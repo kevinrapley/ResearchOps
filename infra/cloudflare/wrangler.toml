@@ -1,11 +1,11 @@
 name = "rops-api"
 main = "src/worker.js"
-compatibility_date = "2024-09-01"
+compatibility_date = "2025-09-26"
 
 [vars]
 AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
 AIRTABLE_TABLE_PROJECTS = "Projects"
-AIRTABLE_TABLE_PROJECTS = "Project Details"
+AIRTABLE_TABLE_DETAILS  = "Project Details"
 SHAREPOINT_CSV_URL = "https://yourtenant.sharepoint.com/sites/ResearchOps/Shared%20Documents/projects.csv"
 ALLOWED_ORIGINS = "http://localhost:8080, https://your-frontend.example.com"
 AUDIT = "true"
