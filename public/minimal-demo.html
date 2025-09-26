@@ -1,56 +1,58 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ResearchOps — Minimal Demo</title>
-<link rel="stylesheet" href="../public/govuk/govuk-typography.css" />
-<link rel="stylesheet" href="../public/govuk/govuk-colours.css" />
-<style>
-  body { font-family: "GDS Transport", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .panel { border: 1px solid #b1b4b6; padding: 12px; border-radius: 4px; }
-  textarea { width: 100%; height: 120px; }
-</style>
-</head>
-<body>
-  <h1 class="govuk-heading-l">ResearchOps — Session + Notes</h1>
-  <div class="grid">
-    <div class="panel">
-      <h2 class="govuk-heading-m">Create Session</h2>
-      <input id="title" class="govuk-input" placeholder="Session title" />
-      <button id="create" class="govuk-button">Create</button>
-      <div id="sid" class="govuk-hint"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ResearchOps — Minimal Demo</title>
+    
+    <link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
+    <link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
+    <link rel="stylesheet" href="./css/screen.css" media="screen" />
+    
+    <style>
+      body { font-family: "GDS Transport", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .panel { border: 1px solid #b1b4b6; padding: 12px; border-radius: 4px; }
+      textarea { width: 100%; height: 120px; }
+    </style>
+  </head>
+  <body>
+    <h1 class="govuk-heading-l">ResearchOps — Session + Notes</h1>
+    <div class="grid">
+      <div class="panel">
+        <h2 class="govuk-heading-m">Create Session</h2>
+        <input id="title" class="govuk-input" placeholder="Session title" />
+        <button id="create" class="govuk-button">Create</button>
+        <div id="sid" class="govuk-hint"></div>
+      </div>
+      <div class="panel">
+        <h2 class="govuk-heading-m">Add Note</h2>
+        <textarea id="note" placeholder="Note text (avoid PII)"></textarea>
+        <input id="tags" class="govuk-input" placeholder="Comma-separated tags" />
+        <button id="save" class="govuk-button">Save Note</button>
+        <pre id="out"></pre>
+      </div>
     </div>
-    <div class="panel">
-      <h2 class="govuk-heading-m">Add Note</h2>
-      <textarea id="note" placeholder="Note text (avoid PII)"></textarea>
-      <input id="tags" class="govuk-input" placeholder="Comma-separated tags" />
-      <button id="save" class="govuk-button">Save Note</button>
-      <pre id="out"></pre>
-    </div>
-  </div>
-
-<script type="module">
-import { ResearchOpsSDK } from "./src/sdk/researchops_sdk_v1.0.0.js";
-const sdk = ResearchOpsSDK.createSDK({
-  org: "home-office-biometrics", project: "demo", study: "demo", user: "you@homeoffice.gov.uk"
-});
-let sessionId = null;
-
-document.getElementById('create').onclick = async () => {
-  const s = await sdk.createSession({ title: document.getElementById('title').value || "Untitled" });
-  sessionId = s.id;
-  document.getElementById('sid').textContent = `Session: ${s.id}`;
-};
-
-document.getElementById('save').onclick = async () => {
-  if (!sessionId) return alert("Create a session first");
-  const text = document.getElementById('note').value;
-  const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  const n = await sdk.addNote(sessionId, { text, tags });
-  document.getElementById('out').textContent = JSON.stringify(n, null, 2);
-};
-</script>
-</body>
+    <script type="module">
+      import { ResearchOpsSDK } from "./src/sdk/researchops_sdk_v1.0.0.js";
+      const sdk = ResearchOpsSDK.createSDK({
+        org: "home-office-biometrics", project: "demo", study: "demo", user: "you@homeoffice.gov.uk"
+      });
+      let sessionId = null;
+      
+      document.getElementById('create').onclick = async () => {
+        const s = await sdk.createSession({ title: document.getElementById('title').value || "Untitled" });
+        sessionId = s.id;
+        document.getElementById('sid').textContent = `Session: ${s.id}`;
+      };
+      
+      document.getElementById('save').onclick = async () => {
+        if (!sessionId) return alert("Create a session first");
+        const text = document.getElementById('note').value;
+        const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean);
+        const n = await sdk.addNote(sessionId, { text, tags });
+        document.getElementById('out').textContent = JSON.stringify(n, null, 2);
+      };
+    </script>
+  </body>
 </html>
