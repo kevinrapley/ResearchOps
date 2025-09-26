@@ -1,3 +1,4 @@
+# .github/workflows/deploy-worker.yml
 name: Deploy Cloudflare Worker
 
 on:
@@ -20,4 +21,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: deploy --config infra/cloudflare/wrangler.toml
+          workingDirectory: infra/cloudflare
