@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Consent — ResearchOps</title>
+	<link rel="stylesheet" href="../public/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="../public/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="../public/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<x-include
+		src="./partials/header.html"
+		vars='{"active":"Consent","subtitle":"Consent"}'>	
+	</x-include>
+
+	<div class="card">
+		<h2 class="govuk-heading-m">Link consent to a session</h2>
+		<label class="govuk-body">Session
+			<select id="session"></select>
+		</label>
+		<label class="govuk-body">Lawful basis
+			<select id="basis">
+				<option value="dpv:PublicInterest">Public task / Public interest</option>
+				<option value="dpv:Consent">Consent</option>
+			</select>
+		</label>
+		<label class="govuk-body">Retention (ISO 8601, e.g., P12M)
+			<input id="ret" class="govuk-input" value="P12M" />
+		</label>
+		<label class="govuk-body">Notes (optional)
+			<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
+		</label>
+		<button id="link" class="govuk-button">Link consent</button>
+		<div id="status" class="govuk-hint"></div>
+	</div>
+
+	<div class="card">
+		<h2 class="govuk-heading-m">Existing consent records</h2>
+		<div id="consents" class="govuk-body"></div>
+	</div>
+	
+	<x-include src="./partials/footer.html"></x-include>
+
+	<script type="module">
+		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
+		import { getCtx, formatDate } from "./scripts/shared.js";
+		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
+
+		async function populateSessions() {
+			const list = await sdk.search({ type: "ResearchSession" });
+			const sel = document.getElementById('session');
+			sel.innerHTML = "";
+			list.forEach(s => {
+				const opt = document.createElement('option');
+				opt.value = s.id;
+				opt.textContent = `${s.name || "(Untitled)"} — ${formatDate(s["schema:startDate"]||s.created)}`;
+				sel.appendChild(opt);
+			});
+		}
+
+		async function loadConsents() {
+			const list = await sdk.search({ type: "Consent" });
+			const div = document.getElementById('consents');
+			div.innerHTML = list.map(c => `
+    <div style="border-top:1px solid #b1b4b6; padding:8px 0">
+      <strong>${c.id}</strong>
+      <div class="govuk-hint">Session: ${c.hasTarget}</div>
+      <div class="govuk-hint">Basis: ${c.LawfulBasis} • Retention: ${c.RetentionSchedule}</div>
+      <div class="govuk-hint">${c.description||""}</div>
+    </div>`).join("");
+		}
+
+		document.getElementById('link').onclick = async () => {
+			const sessionId = document.getElementById('session').value;
+			if (!sessionId) return alert("Create a session first.");
+			const basis = document.getElementById('basis').value;
+			const ret = document.getElementById('ret').value || "P12M";
+			const notes = document.getElementById('notes').value;
+			const c = await sdk.linkConsent(sessionId, { lawfulBasis: basis, retentionISO8601: ret, notes });
+			document.getElementById('status').textContent = `Linked consent ${c.id}`;
+			await loadConsents();
+		};
+
+		await populateSessions();
+		await loadConsents();
+	</script>
+</body>
+
+</html>

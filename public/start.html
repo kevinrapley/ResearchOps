@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Start a New Research Project — ResearchOps Demo Suite</title>
+
+	<link rel="stylesheet" href="../public/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="../public/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="../public/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<x-include src="./partials/header.html" vars='{
+			"active":"Start Research Project",
+			"subtitle":"Define service phase, set status, add stakeholders and objectives"
+		}'>
+	</x-include>
+
+	<main class="govuk-body" role="main">
+		<div class="card">
+			<h1 class="govuk-heading-l" style="margin-top:0">Start a new research project</h1>
+			<p class="lede">
+				Define the project within a service phase and current status, then capture stakeholders and initial objectives.
+			</p>
+
+			<!-- Step 1 -->
+			<section id="step1">
+				<h2 class="govuk-heading-m">Step 1 of 2</h2>
+				<p class="lede">Define the project’s service phase and status</p>
+
+				<label class="govuk-body">Project name
+					<input id="p_name" class="govuk-input" required />
+				</label>
+				
+				<label class="govuk-body">Description
+					<textarea id="p_desc" class="govuk-input"></textarea>
+				</label>
+
+				<label class="govuk-body">Service phase
+					<select id="p_phase" class="govuk-input">
+						<option value="discovery">Discovery</option>
+						<option value="alpha">Alpha</option>
+						<option value="beta">Beta</option>
+						<option value="live">Live</option>
+						<option value="retired">Retired</option>
+					</select>
+				</label>
+
+				<label class="govuk-body">Project status
+					<select id="p_status" class="govuk-input">
+						<option value="goal-setting">Goal setting & problem defining</option>
+						<option value="planning">Planning research</option>
+						<option value="conducting">Conducting research</option>
+						<option value="synthesis">Synthesis & analysis</option>
+						<option value="shared">Shared & socialised research</option>
+						<option value="monitoring">Monitoring metrics</option>
+					</select>
+				</label>
+
+				<div class="cta">
+					<button class="govuk-button" id="next1" type="button">Continue</button>
+				</div>
+			</section>
+
+			<!-- Step 2 -->
+			<section id="step2" style="display:none">
+				<h2 class="govuk-heading-m">Step 2 of 2</h2>
+				<p class="lede">Supplementary information about the project</p>
+
+				<label class="govuk-body">Lead Researcher
+					<input id="lead_name" class="govuk-input" value="" />
+				</label>
+
+				<label class="govuk-body">Researcher&rsquo;s Email
+					<input id="lead_email" type="email" class="govuk-input" value="" />
+				</label>
+
+				<label class="govuk-body">Notes
+					<textarea id="p_notes" class="govuk-input"></textarea>
+				</label>
+
+				<div class="cta">
+					<button class="govuk-button" id="prev2" type="button">Back</button>
+					<button class="govuk-button" id="finish" type="button">Create project</button>
+				</div>
+				<div id="status" class="govuk-hint"></div>
+			</section>
+
+
+			<form id="projectForm">
+				<label class="govuk-body">Project name
+					<input id="p_name" class="govuk-input" required />
+				</label>
+
+				<label class="govuk-body">Description
+					<textarea id="p_desc" class="govuk-input"></textarea>
+				</label>
+
+				<label class="govuk-body">Service phase
+					<select id="p_phase" class="govuk-input">
+						<option value="pre-discovery">Pre-discovery</option>
+						<option value="discovery">Discovery</option>
+						<option value="alpha">Alpha</option>
+						<option value="beta">Beta</option>
+						<option value="live">Live</option>
+						<option value="retired">Retired</option>
+					</select>
+				</label>
+
+				<label class="govuk-body">Project status
+					<select id="p_status" class="govuk-input">
+						<option value="goal-setting">Goal setting & problem defining</option>
+						<option value="planning">Planning research</option>
+						<option value="conducting">Conducting research</option>
+						<option value="synthesis">Synthesis & analysis</option>
+						<option value="shared">Shared & socialised research</option>
+						<option value="monitoring">Monitoring metrics</option>
+					</select>
+				</label>
+
+				<label class="govuk-body">Stakeholders (name | role | email, one per line)
+					<textarea id="p_stakeholders" class="govuk-input"></textarea>
+				</label>
+
+				<label class="govuk-body">Initial objectives (one per line)
+					<textarea id="p_objectives" class="govuk-input"></textarea>
+				</label>
+
+				<label class="govuk-body">User groups (comma-separated)
+					<input id="p_usergroups" class="govuk-input" />
+				</label>
+
+				<button id="create" class="govuk-button" type="submit">Create project</button>
+				<div id="status" class="govuk-hint"></div>
+			</form>
+		</div>
+	</main>
+
+	<!-- Global footer -->
+	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
+	</x-include>
+
+	<script type="module">
+		import "../src/sdk/researchops_sdk_v1.0.0.js";
+		import { getCtx } from "./scripts/shared.js?v=2";
+		const { ResearchOpsSDK } = window;
+		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
+
+		const $ = (id) => document.getElementById(id);
+
+		function parseStakeholders(text) {
+			return text.split("\n").map(line => {
+				const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
+				return { name, role, email };
+			}).filter(s => s.name);
+		}
+
+		document.getElementById('projectForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const name = $('p_name').value.trim();
+			if (!name) return;
+
+			const description = $('p_desc').value.trim();
+			const phase = $('p_phase').value;
+			const status = $('p_status').value;
+			const stakeholders = parseStakeholders($('p_stakeholders').value);
+			const objectives = $('p_objectives').value.split("\n").map(s => s.trim()).filter(Boolean);
+			const user_groups = $('p_usergroups').value.split(",").map(s => s.trim()).filter(Boolean);
+
+			try {
+				const p = await sdk.createProject({ name, description, phase, status, stakeholders, objectives, user_groups });
+				localStorage.setItem("rops.lastProjectId", p.id);
+				$('status').textContent = `Created project ${p.id}`;
+				window.location.href = "./projects.html";
+			} catch (err) {
+				$('status').textContent = "Failed to create project: " + (err?.message || err);
+			}
+		});
+	</script>
+</body>
+
+</html>

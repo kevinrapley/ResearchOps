@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Projects — ResearchOps Demo Suite</title>
+
+	<link rel="stylesheet" href="../public/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="../public/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="../public/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<!-- Global header -->
+	<x-include 
+		src="./partials/header.html" 
+		vars='{
+			"active":"Projects",
+			"subtitle":"Browse projects created in this demo suite"
+		}'>
+	</x-include>
+
+	<main class="govuk-body" role="main">
+		<h1 class="govuk-heading-l" style="margin-top:0">Projects</h1>
+		<div id="list"></div>
+	</main>
+
+	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
+	</x-include>
+
+	<script type="module">
+		import "../src/sdk/researchops_sdk_v1.0.0.js";
+		import { getCtx } from "./scripts/shared.js?v=2";
+		const { ResearchOpsSDK } = window;
+		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
+
+		const container = document.getElementById('list');
+
+		function card(p) {
+			const groups = (p.user_groups || []).map(g => `<span class="tag">${g}</span>`).join(" ");
+			return `<article class="card">
+        <h2 class="govuk-heading-m" style="margin:0">${p.name}</h2>
+        <div class="lede">Phase: ${p["rops:servicePhase"]} · Status: ${p["rops:projectStatus"]}</div>
+        ${p.description ? `<p>${p.description}</p>` : ""}
+        ${groups ? `<div>${groups}</div>` : ""}
+        <details style="margin-top:8px">
+          <summary class="govuk-link">Stakeholders & Objectives</summary>
+          <div><strong>Stakeholders</strong></div>
+          <ul>
+            ${(p.stakeholders || []).map(s => `<li>${s.name} (${s.role}) ${s.email || ""}</li>`).join("") || "<li class='lede'>None</li>"}
+          </ul>
+          <div><strong>Objectives</strong></div>
+          <ul>
+            ${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
+          </ul>
+        </details>
+      </article>`;
+		}
+
+		(async () => {
+			const projects = await sdk.listProjects();
+			container.innerHTML = projects.length ?
+				projects.map(card).join("") :
+				'<p class="lede">No projects yet. <a class="govuk-link" href="./start.html">Create one</a>.</p>';
+		})();
+	</script>
+</body>
+
+</html>
