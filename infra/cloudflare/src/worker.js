@@ -75,7 +75,6 @@ async function handleApi(request, env, ctx) {
       Objectives: (payload.objectives || []).join("\n"),
       UserGroups: (payload.user_groups || []).join(", "),
       Stakeholders: JSON.stringify(payload.stakeholders || []),
-      CreatedAt: payload.created || new Date().toISOString(),
       LocalId: payload.id || ""
     };
 
