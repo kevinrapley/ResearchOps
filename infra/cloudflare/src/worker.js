@@ -1,21 +1,25 @@
 import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
 
 export default {
-	async fetch(request, env, ctx) {
-		const url = new URL(request.url);
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
 
-		// If this is an API call, handle it separately
-		if (url.pathname.startsWith("/api/")) {
-			return handleApi(request, env, ctx);
-		}
+    // --- API first
+    if (url.pathname.startsWith("/api/")) {
+      return handleApi(request, env, ctx); // your existing API function
+    }
 
-		// Otherwise try to serve static assets from /public
-		try {
-			return await getAssetFromKV({ request, waitUntil: ctx.waitUntil.bind(ctx) });
-		} catch (e) {
-			return new Response("Not found", { status: 404 });
-		}
-	}
+    // --- Static assets from /public via Workers Assets
+    // Try the exact path first
+    let resp = await env.ASSETS.fetch(request);
+
+    // If not found, try SPA-style fallback to /index.html
+    if (resp.status === 404) {
+      const indexRequest = new Request(new URL("/index.html", url.origin), request);
+      resp = await env.ASSETS.fetch(indexRequest);
+    }
+    return resp;
+  }
 };
 
 async function handleApi(request, env, ctx) {
