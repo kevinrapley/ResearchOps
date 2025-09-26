@@ -126,177 +126,223 @@
 	</x-include>
 
 	<script type="module">
-		const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
-		const $ = (id) => document.getElementById(id);
+	// === CONFIG ===
+	const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 
-		// Sections & nav buttons
-		const step1 = $('step1'),
-			step2 = $('step2'),
-			step3 = $('step3');
-		const next2 = $('next2'),
-			prev1 = $('prev1'),
-			next3 = $('next3'),
-			prev2 = $('prev2'),
-			finish = $('finish');
+	// === DOM helpers ===
+	const $ = (id) => document.getElementById(id);
 
-		// Step 1 fields + inline error holders
-		const nameEl = $('p_name'),
-			descEl = $('p_desc');
-		const phaseEl = $('p_phase'),
-			statusEl = $('p_status');
-		const nameErr = $('p_name_error'),
-			descErr = $('p_desc_error');
+	// === Mapping: internal codes -> Airtable labels ===
+	const PHASE_LABEL = {
+		"pre-discovery": "Pre-discovery",
+		"discovery": "Discovery",
+		"alpha": "Alpha",
+		"beta": "Beta",
+		"live": "Live",
+		"retired": "Retired"
+	};
 
-		// Step 2
-		const stakeholdersEl = $('p_stakeholders'),
-			objectivesEl = $('p_objectives'),
-			groupsEl = $('p_usergroups');
+	const STATUS_LABEL = {
+		"goal-setting": "Goal setting & problem defining",
+		"planning": "Planning research",
+		"conducting": "Conducting research",
+		"synthesis": "Synthesis & analysis",
+		"shared": "Shared & socialised research",
+		"monitoring": "Monitoring metrics"
+	};
 
-		// Step 3
-		const leadNameEl = $('lead_name'),
-			leadEmailEl = $('lead_email'),
-			notesEl = $('p_notes');
+	// Sections & nav buttons
+	const step1 = $('step1');
+	const step2 = $('step2');
+	const step3 = $('step3');
 
-		// Status line
-		let statusLine = document.getElementById('status');
-		if (!statusLine) {
-			statusLine = document.createElement('p');
-			statusLine.id = 'status';
-			statusLine.className = 'lede';
-			step3.appendChild(statusLine);
+	const next2 = $('next2');
+	const prev1 = $('prev1');
+	const next3 = $('next3');
+	const prev2 = $('prev2');
+	const finish = $('finish');
+
+	// Step 1 fields
+	const nameEl = $('p_name');
+	const descEl = $('p_desc');
+	const phaseEl = $('p_phase');
+	const statusEl = $('p_status');
+
+	// Step 1 inline errors
+	const nameErr = $('p_name_error');
+	const descErr = $('p_desc_error');
+
+	// Step 2 fields
+	const stakeholdersEl = $('p_stakeholders');
+	const objectivesEl = $('p_objectives');
+	const groupsEl = $('p_usergroups');
+
+	// Step 3 fields
+	const leadNameEl = $('lead_name');
+	const leadEmailEl = $('lead_email');
+	const notesEl = $('p_notes');
+
+	// Status line on step 3
+	let statusLine = document.getElementById('status');
+	if (!statusLine) {
+		statusLine = document.createElement('p');
+		statusLine.id = 'status';
+		statusLine.className = 'lede';
+		step3.appendChild(statusLine);
+	}
+	const setStatus = (m) => { statusLine.textContent = m; };
+
+	// === Validation (Step 1) ===
+	function setInlineError(input, errEl, message) {
+		if (message) {
+			input.setAttribute('aria-invalid', 'true');
+			errEl.textContent = message;
+			errEl.style.display = '';
+		} else {
+			input.setAttribute('aria-invalid', 'false');
+			errEl.textContent = '';
+			errEl.style.display = 'none';
 		}
-		const setStatus = (m) => { statusLine.textContent = m; };
+	}
 
-		function setInlineError(input, errEl, message) {
-			if (message) {
-				input.setAttribute('aria-invalid', 'true');
-				errEl.textContent = message;
-				errEl.style.display = '';
-			} else {
-				input.setAttribute('aria-invalid', 'false');
-				errEl.textContent = '';
-				errEl.style.display = 'none';
-			}
+	function validateStep1({ showInline = false } = {}) {
+		const name = nameEl.value.trim();
+		const desc = descEl.value.trim();
+
+		const nameError = !name ? 'Enter a project name.' : '';
+		const descError = !desc ? 'Enter a short project description.' : '';
+
+		if (showInline) {
+			setInlineError(nameEl, nameErr, nameError);
+			setInlineError(descEl, descErr, descError);
+		} else {
+			setInlineError(nameEl, nameErr, '');
+			setInlineError(descEl, descErr, '');
 		}
 
-		// showInline=false while typing (hide errors); true on Continue click (show only failing fields)
-		function validateStep1({ showInline = false } = {}) {
-			const name = nameEl.value.trim();
-			const desc = descEl.value.trim();
+		next2.disabled = Boolean(nameError || descError);
 
-			const nameError = !name ? 'Enter a project name.' : '';
-			const descError = !desc ? 'Enter a short project description.' : '';
-
-			if (showInline) {
-				setInlineError(nameEl, nameErr, nameError);
-				setInlineError(descEl, descErr, descError);
-			} else {
-				// keep clean while user types
-				setInlineError(nameEl, nameErr, '');
-				setInlineError(descEl, descErr, '');
-			}
-
-			// On showInline, focus first invalid
-			if (showInline) {
-				if (nameError) { nameEl.focus(); return false; }
-				if (descError) { descEl.focus(); return false; }
-			}
-			return !(nameError || descError);
+		if (showInline) {
+			if (nameError) { nameEl.focus(); return false; }
+			if (descError) { descEl.focus(); return false; }
 		}
+		return !(nameError || descError);
+	}
 
-		// Keep UI responsive but don’t show errors while typing
-		[nameEl, descEl].forEach(el => {
-			el.addEventListener('input', () => validateStep1({ showInline: false }));
-			el.addEventListener('blur', () => validateStep1({ showInline: false }));
+	[nameEl, descEl].forEach(el => {
+		el.addEventListener('input', () => validateStep1({ showInline: false }));
+		el.addEventListener('blur', () => validateStep1({ showInline: false }));
+	});
+	validateStep1({ showInline: false });
+
+	// === Step navigation ===
+	next2.addEventListener('click', () => {
+		const ok = validateStep1({ showInline: true });
+		if (!ok) return;
+		step1.style.display = 'none';
+		step2.style.display = 'block';
+		stakeholdersEl?.focus();
+	});
+
+	prev1.addEventListener('click', () => {
+		step2.style.display = 'none';
+		step1.style.display = 'block';
+		nameEl.focus();
+	});
+
+	next3.addEventListener('click', () => {
+		step2.style.display = 'none';
+		step3.style.display = 'block';
+		leadNameEl?.focus();
+	});
+
+	prev2.addEventListener('click', () => {
+		step3.style.display = 'none';
+		step2.style.display = 'block';
+	});
+
+	// === Helpers ===
+	function parseStakeholders(text) {
+		return String(text || "")
+			.split(/\r?\n/)
+			.map(line => {
+				const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
+				return { name, role, email };
+			})
+			.filter(s => s.name);
+	}
+
+	function csvListToArray(text) {
+		return String(text || "")
+			.split(",")
+			.map(s => s.trim())
+			.filter(Boolean);
+	}
+
+	function linesToArray(text) {
+		return String(text || "")
+			.split(/\r?\n/)
+			.map(s => s.trim())
+			.filter(Boolean);
+	}
+
+	// === API ===
+	async function postToAirtable(project) {
+		const res = await fetch(`${API_BASE}/api/projects`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(project),
+			credentials: "omit"
 		});
+		const text = await res.text();
+		if (!res.ok) {
+			let detail = "";
+			try { detail = JSON.parse(text).detail || text; } catch { detail = text; }
+			throw new Error(`Airtable error ${res.status}: ${detail}`);
+		}
+		try { return JSON.parse(text); } catch { return { ok: true }; }
+	}
 
-		// Step navigation
-		next2.addEventListener('click', () => {
-			const ok = validateStep1({ showInline: true });
-			if (!ok) return; // show inline errors and stay on Step 1
-			step1.style.display = 'none';
-			step2.style.display = 'block';
-			stakeholdersEl?.focus();
-		});
-
-		prev1.addEventListener('click', () => { step2.style.display = 'none';
+	// === Finish ===
+	finish.addEventListener('click', async () => {
+		if (!validateStep1({ showInline: true })) {
+			step2.style.display = 'none';
+			step3.style.display = 'none';
 			step1.style.display = 'block';
-			nameEl.focus(); });
-		next3.addEventListener('click', () => { step2.style.display = 'none';
-			step3.style.display = 'block';
-			leadNameEl?.focus(); });
-		prev2.addEventListener('click', () => { step3.style.display = 'none';
-			step2.style.display = 'block'; });
-
-		// Helpers
-		function parseStakeholders(text) {
-			return String(text || "")
-				.split(/\r?\n/)
-				.map(line => {
-					const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
-					return { name, role, email };
-				})
-				.filter(s => s.name);
+			return;
 		}
 
-		function csvListToArray(text) { return String(text || "").split(",").map(s => s.trim()).filter(Boolean); }
+		// Map phase/status codes -> Airtable labels
+		const phaseLabel = PHASE_LABEL[phaseEl.value] ?? "Discovery";
+		const statusLabel = STATUS_LABEL[statusEl.value] ?? "Planning research";
 
-		function linesToArray(text) { return String(text || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean); }
+		const project = {
+			org: "Home Office Biometrics",
+			name: nameEl.value.trim(),
+			description: descEl.value.trim(),
+			phase: phaseLabel,
+			status: statusLabel,
+			stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
+			objectives: linesToArray(objectivesEl?.value || ""),
+			user_groups: csvListToArray(groupsEl?.value || ""),
+			lead_researcher: (leadNameEl?.value || "").trim() || undefined,
+			lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
+			notes: (notesEl?.value || "").trim() || undefined,
+			created: new Date().toISOString(),
+			id: (crypto.randomUUID?.() || String(Date.now()))
+		};
 
-		// API
-		async function postToAirtable(project) {
-			const res = await fetch(`${API_BASE}/api/projects`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(project),
-				credentials: "omit"
-			});
-			const text = await res.text();
-			if (!res.ok) {
-				let detail = "";
-				try { detail = JSON.parse(text).detail || text; } catch { detail = text; }
-				throw new Error(`Airtable error ${res.status}: ${detail}`);
-			}
-			try { return JSON.parse(text); } catch { return { ok: true }; }
+		try {
+			setStatus("Saving project…");
+			const out = await postToAirtable(project);
+			setStatus("Saved. Redirecting…");
+			localStorage.setItem("rops.lastProjectId", out?.project_id || "");
+			window.location.href = "./projects.html";
+		} catch (e) {
+			console.error(e);
+			setStatus("Failed to create project: " + (e?.message || e));
 		}
-
-		// Finish
-		finish.addEventListener('click', async () => {
-			// Ensure Step 1 valid; show inline errors if not
-			if (!validateStep1({ showInline: true })) {
-				step2.style.display = 'none';
-				step3.style.display = 'none';
-				step1.style.display = 'block';
-				return;
-			}
-
-			const project = {
-				org: "Home Office Biometrics",
-				name: nameEl.value.trim(),
-				description: descEl.value.trim(),
-				phase: phaseEl.value,
-				status: statusEl.value,
-				stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
-				objectives: linesToArray(objectivesEl?.value || ""),
-				user_groups: csvListToArray(groupsEl?.value || ""),
-				lead_researcher: (leadNameEl?.value || "").trim() || undefined,
-				lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
-				notes: (notesEl?.value || "").trim() || undefined,
-				created: new Date().toISOString(),
-				id: (crypto.randomUUID?.() || String(Date.now()))
-			};
-
-			try {
-				setStatus("Saving project…");
-				const out = await postToAirtable(project);
-				setStatus("Saved. Redirecting…");
-				localStorage.setItem("rops.lastProjectId", out?.project_id || "");
-				window.location.href = "./projects.html";
-			} catch (e) {
-				console.error(e);
-				setStatus("Failed to create project: " + (e?.message || e));
-			}
-		});
+	});
 	</script>
 </body>
 
