@@ -1,0 +1,25 @@
+/* GOV.UK Colour Palette — core set only */
+
+/* Text colours */
+.govuk-text-colour { color: #0b0c0c; }
+.govuk-secondary-text-colour { color: #505a5f; }
+.govuk-link-colour { color: #1d70b8; }
+.govuk-link-hover-colour { color: #003078; }
+.govuk-link-visited-colour { color: #4c2c92; }
+
+/* Brand and functional colours */
+.govuk-brand-colour { color: #1d70b8; }
+.govuk-brand-background { background-color: #1d70b8; color: #fff; }
+
+.govuk-focus-colour { outline-color: #ffbf47; }
+.govuk-focus-background { background-color: #ffbf47; }
+
+.govuk-success-colour { color: #00703c; }
+.govuk-warning-colour { color: #ffbf47; }
+.govuk-error-colour { color: #d4351c; }
+
+/* Background neutrals */
+.govuk-background-light-grey { background-color: #f3f2f1; }
+.govuk-background-mid-grey { background-color: #b1b4b6; }
+.govuk-background-dark-grey { background-color: #505a5f; }
+.govuk-background-black { background-color: #0b0c0c; color: #fff; }
