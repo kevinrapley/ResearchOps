@@ -1,0 +1,15 @@
+{
+  "$id": "note.schema.json",
+  "type": "object",
+  "required": ["@context", "id", "type", "created", "creator", "hasTarget", "hasBody"],
+  "properties": {
+    "@context": { "type": ["object", "string"] },
+    "id": { "type": "string" },
+    "type": { "const": "Note" },
+    "created": { "type": "string", "format": "date-time" },
+    "creator": { "type": "string" },
+    "hasTarget": { "type": "string" },
+    "hasBody": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}
