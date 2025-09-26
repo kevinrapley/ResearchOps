@@ -1,0 +1,15 @@
+name = "rops-api"
+main = "src/worker.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+# ---- Required (set to your values) ----
+AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
+AIRTABLE_TABLE_PROJECTS = "Projects"
+SHAREPOINT_CSV_URL = "https://yourtenant.sharepoint.com/sites/ResearchOps/Shared%20Documents/projects.csv"
+
+# Comma-separated allowlist of your frontend origins
+ALLOWED_ORIGINS = "http://localhost:8080, https://your-frontend.example.com"
+
+# Optional: enable simple console audit logs in Worker
+AUDIT = "true"
