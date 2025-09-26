@@ -7,7 +7,7 @@ AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
 AIRTABLE_TABLE_PROJECTS = "Projects"
 AIRTABLE_TABLE_DETAILS  = "Project Details"
 SHAREPOINT_CSV_URL = "https://yourtenant.sharepoint.com/sites/ResearchOps/Shared%20Documents/projects.csv"
-ALLOWED_ORIGINS = "http://localhost:8080, https://your-frontend.example.com"
+ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080, http://127.0.0.1:5500"
 AUDIT = "true"
 
 [assets]
