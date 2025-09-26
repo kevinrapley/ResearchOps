@@ -1,0 +1,156 @@
+body {
+	margin: 24px;
+	}
+
+.grid {
+	display: grid;
+	gap: 24px;
+	grid-template-columns: 1fr;
+	}
+
+@media (min-width: 900px) {
+	.grid {
+		grid-template-columns: 1fr 1fr;
+		}
+	}
+
+.nav a {
+	margin-right: 12px;
+	}
+
+.nav a.active {
+	font-weight: 700;
+	text-decoration: none;
+	border-bottom: 3px solid #1d70b8;
+	}
+
+.card {
+	border: 1px solid #b1b4b6;
+	border-radius: 6px;
+	padding: 24px;
+	margin-bottom: 16px;
+	background: #fff;
+	}
+
+.eyebrow {
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	font-weight: 700;
+	font-size: 14px;
+	color: #505a5f;
+	margin: 0 0 4px;
+	}
+
+.lede {
+	color: #505a5f;
+	margin-top: 8px;
+	}
+
+.cta {
+	display: inline-block;
+	margin-top: 16px;
+	}
+
+.cta .govuk-button {
+	margin: 0;
+	text-decoration: none;
+	}
+
+.cta .govuk-button:hover {
+	color: #fff;
+	}
+
+.thumb {
+	width: 100%;
+	height: 180px;
+	background: #f3f2f1;
+	border-radius: 4px;
+	margin-bottom: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	}
+
+.thumb span {
+	color: #505a5f;
+	font-size: 14px;
+	}
+	
+.tabs {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	}
+
+.tabs a {
+	padding: 6px 10px;
+	border-radius: 4px;
+	border: 1px solid #b1b4b6;
+	text-decoration: none;
+	}
+
+.tabs a.active {
+	border-color: #1d70b8;
+	}
+
+.list .item {
+	border-top: 1px solid #b1b4b6;
+	padding: 8px 0;
+	}
+	
+select,
+input {
+	width: 100%;
+	}
+	
+textarea {
+	width: 100%;
+	height: 140px;
+	}
+
+.item {
+	border-top: 1px solid #b1b4b6;
+	padding: 8px 0;
+	}
+
+.tag {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	padding: 2px 6px;
+	border-radius: 12px;
+	margin-right: 6px;
+	font-size: 12px;
+	}
+	
+.panel {
+	border: 1px solid #b1b4b6;
+	padding: 12px;
+	border-radius: 4px;
+	}
+
+.note {
+	border: 1px dashed #b1b4b6;
+	padding: 8px;
+	border-radius: 4px;
+	margin-bottom: 8px;
+	cursor: grab;
+	}
+
+.cluster {
+	min-height: 160px;
+	border: 2px solid #b1b4b6;
+	padding: 8px;
+	border-radius: 6px;
+	margin-bottom: 12px;
+	}
+	
+.result {
+	border-top: 1px solid #b1b4b6;
+	padding: 8px 0;
+	}
+
+.type {
+	font-size: 12px;
+	text-transform: uppercase;
+	color: #505a5f;
+	}
