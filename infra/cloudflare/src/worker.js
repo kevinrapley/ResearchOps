@@ -134,3 +134,23 @@ function json(body, status = 200, headers = {}) {
 function safeText(t) {
 	return t && t.length > 2048 ? t.slice(0, 2048) + "…" : t;
 }
+
+import { getAssetFromKV } from "@cloudflare/kv-asset-handler";
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // Serve /api/... as before
+    if (url.pathname.startsWith("/api/")) {
+      return handleApi(request, env, ctx);
+    }
+
+    // Otherwise try to serve from /public
+    try {
+      return await getAssetFromKV({ request, waitUntil: ctx.waitUntil.bind(ctx) });
+    } catch (e) {
+      return new Response("Not found", { status: 404 });
+    }
+  }
+};
