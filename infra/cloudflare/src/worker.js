@@ -8,13 +8,12 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 
-		// --- API routes
+		// API routes
 		if (url.pathname.startsWith("/api/")) {
 			return handleApi(request, env, ctx);
 		}
 
-		// --- Static assets via Workers Assets (no KV)
-		// Try exact asset; on 404, fall back to /index.html (SPA-friendly)
+		// Static assets via Workers Assets
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
 			const indexReq = new Request(new URL("/index.html", url), request);
@@ -29,33 +28,28 @@ async function handleApi(request, env, ctx) {
 	const origin = request.headers.get("Origin") || "";
 	const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 
-	// --- CORS preflight for API
+	// CORS preflight
 	if (request.method === "OPTIONS") {
 		return new Response(null, { headers: corsHeaders(origin, allowed) });
 	}
 
-	// --- Enforce CORS allowlist (non-browser clients may omit Origin)
+	// Enforce CORS allowlist
 	if (origin && !allowed.includes(origin)) {
 		return json({ error: "Origin not allowed" }, 403, corsHeaders(origin, allowed));
 	}
 
-	// --- Health
+	// Health
 	if (url.pathname === "/api/health") {
 		return json({ ok: true, time: new Date().toISOString() }, 200, corsHeaders(origin, allowed));
 	}
 
-	// ====================================================================================
-	// POST /api/projects  -> Create record in Airtable (Projects) + linked Project Details
-	// ====================================================================================
+	// POST /api/projects
 	if (url.pathname === "/api/projects" && request.method === "POST") {
 		let payload;
-		try {
-			payload = await request.json();
-		} catch {
-			return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed));
-		}
+		try { payload = await request.json(); }
+		catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed)); }
 
-		// Required (Step 1)
+		// Required
 		const errs = [];
 		if (!payload.name) errs.push("name");
 		if (!payload.description) errs.push("description");
@@ -63,35 +57,24 @@ async function handleApi(request, env, ctx) {
 			return json({ error: "Missing required fields: " + errs.join(", ") }, 400, corsHeaders(origin, allowed));
 		}
 
-		// Helpers for Airtable field shapes
-		const toSelect = (v) => {
-			if (typeof v !== "string") return undefined;
-			const s = v.trim();
-			return s ? { name: s } : undefined; // reliable for Single select
-		};
-
-		// Map -> Projects fields (adjust to your Airtable schema if needed)
+		// Map -> Projects fields (send plain strings for Single select)
 		const projectFields = {
 			Org: payload.org || "Home Office Biometrics",
 			Name: payload.name,
 			Description: payload.description,
-			Phase: toSelect(payload.phase),          // Single select
-			Status: toSelect(payload.status),        // Single select
+			Phase: typeof payload.phase === "string" ? payload.phase : undefined,   // string label
+			Status: typeof payload.status === "string" ? payload.status : undefined, // string label
 			Objectives: (payload.objectives || []).join("\n"),
 			UserGroups: (payload.user_groups || []).join(", "),
 			Stakeholders: JSON.stringify(payload.stakeholders || []),
-			// CreatedAt: (read-only in Airtable if "Created time") -> do NOT send
+			// Do NOT send CreatedAt if it's a computed field in Airtable
 			LocalId: payload.id || ""
 		};
 
-		// Remove undefined/empty strings so Airtable doesn't choke
+		// prune empties
 		for (const k of Object.keys(projectFields)) {
 			const v = projectFields[k];
-			if (
-				v === undefined ||
-				v === null ||
-				(typeof v === "string" && v.trim() === "")
-			) {
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) {
 				delete projectFields[k];
 			}
 		}
@@ -112,7 +95,6 @@ async function handleApi(request, env, ctx) {
 			},
 			body: JSON.stringify({ records: [{ fields: projectFields }] })
 		});
-
 		const pText = await pRes.text();
 		if (!pRes.ok) {
 			return json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, corsHeaders(origin, allowed));
@@ -125,7 +107,7 @@ async function handleApi(request, env, ctx) {
 			return json({ error: "Airtable response missing project id" }, 502, corsHeaders(origin, allowed));
 		}
 
-		// 2) Create Project Details if provided (linked to the project)
+		// 2) Optional Project Details (linked)
 		let detailId = null;
 		const hasDetails = Boolean(
 			payload.lead_researcher || payload.lead_researcher_email || payload.notes
@@ -133,13 +115,11 @@ async function handleApi(request, env, ctx) {
 
 		if (hasDetails) {
 			const detailsFields = {
-				Project: [projectId], // linked record expects array of IDs
+				Project: [projectId],
 				"Lead Researcher": payload.lead_researcher || "",
 				"Lead Researcher Email": payload.lead_researcher_email || "",
 				Notes: payload.notes || ""
 			};
-
-			// prune empties
 			for (const k of Object.keys(detailsFields)) {
 				const v = detailsFields[k];
 				if (typeof v === "string" && v.trim() === "") delete detailsFields[k];
@@ -153,10 +133,9 @@ async function handleApi(request, env, ctx) {
 				},
 				body: JSON.stringify({ records: [{ fields: detailsFields }] })
 			});
-
 			const dText = await dRes.text();
 			if (!dRes.ok) {
-				// Roll back the project to avoid orphan
+				// rollback
 				try {
 					await fetch(`${atProjectsUrl}/${projectId}`, {
 						method: "DELETE",
@@ -165,44 +144,30 @@ async function handleApi(request, env, ctx) {
 				} catch {}
 				return json({ error: `Airtable details ${dRes.status}`, detail: safeText(dText) }, dRes.status, corsHeaders(origin, allowed));
 			}
-			try {
-				const dJson = JSON.parse(dText);
-				detailId = dJson.records?.[0]?.id || null;
-			} catch {}
+			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
 		}
 
 		if (env.AUDIT === "true") {
 			try { console.log("project.created", { id: projectId, hasDetails, name: projectFields.Name }); } catch {}
 		}
 
-		return json({
-			ok: true,
-			project_id: projectId,
-			detail_id: detailId,
-			project: projectFields
-		}, 200, corsHeaders(origin, allowed));
+		return json({ ok: true, project_id: projectId, detail_id: detailId, project: projectFields }, 200, corsHeaders(origin, allowed));
 	}
 
-	// ====================================================================================
-	// GET /api/projects.csv  -> Stream CSV from SharePoint
-	// ====================================================================================
+	// GET /api/projects.csv
 	if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 		const spUrl = env.SHAREPOINT_CSV_URL;
 		if (!spUrl) {
 			return json({ error: "SHAREPOINT_CSV_URL not configured" }, 500, corsHeaders(origin, allowed));
 		}
-
 		const headers = {};
-		if (env.SHAREPOINT_BEARER) {
-			headers["Authorization"] = `Bearer ${env.SHAREPOINT_BEARER}`;
-		}
+		if (env.SHAREPOINT_BEARER) headers["Authorization"] = `Bearer ${env.SHAREPOINT_BEARER}`;
 
 		const spRes = await fetch(spUrl, { headers });
 		if (!spRes.ok) {
 			const t = await spRes.text();
 			return json({ error: `SharePoint ${spRes.status}`, detail: safeText(t) }, spRes.status, corsHeaders(origin, allowed));
 		}
-
 		return new Response(spRes.body, {
 			status: 200,
 			headers: {
@@ -213,7 +178,6 @@ async function handleApi(request, env, ctx) {
 		});
 	}
 
-	// --- API fallback
 	return json({ error: "Not found" }, 404, corsHeaders(origin, allowed));
 }
 
@@ -224,9 +188,7 @@ function corsHeaders(origin, allowed) {
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",
 		"Vary": "Origin"
 	};
-	if (origin && allowed.includes(origin)) {
-		h["Access-Control-Allow-Origin"] = origin;
-	}
+	if (origin && allowed.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
 	return h;
 }
 
