@@ -22,3 +22,5 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           workingDirectory: infra/cloudflare
+          wranglerVersion: '4'
+          command: deploy
