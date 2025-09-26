@@ -15,12 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Deploy using Wrangler Action (no local install needed)
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          workingDirectory: infra/cloudflare
-          wranglerVersion: '4.40.2'   # or just '4' to track latest v4
+          wranglerVersion: '4.40.2'   # or just '4'
           command: deploy --config infra/cloudflare/wrangler.toml
