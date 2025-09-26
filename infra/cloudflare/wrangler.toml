@@ -3,7 +3,7 @@ main = "src/worker.js"
 compatibility_date = "2024-09-01"
 
 [site]
-bucket = "./public"
+bucket = "../../public"
 
 [vars]
 AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
