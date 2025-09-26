@@ -154,3 +154,17 @@ textarea {
 	text-transform: uppercase;
 	color: #505a5f;
 	}
+	
+.error-message {
+	color: #d4351c;
+	margin-top: 4px;
+	font-size: 14px;
+	}
+
+.panel[role="alert"] {
+	border: 2px solid #d4351c;
+	background: #fef7f7;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 12px;
+	}
