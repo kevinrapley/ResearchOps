@@ -11,5 +11,4 @@ ALLOWED_ORIGINS = "http://localhost:8080, https://your-frontend.example.com"
 AUDIT = "true"
 
 [assets]
-binding = "ASSETS"
-directory = "../../public"
+bucket = "../../public"
