@@ -1,0 +1,12 @@
+{
+  "default": "P12M",
+  "overrides": {
+    "recordings": "P6M",
+    "transcripts": "P12M",
+    "notes": "P12M"
+  },
+  "actions": {
+    "on_expiry": "delete",  // or "archive"
+    "grace_period_days": 7
+  }
+}
