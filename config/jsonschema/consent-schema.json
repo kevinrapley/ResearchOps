@@ -1,0 +1,15 @@
+{
+  "$id": "consent.schema.json",
+  "type": "object",
+  "required": ["@context", "id", "type", "created", "creator", "hasTarget", "LawfulBasis", "RetentionSchedule"],
+  "properties": {
+    "@context": { "type": ["object", "string"] },
+    "id": { "type": "string" },
+    "type": { "const": "Consent" },
+    "created": { "type": "string", "format": "date-time" },
+    "creator": { "type": "string" },
+    "hasTarget": { "type": "string" },
+    "LawfulBasis": { "type": "string" },
+    "RetentionSchedule": { "type": "string", "pattern": "^P\\d+[DWMY]|P\\d+M$" }
+  }
+}
