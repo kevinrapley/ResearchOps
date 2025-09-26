@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "name": "ResearchOps Config (MVP)",
+  "description": "Org→Project→Study→Session; consent, retention, tagging, manual clustering.",
+  "@context": {
+    "dcterms": "http://purl.org/dc/terms/",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "oa": "http://www.w3.org/ns/oa#",
+    "schema": "https://schema.org/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "dpv": "https://w3id.org/dpv#",
+    "rops": "https://example.org/researchops#"
+  },
+  "org": {
+    "id": "home-office-biometrics",
+    "title": "Home Office Biometrics",
+    "retention_default": "P12M",
+    "lawful_basis": ["dpv:PublicInterest", "dpv:Consent"],
+    "data_regions": ["UK"]
+  },
+  "taxonomy": {
+    "scheme_id": "hob::global::taxonomy::v1",
+    "tags_preset": [
+      { "id": "t_usability", "label": "Usability" },
+      { "id": "t_accessibility", "label": "Accessibility" },
+      { "id": "t_trust", "label": "Trust" },
+      { "id": "t_navigation", "label": "Navigation" },
+      { "id": "t_error", "label": "Error" },
+      { "id": "t_content", "label": "Content" },
+      { "id": "t_policy", "label": "Policy/Process" }
+    ]
+  },
+  "methods": [
+    { "id": "interview", "label": "User Interview", "templates": ["note", "consent"] },
+    { "id": "usability", "label": "Usability Test", "templates": ["task", "note", "consent"] },
+    { "id": "stakeholder", "label": "Stakeholder Interview", "templates": ["note"] }
+  ],
+  "repository": {
+    "search": { "semantic": false, "operators": ["AND", "OR", "tag:"] },
+    "filters": ["project", "study", "method", "tag", "date_range"]
+  },
+  "ui": {
+    "microformats": {
+      "note_class": "h-entry",
+      "author_class": "p-author h-card",
+      "published_class": "dt-published",
+      "content_class": "e-content"
+    }
+  },
+  "audit": {
+    "events": [
+      "session.created",
+      "consent.linked",
+      "note.created",
+      "tag.added",
+      "cluster.created",
+      "theme.published"
+    ]
+  }
+}
