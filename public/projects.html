@@ -14,9 +14,7 @@
 
 <body>
 	<!-- Global header -->
-	<x-include 
-		src="./partials/header.html" 
-		vars='{
+	<x-include src="./partials/header.html" vars='{
 			"active":"Projects",
 			"subtitle":"Browse projects created in this demo suite"
 		}'>
@@ -31,39 +29,123 @@
 	</x-include>
 
 	<script type="module">
+		// Hook projects list to read from CSV via your Worker
 		import "../src/sdk/researchops_sdk_v1.0.0.js";
 		import { getCtx } from "./scripts/shared.js?v=2";
+
 		const { ResearchOpsSDK } = window;
 		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
 
+		const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 		const container = document.getElementById('list');
+
+		// --- CSV parser (handles quotes, commas, CRLF) ---
+		function parseCSV(text) {
+			const rows = [];
+			let row = [],
+				field = "",
+				inQuotes = false;
+
+			for (let i = 0; i < text.length; i++) {
+				const c = text[i];
+				const n = text[i + 1];
+
+				if (inQuotes) {
+					if (c === '"' && n === '"') { field += '"';
+						i++; } else if (c === '"') { inQuotes = false; } else { field += c; }
+				} else {
+					if (c === '"') inQuotes = true;
+					else if (c === ',') { row.push(field);
+						field = ""; } else if (c === '\r') { /* ignore CR; handle on LF */ } else if (c === '\n') { row.push(field);
+						rows.push(row);
+						row = [];
+						field = ""; } else { field += c; }
+				}
+			}
+			if (field.length || row.length) { row.push(field);
+				rows.push(row); }
+			return rows;
+		}
+
+		// Map CSV row -> object expected by your cards
+		function mapProjectRow(header, row) {
+			const idx = (name) => header.indexOf(name);
+			const get = (name) => {
+				const i = idx(name);
+				return i >= 0 ? row[i] ?? "" : "";
+			};
+
+			const name = get("Name");
+			const description = get("Description");
+			const phase = get("Phase") || "Discovery";
+			const status = get("Status") || "Planning research";
+
+			const objectives = (get("Objectives") || "")
+				.split("|").map(s => s.trim()).filter(Boolean);
+			const user_groups = (get("UserGroups") || "")
+				.split("|").map(s => s.trim()).filter(Boolean);
+
+			let stakeholders = [];
+			try { stakeholders = JSON.parse(get("Stakeholders") || "[]"); } catch { stakeholders = []; }
+
+			return {
+				id: get("LocalId") || undefined,
+				name,
+				description,
+				stakeholders,
+				objectives,
+				user_groups,
+				["rops:servicePhase"]: phase,
+				["rops:projectStatus"]: status
+			};
+		}
+
+		// Override listProjects to read from GitHub-backed CSV via Worker
+		sdk.listProjects = async function listProjectsFromCsv() {
+			const res = await fetch(`${API_BASE}/api/projects.csv`, { cache: "no-store" });
+			if (!res.ok) throw new Error(`Failed to fetch projects.csv (${res.status})`);
+			const text = await res.text();
+			const rows = parseCSV(text);
+
+			if (!rows.length) return [];
+			const [headerRow, ...dataRows] = rows;
+			const header = headerRow.map(h => (h || "").trim());
+
+			return dataRows
+				.filter(r => r && r.some(cell => (cell || "").trim().length))
+				.map(r => mapProjectRow(header, r));
+		};
 
 		function card(p) {
 			const groups = (p.user_groups || []).map(g => `<span class="tag">${g}</span>`).join(" ");
 			return `<article class="card">
-        <h2 class="govuk-heading-m" style="margin:0">${p.name}</h2>
-        <div class="lede">Phase: ${p["rops:servicePhase"]} · Status: ${p["rops:projectStatus"]}</div>
-        ${p.description ? `<p>${p.description}</p>` : ""}
-        ${groups ? `<div>${groups}</div>` : ""}
-        <details style="margin-top:8px">
-          <summary class="govuk-link">Stakeholders & Objectives</summary>
-          <div><strong>Stakeholders</strong></div>
-          <ul>
-            ${(p.stakeholders || []).map(s => `<li>${s.name} (${s.role}) ${s.email || ""}</li>`).join("") || "<li class='lede'>None</li>"}
-          </ul>
-          <div><strong>Objectives</strong></div>
-          <ul>
-            ${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
-          </ul>
-        </details>
-      </article>`;
+			<h2 class="govuk-heading-m" style="margin:0">${p.name}</h2>
+			<div class="lede">Phase: ${p["rops:servicePhase"]} · Status: ${p["rops:projectStatus"]}</div>
+			${p.description ? `<p>${p.description}</p>` : ""}
+			${groups ? `<div>${groups}</div>` : ""}
+			<details style="margin-top:8px">
+				<summary class="govuk-link">Stakeholders & Objectives</summary>
+				<div><strong>Stakeholders</strong></div>
+				<ul>
+					${(p.stakeholders || []).map(s => `<li>${s.name} (${s.role}) ${s.email || ""}</li>`).join("") || "<li class='lede'>None</li>"}
+				</ul>
+				<div><strong>Objectives</strong></div>
+				<ul>
+					${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
+				</ul>
+			</details>
+		</article>`;
 		}
 
 		(async () => {
-			const projects = await sdk.listProjects();
-			container.innerHTML = projects.length ?
-				projects.map(card).join("") :
-				'<p class="lede">No projects yet. <a class="govuk-link" href="./start.html">Create one</a>.</p>';
+			try {
+				const projects = await sdk.listProjects();
+				container.innerHTML = projects.length ?
+					projects.map(card).join("") :
+					'<p class="lede">No projects yet. <a class="govuk-link" href="./start.html">Create one</a>.</p>';
+			} catch (e) {
+				container.innerHTML = `<p class="lede">Could not load projects (${e?.message || e}).</p>`;
+			}
 		})();
 	</script>
 </body>

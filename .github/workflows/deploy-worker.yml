@@ -20,5 +20,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          wranglerVersion: '4.40.2'   # or just '4'
+          wranglerVersion: '4.40.2'e
           command: deploy --config infra/cloudflare/wrangler.toml
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
