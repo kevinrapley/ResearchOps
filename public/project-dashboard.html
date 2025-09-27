@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -20,138 +21,114 @@
 	}'></x-include>
 
 	<main class="govuk-body" role="main">
-		<header class="page-header">
-			<nav aria-label="Top actions" class="page-actions">
-				<a id="back-link" class="govuk-link" href="./projects.html" data-nav="back">← Return to Project List</a>
-				<a id="edit-link" class="govuk-button" href="./start.html">Edit Project</a>
-			</nav>
 
-			<p id="eyebrow-org" class="eyebrow govuk-success-colour">Organisation</p>
-			<h1 id="project-title" class="govuk-heading-l" style="margin-top:0">Project Title</h1>
+		<!-- Hero -->
+		<div class="dashboard-hero">
+			<p class="dashboard-eyebrow">Home Office Biometrics</p>
+			<h1 class="dashboard-title govuk-heading-l">New Project</h1>
+			<p class="dashboard-subtitle">Project description of the new project</p>
+		</div>
 
-			<p id="project-subtitle" class="lede" aria-live="polite"></p>
+		<!-- Top actions -->
+		<div class="actions-bar">
+			<a href="./projects.html" class="btn btn--secondary">← Return to Project List</a>
+			<a href="./edit-project.html" class="btn">✎ Edit Project</a>
+		</div>
 
-			<!-- Key facts (accessible) -->
-			<dl class="info dl--grid">
-				<div>
-					<dt>Service Stage</dt>
-					<dd id="service-stage">–</dd>
-				</div>
-				<div>
-					<dt>Project Stage</dt>
-					<dd id="project-stage">–</dd>
-				</div>
-				<div>
-					<dt>Client Name</dt>
-					<dd id="client-name">–</dd>
-				</div>
-				<div>
-					<dt>Lead Researcher</dt>
-					<dd id="lead-researcher">–</dd>
-				</div>
-				<div>
-					<dt>Lead Researcher Email</dt>
-					<dd id="lead-researcher-email">–</dd>
-				</div>
-			</dl>
-		</header>
+		<!-- Key information -->
+		<section class="kv">
+			<ul class="kv__list">
+				<li><span class="kv__term">Service Stage</span> <span class="kv__desc">Discovery</span></li>
+				<li><span class="kv__term">Project Stage</span> <span class="kv__desc">Planning research</span></li>
+				<li><span class="kv__term">Client Name</span> <span class="kv__desc">–</span></li>
+				<li><span class="kv__term">Lead Researcher</span> <span class="kv__desc">–</span></li>
+				<li><span class="kv__term">Lead Researcher Email</span> <span class="kv__desc">–</span></li>
+			</ul>
+		</section>
 
-		<!-- Button board / sub-nav -->
-		<nav class="board" aria-label="Project areas">
-			<a class="board__link" href="#" data-area="journal">Reflexive Journal</a>
-			<a class="board__link" href="#stakeholders" data-area="stakeholders">Stakeholder Management</a>
-			<a class="board__link" href="#planning" data-area="planning">Research Planning</a>
-			<a class="board__link" href="#outcomes" data-area="outcomes">Research Outcomes</a>
+		<!-- Sublink Button Board -->
+		<nav class="board">
+			<a href="#" class="board__item">Reflexive Journal</a>
+			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
+			<a href="#planning" class="board__item">Research Planning</a>
+			<a href="#outcomes" class="board__item">Research Outcomes</a>
 		</nav>
 
-		<!-- Stakeholders -->
-		<section id="stakeholders" class="app-card" aria-labelledby="stakeholders-heading">
-			<h2 id="stakeholders-heading" class="govuk-heading-m">Stakeholder Management</h2>
-			<p class="lede">Keep track of people involved and why they matter to the project.</p>
-			<div class="cta">
-				<a class="govuk-button" href="#" aria-label="Add stakeholder">+ Add Stakeholder</a>
-			</div>
-
-			<div class="grid">
-				<article class="panel">
+		<!-- Stakeholder Section -->
+		<section id="stakeholders" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
+				<a href="#" class="btn btn--outline">+ Add Stakeholder</a>
+			</header>
+			<div class="section__body section__grid">
+				<div>
 					<h3 class="govuk-heading-s">Stakeholders</h3>
-					<ul id="stakeholder-list" role="list" class="list"></ul>
-				</article>
-
-				<article class="panel">
+					<ul class="list-unstyled list-divided">
+						<li>No stakeholders yet.</li>
+					</ul>
+				</div>
+				<div>
 					<h3 class="govuk-heading-s">Objectives</h3>
-					<ul id="objectives-list" role="list" class="list"></ul>
-					<div class="cta">
-						<a class="govuk-button" href="#" aria-label="Add objective">+ Add Objective</a>
-					</div>
-				</article>
+					<ul class="list-unstyled list-divided">
+						<li>Objective 1</li>
+						<li>Objective 2</li>
+						<li>Objective 3</li>
+					</ul>
+					<a href="#" class="btn btn--outline">+ Add Objective</a>
+				</div>
 			</div>
 		</section>
 
-		<!-- Research planning -->
-		<section id="planning" class="app-card" aria-labelledby="planning-heading">
-			<h2 id="planning-heading" class="govuk-heading-m">Research Planning</h2>
-			<p class="lede">User groups and participants help you plan suitable studies.</p>
-			<div class="cta">
-				<a class="govuk-button" href="#" aria-label="Open research planning">Open Research Planning</a>
-			</div>
-
-			<div class="grid">
-				<article class="panel">
+		<!-- Research Planning Section -->
+		<section id="planning" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Planning</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
 					<h3 class="govuk-heading-s">User Groups</h3>
-					<ul id="groups-list" role="list" class="list"></ul>
-					<div class="cta">
-						<a class="govuk-button" href="#" aria-label="Add user group">+ Add User Group</a>
-					</div>
-				</article>
-
-				<article class="panel">
+					<ul class="list-unstyled list-divided">
+						<li>No user groups yet.</li>
+					</ul>
+					<a href="#" class="btn btn--outline">+ Add User Group</a>
+				</div>
+				<div>
 					<h3 class="govuk-heading-s">Participants</h3>
-					<ul id="participants-list" role="list" class="list">
-						<li class="lede">No participants yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No participants yet.</li>
 					</ul>
-					<div class="cluster">
-						<label for="csv-upload" class="govuk-heading-s" style="margin:0 0 6px">Bulk upload (CSV)</label>
-						<input id="csv-upload" type="file" accept=".csv,text/csv" />
-						<p class="govuk-hint" id="csv-hint">Upload a CSV export from an approved source.</p>
+					<a href="#" class="btn btn--outline">+ Add Participant</a>
+					<div class="dropzone">
+						<p>Bulk upload participants via CSV</p>
+						<input type="file" accept=".csv">
 					</div>
-					<div class="cta">
-						<a class="govuk-button" href="#" aria-label="Add participant">+ Add Participant</a>
-					</div>
-				</article>
+				</div>
 			</div>
 		</section>
 
-		<!-- Research outcomes -->
-		<section id="outcomes" class="app-card" aria-labelledby="outcomes-heading">
-			<h2 id="outcomes-heading" class="govuk-heading-m">Research Outcomes</h2>
-			<p class="lede">Capture studies and insights as you learn.</p>
-			<div class="cta">
-				<a class="govuk-button" href="#" aria-label="Open research outcomes">Open Research Outcomes</a>
-			</div>
-
-			<div class="grid">
-				<article class="panel">
-					<h3 class="govuk-heading-s">Study’s</h3>
-					<ul id="studies-list" role="list" class="list">
-						<li class="lede">No studies yet.</li>
+		<!-- Research Outcomes Section -->
+		<section id="outcomes" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Outcomes</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">Studies</h3>
+					<ul class="list-unstyled list-divided">
+						<li>No studies yet.</li>
 					</ul>
-					<div class="cta">
-						<a class="govuk-button" href="#" aria-label="Add study">+ Add Study</a>
-					</div>
-				</article>
-
-				<article class="panel">
+					<a href="#" class="btn btn--outline">+ Add Study</a>
+				</div>
+				<div>
 					<h3 class="govuk-heading-s">Insights</h3>
-					<ul id="insights-list" role="list" class="list">
-						<li class="lede">No insights yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No insights yet.</li>
 					</ul>
-					<div class="cta">
-						<a class="govuk-button" href="#" aria-label="Add insight">+ Add Insight</a>
-					</div>
-				</article>
+					<a href="#" class="btn btn--outline">+ Add Insight</a>
+				</div>
 			</div>
 		</section>
+
 	</main>
 
 	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
@@ -164,21 +141,34 @@
 
 		function parseCSV(text) {
 			const rows = [];
-			let row = [], field = "", q = false;
+			let row = [],
+				field = "",
+				q = false;
 			for (let i = 0; i < text.length; i++) {
-				const c = text[i], n = text[i + 1];
+				const c = text[i],
+					n = text[i + 1];
 				if (q) {
-					if (c === '"' && n === '"') { field += '"'; i++; }
-					else if (c === '"') { q = false; }
-					else { field += c; }
+					if (c === '"' && n === '"') {
+						field += '"';
+						i++;
+					} else if (c === '"') { q = false; } else { field += c; }
 				} else {
 					if (c === '"') q = true;
-					else if (c === ",") { row.push(field); field = ""; }
-					else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-					else if (c !== "\r") field += c;
+					else if (c === ",") {
+						row.push(field);
+						field = "";
+					} else if (c === "\n") {
+						row.push(field);
+						rows.push(row);
+						row = [];
+						field = "";
+					} else if (c !== "\r") field += c;
 				}
 			}
-			if (field.length || row.length) { row.push(field); rows.push(row); }
+			if (field.length || row.length) {
+				row.push(field);
+				rows.push(row);
+			}
 			return rows;
 		}
 
@@ -226,66 +216,66 @@
 		function textOrDash(v) { return v && String(v).trim() ? v : "–"; }
 
 		function render({ project, detail }) {
-			$("eyebrow-org").textContent    = project.Org || project.org || "Home Office Biometrics";
-			$("project-title").textContent  = project.Name || project.name || "Untitled project";
+			$("eyebrow-org").textContent = project.Org || project.org || "Home Office Biometrics";
+			$("project-title").textContent = project.Name || project.name || "Untitled project";
 
-			const phase  = project.Phase || project["rops:servicePhase"] || "";
+			const phase = project.Phase || project["rops:servicePhase"] || "";
 			const status = project.Status || project["rops:projectStatus"] || "";
 			$("project-subtitle").textContent = (project.Description || project.description || "").trim();
 
 			$("service-stage").textContent = textOrDash(phase);
 			$("project-stage").textContent = textOrDash(status);
-			$("client-name").textContent   = textOrDash(project.Org || project.org);
+			$("client-name").textContent = textOrDash(project.Org || project.org);
 
-			const lead   = detail?.LeadResearcher || "";
-			const email  = detail?.LeadResearcherEmail || "";
+			const lead = detail?.LeadResearcher || "";
+			const email = detail?.LeadResearcherEmail || "";
 			$("lead-researcher").textContent = textOrDash(lead);
-			$("lead-researcher-email").innerHTML = email
-				? `<a class="govuk-link" href="mailto:${email}">${email}</a>`
-				: "–";
+			$("lead-researcher-email").innerHTML = email ?
+				`<a class="govuk-link" href="mailto:${email}">${email}</a>` :
+				"–";
 
 			// Edit link can deep-link to your flow (adjust as needed)
 			const localId = project.LocalId || project.id || "";
 			$("edit-link").href = `./start.html?edit=${encodeURIComponent(localId)}`;
 
 			// Lists
-			const stakeholders = Array.isArray(project.Stakeholders)
-				? project.Stakeholders
-				: (() => { try { return JSON.parse(project.Stakeholders || "[]"); } catch { return []; } })();
+			const stakeholders = Array.isArray(project.Stakeholders) ?
+				project.Stakeholders :
+				(() => { try { return JSON.parse(project.Stakeholders || "[]"); } catch { return []; } })();
 
 			$("stakeholder-list").innerHTML =
-				stakeholders.length
-					? stakeholders.map(s => {
-							const name = s.name || "";
-							const role = s.role ? ` — ${s.role}` : "";
-							const em   = s.email ? ` <a class="govuk-link" href="mailto:${s.email}">${s.email}</a>` : "";
-							return `<li>${name}${role}${em}</li>`;
-						}).join("")
-					: `<li class="lede">No stakeholders yet.</li>`;
+				stakeholders.length ?
+				stakeholders.map(s => {
+					const name = s.name || "";
+					const role = s.role ? ` — ${s.role}` : "";
+					const em = s.email ? ` <a class="govuk-link" href="mailto:${s.email}">${s.email}</a>` : "";
+					return `<li>${name}${role}${em}</li>`;
+				}).join("") :
+				`<li class="lede">No stakeholders yet.</li>`;
 
-			const objectives = Array.isArray(project.Objectives)
-				? project.Objectives
-				: String(project.Objectives || project.objectives || "")
-						.split("\n")
-						.map(s => s.trim())
-						.filter(Boolean);
+			const objectives = Array.isArray(project.Objectives) ?
+				project.Objectives :
+				String(project.Objectives || project.objectives || "")
+				.split("\n")
+				.map(s => s.trim())
+				.filter(Boolean);
 
 			$("objectives-list").innerHTML =
-				objectives.length
-					? objectives.map(o => `<li>${o}</li>`).join("")
-					: `<li class="lede">No objectives yet.</li>`;
+				objectives.length ?
+				objectives.map(o => `<li>${o}</li>`).join("") :
+				`<li class="lede">No objectives yet.</li>`;
 
-			const groups = Array.isArray(project.UserGroups)
-				? project.UserGroups
-				: String(project.UserGroups || project.user_groups || "")
-						.split(",")
-						.map(s => s.trim())
-						.filter(Boolean);
+			const groups = Array.isArray(project.UserGroups) ?
+				project.UserGroups :
+				String(project.UserGroups || project.user_groups || "")
+				.split(",")
+				.map(s => s.trim())
+				.filter(Boolean);
 
 			$("groups-list").innerHTML =
-				groups.length
-					? groups.map(g => `<li><span class="tag">${g}</span></li>`).join("")
-					: `<li class="lede">No user groups yet.</li>`;
+				groups.length ?
+				groups.map(g => `<li><span class="tag">${g}</span></li>`).join("") :
+				`<li class="lede">No user groups yet.</li>`;
 		}
 
 		/* ========= bootstrap ========= */
@@ -300,4 +290,5 @@
 		})();
 	</script>
 </body>
+
 </html>
