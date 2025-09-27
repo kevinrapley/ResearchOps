@@ -3,7 +3,7 @@ name: Deploy Cloudflare Worker
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, start-csv ]
   workflow_dispatch:
 
 jobs:
