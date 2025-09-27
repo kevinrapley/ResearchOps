@@ -1,25 +1,123 @@
-/* GOV.UK Colour Palette — core set only */
+/* =========================================
+   GOV.UK Colour Palette — Core + Utilities
+   ========================================= */
 
-/* Text colours */
-.govuk-text-colour { color: #0b0c0c; }
-.govuk-secondary-text-colour { color: #505a5f; }
-.govuk-link-colour { color: #1d70b8; }
-.govuk-link-hover-colour { color: #003078; }
-.govuk-link-visited-colour { color: #4c2c92; }
+/* -------------------------
+   CSS Variables (custom properties)
+   ------------------------- */
+:root {
+	/* Text colours */
+	--govuk-text-colour: #0b0c0c;
+	--govuk-secondary-text-colour: #505a5f;
+	--govuk-link-colour: #1d70b8;
+	--govuk-link-hover-colour: #003078;
+	--govuk-link-visited-colour: #4c2c92;
 
-/* Brand and functional colours */
-.govuk-brand-colour { color: #1d70b8; }
-.govuk-brand-background { background-color: #1d70b8; color: #fff; }
+	/* Brand and functional colours */
+	--govuk-brand-colour: #1d70b8;
+	--govuk-focus-colour: #ffbf47;
+	--govuk-success-colour: #00703c;
+	--govuk-warning-colour: #ffbf47;
+	--govuk-error-colour: #d4351c;
 
-.govuk-focus-colour { outline-color: #ffbf47; }
-.govuk-focus-background { background-color: #ffbf47; }
+	/* Background neutrals */
+	--govuk-background-light-grey: #f3f2f1;
+	--govuk-background-mid-grey: #b1b4b6;
+	--govuk-background-dark-grey: #505a5f;
+	--govuk-background-black: #0b0c0c;
+}
 
-.govuk-success-colour { color: #00703c; }
-.govuk-warning-colour { color: #ffbf47; }
-.govuk-error-colour { color: #d4351c; }
+/* -------------------------
+   Text utilities
+   ------------------------- */
+.govuk-text-colour {
+	color: var(--govuk-text-colour);
+	}
 
-/* Background neutrals */
-.govuk-background-light-grey { background-color: #f3f2f1; }
-.govuk-background-mid-grey { background-color: #b1b4b6; }
-.govuk-background-dark-grey { background-color: #505a5f; }
-.govuk-background-black { background-color: #0b0c0c; color: #fff; }
+.govuk-secondary-text-colour {
+	color: var(--govuk-secondary-text-colour);
+	}
+
+.govuk-link-colour {
+	color: var(--govuk-link-colour);
+	}
+
+.govuk-link-hover-colour {
+	color: var(--govuk-link-hover-colour);
+	}
+
+.govuk-link-visited-colour {
+	color: var(--govuk-link-visited-colour);
+	}
+
+/* -------------------------
+   Background utilities
+   ------------------------- */
+.govuk-brand-background {
+	background-color: var(--govuk-brand-colour);
+	color: #fff;
+	}
+
+.govuk-focus-background {
+	background-color: var(--govuk-focus-colour);
+	}
+
+.govuk-success-background {
+	background-color: var(--govuk-success-colour);
+	color: #fff;
+	}
+
+.govuk-warning-background {
+	background-color: var(--govuk-warning-colour);
+	}
+
+.govuk-error-background {
+	background-color: var(--govuk-error-colour);
+	color: #fff;
+	}
+
+.govuk-background-light-grey {
+	background-color: var(--govuk-background-light-grey);
+	}
+
+.govuk-background-mid-grey {
+	background-color: var(--govuk-background-mid-grey);
+	}
+
+.govuk-background-dark-grey {
+	background-color: var(--govuk-background-dark-grey);
+	color: #fff;
+	}
+
+.govuk-background-black {
+	background-color: var(--govuk-background-black);
+	color: #fff;
+	}
+
+/* -------------------------
+   Link states (global)
+   ------------------------- */
+a {
+	color: var(--govuk-link-colour);
+	text-decoration: underline;
+	}
+
+a:visited {
+	color: var(--govuk-link-visited-colour);
+	}
+
+a:hover {
+	color: var(--govuk-link-hover-colour);
+	}
+
+a:active {
+	color: var(--govuk-link-colour);
+	}
+
+a:focus {
+	color: var(--govuk-text-colour);
+	background-color: var(--govuk-focus-colour);
+	outline: 3px solid transparent;
+	box-shadow: 0 -2px var(--govuk-focus-colour), 0 4px var(--govuk-text-colour);
+	text-decoration: none;
+	}
