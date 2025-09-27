@@ -343,73 +343,56 @@
 		function card(p) {
 			const org = p.org || p.Org || "Home Office Biometrics";
 			const projectId = encodeURIComponent(p.id || p.LocalId || "");
+			const phase = p["rops:servicePhase"] || "";
+			const status = p["rops:projectStatus"] || "";
 			const groups = (p.user_groups || []).map(g => `<li><span class="tag">${g}</span></li>`).join("");
 
-			// Accessible headings and landmark structure
-			// - <article>: self-contained card
-			// - <header>: org + title
-			// - <dl>: key facts (Phase/Status) with screen-reader friendly pairing
-			// - <section>: description, user groups, expandable details
 			return `
-  <article class="card" aria-labelledby="project-title-${projectId}">
-    <header class="project-header">
-      <p class="project-org govuk-caption-m">${org}</p>
-      <h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
-        <a class="govuk-link" href="./project.html?id=${projectId}" rel="bookmark">
-          ${p.name}
-        </a>
-      </h2>
-      <dl class="project-meta" aria-label="Project status">
-        <div>
-          <dt class="label">Phase:</dt>
-          <dd>${p['rops:servicePhase'] || ""}</dd>
-        </div>
-        <div>
-          <dt class="label">Status:</dt>
-          <dd>${p['rops:projectStatus'] || ""}</dd>
-        </div>
-      </dl>
-    </header>
+<article class="card" aria-labelledby="project-title-${projectId}">
+	<p class="project-org">${org}</p>
+	<h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
+		<a class="govuk-link" href="./project.html?id=${projectId}" rel="bookmark">${p.name}</a>
+	</h2>
 
-    ${p.description ? `
-    <section class="project-summary">
-      <p>${p.description}</p>
-    </section>` : ""}
+	<p class="project-meta">
+		<strong>Phase:</strong> ${phase} · <strong>Status:</strong> ${status}
+	</p>
 
-    ${(p.user_groups && p.user_groups.length) ? `
-    <section class="user-groups" aria-labelledby="user-groups-${projectId}">
-      <h3 id="user-groups-${projectId}" class="govuk-heading-s">User Groups</h3>
-      <ul class="tags" role="list">
-        ${groups}
-      </ul>
-    </section>` : ""}
+	${p.description ? `<section class="project-summary"><p>${p.description}</p></section>` : ""}
 
-    <section class="project-extra">
-      <details class="project-details">
-        <summary class="govuk-link">Stakeholders &amp; Objectives</summary>
+	${(p.user_groups && p.user_groups.length) ? `
+	<section class="user-groups" aria-labelledby="user-groups-${projectId}">
+		<h3 id="user-groups-${projectId}" class="project-groups-title">User Groups</h3>
+		<ul class="tags" role="list">
+			${groups}
+		</ul>
+	</section>` : ""}
 
-        <div class="details-columns">
-          <div>
-            <h4 class="govuk-heading-s">Stakeholders</h4>
-            <ul role="list">
-              ${(p.stakeholders || []).map(s => {
-                const name = s.name || "";
-                const role = s.role ? ` — ${s.role}` : "";
-                const email = s.email ? ` <a href="mailto:${s.email}" class="govuk-link">${s.email}</a>` : "";
-                return `<li>${name}${role}${email}</li>`;
-              }).join("") || "<li class='lede'>None</li>"}
-            </ul>
-          </div>
-          <div>
-            <h4 class="govuk-heading-s">Objectives</h4>
-            <ul role="list">
-              ${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
-            </ul>
-          </div>
-        </div>
-      </details>
-    </section>
-  </article>`;
+	<section class="project-extra">
+		<details class="project-details">
+			<summary class="govuk-link">Stakeholders &amp; Objectives</summary>
+			<div class="details-columns">
+				<div>
+					<h4 class="govuk-heading-s">Stakeholders</h4>
+					<ul role="list">
+						${(p.stakeholders || []).map(s => {
+							const name = s.name || "";
+							const role = s.role ? ` — ${s.role}` : "";
+							const email = s.email ? ` <a href="mailto:${s.email}" class="govuk-link">${s.email}</a>` : "";
+							return `<li>${name}${role}${email}</li>`;
+						}).join("") || "<li class='lede'>None</li>"}
+					</ul>
+				</div>
+				<div>
+					<h4 class="govuk-heading-s">Objectives</h4>
+					<ul role="list">
+						${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
+					</ul>
+				</div>
+			</div>
+		</details>
+	</section>
+</article>`;
 		}
 
 		function render(projects, source) {
