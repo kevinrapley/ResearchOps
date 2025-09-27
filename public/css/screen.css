@@ -168,3 +168,76 @@ textarea {
 	border-radius: 4px;
 	margin-bottom: 12px;
 	}
+.app-card {
+	padding: 16px;
+	margin-bottom: 24px;
+	border: 1px solid #b1b4b6;
+	background-color: #ffffff;
+	}
+
+.app-card__org {
+	margin-bottom: 4px;
+	color: #00703c; /* HO green */
+	font-size: 0.9rem;
+	font-weight: bold;
+	}
+
+.app-card__title {
+	margin: 0;
+	}
+
+.app-card__title-link {
+	text-decoration: none;
+	}
+
+.app-card__title-link:hover {
+	text-decoration: underline;
+	}
+
+.app-card__meta {
+	margin-bottom: 8px;
+	font-size: 0.95rem;
+	}
+
+.app-card__meta strong {
+	font-weight: bold;
+	}
+
+.app-card__description {
+	margin-bottom: 8px;
+	}
+
+.app-card__groups-title {
+	margin-bottom: 4px;
+	font-size: 0.95rem;
+	font-weight: bold;
+	}
+
+.app-card__groups {
+	margin-bottom: 8px;
+	}
+
+.app-card__groups .tag {
+	margin-right: 4px;
+	}
+
+.app-card__details summary {
+	cursor: pointer;
+	}
+
+/* GOV.UK-style focus treatment on links inside card */
+.app-card a.govuk-link:focus {
+	outline: 3px solid transparent;
+	color: #0b0c0c;
+	background-color: #fd0;
+	box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+	text-decoration: none;
+	}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		animation: none !important;
+		}
+	}
