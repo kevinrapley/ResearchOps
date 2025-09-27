@@ -32,17 +32,33 @@
 		<!-- Top actions -->
 		<div class="actions-bar">
 			<a href="./projects.html" class="btn btn--secondary">← Return to Project List</a>
-			<a href="./edit-project.html" class="btn">✎ Edit Project</a>
+			<a href="./edit-project.html" class="btn" id="btn-edit">✎ Edit Project</a>
 		</div>
 
 		<!-- Key information -->
 		<section class="kv">
 			<ul class="kv__list">
-				<li><span class="kv__term">Service Stage</span> <span class="kv__desc">Discovery</span></li>
-				<li><span class="kv__term">Project Stage</span> <span class="kv__desc">Planning research</span></li>
-				<li><span class="kv__term">Client Name</span> <span class="kv__desc">–</span></li>
-				<li><span class="kv__term">Lead Researcher</span> <span class="kv__desc">–</span></li>
-				<li><span class="kv__term">Lead Researcher Email</span> <span class="kv__desc">–</span></li>
+				<li>
+					<span class="kv__term">Service Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-service-stage">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Project Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-project-stage">–</span>
+
+				</li>
+				<li>
+					<span class="kv__term">Client Name</span>&nbsp;
+					<span class="kv__desc" id="kv-client-name">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Lead Researcher</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-researcher">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Lead Researcher Email</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-email">–</span>
+				</li>
 			</ul>
 		</section>
 
@@ -58,23 +74,21 @@
 		<section id="stakeholders" class="section">
 			<header class="section__header">
 				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
-				<a href="#" class="btn btn--outline">+ Add Stakeholder</a>
+				<button type="button" class="btn btn--outline">+ Add Stakeholder</button>
 			</header>
 			<div class="section__body section__grid">
 				<div>
 					<h3 class="govuk-heading-s">Stakeholders</h3>
-					<ul class="list-unstyled list-divided">
+					<ul class="list-unstyled list-divided" id="stakeholders-list">
 						<li>No stakeholders yet.</li>
 					</ul>
 				</div>
 				<div>
 					<h3 class="govuk-heading-s">Objectives</h3>
-					<ul class="list-unstyled list-divided">
-						<li>Objective 1</li>
-						<li>Objective 2</li>
-						<li>Objective 3</li>
+					<ul class="list-unstyled list-divided" id="objectives-list">
+						<li>No objectives yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Objective</a>
+					<button type="button" class="btn btn--outline">+ Add Objective</button>
 				</div>
 			</div>
 		</section>
@@ -87,20 +101,20 @@
 			<div class="section__body section__grid">
 				<div>
 					<h3 class="govuk-heading-s">User Groups</h3>
-					<ul class="list-unstyled list-divided">
+					<ul class="list-unstyled list-divided" id="user-groups-list">
 						<li>No user groups yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add User Group</a>
+					<button type="button" class="btn btn--outline">+ Add User Group</button>
 				</div>
 				<div>
 					<h3 class="govuk-heading-s">Participants</h3>
-					<ul class="list-unstyled list-divided">
+					<ul class="list-unstyled list-divided" id="participants-list">
 						<li>No participants yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Participant</a>
-					<div class="dropzone">
+					<button type="button" class="btn btn--outline">+ Add Participant</button>
+					<div class="dropzone" aria-label="Bulk upload participants">
 						<p>Bulk upload participants via CSV</p>
-						<input type="file" accept=".csv">
+						<input type="file" accept=".csv" aria-label="Upload participants CSV">
 					</div>
 				</div>
 			</div>
@@ -114,17 +128,17 @@
 			<div class="section__body section__grid">
 				<div>
 					<h3 class="govuk-heading-s">Studies</h3>
-					<ul class="list-unstyled list-divided">
+					<ul class="list-unstyled list-divided" id="studies-list">
 						<li>No studies yet.</li>
 					</ul>
 					<button id="btn-add-study" class="btn btn--outline" type="button">+ Add Study</button>
 				</div>
 				<div>
 					<h3 class="govuk-heading-s">Insights</h3>
-					<ul class="list-unstyled list-divided">
+					<ul class="list-unstyled list-divided" id="insights-list">
 						<li>No insights yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Insight</a>
+					<button type="button" class="btn btn--outline">+ Add Insight</button>
 				</div>
 			</div>
 		</section>
