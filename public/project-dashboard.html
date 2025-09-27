@@ -6,7 +6,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Project Dashboard — ResearchOps</title>
 
-	<!-- Your existing foundations -->
 	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="./css/screen.css" media="screen" />
@@ -21,132 +20,136 @@
 	}'></x-include>
 
 	<main class="govuk-body" role="main">
+		<h1 class="govuk-heading-l" style="margin-top:0">Project Dashboard</h1>
+
+		<nav class="nav" aria-label="secondary actions" style="margin-bottom:16px">
+			<a class="govuk-link" href="./projects.html">← Return to Project List</a>
+			<a class="govuk-link govuk-brand-background" href="#" id="btn-edit" style="padding:.25rem .5rem; border-radius:4px; margin-left:8px;">Edit Project</a>
+		</nav>
 
 		<!-- Hero -->
-		<div class="dashboard-hero">
-			<p id="eyebrow-org" class="project-org"></p>
-			<h1 id="project-title" class="govuk-heading-l"></h1>
-			<p id="project-subtitle" class="lede"></p>
-		</div>
+		<p id="eyebrow-org" class="project-org">Home Office Biometrics</p>
+		<h2 id="project-title" class="govuk-heading-l" style="margin-top:0">Untitled project</h2>
+		<p id="project-subtitle" class="lede"></p>
 
-		<!-- Top actions -->
-		<div class="actions-bar">
-			<a href="./projects.html" class="btn btn--secondary">← Return to Project List</a>
-			<a href="./edit-project.html" class="btn">✎ Edit Project</a>
-		</div>
-
-		<!-- Key information -->
-		<section class="kv">
-			<ul class="kv__list">
-				<li><span class="kv__term">Service Stage</span> <span class="kv__desc">Discovery</span></li>
-				<li><span class="kv__term">Project Stage</span> <span class="kv__desc">Planning research</span></li>
-				<li><span class="kv__term">Client Name</span> <span class="kv__desc">–</span></li>
-				<li><span class="kv__term">Lead Researcher</span> <span class="kv__desc">–</span></li>
-				<li><span class="kv__term">Lead Researcher Email</span> <span class="kv__desc">–</span></li>
-			</ul>
+		<!-- Key info (Service/Project stages etc.) -->
+		<section class="panel" aria-labelledby="info-heading" style="margin:16px 0;">
+			<h3 id="info-heading" class="govuk-heading-m">Information</h3>
+			<dl class="project-meta" style="margin:0;">
+				<div>
+					<dt class="label">Service Stage</dt>
+					<dd id="kv-service-stage">—</dd>
+				</div>
+				<div>
+					<dt class="label">Project Stage</dt>
+					<dd id="kv-project-stage">—</dd>
+				</div>
+				<div>
+					<dt class="label">Organisation Name</dt>
+					<dd id="kv-client-name">—</dd>
+				</div>
+				<div>
+					<dt class="label">Lead Researcher</dt>
+					<dd id="kv-lead-researcher">—</dd>
+				</div>
+				<div>
+					<dt class="label">Lead Researcher Email</dt>
+					<dd id="kv-lead-email">—</dd>
+				</div>
+			</dl>
 		</section>
 
 		<!-- Sublink Button Board -->
-		<nav class="board">
-			<a href="#" class="board__item">Reflexive Journal</a>
-			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
-			<a href="#planning" class="board__item">Research Planning</a>
-			<a href="#outcomes" class="board__item">Research Outcomes</a>
+		<nav aria-label="Project sections" class="tabs" style="margin-bottom:16px">
+			<a class="govuk-link" href="#journal">Reflexive Journal</a>
+			<a class="govuk-link" href="#stakeholders">Stakeholder Management</a>
+			<a class="govuk-link" href="#planning">Research Planning</a>
+			<a class="govuk-link" href="#outcomes">Research Outcomes</a>
 		</nav>
 
-		<!-- Stakeholder Section -->
-		<section id="stakeholders" class="section">
-			<header class="section__header">
-				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
-				<a href="#" class="btn btn--outline">+ Add Stakeholder</a>
-			</header>
-			<div class="section__body section__grid">
-				<div>
+		<!-- Stakeholder section -->
+		<section id="stakeholders" class="panel" aria-labelledby="stakeholders-heading" style="margin-bottom:16px;">
+			<h2 id="stakeholders-heading" class="govuk-heading-m">Stakeholder Management</h2>
+			<p class="lede">Keep track of people involved and why they matter to the project.</p>
+
+			<div class="grid">
+				<div class="panel">
 					<h3 class="govuk-heading-s">Stakeholders</h3>
-					<ul class="list-unstyled list-divided">
-						<li>No stakeholders yet.</li>
+					<ul id="stakeholders-list" role="list">
+						<li class="lede">No stakeholders yet.</li>
 					</ul>
+					<button class="govuk-button" type="button">+ Add Stakeholder</button>
 				</div>
-				<div>
+
+				<div class="panel">
 					<h3 class="govuk-heading-s">Objectives</h3>
-					<ul class="list-unstyled list-divided">
-						<li>Objective 1</li>
-						<li>Objective 2</li>
-						<li>Objective 3</li>
+					<ul id="objectives-list" role="list">
+						<li class="lede">No objectives yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Objective</a>
+					<button class="govuk-button" type="button">+ Add Objective</button>
 				</div>
 			</div>
 		</section>
 
-		<!-- Research Planning Section -->
-		<section id="planning" class="section">
-			<header class="section__header">
-				<h2 class="section__title govuk-heading-m">Research Planning</h2>
-			</header>
-			<div class="section__body section__grid">
-				<div>
+		<!-- Research planning section -->
+		<section id="planning" class="panel" aria-labelledby="planning-heading" style="margin-bottom:16px;">
+			<h2 id="planning-heading" class="govuk-heading-m">Research Planning</h2>
+			<div class="grid">
+				<div class="panel">
 					<h3 class="govuk-heading-s">User Groups</h3>
-					<ul class="list-unstyled list-divided">
-						<li>No user groups yet.</li>
+					<ul id="user-groups-list" role="list">
+						<li class="lede">No user groups yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add User Group</a>
+					<button class="govuk-button" type="button">+ Add User Group</button>
 				</div>
-				<div>
+
+				<div class="panel">
 					<h3 class="govuk-heading-s">Participants</h3>
-					<ul class="list-unstyled list-divided">
-						<li>No participants yet.</li>
+					<ul id="participants-list" role="list">
+						<li class="lede">No participants yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Participant</a>
-					<div class="dropzone">
-						<p>Bulk upload participants via CSV</p>
-						<input type="file" accept=".csv">
-					</div>
+					<button class="govuk-button" type="button">+ Add Participant</button>
+					<div class="note" aria-live="polite" style="margin-top:8px;">Bulk upload participants via CSV</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Research Outcomes Section -->
-		<section id="outcomes" class="section">
-			<header class="section__header">
-				<h2 class="section__title govuk-heading-m">Research Outcomes</h2>
-			</header>
-			<div class="section__body section__grid">
-				<div>
+		<!-- Research outcomes section -->
+		<section id="outcomes" class="panel" aria-labelledby="outcomes-heading" style="margin-bottom:16px;">
+			<h2 id="outcomes-heading" class="govuk-heading-m">Research Outcomes</h2>
+
+			<div class="grid">
+				<div class="panel">
 					<h3 class="govuk-heading-s">Studies</h3>
-					<ul class="list-unstyled list-divided">
-						<li>No studies yet.</li>
+					<ul id="studies-list" role="list">
+						<li class="lede">No studies yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Study</a>
+					<!-- The ONE AND ONLY Add Study trigger -->
+					<button id="btn-add-study" class="govuk-button" type="button">+ Add Study</button>
 				</div>
-				<div>
+
+				<div class="panel">
 					<h3 class="govuk-heading-s">Insights</h3>
-					<ul class="list-unstyled list-divided">
-						<li>No insights yet.</li>
+					<ul id="insights-list" role="list">
+						<li class="lede">No insights yet.</li>
 					</ul>
-					<a href="#" class="btn btn--outline">+ Add Insight</a>
+					<button id="btn-add-insight" class="govuk-button" type="button">+ Add Insight</button>
 				</div>
 			</div>
 		</section>
 
-		<section id="research-outcomes" class="dashboard-section">
-			<h2 class="govuk-heading-m">Research Outcomes</h2>
-			<div class="outcome-actions">
-				<button id="btn-add-study" class="govuk-button">+ Add Study</button>
-				<button id="btn-add-insight" class="govuk-button">+ Add Insight</button>
-			</div>
-			<div id="studies-list" class="cluster">
-				<p class="lede">No studies yet.</p>
-			</div>
-		</section>
+		<!-- Accessible modal dialog: Add Study -->
+		<dialog id="study-dialog" aria-labelledby="study-title" aria-describedby="study-desc" aria-modal="true" role="dialog">
+			<form method="dialog" style="min-width: min(90vw, 560px);">
+				<header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+					<h3 id="study-title" class="govuk-heading-m" style="margin:0;">Add Study</h3>
+					<button type="button" class="govuk-link" id="study-close" aria-label="Close add study dialog">✕</button>
+				</header>
 
-		<!-- Modal -->
-		<dialog id="study-dialog" class="modal">
-			<form method="dialog" id="study-form">
-				<h3 class="govuk-heading-m">Add Study</h3>
+				<p id="study-desc" class="lede">Create a study and capture the method and a short description.</p>
 
-				<label for="research-method" class="govuk-label">Research Method</label>
-				<select id="research-method" name="method" class="govuk-select" required>
+				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
+				<select id="study-method" class="govuk-input" required aria-required="true">
 					<option value="">Choose something</option>
 					<option>Card Sort</option>
 					<option>Contextual Inquiry</option>
@@ -161,35 +164,31 @@
 					<option>User Interview</option>
 				</select>
 
-				<label for="study-description" class="govuk-label">Study Description</label>
-				<textarea id="study-description" name="description" class="govuk-textarea" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/23" required></textarea>
-
-				<div class="modal-actions">
-					<button type="submit" class="govuk-button">Submit</button>
-					<button type="reset" class="govuk-button govuk-button--secondary" formmethod="dialog">Cancel</button>
+				<div class="note" style="margin:8px 0;">
+					Provide a description for the study that is unique and recognisable now and in the future.
 				</div>
+
+				<label class="govuk-label" for="study-notes">Study Description <span class="govuk-hint">(required)</span></label>
+				<textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
+
+				<footer style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+					<button class="govuk-button" value="cancel" id="study-cancel" type="button">Cancel</button>
+					<button class="govuk-button" value="submit" id="study-submit" type="submit">Submit</button>
+				</footer>
 			</form>
 		</dialog>
-
 	</main>
 
 	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
-		// tiny helpers
-		const $ = (sel) => document.querySelector(sel);
-		const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-		const setText = (sel, value, fallback = "—") => {
-			const el = $(sel);
-			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
-		};
+		/* ========= tiny helpers ========= */
+		const $ = (sel, root = document) => root.querySelector(sel);
+		const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+		const setText = (sel, value, fallback = "—") => { const el = $(sel); if (el) el.textContent = (value ?? "").toString().trim() || fallback; };
+		const toMs = (d) => { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; };
 
-		function toMs(d) {
-			const n = Date.parse(d);
-			return Number.isFinite(n) ? n : 0;
-		}
-
-		// fetch projects from the Worker and map into a consistent shape
+		/* ========= data loading ========= */
 		async function loadProjects() {
 			const res = await fetch("/api/projects", { cache: "no-store" });
 			const js = await res.json().catch(() => ({}));
@@ -209,25 +208,42 @@
 			}));
 		}
 
-		// choose project by ?id=… (matches LocalId or Airtable id)
 		function pickProject(projects) {
 			const id = new URLSearchParams(location.search).get("id") || "";
 			if (!id) return null;
 			return projects.find(p => p.id === id || p.localId === id) || null;
 		}
 
-		// populate the page
 		function renderProject(project) {
-			// hero
 			setText("#eyebrow-org", project.org, "Home Office Biometrics");
 			setText("#project-title", project.name, "Untitled project");
 			setText("#project-subtitle", project.description, "");
-
-			// key/value info
 			setText("#kv-service-stage", project.phase);
 			setText("#kv-project-stage", project.status);
+			setText("#kv-client-name", project.org);
 
-			// user groups list (if present)
+			// stakeholders
+			const st = $("#stakeholders-list");
+			if (st) {
+				st.innerHTML = project.stakeholders.length ?
+					project.stakeholders.map(s => {
+						const name = s.name || "";
+						const role = s.role ? ` — ${s.role}` : "";
+						const email = s.email ? ` <a class="govuk-link" href="mailto:${s.email}">${s.email}</a>` : "";
+						return `<li>${name}${role}${email}</li>`;
+					}).join("") :
+					`<li class="lede">No stakeholders yet.</li>`;
+			}
+
+			// objectives
+			const obj = $("#objectives-list");
+			if (obj) {
+				obj.innerHTML = project.objectives.length ?
+					project.objectives.map(o => `<li>${o}</li>`).join("") :
+					`<li class="lede">No objectives yet.</li>`;
+			}
+
+			// user groups
 			const ug = $("#user-groups-list");
 			if (ug) {
 				ug.innerHTML = project.user_groups.length ?
@@ -235,127 +251,81 @@
 					`<li class="lede">No user groups yet.</li>`;
 			}
 
-			// objectives list (if present)
-			const obj = $("#objectives-list");
-			if (obj) {
-				obj.innerHTML = project.objectives.length ?
-					project.objectives.map(o => `<li>${o}</li>`).join("") :
-					`<li class="lede">No objectives yet.</li>`;
-			}
+			// edit link (placeholder)
+			$("#btn-edit")?.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
-		// ================
-		// Accessible dialog
-		// ================
-		function initStudyDialog() {
-			const dialog = /** @type {HTMLDialogElement|null} */ ($("#study-dialog"));
+		/* ========= accessible modal (Add Study) ========= */
+		(function initStudyModal() {
+			const dialog = $("#study-dialog");
 			const openBtn = $("#btn-add-study");
-			const form = $("#study-form");
-			const list = $("#studies-list");
-			const pageRoot = $("main") || document.body;
+			const closeBtn = $("#study-close");
+			const cancelBtn = $("#study-cancel");
+			const submitBtn = $("#study-submit");
+			let lastFocus = null;
 
-			if (!dialog || !openBtn || !form || !list) return;
-
-			// Ensure ARIA hooks exist (robust if missing in HTML)
-			dialog.setAttribute("role", "dialog");
-			dialog.setAttribute("aria-modal", "true");
-			if (!dialog.getAttribute("aria-labelledby")) {
-				const title = dialog.querySelector("h3");
-				if (title && !title.id) title.id = "study-dialog-title";
-				if (title) dialog.setAttribute("aria-labelledby", title.id);
-			}
-
-			let lastActive = null;
-
-			function focusableWithin(el) {
-				const selectors = [
-					'a[href]', 'button:not([disabled])', 'input:not([disabled])',
-					'select:not([disabled])', 'textarea:not([disabled])',
-					'[tabindex]:not([tabindex="-1"])'
-				];
-				return Array.from(el.querySelectorAll(selectors.join(',')))
-					.filter(n => n.offsetParent !== null || el === n); // visible-ish
-			}
-
-			function trapTab(e) {
-				if (!dialog.open || e.key !== "Tab") return;
-				const f = focusableWithin(dialog);
-				if (!f.length) return;
-				const first = f[0],
-					last = f[f.length - 1];
-				if (e.shiftKey && document.activeElement === first) {
-					last.focus();
-					e.preventDefault();
-				} else if (!e.shiftKey && document.activeElement === last) {
-					first.focus();
-					e.preventDefault();
-				}
-			}
+			if (!dialog || !openBtn) return;
 
 			function open() {
-				lastActive = document.activeElement;
-				// hide the rest of the page for AT; lock scroll
-				pageRoot.setAttribute("aria-hidden", "true");
-				document.body.style.overflow = "hidden";
-
-				if (typeof dialog.showModal === "function") {
-					dialog.showModal();
-				} else {
-					// very old Safari fallback
-					dialog.setAttribute("open", "");
-				}
-				// focus the first field
-				const firstInput = dialog.querySelector("select, textarea, input, button");
-				(firstInput || dialog).focus();
-				dialog.addEventListener("keydown", trapTab);
+				lastFocus = document.activeElement;
+				dialog.showModal();
+				dialog.setAttribute("aria-hidden", "false");
+				// focus first input
+				$("#study-method")?.focus();
+				// inert background for SRs
+				document.documentElement.classList.add("modal-open");
 			}
 
 			function close() {
-				dialog.removeEventListener("keydown", trapTab);
-				if (dialog.open && typeof dialog.close === "function") dialog.close();
-				dialog.removeAttribute("open");
-				pageRoot.removeAttribute("aria-hidden");
-				document.body.style.overflow = "";
-				if (lastActive && typeof lastActive.focus === "function") {
-					lastActive.focus();
-				} else {
-					openBtn.focus();
-				}
+				dialog.close();
+				dialog.setAttribute("aria-hidden", "true");
+				document.documentElement.classList.remove("modal-open");
+				if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
 			}
 
-			// open + close wiring
-			openBtn.addEventListener("click", () => open());
-			dialog.addEventListener("cancel", (e) => { e.preventDefault();
-				close(); }); // Esc
+			// Basic focus trap
+			dialog.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") { e.preventDefault();
+					close(); return; }
+				if (e.key !== "Tab") return;
+				const f = $$(
+					'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+					dialog
+				).filter(el => el.offsetParent !== null);
+				if (!f.length) return;
+				const first = f[0],
+					last = f[f.length - 1];
+				if (e.shiftKey && document.activeElement === first) { last.focus();
+					e.preventDefault(); } else if (!e.shiftKey && document.activeElement === last) { first.focus();
+					e.preventDefault(); }
+			});
+
+			// click outside (backdrop) closes
 			dialog.addEventListener("click", (e) => {
-				// click on the backdrop closes (only for native <dialog>)
-				if (e.target === dialog) close();
-			});
-			dialog.querySelectorAll('[formmethod="dialog"], [data-close-dialog]').forEach(btn => {
-				btn.addEventListener("click", () => close());
+				const rect = dialog.getBoundingClientRect();
+				const inDialog = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+				if (!inDialog) close();
 			});
 
-			// submit -> append to list (UI only)
-			form.addEventListener("submit", (e) => {
-				e.preventDefault();
-				/** @type {HTMLSelectElement} */
-				const methodEl = form.querySelector('#research-method');
-				/** @type {HTMLTextAreaElement} */
-				const descEl = form.querySelector('#study-description');
-				const method = methodEl?.value.trim();
-				const desc = descEl?.value.trim();
-				if (!method || !desc) return;
+			openBtn.addEventListener("click", open);
+			closeBtn?.addEventListener("click", close);
+			cancelBtn?.addEventListener("click", close);
 
-				const item = document.createElement("div");
-				item.className = "note";
-				item.innerHTML = `<strong>${method}</strong><br>${desc}`;
-				list.appendChild(item);
-
-				form.reset();
+			// Trivial submit handler (extend later)
+			dialog.addEventListener("close", () => {
+				// noop for now
+			});
+			submitBtn?.addEventListener("click", (e) => {
+				// Validate
+				const method = $("#study-method")?.value?.trim();
+				const notes = $("#study-notes")?.value?.trim();
+				if (!method || !notes) { e.preventDefault(); return; }
+				// In a later phase, POST to your API here
 				close();
 			});
-		}
+		})();
 
+		/* ========= bootstrap ========= */
 		(async () => {
 			try {
 				const projects = await loadProjects();
@@ -363,9 +333,6 @@
 				const project = pickProject(projects);
 				if (!project) throw new Error("Project not found from id param");
 				renderProject(project);
-
-				// once content is on the page, wire the dialog
-				initStudyDialog();
 			} catch (err) {
 				console.error(err);
 				alert("Could not load project.");
