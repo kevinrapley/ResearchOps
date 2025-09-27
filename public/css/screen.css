@@ -1,3 +1,12 @@
+/* ==========================================================================
+   ResearchOps UI — Screen stylesheet (merged)
+   Depends on: govuk-typography.css, govuk-colours.css
+   Aligns with Home Office Design System accents
+   ========================================================================== */
+
+/* Page layout
+   -------------------------------------------------------------------------- */
+
 body {
 	margin: 24px;
 	}
@@ -14,6 +23,9 @@ body {
 		}
 	}
 
+/* Navigation
+   -------------------------------------------------------------------------- */
+
 .nav a {
 	margin-right: 12px;
 	}
@@ -21,28 +33,113 @@ body {
 .nav a.active {
 	font-weight: 700;
 	text-decoration: none;
-	border-bottom: 3px solid #1d70b8;
+	border-bottom: 3px solid #1d70b8; /* GOV.UK brand */
 	}
 
+/* Cards
+   -------------------------------------------------------------------------- */
+
 .card {
-	border: 1px solid #b1b4b6;
+	border: 1px solid #b1b4b6;       /* govuk mid grey */
 	border-radius: 6px;
 	padding: 24px;
 	margin-bottom: 16px;
 	background: #fff;
 	}
 
-.eyebrow {
-	text-transform: uppercase;
-	letter-spacing: .03em;
-	font-weight: 700;
-	font-size: 14px;
-	color: #505a5f;
+/* Eyebrow (org) — Home Office green */
+.project-org {
 	margin: 0 0 4px;
+	color: #00703c;                   /* HO green */
+	font-weight: 700;
+	font-size: 0.95rem;
+	letter-spacing: .02em;
+	text-transform: none;
 	}
 
+/* Title link inherits GOV.UK link colours from govuk-colours.css */
+.project-title {
+	margin: 0;
+	}
+
+.project-title .govuk-link {
+	text-decoration: none;
+	}
+
+.project-title .govuk-link:hover {
+	text-decoration: underline;
+	}
+
+/* Meta (Phase/Status) — strong labels, inline pairs */
+.project-meta {
+	display: grid;
+	gap: 2px 12px;
+	grid-auto-rows: min-content;
+	margin: 4px 0 8px;
+	}
+
+.project-meta > div {
+	display: inline-grid;
+	grid-auto-flow: column;
+	align-items: baseline;
+	gap: 6px;
+	}
+
+.project-meta .label {
+	font-weight: 700;
+	}
+
+/* Body copy areas */
+.project-summary {
+	margin-bottom: 8px;
+	}
+
+/* User groups section */
+.user-groups {
+	margin: 8px 0 8px;
+	}
+
+.user-groups .govuk-heading-s {
+	margin: 12px 0 6px;
+	}
+
+/* Tags (chips) */
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0 0 8px;
+	padding: 0;
+	list-style: none;
+	}
+
+.tag {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	padding: 2px 8px;
+	border-radius: 14px;
+	font-size: 12px;
+	}
+
+/* Details/summary section */
+.project-details summary {
+	cursor: pointer;
+	}
+
+/* GOV.UK-style focus ring on links inside cards (uses govuk-colours focus) */
+.card a:focus {
+	outline: 3px solid transparent;
+	color: #0b0c0c;
+	background-color: #ffbf47;       /* govuk focus */
+	box-shadow: 0 -2px #ffbf47, 0 4px #0b0c0c;
+	text-decoration: none;
+	}
+
+/* Generic components retained from previous screen.css
+   -------------------------------------------------------------------------- */
+
 .lede {
-	color: #505a5f;
+	color: #505a5f;                   /* govuk secondary text */
 	margin-top: 8px;
 	}
 
@@ -63,7 +160,7 @@ body {
 .thumb {
 	width: 100%;
 	height: 180px;
-	background: #f3f2f1;
+	background: #f3f2f1;              /* govuk light grey */
 	border-radius: 4px;
 	margin-bottom: 16px;
 	display: flex;
@@ -75,7 +172,7 @@ body {
 	color: #505a5f;
 	font-size: 14px;
 	}
-	
+
 .tabs {
 	display: flex;
 	gap: 12px;
@@ -90,19 +187,19 @@ body {
 	}
 
 .tabs a.active {
-	border-color: #1d70b8;
+	border-color: #1d70b8;            /* govuk brand */
 	}
 
 .list .item {
 	border-top: 1px solid #b1b4b6;
 	padding: 8px 0;
 	}
-	
+
 select,
 input {
 	width: 100%;
 	}
-	
+
 textarea {
 	width: 100%;
 	height: 140px;
@@ -113,15 +210,7 @@ textarea {
 	padding: 8px 0;
 	}
 
-.tag {
-	display: inline-block;
-	border: 1px solid #b1b4b6;
-	padding: 2px 6px;
-	border-radius: 12px;
-	margin-right: 6px;
-	font-size: 12px;
-	}
-	
+/* Panels / notes */
 .panel {
 	border: 1px solid #b1b4b6;
 	padding: 12px;
@@ -143,7 +232,7 @@ textarea {
 	border-radius: 6px;
 	margin-bottom: 12px;
 	}
-	
+
 .result {
 	border-top: 1px solid #b1b4b6;
 	padding: 8px 0;
@@ -154,9 +243,10 @@ textarea {
 	text-transform: uppercase;
 	color: #505a5f;
 	}
-	
+
+/* Errors */
 .error-message {
-	color: #d4351c;
+	color: #d4351c;                   /* govuk error */
 	margin-top: 4px;
 	font-size: 14px;
 	}
@@ -169,78 +259,10 @@ textarea {
 	margin-bottom: 12px;
 	}
 
-.card {
-	border: 1px solid #b1b4b6;
-	border-radius: 6px;
-	padding: 24px;
-	margin-bottom: 16px;
-	background: #fff;
-	}
-
-/* Org eyebrow (Home Office green, small) */
-.project-org {
-	margin: 0 0 4px;
-	color: #00703c;
-	font-size: 0.9rem;
-	font-weight: bold;
-	}
-
-/* Title + link */
-.project-title {
-	margin: 0;
-	}
-
-.project-title a {
-	text-decoration: none;
-	}
-
-.project-title a:hover {
-	text-decoration: underline;
-	}
-
-/* Meta line: "Phase: X · Status: Y" with bold labels */
-.project-meta {
-	margin: 8px 0;
-	color: #505a5f;
-	font-size: 0.95rem;
-	}
-
-.project-meta strong {
-	font-weight: 700;
-	}
-
-/* Description copy below meta */
-.project-summary {
-	margin: 8px 0 12px;
-	}
-
-/* User groups block */
-.project-groups-title {
-	margin: 12px 0 6px;
-	font-size: 0.95rem; /* same size as meta line */
-	font-weight: 700;
-	}
-
-.tags {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	}
-
-.tags li {
-	display: inline-block;
-	margin: 0 6px 6px 0;
-	}
-
-.tag {
-	display: inline-block;
-	border: 1px solid #b1b4b6;
-	padding: 2px 6px;
-	border-radius: 12px;
-	font-size: 12px;
-	}
-
-/* Details link usability */
-.project-details summary {
-	cursor: pointer;
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		animation: none !important;
+		}
 	}
