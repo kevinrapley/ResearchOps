@@ -7,7 +7,7 @@ binding = "ASSETS"
 directory = "../../public"
 
 [vars]
-# CORS (local + production origins)
+# CORS
 ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
 
 # Airtable
