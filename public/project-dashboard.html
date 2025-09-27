@@ -187,47 +187,171 @@
 	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
-		/* ========= tiny helpers ========= */
-		const $ = (sel, root = document) => root.querySelector(sel);
-		const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-		const setText = (sel, value, fallback = "—") => { const el = $(sel); if (el) el.textContent = (value ?? "").toString().trim() || fallback; };
-		const toMs = (d) => { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; };
+		/**
+		 * @file project-dashboard.bootstrap.js (inline)
+		 * @module ProjectDashboard
+		 * @summary Bootstrap for the Project Dashboard screen:
+		 *  - Loads projects from the Worker API
+		 *  - Picks the current project by ?id=
+		 *  - Renders key fields into the page
+		 *  - Wires up an accessible “Add Study” modal and POSTs to /api/studies
+		 *
+		 * @requires globalThis.fetch
+		 * @requires globalThis.URLSearchParams
+		 */
 
-		/* ========= data loading ========= */
-		async function loadProjects() {
-			const res = await fetch("/api/projects", { cache: "no-store" });
-			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
-			return (js.projects || []).map(p => ({
-				id: p.id || p.LocalId || p.localId || "",
-				localId: p.LocalId || p.localId || "",
-				name: p.name || p.Name || "",
-				description: p.description || p.Description || "",
-				org: p.Org || p.org || "Home Office Biometrics",
-				phase: p["rops:servicePhase"] || p.Phase || "",
-				status: p["rops:projectStatus"] || p.Status || "",
-				objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
-				user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
-				stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
-				createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
-			}));
+		/* =========================
+		 * @section Types
+		 * ========================= */
+
+		/**
+		 * @typedef {Object} UIProject
+		 * @property {string}  id
+		 * @property {string}  localId
+		 * @property {string}  name
+		 * @property {string}  description
+		 * @property {string}  org
+		 * @property {string}  phase
+		 * @property {string}  status
+		 * @property {string[]} objectives
+		 * @property {string[]} user_groups
+		 * @property {Array<{name?:string, role?:string, email?:string}>} stakeholders
+		 * @property {string}  createdAt
+		 */
+
+		/* =========================
+		 * @section Tiny helpers
+		 * ========================= */
+
+		/**
+		 * Shorthand for querySelector.
+		 * @function
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement|null}
+		 */
+		function $(sel, root = document) {
+			return root.querySelector(sel);
 		}
 
+		/**
+		 * Shorthand for querySelectorAll → Array.
+		 * @function
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement[]}
+		 */
+		function $$(sel, root = document) {
+			return Array.from(root.querySelectorAll(sel));
+		}
+
+		/**
+		 * Set textContent with a fallback if value is empty.
+		 * @function
+		 * @param {string} sel
+		 * @param {unknown} value
+		 * @param {string} [fallback="—"]
+		 * @returns {void}
+		 */
+		function setText(sel, value, fallback = "—") {
+			const el = $(sel);
+			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
+		}
+
+		/**
+		 * Parse a date-like string to epoch ms; invalid → 0.
+		 * @function
+		 * @param {string} d
+		 * @returns {number}
+		 */
+		function toMs(d) {
+			const n = Date.parse(d);
+			return Number.isFinite(n) ? n : 0;
+		}
+
+		/* =========================
+		 * @section Data loading
+		 * ========================= */
+
+		/**
+		 * Load projects from the Worker API and normalise shape.
+		 * @async
+		 * @function loadProjects
+		 * @returns {Promise<UIProject[]>}
+		 * @throws {Error} If the API call fails.
+		 */
+		async function loadProjects() {
+			const res = await fetch("/api/projects", { cache: "no-store" });
+			/** @type {{ok?:boolean, projects?:any[]}} */
+			const js = await res.json().catch(() => ({}));
+
+			if (!res.ok || !js?.ok) {
+				throw new Error(`Projects fetch failed (${res.status})`);
+			}
+
+			return (js.projects || []).map(p =>
+				/** @type {UIProject} */
+				({
+					id: p.id || p.LocalId || p.localId || "",
+					localId: p.LocalId || p.localId || "",
+					name: p.name || p.Name || "",
+					description: p.description || p.Description || "",
+					org: p.Org || p.org || "Home Office Biometrics",
+					phase: p["rops:servicePhase"] || p.Phase || "",
+					status: p["rops:projectStatus"] || p.Status || "",
+					objectives: Array.isArray(p.objectives) ?
+						p.objectives :
+						String(p.Objectives ?? p.objectives ?? "")
+						.split(/\r?\n/)
+						.filter(Boolean),
+					user_groups: Array.isArray(p.user_groups) ?
+						p.user_groups :
+						String(p.UserGroups ?? p.user_groups ?? "")
+						.split(",")
+						.map(s => s.trim())
+						.filter(Boolean),
+					stakeholders: Array.isArray(p.stakeholders) ?
+						p.stakeholders :
+						(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
+				}));
+		}
+
+		/**
+		 * Pick the project that matches ?id= (supports Airtable id or LocalId).
+		 * @function pickProject
+		 * @param {UIProject[]} projects
+		 * @returns {UIProject|null}
+		 */
 		function pickProject(projects) {
 			const id = new URLSearchParams(location.search).get("id") || "";
 			if (!id) return null;
 			return projects.find(p => p.id === id || p.localId === id) || null;
 		}
 
+		/**
+		 * Render the selected project into the page.
+		 * Also stores the Airtable id on <main data-project-airtable-id="…"> for later API calls.
+		 * @function renderProject
+		 * @param {UIProject} project
+		 * @returns {void}
+		 */
 		function renderProject(project) {
+			// Header
 			setText("#eyebrow-org", project.org, "Home Office Biometrics");
 			setText("#project-title", project.name, "Untitled project");
 			setText("#project-subtitle", project.description, "");
+
+			// Key/value
 			setText("#kv-service-stage", project.phase);
 			setText("#kv-project-stage", project.status);
 			setText("#kv-client-name", project.org);
 
-			// stakeholders
+			// Persist id for modal submit
+			const mainEl = $("main");
+			if (mainEl) mainEl.dataset.projectAirtableId = project.id || "";
+
+			// Stakeholders
 			const st = $("#stakeholders-list");
 			if (st) {
 				st.innerHTML = project.stakeholders.length ?
@@ -240,7 +364,7 @@
 					`<li class="lede">No stakeholders yet.</li>`;
 			}
 
-			// objectives
+			// Objectives
 			const obj = $("#objectives-list");
 			if (obj) {
 				obj.innerHTML = project.objectives.length ?
@@ -248,7 +372,7 @@
 					`<li class="lede">No objectives yet.</li>`;
 			}
 
-			// user groups
+			// User groups
 			const ug = $("#user-groups-list");
 			if (ug) {
 				ug.innerHTML = project.user_groups.length ?
@@ -256,31 +380,47 @@
 					`<li class="lede">No user groups yet.</li>`;
 			}
 
-			// edit link (placeholder)
-			$("#btn-edit")?.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
+			// Edit link (placeholder route into your flow)
+			const edit = $("#btn-edit");
+			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
-		/* ========= accessible modal (Add Study) ========= */
+		/* =========================
+		 * @section Accessible “Add Study” modal
+		 * ========================= */
+
+		/**
+		 * Initialise the <dialog> based Add Study modal:
+		 *  - Opens from “+ Add Study”
+		 *  - Traps focus and supports Esc to close
+		 *  - Submits to /api/studies and closes on success
+		 * @function initStudyModal
+		 * @returns {void}
+		 * @listens click
+		 * @listens keydown
+		 */
 		(function initStudyModal() {
-			const dialog = $("#study-dialog");
+			/** @type {HTMLDialogElement|null} */
+			const dialog = /** @type {any} */ ($("#study-dialog"));
 			const openBtn = $("#btn-add-study");
 			const closeBtn = $("#study-close");
 			const cancelBtn = $("#study-cancel");
 			const submitBtn = $("#study-submit");
+
 			let lastFocus = null;
 
 			if (!dialog || !openBtn) return;
 
+			/** @returns {void} */
 			function open() {
 				lastFocus = document.activeElement;
 				dialog.showModal();
 				dialog.setAttribute("aria-hidden", "false");
-				// focus first input
 				$("#study-method")?.focus();
-				// inert background for SRs
 				document.documentElement.classList.add("modal-open");
 			}
 
+			/** @returns {void} */
 			function close() {
 				dialog.close();
 				dialog.setAttribute("aria-hidden", "true");
@@ -288,7 +428,7 @@
 				if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
 			}
 
-			// Basic focus trap
+			// Focus trap + Escape support
 			dialog.addEventListener("keydown", (e) => {
 				if (e.key === "Escape") {
 					e.preventDefault();
@@ -296,13 +436,17 @@
 					return;
 				}
 				if (e.key !== "Tab") return;
-				const f = $$(
+
+				const focusables = $$(
 					'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
 					dialog
 				).filter(el => el.offsetParent !== null);
-				if (!f.length) return;
-				const first = f[0],
-					last = f[f.length - 1];
+
+				if (!focusables.length) return;
+
+				const first = focusables[0];
+				const last = focusables[focusables.length - 1];
+
 				if (e.shiftKey && document.activeElement === first) {
 					last.focus();
 					e.preventDefault();
@@ -312,7 +456,7 @@
 				}
 			});
 
-			// click outside (backdrop) closes
+			// Click outside (backdrop) closes on supporting browsers
 			dialog.addEventListener("click", (e) => {
 				const rect = dialog.getBoundingClientRect();
 				const inDialog = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
@@ -323,22 +467,58 @@
 			closeBtn?.addEventListener("click", close);
 			cancelBtn?.addEventListener("click", close);
 
-			// Trivial submit handler (extend later)
-			dialog.addEventListener("close", () => {
-				// noop for now
-			});
-			submitBtn?.addEventListener("click", (e) => {
-				// Validate
-				const method = $("#study-method")?.value?.trim();
-				const notes = $("#study-notes")?.value?.trim();
-				if (!method || !notes) { e.preventDefault(); return; }
-				// In a later phase, POST to your API here
-				close();
+			// Submit “Add Study”
+			submitBtn?.addEventListener("click", async (e) => {
+				e.preventDefault();
+
+				const method = /** @type {HTMLSelectElement|null} */ ($("#study-method"))?.value?.trim();
+				const notes = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"))?.value?.trim();
+
+				if (!method || !notes) return;
+
+				const mainEl = $("main");
+				const projectAirtableId = mainEl?.dataset?.projectAirtableId || "";
+
+				if (!projectAirtableId) {
+					alert("Missing project id; cannot create study.");
+					return;
+				}
+
+				try {
+					const res = await fetch("/api/studies", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							project_airtable_id: projectAirtableId,
+							method,
+							description: notes,
+							status: "Planned"
+						})
+					});
+					const js = await res.json().catch(() => ({}));
+					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
+
+					close();
+					alert("Study created.");
+				} catch (err) {
+					// eslint-disable-next-line no-console
+					console.error(err);
+					alert("Could not create study.");
+				}
 			});
 		})();
 
-		/* ========= bootstrap ========= */
-		(async () => {
+		/* =========================
+		 * @section Bootstrap
+		 * ========================= */
+
+		/**
+		 * Entrypoint: load, sort, pick, render.
+		 * @async
+		 * @function
+		 * @returns {Promise<void>}
+		 */
+		(async function bootstrap() {
 			try {
 				const projects = await loadProjects();
 				projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
@@ -346,6 +526,7 @@
 				if (!project) throw new Error("Project not found from id param");
 				renderProject(project);
 			} catch (err) {
+				// eslint-disable-next-line no-console
 				console.error(err);
 				alert("Could not load project.");
 			}
