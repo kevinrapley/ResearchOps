@@ -61,24 +61,27 @@
 		}
 
 		/**
-		* @class Emitter
- 		* @classdesc Lightweight emitter.
- 		*/
+		 * @class Emitter
+		 * @classdesc Lightweight emitter.
+		 */
 		class Emitter {
 			/** @type {Record<string, Array<{fn:Function}>>} */
 			#m = Object.create(null);
 			on(evt, fn) {
-				(this.#m[evt] ||= []).push({ fn }); return () => this.off(evt, fn); }
+				(this.#m[evt] ||= []).push({ fn });
+				return () => this.off(evt, fn);
+			}
 			off(evt, fn) { const a = this.#m[evt]; if (!a) return; const i = a.findIndex(l => l.fn === fn); if (i >= 0) a.splice(i, 1); }
 			emit(evt, payload) {
-				(this.#m[evt] || []).forEach(l => l.fn(payload)); }
+				(this.#m[evt] || []).forEach(l => l.fn(payload));
+			}
 			reset() { this.#m = Object.create(null); }
 		}
 
 		/**
-		* @class BatchedLogger
- 		* @classdesc Batched console logger.
- 		*/
+		 * @class BatchedLogger
+		 * @classdesc Batched console logger.
+		 */
 		class BatchedLogger {
 			#q = [];
 			#timer = null;
@@ -100,19 +103,21 @@
 				}
 				console.groupEnd();
 			}
-			reset() { clearTimeout(this.#timer);
+			reset() {
+				clearTimeout(this.#timer);
 				this.#timer = null;
-				this.#q.length = 0; }
+				this.#q.length = 0;
+			}
 			destroy() { this.reset(); }
 		}
 
 		/* =========================
 		 * @section CSV helpers
 		 * ========================= */
-		 
+
 		/**
-		* @function parseCSV
- 		*/
+		 * @function parseCSV
+		 */
 		function parseCSV(text) {
 			const rows = [];
 			let row = [],
@@ -122,33 +127,41 @@
 				const c = text[i],
 					n = text[i + 1];
 				if (inQuotes) {
-					if (c === '"' && n === '"') { field += '"';
-						i++; } else if (c === '"') { inQuotes = false; } else { field += c; }
+					if (c === '"' && n === '"') {
+						field += '"';
+						i++;
+					} else if (c === '"') { inQuotes = false; } else { field += c; }
 				} else {
 					if (c === '"') inQuotes = true;
-					else if (c === ',') { row.push(field);
-						field = ""; } else if (c === '\r') { /* ignore */ } else if (c === '\n') { row.push(field);
+					else if (c === ',') {
+						row.push(field);
+						field = "";
+					} else if (c === '\r') { /* ignore */ } else if (c === '\n') {
+						row.push(field);
 						rows.push(row);
 						row = [];
-						field = ""; } else { field += c; }
+						field = "";
+					} else { field += c; }
 				}
 			}
-			if (field.length || row.length) { row.push(field);
-				rows.push(row); }
+			if (field.length || row.length) {
+				row.push(field);
+				rows.push(row);
+			}
 			return rows;
 		}
 
 		/**
-		* @function safeJsonArray
- 		*/
+		 * @function safeJsonArray
+		 */
 		function safeJsonArray(s) {
 			try { const v = JSON.parse(String(s)); return Array.isArray(v) ? v : []; } catch { return []; }
 		}
 
 		/**
-		* @function mapProjectRow
-		* @description Map CSV row -> UI model (adds createdAt)
- 		*/
+		 * @function mapProjectRow
+		 * @description Map CSV row -> UI model (adds createdAt)
+		 */
 		function mapProjectRow(header, row) {
 			const idx = (name) => header.indexOf(name);
 			const get = (name) => { const i = idx(name); return i >= 0 ? (row[i] ?? "") : ""; };
@@ -192,9 +205,9 @@
 		 */
 
 		/**
-		* @class ProjectsDataClient
- 		* @classdesc 
- 		*/
+		 * @class ProjectsDataClient
+		 * @classdesc 
+		 */
 		class ProjectsDataClient {
 			#apiBase;
 			#emitter = new Emitter();
@@ -204,14 +217,18 @@
 			state = { source: null, projects: [] };
 
 			constructor(apiBaseIn = apiBase) { this.#apiBase = apiBaseIn; }
-			reset() { for (const c of this.#aborts) c.abort();
+			reset() {
+				for (const c of this.#aborts) c.abort();
 				this.#aborts.clear();
 				this.state = { source: null, projects: [] };
 				this.#logger.reset();
-				this.#emitter.emit("reset"); }
-			destroy() { this.reset();
+				this.#emitter.emit("reset");
+			}
+			destroy() {
+				this.reset();
 				this.#emitter.reset();
-				this.#logger.destroy(); }
+				this.#logger.destroy();
+			}
 			on(evt, fn) { return this.#emitter.on(evt, fn); }
 
 			async #fetchJson(url) {
@@ -224,8 +241,10 @@
 					let data;
 					try { data = JSON.parse(text); } catch { data = { ok: false, parseError: true, raw: text }; }
 					return { ok: res.ok, status: res.status, data };
-				} finally { clearTimeout(timer);
-					this.#aborts.delete(ctl); }
+				} finally {
+					clearTimeout(timer);
+					this.#aborts.delete(ctl);
+				}
 			}
 
 			/** Primary: Airtable via Worker /api/projects (maps createdAt) */
@@ -238,17 +257,43 @@
 					this.#logger.log("warn", m, { status, data });
 					throw new Error(m);
 				}
-				const projects = (data.projects || []).map((p) => ({
-					id: p.LocalId || p.id,
-					name: p.Name,
-					description: p.Description,
-					stakeholders: Array.isArray(p.Stakeholders) ? p.Stakeholders : p.Stakeholders ? safeJsonArray(p.Stakeholders) : [],
-					objectives: Array.isArray(p.Objectives) ? p.Objectives : p.Objectives ? String(p.Objectives).split("\n").map(s => s.trim()).filter(Boolean) : [],
-					user_groups: Array.isArray(p.UserGroups) ? p.UserGroups : p.UserGroups ? String(p.UserGroups).split(",").map(s => s.trim()).filter(Boolean) : [],
-					createdAt: p.createdAt || p.CreatedAt || "", // <- Worker now returns this; keep fallbacks
-					['rops:servicePhase']: p.Phase,
-					['rops:projectStatus']: p.Status
-				}));
+				const projects = (data.projects || []).map((p) => {
+					// normalise fields from either Airtable-raw or UI-shaped worker
+					const name = p.Name ?? p.name ?? "";
+					const description = p.Description ?? p.description ?? "";
+					const phase = p.Phase ?? p["rops:servicePhase"] ?? "";
+					const status = p.Status ?? p["rops:projectStatus"] ?? "";
+
+					const stakeholders = Array.isArray(p.Stakeholders) ? p.Stakeholders :
+						Array.isArray(p.stakeholders) ? p.stakeholders :
+						p.Stakeholders ? safeJsonArray(p.Stakeholders) :
+						p.stakeholders ? safeJsonArray(p.stakeholders) :
+						[];
+
+					const objectivesRaw = p.Objectives ?? p.objectives ?? "";
+					const objectives = Array.isArray(objectivesRaw) ?
+						objectivesRaw :
+						String(objectivesRaw).split("\n").map(s => s.trim()).filter(Boolean);
+
+					const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
+					const user_groups = Array.isArray(groupsRaw) ?
+						groupsRaw :
+						String(groupsRaw).split(",").map(s => s.trim()).filter(Boolean);
+
+					const createdAt = p.CreatedAt ?? p.createdAt ?? p.createdTime ?? "";
+
+					return {
+						id: p.LocalId || p.id,
+						name,
+						description,
+						stakeholders,
+						objectives,
+						user_groups,
+						createdAt,
+						['rops:servicePhase']: phase,
+						['rops:projectStatus']: status
+					};
+				});
 				this.state = { source: "airtable", projects };
 				this.#emitter.emit("update", this.state);
 				return projects;
@@ -277,8 +322,10 @@
 					this.state = { source: "csv", projects };
 					this.#emitter.emit("update", this.state);
 					return projects;
-				} finally { clearTimeout(timer);
-					this.#aborts.delete(ctl); }
+				} finally {
+					clearTimeout(timer);
+					this.#aborts.delete(ctl);
+				}
 			}
 
 			/** Prefer Airtable; fallback to CSV */
