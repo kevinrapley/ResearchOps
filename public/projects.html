@@ -42,7 +42,7 @@
 		 * Configuration (no magic numbers)
 		 * ========================= */
 		const CONFIG = Object.freeze({
-			API_BASE: "https://rops-api.digikev-kevin-rapley.workers.dev",
+			// Use relative URLs so this works on any host without CORS pain
 			FETCH_TIMEOUT_MS: 12_000,
 			LOG_BATCH_INTERVAL_MS: 500,
 			CACHE: "no-store",
@@ -127,15 +127,6 @@
 		}
 
 		/**
-		 * Safely parse a JSON-ish value to an array.
-		 * @param {unknown} s
-		 * @returns {any[]}
-		 */
-		function safeJsonArray(s) {
-			try { const v = JSON.parse(String(s)); return Array.isArray(v) ? v : []; } catch { return []; }
-		}
-
-		/**
 		 * @param {string[]} header
 		 * @param {string[]} row
 		 */
@@ -188,15 +179,12 @@
 		 * Provides lifecycle, state, and structured logging.
 		 */
 		class ProjectsDataClient {
-			#apiBase;
 			#emitter = new Emitter();
 			#logger = new BatchedLogger();
 			#aborts = new Set();
 
 			/** @type {{source:'airtable'|'csv'|null, projects:UIProject[]}} */
 			state = { source: null, projects: [] };
-
-			constructor(apiBase = CONFIG.API_BASE) { this.#apiBase = apiBase; }
 
 			/** Abort and clear in-flight, but keep listeners */
 			reset() {
@@ -232,9 +220,9 @@
 				}
 			}
 
-			/** Primary: Airtable via Worker /api/projects */
+			/** Primary: Airtable via Worker /api/projects (tolerant mapping) */
 			async listFromAirtable() {
-				const url = `${this.#apiBase}/api/projects`;
+				const url = `/api/projects`; // relative path
 				this.#logger.log("info", "GET /api/projects (airtable)");
 				const { ok, status, data } = await this.#fetchJson(url);
 				if (!ok || !data?.ok) {
@@ -242,19 +230,42 @@
 					this.#logger.log("warn", m, { status, data });
 					throw new Error(m);
 				}
-				const projects = (data.projects || []).map((p) => ({
-					id: p.LocalId,
-					name: p.Name,
-					description: p.Description,
-					stakeholders: Array.isArray(p.Stakeholders) ? p.Stakeholders :
-						p.Stakeholders ? safeJsonArray(p.Stakeholders) : [],
-					objectives: Array.isArray(p.Objectives) ? p.Objectives :
-						p.Objectives ? String(p.Objectives).split("\n").map(s => s.trim()).filter(Boolean) : [],
-					user_groups: Array.isArray(p.UserGroups) ? p.UserGroups :
-						p.UserGroups ? String(p.UserGroups).split(",").map(s => s.trim()).filter(Boolean) : [],
-					['rops:servicePhase']: p.Phase,
-					['rops:projectStatus']: p.Status
-				}));
+
+				const projects = (data.projects || []).map((p) => {
+					// prefer UI-shaped keys; fall back to Airtable-shaped keys
+					const name = p.name ?? p.Name ?? "";
+					const description = p.description ?? p.Description ?? "";
+					const phase = p["rops:servicePhase"] ?? p.Phase ?? "";
+					const status = p["rops:projectStatus"] ?? p.Status ?? "";
+
+					// stakeholders can be array already or JSON string
+					let stakeholders = [];
+					if (Array.isArray(p.stakeholders)) stakeholders = p.stakeholders;
+					else if (Array.isArray(p.Stakeholders)) stakeholders = p.Stakeholders;
+					else if (typeof p.Stakeholders === "string" && p.Stakeholders.trim()) {
+						try { stakeholders = JSON.parse(p.Stakeholders); } catch {}
+					}
+
+					const objectives = Array.isArray(p.objectives) ?
+						p.objectives :
+						String(p.Objectives || "").split("\n").map(s => s.trim()).filter(Boolean);
+
+					const user_groups = Array.isArray(p.user_groups) ?
+						p.user_groups :
+						String(p.UserGroups || "").split(",").map(s => s.trim()).filter(Boolean);
+
+					return {
+						id: p.id || p.LocalId,
+						name,
+						description,
+						stakeholders,
+						objectives,
+						user_groups,
+						["rops:servicePhase"]: phase,
+						["rops:projectStatus"]: status
+					};
+				});
+
 				this.state = { source: "airtable", projects };
 				this.#emitter.emit("update", this.state);
 				return projects;
@@ -266,7 +277,7 @@
 				this.#aborts.add(ctl);
 				const timer = setTimeout(() => ctl.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
 				try {
-					const res = await fetch(`${this.#apiBase}/api/projects.csv`, { cache: CONFIG.CACHE, signal: ctl.signal });
+					const res = await fetch(`/api/projects.csv`, { cache: CONFIG.CACHE, signal: ctl.signal });
 					if (!res.ok) throw new Error(`CSV fetch failed (${res.status})`);
 					const text = await res.text();
 					const rows = parseCSV(text);
@@ -304,7 +315,7 @@
 		 * UI bootstrap
 		 * ========================= */
 		const container = document.getElementById("list");
-		const client = new ProjectsDataClient(CONFIG.API_BASE);
+		const client = new ProjectsDataClient();
 
 		function card(p) {
 			const groups = (p.user_groups || []).map(g => `<span class="tag">${g}</span>`).join(" ");
