@@ -23,27 +23,22 @@ jobs:
           test -n "${{ secrets.GH_PAT }}" || (echo "GH_PAT missing"; exit 1)
           test -n "${{ secrets.AIRTABLE_API_KEY }}" || (echo "AIRTABLE_API_KEY missing"; exit 1)
 
-      # Install Wrangler explicitly so we can use it in subsequent run steps
       - name: Install Wrangler
         run: npm i -g wrangler@4.40.2
 
-      # Set secrets directly on the Worker defined by infra/cloudflare/wrangler.toml
+      # Put Worker secrets (no --yes; pipe via stdin). Wrangler CLI expects CLOUDFLARE_* envs.
       - name: Put Worker secrets
         env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          GH_PAT: ${{ secrets.GH_PAT }}
-          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          echo -n "$GH_PAT" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml --yes
-          echo -n "$AIRTABLE_API_KEY" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml --yes
+          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml
 
-      # Deploy
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           wranglerVersion: '4.40.2'
-          workingDirectory: infra/cloudflare
-          command: deploy --config wrangler.toml
+          command: deploy --config infra/cloudflare/wrangler.toml

@@ -1,3 +1,4 @@
+// infra/cloudflare/src/worker.js
 // ResearchOps Worker: static assets + Airtable + GitHub CSV dual-write
 // Routes:
 // - GET  /api/health
@@ -27,7 +28,10 @@ export default {
 async function handleApi(request, env, ctx) {
   const url = new URL(request.url);
   const origin = request.headers.get("Origin") || "";
-  const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+  const allowed = (env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
 
   // CORS preflight
   if (request.method === "OPTIONS") {
@@ -48,7 +52,8 @@ async function handleApi(request, env, ctx) {
   // ====================================================================================
   if (url.pathname === "/api/projects" && request.method === "POST") {
     let payload;
-    try { payload = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed)); }
+    try { payload = await request.json(); }
+    catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed)); }
 
     // Required (Step 1)
     const errs = [];
@@ -59,16 +64,17 @@ async function handleApi(request, env, ctx) {
     }
 
     // ---------- Airtable write (system of record) ----------
+    // Send plain strings for Single selects (labels must match Airtable exactly)
     const projectFields = {
       Org: payload.org || "Home Office Biometrics",
       Name: payload.name,
       Description: payload.description,
-      Phase: typeof payload.phase === "string" ? payload.phase : undefined, // send label string
+      Phase: typeof payload.phase === "string" ? payload.phase : undefined,
       Status: typeof payload.status === "string" ? payload.status : undefined,
       Objectives: (payload.objectives || []).join("\n"),
       UserGroups: (payload.user_groups || []).join(", "),
       Stakeholders: JSON.stringify(payload.stakeholders || []),
-      LocalId: payload.id || "" // optional client id
+      LocalId: payload.id || ""
     };
     // prune empties
     for (const k of Object.keys(projectFields)) {

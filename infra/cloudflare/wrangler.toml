@@ -1,3 +1,4 @@
+# infra/cloudflare/wrangler.toml
 name = "rops-api"
 main = "src/worker.js"
 compatibility_date = "2025-09-26"
@@ -18,7 +19,7 @@ AUDIT = "true"
 
 # GitHub CSV repo details
 GH_OWNER = "kevinrapley"
-GH_REPO = "ResearchOps"
+GH_REPO  = "ResearchOps"
 GH_BRANCH = "main"
 GH_PATH_PROJECTS = "data/projects.csv"
 GH_PATH_DETAILS  = "data/project-details.csv"
