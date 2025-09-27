@@ -129,6 +129,48 @@
 			</div>
 		</section>
 
+		<section id="research-outcomes" class="dashboard-section">
+			<h2 class="govuk-heading-m">Research Outcomes</h2>
+			<div class="outcome-actions">
+				<button id="btn-add-study" class="govuk-button">+ Add Study</button>
+				<button id="btn-add-insight" class="govuk-button">+ Add Insight</button>
+			</div>
+			<div id="studies-list" class="cluster">
+				<p class="lede">No studies yet.</p>
+			</div>
+		</section>
+
+		<!-- Modal -->
+		<dialog id="study-dialog" class="modal">
+			<form method="dialog" id="study-form">
+				<h3 class="govuk-heading-m">Add Study</h3>
+
+				<label for="research-method" class="govuk-label">Research Method</label>
+				<select id="research-method" name="method" class="govuk-select" required>
+					<option value="">Choose something</option>
+					<option>Card Sort</option>
+					<option>Contextual Inquiry</option>
+					<option>Customer Satisfaction Survey</option>
+					<option>Diary Study</option>
+					<option>Existing Research Analysis</option>
+					<option>Expert Review</option>
+					<option>Stakeholder Interview</option>
+					<option>Survey</option>
+					<option>Tree Test</option>
+					<option>Usability Test</option>
+					<option>User Interview</option>
+				</select>
+
+				<label for="study-description" class="govuk-label">Study Description</label>
+				<textarea id="study-description" name="description" class="govuk-textarea" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/23" required></textarea>
+
+				<div class="modal-actions">
+					<button type="submit" class="govuk-button">Submit</button>
+					<button type="reset" class="govuk-button govuk-button--secondary" formmethod="dialog">Cancel</button>
+				</div>
+			</form>
+		</dialog>
+
 	</main>
 
 	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
@@ -160,12 +202,9 @@
 				org: p.Org || p.org || "Home Office Biometrics",
 				phase: p["rops:servicePhase"] || p.Phase || "",
 				status: p["rops:projectStatus"] || p.Status || "",
-				objectives: Array.isArray(p.objectives) ? p.objectives :
-					String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
-				user_groups: Array.isArray(p.user_groups) ? p.user_groups :
-					String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
-				stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders :
-					(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+				objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+				user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+				stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
 				createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
 			}));
 		}
@@ -184,15 +223,11 @@
 			setText("#project-title", project.name, "Untitled project");
 			setText("#project-subtitle", project.description, "");
 
-			// key/value info (expects these ids to exist in your markup)
+			// key/value info
 			setText("#kv-service-stage", project.phase);
 			setText("#kv-project-stage", project.status);
-			// optional extras if/when you wire them up
-			// setText("#kv-client-name", project.org);
-			// setText("#kv-lead-researcher", project.leadResearcher);
-			// setText("#kv-lead-email", project.leadResearcherEmail);
 
-			// user groups list (if you have a UL with this id)
+			// user groups list (if present)
 			const ug = $("#user-groups-list");
 			if (ug) {
 				ug.innerHTML = project.user_groups.length ?
@@ -200,7 +235,7 @@
 					`<li class="lede">No user groups yet.</li>`;
 			}
 
-			// objectives list (if you have a UL with this id)
+			// objectives list (if present)
 			const obj = $("#objectives-list");
 			if (obj) {
 				obj.innerHTML = project.objectives.length ?
@@ -209,14 +244,128 @@
 			}
 		}
 
+		// ================
+		// Accessible dialog
+		// ================
+		function initStudyDialog() {
+			const dialog = /** @type {HTMLDialogElement|null} */ ($("#study-dialog"));
+			const openBtn = $("#btn-add-study");
+			const form = $("#study-form");
+			const list = $("#studies-list");
+			const pageRoot = $("main") || document.body;
+
+			if (!dialog || !openBtn || !form || !list) return;
+
+			// Ensure ARIA hooks exist (robust if missing in HTML)
+			dialog.setAttribute("role", "dialog");
+			dialog.setAttribute("aria-modal", "true");
+			if (!dialog.getAttribute("aria-labelledby")) {
+				const title = dialog.querySelector("h3");
+				if (title && !title.id) title.id = "study-dialog-title";
+				if (title) dialog.setAttribute("aria-labelledby", title.id);
+			}
+
+			let lastActive = null;
+
+			function focusableWithin(el) {
+				const selectors = [
+					'a[href]', 'button:not([disabled])', 'input:not([disabled])',
+					'select:not([disabled])', 'textarea:not([disabled])',
+					'[tabindex]:not([tabindex="-1"])'
+				];
+				return Array.from(el.querySelectorAll(selectors.join(',')))
+					.filter(n => n.offsetParent !== null || el === n); // visible-ish
+			}
+
+			function trapTab(e) {
+				if (!dialog.open || e.key !== "Tab") return;
+				const f = focusableWithin(dialog);
+				if (!f.length) return;
+				const first = f[0],
+					last = f[f.length - 1];
+				if (e.shiftKey && document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				} else if (!e.shiftKey && document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
+			}
+
+			function open() {
+				lastActive = document.activeElement;
+				// hide the rest of the page for AT; lock scroll
+				pageRoot.setAttribute("aria-hidden", "true");
+				document.body.style.overflow = "hidden";
+
+				if (typeof dialog.showModal === "function") {
+					dialog.showModal();
+				} else {
+					// very old Safari fallback
+					dialog.setAttribute("open", "");
+				}
+				// focus the first field
+				const firstInput = dialog.querySelector("select, textarea, input, button");
+				(firstInput || dialog).focus();
+				dialog.addEventListener("keydown", trapTab);
+			}
+
+			function close() {
+				dialog.removeEventListener("keydown", trapTab);
+				if (dialog.open && typeof dialog.close === "function") dialog.close();
+				dialog.removeAttribute("open");
+				pageRoot.removeAttribute("aria-hidden");
+				document.body.style.overflow = "";
+				if (lastActive && typeof lastActive.focus === "function") {
+					lastActive.focus();
+				} else {
+					openBtn.focus();
+				}
+			}
+
+			// open + close wiring
+			openBtn.addEventListener("click", () => open());
+			dialog.addEventListener("cancel", (e) => { e.preventDefault();
+				close(); }); // Esc
+			dialog.addEventListener("click", (e) => {
+				// click on the backdrop closes (only for native <dialog>)
+				if (e.target === dialog) close();
+			});
+			dialog.querySelectorAll('[formmethod="dialog"], [data-close-dialog]').forEach(btn => {
+				btn.addEventListener("click", () => close());
+			});
+
+			// submit -> append to list (UI only)
+			form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				/** @type {HTMLSelectElement} */
+				const methodEl = form.querySelector('#research-method');
+				/** @type {HTMLTextAreaElement} */
+				const descEl = form.querySelector('#study-description');
+				const method = methodEl?.value.trim();
+				const desc = descEl?.value.trim();
+				if (!method || !desc) return;
+
+				const item = document.createElement("div");
+				item.className = "note";
+				item.innerHTML = `<strong>${method}</strong><br>${desc}`;
+				list.appendChild(item);
+
+				form.reset();
+				close();
+			});
+		}
+
 		(async () => {
 			try {
 				const projects = await loadProjects();
-				// keep same newest-first order if you list related things
 				projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 				const project = pickProject(projects);
 				if (!project) throw new Error("Project not found from id param");
 				renderProject(project);
+
+				// once content is on the page, wire the dialog
+				initStudyDialog();
 			} catch (err) {
 				console.error(err);
 				alert("Could not load project.");
