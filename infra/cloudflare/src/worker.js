@@ -242,7 +242,8 @@ class ResearchOpsService {
       Objectives: (payload.objectives || []).join("\n"),
       UserGroups: (payload.user_groups || []).join(", "),
       Stakeholders: JSON.stringify(payload.stakeholders || []),
-      LocalId: payload.id || ""
+      LocalId: payload.id || "",
+      createdAt: f.CreatedAt || r.createdTime || ""
     };
     // prune empties
     for (const k of Object.keys(projectFields)) {
