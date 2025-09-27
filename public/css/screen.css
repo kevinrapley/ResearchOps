@@ -168,76 +168,79 @@ textarea {
 	border-radius: 4px;
 	margin-bottom: 12px;
 	}
-.app-card {
-	padding: 16px;
-	margin-bottom: 24px;
+
+.card {
 	border: 1px solid #b1b4b6;
-	background-color: #ffffff;
+	border-radius: 6px;
+	padding: 24px;
+	margin-bottom: 16px;
+	background: #fff;
 	}
 
-.app-card__org {
-	margin-bottom: 4px;
-	color: #00703c; /* HO green */
+/* Org eyebrow (Home Office green, small) */
+.project-org {
+	margin: 0 0 4px;
+	color: #00703c;
 	font-size: 0.9rem;
 	font-weight: bold;
 	}
 
-.app-card__title {
+/* Title + link */
+.project-title {
 	margin: 0;
 	}
 
-.app-card__title-link {
+.project-title a {
 	text-decoration: none;
 	}
 
-.app-card__title-link:hover {
+.project-title a:hover {
 	text-decoration: underline;
 	}
 
-.app-card__meta {
-	margin-bottom: 8px;
+/* Meta line: "Phase: X · Status: Y" with bold labels */
+.project-meta {
+	margin: 8px 0;
+	color: #505a5f;
 	font-size: 0.95rem;
 	}
 
-.app-card__meta strong {
-	font-weight: bold;
+.project-meta strong {
+	font-weight: 700;
 	}
 
-.app-card__description {
-	margin-bottom: 8px;
+/* Description copy below meta */
+.project-summary {
+	margin: 8px 0 12px;
 	}
 
-.app-card__groups-title {
-	margin-bottom: 4px;
-	font-size: 0.95rem;
-	font-weight: bold;
+/* User groups block */
+.project-groups-title {
+	margin: 12px 0 6px;
+	font-size: 0.95rem; /* same size as meta line */
+	font-weight: 700;
 	}
 
-.app-card__groups {
-	margin-bottom: 8px;
+.tags {
+	margin: 0;
+	padding: 0;
+	list-style: none;
 	}
 
-.app-card__groups .tag {
-	margin-right: 4px;
+.tags li {
+	display: inline-block;
+	margin: 0 6px 6px 0;
 	}
 
-.app-card__details summary {
+.tag {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	padding: 2px 6px;
+	border-radius: 12px;
+	font-size: 12px;
+	}
+
+/* Details link usability */
+.project-details summary {
 	cursor: pointer;
-	}
-
-/* GOV.UK-style focus treatment on links inside card */
-.app-card a.govuk-link:focus {
-	outline: 3px solid transparent;
-	color: #0b0c0c;
-	background-color: #fd0;
-	box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
-	text-decoration: none;
-	}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-		animation: none !important;
-		}
 	}
