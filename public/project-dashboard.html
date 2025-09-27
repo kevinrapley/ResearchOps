@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Project Dashboard — ResearchOps</title>
 
+	<!-- Your existing foundations -->
 	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="./css/screen.css" media="screen" />
@@ -20,120 +21,110 @@
 	}'></x-include>
 
 	<main class="govuk-body" role="main">
-		<h1 class="govuk-heading-l" style="margin-top:0">Project Dashboard</h1>
-
-		<nav class="nav" aria-label="secondary actions" style="margin-bottom:16px">
-			<a class="govuk-link" href="./projects.html">← Return to Project List</a>
-			<a class="govuk-link govuk-brand-background" href="#" id="btn-edit" style="padding:.25rem .5rem; border-radius:4px; margin-left:8px;">Edit Project</a>
-		</nav>
 
 		<!-- Hero -->
-		<p id="eyebrow-org" class="project-org">Home Office Biometrics</p>
-		<h2 id="project-title" class="govuk-heading-l" style="margin-top:0">Untitled project</h2>
-		<p id="project-subtitle" class="lede"></p>
+		<div class="dashboard-hero">
+			<p id="eyebrow-org" class="project-org"></p>
+			<h1 id="project-title" class="govuk-heading-l"></h1>
+			<p id="project-subtitle" class="lede"></p>
+		</div>
 
-		<!-- Key info (Service/Project stages etc.) -->
-		<section class="panel" aria-labelledby="info-heading" style="margin:16px 0;">
-			<h3 id="info-heading" class="govuk-heading-m">Information</h3>
-			<dl class="project-meta" style="margin:0;">
-				<div>
-					<dt class="label">Service Stage</dt>
-					<dd id="kv-service-stage">—</dd>
-				</div>
-				<div>
-					<dt class="label">Project Stage</dt>
-					<dd id="kv-project-stage">—</dd>
-				</div>
-				<div>
-					<dt class="label">Organisation Name</dt>
-					<dd id="kv-client-name">—</dd>
-				</div>
-				<div>
-					<dt class="label">Lead Researcher</dt>
-					<dd id="kv-lead-researcher">—</dd>
-				</div>
-				<div>
-					<dt class="label">Lead Researcher Email</dt>
-					<dd id="kv-lead-email">—</dd>
-				</div>
-			</dl>
+		<!-- Top actions -->
+		<div class="actions-bar">
+			<a href="./projects.html" class="btn btn--secondary">← Return to Project List</a>
+			<a href="./edit-project.html" class="btn">✎ Edit Project</a>
+		</div>
+
+		<!-- Key information -->
+		<section class="kv">
+			<ul class="kv__list">
+				<li><span class="kv__term">Service Stage</span> <span class="kv__desc">Discovery</span></li>
+				<li><span class="kv__term">Project Stage</span> <span class="kv__desc">Planning research</span></li>
+				<li><span class="kv__term">Client Name</span> <span class="kv__desc">–</span></li>
+				<li><span class="kv__term">Lead Researcher</span> <span class="kv__desc">–</span></li>
+				<li><span class="kv__term">Lead Researcher Email</span> <span class="kv__desc">–</span></li>
+			</ul>
 		</section>
 
 		<!-- Sublink Button Board -->
-		<nav aria-label="Project sections" class="tabs" style="margin-bottom:16px">
-			<a class="govuk-link" href="#journal">Reflexive Journal</a>
-			<a class="govuk-link" href="#stakeholders">Stakeholder Management</a>
-			<a class="govuk-link" href="#planning">Research Planning</a>
-			<a class="govuk-link" href="#outcomes">Research Outcomes</a>
+		<nav class="board">
+			<a href="#" class="board__item">Reflexive Journal</a>
+			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
+			<a href="#planning" class="board__item">Research Planning</a>
+			<a href="#outcomes" class="board__item">Research Outcomes</a>
 		</nav>
 
-		<!-- Stakeholder section -->
-		<section id="stakeholders" class="panel" aria-labelledby="stakeholders-heading" style="margin-bottom:16px;">
-			<h2 id="stakeholders-heading" class="govuk-heading-m">Stakeholder Management</h2>
-			<p class="lede">Keep track of people involved and why they matter to the project.</p>
-
-			<div class="grid">
-				<div class="panel">
+		<!-- Stakeholder Section -->
+		<section id="stakeholders" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
+				<a href="#" class="btn btn--outline">+ Add Stakeholder</a>
+			</header>
+			<div class="section__body section__grid">
+				<div>
 					<h3 class="govuk-heading-s">Stakeholders</h3>
-					<ul id="stakeholders-list" role="list">
-						<li class="lede">No stakeholders yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No stakeholders yet.</li>
 					</ul>
-					<button class="govuk-button" type="button">+ Add Stakeholder</button>
 				</div>
-
-				<div class="panel">
+				<div>
 					<h3 class="govuk-heading-s">Objectives</h3>
-					<ul id="objectives-list" role="list">
-						<li class="lede">No objectives yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>Objective 1</li>
+						<li>Objective 2</li>
+						<li>Objective 3</li>
 					</ul>
-					<button class="govuk-button" type="button">+ Add Objective</button>
+					<a href="#" class="btn btn--outline">+ Add Objective</a>
 				</div>
 			</div>
 		</section>
 
-		<!-- Research planning section -->
-		<section id="planning" class="panel" aria-labelledby="planning-heading" style="margin-bottom:16px;">
-			<h2 id="planning-heading" class="govuk-heading-m">Research Planning</h2>
-			<div class="grid">
-				<div class="panel">
+		<!-- Research Planning Section -->
+		<section id="planning" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Planning</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
 					<h3 class="govuk-heading-s">User Groups</h3>
-					<ul id="user-groups-list" role="list">
-						<li class="lede">No user groups yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No user groups yet.</li>
 					</ul>
-					<button class="govuk-button" type="button">+ Add User Group</button>
+					<a href="#" class="btn btn--outline">+ Add User Group</a>
 				</div>
-
-				<div class="panel">
+				<div>
 					<h3 class="govuk-heading-s">Participants</h3>
-					<ul id="participants-list" role="list">
-						<li class="lede">No participants yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No participants yet.</li>
 					</ul>
-					<button class="govuk-button" type="button">+ Add Participant</button>
-					<div class="note" aria-live="polite" style="margin-top:8px;">Bulk upload participants via CSV</div>
+					<a href="#" class="btn btn--outline">+ Add Participant</a>
+					<div class="dropzone">
+						<p>Bulk upload participants via CSV</p>
+						<input type="file" accept=".csv">
+					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Research outcomes section -->
-		<section id="outcomes" class="panel" aria-labelledby="outcomes-heading" style="margin-bottom:16px;">
-			<h2 id="outcomes-heading" class="govuk-heading-m">Research Outcomes</h2>
-
-			<div class="grid">
-				<div class="panel">
+		<!-- Research Outcomes Section -->
+		<section id="outcomes" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Outcomes</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
 					<h3 class="govuk-heading-s">Studies</h3>
-					<ul id="studies-list" role="list">
-						<li class="lede">No studies yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No studies yet.</li>
 					</ul>
-					<!-- The ONE AND ONLY Add Study trigger -->
 					<button id="btn-add-study" class="govuk-button" type="button">+ Add Study</button>
 				</div>
-
-				<div class="panel">
+				<div>
 					<h3 class="govuk-heading-s">Insights</h3>
-					<ul id="insights-list" role="list">
-						<li class="lede">No insights yet.</li>
+					<ul class="list-unstyled list-divided">
+						<li>No insights yet.</li>
 					</ul>
-					<button id="btn-add-insight" class="govuk-button" type="button">+ Add Insight</button>
+					<a href="#" class="btn btn--outline">+ Add Insight</a>
 				</div>
 			</div>
 		</section>
@@ -285,8 +276,11 @@
 
 			// Basic focus trap
 			dialog.addEventListener("keydown", (e) => {
-				if (e.key === "Escape") { e.preventDefault();
-					close(); return; }
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+					return;
+				}
 				if (e.key !== "Tab") return;
 				const f = $$(
 					'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -295,9 +289,13 @@
 				if (!f.length) return;
 				const first = f[0],
 					last = f[f.length - 1];
-				if (e.shiftKey && document.activeElement === first) { last.focus();
-					e.preventDefault(); } else if (!e.shiftKey && document.activeElement === last) { first.focus();
-					e.preventDefault(); }
+				if (e.shiftKey && document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				} else if (!e.shiftKey && document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
 			});
 
 			// click outside (backdrop) closes
