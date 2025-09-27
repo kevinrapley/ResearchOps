@@ -24,9 +24,9 @@
 
 		<!-- Hero -->
 		<div class="dashboard-hero">
-			<p class="dashboard-eyebrow">Home Office Biometrics</p>
-			<h1 class="dashboard-title govuk-heading-l">New Project</h1>
-			<p class="dashboard-subtitle">Project description of the new project</p>
+			<p id="eyebrow-org" class="project-org"></p>
+			<h1 id="project-title" class="govuk-heading-l"></h1>
+			<p id="project-subtitle" class="lede"></p>
 		</div>
 
 		<!-- Top actions -->
@@ -134,158 +134,92 @@
 	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
-		/* ========= util ========= */
-		const API = location.origin; // same-origin Worker
-		const qs = new URLSearchParams(location.search);
-		const qid = qs.get("id") || ""; // Airtable id or LocalId
+		// tiny helpers
+		const $ = (sel) => document.querySelector(sel);
+		const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+		const setText = (sel, value, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
+		};
 
-		function parseCSV(text) {
-			const rows = [];
-			let row = [],
-				field = "",
-				q = false;
-			for (let i = 0; i < text.length; i++) {
-				const c = text[i],
-					n = text[i + 1];
-				if (q) {
-					if (c === '"' && n === '"') {
-						field += '"';
-						i++;
-					} else if (c === '"') { q = false; } else { field += c; }
-				} else {
-					if (c === '"') q = true;
-					else if (c === ",") {
-						row.push(field);
-						field = "";
-					} else if (c === "\n") {
-						row.push(field);
-						rows.push(row);
-						row = [];
-						field = "";
-					} else if (c !== "\r") field += c;
-				}
+		function toMs(d) {
+			const n = Date.parse(d);
+			return Number.isFinite(n) ? n : 0;
+		}
+
+		// fetch projects from the Worker and map into a consistent shape
+		async function loadProjects() {
+			const res = await fetch("/api/projects", { cache: "no-store" });
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
+			return (js.projects || []).map(p => ({
+				id: p.id || p.LocalId || p.localId || "",
+				localId: p.LocalId || p.localId || "",
+				name: p.name || p.Name || "",
+				description: p.description || p.Description || "",
+				org: p.Org || p.org || "Home Office Biometrics",
+				phase: p["rops:servicePhase"] || p.Phase || "",
+				status: p["rops:projectStatus"] || p.Status || "",
+				objectives: Array.isArray(p.objectives) ? p.objectives :
+					String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+				user_groups: Array.isArray(p.user_groups) ? p.user_groups :
+					String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+				stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders :
+					(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+				createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
+			}));
+		}
+
+		// choose project by ?id=… (matches LocalId or Airtable id)
+		function pickProject(projects) {
+			const id = new URLSearchParams(location.search).get("id") || "";
+			if (!id) return null;
+			return projects.find(p => p.id === id || p.localId === id) || null;
+		}
+
+		// populate the page
+		function renderProject(project) {
+			// hero
+			setText("#eyebrow-org", project.org, "Home Office Biometrics");
+			setText("#project-title", project.name, "Untitled project");
+			setText("#project-subtitle", project.description, "");
+
+			// key/value info (expects these ids to exist in your markup)
+			setText("#kv-service-stage", project.phase);
+			setText("#kv-project-stage", project.status);
+			// optional extras if/when you wire them up
+			// setText("#kv-client-name", project.org);
+			// setText("#kv-lead-researcher", project.leadResearcher);
+			// setText("#kv-lead-email", project.leadResearcherEmail);
+
+			// user groups list (if you have a UL with this id)
+			const ug = $("#user-groups-list");
+			if (ug) {
+				ug.innerHTML = project.user_groups.length ?
+					project.user_groups.map(g => `<li><span class="tag">${g}</span></li>`).join("") :
+					`<li class="lede">No user groups yet.</li>`;
 			}
-			if (field.length || row.length) {
-				row.push(field);
-				rows.push(row);
+
+			// objectives list (if you have a UL with this id)
+			const obj = $("#objectives-list");
+			if (obj) {
+				obj.innerHTML = project.objectives.length ?
+					project.objectives.map(o => `<li>${o}</li>`).join("") :
+					`<li class="lede">No objectives yet.</li>`;
 			}
-			return rows;
 		}
 
-		const $ = (id) => document.getElementById(id);
-
-		/* ========= data load ========= */
-		async function loadProjectAndDetails() {
-			// 1) projects (Airtable)
-			const pj = await fetch(`${API}/api/projects`, { cache: "no-store" })
-				.then(r => r.json());
-
-			if (!pj.ok) throw new Error("Projects fetch failed");
-
-			const match = (rec) => {
-				const airId = rec.id || rec.AirtableId;
-				const local = rec.LocalId || rec.localId || rec.id;
-				return airId === qid || local === qid;
-			};
-			const project = (pj.projects || []).find(match);
-			if (!project) throw new Error("Project not found");
-
-			// 2) details (CSV) — join if available
-			let detail = null;
-			try {
-				const res = await fetch(`${API}/api/project-details.csv`, { cache: "no-store" });
-				if (res.ok) {
-					const text = await res.text();
-					const [header, ...rows] = parseCSV(text);
-					const idx = (name) => header.indexOf(name);
-					const by = rows.map(r => ({
-						AirtableId: r[idx("AirtableId")] || "",
-						LocalProjectId: r[idx("LocalProjectId")] || "",
-						LeadResearcher: r[idx("LeadResearcher")] || "",
-						LeadResearcherEmail: r[idx("LeadResearcherEmail")] || "",
-						Notes: r[idx("Notes")] || ""
-					}));
-					detail = by.find(d => d.AirtableId === project.id || (project.LocalId && d.LocalProjectId === project.LocalId)) || null;
-				}
-			} catch { /* ignore */ }
-
-			return { project, detail };
-		}
-
-		/* ========= render ========= */
-		function textOrDash(v) { return v && String(v).trim() ? v : "–"; }
-
-		function render({ project, detail }) {
-			$("eyebrow-org").textContent = project.Org || project.org || "Home Office Biometrics";
-			$("project-title").textContent = project.Name || project.name || "Untitled project";
-
-			const phase = project.Phase || project["rops:servicePhase"] || "";
-			const status = project.Status || project["rops:projectStatus"] || "";
-			$("project-subtitle").textContent = (project.Description || project.description || "").trim();
-
-			$("service-stage").textContent = textOrDash(phase);
-			$("project-stage").textContent = textOrDash(status);
-			$("client-name").textContent = textOrDash(project.Org || project.org);
-
-			const lead = detail?.LeadResearcher || "";
-			const email = detail?.LeadResearcherEmail || "";
-			$("lead-researcher").textContent = textOrDash(lead);
-			$("lead-researcher-email").innerHTML = email ?
-				`<a class="govuk-link" href="mailto:${email}">${email}</a>` :
-				"–";
-
-			// Edit link can deep-link to your flow (adjust as needed)
-			const localId = project.LocalId || project.id || "";
-			$("edit-link").href = `./start.html?edit=${encodeURIComponent(localId)}`;
-
-			// Lists
-			const stakeholders = Array.isArray(project.Stakeholders) ?
-				project.Stakeholders :
-				(() => { try { return JSON.parse(project.Stakeholders || "[]"); } catch { return []; } })();
-
-			$("stakeholder-list").innerHTML =
-				stakeholders.length ?
-				stakeholders.map(s => {
-					const name = s.name || "";
-					const role = s.role ? ` — ${s.role}` : "";
-					const em = s.email ? ` <a class="govuk-link" href="mailto:${s.email}">${s.email}</a>` : "";
-					return `<li>${name}${role}${em}</li>`;
-				}).join("") :
-				`<li class="lede">No stakeholders yet.</li>`;
-
-			const objectives = Array.isArray(project.Objectives) ?
-				project.Objectives :
-				String(project.Objectives || project.objectives || "")
-				.split("\n")
-				.map(s => s.trim())
-				.filter(Boolean);
-
-			$("objectives-list").innerHTML =
-				objectives.length ?
-				objectives.map(o => `<li>${o}</li>`).join("") :
-				`<li class="lede">No objectives yet.</li>`;
-
-			const groups = Array.isArray(project.UserGroups) ?
-				project.UserGroups :
-				String(project.UserGroups || project.user_groups || "")
-				.split(",")
-				.map(s => s.trim())
-				.filter(Boolean);
-
-			$("groups-list").innerHTML =
-				groups.length ?
-				groups.map(g => `<li><span class="tag">${g}</span></li>`).join("") :
-				`<li class="lede">No user groups yet.</li>`;
-		}
-
-		/* ========= bootstrap ========= */
 		(async () => {
 			try {
-				const data = await loadProjectAndDetails();
-				render(data);
-			} catch (e) {
-				document.querySelector("main").innerHTML =
-					`<div class="panel" role="alert"><strong>Could not load project.</strong><br>${e?.message || e}</div>`;
+				const projects = await loadProjects();
+				// keep same newest-first order if you list related things
+				projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+				const project = pickProject(projects);
+				if (!project) throw new Error("Project not found from id param");
+				renderProject(project);
+			} catch (err) {
+				console.error(err);
+				alert("Could not load project.");
 			}
 		})();
 	</script>
