@@ -1,15 +1,25 @@
+# infra/cloudflare/wrangler.toml
 name = "rops-api"
 main = "src/worker.js"
 compatibility_date = "2025-09-26"
 
-[vars]
-AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
-AIRTABLE_TABLE_PROJECTS = "Projects"
-AIRTABLE_TABLE_DETAILS  = "Project Details"
-SHAREPOINT_CSV_URL = "https://yourtenant.sharepoint.com/sites/ResearchOps/Shared%20Documents/projects.csv"
-ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080, http://127.0.0.1:5500"
-AUDIT = "true"
-
 [assets]
 binding = "ASSETS"
 directory = "../../public"
+
+[vars]
+# CORS
+ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
+
+# Airtable
+AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
+AIRTABLE_TABLE_PROJECTS = "Projects"
+AIRTABLE_TABLE_DETAILS  = "Project Details"
+AUDIT = "true"
+
+# GitHub CSV repo details
+GH_OWNER = "kevinrapley"
+GH_REPO  = "ResearchOps"
+GH_BRANCH = "main"
+GH_PATH_PROJECTS = "data/projects.csv"
+GH_PATH_DETAILS  = "data/project-details.csv"

@@ -1,19 +1,21 @@
 // infra/cloudflare/src/worker.js
-// ResearchOps Worker: serves static assets (no KV) and exposes API routes.
+// ResearchOps Worker: static assets + Airtable + GitHub CSV dual-write
+// Routes:
 // - GET  /api/health
-// - POST /api/projects      -> Airtable: create Projects (+ Project Details if provided)
-// - GET  /api/projects.csv  -> Proxy CSV from SharePoint
+// - POST /api/projects                 -> Airtable (Projects + Project Details) + append to GitHub CSV
+// - GET  /api/projects.csv             -> stream CSV from GitHub repo
+// - GET  /api/project-details.csv      -> stream CSV from GitHub repo
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // ---- API routes
+    // API routes
     if (url.pathname.startsWith("/api/")) {
       return handleApi(request, env, ctx);
     }
 
-    // ---- Static assets via Workers Assets
+    // Static assets via Workers Assets
     let resp = await env.ASSETS.fetch(request);
     if (resp.status === 404) {
       const indexReq = new Request(new URL("/index.html", url), request);
@@ -26,32 +28,34 @@ export default {
 async function handleApi(request, env, ctx) {
   const url = new URL(request.url);
   const origin = request.headers.get("Origin") || "";
-  const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+  const allowed = (env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
 
-  // ---- CORS preflight
+  // CORS preflight
   if (request.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders(origin, allowed) });
   }
-
-  // ---- Enforce CORS allowlist
+  // Enforce CORS allowlist
   if (origin && !allowed.includes(origin)) {
     return json({ error: "Origin not allowed" }, 403, corsHeaders(origin, allowed));
   }
 
-  // ---- Health
+  // Health
   if (url.pathname === "/api/health") {
     return json({ ok: true, time: new Date().toISOString() }, 200, corsHeaders(origin, allowed));
   }
 
   // ====================================================================================
-  // POST /api/projects  -> Create Projects (+ optional linked Project Details)
+  // POST /api/projects  -> Airtable first, then GitHub CSV append
   // ====================================================================================
   if (url.pathname === "/api/projects" && request.method === "POST") {
     let payload;
     try { payload = await request.json(); }
     catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed)); }
 
-    // Required
+    // Required (Step 1)
     const errs = [];
     if (!payload.name) errs.push("name");
     if (!payload.description) errs.push("description");
@@ -59,7 +63,8 @@ async function handleApi(request, env, ctx) {
       return json({ error: "Missing required fields: " + errs.join(", ") }, 400, corsHeaders(origin, allowed));
     }
 
-    // Send plain strings for Single selects (must match Airtable exactly)
+    // ---------- Airtable write (system of record) ----------
+    // Send plain strings for Single selects (labels must match Airtable exactly)
     const projectFields = {
       Org: payload.org || "Home Office Biometrics",
       Name: payload.name,
@@ -71,7 +76,6 @@ async function handleApi(request, env, ctx) {
       Stakeholders: JSON.stringify(payload.stakeholders || []),
       LocalId: payload.id || ""
     };
-
     // prune empties
     for (const k of Object.keys(projectFields)) {
       const v = projectFields[k];
@@ -98,6 +102,7 @@ async function handleApi(request, env, ctx) {
     });
     const pText = await pRes.text();
     if (!pRes.ok) {
+      // bubble Airtable error (403/422/etc)
       return json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, corsHeaders(origin, allowed));
     }
 
@@ -107,7 +112,7 @@ async function handleApi(request, env, ctx) {
       return json({ error: "Airtable response missing project id" }, 502, corsHeaders(origin, allowed));
     }
 
-    // 2) Optional: Project Details linked to the new project
+    // 2) Optional Project Details (linked)
     let detailId = null;
     const hasDetails = Boolean(
       payload.lead_researcher || payload.lead_researcher_email || payload.notes
@@ -115,7 +120,7 @@ async function handleApi(request, env, ctx) {
 
     if (hasDetails) {
       const detailsFields = {
-        Project: [projectId],
+        Project: [projectId], // linked record expects array of record IDs
         "Lead Researcher": payload.lead_researcher || "",
         "Lead Researcher Email": payload.lead_researcher_email || "",
         Notes: payload.notes || ""
@@ -135,7 +140,7 @@ async function handleApi(request, env, ctx) {
       });
       const dText = await dRes.text();
       if (!dRes.ok) {
-        // rollback
+        // rollback the project if details creation fails
         try {
           await fetch(`${atProjectsUrl}/${projectId}`, {
             method: "DELETE",
@@ -147,55 +152,161 @@ async function handleApi(request, env, ctx) {
       try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
     }
 
-    if (env.AUDIT === "true") {
-      try { console.log("project.created", { id: projectId, name: projectFields.Name, hasDetails }); } catch {}
+    // ---------- GitHub CSV append (secondary) ----------
+    let csvOk = true, csvError = null;
+    try {
+      const nowIso = new Date().toISOString();
+      // projects.csv row
+      const projectRow = [
+        payload.id || "", // LocalId
+        payload.org || "Home Office Biometrics", // Org
+        payload.name || "", // Name
+        payload.description || "", // Description
+        payload.phase || "", // Phase (label)
+        payload.status || "", // Status (label)
+        (payload.objectives || []).join(" | "), // Objectives
+        (payload.user_groups || []).join(" | "), // UserGroups
+        JSON.stringify(payload.stakeholders || []), // Stakeholders JSON
+        nowIso // CreatedAt
+      ];
+
+      await githubCsvAppend(env, {
+        path: env.GH_PATH_PROJECTS,
+        header: [
+          "LocalId","Org","Name","Description","Phase","Status","Objectives","UserGroups","Stakeholders","CreatedAt"
+        ],
+        row: projectRow
+      });
+
+      // project-details.csv row (optional)
+      if (hasDetails) {
+        const detailsRow = [
+          projectId, // AirtableId
+          payload.id || "", // LocalProjectId
+          payload.lead_researcher || "",
+          payload.lead_researcher_email || "",
+          payload.notes || "",
+          nowIso
+        ];
+        await githubCsvAppend(env, {
+          path: env.GH_PATH_DETAILS,
+          header: [
+            "AirtableId","LocalProjectId","LeadResearcher","LeadResearcherEmail","Notes","CreatedAt"
+          ],
+          row: detailsRow
+        });
+      }
+    } catch (e) {
+      csvOk = false;
+      csvError = String(e?.message || e);
     }
 
-    return json({ ok: true, project_id: projectId, detail_id: detailId, project: projectFields }, 200, corsHeaders(origin, allowed));
+    if (env.AUDIT === "true") {
+      try { console.log("project.created", { airtableId: projectId, details: hasDetails, csvOk }); } catch {}
+    }
+
+    return json({
+      ok: true,
+      project_id: projectId,
+      detail_id: detailId,
+      csv_ok: csvOk,
+      csv_error: csvOk ? undefined : csvError
+    }, 200, corsHeaders(origin, allowed));
   }
 
   // ====================================================================================
-  // GET /api/projects.csv  -> Proxy CSV from SharePoint
+  // CSV: GET latest from GitHub (proxied through the Worker)
   // ====================================================================================
   if (url.pathname === "/api/projects.csv" && request.method === "GET") {
-    const spUrl = env.SHAREPOINT_CSV_URL;
-    if (!spUrl) {
-      return json({ error: "SHAREPOINT_CSV_URL not configured" }, 500, corsHeaders(origin, allowed));
-    }
+    return githubCsvStream(env, env.GH_PATH_PROJECTS, corsHeaders(origin, allowed));
+  }
 
-    const headers = {};
-    if (env.SHAREPOINT_BEARER) headers["Authorization"] = `Bearer ${env.SHAREPOINT_BEARER}`;
-
-    const spRes = await fetch(spUrl, { headers });
-    if (!spRes.ok) {
-      const t = await spRes.text();
-      return json({ error: `SharePoint ${spRes.status}`, detail: safeText(t) }, spRes.status, corsHeaders(origin, allowed));
-    }
-
-    return new Response(spRes.body, {
-      status: 200,
-      headers: {
-        ...corsHeaders(origin, allowed),
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="projects.csv"'
-      }
-    });
+  if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
+    return githubCsvStream(env, env.GH_PATH_DETAILS, corsHeaders(origin, allowed));
   }
 
   // Fallback
   return json({ error: "Not found" }, 404, corsHeaders(origin, allowed));
 }
 
-// ---------- helpers ----------
+/* ---------------- GitHub CSV helpers ---------------- */
+
+// Append a row to a CSV file in GitHub (create file with header if missing)
+async function githubCsvAppend(env, { path, header, row }) {
+  const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = env;
+  const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+  const headers = {
+    "Authorization": `Bearer ${GH_TOKEN}`,
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json"
+  };
+
+  // Read current file
+  let sha = undefined;
+  let content = "";
+  let exists = false;
+
+  const getRes = await fetch(`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers });
+  if (getRes.status === 200) {
+    const js = await getRes.json();
+    sha = js.sha;
+    content = b64Decode(js.content);
+    exists = true;
+  } else if (getRes.status === 404) {
+    content = header.join(",") + "\n";
+  } else {
+    const t = await getRes.text();
+    throw new Error(`GitHub read ${getRes.status}: ${t}`);
+  }
+
+  // Append a line
+  content += toCsvLine(row);
+
+  // Write back
+  const putBody = {
+    message: exists ? `chore: append row to ${path}` : `chore: create ${path} with header`,
+    content: b64Encode(content),
+    branch: GH_BRANCH
+  };
+  if (sha) putBody.sha = sha;
+
+  const putRes = await fetch(base, { method: "PUT", headers, body: JSON.stringify(putBody) });
+  if (!putRes.ok) {
+    const t = await putRes.text();
+    throw new Error(`GitHub write ${putRes.status}: ${t}`);
+  }
+}
+
+// Stream a CSV file from GitHub (via Worker for CORS)
+async function githubCsvStream(env, path, cors) {
+  const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = env;
+  const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${encodeURIComponent(GH_BRANCH)}/${path}`;
+  const res = await fetch(url, { headers: GH_TOKEN ? { "Authorization": `Bearer ${GH_TOKEN}` } : {} });
+  if (!res.ok) {
+    const t = await res.text();
+    return json({ error: `GitHub ${res.status}`, detail: t }, res.status, cors);
+  }
+  return new Response(res.body, {
+    status: 200,
+    headers: {
+      ...cors,
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `inline; filename="${path.split("/").pop() || "data.csv"}"`,
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
+/* ---------------- general helpers ---------------- */
+
 function corsHeaders(origin, allowed) {
   const h = {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Vary": "Origin"
   };
-  if (origin && allowed.includes(origin)) {
-    h["Access-Control-Allow-Origin"] = origin;
-  }
+  if (origin && allowed.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
   return h;
 }
 
@@ -208,4 +319,26 @@ function json(body, status = 200, headers = {}) {
 
 function safeText(t) {
   return t && t.length > 2048 ? t.slice(0, 2048) + "…" : t;
+}
+
+function csvEscape(val) {
+  if (val == null) return "";
+  const s = String(val);
+  const needsQuotes = /[",\r\n]/.test(s);
+  const esc = s.replace(/"/g, '""');
+  return needsQuotes ? `"${esc}"` : esc;
+}
+
+function toCsvLine(arr) {
+  return arr.map(csvEscape).join(",") + "\n";
+}
+
+// Base64 helpers for GitHub contents API
+function b64Encode(s) {
+  return btoa(unescape(encodeURIComponent(s)));
+}
+
+function b64Decode(b) {
+  const clean = (b || "").replace(/\n/g, "");
+  return decodeURIComponent(escape(atob(clean)));
 }
