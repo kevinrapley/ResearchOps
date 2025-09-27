@@ -34,30 +34,38 @@
 		 * @module ProjectsUI
 		 * @description
 		 * Projects list UI with Airtable-first read and CSV fallback.
-		 * Class-based client, lifecycle (reset/destroy), timeout/abort, batched logging,
-		 * config (no magic numbers), testable exports, and JSDoc annotations.
+		 * Adds createdAt mapping and sorts newest-first. Class-based client,
+		 * lifecycle (reset/destroy), timeout/abort, batched logging, and JSDoc.
 		 */
 
-		/** =========================
-		 * Configuration (no magic numbers)
+		/* =========================
+		 * @section Configuration
 		 * ========================= */
 		const CONFIG = Object.freeze({
-			// Use relative URLs so this works on any host without CORS pain
+			API_BASE: "", // empty = same origin (recommended)
 			FETCH_TIMEOUT_MS: 12_000,
 			LOG_BATCH_INTERVAL_MS: 500,
 			CACHE: "no-store",
 			SHOW_SOURCE_NOTE: false
 		});
 
-		/** =========================
-		 * Lightweight Event Emitter
+		/* =========================
+		 * @section Utilities
 		 * ========================= */
+		const apiBase = CONFIG.API_BASE || `${location.origin}`;
+
+		/** Parse a date safely to ms (NaN -> 0). */
+		function toMs(d) {
+			const n = Date.parse(d);
+			return Number.isFinite(n) ? n : 0;
+		}
+
 		/**
-		 * @typedef {Object} Listener
-		 * @property {(payload:any)=>void} fn
-		 */
+		* @class Emitter
+ 		* @classdesc Lightweight emitter.
+ 		*/
 		class Emitter {
-			/** @type {Record<string, Listener[]>} */
+			/** @type {Record<string, Array<{fn:Function}>>} */
 			#m = Object.create(null);
 			on(evt, fn) {
 				(this.#m[evt] ||= []).push({ fn }); return () => this.off(evt, fn); }
@@ -67,9 +75,10 @@
 			reset() { this.#m = Object.create(null); }
 		}
 
-		/** =========================
-		 * Batched Logger (console)
-		 * ========================= */
+		/**
+		* @class BatchedLogger
+ 		* @classdesc Batched console logger.
+ 		*/
 		class BatchedLogger {
 			#q = [];
 			#timer = null;
@@ -97,10 +106,13 @@
 			destroy() { this.reset(); }
 		}
 
-		/** =========================
-		 * CSV helpers
+		/* =========================
+		 * @section CSV helpers
 		 * ========================= */
-		/** @param {string} text */
+		 
+		/**
+		* @function parseCSV
+ 		*/
 		function parseCSV(text) {
 			const rows = [];
 			let row = [],
@@ -127,9 +139,16 @@
 		}
 
 		/**
-		 * @param {string[]} header
-		 * @param {string[]} row
-		 */
+		* @function safeJsonArray
+ 		*/
+		function safeJsonArray(s) {
+			try { const v = JSON.parse(String(s)); return Array.isArray(v) ? v : []; } catch { return []; }
+		}
+
+		/**
+		* @function mapProjectRow
+		* @description Map CSV row -> UI model (adds createdAt)
+ 		*/
 		function mapProjectRow(header, row) {
 			const idx = (name) => header.indexOf(name);
 			const get = (name) => { const i = idx(name); return i >= 0 ? (row[i] ?? "") : ""; };
@@ -138,12 +157,8 @@
 			const description = get("Description");
 			const phase = get("Phase") || "Discovery";
 			const status = get("Status") || "Planning research";
-
-			const objectives = (get("Objectives") || "")
-				.split("|").map(s => s.trim()).filter(Boolean);
-			const user_groups = (get("UserGroups") || "")
-				.split("|").map(s => s.trim()).filter(Boolean);
-
+			const objectives = (get("Objectives") || "").split("|").map(s => s.trim()).filter(Boolean);
+			const user_groups = (get("UserGroups") || "").split("|").map(s => s.trim()).filter(Boolean);
 			let stakeholders = [];
 			try { stakeholders = JSON.parse(get("Stakeholders") || "[]"); } catch { stakeholders = []; }
 
@@ -154,13 +169,14 @@
 				stakeholders,
 				objectives,
 				user_groups,
+				createdAt: get("CreatedAt") || "", // <- used for sorting
 				['rops:servicePhase']: phase,
 				['rops:projectStatus']: status
 			};
 		}
 
-		/** =========================
-		 * Projects Data Client
+		/* =========================
+		 * @section Projects Data Client
 		 * ========================= */
 		/**
 		 * @typedef {Object} UIProject
@@ -170,40 +186,34 @@
 		 * @property {Array<{name:string,role?:string,email?:string}>} stakeholders
 		 * @property {string[]} objectives
 		 * @property {string[]} user_groups
+		 * @property {string} createdAt
 		 * @property {string} ['rops:servicePhase']
 		 * @property {string} ['rops:projectStatus']
 		 */
 
 		/**
-		 * Data client to fetch projects from Airtable (primary) or CSV (fallback).
-		 * Provides lifecycle, state, and structured logging.
-		 */
+		* @class ProjectsDataClient
+ 		* @classdesc 
+ 		*/
 		class ProjectsDataClient {
+			#apiBase;
 			#emitter = new Emitter();
 			#logger = new BatchedLogger();
 			#aborts = new Set();
-
 			/** @type {{source:'airtable'|'csv'|null, projects:UIProject[]}} */
 			state = { source: null, projects: [] };
 
-			/** Abort and clear in-flight, but keep listeners */
-			reset() {
-				for (const c of this.#aborts) c.abort();
+			constructor(apiBaseIn = apiBase) { this.#apiBase = apiBaseIn; }
+			reset() { for (const c of this.#aborts) c.abort();
 				this.#aborts.clear();
 				this.state = { source: null, projects: [] };
 				this.#logger.reset();
-				this.#emitter.emit("reset");
-			}
-
-			/** Abort, drop listeners, clear logger queue */
+				this.#emitter.emit("reset"); }
 			destroy() { this.reset();
 				this.#emitter.reset();
 				this.#logger.destroy(); }
-
-			/** Subscribe to client events */
 			on(evt, fn) { return this.#emitter.on(evt, fn); }
 
-			/** Internal fetch with timeout + abort tracking */
 			async #fetchJson(url) {
 				const ctl = new AbortController();
 				this.#aborts.add(ctl);
@@ -214,15 +224,13 @@
 					let data;
 					try { data = JSON.parse(text); } catch { data = { ok: false, parseError: true, raw: text }; }
 					return { ok: res.ok, status: res.status, data };
-				} finally {
-					clearTimeout(timer);
-					this.#aborts.delete(ctl);
-				}
+				} finally { clearTimeout(timer);
+					this.#aborts.delete(ctl); }
 			}
 
-			/** Primary: Airtable via Worker /api/projects (tolerant mapping) */
+			/** Primary: Airtable via Worker /api/projects (maps createdAt) */
 			async listFromAirtable() {
-				const url = `/api/projects`; // relative path
+				const url = `${this.#apiBase}/api/projects`;
 				this.#logger.log("info", "GET /api/projects (airtable)");
 				const { ok, status, data } = await this.#fetchJson(url);
 				if (!ok || !data?.ok) {
@@ -230,54 +238,29 @@
 					this.#logger.log("warn", m, { status, data });
 					throw new Error(m);
 				}
-
-				const projects = (data.projects || []).map((p) => {
-					// prefer UI-shaped keys; fall back to Airtable-shaped keys
-					const name = p.name ?? p.Name ?? "";
-					const description = p.description ?? p.Description ?? "";
-					const phase = p["rops:servicePhase"] ?? p.Phase ?? "";
-					const status = p["rops:projectStatus"] ?? p.Status ?? "";
-
-					// stakeholders can be array already or JSON string
-					let stakeholders = [];
-					if (Array.isArray(p.stakeholders)) stakeholders = p.stakeholders;
-					else if (Array.isArray(p.Stakeholders)) stakeholders = p.Stakeholders;
-					else if (typeof p.Stakeholders === "string" && p.Stakeholders.trim()) {
-						try { stakeholders = JSON.parse(p.Stakeholders); } catch {}
-					}
-
-					const objectives = Array.isArray(p.objectives) ?
-						p.objectives :
-						String(p.Objectives || "").split("\n").map(s => s.trim()).filter(Boolean);
-
-					const user_groups = Array.isArray(p.user_groups) ?
-						p.user_groups :
-						String(p.UserGroups || "").split(",").map(s => s.trim()).filter(Boolean);
-
-					return {
-						id: p.id || p.LocalId,
-						name,
-						description,
-						stakeholders,
-						objectives,
-						user_groups,
-						["rops:servicePhase"]: phase,
-						["rops:projectStatus"]: status
-					};
-				});
-
+				const projects = (data.projects || []).map((p) => ({
+					id: p.LocalId || p.id,
+					name: p.Name,
+					description: p.Description,
+					stakeholders: Array.isArray(p.Stakeholders) ? p.Stakeholders : p.Stakeholders ? safeJsonArray(p.Stakeholders) : [],
+					objectives: Array.isArray(p.Objectives) ? p.Objectives : p.Objectives ? String(p.Objectives).split("\n").map(s => s.trim()).filter(Boolean) : [],
+					user_groups: Array.isArray(p.UserGroups) ? p.UserGroups : p.UserGroups ? String(p.UserGroups).split(",").map(s => s.trim()).filter(Boolean) : [],
+					createdAt: p.createdAt || p.CreatedAt || "", // <- Worker now returns this; keep fallbacks
+					['rops:servicePhase']: p.Phase,
+					['rops:projectStatus']: p.Status
+				}));
 				this.state = { source: "airtable", projects };
 				this.#emitter.emit("update", this.state);
 				return projects;
 			}
 
-			/** Fallback: CSV via Worker /api/projects.csv */
+			/** Fallback: CSV via /api/projects.csv (maps CreatedAt column) */
 			async listFromCsv() {
 				const ctl = new AbortController();
 				this.#aborts.add(ctl);
 				const timer = setTimeout(() => ctl.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
 				try {
-					const res = await fetch(`/api/projects.csv`, { cache: CONFIG.CACHE, signal: ctl.signal });
+					const res = await fetch(`${this.#apiBase}/api/projects.csv`, { cache: CONFIG.CACHE, signal: ctl.signal });
 					if (!res.ok) throw new Error(`CSV fetch failed (${res.status})`);
 					const text = await res.text();
 					const rows = parseCSV(text);
@@ -294,51 +277,47 @@
 					this.state = { source: "csv", projects };
 					this.#emitter.emit("update", this.state);
 					return projects;
-				} finally {
-					clearTimeout(timer);
-					this.#aborts.delete(ctl);
-				}
+				} finally { clearTimeout(timer);
+					this.#aborts.delete(ctl); }
 			}
 
-			/** Prefer Airtable, fallback to CSV */
+			/** Prefer Airtable; fallback to CSV */
 			async listProjects() {
-				try {
-					return await this.listFromAirtable();
-				} catch (e) {
-					this.#logger.log("warn", "Falling back to CSV", { error: String(e?.message || e) });
-					return await this.listFromCsv();
-				}
+				try { return await this.listFromAirtable(); } catch (e) { this.#logger.log("warn", "Falling back to CSV", { error: String(e?.message || e) }); return await this.listFromCsv(); }
 			}
 		}
 
-		/** =========================
-		 * UI bootstrap
+		/* =========================
+		 * @section UI bootstrap
 		 * ========================= */
 		const container = document.getElementById("list");
-		const client = new ProjectsDataClient();
+		const client = new ProjectsDataClient(apiBase);
 
 		function card(p) {
 			const groups = (p.user_groups || []).map(g => `<span class="tag">${g}</span>`).join(" ");
 			return `<article class="card">
-  <h2 class="govuk-heading-m" style="margin:0">${p.name}</h2>
-  <div class="lede">Phase: ${p['rops:servicePhase']} · Status: ${p['rops:projectStatus']}</div>
-  ${p.description ? `<p>${p.description}</p>` : ""}
-  ${groups ? `<div>${groups}</div>` : ""}
-  <details style="margin-top:8px">
-    <summary class="govuk-link">Stakeholders & Objectives</summary>
-    <div><strong>Stakeholders</strong></div>
-    <ul>
-      ${(p.stakeholders || []).map(s => `<li>${s.name || ""} ${s.role || ""} ${s.email || ""}</li>`).join("") || "<li class='lede'>None</li>"}
-    </ul>
-    <div><strong>Objectives</strong></div>
-    <ul>
-      ${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
-    </ul>
-  </details>
-</article>`;
+    <h2 class="govuk-heading-m" style="margin:0">${p.name}</h2>
+    <div class="lede">Phase: ${p['rops:servicePhase']} · Status: ${p['rops:projectStatus']}</div>
+    ${p.description ? `<p>${p.description}</p>` : ""}
+    ${groups ? `<div>${groups}</div>` : ""}
+    <details style="margin-top:8px">
+      <summary class="govuk-link">Stakeholders & Objectives</summary>
+      <div><strong>Stakeholders</strong></div>
+      <ul>
+        ${(p.stakeholders || []).map(s => `<li>${s.name || ""} ${s.role || ""} ${s.email || ""}</li>`).join("") || "<li class='lede'>None</li>"}
+      </ul>
+      <div><strong>Objectives</strong></div>
+      <ul>
+        ${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
+      </ul>
+    </details>
+  </article>`;
 		}
 
 		function render(projects, source) {
+			// NEW: newest-first by createdAt (Airtable CreatedAt or record.createdTime; CSV CreatedAt column)
+			projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+
 			if (!projects.length) {
 				container.innerHTML = '<p class="lede">No projects yet. <a class="govuk-link" href="./start.html">Create one</a>.</p>';
 				return;
@@ -361,40 +340,14 @@
 			}
 		})();
 
-		/** =========================
-		 * Test / Mock utilities export
+		/* =========================
+		 * @section Test / Mock exports
 		 * ========================= */
-		/**
-		 * @typedef {Object} MockProject
-		 * @property {string} name
-		 * @property {string} description
-		 * @property {string} phase
-		 * @property {string} status
-		 */
-		function createMockProjects(n = 3) {
-			const out = [];
-			for (let i = 0; i < n; i++) {
-				out.push({
-					id: `mock-${i}`,
-					name: `Mock project ${i + 1}`,
-					description: `Description ${i + 1}`,
-					stakeholders: [],
-					objectives: ["Objective A", "Objective B"],
-					user_groups: ["Staff", "Citizens"],
-					['rops:servicePhase']: "Discovery",
-					['rops:projectStatus']: "Planning research"
-				});
-			}
-			return out;
-		}
-
-		// Expose testable bits
 		window.__rops = Object.freeze({
 			CONFIG,
 			ProjectsDataClient,
 			parseCSV,
-			mapProjectRow,
-			createMockProjects,
+			toMs,
 			reset: () => client.reset(),
 			destroy: () => client.destroy()
 		});
