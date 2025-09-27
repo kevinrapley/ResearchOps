@@ -90,7 +90,7 @@ class BatchLogger {
 	 */
 	log(level, msg, meta) {
 		if (this._destroyed) return;
-		[this._buf.push({ t: Date.now(), level, msg, meta })];
+		this._buf.push({ t: Date.now(), level, msg, meta });
 		if (this._buf.length >= this._batchSize) this.flush();
 	}
 
@@ -356,7 +356,18 @@ class ResearchOpsService {
 			};
 		});
 
-		projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+		// Deterministic order: createdAt (desc), name (asc CI), id/LocalId (asc)
+		projects.sort((a, b) => {
+			const d = toMs(b.createdAt) - toMs(a.createdAt);
+			if (d !== 0) return d;
+			const an = String(a.name || "").toLocaleLowerCase();
+			const bn = String(b.name || "").toLocaleLowerCase();
+			if (an < bn) return -1;
+			if (an > bn) return 1;
+			const ai = String(a.id || a.LocalId || "");
+			const bi = String(b.id || b.LocalId || "");
+			return ai.localeCompare(bi);
+		});
 
 		return this.json({ ok: true, projects }, 200, this.corsHeaders(origin));
 	}
@@ -385,6 +396,7 @@ class ResearchOpsService {
 		if (!payload.description) errs.push("description");
 		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
 
+		// Airtable (system of record)
 		const projectFields = {
 			Org: payload.org || "Home Office Biometrics",
 			Name: payload.name,
@@ -407,6 +419,7 @@ class ResearchOpsService {
 		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
 		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
 
+		// 1) Create project
 		const pRes = await fetchWithTimeout(atProjectsUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -422,6 +435,7 @@ class ResearchOpsService {
 		const projectId = pJson.records?.[0]?.id;
 		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
 
+		// 2) Optional details
 		let detailId = null;
 		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
 		if (hasDetails) {
@@ -449,6 +463,7 @@ class ResearchOpsService {
 			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
 		}
 
+		// 3) GitHub CSV append (best-effort; never block success)
 		let csvOk = true,
 			csvError = null;
 		try {
@@ -563,28 +578,30 @@ class ResearchOpsService {
 		const studyId = sJson.records?.[0]?.id;
 		if (!studyId) return this.json({ error: "Airtable response missing study id" }, 502, this.corsHeaders(origin));
 
-		let csvOk = true,
-			csvError = null;
-		try {
-			const nowIso = new Date().toISOString();
-			const row = [
-				studyId,
-				payload.project_airtable_id,
-				payload.study_id || "",
-				payload.method || "",
-				payload.status || "",
-				payload.description || "",
-				nowIso
-			];
-			await this.githubCsvAppend({
-				path: this.env.GH_PATH_STUDIES,
-				header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
-				row
-			});
-		} catch (e) {
-			csvOk = false;
-			csvError = String(e?.message || e);
-			this.log.warn("github.csv.append.fail.study", { err: csvError });
+		// GitHub CSV append (best-effort; guard missing GH_PATH_STUDIES)
+		let csvOk = true, csvError = null;
+		if (this.env.GH_PATH_STUDIES) {
+			try {
+				const nowIso = new Date().toISOString();
+				const row = [
+					studyId,
+					payload.project_airtable_id,
+					payload.study_id || "",
+					payload.method || "",
+					payload.status || "",
+					payload.description || "",
+					nowIso
+				];
+				await this.githubCsvAppend({
+					path: this.env.GH_PATH_STUDIES,
+					header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
+					row
+				});
+			} catch (e) {
+				csvOk = false;
+				csvError = String(e?.message || e);
+				this.log.warn("github.csv.append.fail.study", { err: csvError });
+			}
 		}
 
 		if (this.env.AUDIT === "true") this.log.info("study.created", { studyId, csvOk });
@@ -640,6 +657,7 @@ class ResearchOpsService {
 			"Content-Type": "application/json"
 		};
 
+		// Read current file (to get sha)
 		let sha = undefined,
 			content = "",
 			exists = false;
@@ -725,6 +743,7 @@ export default {
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
 			}
 
+			// Static assets (SPA fallback)
 			let resp = await env.ASSETS.fetch(request);
 			if (resp.status === 404) {
 				const indexReq = new Request(new URL("/index.html", url), request);
@@ -793,6 +812,7 @@ export function makeJsonRequest(path, body, init = {}) {
 		body: JSON.stringify(body)
 	};
 
+	// Copy other keys (like mode, credentials, etc.)
 	for (const k in init) {
 		if (k !== "headers") reqInit[k] = init[k];
 	}
