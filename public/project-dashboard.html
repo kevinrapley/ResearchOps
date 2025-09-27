@@ -269,6 +269,16 @@
 			return Number.isFinite(n) ? n : 0;
 		}
 
+		/**
+		 * Parse JSON safely.
+		 * @function
+		 * @param {string} t
+		 * @returns {any}
+		 */
+		function safeJson(t) {
+			try { return JSON.parse(t); } catch { return {}; }
+		}
+
 		/* =========================
 		 * @section Data loading
 		 * ========================= */
@@ -282,8 +292,9 @@
 		 */
 		async function loadProjects() {
 			const res = await fetch("/api/projects", { cache: "no-store" });
+			const text = await res.text();
 			/** @type {{ok?:boolean, projects?:any[]}} */
-			const js = await res.json().catch(() => ({}));
+			const js = safeJson(text);
 
 			if (!res.ok || !js?.ok) {
 				throw new Error(`Projects fetch failed (${res.status})`);
@@ -300,21 +311,19 @@
 					phase: p["rops:servicePhase"] || p.Phase || "",
 					status: p["rops:projectStatus"] || p.Status || "",
 					objectives: Array.isArray(p.objectives) ?
-						p.objectives :
-						String(p.Objectives ?? p.objectives ?? "")
+						p.objectives : String(p.Objectives ?? p.objectives ?? "")
 						.split(/\r?\n/)
 						.filter(Boolean),
 					user_groups: Array.isArray(p.user_groups) ?
-						p.user_groups :
-						String(p.UserGroups ?? p.user_groups ?? "")
+						p.user_groups : String(p.UserGroups ?? p.user_groups ?? "")
 						.split(",")
 						.map(s => s.trim())
 						.filter(Boolean),
 					stakeholders: Array.isArray(p.stakeholders) ?
-						p.stakeholders :
-						(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
 					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
-				}));
+				})
+			);
 		}
 
 		/**
@@ -478,11 +487,14 @@
 
 				const mainEl = $("main");
 				const projectAirtableId = mainEl?.dataset?.projectAirtableId || "";
-
 				if (!projectAirtableId) {
 					alert("Missing project id; cannot create study.");
 					return;
 				}
+
+				// Busy state
+				submitBtn.disabled = true;
+				submitBtn.setAttribute("aria-busy", "true");
 
 				try {
 					const res = await fetch("/api/studies", {
@@ -495,15 +507,24 @@
 							status: "Planned"
 						})
 					});
-					const js = await res.json().catch(() => ({}));
-					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
+					const bodyText = await res.text();
+					const js = safeJson(bodyText);
+
+					if (!res.ok || !js?.ok) {
+						const msg = js?.error || `HTTP ${res.status}`;
+						throw new Error(msg);
+					}
 
 					close();
 					alert("Study created.");
+					// TODO: refresh studies list
 				} catch (err) {
 					// eslint-disable-next-line no-console
 					console.error(err);
 					alert("Could not create study.");
+				} finally {
+					submitBtn.removeAttribute("aria-busy");
+					submitBtn.disabled = false;
 				}
 			});
 		})();
