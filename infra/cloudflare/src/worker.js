@@ -51,7 +51,7 @@ async function handleApi(request, env, ctx) {
     try { payload = await request.json(); }
     catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(origin, allowed)); }
 
-    // Required (Step 1)
+    // Required
     const errs = [];
     if (!payload.name) errs.push("name");
     if (!payload.description) errs.push("description");
@@ -59,7 +59,7 @@ async function handleApi(request, env, ctx) {
       return json({ error: "Missing required fields: " + errs.join(", ") }, 400, corsHeaders(origin, allowed));
     }
 
-    // Send strings for Airtable single-selects (labels must match options in base)
+    // Send plain strings for Single selects (must match Airtable exactly)
     const projectFields = {
       Org: payload.org || "Home Office Biometrics",
       Name: payload.name,
@@ -69,7 +69,6 @@ async function handleApi(request, env, ctx) {
       Objectives: (payload.objectives || []).join("\n"),
       UserGroups: (payload.user_groups || []).join(", "),
       Stakeholders: JSON.stringify(payload.stakeholders || []),
-      // Do NOT send CreatedAt if it's a computed "Created time" field
       LocalId: payload.id || ""
     };
 
@@ -116,7 +115,7 @@ async function handleApi(request, env, ctx) {
 
     if (hasDetails) {
       const detailsFields = {
-        Project: [projectId],                              // linked record expects array of record IDs
+        Project: [projectId],
         "Lead Researcher": payload.lead_researcher || "",
         "Lead Researcher Email": payload.lead_researcher_email || "",
         Notes: payload.notes || ""
@@ -136,7 +135,7 @@ async function handleApi(request, env, ctx) {
       });
       const dText = await dRes.text();
       if (!dRes.ok) {
-        // rollback to avoid orphan
+        // rollback
         try {
           await fetch(`${atProjectsUrl}/${projectId}`, {
             method: "DELETE",
@@ -156,7 +155,7 @@ async function handleApi(request, env, ctx) {
   }
 
   // ====================================================================================
-  // GET /api/projects.csv  -> Stream CSV from SharePoint
+  // GET /api/projects.csv  -> Proxy CSV from SharePoint
   // ====================================================================================
   if (url.pathname === "/api/projects.csv" && request.method === "GET") {
     const spUrl = env.SHAREPOINT_CSV_URL;
@@ -165,9 +164,7 @@ async function handleApi(request, env, ctx) {
     }
 
     const headers = {};
-    if (env.SHAREPOINT_BEARER) {
-      headers["Authorization"] = `Bearer ${env.SHAREPOINT_BEARER}`;
-    }
+    if (env.SHAREPOINT_BEARER) headers["Authorization"] = `Bearer ${env.SHAREPOINT_BEARER}`;
 
     const spRes = await fetch(spUrl, { headers });
     if (!spRes.ok) {
