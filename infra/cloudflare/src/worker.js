@@ -82,7 +82,7 @@ async function handleApi(request, env, ctx) {
 
     const base = env.AIRTABLE_BASE_ID;
     const tProjects = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-    const tDetails  = encodeURIComponent(env.AIRTABLE_TABLE_PROJECT_DETAILS);
+    const tDetails  = encodeURIComponent(env.AIRTABLE_TABLE_DETAILS);
 
     const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
     const atDetailsUrl  = `https://api.airtable.com/v0/${base}/${tDetails}`;
