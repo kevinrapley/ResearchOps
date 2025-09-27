@@ -277,3 +277,294 @@ textarea {
 		animation: none !important;
 		}
 	}
+
+/* ==========================================================================
+   Project Dashboard — page-specific additions
+   ========================================================================== */
+
+/* Hero / page header
+   -------------------------------------------------------------------------- */
+
+.dashboard-hero {
+	padding: 24px 24px 8px;
+	border-bottom: 1px solid #b1b4b6;
+	background: #fff;
+	}
+
+.dashboard-eyebrow {
+	margin: 0 0 4px;
+	color: #00703c;            /* HO green */
+	font-weight: 700;
+	font-size: 0.95rem;
+	letter-spacing: .02em;
+	text-transform: uppercase;
+	}
+
+.dashboard-title {
+	margin: 0 0 4px;
+	}
+
+.dashboard-subtitle {
+	margin: 0;
+	color: #505a5f;
+	}
+
+/* Breadcrumbs
+   -------------------------------------------------------------------------- */
+
+.dashboard-breadcrumbs {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin: 12px 0 0;
+	font-size: 0.95rem;
+	color: #505a5f;
+	}
+
+.dashboard-breadcrumbs a {
+	text-decoration: none;
+	}
+
+.dashboard-breadcrumbs a:hover,
+.dashboard-breadcrumbs a:focus {
+	text-decoration: underline;
+	}
+
+/* Top actions (Edit + Return)
+   -------------------------------------------------------------------------- */
+
+.actions-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 12px 24px;
+	border-bottom: 1px solid #b1b4b6;
+	background: #fff;
+	}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	border-radius: 6px;
+	border: 2px solid transparent;
+	font-weight: 700;
+	font-size: 16px;
+	cursor: pointer;
+	text-decoration: none;
+	background: #1d70b8;       /* GOV.UK brand */
+	color: #fff;
+	}
+
+.btn:hover {
+	background: #003078;       /* GOV.UK brand hover */
+	color: #fff;
+	}
+
+.btn:focus {
+	outline: 3px solid #ffbf47; /* GOV.UK focus */
+	outline-offset: 0;
+	}
+
+.btn--secondary {
+	background: #fff;
+	color: #0b0c0c;
+	border-color: #b1b4b6;
+	}
+
+.btn--secondary:hover {
+	border-color: #1d70b8;
+	color: #0b0c0c;
+	}
+
+.btn--outline {
+	background: #fff;
+	color: #1d70b8;
+	border-color: #1d70b8;
+	}
+
+.btn--outline:hover {
+	background: #f3f2f1;
+	}
+
+/* Sublink Button Board
+   -------------------------------------------------------------------------- */
+
+.board {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+	padding: 16px 24px;
+	background: #fff;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+@media (min-width: 740px) {
+	.board {
+		grid-template-columns: repeat(4, 1fr);
+		}
+	}
+
+.board__item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 56px;
+	border: 1px solid #b1b4b6;
+	border-radius: 8px;
+	background: #fff;
+	text-decoration: none;
+	font-weight: 700;
+	}
+
+.board__item:hover {
+	border-color: #1d70b8;
+	}
+
+.board__item:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	}
+
+/* Key information (Service Stage, etc.)
+   -------------------------------------------------------------------------- */
+
+.kv {
+	padding: 16px 24px;
+	background: #fff;
+	}
+
+.kv__list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px 24px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+@media (min-width: 740px) {
+	.kv__list {
+		grid-template-columns: 220px 1fr;
+		}
+	}
+
+.kv__term {
+	font-weight: 700;
+	color: #0b0c0c;
+	}
+
+.kv__desc {
+	color: #0b0c0c;
+	}
+
+/* Dashboard sections
+   -------------------------------------------------------------------------- */
+
+.section {
+	margin: 16px 0 24px;
+	border: 1px solid #b1b4b6;
+	border-radius: 6px;
+	background: #fff;
+	}
+
+.section__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 16px 8px;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+.section__title {
+	margin: 0;
+	}
+
+.section__body {
+	padding: 16px;
+	}
+
+.section__grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+	}
+
+@media (min-width: 900px) {
+	.section__grid {
+		grid-template-columns: 1fr 1fr;
+		}
+	}
+
+/* Lists (stakeholders, objectives, etc.)
+   -------------------------------------------------------------------------- */
+
+.list-unstyled {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.list-divided > li + li {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 8px;
+	margin-top: 8px;
+	}
+
+/* Tag pills reuse .tag from cards */
+
+/* Tables (for uploads / participants if needed)
+   -------------------------------------------------------------------------- */
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	}
+
+.table th,
+.table td {
+	padding: 8px 10px;
+	border-top: 1px solid #b1b4b6;
+	text-align: left;
+	}
+
+.table th {
+	font-weight: 700;
+	}
+
+/* Bulk upload / dropzone
+   -------------------------------------------------------------------------- */
+
+.dropzone {
+	display: grid;
+	place-items: center;
+	min-height: 120px;
+	padding: 16px;
+	border: 2px dashed #b1b4b6;
+	border-radius: 6px;
+	background: #f3f2f1;
+	color: #505a5f;
+	text-align: center;
+	}
+
+.dropzone input[type="file"] {
+	display: none;
+	}
+
+/* Links inside dashboard cards
+   -------------------------------------------------------------------------- */
+
+.section a:focus,
+.kv a:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	}
+
+/* Ensure the project title link is reachable and obvious on focus */
+.project-title .govuk-link {
+	position: relative;
+	z-index: 1;
+	}
