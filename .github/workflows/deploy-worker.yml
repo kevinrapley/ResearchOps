@@ -22,6 +22,7 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           wranglerVersion: '4.40.2'
           workingDirectory: infra/cloudflare
-          command: deploy --config infra/cloudflare/wrangler.toml
+          command: deploy --config wrangler.toml
           secrets: |
             GH_TOKEN=${{ secrets.GH_PAT }}
+            AIRTABLE_API_KEY=${{ secrets.AIRTABLE_API_KEY }}
