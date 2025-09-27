@@ -57,17 +57,28 @@ body {
 	text-transform: none;
 	}
 
-/* Title link inherits GOV.UK link colours from govuk-colours.css */
+/* =========================
+   Project card titles
+   ========================= */
+
 .project-title {
 	margin: 0;
 	}
 
 .project-title .govuk-link {
+	color: #0b0c0c;
 	text-decoration: none;
+	font-weight: 700;
 	}
 
-.project-title .govuk-link:hover {
+.project-title .govuk-link:hover,
+.project-title .govuk-link:focus {
+	color: #0b0c0c;
 	text-decoration: underline;
+	}
+
+.project-title .govuk-link:visited {
+	color: #0b0c0c; /* do not change visited colour */
 	}
 
 /* Meta (Phase/Status) — strong labels, inline pairs */
