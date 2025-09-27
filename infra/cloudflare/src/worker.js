@@ -8,6 +8,8 @@
  * - List projects (Airtable, newest-first via `record.createdTime`): `GET /api/projects`
  * - Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write):
  *   `POST /api/projects`
+ * - Create study (Airtable primary; best-effort GitHub CSV dual-write):
+ *   `POST /api/studies`
  * - CSV streaming from GitHub: `GET /api/projects.csv`, `GET /api/project-details.csv`
  *
  * @exports default
@@ -21,12 +23,14 @@
  * @property {string} AIRTABLE_BASE_ID
  * @property {string} AIRTABLE_TABLE_PROJECTS
  * @property {string} AIRTABLE_TABLE_DETAILS
+ * @property {string} AIRTABLE_TABLE_STUDIES
  * @property {string} AIRTABLE_API_KEY
  * @property {string} GH_OWNER
  * @property {string} GH_REPO
  * @property {string} GH_BRANCH
  * @property {string} GH_PATH_PROJECTS
  * @property {string} GH_PATH_DETAILS
+ * @property {string} GH_PATH_STUDIES
  * @property {string} GH_TOKEN
  * @property {any}    ASSETS
  */
@@ -86,7 +90,7 @@ class BatchLogger {
 	 */
 	log(level, msg, meta) {
 		if (this._destroyed) return;
-		this._buf.push({ t: Date.now(), level, msg, meta });
+		[this._buf.push({ t: Date.now(), level, msg, meta })];
 		if (this._buf.length >= this._batchSize) this.flush();
 	}
 
@@ -352,7 +356,6 @@ class ResearchOpsService {
 			};
 		});
 
-		// Guarantee newest-first for the UI
 		projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 
 		return this.json({ ok: true, projects }, 200, this.corsHeaders(origin));
@@ -382,7 +385,6 @@ class ResearchOpsService {
 		if (!payload.description) errs.push("description");
 		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
 
-		// Airtable (system of record)
 		const projectFields = {
 			Org: payload.org || "Home Office Biometrics",
 			Name: payload.name,
@@ -405,7 +407,6 @@ class ResearchOpsService {
 		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
 		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
 
-		// 1) Create project
 		const pRes = await fetchWithTimeout(atProjectsUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -421,7 +422,6 @@ class ResearchOpsService {
 		const projectId = pJson.records?.[0]?.id;
 		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
 
-		// 2) Optional details
 		let detailId = null;
 		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
 		if (hasDetails) {
@@ -449,7 +449,6 @@ class ResearchOpsService {
 			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
 		}
 
-		// 3) GitHub CSV append (best-effort; never block success)
 		let csvOk = true,
 			csvError = null;
 		try {
@@ -495,6 +494,101 @@ class ResearchOpsService {
 
 		if (this.env.AUDIT === "true") this.log.info("project.created", { airtableId: projectId, hasDetails, csvOk });
 		return this.json({ ok: true, project_id: projectId, detail_id: detailId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a Study linked to a Project (Airtable primary) and append to GitHub CSV (best-effort).
+	 * @async
+	 * @function
+	 * @param {Request} request
+	 * @param {string} origin
+	 * @returns {Promise<Response>}
+	 * @throws {Error} On network or Airtable API failure.
+	 * @example
+	 * // Payload:
+	 * // {
+	 * //   "project_airtable_id": "recXXXXXXXXXXXXXX",   // required
+	 * //   "method": "User Interview",                   // required
+	 * //   "description": "Short study description",     // required
+	 * //   "status": "Planned",                          // optional
+	 * //   "study_id": "local-uuid-1234"                 // optional
+	 * // }
+	 */
+	async createStudy(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const errs = [];
+		if (!payload.project_airtable_id) errs.push("project_airtable_id");
+		if (!payload.method) errs.push("method");
+		if (!payload.description) errs.push("description");
+		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atStudiesUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
+
+		const fields = {
+			Project: [payload.project_airtable_id],
+			Method: payload.method,
+			Description: payload.description,
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			"Study ID": typeof payload.study_id === "string" ? payload.study_id : undefined
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+
+		const sRes = await fetchWithTimeout(atStudiesUrl, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+		const sText = await sRes.text();
+		if (!sRes.ok) {
+			this.log.error("airtable.study.create.fail", { status: sRes.status, text: safeText(sText) });
+			return this.json({ error: `Airtable ${sRes.status}`, detail: safeText(sText) }, sRes.status, this.corsHeaders(origin));
+		}
+
+		let sJson;
+		try { sJson = JSON.parse(sText); } catch { sJson = { records: [] }; }
+		const studyId = sJson.records?.[0]?.id;
+		if (!studyId) return this.json({ error: "Airtable response missing study id" }, 502, this.corsHeaders(origin));
+
+		let csvOk = true,
+			csvError = null;
+		try {
+			const nowIso = new Date().toISOString();
+			const row = [
+				studyId,
+				payload.project_airtable_id,
+				payload.study_id || "",
+				payload.method || "",
+				payload.status || "",
+				payload.description || "",
+				nowIso
+			];
+			await this.githubCsvAppend({
+				path: this.env.GH_PATH_STUDIES,
+				header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
+				row
+			});
+		} catch (e) {
+			csvOk = false;
+			csvError = String(e?.message || e);
+			this.log.warn("github.csv.append.fail.study", { err: csvError });
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("study.created", { studyId, csvOk });
+		return this.json({ ok: true, study_id: studyId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
 	}
 
 	/**
@@ -546,7 +640,6 @@ class ResearchOpsService {
 			"Content-Type": "application/json"
 		};
 
-		// Read current file (to get sha)
 		let sha = undefined,
 			content = "",
 			exists = false;
@@ -620,6 +713,9 @@ export default {
 				if (url.pathname === "/api/projects" && request.method === "POST") {
 					return service.createProject(request, origin);
 				}
+				if (url.pathname === "/api/studies" && request.method === "POST") {
+					return service.createStudy(request, origin);
+				}
 				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
 				}
@@ -629,7 +725,6 @@ export default {
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
 			}
 
-			// Static assets (SPA fallback)
 			let resp = await env.ASSETS.fetch(request);
 			if (resp.status === 404) {
 				const indexReq = new Request(new URL("/index.html", url), request);
@@ -665,12 +760,14 @@ export function createMockEnv(overrides = {}) {
 		AIRTABLE_BASE_ID: "app_base",
 		AIRTABLE_TABLE_PROJECTS: "Projects",
 		AIRTABLE_TABLE_DETAILS: "Project Details",
+		AIRTABLE_TABLE_STUDIES: "Project Studies",
 		AIRTABLE_API_KEY: "key",
 		GH_OWNER: "owner",
 		GH_REPO: "repo",
 		GH_BRANCH: "main",
 		GH_PATH_PROJECTS: "data/projects.csv",
 		GH_PATH_DETAILS: "data/project-details.csv",
+		GH_PATH_STUDIES: "data/studies.csv",
 		GH_TOKEN: "gh",
 		ASSETS: { fetch: () => new Response("not-found", { status: 404 }) },
 		...overrides
@@ -696,7 +793,6 @@ export function makeJsonRequest(path, body, init = {}) {
 		body: JSON.stringify(body)
 	};
 
-	// Copy other keys (like mode, credentials, etc.)
 	for (const k in init) {
 		if (k !== "headers") reqInit[k] = init[k];
 	}
