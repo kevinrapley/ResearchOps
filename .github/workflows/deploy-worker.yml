@@ -4,7 +4,7 @@ name: Deploy Cloudflare Worker
 on:
   push:
     branches: [ main, start-csv ]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   deploy:
@@ -20,7 +20,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          wranglerVersion: '4.40.2'e
+          wranglerVersion: '4.40.2'
+          workingDirectory: infra/cloudflare
           command: deploy --config infra/cloudflare/wrangler.toml
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          secrets: |
+            GH_TOKEN=${{ secrets.GH_PAT }}
