@@ -478,7 +478,7 @@ class ResearchOpsService {
 		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
 		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
 
-		/** @inner Create main project record in Airtable */
+		/** @inner 1) Create main project record in Airtable */
 		const pRes = await fetchWithTimeout(atProjectsUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -494,7 +494,7 @@ class ResearchOpsService {
 		const projectId = pJson.records?.[0]?.id;
 		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
 
-		/** @inner Optional details record creation if any detail fields are present */
+		/** @inner 2) Optional details record creation if any detail fields are present */
 		let detailId = null;
 		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
 		if (hasDetails) {
@@ -529,7 +529,7 @@ class ResearchOpsService {
 			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
 		}
 
-		/** @inner Best-effort GitHub CSV append(s) - non-blocking failures */
+		/** @inner 3) Best-effort GitHub CSV append(s) - non-blocking failures */
 		let csvOk = true,
 			csvError = null;
 		try {
@@ -781,6 +781,7 @@ class ResearchOpsService {
 	 * return service.streamCsv(origin, env.GH_PATH_PROJECTS);
 	 */
 	async streamCsv(origin, path) {
+		/** @inner Extract GitHub config and build API URL with headers */
 		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
 		const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
 		const headers = {
@@ -790,16 +791,19 @@ class ResearchOpsService {
 		};
 
 		try {
+			/** @inner Fetch the CSV file from GitHub with timeout protection */
 			const getRes = await fetchWithTimeout(
 				`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers },
 				this.cfg.TIMEOUT_MS
 			);
 
+			/** @inner Handle file not found gracefully */
 			if (getRes.status === 404) {
 				this.log.warn("csv.not_found", { path });
 				return this.json({ error: "CSV file not found" }, 404, this.corsHeaders(origin));
 			}
 
+			/** @inner Handle other HTTP errors from GitHub API */
 			if (!getRes.ok) {
 				const text = await getRes.text();
 				this.log.error("github.csv.read.fail", { status: getRes.status, text: safeText(text) });
@@ -809,9 +813,11 @@ class ResearchOpsService {
 				);
 			}
 
+			/** @inner Parse successful response and decode base64 content */
 			const js = await getRes.json();
 			const content = b64Decode(js.content);
 
+			/** @inner Build CSV response headers with proper content type and CORS */
 			const csvHeaders = {
 				"Content-Type": "text/csv; charset=utf-8",
 				"Content-Disposition": `attachment; filename="${path.split('/').pop() || 'data.csv'}"`,
@@ -822,6 +828,7 @@ class ResearchOpsService {
 			return new Response(content, { status: 200, headers: csvHeaders });
 
 		} catch (e) {
+			/** @inner Handle any unexpected exceptions during CSV streaming */
 			this.log.error("csv.stream.error", { err: String(e?.message || e), path });
 			return this.json({ error: "Failed to stream CSV", detail: String(e?.message || e) },
 				500,
@@ -959,7 +966,7 @@ export default {
 					return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
 				}
 
-				/** @inner Route to appropriate service methods */
+				// Route to appropriate service methods
 				/** @inner Health endpoint */
 				if (url.pathname === "/api/health") return service.health(origin);
 
