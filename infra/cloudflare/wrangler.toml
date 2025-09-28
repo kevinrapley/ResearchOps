@@ -15,6 +15,7 @@ ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://loc
 AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
 AIRTABLE_TABLE_PROJECTS = "Projects"
 AIRTABLE_TABLE_DETAILS  = "Project Details"
+AIRTABLE_TABLE_STUDIES    = "Project Studies"
 AUDIT = "true"
 
 # GitHub CSV repo details
@@ -23,3 +24,4 @@ GH_REPO  = "ResearchOps"
 GH_BRANCH = "main"
 GH_PATH_PROJECTS = "data/projects.csv"
 GH_PATH_DETAILS  = "data/project-details.csv"
+GH_PATH_STUDIES  = "data/studies.csv"
