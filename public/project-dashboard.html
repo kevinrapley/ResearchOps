@@ -190,8 +190,6 @@
 		/**
 		 * @file project-dashboard.bootstrap.js (inline)
 		 * @module ProjectDashboard
-		 * @summary Loads a project, renders it, lists its studies, and provides an accessible
-		 *          “Add Study” modal that POSTs to /api/studies.
 		 */
 
 		/* =========================
@@ -215,8 +213,8 @@
 
 		/**
 		 * @typedef {Object} UIStudy
-		 * @property {string} id            // Airtable record id
-		 * @property {string} study_id      // Local Study ID (your UUID)
+		 * @property {string} id
+		 * @property {string} study_id
 		 * @property {string} method
 		 * @property {string} status
 		 * @property {string} description
@@ -227,64 +225,32 @@
 		 * @section Tiny helpers
 		 * ========================= */
 
-		/**
-		 * querySelector shorthand.
-		 * @param {string} sel
-		 * @param {ParentNode} [root=document]
-		 * @returns {HTMLElement|null}
-		 */
+		/** @param {string} sel @param {ParentNode} [root=document] */
 		function $(sel, root = document) { return root.querySelector(sel); }
-
-		/**
-		 * querySelectorAll → Array shorthand.
-		 * @param {string} sel
-		 * @param {ParentNode} [root=document]
-		 * @returns {HTMLElement[]}
-		 */
+		/** @param {string} sel @param {ParentNode} [root=document] */
 		function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
-		/**
-		 * Set text with fallback when empty.
-		 * @param {string} sel
-		 * @param {unknown} value
-		 * @param {string} [fallback="—"]
-		 * @returns {void}
-		 */
+		/** @param {string} sel @param {unknown} value @param {string} [fallback="—"] */
 		function setText(sel, value, fallback = "—") {
 			const el = $(sel);
 			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
 		}
 
-		/**
-		 * Date → epoch ms (invalid → 0).
-		 * @param {string} d
-		 * @returns {number}
-		 */
+		/** @param {string} d */
 		function toMs(d) { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; }
 
-		/**
-		 * UUID (fallback to timestamp).
-		 * @returns {string}
-		 */
-		function uid() {
-			try { return crypto.randomUUID(); } catch { return `study_${Date.now()}`; }
-		}
+		function uid() { try { return crypto.randomUUID(); } catch { return `study_${Date.now()}`; } }
 
 		/* =========================
 		 * @section Data loading
 		 * ========================= */
 
-		/**
-		 * Load projects from the Worker API and normalise.
-		 * @returns {Promise<UIProject[]>}
-		 * @throws {Error}
-		 */
+		/** @returns {Promise<UIProject[]>} */
 		async function loadProjects() {
 			const res = await fetch("/api/projects", { cache: "no-store" });
 			/** @type {{ok?:boolean, projects?:any[]}} */
 			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
-
+			if (!res.ok || !js?.ok) throw new Error(`Projects HTTP ${res.status}`);
 			return (js.projects || []).map(p => /** @type {UIProject} */ ({
 				id: p.id || p.LocalId || p.localId || "",
 				localId: p.LocalId || p.localId || "",
@@ -306,29 +272,20 @@
 			}));
 		}
 
-		/**
-		 * Pick project by ?id= (Airtable id or LocalId).
-		 * @param {UIProject[]} projects
-		 * @returns {UIProject|null}
-		 */
+		/** @param {UIProject[]} projects */
 		function pickProject(projects) {
 			const id = new URLSearchParams(location.search).get("id") || "";
 			if (!id) return null;
 			return projects.find(p => p.id === id || p.localId === id) || null;
 		}
 
-		/**
-		 * Load studies for a given project from the Worker (requires GET /api/studies?project=…).
-		 * @param {string} projectAirtableId
-		 * @returns {Promise<UIStudy[]>}
-		 */
+		/** @param {string} projectAirtableId @returns {Promise<UIStudy[]>} */
 		async function loadStudies(projectAirtableId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}&limit=100`;
 			const res = await fetch(url, { cache: "no-store" });
 			/** @type {{ok?:boolean, studies?:any[]}} */
 			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(`Studies fetch failed (${res.status})`);
-
+			if (!res.ok || !js?.ok) throw new Error(`Studies HTTP ${res.status}`);
 			return (js.studies || []).map(s => /** @type {UIStudy} */ ({
 				id: s.id || "",
 				study_id: s.study_id || s["Study ID"] || "",
@@ -343,11 +300,7 @@
 		 * @section Render
 		 * ========================= */
 
-		/**
-		 * Render the selected project and persist its Airtable id on <main>.
-		 * @param {UIProject} project
-		 * @returns {void}
-		 */
+		/** @param {UIProject} project */
 		function renderProject(project) {
 			setText("#eyebrow-org", project.org, "Home Office Biometrics");
 			setText("#project-title", project.name, "Untitled project");
@@ -389,23 +342,12 @@
 			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
-		/**
-		 * Render Studies list into #studies-list.
-		 * @param {UIStudy[]} studies
-		 * @returns {void}
-		 */
+		/** @param {UIStudy[]} studies */
 		function renderStudies(studies) {
 			const list = $("#studies-list");
 			if (!list) return;
-
-			if (!studies.length) {
-				list.innerHTML = `<li>No studies yet.</li>`;
-				return;
-			}
-
-			// newest first by createdAt
+			if (!studies.length) { list.innerHTML = `<li>No studies yet.</li>`; return; }
 			studies.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-
 			list.innerHTML = studies.map(s => {
 				const idFrag = s.study_id ? ` <span class="type">(${s.study_id})</span>` : "";
 				const statusFrag = s.status ? ` — ${s.status}` : "";
@@ -415,7 +357,7 @@
 		}
 
 		/* =========================
-		 * @section Accessible “Add Study” modal
+		 * @section Modal
 		 * ========================= */
 
 		(function initStudyModal() {
@@ -472,7 +414,6 @@
 
 			submitBtn?.addEventListener("click", async (e) => {
 				e.preventDefault();
-
 				const method = /** @type {HTMLSelectElement|null} */ ($("#study-method"))?.value?.trim();
 				const notes = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"))?.value?.trim();
 				if (!method || !notes) return;
@@ -481,7 +422,6 @@
 				const projectAirtableId = mainEl?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
 
-				// Generate a local/public-friendly Study ID and send it to Airtable ("Study ID" field).
 				const studyId = uid();
 
 				try {
@@ -499,17 +439,22 @@
 					const js = await res.json().catch(() => ({}));
 					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
 
-					// Clear form and refresh the list
 					$("#study-method").value = "";
 					$("#study-notes").value = "";
 					close();
 
-					// Re-fetch studies and re-render
-					const studies = await loadStudies(projectAirtableId);
-					renderStudies(studies);
+					// After create, refresh studies list (guarded so failures don't break page)
+					try {
+						const studies = await loadStudies(projectAirtableId);
+						renderStudies(studies);
+					} catch (e2) {
+						console.error(e2);
+						const list = $("#studies-list");
+						if (list) list.innerHTML = `<li class="lede">Study created, but list could not refresh.</li>`;
+					}
 				} catch (err) {
 					console.error(err);
-					alert("Could not create study.");
+					alert(`Could not create study. ${err?.message ? "Server: " + err.message : ""}`);
 				}
 			});
 		})();
@@ -525,14 +470,21 @@
 				const project = pickProject(projects);
 				if (!project) throw new Error("Project not found from id param");
 
+				// Always render the project first
 				renderProject(project);
 
-				// Load and render studies for this project
-				const studies = await loadStudies(project.id);
-				renderStudies(studies);
+				// Then load studies, but don't fail the whole page if it errors
+				try {
+					const studies = await loadStudies(project.id);
+					renderStudies(studies);
+				} catch (e) {
+					console.error(e);
+					const list = $("#studies-list");
+					if (list) list.innerHTML = `<li class="lede">Could not load studies.</li>`;
+				}
 			} catch (err) {
 				console.error(err);
-				alert("Could not load project.");
+				alert(`Could not load project. ${err?.message ? "Detail: " + err.message : ""}`);
 			}
 		})();
 	</script>
