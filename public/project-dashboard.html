@@ -318,14 +318,11 @@
 					phase: p["rops:servicePhase"] || p.Phase || "",
 					status: p["rops:projectStatus"] || p.Status || "",
 					objectives: Array.isArray(p.objectives) ?
-						p.objectives :
-						String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+						p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
 					user_groups: Array.isArray(p.user_groups) ?
-						p.user_groups :
-						String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+						p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
 					stakeholders: Array.isArray(p.stakeholders) ?
-						p.stakeholders :
-						(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
 					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
 				})
 			);
@@ -421,28 +418,38 @@
 		}
 
 		/**
-		 * Render studies into the Studies list.
+		 * Render studies list (links to study.html).
 		 * @function renderStudies
-		 * @param {UIStudy[]} studies
+		 * @param {UIProject} project
+		 * @param {Array<{id:string, studyId?:string, method:string, status?:string, description?:string, createdAt?:string}>} studies
 		 * @returns {void}
 		 */
-		function renderStudies(studies) {
-			const list = $("#studies-list");
+		function renderStudies(project, studies) {
+			const list = document.getElementById("studies-list");
 			if (!list) return;
 
 			if (!studies.length) {
-				list.innerHTML = `<li>No studies yet.</li>`;
+				list.innerHTML = '<li class="lede">No studies yet.</li>';
 				return;
 			}
 
-			// newest-first by createdAt if provided
-			studies.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-
 			list.innerHTML = studies.map(s => {
-				const idLine = s.studyId ? ` <span class="type">(${s.studyId})</span>` : "";
-				const status = s.status ? ` — <em>${s.status}</em>` : "";
-				const desc = s.description ? `<div class="lede" style="margin-top:4px;">${s.description}</div>` : "";
-				return `<li><strong>${s.method}</strong>${status}${idLine}${desc}</li>`;
+				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const code = (s.studyId || "").toString().toUpperCase();
+				const status = (s.status || "").trim();
+				const meta = [
+					status ? `<em>${status}</em>` : "",
+					code ? `(${code})` : ""
+				].filter(Boolean).join(" ");
+				return `
+			<li class="item">
+				<div>
+					<a class="govuk-link" href="${href}">${s.method || "Study"}</a>
+					${meta ? ` — ${meta}` : ""}
+				</div>
+				${s.description ? `<div class="lede" style="margin-top:4px;">${s.description}</div>` : ""}
+			</li>
+		`;
 			}).join("");
 		}
 
