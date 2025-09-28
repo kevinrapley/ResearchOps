@@ -4,46 +4,42 @@
  * @summary Cloudflare Worker for ResearchOps platform (Airtable + GitHub CSV).
  * @description
  * Serves static assets and exposes API routes for:
- * - Health:
- *   - `GET /api/health`
- * - Projects:
- *   - List projects (Airtable, newest-first via `record.createdTime`): `GET /api/projects`
- *   - Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write):
- *     `POST /api/projects`
- * - Studies:
- *   - Create study (Airtable primary; best-effort GitHub CSV dual-write): `POST /api/studies`
- *   - List studies for a project: `GET /api/studies?project=<AirtableId>`
- * - CSV streaming from GitHub:
- *   - `GET /api/projects.csv`, `GET /api/project-details.csv`
+ * - Health: `GET /api/health`
+ * - List projects (Airtable, newest-first via `record.createdTime`): `GET /api/projects`
+ * - Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write):
+ *   `POST /api/projects`
+ * - Create study (Airtable primary; best-effort GitHub CSV dual-write):
+ *   `POST /api/studies`
+ * - List studies for a project (Airtable): `GET /api/studies?project=<airtableId>`
+ * - CSV streaming from GitHub: `GET /api/projects.csv`, `GET /api/project-details.csv`
  *
+ * @exports default
  * @requires globalThis.fetch
  * @requires globalThis.Request
  * @requires globalThis.Response
  *
  * @typedef {Object} Env
- * @property {string} ALLOWED_ORIGINS Comma-separated list of allowed origins for CORS.
- * @property {string} AUDIT "true" to enable audit logs; otherwise "false".
- * @property {string} AIRTABLE_BASE_ID Airtable base ID.
- * @property {string} AIRTABLE_TABLE_PROJECTS Table name for projects.
- * @property {string} AIRTABLE_TABLE_DETAILS  Table name for project details.
- * @property {string} AIRTABLE_TABLE_STUDIES  Table name for studies (e.g., "Project Studies").
- * @property {string} AIRTABLE_API_KEY Airtable API token.
- * @property {string} GH_OWNER GitHub repository owner.
- * @property {string} GH_REPO GitHub repository name.
- * @property {string} GH_BRANCH GitHub branch (e.g., "main").
- * @property {string} GH_PATH_PROJECTS Path to projects CSV file.
- * @property {string} GH_PATH_DETAILS  Path to project-details CSV file.
- * @property {string} GH_PATH_STUDIES  Path to studies CSV file.
- * @property {string} GH_TOKEN GitHub access token.
- * @property {any}    ASSETS Cloudflare static assets binding.
+ * @property {string} ALLOWED_ORIGINS
+ * @property {string} AUDIT
+ * @property {string} AIRTABLE_BASE_ID
+ * @property {string} AIRTABLE_TABLE_PROJECTS
+ * @property {string} AIRTABLE_TABLE_DETAILS
+ * @property {string} AIRTABLE_TABLE_STUDIES
+ * @property {string} AIRTABLE_API_KEY
+ * @property {string} GH_OWNER
+ * @property {string} GH_REPO
+ * @property {string} GH_BRANCH
+ * @property {string} GH_PATH_PROJECTS
+ * @property {string} GH_PATH_DETAILS
+ * @property {string} GH_PATH_STUDIES
+ * @property {string} GH_TOKEN
+ * @property {any}    ASSETS
  */
 
 /* =========================
  * @section Configuration
  * ========================= */
-
 /**
- * Immutable configuration defaults.
  * @constant
  * @name DEFAULTS
  * @type {Readonly<{
@@ -67,16 +63,14 @@ const DEFAULTS = Object.freeze({
 /* =========================
  * @section Batched logger
  * ========================= */
-
 /**
  * Minimal batched console logger (prevents log spam).
  * @class BatchLogger
- * @public
+ * @classdesc Internal console logger used by the service.
  * @inner
  */
 class BatchLogger {
 	/**
-	 * Construct a BatchLogger.
 	 * @constructs BatchLogger
 	 * @param {{batchSize?:number}} [opts]
 	 */
@@ -90,7 +84,8 @@ class BatchLogger {
 	}
 
 	/**
-	 * Buffer a log entry and flush when batch size is reached.
+	 * @function
+	 * @access public
 	 * @param {"info"|"warn"|"error"} level
 	 * @param {string} msg
 	 * @param {unknown} [meta]
@@ -111,15 +106,14 @@ class BatchLogger {
 
 	/**
 	 * Flush the buffered entries to console.
+	 * @function
 	 * @returns {void}
 	 */
 	flush() {
 		if (!this._buf.length) return;
 		try {
-			// Single grouped write where possible (reduces noise)
 			console.log("audit.batch", this._buf);
 		} catch {
-			// Fallback for environments that might not support structured logs
 			for (const e of this._buf) {
 				try { console.log("audit.entry", e); } catch {}
 			}
@@ -147,7 +141,6 @@ class BatchLogger {
 /* =========================
  * @section Helper functions
  * ========================= */
-
 /**
  * Fetch with a hard timeout.
  * @async
@@ -246,18 +239,13 @@ function toMs(d) {
 /* =========================
  * @section Core service
  * ========================= */
-
 /**
- * ResearchOps HTTP service (Airtable + GitHub CSV).
- * Encapsulates business logic for all API routes.
- *
- * @class ResearchOpsService
+ * @class
+ * @classdesc ResearchOps HTTP service (Airtable + GitHub CSV).
  * @public
- * @inner
  */
 class ResearchOpsService {
 	/**
-	 * Construct the service.
 	 * @constructs ResearchOpsService
 	 * @param {Env} env
 	 * @param {{cfg?:Partial<typeof DEFAULTS>, logger?:BatchLogger}} [opts]
@@ -276,14 +264,12 @@ class ResearchOpsService {
 	/**
 	 * Reset soft state (test helper).
 	 * @returns {void}
-	 * @inner
 	 */
 	reset() { this.log.reset(); }
 
 	/**
 	 * Cleanup resources (idempotent).
 	 * @returns {void}
-	 * @inner
 	 */
 	destroy() {
 		if (this.destroyed) return;
@@ -293,8 +279,7 @@ class ResearchOpsService {
 
 	/**
 	 * Build CORS headers for the given origin.
-	 * @function corsHeaders
-	 * @inner
+	 * @function
 	 * @param {string} origin
 	 * @returns {Record<string,string>}
 	 */
@@ -311,8 +296,7 @@ class ResearchOpsService {
 
 	/**
 	 * JSON response helper.
-	 * @function json
-	 * @inner
+	 * @function
 	 * @param {unknown} body
 	 * @param {number} [status=200]
 	 * @param {HeadersInit} [headers]
@@ -326,8 +310,7 @@ class ResearchOpsService {
 	/**
 	 * Health endpoint.
 	 * @async
-	 * @function health
-	 * @inner
+	 * @function
 	 * @param {string} origin
 	 * @returns {Promise<Response>}
 	 */
@@ -337,21 +320,15 @@ class ResearchOpsService {
 
 	/**
 	 * List projects from Airtable.
-	 *
-	 * - Uses Airtable `record.createdTime` for `createdAt`.
-	 * - Sorted newest-first server-side to guarantee stable ordering.
+	 * - Uses Airtable `record.createdTime` (system timestamp) for `createdAt`.
+	 * - Sorted newest-first server-side to guarantee order irrespective of view configuration.
 	 *
 	 * @async
-	 * @function listProjectsFromAirtable
-	 * @memberof ResearchOpsService
-	 * @inner
+	 * @function
 	 * @param {string} origin
-	 *   Request origin (for CORS).
 	 * @param {URL} url
-	 *   Parsed request URL; supports `?limit=` and `?view=`.
 	 * @returns {Promise<Response>}
-	 *   JSON `{ ok:true, projects:[...] }` or `{ error:string }`.
-	 *
+	 * @throws {Error} On network or Airtable API failure.
 	 * @example
 	 * // GET /api/projects?limit=100&view=Grid%20view
 	 */
@@ -404,26 +381,12 @@ class ResearchOpsService {
 
 	/**
 	 * Create a project in Airtable (+ optional details), then append to GitHub CSV (best-effort).
-	 *
-	 * Validation:
-	 * - Requires `name` and `description`.
-	 * - Optional: `phase`, `status`, `objectives[]`, `user_groups[]`, `stakeholders[]`, `id` (LocalId).
-	 *
-	 * Side effects:
-	 * - Creates one Airtable record in Projects.
-	 * - Optionally creates one Airtable record in Project Details if lead fields are present.
-	 * - Appends one (or two) lines to GitHub CSV files (best-effort, non-blocking).
-	 *
 	 * @async
-	 * @function createProject
-	 * @memberof ResearchOpsService
-	 * @inner
+	 * @function
 	 * @param {Request} request
-	 *   Incoming HTTP request with JSON body.
 	 * @param {string} origin
-	 *   Request origin (for CORS).
 	 * @returns {Promise<Response>}
-	 *   JSON `{ ok:true, project_id, detail_id, csv_ok, csv_error? }` or error JSON with status.
+	 * @throws {Error} On network or Airtable API failure.
 	 */
 	async createProject(request, origin) {
 		const body = await request.arrayBuffer();
@@ -433,8 +396,7 @@ class ResearchOpsService {
 		}
 		/** @type {any} */
 		let payload;
-		try { payload = JSON.parse(new TextDecoder().decode(body)); }
-		catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
 
 		const errs = [];
 		if (!payload.name) errs.push("name");
@@ -463,7 +425,6 @@ class ResearchOpsService {
 		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
 		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
 
-		// 1) Create project
 		const pRes = await fetchWithTimeout(atProjectsUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -476,4 +437,439 @@ class ResearchOpsService {
 		}
 		let pJson;
 		try { pJson = JSON.parse(pText); } catch { pJson = { records: [] }; }
-		const projectId =
+		const projectId = pJson.records?.[0]?.id;
+		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
+
+		let detailId = null;
+		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
+		if (hasDetails) {
+			const detailsFields = {
+				Project: [projectId],
+				"Lead Researcher": payload.lead_researcher || "",
+				"Lead Researcher Email": payload.lead_researcher_email || "",
+				Notes: payload.notes || ""
+			};
+			for (const k of Object.keys(detailsFields)) {
+				const v = detailsFields[k];
+				if (typeof v === "string" && v.trim() === "") delete detailsFields[k];
+			}
+			const dRes = await fetchWithTimeout(atDetailsUrl, {
+				method: "POST",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ fields: detailsFields }] })
+			}, this.cfg.TIMEOUT_MS);
+			const dText = await dRes.text();
+			if (!dRes.ok) {
+				try { await fetchWithTimeout(`${atProjectsUrl}/${projectId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` } }, this.cfg.TIMEOUT_MS); } catch {}
+				this.log.error("airtable.details.fail", { status: dRes.status, text: safeText(dText) });
+				return this.json({ error: `Airtable details ${dRes.status}`, detail: safeText(dText) }, dRes.status, this.corsHeaders(origin));
+			}
+			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
+		}
+
+		let csvOk = true,
+			csvError = null;
+		try {
+			const nowIso = new Date().toISOString();
+			const projectRow = [
+				payload.id || "",
+				payload.org || "Home Office Biometrics",
+				payload.name || "",
+				payload.description || "",
+				payload.phase || "",
+				payload.status || "",
+				(payload.objectives || []).join(" | "),
+				(payload.user_groups || []).join(" | "),
+				JSON.stringify(payload.stakeholders || []),
+				nowIso
+			];
+			await this.githubCsvAppend({
+				path: this.env.GH_PATH_PROJECTS,
+				header: ["LocalId", "Org", "Name", "Description", "Phase", "Status", "Objectives", "UserGroups", "Stakeholders", "CreatedAt"],
+				row: projectRow
+			});
+
+			if (hasDetails) {
+				const detailsRow = [
+					projectId,
+					payload.id || "",
+					payload.lead_researcher || "",
+					payload.lead_researcher_email || "",
+					payload.notes || "",
+					nowIso
+				];
+				await this.githubCsvAppend({
+					path: this.env.GH_PATH_DETAILS,
+					header: ["AirtableId", "LocalProjectId", "LeadResearcher", "LeadResearcherEmail", "Notes", "CreatedAt"],
+					row: detailsRow
+				});
+			}
+		} catch (e) {
+			csvOk = false;
+			csvError = String(e?.message || e);
+			this.log.warn("github.csv.append.fail", { err: csvError });
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("project.created", { airtableId: projectId, hasDetails, csvOk });
+		return this.json({ ok: true, project_id: projectId, detail_id: detailId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a Study linked to a Project (Airtable primary) and append to GitHub CSV (best-effort).
+	 * @async
+	 * @function
+	 * @param {Request} request
+	 * @param {string} origin
+	 * @returns {Promise<Response>}
+	 * @throws {Error} On network or Airtable API failure.
+	 * @example
+	 * // Payload:
+	 * // {
+	 * //   "project_airtable_id": "recXXXXXXXXXXXXXX",   // required
+	 * //   "method": "User Interview",                   // required
+	 * //   "description": "Short study description",     // required
+	 * //   "status": "Planned",                          // optional
+	 * //   "study_id": "local-uuid-1234"                 // optional
+	 * // }
+	 */
+	async createStudy(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const errs = [];
+		if (!payload.project_airtable_id) errs.push("project_airtable_id");
+		if (!payload.method) errs.push("method");
+		if (!payload.description) errs.push("description");
+		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atStudiesUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
+
+		const fields = {
+			Project: [payload.project_airtable_id],
+			Method: payload.method,
+			Description: payload.description,
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			"Study ID": typeof payload.study_id === "string" ? payload.study_id : undefined
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+
+		const sRes = await fetchWithTimeout(atStudiesUrl, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+		const sText = await sRes.text();
+		if (!sRes.ok) {
+			this.log.error("airtable.study.create.fail", { status: sRes.status, text: safeText(sText) });
+			return this.json({ error: `Airtable ${sRes.status}`, detail: safeText(sText) }, sRes.status, this.corsHeaders(origin));
+		}
+
+		let sJson;
+		try { sJson = JSON.parse(sText); } catch { sJson = { records: [] }; }
+		const studyId = sJson.records?.[0]?.id;
+		if (!studyId) return this.json({ error: "Airtable response missing study id" }, 502, this.corsHeaders(origin));
+
+		let csvOk = true,
+			csvError = null;
+		try {
+			const nowIso = new Date().toISOString();
+			const row = [
+				studyId,
+				payload.project_airtable_id,
+				payload.study_id || "",
+				payload.method || "",
+				payload.status || "",
+				payload.description || "",
+				nowIso
+			];
+			await this.githubCsvAppend({
+				path: this.env.GH_PATH_STUDIES,
+				header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
+				row
+			});
+		} catch (e) {
+			csvOk = false;
+			csvError = String(e?.message || e);
+			this.log.warn("github.csv.append.fail.study", { err: csvError });
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("study.created", { studyId, csvOk });
+		return this.json({ ok: true, study_id: studyId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * List studies for a given project from Airtable.
+	 * @async
+	 * @function listStudies
+	 * @param {string} origin
+	 * @param {URL} url
+	 * @returns {Promise<Response>}
+	 */
+	async listStudies(origin, url) {
+		const projectId = url.searchParams.get("project");
+		if (!projectId) {
+			return this.json({ error: "Missing project query" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		// filterByFormula: Project is a linked-record array; use FIND within ARRAYJOIN
+		const atUrl = `https://api.airtable.com/v0/${base}/${tStudies}?filterByFormula=${encodeURIComponent(`FIND("${projectId}", ARRAYJOIN({Project}))`)}`;
+
+		const res = await fetchWithTimeout(atUrl, {
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+
+		/** @type {{records:Array<{id:string,createdTime:string,fields:Record<string,any>}>}} */
+		let data;
+		try { data = JSON.parse(text); } catch { data = { records: [] }; }
+
+		const studies = (data.records || []).map(r => {
+			const f = r.fields || {};
+			return {
+				id: r.id,
+				studyId: f["Study ID"] || "",
+				method: f.Method || "",
+				status: f.Status || "",
+				description: f.Description || "",
+				createdAt: r.createdTime
+			};
+		});
+
+		return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Proxy a CSV file from GitHub Raw content.
+	 * @async
+	 * @function
+	 * @param {string} origin
+	 * @param {string} path
+	 * @returns {Promise<Response>}
+	 */
+	async streamCsv(origin, path) {
+		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
+		const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${encodeURIComponent(GH_BRANCH)}/${path}`;
+		const res = await fetchWithTimeout(url, {
+			headers: GH_TOKEN ? { "Authorization": `Bearer ${GH_TOKEN}` } : {}
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const t = await res.text();
+			this.log.error("github.csv.stream.fail", { status: res.status, detail: safeText(t) });
+			return this.json({ error: `GitHub ${res.status}`, detail: safeText(t) }, res.status, this.corsHeaders(origin));
+		}
+		return new Response(res.body, {
+			status: 200,
+			headers: {
+				...this.corsHeaders(origin),
+				"Content-Type": "text/csv; charset=utf-8",
+				"Content-Disposition": `inline; filename="${path.split("/").pop() || "data.csv"}"`,
+				"Cache-Control": this.cfg.CSV_CACHE_CONTROL
+			}
+		});
+	}
+
+	/**
+	 * Append a row to a CSV file in GitHub (create if missing).
+	 * @async
+	 * @function
+	 * @param {{path:string, header:string[], row:string[]}} params
+	 * @returns {Promise<void>}
+	 * @throws {Error} If GitHub API read/write fails.
+	 */
+	async githubCsvAppend({ path, header, row }) {
+		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
+		const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+		const headers = {
+			"Authorization": `Bearer ${GH_TOKEN}`,
+			"Accept": "application/vnd.github+json",
+			"X-GitHub-Api-Version": DEFAULTS.GH_API_VERSION,
+			"Content-Type": "application/json"
+		};
+
+		let sha = undefined,
+			content = "",
+			exists = false;
+		const getRes = await fetchWithTimeout(`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers }, this.cfg.TIMEOUT_MS);
+		if (getRes.status === 200) {
+			const js = await getRes.json();
+			sha = js.sha;
+			content = b64Decode(js.content);
+			exists = true;
+		} else if (getRes.status === 404) {
+			content = header.join(",") + "\n";
+		} else {
+			const t = await getRes.text();
+			throw new Error(`GitHub read ${getRes.status}: ${safeText(t)}`);
+		}
+
+		content += toCsvLine(row);
+
+		const putBody = {
+			message: exists ? `chore: append row to ${path}` : `chore: create ${path} with header`,
+			content: b64Encode(content),
+			branch: GH_BRANCH
+		};
+		if (sha) putBody.sha = sha;
+
+		const putRes = await fetchWithTimeout(base, { method: "PUT", headers, body: JSON.stringify(putBody) }, this.cfg.TIMEOUT_MS);
+		if (!putRes.ok) {
+			const t = await putRes.text();
+			throw new Error(`GitHub write ${putRes.status}: ${safeText(t)}`);
+		}
+	}
+}
+
+/* =========================
+ * @section Worker entrypoint
+ * ========================= */
+/**
+ * Default export: Cloudflare Worker `fetch` handler.
+ * @exports default
+ */
+export default {
+	/**
+	 * Cloudflare Worker entrypoint.
+	 * @async
+	 * @function
+	 * @param {Request} request
+	 * @param {Env} env
+	 * @param {ExecutionContext} ctx
+	 * @returns {Promise<Response>}
+	 * @throws {Error} On unexpected failure (returned as 500 response).
+	 */
+	async fetch(request, env, ctx) {
+		const service = new ResearchOpsService(env);
+		const url = new URL(request.url);
+		const origin = request.headers.get("Origin") || "";
+
+		try {
+			if (url.pathname.startsWith("/api/")) {
+				if (request.method === "OPTIONS") {
+					return new Response(null, { headers: service.corsHeaders(origin) });
+				}
+				const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+				if (origin && !allowed.includes(origin)) {
+					return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
+				}
+
+				if (url.pathname === "/api/health") return service.health(origin);
+
+				if (url.pathname === "/api/projects" && request.method === "GET") {
+					return service.listProjectsFromAirtable(origin, url);
+				}
+				if (url.pathname === "/api/projects" && request.method === "POST") {
+					return service.createProject(request, origin);
+				}
+
+				if (url.pathname === "/api/studies" && request.method === "GET") {
+					return service.listStudies(origin, url);
+				}
+				if (url.pathname === "/api/studies" && request.method === "POST") {
+					return service.createStudy(request, origin);
+				}
+
+				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
+					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
+				}
+				if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
+					return service.streamCsv(origin, env.GH_PATH_DETAILS);
+				}
+
+				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
+			}
+
+			// Static assets (SPA fallback)
+			let resp = await env.ASSETS.fetch(request);
+			if (resp.status === 404) {
+				const indexReq = new Request(new URL("/index.html", url), request);
+				resp = await env.ASSETS.fetch(indexReq);
+			}
+			return resp;
+		} catch (e) {
+			service.log.error("unhandled.error", { err: String(e?.message || e) });
+			return new Response(JSON.stringify({ error: "Internal error" }), {
+				status: 500,
+				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+			});
+		} finally {
+			service.destroy();
+		}
+	}
+};
+
+/* =========================
+ * @section Test utilities (named exports)
+ * ========================= */
+/**
+ * Create a minimal mock Env for unit tests.
+ * @function
+ * @param {Partial<Env>} overrides
+ * @returns {Env}
+ * @since 1.0.0
+ */
+export function createMockEnv(overrides = {}) {
+	return /** @type {Env} */ ({
+		ALLOWED_ORIGINS: "http://localhost:8080",
+		AUDIT: "false",
+		AIRTABLE_BASE_ID: "app_base",
+		AIRTABLE_TABLE_PROJECTS: "Projects",
+		AIRTABLE_TABLE_DETAILS: "Project Details",
+		AIRTABLE_TABLE_STUDIES: "Project Studies",
+		AIRTABLE_API_KEY: "key",
+		GH_OWNER: "owner",
+		GH_REPO: "repo",
+		GH_BRANCH: "main",
+		GH_PATH_PROJECTS: "data/projects.csv",
+		GH_PATH_DETAILS: "data/project-details.csv",
+		GH_PATH_STUDIES: "data/studies.csv",
+		GH_TOKEN: "gh",
+		ASSETS: { fetch: () => new Response("not-found", { status: 404 }) },
+		...overrides
+	});
+}
+
+/**
+ * Build a JSON Request for tests.
+ * @function
+ * @param {string} path
+ * @param {any} body
+ * @param {RequestInit} [init]
+ * @returns {Request}
+ * @example
+ * const req = makeJsonRequest("/api/projects", { name:"X", description:"Y" });
+ */
+export function makeJsonRequest(path, body, init = {}) {
+	const reqInit = {
+		method: "POST",
+		headers: Object.assign({ "Content-Type": "application/json" },
+			init.headers || {}
+		),
+		body: JSON.stringify(body)
+	};
+
+	for (const k in init) {
+		if (k !== "headers") reqInit[k] = init[k];
+	}
+
+	return new Request(`https://example.test${path}`, reqInit);
+}
