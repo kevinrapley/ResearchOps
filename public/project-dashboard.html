@@ -190,6 +190,15 @@
 		/**
 		 * @file project-dashboard.bootstrap.js (inline)
 		 * @module ProjectDashboard
+		 * @summary Bootstrap for the Project Dashboard screen:
+		 *  - Loads projects from the Worker API
+		 *  - Picks the current project by ?id=
+		 *  - Renders key fields into the page
+		 *  - Lists studies for the project via /api/studies?project=…
+		 *  - Wires an accessible “Add Study” modal and POSTs to /api/studies
+		 *
+		 * @requires globalThis.fetch
+		 * @requires globalThis.URLSearchParams
 		 */
 
 		/* =========================
@@ -213,8 +222,8 @@
 
 		/**
 		 * @typedef {Object} UIStudy
-		 * @property {string} id
-		 * @property {string} study_id
+		 * @property {string} id           Airtable record id
+		 * @property {string} studyId      Value from “Study ID” field
 		 * @property {string} method
 		 * @property {string} status
 		 * @property {string} description
@@ -225,82 +234,151 @@
 		 * @section Tiny helpers
 		 * ========================= */
 
-		/** @param {string} sel @param {ParentNode} [root=document] */
-		function $(sel, root = document) { return root.querySelector(sel); }
-		/** @param {string} sel @param {ParentNode} [root=document] */
-		function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+		/**
+		 * Shorthand for querySelector.
+		 * @function
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement|null}
+		 */
+		function $(sel, root = document) {
+			return root.querySelector(sel);
+		}
 
-		/** @param {string} sel @param {unknown} value @param {string} [fallback="—"] */
+		/**
+		 * Shorthand for querySelectorAll → Array.
+		 * @function
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement[]}
+		 */
+		function $$(sel, root = document) {
+			return Array.from(root.querySelectorAll(sel));
+		}
+
+		/**
+		 * Set textContent with a fallback if value is empty.
+		 * @function
+		 * @param {string} sel
+		 * @param {unknown} value
+		 * @param {string} [fallback="—"]
+		 * @returns {void}
+		 */
 		function setText(sel, value, fallback = "—") {
 			const el = $(sel);
 			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
 		}
 
-		/** @param {string} d */
-		function toMs(d) { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; }
+		/**
+		 * Parse a date-like string to epoch ms; invalid → 0.
+		 * @function
+		 * @param {string} d
+		 * @returns {number}
+		 */
+		function toMs(d) {
+			const n = Date.parse(d);
+			return Number.isFinite(n) ? n : 0;
+		}
 
-		function uid() { try { return crypto.randomUUID(); } catch { return `study_${Date.now()}`; } }
+		/**
+		 * Generate a simple client study id (text field in Airtable).
+		 * @function
+		 * @returns {string}
+		 */
+		function makeStudyId() {
+			// Keeps your recNNN… look but unique enough for demo purposes.
+			return "rec" + Math.floor(Date.now() / 1000).toString(36);
+		}
 
 		/* =========================
 		 * @section Data loading
 		 * ========================= */
 
-		/** @returns {Promise<UIProject[]>} */
+		/**
+		 * Load projects from the Worker API and normalise shape.
+		 * @async
+		 * @function loadProjects
+		 * @returns {Promise<UIProject[]>}
+		 * @throws {Error} If the API call fails.
+		 */
 		async function loadProjects() {
 			const res = await fetch("/api/projects", { cache: "no-store" });
 			/** @type {{ok?:boolean, projects?:any[]}} */
 			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(`Projects HTTP ${res.status}`);
-			return (js.projects || []).map(p => /** @type {UIProject} */ ({
-				id: p.id || p.LocalId || p.localId || "",
-				localId: p.LocalId || p.localId || "",
-				name: p.name || p.Name || "",
-				description: p.description || p.Description || "",
-				org: p.Org || p.org || "Home Office Biometrics",
-				phase: p["rops:servicePhase"] || p.Phase || "",
-				status: p["rops:projectStatus"] || p.Status || "",
-				objectives: Array.isArray(p.objectives) ?
-					p.objectives :
-					String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
-				user_groups: Array.isArray(p.user_groups) ?
-					p.user_groups :
-					String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
-				stakeholders: Array.isArray(p.stakeholders) ?
-					p.stakeholders :
-					(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
-				createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
-			}));
+			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
+
+			return (js.projects || []).map(p =>
+				/** @type {UIProject} */
+				({
+					id: p.id || p.LocalId || p.localId || "",
+					localId: p.LocalId || p.localId || "",
+					name: p.name || p.Name || "",
+					description: p.description || p.Description || "",
+					org: p.Org || p.org || "Home Office Biometrics",
+					phase: p["rops:servicePhase"] || p.Phase || "",
+					status: p["rops:projectStatus"] || p.Status || "",
+					objectives: Array.isArray(p.objectives) ?
+						p.objectives :
+						String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+					user_groups: Array.isArray(p.user_groups) ?
+						p.user_groups :
+						String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+					stakeholders: Array.isArray(p.stakeholders) ?
+						p.stakeholders :
+						(() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
+				})
+			);
 		}
 
-		/** @param {UIProject[]} projects */
+		/**
+		 * Pick the project that matches ?id= (supports Airtable id or LocalId).
+		 * @function pickProject
+		 * @param {UIProject[]} projects
+		 * @returns {UIProject|null}
+		 */
 		function pickProject(projects) {
 			const id = new URLSearchParams(location.search).get("id") || "";
 			if (!id) return null;
 			return projects.find(p => p.id === id || p.localId === id) || null;
 		}
 
-		/** @param {string} projectAirtableId @returns {Promise<UIStudy[]>} */
-		async function loadStudies(projectAirtableId) {
-			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}&limit=100`;
+		/**
+		 * Load studies for the specified project.
+		 * @async
+		 * @function loadStudies
+		 * @param {string} airtableProjectId
+		 * @returns {Promise<UIStudy[]>}
+		 */
+		async function loadStudies(airtableProjectId) {
+			const url = `/api/studies?project=${encodeURIComponent(airtableProjectId)}`;
 			const res = await fetch(url, { cache: "no-store" });
 			/** @type {{ok?:boolean, studies?:any[]}} */
 			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(`Studies HTTP ${res.status}`);
-			return (js.studies || []).map(s => /** @type {UIStudy} */ ({
-				id: s.id || "",
-				study_id: s.study_id || s["Study ID"] || "",
-				method: s.method || s.Method || "",
-				status: s.status || s.Status || "",
-				description: s.description || s.Description || "",
-				createdAt: s.createdAt || s.createdTime || ""
-			}));
+			if (!res.ok || !js?.ok) return [];
+			return (js.studies || []).map(r =>
+				/** @type {UIStudy} */
+				({
+					id: r.id || "",
+					studyId: r.studyId || "",
+					method: r.method || "",
+					status: r.status || "",
+					description: r.description || "",
+					createdAt: r.createdAt || ""
+				})
+			);
 		}
 
 		/* =========================
-		 * @section Render
+		 * @section Rendering
 		 * ========================= */
 
-		/** @param {UIProject} project */
+		/**
+		 * Render the selected project into the page and store its Airtable id on <main>.
+		 * @function renderProject
+		 * @param {UIProject} project
+		 * @returns {void}
+		 */
 		function renderProject(project) {
 			setText("#eyebrow-org", project.org, "Home Office Biometrics");
 			setText("#project-title", project.name, "Untitled project");
@@ -342,22 +420,34 @@
 			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
-		/** @param {UIStudy[]} studies */
+		/**
+		 * Render studies into the Studies list.
+		 * @function renderStudies
+		 * @param {UIStudy[]} studies
+		 * @returns {void}
+		 */
 		function renderStudies(studies) {
 			const list = $("#studies-list");
 			if (!list) return;
-			if (!studies.length) { list.innerHTML = `<li>No studies yet.</li>`; return; }
+
+			if (!studies.length) {
+				list.innerHTML = `<li>No studies yet.</li>`;
+				return;
+			}
+
+			// newest-first by createdAt if provided
 			studies.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+
 			list.innerHTML = studies.map(s => {
-				const idFrag = s.study_id ? ` <span class="type">(${s.study_id})</span>` : "";
-				const statusFrag = s.status ? ` — ${s.status}` : "";
-				const descFrag = s.description ? `<br><span class="govuk-secondary-text-colour">${s.description}</span>` : "";
-				return `<li><strong>${s.method}</strong>${statusFrag}${idFrag}${descFrag}</li>`;
+				const idLine = s.studyId ? ` <span class="type">(${s.studyId})</span>` : "";
+				const status = s.status ? ` — <em>${s.status}</em>` : "";
+				const desc = s.description ? `<div class="lede" style="margin-top:4px;">${s.description}</div>` : "";
+				return `<li><strong>${s.method}</strong>${status}${idLine}${desc}</li>`;
 			}).join("");
 		}
 
 		/* =========================
-		 * @section Modal
+		 * @section Accessible “Add Study” modal
 		 * ========================= */
 
 		(function initStudyModal() {
@@ -367,6 +457,7 @@
 			const closeBtn = $("#study-close");
 			const cancelBtn = $("#study-cancel");
 			const submitBtn = $("#study-submit");
+
 			let lastFocus = null;
 
 			if (!dialog || !openBtn) return;
@@ -386,25 +477,38 @@
 				if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
 			}
 
+			// Focus trap + Escape support
 			dialog.addEventListener("keydown", (e) => {
-				if (e.key === "Escape") { e.preventDefault();
-					close(); return; }
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+					return;
+				}
 				if (e.key !== "Tab") return;
-				const f = $$(
+
+				const focusables = $$(
 					'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
 					dialog
 				).filter(el => el.offsetParent !== null);
-				if (!f.length) return;
-				const first = f[0],
-					last = f[f.length - 1];
-				if (e.shiftKey && document.activeElement === first) { last.focus();
-					e.preventDefault(); } else if (!e.shiftKey && document.activeElement === last) { first.focus();
-					e.preventDefault(); }
+
+				if (!focusables.length) return;
+
+				const first = focusables[0];
+				const last = focusables[focusables.length - 1];
+
+				if (e.shiftKey && document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				} else if (!e.shiftKey && document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
 			});
 
+			// Click outside (backdrop) closes
 			dialog.addEventListener("click", (e) => {
-				const r = dialog.getBoundingClientRect();
-				const inside = (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom);
+				const rect = dialog.getBoundingClientRect();
+				const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
 				if (!inside) close();
 			});
 
@@ -412,17 +516,18 @@
 			closeBtn?.addEventListener("click", close);
 			cancelBtn?.addEventListener("click", close);
 
+			// Submit “Add Study”
 			submitBtn?.addEventListener("click", async (e) => {
 				e.preventDefault();
+
 				const method = /** @type {HTMLSelectElement|null} */ ($("#study-method"))?.value?.trim();
 				const notes = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"))?.value?.trim();
+
 				if (!method || !notes) return;
 
 				const mainEl = $("main");
 				const projectAirtableId = mainEl?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
-
-				const studyId = uid();
 
 				try {
 					const res = await fetch("/api/studies", {
@@ -433,28 +538,20 @@
 							method,
 							description: notes,
 							status: "Planned",
-							study_id: studyId
+							study_id: makeStudyId()
 						})
 					});
 					const js = await res.json().catch(() => ({}));
 					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
 
-					$("#study-method").value = "";
-					$("#study-notes").value = "";
+					// Refresh the list and close
+					const studies = await loadStudies(projectAirtableId);
+					renderStudies(studies);
 					close();
-
-					// After create, refresh studies list (guarded so failures don't break page)
-					try {
-						const studies = await loadStudies(projectAirtableId);
-						renderStudies(studies);
-					} catch (e2) {
-						console.error(e2);
-						const list = $("#studies-list");
-						if (list) list.innerHTML = `<li class="lede">Study created, but list could not refresh.</li>`;
-					}
 				} catch (err) {
+					// eslint-disable-next-line no-console
 					console.error(err);
-					alert(`Could not create study. ${err?.message ? "Server: " + err.message : ""}`);
+					alert("Could not create study.");
 				}
 			});
 		})();
@@ -463,6 +560,12 @@
 		 * @section Bootstrap
 		 * ========================= */
 
+		/**
+		 * Entrypoint: load, sort, pick, render, then fetch & render studies.
+		 * @async
+		 * @function
+		 * @returns {Promise<void>}
+		 */
 		(async function bootstrap() {
 			try {
 				const projects = await loadProjects();
@@ -470,21 +573,15 @@
 				const project = pickProject(projects);
 				if (!project) throw new Error("Project not found from id param");
 
-				// Always render the project first
 				renderProject(project);
 
-				// Then load studies, but don't fail the whole page if it errors
-				try {
-					const studies = await loadStudies(project.id);
-					renderStudies(studies);
-				} catch (e) {
-					console.error(e);
-					const list = $("#studies-list");
-					if (list) list.innerHTML = `<li class="lede">Could not load studies.</li>`;
-				}
+				// Load & render studies for this project
+				const studies = await loadStudies(project.id);
+				renderStudies(studies);
 			} catch (err) {
+				// eslint-disable-next-line no-console
 				console.error(err);
-				alert(`Could not load project. ${err?.message ? "Detail: " + err.message : ""}`);
+				alert("Could not load project.");
 			}
 		})();
 	</script>
