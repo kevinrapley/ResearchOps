@@ -456,7 +456,7 @@
 				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${status}</em>` : ""].filter(Boolean).join(" ");
-				const desc = truncateText(s.description || "", 200);
+				const desc = truncateText(s.description || "", 170);
 
 				return `
 			<li class="item">
