@@ -11,6 +11,9 @@ directory = "../../public"
 # CORS
 ALLOWED_ORIGINS = "https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
 
+[observability.logs]
+enabled = true
+
 # Airtable
 AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
 AIRTABLE_TABLE_PROJECTS = "Projects"
