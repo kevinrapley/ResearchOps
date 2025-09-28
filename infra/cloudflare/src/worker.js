@@ -291,13 +291,6 @@ class ResearchOpsService {
 		this.destroyed = true;
 	}
 
-	// Add this temporary debug endpoint to check your configuration
-
-	// In the fetch handler, add this route:
-	if (url.pathname === "/api/debug/config" && request.method === "GET") {
-		return service.debugConfig(origin);
-	}
-
 	// Add this method to ResearchOpsService class:
 	async debugConfig(origin) {
 		const config = {
@@ -1062,6 +1055,11 @@ export default {
 
 				/** @inner 404 for unmatched API routes */
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
+			}
+
+			// In the fetch handler, add this route:
+			if (url.pathname === "/api/debug/config" && request.method === "GET") {
+				return service.debugConfig(origin);
 			}
 
 			/** @inner Handle static assets with SPA fallback */
