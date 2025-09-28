@@ -291,65 +291,6 @@ class ResearchOpsService {
 		this.destroyed = true;
 	}
 
-	// Add this method to ResearchOpsService class:
-	async debugConfig(origin) {
-		const config = {
-			airtable: {
-				baseId: this.env.AIRTABLE_BASE_ID ? `${this.env.AIRTABLE_BASE_ID.substring(0, 8)}...` : "MISSING",
-				tableProjects: this.env.AIRTABLE_TABLE_PROJECTS || "MISSING",
-				tableDetails: this.env.AIRTABLE_TABLE_DETAILS || "MISSING",
-				tableStudies: this.env.AIRTABLE_TABLE_STUDIES || "MISSING",
-				apiKeyPresent: !!this.env.AIRTABLE_API_KEY,
-				apiKeyPrefix: this.env.AIRTABLE_API_KEY?.substring(0, 3) || "MISSING"
-			},
-			github: {
-				owner: this.env.GH_OWNER || "MISSING",
-				repo: this.env.GH_REPO || "MISSING",
-				branch: this.env.GH_BRANCH || "MISSING",
-				pathProjects: this.env.GH_PATH_PROJECTS || "MISSING",
-				pathDetails: this.env.GH_PATH_DETAILS || "MISSING",
-				pathStudies: this.env.GH_PATH_STUDIES || "MISSING",
-				tokenPresent: !!this.env.GH_TOKEN,
-				tokenPrefix: this.env.GH_TOKEN?.substring(0, 4) || "MISSING"
-			}
-		};
-
-		// Test basic connectivity
-		const tests = {};
-
-		try {
-			// Test Airtable
-			if (this.env.AIRTABLE_BASE_ID && this.env.AIRTABLE_API_KEY) {
-				const atUrl = `https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}`;
-				const atRes = await fetchWithTimeout(atUrl, {
-					headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
-				}, 5000);
-				tests.airtable = {
-					status: atRes.status,
-					ok: atRes.ok,
-					accessible: atRes.status !== 404
-				};
-			}
-
-			// Test GitHub  
-			if (this.env.GH_OWNER && this.env.GH_REPO && this.env.GH_TOKEN) {
-				const ghUrl = `https://api.github.com/repos/${this.env.GH_OWNER}/${this.env.GH_REPO}`;
-				const ghRes = await fetchWithTimeout(ghUrl, {
-					headers: { "Authorization": `Bearer ${this.env.GH_TOKEN}` }
-				}, 5000);
-				tests.github = {
-					status: ghRes.status,
-					ok: ghRes.ok,
-					accessible: ghRes.status !== 404 && ghRes.status !== 403
-				};
-			}
-		} catch (error) {
-			tests.error = error.message;
-		}
-
-		return this.json({ config, tests }, 200, this.corsHeaders(origin));
-	}
-
 	/**
 	 * Build CORS headers for the given origin.
 	 * @function corsHeaders
@@ -840,61 +781,61 @@ class ResearchOpsService {
 	 * return service.streamCsv(origin, env.GH_PATH_PROJECTS);
 	 */
 	async streamCsv(origin, path) {
-		/** @inner Extract GitHub config and build API URL with headers */
-		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
-		const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
-		const headers = {
-			"Authorization": `Bearer ${GH_TOKEN}`,
-			"Accept": "application/vnd.github+json",
-			"X-GitHub-Api-Version": this.cfg.GH_API_VERSION
-		};
+    /** @inner Extract GitHub config and build API URL with headers */
+    const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
+    const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+    const headers = {
+        "Authorization": `Bearer ${GH_TOKEN}`,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": this.cfg.GH_API_VERSION
+    };
 
-		try {
-			/** @inner Fetch the CSV file from GitHub with timeout protection */
-			const getRes = await fetchWithTimeout(
-				`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers },
-				this.cfg.TIMEOUT_MS
-			);
+    try {
+        /** @inner Fetch the CSV file from GitHub with timeout protection */
+        const getRes = await fetchWithTimeout(
+            `${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers },
+            this.cfg.TIMEOUT_MS
+        );
 
-			/** @inner Handle file not found gracefully */
-			if (getRes.status === 404) {
-				this.log.warn("csv.not_found", { path });
-				return this.json({ error: "CSV file not found" }, 404, this.corsHeaders(origin));
-			}
+        /** @inner Handle file not found gracefully */
+        if (getRes.status === 404) {
+            this.log.warn("csv.not_found", { path });
+            return this.json({ error: "CSV file not found" }, 404, this.corsHeaders(origin));
+        }
 
-			/** @inner Handle other HTTP errors from GitHub API */
-			if (!getRes.ok) {
-				const text = await getRes.text();
-				this.log.error("github.csv.read.fail", { status: getRes.status, text: safeText(text) });
-				return this.json({ error: `GitHub ${getRes.status}`, detail: safeText(text) },
-					getRes.status,
-					this.corsHeaders(origin)
-				);
-			}
+        /** @inner Handle other HTTP errors from GitHub API */
+        if (!getRes.ok) {
+            const text = await getRes.text();
+            this.log.error("github.csv.read.fail", { status: getRes.status, text: safeText(text) });
+            return this.json({ error: `GitHub ${getRes.status}`, detail: safeText(text) },
+                getRes.status,
+                this.corsHeaders(origin)
+            );
+        }
 
-			/** @inner Parse successful response and decode base64 content */
-			const js = await getRes.json();
-			const content = b64Decode(js.content);
+        /** @inner Parse successful response and decode base64 content */
+        const js = await getRes.json();
+        const content = b64Decode(js.content);
 
-			/** @inner Build CSV response headers with proper content type and CORS */
-			const csvHeaders = {
-				"Content-Type": "text/csv; charset=utf-8",
-				"Content-Disposition": `attachment; filename="${path.split('/').pop() || 'data.csv'}"`,
-				"Cache-Control": this.cfg.CSV_CACHE_CONTROL,
-				...this.corsHeaders(origin)
-			};
+        /** @inner Build CSV response headers with proper content type and CORS */
+        const csvHeaders = {
+            "Content-Type": "text/csv; charset=utf-8",
+            "Content-Disposition": `attachment; filename="${path.split('/').pop() || 'data.csv'}"`,
+            "Cache-Control": this.cfg.CSV_CACHE_CONTROL,
+            ...this.corsHeaders(origin)
+        };
 
-			return new Response(content, { status: 200, headers: csvHeaders });
+        return new Response(content, { status: 200, headers: csvHeaders });
 
-		} catch (e) {
-			/** @inner Handle any unexpected exceptions during CSV streaming */
-			this.log.error("csv.stream.error", { err: String(e?.message || e), path });
-			return this.json({ error: "Failed to stream CSV", detail: String(e?.message || e) },
-				500,
-				this.corsHeaders(origin)
-			);
-		}
-	}
+    } catch (e) {
+        /** @inner Handle any unexpected exceptions during CSV streaming */
+        this.log.error("csv.stream.error", { err: String(e?.message || e), path });
+        return this.json({ error: "Failed to stream CSV", detail: String(e?.message || e) },
+            500,
+            this.corsHeaders(origin)
+        );
+    }
+}
 
 	/**
 	 * Append a row to a GitHub-hosted CSV file (create if missing).
@@ -1055,11 +996,6 @@ export default {
 
 				/** @inner 404 for unmatched API routes */
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
-			}
-
-			// In the fetch handler, add this route:
-			if (url.pathname === "/api/debug/config" && request.method === "GET") {
-				return service.debugConfig(origin);
 			}
 
 			/** @inner Handle static assets with SPA fallback */
