@@ -429,7 +429,7 @@
 
 		/**
 		 * Render studies list (links to study.html).
-		 * Truncates description to ~2 lines (≈140 chars) with ellipsis.
+		 * Truncates description to ~2 lines (≈170 chars) with fade-out tail.
 		 * @function renderStudies
 		 * @param {UIProject} project
 		 * @param {Array<{id:string, studyId?:string, method:string, status?:string, description?:string, createdAt?:string}>} studies
@@ -444,28 +444,32 @@
 				return;
 			}
 
-			// helper: truncate to whole words + ellipsis
-			function truncateText(text, maxLength = 140) {
+			// helper: truncate to whole words, ellipsis optional
+			function truncateText(text, maxLength = 170) {
 				if (!text) return "";
 				if (text.length <= maxLength) return text;
 				const truncated = text.slice(0, maxLength).replace(/\s+\S*$/, ""); // backtrack to last space
-				return truncated + "&hellip;";
+				return truncated;
 			}
 
 			list.innerHTML = studies.map(s => {
 				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${status}</em>` : ""].filter(Boolean).join(" ");
-				const desc = truncateText(s.description || "", 170);
+
+				// apply fade-tail if text was truncated
+				const fullDesc = s.description || "";
+				const isTruncated = fullDesc.length > 170;
+				const desc = truncateText(fullDesc, 170);
 
 				return `
-			<li class="item">
-				<div>
-					<a class="govuk-link" href="${href}">${s.method || "Study"}</a>
-					${meta ? ` — ${meta}` : ""}
-				</div>
-				${desc ? `<div class="lede" style="margin-top:4px;">${desc}</div>` : ""}
-			</li>
+		<li class="item">
+			<div>
+				<a class="govuk-link" href="${href}">${s.method || "Study"}</a>
+				${meta ? ` — ${meta}` : ""}
+			</div>
+			${desc ? `<div class="lede" style="margin-top:4px;"><span class="${isTruncated ? "fade-tail" : ""}">${desc}${isTruncated ? "&hellip;" : ""}</span></div>` : ""}
+		</li>
 		`;
 			}).join("");
 		}
