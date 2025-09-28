@@ -289,6 +289,7 @@
 		 */
 		function makeStudyId() {
 			// Keeps your recNNN… look but unique enough for demo purposes.
+			const n = Math.floor(Date.now() / 1000) % 1_000_000_000;
 			return "rec" + Math.floor(Date.now() / 1000).toString(36);
 		}
 
@@ -466,7 +467,7 @@
 		 * @section Accessible “Add Study” modal
 		 * ========================= */
 
-		(function initStudyModal() {
+		function initStudyModal(project) {
 			/** @type {HTMLDialogElement|null} */
 			const dialog = /** @type {any} */ ($("#study-dialog"));
 			const openBtn = $("#btn-add-study");
@@ -541,8 +542,7 @@
 
 				if (!method || !notes) return;
 
-				const mainEl = $("main");
-				const projectAirtableId = mainEl?.dataset?.projectAirtableId || "";
+				const projectAirtableId = project.id || $("main")?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
 
 				try {
@@ -561,8 +561,8 @@
 					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
 
 					// Refresh the list and close
-					const studies = await loadStudies(projectAirtableId);
-					renderStudies(studies);
+					const studies = await loadStudies(project.id);
+					renderStudies(project, studies)
 					close();
 				} catch (err) {
 					// eslint-disable-next-line no-console
@@ -570,7 +570,7 @@
 					alert("Could not create study.");
 				}
 			});
-		})();
+		}
 
 		/* =========================
 		 * @section Bootstrap
@@ -594,6 +594,7 @@
 
 				const studies = await loadStudies(project.id); // GET /api/studies?project=...
 				renderStudies(project, studies);
+				initStudyModal(project);
 
 			} catch (err) {
 				console.error(err);
