@@ -325,7 +325,7 @@
 						p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
 					stakeholders: Array.isArray(p.stakeholders) ?
 						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
-					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
+					createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
 					
 					/** @inner Keep the lead fields coming from the API */
 					lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
