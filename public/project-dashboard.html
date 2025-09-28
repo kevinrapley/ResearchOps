@@ -327,7 +327,7 @@
 					stakeholders: Array.isArray(p.stakeholders) ?
 						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
 					createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
-					
+
 					/** @inner Keep the lead fields coming from the API */
 					lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
 					lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
@@ -474,9 +474,9 @@
 			const closeBtn = $("#study-close");
 			const cancelBtn = $("#study-cancel");
 			const submitBtn = $("#study-submit");
+			const form = dialog?.querySelector("form");
 
 			let lastFocus = null;
-
 			if (!dialog || !openBtn) return;
 
 			function open() {
@@ -533,17 +533,21 @@
 			closeBtn?.addEventListener("click", close);
 			cancelBtn?.addEventListener("click", close);
 
-			// Submit “Add Study”
-			submitBtn?.addEventListener("click", async (e) => {
+			// Prefer form submit so Enter key works
+			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
 				e.preventDefault();
 
-				const method = /** @type {HTMLSelectElement|null} */ ($("#study-method"))?.value?.trim();
-				const notes = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"))?.value?.trim();
-
+				const methodEl = /** @type {HTMLSelectElement|null} */ ($("#study-method"));
+				const notesEl = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"));
+				const method = methodEl?.value?.trim();
+				const notes = notesEl?.value?.trim();
 				if (!method || !notes) return;
 
 				const projectAirtableId = project.id || $("main")?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
+
+				// Disable submit while posting
+				submitBtn?.setAttribute("disabled", "true");
 
 				try {
 					const res = await fetch("/api/studies", {
@@ -562,12 +566,18 @@
 
 					// Refresh the list and close
 					const studies = await loadStudies(project.id);
-					renderStudies(project, studies)
+					renderStudies(project, studies); // ← semicolon added
+
+					// Clear inputs for next time
+					if (methodEl) methodEl.value = "";
+					if (notesEl) notesEl.value = "";
+
 					close();
 				} catch (err) {
-					// eslint-disable-next-line no-console
 					console.error(err);
 					alert("Could not create study.");
+				} finally {
+					submitBtn?.removeAttribute("disabled");
 				}
 			});
 		}
