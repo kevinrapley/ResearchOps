@@ -218,6 +218,8 @@
 		 * @property {string[]} user_groups
 		 * @property {Array<{name?:string, role?:string, email?:string}>} stakeholders
 		 * @property {string}  createdAt
+		 * @property {string} lead_researcher
+		 * @property {string} lead_researcher_email
 		 */
 
 		/**
@@ -383,6 +385,8 @@
 			setText("#kv-service-stage", project.phase);
 			setText("#kv-project-stage", project.status);
 			setText("#kv-client-name", project.org);
+			setText("#kv-lead-researcher", project.lead_researcher || "—");
+			setText("#kv-lead-email", project.lead_researcher_email || "—");
 
 			const mainEl = $("main");
 			if (mainEl) mainEl.dataset.projectAirtableId = project.id || "";
