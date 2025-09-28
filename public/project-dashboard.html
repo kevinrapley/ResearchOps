@@ -326,6 +326,11 @@
 					stakeholders: Array.isArray(p.stakeholders) ?
 						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
 					createdAt: p.createdAt || p.CreatedAt || p.createdTime || ""
+					
+					/** @inner Keep the lead fields coming from the API */
+					lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
+					lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
+
 				})
 			);
 		}
