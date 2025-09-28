@@ -291,6 +291,72 @@ class ResearchOpsService {
 		this.destroyed = true;
 	}
 
+	// Add this temporary debug endpoint to check your configuration
+
+	// In the fetch handler, add this route:
+	if (url.pathname === "/api/debug/config" && request.method === "GET") {
+		return service.debugConfig(origin);
+	}
+
+	// Add this method to ResearchOpsService class:
+	async debugConfig(origin) {
+		const config = {
+			airtable: {
+				baseId: this.env.AIRTABLE_BASE_ID ? `${this.env.AIRTABLE_BASE_ID.substring(0, 8)}...` : "MISSING",
+				tableProjects: this.env.AIRTABLE_TABLE_PROJECTS || "MISSING",
+				tableDetails: this.env.AIRTABLE_TABLE_DETAILS || "MISSING",
+				tableStudies: this.env.AIRTABLE_TABLE_STUDIES || "MISSING",
+				apiKeyPresent: !!this.env.AIRTABLE_API_KEY,
+				apiKeyPrefix: this.env.AIRTABLE_API_KEY?.substring(0, 3) || "MISSING"
+			},
+			github: {
+				owner: this.env.GH_OWNER || "MISSING",
+				repo: this.env.GH_REPO || "MISSING",
+				branch: this.env.GH_BRANCH || "MISSING",
+				pathProjects: this.env.GH_PATH_PROJECTS || "MISSING",
+				pathDetails: this.env.GH_PATH_DETAILS || "MISSING",
+				pathStudies: this.env.GH_PATH_STUDIES || "MISSING",
+				tokenPresent: !!this.env.GH_TOKEN,
+				tokenPrefix: this.env.GH_TOKEN?.substring(0, 4) || "MISSING"
+			}
+		};
+
+		// Test basic connectivity
+		const tests = {};
+
+		try {
+			// Test Airtable
+			if (this.env.AIRTABLE_BASE_ID && this.env.AIRTABLE_API_KEY) {
+				const atUrl = `https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}`;
+				const atRes = await fetchWithTimeout(atUrl, {
+					headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+				}, 5000);
+				tests.airtable = {
+					status: atRes.status,
+					ok: atRes.ok,
+					accessible: atRes.status !== 404
+				};
+			}
+
+			// Test GitHub  
+			if (this.env.GH_OWNER && this.env.GH_REPO && this.env.GH_TOKEN) {
+				const ghUrl = `https://api.github.com/repos/${this.env.GH_OWNER}/${this.env.GH_REPO}`;
+				const ghRes = await fetchWithTimeout(ghUrl, {
+					headers: { "Authorization": `Bearer ${this.env.GH_TOKEN}` }
+				}, 5000);
+				tests.github = {
+					status: ghRes.status,
+					ok: ghRes.ok,
+					accessible: ghRes.status !== 404 && ghRes.status !== 403
+				};
+			}
+		} catch (error) {
+			tests.error = error.message;
+		}
+
+		return this.json({ config, tests }, 200, this.corsHeaders(origin));
+	}
+
 	/**
 	 * Build CORS headers for the given origin.
 	 * @function corsHeaders
