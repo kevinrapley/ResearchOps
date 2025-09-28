@@ -608,6 +608,7 @@ class ResearchOpsService {
 
 	/**
 	 * List studies for a given project from Airtable.
+	 * Filters by linked-record ids in the returned JSON (not by formula).
 	 * @async
 	 * @function listStudies
 	 * @param {string} origin
@@ -623,9 +624,10 @@ class ResearchOpsService {
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
 
-		// filterByFormula: check if the linked-record array {Project} contains the given id
-		const formula = `FIND("${projectId}", ARRAYJOIN({Project}))`;
-		const atUrl = `https://api.airtable.com/v0/${base}/${tStudies}?filterByFormula=${encodeURIComponent(formula)}`;
+		// Optional: allow ?view=My%20View for server-side constraints (e.g., hide archived)
+		const view = url.searchParams.get("view");
+		let atUrl = `https://api.airtable.com/v0/${base}/${tStudies}?pageSize=100`;
+		if (view) atUrl += `&view=${encodeURIComponent(view)}`;
 
 		const res = await fetchWithTimeout(atUrl, {
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
@@ -641,17 +643,20 @@ class ResearchOpsService {
 		let data;
 		try { data = JSON.parse(text); } catch { data = { records: [] }; }
 
-		const studies = (data.records || []).map(r => {
-			const f = r.fields || {};
-			return {
-				id: r.id,
-				studyId: f["Study ID"] || "",
-				method: f.Method || "",
-				status: f.Status || "",
-				description: f.Description || "",
-				createdAt: r.createdTime
-			};
-		});
+		// Filter by the linked-record ids array that Airtable returns for {Project}
+		const studies = (data.records || [])
+			.filter(r => Array.isArray(r.fields?.Project) && r.fields.Project.includes(projectId))
+			.map(r => {
+				const f = r.fields || {};
+				return {
+					id: r.id,
+					studyId: f["Study ID"] || "",
+					method: f.Method || "",
+					status: f.Status || "",
+					description: f.Description || "",
+					createdAt: r.createdTime
+				};
+			});
 
 		return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
 	}
