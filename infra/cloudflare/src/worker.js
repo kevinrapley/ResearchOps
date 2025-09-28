@@ -470,27 +470,25 @@ class ResearchOpsService {
 	 *   JSON `{ ok:true, project_id, detail_id, csv_ok, csv_error? }` or error JSON with status.
 	 */
 	async createProject(request, origin) {
-		/** @inner Parse and validate request body size */
+		// Size guard for body (prevents abuse)
 		const body = await request.arrayBuffer();
 		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
 			this.log.warn("request.too_large", { size: body.byteLength });
 			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
 		}
 
-		/**
-		 * @inner Parse JSON payload safely
-		 * @type {any}
-		 */
+		/** @inner Parse JSON payload safely */
+		/** @type {any} */
 		let payload;
 		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
 
-		/** @inner Validate required fields */
+		// Validate required fields
 		const errs = [];
 		if (!payload.name) errs.push("name");
 		if (!payload.description) errs.push("description");
 		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
 
-		/** @inner Build Airtable project fields, filtering out undefined/empty values */
+		/** @inner Build Airtable project fields; strip empties */
 		const projectFields = {
 			Org: payload.org || "Home Office Biometrics",
 			Name: payload.name,
@@ -507,14 +505,14 @@ class ResearchOpsService {
 			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete projectFields[k];
 		}
 
-		/** @inner Prepare Airtable API endpoints */
+		/** @inner Prepare Airtable endpoints */
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tProjects = encodeURIComponent(this.env.AIRTABLE_TABLE_PROJECTS);
 		const tDetails = encodeURIComponent(this.env.AIRTABLE_TABLE_DETAILS);
 		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
 		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
 
-		/** @inner 1) Create main project record in Airtable */
+		// 1) Create main project
 		const pRes = await fetchWithTimeout(atProjectsUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -525,12 +523,13 @@ class ResearchOpsService {
 			this.log.error("airtable.create.fail", { status: pRes.status, text: safeText(pText) });
 			return this.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, this.corsHeaders(origin));
 		}
+		/** @inner Extract project Airtable id */
 		let pJson;
 		try { pJson = JSON.parse(pText); } catch { pJson = { records: [] }; }
 		const projectId = pJson.records?.[0]?.id;
 		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
 
-		/** @inner 2) Optional details record creation if any detail fields are present */
+		// 2) Optionally create "Project Details" row
 		let detailId = null;
 		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
 		if (hasDetails) {
@@ -540,11 +539,12 @@ class ResearchOpsService {
 				"Lead Researcher Email": payload.lead_researcher_email || "",
 				Notes: payload.notes || ""
 			};
-			/** @inner Remove empty string fields */
+			// Strip empty strings
 			for (const k of Object.keys(detailsFields)) {
 				const v = detailsFields[k];
 				if (typeof v === "string" && v.trim() === "") delete detailsFields[k];
 			}
+
 			const dRes = await fetchWithTimeout(atDetailsUrl, {
 				method: "POST",
 				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -552,25 +552,20 @@ class ResearchOpsService {
 			}, this.cfg.TIMEOUT_MS);
 			const dText = await dRes.text();
 			if (!dRes.ok) {
-				/** @inner Attempt rollback of newly-created project on details failure */
-				try {
-					await fetchWithTimeout(`${atProjectsUrl}/${projectId}`, {
-						method: "DELETE",
-						headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
-					}, this.cfg.TIMEOUT_MS);
-				} catch {}
+				// Best-effort rollback of the project record
+				try { await fetchWithTimeout(`${atProjectsUrl}/${projectId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` } }, this.cfg.TIMEOUT_MS); } catch {}
 				this.log.error("airtable.details.fail", { status: dRes.status, text: safeText(dText) });
 				return this.json({ error: `Airtable details ${dRes.status}`, detail: safeText(dText) }, dRes.status, this.corsHeaders(origin));
 			}
 			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
 		}
 
-		/** @inner 3) Best-effort GitHub CSV append(s) - non-blocking failures */
+		// 3) Best-effort GitHub CSV append(s)
 		let csvOk = true,
 			csvError = null;
 		try {
 			const nowIso = new Date().toISOString();
-			/** @inner Append to projects CSV */
+			// projects.csv
 			const projectRow = [
 				payload.id || "",
 				payload.org || "Home Office Biometrics",
@@ -589,7 +584,7 @@ class ResearchOpsService {
 				row: projectRow
 			});
 
-			/** @inner Append to details CSV if we have details */
+			// project-details.csv (optional)
 			if (hasDetails) {
 				const detailsRow = [
 					projectId,
@@ -611,7 +606,6 @@ class ResearchOpsService {
 			this.log.warn("github.csv.append.fail", { err: csvError });
 		}
 
-		/** @inner Log successful creation if audit mode enabled */
 		if (this.env.AUDIT === "true") this.log.info("project.created", { airtableId: projectId, hasDetails, csvOk });
 		return this.json({ ok: true, project_id: projectId, detail_id: detailId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
 	}
@@ -635,33 +629,31 @@ class ResearchOpsService {
 	 *   JSON `{ ok:true, study_id, csv_ok, csv_error? }` or error JSON with status.
 	 */
 	async createStudy(request, origin) {
-		/** @inner Parse and validate request body size */
+		// Size guard
 		const body = await request.arrayBuffer();
 		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
 			this.log.warn("request.too_large", { size: body.byteLength });
 			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
 		}
 
-		/**
-		 * @inner Parse JSON payload safely
-		 * @type {any}
-		 */
+		/** @inner Parse body JSON */
+		/** @type {any} */
 		let payload;
 		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
 
-		/** @inner Validate required fields */
+		// Required field checks
 		const errs = [];
 		if (!payload.project_airtable_id) errs.push("project_airtable_id");
 		if (!payload.method) errs.push("method");
 		if (!payload.description) errs.push("description");
 		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
 
-		/** @inner Prepare Airtable API endpoint */
+		/** @inner Airtable endpoint */
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
 		const atStudiesUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
 
-		/** @inner Build study fields, filtering out undefined/empty values */
+		/** @inner Construct study fields; strip empties */
 		const fields = {
 			Project: [payload.project_airtable_id],
 			Method: payload.method,
@@ -674,7 +666,7 @@ class ResearchOpsService {
 			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete fields[k];
 		}
 
-		/** @inner Create study record in Airtable */
+		// Create study
 		const sRes = await fetchWithTimeout(atStudiesUrl, {
 			method: "POST",
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -686,13 +678,13 @@ class ResearchOpsService {
 			return this.json({ error: `Airtable ${sRes.status}`, detail: safeText(sText) }, sRes.status, this.corsHeaders(origin));
 		}
 
-		/** @inner Parse response and extract study ID */
+		/** @inner Extract new Airtable record id */
 		let sJson;
 		try { sJson = JSON.parse(sText); } catch { sJson = { records: [] }; }
 		const studyId = sJson.records?.[0]?.id;
 		if (!studyId) return this.json({ error: "Airtable response missing study id" }, 502, this.corsHeaders(origin));
 
-		/** @inner Best-effort GitHub CSV append - non-blocking failures */
+		// Best-effort CSV write
 		let csvOk = true,
 			csvError = null;
 		try {
@@ -717,7 +709,6 @@ class ResearchOpsService {
 			this.log.warn("github.csv.append.fail.study", { err: csvError });
 		}
 
-		/** @inner Log successful creation if audit mode enabled */
 		if (this.env.AUDIT === "true") this.log.info("study.created", { studyId, csvOk });
 		return this.json({ ok: true, study_id: studyId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
 	}
@@ -725,61 +716,61 @@ class ResearchOpsService {
 	/**
 	 * List studies linked to a given project from Airtable.
 	 *
-	 * - Requires `?project=<AirtableId>` query param (the **Airtable record id** of the Project).
-	 * - Returns matching Study records (linked via `Project` link field).
+	 * - Requires `?project=<AirtableId>` query param (the Airtable record id of the Project).
+	 * - Paginates through Airtable results to avoid missing records.
+	 * - Filters client-side to ensure exact link match.
 	 *
 	 * @async
 	 * @function listStudies
 	 * @memberof ResearchOpsService
 	 * @inner
 	 * @param {string} origin
-	 *   Request origin (for CORS).
 	 * @param {URL} url
-	 *   Parsed request URL containing `?project=`.
 	 * @returns {Promise<Response>}
-	 *   JSON `{ ok:true, studies:[...] }` or error JSON with status.
-	 *
-	 * @example
-	 * // GET /api/studies?project=recXXXXXXXX
 	 */
 	async listStudies(origin, url) {
-		/** @inner Extract and validate project ID parameter */
+		// Validate required query param
 		const projectId = url.searchParams.get("project");
 		if (!projectId) {
 			return this.json({ error: "Missing project query" }, 400, this.corsHeaders(origin));
 		}
 
-		/** @inner Prepare Airtable API endpoint and filter formula */
+		/** @inner Endpoint + auth setup */
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atBase = `https://api.airtable.com/v0/${base}/${tStudies}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
 
-		/**
-		 * @inner Match exact linked record id in a multi-link field
-		 * Using FIND + ARRAYJOIN is pragmatic for a single param; if performance 
-		 * becomes an issue, use an Airtable View filtered by the linked record.
-		 */
-		const formula = `FIND("${projectId}", ARRAYJOIN({Project}))`;
-		const atUrl = `https://api.airtable.com/v0/${base}/${tStudies}?filterByFormula=${encodeURIComponent(formula)}`;
+		/** @inner Collect across pages */
+		const records = [];
+		let offset;
 
-		/** @inner Fetch studies from Airtable */
-		const res = await fetchWithTimeout(atUrl, {
-			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
-		}, this.cfg.TIMEOUT_MS);
+		do {
+			// Limit fields to minimize payload; add offset as needed
+			const params = new URLSearchParams({ pageSize: "100" });
+			["Project", "Method", "Status", "Description", "Study ID"].forEach(f => params.append("fields[]", f));
+			if (offset) params.set("offset", offset);
 
-		const text = await res.text();
-		if (!res.ok) {
-			this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
-			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
-		}
+			const res = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+			const text = await res.text();
 
-		/** 
-		 * @inner Parse response and transform to our study format
-		 * @type {{records:Array<{id:string,createdTime:string,fields:Record<string,any>}>}} 
-		 */
-		let data;
-		try { data = JSON.parse(text); } catch { data = { records: [] }; }
+			if (!res.ok) {
+				this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
+				return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+			}
 
-		const studies = (data.records || []).map(r => {
+			/** @inner Parse and accumulate */
+			let js;
+			try { js = JSON.parse(text); } catch { js = { records: [] }; }
+			records.push(...(js.records || []));
+			offset = js.offset;
+		} while (offset);
+
+		// Filter: ensure the linked Project array contains the requested id
+		const filtered = records.filter(r => Array.isArray(r.fields?.Project) && r.fields.Project.includes(projectId));
+
+		// Map to UI model
+		const studies = filtered.map(r => {
 			const f = r.fields || {};
 			return {
 				id: r.id,
@@ -790,6 +781,9 @@ class ResearchOpsService {
 				createdAt: r.createdTime
 			};
 		});
+
+		// Newest first
+		studies.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
 
 		return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
 	}
@@ -884,22 +878,9 @@ class ResearchOpsService {
 	 * @function githubCsvAppend
 	 * @memberof ResearchOpsService
 	 * @inner
-	 * @param {Object} params
-	 * @param {string} params.path
-	 *   Repository path to CSV file (e.g., `data/studies.csv`).
-	 * @param {string[]} params.header
-	 *   Array of header column names (used if file needs creating).
-	 * @param {string[]} params.row
-	 *   Array of values to append as a new row.
+	 * @param {{path:string, header:string[], row:string[]}} params
 	 * @returns {Promise<void>}
 	 * @throws {Error} If GitHub API read/write fails.
-	 *
-	 * @example
-	 * await service.githubCsvAppend({
-	 *   path: "data/studies.csv",
-	 *   header: ["AirtableId","ProjectAirtableId","StudyId","Method","Status","Description","CreatedAt"],
-	 *   row: ["rec123","rec999","","User Interview","Planned","Consent forms","2025-09-28T12:00:00Z"]
-	 * });
 	 */
 	async githubCsvAppend({ path, header, row }) {
 		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
@@ -911,41 +892,35 @@ class ResearchOpsService {
 			"Content-Type": "application/json"
 		};
 
-		/** @inner Read current file (to get sha and existing content) */
+		/** @inner Read the current file */
 		let sha = undefined,
 			content = "",
 			exists = false;
 		const getRes = await fetchWithTimeout(`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers }, this.cfg.TIMEOUT_MS);
 		if (getRes.status === 200) {
-			/** @inner File exists - get current content and sha */
 			const js = await getRes.json();
 			sha = js.sha;
 			content = b64Decode(js.content);
 			exists = true;
 		} else if (getRes.status === 404) {
-			/** @inner File doesn't exist - start with header row */
+			// Initialize with header
 			content = header.join(",") + "\n";
 		} else {
-			/** @inner Unexpected error reading file */
 			const t = await getRes.text();
 			throw new Error(`GitHub read ${getRes.status}: ${safeText(t)}`);
 		}
 
-		/** @inner Append new row to content */
+		// Append the new row
 		content += toCsvLine(row);
 
-		/**
-		 * @inner Prepare commit payload
-		 * @type {any}
-		 */
+		/** @inner Write back to GitHub with commit message */
 		const putBody = {
 			message: exists ? `chore: append row to ${path}` : `chore: create ${path} with header`,
 			content: b64Encode(content),
 			branch: GH_BRANCH
 		};
-		if (sha) putBody.sha = sha; // Include sha for updates
+		if (sha) putBody.sha = sha;
 
-		/** @inner Write updated content back to GitHub */
 		const putRes = await fetchWithTimeout(base, { method: "PUT", headers, body: JSON.stringify(putBody) }, this.cfg.TIMEOUT_MS);
 		if (!putRes.ok) {
 			const t = await putRes.text();
@@ -964,49 +939,42 @@ class ResearchOpsService {
  * - Routes all `/api/*` requests to service methods.
  * - Supports CORS preflight via `OPTIONS`.
  * - Enforces allowed origins (`ALLOWED_ORIGINS`).
- * - Proxies static assets via `env.ASSETS`.
+ * - Proxies static assets via `env.ASSETS` with SPA fallback.
  *
  * @async
  * @function fetch
  * @memberof default
  * @inner
  * @param {Request} request
- *   Incoming Cloudflare Worker Request.
  * @param {Env} env
- *   Environment variables (bindings + secrets).
  * @param {ExecutionContext} ctx
- *   Cloudflare execution context.
  * @returns {Promise<Response>}
- *   Standard Fetch API Response.
- *
- * @throws {Error} On unexpected failure (returned as 500 JSON).
  */
 export default {
 	async fetch(request, env, ctx) {
-		/** @inner Initialize service and extract request details */
+		/** @inner Bootstrap per-request service instance */
 		const service = new ResearchOpsService(env);
 		const url = new URL(request.url);
 		const origin = request.headers.get("Origin") || "";
 
 		try {
-			/** @inner Handle API routes */
+			// API routes
 			if (url.pathname.startsWith("/api/")) {
-				/** @inner Handle CORS preflight requests */
+				// CORS preflight
 				if (request.method === "OPTIONS") {
 					return new Response(null, { headers: service.corsHeaders(origin) });
 				}
 
-				/** @inner Enforce allowed origins for API requests */
+				// Enforce ALLOWED_ORIGINS for API calls
 				const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 				if (origin && !allowed.includes(origin)) {
 					return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
 				}
 
-				// Route to appropriate service methods
-				/** @inner Health endpoint */
+				// Route map
 				if (url.pathname === "/api/health") return service.health(origin);
 
-				/** @inner Projects endpoints */
+				// Projects
 				if (url.pathname === "/api/projects" && request.method === "GET") {
 					return service.listProjectsFromAirtable(origin, url);
 				}
@@ -1014,7 +982,7 @@ export default {
 					return service.createProject(request, origin);
 				}
 
-				/** @inner Studies endpoints */
+				// Studies
 				if (url.pathname === "/api/studies" && request.method === "GET") {
 					return service.listStudies(origin, url);
 				}
@@ -1022,7 +990,7 @@ export default {
 					return service.createStudy(request, origin);
 				}
 
-				/** @inner CSV streaming endpoints */
+				// CSV streaming
 				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
 				}
@@ -1030,27 +998,28 @@ export default {
 					return service.streamCsv(origin, env.GH_PATH_DETAILS);
 				}
 
-				/** @inner 404 for unmatched API routes */
+				// 404 for unknown API paths
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
 			}
 
-			/** @inner Handle static assets with SPA fallback */
+			// Static assets with SPA fallback
 			let resp = await env.ASSETS.fetch(request);
 			if (resp.status === 404) {
-				/** @inner SPA fallback - serve index.html for client-side routing */
+				// Serve index.html for client-side routes
 				const indexReq = new Request(new URL("/index.html", url), request);
 				resp = await env.ASSETS.fetch(indexReq);
 			}
 			return resp;
+
 		} catch (e) {
-			/** @inner Log and return structured error for any unhandled exceptions */
+			// Defensive error handling to avoid leaking impl details
 			service.log.error("unhandled.error", { err: String(e?.message || e) });
 			return new Response(JSON.stringify({ error: "Internal error" }), {
 				status: 500,
 				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 			});
 		} finally {
-			/** @inner Always cleanup service resources */
+			// Always flush/destroy logger buffers
 			service.destroy();
 		}
 	}
