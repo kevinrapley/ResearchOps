@@ -344,7 +344,7 @@ class ResearchOpsService {
 	 * @async
 	 * @function listProjectsFromAirtable
 	 * @memberof ResearchOpsService
-	 * @inner
+	 * @inner join Project Details -> include lead fields
 	 * @param {string} origin
 	 *   Request origin (for CORS).
 	 * @param {URL} url
@@ -356,40 +356,35 @@ class ResearchOpsService {
 	 * // GET /api/projects?limit=100&view=Grid%20view
 	 */
 	async listProjectsFromAirtable(origin, url) {
-		/** @inner Extract query parameters and apply sensible limits */
 		const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
 		const view = url.searchParams.get("view") || undefined;
 
-		/** @inner Build Airtable API URL */
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tProjects = encodeURIComponent(this.env.AIRTABLE_TABLE_PROJECTS);
+		const tDetails = encodeURIComponent(this.env.AIRTABLE_TABLE_DETAILS);
 
+		// ---- 1) Projects
 		let atUrl = `https://api.airtable.com/v0/${base}/${tProjects}?pageSize=${limit}`;
 		if (view) atUrl += `&view=${encodeURIComponent(view)}`;
 
-		/** @inner Fetch from Airtable with timeout protection */
-		const res = await fetchWithTimeout(atUrl, {
+		const pRes = await fetchWithTimeout(atUrl, {
 			headers: {
 				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
 				"Content-Type": "application/json"
 			}
 		}, this.cfg.TIMEOUT_MS);
 
-		const text = await res.text();
-		if (!res.ok) {
-			this.log.error("airtable.list.fail", { status: res.status, text: safeText(text) });
-			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		const pText = await pRes.text();
+		if (!pRes.ok) {
+			this.log.error("airtable.list.fail", { status: pRes.status, text: safeText(pText) });
+			return this.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, this.corsHeaders(origin));
 		}
 
-		/**
-		 * @inner Parse Airtable response safely
-		 * @type {{records: Array<{id:string,createdTime?:string,fields:Record<string,any>}>}}
-		 */
-		let data;
-		try { data = JSON.parse(text); } catch { data = { records: [] }; }
+		/** @type {{records: Array<{id:string,createdTime?:string,fields:Record<string,any>}>}} */
+		let pData;
+		try { pData = JSON.parse(pText); } catch { pData = { records: [] }; }
 
-		/** @inner Transform Airtable records to our project format */
-		let projects = (data.records || []).map(r => {
+		let projects = (pData.records || []).map(r => {
 			const f = r.fields || {};
 			return {
 				id: r.id,
@@ -404,9 +399,50 @@ class ResearchOpsService {
 			};
 		});
 
-		/** @inner Sort newest-first by creation time for stable ordering */
-		projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+		// ---- 2) Project Details (pull lead researcher + email)
+		// We fetch a single page (100) which is fine for this UI; expand if you have more.
+		const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
+		const dRes = await fetchWithTimeout(dUrl, {
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
 
+		if (dRes.ok) {
+			const dText = await dRes.text();
+			/** @type {{records:Array<{id:string,createdTime?:string,fields:Record<string,any>}>}} */
+			let dData;
+			try { dData = JSON.parse(dText); } catch { dData = { records: [] }; }
+
+			// Map first-seen (or latest-by-createdTime) detail per project id.
+			const detailsByProject = new Map();
+			for (const r of (dData.records || [])) {
+				const f = r.fields || {};
+				const linked = Array.isArray(f.Project) && f.Project[0];
+				if (!linked) continue;
+				const existing = detailsByProject.get(linked);
+				// prefer the newest createdTime if multiple
+				if (!existing || toMs(r.createdTime) > toMs(existing._createdAt)) {
+					detailsByProject.set(linked, {
+						lead_researcher: f["Lead Researcher"] || "",
+						lead_researcher_email: f["Lead Researcher Email"] || "",
+						notes: f.Notes || "",
+						_createdAt: r.createdTime || ""
+					});
+				}
+			}
+
+			// Merge onto projects by Airtable id (record id)
+			projects = projects.map(p => {
+				const d = detailsByProject.get(p.id);
+				return d ? { ...p, lead_researcher: d.lead_researcher, lead_researcher_email: d.lead_researcher_email, notes: d.notes } : p;
+			});
+		} else {
+			// Non-blocking: if details fetch fails, just log and continue
+			const dt = await dRes.text().catch(() => "");
+			this.log.warn("airtable.details.join.fail", { status: dRes.status, detail: safeText(dt) });
+		}
+
+		// newest-first for UI
+		projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 		return this.json({ ok: true, projects }, 200, this.corsHeaders(origin));
 	}
 
