@@ -28,6 +28,7 @@ export async function onRequest(context) {
 
   // Build upstream URL: /api/<rest>?<query>
   const inUrl = new URL(request.url);
+  inUrl.pathname = "/api/" + params.path.join("/");
   const rest = typeof params.path === "string" ? params.path : "";
   const target = new URL(`/api/${rest}${inUrl.search}`, env.UPSTREAM_API);
 
