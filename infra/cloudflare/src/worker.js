@@ -824,7 +824,7 @@ class ResearchOpsService {
 
 		return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
 	}
-	
+
 	/**
 	 * Update a Study (Airtable partial update).
 	 * Accepts: { description?, method?, status?, study_id? }
@@ -1089,6 +1089,10 @@ export default {
 				}
 				if (url.pathname === "/api/studies" && request.method === "POST") {
 					return service.createStudy(request, origin);
+				}
+				if (url.pathname.startsWith("/api/studies/") && request.method === "PATCH") {
+					const studyId = decodeURIComponent(url.pathname.slice("/api/studies/".length));
+					return service.updateStudy(request, origin, studyId);
 				}
 
 				// CSV streaming
