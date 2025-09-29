@@ -6,21 +6,21 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Study — ResearchOps</title>
 
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<script type="module" src="/components/layout.js"></script>
 </head>
 
 <body>
-	<x-include src="./partials/header.html" vars='{
+	<x-include src="/partials/header.html" vars='{
     "active":"Projects",
     "subtitle":"Study"
   }'></x-include>
 
 	<main class="govuk-body" role="main">
 		<div class="actions-bar">
-			<a id="back-to-project" href="./pages/projects/" class="btn btn--secondary">← Back to Project</a>
+			<a id="back-to-project" href="/pages/projects/" class="btn btn--secondary">← Back to Project</a>
 			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
 		</div>
 
@@ -102,7 +102,7 @@
 		</section>
 	</main>
 
-	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
 		/** Minimal Study bootstrap — loads one study (pid+sid) and renders it. */
@@ -208,8 +208,8 @@
 				console.log("[study] pid", pid, "sid", sid);
 
 				// If file lives at /pages/study/index.html:
-				$("#back-to-project")?.setAttribute("href", `../project-dashboard/?id=${encodeURIComponent(pid)}`);
-				$("#edit-study")?.setAttribute("href", `./?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
+				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
+				$("#edit-study")?.setAttribute("href", `/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
 
 				const studies = await loadStudies(pid);
 				const study = studies.find(s => s.id === sid);
