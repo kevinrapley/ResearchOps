@@ -977,7 +977,7 @@ export default {
  */
 export function createMockEnv(overrides = {}) {
 	return /** @type {Env} */ ({
-		ALLOWED_ORIGINS: "http://localhost:8080, https://rops-api.digikev-kevin-rapley.workers.dev",
+		ALLOWED_ORIGINS: "https://rops-api.digikev-kevin-rapley.workers.dev",
 		AUDIT: "false",
 		AIRTABLE_BASE_ID: "app_base",
 		AIRTABLE_TABLE_PROJECTS: "Projects",
