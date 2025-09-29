@@ -301,7 +301,7 @@ class ResearchOpsService {
 	corsHeaders(origin) {
 		const allowed = (this.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 		const h = {
-			"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+			"Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
 			"Access-Control-Allow-Headers": "Content-Type, Authorization",
 			"Vary": "Origin"
 		};
@@ -321,6 +321,43 @@ class ResearchOpsService {
 	json(body, status = 200, headers = {}) {
 		const hdrs = Object.assign({ "Content-Type": "application/json" }, headers || {});
 		return new Response(JSON.stringify(body), { status, headers: hdrs });
+	}
+
+	/**
+	 * @file public/js/richtext.js
+	 * @summary Markdown → Airtable Rich Text adapter (browser).
+	 * Airtable Rich Text accepts Markdown. This normalises Markdown consistently.
+	 */
+
+	/**
+	 * Normalise Markdown for Airtable Rich Text fields.
+	 * - Normalises line endings to "\n"
+	 * - Trims outer whitespace
+	 * - Collapses >2 blank lines to 2
+	 * - Converts tabs to 2 spaces
+	 * - Trims trailing spaces at line ends
+	 * @param {string} markdown
+	 * @param {{collapseBlank?:boolean, tabSize?:number}} [opts]
+	 * @returns {string}
+	 */
+	export function mdToAirtableRich(markdown, opts = {}) {
+		const tabSize = Math.max(1, opts.tabSize ?? 2);
+		const collapseBlank = opts.collapseBlank ?? true;
+
+		let md = String(markdown ?? "");
+
+		// normalise line Endings
+		md = md.replace(/\r\n?/g, "\n");
+		// tabs → spaces
+		md = md.replace(/\t/g, " ".repeat(tabSize));
+		// trim trailing spaces (per line)
+		md = md.split("\n").map(l => l.replace(/[ \t]+$/g, "")).join("\n");
+		// collapse 3+ blank lines → 2
+		if (collapseBlank) md = md.replace(/\n{3,}/g, "\n\n");
+		// outer trim
+		md = md.trim();
+
+		return md;
 	}
 
 	/**
@@ -786,6 +823,70 @@ class ResearchOpsService {
 		studies.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
 
 		return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
+	}
+	
+	/**
+	 * Update a Study (Airtable partial update).
+	 * Accepts: { description?, method?, status?, study_id? }
+	 * Writes to Airtable fields: Description, Method, Status, "Study ID".
+	 */
+	async updateStudy(request, origin, studyId) {
+		if (!studyId) {
+			return this.json({ error: "Missing study id" }, 400, this.corsHeaders(origin));
+		}
+
+		// guard: payload size
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		// parse JSON
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		// map incoming props → Airtable fields (only allow whitelisted fields)
+		const fields = {
+			Description: typeof payload.description === "string" ? payload.description : undefined,
+			Method: typeof payload.method === "string" ? payload.method : undefined,
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			"Study ID": typeof payload.study_id === "string" ? payload.study_id : undefined
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+
+		if (Object.keys(fields).length === 0) {
+			return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+		}
+
+		// Airtable PATCH
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
+
+		const res = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				records: [{ id: studyId, fields }]
+			})
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.study.update.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("study.updated", { studyId, fields });
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
 	}
 
 	/**
