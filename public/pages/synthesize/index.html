@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Synthesis — ResearchOps</title>
+
+	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="./css/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<x-include src="./partials/header.html" vars='{"active":"Synthesis","subtitle":"Synthesis"}'>
+	</x-include>
+
+	<div class="grid">
+		<div class="panel">
+			<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
+			<input id="filter" class="govuk-input" placeholder="Filter by tag (optional)" />
+			<div id="evidence"></div>
+		</div>
+		<div class="panel">
+			<h2 class="govuk-heading-m">Clusters</h2>
+			<div id="clusters"></div>
+			<div style="margin-top:8px;">
+				<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
+				<button id="addCluster" class="govuk-button">Add cluster</button>
+			</div>
+			<div style="margin-top:16px;">
+				<h3 class="govuk-heading-s">Publish theme from cluster</h3>
+				<select id="clusterSelect"></select>
+				<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
+				<textarea id="themeDesc" class="govuk-input" style="height:100px" placeholder="Theme description"></textarea>
+				<button id="publish" class="govuk-button">Publish theme</button>
+				<div id="status" class="govuk-hint"></div>
+			</div>
+		</div>
+	</div>
+
+	<x-include src="./partials/footer.html"></x-include>
+
+	<script type="module">
+		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
+		import { getCtx } from "./scripts/shared.js";
+		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
+
+		function el(html) {
+			const d = document.createElement('div');
+			d.innerHTML = html.trim();
+			return d.firstChild;
+		}
+
+		async function loadEvidence(tagFilter) {
+			const notes = await sdk.search({ type: "Note" });
+			const tags = await sdk.search({ type: "Tag" });
+			const byNote = new Map();
+			tags.forEach(t => {
+				const arr = byNote.get(t.hasTarget) || [];
+				arr.push(t);
+				byNote.set(t.hasTarget, arr);
+			});
+			const wrap = document.getElementById('evidence');
+			wrap.innerHTML = "";
+			notes.forEach(n => {
+				const noteTags = byNote.get(n.id) || [];
+				if (tagFilter && !noteTags.some(t => t.name.toLowerCase().includes(tagFilter.toLowerCase()))) return;
+				const tagHtml = noteTags.map(t => `<span class="tag">${t.name}</span>`).join("");
+				const card = el(`<div class="note" draggable="true" data-id="${n.id}">
+        <div><strong>${new Date(n.created).toLocaleString()}</strong></div>
+        <div>${n.hasBody}</div>
+        <div>${tagHtml}</div>
+    </div>`);
+				card.addEventListener('dragstart', e => {
+					e.dataTransfer.setData('text/plain', n.id);
+				});
+				wrap.appendChild(card);
+			});
+		}
+
+		async function loadClusters() {
+			const clusters = await sdk.search({ type: "Cluster" });
+			const wrap = document.getElementById('clusters');
+			const sel = document.getElementById('clusterSelect');
+			wrap.innerHTML = "";
+			sel.innerHTML = "";
+			clusters.forEach(c => {
+				const box = el(`<div class="cluster" data-id="${c.id}">
+        <div><strong>${c.name}</strong> <span class="govuk-hint">(${(c.members||[]).length} items)</span></div>
+        <div class="bin"></div>
+    </div>`);
+				box.addEventListener('dragover', e => e.preventDefault());
+				box.addEventListener('drop', async e => {
+					const id = e.dataTransfer.getData('text/plain');
+					const fresh = (await sdk.search({ type: "Cluster" })).find(x => x.id === c.id);
+					const members = new Set([...(fresh.members || []), id]);
+					// “update” by saving a new cluster object (simple demo approach)
+					await sdk.createCluster({ label: c.name, members: Array.from(members), id: c.id });
+					await loadClusters();
+				});
+				wrap.appendChild(box);
+
+				const opt = document.createElement('option');
+				opt.value = c.id;
+				opt.textContent = c.name;
+				sel.appendChild(opt);
+			});
+		}
+
+		document.getElementById('addCluster').onclick = async () => {
+			const label = document.getElementById('newCluster').value.trim();
+			if (!label) return;
+			await sdk.createCluster({ label, members: [] });
+			document.getElementById('newCluster').value = "";
+			await loadClusters();
+		};
+
+		document.getElementById('publish').onclick = async () => {
+			const id = document.getElementById('clusterSelect').value;
+			if (!id) return alert("Create/select a cluster.");
+			const all = await sdk.search({ type: "Cluster" });
+			const c = all.find(x => x.id === id);
+			const label = document.getElementById('themeLabel').value.trim();
+			const desc = document.getElementById('themeDesc').value.trim();
+			if (!label) return alert("Theme label required.");
+			const t = await sdk.publishTheme({ label, description: desc, evidenceIds: c?.members || [] });
+			document.getElementById('status').textContent = `Published theme ${t.id}`;
+		};
+
+		document.getElementById('filter').oninput = (e) => loadEvidence(e.target.value);
+
+		await loadEvidence("");
+		await loadClusters();
+	</script>
+</body>
+
+</html>
