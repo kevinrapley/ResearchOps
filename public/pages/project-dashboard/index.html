@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Project Dashboard — ResearchOps</title>
+
+	<!-- Your existing foundations -->
+	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="./css/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<!-- Global header -->
+	<x-include src="./partials/header.html" vars='{
+		"active":"Projects",
+		"subtitle":"Project Dashboard"
+	}'></x-include>
+
+	<main class="govuk-body" role="main">
+
+		<!-- Hero -->
+		<div class="dashboard-hero">
+			<p id="eyebrow-org" class="project-org"></p>
+			<h1 id="project-title" class="govuk-heading-l"></h1>
+			<p id="project-subtitle" class="lede"></p>
+		</div>
+
+		<!-- Top actions -->
+		<div class="actions-bar">
+			<a href="./pages/projects/" class="btn btn--secondary">← Return to Project List</a>
+			<a href="./pages/start/" class="btn" id="btn-edit">✎ Edit Project</a>
+		</div>
+
+		<!-- Key information -->
+		<section class="kv">
+			<ul class="kv__list">
+				<li>
+					<span class="kv__term">Service Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-service-stage">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Project Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-project-stage">–</span>
+
+				</li>
+				<li>
+					<span class="kv__term">Client Name</span>&nbsp;
+					<span class="kv__desc" id="kv-client-name">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Lead Researcher</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-researcher">–</span>
+				</li>
+				<li>
+					<span class="kv__term">Lead Researcher Email</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-email">–</span>
+				</li>
+			</ul>
+		</section>
+
+		<!-- Sublink Button Board -->
+		<nav class="board">
+			<a href="#" class="board__item">Reflexive Journal</a>
+			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
+			<a href="#planning" class="board__item">Research Planning</a>
+			<a href="#outcomes" class="board__item">Research Outcomes</a>
+		</nav>
+
+		<!-- Stakeholder Section -->
+		<section id="stakeholders" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
+				<button type="button" class="btn btn--outline">+ Add Stakeholder</button>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">Stakeholders</h3>
+					<ul class="list-unstyled list-divided" id="stakeholders-list">
+						<li>No stakeholders yet.</li>
+					</ul>
+					<nav id="stakeholders-pager" class="paginate" aria-label="Stakeholders pagination"></nav>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Objectives</h3>
+					<ul class="list-unstyled list-divided" id="objectives-list">
+						<li>No objectives yet.</li>
+					</ul>
+					<nav id="objectives-pager" class="paginate" aria-label="Objectives pagination"></nav>
+					<button type="button" class="btn btn--outline">+ Add Objective</button>
+				</div>
+			</div>
+
+		</section>
+
+		<!-- Research Planning Section -->
+		<section id="planning" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Planning</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">User Groups</h3>
+					<ul class="list-unstyled list-divided" id="user-groups-list">
+						<li>No user groups yet.</li>
+					</ul>
+					<nav id="user-groups-pager" class="paginate" aria-label="User groups pagination"></nav>
+					<button type="button" class="btn btn--outline">+ Add User Group</button>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Participants</h3>
+					<ul class="list-unstyled list-divided" id="participants-list">
+						<li>No participants yet.</li>
+					</ul>
+					<nav id="participants-pager" class="paginate" aria-label="Participants pagination"></nav>
+					<button type="button" class="btn btn--outline">+ Add Participant</button>
+					<div class="dropzone" aria-label="Bulk upload participants">
+						<p>Bulk upload participants via CSV</p>
+						<input type="file" accept=".csv" aria-label="Upload participants CSV">
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Research Outcomes Section -->
+		<section id="outcomes" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Outcomes</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">Studies</h3>
+					<ul class="list-unstyled list-divided" id="studies-list">
+						<li>No studies yet.</li>
+					</ul>
+					<nav id="studies-pager" class="paginate" aria-label="Studies pagination"></nav>
+					<button id="btn-add-study" class="btn btn--outline" type="button">+ Add Study</button>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Insights</h3>
+					<ul class="list-unstyled list-divided" id="insights-list">
+						<li>No insights yet.</li>
+					</ul>
+					<nav id="insights-pager" class="paginate" aria-label="Insights pagination"></nav>
+					<button type="button" class="btn btn--outline">+ Add Insight</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Accessible modal dialog: Add Study -->
+		<dialog id="study-dialog" aria-labelledby="study-title" aria-describedby="study-desc" aria-modal="true" role="dialog">
+			<form method="dialog" style="min-width: min(90vw, 560px);">
+				<header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+					<h3 id="study-title" class="govuk-heading-m" style="margin:0;">Add Study</h3>
+					<button type="button" class="btn btn--outline" id="study-close" aria-label="Close add study dialog">✕</button>
+				</header>
+
+				<p id="study-desc" class="lede">Create a study and capture the method and a short description.</p>
+
+				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
+				<select id="study-method" class="govuk-input" required aria-required="true">
+					<option value="">Choose something</option>
+					<option>Card Sort</option>
+					<option>Contextual Inquiry</option>
+					<option>Customer Satisfaction Survey</option>
+					<option>Diary Study</option>
+					<option>Existing Research Analysis</option>
+					<option>Expert Review</option>
+					<option>Stakeholder Interview</option>
+					<option>Survey</option>
+					<option>Tree Test</option>
+					<option>Usability Test</option>
+					<option>User Interview</option>
+				</select>
+
+				<div class="note" style="margin:8px 0;">
+					Provide a description for the study that is unique and recognisable now and in the future.
+				</div>
+
+				<label class="govuk-label" for="study-notes">Study Description <span class="govuk-hint">(required)</span></label>
+				<textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
+
+				<footer style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+					<button class="govuk-button" value="cancel" id="study-cancel" type="button">Cancel</button>
+					<button class="govuk-button" value="submit" id="study-submit" type="submit">Submit</button>
+				</footer>
+			</form>
+		</dialog>
+	</main>
+
+	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+
+	<script type="module">
+		/**
+		 * @file project-dashboard.bootstrap.js
+		 * @module ProjectDashboard
+		 * @summary Bootstrap the Project Dashboard:
+		 *          - Load projects from Worker API
+		 *          - Select current project via ?id=
+		 *          - Render key fields and lists
+		 *          - Load & list studies (/api/studies?project=…)
+		 *          - Accessible “Add Study” modal to POST /api/studies
+		 * @requires globalThis.fetch
+		 * @requires globalThis.URLSearchParams
+		 */
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Types
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * @typedef {Object} UIProject
+		 * @property {string}  id
+		 * @property {string}  localId
+		 * @property {string}  name
+		 * @property {string}  description
+		 * @property {string}  org
+		 * @property {string}  phase
+		 * @property {string}  status
+		 * @property {string[]} objectives
+		 * @property {string[]} user_groups
+		 * @property {{name?:string, role?:string, email?:string}[]} stakeholders
+		 * @property {string}  createdAt
+		 * @property {string}  lead_researcher
+		 * @property {string}  lead_researcher_email
+		 */
+
+		/**
+		 * @typedef {Object} UIStudy
+		 * @property {string} id
+		 * @property {string} studyId
+		 * @property {string} method
+		 * @property {string} status
+		 * @property {string} description
+		 * @property {string} createdAt
+		 */
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Tiny helpers
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * querySelector shorthand.
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement|null}
+		 */
+		const $ = (sel, root = document) => root.querySelector(sel);
+
+		/**
+		 * querySelectorAll → Array.
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement[]}
+		 */
+		const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+		/**
+		 * textContent with fallback.
+		 * @param {string} sel
+		 * @param {unknown} value
+		 * @param {string} [fallback="—"]
+		 * @returns {void}
+		 */
+		const setText = (sel, value, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
+		};
+
+		/**
+		 * Parse date-ish string → epoch ms; invalid → 0.
+		 * @param {string} d
+		 * @returns {number}
+		 */
+		const toMs = (d) => {
+			const n = Date.parse(d);
+			return Number.isFinite(n) ? n : 0;
+		};
+
+		/**
+		 * Client-side study id (demo) resembling Airtable record ids.
+		 * @returns {string}
+		 */
+		const makeStudyId = () => "rec" + Math.floor(Date.now() / 1000).toString(36);
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Data loading
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Load projects from the Worker API and normalise shape.
+		 * @returns {Promise<UIProject[]>}
+		 * @throws {Error} On HTTP or payload error.
+		 */
+		async function loadProjects() {
+			const res = await fetch("/api/projects", { cache: "no-store" });
+			/** @type {{ok?:boolean, projects?:any[]}} */
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
+
+			return (js.projects || []).map(p =>
+				/** @type {UIProject} */
+				({
+					id: p.id || p.LocalId || p.localId || "",
+					localId: p.LocalId || p.localId || "",
+					name: p.name || p.Name || "",
+					description: p.description || p.Description || "",
+					org: p.Org || p.org || "Home Office Biometrics",
+					phase: p["rops:servicePhase"] || p.Phase || "",
+					status: p["rops:projectStatus"] || p.Status || "",
+					objectives: Array.isArray(p.objectives) ?
+						p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+					user_groups: Array.isArray(p.user_groups) ?
+						p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+					stakeholders: Array.isArray(p.stakeholders) ?
+						p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+					createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
+					lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
+					lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
+				})
+			);
+		}
+
+		/**
+		 * Pick the project for ?id= (supports Airtable id or LocalId).
+		 * @param {UIProject[]} projects
+		 * @returns {UIProject|null}
+		 */
+		function pickProject(projects) {
+			const id = new URLSearchParams(location.search).get("id") || "";
+			if (!id) return null;
+			return projects.find(p => p.id === id || p.localId === id) || null;
+		}
+
+		/**
+		 * Load studies for a project.
+		 * @param {string} airtableProjectId
+		 * @returns {Promise<UIStudy[]>}
+		 */
+		async function loadStudies(airtableProjectId) {
+			const url = `/api/studies?project=${encodeURIComponent(airtableProjectId)}`;
+			const res = await fetch(url, { cache: "no-store" });
+			/** @type {{ok?:boolean, studies?:any[]}} */
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) return [];
+			return (js.studies || []).map(r =>
+				/** @type {UIStudy} */
+				({
+					id: r.id || "",
+					studyId: r.studyId || "",
+					method: r.method || "",
+					status: r.status || "",
+					description: r.description || "",
+					createdAt: r.createdAt || ""
+				})
+			);
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Rendering
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Render the selected project into the page and store its Airtable id on <main>.
+		 * @param {UIProject} project
+		 * @returns {void}
+		 */
+		function renderProject(project) {
+			setText("#eyebrow-org", project.org, "Home Office Biometrics");
+			setText("#project-title", project.name, "Untitled project");
+			setText("#project-subtitle", project.description, "");
+			setText("#kv-service-stage", project.phase);
+			setText("#kv-project-stage", project.status);
+			setText("#kv-client-name", project.org);
+			setText("#kv-lead-researcher", project.lead_researcher || "—");
+			setText("#kv-lead-email", project.lead_researcher_email || "—");
+
+			const mainEl = $("main");
+			if (mainEl) mainEl.dataset.projectAirtableId = project.id || "";
+
+			const st = $("#stakeholders-list");
+			if (st) {
+				st.innerHTML = project.stakeholders.length ?
+					project.stakeholders.map(s => {
+						const name = s.name || "";
+						const role = s.role ? ` — ${s.role}` : "";
+						const email = s.email ? ` <a class="govuk-link" href="mailto:${s.email}">${s.email}</a>` : "";
+						return `<li>${name}${role}${email}</li>`;
+					}).join("") :
+					`<li class="lede">No stakeholders yet.</li>`;
+			}
+
+			const obj = $("#objectives-list");
+			if (obj) {
+				obj.innerHTML = project.objectives.length ?
+					project.objectives.map(o => `<li>${o}</li>`).join("") :
+					`<li class="lede">No objectives yet.</li>`;
+			}
+
+			const ug = $("#user-groups-list");
+			if (ug) {
+				ug.innerHTML = project.user_groups.length ?
+					project.user_groups.map(g => `<li><span class="tag">${g}</span></li>`).join("") :
+					`<li class="lede">No user groups yet.</li>`;
+			}
+
+			const edit = $("#btn-edit");
+			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
+		}
+
+		/**
+		 * Render studies list (links to study.html).
+		 * Truncates description to ≈170 chars with a faded tail on the last 10 chars.
+		 * @param {UIProject} project
+		 * @param {UIStudy[]} studies
+		 * @returns {void}
+		 */
+		function renderStudies(project, studies) {
+			const list = document.getElementById("studies-list");
+			if (!list) return;
+
+			if (!studies.length) {
+				list.innerHTML = '<li class="lede">No studies yet.</li>';
+				return;
+			}
+
+			/** @param {string} s */
+			const escapeHtml = (s = "") =>
+				s.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+
+			/**
+			 * Truncate to whole words at ~maxLength without ellipsis (handled in faded tail).
+			 * @param {string} text
+			 * @param {number} [maxLength=170]
+			 * @returns {string}
+			 */
+			const truncateToWords = (text, maxLength = 170) => {
+				if (!text) return "";
+				if (text.length <= maxLength) return text;
+				return text.slice(0, maxLength).replace(/\s+\S*$/, "");
+			};
+
+			list.innerHTML = studies.map(s => {
+				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const status = (s.status || "").trim();
+				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
+
+				const full = s.description || "";
+				const isTruncated = full.length > 170;
+				const truncated = truncateToWords(full, 170);
+
+				let descHtml = "";
+				if (truncated) {
+					if (isTruncated && truncated.length > 10) {
+						const head = escapeHtml(truncated.slice(0, -10));
+						const tail = escapeHtml(truncated.slice(-10));
+						descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
+					} else {
+						descHtml = escapeHtml(truncated);
+					}
+				}
+
+				return `
+<li class="item">
+	<div>
+		<a class="govuk-link" href="${href}">${escapeHtml(s.method || "Study")}</a>
+		${meta ? ` — ${meta}` : ""}
+	</div>
+	${descHtml ? `<div class="lede" style="margin-top:4px;">${descHtml}</div>` : ""}
+</li>`;
+			}).join("");
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Accessible “Add Study” modal
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Wire up the <dialog> to add a Study. Restores focus on close.
+		 * @param {UIProject} project
+		 * @returns {void}
+		 */
+		function initStudyModal(project) {
+			/** @type {HTMLDialogElement|null} */
+			const dialog = /** @type {any} */ ($("#study-dialog"));
+			const openBtn = $("#btn-add-study");
+			const closeBtn = $("#study-close");
+			const cancelBtn = $("#study-cancel");
+			const submitBtn = $("#study-submit");
+			const form = dialog?.querySelector("form");
+
+			/** @type {Element|null} */
+			let lastFocus = null;
+			if (!dialog || !openBtn) return;
+
+			const open = () => {
+				lastFocus = document.activeElement;
+				dialog.showModal();
+				dialog.setAttribute("aria-hidden", "false");
+				$("#study-method")?.focus();
+				document.documentElement.classList.add("modal-open");
+			};
+
+			const close = () => {
+				dialog.close();
+				dialog.setAttribute("aria-hidden", "true");
+				document.documentElement.classList.remove("modal-open");
+				if (lastFocus && typeof /** @type {any} */(lastFocus).focus === "function") {
+					/** @type {any} */
+					(lastFocus).focus();
+				}
+			};
+
+			// Focus trap + Escape support
+			dialog.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+					return;
+				}
+				if (e.key !== "Tab") return;
+
+				const focusables = $$(
+					'a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+					dialog
+				).filter(el => el.offsetParent !== null);
+
+				if (!focusables.length) return;
+
+				const first = focusables[0];
+				const last = focusables[focusables.length - 1];
+
+				// @ts-ignore
+				if (e.shiftKey && document.activeElement === first) {
+					// @ts-ignore
+					last.focus();
+					e.preventDefault();
+					// @ts-ignore
+				} else if (!e.shiftKey && document.activeElement === last) {
+					// @ts-ignore
+					first.focus();
+					e.preventDefault();
+				}
+			});
+
+			// Click outside (backdrop) closes
+			dialog.addEventListener("click", (e) => {
+				const rect = dialog.getBoundingClientRect();
+				const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+				if (!inside) close();
+			});
+
+			openBtn.addEventListener("click", open);
+			closeBtn?.addEventListener("click", close);
+			cancelBtn?.addEventListener("click", close);
+
+			// Prefer form submit so Enter key works
+			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
+				e.preventDefault();
+
+				const methodEl = /** @type {HTMLSelectElement|null} */ ($("#study-method"));
+				const notesEl = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"));
+				const method = methodEl?.value?.trim();
+				const notes = notesEl?.value?.trim();
+				if (!method || !notes) return;
+
+				const projectAirtableId = project.id || $("main")?.dataset?.projectAirtableId || "";
+				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
+
+				// Disable submit while posting
+				submitBtn?.setAttribute("disabled", "true");
+
+				try {
+					const res = await fetch("/api/studies", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							project_airtable_id: projectAirtableId,
+							method,
+							description: notes,
+							status: "Planned",
+							study_id: makeStudyId()
+						})
+					});
+					const js = await res.json().catch(() => ({}));
+					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
+
+					// Refresh the list and close
+					const studies = await loadStudies(project.id);
+					renderStudies(project, studies);
+
+					// Clear inputs
+					if (methodEl) methodEl.value = "";
+					if (notesEl) notesEl.value = "";
+
+					close();
+				} catch (err) {
+					console.error(err);
+					alert("Could not create study.");
+				} finally {
+					submitBtn?.removeAttribute("disabled");
+				}
+			});
+		}
+
+		/* ──────────────────────────────────────────────────────────────
+		 * Bootstrap
+		 * ────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Entrypoint: load, sort, pick, render, then fetch & render studies; init modal.
+		 * @returns {Promise<void>}
+		 */
+		(async function bootstrap() {
+			try {
+				const projects = await loadProjects();
+				projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+				const project = pickProject(projects);
+				if (!project) throw new Error("Project not found from id param");
+
+				// Render project details into the page
+				renderProject(project);
+
+				// Load and render studies
+				const studies = await loadStudies(project.id);
+				renderStudies(project, studies);
+
+				// Wire modal
+				initStudyModal(project);
+
+			} catch (err) {
+				console.error(err);
+				alert("Could not load project.");
+			}
+		})();
+	</script>
+</body>
+
+</html>
