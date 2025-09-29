@@ -408,7 +408,7 @@
 			}
 
 			const edit = $("#btn-edit");
-			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
+			if (edit) edit.setAttribute("href", `/pages/start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
 		/**
@@ -448,7 +448,7 @@
 			};
 
 			list.innerHTML = studies.map(s => {
-				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const href = `/pages/study?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
 
