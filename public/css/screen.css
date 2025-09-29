@@ -599,6 +599,120 @@ textarea {
 /* Studies list on dashboard
    -------------------------------------------------------------------------- */
 
+/* mobile-first layout */
+.page-wrap {
+	padding: 12px;
+	max-width: 720px;
+	margin: 0 auto;
+	}
+
+h1.page-title {
+	font-size: 28px;
+	line-height: 1.2;
+	margin: 8px 0 12px 0;
+	}
+
+.projects {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: 1fr;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.project-card {
+	border: 1px solid var(--govuk-border, #b1b4b6);
+	border-radius: 8px;
+	padding: 12px 14px;
+	background: #fff;
+	}
+
+.project-card h2 {
+	font-size: 20px;
+	line-height: 1.3;
+	margin: 4px 0 6px 0;
+	}
+
+.project-meta {
+	display: grid;
+	gap: 4px;
+	font-size: 14px;
+	color: #505a5f;
+	margin-bottom: 8px;
+	}
+
+.badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 6px 0 0 0;
+	}
+
+.badge {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	border-radius: 999px;
+	padding: 2px 8px;
+	font-size: 12px;
+	line-height: 18px;
+	color: #0b0c0c;
+	background: #f3f2f1;
+	}
+
+/* Pagination */
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+	margin: 14px 0 8px 0;
+	}
+
+.pagination button,
+.pagination a {
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid #b1b4b6;
+	border-radius: 6px;
+	background: #fff;
+	font: inherit;
+	line-height: 34px;
+	text-align: center;
+	cursor: pointer;
+	}
+
+.pagination a[aria-current="page"] {
+	font-weight: 700;
+	outline: 2px solid #0b0c0c;
+	outline-offset: 2px;
+	}
+
+.pagination button[disabled] {
+	opacity: .45;
+	cursor: default;
+	}
+
+/* Larger screens */
+@media (min-width: 640px) {
+	.page-wrap {
+		padding: 16px;
+		}
+	.projects {
+		gap: 16px;
+		}
+	.project-card {
+		padding: 14px 16px;
+		}
+	}
+
+@media (min-width: 900px) {
+	.projects {
+		grid-template-columns: 1fr 1fr;
+		}
+	}
+	
 /* Fades the last N characters of the span (configurable via --fade-ch) */
 .fade-tail {
 	display: inline-block;
