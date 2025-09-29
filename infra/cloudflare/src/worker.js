@@ -650,9 +650,10 @@ class ResearchOpsService {
 
 	/**
 	 * List studies linked to a given project from Airtable.
-	 * - Requires ?project=<AirtableId>
-	 * - Uses filterByFormula server-side (faster, safer)
-	 * - Accepts several common link-field names to avoid schema mismatch
+	 * Strategy:
+	 *  1) Try server-side filterByFormula on {Project}.
+	 *  2) If Airtable says unknown field (422/400), fall back to fetching all
+	 *     and filter client-side by detecting any link-field that contains the projectId.
 	 */
 	async listStudies(origin, url) {
 		const projectId = url.searchParams.get("project");
@@ -665,46 +666,18 @@ class ResearchOpsService {
 		const atBase = `https://api.airtable.com/v0/${base}/${tStudies}`;
 		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
 
-		// We’ll request a broader set of fields so we don’t fail on naming drift.
-		const wantedFields = [
-			"Project", // canonical link field
-			"Project (from Projects)", // common Airtable auto-name
-			"Method", "Status", "Description", "Study ID"
-		];
-
-		// Server-side filter: search for the record id inside the link array using ARRAYJOIN()
-		// Example: FIND('rec123', ARRAYJOIN({Project})) — works even if there are multiple links.
-		const filter = `FIND('${projectId}', ARRAYJOIN({Project}))`;
-		// Fallback: if the link field was auto-renamed, try that as well.
-		const filterAlt = `FIND('${projectId}', ARRAYJOIN({Project (from Projects)}))`;
-		const filterByFormula = `OR(${filter}, ${filterAlt})`;
-
-		const params = new URLSearchParams({ pageSize: "100", filterByFormula });
-		for (const f of wantedFields) params.append("fields[]", f);
-
-		const records = [];
-		let offset;
-
-		do {
-			if (offset) params.set("offset", offset);
+		/** Fetch a page with optional extra query params */
+		const fetchPage = async (extraParams) => {
+			const params = new URLSearchParams({ pageSize: "100", ...(extraParams || {}) });
 			const res = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
 			const text = await res.text();
-
-			if (!res.ok) {
-				this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
-				return this.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
-			}
-
-			/** @type {{records:Array<{id:string,createdTime?:string,fields:Record<string,any>}>,offset?:string}} */
 			let js;
 			try { js = JSON.parse(text); } catch { js = { records: [] }; }
+			return { res, text, js };
+		};
 
-			records.push(...(js.records || []));
-			offset = js.offset;
-		} while (offset);
-
-		// Prefer "Project"; fall back to the auto-named variant
-		const studies = records.map(r => {
+		/** Map Airtable record → UI shape */
+		const mapStudy = (r) => {
 			const f = r.fields || {};
 			return {
 				id: r.id,
@@ -712,17 +685,76 @@ class ResearchOpsService {
 				method: f.Method || "",
 				status: f.Status || "",
 				description: f.Description || "",
-				createdAt: r.createdTime || "",
-				_link: Array.isArray(f.Project) ? f.Project : (Array.isArray(f["Project (from Projects)"]) ? f["Project (from Projects)"] : [])
+				createdAt: r.createdTime || ""
 			};
-		});
+		};
 
-		// Extra safety: keep only those still linked to the requested project id
-		const linked = studies.filter(s => Array.isArray(s._link) && s._link.includes(projectId))
-			.map(({ _link, ...rest }) => rest);
+		// ---------- 1) Try server-side filter on {Project} ----------
+		try {
+			// filterByFormula that tolerates empty/undefined: IF({Project}, FIND(pid, ARRAYJOIN({Project})))
+			const filterByFormula = `IF({Project},FIND('${projectId}',ARRAYJOIN({Project})))`;
+			const records = [];
+			let offset;
 
-		linked.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
-		return this.json({ ok: true, studies: linked }, 200, this.corsHeaders(origin));
+			do {
+				const { res, text, js } = await fetchPage({ filterByFormula, offset });
+				if (!res.ok) {
+					// Bubble up 422/400 to trigger fallback; other statuses return immediately
+					if (res.status === 422 || res.status === 400) throw Object.assign(new Error("schema"), { _schema: true, text, code: res.status });
+					this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
+					return this.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+				}
+				records.push(...(js.records || []));
+				offset = js.offset;
+			} while (offset);
+
+			const studies = records.map(mapStudy)
+				.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+
+			return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
+		} catch (e) {
+			// Only fall back on schema/field-name errors
+			if (!e || !e._schema) {
+				this.log.error("airtable.studies.unexpected", { err: String(e?.message || e) });
+				return this.json({ ok: false, error: "Unexpected error listing studies" }, 500, this.corsHeaders(origin));
+			}
+			this.log.warn("airtable.studies.schema_fallback", { detail: safeText(e.text), code: e.code });
+		}
+
+		// ---------- 2) Fallback: fetch all, filter client-side ----------
+		try {
+			const records = [];
+			let offset;
+			do {
+				const { res, text, js } = await fetchPage({ offset });
+				if (!res.ok) {
+					this.log.error("airtable.studies.fallback.fail", { status: res.status, text: safeText(text) });
+					return this.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+				}
+				records.push(...(js.records || []));
+				offset = js.offset;
+			} while (offset);
+
+			// Detect any link-like field that contains the projectId
+			const isRecId = (s) => typeof s === "string" && /^rec[0-9A-Za-z]{14}$/.test(s);
+			const linked = records.filter(r => {
+				const f = r.fields || {};
+				return Object.values(f).some(v =>
+					Array.isArray(v) &&
+					v.length &&
+					v.every(isRecId) &&
+					v.includes(projectId)
+				);
+			});
+
+			const studies = linked.map(mapStudy)
+				.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+
+			return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
+		} catch (err) {
+			this.log.error("airtable.studies.fallback.error", { err: String(err?.message || err) });
+			return this.json({ ok: false, error: "Failed to list studies (fallback)" }, 500, this.corsHeaders(origin));
+		}
 	}
 
 	/**
