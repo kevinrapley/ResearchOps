@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Start a New Research Project — ResearchOps Demo Suite</title>
+
+	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="./css/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
+</head>
+
+<body>
+	<x-include src="./partials/header.html" vars='{
+			"active":"Start Research Project",
+			"subtitle":"Define service phase, set status, add stakeholders and objectives"
+		}'>
+	</x-include>
+
+	<main class="govuk-body" role="main">
+		<div class="card">
+			<h1 class="govuk-heading-l" style="margin-top:0">Start a new research project</h1>
+			<p class="lede">
+				Define the project within a service phase and current status, then capture stakeholders and initial objectives.
+			</p>
+
+			<!-- Step 1 -->
+			<section id="step1">
+				<h2 class="govuk-heading-m">Step 1 of 3</h2>
+				<p class="lede">Define the project’s service phase and status</p>
+
+				<div id="error-summary" class="panel" style="display:none" role="alert" aria-live="polite"></div>
+
+				<form id="projectForm" novalidate>
+					<label class="govuk-body" for="p_name">Project name</label>
+					<input id="p_name" class="govuk-input" required aria-required="true" aria-invalid="false" />
+					<p id="p_name_error" class="error-message" style="display:none"></p>
+
+					<label class="govuk-body" for="p_desc">Description</label>
+					<textarea id="p_desc" class="govuk-input" required aria-required="true" aria-invalid="false"></textarea>
+					<p id="p_desc_error" class="error-message" style="display:none"></p>
+
+					<label class="govuk-body" for="p_phase">Service phase</label>
+					<select id="p_phase" class="govuk-input">
+						<option value="pre-discovery">Pre-Discovery</option>
+						<option value="discovery">Discovery</option>
+						<option value="alpha">Alpha</option>
+						<option value="beta">Beta</option>
+						<option value="live">Live</option>
+						<option value="retired">Retired</option>
+					</select>
+
+					<label class="govuk-body" for="p_status">Project status</label>
+					<select id="p_status" class="govuk-input">
+						<option value="goal-setting">Goal setting &amp; problem defining</option>
+						<option value="planning">Planning research</option>
+						<option value="conducting">Conducting research</option>
+						<option value="synthesis">Synthesis &amp; analysis</option>
+						<option value="shared">Shared &amp; socialised research</option>
+						<option value="monitoring">Monitoring metrics</option>
+					</select>
+
+					<div class="cta">
+						<button class="govuk-button" id="next2" type="button">Continue</button>
+					</div>
+				</form>
+			</section>
+
+			<!-- Step 2 -->
+			<section id="step2" style="display:none">
+				<h2 class="govuk-heading-m">Step 2 of 3</h2>
+				<p class="lede">Define the project’s stakeholders, objectives, and user groups</p>
+
+				<form id="targetForm">
+
+					<label class="govuk-body">Stakeholders (name | role | email, one per line)
+						<textarea id="p_stakeholders" class="govuk-input"></textarea>
+					</label>
+
+					<label class="govuk-body">Initial objectives (one per line)
+						<textarea id="p_objectives" class="govuk-input"></textarea>
+					</label>
+
+					<label class="govuk-body">User groups (comma-separated)
+						<input id="p_usergroups" class="govuk-input" />
+					</label>
+
+					<div class="cta">
+						<button class="govuk-button" id="prev1" type="button">Back</button>
+						<button class="govuk-button" id="next3" type="button">Continue</button>
+					</div>
+				</form>
+			</section>
+
+			<!-- Step 3 -->
+			<section id="step3" style="display:none">
+				<h2 class="govuk-heading-m">Step 3 of 3</h2>
+				<p class="lede">Supplementary information about the project</p>
+
+				<form id="researchForm">
+					<label class="govuk-body">Lead Researcher
+						<input id="lead_name" class="govuk-input" value="" />
+					</label>
+
+					<label class="govuk-body">Researcher&rsquo;s Email
+						<input id="lead_email" type="email" class="govuk-input" value="" />
+					</label>
+
+					<label class="govuk-body">Notes
+						<textarea id="p_notes" class="govuk-input"></textarea>
+					</label>
+
+					<div class="cta">
+						<button class="govuk-button" id="prev2" type="button">Back</button>
+						<button class="govuk-button" id="finish" type="button">Create project</button>
+					</div>
+				</form>
+			</section>
+		</div>
+	</main>
+
+	<!-- Global footer -->
+	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
+	</x-include>
+
+	<script type="module">
+		// === CONFIG ===
+		const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
+
+		// === DOM helpers ===
+		const $ = (id) => document.getElementById(id);
+
+		// === Mapping: internal codes -> Airtable labels ===
+		const PHASE_LABEL = {
+			"pre-discovery": "Pre-Discovery",
+			"discovery": "Discovery",
+			"alpha": "Alpha",
+			"beta": "Beta",
+			"live": "Live",
+			"retired": "Retired"
+		};
+
+		const STATUS_LABEL = {
+			"goal-setting": "Goal setting & problem defining",
+			"planning": "Planning research",
+			"conducting": "Conducting research",
+			"synthesis": "Synthesis & analysis",
+			"shared": "Shared & socialised research",
+			"monitoring": "Monitoring metrics"
+		};
+
+		// Sections & nav buttons
+		const step1 = $('step1');
+		const step2 = $('step2');
+		const step3 = $('step3');
+
+		const next2 = $('next2');
+		const prev1 = $('prev1');
+		const next3 = $('next3');
+		const prev2 = $('prev2');
+		const finish = $('finish');
+
+		// Step 1 fields
+		const nameEl = $('p_name');
+		const descEl = $('p_desc');
+		const phaseEl = $('p_phase');
+		const statusEl = $('p_status');
+
+		// Step 1 inline errors
+		const nameErr = $('p_name_error');
+		const descErr = $('p_desc_error');
+
+		// Step 2 fields
+		const stakeholdersEl = $('p_stakeholders');
+		const objectivesEl = $('p_objectives');
+		const groupsEl = $('p_usergroups');
+
+		// Step 3 fields
+		const leadNameEl = $('lead_name');
+		const leadEmailEl = $('lead_email');
+		const notesEl = $('p_notes');
+
+		// Status line on step 3
+		let statusLine = document.getElementById('status');
+		if (!statusLine) {
+			statusLine = document.createElement('p');
+			statusLine.id = 'status';
+			statusLine.className = 'lede';
+			step3.appendChild(statusLine);
+		}
+		const setStatus = (m) => { statusLine.textContent = m; };
+
+		// === Validation (Step 1) ===
+		function setInlineError(input, errEl, message) {
+			if (message) {
+				input.setAttribute('aria-invalid', 'true');
+				errEl.textContent = message;
+				errEl.style.display = '';
+			} else {
+				input.setAttribute('aria-invalid', 'false');
+				errEl.textContent = '';
+				errEl.style.display = 'none';
+			}
+		}
+
+		function validateStep1({ showInline = false } = {}) {
+			const name = nameEl.value.trim();
+			const desc = descEl.value.trim();
+
+			const nameError = !name ? 'Enter a project name.' : '';
+			const descError = !desc ? 'Enter a short project description.' : '';
+
+			if (showInline) {
+				setInlineError(nameEl, nameErr, nameError);
+				setInlineError(descEl, descErr, descError);
+			} else {
+				setInlineError(nameEl, nameErr, '');
+				setInlineError(descEl, descErr, '');
+			}
+
+			next2.disabled = Boolean(nameError || descError);
+
+			if (showInline) {
+				if (nameError) { nameEl.focus(); return false; }
+				if (descError) { descEl.focus(); return false; }
+			}
+			return !(nameError || descError);
+		}
+
+		[nameEl, descEl].forEach(el => {
+			el.addEventListener('input', () => validateStep1({ showInline: false }));
+			el.addEventListener('blur', () => validateStep1({ showInline: false }));
+		});
+		validateStep1({ showInline: false });
+
+		// === Step navigation ===
+		next2.addEventListener('click', () => {
+			const ok = validateStep1({ showInline: true });
+			if (!ok) return;
+			step1.style.display = 'none';
+			step2.style.display = 'block';
+			stakeholdersEl?.focus();
+		});
+
+		prev1.addEventListener('click', () => {
+			step2.style.display = 'none';
+			step1.style.display = 'block';
+			nameEl.focus();
+		});
+
+		next3.addEventListener('click', () => {
+			step2.style.display = 'none';
+			step3.style.display = 'block';
+			leadNameEl?.focus();
+		});
+
+		prev2.addEventListener('click', () => {
+			step3.style.display = 'none';
+			step2.style.display = 'block';
+		});
+
+		// === Helpers ===
+		function parseStakeholders(text) {
+			return String(text || "")
+				.split(/\r?\n/)
+				.map(line => {
+					const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
+					return { name, role, email };
+				})
+				.filter(s => s.name);
+		}
+
+		function csvListToArray(text) {
+			return String(text || "")
+				.split(",")
+				.map(s => s.trim())
+				.filter(Boolean);
+		}
+
+		function linesToArray(text) {
+			return String(text || "")
+				.split(/\r?\n/)
+				.map(s => s.trim())
+				.filter(Boolean);
+		}
+
+		// === API ===
+		async function postToAirtable(project) {
+			const res = await fetch(`${API_BASE}/api/projects`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(project),
+				credentials: "omit"
+			});
+			const text = await res.text();
+			if (!res.ok) {
+				let detail = "";
+				try { detail = JSON.parse(text).detail || text; } catch { detail = text; }
+				throw new Error(`Airtable error ${res.status}: ${detail}`);
+			}
+			try { return JSON.parse(text); } catch { return { ok: true }; }
+		}
+
+		// === Finish ===
+		finish.addEventListener('click', async () => {
+			if (!validateStep1({ showInline: true })) {
+				step2.style.display = 'none';
+				step3.style.display = 'none';
+				step1.style.display = 'block';
+				return;
+			}
+
+			// Map phase/status codes -> Airtable labels
+			const phaseLabel = PHASE_LABEL[phaseEl.value] ?? "Discovery";
+			const statusLabel = STATUS_LABEL[statusEl.value] ?? "Planning research";
+
+			const project = {
+				org: "Home Office Biometrics",
+				name: nameEl.value.trim(),
+				description: descEl.value.trim(),
+				phase: phaseLabel,
+				status: statusLabel,
+				stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
+				objectives: linesToArray(objectivesEl?.value || ""),
+				user_groups: csvListToArray(groupsEl?.value || ""),
+				lead_researcher: (leadNameEl?.value || "").trim() || undefined,
+				lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
+				notes: (notesEl?.value || "").trim() || undefined,
+				created: new Date().toISOString(),
+				id: (crypto.randomUUID?.() || String(Date.now()))
+			};
+
+			try {
+				setStatus("Saving project…");
+				const out = await postToAirtable(project);
+				setStatus("Saved. Redirecting…");
+				localStorage.setItem("rops.lastProjectId", out?.project_id || "");
+				window.location.href = "./projects.html";
+			} catch (e) {
+				console.error(e);
+				setStatus("Failed to create project: " + (e?.message || e));
+			}
+		});
+	</script>
+</body>
+
+</html>
