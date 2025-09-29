@@ -105,18 +105,24 @@
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
-		/** Minimal Study bootstrap — loads one study (pid+sid) and renders it. */
+		/**
+		 * @file study.bootstrap.js
+		 * @summary Load one study (via pid & sid), render Markdown description,
+		 *          allow editing with optimistic UI + rollback.
+		 */
 
+		/* ─── Tiny DOM helpers ───────────────────────────────────────────── */
+
+		/** @param {string} sel @param {ParentNode} [root=document] */
 		const $ = (sel, root = document) => root.querySelector(sel);
+
+		/** @param {string} sel @param {unknown} value @param {string} [fallback="—"] */
 		const setText = (sel, value, fallback = "—") => {
 			const el = $(sel);
 			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
 		};
 
-		function getSafeSearchParams() {
-			const normalized = (location.search || "").replace(/&amp;/gi, "&");
-			return new URLSearchParams(normalized);
-		}
+		/* ─── Markdown → HTML (safe subset) ─────────────────────────────── */
 
 		function escapeHtml(s) {
 			return String(s ?? "")
@@ -127,41 +133,61 @@
 				.replace(/'/g, "&#39;");
 		}
 
+		/**
+		 * Supported: code fences, inline code, headings (#..######), **bold**, *italic*,
+		 * links [text](https://…), unordered/ordered lists, paragraphs & <br>.
+		 * @param {string} md
+		 */
 		function mdToHtml(md) {
 			let src = String(md ?? "").replace(/\r\n?/g, "\n");
+
+			// ``` code ```
 			src = src.replace(/```([\s\S]*?)```/g, (_m, code) =>
 				`<pre><code>${escapeHtml(String(code).trim())}</code></pre>`
 			);
+
+			// `code`
 			src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
+
+			// #### Headings
 			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) =>
 				`<h${hashes.length}>${escapeHtml(String(text).trim())}</h${hashes.length}>`
 			);
+
+			// **bold** / *italic*
 			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
 			src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
-			src = src.replace(
-				/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g,
-			(_m, text, url) =>
+
+			// [text](http/https URL)  ← FIXED REGEX
+			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) =>
 			`<a class="govuk-link" href="${escapeHtml(url)}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`
 		);
+
+		// • unordered lists
 		src = src.replace(
 			/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
 			(m) => {
-				const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*[-*+]\s+/, "").trim());
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*[-*+]\s+/, "").trim());
 				return `\n<ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
 			}
 		);
+
+		// 1. ordered lists
 		src = src.replace(
 			/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
 			(m) => {
-				const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*\d+\.\s+/, "").trim());
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*\d+\.\s+/, "").trim());
 				return `\n<ol>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
 			}
 		);
+
+		// Paragraphs
 		const blocks = src
 			.split(/\n{2,}/)
 			.map(b => b.trim())
 			.filter(Boolean)
 			.map(b => (/^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`));
+
 		return blocks.join("\n");
 		}
 
@@ -171,18 +197,25 @@
 			try { el.innerHTML = mdToHtml(markdown); } catch { el.textContent = String(markdown ?? ""); }
 		}
 
+		/* ─── Data access ───────────────────────────────────────────────── */
+
+		/**
+		 * GET /api/studies?project=<aid>
+		 * @param {string} projectId
+		 * @returns {Promise<Array<{id:string,studyId?:string,method:string,status?:string,description?:string,createdAt?:string}>>}
+		 */
 		async function loadStudies(projectId) {
-			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-			console.log("[study] GET", url);
-			const res = await fetch(url, { cache: "no-store" });
-			const text = await res.text();
-			let js = {};
-			try { js = JSON.parse(text); } catch {}
-			console.log("[study] /api/studies status", res.status, js);
+			const res = await fetch(`/api/studies?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
+			const js = await res.json().catch(() => ({}));
 			if (!res.ok || !js?.ok) throw new Error(js?.error || `Studies fetch failed (${res.status})`);
 			return js.studies || [];
 		}
 
+		/**
+		 * PATCH /api/studies/:id (only description, normalised)
+		 * @param {string} studyId
+		 * @param {string} markdown
+		 */
 		async function patchStudyDescription(studyId, markdown) {
 			const md = String(markdown ?? "").replace(/\r\n?/g, "\n").replace(/\t/g, "  ").trim();
 			const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
@@ -194,41 +227,48 @@
 			if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
 		}
 
+		/* ─── Bootstrap ─────────────────────────────────────────────────── */
+
 		(async function bootstrap() {
 			try {
-				const usp = getSafeSearchParams();
-				let pid = usp.get("pid") || "";
-				let sid = usp.get("sid") || "";
-				if (!sid && pid.includes("&sid=")) {
-					const [pidOnly, after] = pid.split("&sid=");
-					pid = pidOnly;
-					sid = (after || "").split("&")[0];
-				}
+				const usp = new URLSearchParams(location.search);
+				const pid = usp.get("pid") || "";
+				const sid = usp.get("sid") || "";
 				if (!pid || !sid) throw new Error("Missing pid or sid");
-				console.log("[study] pid", pid, "sid", sid);
 
-				// If file lives at /pages/study/index.html:
+				// Back link → Project Dashboard (new pages/ structure)
 				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
-				$("#edit-study")?.setAttribute("href", `/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
 
+				// Load & pick current study
 				const studies = await loadStudies(pid);
+				console.debug("[study] studies fetched:", studies.length);
 				const study = studies.find(s => s.id === sid);
-				console.log("[study] found study?", Boolean(study), study);
 				if (!study) throw new Error(`Study not found (sid=${sid})`);
 
+				// Header + key info
 				setText("#study-eyebrow", "Study");
 				setText("#study-title", study.method || "Study");
 				setText("#kv-method", study.method || "");
 				setText("#kv-status", study.status || "");
 				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
 
+				// Description
 				let currentMarkdown = typeof study.description === "string" ? study.description : "";
 				setMarkdown("#description", currentMarkdown);
 
+				// Optional deep-link
+				$("#edit-study")?.setAttribute(
+					"href",
+					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
+				);
+
+				// Editor wiring
 				const editor = /** @type {HTMLFormElement|null} */ ($("#desc-editor"));
 				const input = /** @type {HTMLTextAreaElement|null} */ ($("#desc-input"));
 				const btnEdit = /** @type {HTMLButtonElement|null} */ ($("#btn-edit-desc"));
 				const btnCancel = /** @type {HTMLButtonElement|null} */ ($("#desc-cancel"));
+
+				/** @type {HTMLElement|null} */
 				let lastFocus = null;
 
 				btnEdit?.addEventListener("click", () => {
@@ -249,6 +289,8 @@
 					e.preventDefault();
 					if (!input) return;
 					const nextMd = input.value || "";
+
+					// Optimistic preview
 					setMarkdown("#description", nextMd);
 					editor.hidden = true;
 
