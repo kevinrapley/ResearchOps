@@ -6,15 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Projects — ResearchOps Demo Suite</title>
 
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<script type="module" src="/components/layout.js"></script>
 </head>
 
 <body>
 	<!-- Global header -->
-	<x-include src="./partials/header.html" vars='{
+	<x-include src="/partials/header.html" vars='{
 			"active":"Projects",
 			"subtitle":"Browse projects created in this demo suite"
 		}'>
@@ -25,7 +25,7 @@
 		<div id="list"></div>
 	</main>
 
-	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
 	</x-include>
 
 	<script type="module">
