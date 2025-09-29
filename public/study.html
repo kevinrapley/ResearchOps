@@ -107,45 +107,24 @@
 	<script type="module">
 		/**
 		 * @file study.bootstrap.js
-		 * @summary Load a single study (via pid+sid), render its Markdown description, and allow editing
-		 *          with optimistic UI and rollback on failure. Conservatively sanitises Markdown for display
-		 *          and normalises Markdown for Airtable Rich Text on outbound PATCH.
-		 * @requires globalThis.fetch
-		 * @requires globalThis.URLSearchParams
-		 * @requires ./js/richtext.js (export: mdToAirtableRich)
+		 * @summary Load one study (via ?pid & ?sid), render Markdown safely, and allow editing.
+		 *          Self-contained: no external imports. Adds clear error reporting + console logs.
 		 */
-
-		import { mdToAirtableRich } from "./js/richtext.js";
 
 		/* ──────────────────────────────────────────────────────────────────────────
 		 * Utilities
 		 * ────────────────────────────────────────────────────────────────────────── */
 
-		/**
-		 * Shorthand for querySelector.
-		 * @param {string} sel
-		 * @param {ParentNode} [root=document]
-		 * @returns {HTMLElement|null}
-		 */
+		/** @param {string} sel @param {ParentNode} [root=document] */
 		const $ = (sel, root = document) => root.querySelector(sel);
 
-		/**
-		 * Set textContent with a fallback if value is empty.
-		 * @param {string} sel
-		 * @param {unknown} value
-		 * @param {string} [fallback="—"]
-		 * @returns {void}
-		 */
+		/** @param {string} sel @param {unknown} value @param {string} [fallback="—"] */
 		const setText = (sel, value, fallback = "—") => {
 			const el = $(sel);
 			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
 		};
 
-		/**
-		 * Minimal HTML escaper for user-supplied strings.
-		 * @param {unknown} s
-		 * @returns {string}
-		 */
+		/** @param {unknown} s */
 		function escapeHtml(s) {
 			return String(s ?? "")
 				.replace(/&/g, "&amp;")
@@ -155,24 +134,25 @@
 				.replace(/'/g, "&#39;");
 		}
 
+		/** Minimal Airtable Rich-Text normaliser (inline so no import is required) */
+		function mdToAirtableRich(md, { collapseBlank = true, tabSize = 2 } = {}) {
+			let t = String(md ?? "");
+			t = t.replace(/\r\n?/g, "\n");
+			t = t.replace(/\t/g, " ".repeat(Math.max(1, tabSize)));
+			t = t.split("\n").map(l => l.replace(/[ \t]+$/g, "")).join("\n");
+			if (collapseBlank) t = t.replace(/\n{3,}/g, "\n\n");
+			return t.trim();
+		}
+
 		/* ──────────────────────────────────────────────────────────────────────────
-		 * Markdown → HTML (safe subset for parity with Airtable Rich Text)
+		 * Markdown → HTML (safe subset)
 		 * ────────────────────────────────────────────────────────────────────────── */
 
-		/**
-		 * Convert a conservative Markdown subset to HTML.
-		 * Supported: code fences, inline code, headings (#..######), **bold**, *italic*,
-		 * links [text](https://…), unordered/ordered lists, paragraphs & <br>.
-		 * @param {string} md
-		 * @returns {string} HTML
-		 */
 		function mdToHtml(md) {
 			let src = String(md ?? "");
-
-			// normalise newlines
 			src = src.replace(/\r\n?/g, "\n");
 
-			// code blocks (```lang?\n...\n```)
+			// code fences
 			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => {
 				return `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`;
 			});
@@ -180,7 +160,7 @@
 			// inline code
 			src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
 
-			// headings ######..#
+			// headings
 			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) => {
 				const lvl = hashes.length;
 				return `<h${lvl}>${escapeHtml(String(text).trim())}</h${lvl}>`;
@@ -190,7 +170,7 @@
 			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
 			src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
 
-			// links [text](url) — allow only http/https  ✅ FIXED
+			// ✅ links [text](http/https url)
 			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => {
 		const safeUrl = escapeHtml(url);
 		return `<a class="govuk-link" href="${safeUrl}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`;
@@ -214,26 +194,17 @@
 			}
 		);
 
-		// paragraphs: wrap remaining blocks split by blank lines
+		// paragraphs
 		const blocks = src
 			.split(/\n{2,}/)
 			.map(b => b.trim())
 			.filter(Boolean)
-			.map(b => {
-				// already block-level?
-				if (/^<(h\d|ul|ol|pre)/.test(b)) return b;
-				return `<p>${b.replace(/\n/g, "<br>")}</p>`;
-			});
+			.map(b => (/^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`));
 
 		return blocks.join("\n");
 		}
 
-		/**
-		 * Render Markdown into the target element as HTML (safe subset).
-		 * @param {string} selector
-		 * @param {string} markdown
-		 * @returns {void}
-		 */
+		/** @param {string} selector @param {string} markdown */
 		function setMarkdown(selector, markdown) {
 			const el = $(selector);
 			if (!el) return;
@@ -241,123 +212,43 @@
 		}
 
 		/* ──────────────────────────────────────────────────────────────────────────
-		 * Pagination (client-side; 5 per page)
-		 * ────────────────────────────────────────────────────────────────────────── */
-
-		/**
-		 * Paginate an existing <ul> of <li> items. Renders Prev / windowed page numbers / Next
-		 * into a companion <nav>. Stores state in ?page_<key>= for restore.
-		 * @param {string} listSel  CSS selector for the UL
-		 * @param {string} pagerSel CSS selector for the NAV
-		 * @param {string} key      short key for URL param (e.g. "studies")
-		 * @param {number} [size=5] items per page
-		 * @returns {void}
-		 */
-		function paginateList(listSel, pagerSel, key, size = 5) {
-			const list = document.querySelector(listSel);
-			const pager = document.querySelector(pagerSel);
-			if (!list || !pager) return;
-
-			const items = Array.from(list.children);
-			if (!items.length) { pager.innerHTML = ""; return; }
-
-			const url = new URL(window.location.href);
-			const total = Math.max(1, Math.ceil(items.length / size));
-			let current = Math.max(1, Math.min(parseInt(url.searchParams.get("page_" + key) || "1", 10), total));
-
-			/** @param {number} n */
-			function show(n) {
-				current = Math.max(1, Math.min(n, total));
-				const start = (current - 1) * size;
-				const end = start + size;
-				items.forEach((el, i) => { el.style.display = (i >= start && i < end) ? "" : "none"; });
-				url.searchParams.set("page_" + key, String(current));
-				history.replaceState({}, "", url);
-				render();
-			}
-
-			function render() {
-				pager.innerHTML = "";
-
-				/** @param {string} label @param {() => void} onClick @param {boolean} [disabled] */
-				const mkBtn = (label, onClick, disabled = false) => {
-					const b = document.createElement("button");
-					b.type = "button";
-					b.textContent = label;
-					b.disabled = !!disabled;
-					if (!disabled) b.addEventListener("click", onClick);
-					return b;
-				};
-
-				pager.appendChild(mkBtn("Prev", () => show(current - 1), current <= 1));
-
-				const windowSize = 5;
-				let start = Math.max(1, current - Math.floor(windowSize / 2));
-				let end = Math.min(total, start + windowSize - 1);
-				start = Math.max(1, end - windowSize + 1);
-
-				for (let p = start; p <= end; p++) {
-					const a = document.createElement("a");
-					a.href = "#";
-					a.textContent = String(p);
-					if (p === current) a.setAttribute("aria-current", "page");
-					a.addEventListener("click", (e) => {
-						e.preventDefault();
-						show(p);
-					});
-					pager.appendChild(a);
-				}
-
-				pager.appendChild(mkBtn("Next", () => show(current + 1), current >= total));
-			}
-
-			pager.addEventListener("keydown", (e) => {
-				if (e.key === "ArrowRight") {
-					e.preventDefault();
-					show(current + 1);
-				}
-				if (e.key === "ArrowLeft") {
-					e.preventDefault();
-					show(current - 1);
-				}
-			});
-
-			show(current);
-		}
-
-		/* ──────────────────────────────────────────────────────────────────────────
-		 * Data access
+		 * API
 		 * ────────────────────────────────────────────────────────────────────────── */
 
 		/**
 		 * GET /api/studies?project=<aid>
-		 * @param {string} projectId Airtable project record id
+		 * @param {string} projectId
 		 * @returns {Promise<Array<{id:string, studyId?:string, method:string, status?:string, description?:string, createdAt?:string}>>}
-		 * @throws {Error} If the API call fails
 		 */
 		async function loadStudies(projectId) {
-			const res = await fetch(`/api/studies?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
-			/** @type {{ok?:boolean, studies?:any[]}} */
-			const js = await res.json().catch(() => ({}));
-			if (!res.ok || !js?.ok) throw new Error(js?.error || `Studies fetch failed (${res.status})`);
+			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
+			console.log("[study] GET", url);
+			const res = await fetch(url, { cache: "no-store" });
+			const text = await res.text();
+			let js = {};
+			try { js = JSON.parse(text); } catch { /* keep raw */ }
+			console.log("[study] status", res.status, "payload:", js || text);
+			if (!res.ok || !js?.ok) {
+				throw new Error(`Studies fetch failed (${res.status}) — ${typeof text === "string" ? text.slice(0,200) : ""}`);
+			}
 			return js.studies || [];
 		}
 
 		/**
-		 * PATCH /api/studies/:id — updates Description (Markdown normalised to Airtable Rich Text).
-		 * @param {string} studyId Airtable record id for the study
-		 * @param {string} markdown Raw Markdown the user entered
-		 * @returns {Promise<void>}
-		 * @throws {Error} If the API call fails
+		 * PATCH /api/studies/:id — update Description
+		 * @param {string} studyId
+		 * @param {string} markdown
 		 */
 		async function patchStudyDescription(studyId, markdown) {
 			const md = mdToAirtableRich(markdown);
+			console.log("[study] PATCH /api/studies/" + studyId, { description: md.slice(0, 120) });
 			const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ description: md })
 			});
 			const js = await res.json().catch(() => ({}));
+			console.log("[study] PATCH status", res.status, js);
 			if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
 		}
 
@@ -365,24 +256,43 @@
 		 * Bootstrap
 		 * ────────────────────────────────────────────────────────────────────────── */
 
-		/**
-		 * Initialise page: load study, render fields, wire editor with optimistic update + rollback.
-		 * @returns {Promise<void>}
-		 */
+		/** Surface an error visually and in the console */
+		function showError(message, detail = "") {
+			console.error("[study] ERROR:", message, detail);
+			const panel = document.createElement("div");
+			panel.setAttribute("role", "alert");
+			panel.className = "panel";
+			panel.style.border = "2px solid #d4351c";
+			panel.style.background = "#fef7f7";
+			panel.style.margin = "12px 16px";
+			panel.innerHTML = `
+    <strong>Could not load study</strong>
+    <div class="lede" style="margin-top:6px;">${escapeHtml(message)}</div>
+    ${detail ? `<pre style="white-space:pre-wrap;margin-top:8px;">${escapeHtml(detail)}</pre>` : ""}
+  `;
+			const main = document.querySelector("main") || document.body;
+			main.insertBefore(panel, main.firstChild);
+		}
+
 		(async function bootstrap() {
 			try {
 				const usp = new URLSearchParams(location.search);
 				const pid = usp.get("pid") || "";
 				const sid = usp.get("sid") || "";
-				if (!pid || !sid) throw new Error("Missing pid or sid");
+				console.log("[study] params", { pid, sid });
+				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Back link targets the Project Dashboard
+				// Back link
 				$("#back-to-project")?.setAttribute("href", `./project-dashboard.html?id=${encodeURIComponent(pid)}`);
 
-				// Fetch and select the current study
+				// Fetch studies for the project and find the one we need
 				const studies = await loadStudies(pid);
+				console.log("[study] studies count", studies.length);
 				const study = studies.find(s => s.id === sid);
-				if (!study) throw new Error("Study not found");
+				if (!study) {
+					showError("Study not found for this project.", `pid=${pid}\nsid=${sid}\nFound ${studies.length} study records for project.`);
+					return;
+				}
 
 				// Header + key info
 				setText("#study-eyebrow", "Study");
@@ -395,19 +305,14 @@
 				let currentMarkdown = typeof study.description === "string" ? study.description : "";
 				setMarkdown("#description", currentMarkdown);
 
-				// Optional “edit” deep-link
-				$("#edit-study")?.setAttribute(
-					"href",
-					`./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
-				);
+				// Edit deep-link
+				$("#edit-study")?.setAttribute("href", `./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
 
-				// Editor wiring with focus management and rollback
+				// Editor wiring
 				const editor = /** @type {HTMLFormElement|null} */ ($("#desc-editor"));
 				const input = /** @type {HTMLTextAreaElement|null} */ ($("#desc-input"));
 				const btnEdit = /** @type {HTMLButtonElement|null} */ ($("#btn-edit-desc"));
 				const btnCancel = /** @type {HTMLButtonElement|null} */ ($("#desc-cancel"));
-
-				/** @type {HTMLElement|null} */
 				let lastFocus = null;
 
 				btnEdit?.addEventListener("click", () => {
@@ -435,19 +340,17 @@
 
 					try {
 						await patchStudyDescription(sid, nextMd);
-						currentMarkdown = nextMd; // commit on success
+						currentMarkdown = nextMd;
 						lastFocus?.focus?.();
 					} catch (err) {
-						console.error(err);
 						setMarkdown("#description", currentMarkdown);
-						alert("Failed to save — changes were not persisted.");
+						showError("Failed to save — changes were not persisted.", String(err?.message || err));
 						lastFocus?.focus?.();
 					}
 				});
 
 			} catch (err) {
-				console.error(err);
-				alert("Could not load study.");
+				showError("Could not load study.", String(err?.message || err));
 			}
 		})();
 	</script>
