@@ -477,7 +477,7 @@
 						const head = escapeHtml(truncated.slice(0, -10));
 						const tail = escapeHtml(truncated.slice(-10));
 						// fade only this tail span + ellipsis
-						descHtml = `${head}<span class="fade-tail">${tail}&hellip;</span>`;
+						descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
 					} else {
 						descHtml = escapeHtml(truncated);
 					}
