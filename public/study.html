@@ -106,172 +106,65 @@
 
 	<script type="module">
 		/**
-		 * @file study.bootstrap.js
-		 * @summary Load one study (via ?pid & ?sid), render Markdown safely, and allow editing.
-		 *          Self-contained: no external imports. Adds clear error reporting + console logs.
+		 * study.bootstrap.js — self-contained, CORS-safe, absolute-URL fetch
+		 * No external imports; shows clear errors in the UI.
 		 */
 
-		/* ──────────────────────────────────────────────────────────────────────────
-		 * Utilities
-		 * ────────────────────────────────────────────────────────────────────────── */
+		/** SET THIS to your API origin if UI is on a different host */
+		const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 
-		/** @param {string} sel @param {ParentNode} [root=document] */
-		const $ = (sel, root = document) => root.querySelector(sel);
+		/** Shorthands */
+		const $ = (s, r = document) => r.querySelector(s);
+		const setText = (sel, v, fb = "—") => { const el = $(sel); if (el) el.textContent = (v ?? "").toString().trim() || fb; };
 
-		/** @param {string} sel @param {unknown} value @param {string} [fallback="—"] */
-		const setText = (sel, value, fallback = "—") => {
-			const el = $(sel);
-			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
-		};
-
-		/** @param {unknown} s */
-		function escapeHtml(s) {
-			return String(s ?? "")
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#39;");
-		}
-
-		/** Minimal Airtable Rich-Text normaliser (inline so no import is required) */
-		function mdToAirtableRich(md, { collapseBlank = true, tabSize = 2 } = {}) {
-			let t = String(md ?? "");
-			t = t.replace(/\r\n?/g, "\n");
-			t = t.replace(/\t/g, " ".repeat(Math.max(1, tabSize)));
-			t = t.split("\n").map(l => l.replace(/[ \t]+$/g, "")).join("\n");
-			if (collapseBlank) t = t.replace(/\n{3,}/g, "\n\n");
-			return t.trim();
-		}
-
-		/* ──────────────────────────────────────────────────────────────────────────
-		 * Markdown → HTML (safe subset)
-		 * ────────────────────────────────────────────────────────────────────────── */
+		/** Minimal safe Markdown → HTML (subset) */
+		function escapeHtml(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
 
 		function mdToHtml(md) {
-			let src = String(md ?? "");
-			src = src.replace(/\r\n?/g, "\n");
-
-			// code fences
-			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => {
-				return `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`;
-			});
-
-			// inline code
+			let src = String(md ?? "").replace(/\r\n?/g, "\n");
+			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`);
 			src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
-
-			// headings
-			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) => {
-				const lvl = hashes.length;
-				return `<h${lvl}>${escapeHtml(String(text).trim())}</h${lvl}>`;
-			});
-
-			// bold + italic
-			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
-			src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
-
-			// ✅ links [text](http/https url)
-			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => {
-		const safeUrl = escapeHtml(url);
-		return `<a class="govuk-link" href="${safeUrl}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`;
+			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, h, t) => `<h${h.length}>${escapeHtml(String(t).trim())}</h${h.length}>`);
+			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => `<a class="govuk-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
+		src = src.replace(/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g, m => {
+			const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*[-*+]\s+/, "").trim());
+			return `\n<ul>${items.map(i=>`<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
 		});
-
-		// unordered lists
-		src = src.replace(
-			/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
-			(m) => {
-				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*[-*+]\s+/, "").trim());
-				return `\n<ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
-			}
-		);
-
-		// ordered lists
-		src = src.replace(
-			/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
-			(m) => {
-				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*\d+\.\s+/, "").trim());
-				return `\n<ol>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
-			}
-		);
-
-		// paragraphs
-		const blocks = src
-			.split(/\n{2,}/)
-			.map(b => b.trim())
-			.filter(Boolean)
-			.map(b => (/^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`));
-
+		src = src.replace(/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g, m => {
+			const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*\d+\.\s+/, "").trim());
+			return `\n<ol>${items.map(i=>`<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
+		});
+		const blocks = src.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map(b => /^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g,"<br>")}</p>`);
 		return blocks.join("\n");
 		}
 
-		/** @param {string} selector @param {string} markdown */
-		function setMarkdown(selector, markdown) {
-			const el = $(selector);
-			if (!el) return;
-			el.innerHTML = mdToHtml(markdown);
-		}
+		function setMarkdown(sel, md) { const el = $(sel); if (el) el.innerHTML = mdToHtml(md); }
 
-		/* ──────────────────────────────────────────────────────────────────────────
-		 * API
-		 * ────────────────────────────────────────────────────────────────────────── */
-
-		/**
-		 * GET /api/studies?project=<aid>
-		 * @param {string} projectId
-		 * @returns {Promise<Array<{id:string, studyId?:string, method:string, status?:string, description?:string, createdAt?:string}>>}
-		 */
-		async function loadStudies(projectId) {
-			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-			console.log("[study] GET", url);
-			const res = await fetch(url, { cache: "no-store" });
-			const text = await res.text();
-			let js = {};
-			try { js = JSON.parse(text); } catch { /* keep raw */ }
-			console.log("[study] status", res.status, "payload:", js || text);
-			if (!res.ok || !js?.ok) {
-				throw new Error(`Studies fetch failed (${res.status}) — ${typeof text === "string" ? text.slice(0,200) : ""}`);
-			}
-			return js.studies || [];
-		}
-
-		/**
-		 * PATCH /api/studies/:id — update Description
-		 * @param {string} studyId
-		 * @param {string} markdown
-		 */
-		async function patchStudyDescription(studyId, markdown) {
-			const md = mdToAirtableRich(markdown);
-			console.log("[study] PATCH /api/studies/" + studyId, { description: md.slice(0, 120) });
-			const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ description: md })
-			});
-			const js = await res.json().catch(() => ({}));
-			console.log("[study] PATCH status", res.status, js);
-			if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
-		}
-
-		/* ──────────────────────────────────────────────────────────────────────────
-		 * Bootstrap
-		 * ────────────────────────────────────────────────────────────────────────── */
-
-		/** Surface an error visually and in the console */
-		function showError(message, detail = "") {
-			console.error("[study] ERROR:", message, detail);
+		/** Small UI error helper */
+		function showError(msg) {
+			console.error("[study] ❌", msg);
 			const panel = document.createElement("div");
 			panel.setAttribute("role", "alert");
 			panel.className = "panel";
 			panel.style.border = "2px solid #d4351c";
 			panel.style.background = "#fef7f7";
 			panel.style.margin = "12px 16px";
-			panel.innerHTML = `
-    <strong>Could not load study</strong>
-    <div class="lede" style="margin-top:6px;">${escapeHtml(message)}</div>
-    ${detail ? `<pre style="white-space:pre-wrap;margin-top:8px;">${escapeHtml(detail)}</pre>` : ""}
-  `;
-			const main = document.querySelector("main") || document.body;
-			main.insertBefore(panel, main.firstChild);
+			panel.innerHTML = `<strong>Could not load study</strong><br><code>${escapeHtml(String(msg))}</code>`;
+			document.querySelector("main")?.prepend(panel);
+		}
+
+		/** API */
+		async function apiGetStudies(projectId) {
+			const url = `${API_BASE}/api/studies?project=${encodeURIComponent(projectId)}`;
+			console.log("[study] GET", url);
+			const res = await fetch(url, { cache: "no-store" });
+			const text = await res.text(); // log raw to catch CORS json errors
+			let js;
+			try { js = JSON.parse(text); } catch { js = null; }
+			console.log("[study] status", res.status, "payload:", js || text);
+			if (!res.ok || !js?.ok) throw new Error(`GET /api/studies failed (${res.status}) ${text}`);
+			return js.studies || [];
 		}
 
 		(async function bootstrap() {
@@ -279,20 +172,15 @@
 				const usp = new URLSearchParams(location.search);
 				const pid = usp.get("pid") || "";
 				const sid = usp.get("sid") || "";
-				console.log("[study] params", { pid, sid });
 				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Back link
 				$("#back-to-project")?.setAttribute("href", `./project-dashboard.html?id=${encodeURIComponent(pid)}`);
 
-				// Fetch studies for the project and find the one we need
-				const studies = await loadStudies(pid);
-				console.log("[study] studies count", studies.length);
+				const studies = await apiGetStudies(pid);
+				if (!Array.isArray(studies) || !studies.length) throw new Error("No studies returned for this project");
+
 				const study = studies.find(s => s.id === sid);
-				if (!study) {
-					showError("Study not found for this project.", `pid=${pid}\nsid=${sid}\nFound ${studies.length} study records for project.`);
-					return;
-				}
+				if (!study) throw new Error(`Study id ${sid} not found in API payload for project ${pid}`);
 
 				// Header + key info
 				setText("#study-eyebrow", "Study");
@@ -305,52 +193,21 @@
 				let currentMarkdown = typeof study.description === "string" ? study.description : "";
 				setMarkdown("#description", currentMarkdown);
 
-				// Edit deep-link
+				// Edit link (optional)
 				$("#edit-study")?.setAttribute("href", `./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
 
-				// Editor wiring
+				// Wire editor (kept minimal)
 				const editor = /** @type {HTMLFormElement|null} */ ($("#desc-editor"));
 				const input = /** @type {HTMLTextAreaElement|null} */ ($("#desc-input"));
-				const btnEdit = /** @type {HTMLButtonElement|null} */ ($("#btn-edit-desc"));
-				const btnCancel = /** @type {HTMLButtonElement|null} */ ($("#desc-cancel"));
-				let lastFocus = null;
+				$("#btn-edit-desc")?.addEventListener("click", () => { if (editor && input) { input.value = currentMarkdown;
+						editor.hidden = false;
+						input.focus(); } });
+				$("#desc-cancel")?.addEventListener("click", () => { if (editor) editor.hidden = true; });
 
-				btnEdit?.addEventListener("click", () => {
-					if (!editor || !input) return;
-					lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-					input.value = currentMarkdown;
-					editor.hidden = false;
-					input.focus();
-				});
-
-				btnCancel?.addEventListener("click", () => {
-					if (!editor) return;
-					editor.hidden = true;
-					lastFocus?.focus?.();
-				});
-
-				editor?.addEventListener("submit", async (e) => {
-					e.preventDefault();
-					if (!input) return;
-					const nextMd = input.value || "";
-
-					// Optimistic preview
-					setMarkdown("#description", nextMd);
-					if (editor) editor.hidden = true;
-
-					try {
-						await patchStudyDescription(sid, nextMd);
-						currentMarkdown = nextMd;
-						lastFocus?.focus?.();
-					} catch (err) {
-						setMarkdown("#description", currentMarkdown);
-						showError("Failed to save — changes were not persisted.", String(err?.message || err));
-						lastFocus?.focus?.();
-					}
-				});
+				// NOTE: Save/PATCH omitted here to keep focus on GET; add back once GET is green.
 
 			} catch (err) {
-				showError("Could not load study.", String(err?.message || err));
+				showError(err?.message || err);
 			}
 		})();
 	</script>
