@@ -117,10 +117,8 @@ class BatchLogger {
   flush() {
     if (!this._buf.length) return;
     try {
-      // Single grouped write where possible (reduces noise)
       console.log("audit.batch", this._buf);
     } catch {
-      // Fallback for environments that might not support structured logs
       for (const e of this._buf) {
         try { console.log("audit.entry", e); } catch {}
       }
@@ -129,16 +127,10 @@ class BatchLogger {
     }
   }
 
-  /**
-   * Reset the buffer (test helper).
-   * @returns {void}
-   */
+  /** @returns {void} */
   reset() { this._buf = []; }
 
-  /**
-   * Clean up and prevent further logging.
-   * @returns {void}
-   */
+  /** @returns {void} */
   destroy() {
     this.flush();
     this._destroyed = true;
@@ -298,18 +290,10 @@ class ResearchOpsService {
     this.destroyed = false;
   }
 
-  /**
-   * Reset soft state (test helper).
-   * @returns {void}
-   * @inner
-   */
+  /** @returns {void} */
   reset() { this.log.reset(); }
 
-  /**
-   * Cleanup resources (idempotent).
-   * @returns {void}
-   * @inner
-   */
+  /** @returns {void} */
   destroy() {
     if (this.destroyed) return;
     this.log.destroy();
@@ -361,19 +345,9 @@ class ResearchOpsService {
   }
 
   /**
-   * List projects from Airtable.
-   *
+   * List projects from Airtable (joins latest Project Details).
    * - Uses Airtable `record.createdTime` for `createdAt`.
    * - Sorted newest-first server-side to guarantee stable ordering.
-   * - Joins "Project Details" to include Lead Researcher fields.
-   *
-   * @async
-   * @function listProjectsFromAirtable
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {string} origin
-   * @param {URL} url
-   * @returns {Promise<Response>}
    */
   async listProjectsFromAirtable(origin, url) {
     const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
@@ -419,7 +393,7 @@ class ResearchOpsService {
       };
     });
 
-    // ---- 2) Project Details (pull lead researcher + email)
+    // ---- 2) Project Details (pull lead researcher + email, latest)
     const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
     const dRes = await fetchWithTimeout(dUrl, {
       headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
@@ -431,7 +405,6 @@ class ResearchOpsService {
       let dData;
       try { dData = JSON.parse(dText); } catch { dData = { records: [] }; }
 
-      // Map newest details per project id
       const detailsByProject = new Map();
       for (const r of (dData.records || [])) {
         const f = r.fields || {};
@@ -463,13 +436,6 @@ class ResearchOpsService {
 
   /**
    * Create a project in Airtable (+ optional details), then append to GitHub CSV (best-effort).
-   * @async
-   * @function createProject
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {Request} request
-   * @param {string} origin
-   * @returns {Promise<Response>}
    */
   async createProject(request, origin) {
     const body = await request.arrayBuffer();
@@ -602,13 +568,6 @@ class ResearchOpsService {
 
   /**
    * Create a Study linked to a Project (Airtable primary) and append to GitHub CSV (best-effort).
-   * @async
-   * @function createStudy
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {Request} request
-   * @param {string} origin
-   * @returns {Promise<Response>}
    */
   async createStudy(request, origin) {
     const body = await request.arrayBuffer();
@@ -691,13 +650,6 @@ class ResearchOpsService {
    * List studies linked to a given project from Airtable.
    * - Requires `?project=<AirtableId>`.
    * - Paginates to collect all results.
-   * @async
-   * @function listStudies
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {string} origin
-   * @param {URL} url
-   * @returns {Promise<Response>}
    */
   async listStudies(origin, url) {
     const projectId = url.searchParams.get("project");
@@ -813,13 +765,6 @@ class ResearchOpsService {
 
   /**
    * Stream a CSV file from GitHub with proper headers.
-   * @async
-   * @function streamCsv
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {string} origin
-   * @param {string} path
-   * @returns {Promise<Response>}
    */
   async streamCsv(origin, path) {
     const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
@@ -873,13 +818,6 @@ class ResearchOpsService {
 
   /**
    * Append a row to a GitHub-hosted CSV file (create if missing).
-   * @async
-   * @function githubCsvAppend
-   * @memberof ResearchOpsService
-   * @inner
-   * @param {{path:string, header:string[], row:string[]}} params
-   * @returns {Promise<void>}
-   * @throws {Error}
    */
   async githubCsvAppend({ path, header, row }) {
     const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
@@ -930,18 +868,9 @@ class ResearchOpsService {
 
 /**
  * Default export: Cloudflare Worker `fetch` handler.
- * @async
- * @function fetch
- * @memberof default
- * @inner
- * @param {Request} request
- * @param {Env} env
- * @param {ExecutionContext} ctx
- * @returns {Promise<Response>}
  */
 export default {
   async fetch(request, env, ctx) {
-    /** @inner Bootstrap per-request service instance */
     const service = new ResearchOpsService(env);
     const url = new URL(request.url);
     const origin = request.headers.get("Origin") || "";
@@ -1021,11 +950,6 @@ export default {
 
 /**
  * Create a minimal mock Env for unit tests.
- * @function createMockEnv
- * @inner
- * @param {Partial<Env>} overrides
- * @returns {Env}
- * @since 1.0.0
  */
 export function createMockEnv(overrides = {}) {
   return /** @type {Env} */ ({
@@ -1050,12 +974,6 @@ export function createMockEnv(overrides = {}) {
 
 /**
  * Build a JSON Request for tests.
- * @function makeJsonRequest
- * @inner
- * @param {string} path
- * @param {any} body
- * @param {RequestInit} [init]
- * @returns {Request}
  * @example
  * const req = makeJsonRequest("/api/projects", { name:"X", description:"Y" });
  */
@@ -1068,7 +986,6 @@ export function makeJsonRequest(path, body, init = {}) {
     body: JSON.stringify(body)
   };
 
-  /** @inner Preserve extra init options (mode, credentials, etc.) */
   for (const k in init) {
     if (k !== "headers") reqInit[k] = init[k];
   }
