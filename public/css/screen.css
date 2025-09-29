@@ -601,19 +601,19 @@ textarea {
 
 /* Fades the last N characters of the span (configurable via --fade-ch) */
 .fade-tail {
-	display: inline-block; /* needed so the mask fits the text box */
-	-webkit-mask-image: linear-gradient(
+	display: inline-block;
+	-webkit-mask-image: 
+		linear-gradient(
 		to right,
 		black 0,
-		black calc(100% - var(--fade-ch, 10ch)),
-		rgba(0,0,0,0) 100%
-		);
-	mask-image: linear-gradient(
+		black calc(100% - 10ch),
+		rgba(0,0,0,0) 100%);
+	mask-image: 
+		linear-gradient(
 		to right,
 		black 0,
-		black calc(100% - var(--fade-ch, 10ch)),
-		rgba(0,0,0,0) 100%
-		);
+		black calc(100% - 10ch),
+		rgba(0,0,0,0) 100%);
 	-webkit-mask-size: 100% 100%;
 	mask-size: 100% 100%;
 	}
