@@ -1,314 +1,453 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Study — ResearchOps</title>
 
-  <link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-  <link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-  <link rel="stylesheet" href="./css/screen.css" media="screen" />
-  <script type="module" src="./components/layout.js"></script>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Study — ResearchOps</title>
+
+	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="./css/screen.css" media="screen" />
+	<script type="module" src="./components/layout.js"></script>
 </head>
 
 <body>
-  <x-include src="./partials/header.html" vars='{
+	<x-include src="./partials/header.html" vars='{
     "active":"Projects",
     "subtitle":"Study"
   }'></x-include>
 
-  <main class="govuk-body" role="main">
-    <div class="actions-bar">
-      <a id="back-to-project" href="./projects.html" class="btn btn--secondary">← Back to Project</a>
-      <a id="edit-study" href="#" class="btn">✎ Edit Study</a>
-    </div>
+	<main class="govuk-body" role="main">
+		<div class="actions-bar">
+			<a id="back-to-project" href="./projects.html" class="btn btn--secondary">← Back to Project</a>
+			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
+		</div>
 
-    <!-- Hero -->
-    <div class="dashboard-hero">
-      <p id="study-eyebrow" class="project-org"></p>
-      <h1 id="study-title" class="govuk-heading-l">Study</h1>
+		<!-- Hero -->
+		<div class="dashboard-hero">
+			<p id="study-eyebrow" class="project-org"></p>
+			<h1 id="study-title" class="govuk-heading-l">Study</h1>
 
-      <!-- Description lives under the title -->
-      <div id="desc-view-wrap">
-        <div id="description" class="govuk-body">—</div>
-        <div class="actions-bar" style="margin-top:8px;">
-          <button id="btn-edit-desc" type="button" class="btn btn--outline">✎ Edit description</button>
-        </div>
-      </div>
+			<!-- Description lives under the title -->
+			<div id="desc-view-wrap">
+				<div id="description" class="govuk-body">—</div>
+				<div class="actions-bar" style="margin-top:8px;">
+					<button id="btn-edit-desc" type="button" class="btn btn--outline">✎ Edit description</button>
+				</div>
+			</div>
 
-      <!-- Inline editor (hidden by default) -->
-      <form id="desc-editor" class="panel" hidden>
-        <label class="govuk-label" for="desc-input">Description (Markdown)</label>
-        <textarea id="desc-input" class="govuk-input" rows="8" spellcheck="true" autocomplete="off"></textarea>
-        <div class="actions-bar" style="gap:8px;">
-          <button class="btn" type="submit">Save</button>
-          <button class="btn btn--secondary" id="desc-cancel" type="button">Cancel</button>
-        </div>
+			<!-- Inline editor (hidden by default) -->
+			<form id="desc-editor" class="panel" hidden>
+				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
+				<textarea id="desc-input" class="govuk-input" rows="8" spellcheck="true" autocomplete="off"></textarea>
+				<div class="actions-bar" style="gap:8px;">
+					<button class="btn" type="submit">Save</button>
+					<button class="btn btn--secondary" id="desc-cancel" type="button">Cancel</button>
+				</div>
 
-        <!-- Allowed Markdown cheat sheet -->
-        <details class="note" style="margin-top:8px;">
-          <summary>Markdown cheat sheet (allowed)</summary>
-          <div>
-            <p>You can use a safe subset of Markdown:</p>
-            <ul>
-              <li>Headings: <code>#</code> … <code>######</code></li>
-              <li>Bold / italic: <code>**bold**</code>, <code>*italic*</code></li>
-              <li>Links: <code>[text](https://…)</code></li>
-              <li>Lists:
-                <ul>
-                  <li>Unordered: lines starting with <code>-</code>, <code>*</code> or <code>+</code></li>
-                  <li>Ordered: <code>1. item</code></li>
-                </ul>
-              </li>
-              <li>Inline code: <code>`code`</code></li>
-              <li>Code block: triple backticks <code>```</code></li>
-              <li>Paragraphs: blank line between blocks</li>
-            </ul>
-          </div>
-        </details>
-      </form>
-    </div>
+				<!-- Allowed Markdown cheat sheet -->
+				<details class="note" style="margin-top:8px;">
+					<summary>Markdown cheat sheet (allowed)</summary>
+					<div>
+						<p>You can use a safe subset of Markdown:</p>
+						<ul>
+							<li>Headings: <code>#</code> … <code>######</code></li>
+							<li>Bold / italic: <code>**bold**</code>, <code>*italic*</code></li>
+							<li>Links: <code>[text](https://…)</code></li>
+							<li>Lists:
+								<ul>
+									<li>Unordered: lines starting with <code>-</code>, <code>*</code> or <code>+</code></li>
+									<li>Ordered: <code>1. item</code></li>
+								</ul>
+							</li>
+							<li>Inline code: <code>`code`</code></li>
+							<li>Code block: triple backticks <code>```</code></li>
+							<li>Paragraphs: blank line between blocks</li>
+						</ul>
+					</div>
+				</details>
+			</form>
+		</div>
 
-    <!-- Key info -->
-    <section class="kv">
-      <ul class="kv__list">
-        <li><span class="kv__term">Method</span>&nbsp;<span class="kv__desc" id="kv-method">–</span></li>
-        <li><span class="kv__term">Status</span>&nbsp;<span class="kv__desc" id="kv-status">–</span></li>
-        <li><span class="kv__term">Study ID</span>&nbsp;<span class="kv__desc" id="kv-studyid">–</span></li>
-      </ul>
-    </section>
+		<!-- Key info -->
+		<section class="kv">
+			<ul class="kv__list">
+				<li><span class="kv__term">Method</span>&nbsp;<span class="kv__desc" id="kv-method">–</span></li>
+				<li><span class="kv__term">Status</span>&nbsp;<span class="kv__desc" id="kv-status">–</span></li>
+				<li><span class="kv__term">Study ID</span>&nbsp;<span class="kv__desc" id="kv-studyid">–</span></li>
+			</ul>
+		</section>
 
-    <!-- Materials hubs (placeholders) -->
-    <nav class="board" aria-label="Study setup">
-      <a href="#" class="board__item" aria-disabled="true">Produce consent forms</a>
-      <a href="#" class="board__item" aria-disabled="true">Manage consent</a>
-      <a href="#" class="board__item" aria-disabled="true">Schedule participants</a>
-      <a href="#" class="board__item" aria-disabled="true">Discussion guides</a>
-      <a href="#" class="board__item" aria-disabled="true">Note takers &amp; observers</a>
-      <a href="#" class="board__item" aria-disabled="true">Begin a session</a>
-    </nav>
+		<!-- Materials hubs (placeholders) -->
+		<nav class="board" aria-label="Study setup">
+			<a href="#" class="board__item" aria-disabled="true">Produce consent forms</a>
+			<a href="#" class="board__item" aria-disabled="true">Manage consent</a>
+			<a href="#" class="board__item" aria-disabled="true">Schedule participants</a>
+			<a href="#" class="board__item" aria-disabled="true">Discussion guides</a>
+			<a href="#" class="board__item" aria-disabled="true">Note takers &amp; observers</a>
+			<a href="#" class="board__item" aria-disabled="true">Begin a session</a>
+		</nav>
 
-    <!-- Overview kept for future content -->
-    <section class="section">
-      <header class="section__header">
-        <h2 class="section__title govuk-heading-m">Overview</h2>
-      </header>
-      <div class="section__body">
-        <div class="panel">
-          <p class="govuk-body">Set up your study materials and workflows here.</p>
-        </div>
-      </div>
-    </section>
-  </main>
+		<!-- Overview kept for future content -->
+		<section class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Overview</h2>
+			</header>
+			<div class="section__body">
+				<div class="panel">
+					<p class="govuk-body">Set up your study materials and workflows here.</p>
+				</div>
+			</div>
+		</section>
+	</main>
 
-  <x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<x-include src="./partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
-  <script type="module">
-    /**
-     * @file study.bootstrap.js (inline)
-     * @summary Loads one study (by pid+sid), renders Markdown description under the title,
-     * and allows editing with Markdown that PATCHes back to Airtable (via the Worker).
-     */
+	<script type="module">
+		/**
+		 * @file study.bootstrap.js
+		 * @summary Load a single study (via pid+sid), render its Markdown description, and allow editing
+		 *          with optimistic UI and rollback on failure. Conservatively sanitises Markdown for display
+		 *          and normalises Markdown for Airtable Rich Text on outbound PATCH.
+		 * @requires globalThis.fetch
+		 * @requires globalThis.URLSearchParams
+		 * @requires ./js/richtext.js (export: mdToAirtableRich)
+		 */
 
-    import { mdToAirtableRich } from "./js/richtext.js";
+		import { mdToAirtableRich } from "./js/richtext.js";
 
-    /* ========== tiny helpers ========== */
-    const $ = (sel, root = document) => root.querySelector(sel);
-    const setText = (sel, value, fallback = "—") => {
-      const el = $(sel);
-      if (el) el.textContent = (value ?? "").toString().trim() || fallback;
-    };
+		/* ──────────────────────────────────────────────────────────────────────────
+		 * Utilities
+		 * ────────────────────────────────────────────────────────────────────────── */
 
-    /* ========== sanitise + markdown (minimal, safe subset) ========== */
+		/**
+		 * Shorthand for querySelector.
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement|null}
+		 */
+		const $ = (sel, root = document) => root.querySelector(sel);
 
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
+		/**
+		 * Set textContent with a fallback if value is empty.
+		 * @param {string} sel
+		 * @param {unknown} value
+		 * @param {string} [fallback="—"]
+		 * @returns {void}
+		 */
+		const setText = (sel, value, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
+		};
 
-    /**
-     * Very small, safe Markdown → HTML (headings, bold/italic, code, links, lists, paragraphs).
-     * Intentionally conservative to avoid XSS; good enough for Airtable Rich Text parity.
-     */
-    function mdToHtml(md) {
-      let src = String(md ?? "");
+		/**
+		 * Minimal HTML escaper for user-supplied strings.
+		 * @param {unknown} s
+		 * @returns {string}
+		 */
+		function escapeHtml(s) {
+			return String(s ?? "")
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
 
-      // normalise newlines
-      src = src.replace(/\r\n?/g, "\n");
+		/* ──────────────────────────────────────────────────────────────────────────
+		 * Markdown → HTML (safe subset for parity with Airtable Rich Text)
+		 * ────────────────────────────────────────────────────────────────────────── */
 
-      // code blocks (```lang?\n...\n```)
-      src = src.replace(/```([\s\S]*?)```/g, (m, code) => {
-        return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
-      });
+		/**
+		 * Convert a conservative Markdown subset to HTML.
+		 * Supported: code fences, inline code, headings (#..######), **bold**, *italic*,
+		 * links [text](https://…), unordered/ordered lists, paragraphs & <br>.
+		 * @param {string} md
+		 * @returns {string} HTML
+		 */
+		function mdToHtml(md) {
+			let src = String(md ?? "");
 
-      // inline code
-      src = src.replace(/`([^`]+?)`/g, (m, code) => `<code>${escapeHtml(code)}</code>`);
+			// normalise newlines
+			src = src.replace(/\r\n?/g, "\n");
 
-      // headings ###### to #
-      src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (m, hashes, text) => {
-        const lvl = hashes.length;
-        return `<h${lvl}>${escapeHtml(text.trim())}</h${lvl}>`;
-      });
+			// code blocks (```lang?\n...\n```)
+			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => {
+				return `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`;
+			});
 
-      // bold + italic (simple)
-      src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
-      src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+			// inline code
+			src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
 
-      // links: [text](url) — url escaped, text preserved (already escaped by earlier steps if needed)
-      src = src.replace(/\[([^\]]+?)\]\((https?:\/\/[^\s)]+)\)/g, (m, text, url) => {
-        const safeUrl = escapeHtml(url);
-        return `<a class="govuk-link" href="${safeUrl}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`;
-      });
+			// headings ######..#
+			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) => {
+				const lvl = hashes.length;
+				return `<h${lvl}>${escapeHtml(String(text).trim())}</h${lvl}>`;
+			});
 
-      // lists (very small parser): handle groups of lines starting with -, +, *, or 1.
-      src = src.replace(
-        /(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
-        (m) => {
-          const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*[-*+]\s+/, "").trim());
-          return `\n<ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
-        }
-      );
+			// bold + italic
+			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
+			src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
 
-      src = src.replace(
-        /(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
-        (m) => {
-          const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*\d+\.\s+/, "").trim());
-          return `\n<ol>${items.map(i => `<li>${i}</li>`).join("")}</ol>`;
-        }
-      );
+			// links [text](url) — allow only http/https
+			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => {
+		const safeUrl = escapeHtml(url);
+		return `<a class="govuk-link" href="${safeUrl}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`;
+		});
 
-      // paragraphs: wrap leftover text blocks separated by blank lines
-      const blocks = src
-        .split(/\n{2,}/)
-        .map(b => b.trim())
-        .filter(Boolean)
-        .map(b => {
-          // already block-level? (starts with <h, <p, <ul, <ol, <pre)
-          if (/^<(h\d|ul|ol|pre)/.test(b)) return b;
-          return `<p>${b.replace(/\n/g, "<br>")}</p>`;
-        });
+		// unordered lists
+		src = src.replace(
+			/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
+			(m) => {
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*[-*+]\s+/, "").trim());
+				return `\n<ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+			}
+		);
 
-      return blocks.join("\n");
-    }
+		// ordered lists
+		src = src.replace(
+			/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
+			(m) => {
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*\d+\.\s+/, "").trim());
+				return `\n<ol>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
+			}
+		);
 
-    function setMarkdown(selector, markdown) {
-      const el = $(selector);
-      if (!el) return;
-      const html = mdToHtml(markdown);
-      el.innerHTML = html;
-    }
+		// paragraphs: wrap remaining blocks split by blank lines
+		const blocks = src
+			.split(/\n{2,}/)
+			.map(b => b.trim())
+			.filter(Boolean)
+			.map(b => {
+				// already block-level?
+				if (/^<(h\d|ul|ol|pre)/.test(b)) return b;
+				return `<p>${b.replace(/\n/g, "<br>")}</p>`;
+			});
 
-    /* ========== data ========== */
+		return blocks.join("\n");
+		}
 
-    /**
-     * GET /api/studies?project=<aid>
-     * @param {string} projectId
-     * @returns {Promise<Array<{id:string, studyId?:string, method:string, status?:string, description?:string}>>}
-     */
-    async function loadStudies(projectId) {
-      const res = await fetch(`/api/studies?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok || !js?.ok) throw new Error(js?.error || `Studies fetch failed (${res.status})`);
-      return js.studies || [];
-    }
+		/**
+		 * Render Markdown into the target element as HTML (safe subset).
+		 * @param {string} selector
+		 * @param {string} markdown
+		 * @returns {void}
+		 */
+		function setMarkdown(selector, markdown) {
+			const el = $(selector);
+			if (!el) return;
+			el.innerHTML = mdToHtml(markdown);
+		}
 
-    /**
-     * PATCH /api/studies/:id
-     * Only sends fields that need updating. Here we update Description (as Markdown for Airtable Rich Text).
-     * @param {string} studyId
-     * @param {string} markdown
-     * @returns {Promise<boolean>}
-     */
-    async function patchStudyDescription(studyId, markdown) {
-      // Normalise Markdown before send (keeps preview == stored and consistent everywhere)
-      const md = mdToAirtableRich(markdown);
-      const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: md })
-      });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
-      return true;
-      }
+		/* ──────────────────────────────────────────────────────────────────────────
+		 * Pagination (client-side; 5 per page)
+		 * ────────────────────────────────────────────────────────────────────────── */
 
-    /* ========== bootstrap ========== */
+		/**
+		 * Paginate an existing <ul> of <li> items. Renders Prev / windowed page numbers / Next
+		 * into a companion <nav>. Stores state in ?page_<key>= for restore.
+		 * @param {string} listSel  CSS selector for the UL
+		 * @param {string} pagerSel CSS selector for the NAV
+		 * @param {string} key      short key for URL param (e.g. "studies")
+		 * @param {number} [size=5] items per page
+		 * @returns {void}
+		 */
+		function paginateList(listSel, pagerSel, key, size = 5) {
+			const list = document.querySelector(listSel);
+			const pager = document.querySelector(pagerSel);
+			if (!list || !pager) return;
 
-    (async function bootstrap() {
-      try {
-        const usp = new URLSearchParams(location.search);
-        const pid = usp.get("pid") || "";
-        const sid = usp.get("sid") || "";
-        if (!pid || !sid) throw new Error("Missing pid or sid");
+			const items = Array.from(list.children);
+			if (!items.length) { pager.innerHTML = ""; return; }
 
-        // Back link targets the Project Dashboard
-        $("#back-to-project")?.setAttribute("href", `./project-dashboard.html?id=${encodeURIComponent(pid)}`);
+			const url = new URL(window.location.href);
+			const total = Math.max(1, Math.ceil(items.length / size));
+			let current = Math.max(1, Math.min(parseInt(url.searchParams.get("page_" + key) || "1", 10), total));
 
-        const studies = await loadStudies(pid);
-        const study = studies.find(s => s.id === sid);
-        if (!study) throw new Error("Study not found");
+			/** @param {number} n */
+			function show(n) {
+				current = Math.max(1, Math.min(n, total));
+				const start = (current - 1) * size;
+				const end = start + size;
+				items.forEach((el, i) => { el.style.display = (i >= start && i < end) ? "" : "none"; });
+				url.searchParams.set("page_" + key, String(current));
+				history.replaceState({}, "", url);
+				render();
+			}
 
-        // Header + key info
-        setText("#study-eyebrow", "Study");
-        setText("#study-title", study.method || "Study");
-        setText("#kv-method", study.method || "");
-        setText("#kv-status", study.status || "");
-        setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
+			function render() {
+				pager.innerHTML = "";
 
-        // Description under the title (render Markdown safely)
-        let currentMarkdown = mdToAirtableRich(study.description || "");
-        setMarkdown("#description", currentMarkdown);
+				/** @param {string} label @param {() => void} onClick @param {boolean} [disabled] */
+				const mkBtn = (label, onClick, disabled = false) => {
+					const b = document.createElement("button");
+					b.type = "button";
+					b.textContent = label;
+					b.disabled = !!disabled;
+					if (!disabled) b.addEventListener("click", onClick);
+					return b;
+				};
 
-        // Optional “edit” route (placeholder deep-link)
-        $("#edit-study")?.setAttribute(
-          "href",
-          `./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
-        );
+				pager.appendChild(mkBtn("Prev", () => show(current - 1), current <= 1));
 
-        // --- Editor wiring ---
-        const editor = $("#desc-editor");
-        const input  = /** @type {HTMLTextAreaElement} */ ($("#desc-input"));
-        const btnEdit = $("#btn-edit-desc");
-        const btnCancel = $("#desc-cancel");
+				const windowSize = 5;
+				let start = Math.max(1, current - Math.floor(windowSize / 2));
+				let end = Math.min(total, start + windowSize - 1);
+				start = Math.max(1, end - windowSize + 1);
 
-        btnEdit?.addEventListener("click", () => {
-          input.value = currentMarkdown;
-          editor.hidden = false;
-          input.focus();
-        });
+				for (let p = start; p <= end; p++) {
+					const a = document.createElement("a");
+					a.href = "#";
+					a.textContent = String(p);
+					if (p === current) a.setAttribute("aria-current", "page");
+					a.addEventListener("click", (e) => { e.preventDefault();
+						show(p); });
+					pager.appendChild(a);
+				}
 
-        btnCancel?.addEventListener("click", () => {
-          editor.hidden = true;
-        });
+				pager.appendChild(mkBtn("Next", () => show(current + 1), current >= total));
+			}
 
-        editor?.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const nextMd = input.value || "";
+			pager.addEventListener("keydown", (e) => {
+				if (e.key === "ArrowRight") { e.preventDefault();
+					show(current + 1); }
+				if (e.key === "ArrowLeft") { e.preventDefault();
+					show(current - 1); }
+			});
 
-          // Optimistic preview (normalise + render)
-          currentMarkdown = mdToAirtableRich(nextMd);
-          setMarkdown("#description", currentMarkdown);
-          editor.hidden = true;
+			show(current);
+		}
 
-          try {
-            await patchStudyDescription(sid, nextMd);
-          } catch (err) {
-            // roll back UI if desired; for now just notify
-            console.error(err);
-            alert("Saved locally, but failed to persist to Airtable.");
-          }
-        });
+		/* ──────────────────────────────────────────────────────────────────────────
+		 * Data access
+		 * ────────────────────────────────────────────────────────────────────────── */
 
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
-        alert("Could not load study.");
-      }
-    })();
-  </script>
+		/**
+		 * GET /api/studies?project=<aid>
+		 * @param {string} projectId Airtable project record id
+		 * @returns {Promise<Array<{id:string, studyId?:string, method:string, status?:string, description?:string, createdAt?:string}>>}
+		 * @throws {Error} If the API call fails
+		 */
+		async function loadStudies(projectId) {
+			const res = await fetch(`/api/studies?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
+			/** @type {{ok?:boolean, studies?:any[]}} */
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) throw new Error(js?.error || `Studies fetch failed (${res.status})`);
+			return js.studies || [];
+		}
+
+		/**
+		 * PATCH /api/studies/:id — updates Description (Markdown normalised to Airtable Rich Text).
+		 * @param {string} studyId Airtable record id for the study
+		 * @param {string} markdown Raw Markdown the user entered
+		 * @returns {Promise<void>}
+		 * @throws {Error} If the API call fails
+		 */
+		async function patchStudyDescription(studyId, markdown) {
+			const md = mdToAirtableRich(markdown);
+			const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ description: md })
+			});
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
+		}
+
+		/* ──────────────────────────────────────────────────────────────────────────
+		 * Bootstrap
+		 * ────────────────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Initialise page: load study, render fields, wire editor with optimistic update + rollback.
+		 * @returns {Promise<void>}
+		 */
+		(async function bootstrap() {
+			try {
+				const usp = new URLSearchParams(location.search);
+				const pid = usp.get("pid") || "";
+				const sid = usp.get("sid") || "";
+				if (!pid || !sid) throw new Error("Missing pid or sid");
+
+				// Back link targets the Project Dashboard
+				$("#back-to-project")?.setAttribute("href", `./project-dashboard.html?id=${encodeURIComponent(pid)}`);
+
+				// Fetch and select the current study
+				const studies = await loadStudies(pid);
+				const study = studies.find(s => s.id === sid);
+				if (!study) throw new Error("Study not found");
+
+				// Header + key info
+				setText("#study-eyebrow", "Study");
+				setText("#study-title", study.method || "Study");
+				setText("#kv-method", study.method || "");
+				setText("#kv-status", study.status || "");
+				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
+
+				// Description: keep raw Markdown as source-of-truth; only normalise on outbound PATCH
+				/** @type {string} */
+				let currentMarkdown = study.description || "";
+				setMarkdown("#description", currentMarkdown);
+
+				// Optional “edit” deep-link
+				$("#edit-study")?.setAttribute(
+					"href",
+					`./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
+				);
+
+				// Editor wiring with focus management and rollback
+				const editor = /** @type {HTMLFormElement|null} */ ($("#desc-editor"));
+				const input = /** @type {HTMLTextAreaElement|null} */ ($("#desc-input"));
+				const btnEdit = /** @type {HTMLButtonElement|null} */ ($("#btn-edit-desc"));
+				const btnCancel = /** @type {HTMLButtonElement|null} */ ($("#desc-cancel"));
+
+				/** @type {HTMLElement|null} */
+				let lastFocus = null;
+
+				btnEdit?.addEventListener("click", () => {
+					if (!editor || !input) return;
+					lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+					input.value = currentMarkdown;
+					editor.hidden = false;
+					input.focus();
+				});
+
+				btnCancel?.addEventListener("click", () => {
+					if (!editor) return;
+					editor.hidden = true;
+					lastFocus?.focus?.();
+				});
+
+				editor?.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					if (!input) return;
+					const nextMd = input.value || "";
+
+					// Optimistic preview
+					setMarkdown("#description", nextMd);
+					if (editor) editor.hidden = true;
+
+					try {
+						await patchStudyDescription(sid, nextMd);
+						currentMarkdown = nextMd; // commit on success
+						lastFocus?.focus?.();
+					} catch (err) {
+						// Roll back UI and inform the user (keep alert for now to avoid introducing new UI)
+						console.error(err);
+						setMarkdown("#description", currentMarkdown);
+						alert("Failed to save — changes were not persisted.");
+						lastFocus?.focus?.();
+					}
+				});
+
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error(err);
+				alert("Could not load study.");
+			}
+		})();
+	</script>
 </body>
+
 </html>
