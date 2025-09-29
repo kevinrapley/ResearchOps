@@ -301,8 +301,10 @@
 					a.href = "#";
 					a.textContent = String(p);
 					if (p === current) a.setAttribute("aria-current", "page");
-					a.addEventListener("click", (e) => { e.preventDefault();
-						show(p); });
+					a.addEventListener("click", (e) => {
+						e.preventDefault();
+						show(p);
+					});
 					pager.appendChild(a);
 				}
 
@@ -310,10 +312,14 @@
 			}
 
 			pager.addEventListener("keydown", (e) => {
-				if (e.key === "ArrowRight") { e.preventDefault();
-					show(current + 1); }
-				if (e.key === "ArrowLeft") { e.preventDefault();
-					show(current - 1); }
+				if (e.key === "ArrowRight") {
+					e.preventDefault();
+					show(current + 1);
+				}
+				if (e.key === "ArrowLeft") {
+					e.preventDefault();
+					show(current - 1);
+				}
 			});
 
 			show(current);
@@ -387,7 +393,7 @@
 
 				// Description: keep raw Markdown as source-of-truth; only normalise on outbound PATCH
 				/** @type {string} */
-				let currentMarkdown = study.description || "";
+				let currentMarkdown = typeof study.description === "string" ? study.description : "";
 				setMarkdown("#description", currentMarkdown);
 
 				// Optional “edit” deep-link
