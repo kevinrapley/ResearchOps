@@ -1,66 +1,88 @@
 /**
- * Cloudflare Pages Function proxy for /api/* → Worker API.
- * Set UPSTREAM_API in Pages env, e.g. https://rops-api.digikev-kevin-rapley.workers.dev
+ * Cloudflare Pages Functions proxy for `/api/*` → Worker API.
+ * Set UPSTREAM_API in Pages → Settings → Variables (e.g. https://rops-api….workers.dev)
  */
-export async function onRequest(context) {
-  const { request, env, params } = context;
 
+/**
+ * @param {import('@cloudflare/workers-types').Request} request
+ * @param {{UPSTREAM_API?: string}} env
+ * @param {{params: {path?: string[]}}} context
+ */
+export async function onRequest({ request, env, params }) {
   if (!env.UPSTREAM_API) {
     return new Response(JSON.stringify({ ok: false, error: "UPSTREAM_API not configured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
+      status: 500, headers: { "Content-Type": "application/json" }
     });
   }
 
-  // CORS preflight
+  // CORS preflight (let Pages answer quickly)
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": request.headers.get("Origin") || "*",
-        "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Vary": "Origin",
-        "Access-Control-Max-Age": "86400"
-      }
+      headers: corsHeaders(request.headers.get("Origin"))
     });
   }
 
-  // Build upstream URL: /api/<rest>?<query>
-  const inUrl = new URL(request.url);
-  inUrl.pathname = "/api/" + params.path.join("/");
-  const rest = typeof params.path === "string" ? params.path : "";
-  const target = new URL(`/api/${rest}${inUrl.search}`, env.UPSTREAM_API);
+  // Build upstream URL: <UPSTREAM_API>/api/<...path...>?<query>
+  const inReqUrl = new URL(request.url);
+  const upstreamBase = new URL(env.UPSTREAM_API);
 
-  const outHeaders = new Headers();
-  const ct = request.headers.get("content-type");
-  if (ct) outHeaders.set("content-type", ct);
-  const auth = request.headers.get("authorization");
-  if (auth) outHeaders.set("authorization", auth);
+  // Everything after '/api' from the incoming request
+  const tailPath = inReqUrl.pathname.replace(/^\/api\/?/, ""); // e.g. 'studies'
+  const cleanBasePath = upstreamBase.pathname.replace(/\/+$/, ""); // no trailing slash
+  const upstreamPath = `${cleanBasePath}/api/${tailPath}`;         // ensure single /api
 
-  const method = request.method.toUpperCase();
-  const init = { method, headers: outHeaders };
-  if (!["GET", "HEAD"].includes(method)) {
+  const outUrl = new URL(upstreamBase.origin + upstreamPath);
+  outUrl.search = inReqUrl.search; // preserve ?query
+
+  // Clone headers, but don’t forward Host; ensure we include browser Origin (for Worker CORS check)
+  const fwdHeaders = new Headers(request.headers);
+  fwdHeaders.delete("host");
+  const browserOrigin = request.headers.get("Origin");
+  if (browserOrigin) {
+    fwdHeaders.set("Origin", browserOrigin);
+  }
+
+  // Forward method & body (no body for GET/HEAD)
+  const init = {
+    method: request.method,
+    headers: fwdHeaders
+  };
+  if (!["GET", "HEAD"].includes(request.method.toUpperCase())) {
     init.body = await request.arrayBuffer();
   }
 
-  let res;
+  let upstreamResp;
   try {
-    res = await fetch(target.toString(), init);
+    upstreamResp = await fetch(outUrl.toString(), init);
   } catch (err) {
-    return new Response(JSON.stringify({
-      ok: false,
-      error: "Upstream fetch failed",
-      detail: String(err?.message || err),
-      _proxy: { target: target.toString() }
-    }), { status: 502, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ ok: false, error: "Upstream fetch failed", detail: String(err) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders(browserOrigin) }
+    });
   }
 
-  const hdrs = new Headers(res.headers);
-  hdrs.set("Access-Control-Allow-Origin", inUrl.origin);
-  hdrs.set("Vary", "Origin");
-  hdrs.set("X-Proxy-Target", target.toString());
-  hdrs.set("X-Proxy-Upstream-Status", String(res.status));
+  // Mirror upstream response with our CORS headers
+  const respHeaders = new Headers(upstreamResp.headers);
+  const cors = corsHeaders(browserOrigin);
+  for (const [k, v] of Object.entries(cors)) respHeaders.set(k, v);
 
-  return new Response(res.body, { status: res.status, headers: hdrs });
+  return new Response(upstreamResp.body, {
+    status: upstreamResp.status,
+    headers: respHeaders
+  });
+}
+
+/**
+ * Build permissive CORS headers for the calling Origin.
+ * @param {string|null} origin
+ */
+function corsHeaders(origin) {
+  return {
+    "Access-Control-Allow-Origin": origin || "*",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin",
+    "Access-Control-Max-Age": "86400"
+  };
 }
