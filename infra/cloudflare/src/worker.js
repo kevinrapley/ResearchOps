@@ -653,7 +653,8 @@ class ResearchOpsService {
 	 * Strategy:
 	 *  1) Try server-side filterByFormula on {Project}.
 	 *  2) If Airtable says unknown field (422/400), fall back to fetching all
-	 *     and filter client-side by detecting any link-field that contains the projectId.
+	 *     and filter client-side by detecting a link-field that contains projectId.
+	 * NOTE: Carefully builds URLSearchParams to avoid "offset=undefined".
 	 */
 	async listStudies(origin, url) {
 		const projectId = url.searchParams.get("project");
@@ -666,10 +667,20 @@ class ResearchOpsService {
 		const atBase = `https://api.airtable.com/v0/${base}/${tStudies}`;
 		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
 
-		/** Fetch a page with optional extra query params */
-		const fetchPage = async (extraParams) => {
-			const params = new URLSearchParams({ pageSize: "100", ...(extraParams || {}) });
-			const res = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+		/** Build query string safely (skip null/undefined/empty) */
+		const buildQs = (extra = {}) => {
+			const params = new URLSearchParams();
+			params.set("pageSize", "100");
+			for (const [k, v] of Object.entries(extra)) {
+				if (v !== undefined && v !== null && v !== "") params.set(k, String(v));
+			}
+			return params.toString();
+		};
+
+		/** Fetch one page with optional extra query params */
+		const fetchPage = async (extra) => {
+			const qs = buildQs(extra);
+			const res = await fetchWithTimeout(`${atBase}?${qs}`, { headers }, this.cfg.TIMEOUT_MS);
 			const text = await res.text();
 			let js;
 			try { js = JSON.parse(text); } catch { js = { records: [] }; }
@@ -691,21 +702,24 @@ class ResearchOpsService {
 
 		// ---------- 1) Try server-side filter on {Project} ----------
 		try {
-			// filterByFormula that tolerates empty/undefined: IF({Project}, FIND(pid, ARRAYJOIN({Project})))
+			// Matches when {Project} is an array of rec ids that includes projectId
 			const filterByFormula = `IF({Project},FIND('${projectId}',ARRAYJOIN({Project})))`;
+
 			const records = [];
-			let offset;
+			let offset = undefined;
 
 			do {
 				const { res, text, js } = await fetchPage({ filterByFormula, offset });
 				if (!res.ok) {
-					// Bubble up 422/400 to trigger fallback; other statuses return immediately
-					if (res.status === 422 || res.status === 400) throw Object.assign(new Error("schema"), { _schema: true, text, code: res.status });
+					// Bubble specific schema errors to trigger fallback
+					if (res.status === 422 || res.status === 400) {
+						throw Object.assign(new Error("schema"), { _schema: true, text, code: res.status });
+					}
 					this.log.error("airtable.studies.fail", { status: res.status, text: safeText(text) });
 					return this.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
 				}
 				records.push(...(js.records || []));
-				offset = js.offset;
+				offset = js.offset; // undefined when no more pages
 			} while (offset);
 
 			const studies = records.map(mapStudy)
@@ -713,7 +727,7 @@ class ResearchOpsService {
 
 			return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
 		} catch (e) {
-			// Only fall back on schema/field-name errors
+			// Only fall back on schema/field-name issues
 			if (!e || !e._schema) {
 				this.log.error("airtable.studies.unexpected", { err: String(e?.message || e) });
 				return this.json({ ok: false, error: "Unexpected error listing studies" }, 500, this.corsHeaders(origin));
@@ -724,7 +738,8 @@ class ResearchOpsService {
 		// ---------- 2) Fallback: fetch all, filter client-side ----------
 		try {
 			const records = [];
-			let offset;
+			let offset = undefined;
+
 			do {
 				const { res, text, js } = await fetchPage({ offset });
 				if (!res.ok) {
@@ -735,15 +750,12 @@ class ResearchOpsService {
 				offset = js.offset;
 			} while (offset);
 
-			// Detect any link-like field that contains the projectId
+			// Detect any link-like field (array of rec ids) that contains projectId
 			const isRecId = (s) => typeof s === "string" && /^rec[0-9A-Za-z]{14}$/.test(s);
 			const linked = records.filter(r => {
 				const f = r.fields || {};
 				return Object.values(f).some(v =>
-					Array.isArray(v) &&
-					v.length &&
-					v.every(isRecId) &&
-					v.includes(projectId)
+					Array.isArray(v) && v.length && v.every(isRecId) && v.includes(projectId)
 				);
 			});
 
