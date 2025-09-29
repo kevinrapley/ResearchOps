@@ -106,81 +106,194 @@
 
 	<script type="module">
 		/**
-		 * study.bootstrap.js — self-contained, CORS-safe, absolute-URL fetch
-		 * No external imports; shows clear errors in the UI.
+		 * @file study.bootstrap.js
+		 * @summary Load a single study (via pid + sid), render its Markdown description,
+		 *          and allow editing with optimistic UI + rollback. Safe, minimal Markdown.
+		 * @requires globalThis.fetch
+		 * @requires globalThis.URLSearchParams
 		 */
 
-		/** SET THIS to your API origin if UI is on a different host */
-		const API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
+		/* ──────────────────────────────────────────────────────────────────
+		 * Tiny DOM helpers
+		 * ────────────────────────────────────────────────────────────────── */
 
-		/** Shorthands */
-		const $ = (s, r = document) => r.querySelector(s);
-		const setText = (sel, v, fb = "—") => { const el = $(sel); if (el) el.textContent = (v ?? "").toString().trim() || fb; };
+		/**
+		 * Shorthand for querySelector.
+		 * @param {string} sel
+		 * @param {ParentNode} [root=document]
+		 * @returns {HTMLElement|null}
+		 */
+		const $ = (sel, root = document) => root.querySelector(sel);
 
-		/** Minimal safe Markdown → HTML (subset) */
-		function escapeHtml(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+		/**
+		 * Set textContent with a fallback.
+		 * @param {string} sel
+		 * @param {unknown} value
+		 * @param {string} [fallback="—"]
+		 * @returns {void}
+		 */
+		const setText = (sel, value, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
+		};
 
+		/* ──────────────────────────────────────────────────────────────────
+		 * Markdown (conservative) → HTML
+		 * ────────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Escape text for safe HTML insertion.
+		 * @param {unknown} s
+		 * @returns {string}
+		 */
+		function escapeHtml(s) {
+			return String(s ?? "")
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+
+		/**
+		 * Convert a conservative Markdown subset to HTML.
+		 * Supported: code fences, inline code, headings (#..######), **bold**, *italic*,
+		 * links [text](https://…), unordered/ordered lists, paragraphs & <br>.
+		 * @param {string} md
+		 * @returns {string}
+		 */
 		function mdToHtml(md) {
 			let src = String(md ?? "").replace(/\r\n?/g, "\n");
-			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`);
+
+			// Fenced code blocks ```...```
+			src = src.replace(/```([\s\S]*?)```/g, (_m, code) => {
+				return `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`;
+			});
+
+			// Inline code
 			src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
-			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, h, t) => `<h${h.length}>${escapeHtml(String(t).trim())}</h${h.length}>`);
-			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+?)\*/g, "<em>$1</em>");
-			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => `<a class="govuk-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
-		src = src.replace(/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g, m => {
-			const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*[-*+]\s+/, "").trim());
-			return `\n<ul>${items.map(i=>`<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+
+			// Headings ######..#
+			src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) => {
+				const lvl = hashes.length;
+				return `<h${lvl}>${escapeHtml(String(text).trim())}</h${lvl}>`;
+			});
+
+			// Bold + italic (simple)
+			src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
+			src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+
+			// Links: [text](http/https URL)
+			src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_m, text, url) => {
+		const safeUrl = escapeHtml(url);
+		return `<a class="govuk-link" href="${safeUrl}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`;
 		});
-		src = src.replace(/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g, m => {
-			const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*\d+\.\s+/, "").trim());
-			return `\n<ol>${items.map(i=>`<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
-		});
-		const blocks = src.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map(b => /^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g,"<br>")}</p>`);
+
+		// Unordered lists
+		src = src.replace(
+			/(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
+			(m) => {
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*[-*+]\s+/, "").trim());
+				return `\n<ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+			}
+		);
+
+		// Ordered lists
+		src = src.replace(
+			/(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
+			(m) => {
+				const items = m.trim().split(/\n/).map(line => line.replace(/^[ \t]*\d+\.\s+/, "").trim());
+				return `\n<ol>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
+			}
+		);
+
+		// Paragraph wrapping
+		const blocks = src
+			.split(/\n{2,}/)
+			.map(b => b.trim())
+			.filter(Boolean)
+			.map(b => (/^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`));
+
 		return blocks.join("\n");
 		}
 
-		function setMarkdown(sel, md) { const el = $(sel); if (el) el.innerHTML = mdToHtml(md); }
-
-		/** Small UI error helper */
-		function showError(msg) {
-			console.error("[study] ❌", msg);
-			const panel = document.createElement("div");
-			panel.setAttribute("role", "alert");
-			panel.className = "panel";
-			panel.style.border = "2px solid #d4351c";
-			panel.style.background = "#fef7f7";
-			panel.style.margin = "12px 16px";
-			panel.innerHTML = `<strong>Could not load study</strong><br><code>${escapeHtml(String(msg))}</code>`;
-			document.querySelector("main")?.prepend(panel);
+		/**
+		 * Safely set Markdown-rendered HTML into a target element.
+		 * Falls back to escaped plain text on any error.
+		 * @param {string} selector
+		 * @param {string} markdown
+		 * @returns {void}
+		 */
+		function setMarkdown(selector, markdown) {
+			const el = $(selector);
+			if (!el) return;
+			try {
+				el.innerHTML = mdToHtml(markdown);
+			} catch (err) {
+				console.error("Markdown render failed; falling back to text.", err);
+				el.textContent = String(markdown ?? "");
+			}
 		}
 
-		/** API */
-		async function apiGetStudies(projectId) {
-			const url = `${API_BASE}/api/studies?project=${encodeURIComponent(projectId)}`;
-			console.log("[study] GET", url);
-			const res = await fetch(url, { cache: "no-store" });
-			const text = await res.text(); // log raw to catch CORS json errors
-			let js;
-			try { js = JSON.parse(text); } catch { js = null; }
-			console.log("[study] status", res.status, "payload:", js || text);
-			if (!res.ok || !js?.ok) throw new Error(`GET /api/studies failed (${res.status}) ${text}`);
+		/* ──────────────────────────────────────────────────────────────────
+		 * Data access
+		 * ────────────────────────────────────────────────────────────────── */
+
+		/**
+		 * GET /api/studies?project=<aid>
+		 * @param {string} projectId
+		 * @returns {Promise<Array<{id:string,studyId?:string,method:string,status?:string,description?:string,createdAt?:string}>>}
+		 */
+		async function loadStudies(projectId) {
+			const res = await fetch(`/api/studies?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) {
+				throw new Error(js?.error || `Studies fetch failed (${res.status})`);
+			}
 			return js.studies || [];
 		}
 
+		/**
+		 * PATCH /api/studies/:id — updates Description after normalising.
+		 * @param {string} studyId
+		 * @param {string} markdown
+		 * @returns {Promise<void>}
+		 */
+		async function patchStudyDescription(studyId, markdown) {
+			// Minimal normaliser (tabs→2 spaces, CRLF→LF, trim)
+			const md = String(markdown ?? "").replace(/\r\n?/g, "\n").replace(/\t/g, "  ").trim();
+			const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ description: md })
+			});
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) throw new Error(js?.error || `PATCH failed (${res.status})`);
+		}
+
+		/* ──────────────────────────────────────────────────────────────────
+		 * Bootstrap
+		 * ────────────────────────────────────────────────────────────────── */
+
+		/**
+		 * Initialise page: load study, render fields, wire editor.
+		 * @returns {Promise<void>}
+		 */
 		(async function bootstrap() {
 			try {
 				const usp = new URLSearchParams(location.search);
 				const pid = usp.get("pid") || "";
 				const sid = usp.get("sid") || "";
-				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
+				if (!pid || !sid) throw new Error("Missing pid or sid");
 
+				// Back link → Project Dashboard
 				$("#back-to-project")?.setAttribute("href", `./project-dashboard.html?id=${encodeURIComponent(pid)}`);
 
-				const studies = await apiGetStudies(pid);
-				if (!Array.isArray(studies) || !studies.length) throw new Error("No studies returned for this project");
-
+				// Fetch studies for the project and select the one we need
+				const studies = await loadStudies(pid);
+				console.debug("studies fetched:", studies.length, studies);
 				const study = studies.find(s => s.id === sid);
-				if (!study) throw new Error(`Study id ${sid} not found in API payload for project ${pid}`);
+				if (!study) throw new Error(`Study not found (sid=${sid})`);
 
 				// Header + key info
 				setText("#study-eyebrow", "Study");
@@ -190,24 +303,63 @@
 				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
 
 				// Description
+				/** @type {string} */
 				let currentMarkdown = typeof study.description === "string" ? study.description : "";
 				setMarkdown("#description", currentMarkdown);
 
-				// Edit link (optional)
-				$("#edit-study")?.setAttribute("href", `./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
+				// Optional deep-link
+				$("#edit-study")?.setAttribute(
+					"href",
+					`./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
+				);
 
-				// Wire editor (kept minimal)
+				// Editor wiring
 				const editor = /** @type {HTMLFormElement|null} */ ($("#desc-editor"));
 				const input = /** @type {HTMLTextAreaElement|null} */ ($("#desc-input"));
-				$("#btn-edit-desc")?.addEventListener("click", () => { if (editor && input) { input.value = currentMarkdown;
-						editor.hidden = false;
-						input.focus(); } });
-				$("#desc-cancel")?.addEventListener("click", () => { if (editor) editor.hidden = true; });
+				const btnEdit = /** @type {HTMLButtonElement|null} */ ($("#btn-edit-desc"));
+				const btnCancel = /** @type {HTMLButtonElement|null} */ ($("#desc-cancel"));
 
-				// NOTE: Save/PATCH omitted here to keep focus on GET; add back once GET is green.
+				/** @type {HTMLElement|null} */
+				let lastFocus = null;
+
+				btnEdit?.addEventListener("click", () => {
+					if (!editor || !input) return;
+					lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+					input.value = currentMarkdown;
+					editor.hidden = false;
+					input.focus();
+				});
+
+				btnCancel?.addEventListener("click", () => {
+					if (!editor) return;
+					editor.hidden = true;
+					lastFocus?.focus?.();
+				});
+
+				editor?.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					if (!input) return;
+					const nextMd = input.value || "";
+
+					// Optimistic preview
+					setMarkdown("#description", nextMd);
+					editor.hidden = true;
+
+					try {
+						await patchStudyDescription(sid, nextMd);
+						currentMarkdown = nextMd;
+						lastFocus?.focus?.();
+					} catch (err) {
+						console.error(err);
+						setMarkdown("#description", currentMarkdown); // rollback
+						alert("Failed to save — changes were not persisted.");
+						lastFocus?.focus?.();
+					}
+				});
 
 			} catch (err) {
-				showError(err?.message || err);
+				console.error(err);
+				alert("Could not load study.");
 			}
 		})();
 	</script>
