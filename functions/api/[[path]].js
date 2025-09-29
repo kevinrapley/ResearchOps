@@ -1,64 +1,91 @@
 /**
- * Cloudflare Pages Function: proxy /api/* to your Worker API.
- *
- * Env var required on Pages:
- *   UPSTREAM_API = https://rops-api.digikev-kevin-rapley.workers.dev
+ * Cloudflare Pages Function proxy for /api/* → your Worker API.
+ * Set UPSTREAM_API in Pages env, e.g. https://rops-api.digikev-kevin-rapley.workers.dev
  */
 export async function onRequest(context) {
-  const { request, env, params, next } = context;
-  const upstream = env.UPSTREAM_API;
-  if (!upstream) {
-    return new Response('UPSTREAM_API not configured', { status: 500 });
+  const { request, env, params } = context;
+
+  if (!env.UPSTREAM_API) {
+    return new Response(JSON.stringify({ ok: false, error: "UPSTREAM_API not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 
-  // Handle CORS preflight at the Pages edge (same-origin for the browser)
-  if (request.method === 'OPTIONS') {
+  // Preflight
+  if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Vary': 'Origin',
-        'Access-Control-Max-Age': '86400'
+        "Access-Control-Allow-Origin": request.headers.get("Origin") || "*",
+        "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Vary": "Origin",
+        "Access-Control-Max-Age": "86400"
       }
     });
   }
 
-  // Rebuild target URL: /api/<rest>?<query>
-  const url = new URL(request.url);
-  const rest = Array.isArray(params.path) ? params.path.join('/') : (params.path || '');
-  const target = new URL(`/api/${rest}`, upstream);
-  target.search = url.search; // preserve query string
+  // Build upstream URL: /api/<rest>?<query>
+  const inUrl = new URL(request.url);
+  const rest = typeof params.path === "string" ? params.path : "";
+  const target = new URL(`/api/${rest}`, env.UPSTREAM_API);
+  target.search = inUrl.search;
 
-  // Clone request: pass method/body + safe headers
-  const hopByHop = new Set([
-    'connection','keep-alive','proxy-authenticate','proxy-authorization',
-    'te','trailers','transfer-encoding','upgrade'
-  ]);
+  // Copy allowed headers + body when needed
   const outHeaders = new Headers();
-  for (const [k, v] of request.headers) {
-    const lk = k.toLowerCase();
-    if (hopByHop.has(lk)) continue;
-    // Preserve basics only
-    if (['content-type', 'authorization'].includes(lk)) outHeaders.set(k, v);
-  }
+  const ct = request.headers.get("content-type");
+  if (ct) outHeaders.set("content-type", ct);
+  const auth = request.headers.get("authorization");
+  if (auth) outHeaders.set("authorization", auth);
 
-  // Only include a body for methods that support it
   const method = request.method.toUpperCase();
   const init = { method, headers: outHeaders };
-  if (!['GET','HEAD'].includes(method)) init.body = await request.arrayBuffer();
+  if (!["GET", "HEAD"].includes(method)) {
+    init.body = await request.arrayBuffer();
+  }
 
-  // Fetch the Worker
-  const res = await fetch(target.toString(), init);
+  // Fetch upstream
+  let res;
+  try {
+    res = await fetch(target.toString(), init);
+  } catch (err) {
+    return new Response(JSON.stringify({
+      ok: false,
+      error: "Upstream fetch failed",
+      detail: String(err?.message || err),
+      _proxy: { target: target.toString() }
+    }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 
-  // Pass response back; adjust CORS for the browser (same-origin to Pages)
-  const resHeaders = new Headers(res.headers);
-  resHeaders.set('Access-Control-Allow-Origin', url.origin);
-  resHeaders.set('Vary', 'Origin');
+  // Bubble up JSON body on non-2xx for easier debugging
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    return new Response(text || JSON.stringify({
+      ok: false,
+      error: "Upstream returned non-2xx",
+      status: res.status,
+      _proxy: { target: target.toString() }
+    }), {
+      status: res.status,
+      headers: {
+        "Content-Type": res.headers.get("content-type") || "application/json",
+        "Access-Control-Allow-Origin": inUrl.origin,
+        "Vary": "Origin",
+        "X-Proxy-Target": target.toString(),
+        "X-Proxy-Upstream-Status": String(res.status)
+      }
+    });
+  }
 
-  return new Response(res.body, {
-    status: res.status,
-    headers: resHeaders
-  });
+  // Pass through on success
+  const hdrs = new Headers(res.headers);
+  hdrs.set("Access-Control-Allow-Origin", inUrl.origin);
+  hdrs.set("Vary", "Origin");
+  hdrs.set("X-Proxy-Target", target.toString());
+  hdrs.set("X-Proxy-Upstream-Status", String(res.status));
+  return new Response(res.body, { status: res.status, headers: hdrs });
 }
