@@ -1,11 +1,41 @@
 /* ==========================================================================
-   ResearchOps UI — Screen stylesheet (merged)
-   Depends on: govuk-typography.css, govuk-colours.css
-   Aligns with Home Office Design System accents
+   ResearchOps UI • Screen stylesheet
+   Version:    v1.0.0
+   Service:    Home Office Biometrics — ResearchOps
+   Author:     Kevin Rapley
+   Date:       2025-09-29
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/screen.css
+   License:    All rights reserved
+   NAV KEY:    "="  (Find "=" to jump sections)
    ========================================================================== */
 
-/* Page layout
-   -------------------------------------------------------------------------- */
+/* CSS DIRECTORY
+	1. =LAYOUT & GRID
+	2. =NAVIGATION
+	3. =CARDS & PATTERNS
+	4. =PROJECT LIST
+	5. =GENERIC COMPONENTS
+	6. =ERRORS & STATES
+	7. =DASHBOARD (Hero, Actions, KV)
+	8. =SECTIONS (Board, Lists, Tables, Dropzone)
+	9. =FORMS & MODALS
+   10. =PAGINATION
+   11. =UTILITIES (Tags, Notes, Motion)
+*/
+
+/* COLORS (GOV.UK / HOD)
+	- text              #0b0c0c
+	- muted text        #505a5f
+	- link              #1d70b8
+	- focus ring        #ffbf47
+	- border            #b1b4b6
+	- light grey        #f3f2f1
+	- panel bg          #ffffff
+	- HO green          #00703c
+*/
+
+/* === =LAYOUT & GRID ===================================== */
 
 body {
 	margin: 24px;
@@ -23,8 +53,7 @@ body {
 		}
 	}
 
-/* Navigation
-   -------------------------------------------------------------------------- */
+/* === =NAVIGATION ======================================== */
 
 .nav a {
 	margin-right: 12px;
@@ -33,33 +62,27 @@ body {
 .nav a.active {
 	font-weight: 700;
 	text-decoration: none;
-	border-bottom: 3px solid #1d70b8; /* GOV.UK brand */
+	border-bottom: 3px solid #1d70b8;
 	}
 
-/* Cards
-   -------------------------------------------------------------------------- */
+/* === =CARDS & PATTERNS ================================== */
 
 .card {
-	border: 1px solid #b1b4b6;       /* govuk mid grey */
+	border: 1px solid #b1b4b6;
 	border-radius: 6px;
 	padding: 24px;
 	margin-bottom: 16px;
 	background: #fff;
 	}
 
-/* Eyebrow (org) — Home Office green */
 .project-org {
 	margin: 0 0 4px;
-	color: #00703c;                   /* HO green */
+	color: #00703c;
 	font-weight: 700;
 	font-size: 0.95rem;
 	letter-spacing: .02em;
 	text-transform: none;
 	}
-
-/* =========================
-   Project card titles
-   ========================= */
 
 .project-title {
 	margin: 0;
@@ -78,10 +101,9 @@ body {
 	}
 
 .project-title .govuk-link:visited {
-	color: #0b0c0c; /* do not change visited colour */
+	color: #0b0c0c;
 	}
 
-/* Meta (Phase/Status) — strong labels, inline pairs */
 .project-meta {
 	display: grid;
 	gap: 2px 12px;
@@ -100,12 +122,10 @@ body {
 	font-weight: 700;
 	}
 
-/* Body copy areas */
 .project-summary {
 	margin-bottom: 8px;
 	}
 
-/* User groups section */
 .user-groups {
 	margin: 8px 0 8px;
 	}
@@ -114,7 +134,6 @@ body {
 	margin: 12px 0 6px;
 	}
 
-/* Tags (chips) */
 .tags {
 	display: flex;
 	flex-wrap: wrap;
@@ -132,46 +151,24 @@ body {
 	font-size: 12px;
 	}
 
-/* Details/summary section */
 .project-details summary {
 	cursor: pointer;
 	}
 
-/* GOV.UK-style focus ring on links inside cards (uses govuk-colours focus) */
 .card a:focus {
 	outline: 3px solid transparent;
 	color: #0b0c0c;
-	background-color: #ffbf47;       /* govuk focus */
+	background-color: #ffbf47;
 	box-shadow: 0 -2px #ffbf47, 0 4px #0b0c0c;
 	text-decoration: none;
 	}
 
-/* Generic components retained from previous screen.css
-   -------------------------------------------------------------------------- */
-
-.lede {
-	color: #505a5f;                   /* govuk secondary text */
-	margin-top: 8px;
-	}
-
-.cta {
-	display: inline-block;
-	margin-top: 16px;
-	}
-
-.cta .govuk-button {
-	margin: 0;
-	text-decoration: none;
-	}
-
-.cta .govuk-button:hover {
-	color: #fff;
-	}
+/* === =PROJECT LIST ====================================== */
 
 .thumb {
 	width: 100%;
 	height: 180px;
-	background: #f3f2f1;              /* govuk light grey */
+	background: #f3f2f1;
 	border-radius: 4px;
 	margin-bottom: 16px;
 	display: flex;
@@ -198,12 +195,33 @@ body {
 	}
 
 .tabs a.active {
-	border-color: #1d70b8;            /* govuk brand */
+	border-color: #1d70b8;
 	}
 
 .list .item {
 	border-top: 1px solid #b1b4b6;
 	padding: 8px 0;
+	}
+
+/* === =GENERIC COMPONENTS ================================ */
+
+.lede {
+	color: #505a5f;
+	margin-top: 8px;
+	}
+
+.cta {
+	display: inline-block;
+	margin-top: 16px;
+	}
+
+.cta .govuk-button {
+	margin: 0;
+	text-decoration: none;
+	}
+
+.cta .govuk-button:hover {
+	color: #fff;
 	}
 
 select,
@@ -221,7 +239,6 @@ textarea {
 	padding: 8px 0;
 	}
 
-/* Panels / notes */
 .panel {
 	border: 1px solid #b1b4b6;
 	padding: 12px;
@@ -255,9 +272,10 @@ textarea {
 	color: #505a5f;
 	}
 
-/* Errors */
+/* === =ERRORS & STATES =================================== */
+
 .error-message {
-	color: #d4351c;                   /* govuk error */
+	color: #d4351c;
 	margin-top: 4px;
 	font-size: 14px;
 	}
@@ -270,34 +288,12 @@ textarea {
 	margin-bottom: 12px;
 	}
 
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-		animation: none !important;
-		}
-	}
-
-/* ==========================================================================
-   Project Dashboard — page-specific additions
-   ========================================================================== */
-
-/* Hero / page header
-   -------------------------------------------------------------------------- */
+/* === =DASHBOARD (Hero, Actions, KV) ===================== */
 
 .dashboard-hero {
 	padding: 24px 24px 8px;
 	border-bottom: 1px solid #b1b4b6;
 	background: #fff;
-	}
-
-.dashboard-eyebrow {
-	margin: 0 0 4px;
-	color: #00703c;            /* HO green */
-	font-weight: 700;
-	font-size: 0.95rem;
-	letter-spacing: .02em;
-	text-transform: uppercase;
 	}
 
 .dashboard-title {
@@ -308,9 +304,6 @@ textarea {
 	margin: 0;
 	color: #505a5f;
 	}
-
-/* Breadcrumbs
-   -------------------------------------------------------------------------- */
 
 .dashboard-breadcrumbs {
 	display: flex;
@@ -329,9 +322,6 @@ textarea {
 .dashboard-breadcrumbs a:focus {
 	text-decoration: underline;
 	}
-
-/* Top actions (Edit + Return)
-   -------------------------------------------------------------------------- */
 
 .actions-bar {
 	display: flex;
@@ -355,17 +345,17 @@ textarea {
 	font-size: 16px;
 	cursor: pointer;
 	text-decoration: none;
-	background: #1d70b8;       /* GOV.UK brand */
+	background: #1d70b8;
 	color: #fff;
 	}
 
 .btn:hover {
-	background: #003078;       /* GOV.UK brand hover */
+	background: #003078;
 	color: #fff;
 	}
 
 .btn:focus {
-	outline: 3px solid #ffbf47; /* GOV.UK focus */
+	outline: 3px solid #ffbf47;
 	outline-offset: 0;
 	}
 
@@ -390,8 +380,30 @@ textarea {
 	background: #f3f2f1;
 	}
 
-/* Sublink Button Board
-   -------------------------------------------------------------------------- */
+.kv {
+	padding: 16px 24px;
+	background: #fff;
+	}
+
+.kv__list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px 24px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.kv__term {
+	font-weight: 700;
+	color: #0b0c0c;
+	}
+
+.kv__desc {
+	color: #0b0c0c;
+	}
+
+/* === =SECTIONS (Board, Lists, Tables, Dropzone) ========= */
 
 .board {
 	display: grid;
@@ -400,12 +412,6 @@ textarea {
 	padding: 16px 24px;
 	background: #fff;
 	border-bottom: 1px solid #b1b4b6;
-	}
-
-@media (min-width: 740px) {
-	.board {
-		grid-template-columns: repeat(4, 1fr);
-		}
 	}
 
 .board__item {
@@ -429,45 +435,10 @@ textarea {
 	outline-offset: 0;
 	}
 
-/* Key information (Service Stage, etc.)
-   -------------------------------------------------------------------------- */
-
-.kv {
-	padding: 16px 24px;
-	background: #fff;
-	}
-
-.kv__list {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 10px 24px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	}
-
-@media (min-width: 740px) {
-	.kv__list {
-		grid-template-columns: 220px 1fr;
-		}
-	}
-
-.kv__term {
-	font-weight: 700;
-	color: #0b0c0c;
-	}
-
-.kv__desc {
-	color: #0b0c0c;
-	}
-
-/* Dashboard sections
-   -------------------------------------------------------------------------- */
-
 .section {
 	margin: 16px 0 24px;
 	border: 1px solid #b1b4b6;
-	border-radius: 6px;
+	border-radius: 12px;
 	background: #fff;
 	}
 
@@ -475,7 +446,7 @@ textarea {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 16px 16px 8px;
+	padding: 12px 12px 0 12px;
 	border-bottom: 1px solid #b1b4b6;
 	}
 
@@ -484,23 +455,14 @@ textarea {
 	}
 
 .section__body {
-	padding: 16px;
+	padding: 8px 12px 12px 12px;
 	}
 
 .section__grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: 16px;
+	gap: 12px;
 	}
-
-@media (min-width: 900px) {
-	.section__grid {
-		grid-template-columns: 1fr 1fr;
-		}
-	}
-
-/* Lists (stakeholders, objectives, etc.)
-   -------------------------------------------------------------------------- */
 
 .list-unstyled {
 	margin: 0;
@@ -513,11 +475,6 @@ textarea {
 	padding-top: 8px;
 	margin-top: 8px;
 	}
-
-/* Tag pills reuse .tag from cards */
-
-/* Tables (for uploads / participants if needed)
-   -------------------------------------------------------------------------- */
 
 .table {
 	width: 100%;
@@ -535,9 +492,6 @@ textarea {
 	font-weight: 700;
 	}
 
-/* Bulk upload / dropzone
-   -------------------------------------------------------------------------- */
-
 .dropzone {
 	display: grid;
 	place-items: center;
@@ -554,22 +508,8 @@ textarea {
 	display: none;
 	}
 
-/* Links inside dashboard cards
-   -------------------------------------------------------------------------- */
+/* === =FORMS & MODALS ==================================== */
 
-.section a:focus,
-.kv a:focus {
-	outline: 3px solid #ffbf47;
-	outline-offset: 0;
-	}
-
-/* Ensure the project title link is reachable and obvious on focus */
-.project-title .govuk-link {
-	position: relative;
-	z-index: 1;
-	}
-
-/* Modal styling */
 .modal {
 	display: none;
 	border: none;
@@ -596,138 +536,71 @@ textarea {
 	margin-top: 16px;
 	}
 
-/* Studies list on dashboard
-   -------------------------------------------------------------------------- */
+/* === =PAGINATION ======================================== */
 
-/* mobile-first layout */
-.page-wrap {
-	padding: 12px;
-	max-width: 720px;
-	margin: 0 auto;
-	}
-
-h1.page-title {
-	font-size: 28px;
-	line-height: 1.2;
-	margin: 8px 0 12px 0;
-	}
-
-.projects {
-	display: grid;
-	gap: 12px;
-	grid-template-columns: 1fr;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	}
-
-.project-card {
-	border: 1px solid var(--govuk-border, #b1b4b6);
-	border-radius: 8px;
-	padding: 12px 14px;
-	background: #fff;
-	}
-
-.project-card h2 {
-	font-size: 20px;
-	line-height: 1.3;
-	margin: 4px 0 6px 0;
-	}
-
-.project-meta {
-	display: grid;
-	gap: 4px;
-	font-size: 14px;
-	color: #505a5f;
-	margin-bottom: 8px;
-	}
-
-.badges {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 6px 0 0 0;
-	}
-
-.badge {
-	display: inline-block;
-	border: 1px solid #b1b4b6;
-	border-radius: 999px;
-	padding: 2px 8px;
-	font-size: 12px;
-	line-height: 18px;
-	color: #0b0c0c;
-	background: #f3f2f1;
-	}
-
-/* Pagination */
-.pagination {
+.paginate {
 	display: flex;
 	justify-content: center;
-	align-items: center;
 	gap: 6px;
-	margin: 14px 0 8px 0;
+	margin: 10px 0 4px 0;
 	}
 
-.pagination button,
-.pagination a {
+.paginate button,
+.paginate a {
 	min-width: 36px;
-	height: 36px;
+	height: 34px;
 	padding: 0 10px;
 	border: 1px solid #b1b4b6;
-	border-radius: 6px;
+	border-radius: 8px;
 	background: #fff;
 	font: inherit;
-	line-height: 34px;
+	line-height: 32px;
 	text-align: center;
 	cursor: pointer;
 	}
 
-.pagination a[aria-current="page"] {
+.paginate a[aria-current="page"] {
 	font-weight: 700;
 	outline: 2px solid #0b0c0c;
 	outline-offset: 2px;
 	}
 
-.pagination button[disabled] {
+.paginate button[disabled] {
 	opacity: .45;
 	cursor: default;
 	}
 
-/* Larger screens */
-@media (min-width: 640px) {
-	.page-wrap {
-		padding: 16px;
+/* === =UTILITIES (Tags, Notes, Motion) =================== */
+
+.fade-tail {
+	display: inline-block;
+	-webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 10ch), rgba(0,0,0,0) 100%);
+	mask-image: linear-gradient(to right, black 0, black calc(100% - 10ch), rgba(0,0,0,0) 100%);
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+	}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		animation: none !important;
 		}
-	.projects {
-		gap: 16px;
+	}
+
+/* Responsive upgrades */
+@media (min-width: 740px) {
+	.board {
+		grid-template-columns: repeat(4, 1fr);
 		}
-	.project-card {
-		padding: 14px 16px;
+	.kv__list {
+		grid-template-columns: 220px 1fr;
 		}
 	}
 
 @media (min-width: 900px) {
-	.projects {
+	.section__grid {
 		grid-template-columns: 1fr 1fr;
 		}
 	}
-	
-/* Fades the last N characters of the span (configurable via --fade-ch) */
-.fade-tail {
-	display: inline-block;
-	-webkit-mask-image: 
-		linear-gradient(
-		to right,
-		black 0,
-		black calc(100% - 10ch),
-		rgba(0,0,0,0) 100%);
-	mask-image: 
-		linear-gradient(
-		to right,
-		black 0,
-		black calc(100% - 10ch),
-		rgba(0,0,0,0) 100%);
-	-webkit-mask-size: 100% 100%;
-	mask-size: 100% 100%;
-	}
+
+/* transparency begins in the cascade */
