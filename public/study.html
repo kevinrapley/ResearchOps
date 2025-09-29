@@ -57,7 +57,8 @@
 			</header>
 			<div class="section__body">
 				<div class="panel">
-					<p id="study-description" class="govuk-body">–</p>
+					<!-- changed to DIV so we can inject rich HTML safely -->
+					<div id="study-description" class="govuk-body">–</div>
 				</div>
 			</div>
 		</section>
@@ -68,15 +69,138 @@
 	<script type="module">
 		/**
 		 * @file study.bootstrap.js (inline)
-		 * @summary Loads one study (by pid+sid) and renders the page.
+		 * @summary Loads one study (by pid+sid) and renders the page (with safe Markdown → HTML).
 		 */
 
-		/* helpers */
+		/* ===== helpers ===== */
 		const $ = (sel, root = document) => root.querySelector(sel);
 		const setText = (sel, value, fallback = "—") => {
 			const el = $(sel);
 			if (el) el.textContent = (value ?? "").toString().trim() || fallback;
 		};
+
+		/**
+		 * Escape HTML special chars.
+		 * @param {string} s
+		 */
+		function escapeHtml(s) {
+			return String(s)
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+
+		/**
+		 * Very small Markdown → HTML (headings, lists, links, bold/italic, code)
+		 * Assumes input is Airtable rich text (markdown-like).
+		 * @param {string} md
+		 * @returns {string} (UNSAFE until sanitized)
+		 */
+		function mdToHtml(md) {
+			if (!md) return "";
+			let src = md.replace(/\r\n?/g, "\n");
+
+			// code blocks ``` ```
+			src = src.replace(/```([\s\S]*?)```/g, (_, code) => {
+				return `<pre><code>${escapeHtml(code)}</code></pre>`;
+			});
+
+			// headings ####, ###, ##, #
+			src = src
+				.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>")
+				.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>")
+				.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>")
+				.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+
+			// unordered lists
+			// group consecutive -/* lines into a <ul>
+			src = src.replace(
+				/(?:^(?:-|\*)\s+.+\n?)+/gm,
+				(block) => {
+					const items = block.trim().split(/\n/).map(l => l.replace(/^(?:-|\*)\s+/, "").trim());
+					return `<ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+				}
+			);
+
+			// inline code `code`
+			src = src.replace(/`([^`]+)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
+
+			// bold **text**
+			src = src.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+
+			// italic *text*
+			src = src.replace(/(^|[^\*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+
+			// links [text](url)
+			src = src.replace(/$begin:math:display$([^$end:math:display$]+)\]$begin:math:text$([^)]+)$end:math:text$/g, (m, text, href) => {
+				const cleanHref = String(href).trim();
+				return `<a href="${cleanHref}">${text}</a>`;
+			});
+
+			// paragraphs: split on blank lines, wrap non-blocks
+			const blocks = src.split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+			const isBlock = /^(?:<h\d|<ul>|<pre>|<blockquote>|<p>|<table>|<ol>)/i;
+			return blocks.map(b => isBlock.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`).join("\n");
+		}
+
+		/**
+		 * Sanitize a subset of HTML tags/attrs.
+		 * Allows: p, br, em, strong, h1–h4, ul, ol, li, a[href], code, pre, blockquote.
+		 * - Ensures links are http(s) or mailto:
+		 * - Adds rel and target to links.
+		 * @param {string} html
+		 * @returns {string}
+		 */
+		function sanitize(html) {
+			const allowed = new Set(["P","BR","EM","STRONG","H1","H2","H3","H4","UL","OL","LI","A","CODE","PRE","BLOCKQUOTE"]);
+			const tmp = document.createElement("template");
+			tmp.innerHTML = html;
+
+			const walker = document.createTreeWalker(tmp.content, NodeFilter.SHOW_ELEMENT, null);
+			/** @type {Element[]} */
+			const toRemove = [];
+
+			while (walker.nextNode()) {
+				const el = /** @type {Element} */ (walker.currentNode);
+				if (!allowed.has(el.tagName)) {
+					toRemove.push(el);
+					continue;
+				}
+				if (el.tagName === "A") {
+					const href = el.getAttribute("href") || "";
+					const ok = /^https?:\/\//i.test(href) || /^mailto:/i.test(href);
+					if (!ok) {
+						el.removeAttribute("href");
+					} else {
+						el.setAttribute("rel", "noopener noreferrer");
+						el.setAttribute("target", "_blank");
+					}
+				}
+				// strip all other attributes except allowed
+				for (const attr of Array.from(el.attributes)) {
+					if (el.tagName === "A" && (attr.name === "href" || attr.name === "rel" || attr.name === "target")) continue;
+					// no classes/styles to keep it strict; adjust if you later want to allow class
+					el.removeAttribute(attr.name);
+				}
+			}
+			for (const el of toRemove) el.replaceWith(document.createTextNode(el.textContent || ""));
+			return tmp.innerHTML;
+		}
+
+		/**
+		 * Render markdown safely into a selector.
+		 * @param {string} sel
+		 * @param {string} md
+		 */
+		function setMarkdown(sel, md) {
+			const el = $(sel);
+			if (!el) return;
+			if (!md) { el.textContent = "—"; return; }
+			const html = sanitize(mdToHtml(md));
+			el.innerHTML = html || "—";
+		}
 
 		/**
 		 * GET /api/studies?project=<aid>
@@ -107,11 +231,15 @@
 				// Header + key info
 				setText("#study-eyebrow", "Study");
 				setText("#study-title", study.method || "Study");
-				setText("#study-subtitle", study.description || "");
+				// subtitle shows a plain-text summary (strip markdown)
+				const subtitle = (study.description || "").replace(/[`*_>#-]/g, "");
+				setText("#study-subtitle", subtitle || "");
 				setText("#kv-method", study.method || "");
 				setText("#kv-status", study.status || "");
 				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
-				setText("#study-description", study.description || "");
+
+				// Rich text description (Markdown → safe HTML)
+				setMarkdown("#study-description", study.description || "");
 
 				// Optional “edit” route (placeholder)
 				$("#edit-study")?.setAttribute("href", `./study.html?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
