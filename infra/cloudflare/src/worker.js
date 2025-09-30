@@ -16,6 +16,8 @@
  *   - Update study (partial): `PATCH /api/studies/:id`
  * - CSV streaming from GitHub:
  *   - `GET /api/projects.csv`, `GET /api/project-details.csv`
+ * - AI assist:
+ *   - Rule-guided rewrite for Description (Workers AI): `POST /api/ai-rewrite`
  *
  * @requires globalThis.fetch
  * @requires globalThis.Request
@@ -37,11 +39,17 @@
  * @property {string} GH_PATH_STUDIES  Path to studies CSV file.
  * @property {string} GH_TOKEN GitHub access token.
  * @property {any}    ASSETS Cloudflare static assets binding.
+ * @property {string} [MODEL] Workers AI model name (e.g., "@cf/meta/llama-3.1-8b-instruct").
+ * @property {string} [AIRTABLE_TABLE_AI_LOG] Optional Airtable table for counters-only AI logs (e.g., "AI_Usage").
+ * @property {any}    AI Cloudflare Workers AI binding (env.AI.run).
  */
+
+// AI rewrite endpoint (Workers AI)
+import { aiRewrite } from './ai-rewrite.js';
 
 /* =========================
  * @section Configuration
- * ========================= */
+ * ========================= *
 
 /**
  * Immutable configuration defaults.
@@ -57,6 +65,7 @@
  * @default
  * @inner
  */
+
 const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	CSV_CACHE_CONTROL: "no-store",
@@ -910,37 +919,114 @@ export default {
 				}
 
 				// Route map
-				if (url.pathname === "/api/health") return service.health(origin);
+				/**
+				 * Health check.
+				 * @route GET /api/health
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:boolean, time:string }
+				 */
+				if (url.pathname === "/api/health") {
+					return service.health(origin);
+				}
 
-				// Projects
+				/* -------------------- Projects -------------------- */
+				/**
+				 * List projects (Airtable; newest-first by record.createdTime).
+				 * @route GET /api/projects
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @query  { limit?:number, view?:string }
+				 * @output { ok:true, projects:Array<{id:string,name:string,description:string,createdAt:string,...}> }
+				 */
 				if (url.pathname === "/api/projects" && request.method === "GET") {
 					return service.listProjectsFromAirtable(origin, url);
 				}
+
+				/**
+				 * Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write).
+				 * @route POST /api/projects
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { org?:string, name:string, description:string, phase?:string, status?:string, objectives?:string[], user_groups?:string[], stakeholders?:any[], id?:string, lead_researcher?:string, lead_researcher_email?:string, notes?:string }
+				 * @output { ok:true, project_id:string, detail_id?:string, csv_ok:boolean, csv_error?:string }
+				 */
 				if (url.pathname === "/api/projects" && request.method === "POST") {
 					return service.createProject(request, origin);
 				}
 
-				// Studies
+				/* --------------------- Studies -------------------- */
+				/**
+				 * List studies for a project (Airtable).
+				 * @route GET /api/studies
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @query  { project:string } – Airtable record id of the Project
+				 * @output { ok:true, studies:Array<{id:string,studyId:string,method:string,status:string,description:string,createdAt:string}> }
+				 */
 				if (url.pathname === "/api/studies" && request.method === "GET") {
 					return service.listStudies(origin, url);
 				}
+
+				/**
+				 * Create study (Airtable primary; best-effort GitHub CSV dual-write).
+				 * @route POST /api/studies
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { project_airtable_id:string, method:string, description:string, status?:string, study_id?:string }
+				 * @output { ok:true, study_id:string, csv_ok:boolean, csv_error?:string }
+				 */
 				if (url.pathname === "/api/studies" && request.method === "POST") {
 					return service.createStudy(request, origin);
 				}
+
+				/**
+				 * Update study (partial; Airtable PATCH).
+				 * @route PATCH /api/studies/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @param  {string} id – Airtable record id of the Study
+				 * @input  { description?:string, method?:string, status?:string, study_id?:string }
+				 * @output { ok:true }
+				 */
 				if (url.pathname.startsWith("/api/studies/") && request.method === "PATCH") {
 					const studyId = decodeURIComponent(url.pathname.slice("/api/studies/".length));
 					return service.updateStudy(request, origin, studyId);
 				}
 
-				// CSV streaming
+				/* ---------------------- AI assist ----------------- */
+				/**
+				 * AI assist (rule-guided rewrite).
+				 * @route POST /api/ai-rewrite
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { text:string } – Step 1 Description (≥400 chars)
+				 * @output { summary:string, suggestions:Array<{category:string,tip:string,why:string,severity:"high"|"medium"|"low"}>, rewrite:string, flags:{possible_personal_data:boolean} }
+				 */
+				if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
+					return aiRewrite(request, env, origin);
+				}
+
+				/* --------------------- CSV streaming -------------- */
+				/**
+				 * Stream Projects CSV from GitHub (best-effort).
+				 * @route GET /api/projects.csv
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output text/csv
+				 */
 				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
 				}
+
+				/**
+				 * Stream Project Details CSV from GitHub (best-effort).
+				 * @route GET /api/project-details.csv
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output text/csv
+				 */
 				if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
 					return service.streamCsv(origin, env.GH_PATH_DETAILS);
 				}
 
-				// 404 for unknown API paths
+				/**
+				 * Unknown API path.
+				 * @route * /api/**
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { error:"Not found" }
+				 */
 				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
 			}
 
