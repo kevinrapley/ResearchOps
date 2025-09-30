@@ -272,6 +272,15 @@ textarea {
 	color: #505a5f;
 	}
 
+/* Description assistance toolbar */
+.toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	margin-top: 8px;
+	}
+
 /* === =ERRORS & STATES =================================== */
 
 .error-message {
@@ -536,6 +545,43 @@ textarea {
 	margin-top: 16px;
 	}
 
+/* Rule/AI suggestion panel */
+.sugg-region {
+	padding: 12px;
+	border: 1px solid var(--border, #b1b4b6);
+	border-radius: 6px;
+	background: var(--panel, #ffffff);
+	}
+
+.sugg-summary {
+	font-weight: 700;
+	margin-bottom: 8px;
+	}
+
+.sugg-list {
+	margin: 0;
+	padding-left: 18px;
+	}
+
+.sugg-item { margin: 8px 0; }
+
+.sugg-cat { font-weight: 700; }
+
+.sugg-why {
+	font-size: 0.9rem;
+	color: #505a5f;
+	margin-top: 2px;
+	}
+
+/* Keyboard users get a visible focus when interacting inside the panel */
+.sugg-region:focus-within {
+	box-shadow: 0 0 0 3px #ffbf47;
+	outline: none;
+	}
+
+/* Optional status text under buttons */
+#ai-rewrite-status { margin-left: 8px; }
+
 /* === =PAGINATION ======================================== */
 
 .paginate {
@@ -586,6 +632,14 @@ textarea {
 		animation: none !important;
 		}
 	}
+
+/* Spacing + tone utilities used in Start → Step 1 */
+.mt-2 { margin-top: 8px !important; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.muted { color: #505a5f; }
+
+/* Live regions (no visual change; kept for clarity) */
+[aria-live="polite"] { }
 
 /* Responsive upgrades */
 @media (min-width: 740px) {
