@@ -582,6 +582,30 @@ textarea {
 /* Optional status text under buttons */
 #ai-rewrite-status { margin-left: 8px; }
 
+/* Decouple input from next label */
+.govuk-input {
+	margin-bottom: 20px;
+	}
+
+/* Couple label with its hint text */
+.govuk-body + .hint {
+	margin-top: -4px;
+	margin-bottom: 4px;
+	color: #505a5f;
+	font-size: 0.95rem;
+	}
+
+/* Couple hint with textarea/input below */
+.hint + textarea,
+.hint + input {
+	margin-top: 4px;
+	}
+
+/* Decouple select inputs from following label */
+select.govuk-input {
+	margin-bottom: 20px;
+	}
+
 /* === =PAGINATION ======================================== */
 
 .paginate {
