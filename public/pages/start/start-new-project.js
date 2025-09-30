@@ -110,67 +110,7 @@ const STATUS_LABEL = Object.freeze({
 });
 
 /* =========================
- * @section DOM bindings
- * ========================= */
-
-// Sections & nav buttons
-const step1 = $('step1');
-const step2 = $('step2');
-const step3 = $('step3');
-
-const next2 = $('next2');
-const prev1 = $('prev1');
-const next3 = $('next3');
-const prev2 = $('prev2');
-const finish = $('finish');
-
-// Step 1 fields
-/** @type {HTMLInputElement|null}   */
-const nameEl = /** @type {any} */ ($('p_name'));
-/** @type {HTMLTextAreaElement|null}*/
-const descEl = /** @type {any} */ ($('p_desc'));
-/** @type {HTMLSelectElement|null}  */
-const phaseEl = /** @type {any} */ ($('p_phase'));
-/** @type {HTMLSelectElement|null}  */
-const statusEl = /** @type {any} */ ($('p_status'));
-
-// Step 1 inline errors
-/** @type {HTMLElement|null} */
-const nameErr = $('p_name_error');
-/** @type {HTMLElement|null} */
-const descErr = $('p_desc_error');
-
-// AI tools container (hidden until Description ≥ MIN_DESC_CHARS)
-/** @type {HTMLElement|null} */
-const aiTools = $('ai-tools');
-
-// Step 2 fields
-/** @type {HTMLTextAreaElement|null}*/
-const stakeholdersEl = /** @type {any} */ ($('p_stakeholders'));
-/** @type {HTMLTextAreaElement|null}*/
-const objectivesEl = /** @type {any} */ ($('p_objectives'));
-/** @type {HTMLInputElement|null}   */
-const groupsEl = /** @type {any} */ ($('p_usergroups'));
-
-// Step 3 fields
-/** @type {HTMLInputElement|null}   */
-const leadNameEl = /** @type {any} */ ($('lead_name'));
-/** @type {HTMLInputElement|null}   */
-const leadEmailEl = /** @type {any} */ ($('lead_email'));
-/** @type {HTMLTextAreaElement|null}*/
-const notesEl = /** @type {any} */ ($('p_notes'));
-
-// Step 3 status line (create on demand)
-let statusLine = $('status');
-if (!statusLine) {
-	statusLine = document.createElement('p');
-	statusLine.id = 'status';
-	statusLine.className = 'lede';
-	step3?.appendChild(statusLine);
-}
-
-/* =========================
- * @section Helper functions
+ * @section Helpers (pure)
  * ========================= */
 
 /**
@@ -193,52 +133,6 @@ function setInlineError(input, errEl, message) {
 		errEl.textContent = '';
 		errEl.style.display = 'none';
 	}
-}
-
-/**
- * Validate Step 1 fields (name + description).
- * Updates inline errors and controls the “Continue” button state.
- * @function validateStep1
- * @inner
- * @param {{showInline?:boolean}} [opts]
- * @returns {boolean} true if valid
- */
-function validateStep1(opts = {}) {
-	const showInline = Boolean(opts.showInline);
-	const name = (nameEl?.value || "").trim();
-	const desc = (descEl?.value || "").trim();
-
-	const nameError = !name ? 'Enter a project name.' : '';
-	const descError = !desc ? 'Enter a short project description.' : '';
-
-	if (showInline) {
-		if (nameEl && nameErr) setInlineError(nameEl, nameErr, nameError);
-		if (descEl && descErr) setInlineError(descEl, descErr, descError);
-	} else {
-		if (nameEl && nameErr) setInlineError(nameEl, nameErr, '');
-		if (descEl && descErr) setInlineError(descEl, descErr, '');
-	}
-
-	if (next2) next2.disabled = Boolean(nameError || descError);
-
-	if (showInline) {
-		if (nameError && nameEl) { nameEl.focus(); return false; }
-		if (descError && descEl) { descEl.focus(); return false; }
-	}
-	return !(nameError || descError);
-}
-
-/**
- * Show/hide the AI tools toolbar based on Description length.
- * Tools appear only when chars ≥ DEFAULTS.MIN_DESC_CHARS.
- * @function toggleAiTools
- * @inner
- * @returns {void}
- */
-function toggleAiTools() {
-	if (!descEl || !aiTools) return;
-	const len = (descEl.value || "").trim().length;
-	aiTools.classList.toggle('hidden', len < DEFAULTS.MIN_DESC_CHARS);
 }
 
 /**
@@ -288,17 +182,6 @@ function linesToArray(text) {
 }
 
 /**
- * Set Step 3 status line text.
- * @function setStatus
- * @inner
- * @param {string} msg
- * @returns {void}
- */
-function setStatus(msg) {
-	if (statusLine) statusLine.textContent = msg;
-}
-
-/**
  * POST to ResearchOps API `/api/projects`.
  * Throws on HTTP error; returns parsed JSON on success.
  * @async
@@ -325,93 +208,211 @@ async function postToAirtable(project) {
 }
 
 /* =========================
- * @section Event wiring
- * ========================= */
-
-// Reactive validation (Step 1)
-[nameEl, descEl].forEach(el => {
-	el?.addEventListener('input', () => validateStep1({ showInline: false }));
-	el?.addEventListener('blur', () => validateStep1({ showInline: false }));
-});
-validateStep1({ showInline: false });
-
-// AI tools visibility (based on Description length)
-descEl?.addEventListener('input', toggleAiTools);
-descEl?.addEventListener('blur', toggleAiTools);
-toggleAiTools();
-
-// Step navigation
-next2?.addEventListener('click', () => {
-	const ok = validateStep1({ showInline: true });
-	if (!ok) return;
-	if (step1) step1.style.display = 'none';
-	if (step2) step2.style.display = 'block';
-	stakeholdersEl?.focus();
-});
-
-prev1?.addEventListener('click', () => {
-	if (step2) step2.style.display = 'none';
-	if (step1) step1.style.display = 'block';
-	nameEl?.focus();
-});
-
-next3?.addEventListener('click', () => {
-	if (step2) step2.style.display = 'none';
-	if (step3) step3.style.display = 'block';
-	leadNameEl?.focus();
-});
-
-prev2?.addEventListener('click', () => {
-	if (step3) step3.style.display = 'none';
-	if (step2) step2.style.display = 'block';
-});
-
-/* =========================
- * @section Submit (Finish)
+ * @section Initialiser
  * ========================= */
 
 /**
- * Gather form values and submit to the API.
- * On success, saves `project_id` for redirect context and navigates to Projects.
+ * Initialise the Start page controller once the DOM is ready.
+ * Wires validation, AI tools visibility, navigation, and submit.
+ * @function initStartPage
+ * @returns {void}
  */
-finish?.addEventListener('click', async () => {
-	// Ensure Step 1 passes before allowing completion
-	if (!validateStep1({ showInline: true })) {
+function initStartPage() {
+	// Sections & nav buttons
+	const step1 = $('step1');
+	const step2 = $('step2');
+	const step3 = $('step3');
+
+	const next2 = $('next2');
+	const prev1 = $('prev1');
+	const next3 = $('next3');
+	const prev2 = $('prev2');
+	const finish = $('finish');
+
+	// Step 1 fields
+	/** @type {HTMLInputElement|null}   */ const nameEl  = /** @type {any} */ ($('p_name'));
+	/** @type {HTMLTextAreaElement|null}*/ const descEl  = /** @type {any} */ ($('p_desc'));
+	/** @type {HTMLSelectElement|null}  */ const phaseEl = /** @type {any} */ ($('p_phase'));
+	/** @type {HTMLSelectElement|null}  */ const statusEl= /** @type {any} */ ($('p_status'));
+
+	// Step 1 inline errors
+	/** @type {HTMLElement|null} */ const nameErr = $('p_name_error');
+	/** @type {HTMLElement|null} */ const descErr = $('p_desc_error');
+
+	// AI tools container (hidden until Description ≥ MIN_DESC_CHARS)
+	/** @type {HTMLElement|null} */ const aiTools = $('ai-tools');
+
+	// Step 2 fields
+	/** @type {HTMLTextAreaElement|null}*/ const stakeholdersEl = /** @type {any} */ ($('p_stakeholders'));
+	/** @type {HTMLTextAreaElement|null}*/ const objectivesEl   = /** @type {any} */ ($('p_objectives'));
+	/** @type {HTMLInputElement|null}   */ const groupsEl       = /** @type {any} */ ($('p_usergroups'));
+
+	// Step 3 fields
+	/** @type {HTMLInputElement|null}   */ const leadNameEl = /** @type {any} */ ($('lead_name'));
+	/** @type {HTMLInputElement|null}   */ const leadEmailEl= /** @type {any} */ ($('lead_email'));
+	/** @type {HTMLTextAreaElement|null}*/ const notesEl    = /** @type {any} */ ($('p_notes'));
+
+	// Step 3 status line (create on demand)
+	let statusLine = $('status');
+	if (!statusLine) {
+		statusLine = document.createElement('p');
+		statusLine.id = 'status';
+		statusLine.className = 'lede';
+		step3?.appendChild(statusLine);
+	}
+
+	/**
+	 * Set Step 3 status line text.
+	 * @function setStatus
+	 * @inner
+	 * @param {string} msg
+	 * @returns {void}
+	 */
+	function setStatus(msg) {
+		if (statusLine) statusLine.textContent = msg;
+	}
+
+	/**
+	 * Validate Step 1 fields (name + description).
+	 * Updates inline errors and controls the “Continue” button state.
+	 * @function validateStep1
+	 * @inner
+	 * @param {{showInline?:boolean}} [opts]
+	 * @returns {boolean} true if valid
+	 */
+	function validateStep1(opts = {}) {
+		const showInline = Boolean(opts.showInline);
+		const name = (nameEl?.value || "").trim();
+		const desc = (descEl?.value || "").trim();
+
+		const nameError = !name ? 'Enter a project name.' : '';
+		const descError = !desc ? 'Enter a short project description.' : '';
+
+		if (showInline) {
+			if (nameEl && nameErr) setInlineError(nameEl, nameErr, nameError);
+			if (descEl && descErr) setInlineError(descEl, descErr, descError);
+		} else {
+			if (nameEl && nameErr) setInlineError(nameEl, nameErr, '');
+			if (descEl && descErr) setInlineError(descEl, descErr, '');
+		}
+
+		if (next2) next2.disabled = Boolean(nameError || descError);
+
+		if (showInline) {
+			if (nameError && nameEl) { nameEl.focus(); return false; }
+			if (descError && descEl) { descEl.focus(); return false; }
+		}
+		return !(nameError || descError);
+	}
+
+	/**
+	 * Show/hide the AI tools toolbar based on Description length.
+	 * Tools appear only when chars ≥ DEFAULTS.MIN_DESC_CHARS.
+	 * @function toggleAiTools
+	 * @inner
+	 * @returns {void}
+	 */
+	function toggleAiTools() {
+		if (!descEl || !aiTools) return;
+		const len = (descEl.value || "").trim().length;
+		aiTools.classList.toggle('hidden', len < DEFAULTS.MIN_DESC_CHARS);
+	}
+
+	// ========== Event wiring ==========
+
+	// Reactive validation (Step 1)
+	[nameEl, descEl].forEach(el => {
+		el?.addEventListener('input', () => validateStep1({ showInline: false }));
+		el?.addEventListener('blur', () => validateStep1({ showInline: false }));
+	});
+	validateStep1({ showInline: false });
+
+	// AI tools visibility (based on Description length)
+	if (!descEl) console.warn('[start] missing #p_desc');
+	if (!aiTools) console.warn('[start] missing #ai-tools');
+	descEl?.addEventListener('input', toggleAiTools);
+	descEl?.addEventListener('blur', toggleAiTools);
+	toggleAiTools();
+
+	// Step navigation
+	next2?.addEventListener('click', () => {
+		const ok = validateStep1({ showInline: true });
+		if (!ok) return;
+		if (step1) step1.style.display = 'none';
+		if (step2) step2.style.display = 'block';
+		stakeholdersEl?.focus();
+	});
+
+	prev1?.addEventListener('click', () => {
 		if (step2) step2.style.display = 'none';
-		if (step3) step3.style.display = 'none';
 		if (step1) step1.style.display = 'block';
-		return;
-	}
+		nameEl?.focus();
+	});
 
-	// Map internal codes -> Airtable labels
-	const phaseLabel = PHASE_LABEL[phaseEl?.value || ""] ?? "Discovery";
-	const statusLabel = STATUS_LABEL[statusEl?.value || ""] ?? "Planning research";
+	next3?.addEventListener('click', () => {
+		if (step2) step2.style.display = 'none';
+		if (step3) step3.style.display = 'block';
+		leadNameEl?.focus();
+	});
 
-	/** @type {ProjectPayload} */
-	const project = {
-		org: "Home Office Biometrics",
-		name: (nameEl?.value || "").trim(),
-		description: (descEl?.value || "").trim(),
-		phase: phaseLabel,
-		status: statusLabel,
-		stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
-		objectives: linesToArray(objectivesEl?.value || ""),
-		user_groups: csvListToArray(groupsEl?.value || ""),
-		lead_researcher: (leadNameEl?.value || "").trim() || undefined,
-		lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
-		notes: (notesEl?.value || "").trim() || undefined,
-		created: new Date().toISOString(),
-		id: (crypto.randomUUID?.() || String(Date.now()))
-	};
+	prev2?.addEventListener('click', () => {
+		if (step3) step3.style.display = 'none';
+		if (step2) step2.style.display = 'block';
+	});
 
-	try {
-		setStatus("Saving project…");
-		const out = await postToAirtable(project);
-		setStatus("Saved. Redirecting…");
-		localStorage.setItem("rops.lastProjectId", out?.project_id || "");
-		window.location.href = "./projects.html";
-	} catch (e) {
-		console.error(e);
-		setStatus("Failed to create project: " + ( /** @type {any} */ (e)?.message || e));
-	}
-});
+	// Submit (Finish)
+	finish?.addEventListener('click', async () => {
+		// Ensure Step 1 passes before allowing completion
+		if (!validateStep1({ showInline: true })) {
+			if (step2) step2.style.display = 'none';
+			if (step3) step3.style.display = 'none';
+			if (step1) step1.style.display = 'block';
+			return;
+		}
+
+		// Map internal codes -> Airtable labels
+		const phaseLabel  = PHASE_LABEL[phaseEl?.value || ""] ?? "Discovery";
+		const statusLabel = STATUS_LABEL[statusEl?.value || ""] ?? "Planning research";
+
+		/** @type {ProjectPayload} */
+		const project = {
+			org: "Home Office Biometrics",
+			name: (nameEl?.value || "").trim(),
+			description: (descEl?.value || "").trim(),
+			phase: phaseLabel,
+			status: statusLabel,
+			stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
+			objectives: linesToArray(objectivesEl?.value || ""),
+			user_groups: csvListToArray(groupsEl?.value || ""),
+			lead_researcher: (leadNameEl?.value || "").trim() || undefined,
+			lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
+			notes: (notesEl?.value || "").trim() || undefined,
+			created: new Date().toISOString(),
+			id: (crypto.randomUUID?.() || String(Date.now()))
+		};
+
+		try {
+			setStatus("Saving project…");
+			const out = await postToAirtable(project);
+			setStatus("Saved. Redirecting…");
+			localStorage.setItem("rops.lastProjectId", out?.project_id || "");
+			window.location.href = "./projects.html";
+		} catch (e) {
+			console.error(e);
+			setStatus("Failed to create project: " + (/** @type {any} */(e)?.message || e));
+		}
+	});
+}
+
+/* =========================
+ * @section Bootstrap
+ * ========================= */
+
+/**
+ * Run initialiser when DOM is ready (safe if script moves to <head>).
+ */
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initStartPage);
+} else {
+	initStartPage();
+}
