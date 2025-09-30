@@ -396,7 +396,7 @@ function initStartPage() {
 			const out = await postToAirtable(project);
 			setStatus("Saved. Redirecting…");
 			localStorage.setItem("rops.lastProjectId", out?.project_id || "");
-			window.location.href = "./projects.html";
+			window.location.href = "/pages/projects";
 		} catch (e) {
 			console.error(e);
 			setStatus("Failed to create project: " + (/** @type {any} */(e)?.message || e));
