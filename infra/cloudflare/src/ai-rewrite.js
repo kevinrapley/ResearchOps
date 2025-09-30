@@ -238,23 +238,37 @@ class AiRewriteService {
 		const SYSTEM_PROMPT = [
 			"You assist UK Home Office user researchers.",
 			"Rewrite a research project Description using GOV.UK style.",
-			"Only use facts from the provided input; do not invent content.",
-			"If PII appears in the input, do not repeat it; advise removal.",
-			"Output must be strictly JSON. Do not include markdown, code fences, or prose.",
-			"If any field would be empty, return an empty string for it—never omit required keys."
+			"Only use facts from the provided input; never invent new details.",
+			"If PII appears in the input, do not repeat it; instead advise removal.",
+			"Structure the rewrite into labelled sections only if the input supports them.",
+			"Section format: Label on its own line with a colon, content on the next line(s),",
+			"then one blank line before the next section. Do not include unused labels.",
+			"Typical sections you may include: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks, Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria.",
+			"Output must be strictly JSON. Do not include markdown, code fences, or explanatory prose.",
+			"If any field would be empty, return an empty string for it — never omit required keys."
 		].join(" ");
 
 		/** @const {string} */
 		const RULES_PROMPT = [
 			"Rules you must apply:",
-			"1) Problem framing: restate as a user need; add one line each for in-scope/out-of-scope.",
-			"2) Users & inclusion: name primary users and contexts; mention inclusion (accessibility, device, language).",
-			"3) Outcomes & measures: set SMART outcomes with a number and timeframe.",
-			"4) Assumptions & risks: list as hypotheses; note constraints.",
-			"5) Ethics: consent, retention, DPIA/DPS; avoid PII.",
-			"6) Method: fit to maturity (discovery vs alpha).",
-			"7) Style: expand acronyms; plain English; short sentences.",
-			"8) Clarity: three-part structure; remove duplication."
+			"01) Problem framing: restate as a user need; add one line each for in-scope/out-of-scope if the input mentions them.",
+			"02) Users & inclusion: name primary users and contexts; mention inclusion (accessibility, device, language) if present.",
+			"03) Outcomes & measures: include SMART outcomes with a number and timeframe where available.",
+			"04) Assumptions & risks: capture as hypotheses; note constraints or dependencies.",
+			"05) Ethics: summarise consent, retention, DPIA/DPS; remove or flag PII.",
+			"06) Method: fit to maturity (discovery vs alpha) if described.",
+			"07) Context: include policy drivers, service phase, organisational context if described.",
+			"08) Stakeholders: list key people or teams to involve if given.",
+			"09) Research questions: capture explicit questions the project will address.",
+			"10) Artefacts/Deliverables: outputs such as maps, prototypes, reports if stated.",
+			"11) Timeline: milestones or expected timeframe if available.",
+			"12) Recruitment: sample, accessibility needs, demographics if mentioned.",
+			"13) Data handling: storage, retention, sharing rules if described.",
+			"14) Success criteria: capture what 'good' looks like if stated.",
+			"15) Style: expand acronyms; use plain English; short sentences.",
+			"16) Clarity: remove duplication; structure content under clear headings.",
+			"",
+			"Include only sections where the input contains relevant content. Never invent details."
 		].join("\n");
 
 		/** @const {string} */
@@ -266,18 +280,68 @@ class AiRewriteService {
 				why: "string (<= 160 chars). Rationale for the tip.",
 				severity: "one of: 'high' | 'medium' | 'low'"
 			}],
-			rewrite: "string (<= 1800 chars). Concise, PII-free rewrite: Problem → Users & Inclusion → Outcomes & Measures → Ethics & Method."
+			rewrite: [
+				"string (<= 1800 chars). Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input.",
+				"Format: each section starts with a capitalised label followed by a colon on its own line,",
+				"then the content on the next line(s). Insert one blank line between sections.",
+				"Only include sections if input/rules provide relevant content — do NOT invent facts.",
+				"Typical labels you MAY use: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks,",
+				"Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria.",
+				"Style: plain English; expand acronyms; short sentences; no placeholders (e.g., 'TBD')."
+			].join(" ")
 		}, null, 2);
 
 		/** @const {string} */
 		const OUTPUT_EXAMPLE = JSON.stringify({
-			summary: "Clarify users and inclusion; set measurable outcomes; avoid PII.",
-			suggestions: [
-				{ category: "Users & inclusion", tip: "Name primary users and usage contexts.", why: "Guides recruitment and tasks.", severity: "high" },
-				{ category: "Outcomes & measures", tip: "Add a numeric target and timeframe.", why: "Enables success tracking.", severity: "high" }
+			summary: "Clarify scope and outcomes; surface research questions; avoid PII.",
+			suggestions: [{
+					category: "Scope",
+					tip: "State what is in and out of scope.",
+					why: "Prevents drift and sets clear boundaries.",
+					severity: "high"
+				},
+				{
+					category: "Research questions",
+					tip: "List 2–4 questions the study must answer.",
+					why: "Focuses method and analysis.",
+					severity: "medium"
+				},
+				{
+					category: "Outcomes & measures",
+					tip: "Add a numeric target with a timeframe.",
+					why: "Enables tracking of success.",
+					severity: "high"
+				},
+				{
+					category: "Style",
+					tip: "Use short sentences and expand acronyms.",
+					why: "Improves GOV.UK clarity.",
+					severity: "low"
+				}
 			],
-			rewrite: "Problem: Applicants abandon ID checks due to unclear steps. In scope: online flow; out of scope: payment provider changes. Users: first-time visa applicants on mobile; include screen-reader users and low bandwidth. Outcomes: identify top 3 blockers and raise task completion by 20% by end of Q2. Ethics: consent gathered; no PII in notes; retain audio 90 days; DPIA confirmed. Method: discovery interviews, journey mapping; later, prototype usability."
-		}, null, 0);
+			rewrite: "Problem:\n" +
+				"Applicants abandon the address step because instructions and error messages are unclear.\n" +
+				"\n" +
+				"Scope:\n" +
+				"In scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.\n" +
+				"\n" +
+				"Users:\n" +
+				"First-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n" +
+				"\n" +
+				"Research questions:\n" +
+				"• Which parts of the address step cause confusion?\n" +
+				"• What wording and ordering improve completion?\n" +
+				"• What accessibility issues appear on mobile devices?\n" +
+				"\n" +
+				"Outcomes:\n" +
+				"Identify the top 3 blockers and reduce abandonment by 15% within the next quarter.\n" +
+				"\n" +
+				"Method:\n" +
+				"Discovery interviews (≈12) and remote task-based usability on a clickable prototype, followed by a synthesis workshop.\n" +
+				"\n" +
+				"Timeline:\n" +
+				"Fieldwork in November; synthesis in early December."
+		}, null, 2);
 
 		/** @const {string} */
 		const INSTRUCTIONS = [
