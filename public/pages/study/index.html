@@ -106,95 +106,67 @@
 
 	<script type="module">
 		/**
-		 * Minimal, battle-tested bootstrap:
-		 * - Reads ?pid & ?sid
-		 * - GETs /api/studies?project=pid
-		 * - Finds study by sid
-		 * - Renders Method/Status/Study ID + Markdown description
-		 * - Emits clear console + on-page debug if anything fails
+		 * Study page bootstrap — minimal, reliable fetch + render from Worker API.
+		 * Expects URL params: ?pid=<AirtableProjectId>&sid=<AirtableStudyRecordId>
+		 * Uses: GET /api/studies?project=<pid>  → [{ id, studyId, method, status, description, createdAt }]
 		 */
 
-		const $ = (s, r = document) => r.querySelector(s);
-		const setText = (sel, v, fallback = "—") => { const el = $(sel); if (el) el.textContent = (v ?? "").toString().trim() || fallback; };
+		// ── small helpers
+		const $ = (sel, root = document) => root.querySelector(sel);
+		const setText = (sel, val, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (val ?? "").toString().trim() || fallback;
+		};
 
-		// ultra-safe Markdown subset (no fancy regex that could break)
-		function esc(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
-
-		function mdToHtml(md) {
-			let t = String(md ?? "").replace(/\r\n?/g, "\n");
-			t = t.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${esc(code.trim())}</code></pre>`);
-			t = t.replace(/`([^`]+?)`/g, (_, code) => `<code>${esc(code)}</code>`);
-			t = t.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_, h, txt) => `<h${h.length}>${esc(txt.trim())}</h${h.length}>`);
-			t = t.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+?)\*/g, "<em>$1</em>");
-			t = t.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_, label, url) => `<a class="govuk-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`);
-		const blocks = t.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map(b => /^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g,"<br>")}</p>`);
-		return blocks.join("\n");
+		// ── data access (Worker API proxies Airtable “Project Studies”)
+		async function loadStudies(projectAirtableId) {
+			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}`;
+			const res = await fetch(url, { cache: "no-store" });
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
+				throw new Error(js?.error || `Studies fetch failed (${res.status})`);
+			}
+			return js.studies;
 		}
 
-		function setMarkdown(selector, md) {
-			const el = $(selector);
-			if (!el) return;
-			try { el.innerHTML = mdToHtml(md); } catch (err) { console.error("Markdown failed:", err);
-				el.textContent = String(md ?? ""); }
-		}
+		// ── bootstrap
+		(async function init() {
+			try {
+				const usp = new URLSearchParams(location.search);
+				const pid = usp.get("pid") || ""; // Airtable Project record id
+				const sid = usp.get("sid") || ""; // Airtable Study record id
+				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-		(function init() {
-			// add a tiny on-page debug area
-			const dbg = document.createElement("pre");
-			dbg.id = "debug";
-			dbg.style.whiteSpace = "pre-wrap";
-			dbg.style.fontSize = "12px";
-			dbg.style.opacity = "0.7";
-			document.body.appendChild(dbg);
-			const log = (...a) => { console.log(...a); try { dbg.textContent += a.map(x => typeof x === "string" ? x : JSON.stringify(x, null, 2)).join(" ") + "\n"; } catch {} };
+				// Correct back-link for your /pages/ structure
+				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
 
-			const usp = new URLSearchParams(location.search);
-			const pid = usp.get("pid") || "";
-			const sid = usp.get("sid") || "";
-			if (!pid || !sid) { log("Missing pid or sid", { pid, sid });
-				setText("#study-title", "Study");
-				setText("#kv-method", "—");
-				setText("#kv-status", "—");
-				setText("#kv-studyid", "—"); return; }
+				// Fetch studies for this project and pick the one we need
+				const studies = await loadStudies(pid);
+				console.debug("[study] fetched", studies.length, "studies for project", pid);
+				const study = studies.find(s => s.id === sid);
+				if (!study) throw new Error(`Study not found in project (sid=${sid})`);
 
-			// make sure links work from /pages/study/
-			$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
-			$("#edit-study")?.setAttribute("href", `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
+				// Paint the UI (keep this dead simple first)
+				setText("#study-eyebrow", "Study");
+				setText("#study-title", study.method || "Study");
+				setText("#kv-method", study.method || "");
+				setText("#kv-status", study.status || "");
+				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
 
-			const url = `/api/studies?project=${encodeURIComponent(pid)}`;
-			log("Fetching:", url);
+				// For now, show raw description plainly (no Markdown yet)
+				const descEl = $("#description");
+				if (descEl) descEl.textContent = (study.description || "").trim() || "—";
 
-			fetch(url, { cache: "no-store" })
-				.then(async res => {
-					const js = await res.json().catch(() => ({}));
-					log("API status:", res.status, "payload.ok:", js?.ok);
-					if (!res.ok || !js?.ok) { throw new Error(js?.error || `HTTP ${res.status}`); }
-					const studies = Array.isArray(js.studies) ? js.studies : [];
-					log("studies length:", studies.length);
+				// Optional “edit” deep link (stays on this page)
+				$("#edit-study")?.setAttribute(
+					"href",
+					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
+				);
 
-					const study = studies.find(s => s.id === sid);
-					if (!study) { throw new Error(`Study not found for sid=${sid}`); }
-
-					// render
-					setText("#study-eyebrow", "Study");
-					setText("#study-title", study.method || "Study");
-					setText("#kv-method", study.method || "—");
-					setText("#kv-status", study.status || "—");
-					setText("#kv-studyid", (study.studyId || "").toString().toUpperCase() || "—");
-					setMarkdown("#description", study.description || "—");
-
-					log("Rendered study:", { id: study.id, method: study.method, status: study.status });
-				})
-				.catch(err => {
-					console.error(err);
-					log("ERROR:", String(err && err.message || err));
-					setText("#study-title", "Study");
-					setText("#kv-method", "—");
-					setText("#kv-status", "—");
-					setText("#kv-studyid", "—");
-					const desc = $("#description");
-					if (desc) desc.textContent = "Could not load study.";
-				});
+			} catch (err) {
+				console.error("[study] init error:", err);
+				alert("Could not load study.");
+			}
 		})();
 	</script>
 </body>
