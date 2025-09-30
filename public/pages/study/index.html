@@ -105,131 +105,98 @@
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 
 	<script type="module">
-  /**
-   * @file study.bootstrap.js
-   * @summary Load one study via pid+sid from /api/studies, render fields + Markdown.
-   *          Uses absolute /pages/... links so navigation works from nested routes.
-   */
+		/**
+		 * Minimal, battle-tested bootstrap:
+		 * - Reads ?pid & ?sid
+		 * - GETs /api/studies?project=pid
+		 * - Finds study by sid
+		 * - Renders Method/Status/Study ID + Markdown description
+		 * - Emits clear console + on-page debug if anything fails
+		 */
 
-  /** @param {string} sel @param {ParentNode} [root] */
-  const $ = (sel, root = document) => root.querySelector(sel);
-  /** @param {string} sel @param {unknown} v @param {string} [fallback="—"] */
-  const setText = (sel, v, fallback = "—") => { const el = $(sel); if (el) el.textContent = (v ?? "").toString().trim() || fallback; };
+		const $ = (s, r = document) => r.querySelector(s);
+		const setText = (sel, v, fallback = "—") => { const el = $(sel); if (el) el.textContent = (v ?? "").toString().trim() || fallback; };
 
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
+		// ultra-safe Markdown subset (no fancy regex that could break)
+		function esc(s) { return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
 
-  // Conservative Markdown → HTML (headings, bold/italic, code, links, lists, paragraphs)
-  function mdToHtml(md) {
-    let src = String(md ?? "").replace(/\r\n?/g, "\n");
+		function mdToHtml(md) {
+			let t = String(md ?? "").replace(/\r\n?/g, "\n");
+			t = t.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${esc(code.trim())}</code></pre>`);
+			t = t.replace(/`([^`]+?)`/g, (_, code) => `<code>${esc(code)}</code>`);
+			t = t.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_, h, txt) => `<h${h.length}>${esc(txt.trim())}</h${h.length}>`);
+			t = t.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+			t = t.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g, (_, label, url) => `<a class="govuk-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`);
+		const blocks = t.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map(b => /^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g,"<br>")}</p>`);
+		return blocks.join("\n");
+		}
 
-    // ```code```
-    src = src.replace(/```([\s\S]*?)```/g, (_m, code) =>
-      `<pre><code>${escapeHtml(String(code).trim())}</code></pre>`
-    );
+		function setMarkdown(selector, md) {
+			const el = $(selector);
+			if (!el) return;
+			try { el.innerHTML = mdToHtml(md); } catch (err) { console.error("Markdown failed:", err);
+				el.textContent = String(md ?? ""); }
+		}
 
-    // `code`
-    src = src.replace(/`([^`]+?)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
+		(function init() {
+			// add a tiny on-page debug area
+			const dbg = document.createElement("pre");
+			dbg.id = "debug";
+			dbg.style.whiteSpace = "pre-wrap";
+			dbg.style.fontSize = "12px";
+			dbg.style.opacity = "0.7";
+			document.body.appendChild(dbg);
+			const log = (...a) => { console.log(...a); try { dbg.textContent += a.map(x => typeof x === "string" ? x : JSON.stringify(x, null, 2)).join(" ") + "\n"; } catch {} };
 
-    // #..###### headings
-    src = src.replace(/^(#{1,6})[ \t]+(.+)$/gm, (_m, hashes, text) =>
-      `<h${hashes.length}>${escapeHtml(String(text).trim())}</h${hashes.length}>`
-    );
+			const usp = new URLSearchParams(location.search);
+			const pid = usp.get("pid") || "";
+			const sid = usp.get("sid") || "";
+			if (!pid || !sid) { log("Missing pid or sid", { pid, sid });
+				setText("#study-title", "Study");
+				setText("#kv-method", "—");
+				setText("#kv-status", "—");
+				setText("#kv-studyid", "—"); return; }
 
-    // **bold** / *italic*
-    src = src.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>");
-    src = src.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+			// make sure links work from /pages/study/
+			$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
+			$("#edit-study")?.setAttribute("href", `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
 
-    // [text](https://url) — allow only http/https
-    src = src.replace(/$begin:math:display$([^$end:math:display$]+?)\]$begin:math:text$(https?:\\/\\/[^\\s)]+)$end:math:text$/g, (_m, text, url) =>
-      `<a class="govuk-link" href="${escapeHtml(url)}" rel="noopener noreferrer" target="_blank">${escapeHtml(text)}</a>`
-    );
+			const url = `/api/studies?project=${encodeURIComponent(pid)}`;
+			log("Fetching:", url);
 
-    // unordered lists
-    src = src.replace(
-      /(^|\n)(?:([ \t]*)([-*+])\s+.+(?:\n\2[-*+]\s+.+)*)/g,
-      (m) => {
-        const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*[-*+]\s+/, "").trim());
-        return `\n<ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
-      }
-    );
+			fetch(url, { cache: "no-store" })
+				.then(async res => {
+					const js = await res.json().catch(() => ({}));
+					log("API status:", res.status, "payload.ok:", js?.ok);
+					if (!res.ok || !js?.ok) { throw new Error(js?.error || `HTTP ${res.status}`); }
+					const studies = Array.isArray(js.studies) ? js.studies : [];
+					log("studies length:", studies.length);
 
-    // ordered lists
-    src = src.replace(
-      /(^|\n)(?:([ \t]*)(\d+)\.\s+.+(?:\n\2\d+\.\s+.+)*)/g,
-      (m) => {
-        const items = m.trim().split(/\n/).map(l => l.replace(/^[ \t]*\d+\.\s+/, "").trim());
-        return `\n<ol>${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`;
-      }
-    );
+					const study = studies.find(s => s.id === sid);
+					if (!study) { throw new Error(`Study not found for sid=${sid}`); }
 
-    // paragraphs
-    const blocks = src
-      .split(/\n{2,}/)
-      .map(b => b.trim())
-      .filter(Boolean)
-      .map(b => (/^<(h\d|ul|ol|pre)/.test(b) ? b : `<p>${b.replace(/\n/g, "<br>")}</p>`));
+					// render
+					setText("#study-eyebrow", "Study");
+					setText("#study-title", study.method || "Study");
+					setText("#kv-method", study.method || "—");
+					setText("#kv-status", study.status || "—");
+					setText("#kv-studyid", (study.studyId || "").toString().toUpperCase() || "—");
+					setMarkdown("#description", study.description || "—");
 
-    return blocks.join("\n");
-  }
-
-  /** @param {string} selector @param {string} markdown */
-  function setMarkdown(selector, markdown) {
-    const el = $(selector);
-    if (!el) return;
-    try { el.innerHTML = mdToHtml(markdown); }
-    catch { el.textContent = String(markdown ?? ""); }
-  }
-
-  // ─── Bootstrap ──────────────────────────────────────────────────────
-  (async function bootstrap() {
-    try {
-      const usp = new URLSearchParams(location.search);
-      const pid = usp.get("pid") || "";
-      const sid = usp.get("sid") || "";
-      if (!pid || !sid) throw new Error("Missing pid or sid");
-
-      // Make sure nav links work from /pages/study/
-      $("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
-      $("#edit-study")?.setAttribute("href", `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
-
-      // Fetch all studies for this project from the proxied API
-      const res = await fetch(`/api/studies?project=${encodeURIComponent(pid)}`, { cache: "no-store" });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
-      const studies = js.studies || [];
-
-      // Find the requested study
-      const study = studies.find(s => s.id === sid);
-      if (!study) throw new Error(`Study not found: ${sid}`);
-
-      // Render fields
-      setText("#study-eyebrow", "Study");
-      setText("#study-title", study.method || "Study");
-      setText("#kv-method", study.method || "—");
-      setText("#kv-status", study.status || "—");
-      setText("#kv-studyid", (study.studyId || "").toString().toUpperCase() || "—");
-
-      // Render description (Markdown-safe)
-      setMarkdown("#description", study.description || "—");
-
-    } catch (err) {
-      console.error(err);
-      setText("#study-title", "Study");
-      setText("#kv-method", "—");
-      setText("#kv-status", "—");
-      setText("#kv-studyid", "—");
-      const desc = $("#description");
-      if (desc) desc.textContent = "Could not load study.";
-    }
-  })();
-</script>
+					log("Rendered study:", { id: study.id, method: study.method, status: study.status });
+				})
+				.catch(err => {
+					console.error(err);
+					log("ERROR:", String(err && err.message || err));
+					setText("#study-title", "Study");
+					setText("#kv-method", "—");
+					setText("#kv-status", "—");
+					setText("#kv-studyid", "—");
+					const desc = $("#description");
+					if (desc) desc.textContent = "Could not load study.";
+				});
+		})();
+	</script>
 </body>
 
 </html>
