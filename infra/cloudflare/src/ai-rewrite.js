@@ -76,6 +76,7 @@ function corsHeaders(env, origin) {
 	const h = {
 		"Access-Control-Allow-Methods": "POST, OPTIONS",
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",
+		"Access-Control-Max-Age": "86400",
 		"Vary": "Origin"
 	};
 	if (origin && allowed.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
@@ -152,12 +153,17 @@ function detectPII(text) {
  * @returns {string}
  */
 function sanitizeRewrite(s) {
-	return (s || "")
-		.replace(/\S+@\S+/g, "[redacted]")
+	let out = String(s || "");
+	// PII redaction
+	out = out.replace(/\S+@\S+/g, "[redacted]")
 		.replace(/\b(?!BG|GB|NK|KN|TN|NT|ZZ)[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]\b/gi, "[redacted]")
-		.replace(/\b\d{3}\s?\d{3}\s?\d{4}\b/g, "[redacted]")
-		.replace(/\s+/g, " ")
+		.replace(/\b\d{3}\s?\d{3}\s?\d{4}\b/g, "[redacted]");
+	// Normalise newlines and trim line endings
+	out = out.replace(/\r\n?/g, "\n")
+		.split("\n").map(l => l.trimEnd()).join("\n")
+		.replace(/\n{3,}/g, "\n\n") // collapse 3+ blanks to 2
 		.trim();
+	return out;
 }
 
 /* =========================
@@ -227,38 +233,77 @@ class AiRewriteService {
 		const model = this.env.MODEL || this.cfg.MODEL_FALLBACK;
 
 		// Policy & rules (kept concise to preserve tokens)
-		const system = [
+
+		/** @const {string} */
+		const SYSTEM_PROMPT = [
 			"You assist UK Home Office user researchers.",
-			"Rewrite the research project Description concisely in GOV.UK style.",
-			"Do not invent facts; only use provided content.",
-			"If PII appears in input, do not copy it; suggest removal.",
-			"Keep rewrite <= 220 words; structure: Problem → Users & Inclusion → Outcomes & Measures → Ethics & Method."
+			"Rewrite a research project Description using GOV.UK style.",
+			"Only use facts from the provided input; do not invent content.",
+			"If PII appears in the input, do not repeat it; advise removal.",
+			"Output must be strictly JSON. Do not include markdown, code fences, or prose.",
+			"If any field would be empty, return an empty string for it—never omit required keys."
 		].join(" ");
 
-		const rules = [
-			"Reframe problem as user need; one-line in/out of scope.",
-			"Name primary users + contexts; add inclusion (accessibility, device, language).",
-			"Set SMART outcomes (number + timeframe).",
-			"Assumptions as hypotheses; note risks/constraints.",
-			"Privacy: consent, retention, DPIA/DPS; avoid PII.",
-			"Method fit to maturity (discovery vs alpha).",
-			"Style: expand acronyms; avoid jargon/hedging; short sentences.",
-			"Clarity: three-part structure; remove duplication."
-		].join(" ");
+		/** @const {string} */
+		const RULES_PROMPT = [
+			"Rules you must apply:",
+			"1) Problem framing: restate as a user need; add one line each for in-scope/out-of-scope.",
+			"2) Users & inclusion: name primary users and contexts; mention inclusion (accessibility, device, language).",
+			"3) Outcomes & measures: set SMART outcomes with a number and timeframe.",
+			"4) Assumptions & risks: list as hypotheses; note constraints.",
+			"5) Ethics: consent, retention, DPIA/DPS; avoid PII.",
+			"6) Method: fit to maturity (discovery vs alpha).",
+			"7) Style: expand acronyms; plain English; short sentences.",
+			"8) Clarity: three-part structure; remove duplication."
+		].join("\n");
 
-		const instr = `Return strict JSON with keys: summary, suggestions (array of {category, tip, why, severity}), rewrite.
-Limit suggestions to ${this.cfg.MAX_SUGGESTIONS} items, each <= ${this.cfg.MAX_SUGGESTION_LEN} chars.
-Rewrite must not contain emails, NI, or NHS numbers.`;
+		/** @const {string} */
+		const OUTPUT_SCHEMA_STR = JSON.stringify({
+			summary: "string (<= 300 chars). Brief overview of what to improve.",
+			suggestions: [{
+				category: "string (e.g., 'Style', 'Users & inclusion', 'Outcomes & measures')",
+				tip: "string (<= 160 chars). Concrete edit or addition.",
+				why: "string (<= 160 chars). Rationale for the tip.",
+				severity: "one of: 'high' | 'medium' | 'low'"
+			}],
+			rewrite: "string (<= 1800 chars). Concise, PII-free rewrite: Problem → Users & Inclusion → Outcomes & Measures → Ethics & Method."
+		}, null, 2);
+
+		/** @const {string} */
+		const OUTPUT_EXAMPLE = JSON.stringify({
+			summary: "Clarify users and inclusion; set measurable outcomes; avoid PII.",
+			suggestions: [
+				{ category: "Users & inclusion", tip: "Name primary users and usage contexts.", why: "Guides recruitment and tasks.", severity: "high" },
+				{ category: "Outcomes & measures", tip: "Add a numeric target and timeframe.", why: "Enables success tracking.", severity: "high" }
+			],
+			rewrite: "Problem: Applicants abandon ID checks due to unclear steps. In scope: online flow; out of scope: payment provider changes. Users: first-time visa applicants on mobile; include screen-reader users and low bandwidth. Outcomes: identify top 3 blockers and raise task completion by 20% by end of Q2. Ethics: consent gathered; no PII in notes; retain audio 90 days; DPIA confirmed. Method: discovery interviews, journey mapping; later, prototype usability."
+		}, null, 0);
+
+		/** @const {string} */
+		const INSTRUCTIONS = [
+			"Return JSON ONLY, matching this schema:",
+			OUTPUT_SCHEMA_STR,
+			"",
+			"Constraints:",
+			`- suggestions: max ${DEFAULTS.MAX_SUGGESTIONS} items; each tip/why <= ${DEFAULTS.MAX_SUGGESTION_LEN} chars; include a balanced mix across categories.`,
+			`- rewrite: <= ${DEFAULTS.MAX_REWRITE_CHARS} chars; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.`,
+			"- Do not include markdown, code fences, or any text outside JSON.",
+			"",
+			"If unsure, still return valid JSON using best-effort values. Here is a minimal valid example:",
+			OUTPUT_EXAMPLE,
+			"",
+			"INPUT (verbatim):"
+		].join("\n");
 
 		let modelOutput = "";
 		try {
 			const resp = await this.env.AI.run(model, {
 				messages: [
-					{ role: "system", content: system },
-					{ role: "user", content: `${rules}\n\n${instr}\n\nINPUT:\n${input}` }
+					{ role: "system", content: SYSTEM_PROMPT },
+					{ role: "user", content: `${RULES_PROMPT}\n\n${INSTRUCTIONS}\n${input}` }
 				],
 				temperature: 0.2,
-				max_tokens: 800
+				max_tokens: 900
 			});
 
 			modelOutput = typeof resp === "string" ? resp : (resp?.response || resp?.result || "");
@@ -267,19 +312,38 @@ Rewrite must not contain emails, NI, or NHS numbers.`;
 			if (this.env.AUDIT === "true") {
 				console.warn("ai.run.fail", { err: String(e?.message || e) });
 			}
-			return json({ error: "AI_UNAVAILABLE" }, 503, corsHeaders(this.env, origin));
+			return json({ error: "AI_UNAVAILABLE", message: "The AI service is temporarily unavailable." },
+				503,
+				corsHeaders(this.env, origin)
+			);
+		}
+
+		// Before safeParseJSON(modelOutput):
+		const first = modelOutput.indexOf("{");
+		const last = modelOutput.lastIndexOf("}");
+		if (first !== -1 && last !== -1 && last > first) {
+			modelOutput = modelOutput.slice(first, last + 1);
 		}
 
 		// Parse + clamp + sanitize
 		const parsed = safeParseJSON(modelOutput);
-		const suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, this.cfg.MAX_SUGGESTIONS).map(s => ({
-			category: typeof s?.category === "string" ? s.category : "General",
-			tip: clamp(typeof s?.tip === "string" ? s.tip : "", this.cfg.MAX_SUGGESTION_LEN),
-			why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
-			severity: ["high", "medium", "low"].includes(s?.severity) ? s.severity : "medium"
-		})) : [];
+		const suggestions = Array.isArray(parsed.suggestions) ?
+			parsed.suggestions
+			.slice(0, this.cfg.MAX_SUGGESTIONS)
+			.map(s => ({
+				category: typeof s?.category === "string" ? s.category : "General",
+				tip: clamp(typeof s?.tip === "string" ? s.tip : "", this.cfg.MAX_SUGGESTION_LEN),
+				why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
+				severity: ["high", "medium", "low"].includes(s?.severity) ? s.severity : "medium"
+			}))
+			.filter(s => s.tip.trim().length > 0) : [];
 
 		let rewrite = sanitizeRewrite(clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS));
+
+		if (!rewrite) {
+			// brief, safe fallback – keeps UI consistent without inventing content
+			rewrite = "Problem: [clarify the user need and scope]. Users & inclusion: [name primary users and contexts; include accessibility]. Outcomes: [add measurable target and timeframe]. Ethics: [consent, retention, DPIA; no PII]. Method: [fit to maturity].";
+		}
 
 		// Final PII sweep on rewrite
 		if (detectPII(rewrite)) {
@@ -305,13 +369,15 @@ Rewrite must not contain emails, NI, or NHS numbers.`;
 							"content-type": "application/json"
 						},
 						body: JSON.stringify({
-							fields: {
-								ts: new Date().toISOString(),
-								trigger: "ai",
-								char_bucket: Math.floor(input.length / 200) * 200,
-								suggestion_count: suggestions.length,
-								pii_detected: !!hasPII
-							}
+							records: [{
+								fields: {
+									ts: new Date().toISOString(),
+									trigger: "ai",
+									char_bucket: Math.max(0, Math.floor(input.length / 200) * 200),
+									suggestion_count: suggestions.length,
+									pii_detected: !!hasPII
+								}
+							}]
 						})
 					});
 				}
