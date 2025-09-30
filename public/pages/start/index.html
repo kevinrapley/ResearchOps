@@ -9,6 +9,11 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	
+	<!-- Description assistance modules -->
+	<script type="module" src="/js/copilot-suggester.js"></script>
+	<script type="module" src="/js/start-description-assist.js"></script>
+	
 	<script type="module" src="/components/layout.js"></script>
 </head>
 
@@ -39,8 +44,22 @@
 					<p id="p_name_error" class="error-message" style="display:none"></p>
 
 					<label class="govuk-body" for="p_desc">Description</label>
-					<textarea id="p_desc" class="govuk-input" required aria-required="true" aria-invalid="false"></textarea>
+					<textarea id="p_desc" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
+					<p id="p_desc_help" class="lede mono muted">Write what you plan to research. Do not include personal data.</p>
 					<p id="p_desc_error" class="error-message" style="display:none"></p>
+
+					<!-- Description assistance controls -->
+					<div class="toolbar mt-2" aria-label="Description assistance">
+						<button class="btn btn--secondary" id="btn-get-suggestions" type="button">Get suggestions</button>
+						<button class="btn btn--outline" id="btn-ai-rewrite" type="button">Try AI rewrite</button>
+						<small id="ai-rewrite-status" class="mono muted" aria-live="polite"></small>
+					</div>
+
+					<!-- Rule-based suggestions (client only) -->
+					<div id="description-suggestions" class="mt-2" aria-live="polite"></div>
+
+					<!-- AI output (summary + suggestions + optional rewrite) -->
+					<div id="ai-rewrite-output" class="mt-2" aria-live="polite"></div>
 
 					<label class="govuk-body" for="p_phase">Service phase</label>
 					<select id="p_phase" class="govuk-input">
@@ -342,6 +361,23 @@
 				console.error(e);
 				setStatus("Failed to create project: " + (e?.message || e));
 			}
+		});
+	</script>
+
+	<script type="module">
+		import { initStartDescriptionAssist } from '/js/start-description-assist.js';
+
+		// Use your deployed Worker origin for the AI route
+		const AI_ENDPOINT = 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite';
+
+		initStartDescriptionAssist({
+			textareaSelector: '#p_desc',
+			manualBtnSelector: '#btn-get-suggestions',
+			aiBtnSelector: '#btn-ai-rewrite',
+			suggContainerSelector: '#description-suggestions',
+			aiContainerSelector: '#ai-rewrite-output',
+			aiStatusSelector: '#ai-rewrite-status',
+			aiEndpoint: AI_ENDPOINT
 		});
 	</script>
 </body>
