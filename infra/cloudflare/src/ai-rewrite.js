@@ -8,7 +8,7 @@
  *   Payload:
  *     { mode: "description"|"objectives", text: string }
  *     - description: ≥ 400 chars (Step 1)
- *     - objectives:  ≥ 200 chars (Step 2)
+ *     - objectives:  ≥ 60 chars (Step 2)
  *   Returns:
  *     {
  *       summary: string,
@@ -63,7 +63,7 @@ const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	MAX_BODY_BYTES: 512 * 1024,
 	MIN_TEXT_CHARS: 400,
-	MIN_OBJ_TEXT_CHARS: 200, // Align with Step 2 requirement (≥ 200 chars)
+	MIN_OBJ_TEXT_CHARS: 60,
 	MAX_INPUT_CHARS: 5000,
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
