@@ -349,6 +349,193 @@ function neutraliseInventedMethods(rewrite, input) {
 }
 
 /* =========================
+ * @section Bias audit + light neutralisation (guardrails)
+ * ========================= */
+
+/**
+ * Bias audit + light neutralisation.
+ * - Scans the rewrite for common biased/excluding language.
+ * - Replaces a few terms with neutral alternatives (where safe).
+ * - Produces suggestion items explaining issues and mitigations.
+ *
+ * NOTE: We never add new project details. We only neutralise phrasing.
+ *
+ * @param {string} rewrite
+ * @param {string} input
+ * @returns {{ text: string, issues: Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}> }}
+ */
+function auditForBias(rewrite, input) {
+	let out = String(rewrite || "");
+	/** @type {Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}>} */
+	const issues = [];
+
+	// --- Utility helpers ---
+	const push = (tip, why, severity = "medium", category = "Bias") =>
+		issues.push({ category, tip, why, severity });
+
+	const replaceAll = (pairs) => {
+		for (const { re, to, tip, why, severity = "medium" } of pairs) {
+			if (re.test(out)) {
+				out = out.replace(re, to);
+				push(tip, why, severity);
+			}
+		}
+	};
+
+	// --- 1) Ableist / excluding terms (safe neutralisations) ---
+	replaceAll([{
+			re: /\bwheelchair[-\s]?bound\b/gi,
+			to: "wheelchair user",
+			tip: "Use 'wheelchair user' instead of 'wheelchair-bound'.",
+			why: "‘Bound’ is ableist; the neutral term is ‘wheelchair user’.",
+			severity: "high",
+		},
+		{
+			re: /\bhandicapped\b/gi,
+			to: "disabled people",
+			tip: "Use 'disabled people' instead of 'handicapped'.",
+			why: "Aligns with inclusive, accepted language in UK public sector.",
+			severity: "high",
+		},
+		{
+			re: /\b(the\s+disabled|the\s+blind|the\s+deaf)\b/gi,
+			to: "disabled people",
+			tip: "Avoid 'the disabled' → use 'disabled people'.",
+			why: "Person-first or identity-first phrasing avoids othering.",
+			severity: "medium",
+		},
+		{
+			re: /\b(insane|crazy|mad|lame)\b/gi,
+			to: "inappropriate",
+			tip: "Avoid ableist descriptors like 'crazy' or 'lame'.",
+			why: "These terms stigmatise disability; use neutral language.",
+			severity: "medium",
+		},
+		{
+			re: /\bblind\s+spot\b/gi,
+			to: "gap",
+			tip: "Replace 'blind spot' with 'gap'.",
+			why: "Avoids ableist metaphor; neutral alternative is clearer.",
+			severity: "low",
+		},
+	]);
+
+	// --- 2) Gendered / casual collective terms ---
+	replaceAll([{
+			re: /\bchairman\b/gi,
+			to: "chair",
+			tip: "Use 'chair' instead of 'chairman'.",
+			why: "Gender-neutral job titles are more inclusive.",
+			severity: "medium",
+		},
+		{
+			re: /\bpolicemen\b/gi,
+			to: "police officers",
+			tip: "Use 'police officers' instead of 'policemen'.",
+			why: "Gender-neutral roles are clearer and inclusive.",
+			severity: "medium",
+		},
+		{
+			re: /\bguys\b/gi,
+			to: "everyone",
+			tip: "Avoid 'guys' for mixed groups; use 'everyone'.",
+			why: "Casual gendered collective can exclude readers.",
+			severity: "low",
+		},
+	]);
+
+	// --- 3) Othering / immigration & language phrasing ---
+	replaceAll([{
+			re: /\bforeigners\b/gi,
+			to: "people from outside the UK",
+			tip: "Avoid 'foreigners' → use neutral phrasing.",
+			why: "Reduces othering; focuses on context not identity.",
+			severity: "high",
+		},
+		{
+			re: /\bnon[-\s]?english\s+speakers\b/gi,
+			to: "people who do not speak English fluently",
+			tip: "Prefer 'people who do not speak English fluently'.",
+			why: "People-centred phrasing is more respectful and clear.",
+			severity: "medium",
+		},
+	]);
+
+	// --- 4) “Normal users” / defaulting language ---
+	replaceAll([{
+			re: /\bnormal\s+users?\b/gi,
+			to: "users",
+			tip: "Avoid 'normal users' → just say 'users'.",
+			why: "‘Normal’ implies others are abnormal/excluded.",
+			severity: "high",
+		},
+		{
+			re: /\bregular\s+users?\b/gi,
+			to: "users",
+			tip: "Avoid 'regular users' unless defined.",
+			why: "Imprecise category can exclude; define segments instead.",
+			severity: "low",
+		},
+	]);
+
+	// --- 5) Confirmation-bias language in research framing ---
+	// We don’t change semantics; we de-bias phrasing.
+	replaceAll([{
+			re: /\bprove\s+that\b/gi,
+			to: "test whether",
+			tip: "Replace 'prove that' with 'test whether'.",
+			why: "Reduces confirmation bias in research framing.",
+			severity: "medium",
+		},
+		{
+			re: /\bconfirm\s+that\s+users\b/gi,
+			to: "learn whether users",
+			tip: "Replace 'confirm that users' with 'learn whether users'.",
+			why: "Keeps inquiry open and avoids pre-judging outcomes.",
+			severity: "medium",
+		},
+	]);
+
+	// --- 6) “Just”, “simple”, “obvious” — trivialising difficulty ---
+	// We avoid auto-replacing these everywhere; we flag them for suggestions.
+	const trivialising = /\b(just|simply|obvious|obviously|easy|trivial)\b/gi;
+	if (trivialising.test(out)) {
+		push(
+			"Avoid words like 'just', 'simply', or 'obvious'.",
+			"They can minimise user challenges and bias facilitator expectations.",
+			"low"
+		);
+	}
+
+	// --- 7) Heuristic: testing mentioned but no accessibility mention (OK to SUGGEST only)
+	// Do not inject new content into rewrite; suggestion only.
+	const mentionsTesting = /\b(test|validate|usability|research|study|evaluate|assess)\b/i.test(out);
+	const mentionsA11y =
+		/\b(accessibility|screen\s*reader|keyboard|contrast|assistive\s+tech|WCAG|disabled\s+people)\b/i.test(out);
+	if (mentionsTesting && !mentionsA11y) {
+		// Only add if the INPUT itself doesn’t already mention it (to avoid nagging duplicates)
+		const inputHasA11y =
+			/\b(accessibility|screen\s*reader|keyboard|contrast|assistive\s+tech|WCAG|disabled\s+people)\b/i.test(input || "");
+		if (!inputHasA11y) {
+			push(
+				"Consider how accessibility needs will be included in the research.",
+				"Ensures the work is inclusive across disabilities, devices, and contexts.",
+				"medium"
+			);
+		}
+	}
+
+	// Normalise whitespace after replacements
+	out = out.replace(/[ \t]{2,}/g, " ")
+		.replace(/\s+([,.;:])/g, "$1")
+		.replace(/\s{2,}/g, " ")
+		.replace(/\n[ \t]+/g, "\n")
+		.trim();
+
+	return { text: out, issues };
+}
+
+/* =========================
  * @section Shared prompts (exported for reuse)
  * ========================= */
 
@@ -693,17 +880,36 @@ class AiRewriteService {
 		// Remove invented method specifics not present in input
 		rewrite = neutraliseInventedMethods(cleanedRewrite, input);
 
-		// Merge notes into suggestions without exceeding MAX_SUGGESTIONS
+		// Merge quantifier notes into suggestions without exceeding MAX_SUGGESTIONS
 		if (notes.length) {
 			const remainingSlots = Math.max(0, this.cfg.MAX_SUGGESTIONS - suggestions.length);
 			const toAdd = notes.slice(0, remainingSlots);
-			suggestions = suggestions.concat(toAdd.map(n => ({
-				category: n.category,
-				tip: clamp(n.tip, this.cfg.MAX_SUGGESTION_LEN),
-				why: clamp(n.why, this.cfg.MAX_SUGGESTION_LEN),
-				severity: n.severity
-			})));
+			suggestions = suggestions.concat(
+				toAdd.map(n => ({
+					category: n.category,
+					tip: clamp(n.tip, this.cfg.MAX_SUGGESTION_LEN),
+					why: clamp(n.why, this.cfg.MAX_SUGGESTION_LEN),
+					severity: n.severity
+				}))
+			);
 		}
+
+		// Bias audit (neutralises phrasing + adds suggestion items)
+		const { text: biasFixed, issues: biasIssues } = auditForBias(rewrite, input);
+		rewrite = biasFixed;
+
+		if (biasIssues.length) {
+			const remaining = Math.max(0, this.cfg.MAX_SUGGESTIONS - suggestions.length);
+			suggestions = suggestions.concat(
+				biasIssues.slice(0, remaining).map(i => ({
+					category: i.category,
+					tip: clamp(i.tip, this.cfg.MAX_SUGGESTION_LEN),
+					why: clamp(i.why, this.cfg.MAX_SUGGESTION_LEN),
+					severity: i.severity
+				}))
+			);
+		}
+
 
 		// Minimal safe fallback to keep UI consistent (do not invent details)
 		if (!rewrite) {
