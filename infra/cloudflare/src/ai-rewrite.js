@@ -267,7 +267,7 @@ function rulesPromptForMode(mode) {
 			"Rules (Objectives):",
 			"01) Split into 3–6 concise, numbered objectives when possible.",
 			"02) Make each objective action-oriented (start with a verb).",
-			"03) Apply SMART if the input allows: include measurable targets and timeframes.",
+			"03) Apply SMART only if numbers or timeframes are explicitly present in the input. Do not create new metrics, percentages, or deadlines.",
 			"04) Include any constraints, dependencies, or risks if mentioned.",
 			"05) Keep scope aligned to the service phase and project status if present in the input.",
 			"06) Avoid PII; if present, advise removal in suggestions.",
