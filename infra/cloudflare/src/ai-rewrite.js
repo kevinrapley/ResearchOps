@@ -68,7 +68,7 @@ const DEFAULTS = Object.freeze({
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
 	MAX_REWRITE_CHARS: 1800, // ~220 words
-	MODEL_FALLBACK: "@cf/meta/llama-3.1-8b-instruct"
+	MODEL_FALLBACK: "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"
 });
 
 /* =========================
