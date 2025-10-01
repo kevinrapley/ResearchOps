@@ -1,159 +1,168 @@
+// /js/start-description-assist.js
 /**
- * @file start-description-assist.js
- * @module StartDescriptionAssist
- * @summary Page wiring for “Start → Step 1 of 3 — Description”.
- * @description
- * Enhances the Step 1 “Description” field with:
- * - Local, zero-cost rule suggestions (client-only; no network).
- * - Optional AI-powered concise rewrite via `POST /api/ai-rewrite`.
+ * Start Description Assist
+ * Binds suggestion + AI rewrite helpers to a project description textarea.
+ * Idempotent: safe to call multiple times; will only bind once per textarea.
  *
- * Accessibility:
- * - Live regions for status + results (aria-live="polite").
- * - Keyboard reachable controls; focus returns to the textarea after apply.
+ * Exports:
+ *   - initStartDescriptionAssist(config)
  *
- * Privacy:
- * - No network calls until the user explicitly clicks “Try AI rewrite”.
- * - AI endpoint is hosted in your Worker; OFFICIAL-by-default handling.
+ * Config:
+ *   - textareaSelector: CSS selector for the target <textarea>
+ *   - manualBtnSelector: button to generate lightweight suggestions client-side
+ *   - aiBtnSelector: button to call AI endpoint for rewrite
+ *   - suggContainerSelector: container to render suggestion chips/list
+ *   - aiContainerSelector: container to render AI rewrite output
+ *   - aiStatusSelector: element for status messages (aria-live preferred)
+ *   - aiEndpoint: absolute URL of the AI rewrite API
  */
 
-import { initCopilotSuggester } from './copilot-suggester.js';
+const _BOUND_FLAG = Symbol('sda_bound');
+const _CONTROLLER = Symbol('sda_abort_controller');
 
-const DEFAULTS = Object.freeze({
-	MIN_CHARS_FOR_AI: 400,
-	TIMEOUT_MS: 10_000,
-	ENDPOINT: '/api/ai-rewrite'
-});
-
-function esc(s) {
-	return String(s ?? '').replace(/[&<>"']/g, m => ({
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		'\'': '&#39;'
-	} [m]));
+function $(sel, root = document) { return root.querySelector(sel); }
+function assertEl(el, label) {
+	if (!el) throw new Error(`[start-description-assist] Missing element: ${label}`);
+	return el;
 }
 
-async function fetchWithTimeout(resource, init, timeoutMs = DEFAULTS.TIMEOUT_MS) {
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
-	try {
-		const initSafe = Object.assign({}, init || {});
-		initSafe.signal = controller.signal;
-		return await fetch(resource, initSafe);
-	} finally {
-		clearTimeout(id);
-	}
+function setStatus(el, msg, busy = false) {
+	if (!el) return;
+	el.textContent = msg || '';
+	if (busy) { el.setAttribute('aria-busy', 'true'); }
+	else { el.removeAttribute('aria-busy'); }
 }
 
-function renderAiPanel(data) {
-	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
-	return `
-		<div class="sugg-region">
-			<div class="sugg-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
-			<ul class="sugg-list">
-				${list.map(s => `
-					<li class="sugg-item">
-						<strong class="sugg-cat">${esc(s?.category || 'General')}</strong> — ${esc(s?.tip || '')}
-						<div class="sugg-why">Why: ${esc(s?.why || '')}${s?.severity ? ` (${esc(s.severity)})` : ''}</div>
-					</li>
-				`).join('')}
-			</ul>
-			<hr/>
-			<div><strong>Concise rewrite (optional):</strong></div>
-			<p>${esc(data?.rewrite || '')}</p>
-			<button type="button" id="apply-ai-rewrite" class="btn">Replace Description with rewrite</button>
-		</div>
-	`;
-}
-
-function bindApplyRewrite(container, textarea, suggInstance) {
-	const btn = container.querySelector('#apply-ai-rewrite');
-	const p = container.querySelector('p');
-	if (!btn || !p) return;
-	btn.addEventListener('click', () => {
-		textarea.value = p.textContent || '';
-		textarea.focus();
-		try { typeof suggInstance?.forceSuggest === 'function' && suggInstance.forceSuggest(); } catch {}
+function h(tag, props = {}, children = []) {
+	const el = document.createElement(tag);
+	Object.entries(props || {}).forEach(([k, v]) => {
+		if (v === undefined || v === null) return;
+		if (k === 'class') el.className = v;
+		else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+		else el.setAttribute(k, String(v));
 	});
+	(children || []).forEach(c => { if (c !== undefined && c !== null) el.append(c.nodeType ? c : document.createTextNode(String(c))); });
+	return el;
 }
 
-export function initStartDescriptionAssist(cfg = {}) {
-	const opts = {
-		textareaSelector: '#project-description',
-		manualBtnSelector: '#btn-get-suggestions',
-		aiBtnSelector: '#btn-ai-rewrite',
-		suggContainerSelector: '#description-suggestions',
-		aiContainerSelector: '#ai-rewrite-output',
-		aiStatusSelector: '#ai-rewrite-status',
-		aiEndpoint: DEFAULTS.ENDPOINT,
-		minCharsForAI: DEFAULTS.MIN_CHARS_FOR_AI,
-		requestTimeoutMs: DEFAULTS.TIMEOUT_MS,
-		...cfg
+function simpleClientSuggestions(text) {
+	// Very lightweight transformations. Deterministic. No network.
+	const t = (text || '').trim();
+	if (!t) return [
+		'Explain the user need in one sentence.',
+		'Add scope boundaries (what is and isnât included).',
+		'List known constraints (policy, security, data, time).',
+		'Write acceptance criteria as âGiven/When/Thenâ.'
+	];
+	const bullets = [];
+	if (t.length > 280) bullets.push('Open with a 1â2 sentence summary.');
+	if (!/[.!?]\s*$/.test(t)) bullets.push('Finish with a clear outcome statement.');
+	if (!/user|citizen|research/i.test(t)) bullets.push('Name the primary user and their goal.');
+	if (!/measure|metric|kpi|success/i.test(t)) bullets.push('State how success will be measured.');
+	if (!/risk|assumption|unknown/i.test(t)) bullets.push('Call out top risks and assumptions.');
+	return bullets.length ? bullets : ['Tighten language. Prefer short sentences and plain English.'];
+}
+
+export function initStartDescriptionAssist(cfg) {
+	if (!cfg) throw new Error('[start-description-assist] Missing config');
+
+	const root = document;
+	const textarea = assertEl($(cfg.textareaSelector, root), 'textareaSelector');
+	if (textarea[_BOUND_FLAG]) return; // idempotent per textarea
+
+	const btnManual = assertEl($(cfg.manualBtnSelector, root), 'manualBtnSelector');
+	const btnAI = assertEl($(cfg.aiBtnSelector, root), 'aiBtnSelector');
+	const suggContainer = assertEl($(cfg.suggContainerSelector, root), 'suggContainerSelector');
+	const aiContainer = assertEl($(cfg.aiContainerSelector, root), 'aiContainerSelector');
+	const statusEl = assertEl($(cfg.aiStatusSelector, root), 'aiStatusSelector');
+	const endpoint = String(cfg.aiEndpoint || '').trim();
+	if (!/^https?:\/\//.test(endpoint)) throw new Error('[start-description-assist] aiEndpoint must be an absolute URL');
+
+	// mark bound + create a per-instance abort controller
+	textarea[_BOUND_FLAG] = true;
+	textarea[_CONTROLLER] = null;
+
+	// --- render helpers ---
+	const renderSuggestions = (items) => {
+		suggContainer.innerHTML = '';
+		const ul = h('ul', { class: 'sda-suggestions', role: 'list' });
+		(items || []).forEach((txt) => {
+			const li = h('li', { class: 'sda-suggestion' }, [
+				 h('button', { type: 'button', class: 'sda-chip', onClick: () => insertSuggestion(txt) }, [txt])
+			]);
+			ul.appendChild(li);
+		});
+		suggContainer.appendChild(ul);
 	};
 
-	const textarea = document.querySelector(opts.textareaSelector);
-	const manualBtn = document.querySelector(opts.manualBtnSelector);
-	const aiBtn = document.querySelector(opts.aiBtnSelector);
-	const suggContainer = document.querySelector(opts.suggContainerSelector);
-	const aiContainer = document.querySelector(opts.aiContainerSelector);
-	const aiStatus = document.querySelector(opts.aiStatusSelector);
+	function insertSuggestion(s) {
+		if (!s) return;
+		const cur = textarea.value || '';
+		const glue = cur && !/\n$/.test(cur) ? '\n' : '';
+		textarea.value = cur + glue + s;
+		textarea.dispatchEvent(new Event('input', { bubbles: true }));
+		textarea.focus();
+	}
 
-	if (!textarea || !suggContainer) return null;
+	const renderAI = (text) => {
+		aiContainer.innerHTML = '';
+		if (!text) return;
+		const pre = h('pre', { class: 'sda-ai-output', tabindex: '0' }, [text]);
+		aiContainer.appendChild(pre);
+	};
 
-	const suggInstance = initCopilotSuggester({
-		textarea: opts.textareaSelector,
-		container: opts.suggContainerSelector,
-		button: opts.manualBtnSelector
+	// --- events ---
+	btnManual.addEventListener('click', (e) => {
+		e?.preventDefault?.();
+		const items = simpleClientSuggestions(textarea.value);
+		renderSuggestions(items);
+		setStatus(statusEl, 'Generated local suggestions.', false);
 	});
 
-	// Mark Step 1 as handled so other scripts can stand down
-	window.__descAssistActive = true;
-	try { if (suggContainer) suggContainer.dataset.owner = 'start-description-assist'; } catch {}
+	btnAI.addEventListener('click', async (e) => {
+		e?.preventDefault?.();
+		if (textarea[_CONTROLLER]) { try { textarea[_CONTROLLER].abort(); } catch {} }
+		const controller = new AbortController();
+		textarea[_CONTROLLER] = controller;
 
-	const onAiClick = async () => {
-		const text = (textarea.value || '').trim();
-		if (text.length < opts.minCharsForAI) {
-			if (aiStatus) aiStatus.textContent = `Enter at least ${opts.minCharsForAI} characters to try AI.`;
-			textarea.focus();
-			return;
-		}
-
-		if (aiStatus) aiStatus.textContent = 'Thinking…';
-		if (aiContainer) aiContainer.textContent = '';
+		btnAI.disabled = true;
+		setStatus(statusEl, 'Rewritingâ¦', true);
 
 		try {
-			const res = await fetchWithTimeout(opts.aiEndpoint, {
+			const res = await fetch(endpoint, {
 				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ text })
-			}, opts.requestTimeoutMs);
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ text: textarea.value || '' }),
+				signal: controller.signal
+			});
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			const data = await res.json().catch(() => ({}));
+			// Flexible shape support
+			const out = data.output || data.text || data.result || (typeof data === 'string' ? data : '');
+			renderAI(out);
+			setStatus(statusEl, 'Rewrite complete.', false);
+		} catch (err) {
+			if (err.name === 'AbortError') { setStatus(statusEl, 'Cancelled.', false); return; }
+			console.error('[start-description-assist] AI rewrite failed:', err);
+			setStatus(statusEl, 'Rewrite failed. Try again.', false);
+		} finally {
+			btnAI.disabled = false;
+			textarea[_CONTROLLER] = null;
+		}
+	});
 
-			if (!res.ok) {
-				if (aiStatus) aiStatus.textContent = 'Suggestions are temporarily unavailable.';
-				return;
-			}
+	// initial passive suggestions
+	if ((textarea.value || '').trim()) {
+		renderSuggestions(simpleClientSuggestions(textarea.value));
+	}
 
-			const data = await res.json();
-			if (aiContainer) {
-				aiContainer.innerHTML = renderAiPanel(data);
-				bindApplyRewrite(aiContainer, textarea, suggInstance);
-			}
-			if (aiStatus) {
-				aiStatus.textContent = data?.flags?.possible_personal_data ?
-					'⚠️ Possible personal data detected in your original text.' :
-					'Done.';
-			}
-		} catch {
-			if (aiStatus) aiStatus.textContent = 'Network error.';
+	return {
+		destroy() {
+			btnManual.replaceWith(btnManual.cloneNode(true));
+			btnAI.replaceWith(btnAI.cloneNode(true));
+			textarea[_BOUND_FLAG] = false;
+			textarea[_CONTROLLER]?.abort?.();
+			textarea[_CONTROLLER] = null;
 		}
 	};
-
-	aiBtn?.addEventListener('click', onAiClick);
-
-	window.dispatchEvent(new CustomEvent('start-description-assist:ready'));
-
-	return { destroy() { try { aiBtn?.removeEventListener('click', onAiClick); } catch {} } };
 }
-
-document.addEventListener('DOMContentLoaded', () => { initStartDescriptionAssist(); });
