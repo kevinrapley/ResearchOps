@@ -86,110 +86,174 @@ function bindApplyRewrite(container, textarea, suggInstance) {
 }
 
 /**
- * Initialise Description assistance (idempotent).
- * @param {Partial<AssistConfig>} cfg
- * @returns {{destroy:()=>void}|null}
+ * Initialise Description assistance on the Start page.
+ * Safe to call multiple times; no-op if selectors don’t match.
+ *
+ * @function initStartDescriptionAssist
+ * @public
+ * @param {Partial<AssistConfig>} [cfg]
+ * @returns {{ destroy:()=>void }|null}
  */
 export function initStartDescriptionAssist(cfg = {}) {
-	if (window.__descAssistActive) return null; // prevent double-wiring
 	/** @type {AssistConfig} */
-	const opts = Object.freeze({ ...DEFAULTS, ...cfg });
+	const opts = {
+		textareaSelector: '#p_desc', // ✅ matches your HTML
+		manualBtnSelector: '#btn-get-suggestions',
+		aiBtnSelector: '#btn-ai-rewrite',
+		suggContainerSelector: '#description-suggestions',
+		aiContainerSelector: '#ai-rewrite-output',
+		aiStatusSelector: '#ai-rewrite-status',
+		aiEndpoint: '/api/ai-rewrite',
+		minCharsForAI: 400,
+		requestTimeoutMs: 10_000,
+		...cfg
+	};
 
+	/** @type {HTMLTextAreaElement|null} */
 	const textarea = document.querySelector(opts.textareaSelector);
+	/** @type {HTMLButtonElement|null} */
 	const manualBtn = document.querySelector(opts.manualBtnSelector);
+	/** @type {HTMLButtonElement|null} */
 	const aiBtn = document.querySelector(opts.aiBtnSelector);
+	/** @type {HTMLElement|null} */
 	const suggContainer = document.querySelector(opts.suggContainerSelector);
+	/** @type {HTMLElement|null} */
 	const aiContainer = document.querySelector(opts.aiContainerSelector);
+	/** @type {HTMLElement|null} */
 	const aiStatus = document.querySelector(opts.aiStatusSelector);
-	const toolsBar = document.querySelector('#ai-tools');
+	/** @type {HTMLElement|null} */
+	const aiTools = document.getElementById('ai-tools');
 
 	if (!textarea || !suggContainer) return null;
 
-	// Init local suggester (handles 2-column Suggestions | Bias and auto/ manual flows)
-	const sugg = initCopilotSuggester({
+	// Local rule-based suggester
+	const suggInstance = initCopilotSuggester({
 		textarea: opts.textareaSelector,
 		container: opts.suggContainerSelector,
-		manualButton: opts.manualBtnSelector,
-		biasColumn: true, // ✅ render bias alongside suggestions
-		autoThreshold: 400, // ✅ auto when ≥400 chars
+		button: opts.manualBtnSelector
 	});
 
-	// Reveal the toolbar when threshold is reached
-	const updateToolsVisibility = () => {
-		const show = (textarea.value.trim().length >= opts.minCharsForAI);
-		toolsBar?.classList.toggle('hidden', !show);
+	// --- Robust reveal logic for AI tools (input, paste, change, keyup) ---
+	const min = opts.minCharsForAI;
+
+	/** @returns {number} */
+	const currentLen = () => (textarea.value || '').trim().length;
+
+	/** @param {boolean} show */
+	const setToolsVisible = (show) => {
+		if (!aiTools) return;
+		aiTools.classList.toggle('hidden', !show);
+		// optional: aria
+		aiTools.setAttribute('aria-hidden', show ? 'false' : 'true');
 	};
 
-	// Paste-safe: run on `input` + do an initial pass on load
-	const onInput = () => {
-		updateToolsVisibility();
-		sugg?.maybeAutoSuggest?.(); // auto suggest when past threshold
+	/** Run on every text change */
+	const handleReveal = () => {
+		const ok = currentLen() >= min;
+		setToolsVisible(ok);
 	};
+
+	// Input covers typing and paste in modern browsers; still add paste fallback.
+	const onInput = () => handleReveal();
+	const onKeyup = () => handleReveal();
+	const onChange = () => handleReveal();
+	const onPaste = () => {
+		// Defer so the value includes pasted text
+		setTimeout(handleReveal, 0);
+	};
+
 	textarea.addEventListener('input', onInput);
-	// initial (for paste or autofill before JS)
-	queueMicrotask(() => { onInput(); });
+	textarea.addEventListener('keyup', onKeyup);
+	textarea.addEventListener('change', onChange);
+	textarea.addEventListener('paste', onPaste);
 
-	// AI rewrite
+	// Initial pass (handles prefilled/auto-fill content)
+	handleReveal();
+
+	// --- AI rewrite click handler (unchanged; shown here for completeness) ---
 	const onAiClick = async () => {
-		const text = textarea.value.trim();
-		if (text.length < opts.minCharsForAI) {
-			aiStatus && (aiStatus.textContent = `Enter at least ${opts.minCharsForAI} characters to try AI.`);
+		const text = (textarea.value || '').trim();
+		if (text.length < min) {
+			if (aiStatus) aiStatus.textContent = `Enter at least ${min} characters to try AI.`;
 			textarea.focus();
 			return;
 		}
-		aiStatus && (aiStatus.textContent = 'Thinking…');
-		aiContainer && (aiContainer.textContent = '');
+
+		if (aiStatus) aiStatus.textContent = 'Thinking…';
+		if (aiContainer) aiContainer.textContent = '';
 
 		try {
-			const res = await fetchWithTimeout(opts.aiEndpoint, {
+			const res = await fetch(opts.aiEndpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ text })
-			}, opts.requestTimeoutMs);
+				body: JSON.stringify({ mode: 'description', text }) // ✅ ensure mode=description
+			});
 
 			if (!res.ok) {
-				aiStatus && (aiStatus.textContent = 'Suggestions are temporarily unavailable.');
+				if (aiStatus) aiStatus.textContent = 'Suggestions are temporarily unavailable.';
 				return;
 			}
+
 			const data = await res.json();
 			if (aiContainer) {
 				aiContainer.innerHTML = renderAiPanel(data);
-				bindApplyRewrite(aiContainer, textarea, sugg);
-				// inject bias suggestions (reuse the same bias engine for step 1)
-				const biasSlot = aiContainer.querySelector('#ai-bias-slot');
-				if (biasSlot && typeof sugg?.renderBiasFor === 'function') {
-					biasSlot.innerHTML = sugg.renderBiasFor(text);
-				}
+				bindApplyRewrite(aiContainer, textarea, suggInstance);
 			}
-			aiStatus && (aiStatus.textContent = data?.flags?.possible_personal_data ?
-				'⚠️ Possible personal data detected in your original text.' :
-				'Done.');
+			if (aiStatus) {
+				aiStatus.textContent = data?.flags?.possible_personal_data ?
+					'⚠️ Possible personal data detected in your original text.' :
+					'Done.';
+			}
 		} catch {
-			aiStatus && (aiStatus.textContent = 'Network error.');
+			if (aiStatus) aiStatus.textContent = 'Network error.';
 		}
 	};
-	aiBtn?.addEventListener('click', onAiClick);
-	manualBtn?.addEventListener('click', () => sugg?.forceSuggest?.()); // keep manual trigger
 
-	window.__descAssistActive = true;
+	aiBtn?.addEventListener('click', onAiClick);
+
+	// Let the page know we’re wired up (analytics or other listeners can hook into this)
 	window.dispatchEvent(new CustomEvent('start-description-assist:ready'));
 
 	return {
 		destroy() {
 			try {
 				textarea.removeEventListener('input', onInput);
+				textarea.removeEventListener('keyup', onKeyup);
+				textarea.removeEventListener('change', onChange);
+				textarea.removeEventListener('paste', onPaste);
 				aiBtn?.removeEventListener('click', onAiClick);
 			} catch {}
-			window.__descAssistActive = false;
 		}
 	};
 }
 
-// auto-init
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => initStartDescriptionAssist());
-} else {
-	initStartDescriptionAssist();
-}
-ptionAssist();
-});
+/* =========================
+ * @section Auto-init (progressive enhancement)
+ * ========================= */
+
+/**
+ * Auto-initialise once per page. Safe when the script is included multiple times.
+ * Uses a global guard flag to avoid double-wiring.
+ * If you ever need to disable auto-init for testing, add data-noauto="true" on the script tag.
+ */
+(() => {
+	// Guard to avoid double init across partial reloads or multiple script tags
+	if (window.__descAssistActive === true) return;
+	if (document.currentScript && document.currentScript.dataset.noauto === 'true') return;
+
+	const start = () => {
+		const handle = initStartDescriptionAssist();
+		if (handle) {
+			// mark as active so other controllers (e.g., start-new-project.js) don't re-wire Step 1
+			window.__descAssistActive = true;
+			// Expose handle for optional teardown in SPA-style navigation
+			window.__descAssistHandle = handle;
+		}
+	};
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', start, { once: true });
+	} else {
+		start();
+	}
+})();
