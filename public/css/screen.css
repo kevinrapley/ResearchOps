@@ -805,4 +805,89 @@ select.govuk-input {
 #ai-rewrite-status,
 #ai-obj-status { margin-left: 8px; }
 
+/* -------- Projects skeletons -------- */
+.projects-grid {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 1fr;
+	}
+
+@media (min-width: 700px) {
+	.projects-grid {
+		grid-template-columns: 1fr 1fr;
+		}
+	}
+
+@media (min-width: 1100px) {
+	.projects-grid {
+		grid-template-columns: 1fr 1fr 1fr;
+		}
+	}
+
+/* Card */
+.project-card {
+	border: 1px solid var(--govuk-border-colour, #b1b4b6);
+	border-radius: 4px;
+	padding: 16px;
+	background: #fff;
+	}
+
+/* Skeleton base */
+.skel {
+	position: relative;
+	overflow: hidden;
+	background: #f3f2f1;
+	border-radius: 3px;
+	}
+
+.skel::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	transform: translateX(-100%);
+	background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0) 100%);
+	animation: skel-shimmer 1200ms infinite;
+	}
+
+@keyframes skel-shimmer {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(100%); }
+	}
+
+/* Skeleton layout blocks */
+.skel-title {
+	height: 18px;
+	margin-bottom: 12px;
+	}
+
+.skel-meta {
+	height: 12px;
+	width: 60%;
+	margin-bottom: 16px;
+	}
+
+.skel-line {
+	height: 10px;
+	margin-bottom: 8px;
+	}
+
+.skel-line.w-80 { width: 80%; }
+.skel-line.w-60 { width: 60%; }
+.skel-line.w-40 { width: 40%; }
+
+/* Real content typography inside .project-card */
+.project-title {
+	margin: 0 0 4px 0;
+	font-weight: 700;
+	}
+
+.project-meta {
+	color: #505a5f;
+	margin: 0 0 8px 0;
+	}
+
+.project-summary {
+	margin: 0;
+	}
+
 /* transparency begins in the cascade */
