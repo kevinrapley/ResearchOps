@@ -835,8 +835,10 @@ class AiRewriteService {
 					{ role: "system", content: SYSTEM_PROMPT },
 					{ role: "user", content: `${RULES_PROMPT}\n\n${INSTRUCTIONS}\n${input}` }
 				],
-				temperature: 0.1, // tightened for determinism
-				max_tokens: 900
+				temperature: 0.15, // tightened for determinism
+				top_p: 0.9,// smallest set of tokens whose combined probability is at least 90% of the distribution
+				max_tokens: 900, // 900 tokens is plenty for summary + 6–8 suggestions + rewrite.
+				stop: ["```", "\n\n\n", "\nINPUT (verbatim):"] // conservative stops to prevent run-on prose
 			});
 
 			modelOutput = typeof resp === "string" ? resp : (resp?.response || resp?.result || "");
