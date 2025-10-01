@@ -5,33 +5,65 @@
  *
  * @description
  * - Mirrors Step 1 behaviour, with a lower threshold (≥ 60 chars).
- * - Uses the same 2-column suggestion presentation.
- * - Calls /api/ai-rewrite?mode=objectives for AI.
+ * - Uses the same 2-column suggestion presentation (general vs bias).
+ * - Calls /api/ai-rewrite?mode=objectives for AI (only on explicit click).
+ *
+ * @typedef {Object} AssistConfig
+ * @property {string} textareaSelector
+ * @property {string} manualBtnSelector
+ * @property {string} aiBtnSelector
+ * @property {string} suggContainerSelector
+ * @property {string} aiContainerSelector
+ * @property {string} aiStatusSelector
+ * @property {string} aiEndpoint
+ * @property {number} minCharsForAI
+ * @property {number} requestTimeoutMs
  */
 
 import { initCopilotSuggester } from './copilot-suggester.js';
 
+/* =========================
+ * Helpers
+ * ========================= */
+
 /**
- * Classify AI suggestions into "general" vs "bias & inclusion".
- * @param {Array<{category?:string, tip?:string, why?:string, severity?:string}>} items
+ * HTML-escape a string for safe interpolation.
+ * @param {unknown} s
+ * @returns {string}
+ */
+const esc = (s) =>
+	String(s ?? '').replace(/[&<>"']/g, c => ({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;'
+	} [c]));
+
+/**
+ * Classify suggestions into "general" vs "bias & inclusion".
+ * @param {Array<{category?:string, tip?:string, why?:string, severity?:string}>} [items=[]]
  * @returns {{left:Array, right:Array}} left=general, right=bias
  */
 function splitSuggestionsByBias(items = []) {
 	const biasKeywords = [
 		'bias', 'inclusion', 'inclusive', 'accessibility', 'accessible',
-		'assistive', 'screen reader', 'contrast', 'language', 'bilingual',
-		'welsh', 'device coverage', 'browser coverage', 'diversity', 'equality',
-		'users with disabilities', 'disability', 'low vision', 'motor', 'hearing'
+		'assistive', 'screen reader', 'screen-reader', 'contrast', 'language',
+		'bilingual', 'welsh', 'device coverage', 'browser coverage', 'diversity',
+		'equality', 'users with disabilities', 'disability', 'low vision', 'motor', 'hearing'
 	];
-	const hasBiasSignal = (s = '') => biasKeywords.some(k => s.toLowerCase().includes(k));
+	const hasBiasSignal = (text = '') =>
+		biasKeywords.some(k => text.toLowerCase().includes(k));
+
 	/** @type {Array} */
 	const left = [];
 	/** @type {Array} */
 	const right = [];
+
 	for (const s of items) {
-		const cat = String(s?.category || '');
-		const tip = String(s?.tip || '');
-		const why = String(s?.why || '');
+		const cat = String(s?.category ?? '');
+		const tip = String(s?.tip ?? '');
+		const why = String(s?.why ?? '');
 		const blob = `${cat} ${tip} ${why}`.toLowerCase();
 		(hasBiasSignal(blob) ? right : left).push(s);
 	}
@@ -47,14 +79,16 @@ function splitSuggestionsByBias(items = []) {
  */
 function renderTwoColumnSuggestions(left = [], right = [], idPrefix = 'sugg') {
 	const renderList = (items, emptyText) => {
-		if (!items?.length) {
-			return `<p class="muted">${emptyText}</p>`;
-		}
+		if (!items?.length) return `<p class="muted">${esc(emptyText)}</p>`;
 		return `<ul class="${idPrefix}-list">
       ${items.map(s => `
         <li class="${idPrefix}-item">
-          <strong class="${idPrefix}-cat">${esc(s?.category || 'General')}</strong> — ${esc(s?.tip || '')}
-          <div class="${idPrefix}-why">Why: ${esc(s?.why || '')}${s?.severity ? ` (${esc(s.severity)})` : ''}</div>
+          <div class="${idPrefix}-row">
+            <strong class="${idPrefix}-cat">${esc(s?.category || 'General')}</strong>
+            <span class="${idPrefix}-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</span>
+          </div>
+          <div class="${idPrefix}-tip">${esc(s?.tip || '')}</div>
+          <div class="${idPrefix}-why"><span class="mono muted">Why:</span> ${esc(s?.why || '')}</div>
         </li>
       `).join('')}
     </ul>`;
@@ -88,64 +122,18 @@ function renderAiPanelTwoCol(data, idPrefix = 'ai') {
       ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
       <hr />
       <div><strong>Concise rewrite (optional):</strong></div>
-      <p>${esc(data?.rewrite || '')}</p>
-      <button type="button" id="apply-ai-rewrite" class="btn">Replace Description with rewrite</button>
+      <pre class="rewrite-block" aria-label="AI rewrite">${esc(data?.rewrite || '')}</pre>
+      <button type="button" id="apply-ai-obj-rewrite" class="btn">Replace Objectives with rewrite</button>
     </div>
   `;
 }
 
-const DEFAULTS = Object.freeze({
-	MIN_CHARS_FOR_AI: 60,
-	TIMEOUT_MS: 10_000,
-	ENDPOINT: '/api/ai-rewrite'
-});
-
-/** @param {unknown} s */
-const esc = s => String(s ?? '')
-	.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [c]));
-
 /**
- * @param {{summary?:string, suggestions?:Array, rewrite?:string}} data
- */
-function renderAiPanelTwoCol(data) {
-	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
-	const left = list.filter(s => !/bias|inclusion|accessibility/i.test(s?.category || ''));
-	const right = list.filter(s => /bias|inclusion|accessibility/i.test(s?.category || ''));
-
-	const col = (items, heading) => `
-    <section class="sugg-col">
-      <h3 class="sugg-heading">${esc(heading)}</h3>
-      <ul class="sugg-list">
-        ${items.map(s => `
-          <li class="sugg-item">
-            <div class="sugg-row">
-              <strong class="sugg-cat">${esc(s?.category || 'General')}</strong>
-              <span class="sugg-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</span>
-            </div>
-            <div class="sugg-tip">${esc(s?.tip || '')}</div>
-            <div class="sugg-why"><span class="mono muted">Why:</span> ${esc(s?.why || '')}</div>
-          </li>`).join('')}
-      </ul>
-    </section>`.trim();
-
-	return `
-    <div class="sugg-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
-    <div class="sugg-grid" role="group" aria-label="AI suggestions split view">
-      ${col(left, 'AI Suggestions')}
-      ${col(right.length ? right : [{category:'Bias', tip:'No bias findings.', why:'', severity:'low'}], 'AI Bias & Inclusion')}
-    </div>
-    <hr/>
-    <div><strong>Concise rewrite (optional):</strong></div>
-    <pre class="rewrite-block" aria-label="AI rewrite">${esc(data?.rewrite || '')}</pre>
-    <button type="button" id="apply-ai-obj-rewrite" class="btn">Replace Objectives with rewrite</button>
-  `.trim();
-}
-
-/**
- * Fetch with timeout
+ * Fetch with a hard timeout.
  * @param {RequestInfo|URL} resource
- * @param {RequestInit} init
+ * @param {RequestInit} [init]
  * @param {number} timeoutMs
+ * @returns {Promise<Response>}
  */
 async function fetchWithTimeout(resource, init, timeoutMs) {
 	const controller = new AbortController();
@@ -155,21 +143,27 @@ async function fetchWithTimeout(resource, init, timeoutMs) {
 	} finally { clearTimeout(t); }
 }
 
+/* =========================
+ * Config
+ * ========================= */
+
+const DEFAULTS = Object.freeze({
+	MIN_CHARS_FOR_AI: 60,
+	TIMEOUT_MS: 10_000,
+	ENDPOINT: '/api/ai-rewrite'
+});
+
+/* =========================
+ * Entrypoint
+ * ========================= */
+
 /**
- * Initialise Step 2 assistance.
- * @param {Partial<{
- *  textareaSelector:string,
- *  manualBtnSelector:string,
- *  aiBtnSelector:string,
- *  suggContainerSelector:string,
- *  aiContainerSelector:string,
- *  aiStatusSelector:string,
- *  aiEndpoint:string,
- *  minCharsForAI:number,
- *  requestTimeoutMs:number
- * }>} cfg
+ * Initialise Step 2 assistance (Objectives).
+ * @param {Partial<AssistConfig>} [cfg]
+ * @returns {{destroy:()=>void}|null}
  */
 export function initStartObjectiveAssist(cfg = {}) {
+	/** @type {AssistConfig} */
 	const opts = {
 		textareaSelector: '#p_objectives',
 		manualBtnSelector: '#btn-obj-suggestions',
@@ -193,20 +187,32 @@ export function initStartObjectiveAssist(cfg = {}) {
 
 	if (!ta || !suggMount) return null;
 
-	// Local suggester (threshold 60)
+	// Local suggester (threshold 60) with 2-column renderer
 	const sugg = initCopilotSuggester({
 		textarea: opts.textareaSelector,
 		container: opts.suggContainerSelector,
 		button: opts.manualBtnSelector,
-		minChars: opts.minCharsForAI
+		minChars: opts.minCharsForAI,
+		renderTwoColumn: (list) => {
+			const { left, right } = splitSuggestionsByBias(list);
+			return renderTwoColumnSuggestions(left, right, 'sugg');
+		}
 	});
 
-	const showToolbarIfReady = () => {
-		if (!toolbar) return;
+	/**
+	 * Show toolbar and auto-render suggestions once threshold reached.
+	 */
+	const onInput = () => {
 		const v = (ta.value || '').trim();
-		if (v.length >= opts.minCharsForAI) toolbar.classList.remove('hidden');
+		if (v.length >= opts.minCharsForAI) {
+			toolbar && toolbar.classList.remove('hidden');
+			try { sugg.forceSuggest(); } catch {}
+		}
 	};
 
+	/**
+	 * Trigger AI rewrite (objectives mode).
+	 */
 	const onAiClick = async () => {
 		const text = (ta.value || '').trim();
 		if (text.length < opts.minCharsForAI) {
@@ -228,9 +234,10 @@ export function initStartObjectiveAssist(cfg = {}) {
 				aiStatus && (aiStatus.textContent = 'Suggestions are temporarily unavailable.');
 				return;
 			}
+
 			const data = await res.json();
 			if (aiMount) {
-				aiMount.innerHTML = renderAiPanelTwoCol(data);
+				aiMount.innerHTML = renderAiPanelTwoCol(data, 'ai');
 				const apply = aiMount.querySelector('#apply-ai-obj-rewrite');
 				const pre = aiMount.querySelector('.rewrite-block');
 				apply?.addEventListener('click', () => {
@@ -239,7 +246,9 @@ export function initStartObjectiveAssist(cfg = {}) {
 					try { sugg.forceSuggest(); } catch {}
 				});
 			}
-			aiStatus && (aiStatus.textContent = data?.flags?.possible_personal_data ?
+
+			aiStatus && (aiStatus.textContent =
+				data?.flags?.possible_personal_data ?
 				'⚠️ Possible personal data detected in your original text.' :
 				'Done.');
 		} catch {
@@ -247,24 +256,32 @@ export function initStartObjectiveAssist(cfg = {}) {
 		}
 	};
 
-	ta.addEventListener('input', showToolbarIfReady);
-	manualBtn?.addEventListener('click', () => { /* rendered by suggester */ });
+	// Wire up
+	ta.addEventListener('input', onInput);
+	manualBtn?.addEventListener('click', () => { try { sugg.forceSuggest(); } catch {} });
 	aiBtn?.addEventListener('click', onAiClick);
 
-	showToolbarIfReady();
+	// Initial (paste) check
+	onInput();
+
+	// Announce ready (optional hooks)
+	window.dispatchEvent(new CustomEvent('start-objective-assist:ready'));
 
 	return {
 		destroy() {
 			try {
-				ta.removeEventListener('input', showToolbarIfReady);
+				ta.removeEventListener('input', onInput);
 				aiBtn?.removeEventListener('click', onAiClick);
-				sugg?.destroy?.();
+				if (typeof sugg?.destroy === 'function') sugg.destroy();
 			} catch {}
 		}
 	};
 }
 
-// Auto-init
+/* =========================
+ * Auto-init (progressive enhancement)
+ * ========================= */
+
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', () => initStartObjectiveAssist());
 } else {
