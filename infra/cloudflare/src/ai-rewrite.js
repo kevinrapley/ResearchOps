@@ -62,8 +62,8 @@
 const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	MAX_BODY_BYTES: 512 * 1024,
-	MIN_TEXT_CHARS: 400, // Step 1: Description
-	MIN_OBJECTIVES_CHARS: 200, // Step 2: Initial Objectives
+	MIN_TEXT_CHARS: 400,
+	MIN_OBJ_TEXT_CHARS: 60,
 	MAX_INPUT_CHARS: 5000,
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
@@ -260,7 +260,7 @@ function rulesPromptForMode(mode) {
 			"Include only sections where the input contains relevant content. Never invent details."
 		].join("\n");
 	}
-	
+
 	if (mode === "objectives") {
 		return [
 			"Rules (Objectives):",
@@ -326,22 +326,26 @@ class AiRewriteService {
 			return json({ error: "Origin not allowed" }, 403, corsHeaders(this.env, origin));
 		}
 
+		// Identify mode from query (?mode=description|objectives)
+		const url = new URL(request.url);
+		const qMode = (url.searchParams.get("mode") || "description").toLowerCase();
+		/** @type {"description"|"objectives"} */
+		const mode = (qMode === "objectives") ? "objectives" : "description";
+
 		// Body guardrails
 		const buf = await request.arrayBuffer();
 		if (buf.byteLength > this.cfg.MAX_BODY_BYTES) {
 			return json({ error: "Payload too large" }, 413, corsHeaders(this.env, origin));
 		}
 
-		/** @type {{text?:unknown, mode?:unknown}} */
+		/** @type {{text?:unknown}} */
 		let payload;
 		try { payload = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(this.env, origin)); }
 
-		const rawMode = typeof payload.mode === "string" ? payload.mode : "description";
-		/** @type {"description"|"objectives"} */
-		const mode = rawMode.toLowerCase() === "objectives" ? "objectives" : "description";
-
 		const text = typeof payload.text === "string" ? payload.text : "";
-		const minChars = mode === "objectives" ? this.cfg.MIN_OBJECTIVES_CHARS : this.cfg.MIN_TEXT_CHARS;
+
+		// Mode-specific minimum length
+		const minChars = (mode === "objectives") ? this.cfg.MIN_OBJ_TEXT_CHARS : this.cfg.MIN_TEXT_CHARS;
 		if (text.trim().length < minChars) {
 			return json({ error: `MIN_LENGTH_${minChars}` }, 400, corsHeaders(this.env, origin));
 		}
