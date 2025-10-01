@@ -1,17 +1,27 @@
 /**
  * @file ai-rewrite.js
  * @module AiRewrite
- * @summary Cloudflare Worker AI endpoint for rule-guided Description rewrites.
+ * @summary Cloudflare Worker AI endpoint for rule-guided rewrites (Description & Objectives).
  * @description
  * Exposes:
- * - `POST /api/ai-rewrite`:
- *   Input:  { text:string } (≥ 400 chars)
- *   Output: { summary:string, suggestions:Array<{category,tip,why,severity}>, rewrite:string, flags:{possible_personal_data:boolean} }
+ * - `POST /api/ai-rewrite`
+ *   Payload:
+ *     { mode: "description"|"objectives", text: string }
+ *     - description: ≥ 400 chars (Step 1)
+ *     - objectives:  ≥ 200 chars (Step 2)
+ *   Returns:
+ *     {
+ *       summary: string,
+ *       suggestions: Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}>,
+ *       rewrite: string,
+ *       flags: { possible_personal_data: boolean }
+ *     }
  *
  * Design:
- * - Uses Cloudflare Workers AI via `env.AI.run(model, ...)`.
- * - Enforces OFFICIAL-by-default handling, no third-party calls.
- * - Hard token/length clamps, PII sweep, and counters-only Airtable logging.
+ * - Uses Cloudflare Workers AI via `env.AI.run(model, ...)`
+ * - OFFICIAL-by-default (no third-party calls)
+ * - Hard clamps for input/output length, strict JSON shaping
+ * - PII sweep (email, NI, NHS) and counters-only Airtable logging
  *
  * @requires globalThis.fetch
  * @requires globalThis.Request
@@ -24,7 +34,7 @@
  * @property {string} AIRTABLE_API_KEY Airtable API token.
  * @property {string} [AIRTABLE_TABLE_AI_LOG] Optional Airtable table for counters-only AI usage logs (e.g., "AI_Usage").
  * @property {string} [MODEL] Workers AI model name (e.g., "@cf/meta/llama-3.1-8b-instruct").
- * @property {any}    AI Cloudflare Workers AI binding.
+ * @property {any}    AI Cloudflare Workers AI binding (env.AI.run).
  */
 
 /* =========================
@@ -39,6 +49,7 @@
  *   TIMEOUT_MS:number,
  *   MAX_BODY_BYTES:number,
  *   MIN_TEXT_CHARS:number,
+ *   MIN_OBJECTIVES_CHARS:number,
  *   MAX_INPUT_CHARS:number,
  *   MAX_SUGGESTIONS:number,
  *   MAX_SUGGESTION_LEN:number,
@@ -51,7 +62,8 @@
 const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	MAX_BODY_BYTES: 512 * 1024,
-	MIN_TEXT_CHARS: 400,
+	MIN_TEXT_CHARS: 400, // Step 1: Description
+	MIN_OBJECTIVES_CHARS: 200, // Step 2: Initial Objectives
 	MAX_INPUT_CHARS: 5000,
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
@@ -146,7 +158,7 @@ function detectPII(text) {
 }
 
 /**
- * Sanitize rewrite for obvious PII remnants and whitespace.
+ * Sanitize rewrite for PII and whitespace/newlines.
  * @function sanitizeRewrite
  * @inner
  * @param {string} s
@@ -164,6 +176,107 @@ function sanitizeRewrite(s) {
 		.replace(/\n{3,}/g, "\n\n") // collapse 3+ blanks to 2
 		.trim();
 	return out;
+}
+
+/* =========================
+ * @section Shared prompts (exported for reuse)
+ * ========================= */
+
+/**
+ * High-level base instruction shared by both Description and Objectives modes.
+ * @constant
+ * @name BASE_SYSTEM_PROMPT
+ * @type {string}
+ */
+export const BASE_SYSTEM_PROMPT = [
+	"You assist UK Home Office user researchers.",
+	"Use GOV.UK style: plain English, short sentences, accessible to all.",
+	"Only use facts from the provided input; never invent new details.",
+	"If personal data appears, do not repeat it; instead advise removal.",
+	"Output must be strictly JSON. Do not include markdown, code fences, or explanatory prose.",
+	"If any field would be empty, return an empty string — never omit required keys."
+].join(" ");
+
+/**
+ * Description-specific system prompt (Step 1).
+ * @constant
+ * @name DESC_SYSTEM_PROMPT
+ * @type {string}
+ */
+export const DESC_SYSTEM_PROMPT = [
+	BASE_SYSTEM_PROMPT,
+	"Rewrite a research project Description.",
+	"Structure the rewrite into labelled sections only if the input supports them.",
+	"Section format: Label on its own line with a colon, content on the next line(s),",
+	"then one blank line before the next section. Do not include unused labels.",
+	"Typical sections you may include: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks, Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria."
+].join(" ");
+
+/**
+ * Objectives-specific system prompt (Step 2).
+ * @constant
+ * @name OBJ_SYSTEM_PROMPT
+ * @type {string}
+ */
+export const OBJ_SYSTEM_PROMPT = [
+	BASE_SYSTEM_PROMPT,
+	"Rewrite and refine 'Initial Objectives' for a new research project.",
+	"Group into clear, numbered objectives where possible.",
+	"Apply SMART where detail exists (specific, measurable, achievable, relevant, time-bound).",
+	"Avoid adding brand-new aims; only clarify or tighten what is present."
+].join(" ");
+
+/* =========================
+ * @section Mode rules
+ * ========================= */
+
+/**
+ * Build the RULES prompt per mode.
+ * @function rulesPromptForMode
+ * @param {"description"|"objectives"} mode
+ * @returns {string}
+ */
+function rulesPromptForMode(mode) {
+	if (mode === "description") {
+		return [
+			"Rules (Description):",
+			"01) Problem framing: restate as a user need; add one line each for in-scope/out-of-scope if the input mentions them.",
+			"02) Users & inclusion: name primary users and contexts; mention inclusion (accessibility, device, language) if present.",
+			"03) Outcomes & measures: include SMART outcomes with a number and timeframe where available.",
+			"04) Assumptions & risks: capture as hypotheses; note constraints or dependencies.",
+			"05) Ethics: summarise consent, retention, DPIA/DPS; remove or flag PII.",
+			"06) Method: fit to maturity (discovery vs alpha) if described.",
+			"07) Context: include policy drivers, service phase, organisational context if described.",
+			"08) Stakeholders: list key people or teams to involve if given.",
+			"09) Research questions: capture explicit questions the project will address.",
+			"10) Artefacts/Deliverables: outputs such as maps, prototypes, reports if stated.",
+			"11) Timeline: milestones or expected timeframe if available.",
+			"12) Recruitment: sample, accessibility needs, demographics if mentioned.",
+			"13) Data handling: storage, retention, sharing rules if described.",
+			"14) Success criteria: capture what 'good' looks like if stated.",
+			"15) Style: expand acronyms; use plain English; short sentences.",
+			"16) Clarity: remove duplication; structure content under clear headings.",
+			"",
+			"Include only sections where the input contains relevant content. Never invent details."
+		].join("\n");
+	}
+	
+	if (mode === "objectives") {
+		return [
+			"Rules (Objectives):",
+			"01) Split into 3–6 concise, numbered objectives when possible.",
+			"02) Make each objective action-oriented (start with a verb).",
+			"03) Apply SMART if the input allows: include measurable targets and timeframes.",
+			"04) Include any constraints, dependencies, or risks if mentioned.",
+			"05) Keep scope aligned to the service phase and project status if present in the input.",
+			"06) Avoid PII; if present, advise removal in suggestions.",
+			"07) Use GOV.UK style: plain English, short sentences, expanded acronyms.",
+			"08) If there is ambiguity, keep the objective clear but do not invent details."
+		].join("\n");
+	}
+
+	// Fallback if an unknown mode sneaks through
+	return "No rules available for this mode.";
 }
 
 /* =========================
@@ -219,129 +332,65 @@ class AiRewriteService {
 			return json({ error: "Payload too large" }, 413, corsHeaders(this.env, origin));
 		}
 
-		/** @type {{text?:unknown}} */
+		/** @type {{text?:unknown, mode?:unknown}} */
 		let payload;
 		try { payload = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: "Invalid JSON" }, 400, corsHeaders(this.env, origin)); }
 
+		const rawMode = typeof payload.mode === "string" ? payload.mode : "description";
+		/** @type {"description"|"objectives"} */
+		const mode = rawMode.toLowerCase() === "objectives" ? "objectives" : "description";
+
 		const text = typeof payload.text === "string" ? payload.text : "";
-		if (text.trim().length < this.cfg.MIN_TEXT_CHARS) {
-			return json({ error: "MIN_LENGTH_400" }, 400, corsHeaders(this.env, origin));
+		const minChars = mode === "objectives" ? this.cfg.MIN_OBJECTIVES_CHARS : this.cfg.MIN_TEXT_CHARS;
+		if (text.trim().length < minChars) {
+			return json({ error: `MIN_LENGTH_${minChars}` }, 400, corsHeaders(this.env, origin));
 		}
 
 		const hasPII = detectPII(text);
 		const input = clamp(text, this.cfg.MAX_INPUT_CHARS);
 		const model = this.env.MODEL || this.cfg.MODEL_FALLBACK;
 
-		// Policy & rules (kept concise to preserve tokens)
+		// Prompts
+		const SYSTEM_PROMPT = mode === "objectives" ? OBJ_SYSTEM_PROMPT : DESC_SYSTEM_PROMPT;
+		const RULES_PROMPT = rulesPromptForMode(mode);
 
-		/** @const {string} */
-		const SYSTEM_PROMPT = [
-			"You assist UK Home Office user researchers.",
-			"Rewrite a research project Description using GOV.UK style.",
-			"Only use facts from the provided input; never invent new details.",
-			"If PII appears in the input, do not repeat it; instead advise removal.",
-			"Structure the rewrite into labelled sections only if the input supports them.",
-			"Section format: Label on its own line with a colon, content on the next line(s),",
-			"then one blank line before the next section. Do not include unused labels.",
-			"Typical sections you may include: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks, Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria.",
-			"Output must be strictly JSON. Do not include markdown, code fences, or explanatory prose.",
-			"If any field would be empty, return an empty string for it — never omit required keys."
-		].join(" ");
-
-		/** @const {string} */
-		const RULES_PROMPT = [
-			"Rules you must apply:",
-			"01) Problem framing: restate as a user need; add one line each for in-scope/out-of-scope if the input mentions them.",
-			"02) Users & inclusion: name primary users and contexts; mention inclusion (accessibility, device, language) if present.",
-			"03) Outcomes & measures: include SMART outcomes with a number and timeframe where available.",
-			"04) Assumptions & risks: capture as hypotheses; note constraints or dependencies.",
-			"05) Ethics: summarise consent, retention, DPIA/DPS; remove or flag PII.",
-			"06) Method: fit to maturity (discovery vs alpha) if described.",
-			"07) Context: include policy drivers, service phase, organisational context if described.",
-			"08) Stakeholders: list key people or teams to involve if given.",
-			"09) Research questions: capture explicit questions the project will address.",
-			"10) Artefacts/Deliverables: outputs such as maps, prototypes, reports if stated.",
-			"11) Timeline: milestones or expected timeframe if available.",
-			"12) Recruitment: sample, accessibility needs, demographics if mentioned.",
-			"13) Data handling: storage, retention, sharing rules if described.",
-			"14) Success criteria: capture what 'good' looks like if stated.",
-			"15) Style: expand acronyms; use plain English; short sentences.",
-			"16) Clarity: remove duplication; structure content under clear headings.",
-			"",
-			"Include only sections where the input contains relevant content. Never invent details."
-		].join("\n");
-
+		// Output schema/instructions remain the same for both modes
 		/** @const {string} */
 		const OUTPUT_SCHEMA_STR = JSON.stringify({
 			summary: "string (<= 300 chars). Brief overview of what to improve.",
 			suggestions: [{
-				category: "string (e.g., 'Style', 'Users & inclusion', 'Outcomes & measures')",
+				category: "string (e.g., 'Style', 'Users & inclusion', 'Outcomes & measures', 'Scope', 'Risks')",
 				tip: "string (<= 160 chars). Concrete edit or addition.",
 				why: "string (<= 160 chars). Rationale for the tip.",
 				severity: "one of: 'high' | 'medium' | 'low'"
 			}],
 			rewrite: [
-				"string (<= 1800 chars). Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input.",
-				"Format: each section starts with a capitalised label followed by a colon on its own line,",
-				"then the content on the next line(s). Insert one blank line between sections.",
-				"Only include sections if input/rules provide relevant content — do NOT invent facts.",
-				"Typical labels you MAY use: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks,",
-				"Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria.",
-				"Style: plain English; expand acronyms; short sentences; no placeholders (e.g., 'TBD')."
+				"string (<= 1800 chars).",
+				mode === "objectives" ?
+				"A numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
+				"Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input. Each section starts with a label on its own line (with a colon), then content on the next line(s), and one blank line between sections. Only include sections if supported by the input."
 			].join(" ")
 		}, null, 2);
 
 		/** @const {string} */
-		const OUTPUT_EXAMPLE = JSON.stringify({
-			summary: "Clarify scope and outcomes; surface research questions; avoid PII.",
-			suggestions: [{
-					category: "Scope",
-					tip: "State what is in and out of scope.",
-					why: "Prevents drift and sets clear boundaries.",
-					severity: "high"
-				},
-				{
-					category: "Research questions",
-					tip: "List 2–4 questions the study must answer.",
-					why: "Focuses method and analysis.",
-					severity: "medium"
-				},
-				{
-					category: "Outcomes & measures",
-					tip: "Add a numeric target with a timeframe.",
-					why: "Enables tracking of success.",
-					severity: "high"
-				},
-				{
-					category: "Style",
-					tip: "Use short sentences and expand acronyms.",
-					why: "Improves GOV.UK clarity.",
-					severity: "low"
-				}
-			],
-			rewrite: "Problem:\n" +
-				"Applicants abandon the address step because instructions and error messages are unclear.\n" +
-				"\n" +
-				"Scope:\n" +
-				"In scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.\n" +
-				"\n" +
-				"Users:\n" +
-				"First-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n" +
-				"\n" +
-				"Research questions:\n" +
-				"• Which parts of the address step cause confusion?\n" +
-				"• What wording and ordering improve completion?\n" +
-				"• What accessibility issues appear on mobile devices?\n" +
-				"\n" +
-				"Outcomes:\n" +
-				"Identify the top 3 blockers and reduce abandonment by 15% within the next quarter.\n" +
-				"\n" +
-				"Method:\n" +
-				"Discovery interviews (≈12) and remote task-based usability on a clickable prototype, followed by a synthesis workshop.\n" +
-				"\n" +
-				"Timeline:\n" +
-				"Fieldwork in November; synthesis in early December."
-		}, null, 2);
+		const OUTPUT_EXAMPLE = JSON.stringify(
+			mode === "objectives" ? {
+				summary: "Tighten objectives; add measurable targets and timeframes.",
+				suggestions: [
+					{ category: "Measurability", tip: "Add numeric targets to 2 objectives.", why: "Enables progress tracking.", severity: "high" },
+					{ category: "Clarity", tip: "Start each objective with an action verb.", why: "Improves readability.", severity: "medium" }
+				],
+				rewrite: "1) Identify the top 3 blockers in the account proofing journey by end of Q2.\n2) Increase task completion for the ID check step by 15% within 3 months.\n3) Validate the revised error messages with at least 8 participants using screen readers.\n4) Produce a prioritised backlog of improvements agreed with policy and service design."
+			} : {
+				summary: "Clarify scope and outcomes; surface research questions; avoid PII.",
+				suggestions: [
+					{ category: "Scope", tip: "State what is in and out of scope.", why: "Prevents drift and sets clear boundaries.", severity: "high" },
+					{ category: "Research questions", tip: "List 2–4 key questions.", why: "Focuses method and analysis.", severity: "medium" },
+					{ category: "Outcomes & measures", tip: "Add a numeric target with a timeframe.", why: "Enables tracking of success.", severity: "high" }
+				],
+				rewrite: "Problem:\nApplicants abandon the address step because instructions and error messages are unclear.\n\nScope:\nIn scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.\n\nUsers:\nFirst-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n\nOutcomes:\nIdentify the top 3 blockers and reduce abandonment by 15% within the next quarter."
+			}, null, 2
+		);
 
 		/** @const {string} */
 		const INSTRUCTIONS = [
@@ -359,6 +408,7 @@ class AiRewriteService {
 			"INPUT (verbatim):"
 		].join("\n");
 
+		// ---- Model call
 		let modelOutput = "";
 		try {
 			const resp = await this.env.AI.run(model, {
@@ -372,7 +422,6 @@ class AiRewriteService {
 
 			modelOutput = typeof resp === "string" ? resp : (resp?.response || resp?.result || "");
 		} catch (e) {
-			// Optional audit (no raw content)
 			if (this.env.AUDIT === "true") {
 				console.warn("ai.run.fail", { err: String(e?.message || e) });
 			}
@@ -382,7 +431,7 @@ class AiRewriteService {
 			);
 		}
 
-		// Before safeParseJSON(modelOutput):
+		// Trim any accidental prose around JSON
 		const first = modelOutput.indexOf("{");
 		const last = modelOutput.lastIndexOf("}");
 		if (first !== -1 && last !== -1 && last > first) {
@@ -398,15 +447,19 @@ class AiRewriteService {
 				category: typeof s?.category === "string" ? s.category : "General",
 				tip: clamp(typeof s?.tip === "string" ? s.tip : "", this.cfg.MAX_SUGGESTION_LEN),
 				why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
-				severity: ["high", "medium", "low"].includes(s?.severity) ? s.severity : "medium"
+				severity: ["high", "medium", "low"].includes(s?.severity) ? s?.severity : "medium"
 			}))
 			.filter(s => s.tip.trim().length > 0) : [];
 
-		let rewrite = sanitizeRewrite(clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS));
+		let rewrite = sanitizeRewrite(
+			clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
+		);
 
+		// Minimal safe fallback to keep UI consistent (do not invent details)
 		if (!rewrite) {
-			// brief, safe fallback – keeps UI consistent without inventing content
-			rewrite = "Problem: [clarify the user need and scope]. Users & inclusion: [name primary users and contexts; include accessibility]. Outcomes: [add measurable target and timeframe]. Ethics: [consent, retention, DPIA; no PII]. Method: [fit to maturity].";
+			rewrite = mode === "objectives" ?
+				"1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
+				"Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
 		}
 
 		// Final PII sweep on rewrite
@@ -415,35 +468,41 @@ class AiRewriteService {
 		}
 
 		const body = {
-			summary: typeof parsed.summary === "string" ? clamp(parsed.summary, 300) : "Suggestions to strengthen your Description",
+			summary: typeof parsed.summary === "string" ? clamp(parsed.summary, 300) : (
+				mode === "objectives" ?
+				"Suggestions to strengthen your Initial Objectives" :
+				"Suggestions to strengthen your Description"
+			),
 			suggestions,
 			rewrite,
 			flags: { possible_personal_data: hasPII }
 		};
 
 		// Counters-only log to Airtable (best-effort; no raw text)
-		// Fields: ts (ISO), trigger, char_bucket, suggestion_count, pii_detected
+		// Fields: ts, trigger, char_bucket, suggestion_count, pii_detected
 		(async () => {
 			try {
 				if (this.env.AIRTABLE_BASE_ID && this.env.AIRTABLE_API_KEY && this.env.AIRTABLE_TABLE_AI_LOG) {
-					await fetch(`https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}/${encodeURIComponent(this.env.AIRTABLE_TABLE_AI_LOG)}`, {
-						method: "POST",
-						headers: {
-							"authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
-							"content-type": "application/json"
-						},
-						body: JSON.stringify({
-							records: [{
-								fields: {
-									ts: new Date().toISOString(),
-									trigger: "ai",
-									char_bucket: Math.max(0, Math.floor(input.length / 200) * 200),
-									suggestion_count: suggestions.length,
-									pii_detected: !!hasPII
-								}
-							}]
-						})
-					});
+					await fetch(
+						`https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}/${encodeURIComponent(this.env.AIRTABLE_TABLE_AI_LOG)}`, {
+							method: "POST",
+							headers: {
+								"authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+								"content-type": "application/json"
+							},
+							body: JSON.stringify({
+								records: [{
+									fields: {
+										ts: new Date().toISOString(),
+										trigger: mode === "objectives" ? "ai:obj" : "ai:desc",
+										char_bucket: Math.max(0, Math.floor(input.length / 200) * 200),
+										suggestion_count: suggestions.length,
+										pii_detected: !!hasPII
+									}
+								}]
+							})
+						}
+					);
 				}
 			} catch (e) {
 				if (this.env.AUDIT === "true") {
@@ -453,7 +512,13 @@ class AiRewriteService {
 		})();
 
 		if (this.env.AUDIT === "true") {
-			console.log("ai.rewrite.ok", { len: input.length, sugg: suggestions.length, pii: hasPII, out: safeText(rewrite) });
+			console.log("ai.rewrite.ok", {
+				mode,
+				len: input.length,
+				sugg: suggestions.length,
+				pii: hasPII,
+				out: safeText(rewrite)
+			});
 		}
 
 		return json(body, 200, corsHeaders(this.env, origin));
@@ -530,7 +595,7 @@ export function createMockEnv(overrides = {}) {
  * Build a JSON Request for tests.
  * @function makeJsonRequest
  * @example
- * const req = makeJsonRequest("/api/ai-rewrite", { text: "x".repeat(420) });
+ * const req = makeJsonRequest("/api/ai-rewrite", { mode:"description", text: "x".repeat(420) });
  */
 export function makeJsonRequest(path, body, init = {}) {
 	const reqInit = {
