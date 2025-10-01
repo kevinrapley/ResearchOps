@@ -11,6 +11,89 @@
 
 import { initCopilotSuggester } from './copilot-suggester.js';
 
+/**
+ * Classify AI suggestions into "general" vs "bias & inclusion".
+ * @param {Array<{category?:string, tip?:string, why?:string, severity?:string}>} items
+ * @returns {{left:Array, right:Array}} left=general, right=bias
+ */
+function splitSuggestionsByBias(items = []) {
+	const biasKeywords = [
+		'bias', 'inclusion', 'inclusive', 'accessibility', 'accessible',
+		'assistive', 'screen reader', 'contrast', 'language', 'bilingual',
+		'welsh', 'device coverage', 'browser coverage', 'diversity', 'equality',
+		'users with disabilities', 'disability', 'low vision', 'motor', 'hearing'
+	];
+	const hasBiasSignal = (s = '') => biasKeywords.some(k => s.toLowerCase().includes(k));
+	/** @type {Array} */
+	const left = [];
+	/** @type {Array} */
+	const right = [];
+	for (const s of items) {
+		const cat = String(s?.category || '');
+		const tip = String(s?.tip || '');
+		const why = String(s?.why || '');
+		const blob = `${cat} ${tip} ${why}`.toLowerCase();
+		(hasBiasSignal(blob) ? right : left).push(s);
+	}
+	return { left, right };
+}
+
+/**
+ * Render two columns: "Suggestions" (left) and "Bias & Inclusion" (right).
+ * @param {Array} left
+ * @param {Array} right
+ * @param {string} [idPrefix='sugg']
+ * @returns {string}
+ */
+function renderTwoColumnSuggestions(left = [], right = [], idPrefix = 'sugg') {
+	const renderList = (items, emptyText) => {
+		if (!items?.length) {
+			return `<p class="muted">${emptyText}</p>`;
+		}
+		return `<ul class="${idPrefix}-list">
+      ${items.map(s => `
+        <li class="${idPrefix}-item">
+          <strong class="${idPrefix}-cat">${esc(s?.category || 'General')}</strong> — ${esc(s?.tip || '')}
+          <div class="${idPrefix}-why">Why: ${esc(s?.why || '')}${s?.severity ? ` (${esc(s.severity)})` : ''}</div>
+        </li>
+      `).join('')}
+    </ul>`;
+	};
+
+	return `
+  <section class="${idPrefix}-grid" aria-label="Suggestions grid">
+    <div class="${idPrefix}-col" aria-label="Suggestions">
+      <h3 class="govuk-heading-s">Suggestions</h3>
+      ${renderList(left, 'No general suggestions.')}
+    </div>
+    <div class="${idPrefix}-col" aria-label="Bias &amp; Inclusion">
+      <h3 class="govuk-heading-s">Bias &amp; Inclusion</h3>
+      ${renderList(right, 'No bias findings.')}
+    </div>
+  </section>`;
+}
+
+/**
+ * Render AI panel using two-column layout + rewrite block.
+ * @param {{summary?:string, suggestions?:Array, rewrite?:string}} data
+ * @param {string} [idPrefix='ai']
+ * @returns {string}
+ */
+function renderAiPanelTwoCol(data, idPrefix = 'ai') {
+	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
+	const { left, right } = splitSuggestionsByBias(list);
+	return `
+    <div class="${idPrefix}-region">
+      <div class="${idPrefix}-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
+      ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
+      <hr />
+      <div><strong>Concise rewrite (optional):</strong></div>
+      <p>${esc(data?.rewrite || '')}</p>
+      <button type="button" id="apply-ai-rewrite" class="btn">Replace Description with rewrite</button>
+    </div>
+  `;
+}
+
 const DEFAULTS = Object.freeze({
 	MIN_CHARS_FOR_AI: 60,
 	TIMEOUT_MS: 10_000,
