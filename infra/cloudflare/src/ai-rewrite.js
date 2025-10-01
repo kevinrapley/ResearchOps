@@ -377,13 +377,7 @@ export const DESC_SYSTEM_PROMPT = [
 	BASE_SYSTEM_PROMPT,
 	"Rewrite a research project Description.",
 	"Structure the rewrite into labelled sections only if the input supports them.",
-	"Section format (mandatory): Each section must use exactly this layout:",
-		"Line 1: Section label followed by a colon, with no text after the colon.",
-		"Carriage return",
-		"Line 2+: Content for that section.",
-		"2 Carriage returns after the section and before the next label.",
-		"Never place content on the same line as the label.",
-	"Do not include unused labels.",
+	"Section format (mandatory): Each section must use exactly this layout: 1). Line 1 » Section label followed by a colon, with no text after the colon. 2). Carriage return. 3). Line 2+ » Content for that section. 4). 2 Carriage returns after the section and before the next label. 5). Never place content on the same line as the label. Always 2 carriage returns between section content and the following label. Do not include unused labels.",
 	"Typical sections you may include: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks, Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria."
 ].join(" ");
 
