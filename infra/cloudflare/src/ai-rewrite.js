@@ -256,6 +256,7 @@ function rulesPromptForMode(mode) {
 			"14) Success criteria: capture what 'good' looks like if stated.",
 			"15) Style: expand acronyms; use plain English; short sentences.",
 			"16) Clarity: remove duplication; structure content under clear headings.",
+			"17) Do NOT add quantities, dates or policy assertions unless provided; place them in suggestions instead.",
 			"",
 			"Include only sections where the input contains relevant content. Never invent details."
 		].join("\n");
@@ -271,7 +272,8 @@ function rulesPromptForMode(mode) {
 			"05) Keep scope aligned to the service phase and project status if present in the input.",
 			"06) Avoid PII; if present, advise removal in suggestions.",
 			"07) Use GOV.UK style: plain English, short sentences, expanded acronyms.",
-			"08) If there is ambiguity, keep the objective clear but do not invent details."
+			"08) If there is ambiguity, keep the objective clear but do not invent details.",
+			"09) Do NOT add numbers, sample sizes, percentages, or timeframes unless they appear in the input; propose them only in suggestions.",
 		].join("\n");
 	}
 
