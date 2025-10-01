@@ -69,9 +69,9 @@
  * @inner
  */
 const DEFAULTS = Object.freeze({
-  API_BASE: "https://rops-api.digikev-kevin-rapley.workers.dev",
-  MIN_DESC_CHARS: 400, // Step 1 AI tools threshold
-  MIN_OBJ_CHARS: 60    // Step 2 AI tools threshold (gentler)
+	API_BASE: "https://rops-api.digikev-kevin-rapley.workers.dev",
+	MIN_DESC_CHARS: 400, // Step 1 AI tools threshold
+	MIN_OBJ_CHARS: 60 // Step 2 AI tools threshold (gentler)
 });
 
 /* =========================
@@ -93,22 +93,22 @@ const $ = (id) => document.getElementById(id);
 
 /** @type {LabelMap} */
 const PHASE_LABEL = Object.freeze({
-  "pre-discovery": "Pre-Discovery",
-  "discovery": "Discovery",
-  "alpha": "Alpha",
-  "beta": "Beta",
-  "live": "Live",
-  "retired": "Retired"
+	"pre-discovery": "Pre-Discovery",
+	"discovery": "Discovery",
+	"alpha": "Alpha",
+	"beta": "Beta",
+	"live": "Live",
+	"retired": "Retired"
 });
 
 /** @type {LabelMap} */
 const STATUS_LABEL = Object.freeze({
-  "goal-setting": "Goal setting & problem defining",
-  "planning": "Planning research",
-  "conducting": "Conducting research",
-  "synthesis": "Synthesis & analysis",
-  "shared": "Shared & socialised research",
-  "monitoring": "Monitoring metrics"
+	"goal-setting": "Goal setting & problem defining",
+	"planning": "Planning research",
+	"conducting": "Conducting research",
+	"synthesis": "Synthesis & analysis",
+	"shared": "Shared & socialised research",
+	"monitoring": "Monitoring metrics"
 });
 
 /* =========================
@@ -125,16 +125,16 @@ const STATUS_LABEL = Object.freeze({
  * @returns {void}
  */
 function setInlineError(input, errEl, message) {
-  if (!input || !errEl) return;
-  if (message) {
-    input.setAttribute('aria-invalid', 'true');
-    errEl.textContent = message;
-    errEl.style.display = '';
-  } else {
-    input.setAttribute('aria-invalid', 'false');
-    errEl.textContent = '';
-    errEl.style.display = 'none';
-  }
+	if (!input || !errEl) return;
+	if (message) {
+		input.setAttribute('aria-invalid', 'true');
+		errEl.textContent = message;
+		errEl.style.display = '';
+	} else {
+		input.setAttribute('aria-invalid', 'false');
+		errEl.textContent = '';
+		errEl.style.display = 'none';
+	}
 }
 
 /**
@@ -146,13 +146,13 @@ function setInlineError(input, errEl, message) {
  * @returns {Array<{name:string, role?:string, email?:string}>}
  */
 function parseStakeholders(text) {
-  return String(text || "")
-    .split(/\r?\n/)
-    .map(line => {
-      const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
-      return { name, role, email };
-    })
-    .filter(s => s.name);
+	return String(text || "")
+		.split(/\r?\n/)
+		.map(line => {
+			const [name = "", role = "", email = ""] = line.split("|").map(s => s.trim());
+			return { name, role, email };
+		})
+		.filter(s => s.name);
 }
 
 /**
@@ -163,10 +163,10 @@ function parseStakeholders(text) {
  * @returns {string[]}
  */
 function csvListToArray(text) {
-  return String(text || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
+	return String(text || "")
+		.split(",")
+		.map(s => s.trim())
+		.filter(Boolean);
 }
 
 /**
@@ -177,10 +177,10 @@ function csvListToArray(text) {
  * @returns {string[]}
  */
 function linesToArray(text) {
-  return String(text || "")
-    .split(/\r?\n/)
-    .map(s => s.trim())
-    .filter(Boolean);
+	return String(text || "")
+		.split(/\r?\n/)
+		.map(s => s.trim())
+		.filter(Boolean);
 }
 
 /**
@@ -194,19 +194,19 @@ function linesToArray(text) {
  * @throws {Error}
  */
 async function postToAirtable(project) {
-  const res = await fetch(`${DEFAULTS.API_BASE}/api/projects`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(project),
-    credentials: "omit"
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    let detail = "";
-    try { detail = JSON.parse(text).detail || text; } catch { detail = text; }
-    throw new Error(`Airtable error ${res.status}: ${detail}`);
-  }
-  try { return JSON.parse(text); } catch { return /** @type {any} */ ({ ok: true }); }
+	const res = await fetch(`${DEFAULTS.API_BASE}/api/projects`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(project),
+		credentials: "omit"
+	});
+	const text = await res.text();
+	if (!res.ok) {
+		let detail = "";
+		try { detail = JSON.parse(text).detail || text; } catch { detail = text; }
+		throw new Error(`Airtable error ${res.status}: ${detail}`);
+	}
+	try { return JSON.parse(text); } catch { return /** @type {any} */ ({ ok: true }); }
 }
 
 /* =========================
@@ -223,13 +223,13 @@ async function postToAirtable(project) {
  * @throws {Error}
  */
 async function callAi(mode, text) {
-  const res = await fetch(`${DEFAULTS.API_BASE}/api/ai-rewrite?mode=${mode}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text })
-  });
-  if (!res.ok) throw new Error(`AI error ${res.status}`);
-  return res.json();
+	const res = await fetch(`${DEFAULTS.API_BASE}/api/ai-rewrite?mode=${mode}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ text })
+	});
+	if (!res.ok) throw new Error(`AI error ${res.status}`);
+	return res.json();
 }
 
 /**
@@ -249,45 +249,45 @@ async function callAi(mode, text) {
  * @returns {void}
  */
 function wireAiSection({
-  mode,
-  textarea,
-  btnSuggest,
-  btnRewrite,
-  statusEl,
-  msgSuggest,
-  msgSuggestDone,
-  msgRewrite,
-  msgRewriteDone
+	mode,
+	textarea,
+	btnSuggest,
+	btnRewrite,
+	statusEl,
+	msgSuggest,
+	msgSuggestDone,
+	msgRewrite,
+	msgRewriteDone
 }) {
-  if (!textarea) return;
+	if (!textarea) return;
 
-  btnSuggest?.addEventListener('click', async () => {
-    try {
-      if (statusEl) statusEl.textContent = msgSuggest;
-      const out = await callAi(mode, textarea.value);
-      // Hook: render suggestions panel if desired
-      console.log(`[AI][${mode}] suggestions`, out.suggestions);
-      if (statusEl) statusEl.textContent = msgSuggestDone;
-    } catch (e) {
-      console.error(e);
-      if (statusEl) statusEl.textContent = "AI unavailable.";
-    }
-  });
+	btnSuggest?.addEventListener('click', async () => {
+		try {
+			if (statusEl) statusEl.textContent = msgSuggest;
+			const out = await callAi(mode, textarea.value);
+			// Hook: render suggestions panel if desired
+			console.log(`[AI][${mode}] suggestions`, out.suggestions);
+			if (statusEl) statusEl.textContent = msgSuggestDone;
+		} catch (e) {
+			console.error(e);
+			if (statusEl) statusEl.textContent = "AI unavailable.";
+		}
+	});
 
-  btnRewrite?.addEventListener('click', async () => {
-    try {
-      if (statusEl) statusEl.textContent = msgRewrite;
-      const out = await callAi(mode, textarea.value);
-      if (typeof out?.rewrite === "string" && out.rewrite.trim()) {
-        textarea.value = out.rewrite.trim();
-        textarea.dispatchEvent(new Event('input')); // keep any counters/toggles in sync
-      }
-      if (statusEl) statusEl.textContent = msgRewriteDone;
-    } catch (e) {
-      console.error(e);
-      if (statusEl) statusEl.textContent = "AI unavailable.";
-    }
-  });
+	btnRewrite?.addEventListener('click', async () => {
+		try {
+			if (statusEl) statusEl.textContent = msgRewrite;
+			const out = await callAi(mode, textarea.value);
+			if (typeof out?.rewrite === "string" && out.rewrite.trim()) {
+				textarea.value = out.rewrite.trim();
+				textarea.dispatchEvent(new Event('input')); // keep any counters/toggles in sync
+			}
+			if (statusEl) statusEl.textContent = msgRewriteDone;
+		} catch (e) {
+			console.error(e);
+			if (statusEl) statusEl.textContent = "AI unavailable.";
+		}
+	});
 }
 
 /* =========================
@@ -301,218 +301,232 @@ function wireAiSection({
  * @returns {void}
  */
 function initStartPage() {
-  // Sections & nav
-  const step1 = $('step1');
-  const step2 = $('step2');
-  const step3 = $('step3');
+	// Sections & nav
+	const step1 = $('step1');
+	const step2 = $('step2');
+	const step3 = $('step3');
 
-  const next2 = $('next2');
-  const prev1 = $('prev1');
-  const next3 = $('next3');
-  const prev2 = $('prev2');
-  const finish = $('finish');
+	const next2 = $('next2');
+	const prev1 = $('prev1');
+	const next3 = $('next3');
+	const prev2 = $('prev2');
+	const finish = $('finish');
 
-  // Step 1 fields
-  /** @type {HTMLInputElement|null}    */ const nameEl   = /** @type {any} */ ($('p_name'));
-  /** @type {HTMLTextAreaElement|null} */ const descEl   = /** @type {any} */ ($('p_desc'));
-  /** @type {HTMLSelectElement|null}   */ const phaseEl  = /** @type {any} */ ($('p_phase'));
-  /** @type {HTMLSelectElement|null}   */ const statusEl = /** @type {any} */ ($('p_status'));
+	// Step 1 fields
+	/** @type {HTMLInputElement|null}    */
+	const nameEl = /** @type {any} */ ($('p_name'));
+	/** @type {HTMLTextAreaElement|null} */
+	const descEl = /** @type {any} */ ($('p_desc'));
+	/** @type {HTMLSelectElement|null}   */
+	const phaseEl = /** @type {any} */ ($('p_phase'));
+	/** @type {HTMLSelectElement|null}   */
+	const statusEl = /** @type {any} */ ($('p_status'));
 
-  // Step 1 errors
-  /** @type {HTMLElement|null} */ const nameErr = $('p_name_error');
-  /** @type {HTMLElement|null} */ const descErr = $('p_desc_error');
+	// Step 1 errors
+	/** @type {HTMLElement|null} */
+	const nameErr = $('p_name_error');
+	/** @type {HTMLElement|null} */
+	const descErr = $('p_desc_error');
 
-  // Step 1 AI toolbar
-  /** @type {HTMLElement|null} */ const aiTools = $('ai-tools');
-  const btnDescSuggest = $('btn-get-suggestions');
-  const btnDescRewrite = $('btn-ai-rewrite');
-  const aiDescStatus   = $('ai-rewrite-status');
+	// Step 1 AI toolbar
+	/** @type {HTMLElement|null} */
+	const aiTools = $('ai-tools');
+	const btnDescSuggest = $('btn-get-suggestions');
+	const btnDescRewrite = $('btn-ai-rewrite');
+	const aiDescStatus = $('ai-rewrite-status');
 
-  // Step 2 fields
-  /** @type {HTMLTextAreaElement|null} */ const stakeholdersEl = /** @type {any} */ ($('p_stakeholders'));
-  /** @type {HTMLTextAreaElement|null} */ const objectivesEl   = /** @type {any} */ ($('p_objectives'));
-  /** @type {HTMLInputElement|null}    */ const groupsEl       = /** @type {any} */ ($('p_usergroups'));
+	// Step 2 fields
+	/** @type {HTMLTextAreaElement|null} */
+	const stakeholdersEl = /** @type {any} */ ($('p_stakeholders'));
+	/** @type {HTMLTextAreaElement|null} */
+	const objectivesEl = /** @type {any} */ ($('p_objectives'));
+	/** @type {HTMLInputElement|null}    */
+	const groupsEl = /** @type {any} */ ($('p_usergroups'));
 
-  // Step 2 AI toolbar
-  /** @type {HTMLElement|null} */ const aiToolsObj   = $('ai-tools-obj');
-  const btnObjSuggest = $('btn-obj-suggest');
-  const btnObjRewrite = $('btn-obj-rewrite');
-  const aiObjStatus   = $('ai-obj-status');
+	// Step 2 AI toolbar
+	/** @type {HTMLElement|null} */
+	const aiToolsObj = $('ai-objectives-tools');
+	const btnObjSuggest = $('btn-obj-suggestions');
+	const btnObjRewrite = $('btn-obj-ai-rewrite');
+	const aiObjStatus = $('ai-obj-status');
 
-  // Step 3 fields
-  /** @type {HTMLInputElement|null}    */ const leadNameEl  = /** @type {any} */ ($('lead_name'));
-  /** @type {HTMLInputElement|null}    */ const leadEmailEl = /** @type {any} */ ($('lead_email'));
-  /** @type {HTMLTextAreaElement|null} */ const notesEl     = /** @type {any} */ ($('p_notes'));
+	// Step 3 fields
+	/** @type {HTMLInputElement|null}    */
+	const leadNameEl = /** @type {any} */ ($('lead_name'));
+	/** @type {HTMLInputElement|null}    */
+	const leadEmailEl = /** @type {any} */ ($('lead_email'));
+	/** @type {HTMLTextAreaElement|null} */
+	const notesEl = /** @type {any} */ ($('p_notes'));
 
-  // Step 3 status line (create on demand)
-  let statusLine = $('status');
-  if (!statusLine) {
-    statusLine = document.createElement('p');
-    statusLine.id = 'status';
-    statusLine.className = 'lede';
-    step3?.appendChild(statusLine);
-  }
+	// Step 3 status line (create on demand)
+	let statusLine = $('status');
+	if (!statusLine) {
+		statusLine = document.createElement('p');
+		statusLine.id = 'status';
+		statusLine.className = 'lede';
+		step3?.appendChild(statusLine);
+	}
 
-  /** @function setStatus */
-  function setStatus(msg) {
-    if (statusLine) statusLine.textContent = msg;
-  }
+	/** @function setStatus */
+	function setStatus(msg) {
+		if (statusLine) statusLine.textContent = msg;
+	}
 
-  /** @function validateStep1 */
-  function validateStep1(opts = {}) {
-    const showInline = Boolean(opts.showInline);
-    const name = (nameEl?.value || "").trim();
-    const desc = (descEl?.value || "").trim();
+	/** @function validateStep1 */
+	function validateStep1(opts = {}) {
+		const showInline = Boolean(opts.showInline);
+		const name = (nameEl?.value || "").trim();
+		const desc = (descEl?.value || "").trim();
 
-    const nameError = !name ? 'Enter a project name.' : '';
-    const descError = !desc ? 'Enter a short project description.' : '';
+		const nameError = !name ? 'Enter a project name.' : '';
+		const descError = !desc ? 'Enter a short project description.' : '';
 
-    if (showInline) {
-      if (nameEl && nameErr) setInlineError(nameEl, nameErr, nameError);
-      if (descEl && descErr) setInlineError(descEl, descErr, descError);
-    } else {
-      if (nameEl && nameErr) setInlineError(nameEl, nameErr, '');
-      if (descEl && descErr) setInlineError(descEl, descErr, '');
-    }
+		if (showInline) {
+			if (nameEl && nameErr) setInlineError(nameEl, nameErr, nameError);
+			if (descEl && descErr) setInlineError(descEl, descErr, descError);
+		} else {
+			if (nameEl && nameErr) setInlineError(nameEl, nameErr, '');
+			if (descEl && descErr) setInlineError(descEl, descErr, '');
+		}
 
-    if (next2) next2.disabled = Boolean(nameError || descError);
+		if (next2) next2.disabled = Boolean(nameError || descError);
 
-    if (showInline) {
-      if (nameError && nameEl) { nameEl.focus(); return false; }
-      if (descError && descEl) { descEl.focus(); return false; }
-    }
-    return !(nameError || descError);
-  }
+		if (showInline) {
+			if (nameError && nameEl) { nameEl.focus(); return false; }
+			if (descError && descEl) { descEl.focus(); return false; }
+		}
+		return !(nameError || descError);
+	}
 
-  /**
-   * Show/hide the Step 1 AI tools based on Description length.
-   * @function toggleAiToolsDesc
-   */
-  function toggleAiToolsDesc() {
-    if (!descEl || !aiTools) return;
-    const len = (descEl.value || "").trim().length;
-    aiTools.classList.toggle('hidden', len < DEFAULTS.MIN_DESC_CHARS);
-  }
+	/**
+	 * Show/hide the Step 1 AI tools based on Description length.
+	 * @function toggleAiToolsDesc
+	 */
+	function toggleAiToolsDesc() {
+		if (!descEl || !aiTools) return;
+		const len = (descEl.value || "").trim().length;
+		aiTools.classList.toggle('hidden', len < DEFAULTS.MIN_DESC_CHARS);
+	}
 
-  /**
-   * Show/hide the Step 2 AI tools based on Objectives length.
-   * @function toggleAiToolsObj
-   */
-  function toggleAiToolsObj() {
-    if (!objectivesEl || !aiToolsObj) return;
-    const len = (objectivesEl.value || "").trim().length;
-    aiToolsObj.classList.toggle('hidden', len < DEFAULTS.MIN_OBJ_CHARS);
-  }
+	/**
+	 * Show/hide the Step 2 AI tools based on Objectives length.
+	 * @function toggleAiToolsObj
+	 */
+	function toggleAiToolsObj() {
+		if (!objectivesEl || !aiToolsObj) return;
+		const len = (objectivesEl.value || "").trim().length;
+		aiToolsObj.classList.toggle('hidden', len < DEFAULTS.MIN_OBJ_CHARS);
+	}
 
-  // === Event wiring ===
+	// === Event wiring ===
 
-  // Reactive validation (Step 1)
-  [nameEl, descEl].forEach(el => {
-    el?.addEventListener('input', () => validateStep1({ showInline: false }));
-    el?.addEventListener('blur', () => validateStep1({ showInline: false }));
-  });
-  validateStep1({ showInline: false });
+	// Reactive validation (Step 1)
+	[nameEl, descEl].forEach(el => {
+		el?.addEventListener('input', () => validateStep1({ showInline: false }));
+		el?.addEventListener('blur', () => validateStep1({ showInline: false }));
+	});
+	validateStep1({ showInline: false });
 
-  // AI toolbars visibility
-  descEl?.addEventListener('input', toggleAiToolsDesc);
-  descEl?.addEventListener('blur', toggleAiToolsDesc);
-  toggleAiToolsDesc();
+	// AI toolbars visibility
+	descEl?.addEventListener('input', toggleAiToolsDesc);
+	descEl?.addEventListener('blur', toggleAiToolsDesc);
+	toggleAiToolsDesc();
 
-  objectivesEl?.addEventListener('input', toggleAiToolsObj);
-  objectivesEl?.addEventListener('blur', toggleAiToolsObj);
-  toggleAiToolsObj();
+	objectivesEl?.addEventListener('input', toggleAiToolsObj);
+	objectivesEl?.addEventListener('blur', toggleAiToolsObj);
+	toggleAiToolsObj();
 
-  // Step navigation
-  next2?.addEventListener('click', () => {
-    const ok = validateStep1({ showInline: true });
-    if (!ok) return;
-    if (step1) step1.style.display = 'none';
-    if (step2) step2.style.display = 'block';
-    stakeholdersEl?.focus();
-  });
+	// Step navigation
+	next2?.addEventListener('click', () => {
+		const ok = validateStep1({ showInline: true });
+		if (!ok) return;
+		if (step1) step1.style.display = 'none';
+		if (step2) step2.style.display = 'block';
+		stakeholdersEl?.focus();
+	});
 
-  prev1?.addEventListener('click', () => {
-    if (step2) step2.style.display = 'none';
-    if (step1) step1.style.display = 'block';
-    nameEl?.focus();
-  });
+	prev1?.addEventListener('click', () => {
+		if (step2) step2.style.display = 'none';
+		if (step1) step1.style.display = 'block';
+		nameEl?.focus();
+	});
 
-  next3?.addEventListener('click', () => {
-    if (step2) step2.style.display = 'none';
-    if (step3) step3.style.display = 'block';
-    leadNameEl?.focus();
-  });
+	next3?.addEventListener('click', () => {
+		if (step2) step2.style.display = 'none';
+		if (step3) step3.style.display = 'block';
+		leadNameEl?.focus();
+	});
 
-  prev2?.addEventListener('click', () => {
-    if (step3) step3.style.display = 'none';
-    if (step2) step2.style.display = 'block';
-  });
+	prev2?.addEventListener('click', () => {
+		if (step3) step3.style.display = 'none';
+		if (step2) step2.style.display = 'block';
+	});
 
-  // Submit (Finish)
-  finish?.addEventListener('click', async () => {
-    if (!validateStep1({ showInline: true })) {
-      if (step2) step2.style.display = 'none';
-      if (step3) step3.style.display = 'none';
-      if (step1) step1.style.display = 'block';
-      return;
-    }
+	// Submit (Finish)
+	finish?.addEventListener('click', async () => {
+		if (!validateStep1({ showInline: true })) {
+			if (step2) step2.style.display = 'none';
+			if (step3) step3.style.display = 'none';
+			if (step1) step1.style.display = 'block';
+			return;
+		}
 
-    const phaseLabel  = PHASE_LABEL[phaseEl?.value || ""] ?? "Discovery";
-    const statusLabel = STATUS_LABEL[statusEl?.value || ""] ?? "Planning research";
+		const phaseLabel = PHASE_LABEL[phaseEl?.value || ""] ?? "Discovery";
+		const statusLabel = STATUS_LABEL[statusEl?.value || ""] ?? "Planning research";
 
-    /** @type {ProjectPayload} */
-    const project = {
-      org: "Home Office Biometrics",
-      name: (nameEl?.value || "").trim(),
-      description: (descEl?.value || "").trim(),
-      phase: phaseLabel,
-      status: statusLabel,
-      stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
-      objectives: linesToArray(objectivesEl?.value || ""),
-      user_groups: csvListToArray(groupsEl?.value || ""),
-      lead_researcher: (leadNameEl?.value || "").trim() || undefined,
-      lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
-      notes: (notesEl?.value || "").trim() || undefined,
-      created: new Date().toISOString(),
-      id: (crypto.randomUUID?.() || String(Date.now()))
-    };
+		/** @type {ProjectPayload} */
+		const project = {
+			org: "Home Office Biometrics",
+			name: (nameEl?.value || "").trim(),
+			description: (descEl?.value || "").trim(),
+			phase: phaseLabel,
+			status: statusLabel,
+			stakeholders: parseStakeholders(stakeholdersEl?.value || ""),
+			objectives: linesToArray(objectivesEl?.value || ""),
+			user_groups: csvListToArray(groupsEl?.value || ""),
+			lead_researcher: (leadNameEl?.value || "").trim() || undefined,
+			lead_researcher_email: (leadEmailEl?.value || "").trim() || undefined,
+			notes: (notesEl?.value || "").trim() || undefined,
+			created: new Date().toISOString(),
+			id: (crypto.randomUUID?.() || String(Date.now()))
+		};
 
-    try {
-      setStatus("Saving project…");
-      const out = await postToAirtable(project);
-      setStatus("Saved. Redirecting…");
-      localStorage.setItem("rops.lastProjectId", out?.project_id || "");
-      window.location.href = "/pages/projects";
-    } catch (e) {
-      console.error(e);
-      setStatus("Failed to create project: " + (/** @type {any} */(e)?.message || e));
-    }
-  });
+		try {
+			setStatus("Saving project…");
+			const out = await postToAirtable(project);
+			setStatus("Saved. Redirecting…");
+			localStorage.setItem("rops.lastProjectId", out?.project_id || "");
+			window.location.href = "/pages/projects";
+		} catch (e) {
+			console.error(e);
+			setStatus("Failed to create project: " + ( /** @type {any} */ (e)?.message || e));
+		}
+	});
 
-  // === Wire AI sections ===
-  wireAiSection({
-    mode: "description",
-    textarea: descEl,
-    btnSuggest: $('btn-get-suggestions'),
-    btnRewrite: $('btn-ai-rewrite'),
-    statusEl: $('ai-rewrite-status'),
-    msgSuggest: "Getting suggestions…",
-    msgSuggestDone: "Suggestions ready.",
-    msgRewrite: "Rewriting…",
-    msgRewriteDone: "Rewrite applied."
-  });
+	// === Wire AI sections ===
+	wireAiSection({
+		mode: "description",
+		textarea: descEl,
+		btnSuggest: $('btn-get-suggestions'),
+		btnRewrite: $('btn-ai-rewrite'),
+		statusEl: $('ai-rewrite-status'),
+		msgSuggest: "Getting suggestions…",
+		msgSuggestDone: "Suggestions ready.",
+		msgRewrite: "Rewriting…",
+		msgRewriteDone: "Rewrite applied."
+	});
 
-  wireAiSection({
-    mode: "objectives",
-    textarea: objectivesEl,
-    btnSuggest: $('btn-obj-suggest'),
-    btnRewrite: $('btn-obj-rewrite'),
-    statusEl: $('ai-obj-status'),
-    msgSuggest: "Getting suggestions…",
-    msgSuggestDone: "Suggestions ready.",
-    msgRewrite: "Rewriting objectives…",
-    msgRewriteDone: "Objectives rewritten."
-  });
+	wireAiSection({
+		mode: "objectives",
+		textarea: objectivesEl,
+		btnSuggest: $('btn-obj-suggest'),
+		btnRewrite: $('btn-obj-rewrite'),
+		statusEl: $('ai-obj-status'),
+		msgSuggest: "Getting suggestions…",
+		msgSuggestDone: "Suggestions ready.",
+		msgRewrite: "Rewriting objectives…",
+		msgRewriteDone: "Objectives rewritten."
+	});
 }
 
 /* =========================
@@ -523,7 +537,7 @@ function initStartPage() {
  * Run initialiser when DOM is ready (safe if script moves to <head>).
  */
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initStartPage);
+	document.addEventListener('DOMContentLoaded', initStartPage);
 } else {
-  initStartPage();
+	initStartPage();
 }
