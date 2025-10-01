@@ -479,7 +479,7 @@ class AiRewriteService {
 					{ role: "system", content: SYSTEM_PROMPT },
 					{ role: "user", content: `${RULES_PROMPT}\n\n${INSTRUCTIONS}\n${input}` }
 				],
-				temperature: 0.2,
+				temperature: 0.1,
 				max_tokens: 900
 			});
 
@@ -512,8 +512,7 @@ class AiRewriteService {
 				why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
 				severity: ["high", "medium", "low"].includes(s?.severity) ? s?.severity : "medium"
 			}))
-			.filter(s => s.tip.trim().length > 0) :
-			[];
+			.filter(s => s.tip.trim().length > 0) : [];
 
 		let rewrite = sanitizeRewrite(
 			clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
@@ -534,10 +533,8 @@ class AiRewriteService {
 
 		const body = {
 			summary: typeof parsed.summary === "string" ?
-				clamp(parsed.summary, 300) :
-				mode === "objectives" ?
-				"Suggestions to strengthen your Initial Objectives" :
-				"Suggestions to strengthen your Description",
+				clamp(parsed.summary, 300) : mode === "objectives" ?
+				"Suggestions to strengthen your Initial Objectives" : "Suggestions to strengthen your Description",
 			suggestions,
 			rewrite,
 			flags: { possible_personal_data: hasPII }
