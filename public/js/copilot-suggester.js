@@ -111,8 +111,10 @@ function esc(s) {
  */
 function debounce(fn, ms) {
 	let t;
-	return (...args) => { clearTimeout(t);
-		t = setTimeout(() => fn(...args), ms); };
+	return (...args) => {
+		clearTimeout(t);
+		t = setTimeout(() => fn(...args), ms);
+	};
 }
 
 /**
@@ -436,8 +438,7 @@ export function initCopilotSuggester(opts = {}) {
 		}
 		return {
 			summary: suggestions.length ?
-				"Suggestions to strengthen your Description" :
-				"No issues found against the current rule set.",
+				"Suggestions to strengthen your Description" : "No issues found against the current rule set.",
 			suggestions,
 			flags
 		};
