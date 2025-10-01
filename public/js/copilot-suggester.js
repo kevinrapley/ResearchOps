@@ -50,7 +50,7 @@ function renderTwoColumns(left, right) {
     <section class="sugg-col" aria-label="${esc(heading)}">
       <h3 class="sugg-heading">${esc(heading)}</h3>
       <ul class="sugg-list">
-        ${items.map(s => `
+        ${items.length ? items.map(s => `
           <li class="sugg-item">
             <div class="sugg-row">
               <strong class="sugg-cat">${esc(s.category || 'General')}</strong>
@@ -58,16 +58,17 @@ function renderTwoColumns(left, right) {
             </div>
             <div class="sugg-tip">${esc(s.tip || '')}</div>
             <div class="sugg-why"><span class="mono muted">Why:</span> ${esc(s.why || '')}</div>
-          </li>`).join('')}
+          </li>`).join('') 
+        : `<li class="sugg-item"><em>No ${heading.toLowerCase()} found.</em></li>`}
       </ul>
-    </section>`.trim();
+    </section>`;
 
 	return `
     <div class="sugg-grid" role="group" aria-label="Suggestions split view">
       ${col(left, 'Suggestions')}
       ${col(right, 'Bias & Inclusion')}
     </div>
-  `.trim();
+  `;
 }
 
 /**
@@ -176,10 +177,10 @@ export function initCopilotSuggester(opts) {
 
 	const render = () => {
 		const value = (ta.value || '').trim();
-		const base = rules(value);
-		const bias = biasRules(value);
+		const base = rules(value) || [];
+		const bias = biasRules(value) || [];
 
-		// If nothing to show, keep container visible but minimal to preserve layout
+		// Always render two-column grid, even if one side empty
 		mount.innerHTML = renderTwoColumns(base, bias);
 		mount.classList.add('sugg-visible');
 		if (typeof onShown === 'function') onShown();
