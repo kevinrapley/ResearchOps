@@ -249,24 +249,75 @@ async function callAi(mode, text) {
  * @returns {void}
  */
 function wireAiSection({
-	mode,
-	textarea,
-	btnSuggest,
-	btnRewrite,
-	statusEl,
+	mode, // "description" | "objectives"
+	textarea, // HTMLTextAreaElement
+	btnSuggest, // HTMLElement (button)
+	btnRewrite, // HTMLElement (button)
+	statusEl, // HTMLElement (small status)
+	suggContainer, // HTMLElement to render tips
+	rewriteContainer, // HTMLElement to render rewrite
 	msgSuggest,
 	msgSuggestDone,
 	msgRewrite,
-	msgRewriteDone
+	msgRewriteDone,
+	replaceBtnLabel // e.g., "Replace Description with rewrite"
 }) {
 	if (!textarea) return;
 
-	btnSuggest?.addEventListener('click', async () => {
+	const renderSuggestions = (list) => {
+		if (!suggContainer) return;
+		suggContainer.innerHTML = "";
+		if (!Array.isArray(list) || list.length === 0) {
+			suggContainer.textContent = "No suggestions returned.";
+			return;
+		}
+		const ul = document.createElement("ul");
+		list.forEach(s => {
+			const li = document.createElement("li");
+			// Compact, readable line (category — tip — why — severity)
+			li.textContent = [
+				s?.category ? `${s.category}:` : "",
+				s?.tip || "",
+				s?.why ? `— ${s.why}` : "",
+				s?.severity ? ` (${s.severity})` : ""
+			].join(" ").replace(/\s+/g, " ").trim();
+			ul.appendChild(li);
+		});
+		suggContainer.appendChild(ul);
+	};
+
+	const renderRewrite = (text) => {
+		if (!rewriteContainer) return;
+		rewriteContainer.innerHTML = "";
+		if (!text || !text.trim()) {
+			rewriteContainer.textContent = "No rewrite returned.";
+			return;
+		}
+		const wrap = document.createElement("div");
+		const pre = document.createElement("pre");
+		const btn = document.createElement("button");
+
+		pre.textContent = text.trim();
+		pre.className = "panel"; // simple boxed look using your CSS
+
+		btn.type = "button";
+		btn.className = "btn";
+		btn.textContent = replaceBtnLabel || "Replace with rewrite";
+		btn.addEventListener("click", () => {
+			textarea.value = text.trim();
+			textarea.dispatchEvent(new Event("input")); // keep toolbars/counters in sync
+		});
+
+		wrap.appendChild(pre);
+		wrap.appendChild(btn);
+		rewriteContainer.appendChild(wrap);
+	};
+
+	btnSuggest?.addEventListener("click", async () => {
 		try {
 			if (statusEl) statusEl.textContent = msgSuggest;
 			const out = await callAi(mode, textarea.value);
-			// Hook: render suggestions panel if desired
-			console.log(`[AI][${mode}] suggestions`, out.suggestions);
+			renderSuggestions(out?.suggestions || []);
 			if (statusEl) statusEl.textContent = msgSuggestDone;
 		} catch (e) {
 			console.error(e);
@@ -274,13 +325,14 @@ function wireAiSection({
 		}
 	});
 
-	btnRewrite?.addEventListener('click', async () => {
+	btnRewrite?.addEventListener("click", async () => {
 		try {
 			if (statusEl) statusEl.textContent = msgRewrite;
 			const out = await callAi(mode, textarea.value);
-			if (typeof out?.rewrite === "string" && out.rewrite.trim()) {
-				textarea.value = out.rewrite.trim();
-				textarea.dispatchEvent(new Event('input')); // keep any counters/toggles in sync
+			if (typeof out?.rewrite === "string") {
+				renderRewrite(out.rewrite);
+			} else {
+				renderRewrite("");
 			}
 			if (statusEl) statusEl.textContent = msgRewriteDone;
 		} catch (e) {
@@ -510,10 +562,13 @@ function initStartPage() {
 		btnSuggest: btnDescSuggest,
 		btnRewrite: btnDescRewrite,
 		statusEl: aiDescStatus,
+		suggContainer: $('description-suggestions'),
+		rewriteContainer: $('ai-rewrite-output'),
 		msgSuggest: "Getting suggestions…",
 		msgSuggestDone: "Suggestions ready.",
 		msgRewrite: "Rewriting description…",
-		msgRewriteDone: "Description rewritten."
+		msgRewriteDone: "Description rewritten.",
+		replaceBtnLabel: "Replace Description with rewrite"
 	});
 
 	wireAiSection({
@@ -522,10 +577,13 @@ function initStartPage() {
 		btnSuggest: btnObjSuggest,
 		btnRewrite: btnObjRewrite,
 		statusEl: aiObjStatus,
+		suggContainer: $('objectives-suggestions'),
+		rewriteContainer: $('ai-objectives-output'),
 		msgSuggest: "Getting suggestions…",
 		msgSuggestDone: "Suggestions ready.",
 		msgRewrite: "Rewriting objectives…",
-		msgRewriteDone: "Objectives rewritten."
+		msgRewriteDone: "Objectives rewritten.",
+		replaceBtnLabel: "Replace Objectives with rewrite"
 	});
 }
 
