@@ -68,7 +68,7 @@ const DEFAULTS = Object.freeze({
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
 	MAX_REWRITE_CHARS: 1800, // ~220 words
-	MODEL_FALLBACK: "@cf/fblgit/una-cybertron-7b-v2-bf16"
+	MODEL_FALLBACK: "@cf/meta/llama-3.1-8b-instruct"
 });
 
 /* =========================
