@@ -1,23 +1,13 @@
 /**
  * @file start-description-assist.js
  * @module StartDescriptionAssist
- * @summary Page wiring for “Start → Step 1 of 3 — Description”.
+ * @summary Step 1 (Description) enhancements: local suggestions + AI rewrite.
+ *
  * @description
- * Enhances the Step 1 “Description” field with:
- * - Local, zero-cost rule suggestions (client-only; no network).
- * - Optional AI-powered concise rewrite via `POST /api/ai-rewrite`.
- *
- * Accessibility:
- * - Live regions for status + results (aria-live="polite").
- * - Keyboard reachable controls; focus returns to the textarea after apply.
- *
- * Privacy:
- * - No network calls until the user explicitly clicks “Try AI rewrite”.
- * - AI endpoint is hosted in your Worker; OFFICIAL-by-default handling.
- *
- * @requires globalThis.fetch
- * @requires globalThis.document
- * @requires globalThis.CustomEvent
+ * - Shows toolbar when description length ≥ minChars (default 400).
+ * - Renders two-column suggestions (original vs bias) automatically AND on click.
+ * - Calls /api/ai-rewrite?mode=description for summary/suggestions/rewrite.
+ * - Never sends network requests until user clicks “Try AI rewrite”.
  *
  * @typedef {Object} AssistConfig
  * @property {string} textareaSelector
@@ -33,122 +23,76 @@
 
 import { initCopilotSuggester } from './copilot-suggester.js';
 
-/* =========================
- * @section Configuration
- * ========================= */
-
-/**
- * Immutable configuration defaults.
- * @constant
- * @name DEFAULTS
- * @type {Readonly<{
- *   MIN_CHARS_FOR_AI:number,
- *   TIMEOUT_MS:number,
- *   ENDPOINT:string
- * }>}
- * @default
- * @inner
- */
 const DEFAULTS = Object.freeze({
 	MIN_CHARS_FOR_AI: 400,
 	TIMEOUT_MS: 10_000,
 	ENDPOINT: '/api/ai-rewrite'
 });
 
-/* =========================
- * @section Helpers
- * ========================= */
+/** @param {unknown} s */
+const esc = s => String(s ?? '')
+	.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [c]));
 
 /**
- * Escape HTML.
- * @param {unknown} s
- * @returns {string}
+ * Two-column AI panel (AI suggestions left; AI bias notes right if present).
+ * We expect the backend to include any bias findings in `suggestions` (category contains “Bias”/“Accessibility”/“Inclusion”).
+ * @param {{summary?:string, suggestions?:Array, rewrite?:string}} data
  */
-function esc(s) {
-	return String(s ?? '').replace(/[&<>"']/g, m => ({
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#39;'
-	} [m]));
+function renderAiPanelTwoCol(data) {
+	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
+	const left = list.filter(s => !/bias|inclusion|accessibility/i.test(s?.category || ''));
+	const right = list.filter(s => /bias|inclusion|accessibility/i.test(s?.category || ''));
+
+	const col = (items, heading) => `
+    <section class="sugg-col">
+      <h3 class="sugg-heading">${esc(heading)}</h3>
+      <ul class="sugg-list">
+        ${items.map(s => `
+          <li class="sugg-item">
+            <div class="sugg-row">
+              <strong class="sugg-cat">${esc(s?.category || 'General')}</strong>
+              <span class="sugg-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</span>
+            </div>
+            <div class="sugg-tip">${esc(s?.tip || '')}</div>
+            <div class="sugg-why"><span class="mono muted">Why:</span> ${esc(s?.why || '')}</div>
+          </li>`).join('')}
+      </ul>
+    </section>`.trim();
+
+	return `
+    <div class="sugg-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
+    <div class="sugg-grid" role="group" aria-label="AI suggestions split view">
+      ${col(left, 'AI Suggestions')}
+      ${col(right.length ? right : [{category:'Bias', tip:'No bias findings.', why:'', severity:'low'}], 'AI Bias & Inclusion')}
+    </div>
+    <hr/>
+    <div><strong>Concise rewrite (optional):</strong></div>
+    <pre class="rewrite-block" aria-label="AI rewrite">${esc(data?.rewrite || '')}</pre>
+    <button type="button" id="apply-ai-rewrite" class="btn">Replace Description with rewrite</button>
+  `.trim();
 }
 
 /**
- * Fetch with timeout.
+ * Fetch with timeout helper.
  * @param {RequestInfo|URL} resource
- * @param {RequestInit} [init]
- * @param {number} [timeoutMs=DEFAULTS.TIMEOUT_MS]
+ * @param {RequestInit} init
+ * @param {number} timeoutMs
  * @returns {Promise<Response>}
  */
-async function fetchWithTimeout(resource, init, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+async function fetchWithTimeout(resource, init, timeoutMs) {
 	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
+	const t = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
 	try {
-		const initSafe = Object.assign({}, init || {});
-		initSafe.signal = controller.signal;
-		return await fetch(resource, initSafe);
-	} finally {
-		clearTimeout(id);
-	}
+		return await fetch(resource, { ...(init || {}), signal: controller.signal });
+	} finally { clearTimeout(t); }
 }
 
 /**
- * Render the AI panel (summary, suggestions, rewrite).
- * @param {{summary?:string, suggestions?:Array<{category?:string, tip?:string, why?:string, severity?:string}>, rewrite?:string}} data
- * @returns {string}
- */
-function renderAiPanel(data) {
-	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
-	return `
-    <div class="sugg-region">
-      <div class="sugg-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
-      <ul class="sugg-list">
-        ${list.map(s => `
-          <li class="sugg-item">
-            <strong class="sugg-cat">${esc(s?.category || 'General')}</strong> — ${esc(s?.tip || '')}
-            <div class="sugg-why">Why: ${esc(s?.why || '')}${s?.severity ? ` (${esc(s.severity)})` : ''}</div>
-          </li>
-        `).join('')}
-      </ul>
-      <hr/>
-      <div><strong>Concise rewrite (optional):</strong></div>
-      <p>${esc(data?.rewrite || '')}</p>
-      <button type="button" id="apply-ai-rewrite" class="btn">Replace Description with rewrite</button>
-    </div>
-  `;
-}
-
-/**
- * Bind apply button to replace textarea content.
- * @param {HTMLElement} container
- * @param {HTMLTextAreaElement} textarea
- * @param {{forceSuggest?:Function}} suggInstance
- */
-function bindApplyRewrite(container, textarea, suggInstance) {
-	const btn = container.querySelector('#apply-ai-rewrite');
-	const p = container.querySelector('p');
-	if (!btn || !p) return;
-	btn.addEventListener('click', () => {
-		textarea.value = p.textContent || '';
-		textarea.focus();
-		try { typeof suggInstance?.forceSuggest === 'function' && suggInstance.forceSuggest(); } catch {}
-	});
-}
-
-/* =========================
- * @section Core initialiser
- * ========================= */
-
-/**
- * Initialise Description assistance on the Start page.
- * @param {Partial<AssistConfig>} [cfg]
- * @returns {{ destroy:()=>void }|null}
+ * Initialise Step 1 assistance.
+ * @param {Partial<AssistConfig>} cfg
  */
 export function initStartDescriptionAssist(cfg = {}) {
-	/** @type {AssistConfig} */
 	const opts = {
-		// IMPORTANT: these match your HTML
 		textareaSelector: '#p_desc',
 		manualBtnSelector: '#btn-get-suggestions',
 		aiBtnSelector: '#btn-ai-rewrite',
@@ -161,153 +105,94 @@ export function initStartDescriptionAssist(cfg = {}) {
 		...cfg
 	};
 
-	/** @type {HTMLTextAreaElement|null} */
-	const textarea = document.querySelector(opts.textareaSelector);
-	/** @type {HTMLButtonElement|null} */
-	const manualBtn = document.querySelector(opts.manualBtnSelector);
-	/** @type {HTMLButtonElement|null} */
-	const aiBtn = document.querySelector(opts.aiBtnSelector);
-	/** @type {HTMLElement|null} */
-	const suggContainer = document.querySelector(opts.suggContainerSelector);
-	/** @type {HTMLElement|null} */
-	const aiContainer = document.querySelector(opts.aiContainerSelector);
-	/** @type {HTMLElement|null} */
-	const aiStatus = document.querySelector(opts.aiStatusSelector);
-	/** @type {HTMLElement|null} */
-	const aiToolbar = document.getElementById('ai-tools');
+	const ta = /** @type {HTMLTextAreaElement|null} */ (document.querySelector(opts.textareaSelector));
+	const manualBtn = /** @type {HTMLButtonElement|null} */ (document.querySelector(opts.manualBtnSelector));
+	const aiBtn = /** @type {HTMLButtonElement|null} */ (document.querySelector(opts.aiBtnSelector));
+	const suggMount = /** @type {HTMLElement|null} */ (document.querySelector(opts.suggContainerSelector));
+	const aiMount = /** @type {HTMLElement|null} */ (document.querySelector(opts.aiContainerSelector));
+	const aiStatus = /** @type {HTMLElement|null} */ (document.querySelector(opts.aiStatusSelector));
+	const toolbar = /** @type {HTMLElement|null} */ (document.querySelector('#ai-tools'));
 
-	if (!textarea || !suggContainer) return null;
+	if (!ta || !suggMount) return null;
 
-	// 1) Initialise local rule-based suggester
-	const suggInstance = initCopilotSuggester({
+	// Local suggester: 2-column automatic + manual — Step 1 uses 400 chars threshold
+	const sugg = initCopilotSuggester({
 		textarea: opts.textareaSelector,
 		container: opts.suggContainerSelector,
-		button: opts.manualBtnSelector
+		button: opts.manualBtnSelector,
+		minChars: opts.minCharsForAI
 	});
 
-	// Helper: run local suggestions safely
-	const runLocalSuggestions = () => {
-		try {
-			if (typeof suggInstance?.forceSuggest === 'function') {
-				suggInstance.forceSuggest();
-			}
-		} catch { /* noop */ }
+	const showToolbarIfReady = () => {
+		if (!toolbar) return;
+		const v = (ta.value || '').trim();
+		if (v.length >= opts.minCharsForAI) toolbar.classList.remove('hidden');
 	};
 
-	// 2) Auto-show toolbar + auto-suggest when threshold reached
-	const showTools = () => {
-		if (aiToolbar && aiToolbar.classList.contains('hidden')) {
-			aiToolbar.classList.remove('hidden');
-		}
-	};
-
-	const maybeAutoSuggest = () => {
-		const len = (textarea.value || '').trim().length;
-		if (len >= opts.minCharsForAI) {
-			showTools();
-			runLocalSuggestions(); // <-- THIS fixes (2)
-		}
-	};
-
-	const onInput = () => { maybeAutoSuggest(); };
-	const onChange = () => { maybeAutoSuggest(); };
-	const onKeyup = () => { maybeAutoSuggest(); };
-	const onPaste = () => { setTimeout(maybeAutoSuggest, 0); };
-
-	textarea.addEventListener('input', onInput);
-	textarea.addEventListener('keyup', onKeyup);
-	textarea.addEventListener('change', onChange);
-	textarea.addEventListener('paste', onPaste);
-
-	// 3) Manual “Get suggestions” click -> run local suggester
-	if (manualBtn) {
-		manualBtn.type = 'button'; // belt & braces
-		manualBtn.addEventListener('click', (e) => {
-			e.preventDefault();
-			showTools();
-			runLocalSuggestions(); // <-- THIS fixes (3)
-		});
-	}
-
-	// 4) AI rewrite button (unchanged)
+	// AI click -> /api/ai-rewrite?mode=description
 	const onAiClick = async () => {
-		const text = (textarea.value || '').trim();
+		const text = (ta.value || '').trim();
 		if (text.length < opts.minCharsForAI) {
-			if (aiStatus) aiStatus.textContent = `Enter at least ${opts.minCharsForAI} characters to try AI.`;
-			textarea.focus();
+			aiStatus && (aiStatus.textContent = `Enter at least ${opts.minCharsForAI} characters to try AI.`);
+			ta.focus();
 			return;
 		}
-
-		if (aiStatus) aiStatus.textContent = 'Thinking…';
-		if (aiContainer) aiContainer.textContent = '';
+		aiStatus && (aiStatus.textContent = 'Thinking…');
+		aiMount && (aiMount.innerHTML = '');
 
 		try {
-			const res = await fetchWithTimeout(opts.aiEndpoint, {
+			const res = await fetchWithTimeout(`${opts.aiEndpoint}?mode=description`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ text })
 			}, opts.requestTimeoutMs);
 
 			if (!res.ok) {
-				if (aiStatus) aiStatus.textContent = 'Suggestions are temporarily unavailable.';
+				aiStatus && (aiStatus.textContent = 'Suggestions are temporarily unavailable.');
 				return;
 			}
-
 			const data = await res.json();
-			if (aiContainer) {
-				aiContainer.innerHTML = renderAiPanel(data);
-				bindApplyRewrite(aiContainer, textarea, suggInstance);
+			if (aiMount) {
+				aiMount.innerHTML = renderAiPanelTwoCol(data);
+				const apply = aiMount.querySelector('#apply-ai-rewrite');
+				const pre = aiMount.querySelector('.rewrite-block');
+				apply?.addEventListener('click', () => {
+					ta.value = pre?.textContent || '';
+					ta.focus();
+					try { sugg.forceSuggest(); } catch {}
+				});
 			}
-			if (aiStatus) {
-				aiStatus.textContent = data?.flags?.possible_personal_data ?
-					'⚠️ Possible personal data detected in your original text.' :
-					'Done.';
-			}
-			// Keep local suggestions fresh after AI runs
-			runLocalSuggestions();
+			aiStatus && (aiStatus.textContent = data?.flags?.possible_personal_data ?
+				'⚠️ Possible personal data detected in your original text.' :
+				'Done.');
 		} catch {
-			if (aiStatus) aiStatus.textContent = 'Network error.';
+			aiStatus && (aiStatus.textContent = 'Network error.');
 		}
 	};
 
+	// Events
+	ta.addEventListener('input', showToolbarIfReady);
+	manualBtn?.addEventListener('click', () => { /* render handled by suggester */ });
 	aiBtn?.addEventListener('click', onAiClick);
 
-	// Event for analytics
-	window.dispatchEvent(new CustomEvent('start-description-assist:ready'));
+	// Initial check (paste)
+	showToolbarIfReady();
 
+	// Expose a tiny teardown (optional)
 	return {
 		destroy() {
 			try {
-				textarea.removeEventListener('input', onInput);
-				textarea.removeEventListener('keyup', onKeyup);
-				textarea.removeEventListener('change', onChange);
-				textarea.removeEventListener('paste', onPaste);
-				manualBtn?.removeEventListener('click', runLocalSuggestions);
+				ta.removeEventListener('input', showToolbarIfReady);
 				aiBtn?.removeEventListener('click', onAiClick);
+				sugg?.destroy?.();
 			} catch {}
 		}
 	};
 }
 
-/* =========================
- * @section Auto-init (progressive enhancement)
- * ========================= */
-
-(() => {
-	if (window.__descAssistActive === true) return;
-	if (document.currentScript && document.currentScript.dataset.noauto === 'true') return;
-
-	const start = () => {
-		const handle = initStartDescriptionAssist();
-		if (handle) {
-			window.__descAssistActive = true;
-			window.__descAssistHandle = handle;
-		}
-	};
-
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', start, { once: true });
-	} else {
-		start();
-	}
-})();
+// Auto-init (progressive enhancement)
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => initStartDescriptionAssist());
+} else {
+	initStartDescriptionAssist();
+}
