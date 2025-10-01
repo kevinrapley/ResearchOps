@@ -1,10 +1,10 @@
 // /js/start-description-assist.js
 /**
- * Start Description Assist
- * - Imports Copilot Suggester internally (per HTML contract).
- * - Sets window.__descAssistActive when initialised (guard against double-bind).
- * - Exposes initStartDescriptionAssist(cfg) for explicit boot if needed.
- * - Also auto-boots on DOM ready if expected selectors exist.
+ * Start Description Assist (auto-booting)
+ * - Imports Copilot Suggester internally.
+ * - Sets window.__descAssistActive once bound.
+ * - Auto-updates suggestions on input.
+ * - Optional auto-run of AI on paste via <meta name="sda-auto" content="true">.
  */
 
 import { initCopilotSuggester } from '/js/copilot-suggester.js';
@@ -13,16 +13,16 @@ const _BOUND_FLAG = Symbol('sda_bound');
 const _CONTROLLER = Symbol('sda_abort_controller');
 
 function $(sel, root = document) { return root.querySelector(sel); }
-
-function assertEl(el, label) {
-	if (!el) throw new Error(`[start-description-assist] Missing element: ${label}`);
-	return el;
-}
+function assertEl(el, label) { if (!el) throw new Error(`[start-description-assist] Missing element: ${label}`); return el; }
+function exists(sel) { return !!document.querySelector(sel); }
+function readMeta(name) { return document.querySelector(`meta[name="${name}"]`)?.content; }
+function readAiEndpoint() { return (window.__AI_ENDPOINT || readMeta('ai-endpoint') || 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite'); }
+function readAutoFlag() { return String(readMeta('sda-auto') || '').toLowerCase() === 'true'; }
 
 function setStatus(el, msg, busy = false) {
 	if (!el) return;
 	el.textContent = msg || '';
-	if (busy) { el.setAttribute('aria-busy', 'true'); } else { el.removeAttribute('aria-busy'); }
+	if (busy) el.setAttribute('aria-busy', 'true'); else el.removeAttribute('aria-busy');
 }
 
 function h(tag, props = {}, children = []) {
@@ -38,7 +38,6 @@ function h(tag, props = {}, children = []) {
 }
 
 function simpleClientSuggestions(text) {
-	// Very lightweight transformations. Deterministic. No network.
 	const t = (text || '').trim();
 	if (!t) return [
 		'Explain the user need in one sentence.',
@@ -58,30 +57,24 @@ function simpleClientSuggestions(text) {
 export function initStartDescriptionAssist(cfg) {
 	if (!cfg) throw new Error('[start-description-assist] Missing config');
 
-	const root = document;
-	const textarea = assertEl($(cfg.textareaSelector, root), 'textareaSelector');
-	if (textarea[_BOUND_FLAG]) return; // idempotent per textarea
-
-	const btnManual = assertEl($(cfg.manualBtnSelector, root), 'manualBtnSelector');
-	const btnAI = assertEl($(cfg.aiBtnSelector, root), 'aiBtnSelector');
-	const suggContainer = assertEl($(cfg.suggContainerSelector, root), 'suggContainerSelector');
-	const aiContainer = assertEl($(cfg.aiContainerSelector, root), 'aiContainerSelector');
-	const statusEl = assertEl($(cfg.aiStatusSelector, root), 'aiStatusSelector');
+	const textarea = assertEl($(cfg.textareaSelector), 'textareaSelector');
+	if (textarea[_BOUND_FLAG]) return;
+	const btnManual = assertEl($(cfg.manualBtnSelector), 'manualBtnSelector');
+	const btnAI = assertEl($(cfg.aiBtnSelector), 'aiBtnSelector');
+	const suggContainer = assertEl($(cfg.suggContainerSelector), 'suggContainerSelector');
+	const aiContainer = assertEl($(cfg.aiContainerSelector), 'aiContainerSelector');
+	const statusEl = assertEl($(cfg.aiStatusSelector), 'aiStatusSelector');
 	const endpoint = String(cfg.aiEndpoint || '').trim();
 	if (!/^https?:\/\//.test(endpoint)) throw new Error('[start-description-assist] aiEndpoint must be an absolute URL');
 
-	// mark bound + create a per-instance abort controller
 	textarea[_BOUND_FLAG] = true;
 	textarea[_CONTROLLER] = null;
 
-	// --- render helpers ---
 	const renderSuggestions = (items) => {
 		suggContainer.innerHTML = '';
 		const ul = h('ul', { class: 'sda-suggestions', role: 'list' });
 		(items || []).forEach((txt) => {
-			const li = h('li', { class: 'sda-suggestion' }, [
-				h('button', { type: 'button', class: 'sda-chip', onClick: () => insertSuggestion(txt) }, [txt])
-			]);
+			const li = h('li', { class: 'sda-suggestion' }, [ h('button', { type: 'button', class: 'sda-chip', onClick: () => insertSuggestion(txt) }, [txt]) ]);
 			ul.appendChild(li);
 		});
 		suggContainer.appendChild(ul);
@@ -103,16 +96,9 @@ export function initStartDescriptionAssist(cfg) {
 		aiContainer.appendChild(pre);
 	};
 
-	// --- events ---
-	btnManual.addEventListener('click', (e) => {
-		e?.preventDefault?.();
-		const items = simpleClientSuggestions(textarea.value);
-		renderSuggestions(items);
-		setStatus(statusEl, 'Generated local suggestions.', false);
-	});
-
-	btnAI.addEventListener('click', async (e) => {
-		e?.preventDefault?.();
+	async function runAI() {
+		if (!textarea.value.trim()) { setStatus(statusEl, 'Add a description first.'); return; }
+		// abort any in-flight request
 		if (textarea[_CONTROLLER]) { try { textarea[_CONTROLLER].abort(); } catch {} }
 		const controller = new AbortController();
 		textarea[_CONTROLLER] = controller;
@@ -125,28 +111,47 @@ export function initStartDescriptionAssist(cfg) {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ text: textarea.value || '' }),
-				signal: controller.signal
+				signal: controller.signal,
+				mode: 'cors',
+				credentials: 'omit'
 			});
-			if (!res.ok) throw new Error(`HTTP {res.status}`);
+			if (!res.ok) {
+				const hint = res.status === 404 ? ' (endpoint path?)' : (res.status === 401 || res.status === 403 ? ' (auth/CORS?)' : '');
+				throw new Error(`HTTP ${res.status}${hint}`);
+			}
 			const data = await res.json().catch(() => ({}));
-			// Flexible shape support
 			const out = data.output || data.text || data.result || (typeof data === 'string' ? data : '');
 			renderAI(out);
 			setStatus(statusEl, 'Rewrite complete.', false);
 		} catch (err) {
-			if (err.name === 'AbortError') { setStatus(statusEl, 'Cancelled.', false); return; }
 			console.error('[start-description-assist] AI rewrite failed:', err);
-			setStatus(statusEl, 'Rewrite failed. Try again.', false);
+			setStatus(statusEl, 'Rewrite failed. Check console.'); // non-verbose UI
 		} finally {
 			btnAI.disabled = false;
 			textarea[_CONTROLLER] = null;
 		}
-	});
-
-	// initial passive suggestions
-	if ((textarea.value || '').trim()) {
-		renderSuggestions(simpleClientSuggestions(textarea.value));
 	}
+
+	// --- events ---
+	btnManual.addEventListener('click', (e) => {
+		e?.preventDefault?.();
+		renderSuggestions(simpleClientSuggestions(textarea.value));
+		setStatus(statusEl, 'Generated local suggestions.', false);
+	});
+	btnAI.addEventListener('click', (e) => { e?.preventDefault?.(); runAI(); });
+
+	// live enable/disable + live suggestions
+	const syncUi = () => {
+		const hasText = !!textarea.value.trim();
+		btnAI.disabled = !hasText;
+		renderSuggestions(simpleClientSuggestions(textarea.value));
+		setStatus(statusEl, hasText ? 'Ready.' : 'Type or paste a description.');
+	};
+	textarea.addEventListener('input', syncUi);
+	textarea.addEventListener('paste', () => { setTimeout(() => { syncUi(); if (readAutoFlag()) runAI(); }, 0); });
+
+	// initial UI
+	syncUi();
 
 	// mark global flag so other initialisers can skip
 	window.__descAssistActive = true;
@@ -163,19 +168,10 @@ export function initStartDescriptionAssist(cfg) {
 	};
 }
 
-// ---------------- Auto-boot (per HTML contract) ----------------
-
-function readAiEndpoint() {
-	// Priority: window.__AI_ENDPOINT -> <meta name="ai-endpoint" content="..."> -> default
-	const meta = document.querySelector('meta[name="ai-endpoint"]')?.content;
-	return (window.__AI_ENDPOINT || meta || 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite');
-}
-
-function exists(sel) { return !!document.querySelector(sel); }
-
+// ---------------- Auto-boot ----------------
 function bootIfPossible() {
-	if (window.__descAssistActive) return; // already running elsewhere
-	const haveAssistUI = ['#p_desc', '#btn-get-suggestions', '#btn-ai-rewrite', '#description-suggestions', '#ai-rewrite-output', '#ai-rewrite-status'].every(exists);
+	if (window.__descAssistActive) return;
+	const haveAssistUI = ['#p_desc','#btn-get-suggestions','#btn-ai-rewrite','#description-suggestions','#ai-rewrite-output','#ai-rewrite-status'].every(exists);
 	if (!haveAssistUI) return;
 
 	try {
@@ -193,23 +189,12 @@ function bootIfPossible() {
 		return;
 	}
 
-	// Try to start Copilot if its hooks are present (kept distinct from Assist UI)
+	// Kick off Copilot if present
 	try {
-		const copilotSelectorsOk = ['#p_desc', '#copilot-output', '#btn-copilot'].every(exists);
-		if (copilotSelectorsOk) {
-			initCopilotSuggester({
-				sourceSelector: '#p_desc',
-				outputSelector: '#copilot-output',
-				triggerSelector: '#btn-copilot'
-			});
-		}
-	} catch (e) {
-		console.warn('[start-description-assist] Copilot init skipped/failed:', e);
-	}
+		const ok = ['#p_desc','#copilot-output','#btn-copilot'].every(exists);
+		if (ok) initCopilotSuggester({ sourceSelector: '#p_desc', outputSelector: '#copilot-output', triggerSelector: '#btn-copilot' });
+	} catch (e) { console.warn('[start-description-assist] Copilot init skipped/failed:', e); }
 }
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', bootIfPossible, { once: true });
-} else {
-	bootIfPossible();
-}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootIfPossible, { once: true });
+else bootIfPossible();
