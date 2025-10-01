@@ -16,6 +16,9 @@
 
 	<!-- Step 1 owner: imports copilot-suggester internally and sets window.__descAssistActive -->
 	<script type="module" src="/js/start-description-assist.js" defer></script>
+	
+	<!-- Step 2 owner: wires objectives AI & rule suggestions -->
+	<script type="module" src="/js/start-objectives-assist.js" defer></script>
 
 	<!-- Main page controller: respects window.__descAssistActive and will not double-wire Step 1 -->
 	<script type="module" src="start-new-project.js" defer></script>
