@@ -10,7 +10,14 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 
-	<script type="module" src="/components/layout.js"></script>
+	<!-- Components/layout first -->
+	<script type="module" src="/components/layout.js" defer></script>
+
+	<!-- Step 1 owner: imports copilot-suggester internally and sets window.__descAssistActive -->
+	<script type="module" src="/js/start-description-assist.js" defer></script>
+
+	<!-- Main page controller: respects window.__descAssistActive and will not double-wire Step 1 -->
+	<script type="module" src="/js/start-new-project.js" defer></script>
 </head>
 
 <body>
@@ -152,25 +159,6 @@
 	<!-- Global footer -->
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
 	</x-include>
-
-	<script type="module" src="./start-new-project.js"></script>
-
-	<script type="module">
-		import { initStartDescriptionAssist } from '/js/start-description-assist.js';
-
-		// Use your deployed Worker origin for the AI route
-		const AI_ENDPOINT = 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite';
-
-		initStartDescriptionAssist({
-			textareaSelector: '#p_desc',
-			manualBtnSelector: '#btn-get-suggestions',
-			aiBtnSelector: '#btn-ai-rewrite',
-			suggContainerSelector: '#description-suggestions',
-			aiContainerSelector: '#ai-rewrite-output',
-			aiStatusSelector: '#ai-rewrite-status',
-			aiEndpoint: AI_ENDPOINT
-		});
-	</script>
 </body>
 
 </html>
