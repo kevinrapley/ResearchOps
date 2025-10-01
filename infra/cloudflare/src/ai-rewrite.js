@@ -49,7 +49,7 @@
  *   TIMEOUT_MS:number,
  *   MAX_BODY_BYTES:number,
  *   MIN_TEXT_CHARS:number,
- *   MIN_OBJECTIVES_CHARS:number,
+ *   MIN_OBJ_TEXT_CHARS:number,
  *   MAX_INPUT_CHARS:number,
  *   MAX_SUGGESTIONS:number,
  *   MAX_SUGGESTION_LEN:number,
@@ -63,7 +63,7 @@ const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	MAX_BODY_BYTES: 512 * 1024,
 	MIN_TEXT_CHARS: 400,
-	MIN_OBJ_TEXT_CHARS: 60,
+	MIN_OBJ_TEXT_CHARS: 200, // Align with Step 2 requirement (≥ 200 chars)
 	MAX_INPUT_CHARS: 5000,
 	MAX_SUGGESTIONS: 8,
 	MAX_SUGGESTION_LEN: 160,
@@ -280,6 +280,48 @@ function rulesPromptForMode(mode) {
 }
 
 /* =========================
+ * @section Suggestion library (examples to guide AI)
+ * ========================= */
+
+/**
+ * Curated suggestion patterns derived from common issues.
+ * The model should select only relevant items for the current input.
+ * @constant
+ * @name SUGGESTION_LIBRARY
+ * @type {string}
+ */
+const SUGGESTION_LIBRARY = [
+	"Suggestion patterns (use only if relevant to the input):",
+	"",
+	"Weak / unstructured objectives:",
+	"• Measurability: Add numeric targets to 2 objectives. — Enables progress tracking. (high)",
+	"• Clarity: Start each objective with an action verb. — Improves readability. (medium)",
+	"• Scope: Remove ambiguous objectives. — Prevents confusion. (low)",
+	"• Users & inclusion: Consider users with disabilities when testing the prototype. — Ensures accessibility. (medium)",
+	"• Outcomes & measures: Define what success looks like for each objective. — Provides direction. (high)",
+	"• Risks: Identify potential risks and mitigation strategies. — Prepares for challenges. (low)",
+	"",
+	"Overly broad aims:",
+	"• Scope: Replace 'test everything' with focused aspects (e.g., security, user satisfaction). — Enables targeted research. (high)",
+	"• Stakeholders: Clarify whose expectations will be tested and how they will be involved. — Aligns delivery. (medium)",
+	"",
+	"With measurable outcomes present:",
+	"• Measurability: Check each objective has a numeric target and timeframe. — Supports tracking. (high)",
+	"• Clarity: Avoid vague phrases like 'at least' when a precise number exists. — Improves specificity. (low)",
+	"• Inclusion: Prefer 'relevant stakeholders' over specific roles unless needed. — Improves inclusivity. (medium)",
+	"",
+	"With risks / dependencies:",
+	"• Risks: Surface low-availability recruitment risks and how to mitigate them. — Enables contingency planning. (medium)",
+	"• Constraints: Note browser/device constraints as temporary and avoid narrowing scope unless necessary. — Prevents bias. (low)",
+	"• Measurability: Add numeric targets where missing. — Supports tracking. (high)",
+	"",
+	"Mixed quality lists:",
+	"• Scope: Remove objectives that are too vague; merge overlaps. — Improves focus. (high)",
+	"• Measurability: Add measurable targets to 2 objectives. — Enables progress tracking. (high)",
+	"• Inclusion: Add accessibility-related testing where relevant (e.g., screen readers). — Ensures accessibility. (medium)"
+].join("\n");
+
+/* =========================
  * @section Service
  * ========================= */
 
@@ -396,6 +438,16 @@ class AiRewriteService {
 			}, null, 2
 		);
 
+		/**
+		 * Provide the curated suggestion library so the model can pick relevant items.
+		 * Keep it after the schema/example to bias structured outputs first.
+		 * @const {string}
+		 */
+		const SUGGESTION_GUIDANCE = [
+			"Use the following suggestion patterns only if they apply to the input:",
+			SUGGESTION_LIBRARY
+		].join("\n\n");
+
 		/** @const {string} */
 		const INSTRUCTIONS = [
 			"Return JSON ONLY, matching this schema:",
@@ -408,6 +460,8 @@ class AiRewriteService {
 			"",
 			"If unsure, still return valid JSON using best-effort values. Here is a minimal valid example:",
 			OUTPUT_EXAMPLE,
+			"",
+			SUGGESTION_GUIDANCE,
 			"",
 			"INPUT (verbatim):"
 		].join("\n");
@@ -453,7 +507,8 @@ class AiRewriteService {
 				why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
 				severity: ["high", "medium", "low"].includes(s?.severity) ? s?.severity : "medium"
 			}))
-			.filter(s => s.tip.trim().length > 0) : [];
+			.filter(s => s.tip.trim().length > 0) :
+			[];
 
 		let rewrite = sanitizeRewrite(
 			clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
@@ -461,7 +516,8 @@ class AiRewriteService {
 
 		// Minimal safe fallback to keep UI consistent (do not invent details)
 		if (!rewrite) {
-			rewrite = mode === "objectives" ?
+			rewrite =
+				mode === "objectives" ?
 				"1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
 				"Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
 		}
@@ -472,11 +528,11 @@ class AiRewriteService {
 		}
 
 		const body = {
-			summary: typeof parsed.summary === "string" ? clamp(parsed.summary, 300) : (
+			summary: typeof parsed.summary === "string" ?
+				clamp(parsed.summary, 300) :
 				mode === "objectives" ?
 				"Suggestions to strengthen your Initial Objectives" :
-				"Suggestions to strengthen your Description"
-			),
+				"Suggestions to strengthen your Description",
 			suggestions,
 			rewrite,
 			flags: { possible_personal_data: hasPII }
@@ -488,10 +544,12 @@ class AiRewriteService {
 			try {
 				if (this.env.AIRTABLE_BASE_ID && this.env.AIRTABLE_API_KEY && this.env.AIRTABLE_TABLE_AI_LOG) {
 					await fetch(
-						`https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}/${encodeURIComponent(this.env.AIRTABLE_TABLE_AI_LOG)}`, {
+						`https://api.airtable.com/v0/${this.env.AIRTABLE_BASE_ID}/${encodeURIComponent(
+							this.env.AIRTABLE_TABLE_AI_LOG
+						)}`, {
 							method: "POST",
 							headers: {
-								"authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+								authorization: `Bearer ${this.env.AIRTABLE_API_KEY}`,
 								"content-type": "application/json"
 							},
 							body: JSON.stringify({
