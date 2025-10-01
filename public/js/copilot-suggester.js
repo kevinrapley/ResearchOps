@@ -93,61 +93,75 @@ function renderTwoColumns(left, right) {
 
 /**
  * General content-design rules (safe, lightweight heuristics).
+ * Intentionally fires even on “good” inputs to add structure tips.
  * @param {string} t
  * @returns {RuleItem[]}
  */
 function defaultRules(t) {
 	/** @type {RuleItem[]} */
 	const tips = [];
-	const txt = (t || "").toLowerCase().trim();
+	const txt = (t || "").trim();
+	const lc = txt.toLowerCase();
 
-	// Scope too broad
-	if (txt.includes("test everything")) {
+	// 1) Scope nudges (if no explicit "In scope"/"Out of scope" lines)
+	if (!/\b(in|out)\s+of\s+scope\b/i.test(txt)) {
 		tips.push({
 			category: "Scope",
-			tip: "Replace “test everything” with 2–3 focused areas (e.g., security, satisfaction).",
-			why: "Focus enables targeted research and clearer outcomes.",
+			tip: "Add one line each for ‘In scope’ and ‘Out of scope’.",
+			why: "Prevents scope drift and sets clear boundaries.",
 			severity: "high"
 		});
 	}
 
-	// Paragraphing / sentence breaks
-	if (t && !/[.!?]\s/.test(t)) {
+	// 2) Research questions prompt (if no question marks or “research question” phrases)
+	if (!/[?]/.test(txt) && !/research questions?/i.test(txt)) {
 		tips.push({
-			category: "Clarity",
-			tip: "Use short sentences and paragraph breaks.",
-			why: "Improves readability for everyone.",
+			category: "Research questions",
+			tip: "List 2–4 research questions your study will answer.",
+			why: "Focuses method and analysis.",
 			severity: "medium"
 		});
 	}
 
-	// Measurability/timeframe hint (suggestion only; no invented numbers)
-	if (!/(\d{1,3}%|\bQ[1-4]\b|\bby end\b|\bwithin\s+\d+\s+(days?|weeks?|months?|quarters?)\b)/i.test(t)) {
+	// 3) Multiple metrics hygiene (if ≥2 percentages or timeframe+percent mix)
+	const pctMatches = txt.match(/\b\d{1,3}%\b/g) || [];
+	const hasTimeframe = /\b(by\s+end\s+of\s+Q[1-4]|within\s+\d+\s+(days?|weeks?|months?|quarters?)|in\s+\d+\s+(days?|weeks?|months?|quarters?))\b/i.test(txt);
+	if (pctMatches.length >= 2 || (pctMatches.length >= 1 && hasTimeframe)) {
 		tips.push({
 			category: "Outcomes & measures",
-			tip: "Add a measurable outcome and a timeframe (suggested in notes; do not invent specifics).",
-			why: "Enables tracking of success.",
-			severity: "high"
+			tip: "Keep 1–2 key outcomes; confirm baselines and how you’ll measure them.",
+			why: "Avoids KPI sprawl and ensures testable success.",
+			severity: "medium"
 		});
 	}
 
-	// Duplicate ideas (very rough: repeated “also” / “and also” chains)
-	if ((t.match(/\balso\b/gi) || []).length >= 3) {
+	// 4) Deliverables/artefacts (if not mentioned)
+	if (!/(report|playback|readout|backlog|recommendations|artefacts?|artifacts?)/i.test(txt)) {
 		tips.push({
-			category: "Clarity",
-			tip: "Consolidate repeated points; avoid long chains of ‘also’.",
-			why: "Keeps the description concise and scannable.",
+			category: "Deliverables",
+			tip: "State expected outputs (e.g., playback, short report, prioritised backlog).",
+			why: "Aligns expectations for stakeholders.",
 			severity: "low"
 		});
 	}
 
-	// Stakeholders vs users balance
-	if (/stakeholder|policy/i.test(t) && !/user|participant/i.test(t)) {
+	// 5) Sentence/paragraph hygiene (very gentle)
+	if (txt && !/[.!?]\s/.test(txt)) {
 		tips.push({
-			category: "User focus",
-			tip: "Re-balance towards user needs; keep stakeholder checks separate.",
-			why: "Reduces organisational bias and keeps research user-centred.",
-			severity: "medium"
+			category: "Clarity",
+			tip: "Use short sentences and paragraph breaks.",
+			why: "Improves readability for everyone.",
+			severity: "low"
+		});
+	}
+
+	// 6) Broad language tripwire
+	if (lc.includes("test everything")) {
+		tips.push({
+			category: "Scope",
+			tip: "Replace “test everything” with 2–3 focused areas.",
+			why: "Enables targeted research and clear outcomes.",
+			severity: "high"
 		});
 	}
 
