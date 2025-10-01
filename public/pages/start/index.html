@@ -9,11 +9,11 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	
+
 	<!-- Description assistance modules -->
 	<script type="module" src="/js/copilot-suggester.js"></script>
 	<script type="module" src="/js/start-description-assist.js"></script>
-	
+
 	<script type="module" src="/components/layout.js"></script>
 </head>
 
@@ -101,6 +101,17 @@
 					<label class="govuk-body">Initial objectives (one per line)
 						<textarea id="p_objectives" class="govuk-input"></textarea>
 					</label>
+
+					<div class="form-group">
+						<label for="p_objectives">Initial objectives</label>
+						<p class="hint">List your research objectives. Keep them action-oriented. Avoid personal data.</p>
+						<textarea id="p_objectives" name="p_objectives" rows="5"></textarea>
+						<div id="ai-objectives-tools" class="toolbar mt-2 hidden" aria-label="Objectives assistance">
+							<button class="btn btn--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
+							<button class="btn btn--outline" id="btn-obj-ai-rewrite" type="button">Try AI rewrite</button>
+							<small id="ai-obj-status" class="mono muted" aria-live="polite"></small>
+						</div>
+					</div>
 
 					<label class="govuk-body">User groups (comma-separated)
 						<input id="p_usergroups" class="govuk-input" />
