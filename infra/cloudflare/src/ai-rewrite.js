@@ -179,7 +179,7 @@ function sanitizeRewrite(s) {
 }
 
 /* =========================
- * @section Quantifier sanitiser (NEW)
+ * @section Quantifier & method neutralisers (guardrails)
  * ========================= */
 
 /**
@@ -219,9 +219,9 @@ function extractQuantifiedPhrases(text) {
  * Also generate suggestion items explaining what was removed and why.
  *
  * Neutralisations:
- *  - "by end of Q2", "within 3 months", "in 6 weeks" -> removed silently (timeline becomes open).
+ *  - "by end of Q2", "within 3 months", "in 6 weeks" -> removed (timeline becomes open).
  *  - "at least 8 participants", "12 users" -> drop the number (e.g., "participants", "users").
- *  - "25%" or "by 25%" -> replace with "by a measurable amount" to avoid placeholders.
+ *  - "25%" or "by 25%" -> replace with "a measurable amount" to avoid invented specifics.
  *
  * @param {string} rewrite
  * @param {string} input
@@ -230,7 +230,6 @@ function extractQuantifiedPhrases(text) {
 function neutraliseInventedQuantifiers(rewrite, input) {
   let out = String(rewrite || "");
   const inputPhrases = new Set(extractQuantifiedPhrases(input).map(s => s.toLowerCase()));
-  const rewritePhrases = extractQuantifiedPhrases(out);
 
   /** @type {Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}>} */
   const notes = [];
@@ -246,7 +245,7 @@ function neutraliseInventedQuantifiers(rewrite, input) {
   ];
 
   timeframePatterns.forEach(({ re, label }) => {
-    out.replace(re, (m) => {
+    replaceAll(re, (m) => {
       if (!inputPhrases.has(m.toLowerCase())) {
         notes.push({
           category: label,
@@ -254,32 +253,29 @@ function neutraliseInventedQuantifiers(rewrite, input) {
           why: "Timeframes must come from the input; propose them in suggestions instead.",
           severity: "high"
         });
+        return "";
       }
-      return m; // for counting; actual removal done below
+      return m;
     });
-    replaceAll(re, (m) => (inputPhrases.has(m.toLowerCase()) ? m : "")); // remove if invented
   });
 
   // 2) Counts near user terms (drop numbers if invented)
   const countUser = /\b(?:(at\s+least|up\s+to|around|approximately)\s+)?(\d+)\s+(users?|participants?|people|sessions?)\b/gi;
   replaceAll(countUser, (m, qualifier, num, noun) => {
-    const lc = m.toLowerCase();
-    if (inputPhrases.has(lc)) return m; // allowed (present in input)
+    if (inputPhrases.has(m.toLowerCase())) return m; // allowed (present in input)
     notes.push({
       category: "Measurability",
       tip: `Remove invented count ('${m}'); keep role only.`,
       why: "Sample sizes must come from the input; propose targets in suggestions instead.",
       severity: "high"
     });
-    // keep just the role noun; drop quantifier and number
     return noun;
   });
 
   // 3) Generic counts (interviews/tests/etc.)
   const countGeneric = /\b(?:(at\s+least|up\s+to|around|approximately)\s+)?(\d+)\s+(interviews?|tests?|studies|sessions?)\b/gi;
   replaceAll(countGeneric, (m, qualifier, num, noun) => {
-    const lc = m.toLowerCase();
-    if (inputPhrases.has(lc)) return m;
+    if (inputPhrases.has(m.toLowerCase())) return m;
     notes.push({
       category: "Measurability",
       tip: `Remove invented count ('${m}'); keep the activity only.`,
@@ -291,7 +287,7 @@ function neutraliseInventedQuantifiers(rewrite, input) {
 
   // 4) Percentages (e.g., 25%)
   const percent = /\b(\d{1,3})%\b/g;
-  replaceAll(percent, (m, n) => {
+  replaceAll(percent, (m) => {
     if (inputPhrases.has(m.toLowerCase())) return m;
     notes.push({
       category: "Outcomes & measures",
@@ -299,19 +295,57 @@ function neutraliseInventedQuantifiers(rewrite, input) {
       why: "Percent targets must come from the input; propose a number in suggestions instead.",
       severity: "high"
     });
-    // neutral phrase that doesn't invent specifics
     return "a measurable amount";
   });
 
   // Clean up double spaces and stray punctuation after removals
   out = out.replace(/[ \t]+/g, " ")
-           .replace(/\s+([,.;:])/g, "$1")
-           .replace(/\(\s*\)/g, "")
-           .replace(/\s{2,}/g, " ")
-           .replace(/\n[ \t]+/g, "\n")
-           .trim();
+    .replace(/\s+([,.;:])/g, "$1")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\n[ \t]+/g, "\n")
+    .trim();
 
   return { text: out, notes };
+}
+
+/**
+ * Remove invented method specifics not present in the input (e.g., "using screen readers").
+ * Add more phrases as needed; only strips when the phrase isn't in the input.
+ */
+function neutraliseInventedMethods(rewrite, input) {
+  let out = String(rewrite || "");
+  const lcInput = String(input || "").toLowerCase();
+
+  /** Phrases to strip if absent from input */
+  const methodPhrases = [
+    "using screen readers",
+    "remote unmoderated",
+    "a/b test",
+    "benchmark test",
+    "tree test",
+    "card sort",
+    "eye tracking",
+    "heatmap",
+    "heuristic review"
+  ];
+
+  for (const phrase of methodPhrases) {
+    if (!lcInput.includes(phrase)) {
+      const re = new RegExp("\\b" + phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "gi");
+      out = out.replace(re, "");
+    }
+  }
+
+  // Tidy grammar after removals
+  out = out.replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([,.;:])/g, "$1")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+\n/g, "\n")
+    .trim();
+
+  return out;
 }
 
 /* =========================
@@ -554,8 +588,8 @@ class AiRewriteService {
       rewrite: [
         "string (<= 1800 chars).",
         mode === "objectives" ?
-        "A numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
-        "Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input. Each section starts with a label on its own line (with a colon), then content on the next line(s), and one blank line between sections. Only include sections if supported by the input."
+          "A numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
+          "Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input. Each section starts with a label on its own line (with a colon), then content on the next line(s), and one blank line between sections. Only include sections if supported by the input."
       ].join(" ")
     }, null, 2);
 
@@ -648,16 +682,17 @@ class AiRewriteService {
           why: clamp(typeof s?.why === "string" ? s.why : "", this.cfg.MAX_SUGGESTION_LEN),
           severity: ["high", "medium", "low"].includes(s?.severity) ? s?.severity : "medium"
         }))
-        .filter(s => s.tip.trim().length > 0) :
-      [];
+        .filter(s => s.tip.trim().length > 0) : [];
 
     let rewrite = sanitizeRewrite(
       clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
     );
 
-    // === NEW: post-processing guardrail for invented metrics/timeframes ===
+    // === Post-processing guardrail for invented metrics/timeframes/methods ===
     // Compare rewrite vs input; neutralise invented quantifiers and add notes.
     const { text: cleanedRewrite, notes } = neutraliseInventedQuantifiers(rewrite, input);
+    // Remove invented method specifics not present in input
+    rewrite = neutraliseInventedMethods(cleanedRewrite, input);
 
     // Merge notes into suggestions without exceeding MAX_SUGGESTIONS
     if (notes.length) {
@@ -671,14 +706,12 @@ class AiRewriteService {
       })));
     }
 
-    rewrite = cleanedRewrite;
-
     // Minimal safe fallback to keep UI consistent (do not invent details)
     if (!rewrite) {
       rewrite =
         mode === "objectives" ?
-        "1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
-        "Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
+          "1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
+          "Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
     }
 
     // Final PII sweep on rewrite
@@ -688,10 +721,8 @@ class AiRewriteService {
 
     const body = {
       summary: typeof parsed.summary === "string" ?
-        clamp(parsed.summary, 300) :
-        mode === "objectives" ?
-        "Suggestions to strengthen your Initial Objectives" :
-        "Suggestions to strengthen your Description",
+        clamp(parsed.summary, 300) : mode === "objectives" ?
+        "Suggestions to strengthen your Initial Objectives" : "Suggestions to strengthen your Description",
       suggestions,
       rewrite,
       flags: { possible_personal_data: hasPII }
