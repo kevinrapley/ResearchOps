@@ -1,398 +1,442 @@
 /**
  * @file copilot-suggester.js
  * @module CopilotSuggester
- * @summary Client-only rule suggestions + bias checks for Step 1 (Description).
- *
+ * @summary Local, zero-cost suggestions + bias checks for Description/Objectives.
  * @description
- * - No network calls.
- * - Auto-runs when the textarea reaches the minimum length (default 400).
- * - Renders a 2-column panel: Original suggestions (left) and Bias checks (right).
- * - “Get suggestions” button triggers the same rendering on demand.
+ * Client-only suggester that renders two columns:
+ * - Left: actionable suggestions (clarity, scope, measurability, etc.)
+ * - Right: bias checks (language, inclusion, device/browsers, sampling)
+ *
+ * Usage:
+ *  import { initCopilotSuggester } from '/js/copilot-suggester.js';
+ *  const handle = initCopilotSuggester({
+ *    mode: 'description' | 'objectives',
+ *    textarea: '#p_desc',
+ *    container: '#description-suggestions',
+ *    button: '#btn-get-suggestions'
+ *  });
  *
  * Accessibility:
- * - Results container uses aria-live="polite".
- * - Headings and lists are semantic; columns remain linear in narrow viewports.
+ * - `container` should be aria-live="polite".
  *
- * Custom instructions applied:
- * - JSDoc everywhere,
- * - GOV.UK style: plain English; short sentences,
- * - No personal data handling; show hints if detected.
- *
- * @requires globalThis.document
- * @requires globalThis.CustomEvent
+ * Custom project rules:
+ * - GOV.UK style, plain English. No invented data.
+ * - Do not log raw user content. No network calls.
+ */
+
+/* =========================
+ * Types
+ * ========================= */
+
+/**
+ * @typedef {'description'|'objectives'} SuggesterMode
  */
 
 /**
- * Public initialiser.
- * @function initCopilotSuggester
- * @param {Object} cfg
- * @param {string} cfg.textarea      - CSS selector or HTMLElement for the Step 1 textarea.
- * @param {string} cfg.container     - CSS selector or HTMLElement for the suggestions container (left/right columns host).
- * @param {string} [cfg.button]      - Optional selector/HTMLElement for “Get suggestions” button.
- * @param {number} [cfg.minChars=400]- Minimum chars before auto-suggest.
- * @returns {{forceSuggest:()=>void, destroy:()=>void}} small API
+ * @typedef {Object} Suggestion
+ * @property {string} category - Category label (e.g., "Measurability", "Scope").
+ * @property {string} tip      - Concrete, concise recommendation.
+ * @property {string} why      - Rationale for the recommendation.
+ * @property {'high'|'medium'|'low'} severity
  */
-export function initCopilotSuggester(cfg = {}) {
-	/** @type {HTMLTextAreaElement|null} */
-	const textarea = typeof cfg.textarea === 'string' ? document.querySelector(cfg.textarea) : cfg.textarea;
-	/** @type {HTMLElement|null} */
-	const container = typeof cfg.container === 'string' ? document.querySelector(cfg.container) : cfg.container;
-	/** @type {HTMLButtonElement|null} */
-	const button = cfg.button ? (typeof cfg.button === 'string' ? document.querySelector(cfg.button) : cfg.button) : null;
 
-	const MIN = typeof cfg.minChars === 'number' ? cfg.minChars : 400;
+/**
+ * @typedef {Object} InitOptions
+ * @property {SuggesterMode} mode
+ * @property {string|HTMLElement} textarea
+ * @property {string|HTMLElement} container
+ * @property {string|HTMLElement} [button]
+ * @property {number} [minCharsAuto]      - Override auto-trigger threshold (defaults per mode).
+ * @property {boolean} [showWhenEmpty]    - If true, renders an empty “no suggestions yet” scaffold.
+ */
 
-	if (!textarea || !container) {
-		return {
-			forceSuggest() {},
-			destroy() {}
-		};
+/* =========================
+ * Constants
+ * ========================= */
+
+const THRESHOLDS = Object.freeze({
+	description: 400,
+	objectives: 60
+});
+
+const MAX_SUGGESTIONS = 8; // cap total on left column
+const MAX_BIAS_SUGGESTIONS = 8; // cap total on right column
+const MAX_TIP_LEN = 160;
+const GOVUK_BADGE = {
+	high: 'badge--high',
+	medium: 'badge--medium',
+	low: 'badge--low'
+};
+
+/* =========================
+ * Utilities
+ * ========================= */
+
+/**
+ * Resolve a selector or return the element itself.
+ * @param {string|HTMLElement|null|undefined} elOrSel
+ * @returns {HTMLElement|null}
+ */
+function $(elOrSel) {
+	if (!elOrSel) return null;
+	if (typeof elOrSel === 'string') return document.querySelector(elOrSel);
+	if (elOrSel instanceof HTMLElement) return elOrSel;
+	return null;
+}
+
+/**
+ * Escape text for safe HTML.
+ * @param {unknown} s
+ * @returns {string}
+ */
+function esc(s) {
+	return String(s ?? '').replace(/[&<>"']/g, m => ({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;'
+	} [m]));
+}
+
+/**
+ * Clamp string length.
+ * @param {string} s
+ * @param {number} n
+ * @returns {string}
+ */
+function clamp(s, n) {
+	const t = String(s || '');
+	return t.length > n ? t.slice(0, n - 1) + '…' : t;
+}
+
+/* =========================
+ * Heuristics — main suggestions (left column)
+ * ========================= */
+
+/**
+ * Build main (non-bias) suggestions from text and mode.
+ * GOV.UK tone, concise, concrete, never invents data.
+ * @param {string} text
+ * @param {SuggesterMode} mode
+ * @returns {Suggestion[]}
+ */
+function buildMainSuggestions(text, mode) {
+	const t = String(text || '').trim();
+	const lc = t.toLowerCase();
+	/** @type {Suggestion[]} */
+	const out = [];
+
+	// Shared heuristics
+	if (/^we\s+want\s+to\s+test\s+everything\b/i.test(t) || lc.includes('test everything')) {
+		out.push({
+			category: 'Scope',
+			tip: 'Replace “test everything” with 2–4 specific aspects.',
+			why: 'Focus enables a clear plan and right methods.',
+			severity: 'high'
+		});
+	}
+	if (/(maybe|perhaps|might)\s+look|unsure|not\s+sure/i.test(lc)) {
+		out.push({
+			category: 'Clarity',
+			tip: 'Replace vague terms like “maybe” with an action verb.',
+			why: 'Clear intent improves planning and analysis.',
+			severity: 'medium'
+		});
 	}
 
-	/* =========================
-	 * Helpers
-	 * ========================= */
-
-	/**
-	 * Escape a string for safe HTML.
-	 * @param {unknown} s
-	 * @returns {string}
-	 */
-	function esc(s) {
-		return String(s ?? '').replace(/[&<>"']/g, m => ({
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			'"': '&quot;',
-			"'": '&#39;'
-		} [m]));
-	}
-
-	/**
-	 * Lightweight debounce.
-	 * @param {Function} fn
-	 * @param {number} wait
-	 * @returns {Function}
-	 */
-	function debounce(fn, wait) {
-		let t;
-		return (...args) => {
-			clearTimeout(t);
-			t = setTimeout(() => fn.apply(null, args), wait);
-		};
-	}
-
-	/**
-	 * Detect very obvious PII patterns (email, NI, NHS).
-	 * @param {string} text
-	 * @returns {boolean}
-	 */
-	function containsPII(text) {
-		const EMAIL = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
-		const NI = /\b(?!BG|GB|NK|KN|TN|NT|ZZ)[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]\b/i;
-		const NHS = /\b\d{3}\s?\d{3}\s?\d{4}\b/;
-		return EMAIL.test(text) || NI.test(text) || NHS.test(text);
-	}
-
-	/* =========================
-	 * Rules: Original suggestions (left column)
-	 * ========================= */
-
-	/**
-	 * Generate rule-based suggestions from the Description text.
-	 * @param {string} text
-	 * @returns {Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}>}
-	 */
-	function buildOriginalSuggestions(text) {
-		const out = [];
-		const t = text.toLowerCase();
-
-		// Scope too broad
-		if (/\btest everything\b/.test(t) || /\beverything\b/.test(t)) {
+	// Description-specific
+	if (mode === 'description') {
+		if (!/problem:|user need|users?:|outcomes?:|scope:|assumptions|risks?|ethics|method|timeline|recruitment|success criteria/i.test(t)) {
 			out.push({
-				category: 'Scope',
-				tip: "Replace 'test everything' with 2–3 focus areas.",
-				why: 'Keeps research targeted and feasible.',
+				category: 'Structure',
+				tip: 'Add labelled sections you already mention (e.g., Problem, Users, Outcomes).',
+				why: 'Clear headings make it easier to read and review.',
+				severity: 'medium'
+			});
+		}
+		if (/email|@|nhs\s*\d|\b[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]\b/i.test(t)) {
+			out.push({
+				category: 'Privacy',
+				tip: 'Remove personal data (emails, NI, NHS numbers) from the description.',
+				why: 'Avoids accidental sharing of personal information.',
 				severity: 'high'
 			});
 		}
+	}
 
-		// Measurability hints
-		if (!/\b\d{1,3}%\b/.test(t) && !/\b(?:by|within)\s+\d+/.test(t)) {
+	// Objectives-specific
+	if (mode === 'objectives') {
+		if (!/\d+%|\b(top\s+\d+)\b/i.test(t) && !/\bby\s+end\s+of\s+q[1-4]\b/i.test(t)) {
 			out.push({
 				category: 'Measurability',
-				tip: 'Add a numeric target or timeframe for 1–2 outcomes.',
-				why: 'Enables progress tracking.',
+				tip: 'Add a measurable target to 1–2 objectives.',
+				why: 'Helps you track progress and success.',
 				severity: 'high'
 			});
 		}
-
-		// Research questions not present
-		if (!/\bresearch question/.test(t) && !/\bwe (need|want) to (learn|understand)/.test(t)) {
+		if (!/^\s*\d\)/m.test(t) && !/^\s*-\s+/m.test(t)) {
 			out.push({
-				category: 'Research questions',
-				tip: 'List 2–4 key research questions.',
-				why: 'Focuses the method and analysis.',
+				category: 'Clarity',
+				tip: 'Start each objective with a verb and list them clearly.',
+				why: 'Makes intent obvious and actionable.',
 				severity: 'medium'
 			});
 		}
-
-		// Users & inclusion
-		if (!/\baccessib|screen reader|assistive|wcag|disab/i.test(text)) {
-			out.push({
-				category: 'Users & inclusion',
-				tip: 'Note accessibility needs (e.g., screen reader users, low vision).',
-				why: 'Ensures people with disabilities are included.',
-				severity: 'medium'
-			});
-		}
-
-		// Ethics & data handling
-		if (containsPII(text)) {
-			out.push({
-				category: 'Ethics',
-				tip: 'Remove personal data (emails, NI, NHS).',
-				why: 'Protects participants and meets policy.',
-				severity: 'high'
-			});
-		} else if (!/\bconsent|retention|privacy|dpo|dpia|data\b/i.test(text)) {
-			out.push({
-				category: 'Data handling',
-				tip: 'Add a line on consent and retention.',
-				why: 'Clarifies how you will handle data.',
-				severity: 'low'
-			});
-		}
-
-		// Stakeholders
-		if (!/\bstakeholder|policy|ops|engineering|design\b/i.test(text)) {
-			out.push({
-				category: 'Stakeholders',
-				tip: 'Name the teams you will involve.',
-				why: 'Prevents surprises and speeds delivery.',
-				severity: 'low'
-			});
-		}
-
-		// Success criteria
-		if (!/\bsuccess|measure of success|good looks like\b/i.test(text)) {
-			out.push({
-				category: 'Success criteria',
-				tip: "State what 'good' looks like in one line.",
-				why: 'Aligns expectations.',
-				severity: 'medium'
-			});
-		}
-
-		return out;
 	}
 
-	/* =========================
-	 * Rules: Bias checks (right column)
-	 * ========================= */
-
-	/**
-	 * Bias findings engine (lightweight heuristics).
-	 * @param {string} text
-	 * @returns {Array<{category:string, tip:string, why:string, severity:"high"|"medium"|"low"}>}
-	 */
-	function buildBiasFindings(text) {
-		const out = [];
-		const t = text.toLowerCase();
-
-		// Exclusionary language or assumptions
-		if (/\ball\b.+(users|people)\s+(have|use)\s+(smartphones|laptops|internet)/i.test(text)) {
-			out.push({
-				category: 'Assumptions',
-				tip: 'Avoid assuming all users have the same devices or connectivity.',
-				why: 'Prevents sampling bias.',
-				severity: 'high'
-			});
-		}
-
-		// Device / browser narrowness
-		if (/\bchrome only|chrome\-only|works on chrome\b/i.test(text)) {
-			out.push({
-				category: 'Constraints',
-				tip: 'Avoid Chrome-only testing; include Safari and Firefox where possible.',
-				why: 'Prevents platform bias.',
-				severity: 'medium'
-			});
-		}
-
-		// Sampling bias: “staff only” or “friends & family”
-		if (/\bstaff only|friends and family|internal only\b/i.test(text)) {
-			out.push({
-				category: 'Sampling',
-				tip: 'Recruit beyond internal staff and friends/family.',
-				why: 'Improves representativeness.',
-				severity: 'high'
-			});
-		}
-
-		// Language / bilingual
-		if (/\bwelsh|bilingual|english only\b/i.test(text) || !/\blanguage|translation|bilingual|welsh\b/i.test(text)) {
-			out.push({
-				category: 'Language inclusion',
-				tip: 'Consider translation needs and bilingual participants where relevant.',
-				why: 'Prevents language bias.',
-				severity: 'medium'
-			});
-		}
-
-		// Accessibility bias
-		if (!/\baccessib|screen reader|assistive|wcag|disab/i.test(text)) {
-			out.push({
-				category: 'Accessibility',
-				tip: 'Include participants using assistive tech (e.g., screen readers).',
-				why: 'Reduces accessibility bias.',
-				severity: 'high'
-			});
-		}
-
-		// Socio-economic / geography signals (only prompt if nothing is mentioned)
-		if (!/\brural|remote|low bandwidth|offline|public computers|libraries\b/i.test(text)) {
-			out.push({
-				category: 'Context diversity',
-				tip: 'Include contexts like low bandwidth or shared/public devices if relevant.',
-				why: 'Avoids context bias.',
-				severity: 'low'
-			});
-		}
-
-		return out;
+	// General duplicates/overlap
+	if ((t.match(/login|log-in|sign[- ]?in/gi) || []).length > 4) {
+		out.push({
+			category: 'Clarity',
+			tip: 'Remove repetition and merge overlapping points.',
+			why: 'Keeps the text concise and readable.',
+			severity: 'low'
+		});
 	}
 
-	/* =========================
-	 * Rendering
-	 * ========================= */
+	return out.slice(0, MAX_SUGGESTIONS).map(s => ({
+		...s,
+		tip: clamp(s.tip, MAX_TIP_LEN),
+		why: clamp(s.why, MAX_TIP_LEN)
+	}));
+}
 
-	/**
-	 * Render two columns: Original suggestions (left) & Bias suggestions (right).
-	 * @param {Array} original
-	 * @param {Array} bias
-	 */
-	function renderColumns(original, bias) {
-		const leftList = original.length ?
-			original.map(s => `<li><strong class="sugg-cat">${esc(s.category)}</strong> — ${esc(s.tip)}<div class="sugg-why">Why: ${esc(s.why)} (${esc(s.severity)})</div></li>`).join('') :
-			`<li>No suggestions found.</li>`;
+/* =========================
+ * Heuristics — bias checks (right column)
+ * ========================= */
 
-		const rightList = bias.length ?
-			bias.map(s => `<li><strong class="sugg-cat">${esc(s.category)}</strong> — ${esc(s.tip)}<div class="sugg-why">Why: ${esc(s.why)} (${esc(s.severity)})</div></li>`).join('') :
-			`<li>No bias findings.</li>`;
+/**
+ * Build bias findings (right column).
+ * @param {string} text
+ * @param {SuggesterMode} mode
+ * @returns {Suggestion[]}
+ */
+function buildBiasSuggestions(text, mode) {
+	const t = String(text || '').trim();
+	const lc = t.toLowerCase();
+	/** @type {Suggestion[]} */
+	const out = [];
 
-		container.innerHTML = `
-      <section class="sugg-grid" aria-label="Suggestions">
-        <div class="sugg-col">
-          <h3 class="govuk-heading-s" id="sugg-heading">Suggestions</h3>
-          <ul class="sugg-list" aria-labelledby="sugg-heading">
-            ${leftList}
-          </ul>
-        </div>
-        <div class="sugg-col">
-          <h3 class="govuk-heading-s" id="bias-heading">Bias checks</h3>
-          <ul class="sugg-list" aria-labelledby="bias-heading">
-            ${rightList}
-          </ul>
-        </div>
+	// Exclusionary browser/device focus
+	if (/chrome(-only| only)|chrome\s+only/i.test(lc) || /\bonly\s+on\s+chrome\b/i.test(lc)) {
+		out.push({
+			category: 'Bias — Devices & Browsers',
+			tip: 'Avoid a Chrome-only constraint unless it is essential.',
+			why: 'Narrow constraints bias findings and exclude users.',
+			severity: 'medium'
+		});
+	}
+
+	// Ableism / accessibility omission
+	if (!/screen reader|accessib|wcag|voiceover|talkback/i.test(lc)) {
+		out.push({
+			category: 'Bias — Accessibility',
+			tip: 'Consider users who use assistive tech (e.g., screen readers).',
+			why: 'Ensures the research includes disabled users.',
+			severity: 'high'
+		});
+	}
+
+	// Language bias / jargon
+	if (/alpha\b|beta\b/i.test(lc) && !/explain|define|check understanding/i.test(lc)) {
+		out.push({
+			category: 'Bias — Language',
+			tip: 'Check understanding of terms like “alpha”.',
+			why: 'Jargon can confuse and exclude participants.',
+			severity: 'medium'
+		});
+	}
+
+	// Sampling breadth
+	if (!/bilingual|welsh|language|interpreter|translation/i.test(lc) && /form|application|apply/i.test(lc)) {
+		out.push({
+			category: 'Bias — Sampling',
+			tip: 'Consider bilingual users and translation needs if relevant.',
+			why: 'Language differences can change comprehension.',
+			severity: 'low'
+		});
+	}
+
+	// Stakeholder centricity over user centricity
+	if (/stakeholders?/i.test(lc) && !/users?/i.test(lc)) {
+		out.push({
+			category: 'Bias — Focus',
+			tip: 'Balance stakeholder aims with user needs.',
+			why: 'Keeps the study centred on user impact.',
+			severity: 'low'
+		});
+	}
+
+	// If nothing triggered, show a single neutral notice
+	if (out.length === 0) {
+		out.push({
+			category: 'Bias checks',
+			tip: 'No obvious bias risks detected.',
+			why: 'Keep watching for accessibility and sampling issues.',
+			severity: 'low'
+		});
+	}
+
+	return out.slice(0, MAX_BIAS_SUGGESTIONS).map(s => ({
+		...s,
+		tip: clamp(s.tip, MAX_TIP_LEN),
+		why: clamp(s.why, MAX_TIP_LEN)
+	}));
+}
+
+/* =========================
+ * Rendering
+ * ========================= */
+
+/**
+ * Render the two-column suggestions block (left: main, right: bias).
+ * @param {Suggestion[]} mainList
+ * @param {Suggestion[]} biasList
+ * @returns {string}
+ */
+function renderTwoColumn(mainList, biasList) {
+	const left = Array.isArray(mainList) ? mainList : [];
+	const right = Array.isArray(biasList) ? biasList : [];
+
+	const li = (s) => `
+    <li class="sugg-item">
+      <span class="sugg-cat">${esc(s.category)}</span>
+      <span class="sugg-sev ${GOVUK_BADGE[s.severity] || ''}">${esc(s.severity)}</span>
+      <div class="sugg-tip">${esc(s.tip)}</div>
+      <div class="sugg-why">Why: ${esc(s.why)}</div>
+    </li>
+  `;
+
+	return `
+    <div class="sugg-grid" role="group" aria-label="Suggestions and bias checks">
+      <section class="sugg-col" aria-label="Suggestions">
+        <h3 class="sugg-col__title">Suggestions</h3>
+        <ul class="sugg-list">
+          ${left.map(li).join('') || '<li class="sugg-item muted">No suggestions yet.</li>'}
+        </ul>
       </section>
-    `;
+      <section class="sugg-col" aria-label="Bias checks">
+        <h3 class="sugg-col__title">Bias checks</h3>
+        <ul class="sugg-list">
+          ${right.map(li).join('') || '<li class="sugg-item muted">No bias findings.</li>'}
+        </ul>
+      </section>
+    </div>
+  `;
+}
 
-		// Lightweight inline styles to ensure two columns, but degrade gracefully.
-		ensureOnceStyles();
-	}
+/* =========================
+ * Main initialiser
+ * ========================= */
 
-	let stylesInjected = false;
+/**
+ * Initialise the suggester. Safe to call multiple times; returns a handle.
+ * @param {InitOptions} options
+ * @returns {{ forceSuggest: ()=>void, destroy: ()=>void }|null}
+ */
+export function initCopilotSuggester(options) {
+	const mode = (options?.mode === 'objectives') ? 'objectives' : 'description';
+	const textarea = $(options?.textarea);
+	const container = $(options?.container);
+	const button = $(options?.button);
+	const minCharsAuto = Number.isFinite(options?.minCharsAuto) ?
+		Number(options.minCharsAuto) :
+		THRESHOLDS[mode];
 
-	function ensureOnceStyles() {
-		if (stylesInjected) return;
-		const style = document.createElement('style');
-		style.setAttribute('data-copilot-suggester', 'true');
-		style.textContent = `
-      .sugg-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-      .sugg-col { border: 1px solid var(--govuk-border-colour, #b1b4b6); padding: .75rem; border-radius: .25rem; background: #fff; }
-      .sugg-list { margin: .5rem 0 0; padding-left: 1.2rem; }
-      .sugg-cat { display: inline-block; }
-      @media (min-width: 800px) {
-        .sugg-grid { grid-template-columns: 1fr 1fr; }
-      }
-    `;
-		document.head.appendChild(style);
-		stylesInjected = true;
-	}
+	if (!textarea || !container) return null;
 
-	/* =========================
-	 * Core logic
-	 * ========================= */
+	// one-time CSS hook (lightweight)
+	container.classList.add('sugg-container');
 
-	/**
-	 * Compute and render suggestions.
-	 * @function run
-	 * @returns {void}
-	 */
-	function run() {
+	/** @type {() => void} */
+	const render = () => {
 		const text = (textarea.value || '').trim();
-		if (!text || text.length < MIN) {
-			// Clear only if there was content; keep container stable otherwise.
-			container.innerHTML = '';
-			return;
-		}
-		const original = buildOriginalSuggestions(text);
-		const bias = buildBiasFindings(text);
-		renderColumns(original, bias);
-
-		// Fire a custom event for analytics/telemetry if needed.
-		window.dispatchEvent(new CustomEvent('copilot-suggester:rendered', {
-			detail: { length: text.length, originalCount: original.length, biasCount: bias.length }
+		const main = buildMainSuggestions(text, mode);
+		const bias = buildBiasSuggestions(text, mode);
+		container.innerHTML = renderTwoColumn(main, bias);
+		container.dataset.populated = 'true';
+		window.dispatchEvent(new CustomEvent('copilot-suggester:updated', {
+			detail: { mode, count: main.length, biasCount: bias.length }
 		}));
-	}
+	};
 
-	// Debounced runners for heavy inputs/paste
-	const debouncedRun = debounce(run, 120);
+	/** @type {() => void} */
+	const maybeAutoSuggest = () => {
+		const text = (textarea.value || '').trim();
+		const eligible = text.length >= minCharsAuto;
+		const already = container.dataset.populated === 'true';
+		if (eligible && !already) render();
+	};
 
-	/**
-	 * Force an immediate recompute/render (public API).
-	 * @function forceSuggest
-	 */
-	function forceSuggest() {
-		run();
-	}
+	/** @type {(ev: Event) => void} */
+	const onInput = () => {
+		// keep lightweight on every keystroke; only auto-render once when threshold first crossed
+		maybeAutoSuggest();
+	};
+	/** @type {(ev: KeyboardEvent) => void} */
+	const onKeyup = () => maybeAutoSuggest();
+	/** @type {(ev: Event) => void} */
+	const onChange = () => maybeAutoSuggest();
+	/** @type {(ev: ClipboardEvent) => void} */
+	const onPaste = () => {
+		// after paste, defer a tick to read updated value
+		setTimeout(maybeAutoSuggest, 0);
+	};
 
-	// Auto-trigger on input, paste, keyup, and change.
-	const onInput = () => debouncedRun();
-	const onKeyup = () => debouncedRun();
-	const onChange = () => debouncedRun();
-	const onPaste = () => setTimeout(run, 0); // run after paste content lands
+	/** @type {() => void} */
+	const onManualClick = () => {
+		render();
+	};
 
 	textarea.addEventListener('input', onInput);
 	textarea.addEventListener('keyup', onKeyup);
 	textarea.addEventListener('change', onChange);
 	textarea.addEventListener('paste', onPaste);
+	button?.addEventListener('click', onManualClick);
 
-	// Manual button triggers the same render
-	if (button) {
-		button.addEventListener('click', (e) => {
-			e.preventDefault();
-			forceSuggest();
-		});
+	// Optional empty scaffold (keeps layout steady)
+	if (options?.showWhenEmpty) {
+		container.innerHTML = renderTwoColumn([], []);
+		container.dataset.populated = 'false';
 	}
 
-	// If there is already content at load (e.g., back nav), evaluate once.
-	if ((textarea.value || '').trim().length >= MIN) {
-		run();
-	}
-
-	// Public API (for start-description-assist.js)
 	return {
-		forceSuggest,
+		/**
+		 * Force re-run suggestions now.
+		 * @returns {void}
+		 */
+		forceSuggest() { render(); },
+
+		/**
+		 * Tear down listeners and clear container.
+		 * @returns {void}
+		 */
 		destroy() {
 			try {
 				textarea.removeEventListener('input', onInput);
 				textarea.removeEventListener('keyup', onKeyup);
 				textarea.removeEventListener('change', onChange);
 				textarea.removeEventListener('paste', onPaste);
-				if (button) button.removeEventListener('click', forceSuggest);
+				button?.removeEventListener('click', onManualClick);
 			} catch {}
 		}
 	};
 }
+
+/* =========================
+ * Minimal styles (optional)
+ * =========================
+ * Add to your CSS bundle if you want quick badges/columns:
+ *
+ * .sugg-grid { display:grid; gap:1rem; grid-template-columns:1fr 1fr; }
+ * .sugg-col__title { margin:0 0 .5rem 0; font-weight:600; }
+ * .sugg-list { list-style: none; padding:0; margin:0; }
+ * .sugg-item { padding:.5rem .75rem; border:1px solid var(--govuk-border, #b1b4b6); border-radius:.25rem; margin-bottom:.5rem; }
+ * .sugg-item .sugg-cat { font-weight:600; margin-right:.5rem; }
+ * .sugg-item .sugg-sev { float:right; text-transform:uppercase; font-size:.75rem; padding:.125rem .375rem; border-radius:.25rem; }
+ * .badge--high { background:#d4351c; color:#fff; }
+ * .badge--medium { background:#f47738; color:#000; }
+ * .badge--low { background:#b1b4b6; color:#000; }
+ * .muted { color:#505a5f; }
+ */
