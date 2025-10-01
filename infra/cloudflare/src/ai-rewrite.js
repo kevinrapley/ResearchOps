@@ -274,6 +274,7 @@ function rulesPromptForMode(mode) {
 			"07) Use GOV.UK style: plain English, short sentences, expanded acronyms.",
 			"08) If there is ambiguity, keep the objective clear but do not invent details.",
 			"09) Do NOT add numbers, sample sizes, percentages, or timeframes unless they appear in the input; propose them only in suggestions.",
+			"10) The rewrite must never introduce new numbers, dates, or timeframes. Only preserve or clarify what is already present in the input."
 		].join("\n");
 	}
 
