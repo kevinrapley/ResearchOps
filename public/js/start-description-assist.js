@@ -1,26 +1,19 @@
 // /js/start-description-assist.js
 /**
  * Start Description Assist
- * Binds suggestion + AI rewrite helpers to a project description textarea.
- * Idempotent: safe to call multiple times; will only bind once per textarea.
- *
- * Exports:
- *   - initStartDescriptionAssist(config)
- *
- * Config:
- *   - textareaSelector: CSS selector for the target <textarea>
- *   - manualBtnSelector: button to generate lightweight suggestions client-side
- *   - aiBtnSelector: button to call AI endpoint for rewrite
- *   - suggContainerSelector: container to render suggestion chips/list
- *   - aiContainerSelector: container to render AI rewrite output
- *   - aiStatusSelector: element for status messages (aria-live preferred)
- *   - aiEndpoint: absolute URL of the AI rewrite API
+ * - Imports Copilot Suggester internally (per HTML contract).
+ * - Sets window.__descAssistActive when initialised (guard against double-bind).
+ * - Exposes initStartDescriptionAssist(cfg) for explicit boot if needed.
+ * - Also auto-boots on DOM ready if expected selectors exist.
  */
+
+import { initCopilotSuggester } from '/js/copilot-suggester.js';
 
 const _BOUND_FLAG = Symbol('sda_bound');
 const _CONTROLLER = Symbol('sda_abort_controller');
 
 function $(sel, root = document) { return root.querySelector(sel); }
+
 function assertEl(el, label) {
 	if (!el) throw new Error(`[start-description-assist] Missing element: ${label}`);
 	return el;
@@ -29,8 +22,7 @@ function assertEl(el, label) {
 function setStatus(el, msg, busy = false) {
 	if (!el) return;
 	el.textContent = msg || '';
-	if (busy) { el.setAttribute('aria-busy', 'true'); }
-	else { el.removeAttribute('aria-busy'); }
+	if (busy) { el.setAttribute('aria-busy', 'true'); } else { el.removeAttribute('aria-busy'); }
 }
 
 function h(tag, props = {}, children = []) {
@@ -50,12 +42,12 @@ function simpleClientSuggestions(text) {
 	const t = (text || '').trim();
 	if (!t) return [
 		'Explain the user need in one sentence.',
-		'Add scope boundaries (what is and isnât included).',
+		'Add scope boundaries (what is and isn\'t included).',
 		'List known constraints (policy, security, data, time).',
-		'Write acceptance criteria as âGiven/When/Thenâ.'
+		'Write acceptance criteria as "Given/When/Then".'
 	];
 	const bullets = [];
-	if (t.length > 280) bullets.push('Open with a 1â2 sentence summary.');
+	if (t.length > 280) bullets.push('Open with a 1-2 sentence summary.');
 	if (!/[.!?]\s*$/.test(t)) bullets.push('Finish with a clear outcome statement.');
 	if (!/user|citizen|research/i.test(t)) bullets.push('Name the primary user and their goal.');
 	if (!/measure|metric|kpi|success/i.test(t)) bullets.push('State how success will be measured.');
@@ -88,7 +80,7 @@ export function initStartDescriptionAssist(cfg) {
 		const ul = h('ul', { class: 'sda-suggestions', role: 'list' });
 		(items || []).forEach((txt) => {
 			const li = h('li', { class: 'sda-suggestion' }, [
-				 h('button', { type: 'button', class: 'sda-chip', onClick: () => insertSuggestion(txt) }, [txt])
+				h('button', { type: 'button', class: 'sda-chip', onClick: () => insertSuggestion(txt) }, [txt])
 			]);
 			ul.appendChild(li);
 		});
@@ -126,7 +118,7 @@ export function initStartDescriptionAssist(cfg) {
 		textarea[_CONTROLLER] = controller;
 
 		btnAI.disabled = true;
-		setStatus(statusEl, 'Rewritingâ¦', true);
+		setStatus(statusEl, 'Rewriting...', true);
 
 		try {
 			const res = await fetch(endpoint, {
@@ -135,7 +127,7 @@ export function initStartDescriptionAssist(cfg) {
 				body: JSON.stringify({ text: textarea.value || '' }),
 				signal: controller.signal
 			});
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			if (!res.ok) throw new Error(`HTTP {res.status}`);
 			const data = await res.json().catch(() => ({}));
 			// Flexible shape support
 			const out = data.output || data.text || data.result || (typeof data === 'string' ? data : '');
@@ -156,6 +148,9 @@ export function initStartDescriptionAssist(cfg) {
 		renderSuggestions(simpleClientSuggestions(textarea.value));
 	}
 
+	// mark global flag so other initialisers can skip
+	window.__descAssistActive = true;
+
 	return {
 		destroy() {
 			btnManual.replaceWith(btnManual.cloneNode(true));
@@ -163,6 +158,58 @@ export function initStartDescriptionAssist(cfg) {
 			textarea[_BOUND_FLAG] = false;
 			textarea[_CONTROLLER]?.abort?.();
 			textarea[_CONTROLLER] = null;
+			window.__descAssistActive = false;
 		}
 	};
+}
+
+// ---------------- Auto-boot (per HTML contract) ----------------
+
+function readAiEndpoint() {
+	// Priority: window.__AI_ENDPOINT -> <meta name="ai-endpoint" content="..."> -> default
+	const meta = document.querySelector('meta[name="ai-endpoint"]')?.content;
+	return (window.__AI_ENDPOINT || meta || 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite');
+}
+
+function exists(sel) { return !!document.querySelector(sel); }
+
+function bootIfPossible() {
+	if (window.__descAssistActive) return; // already running elsewhere
+	const haveAssistUI = ['#p_desc', '#btn-get-suggestions', '#btn-ai-rewrite', '#description-suggestions', '#ai-rewrite-output', '#ai-rewrite-status'].every(exists);
+	if (!haveAssistUI) return;
+
+	try {
+		initStartDescriptionAssist({
+			textareaSelector: '#p_desc',
+			manualBtnSelector: '#btn-get-suggestions',
+			aiBtnSelector: '#btn-ai-rewrite',
+			suggContainerSelector: '#description-suggestions',
+			aiContainerSelector: '#ai-rewrite-output',
+			aiStatusSelector: '#ai-rewrite-status',
+			aiEndpoint: readAiEndpoint()
+		});
+	} catch (e) {
+		console.error('[start-description-assist] Auto-boot failed:', e);
+		return;
+	}
+
+	// Try to start Copilot if its hooks are present (kept distinct from Assist UI)
+	try {
+		const copilotSelectorsOk = ['#p_desc', '#copilot-output', '#btn-copilot'].every(exists);
+		if (copilotSelectorsOk) {
+			initCopilotSuggester({
+				sourceSelector: '#p_desc',
+				outputSelector: '#copilot-output',
+				triggerSelector: '#btn-copilot'
+			});
+		}
+	} catch (e) {
+		console.warn('[start-description-assist] Copilot init skipped/failed:', e);
+	}
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', bootIfPossible, { once: true });
+} else {
+	bootIfPossible();
 }
