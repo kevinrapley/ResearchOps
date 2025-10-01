@@ -1,50 +1,129 @@
-// /pages/start/start-new-project.js
 /**
- * Optional orchestrator.
- * If start-description-assist has already auto-booted (window.__descAssistActive),
- * this file will do nothing. Otherwise, it can explicitly boot modules.
+ * @file start-new-project.js
+ * @module StartNewProject
+ * @summary Page controller for “Start a New Research Project”.
+ * @description
+ * Orchestrates multi-step navigation and validation for the Start flow.
+ * Respects Step 1 ownership by {@link StartDescriptionAssist}: does NOT wire suggestions or AI for Step 1.
+ *
+ * A11y:
+ * - Error summary region with aria-live.
+ * - Buttons manage focus across steps.
+ *
+ * @requires globalThis.document
+ * @requires globalThis.CustomEvent
  */
 
-import { initStartDescriptionAssist } from '/js/start-description-assist.js';
-import { initCopilotSuggester } from '/js/copilot-suggester.js';
+/* =========================
+ * @section Helpers
+ * ========================= */
 
-const once = (() => {
-	const done = new Set();
-	return (key, fn) => { if (done.has(key)) return;
-		done.add(key); try { fn(); } catch (e) { console.error(e); } };
-})();
+/**
+ * Get element by id.
+ * @function $id
+ * @param {string} id
+ * @returns {HTMLElement|null}
+ */
+function $id(id) { return document.getElementById(id); }
 
-function exists(sel) { return !!document.querySelector(sel); }
-
-function readAiEndpoint() {
-	const meta = document.querySelector('meta[name="ai-endpoint"]')?.content;
-	return (window.__AI_ENDPOINT || meta || 'https://rops-api.digikev-kevin-rapley.workers.dev/api/ai-rewrite');
+/**
+ * Show a section and hide the others.
+ * @function showStep
+ * @param {'step1'|'step2'|'step3'} which
+ * @returns {void}
+ */
+function showStep(which) {
+	['step1', 'step2', 'step3'].forEach(id => {
+		const el = $id(id);
+		if (el) el.style.display = (id === which) ? '' : 'none';
+	});
 }
 
+/**
+ * Basic field validation for Step 1.
+ * @function validateStep1
+ * @returns {boolean}
+ */
+function validateStep1() {
+	const name = /** @type {HTMLInputElement|null} */ ($id('p_name'));
+	const desc = /** @type {HTMLTextAreaElement|null} */ ($id('p_desc'));
+	const errSummary = $id('error-summary');
+	const errs = [];
+
+	if (!name?.value.trim()) {
+		errs.push('Enter a project name.');
+	}
+	if (!desc?.value.trim()) {
+		errs.push('Enter a project description.');
+	}
+
+	if (errSummary) {
+		if (errs.length) {
+			errSummary.style.display = '';
+			errSummary.innerHTML = `<ul>${errs.map(e => `<li>${e}</li>`).join('')}</ul>`;
+			errSummary.focus();
+			return false;
+		}
+		errSummary.style.display = 'none';
+		errSummary.textContent = '';
+	}
+	return true;
+}
+
+/* =========================
+ * @section Initialiser
+ * ========================= */
+
+/**
+ * Initialise page wiring for Start flow.
+ * @function initStartNewProject
+ * @public
+ * @returns {{destroy:()=>void}}
+ */
+export function initStartNewProject() {
+	const next2 = /** @type {HTMLButtonElement|null} */ ($id('next2'));
+	const prev1 = /** @type {HTMLButtonElement|null} */ ($id('prev1'));
+	const next3 = /** @type {HTMLButtonElement|null} */ ($id('next3'));
+	const prev2 = /** @type {HTMLButtonElement|null} */ ($id('prev2'));
+	const finish = /** @type {HTMLButtonElement|null} */ ($id('finish'));
+
+	// Step navigation
+	const goNext2 = () => { if (validateStep1()) showStep('step2'); };
+	const goPrev1 = () => showStep('step1');
+	const goNext3 = () => showStep('step3');
+	const goPrev2 = () => showStep('step2');
+	const doFinish = () => {
+		// Placeholder for submit or navigation
+		window.dispatchEvent(new CustomEvent('start:submit', { detail: { ts: Date.now() } }));
+		alert('Project created (demo).');
+	};
+
+	next2?.addEventListener('click', goNext2);
+	prev1?.addEventListener('click', goPrev1);
+	next3?.addEventListener('click', goNext3);
+	prev2?.addEventListener('click', goPrev2);
+	finish?.addEventListener('click', doFinish);
+
+	// Honour Step 1 ownership flag (no-op here, just documented)
+	if (window.__descAssistActive) {
+		// Another script owns Step 1 assistance; we do not attach any listeners there.
+	}
+
+	return {
+		destroy() {
+			next2?.removeEventListener('click', goNext2);
+			prev1?.removeEventListener('click', goPrev1);
+			next3?.removeEventListener('click', goNext3);
+			prev2?.removeEventListener('click', goPrev2);
+			finish?.removeEventListener('click', doFinish);
+		}
+	};
+}
+
+/* =========================
+ * @section Auto-init
+ * ========================= */
+
 document.addEventListener('DOMContentLoaded', () => {
-	if (window.__descAssistActive) return; // already handled by start-description-assist.js
-
-	once('start-description-assist', () => {
-		const req = ['#p_desc', '#btn-get-suggestions', '#btn-ai-rewrite', '#description-suggestions', '#ai-rewrite-output', '#ai-rewrite-status'];
-		if (!req.every(exists)) return;
-		initStartDescriptionAssist({
-			textareaSelector: '#p_desc',
-			manualBtnSelector: '#btn-get-suggestions',
-			aiBtnSelector: '#btn-ai-rewrite',
-			suggContainerSelector: '#description-suggestions',
-			aiContainerSelector: '#ai-rewrite-output',
-			aiStatusSelector: '#ai-rewrite-status',
-			aiEndpoint: readAiEndpoint()
-		});
-	});
-
-	once('copilot-suggester', () => {
-		const need = ['#p_desc', '#copilot-output', '#btn-copilot'];
-		if (!need.every(exists)) return;
-		initCopilotSuggester({
-			sourceSelector: '#p_desc',
-			outputSelector: '#copilot-output',
-			triggerSelector: '#btn-copilot'
-		});
-	});
+	initStartNewProject();
 });
