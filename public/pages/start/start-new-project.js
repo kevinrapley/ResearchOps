@@ -507,21 +507,21 @@ function initStartPage() {
 	wireAiSection({
 		mode: "description",
 		textarea: descEl,
-		btnSuggest: $('btn-get-suggestions'),
-		btnRewrite: $('btn-ai-rewrite'),
-		statusEl: $('ai-rewrite-status'),
+		btnSuggest: btnDescSuggest,
+		btnRewrite: btnDescRewrite,
+		statusEl: aiDescStatus,
 		msgSuggest: "Getting suggestions…",
 		msgSuggestDone: "Suggestions ready.",
-		msgRewrite: "Rewriting…",
-		msgRewriteDone: "Rewrite applied."
+		msgRewrite: "Rewriting description…",
+		msgRewriteDone: "Description rewritten."
 	});
 
 	wireAiSection({
 		mode: "objectives",
 		textarea: objectivesEl,
-		btnSuggest: $('btn-obj-suggest'),
-		btnRewrite: $('btn-obj-rewrite'),
-		statusEl: $('ai-obj-status'),
+		btnSuggest: btnObjSuggest,
+		btnRewrite: btnObjRewrite,
+		statusEl: aiObjStatus,
 		msgSuggest: "Getting suggestions…",
 		msgSuggestDone: "Suggestions ready.",
 		msgRewrite: "Rewriting objectives…",
