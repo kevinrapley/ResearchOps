@@ -1,7 +1,7 @@
 /**
  * @file start-new-project.js
  * @module StartNewProject
- * @summary Multi-step controller. On Step 3 submit, POST to /api/projects → Airtable, then route to /pages/projects/.
+ * @summary Multi-step controller. On Step 3 submit, POST to /api/projects → Airtable, then route to /pages/projects/?created=<id>.
  *
  * @requires globalThis.fetch
  * @requires globalThis.document
@@ -16,13 +16,20 @@ function v(id) {
 	return el ? el.value.trim() : '';
 }
 
-/** Show error summary panel. */
-function showError(msg) {
+/** Show error summary panel (and log to console for debugging). */
+function showError(msg, extra) {
 	const panel = /** @type {HTMLElement|null} */ (document.getElementById('error-summary'));
-	if (!panel) return;
-	panel.textContent = esc(msg);
-	panel.style.display = 'block';
-	panel.focus?.();
+	const text = esc(msg);
+	if (panel) {
+		panel.textContent = text;
+		panel.style.display = 'block';
+		panel.setAttribute('role', 'alert');
+		panel.setAttribute('aria-live', 'polite');
+		panel.focus?.();
+	}
+	// Dev visibility
+	if (extra) console.error('[StartNewProject] Error:', msg, extra);
+	else console.error('[StartNewProject] Error:', msg);
 }
 
 /** Hide error summary panel. */
@@ -32,7 +39,7 @@ function hideError() {
 	panel.style.display = 'none';
 }
 
-/** POST JSON with timeout. */
+/** POST JSON with timeout. Returns {ok:boolean, status:number, json?:any, text?:string}. */
 async function postJson(url, body, timeoutMs = 10000) {
 	const controller = new AbortController();
 	const to = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
@@ -43,7 +50,14 @@ async function postJson(url, body, timeoutMs = 10000) {
 			body: JSON.stringify(body),
 			signal: controller.signal
 		});
-		return res;
+		const ct = res.headers.get('content-type') || '';
+		let payload;
+		try {
+			payload = ct.includes('application/json') ? await res.json() : await res.text();
+		} catch {
+			payload = null;
+		}
+		return { ok: res.ok, status: res.status, ...(typeof payload === 'string' ? { text: payload } : { json: payload }) };
 	} finally {
 		clearTimeout(to);
 	}
@@ -92,7 +106,10 @@ function parseObjectives(raw) {
 	const prev2 = /** @type {HTMLButtonElement|null} */ (document.getElementById('prev2'));
 	const finish = /** @type {HTMLButtonElement|null} */ (document.getElementById('finish'));
 
-	if (!step1 || !step2 || !step3) return;
+	if (!step1 || !step2 || !step3) {
+		console.warn('[StartNewProject] Steps not found; aborting init.');
+		return;
+	}
 
 	const show = (el) => {
 		step1.style.display = 'none';
@@ -115,12 +132,17 @@ function parseObjectives(raw) {
 	next3?.addEventListener('click', () => show(step3));
 	prev2?.addEventListener('click', () => show(step2));
 
-	// Final submit → /api/projects → redirect
+	// Final submit → /api/projects → redirect with ?created=<id>
 	finish?.addEventListener('click', async () => {
 		hideError();
-		const btn = finish;
-		btn.disabled = true;
-		btn.textContent = 'Creating…';
+		if (!finish) return;
+
+		// Guard double submit
+		if (finish.dataset.busy === '1') return;
+		finish.dataset.busy = '1';
+		const originalLabel = finish.textContent || 'Create project';
+		finish.disabled = true;
+		finish.textContent = 'Creating…';
 
 		// Gather payload (arrays where your Worker expects arrays)
 		const payload = {
@@ -140,37 +162,56 @@ function parseObjectives(raw) {
 			lead_researcher_email: v('lead_email'),
 			notes: v('p_notes'),
 
-			// Optional local id / org if you use them upstream
+			// Optional local id / org for your CSV dual-write
 			org: 'Home Office Biometrics',
-			id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())
+			id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()))
 		};
 
+		// Front-end requireds
 		if (!payload.name || !payload.description) {
 			showError('Project name and description are required.');
-			btn.disabled = false;
-			btn.textContent = 'Create project';
+			finish.disabled = false;
+			finish.textContent = originalLabel;
+			finish.dataset.busy = '';
 			return;
 		}
 
 		try {
-			const res = await postJson('/api/projects', payload);
+			const res = await postJson('/api/projects', payload, 15000);
+
+			// Helpful console trace
+			console.log('[StartNewProject] /api/projects →', res);
+
 			if (!res.ok) {
-				let msg = 'Failed to create project.';
-				try {
-					const data = await res.json();
-					msg = data?.error ? `${data.error}${data.detail ? ` — ${data.detail}` : ''}` : msg;
-				} catch {}
-				showError(msg);
-				btn.disabled = false;
-				btn.textContent = 'Create project';
+				// Try to decode Worker error shape
+				const e = res.json && typeof res.json === 'object' ? res.json : {};
+				const statusLine = `HTTP ${res.status}`;
+				const detail = e.detail || res.text || '';
+				// Common CORS/Origin hint
+				const maybeCors = res.status === 403 && /Origin not allowed/i.test(e.error || detail || '');
+				const hint = maybeCors ?
+					'Hint: ensure your page Origin is listed in ALLOWED_ORIGINS in the Worker.' :
+					'';
+				showError(`${statusLine}: ${e.error || 'Failed to create project.'}${detail ? ` — ${detail}` : ''}${hint ? `\n${hint}` : ''}`, res);
+				finish.disabled = false;
+				finish.textContent = originalLabel;
+				finish.dataset.busy = '';
 				return;
 			}
-			// Success → route to projects list
-			window.location.href = '/pages/projects/';
-		} catch {
-			showError('Network error while creating project.');
-			btn.disabled = false;
-			btn.textContent = 'Create project';
+
+			const data = res.json || {};
+			const airtableId = data.project_id || '';
+			// Redirect with ?created=<AirtableId> (fallback to list if missing)
+			const target = airtableId ?
+				`/pages/projects/?created=${encodeURIComponent(airtableId)}` :
+				`/pages/projects/`;
+			window.location.href = target;
+
+		} catch (err) {
+			showError('Network error while creating project.', err);
+			finish.disabled = false;
+			finish.textContent = originalLabel;
+			finish.dataset.busy = '';
 		}
 	});
 })();
