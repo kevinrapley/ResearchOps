@@ -1,24 +1,19 @@
 /**
  * @file start-new-project.js
  * @module StartNewProject
- * @summary Start → 3-step project flow (client controller).
+ * @summary Start → 3-step flow controller (navigation + validation + submit).
  *
  * @description
- * - Validates form inputs.
- * - Builds a clean payload for /api/projects.
- * - Coerces select values to Airtable’s exact option labels to avoid 422.
- * - Submits via fetch with timeout + detailed error handling.
- * - Routes to /pages/projects/ on success.
+ * - Step navigation: #step1 ↔ #step2 ↔ #step3
+ * - Validates Step 1 when continuing to Step 2.
+ * - Builds payload and POSTs to /api/projects on Finish.
+ * - Uses robust Airtable select coercion to avoid 422 errors.
  *
- * Accessibility:
- * - Error summary uses role="alert" and aria-live="polite".
- *
- * Privacy:
- * - OFFICIAL-by-default: only talks to your Worker origin.
+ * NOTE: AI assist (description/objectives) is handled by their own modules.
  */
 
 /* =========================
- * Helpers (DOM + strings)
+ * Utilities
  * ========================= */
 
 /** Escape for safe HTML. */
@@ -47,7 +42,7 @@ function hideError(el) {
 }
 
 /**
- * Require a field (adds aria-invalid + inline error text).
+ * Mark a field as required (inline + aria-invalid).
  * @param {HTMLInputElement|HTMLTextAreaElement} field
  * @param {HTMLElement} inlineError
  * @param {string} label
@@ -55,7 +50,7 @@ function hideError(el) {
 function requireField(field, inlineError, label) {
 	const val = (field?.value || "").trim();
 	const ok = val.length > 0;
-	field.setAttribute("aria-invalid", ok ? "false" : "true");
+	if (field) field.setAttribute("aria-invalid", ok ? "false" : "true");
 	if (inlineError) {
 		inlineError.style.display = ok ? "none" : "block";
 		inlineError.textContent = ok ? "" : `${label} is required.`;
@@ -64,42 +59,77 @@ function requireField(field, inlineError, label) {
 }
 
 /* =========================
- * Select coercion → Airtable labels
+ * DOM refs
+ * ========================= */
+
+// Sections
+const step1 = document.querySelector("#step1");
+const step2 = document.querySelector("#step2");
+const step3 = document.querySelector("#step3");
+
+// Error summary (Step 1)
+const errorSummary = /** @type {HTMLElement|null} */ (document.querySelector("#error-summary"));
+
+// Step 1 fields
+const p_name = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_name"));
+const p_name_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_name_error"));
+const p_desc = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_desc"));
+const p_desc_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_desc_error"));
+const p_phase = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_phase"));
+const p_status = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_status"));
+
+// Step 2 fields
+const taObjectives = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_objectives"));
+const inputUserGroups = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_usergroups"));
+const taStakeholders = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_stakeholders"));
+
+// Step 3 fields
+const leadName = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_name"));
+const leadEmail = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_email"));
+const notes = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_notes"));
+
+// Nav buttons
+const btnNext2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next2"));
+const btnPrev1 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev1"));
+const btnNext3 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next3"));
+const btnPrev2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev2"));
+const btnFinish = /** @type {HTMLButtonElement|null} */ (document.querySelector("#finish"));
+
+/* =========================
+ * Step visibility helpers
  * ========================= */
 
 /**
- * Coerce a user-entered choice to one of Airtable’s exact Single-select labels.
- * - Case/space/hyphen insensitive matching.
- * - Returns "" when no match (so we omit the field to avoid 422).
- * @param {string} raw
- * @param {string[]} allowed
+ * Show one step, hide the rest, keep ARIA state tidy.
+ * @param {1|2|3} n
  */
-function coerceSelect(raw, allowed) {
-	const norm = (s) => String(s || "")
-		.toLowerCase()
-		.replace(/[\s_-]+/g, "-")
-		.trim();
+function goToStep(n) {
+	const map = new Map([
+		[1, step1],
+		[2, step2],
+		[3, step3]
+	]);
 
-	const wanted = norm(raw);
-	for (const opt of allowed) {
-		if (norm(opt) === wanted) return opt; // exact after normalisation
+	for (const [idx, el] of map.entries()) {
+		if (!el) continue;
+		const on = idx === n;
+		el.style.display = on ? "" : "none";
+		el.setAttribute("aria-hidden", on ? "false" : "true");
 	}
 
-	// also try “startsWith” / “includes” forgiving matches
-	const starts = allowed.find(o => norm(o).startsWith(wanted) || wanted.startsWith(norm(o)));
-	if (starts) return starts;
-
-	const contains = allowed.find(o => norm(o).includes(wanted) || wanted.includes(norm(o)));
-	if (contains) return contains;
-
-	return ""; // no safe match
+	// Move focus to first focusable in the step (progressive)
+	const target = map.get(n);
+	if (target) {
+		const focusable = target.querySelector("input, textarea, select, button, [tabindex]");
+		if (focusable && typeof focusable.focus === "function") focusable.focus();
+	}
 }
 
-/** Airtable Single-select labels (must match your base exactly). */
-const PHASE_OPTIONS = [
-	"Pre-Discovery", "Discovery", "Alpha", "Beta", "Live", "Retired"
-];
+/* =========================
+ * Airtable select coercion
+ * ========================= */
 
+const PHASE_OPTIONS = ["Pre-Discovery", "Discovery", "Alpha", "Beta", "Live", "Retired"];
 const STATUS_OPTIONS = [
 	"Goal setting & problem defining",
 	"Planning research",
@@ -109,98 +139,44 @@ const STATUS_OPTIONS = [
 	"Monitoring metrics"
 ];
 
-/* =========================
- * Fetch wrapper with timeout
- * ========================= */
-
 /**
- * POST JSON with a hard timeout and structured response.
- * @param {string} url
- * @param {any} body
- * @param {{timeoutMs?:number, headers?:Record<string,string>}} [opts]
+ * Coerce a free/loose value to one of the exact Airtable labels.
+ * @param {string} raw
+ * @param {string[]} allowed
  */
-async function apiPost(url, body, opts = {}) {
-	const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 12000;
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(new Error("timeout")), timeoutMs);
-
-	window.__ropsDebug?.log(`→ POST ${url}`);
-
-	try {
-		const res = await fetch(url, {
-			method: "POST",
-			headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-			body: JSON.stringify(body),
-			signal: controller.signal
-		});
-
-		const ct = res.headers.get("content-type") || "";
-		let payload;
-		if (ct.includes("application/json")) {
-			payload = await res.json().catch(() => null);
-		} else {
-			payload = await res.text().catch(() => "");
-		}
-
-		window.__ropsDebug?.log(`← ${res.status} ${res.ok ? "OK" : "ERROR"}`);
-
-		return { ok: res.ok, status: res.status, json: (typeof payload === "object" && payload) ? payload : null, text: (typeof payload === "string") ? payload : "" };
-	} finally {
-		clearTimeout(id);
-	}
+function coerceSelect(raw, allowed) {
+	const norm = (s) => String(s || "").toLowerCase().replace(/[\s_-]+/g, "-").trim();
+	const wanted = norm(raw);
+	for (const opt of allowed)
+		if (norm(opt) === wanted) return opt;
+	const starts = allowed.find(o => norm(o).startsWith(wanted) || wanted.startsWith(norm(o)));
+	if (starts) return starts;
+	const contains = allowed.find(o => norm(o).includes(wanted) || wanted.includes(norm(o)));
+	if (contains) return contains;
+	return "";
 }
-
-/* =========================
- * Form wiring
- * ========================= */
-
-// Step 1
-const p_name = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_name"));
-const p_name_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_name_error"));
-const p_desc = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_desc"));
-const p_desc_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_desc_error"));
-const p_phase = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_phase"));
-const p_status = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_status"));
-const errorSummary = /** @type {HTMLElement|null} */ (document.querySelector("#error-summary"));
-
-// Step 2
-const taObjectives = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_objectives"));
-const inputUserGroups = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_usergroups"));
-const taStakeholders = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_stakeholders"));
-
-// Step 3
-const leadName = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_name"));
-const leadEmail = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_email"));
-const notes = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_notes"));
-
-const btnFinish = /** @type {HTMLButtonElement|null} */ (document.querySelector("#finish"));
 
 /* =========================
  * Payload builder
  * ========================= */
 
 /**
- * Build the payload expected by /api/projects.
- * Coerces selects to valid Airtable labels; omits invalids.
+ * Build payload for /api/projects (omits invalid selects).
  */
 function buildPayload() {
-	// Coerce phase/status to Airtable labels (empty string means omit)
 	const coercedPhase = coerceSelect(p_phase?.value, PHASE_OPTIONS);
 	const coercedStatus = coerceSelect(p_status?.value, STATUS_OPTIONS);
 
-	// Objectives (textarea → lines)
 	const objectives = (taObjectives?.value || "")
 		.split("\n")
 		.map(s => s.trim())
 		.filter(Boolean);
 
-	// User groups (comma separated)
 	const user_groups = (inputUserGroups?.value || "")
 		.split(",")
 		.map(s => s.trim())
 		.filter(Boolean);
 
-	// Stakeholders (name | role | email, one per line)
 	const stakeholders = (taStakeholders?.value || "")
 		.split("\n")
 		.map(line => line.trim())
@@ -224,7 +200,6 @@ function buildPayload() {
 		id: ""
 	};
 
-	// Only include phase/status if we matched a valid label
 	if (coercedPhase) out.phase = coercedPhase;
 	if (coercedStatus) out.status = coercedStatus;
 
@@ -232,7 +207,48 @@ function buildPayload() {
 }
 
 /* =========================
- * Submit logic (requested to retain createProject())
+ * Fetch wrapper
+ * ========================= */
+
+/**
+ * POST with timeout; structured return (json OR text).
+ * @param {string} url
+ * @param {any} body
+ * @param {{timeoutMs?:number, headers?:Record<string,string>}} [opts]
+ */
+async function apiPost(url, body, opts = {}) {
+	const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 15000;
+	const controller = new AbortController();
+	const id = setTimeout(() => controller.abort(new Error("timeout")), timeoutMs);
+
+	window.__ropsDebug?.log?.(`→ POST ${url}`);
+
+	try {
+		const res = await fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+			body: JSON.stringify(body),
+			signal: controller.signal
+		});
+
+		const ct = res.headers.get("content-type") || "";
+		let payload;
+		if (ct.includes("application/json")) {
+			payload = await res.json().catch(() => null);
+		} else {
+			payload = await res.text().catch(() => "");
+		}
+
+		window.__ropsDebug?.log?.(`← ${res.status} ${res.ok ? "OK" : "ERROR"}`);
+
+		return { ok: res.ok, status: res.status, json: (payload && typeof payload === "object") ? payload : null, text: (typeof payload === "string") ? payload : "" };
+	} finally {
+		clearTimeout(id);
+	}
+}
+
+/* =========================
+ * Submit (keep createProject())
  * ========================= */
 
 /**
@@ -240,15 +256,16 @@ function buildPayload() {
  */
 async function createProject() {
 	if (!btnFinish) return;
+	// Step 1 fields are critical even if user navigated back
 	hideError(errorSummary);
 
-	// Validate Step 1 again for safety
 	const okName = p_name ? requireField(p_name, p_name_error, "Project name") : true;
 	const okDesc = p_desc ? requireField(p_desc, p_desc_error, "Description") : true;
 	if (!okName || !okDesc) {
 		showError(errorSummary, "Please fix the highlighted fields.");
 		window.__ropsDebug?.show?.();
-		window.__ropsDebug?.log("Validation failed for required Step 1 fields.");
+		window.__ropsDebug?.log?.("Validation failed for required Step 1 fields.");
+		goToStep(1);
 		return;
 	}
 
@@ -257,45 +274,41 @@ async function createProject() {
 
 	try {
 		const payload = buildPayload();
-		window.__ropsDebug?.log(`Submitting /api/projects payload: ${JSON.stringify(payload)}`);
+		window.__ropsDebug?.log?.(`Submitting /api/projects payload: ${JSON.stringify(payload)}`);
 
 		const res = await apiPost("/api/projects", payload, { timeoutMs: 15000 });
 
-		// Airtable 422: invalid select options → give helpful guidance
 		if (!res.ok) {
-			// Prefer JSON
 			if (res.json && res.json.error) {
 				const detail = String(res.json.detail || "");
-				// Detect Airtable INVALID_MULTIPLE_CHOICE_OPTIONS
 				if (/INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(detail)) {
-					// Which field? Phase or Status — show allowed lists.
-					const phaseBad = /Phase|pre-discovery|discovery|alpha|beta|live|retired/i.test(detail) || /select option/.test(detail) && /pre-?discovery/i.test(JSON.stringify(payload));
-					const statusBad = /Status|goal setting|planning research|conducting research|synthesis|shared|monitoring/i.test(detail);
-
 					const lines = ["One or more select values are not allowed by Airtable."];
-					if (phaseBad) lines.push(`Service phase must be one of: ${PHASE_OPTIONS.join(", ")}.`);
-					if (statusBad) lines.push(`Project status must be one of: ${STATUS_OPTIONS.join(", ")}.`);
-					lines.push("Please update the selection and try again.");
-
+					lines.push(`Service phase must be: ${PHASE_OPTIONS.join(", ")}.`);
+					lines.push(`Project status must be: ${STATUS_OPTIONS.join(", ")}.`);
+					lines.push("Update the selections and try again.");
 					showError(errorSummary, lines.join(" "));
 					window.__ropsDebug?.show?.();
-					window.__ropsDebug?.log(`Airtable 422 detail: ${detail}`);
+					window.__ropsDebug?.log?.(`Airtable 422 detail: ${detail}`);
+					goToStep(1);
 				} else {
 					showError(
 						errorSummary,
 						`Error ${res.status}: ${esc(res.json.error)}${res.json.detail ? ` — ${esc(res.json.detail)}` : ""}`
 					);
 					window.__ropsDebug?.show?.();
-					window.__ropsDebug?.log(`Server error ${res.status}: ${JSON.stringify(res.json)}`);
+					window.__ropsDebug?.log?.(`Server error ${res.status}: ${JSON.stringify(res.json)}`);
+					goToStep(1);
 				}
 			} else if (res.text) {
 				showError(errorSummary, `Error ${res.status}: ${esc(res.text)}`);
 				window.__ropsDebug?.show?.();
-				window.__ropsDebug?.log(`Server text error ${res.status}: ${res.text}`);
+				window.__ropsDebug?.log?.(`Server text error ${res.status}: ${res.text}`);
+				goToStep(1);
 			} else {
 				showError(errorSummary, `Error ${res.status}: Request failed.`);
 				window.__ropsDebug?.show?.();
-				window.__ropsDebug?.log(`Generic failure ${res.status}`);
+				window.__ropsDebug?.log?.(`Generic failure ${res.status}`);
+				goToStep(1);
 			}
 
 			btnFinish.textContent = "Create project";
@@ -303,17 +316,15 @@ async function createProject() {
 			return;
 		}
 
-		// Successful JSON shape from worker: { ok:true, project_id: "...", ... }
 		if (res.json && res.json.ok) {
-			window.__ropsDebug?.log(`Project created: ${res.json.project_id}`);
+			window.__ropsDebug?.log?.(`Project created: ${res.json.project_id}`);
 			window.location.href = "/pages/projects/";
 			return;
 		}
 
-		// Fallback: treat as failure if `ok` missing
 		showError(errorSummary, "Unexpected response from the server.");
 		window.__ropsDebug?.show?.();
-		window.__ropsDebug?.log(`Unexpected response: ${JSON.stringify(res.json || res.text || {})}`);
+		window.__ropsDebug?.log?.(`Unexpected response: ${JSON.stringify(res.json || res.text || {})}`);
 		btnFinish.textContent = "Create project";
 		btnFinish.disabled = false;
 
@@ -321,10 +332,39 @@ async function createProject() {
 		const msg = (err && err.message) ? err.message : String(err);
 		showError(errorSummary, `Network error: ${esc(msg)}`);
 		window.__ropsDebug?.show?.();
-		window.__ropsDebug?.log(`Network error: ${msg}`);
+		window.__ropsDebug?.log?.(`Network error: ${msg}`);
 		btnFinish.textContent = "Create project";
 		btnFinish.disabled = false;
 	}
+}
+
+/* =========================
+ * Navigation handlers
+ * ========================= */
+
+function onNextFromStep1() {
+	hideError(errorSummary);
+	const okName = p_name ? requireField(p_name, p_name_error, "Project name") : true;
+	const okDesc = p_desc ? requireField(p_desc, p_desc_error, "Description") : true;
+	if (!okName || !okDesc) {
+		showError(errorSummary, "Please fix the highlighted fields.");
+		return;
+	}
+	goToStep(2);
+}
+
+function onBackToStep1() {
+	hideError(errorSummary);
+	goToStep(1);
+}
+
+function onNextFromStep2() {
+	// No hard validation here (objectives optional), just proceed
+	goToStep(3);
+}
+
+function onBackToStep2() {
+	goToStep(2);
 }
 
 /* =========================
@@ -332,8 +372,25 @@ async function createProject() {
  * ========================= */
 
 function wire() {
-	// Button actions
+	// Initial state
+	goToStep(1);
+
+	// Buttons
+	btnNext2?.addEventListener("click", onNextFromStep1);
+	btnPrev1?.addEventListener("click", onBackToStep1);
+	btnNext3?.addEventListener("click", onNextFromStep2);
+	btnPrev2?.addEventListener("click", onBackToStep2);
 	btnFinish?.addEventListener("click", createProject);
+
+	// Basic Enter-key prevention on Step 1 inputs to avoid accidental submit
+	[p_name, p_desc].forEach(el => {
+		el?.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && !e.shiftKey) {
+				// allow Enter in textarea to make a new line
+				if (el.tagName !== "TEXTAREA") e.preventDefault();
+			}
+		});
+	});
 }
 
 if (document.readyState === "loading") {
@@ -342,5 +399,12 @@ if (document.readyState === "loading") {
 	wire();
 }
 
-// Export for tests (optional)
-export { createProject, buildPayload, coerceSelect, PHASE_OPTIONS, STATUS_OPTIONS };
+// Exports for testing if needed
+export {
+	createProject,
+	buildPayload,
+	coerceSelect,
+	PHASE_OPTIONS,
+	STATUS_OPTIONS,
+	goToStep
+};
