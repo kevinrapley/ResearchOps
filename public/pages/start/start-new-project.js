@@ -1,217 +1,366 @@
 /**
  * @file start-new-project.js
  * @module StartNewProject
- * @summary Multi-step controller. On Step 3 submit, POST to /api/projects → Airtable, then route to /pages/projects/?created=<id>.
+ * @summary Page controller for “Start a new research project” (Steps 1–3).
  *
- * @requires globalThis.fetch
- * @requires globalThis.document
+ * @description
+ * - Collects data across three steps and POSTs to `/api/projects`.
+ * - Shows clear, on-page error messages (no browser console required).
+ * - On success, routes to `/pages/projects/`.
+ * - Uses GOV.UK tone: plain English, short sentences, accessible.
+ *
+ * Accessibility:
+ * - Uses an alert panel (`#error-summary`) with `aria-live="polite"`.
+ * - Keeps focus on the triggering control after errors when possible.
+ *
+ * Privacy:
+ * - Sends only the fields needed by the API.
+ * - No third-party calls; API base is same origin unless overridden by `window.__API_BASE`.
+ *
+ * Customisation:
+ * - Override the API base by setting `window.__API_BASE = 'https://your-worker.workers.dev'`
+ *   before this script runs. Otherwise we default to the current origin.
  */
 
-/** Escape for text nodes. */
-function esc(s) { return String(s ?? ''); }
+/* =========================
+ * Helpers
+ * ========================= */
 
-/** Read value by element id. */
-function v(id) {
-	const el = /** @type {HTMLInputElement|HTMLTextAreaElement|null} */ (document.getElementById(id));
-	return el ? el.value.trim() : '';
+/**
+ * Escape text for safe HTML interpolation.
+ * @param {unknown} s
+ * @returns {string}
+ */
+function esc(s) {
+	return String(s ?? "").replace(/[&<>"']/g, m => ({
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		"\"": "&quot;",
+		"'": "&#39;"
+	} [m]));
 }
 
-/** Show error summary panel (and log to console for debugging). */
-function showError(msg, extra) {
-	const panel = /** @type {HTMLElement|null} */ (document.getElementById('error-summary'));
-	const text = esc(msg);
-	if (panel) {
-		panel.textContent = text;
-		panel.style.display = 'block';
-		panel.setAttribute('role', 'alert');
-		panel.setAttribute('aria-live', 'polite');
-		panel.focus?.();
-	}
-	// Dev visibility
-	if (extra) console.error('[StartNewProject] Error:', msg, extra);
-	else console.error('[StartNewProject] Error:', msg);
-}
-
-/** Hide error summary panel. */
-function hideError() {
-	const panel = /** @type {HTMLElement|null} */ (document.getElementById('error-summary'));
-	if (!panel) return;
-	panel.style.display = 'none';
-}
-
-/** POST JSON with timeout. Returns {ok:boolean, status:number, json?:any, text?:string}. */
-async function postJson(url, body, timeoutMs = 10000) {
+/**
+ * Fetch wrapper with a hard timeout.
+ * @param {RequestInfo|URL} url
+ * @param {RequestInit} init
+ * @param {number} timeoutMs
+ * @returns {Promise<Response>}
+ */
+async function fetchWithTimeout(url, init, timeoutMs) {
 	const controller = new AbortController();
-	const to = setTimeout(() => controller.abort(new Error('timeout')), timeoutMs);
+	const timer = setTimeout(() => controller.abort(new Error("timeout")), timeoutMs);
 	try {
-		const res = await fetch(url, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify(body),
-			signal: controller.signal
-		});
-		const ct = res.headers.get('content-type') || '';
-		let payload;
-		try {
-			payload = ct.includes('application/json') ? await res.json() : await res.text();
-		} catch {
-			payload = null;
-		}
-		return { ok: res.ok, status: res.status, ...(typeof payload === 'string' ? { text: payload } : { json: payload }) };
+		const initSafe = Object.assign({}, init || {});
+		initSafe.signal = controller.signal;
+		return await fetch(url, initSafe);
 	} finally {
-		clearTimeout(to);
+		clearTimeout(timer);
 	}
 }
 
 /**
- * Parse stakeholders textarea lines:
- * "name | role | email" -> { name, role, email }
+ * POST JSON to the API and return a structured result.
+ * We avoid inline “split literals” for clarity.
+ * @param {string} path
+ * @param {any} body
+ * @param {{timeoutMs?:number, base?:string}} [opts]
+ * @returns {Promise<{ok:boolean,status:number,json?:any,text?:string}>}
  */
-function parseStakeholders(raw) {
-	return (raw || '')
-		.split(/\r?\n/)
-		.map(l => l.trim())
-		.filter(Boolean)
-		.map(line => {
-			const [name = '', role = '', email = ''] = line.split('|').map(s => s.trim());
-			return { name, role, email };
-		});
-}
+async function apiPost(path, body, opts = {}) {
+	const base = (typeof window !== "undefined" && window.__API_BASE) ? String(window.__API_BASE).replace(/\/+$/, "") : "";
+	const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 10000;
+	const url = (opts.base || base) + path;
 
-/** Split comma/pipe separated user groups -> array of strings. */
-function parseUserGroups(raw) {
-	return (raw || '')
-		.split(/[,|]/)
-		.map(s => s.trim())
-		.filter(Boolean);
-}
+	const res = await fetchWithTimeout(url, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify(body)
+	}, timeoutMs);
 
-/** Split objectives textarea into array (one objective per line). */
-function parseObjectives(raw) {
-	return (raw || '')
-		.split(/\r?\n/)
-		.map(s => s.trim())
-		.filter(Boolean);
-}
+	// Read body once, then decide how to shape return
+	const raw = await res.text();
+	/** @type {{ok:boolean,status:number,json?:any,text?:string}} */
+	const shaped = { ok: res.ok, status: res.status };
 
-/** Wire steps & final submit. */
-(function init() {
-	const step1 = /** @type {HTMLElement|null} */ (document.getElementById('step1'));
-	const step2 = /** @type {HTMLElement|null} */ (document.getElementById('step2'));
-	const step3 = /** @type {HTMLElement|null} */ (document.getElementById('step3'));
-
-	const next2 = /** @type {HTMLButtonElement|null} */ (document.getElementById('next2'));
-	const prev1 = /** @type {HTMLButtonElement|null} */ (document.getElementById('prev1'));
-	const next3 = /** @type {HTMLButtonElement|null} */ (document.getElementById('next3'));
-	const prev2 = /** @type {HTMLButtonElement|null} */ (document.getElementById('prev2'));
-	const finish = /** @type {HTMLButtonElement|null} */ (document.getElementById('finish'));
-
-	if (!step1 || !step2 || !step3) {
-		console.warn('[StartNewProject] Steps not found; aborting init.');
-		return;
+	try {
+		const parsed = JSON.parse(raw);
+		shaped.json = parsed;
+	} catch {
+		shaped.text = raw;
 	}
 
-	const show = (el) => {
-		step1.style.display = 'none';
-		step2.style.display = 'none';
-		step3.style.display = 'none';
-		el.style.display = 'block';
-		hideError();
-	};
+	return shaped;
+}
+
+/**
+ * Show an error message in the alert panel.
+ * @param {HTMLElement|null} panel
+ * @param {string} message
+ */
+function showError(panel, message) {
+	if (!panel) return;
+	panel.innerHTML = esc(message);
+	panel.style.display = "block";
+}
+
+/**
+ * Hide error panel.
+ * @param {HTMLElement|null} panel
+ */
+function hideError(panel) {
+	if (!panel) return;
+	panel.style.display = "none";
+	panel.textContent = "";
+}
+
+/**
+ * Basic required-field validator.
+ * Adds inline error text and aria-invalid on fields.
+ * @param {HTMLInputElement|HTMLTextAreaElement} el
+ * @param {HTMLElement|null} errEl
+ * @param {string} label
+ * @returns {boolean}
+ */
+function requireField(el, errEl, label) {
+	const ok = Boolean((el.value || "").trim());
+	el.setAttribute("aria-invalid", ok ? "false" : "true");
+	if (errEl) {
+		errEl.textContent = ok ? "" : `${label} is required.`;
+		errEl.style.display = ok ? "none" : "block";
+	}
+	return ok;
+}
+
+/* =========================
+ * DOM bindings
+ * ========================= */
+
+/**
+ * Wire up the Start page.
+ */
+function initStartNewProject() {
+	// Step sections
+	const step1 = /** @type {HTMLElement|null} */ (document.querySelector("#step1"));
+	const step2 = /** @type {HTMLElement|null} */ (document.querySelector("#step2"));
+	const step3 = /** @type {HTMLElement|null} */ (document.querySelector("#step3"));
+
+	// Error summary
+	const errorSummary = /** @type {HTMLElement|null} */ (document.querySelector("#error-summary"));
+
+	// Step 1 fields
+	const p_name = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_name"));
+	const p_name_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_name_error"));
+
+	const p_desc = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_desc"));
+	const p_desc_error = /** @type {HTMLElement|null} */ (document.querySelector("#p_desc_error"));
+
+	const p_phase = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_phase"));
+	const p_status = /** @type {HTMLSelectElement|null} */ (document.querySelector("#p_status"));
 
 	// Step navigation
-	next2?.addEventListener('click', () => {
-		const name = v('p_name');
-		const desc = v('p_desc');
-		if (!name) { showError('Enter a project name.'); return; }
-		if (!desc) { showError('Enter a project description.'); return; }
+	const btnNext2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next2"));
+	const btnPrev1 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev1"));
+	const btnNext3 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next3"));
+	const btnPrev2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev2"));
+	const btnFinish = /** @type {HTMLButtonElement|null} */ (document.querySelector("#finish"));
+
+	// Step 2 fields
+	const p_stakeholders = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_stakeholders"));
+	const p_objectives = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_objectives"));
+	const p_usergroups = /** @type {HTMLInputElement|null} */ (document.querySelector("#p_usergroups"));
+
+	// Step 3 fields
+	const lead_name = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_name"));
+	const lead_email = /** @type {HTMLInputElement|null} */ (document.querySelector("#lead_email"));
+	const p_notes = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_notes"));
+
+	// Guard: if we don't have step1, abort wiring
+	if (!step1) return;
+
+	// Helpers to switch steps
+	const show = (el) => { if (el) el.style.display = ""; };
+	const hide = (el) => { if (el) el.style.display = "none"; };
+
+	/**
+	 * Move to Step 2 if Step 1 required fields are valid.
+	 */
+	function goToStep2() {
+		hideError(errorSummary);
+		const okName = p_name ? requireField(p_name, p_name_error, "Project name") : true;
+		const okDesc = p_desc ? requireField(p_desc, p_desc_error, "Description") : true;
+
+		if (!okName || !okDesc) {
+			showError(errorSummary, "Please fix the highlighted fields.");
+			return;
+		}
+		hide(step1);
 		show(step2);
-	});
+		hide(step3);
+	}
 
-	prev1?.addEventListener('click', () => show(step1));
-	next3?.addEventListener('click', () => show(step3));
-	prev2?.addEventListener('click', () => show(step2));
+	/**
+	 * Move to Step 3 (no required fields on Step 2 by default).
+	 */
+	function goToStep3() {
+		hideError(errorSummary);
+		hide(step1);
+		hide(step2);
+		show(step3);
+	}
 
-	// Final submit → /api/projects → redirect with ?created=<id>
-	finish?.addEventListener('click', async () => {
-		hideError();
-		if (!finish) return;
+	/**
+	 * Move back to Step 1.
+	 */
+	function backToStep1() {
+		hideError(errorSummary);
+		show(step1);
+		hide(step2);
+		hide(step3);
+		if (p_name) p_name.focus();
+	}
 
-		// Guard double submit
-		if (finish.dataset.busy === '1') return;
-		finish.dataset.busy = '1';
-		const originalLabel = finish.textContent || 'Create project';
-		finish.disabled = true;
-		finish.textContent = 'Creating…';
+	/**
+	 * Move back to Step 2.
+	 */
+	function backToStep2() {
+		hideError(errorSummary);
+		hide(step1);
+		show(step2);
+		hide(step3);
+		if (p_objectives) p_objectives.focus();
+	}
 
-		// Gather payload (arrays where your Worker expects arrays)
-		const payload = {
-			// Step 1
-			name: v('p_name'),
-			description: v('p_desc'),
-			phase: v('p_phase'),
-			status: v('p_status'),
+	/**
+	 * Parse stakeholders textarea (name | role | email, one per line).
+	 * @param {string} raw
+	 * @returns {Array<{name:string,role:string,email:string}>}
+	 */
+	function parseStakeholders(raw) {
+		const arr = [];
+		const lines = String(raw || "").split("\n");
+		for (const line of lines) {
+			const parts = line.split("|").map(s => s.trim()).filter(Boolean);
+			if (!parts.length) continue;
+			const name = parts[0] || "";
+			const role = parts[1] || "";
+			const email = parts[2] || "";
+			if (name) arr.push({ name, role, email });
+		}
+		return arr;
+	}
 
-			// Step 2
-			stakeholders: parseStakeholders(v('p_stakeholders')),
-			objectives: parseObjectives(v('p_objectives')),
-			user_groups: parseUserGroups(v('p_usergroups')),
+	/**
+	 * Build the payload for /api/projects.
+	 */
+	function buildPayload() {
+		const objectives = (p_objectives?.value || "")
+			.split("\n")
+			.map(s => s.trim())
+			.filter(Boolean);
 
-			// Step 3
-			lead_researcher: v('lead_name'),
-			lead_researcher_email: v('lead_email'),
-			notes: v('p_notes'),
+		const user_groups = (p_usergroups?.value || "")
+			.split(",")
+			.map(s => s.trim())
+			.filter(Boolean);
 
-			// Optional local id / org for your CSV dual-write
-			org: 'Home Office Biometrics',
-			id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()))
+		const stakeholders = parseStakeholders(p_stakeholders?.value || "");
+
+		return {
+			org: "Home Office Biometrics",
+			name: p_name?.value || "",
+			description: p_desc?.value || "",
+			phase: p_phase?.value || "",
+			status: p_status?.value || "",
+			objectives,
+			user_groups,
+			stakeholders,
+			lead_researcher: lead_name?.value || "",
+			lead_researcher_email: lead_email?.value || "",
+			notes: p_notes?.value || "",
+			// Optional: include a local UUID/slug if your frontend has one
+			id: ""
 		};
+	}
 
-		// Front-end requireds
-		if (!payload.name || !payload.description) {
-			showError('Project name and description are required.');
-			finish.disabled = false;
-			finish.textContent = originalLabel;
-			finish.dataset.busy = '';
+	/**
+	 * Create the project via API and route on success.
+	 */
+	async function createProject() {
+		if (!btnFinish) return;
+		hideError(errorSummary);
+
+		// Validate Step 1 again for safety
+		const okName = p_name ? requireField(p_name, p_name_error, "Project name") : true;
+		const okDesc = p_desc ? requireField(p_desc, p_desc_error, "Description") : true;
+		if (!okName || !okDesc) {
+			showError(errorSummary, "Please fix the highlighted fields.");
 			return;
 		}
 
+		btnFinish.textContent = "Creating…";
+		btnFinish.disabled = true;
+
 		try {
-			const res = await postJson('/api/projects', payload, 15000);
+			const payload = buildPayload();
+			const res = await apiPost("/api/projects", payload, { timeoutMs: 12000 });
 
-			// Helpful console trace
-			console.log('[StartNewProject] /api/projects →', res);
-
+			// Prefer JSON if present
 			if (!res.ok) {
-				// Try to decode Worker error shape
-				const e = res.json && typeof res.json === 'object' ? res.json : {};
-				const statusLine = `HTTP ${res.status}`;
-				const detail = e.detail || res.text || '';
-				// Common CORS/Origin hint
-				const maybeCors = res.status === 403 && /Origin not allowed/i.test(e.error || detail || '');
-				const hint = maybeCors ?
-					'Hint: ensure your page Origin is listed in ALLOWED_ORIGINS in the Worker.' :
-					'';
-				showError(`${statusLine}: ${e.error || 'Failed to create project.'}${detail ? ` — ${detail}` : ''}${hint ? `\n${hint}` : ''}`, res);
-				finish.disabled = false;
-				finish.textContent = originalLabel;
-				finish.dataset.busy = '';
+				if (res.json && res.json.error) {
+					showError(errorSummary, `Error ${res.status}: ${esc(res.json.error)}${res.json.detail ? ` — ${esc(res.json.detail)}` : ""}`);
+				} else if (res.text) {
+					showError(errorSummary, `Error ${res.status}: ${esc(res.text)}`);
+				} else {
+					showError(errorSummary, `Error ${res.status}: Request failed.`);
+				}
+				btnFinish.textContent = "Create project";
+				btnFinish.disabled = false;
 				return;
 			}
 
-			const data = res.json || {};
-			const airtableId = data.project_id || '';
-			// Redirect with ?created=<AirtableId> (fallback to list if missing)
-			const target = airtableId ?
-				`/pages/projects/?created=${encodeURIComponent(airtableId)}` :
-				`/pages/projects/`;
-			window.location.href = target;
+			// Successful JSON shape from worker: { ok:true, project_id: "...", ... }
+			if (res.json && res.json.ok) {
+				// Route to project list
+				window.location.href = "/pages/projects/";
+				return;
+			}
+
+			// Fallback: treat as failure if `ok` missing
+			showError(errorSummary, "Unexpected response from the server.");
+			btnFinish.textContent = "Create project";
+			btnFinish.disabled = false;
 
 		} catch (err) {
-			showError('Network error while creating project.', err);
-			finish.disabled = false;
-			finish.textContent = originalLabel;
-			finish.dataset.busy = '';
+			showError(errorSummary, `Network error: ${esc(err && err.message ? err.message : String(err))}`);
+			btnFinish.textContent = "Create project";
+			btnFinish.disabled = false;
 		}
-	});
-})();
+	}
+
+	/* =========================
+	 * Wire events
+	 * ========================= */
+
+	btnNext2?.addEventListener("click", goToStep2);
+	btnPrev1?.addEventListener("click", backToStep1);
+	btnNext3?.addEventListener("click", goToStep3);
+	btnPrev2?.addEventListener("click", backToStep2);
+	btnFinish?.addEventListener("click", createProject);
+
+	// Default view: Step 1 visible
+	show(step1);
+	hide(step2);
+	hide(step3);
+}
+
+/* =========================
+ * Auto-init
+ * ========================= */
+
+if (document.readyState === "loading") {
+	document.addEventListener("DOMContentLoaded", initStartNewProject);
+} else {
+	initStartNewProject();
+}
