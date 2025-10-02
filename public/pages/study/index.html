@@ -107,25 +107,22 @@
 
 	<script type="module">
 		/**
-		 * Merged Study bootstrap + inline editor (Option A: PATCH /api/studies/:id)
-		 * - Reads ?pid & ?sid from URL
-		 * - Loads studies for project; hydrates UI for the matching study
-		 * - Sets data-study-id programmatically
-		 * - Initialises inline editor bound to /api/studies/:id
-		 *
-		 * Expected API payload from GET /api/studies?project=<pid>:
-		 *   { ok: true, studies: [{ id, studyId, method, status, description, createdAt }] }
-		 * Where `description` is Markdown (server stores MD+HTML per Option A).
+		 * Study page bootstrap — minimal, reliable fetch + render from Worker API.
+		 * Expects URL params: ?pid=<AirtableProjectId>&sid=<AirtableStudyRecordId>
+		 * Uses: GET /api/studies?project=<pid>  → [{ id, studyId, method, status, description, createdAt }]
 		 */
 
-		/* -------------------------- Small DOM helpers -------------------------- */
+		// ── small helpers
 		const $ = (sel, root = document) => root.querySelector(sel);
-		const setText = (sel, val, fallback = '—') => { const el = $(sel); if (el) el.textContent = (val ?? '').toString().trim() || fallback; };
+		const setText = (sel, val, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (val ?? "").toString().trim() || fallback;
+		};
 
-		/* ---------------------------- Data access ------------------------------ */
+		// ── data access (Worker API proxies Airtable “Project Studies”)
 		async function loadStudies(projectAirtableId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}`;
-			const res = await fetch(url, { cache: 'no-store' });
+			const res = await fetch(url, { cache: "no-store" });
 			const js = await res.json().catch(() => ({}));
 			if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
 				throw new Error(js?.error || `Studies fetch failed (${res.status})`);
@@ -133,303 +130,162 @@
 			return js.studies;
 		}
 
-		/* --------------------------- Markdown utils ---------------------------- */
-		function esc(s) {
-			return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' } [c]));
-		}
-
-		/** Conservative Markdown → safe HTML (headings, lists, code, emphasis, links). */
-		function mdToSafeHtml(md) {
-			if (!md) return '<p>—</p>';
-			const lines = String(md).replace(/\r\n?/g, '\n').split('\n');
-			const out = [];
-			let inCode = false;
-
-			const inline = (s) => {
-					let t = esc(s);
-					t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
-					t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-					t = t.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-					t = t.replace(/$begin:math:display$([^$end:math:display$]+)\]$begin:math:text$(https?:\\/\\ / [ ^ \\s)] + ) $end: math: text$ / g,
-				'<a rel="nofollow noopener noreferrer" target="_blank" href="$2">$1</a>');
-		return t;
-		};
-
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-
-			if (/^\s*```/.test(line)) { // code fences
-				if (!inCode) { inCode = true;
-					out.push('<pre><code>'); } else { inCode = false;
-					out.push('</code></pre>'); }
-				continue;
-			}
-			if (inCode) { out.push(esc(line)); continue; }
-
-			// Headings #
-			const h = line.match(/^\s*(#{1,6})\s+(.*)$/);
-			if (h) { out.push(`<h${h[1].length} class="govuk-heading-s">${esc(h[2])}</h${h[1].length}>`); continue; }
-
-			// Unordered list
-			if (/^\s*[-*+]\s+/.test(line)) {
-				const items = [];
-				let j = i;
-				while (j < lines.length && /^\s*[-*+]\s+/.test(lines[j])) {
-					items.push('<li>' + inline(lines[j].replace(/^\s*[-*+]\s+/, '')) + '</li>');
-					j++;
-				}
-				out.push('<ul>' + items.join('') + '</ul>');
-				i = j - 1;
-				continue;
-			}
-			// Ordered list
-			if (/^\s*\d+\.\s+/.test(line)) {
-				const items = [];
-				let j = i;
-				while (j < lines.length && /^\s*\d+\.\s+/.test(lines[j])) {
-					items.push('<li>' + inline(lines[j].replace(/^\s*\d+\.\s+/, '')) + '</li>');
-					j++;
-				}
-				out.push('<ol>' + items.join('') + '</ol>');
-				i = j - 1;
-				continue;
-			}
-
-			// Paragraph / blank
-			if (line.trim() === '') { out.push(''); } else { out.push('<p>' + inline(line) + '</p>'); }
-		}
-		return out.filter(Boolean).join('\n');
-		}
-
-		/** Best-effort HTML → Markdown (used only if needed when entering edit). */
-		function htmlToMd(html) {
-			if (!html) return '';
-			const tmp = document.createElement('div');
-			tmp.innerHTML = html;
-
-			tmp.querySelectorAll('a[href]').forEach(a => a.replaceWith(`[${a.textContent}](${a.getAttribute('href')})`));
-			for (let lvl = 6; lvl >= 1; lvl--) {
-				tmp.querySelectorAll(`h${lvl}`).forEach(h => h.replaceWith(`${'#'.repeat(lvl)} ${h.textContent}\n\n`));
-			}
-			tmp.querySelectorAll('pre code').forEach(code => code.replaceWith('```\n' + code.textContent + '\n```\n\n'));
-			tmp.querySelectorAll('code').forEach(code => code.replaceWith('`' + code.textContent + '`'));
-			tmp.querySelectorAll('li').forEach(li => {
-				const isOl = li.parentElement?.tagName === 'OL';
-				li.replaceWith((isOl ? '1. ' : '- ') + li.textContent + '\n');
-			});
-			tmp.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-			tmp.querySelectorAll('p').forEach(p => p.replaceWith(p.textContent + '\n\n'));
-
-			return tmp.textContent.trim();
-		}
-
-		/* ----------------------- Inline editor controller ---------------------- */
-		/**
-		 * Minimal class (testable) to swap view→textarea and PATCH on save.
-		 * Matches your existing markup:
-		 *  - Read view:   #desc-view-wrap (contains #description + Edit button)
-		 *  - Edit form:   #desc-editor (textarea #desc-input, Save submit, #desc-cancel)
-		 */
-		class StudyDescController {
-			constructor(options) {
-				this.o = Object.assign({
-					viewWrapSel: '#desc-view-wrap',
-					viewSel: '#description',
-					editBtnSel: '#btn-edit-desc',
-					formSel: '#desc-editor',
-					textareaSel: '#desc-input',
-					cancelBtnSel: '#desc-cancel',
-					statusSel: null,
-					saveUrl: '/api/studies/:id',
-					studyIdAttr: 'data-study-id',
-					htmlToMd,
-					mdToHtml: mdToSafeHtml,
-					maxChars: 20000
-				}, options || {});
-				this.state = { editing: false, originalHtml: '', lastSavedMd: '' };
-			}
-
-			init() {
-				this.$viewWrap = $(this.o.viewWrapSel);
-				this.$view = $(this.o.viewSel);
-				this.$editBtn = $(this.o.editBtnSel);
-				this.$form = $(this.o.formSel);
-				this.$ta = $(this.o.textareaSel);
-				this.$cancel = $(this.o.cancelBtnSel);
-				this.$status = this.o.statusSel ? $(this.o.statusSel) : null;
-
-				if (!this.$status) {
-					this.$status = document.createElement('p');
-					this.$status.id = 'desc-status';
-					this.$status.className = 'mono muted';
-					this.$status.setAttribute('role', 'status');
-					this.$status.setAttribute('aria-live', 'polite');
-					this.$status.setAttribute('aria-atomic', 'true');
-					this.$viewWrap.after(this.$status);
-				}
-
-				this.$editBtn?.addEventListener('click', () => this.enterEdit());
-				this.$form?.addEventListener('submit', (e) => { e.preventDefault();
-					this.save(); });
-				this.$cancel?.addEventListener('click', () => this.cancel());
-				this.$form?.addEventListener('keydown', (e) => {
-					if (this.state.editing && e.key === 'Escape') { e.preventDefault();
-						this.cancel(); }
-				});
-				return this;
-			}
-
-			seedMarkdown(md) {
-				this.state.lastSavedMd = (md || '').toString();
-			}
-
-			enterEdit() {
-				if (this.state.editing) return;
-				this.state.editing = true;
-
-				this.state.originalHtml = this.$view.innerHTML;
-				const seed = (this.state.lastSavedMd || '').trim() || this.o.htmlToMd(this.state.originalHtml);
-				this.$ta.value = seed.slice(0, this.o.maxChars);
-
-				this.$viewWrap.hidden = true;
-				this.$form.hidden = false;
-				this.$editBtn.hidden = true;
-				this._status('Editing description. Press Save to apply or Cancel to discard.');
-
-				requestAnimationFrame(() => {
-					this.$ta.focus();
-					this._autosize(this.$ta);
-				});
-			}
-
-			cancel() {
-				if (!this.state.editing) return;
-				this._teardown();
-				this._status('Edit cancelled.');
-			}
-
-			async save() {
-				if (!this.state.editing) return;
-				const md = (this.$ta.value || '').slice(0, this.o.maxChars);
-				const html = this.o.mdToHtml(md);
-
-				// Optimistic UI
-				this.$view.innerHTML = html;
-				this._status('Saving description…');
-				this._busy(true);
-				this._teardown();
-
-				try {
-					const studyId = findStudyId(this.o.studyIdAttr);
-					const url = this.o.saveUrl.replace(':id', studyId);
-					const res = await fetch(url, {
-						method: 'PATCH',
-						headers: { 'content-type': 'application/json' },
-						body: JSON.stringify({ description: md })
-					});
-					if (!res.ok) throw new Error(`HTTP ${res.status}`);
-					this.state.lastSavedMd = md;
-					this._status('Description saved.');
-				} catch (err) {
-					console.error('StudyDescController: save failed', err);
-					this.$view.innerHTML = this.state.originalHtml;
-					this._status('We could not save the description. Try again.');
-				} finally {
-					this._busy(false);
-				}
-			}
-
-			_teardown() {
-				this.$form.hidden = true;
-				this.$viewWrap.hidden = false;
-				this.$editBtn.hidden = false;
-				this.state.editing = false;
-				requestAnimationFrame(() => this.$editBtn.focus());
-			}
-
-			_busy(on) {
-				const root = this.$view.closest('[aria-busy]') || this.$view.parentElement;
-				if (!root) return;
-				if (on) root.setAttribute('aria-busy', 'true');
-				else root.removeAttribute('aria-busy');
-			}
-
-			_status(msg) { if (this.$status) this.$status.textContent = msg; }
-
-			_autosize(ta) {
-				const fit = () => { ta.style.height = 'auto';
-					ta.style.overflow = 'hidden';
-					ta.style.height = ta.scrollHeight + 'px'; };
-				fit();
-				ta.addEventListener('input', () => requestAnimationFrame(fit), { passive: true });
-			}
-		}
-
-		/* -------------------- Programmatic study-id handling ------------------- */
-		function getRootForId() { return document.querySelector('#study-root') || document.querySelector('main') || document.body; }
-
-		function readIdFromDom(attr = 'data-study-id') { return getRootForId().getAttribute(attr) || null; }
-
-		function setDomId(id, attr = 'data-study-id') { const root = getRootForId();
-			root.setAttribute(attr, id); return root; }
-
-		function findStudyId(attr = 'data-study-id') {
-			return readIdFromDom(attr) ||
-				new URLSearchParams(location.search).get('sid') ||
-				(globalThis.__STUDY && globalThis.__STUDY.id) || '';
-		}
-
-		/* ------------------------------- Bootstrap ----------------------------- */
+		// ── bootstrap
 		(async function init() {
 			try {
 				const usp = new URLSearchParams(location.search);
-				const pid = usp.get('pid') || '';
-				const sid = usp.get('sid') || '';
-				if (!pid || !sid) throw new Error('Missing pid or sid in URL');
+				const pid = usp.get("pid") || ""; // Airtable Project record id
+				const sid = usp.get("sid") || ""; // Airtable Study record id
+				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Back-link to project dashboard
-				$('#back-to-project')?.setAttribute('href', `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
+				// Correct back-link for your /pages/ structure
+				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
 
-				// Fetch all studies for project, find current
+				// Fetch studies for this project and pick the one we need
 				const studies = await loadStudies(pid);
-				console.debug('[study] fetched', studies.length, 'studies for project', pid);
+				console.debug("[study] fetched", studies.length, "studies for project", pid);
 				const study = studies.find(s => s.id === sid);
 				if (!study) throw new Error(`Study not found in project (sid=${sid})`);
 
-				// Programmatically set data-study-id on a stable root
-				setDomId(sid);
+				// Paint the UI (keep this dead simple first)
+				setText("#study-eyebrow", "Study");
+				setText("#study-title", study.method || "Study");
+				setText("#kv-method", study.method || "");
+				setText("#kv-status", study.status || "");
+				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
 
-				// Paint headline + key facts
-				setText('#study-eyebrow', 'Study');
-				setText('#study-title', study.method || 'Study');
-				setText('#kv-method', study.method || '');
-				setText('#kv-status', study.status || '');
-				setText('#kv-studyid', (study.studyId || '').toString().toUpperCase());
+				// For now, show raw description plainly (no Markdown yet)
+				const descEl = $("#description");
+				if (descEl) descEl.textContent = (study.description || "").trim() || "—";
 
-				// Description: render Markdown → safe HTML for read view
-				const descMd = (study.description || '').toString();
-				const descHtml = mdToSafeHtml(descMd);
-				const descEl = $('#description');
-				if (descEl) descEl.innerHTML = descHtml;
+				// Optional “edit” deep link (stays on this page)
+				$("#edit-study")?.setAttribute(
+					"href",
+					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
+				);
 
-				// Optional “edit” deep link (kept)
-				$('#edit-study')?.setAttribute('href', `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`);
-
-				// Init inline editor (Option A)
-				const editor = new StudyDescController({
-					saveUrl: '/api/studies/:id'
-				}).init();
-				// Seed editor with current Markdown so Edit opens with MD source
-				editor.seedMarkdown(descMd);
-
-				// If URL anchors #edit, enter edit mode for convenience
-				if (location.hash === '#edit') {
-					$('#btn-edit-desc')?.click();
-				}
 			} catch (err) {
-				console.error('[study] init error:', err);
-				alert('Could not load study.');
+				console.error("[study] init error:", err);
+				alert("Could not load study.");
 			}
+		})();
+	</script>
+
+	<script type="module">
+		/**
+		 * @file study-bootstrap.js
+		 * @summary Derive study id, set data-study-id, then wire the inline editor.
+		 *
+		 * Sources of truth (in order):
+		 * 1) Existing DOM attribute (data-study-id on #study-root / main / body)
+		 * 2) URL query param: sid (or id)
+		 * 3) window.__STUDY?.id (if your page code sets it after fetching)
+		 *
+		 * Fails closed with clear console error.
+		 */
+
+		// ----- Config (no magic strings) -----
+		const SEL_ROOTS = ['#study-root', 'main', 'body'];
+		const ATTR_ID = 'data-study-id';
+		const URL_KEYS = ['sid', 'id']; // adapt if you use another key
+		const SAVE_URL = '/api/studies/:id';
+
+		// ----- Utilities -----
+		/** Find the root element we’ll annotate. */
+		function getRoot() {
+			for (const sel of SEL_ROOTS) {
+				const el = document.querySelector(sel);
+				if (el) return el;
+			}
+			return document.body;
+		}
+
+		/** Try to read an existing study id from DOM. */
+		function readIdFromDom() {
+			const root = getRoot();
+			return root.getAttribute(ATTR_ID) || null;
+		}
+
+		/** Try to read study id from URL (?sid=rec... or ?id=rec...). */
+		function readIdFromUrl() {
+			const qs = new URLSearchParams(location.search);
+			for (const key of URL_KEYS) {
+				const v = qs.get(key);
+				if (v && /^rec[a-zA-Z0-9]{14}$/i.test(v)) return v;
+			}
+			return null;
+		}
+
+		/** Try to read study id from a global your app may set. */
+		function readIdFromGlobal() {
+			// If your page fetch sets window.__STUDY = { id: 'rec...' }
+			const v = (globalThis.__STUDY && globalThis.__STUDY.id) || null;
+			return (typeof v === 'string' && v.startsWith('rec')) ? v : null;
+		}
+
+		/** Set the attribute on the chosen root. */
+		function setDomId(id) {
+			const root = getRoot();
+			root.setAttribute(ATTR_ID, id);
+			return root;
+		}
+
+		/** Initialise the editor once we have an id. */
+		async function initEditor() {
+			// Lazy import if you separated the class into its own module,
+			// otherwise remove this and use the global/class already on the page.
+			// import { StudyDescController } from './study-desc-controller.js';
+
+			// If StudyDescController is already in scope (from earlier snippet), use it:
+			if (typeof StudyDescController !== 'function') {
+				console.error('StudyDescController not found on window or module scope.');
+				return;
+			}
+
+			new StudyDescController({
+				viewWrapSel: '#desc-view-wrap',
+				viewSel: '#description',
+				editBtnSel: '#btn-edit-desc',
+				formSel: '#desc-editor',
+				textareaSel: '#desc-input',
+				cancelBtnSel: '#desc-cancel',
+				saveUrl: SAVE_URL
+			}).init();
+		}
+
+		// ----- Bootstrap flow -----
+		(function bootstrap() {
+			let id = readIdFromDom() || readIdFromUrl() || readIdFromGlobal();
+
+			if (id) {
+				setDomId(id);
+				initEditor();
+				return;
+			}
+
+			// If the id is not yet known (e.g. set later by your data loader),
+			// observe for it to appear and then initialise exactly once.
+			const root = getRoot();
+			const mo = new MutationObserver(() => {
+				const v = readIdFromDom();
+				if (v) {
+					mo.disconnect();
+					initEditor();
+				}
+			});
+			mo.observe(root, { attributes: true, attributeFilter: [ATTR_ID] });
+
+			// Also listen for an app event you might emit after fetching.
+			window.addEventListener('study:loaded', (e) => {
+				const maybeId = e?.detail?.id;
+				if (maybeId && !readIdFromDom()) {
+					setDomId(maybeId);
+					initEditor();
+				}
+			}, { once: true });
+
+			// Last resort log (helps during integration)
+			console.warn('study-bootstrap: study id not found yet; waiting for data-study-id attribute or study:loaded event.');
 		})();
 	</script>
 </body>
