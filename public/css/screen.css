@@ -889,5 +889,30 @@ select.govuk-input {
 .project-summary {
 	margin: 0;
 	}
+	
+/* Debug Shim */
+#rops-debug-toggle { 
+	transition: transform .06s ease-in-out; 
+	}
+
+#rops-debug-toggle:active { 
+	transform: scale(.98); 
+	}
+	
+#rops-debug {
+	backdrop-filter:
+	saturate(120%);
+	}
+	
+#rops-debug button { 
+	background:#fff; 
+	border:1px solid #b1b4b6; 
+	border-radius:6px; 
+	padding:4px 8px;
+	}
+	
+#rops-debug button:hover {
+	border-color:#1d70b8;
+	}
 
 /* transparency begins in the cascade */
