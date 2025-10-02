@@ -61,37 +61,42 @@ async function fetchWithTimeout(url, init, timeoutMs) {
 }
 
 /**
- * POST JSON to the API and return a structured result.
+ * POST JSON with timeout; return unified shape { ok, status, text, json }.
+ * - text: non-JSON body (string) or "" if JSON
+ * - json: parsed object or null if not JSON
  * We avoid inline “split literals” for clarity.
  * @param {string} path
  * @param {any} body
  * @param {{timeoutMs?:number, base?:string}} [opts]
  * @returns {Promise<{ok:boolean,status:number,json?:any,text?:string}>}
  */
-async function apiPost(path, body, opts = {}) {
-	const base = (typeof window !== "undefined" && window.__API_BASE) ? String(window.__API_BASE).replace(/\/+$/, "") : "";
-	const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 10000;
-	const url = (opts.base || base) + path;
-
-	const res = await fetchWithTimeout(url, {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(body)
-	}, timeoutMs);
-
-	// Read body once, then decide how to shape return
-	const raw = await res.text();
-	/** @type {{ok:boolean,status:number,json?:any,text?:string}} */
-	const shaped = { ok: res.ok, status: res.status };
+async function apiPost(url, data, opts) {
+	const timeoutMs = (opts && typeof opts.timeoutMs === "number") ? opts.timeoutMs : 12000;
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(new Error("timeout")), timeoutMs);
 
 	try {
-		const parsed = JSON.parse(raw);
-		shaped.json = parsed;
-	} catch {
-		shaped.text = raw;
-	}
+		const res = await fetch(url, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(data),
+			signal: controller.signal
+		});
 
-	return shaped;
+		const ct = res.headers.get("content-type") || "";
+		let text = "";
+		let json = null;
+
+		if (ct.includes("application/json")) {
+			try { json = await res.json(); } catch { text = await res.text(); } // fallback: return the raw text if JSON parse fails
+		} else {
+			text = await res.text();
+		}
+
+		return { ok: res.ok, status: res.status, text: text, json: json };
+	} finally {
+		clearTimeout(timer);
+	}
 }
 
 /**
@@ -286,12 +291,21 @@ function initStartNewProject() {
 
 	/**
 	 * Create the project via API and route on success.
+	 * - Keeps the same signature and external helpers you already use.
+	 * - Adds robust response handling + optional on-screen debug logs.
 	 */
 	async function createProject() {
 		if (!btnFinish) return;
+
+		// Inline helpers for button state
+		const setBusy = (state) => {
+			btnFinish.textContent = state ? "Creating…" : "Create project";
+			btnFinish.disabled = !!state;
+		};
+
 		hideError(errorSummary);
 
-		// Validate Step 1 again for safety
+		// Re-validate required fields from Step 1
 		const okName = p_name ? requireField(p_name, p_name_error, "Project name") : true;
 		const okDesc = p_desc ? requireField(p_desc, p_desc_error, "Description") : true;
 		if (!okName || !okDesc) {
@@ -299,43 +313,75 @@ function initStartNewProject() {
 			return;
 		}
 
-		btnFinish.textContent = "Creating…";
-		btnFinish.disabled = true;
+		// Build request payload from the 3 steps
+		const payload = buildPayload();
+		if (window.__ropsDebug) {
+			try { window.__ropsDebug.panel.show(); } catch {}
+			window.__ropsDebug.log("Submitting /api/projects payload: " + JSON.stringify(payload));
+		}
+
+		setBusy(true);
 
 		try {
-			const payload = buildPayload();
+			// Use your apiPost (patched below) or keep your existing one if equivalent
 			const res = await apiPost("/api/projects", payload, { timeoutMs: 12000 });
 
-			// Prefer JSON if present
+			// Debug log of raw response
+			if (window.__ropsDebug) {
+				window.__ropsDebug.log("Response status: " + res.status);
+				if (res.json) window.__ropsDebug.log("Response JSON: " + JSON.stringify(res.json));
+				if (res.text && !res.json) window.__ropsDebug.log("Response TEXT: " + res.text);
+			}
+
+			// Non-2xx branch: show the most helpful message we can
 			if (!res.ok) {
-				if (res.json && res.json.error) {
-					showError(errorSummary, `Error ${res.status}: ${esc(res.json.error)}${res.json.detail ? ` — ${esc(res.json.detail)}` : ""}`);
-				} else if (res.text) {
-					showError(errorSummary, `Error ${res.status}: ${esc(res.text)}`);
-				} else {
-					showError(errorSummary, `Error ${res.status}: Request failed.`);
+				// Common cause: CORS (403) because origin not in ALLOWED_ORIGINS
+				if (res.status === 403) {
+					showError(
+						errorSummary,
+						"Request was blocked (403). Check that this site origin is in your ALLOWED_ORIGINS on the API Worker."
+					);
+					return;
 				}
-				btnFinish.textContent = "Create project";
-				btnFinish.disabled = false;
+
+				// Prefer structured error from Worker
+				if (res.json && (res.json.error || res.json.detail)) {
+					const base = "Error " + res.status + ": " + esc(String(res.json.error || "Request failed."));
+					const det = res.json.detail ? " — " + esc(String(res.json.detail)) : "";
+					showError(errorSummary, base + det);
+					return;
+				}
+
+				// Fallback: show text body or a generic message
+				if (res.text) {
+					showError(errorSummary, "Error " + res.status + ": " + esc(res.text));
+					return;
+				}
+
+				showError(errorSummary, "Error " + res.status + ": Request failed.");
 				return;
 			}
 
-			// Successful JSON shape from worker: { ok:true, project_id: "...", ... }
+			// 2xx branch. Expect: { ok:true, project_id: "...", ... }
 			if (res.json && res.json.ok) {
-				// Route to project list
-				window.location.href = "/pages/projects/";
+				// Success → route to project list
+				window.location.assign("/pages/projects/");
 				return;
 			}
 
-			// Fallback: treat as failure if `ok` missing
-			showError(errorSummary, "Unexpected response from the server.");
-			btnFinish.textContent = "Create project";
-			btnFinish.disabled = false;
-
+			// Unexpected success shape: surface it to user
+			showError(
+				errorSummary,
+				"Unexpected response from the server. " +
+				(res.json ? esc(JSON.stringify(res.json)) : res.text ? esc(res.text) : "")
+			);
 		} catch (err) {
-			showError(errorSummary, `Network error: ${esc(err && err.message ? err.message : String(err))}`);
-			btnFinish.textContent = "Create project";
-			btnFinish.disabled = false;
+			// Network, timeout, or thrown parsing errors
+			const msg = (err && err.message) ? err.message : String(err);
+			showError(errorSummary, "Network error: " + esc(msg));
+			if (window.__ropsDebug) window.__ropsDebug.log("Network error: " + msg);
+		} finally {
+			setBusy(false);
 		}
 	}
 
