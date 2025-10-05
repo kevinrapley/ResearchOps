@@ -36,14 +36,14 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 /* -------------------- boot -------------------- */
 window.addEventListener('DOMContentLoaded', async () => {
 	const url = new URL(location.href);
-	const pid = url.searchParams.get('pid') || '';
-	const sid = url.searchParams.get('sid') || '';
+	const pid = url.searchParams.get('pid');
+	const sid = url.searchParams.get('sid');
 
-	// Breadcrumb + context
-	await hydrateCrumbs({ pid, sid });
+	// Breadcrumb contextualisation
+	await hydrateCrumbs({ pid, sid }).catch(console.warn);
 
 	// List guides
-	await loadGuides(sid);
+	await loadGuides(sid).catch(console.warn);
 
 	// Wire actions
 	wireGlobalActions();
@@ -162,25 +162,46 @@ async function loadGuides(studyId) {
 /* -------------------- global actions -------------------- */
 
 function wireGlobalActions() {
-	$('#btn-new').addEventListener('click', () => startNewGuide());
-	$('#btn-import').addEventListener('click', importMarkdownFlow);
+	// Primary click bindings (guarded)
+	const newBtn = document.getElementById('btn-new');
+	if (newBtn) newBtn.addEventListener('click', (e) => {
+		e.preventDefault();
+		startNewGuide();
+	});
 
+	const importBtn = document.getElementById('btn-import');
+	if (importBtn) importBtn.addEventListener('click', importMarkdownFlow);
+
+	// Delegated fallback (works even if elements are injected later)
 	document.addEventListener('click', (e) => {
-		const m = $('#export-menu')?.closest('.menu');
-		if (!m) return;
-		if (m.contains(e.target)) return;
-		m.removeAttribute('aria-expanded');
+		const t = e.target.closest?.('#btn-new');
+		if (t) {
+			e.preventDefault();
+			startNewGuide();
+			return;
+		}
+		const menuWrap = document.getElementById('export-menu')?.closest('.menu');
+		if (!menuWrap) return;
+		if (!menuWrap.contains(e.target)) menuWrap.removeAttribute('aria-expanded');
 	});
 
-	$('#btn-export').addEventListener('click', () => {
-		const menu = $('#export-menu')?.closest('.menu');
-		if (!menu) return;
-		const expanded = menu.getAttribute('aria-expanded') === 'true';
-		menu.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-	});
-	$('#export-menu').addEventListener('click', (e) => {
-		if (e.target.matches?.('[data-export]')) doExport(e.target.dataset.export);
-	});
+	const exportBtn = document.getElementById('btn-export');
+	if (exportBtn) {
+		exportBtn.addEventListener('click', () => {
+			const menu = document.getElementById('export-menu')?.closest('.menu');
+			if (!menu) return;
+			const expanded = menu.getAttribute('aria-expanded') === 'true';
+			menu.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+		});
+	}
+
+	const exportMenu = document.getElementById('export-menu');
+	if (exportMenu) {
+		exportMenu.addEventListener('click', (e) => {
+			const btn = e.target.closest?.('[data-export]');
+			if (btn) doExport(btn.dataset.export);
+		});
+	}
 }
 
 /* -------------------- editor -------------------- */
@@ -496,8 +517,10 @@ function onInsertTag() {
 
 function debounce(fn, ms = 200) {
 	let t;
-	return (...a) => { clearTimeout(t);
-		t = setTimeout(() => fn(...a), ms); };
+	return (...a) => {
+		clearTimeout(t);
+		t = setTimeout(() => fn(...a), ms);
+	};
 }
 
 /**
