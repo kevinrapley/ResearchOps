@@ -28,91 +28,114 @@ import { buildContext } from '/components/guides/context.js';
 import { renderGuide, buildPartials, DEFAULT_SOURCE } from '/components/guides/guide-editor.js';
 import { searchPatterns, listStarterPatterns } from '/components/guides/patterns.js';
 
+/** @param {string} s @param {ParentNode} [r=document] */
 const $ = (s, r = document) => r.querySelector(s);
+/** @param {string} s @param {ParentNode} [r=document] */
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-/* ==========================================================================
-   =BOOTSTRAP
-   ========================================================================== */
-
-/**
- * Initialise page on DOM ready (fetch study context, list guides, wire UI).
- * @returns {Promise<void>}
- */
+/* -------------------- boot -------------------- */
 window.addEventListener('DOMContentLoaded', async () => {
 	const url = new URL(location.href);
-	const pid = url.searchParams.get('pid');
-	const sid = url.searchParams.get('sid');
+	const pid = url.searchParams.get('pid') || '';
+	const sid = url.searchParams.get('sid') || '';
 
+	// Breadcrumb + context
 	await hydrateCrumbs({ pid, sid });
+
+	// List guides
 	await loadGuides(sid);
 
+	// Wire actions
 	wireGlobalActions();
 	wireEditor();
 });
 
+/* -------------------- title helpers -------------------- */
+
 /**
- * Load all studies for a project (mirrors Study page behaviour).
- * @param {string} projectId Airtable project record id
- * @returns {Promise<Array<Object>>} studies
- * @throws {Error} when API contract fails
+ * Compute the Airtable-formula-equivalent title.
+ * LEFT(Description, 80) else "Method — YYYY-MM-DD" (UTC date).
+ * @param {{description?: string, method?: string, createdAt?: string}} s
+ * @returns {string}
  */
-async function loadStudies(projectId) {
-	const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-	const res = await fetch(url, { cache: 'no-store' });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
-		throw new Error(js?.error || `Studies fetch failed (${res.status})`);
-	}
-	return js.studies;
+function computeStudyTitle({ description = '', method = '', createdAt = '' } = {}) {
+	if (description && description.trim()) return description.trim().slice(0, 80);
+	const d = createdAt ? new Date(createdAt) : new Date();
+	const yyyy = d.getUTCFullYear();
+	const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+	const dd = String(d.getUTCDate()).padStart(2, '0');
+	return `${method || 'Study'} — ${yyyy}-${mm}-${dd}`;
 }
 
 /**
- * Populate breadcrumbs and stash {project, study} as global render context.
- * @param {{ pid:string, sid:string }} ids
- * @returns {Promise<void>}
+ * Returns a study that always has a `.title` property.
+ * @template T extends object
+ * @param {T & { title?: string, Title?: string, description?: string, method?: string, createdAt?: string }} s
+ */
+function withSafeTitle(s) {
+	return { ...s, title: s.title || s.Title || computeStudyTitle(s) };
+}
+
+/* -------------------- crumbs + context -------------------- */
+
+/**
+ * Hydrate breadcrumbs and stash a stable context with a safe study title.
+ * @param {{pid:string, sid:string}} param0
  */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
+		// Project
 		const projRes = await fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: 'no-store' });
 		const project = projRes.ok ? await projRes.json() : {};
-		
-		const studies = await loadStudies(pid);
+
+		// Study (align to Study page behaviour: list → find)
+		const listRes = await fetch(`/api/studies?project=${encodeURIComponent(pid)}`, { cache: 'no-store' });
+		const js = listRes.ok ? await listRes.json() : {};
+		const studies = Array.isArray(js?.studies) ? js.studies : [];
 		const rawStudy = studies.find(s => s.id === sid) || {};
-		const study = normalizeStudy(studies.find(s => s.id === sid) || {});
+		const study = withSafeTitle(rawStudy);
 
-		$('#breadcrumb-project').href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-		$('#breadcrumb-project').textContent = project?.name || 'Project';
+		// Breadcrumb labels + links
+		const projCrumb = $('#breadcrumb-project');
+		if (projCrumb) {
+			projCrumb.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+			projCrumb.textContent = project?.name || 'Project';
+		}
 
-		$('#breadcrumb-study').href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-		$('#breadcrumb-study').textContent = study?.title || study?.method || 'Study';
+		const studyCrumb = $('#breadcrumb-study');
+		if (studyCrumb) {
+			studyCrumb.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+			studyCrumb.textContent = study.title || 'Study';
+		}
 
-		$('#back-to-study').href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-		$('[data-bind="study.title"]').textContent = study.title;
+		const sub = $('[data-bind="study.title"]');
+		if (sub) sub.textContent = study.title || '—';
 
+		// Back link to Study page
+		const back = $('#back-to-study');
+		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+
+		// Stash context used by preview/export
 		window.__guideCtx = { project, study };
 	} catch (e) {
 		console.warn('Crumb hydrate failed', e);
-		$('[data-bind="study.title"]').textContent = '—';
-		window.__guideCtx = { project: {}, study: {} };
+		$('[data-bind="study.title"]')?.textContent = '—';
+		window.__guideCtx = { project: {}, study: { title: 'Study' } };
 	}
 }
 
-/* ==========================================================================
-   =LIST
-   ========================================================================== */
+/* -------------------- list guides -------------------- */
 
 /**
- * Fetch and render guides table for a study.
- * @param {string} studyId Airtable study record id
- * @returns {Promise<void>}
+ * Load all guides for this study and render table.
+ * @param {string} studyId
  */
 async function loadGuides(studyId) {
 	const tbody = $('#guides-tbody');
 	try {
 		const res = await fetch(`/api/guides?study=${encodeURIComponent(studyId)}`, { cache: 'no-store' });
 		const list = res.ok ? await res.json() : [];
-		if (!list.length) {
+		if (!Array.isArray(list) || !list.length) {
 			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
 			return;
 		}
@@ -130,49 +153,38 @@ async function loadGuides(studyId) {
 			tbody.appendChild(tr);
 		}
 		$$('button[data-open]').forEach(b => b.addEventListener('click', () => openGuide(b.dataset.open)));
-	} catch {
+	} catch (e) {
+		console.error(e);
 		tbody.innerHTML = `<tr><td colspan="6">Failed to load guides.</td></tr>`;
 	}
 }
 
-/* ==========================================================================
-   =ACTIONS & MENUS
-   ========================================================================== */
+/* -------------------- global actions -------------------- */
 
-/**
- * Wire top toolbar actions and export dropdown menu.
- * @returns {void}
- */
 function wireGlobalActions() {
 	$('#btn-new').addEventListener('click', () => startNewGuide());
 	$('#btn-import').addEventListener('click', importMarkdownFlow);
 
 	document.addEventListener('click', (e) => {
-		const m = $('#export-menu').closest('.menu');
+		const m = $('#export-menu')?.closest('.menu');
 		if (!m) return;
 		if (m.contains(e.target)) return;
 		m.removeAttribute('aria-expanded');
 	});
 
 	$('#btn-export').addEventListener('click', () => {
-		const menu = $('#export-menu').closest('.menu');
+		const menu = $('#export-menu')?.closest('.menu');
+		if (!menu) return;
 		const expanded = menu.getAttribute('aria-expanded') === 'true';
 		menu.setAttribute('aria-expanded', expanded ? 'false' : 'true');
 	});
-
 	$('#export-menu').addEventListener('click', (e) => {
-		if (e.target.matches('[data-export]')) doExport(e.target.dataset.export);
+		if (e.target.matches?.('[data-export]')) doExport(e.target.dataset.export);
 	});
 }
 
-/* ==========================================================================
-   =EDITOR
-   ========================================================================== */
+/* -------------------- editor -------------------- */
 
-/**
- * Set up editor controls and keyboard shortcuts.
- * @returns {void}
- */
 function wireEditor() {
 	$('#btn-insert-pattern').addEventListener('click', openPatternDrawer);
 	$('#drawer-patterns-close').addEventListener('click', closePatternDrawer);
@@ -196,13 +208,9 @@ function wireEditor() {
 	});
 }
 
-/**
- * Start a new guide using DEFAULT_SOURCE.
- * @returns {Promise<void>}
- */
 async function startNewGuide() {
 	$('#editor-section').classList.remove('is-hidden');
-	window.__openGuideId = undefined;
+	window.__openGuideId = undefined; // reset
 	$('#guide-title').value = 'Untitled guide';
 	$('#guide-status').textContent = 'draft';
 	$('#guide-source').value = DEFAULT_SOURCE.trim();
@@ -213,11 +221,6 @@ async function startNewGuide() {
 	announce('Started a new guide');
 }
 
-/**
- * Open an existing guide for editing.
- * @param {string} id Guide id
- * @returns {Promise<void>}
- */
 async function openGuide(id) {
 	try {
 		const res = await fetch(`/api/guides/${encodeURIComponent(id)}`);
@@ -234,19 +237,19 @@ async function openGuide(id) {
 		populateVariablesForm(g.variables || {});
 		await preview();
 		announce(`Opened guide “${g.title || 'Untitled'}”`);
-	} catch {
+	} catch (e) {
+		console.error(e);
 		announce('Failed to open guide');
 	}
 }
 
 /**
- * Render live preview from Markdown + Mustache.
- * @returns {Promise<void>}
+ * Render preview with a **safe study title** available for {{study.title}}.
  */
 async function preview() {
 	const source = $('#guide-source').value;
 	const { project, study: rawStudy } = window.__guideCtx || {};
-	const study = normalizeStudy(rawStudy);
+	const study = withSafeTitle(rawStudy); // ← ensure .title exists
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({ project, study, session: {}, participant: {}, meta });
 	const partialNames = collectPartialNames(source);
@@ -256,10 +259,6 @@ async function preview() {
 	runLints({ source, context, partials });
 }
 
-/**
- * Save current guide (create or update).
- * @returns {Promise<void>}
- */
 async function onSave() {
 	const title = $('#guide-title').value.trim() || 'Untitled guide';
 	const body = {
@@ -279,10 +278,6 @@ async function onSave() {
 	}
 }
 
-/**
- * Publish the currently open guide.
- * @returns {Promise<void>}
- */
 async function onPublish() {
 	const id = window.__openGuideId;
 	const title = $('#guide-title').value.trim();
@@ -297,10 +292,6 @@ async function onPublish() {
 	}
 }
 
-/**
- * Import a local .md file into a new guide.
- * @returns {void}
- */
 function importMarkdownFlow() {
 	const inp = document.createElement('input');
 	inp.type = 'file';
@@ -316,35 +307,19 @@ function importMarkdownFlow() {
 	inp.click();
 }
 
-/* ==========================================================================
-   =DRAWERS: PATTERNS
-   ========================================================================== */
-
-/**
- * Open pattern library drawer.
- * @returns {void}
- */
+/* -------------------- drawers: patterns -------------------- */
 function openPatternDrawer() {
 	$('#drawer-patterns').hidden = false;
 	$('#pattern-search').focus();
 	announce('Pattern drawer opened');
 }
 
-/**
- * Close pattern library drawer.
- * @returns {void}
- */
 function closePatternDrawer() {
 	$('#drawer-patterns').hidden = true;
 	$('#btn-insert-pattern').focus();
 	announce('Pattern drawer closed');
 }
 
-/**
- * Populate pattern list UI.
- * @param {Array<{name:string,title:string,category:string,version:number}>} items
- * @returns {void}
- */
 function populatePatternList(items) {
 	const ul = $('#pattern-list');
 	ul.innerHTML = '';
@@ -366,24 +341,12 @@ function populatePatternList(items) {
 	});
 }
 
-/**
- * Filter patterns in the drawer on input.
- * @param {InputEvent} e
- * @returns {void}
- */
 function onPatternSearch(e) {
 	const q = e.target.value.trim().toLowerCase();
 	populatePatternList(searchPatterns(q));
 }
 
-/* ==========================================================================
-   =DRAWERS: VARIABLES
-   ========================================================================== */
-
-/**
- * Open Variables drawer and populate from front-matter.
- * @returns {void}
- */
+/* -------------------- drawers: variables -------------------- */
 function openVariablesDrawer() {
 	const src = $('#guide-source').value;
 	const { meta } = readFrontMatter(src);
@@ -392,20 +355,11 @@ function openVariablesDrawer() {
 	$('#drawer-variables').focus();
 }
 
-/**
- * Close Variables drawer.
- * @returns {void}
- */
 function closeVariablesDrawer() {
 	$('#drawer-variables').hidden = true;
 	$('#btn-variables').focus();
 }
 
-/**
- * Populate Variables form (simple key/value inputs).
- * @param {Object} meta Front-matter object
- * @returns {void}
- */
 function populateVariablesForm(meta) {
 	const form = $('#variables-form');
 	form.innerHTML = '';
@@ -422,10 +376,6 @@ function populateVariablesForm(meta) {
 	form.addEventListener('input', debounce(onVarsEdit, 200));
 }
 
-/**
- * Write edited Variables back to front-matter YAML and refresh preview.
- * @returns {void}
- */
 function onVarsEdit() {
 	const src = $('#guide-source').value;
 	const fm = readFrontMatter(src);
@@ -436,18 +386,11 @@ function onVarsEdit() {
 	preview();
 }
 
-/* ==========================================================================
-   =EXPORT
-   ========================================================================== */
-
-/**
- * Export current guide via render service.
- * @param {'md'|'html'|'pdf'|'docx'} kind Output type
- * @returns {Promise<void>}
- */
+/* -------------------- export -------------------- */
 async function doExport(kind) {
 	const source = $('#guide-source').value;
-	const { project, study } = window.__guideCtx || {};
+	const { project, study: rawStudy } = window.__guideCtx || {};
+	const study = withSafeTitle(rawStudy); // ensure .title
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({ project, study, session: {}, participant: {}, meta });
 	const partials = await buildPartials(collectPartialNames(source)).catch(() => ({}));
@@ -466,43 +409,7 @@ async function doExport(kind) {
 	announce(`Exported ${filename || kind}`);
 }
 
-/* ==========================================================================
-   =HELPERS
-   ========================================================================== */
-
-/**
- * Ensure study has a stable .title for templates.
- * Falls back to common fields returned by the API.
- * @param {Object} s
- * @returns {Object}
- */
- 
-/** Match Airtable Title formula in JS (LEFT 80, else Method — YYYY-MM-DD). */
-function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
-	if (description && description.trim()) {
-		return description.trim().slice(0, 80);
-	}
-	// YYYY-MM-DD (UTC-ish; keep stable like Airtable DATETIME_FORMAT)
-	const d = createdAt ? new Date(createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
-}
-
-/** Normalise a study to guarantee .title exists. */
-function normalizeStudy(s = {}) {
-	return {
-		...s,
-		title: s.title || computeStudyTitle(s)
-	};
-}
-   
-/**
- * Run simple lints for unknown partials and missing tags.
- * @param {{ source:string, context:Object, partials:Object }} args
- * @returns {void}
- */
+/* -------------------- helpers -------------------- */
 function runLints({ source, context, partials }) {
 	const out = $('#lint-output');
 	const warnings = [];
@@ -513,7 +420,7 @@ function runLints({ source, context, partials }) {
 		if (!(p in partials)) warnings.push(`Unknown partial: {{> ${p}}}`);
 	}
 
-	// Tag existence check ({{a.b}})
+	// Simple tag existence ({{study.something}})
 	const tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
 	let m;
 	while ((m = tagRegex.exec(source))) {
@@ -524,11 +431,6 @@ function runLints({ source, context, partials }) {
 	out.textContent = warnings[0] || 'No issues';
 }
 
-/**
- * Collect partial names from template source.
- * @param {string} src
- * @returns {string[]} names
- */
 function collectPartialNames(src) {
 	const re = /{{>\s*([a-zA-Z0-9_\-]+)\s*}}/g;
 	const names = new Set();
@@ -537,11 +439,6 @@ function collectPartialNames(src) {
 	return Array.from(names);
 }
 
-/**
- * Parse YAML front-matter at the top of the source.
- * @param {string} src Markdown with optional front-matter
- * @returns {{ meta:Object, body:string }}
- */
 function readFrontMatter(src) {
 	if (!src.startsWith('---')) return { meta: {}, body: src };
 	const end = src.indexOf('\n---', 3);
@@ -552,23 +449,12 @@ function readFrontMatter(src) {
 	return { meta, body };
 }
 
-/**
- * Rebuild source with updated front-matter.
- * @param {string} src Original source
- * @param {Object} meta New meta to serialise into YAML
- * @returns {string} updated source
- */
 function writeFrontMatter(src, meta) {
 	const { body } = readFrontMatter(src);
 	const yaml = emitYamlLite(meta);
 	return `---\n${yaml}\n---\n${body.replace(/^\n*/, '')}`;
 }
 
-/**
- * Very small YAML reader (flat key:value, bools, ints).
- * @param {string} y
- * @returns {Object}
- */
 function parseYamlLite(y) {
 	const obj = {};
 	y.split('\n').forEach(line => {
@@ -583,23 +469,12 @@ function parseYamlLite(y) {
 	return obj;
 }
 
-/**
- * Very small YAML writer (flat key:value).
- * @param {Object} o
- * @returns {string}
- */
 function emitYamlLite(o) {
 	return Object.entries(o || {})
 		.map(([k, v]) => `${k}: ${String(v)}`)
 		.join('\n');
 }
 
-/**
- * Insert text at the current cursor position in a textarea.
- * @param {HTMLTextAreaElement} textarea
- * @param {string} snippet
- * @returns {void}
- */
 function insertAtCursor(textarea, snippet) {
 	const { selectionStart: s, selectionEnd: e, value } = textarea;
 	textarea.value = value.slice(0, s) + snippet + value.slice(e);
@@ -607,10 +482,6 @@ function insertAtCursor(textarea, snippet) {
 	textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-/**
- * Quick picker for common Mustache tags.
- * @returns {void}
- */
 function onInsertTag() {
 	const tags = [
 		'{{study.title}}', '{{project.name}}', '{{participant.id}}',
@@ -623,50 +494,32 @@ function onInsertTag() {
 	}
 }
 
-/**
- * Debounce utility.
- * @param {Function} fn
- * @param {number} [ms=200]
- * @returns {Function}
- */
 function debounce(fn, ms = 200) {
 	let t;
-	return (...a) => {
-		clearTimeout(t);
-		t = setTimeout(() => fn(...a), ms);
-	};
+	return (...a) => { clearTimeout(t);
+		t = setTimeout(() => fn(...a), ms); };
 }
 
 /**
- * Safe nested getter that tolerates falsy values.
- * @param {Object} obj
+ * Safe nested property get by path array.
+ * @param {unknown} obj
  * @param {string[]} pathArr
- * @returns {*|undefined}
+ * @returns {unknown}
  */
 function getPath(obj, pathArr) {
 	return pathArr.reduce((acc, k) => {
-		if (acc == null) return undefined; /* stop only on null/undefined */
+		if (acc == null) return undefined;
 		if (typeof acc !== 'object') return undefined;
 		return (k in acc) ? acc[k] : undefined;
 	}, obj);
 }
 
-/**
- * Minimal HTML escaper for table & inputs.
- * @param {*} s
- * @returns {string}
- */
 function escapeHtml(s) {
 	return (s ?? '').toString()
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/**
- * Announce a message to the live region.
- * @param {string} msg
- * @returns {void}
- */
 function announce(msg) {
 	$('#sr-live').textContent = msg;
 }
