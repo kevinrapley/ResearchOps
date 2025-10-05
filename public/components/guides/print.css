@@ -1,0 +1,14 @@
+/* Print-friendly, GOV.UK-leaning */
+@media print {
+	body {
+		font-family: "Helvetica Neue", Arial, sans-serif;
+		font-size: 12pt;
+		line-height: 1.4;
+		}
+	h1, h2, h3 {
+		page-break-after: avoid;
+		}
+	code, pre {
+		white-space: pre-wrap;
+		}
+	}
