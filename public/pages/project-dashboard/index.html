@@ -454,7 +454,7 @@
 			};
 
 			list.innerHTML = studies.map(s => {
-				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const linkText = (s.title || s.method || "Study").trim();
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
