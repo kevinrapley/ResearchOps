@@ -278,13 +278,24 @@ async function openGuide(id) {
 
 async function preview() {
 	const source = $("#guide-source")?.value ?? "";
-	const { project, study } = window.__guideCtx || {};
-	const study = ensureStudyTitle(rawStudy);
+
+	// Pull raw study from context, then normalise
+	const { project, study: rawStudy } = window.__guideCtx || {};
+	const normalisedStudy = ensureStudyTitle(rawStudy || {});
+
 	const meta = readFrontMatter(source).meta;
-	const context = buildContext({ project, study, session: {}, participant: {}, meta });
+	const context = buildContext({
+		project,
+		study: normalisedStudy,
+		session: {},
+		participant: {},
+		meta
+	});
+
 	const partialNames = collectPartialNames(source);
 	const partials = await buildPartials(partialNames).catch(() => ({}));
 	const out = await renderGuide({ source, context, partials });
+
 	$("#guide-preview").innerHTML = out.html;
 	runLints({ source, context, partials });
 }
