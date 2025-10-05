@@ -671,17 +671,94 @@ async function resolveProject(pid, sid) {
 	return { id: pid, name: "(Unnamed project)" };
 }
 
-// Debug instrumentation (temporary)
-(async () => {
-  const pid = new URLSearchParams(location.search).get("pid");
-  const sid = new URLSearchParams(location.search).get("sid");
+/* ──────────────────────────────────────────────────────────────
+ * UI DEBUG PANEL (no console needed)
+ * - Renders /api/projects/:pid and /api/studies/:sid payloads
+ * - Toggle visibility and download the combined JSON
+ * - Auto-opens if you add ?debug=1 to the URL
+ * ────────────────────────────────────────────────────────────── */
+
+(function initApiDebugPanel() {
   try {
-    const p = await fetch("/api/projects/" + pid).then(r => r.json());
-    const s = await fetch("/api/studies/" + sid).then(r => r.json());
-    console.debug("[debug] /api/projects:", JSON.stringify(p, null, 2));
-    console.debug("[debug] /api/studies:", JSON.stringify(s, null, 2));
+    const params = new URLSearchParams(location.search);
+    const pid = params.get("pid");
+    const sid = params.get("sid");
+    if (!pid || !sid) return;
+
+    // Host container (try to place under main actions or fall back to body)
+    const host =
+      document.querySelector(".actions-bar") ||
+      document.querySelector("main") ||
+      document.body;
+
+    // Panel skeleton
+    const wrap = document.createElement("section");
+    wrap.setAttribute("id", "api-debug-panel");
+    wrap.style.margin = "16px 0";
+    wrap.innerHTML = `
+      <details id="api-debug-details" style="border:1px solid #ddd; border-radius:6px; padding:8px; background:#fafafa;">
+        <summary style="cursor:pointer; font-weight:600;">API Debug (projects + study)</summary>
+        <div style="margin-top:8px; display:flex; gap:12px; flex-wrap:wrap;">
+          <button id="api-debug-refresh" class="btn btn--outline" type="button">Refresh</button>
+          <a id="api-debug-download" class="btn btn--secondary" href="#" download="debug-api.json">Download JSON</a>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+          <div>
+            <h4 style="margin:4px 0;">/api/projects/<span id="dbg-proj-id"></span></h4>
+            <pre id="dbg-proj" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
+          </div>
+          <div>
+            <h4 style="margin:4px 0;">/api/studies/<span id="dbg-study-id"></span></h4>
+            <pre id="dbg-study" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
+          </div>
+        </div>
+      </details>
+    `;
+    host.prepend(wrap);
+
+    // Fill IDs in headings
+    document.getElementById("dbg-proj-id").textContent = pid;
+    document.getElementById("dbg-study-id").textContent = sid;
+
+    // Fetch + render + wire download
+    async function refreshDebug() {
+      const [projRes, studyRes] = await Promise.allSettled([
+        fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" }).then(r => r.json()),
+        fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" }).then(r => r.json())
+      ]);
+
+      const proj = projRes.status === "fulfilled" ? projRes.value : { error: String(projRes.reason || "fetch failed") };
+      const study = studyRes.status === "fulfilled" ? studyRes.value : { error: String(studyRes.reason || "fetch failed") };
+
+      // Render safely (textContent to avoid HTML injection)
+      const projPre = document.getElementById("dbg-proj");
+      const studyPre = document.getElementById("dbg-study");
+      if (projPre) projPre.textContent = JSON.stringify(proj, null, 2);
+      if (studyPre) studyPre.textContent = JSON.stringify(study, null, 2);
+
+      // Build a downloadable JSON blob
+      const payload = { project: proj, study: study };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const dl = document.getElementById("api-debug-download");
+      if (dl) {
+        dl.href = url;
+        dl.setAttribute("download", `debug-api-${pid}-${sid}.json`);
+      }
+    }
+
+    // Buttons
+    document.getElementById("api-debug-refresh").addEventListener("click", refreshDebug);
+
+    // Auto-open panel if debug=1
+    const details = document.getElementById("api-debug-details");
+    if (params.get("debug") === "1" && details) details.setAttribute("open", "true");
+
+    // First load
+    refreshDebug();
   } catch (e) {
-    console.warn("debug fetch failed", e);
+    // Non-fatal: if this fails, the rest of the page must still work
+    console && console.warn && console.warn("api debug panel failed", e);
   }
 })();
 
