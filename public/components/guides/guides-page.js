@@ -81,49 +81,44 @@ function pickTitle(s = {}) {
 /** Hydrate breadcrumbs, header subtitle, and guide context. */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
-		// Fetch project + studies in parallel
-		const [projRes, studies] = await Promise.all([
-			fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" }),
-			loadStudies(pid)
-		]);
+		// Studies are still useful for the study title
+		const studies = await loadStudies(pid);
 
-		// ✅ Normalise project so project.name always exists
-		let project = {};
-		if (projRes.ok) {
-			const pj = await projRes.json();
-			project = ensureProjectName(pj);
-		}
+		// ✅ Robust project resolution across all shapes
+		const project = await resolveProject(pid, sid);
 
-		// ✅ Resolve study title
+		// Study + title
 		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
 		const study = ensureStudyTitle(studyRaw);
 
-		// ── Breadcrumbs ──────────────────────────────────────────────
-		const bcProj = document.getElementById("breadcrumb-project");
+		// ── Breadcrumbs
+		var bcProj = document.getElementById("breadcrumb-project");
 		if (bcProj) {
-			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+			bcProj.href = "/pages/project-dashboard/?id=" + encodeURIComponent(pid);
 			bcProj.textContent = project.name || "Project";
 		}
 
-		const bcStudy = document.getElementById("breadcrumb-study");
+		var bcStudy = document.getElementById("breadcrumb-study");
 		if (bcStudy) {
-			bcStudy.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+			bcStudy.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
 			bcStudy.textContent = study.title;
 		}
 
-		// ── Header subtitle + back link ─────────────────────────────
-		const sub = document.querySelector('[data-bind="study.title"]');
+		// Header subtitle + back link
+		var sub = document.querySelector('[data-bind="study.title"]');
 		if (sub) sub.textContent = study.title;
-		const back = document.getElementById("back-to-study");
-		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 
-		// ── Update tab title + context ──────────────────────────────
-		document.title = `Discussion Guides — ${study.title}`;
-		window.__guideCtx = { project, study };
+		var back = document.getElementById("back-to-study");
+		if (back) back.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
+
+		document.title = "Discussion Guides — " + study.title;
+
+		// Store *normalised* context for the preview
+		window.__guideCtx = { project: project, study: study };
 
 	} catch (e) {
 		console.warn("Crumb hydrate failed", e);
-		window.__guideCtx = { project: {}, study: {} };
+		window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
 	}
 }
 
@@ -278,51 +273,43 @@ async function openGuide(id) {
 }
 
 async function preview() {
-	const sourceEl = $("#guide-source");
-	if (!sourceEl) return;
-	const source = sourceEl.value || "";
+	var srcEl = $("#guide-source");
+	if (!srcEl) return;
 
-	// Pull from global context (guaranteed via hydrateCrumbs)
-	const ctx = window.__guideCtx || {};
-	const project = ensureProjectName(ctx.project || {});
-	const study = ensureStudyTitle(ctx.study || {});
+	var source = srcEl.value || "";
+	var ctx = window.__guideCtx || {};
+	var project = ensureProjectName(ctx.project || {});
+	var study = ensureStudyTitle(ctx.study || {});
 
-	// Parse YAML front matter
-	const fm = readFrontMatter(source);
-	const meta = clonePlainObject(fm.meta || {});
-
-	// Prevent reserved names from being overwritten
+	var fm = readFrontMatter(source);
+	var meta = clonePlainObject(fm.meta || {});
 	delete meta.project;
 	delete meta.study;
 	delete meta.session;
 	delete meta.participant;
 
-	// Build safe context (no spread literals)
-	const context = {
-		project: project,
-		study: study,
-		session: {},
-		participant: {},
-		meta: meta
-	};
+	var context = { project: project, study: study, session: {}, participant: {}, meta: meta };
 
-	// Collect and fetch partials
-	const partialNames = collectPartialNames(source);
-	let partials = {};
-	try {
-		partials = await buildPartials(partialNames);
-	} catch {
-		partials = {};
+	var names = collectPartialNames(source);
+	var partials = {};
+	try { partials = await buildPartials(names); } catch {}
+
+	var out = await renderGuide({ source: source, context: context, partials: partials });
+
+	var prev = $("#guide-preview");
+	if (prev) prev.innerHTML = out.html;
+
+	runLints({ source: source, context: context, partials: partials });
+}
+
+/** Plain shallow clone (no spread) */
+function clonePlainObject(obj) {
+	var out = {};
+	if (!obj || typeof obj !== "object") return out;
+	for (var k in obj) {
+		if (Object.prototype.hasOwnProperty.call(obj, k)) out[k] = obj[k];
 	}
-
-	// Render guide using Mustache + Markdown + Purify
-	const out = await renderGuide({ source, context, partials });
-
-	// Write to preview and run lints
-	const previewEl = $("#guide-preview");
-	if (previewEl) previewEl.innerHTML = out.html;
-
-	runLints({ source, context, partials });
+	return out;
 }
 
 async function onSave() {
@@ -493,12 +480,93 @@ function ensureStudyTitle(s = {}) {
 	return { ...s, title: `${method} — ${yyyy}-${mm}-${dd}` };
 }
 
-/** Ensure we always have project.name (lowercase) available. */
-function ensureProjectName(p = {}) {
-	// Unwrap common API shapes
-	const base = p && p.project ? p.project : p;
-	const name = (base.name ?? base.Name ?? "").toString().trim();
-	return { ...base, name };
+/** Get the first non-empty string from a list of candidates. */
+function firstText() {
+	for (var i = 0; i < arguments.length; i++) {
+		var v = arguments[i];
+		if (typeof v === "string" && v.trim()) return v.trim();
+		if (Array.isArray(v) && v.length && typeof v[0] === "string" && v[0].trim()) {
+			return v[0].trim();
+		}
+	}
+	return "";
+}
+
+/** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
+function ensureProjectName(p) {
+	if (!p) p = {};
+	// Unwrap common “{ project: {…} }” envelope
+	var base = (p && p.project) ? p.project : p;
+	// Airtable “fields”
+	var f = (base && base.fields) ? base.fields : null;
+
+	// Try all the likely places/casings you listed:
+	var name = firstText(
+		base && base.name,
+		base && base.Name,
+		base && base.Project,
+		f && f.name,
+		f && f.Name,
+		f && f.Project
+	);
+
+	// If still empty, try a very common alternative Airtable alias
+	if (!name && p && typeof p.Name === "string") name = p.Name.trim();
+
+	// Last resort: derive a readable placeholder
+	if (!name) name = "(Unnamed project)";
+
+	// Write back a lower-case `.name` the rest of the app can rely on
+	base.name = name;
+	return base;
+}
+
+/**
+ * Try multiple API sources to resolve a project record that has a usable .name.
+ * Order:
+ *   1) /api/projects/:pid
+ *   2) /api/project-details?project=:pid        (if your Worker exposes it)
+ *   3) /api/studies/:sid  (some APIs embed a project label on the study)
+ */
+async function resolveProject(pid, sid) {
+	// 1) Primary
+	try {
+		var r1 = await fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" });
+		if (r1.ok) {
+			var pj = await r1.json();
+			var p1 = ensureProjectName(pj);
+			if (p1 && p1.name && p1.name !== "(Unnamed project)") return p1;
+		}
+	} catch {}
+
+	// 2) Details (optional endpoint)
+	try {
+		var r2 = await fetch("/api/project-details?project=" + encodeURIComponent(pid), { cache: "no-store" });
+		if (r2.ok) {
+			var list = await r2.json();
+			if (Array.isArray(list) && list.length) {
+				var p2 = ensureProjectName(list[0]);
+				if (p2 && p2.name && p2.name !== "(Unnamed project)") return p2;
+			}
+		}
+	} catch {}
+
+	// 3) From study (sometimes exposes label/linked “Project” column)
+	try {
+		var r3 = await fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" });
+		if (r3.ok) {
+			var s = await r3.json();
+			// Common places a label might live
+			var via = ensureProjectName(
+				s && s.project ? s.project :
+				(s && s.Project ? { Project: s.Project } : {})
+			);
+			if (via && via.name && via.name !== "(Unnamed project)") return via;
+		}
+	} catch {}
+
+	// Final fallback
+	return { id: pid, name: "(Unnamed project)" };
 }
 
 function runLints({ source, context, partials }) {
