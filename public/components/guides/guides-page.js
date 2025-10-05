@@ -603,163 +603,128 @@ function ensureProjectName(p) {
 }
 
 /**
- * Try multiple API sources to resolve a project record that has a usable .name.
+ * Resolve a usable { id, name } for the current project without using 404 routes.
  * Order:
- *   1) /api/projects/:pid                (object or {ok,project})
- *   2) /api/projects?id=:pid             (list filter – if your API supports it)
- *   3) /api/project-details?project=:pid (optional endpoint)
- *   4) /api/studies/:sid                 (study might carry a project label)
+ *   1) /api/projects (list) → find matching record by id/localId/fields
+ *   2) /api/studies?project=:pid → derive a project label from linked fields
+ *   3) fallback placeholder
  */
 async function resolveProject(pid, sid) {
-	// 1) projects/:pid
+	// 1) Try list endpoint
 	try {
-		var r1 = await fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r1.ok) {
-			var pj = await r1.json();
-			var rec = (pj && (pj.project || pj)); // accept {project:{...}} or {...}
-			var p1 = ensureProjectName(rec);
-			if (p1 && p1.name && p1.name !== "(Unnamed project)") return p1;
-		}
-	} catch (e) {}
-
-	// 2) projects?id=:pid (list filter fallback)
-	try {
-		var rL = await fetch("/api/projects?id=" + encodeURIComponent(pid), { cache: "no-store" });
-		if (rL.ok) {
-			var list = await rL.json();
-			if (Array.isArray(list) && list.length) {
-				// pick exact id match if present
-				var match = list.find(function(row) { return row && (row.id === pid || row.localId === pid || (row.fields && row.fields.id === pid)); }) || list[0];
-				var pL = ensureProjectName(match);
-				if (pL && pL.name && pL.name !== "(Unnamed project)") return pL;
+		const r = await fetch("/api/projects", { cache: "no-store" });
+		if (r.ok) {
+			const js = await r.json().catch(() => ({}));
+			const arr = Array.isArray(js) ? js : (Array.isArray(js?.projects) ? js.projects : []);
+			if (Array.isArray(arr) && arr.length) {
+				const found = arr.find(p => {
+					const base = (p && p.project) ? p.project : p;
+					const fields = base && base.fields ? base.fields : null;
+					const ids = new Set([
+						base && base.id, base && base.ID, base && base.Id,
+						base && base.LocalId, base && base.localId,
+						fields && fields.id, fields && fields.Id, fields && fields.record_id
+					].filter(Boolean).map(String));
+					return ids.has(String(pid));
+				});
+				if (found) return ensureProjectName(found);
 			}
 		}
-	} catch (e) {}
+	} catch (e) { /* ignore and fall through */ }
 
-	// 3) project-details?project=:pid (optional)
+	// 2) Derive from studies list for this project
 	try {
-		var r2 = await fetch("/api/project-details?project=" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r2.ok) {
-			var list2 = await r2.json();
-			if (Array.isArray(list2) && list2.length) {
-				var p2 = ensureProjectName(list2[0]);
-				if (p2 && p2.name && p2.name !== "(Unnamed project)") return p2;
-			}
-		}
-	} catch (e) {}
-
-	// 4) studies/:sid (many APIs include a readable linked label on the study)
-	try {
-		var r3 = await fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" });
-		if (r3.ok) {
-			var s = await r3.json();
-			// Common shapes on the study record
-			var via =
-				ensureProjectName(
-					// nested object
-					(s && s.project) ? s.project :
-					// direct “Project” (string/array/object)
-					(s && (s.Project != null)) ? { Project: s.Project } :
-					// sometimes lives on fields
-					(s && s.fields) ? s : {}
+		const r = await fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" });
+		if (r.ok) {
+			const js = await r.json().catch(() => ({}));
+			const studies = Array.isArray(js) ? js : (Array.isArray(js?.studies) ? js.studies : []);
+			// Check if the payload already includes a project label
+			let name = firstText(
+				js?.project?.name, js?.project?.Name, js?.projectName
+			);
+			if (!name && studies.length) {
+				const s0 = studies[0];
+				// Attempt common places a linked project label might live
+				name = firstText(
+					s0?.project?.name, s0?.project?.Name, s0?.Project,
+					(s0?.fields && (s0.fields.Project || s0.fields.ProjectName || s0.fields.Name))
 				);
-			if (via && via.name && via.name !== "(Unnamed project)") return via;
+			}
+			if (name) return { id: pid, name };
 		}
-	} catch (e) {}
+	} catch (e) { /* ignore */ }
 
-	// Final fallback
+	// 3) Fallback
 	return { id: pid, name: "(Unnamed project)" };
 }
 
 /* ──────────────────────────────────────────────────────────────
- * UI DEBUG PANEL (no console needed)
- * - Renders /api/projects/:pid and /api/studies/:sid payloads
- * - Toggle visibility and download the combined JSON
- * - Auto-opens if you add ?debug=1 to the URL
+ * UI DEBUG PANEL — list endpoints version
+ * Shows: /api/projects (list) and /api/studies?project=:pid
  * ────────────────────────────────────────────────────────────── */
+(function initApiDebugPanelList() {
+	try {
+		const params = new URLSearchParams(location.search);
+		const pid = params.get("pid");
+		if (!pid) return;
 
-(function initApiDebugPanel() {
-  try {
-    const params = new URLSearchParams(location.search);
-    const pid = params.get("pid");
-    const sid = params.get("sid");
-    if (!pid || !sid) return;
+		const host =
+			document.querySelector(".actions-bar") ||
+			document.querySelector("main") ||
+			document.body;
 
-    // Host container (try to place under main actions or fall back to body)
-    const host =
-      document.querySelector(".actions-bar") ||
-      document.querySelector("main") ||
-      document.body;
-
-    // Panel skeleton
-    const wrap = document.createElement("section");
-    wrap.setAttribute("id", "api-debug-panel");
-    wrap.style.margin = "16px 0";
-    wrap.innerHTML = `
-      <details id="api-debug-details" style="border:1px solid #ddd; border-radius:6px; padding:8px; background:#fafafa;">
-        <summary style="cursor:pointer; font-weight:600;">API Debug (projects + study)</summary>
+		const wrap = document.createElement("section");
+		wrap.id = "api-debug-panel-list";
+		wrap.style.margin = "16px 0";
+		wrap.innerHTML = `
+      <details id="api-debug-details-list" style="border:1px solid #ddd; border-radius:6px; padding:8px; background:#fafafa;">
+        <summary style="cursor:pointer; font-weight:600;">API Debug (projects list + studies?project=…)</summary>
         <div style="margin-top:8px; display:flex; gap:12px; flex-wrap:wrap;">
-          <button id="api-debug-refresh" class="btn btn--outline" type="button">Refresh</button>
-          <a id="api-debug-download" class="btn btn--secondary" href="#" download="debug-api.json">Download JSON</a>
+          <button id="api-debug-refresh-list" class="btn btn--outline" type="button">Refresh</button>
+          <a id="api-debug-download-list" class="btn btn--secondary" href="#" download="debug-api-list.json">Download JSON</a>
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
           <div>
-            <h4 style="margin:4px 0;">/api/projects/<span id="dbg-proj-id"></span></h4>
-            <pre id="dbg-proj" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
+            <h4 style="margin:4px 0;">/api/projects</h4>
+            <pre id="dbg-projects" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
           </div>
           <div>
-            <h4 style="margin:4px 0;">/api/studies/<span id="dbg-study-id"></span></h4>
-            <pre id="dbg-study" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
+            <h4 style="margin:4px 0;">/api/studies?project=<code>${pid}</code></h4>
+            <pre id="dbg-studies-list" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
           </div>
         </div>
       </details>
     `;
-    host.prepend(wrap);
+		host.prepend(wrap);
 
-    // Fill IDs in headings
-    document.getElementById("dbg-proj-id").textContent = pid;
-    document.getElementById("dbg-study-id").textContent = sid;
+		async function refresh() {
+			const [projectsRes, studiesRes] = await Promise.allSettled([
+				fetch("/api/projects", { cache: "no-store" }).then(r => r.json()),
+				fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" }).then(r => r.json())
+			]);
+			const projects = projectsRes.status === "fulfilled" ? projectsRes.value : { error: String(projectsRes.reason || "fetch failed") };
+			const studies = studiesRes.status === "fulfilled" ? studiesRes.value : { error: String(studiesRes.reason || "fetch failed") };
 
-    // Fetch + render + wire download
-    async function refreshDebug() {
-      const [projRes, studyRes] = await Promise.allSettled([
-        fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" }).then(r => r.json()),
-        fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" }).then(r => r.json())
-      ]);
+			const preP = document.getElementById("dbg-projects");
+			const preS = document.getElementById("dbg-studies-list");
+			if (preP) preP.textContent = JSON.stringify(projects, null, 2);
+			if (preS) preS.textContent = JSON.stringify(studies, null, 2);
 
-      const proj = projRes.status === "fulfilled" ? projRes.value : { error: String(projRes.reason || "fetch failed") };
-      const study = studyRes.status === "fulfilled" ? studyRes.value : { error: String(studyRes.reason || "fetch failed") };
+			const payload = { projects, studies };
+			const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const dl = document.getElementById("api-debug-download-list");
+			if (dl) dl.href = url;
+		}
 
-      // Render safely (textContent to avoid HTML injection)
-      const projPre = document.getElementById("dbg-proj");
-      const studyPre = document.getElementById("dbg-study");
-      if (projPre) projPre.textContent = JSON.stringify(proj, null, 2);
-      if (studyPre) studyPre.textContent = JSON.stringify(study, null, 2);
+		document.getElementById("api-debug-refresh-list").addEventListener("click", refresh);
 
-      // Build a downloadable JSON blob
-      const payload = { project: proj, study: study };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const dl = document.getElementById("api-debug-download");
-      if (dl) {
-        dl.href = url;
-        dl.setAttribute("download", `debug-api-${pid}-${sid}.json`);
-      }
-    }
+		if (params.get("debug") === "1") {
+			document.getElementById("api-debug-details-list").setAttribute("open", "true");
+		}
 
-    // Buttons
-    document.getElementById("api-debug-refresh").addEventListener("click", refreshDebug);
-
-    // Auto-open panel if debug=1
-    const details = document.getElementById("api-debug-details");
-    if (params.get("debug") === "1" && details) details.setAttribute("open", "true");
-
-    // First load
-    refreshDebug();
-  } catch (e) {
-    // Non-fatal: if this fails, the rest of the page must still work
-    console && console.warn && console.warn("api debug panel failed", e);
-  }
+		refresh();
+	} catch (e) { /* non-fatal */ }
 })();
 
 function runLints(args) {
