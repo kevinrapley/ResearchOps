@@ -560,31 +560,44 @@ function firstText() {
 	return "";
 }
 
+/** Return a readable label from a variety of shapes (string | array | object). */
+function toLabel(v) {
+	if (v == null) return "";
+	if (typeof v === "string") return v.trim();
+	if (Array.isArray(v)) {
+		for (var i = 0; i < v.length; i++) {
+			var t = toLabel(v[i]);
+			if (t) return t;
+		}
+		return "";
+	}
+	if (typeof v === "object") {
+		// Common object-y shapes: {name}, {Name}, {label}, {value}, Airtable cell objects
+		return toLabel(v.name || v.Name || v.label || v.Label || v.value || v.Value || v.text || v.Text);
+	}
+	return "";
+}
+
 /** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
 function ensureProjectName(p) {
 	if (!p) p = {};
 	// Unwrap common “{ project: {…} }” envelope
 	var base = (p && p.project) ? p.project : p;
-	// Airtable “fields”
-	var f = (base && base.fields) ? base.fields : null;
+	// Airtable “fields” (some APIs use Fields)
+	var f = (base && (base.fields || base.Fields)) ? (base.fields || base.Fields) : null;
 
-	// Try all the likely places/casings you listed:
-	var name = firstText(
-		base && base.name,
-		base && base.Name,
-		base && base.Project,
-		f && f.name,
-		f && f.Name,
-		f && f.Project
-	);
+	// Try the most likely candidates in a broad sweep.
+	var name =
+		// direct on record
+		toLabel(base.name) || toLabel(base.Name) || toLabel(base.Project) || toLabel(base.ProjectName) || toLabel(base.project_name) ||
+		// inside fields
+		toLabel(f && (f.name)) || toLabel(f && (f.Name)) || toLabel(f && (f.Project)) || toLabel(f && (f.ProjectName)) ||
+		// plural/collection fallbacks sometimes used by “Projects” table exports
+		toLabel(base.Projects) || toLabel(f && (f.Projects)) ||
+		// super broad last-ditch: any “Project” property if present
+		toLabel(base["Project"]) || toLabel(f && f["Project"]);
 
-	// If still empty, try a very common alternative Airtable alias
-	if (!name && p && typeof p.Name === "string") name = p.Name.trim();
-
-	// Last resort: derive a readable placeholder
 	if (!name) name = "(Unnamed project)";
-
-	// Write back a lower-case `.name` the rest of the app can rely on
 	base.name = name;
 	return base;
 }
@@ -592,42 +605,64 @@ function ensureProjectName(p) {
 /**
  * Try multiple API sources to resolve a project record that has a usable .name.
  * Order:
- *   1) /api/projects/:pid
- *   2) /api/project-details?project=:pid
- *   3) /api/studies/:sid
+ *   1) /api/projects/:pid                (object or {ok,project})
+ *   2) /api/projects?id=:pid             (list filter – if your API supports it)
+ *   3) /api/project-details?project=:pid (optional endpoint)
+ *   4) /api/studies/:sid                 (study might carry a project label)
  */
 async function resolveProject(pid, sid) {
-	// 1) Primary
+	// 1) projects/:pid
 	try {
 		var r1 = await fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" });
 		if (r1.ok) {
 			var pj = await r1.json();
-			var p1 = ensureProjectName(pj);
+			var rec = (pj && (pj.project || pj)); // accept {project:{...}} or {...}
+			var p1 = ensureProjectName(rec);
 			if (p1 && p1.name && p1.name !== "(Unnamed project)") return p1;
 		}
 	} catch (e) {}
 
-	// 2) Details (optional endpoint)
+	// 2) projects?id=:pid (list filter fallback)
+	try {
+		var rL = await fetch("/api/projects?id=" + encodeURIComponent(pid), { cache: "no-store" });
+		if (rL.ok) {
+			var list = await rL.json();
+			if (Array.isArray(list) && list.length) {
+				// pick exact id match if present
+				var match = list.find(function(row) { return row && (row.id === pid || row.localId === pid || (row.fields && row.fields.id === pid)); }) || list[0];
+				var pL = ensureProjectName(match);
+				if (pL && pL.name && pL.name !== "(Unnamed project)") return pL;
+			}
+		}
+	} catch (e) {}
+
+	// 3) project-details?project=:pid (optional)
 	try {
 		var r2 = await fetch("/api/project-details?project=" + encodeURIComponent(pid), { cache: "no-store" });
 		if (r2.ok) {
-			var list = await r2.json();
-			if (Array.isArray(list) && list.length) {
-				var p2 = ensureProjectName(list[0]);
+			var list2 = await r2.json();
+			if (Array.isArray(list2) && list2.length) {
+				var p2 = ensureProjectName(list2[0]);
 				if (p2 && p2.name && p2.name !== "(Unnamed project)") return p2;
 			}
 		}
 	} catch (e) {}
 
-	// 3) From study (sometimes exposes label/linked “Project” column)
+	// 4) studies/:sid (many APIs include a readable linked label on the study)
 	try {
 		var r3 = await fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" });
 		if (r3.ok) {
 			var s = await r3.json();
-			var via = ensureProjectName(
-				(s && s.project) ? s.project :
-				((s && s.Project) ? { Project: s.Project } : {})
-			);
+			// Common shapes on the study record
+			var via =
+				ensureProjectName(
+					// nested object
+					(s && s.project) ? s.project :
+					// direct “Project” (string/array/object)
+					(s && (s.Project != null)) ? { Project: s.Project } :
+					// sometimes lives on fields
+					(s && s.fields) ? s : {}
+				);
 			if (via && via.name && via.name !== "(Unnamed project)") return via;
 		}
 	} catch (e) {}
