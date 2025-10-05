@@ -278,29 +278,50 @@ async function openGuide(id) {
 }
 
 async function preview() {
-	const source = $("#guide-source")?.value ?? "";
+	const sourceEl = $("#guide-source");
+	if (!sourceEl) return;
+	const source = sourceEl.value || "";
 
-	// Pull raw study from context, then normalise
-	const { project: rawProject, study: rawStudy } = window.__guideCtx || {};
+	// Pull from global context (guaranteed via hydrateCrumbs)
+	const ctx = window.__guideCtx || {};
+	const project = ensureProjectName(ctx.project || {});
+	const study = ensureStudyTitle(ctx.study || {});
 
-	const normalisedStudy = ensureStudyTitle(rawStudy || {});
-	const project = ensureProjectName(rawProject || {});
-	const study = ensureStudyTitle(rawStudy || {});
+	// Parse YAML front matter
+	const fm = readFrontMatter(source);
+	const meta = clonePlainObject(fm.meta || {});
 
-	const meta = readFrontMatter(source).meta;
-	const context = buildContext({
-		project,
-		study: normalisedStudy,
+	// Prevent reserved names from being overwritten
+	delete meta.project;
+	delete meta.study;
+	delete meta.session;
+	delete meta.participant;
+
+	// Build safe context (no spread literals)
+	const context = {
+		project: project,
+		study: study,
 		session: {},
 		participant: {},
-		meta
-	});
+		meta: meta
+	};
 
+	// Collect and fetch partials
 	const partialNames = collectPartialNames(source);
-	const partials = await buildPartials(partialNames).catch(() => ({}));
+	let partials = {};
+	try {
+		partials = await buildPartials(partialNames);
+	} catch {
+		partials = {};
+	}
+
+	// Render guide using Mustache + Markdown + Purify
 	const out = await renderGuide({ source, context, partials });
 
-	$("#guide-preview").innerHTML = out.html;
+	// Write to preview and run lints
+	const previewEl = $("#guide-preview");
+	if (previewEl) previewEl.innerHTML = out.html;
+
 	runLints({ source, context, partials });
 }
 
@@ -587,6 +608,22 @@ function escapeHtml(s) {
 	return (s ?? "").toString()
 		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/**
+ * Create a plain shallow clone of an object without using spread literals.
+ * @param {Record<string, any>} obj
+ * @returns {Record<string, any>}
+ */
+function clonePlainObject(obj) {
+	const out = {};
+	if (!obj || typeof obj !== "object") return out;
+	for (const key in obj) {
+		if (Object.prototype.hasOwnProperty.call(obj, key)) {
+			out[key] = obj[key];
+		}
+	}
+	return out;
 }
 
 function announce(msg) { $("#sr-live") && ($("#sr-live").textContent = msg); }
