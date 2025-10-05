@@ -671,6 +671,20 @@ async function resolveProject(pid, sid) {
 	return { id: pid, name: "(Unnamed project)" };
 }
 
+// Debug instrumentation (temporary)
+(async () => {
+  const pid = new URLSearchParams(location.search).get("pid");
+  const sid = new URLSearchParams(location.search).get("sid");
+  try {
+    const p = await fetch("/api/projects/" + pid).then(r => r.json());
+    const s = await fetch("/api/studies/" + sid).then(r => r.json());
+    console.debug("[debug] /api/projects:", JSON.stringify(p, null, 2));
+    console.debug("[debug] /api/studies:", JSON.stringify(s, null, 2));
+  } catch (e) {
+    console.warn("debug fetch failed", e);
+  }
+})();
+
 function runLints(args) {
 	var source = args.source,
 		context = args.context,
