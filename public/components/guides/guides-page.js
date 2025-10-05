@@ -431,7 +431,10 @@ function onVarsEdit() {
 	const fm = readFrontMatter(src);
 	const formVals = {};
 	$$("#variables-form input").forEach(i => formVals[i.id.replace(/^var-/, "")] = i.value);
-	const rebuilt = writeFrontMatter(src, { ...fm.meta, ...formVals });
+	var merged = clonePlainObject(fm.meta || {});
+	for (var k in formVals)
+		if (Object.prototype.hasOwnProperty.call(formVals, k)) merged[k] = formVals[k];
+	const rebuilt = writeFrontMatter(src, merged);
 	$("#guide-source").value = rebuilt;
 	preview();
 }
@@ -469,15 +472,18 @@ function fallbackTitle(s = {}) {
 	return `${method} — ${yyyy}-${mm}-${dd}`;
 }
 
-function ensureStudyTitle(s = {}) {
-	const explicit = (s.title || s.Title || "").toString().trim();
-	if (explicit) return { ...s, title: explicit };
-	const method = (s.method || "Study").trim();
-	const d = s.createdAt ? new Date(s.createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return { ...s, title: `${method} — ${yyyy}-${mm}-${dd}` };
+function ensureStudyTitle(s) {
+	s = s || {};
+	var explicit = (s.title || s.Title || "").toString().trim();
+	var out = clonePlainObject(s);
+	if (explicit) { out.title = explicit; return out; }
+	var method = (s.method || "Study").trim();
+	var d = s.createdAt ? new Date(s.createdAt) : new Date();
+	var yyyy = d.getUTCFullYear();
+	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+	var dd = String(d.getUTCDate()).padStart(2, "0");
+	out.title = method + " — " + yyyy + "-" + mm + "-" + dd;
+	return out;
 }
 
 /** Get the first non-empty string from a list of candidates. */
