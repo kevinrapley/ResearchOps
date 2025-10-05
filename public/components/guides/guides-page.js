@@ -78,7 +78,8 @@ async function hydrateCrumbs({ pid, sid }) {
 		const project = projRes.ok ? await projRes.json() : {};
 
 		const studies = await loadStudies(pid);
-		const study = studies.find(s => s.id === sid) || {};
+		const rawStudy = studies.find(s => s.id === sid) || {};
+		const study = normalizeStudy(rawStudy);
 
 		$('#breadcrumb-project').href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
 		$('#breadcrumb-project').textContent = project?.name || 'Project';
@@ -245,6 +246,7 @@ async function openGuide(id) {
 async function preview() {
 	const source = $('#guide-source').value;
 	const { project, study } = window.__guideCtx || {};
+	const study = normalizeStudy(rawStudy);
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({ project, study, session: {}, participant: {}, meta });
 	const partialNames = collectPartialNames(source);
@@ -468,6 +470,19 @@ async function doExport(kind) {
    =HELPERS
    ========================================================================== */
 
+/**
+ * Ensure study has a stable .title for templates.
+ * Falls back to common fields returned by the API.
+ * @param {Object} s
+ * @returns {Object}
+ */
+function normalizeStudy(s = {}) {
+	return {
+		...s,
+		title: s.title || s.method || s.name || s.studyName || s.studyId || 'Study'
+	};
+}
+   
 /**
  * Run simple lints for unknown partials and missing tags.
  * @param {{ source:string, context:Object, partials:Object }} args
