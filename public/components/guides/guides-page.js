@@ -27,15 +27,15 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", async () => {
-	const url = new URL(location.href);
-	const pid = url.searchParams.get("pid");
-	const sid = url.searchParams.get("sid");
+  const url = new URL(location.href);
+  const pid = url.searchParams.get("pid");
+  const sid = url.searchParams.get("sid");
 
-	await hydrateCrumbs({ pid, sid }).catch(console.warn);
-	await loadGuides(sid).catch(console.warn);
+  try { await hydrateCrumbs({ pid, sid }); } catch (e) { console.warn(e); }
+  try { await loadGuides(sid); } catch (e) { console.warn(e); }
 
-	wireGlobalActions();
-	wireEditor();
+  wireGlobalActions();
+  wireEditor();
 });
 
 /**
@@ -45,81 +45,78 @@ window.addEventListener("DOMContentLoaded", async () => {
  * @throws {Error} when API contract fails
  */
 async function loadStudies(projectId) {
-	const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-	const res = await fetch(url, { cache: "no-store" });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
-		throw new Error(js?.error || `Studies fetch failed (${res.status})`);
-	}
-	return js.studies;
+  const url = "/api/studies?project=" + encodeURIComponent(projectId);
+  const res = await fetch(url, { cache: "no-store" });
+  const js = await res.json().catch(() => ({}));
+  if (!res.ok || js == null || js.ok !== true || !Array.isArray(js.studies)) {
+    throw new Error((js && js.error) || ("Studies fetch failed (" + res.status + ")"));
+  }
+  return js.studies;
 }
 
 /**
  * Prefer a real title; otherwise compute “Method — YYYY-MM-DD”.
  * @param {{ title?:string, Title?:string, method?:string, createdAt?:string }} s
  */
-function pickTitle(s = {}) {
-	const t = (s.title || s.Title || "").trim();
-	if (t) return t;
-	const method = (s.method || "Study").trim();
-	const d = s.createdAt ? new Date(s.createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return `${method} — ${yyyy}-${mm}-${dd}`;
+function pickTitle(s) {
+  s = s || {};
+  var t = (s.title || s.Title || "").trim();
+  if (t) return t;
+  var method = (s.method || "Study").trim();
+  var d = s.createdAt ? new Date(s.createdAt) : new Date();
+  var yyyy = d.getUTCFullYear();
+  var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  var dd = String(d.getUTCDate()).padStart(2, "0");
+  return method + " — " + yyyy + "-" + mm + "-" + dd;
 }
 
 /**
  * Hydrate breadcrumbs, header subtitle, and guide context.
- *
- * Resolves a safe study title via `ensureStudyTitle` so `{{study.title}}`
- * never falls back to description.
- *
- * @param {{ pid: string, sid: string }} params
- * @returns {Promise<void>}
+ * Ensures {{study.title}} is safe and never falls back to description.
  */
-/** Hydrate breadcrumbs, header subtitle, and guide context. */
-async function hydrateCrumbs({ pid, sid }) {
-	try {
-		// Studies are still useful for the study title
-		const studies = await loadStudies(pid);
+async function hydrateCrumbs(params) {
+  var pid = params && params.pid;
+  var sid = params && params.sid;
+  try {
+    // Studies for locating the current study record
+    var studies = await loadStudies(pid);
 
-		// ✅ Robust project resolution across all shapes
-		const project = await resolveProject(pid, sid);
+    // Resolve project.name robustly across shapes
+    var project = await resolveProject(pid, sid);
 
-		// Study + title
-		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
-		const study = ensureStudyTitle(studyRaw);
+    // Study + title
+    var studyRaw = Array.isArray(studies) ? (studies.find(function (s) { return s.id === sid; }) || {}) : {};
+    var study = ensureStudyTitle(studyRaw);
 
-		// ── Breadcrumbs
-		var bcProj = document.getElementById("breadcrumb-project");
-		if (bcProj) {
-			bcProj.href = "/pages/project-dashboard/?id=" + encodeURIComponent(pid);
-			bcProj.textContent = project.name || "Project";
-		}
+    // ── Breadcrumbs
+    var bcProj = document.getElementById("breadcrumb-project");
+    if (bcProj) {
+      bcProj.href = "/pages/project-dashboard/?id=" + encodeURIComponent(pid);
+      bcProj.textContent = project.name || "Project";
+    }
 
-		var bcStudy = document.getElementById("breadcrumb-study");
-		if (bcStudy) {
-			bcStudy.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
-			bcStudy.textContent = study.title;
-		}
+    var bcStudy = document.getElementById("breadcrumb-study");
+    if (bcStudy) {
+      bcStudy.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
+      bcStudy.textContent = study.title;
+    }
 
-		// Header subtitle + back link
-		var sub = document.querySelector('[data-bind="study.title"]');
-		if (sub) sub.textContent = study.title;
+    // Header subtitle + back link
+    var sub = document.querySelector('[data-bind="study.title"]');
+    if (sub) sub.textContent = study.title;
 
-		var back = document.getElementById("back-to-study");
-		if (back) back.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
+    var back = document.getElementById("back-to-study");
+    if (back) back.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
 
-		document.title = "Discussion Guides — " + study.title;
+    try { document.title = "Discussion Guides — " + study.title; } catch (e) {}
 
-		// Store *normalised* context for the preview
-		window.__guideCtx = { project: project, study: study };
+    // Store *normalised* context for the preview
+    window.__guideCtx = { project: project, study: study };
 
-	} catch (e) {
-		console.warn("Crumb hydrate failed", e);
-		window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
-	}
+  } catch (e) {
+    console.warn("Crumb hydrate failed", e);
+    window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
+  }
 }
 
 /**
@@ -127,577 +124,666 @@ async function hydrateCrumbs({ pid, sid }) {
  * @param {string} studyId
  */
 async function loadGuides(studyId) {
-	const tbody = $("#guides-tbody");
-	try {
-		const res = await fetch(`/api/guides?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
-		const list = res.ok ? await res.json() : [];
-		if (!Array.isArray(list) || !list.length) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
-			return;
-		}
-		tbody.innerHTML = "";
-		for (const g of list) {
-			const tr = document.createElement("tr");
-			tr.innerHTML = `
-				<td>${escapeHtml(g.title || "Untitled")}</td>
-				<td>${escapeHtml(g.status || "draft")}</td>
-				<td>v${g.version || 0}</td>
-				<td>${new Date(g.updatedAt || g.createdAt).toLocaleString()}</td>
-				<td>${escapeHtml(g.createdBy?.name || "—")}</td>
-				<td><button class="link-like" data-open="${g.id}">Open</button></td>`;
-			tbody.appendChild(tr);
-		}
-		$$('button[data-open]').forEach(b => b.addEventListener("click", () => openGuide(b.dataset.open)));
-	} catch (e) {
-		console.warn(e);
-		tbody.innerHTML = `<tr><td colspan="6">Failed to load guides.</td></tr>`;
-	}
+  var tbody = $("#guides-tbody");
+  if (!tbody) return;
+  try {
+    const res = await fetch("/api/guides?study=" + encodeURIComponent(studyId), { cache: "no-store" });
+    const list = res.ok ? await res.json() : [];
+    if (!Array.isArray(list) || !list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = "";
+    for (var i = 0; i < list.length; i++) {
+      var g = list[i];
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td>' + escapeHtml(g.title || "Untitled") + "</td>" +
+        '<td>' + escapeHtml(g.status || "draft") + "</td>" +
+        "<td>v" + (g.version || 0) + "</td>" +
+        "<td>" + new Date(g.updatedAt || g.createdAt).toLocaleString() + "</td>" +
+        '<td>' + escapeHtml((g.createdBy && g.createdBy.name) || "—") + "</td>" +
+        '<td><button class="link-like" data-open="' + g.id + '">Open</button></td>';
+      tbody.appendChild(tr);
+    }
+    var openBtns = $$('button[data-open]');
+    for (var j = 0; j < openBtns.length; j++) {
+      (function (btn) {
+        btn.addEventListener("click", function () { openGuide(btn.getAttribute("data-open")); });
+      })(openBtns[j]);
+    }
+  } catch (e) {
+    console.warn(e);
+    tbody.innerHTML = '<tr><td colspan="6">Failed to load guides.</td></tr>';
+  }
 }
 
 /* -------------------- global actions -------------------- */
-/**
- * Attach top-level UI handlers with null-guards & delegation.
- */
+/** Attach top-level UI handlers with null-guards & delegation. */
 function wireGlobalActions() {
-	// Direct bindings
-	$("#btn-new")?.addEventListener("click", onNewClick);
-	$("#btn-import")?.addEventListener("click", importMarkdownFlow);
+  var newBtn = $("#btn-new");
+  if (newBtn) newBtn.addEventListener("click", onNewClick);
 
-	// Delegated fallback (works if DOM changes later)
-	document.addEventListener("click", (e) => {
-		const newBtn = e.target.closest?.("#btn-new");
-		if (newBtn) {
-			e.preventDefault();
-			onNewClick(e);
-			return;
-		}
+  var importBtn = $("#btn-import");
+  if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
 
-		const menu = $("#export-menu")?.closest(".menu");
-		if (menu && !menu.contains(e.target)) menu.removeAttribute("aria-expanded");
-	});
+  // Delegated fallback (works if DOM changes later)
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var hasClosest = t && typeof t.closest === "function";
+    var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
+    if (newBtn2) {
+      e.preventDefault();
+      onNewClick(e);
+      return;
+    }
 
-	$("#btn-export")?.addEventListener("click", () => {
-		const menu = $("#export-menu")?.closest(".menu");
-		if (!menu) return;
-		menu.setAttribute("aria-expanded", menu.getAttribute("aria-expanded") === "true" ? "false" : "true");
-	});
+    var exportMenu = $("#export-menu");
+    var menu = exportMenu ? exportMenu.closest(".menu") : null;
+    if (menu && (!hasClosest || !menu.contains(t))) {
+      menu.removeAttribute("aria-expanded");
+    }
+  });
 
-	$("#export-menu")?.addEventListener("click", (e) => {
-		const target = e.target.closest?.("[data-export]");
-		if (target) doExport(target.dataset.export);
-	});
+  var exportBtn = $("#btn-export");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", function () {
+      var exportMenu = $("#export-menu");
+      var menu = exportMenu ? exportMenu.closest(".menu") : null;
+      if (!menu) return;
+      var expanded = menu.getAttribute("aria-expanded") === "true";
+      menu.setAttribute("aria-expanded", expanded ? "false" : "true");
+    });
+  }
+
+  var exportMenuEl = $("#export-menu");
+  if (exportMenuEl) {
+    exportMenuEl.addEventListener("click", function (e) {
+      var t = e.target;
+      var hasClosest = t && typeof t.closest === "function";
+      var target = hasClosest ? t.closest("[data-export]") : null;
+      if (target) doExport(target.getAttribute("data-export"));
+    });
+  }
 }
 
 function onNewClick(e) {
-	e?.preventDefault?.();
-	startNewGuide();
+  if (e && typeof e.preventDefault === "function") e.preventDefault();
+  startNewGuide();
 }
 
 /* -------------------- editor -------------------- */
 function wireEditor() {
-	$("#btn-insert-pattern")?.addEventListener("click", openPatternDrawer);
-	$("#drawer-patterns-close")?.addEventListener("click", closePatternDrawer);
-	$("#pattern-search")?.addEventListener("input", onPatternSearch);
+  var insertPat = $("#btn-insert-pattern");
+  if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
 
-	$("#btn-variables")?.addEventListener("click", openVariablesDrawer);
-	$("#drawer-variables-close")?.addEventListener("click", closeVariablesDrawer);
+  var patClose = $("#drawer-patterns-close");
+  if (patClose) patClose.addEventListener("click", closePatternDrawer);
 
-	$("#guide-source")?.addEventListener("input", debounce(preview, 150));
-	$("#guide-title")?.addEventListener("input", debounce(() => announce("Title updated"), 400));
+  var patSearch = $("#pattern-search");
+  if (patSearch) patSearch.addEventListener("input", onPatternSearch);
 
-	$("#btn-insert-tag")?.addEventListener("click", onInsertTag);
-	$("#btn-save")?.addEventListener("click", onSave);
-	$("#btn-publish")?.addEventListener("click", onPublish);
+  var varsBtn = $("#btn-variables");
+  if (varsBtn) varsBtn.addEventListener("click", openVariablesDrawer);
 
-	document.addEventListener("keydown", (e) => {
-		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
-			e.preventDefault();
-			onSave();
-		}
-	});
+  var varsClose = $("#drawer-variables-close");
+  if (varsClose) varsClose.addEventListener("click", closeVariablesDrawer);
+
+  var src = $("#guide-source");
+  if (src) src.addEventListener("input", debounce(preview, 150));
+
+  var title = $("#guide-title");
+  if (title) title.addEventListener("input", debounce(function () { announce("Title updated"); }, 400));
+
+  var tagBtn = $("#btn-insert-tag");
+  if (tagBtn) tagBtn.addEventListener("click", onInsertTag);
+
+  var saveBtn = $("#btn-save");
+  if (saveBtn) saveBtn.addEventListener("click", onSave);
+
+  var pubBtn = $("#btn-publish");
+  if (pubBtn) pubBtn.addEventListener("click", onPublish);
+
+  document.addEventListener("keydown", function (e) {
+    var k = e && e.key ? e.key.toLowerCase() : "";
+    if ((e.metaKey || e.ctrlKey) && k === "s") {
+      e.preventDefault();
+      onSave();
+    }
+  });
 }
 
-/**
- * Open a new guide in the editor — always reveals the panel, even if optional imports fail.
- */
+/** Open a new guide in the editor — always reveals the panel, even if optional imports fail. */
 async function startNewGuide() {
-	try {
-		$("#editor-section")?.classList.remove("is-hidden");
+  try {
+    var editor = $("#editor-section");
+    if (editor) editor.classList.remove("is-hidden");
 
-		// Basic safe defaults first (no external deps)
-		window.__openGuideId = undefined;
-		$("#guide-title") && ($("#guide-title").value = "Untitled guide");
-		$("#guide-status") && ($("#guide-status").textContent = "draft");
+    // Basic safe defaults first (no external deps)
+    window.__openGuideId = undefined;
 
-		// Use imported DEFAULT_SOURCE if present, otherwise a tiny inline fallback
-		const defaultSrc =
-			(typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ||
-			`---\nversion: 1\n---\n# New guide\n\nWelcome. Start writing…`;
+    var titleEl = $("#guide-title");
+    if (titleEl) titleEl.value = "Untitled guide";
 
-		$("#guide-source") && ($("#guide-source").value = defaultSrc);
+    var statusEl = $("#guide-status");
+    if (statusEl) statusEl.textContent = "draft";
 
-		// These are best-effort; failures shouldn't block the editor opening
-		try { populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []); } catch (err) { console.warn("Pattern list failed:", err); }
+    // Use imported DEFAULT_SOURCE if present, otherwise a tiny inline fallback
+    var defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim())
+      ? DEFAULT_SOURCE.trim()
+      : "---\nversion: 1\n---\n# New guide\n\nWelcome. Start writing…";
 
-		try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
+    var srcEl = $("#guide-source");
+    if (srcEl) srcEl.value = defaultSrc;
 
-		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
+    // These are best-effort; failures shouldn't block the editor opening
+    try { populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []); } catch (err) { console.warn("Pattern list failed:", err); }
+    try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
+    try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
 
-		$("#guide-title")?.focus();
-		announce("Started a new guide");
-	} catch (err) {
-		console.error("startNewGuide fatal:", err);
-		announce("Could not start a new guide");
-	}
+    if (titleEl) titleEl.focus();
+    announce("Started a new guide");
+  } catch (err) {
+    console.error("startNewGuide fatal:", err);
+    announce("Could not start a new guide");
+  }
 }
 
 async function openGuide(id) {
-	try {
-		const res = await fetch(`/api/guides/${encodeURIComponent(id)}`);
-		const g = res.ok ? await res.json() : null;
-		if (!g) throw new Error("Not found");
+  try {
+    const res = await fetch("/api/guides/" + encodeURIComponent(id));
+    const g = res.ok ? await res.json() : null;
+    if (!g) throw new Error("Not found");
 
-		window.__openGuideId = g.id;
-		$("#editor-section")?.classList.remove("is-hidden");
-		$("#guide-title") && ($("#guide-title").value = g.title || "Untitled");
-		$("#guide-status") && ($("#guide-status").textContent = g.status || "draft");
-		$("#guide-source") && ($("#guide-source").value = g.sourceMarkdown || "");
-		populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
-		populateVariablesForm(g.variables || {});
-		await preview();
-		announce(`Opened guide “${g.title || "Untitled"}”`);
-	} catch (e) {
-		console.warn(e);
-		announce("Failed to open guide");
-	}
+    window.__openGuideId = g.id;
+
+    var editor = $("#editor-section");
+    if (editor) editor.classList.remove("is-hidden");
+
+    var titleEl = $("#guide-title");
+    if (titleEl) titleEl.value = g.title || "Untitled";
+
+    var statusEl = $("#guide-status");
+    if (statusEl) statusEl.textContent = g.status || "draft";
+
+    var srcEl = $("#guide-source");
+    if (srcEl) srcEl.value = g.sourceMarkdown || "";
+
+    populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
+    populateVariablesForm(g.variables || {});
+    await preview();
+    announce('Opened guide “' + (g.title || "Untitled") + '”');
+  } catch (e) {
+    console.warn(e);
+    announce("Failed to open guide");
+  }
 }
 
 async function preview() {
-	var srcEl = $("#guide-source");
-	if (!srcEl) return;
+  var srcEl = $("#guide-source");
+  if (!srcEl) return;
 
-	var source = srcEl.value || "";
-	var ctx = window.__guideCtx || {};
-	var project = ensureProjectName(ctx.project || {});
-	var study = ensureStudyTitle(ctx.study || {});
+  var source = srcEl.value || "";
+  var ctx = window.__guideCtx || {};
+  var project = ensureProjectName(ctx.project || {});
+  var study = ensureStudyTitle(ctx.study || {});
 
-	var fm = readFrontMatter(source);
-	var meta = clonePlainObject(fm.meta || {});
-	delete meta.project;
-	delete meta.study;
-	delete meta.session;
-	delete meta.participant;
+  var fm = readFrontMatter(source);
+  var meta = clonePlainObject((fm && fm.meta) || {});
+  delete meta.project; delete meta.study; delete meta.session; delete meta.participant;
 
-	var context = { project: project, study: study, session: {}, participant: {}, meta: meta };
+  var context = { project: project, study: study, session: {}, participant: {}, meta: meta };
 
-	var names = collectPartialNames(source);
-	var partials = {};
-	try { partials = await buildPartials(names); } catch {}
+  var names = collectPartialNames(source);
+  var partials = {};
+  try { partials = await buildPartials(names); } catch (e) {}
 
-	var out = await renderGuide({ source: source, context: context, partials: partials });
+  var out = await renderGuide({ source: source, context: context, partials: partials });
 
-	var prev = $("#guide-preview");
-	if (prev) prev.innerHTML = out.html;
+  var prev = $("#guide-preview");
+  if (prev) prev.innerHTML = out.html;
 
-	runLints({ source: source, context: context, partials: partials });
+  runLints({ source: source, context: context, partials: partials });
 }
 
 /** Plain shallow clone (no spread) */
 function clonePlainObject(obj) {
-	var out = {};
-	if (!obj || typeof obj !== "object") return out;
-	for (var k in obj) {
-		if (Object.prototype.hasOwnProperty.call(obj, k)) out[k] = obj[k];
-	}
-	return out;
+  var out = {};
+  if (!obj || typeof obj !== "object") return out;
+  for (var k in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, k)) out[k] = obj[k];
+  }
+  return out;
 }
 
 async function onSave() {
-	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
-	const source = $("#guide-source")?.value || "";
-	const body = { title, sourceMarkdown: source, variables: readFrontMatter(source).meta || {} };
-	const id = window.__openGuideId;
-	const method = id ? "PATCH" : "POST";
-	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
-	const res = await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-	if (res.ok) {
-		announce("Guide saved");
-		loadGuides((window.__guideCtx?.study || {}).id);
-	} else {
-		announce("Save failed");
-	}
+  var titleEl = $("#guide-title");
+  var title = (titleEl && titleEl.value ? titleEl.value.trim() : "") || "Untitled guide";
+  var srcEl = $("#guide-source");
+  var source = (srcEl && srcEl.value) || "";
+  var fm = readFrontMatter(source);
+  var body = { title: title, sourceMarkdown: source, variables: (fm && fm.meta) || {} };
+  var id = window.__openGuideId;
+  var method = id ? "PATCH" : "POST";
+  var url = id ? ("/api/guides/" + encodeURIComponent(id)) : "/api/guides";
+  const res = await fetch(url, { method: method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  if (res.ok) {
+    announce("Guide saved");
+    var study = (window.__guideCtx && window.__guideCtx.study) || {};
+    loadGuides(study.id);
+  } else {
+    announce("Save failed");
+  }
 }
 
 async function onPublish() {
-	const id = window.__openGuideId;
-	const title = ($("#guide-title")?.value || "").trim();
-	if (!id) { announce("Save the guide before publishing."); return; }
-	const res = await fetch(`/api/guides/${encodeURIComponent(id)}/publish`, { method: "POST" });
-	if (res.ok) {
-		$("#guide-status").textContent = "published";
-		announce(`Published “${title || "Untitled"}”`);
-		loadGuides((window.__guideCtx?.study || {}).id);
-	} else {
-		announce("Publish failed");
-	}
+  var id = window.__openGuideId;
+  var titleEl = $("#guide-title");
+  var title = titleEl && titleEl.value ? titleEl.value.trim() : "";
+  if (!id) { announce("Save the guide before publishing."); return; }
+  const res = await fetch("/api/guides/" + encodeURIComponent(id) + "/publish", { method: "POST" });
+  if (res.ok) {
+    var statusEl = $("#guide-status");
+    if (statusEl) statusEl.textContent = "published";
+    announce('Published “' + (title || "Untitled") + '”');
+    var study = (window.__guideCtx && window.__guideCtx.study) || {};
+    loadGuides(study.id);
+  } else {
+    announce("Publish failed");
+  }
 }
 
 function importMarkdownFlow() {
-	const inp = document.createElement("input");
-	inp.type = "file";
-	inp.accept = ".md,text/markdown";
-	inp.addEventListener("change", async () => {
-		const file = inp.files?.[0];
-		if (!file) return;
-		const text = await file.text();
-		await startNewGuide();
-		$("#guide-source").value = text;
-		await preview();
-	});
-	inp.click();
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = ".md,text/markdown";
+  inp.addEventListener("change", async function () {
+    const file = inp.files && inp.files[0];
+    if (!file) return;
+    const text = await file.text();
+    await startNewGuide();
+    var srcEl = $("#guide-source");
+    if (srcEl) srcEl.value = text;
+    await preview();
+  });
+  inp.click();
 }
 
 /* -------------------- drawers: patterns -------------------- */
 function openPatternDrawer() {
-	$("#drawer-patterns").hidden = false;
-	$("#pattern-search").focus();
-	announce("Pattern drawer opened");
+  var d = $("#drawer-patterns");
+  if (d) d.hidden = false;
+  var s = $("#pattern-search");
+  if (s) s.focus();
+  announce("Pattern drawer opened");
 }
 
 function closePatternDrawer() {
-	$("#drawer-patterns").hidden = true;
-	$("#btn-insert-pattern").focus();
-	announce("Pattern drawer closed");
+  var d = $("#drawer-patterns");
+  if (d) d.hidden = true;
+  var b = $("#btn-insert-pattern");
+  if (b) b.focus();
+  announce("Pattern drawer closed");
 }
 
 function populatePatternList(items) {
-	const ul = $("#pattern-list");
-	if (!ul) return;
-	ul.innerHTML = "";
-	for (const p of items || []) {
-		const li = document.createElement("li");
-		li.innerHTML = `
-			<button class="btn btn--secondary" data-pattern="${p.name}_v${p.version}">
-				${escapeHtml(p.title)} <span class="muted">(${p.category} · v${p.version})</span>
-			</button>`;
-		ul.appendChild(li);
-	}
-	ul.addEventListener("click", (e) => {
-		const b = e.target.closest("button[data-pattern]");
-		if (!b) return;
-		insertAtCursor($("#guide-source"), `\n{{> ${b.dataset.pattern}}}\n`);
-		preview();
-		closePatternDrawer();
-	});
+  var ul = $("#pattern-list");
+  if (!ul) return;
+  ul.innerHTML = "";
+  var arr = Array.isArray(items) ? items : [];
+  for (var i = 0; i < arr.length; i++) {
+    var p = arr[i];
+    var li = document.createElement("li");
+    li.innerHTML =
+      '<button class="btn btn--secondary" data-pattern="' + p.name + "_v" + p.version + '">' +
+      escapeHtml(p.title) + ' <span class="muted">(' + p.category + " · v" + p.version + ")</span>" +
+      "</button>";
+    ul.appendChild(li);
+  }
+  ul.addEventListener("click", function (e) {
+    var t = e.target;
+    var hasClosest = t && typeof t.closest === "function";
+    var b = hasClosest ? t.closest("button[data-pattern]") : null;
+    if (!b) return;
+    insertAtCursor($("#guide-source"), "\n{{> " + b.getAttribute("data-pattern") + "}}\n");
+    preview();
+    closePatternDrawer();
+  });
 }
 
 function onPatternSearch(e) {
-	const q = e.target.value.trim().toLowerCase();
-	populatePatternList(typeof searchPatterns === "function" ? searchPatterns(q) : []);
+  var q = (e && e.target && e.target.value ? e.target.value : "").trim().toLowerCase();
+  var list = (typeof searchPatterns === "function") ? searchPatterns(q) : [];
+  populatePatternList(list);
 }
 
 /* -------------------- drawers: variables -------------------- */
 function openVariablesDrawer() {
-	const src = $("#guide-source")?.value || "";
-	const { meta } = readFrontMatter(src);
-	populateVariablesForm(meta || {});
-	$("#drawer-variables").hidden = false;
-	$("#drawer-variables").focus();
+  var src = $("#guide-source");
+  var text = src ? src.value : "";
+  var fm = readFrontMatter(text);
+  populateVariablesForm((fm && fm.meta) || {});
+  var d = $("#drawer-variables");
+  if (d) { d.hidden = false; d.focus(); }
 }
 
 function closeVariablesDrawer() {
-	$("#drawer-variables").hidden = true;
-	$("#btn-variables").focus();
+  var d = $("#drawer-variables");
+  if (d) d.hidden = true;
+  var b = $("#btn-variables");
+  if (b) b.focus();
 }
 
 function populateVariablesForm(meta) {
-	const form = $("#variables-form");
-	if (!form) return;
-	form.innerHTML = "";
-	const fields = Object.entries(meta || {}).slice(0, 40);
-	for (const [k, v] of fields) {
-		const id = `var-${k}`;
-		const row = document.createElement("div");
-		row.innerHTML = `
-			<label for="${id}">${escapeHtml(k)}</label>
-			<input id="${id}" class="input" value="${escapeHtml(String(v))}" />`;
-		form.appendChild(row);
-	}
-	form.addEventListener("input", debounce(onVarsEdit, 200));
+  var form = $("#variables-form");
+  if (!form) return;
+  form.innerHTML = "";
+  var entries = Object.entries(meta || {}).slice(0, 40);
+  for (var i = 0; i < entries.length; i++) {
+    var kv = entries[i];
+    var k = kv[0], v = kv[1];
+    var id = "var-" + k;
+    var row = document.createElement("div");
+    row.innerHTML =
+      '<label for="' + id + '">' + escapeHtml(k) + "</label>" +
+      '<input id="' + id + '" class="input" value="' + escapeHtml(String(v)) + '" />';
+    form.appendChild(row);
+  }
+  form.addEventListener("input", debounce(onVarsEdit, 200));
 }
 
 function onVarsEdit() {
-	const src = $("#guide-source")?.value || "";
-	const fm = readFrontMatter(src);
-	const formVals = {};
-	$$("#variables-form input").forEach(i => formVals[i.id.replace(/^var-/, "")] = i.value);
-	var merged = clonePlainObject(fm.meta || {});
-	for (var k in formVals)
-		if (Object.prototype.hasOwnProperty.call(formVals, k)) merged[k] = formVals[k];
-	const rebuilt = writeFrontMatter(src, merged);
-	$("#guide-source").value = rebuilt;
-	preview();
+  var srcEl = $("#guide-source");
+  var src = srcEl ? srcEl.value : "";
+  var fm = readFrontMatter(src);
+  var formVals = {};
+  var inputs = $$("#variables-form input");
+  for (var i = 0; i < inputs.length; i++) {
+    var id = inputs[i].id || "";
+    var key = id.replace(/^var-/, "");
+    formVals[key] = inputs[i].value;
+  }
+  var merged = clonePlainObject((fm && fm.meta) || {});
+  for (var k in formVals) if (Object.prototype.hasOwnProperty.call(formVals, k)) merged[k] = formVals[k];
+  var rebuilt = writeFrontMatter(src, merged);
+  if (srcEl) srcEl.value = rebuilt;
+  preview();
 }
 
 /* -------------------- export -------------------- */
 async function doExport(kind) {
-	const source = $("#guide-source")?.value || "";
-	const { project, study } = window.__guideCtx || {};
-	const meta = readFrontMatter(source).meta;
-	const context = buildContext({ project, study, session: {}, participant: {}, meta });
-	const partials = await buildPartials(collectPartialNames(source)).catch(() => ({}));
-	const payload = { source, context, partials, kind };
-	const res = await fetch("/api/render", {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(payload)
-	});
-	if (!res.ok) { announce("Export failed"); return; }
-	const { filename, blobBase64 } = await res.json();
-	const a = document.createElement("a");
-	a.href = `data:application/octet-stream;base64,${blobBase64}`;
-	a.download = filename || `guide.${kind}`;
-	a.click();
-	announce(`Exported ${filename || kind}`);
+  var srcEl = $("#guide-source");
+  var source = (srcEl && srcEl.value) || "";
+  var ctx = window.__guideCtx || {};
+  var project = ctx.project || {};
+  var study = ctx.study || {};
+  var fm = readFrontMatter(source);
+  var meta = (fm && fm.meta) || {};
+  var context = buildContext({ project: project, study: study, session: {}, participant: {}, meta: meta });
+  var partials = await buildPartials(collectPartialNames(source)).catch(function () { return {}; });
+  var payload = { source: source, context: context, partials: partials, kind: kind };
+  var res = await fetch("/api/render", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) { announce("Export failed"); return; }
+  var js = await res.json();
+  var a = document.createElement("a");
+  a.href = "data:application/octet-stream;base64," + js.blobBase64;
+  a.download = js.filename || ("guide." + kind);
+  a.click();
+  announce("Exported " + (js.filename || kind));
 }
 
 /* -------------------- helpers -------------------- */
 
-function fallbackTitle(s = {}) {
-	const method = (s.method || "Study").trim();
-	const d = s.createdAt ? new Date(s.createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return `${method} — ${yyyy}-${mm}-${dd}`;
-}
-
 function ensureStudyTitle(s) {
-	s = s || {};
-	var explicit = (s.title || s.Title || "").toString().trim();
-	var out = clonePlainObject(s);
-	if (explicit) { out.title = explicit; return out; }
-	var method = (s.method || "Study").trim();
-	var d = s.createdAt ? new Date(s.createdAt) : new Date();
-	var yyyy = d.getUTCFullYear();
-	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	var dd = String(d.getUTCDate()).padStart(2, "0");
-	out.title = method + " — " + yyyy + "-" + mm + "-" + dd;
-	return out;
+  s = s || {};
+  var explicit = (s.title || s.Title || "").toString().trim();
+  var out = clonePlainObject(s);
+  if (explicit) { out.title = explicit; return out; }
+  var method = (s.method || "Study").trim();
+  var d = s.createdAt ? new Date(s.createdAt) : new Date();
+  var yyyy = d.getUTCFullYear();
+  var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  var dd = String(d.getUTCDate()).padStart(2, "0");
+  out.title = method + " — " + yyyy + "-" + mm + "-" + dd;
+  return out;
 }
 
 /** Get the first non-empty string from a list of candidates. */
 function firstText() {
-	for (var i = 0; i < arguments.length; i++) {
-		var v = arguments[i];
-		if (typeof v === "string" && v.trim()) return v.trim();
-		if (Array.isArray(v) && v.length && typeof v[0] === "string" && v[0].trim()) {
-			return v[0].trim();
-		}
-	}
-	return "";
+  for (var i = 0; i < arguments.length; i++) {
+    var v = arguments[i];
+    if (typeof v === "string" && v.trim()) return v.trim();
+    if (Array.isArray(v) && v.length && typeof v[0] === "string" && v[0].trim()) return v[0].trim();
+  }
+  return "";
 }
 
 /** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
 function ensureProjectName(p) {
-	if (!p) p = {};
-	// Unwrap common “{ project: {…} }” envelope
-	var base = (p && p.project) ? p.project : p;
-	// Airtable “fields”
-	var f = (base && base.fields) ? base.fields : null;
+  if (!p) p = {};
+  // Unwrap common “{ project: {…} }” envelope
+  var base = (p && p.project) ? p.project : p;
+  // Airtable “fields”
+  var f = (base && base.fields) ? base.fields : null;
 
-	// Try all the likely places/casings you listed:
-	var name = firstText(
-		base && base.name,
-		base && base.Name,
-		base && base.Project,
-		f && f.name,
-		f && f.Name,
-		f && f.Project
-	);
+  // Try all the likely places/casings you listed:
+  var name = firstText(
+    base && base.name,
+    base && base.Name,
+    base && base.Project,
+    f && f.name,
+    f && f.Name,
+    f && f.Project
+  );
 
-	// If still empty, try a very common alternative Airtable alias
-	if (!name && p && typeof p.Name === "string") name = p.Name.trim();
+  // If still empty, try a very common alternative Airtable alias
+  if (!name && p && typeof p.Name === "string") name = p.Name.trim();
 
-	// Last resort: derive a readable placeholder
-	if (!name) name = "(Unnamed project)";
+  // Last resort: derive a readable placeholder
+  if (!name) name = "(Unnamed project)";
 
-	// Write back a lower-case `.name` the rest of the app can rely on
-	base.name = name;
-	return base;
+  // Write back a lower-case `.name` the rest of the app can rely on
+  base.name = name;
+  return base;
 }
 
 /**
  * Try multiple API sources to resolve a project record that has a usable .name.
  * Order:
  *   1) /api/projects/:pid
- *   2) /api/project-details?project=:pid        (if your Worker exposes it)
- *   3) /api/studies/:sid  (some APIs embed a project label on the study)
+ *   2) /api/project-details?project=:pid
+ *   3) /api/studies/:sid
  */
 async function resolveProject(pid, sid) {
-	// 1) Primary
-	try {
-		var r1 = await fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r1.ok) {
-			var pj = await r1.json();
-			var p1 = ensureProjectName(pj);
-			if (p1 && p1.name && p1.name !== "(Unnamed project)") return p1;
-		}
-	} catch {}
+  // 1) Primary
+  try {
+    var r1 = await fetch("/api/projects/" + encodeURIComponent(pid), { cache: "no-store" });
+    if (r1.ok) {
+      var pj = await r1.json();
+      var p1 = ensureProjectName(pj);
+      if (p1 && p1.name && p1.name !== "(Unnamed project)") return p1;
+    }
+  } catch (e) {}
 
-	// 2) Details (optional endpoint)
-	try {
-		var r2 = await fetch("/api/project-details?project=" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r2.ok) {
-			var list = await r2.json();
-			if (Array.isArray(list) && list.length) {
-				var p2 = ensureProjectName(list[0]);
-				if (p2 && p2.name && p2.name !== "(Unnamed project)") return p2;
-			}
-		}
-	} catch {}
+  // 2) Details (optional endpoint)
+  try {
+    var r2 = await fetch("/api/project-details?project=" + encodeURIComponent(pid), { cache: "no-store" });
+    if (r2.ok) {
+      var list = await r2.json();
+      if (Array.isArray(list) && list.length) {
+        var p2 = ensureProjectName(list[0]);
+        if (p2 && p2.name && p2.name !== "(Unnamed project)") return p2;
+      }
+    }
+  } catch (e) {}
 
-	// 3) From study (sometimes exposes label/linked “Project” column)
-	try {
-		var r3 = await fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" });
-		if (r3.ok) {
-			var s = await r3.json();
-			// Common places a label might live
-			var via = ensureProjectName(
-				s && s.project ? s.project :
-				(s && s.Project ? { Project: s.Project } : {})
-			);
-			if (via && via.name && via.name !== "(Unnamed project)") return via;
-		}
-	} catch {}
+  // 3) From study (sometimes exposes label/linked “Project” column)
+  try {
+    var r3 = await fetch("/api/studies/" + encodeURIComponent(sid), { cache: "no-store" });
+    if (r3.ok) {
+      var s = await r3.json();
+      var via = ensureProjectName(
+        (s && s.project) ? s.project :
+        ((s && s.Project) ? { Project: s.Project } : {})
+      );
+      if (via && via.name && via.name !== "(Unnamed project)") return via;
+    }
+  } catch (e) {}
 
-	// Final fallback
-	return { id: pid, name: "(Unnamed project)" };
+  // Final fallback
+  return { id: pid, name: "(Unnamed project)" };
 }
 
-function runLints({ source, context, partials }) {
-	const out = $("#lint-output");
-	if (!out) return;
-	const warnings = [];
+function runLints(args) {
+  var source = args.source, context = args.context, partials = args.partials;
+  var out = $("#lint-output");
+  if (!out) return;
+  var warnings = [];
 
-	// Undeclared partials
-	for (const p of collectPartialNames(source)) {
-		if (!(p in partials)) warnings.push(`Unknown partial: {{> ${p}}}`);
-	}
+  // Undeclared partials
+  var parts = collectPartialNames(source);
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i];
+    if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
+  }
 
-	// Simple tag existence check ({{study.something}})
-	const tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
-	let m;
-	while ((m = tagRegex.exec(source))) {
-		const path = m[1].split(".");
-		const v = getPath(context, path);
-		// ✅ Only warn if undefined or null; allow empty string/0/false
-		if (v === undefined || v === null) warnings.push(`Missing value for {{${m[1]}}}`);
-	}
+  // Simple tag existence check ({{study.something}})
+  var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
+  var m;
+  for (;;) {
+    m = tagRegex.exec(source);
+    if (!m) break;
+    var path = m[1].split(".");
+    var v = getPath(context, path);
+    if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
+  }
 
-	out.textContent = warnings[0] || "No issues";
+  out.textContent = warnings[0] || "No issues";
 }
 
 function collectPartialNames(src) {
-	const re = /{{>\s*([a-zA-Z0-9_\-]+)\s*}}/g;
-	const names = new Set();
-	let m;
-	while ((m = re.exec(src))) names.add(m[1]);
-	return Array.from(names);
+  var re = /{{>\s*([a-zA-Z0-9_\-]+)\s*}}/g;
+  var names = new Set();
+  var m;
+  for (;;) {
+    m = re.exec(src);
+    if (!m) break;
+    names.add(m[1]);
+  }
+  return Array.from(names);
 }
 
 function readFrontMatter(src) {
-	if (!src.startsWith("---")) return { meta: {}, body: src };
-	const end = src.indexOf("\n---", 3);
-	if (end === -1) return { meta: {}, body: src };
-	const yaml = src.slice(3, end).trim();
-	const body = src.slice(end + 4);
-	const meta = parseYamlLite(yaml);
-	return { meta, body };
+  if (!src || src.indexOf("---") !== 0) return { meta: {}, body: src };
+  var end = src.indexOf("\n---", 3);
+  if (end === -1) return { meta: {}, body: src };
+  var yaml = src.slice(3, end).trim();
+  var body = src.slice(end + 4);
+  var meta = parseYamlLite(yaml);
+  return { meta: meta, body: body };
 }
 
 function writeFrontMatter(src, meta) {
-	const { body } = readFrontMatter(src);
-	const yaml = emitYamlLite(meta);
-	return `---\n${yaml}\n---\n${body.replace(/^\n*/, "")}`;
+  var parsed = readFrontMatter(src);
+  var body = parsed.body;
+  var yaml = emitYamlLite(meta);
+  return "---\n" + yaml + "\n---\n" + body.replace(/^\n*/, "");
 }
 
 function parseYamlLite(y) {
-	const obj = {};
-	y.split("\n").forEach(line => {
-		const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-		if (!m) return;
-		let val = m[2];
-		if (/^\d+$/.test(val)) val = Number(val);
-		if (val === "true") val = true;
-		if (val === "false") val = false;
-		obj[m[1]] = val;
-	});
-	return obj;
+  var obj = {};
+  var lines = (y || "").split("\n");
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!m) continue;
+    var val = m[2];
+    if (/^\d+$/.test(val)) val = Number(val);
+    if (val === "true") val = true;
+    if (val === "false") val = false;
+    obj[m[1]] = val;
+  }
+  return obj;
 }
 
 function emitYamlLite(o) {
-	return Object.entries(o || {})
-		.map(([k, v]) => `${k}: ${String(v)}`)
-		.join("\n");
+  var out = [];
+  for (var k in (o || {})) {
+    if (Object.prototype.hasOwnProperty.call(o, k)) {
+      out.push(k + ": " + String(o[k]));
+    }
+  }
+  return out.join("\n");
 }
 
 function insertAtCursor(textarea, snippet) {
-	if (!textarea) return;
-	const { selectionStart: s = textarea.value.length, selectionEnd: e = textarea.value.length, value } = textarea;
-	textarea.value = value.slice(0, s) + snippet + value.slice(e);
-	textarea.selectionStart = textarea.selectionEnd = s + snippet.length;
-	textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  if (!textarea) return;
+  var s = typeof textarea.selectionStart === "number" ? textarea.selectionStart : textarea.value.length;
+  var e = typeof textarea.selectionEnd === "number" ? textarea.selectionEnd : textarea.value.length;
+  var v = textarea.value;
+  textarea.value = v.slice(0, s) + snippet + v.slice(e);
+  textarea.selectionStart = textarea.selectionEnd = s + snippet.length;
+  textarea.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function onInsertTag() {
-	const tags = [
-		"{{study.title}}", "{{project.name}}", "{{participant.id}}",
-		"{{#tasks}}…{{/tasks}}", "{{#study.remote}}…{{/study.remote}}"
-	];
-	const pick = prompt("Insert tag (example):\n" + tags.join("\n"));
-	if (pick) {
-		insertAtCursor($("#guide-source"), pick);
-		preview();
-	}
+  var tags = [
+    "{{study.title}}", "{{project.name}}", "{{participant.id}}",
+    "{{#tasks}}…{{/tasks}}", "{{#study.remote}}…{{/study.remote}}"
+  ];
+  var pick = prompt("Insert tag (example):\n" + tags.join("\n"));
+  if (pick) {
+    insertAtCursor($("#guide-source"), pick);
+    preview();
+  }
 }
 
-function debounce(fn, ms = 200) {
-	let t;
-	return (...a) => {
-		clearTimeout(t);
-		t = setTimeout(() => fn(...a), ms);
-	};
+function debounce(fn, ms) {
+  ms = (typeof ms === "number") ? ms : 200;
+  var t;
+  return function () {
+    var args = arguments;
+    clearTimeout(t);
+    t = setTimeout(function () { fn.apply(null, args); }, ms);
+  };
 }
 
 function getPath(obj, pathArr) {
-	return pathArr.reduce((acc, k) => {
-		if (acc == null) return undefined;
-		if (typeof acc !== "object") return undefined;
-		return (k in acc) ? acc[k] : undefined;
-	}, obj);
+  var acc = obj;
+  for (var i = 0; i < pathArr.length; i++) {
+    var k = pathArr[i];
+    if (acc == null) return undefined;
+    if (typeof acc !== "object") return undefined;
+    if (!(k in acc)) return undefined;
+    acc = acc[k];
+  }
+  return acc;
 }
 
 function escapeHtml(s) {
-	return (s ?? "").toString()
-		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var str = (s == null ? "" : String(s));
+  return str
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-/**
- * Create a plain shallow clone of an object without using spread literals.
- * @param {Record<string, any>} obj
- * @returns {Record<string, any>}
- */
+/** Create a plain shallow clone of an object without using spread literals. */
 function clonePlainObject(obj) {
-	const out = {};
-	if (!obj || typeof obj !== "object") return out;
-	for (const key in obj) {
-		if (Object.prototype.hasOwnProperty.call(obj, key)) {
-			out[key] = obj[key];
-		}
-	}
-	return out;
+  var out = {};
+  if (!obj || typeof obj !== "object") return out;
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      out[key] = obj[key];
+    }
+  }
+  return out;
 }
 
-function announce(msg) { $("#sr-live") && ($("#sr-live").textContent = msg); }
+function announce(msg) {
+  var sr = $("#sr-live");
+  if (sr) sr.textContent = msg;
+}
