@@ -78,6 +78,7 @@ function pickTitle(s = {}) {
  * @param {{ pid: string, sid: string }} params
  * @returns {Promise<void>}
  */
+/** Hydrate breadcrumbs, header subtitle, and guide context. */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
 		// Fetch project + studies in parallel
@@ -86,18 +87,22 @@ async function hydrateCrumbs({ pid, sid }) {
 			loadStudies(pid)
 		]);
 
-		/** @type {{ name?: string }|{} } */
-		const project = projRes.ok ? await projRes.json() : {};
+		// ✅ Normalise project so project.name always exists
+		let project = {};
+		if (projRes.ok) {
+			const pj = await projRes.json();
+			project = pj.project || pj; // handles both {project:{…}} and plain object
+		}
 
-		/** @type {any} */
+		// ✅ Resolve study title
 		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
-		const study = ensureStudyTitle(studyRaw); // <- guarantees study.title
+		const study = ensureStudyTitle(studyRaw);
 
-		// Breadcrumbs (guards prevent null deref if markup changes)
+		// ── Breadcrumbs ──────────────────────────────────────────────
 		const bcProj = document.getElementById("breadcrumb-project");
 		if (bcProj) {
 			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-			bcProj.textContent = project?.name || "Project";
+			bcProj.textContent = project.name || "Project";
 		}
 
 		const bcStudy = document.getElementById("breadcrumb-study");
@@ -106,22 +111,18 @@ async function hydrateCrumbs({ pid, sid }) {
 			bcStudy.textContent = study.title;
 		}
 
-		// Header subtitle + back link
+		// ── Header subtitle + back link ─────────────────────────────
 		const sub = document.querySelector('[data-bind="study.title"]');
 		if (sub) sub.textContent = study.title;
-
 		const back = document.getElementById("back-to-study");
 		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 
-		// Nice-to-have: tab title reflects the resolved study title
-		try { document.title = `Discussion Guides — ${study.title}`; } catch {}
-
-		// Expose normalised context for preview/export
+		// ── Update tab title + context ──────────────────────────────
+		document.title = `Discussion Guides — ${study.title}`;
 		window.__guideCtx = { project, study };
+
 	} catch (e) {
 		console.warn("Crumb hydrate failed", e);
-		const sub = document.querySelector('[data-bind="study.title"]');
-		if (sub) sub.textContent = "—";
 		window.__guideCtx = { project: {}, study: {} };
 	}
 }
