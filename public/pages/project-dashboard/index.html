@@ -161,8 +161,8 @@
 				<p id="study-desc" class="lede">Create a study and capture a clear title, method, and short description.</p>
 
 				<!-- NEW: Study Title -->
-				<label class="govuk-label" for="study-title-input">Study Title <span class="govuk-hint">(required)</span></label>
-				<input id="study-title-input" class="govuk-input" type="text" required aria-required="true" placeholder="e.g. Caseworker interview round — Jan 2025" />
+				<label class="govuk-label" for="study-title-input">Study Title <span class="govuk-hint"></span></label>
+				<input id="study-title-input" class="govuk-input" type="text" aria-required="false" placeholder="e.g. Caseworker interview round — Jan 2025" />
 
 				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
 				<select id="study-method" class="govuk-input" required aria-required="true">
@@ -351,18 +351,16 @@
 			/** @type {{ok?:boolean, studies?:any[]}} */
 			const js = await res.json().catch(() => ({}));
 			if (!res.ok || !js?.ok) return [];
-			return (js.studies || []).map(r =>
+			return (js.studies || []).map(r => ({
 				/** @type {UIStudy} */
-				({
-					id: r.id || "",
-					studyId: r.studyId || "",
-					title: r.title || r.name || "",
-					method: r.method || "",
-					status: r.status || "",
-					description: r.description || "",
-					createdAt: r.createdAt || ""
-				})
-			);
+				id: r.id || "",
+				studyId: r.studyId || "",
+				title: r.title || computeStudyTitle(r), // ← use API title or compute
+				method: r.method || "",
+				status: r.status || "",
+				description: r.description || "",
+				createdAt: r.createdAt || ""
+			}));
 		}
 
 		/* ──────────────────────────────────────────────────────────────
@@ -454,8 +452,8 @@
 			};
 
 			list.innerHTML = studies.map(s => {
-				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const linkText = (s.title || s.method || "Study").trim();
+				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
 
@@ -572,7 +570,7 @@
 			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
 				e.preventDefault();
 
-				const titleEl  = /** @type {HTMLInputElement|null} */ (document.getElementById("study-title-input"));
+				const titleEl = /** @type {HTMLInputElement|null} */ (document.getElementById("study-title-input"));
 				const methodEl = /** @type {HTMLSelectElement|null} */ ($("#study-method"));
 				const notesEl = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"));
 				const method = methodEl?.value?.trim();
