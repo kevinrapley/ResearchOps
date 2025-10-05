@@ -42,10 +42,6 @@
 			<form id="desc-editor" class="panel" hidden>
 				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
 				<textarea id="desc-input" class="govuk-input" rows="8" spellcheck="true" autocomplete="off"></textarea>
-				<div class="actions-bar" style="gap:8px;">
-					<button class="btn" type="submit">Save</button>
-					<button class="btn btn--secondary" id="desc-cancel" type="button">Cancel</button>
-				</div>
 
 				<!-- Allowed Markdown cheat sheet -->
 				<details class="note" style="margin-top:8px;">
@@ -68,6 +64,11 @@
 						</ul>
 					</div>
 				</details>
+
+				<div class="actions-bar" style="gap:8px;">
+					<button id="btn-save-desc" class="btn" type="submit">Save</button>
+					<button id="btn-cancel-desc" class="btn btn--secondary" type="button">Cancel</button>
+				</div>
 			</form>
 		</div>
 
@@ -85,7 +86,7 @@
 			<a href="#" class="board__item" aria-disabled="true">Produce consent forms</a>
 			<a href="#" class="board__item" aria-disabled="true">Manage consent</a>
 			<a href="#" class="board__item" aria-disabled="true">Schedule participants</a>
-			<a href="#" class="board__item" aria-disabled="true">Discussion guides</a>
+			<a id="link-guides" href="#" class="board__item" aria-disabled="true">Discussion Guides</a>
 			<a href="#" class="board__item" aria-disabled="true">Note takers &amp; observers</a>
 			<a href="#" class="board__item" aria-disabled="true">Begin a session</a>
 		</nav>
@@ -134,35 +135,40 @@
 		(async function init() {
 			try {
 				const usp = new URLSearchParams(location.search);
-				const pid = usp.get("pid") || ""; // Airtable Project record id
-				const sid = usp.get("sid") || ""; // Airtable Study record id
+				const pid = usp.get("pid") || "";
+				const sid = usp.get("sid") || "";
 				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Correct back-link for your /pages/ structure
+				// Back link
 				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
 
-				// Fetch studies for this project and pick the one we need
+				// Fetch & paint
 				const studies = await loadStudies(pid);
-				console.debug("[study] fetched", studies.length, "studies for project", pid);
 				const study = studies.find(s => s.id === sid);
 				if (!study) throw new Error(`Study not found in project (sid=${sid})`);
 
-				// Paint the UI (keep this dead simple first)
 				setText("#study-eyebrow", "Study");
 				setText("#study-title", study.method || "Study");
 				setText("#kv-method", study.method || "");
 				setText("#kv-status", study.status || "");
 				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
 
-				// For now, show raw description plainly (no Markdown yet)
 				const descEl = $("#description");
 				if (descEl) descEl.textContent = (study.description || "").trim() || "—";
 
-				// Optional “edit” deep link (stays on this page)
+				// Edit deep link
 				$("#edit-study")?.setAttribute(
 					"href",
 					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
 				);
+
+				// ✅ Enable "Discussion Guides" route
+				const guides = $("#link-guides");
+				if (guides) {
+					const url = `/pages/study/guides/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+					guides.setAttribute("href", url);
+					guides.removeAttribute("aria-disabled");
+				}
 
 			} catch (err) {
 				console.error("[study] init error:", err);
