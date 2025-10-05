@@ -91,7 +91,7 @@ async function hydrateCrumbs({ pid, sid }) {
 		let project = {};
 		if (projRes.ok) {
 			const pj = await projRes.json();
-			project = pj.project || pj; // handles both {project:{…}} and plain object
+			project = ensureProjectName(pj);
 		}
 
 		// ✅ Resolve study title
@@ -281,8 +281,11 @@ async function preview() {
 	const source = $("#guide-source")?.value ?? "";
 
 	// Pull raw study from context, then normalise
-	const { project, study: rawStudy } = window.__guideCtx || {};
+	const { project: rawProject, study: rawStudy } = window.__guideCtx || {};
+
 	const normalisedStudy = ensureStudyTitle(rawStudy || {});
+	const project = ensureProjectName(rawProject || {});
+	const study = ensureStudyTitle(rawStudy || {});
 
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({
@@ -469,6 +472,14 @@ function ensureStudyTitle(s = {}) {
 	return { ...s, title: `${method} — ${yyyy}-${mm}-${dd}` };
 }
 
+/** Ensure we always have project.name (lowercase) available. */
+function ensureProjectName(p = {}) {
+	// Unwrap common API shapes
+	const base = p && p.project ? p.project : p;
+	const name = (base.name ?? base.Name ?? "").toString().trim();
+	return { ...base, name };
+}
+
 function runLints({ source, context, partials }) {
 	const out = $("#lint-output");
 	if (!out) return;
@@ -484,7 +495,9 @@ function runLints({ source, context, partials }) {
 	let m;
 	while ((m = tagRegex.exec(source))) {
 		const path = m[1].split(".");
-		if (!getPath(context, path)) warnings.push(`Missing value for {{${m[1]}}}`);
+		const v = getPath(context, path);
+		// ✅ Only warn if undefined or null; allow empty string/0/false
+		if (v === undefined || v === null) warnings.push(`Missing value for {{${m[1]}}}`);
 	}
 
 	out.textContent = warnings[0] || "No issues";
