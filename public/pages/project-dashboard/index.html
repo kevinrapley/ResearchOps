@@ -334,7 +334,7 @@
 			const main = document.querySelector("main");
 			if (main) main.dataset.projectAirtableId = project.id || "";
 			const edit = document.getElementById("btn-edit");
-			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
+			if (edit) edit.setAttribute("href", `./start/?id=${encodeURIComponent(project.id)}`);
 		}
 
 		/**
@@ -370,7 +370,7 @@
 			list.innerHTML = studies.map(s0 => {
 				const s = normalizeStudy(s0);
 				// Keep your established route:
-				const href = `/pages/project-dashboard/study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
