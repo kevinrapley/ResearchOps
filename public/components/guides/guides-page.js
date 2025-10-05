@@ -70,33 +70,58 @@ function pickTitle(s = {}) {
 }
 
 /**
- * Breadcrumb + header context.
- * @param {{pid:string, sid:string}} ids
+ * Hydrate breadcrumbs, header subtitle, and guide context.
+ *
+ * Resolves a safe study title via `ensureStudyTitle` so `{{study.title}}`
+ * never falls back to description.
+ *
+ * @param {{ pid: string, sid: string }} params
+ * @returns {Promise<void>}
  */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
+		// Fetch project + studies in parallel
 		const [projRes, studies] = await Promise.all([
 			fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" }),
 			loadStudies(pid)
 		]);
+
+		/** @type {{ name?: string }|{} } */
 		const project = projRes.ok ? await projRes.json() : {};
-		const study = studies.find(s => s.id === sid) || {};
 
-		$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-		$("#breadcrumb-project").textContent = project?.name || "Project";
+		/** @type {any} */
+		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
+		const study = ensureStudyTitle(studyRaw); // <- guarantees study.title
 
-		$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-		$("#breadcrumb-study").textContent = pickTitle(study);
+		// Breadcrumbs (guards prevent null deref if markup changes)
+		const bcProj = document.getElementById("breadcrumb-project");
+		if (bcProj) {
+			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+			bcProj.textContent = project?.name || "Project";
+		}
 
-		// header subtitle + back link
-		$('[data-bind="study.title"]').textContent = pickTitle(study);
-		$("#back-to-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+		const bcStudy = document.getElementById("breadcrumb-study");
+		if (bcStudy) {
+			bcStudy.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+			bcStudy.textContent = study.title;
+		}
 
-		// context for preview/export
+		// Header subtitle + back link
+		const sub = document.querySelector('[data-bind="study.title"]');
+		if (sub) sub.textContent = study.title;
+
+		const back = document.getElementById("back-to-study");
+		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+
+		// Nice-to-have: tab title reflects the resolved study title
+		try { document.title = `Discussion Guides — ${study.title}`; } catch {}
+
+		// Expose normalised context for preview/export
 		window.__guideCtx = { project, study };
 	} catch (e) {
 		console.warn("Crumb hydrate failed", e);
-		$('[data-bind="study.title"]').textContent = "—";
+		const sub = document.querySelector('[data-bind="study.title"]');
+		if (sub) sub.textContent = "—";
 		window.__guideCtx = { project: {}, study: {} };
 	}
 }
@@ -145,8 +170,11 @@ function wireGlobalActions() {
 	// Delegated fallback (works if DOM changes later)
 	document.addEventListener("click", (e) => {
 		const newBtn = e.target.closest?.("#btn-new");
-		if (newBtn) { e.preventDefault();
-			onNewClick(e); return; }
+		if (newBtn) {
+			e.preventDefault();
+			onNewClick(e);
+			return;
+		}
 
 		const menu = $("#export-menu")?.closest(".menu");
 		if (menu && !menu.contains(e.target)) menu.removeAttribute("aria-expanded");
@@ -251,6 +279,7 @@ async function openGuide(id) {
 async function preview() {
 	const source = $("#guide-source")?.value ?? "";
 	const { project, study } = window.__guideCtx || {};
+	const study = ensureStudyTitle(rawStudy);
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({ project, study, session: {}, participant: {}, meta });
 	const partialNames = collectPartialNames(source);
@@ -407,6 +436,27 @@ async function doExport(kind) {
 }
 
 /* -------------------- helpers -------------------- */
+
+function fallbackTitle(s = {}) {
+	const method = (s.method || "Study").trim();
+	const d = s.createdAt ? new Date(s.createdAt) : new Date();
+	const yyyy = d.getUTCFullYear();
+	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+	const dd = String(d.getUTCDate()).padStart(2, "0");
+	return `${method} — ${yyyy}-${mm}-${dd}`;
+}
+
+function ensureStudyTitle(s = {}) {
+	const explicit = (s.title || s.Title || "").toString().trim();
+	if (explicit) return { ...s, title: explicit };
+	const method = (s.method || "Study").trim();
+	const d = s.createdAt ? new Date(s.createdAt) : new Date();
+	const yyyy = d.getUTCFullYear();
+	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+	const dd = String(d.getUTCDate()).padStart(2, "0");
+	return { ...s, title: `${method} — ${yyyy}-${mm}-${dd}` };
+}
+
 function runLints({ source, context, partials }) {
 	const out = $("#lint-output");
 	if (!out) return;
@@ -494,8 +544,10 @@ function onInsertTag() {
 
 function debounce(fn, ms = 200) {
 	let t;
-	return (...a) => { clearTimeout(t);
-		t = setTimeout(() => fn(...a), ms); };
+	return (...a) => {
+		clearTimeout(t);
+		t = setTimeout(() => fn(...a), ms);
+	};
 }
 
 function getPath(obj, pathArr) {
