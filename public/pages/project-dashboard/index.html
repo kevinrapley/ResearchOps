@@ -338,7 +338,9 @@
 		}
 
 		/**
-		 * Render studies list (links to study page).
+		 * Render studies list (links to Study page).
+		 * Displays the Airtable Title field if available,
+		 * otherwise falls back to Method or a generated label.
 		 * @param {UIProject} project
 		 * @param {UIStudy[]} studies
 		 * @returns {void}
@@ -352,7 +354,7 @@
 				return;
 			}
 
-			/** @param {string} s */
+			/** Escape HTML utility */
 			const escapeHtml = (s = "") =>
 				s.replace(/&/g, "&amp;")
 				.replace(/</g, "&lt;")
@@ -360,41 +362,44 @@
 				.replace(/"/g, "&quot;")
 				.replace(/'/g, "&#39;");
 
-			/** Truncate to ~N chars at word boundary. */
-			const truncate = (text, max = 170) => {
+			/** Truncate helper */
+			const truncateToWords = (text, maxLength = 170) => {
 				if (!text) return "";
-				if (text.length <= max) return text;
-				return text.slice(0, max).replace(/\s+\S*$/, "");
+				if (text.length <= maxLength) return text;
+				return text.slice(0, maxLength).replace(/\s+\S*$/, "");
 			};
 
-			list.innerHTML = studies.map(s0 => {
-				const s = normalizeStudy(s0);
-				// Keep your established route:
-				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+			list.innerHTML = studies.map(s => {
+				// ---- determine display title ----
+				const title =
+					s.title?.trim() ||
+					s.Title?.trim() ||
+					s.method?.trim() ||
+					"Untitled Study";
 
+				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
 				const status = (s.status || "").trim();
-				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
+				const meta = status ? ` — <em>${escapeHtml(status)}</em>` : "";
 
 				const full = s.description || "";
-				const cut = truncate(full, 170);
-				const isTrunc = full.length > 170;
+				const isTruncated = full.length > 170;
+				const truncated = truncateToWords(full, 170);
 
 				let descHtml = "";
-				if (cut) {
-					if (isTrunc && cut.length > 10) {
-						const head = escapeHtml(cut.slice(0, -10));
-						const tail = escapeHtml(cut.slice(-10));
+				if (truncated) {
+					if (isTruncated && truncated.length > 10) {
+						const head = escapeHtml(truncated.slice(0, -10));
+						const tail = escapeHtml(truncated.slice(-10));
 						descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
 					} else {
-						descHtml = escapeHtml(cut);
+						descHtml = escapeHtml(truncated);
 					}
 				}
 
 				return `
 <li class="item">
 	<div>
-		<a class="govuk-link" href="${href}">${escapeHtml(s.title || s.method || "Study")}</a>
-		${meta ? ` — ${meta}` : ""}
+		<a class="govuk-link" href="${href}">${escapeHtml(title)}</a>${meta}
 	</div>
 	${descHtml ? `<div class="lede" style="margin-top:4px;">${descHtml}</div>` : ""}
 </li>`;
@@ -440,8 +445,11 @@
 
 			// Focus trap + Escape support
 			dialog.addEventListener("keydown", (e) => {
-				if (e.key === "Escape") { e.preventDefault();
-					close(); return; }
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+					return;
+				}
 				if (e.key !== "Tab") return;
 
 				const focusables = $$('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])', dialog)
@@ -452,11 +460,15 @@
 				const last = focusables[focusables.length - 1];
 
 				// @ts-ignore
-				if (e.shiftKey && document.activeElement === first) { last.focus();
-					e.preventDefault(); }
+				if (e.shiftKey && document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				}
 				// @ts-ignore
-				else if (!e.shiftKey && document.activeElement === last) { first.focus();
-					e.preventDefault(); }
+				else if (!e.shiftKey && document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
 			});
 
 			// Click outside (backdrop) closes
