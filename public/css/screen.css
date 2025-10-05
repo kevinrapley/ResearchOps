@@ -41,6 +41,12 @@ body {
 	margin: 24px;
 	}
 
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 16px;
+	}
+	
 .grid {
 	display: grid;
 	gap: 24px;
@@ -55,6 +61,27 @@ body {
 
 /* === =NAVIGATION ======================================== */
 
+.breadcrumbs {
+	margin: 8px 0 12px;
+	font-size: 0.95rem;
+	color: #505a5f;
+	}
+
+.breadcrumbs ol {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	}
+
+.breadcrumbs li + li::before {
+	content: "›";
+	margin: 0 4px 0 2px;
+	color: #505a5f;
+	}
+	
 .nav a {
 	margin-right: 12px;
 	}
