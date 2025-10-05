@@ -76,10 +76,10 @@ async function hydrateCrumbs({ pid, sid }) {
 	try {
 		const projRes = await fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: 'no-store' });
 		const project = projRes.ok ? await projRes.json() : {};
-
+		
 		const studies = await loadStudies(pid);
 		const rawStudy = studies.find(s => s.id === sid) || {};
-		const study = normalizeStudy(rawStudy);
+		const study = normalizeStudy(studies.find(s => s.id === sid) || {});
 
 		$('#breadcrumb-project').href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
 		$('#breadcrumb-project').textContent = project?.name || 'Project';
@@ -88,7 +88,7 @@ async function hydrateCrumbs({ pid, sid }) {
 		$('#breadcrumb-study').textContent = study?.title || study?.method || 'Study';
 
 		$('#back-to-study').href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-		$('[data-bind="study.title"]').textContent = study?.title || study?.method || '—';
+		$('[data-bind="study.title"]').textContent = study.title;
 
 		window.__guideCtx = { project, study };
 	} catch (e) {
@@ -245,7 +245,7 @@ async function openGuide(id) {
  */
 async function preview() {
 	const source = $('#guide-source').value;
-	const { project, study } = window.__guideCtx || {};
+	const { project, study: rawStudy } = window.__guideCtx || {};
 	const study = normalizeStudy(rawStudy);
 	const meta = readFrontMatter(source).meta;
 	const context = buildContext({ project, study, session: {}, participant: {}, meta });
@@ -476,10 +476,25 @@ async function doExport(kind) {
  * @param {Object} s
  * @returns {Object}
  */
+ 
+/** Match Airtable Title formula in JS (LEFT 80, else Method — YYYY-MM-DD). */
+function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
+	if (description && description.trim()) {
+		return description.trim().slice(0, 80);
+	}
+	// YYYY-MM-DD (UTC-ish; keep stable like Airtable DATETIME_FORMAT)
+	const d = createdAt ? new Date(createdAt) : new Date();
+	const yyyy = d.getUTCFullYear();
+	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+	const dd = String(d.getUTCDate()).padStart(2, "0");
+	return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
+}
+
+/** Normalise a study to guarantee .title exists. */
 function normalizeStudy(s = {}) {
 	return {
 		...s,
-		title: s.title || s.method || s.name || s.studyName || s.studyId || 'Study'
+		title: s.title || computeStudyTitle(s)
 	};
 }
    
