@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+
 	<script type="module" src="/components/layout.js"></script>
 	<script type="module" src="study-desc-controller.js" defer></script>
 </head>
@@ -19,7 +20,9 @@
     "subtitle":"Study"
   }'></x-include>
 
-	<main id="main" class="container" role="main">
+	<!-- Use container to match global layout spacing -->
+	<main id="main" class="container govuk-body" role="main">
+
 		<div class="actions-bar">
 			<a id="back-to-project" href="/pages/projects/" class="btn btn--secondary">← Back to Project</a>
 			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
@@ -27,7 +30,7 @@
 
 		<!-- Hero -->
 		<div class="dashboard-hero">
-			<p id="study-eyebrow" class="project-org"></p>
+			<p id="study-eyebrow" class="project-org">Study</p>
 			<h1 id="study-title" class="govuk-heading-l">Study</h1>
 
 			<!-- Description lives under the title -->
@@ -43,7 +46,6 @@
 				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
 				<textarea id="desc-input" class="govuk-input" rows="8" spellcheck="true" autocomplete="off"></textarea>
 
-				<!-- Allowed Markdown cheat sheet -->
 				<details class="note" style="margin-top:8px;">
 					<summary>Markdown cheat sheet (allowed)</summary>
 					<div>
@@ -54,13 +56,12 @@
 							<li>Links: <code>[text](https://…)</code></li>
 							<li>Lists:
 								<ul>
-									<li>Unordered: lines starting with <code>-</code>, <code>*</code> or <code>+</code></li>
+									<li>Unordered: <code>-</code> or <code>*</code></li>
 									<li>Ordered: <code>1. item</code></li>
 								</ul>
 							</li>
 							<li>Inline code: <code>`code`</code></li>
-							<li>Code block: triple backticks <code>```</code></li>
-							<li>Paragraphs: blank line between blocks</li>
+							<li>Code block: <code>```</code></li>
 						</ul>
 					</div>
 				</details>
@@ -81,7 +82,7 @@
 			</ul>
 		</section>
 
-		<!-- Materials hubs (placeholders) -->
+		<!-- Materials hubs -->
 		<nav class="board" aria-label="Study setup">
 			<a href="#" class="board__item" aria-disabled="true">Produce consent forms</a>
 			<a href="#" class="board__item" aria-disabled="true">Manage consent</a>
@@ -91,7 +92,6 @@
 			<a href="#" class="board__item" aria-disabled="true">Begin a session</a>
 		</nav>
 
-		<!-- Overview kept for future content -->
 		<section class="section">
 			<header class="section__header">
 				<h2 class="section__title govuk-heading-m">Overview</h2>
@@ -108,16 +108,49 @@
 
 	<script type="module">
 		/**
-		 * Study page bootstrap — minimal, reliable fetch + render from Worker API.
-		 * Expects URL params: ?pid=<AirtableProjectId>&sid=<AirtableStudyRecordId>
-		 * Uses: GET /api/studies?project=<pid>  → [{ id, studyId, method, status, description, createdAt }]
+		 * @file study/index.html (bootstrap)
+		 * @module StudyPage
+		 * @summary Fetches study data via Worker API and renders the page.
+		 * @description
+		 * - Title logic: prefer `study.title` (if present); otherwise compute “Method — YYYY-MM-DD”.
+		 * - Description is shown under the H1, never used as the title.
+		 * - “Discussion Guides” tile routes to `/pages/study/guides/?pid=…&sid=…`.
 		 */
 
-		// ── small helpers
-		const $ = (s, r = document) => r.querySelector(s);
-		const setText = (sel, val, fallback = "—") => { const el = $(sel); if (el) el.textContent = (val ?? "").toString().trim() || fallback; };
+		/* ── tiny helpers ───────────────────────────────────────────── */
 
-		// ── data access (Worker API proxies Airtable “Project Studies”)
+		/** @param {string} sel @param {ParentNode} [root=document] */
+		const $ = (sel, root = document) => root.querySelector(sel);
+
+		/**
+		 * Compute Airtable-like fallback title:
+		 * LEFT(Description, 80) is *not* used for the H1; for the H1 we prefer 'Method — YYYY-MM-DD'
+		 * when an explicit `title` is not set.
+		 * @param {{ method?: string, createdAt?: string }} s
+		 */
+		function fallbackTitle(s = {}) {
+			const method = (s.method || "Study").trim();
+			const d = s.createdAt ? new Date(s.createdAt) : new Date();
+			const yyyy = d.getUTCFullYear();
+			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+			const dd = String(d.getUTCDate()).padStart(2, "0");
+			return `${method} — ${yyyy}-${mm}-${dd}`;
+		}
+
+		/**
+		 * Title to display in the H1.
+		 * @param {{ title?: string, Title?: string, method?: string, createdAt?: string }} s
+		 * @returns {string}
+		 */
+		function pickH1Title(s = {}) {
+			return (s.title || s.Title || "").trim() || fallbackTitle(s);
+		}
+
+		/**
+		 * Fetch all studies for a project.
+		 * @param {string} projectAirtableId
+		 * @returns {Promise<Array<any>>}
+		 */
 		async function loadStudies(projectAirtableId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}`;
 			const res = await fetch(url, { cache: "no-store" });
@@ -128,19 +161,8 @@
 			return js.studies;
 		}
 
-		// Airtable 'Title' formula parity: LEFT(Description, 80) else 'Method — YYYY-MM-DD'
-		function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
-			if (description && description.trim()) return description.trim().slice(0, 80);
-			const d = createdAt ? new Date(createdAt) : new Date();
-			const yyyy = d.getUTCFullYear();
-			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-			const dd = String(d.getUTCDate()).padStart(2, "0");
-			return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
-		}
+		/* ── bootstrap ─────────────────────────────────────────────── */
 
-		function normalizeStudy(s = {}) { return { ...s, title: s.title || s.Title || computeStudyTitle(s) }; }
-
-		// ── bootstrap
 		(async function init() {
 			try {
 				const usp = new URLSearchParams(location.search);
@@ -148,156 +170,45 @@
 				const sid = usp.get("sid") || "";
 				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Back link
-				document.getElementById("back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
+				// Back to project route
+				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
 
-				// Fetch & paint
+				// Fetch the project studies and find this one
 				const studies = await loadStudies(pid);
-				const study = normalizeStudy(studies.find(s => s.id === sid) || {});
+				const study = studies.find(s => s.id === sid) || {};
 
-				setText("#study-eyebrow", "Study");
-				setText("#study-title", study.title);
-				setText("#kv-method", study.method || "");
-				setText("#kv-status", study.status || "");
-				setText("#kv-studyid", (study.studyId || "").toString().toUpperCase());
-				const descEl = document.getElementById("description");
-				if (descEl) descEl.textContent = (study.description || "").trim() || "—";
+				// Paint H1 using title (or computed fallback), not description
+				$("#study-title").textContent = pickH1Title(study);
 
-				// Deep links
-				document.getElementById("edit-study")?.setAttribute(
+				// Key-value facts
+				$("#kv-method").textContent = (study.method || "—");
+				$("#kv-status").textContent = (study.status || "—");
+				$("#kv-studyid").textContent = String(study.studyId || "—").toUpperCase();
+
+				// Description (plain text for now)
+				const desc = (study.description || "").trim();
+				$("#description").textContent = desc || "—";
+
+				// Optional “edit” deep link
+				$("#edit-study")?.setAttribute(
 					"href",
 					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
 				);
 
-				// ✅ Guides link: pid + sid
-				const guides = document.getElementById("link-guides");
+				// Enable “Discussion Guides” route
+				const guides = $("#link-guides");
 				if (guides) {
 					const url = `/pages/study/guides/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 					guides.setAttribute("href", url);
 					guides.removeAttribute("aria-disabled");
 				}
+
+				// Expose id for inline editor wiring (if needed elsewhere)
+				document.body.setAttribute("data-study-id", sid);
 			} catch (err) {
 				console.error("[study] init error:", err);
 				alert("Could not load study.");
 			}
-		})();
-	</script>
-
-	<script type="module">
-		/**
-		 * @file study-bootstrap.js
-		 * @summary Derive study id, set data-study-id, then wire the inline editor.
-		 *
-		 * Sources of truth (in order):
-		 * 1) Existing DOM attribute (data-study-id on #study-root / main / body)
-		 * 2) URL query param: sid (or id)
-		 * 3) window.__STUDY?.id (if your page code sets it after fetching)
-		 *
-		 * Fails closed with clear console error.
-		 */
-
-		// ----- Config (no magic strings) -----
-		const SEL_ROOTS = ['#study-root', 'main', 'body'];
-		const ATTR_ID = 'data-study-id';
-		const URL_KEYS = ['sid', 'id']; // adapt if you use another key
-		const SAVE_URL = '/api/studies/:id';
-
-		// ----- Utilities -----
-		/** Find the root element we’ll annotate. */
-		function getRoot() {
-			for (const sel of SEL_ROOTS) {
-				const el = document.querySelector(sel);
-				if (el) return el;
-			}
-			return document.body;
-		}
-
-		/** Try to read an existing study id from DOM. */
-		function readIdFromDom() {
-			const root = getRoot();
-			return root.getAttribute(ATTR_ID) || null;
-		}
-
-		/** Try to read study id from URL (?sid=rec... or ?id=rec...). */
-		function readIdFromUrl() {
-			const qs = new URLSearchParams(location.search);
-			for (const key of URL_KEYS) {
-				const v = qs.get(key);
-				if (v && /^rec[a-zA-Z0-9]{14}$/i.test(v)) return v;
-			}
-			return null;
-		}
-
-		/** Try to read study id from a global your app may set. */
-		function readIdFromGlobal() {
-			// If your page fetch sets window.__STUDY = { id: 'rec...' }
-			const v = (globalThis.__STUDY && globalThis.__STUDY.id) || null;
-			return (typeof v === 'string' && v.startsWith('rec')) ? v : null;
-		}
-
-		/** Set the attribute on the chosen root. */
-		function setDomId(id) {
-			const root = getRoot();
-			root.setAttribute(ATTR_ID, id);
-			return root;
-		}
-
-		/** Initialise the editor once we have an id. */
-		async function initEditor() {
-			// Lazy import if you separated the class into its own module,
-			// otherwise remove this and use the global/class already on the page.
-			// import { StudyDescController } from './study-desc-controller.js';
-
-			// If StudyDescController is already in scope (from earlier snippet), use it:
-			if (typeof StudyDescController !== 'function') {
-				console.error('StudyDescController not found on window or module scope.');
-				return;
-			}
-
-			new StudyDescController({
-				viewWrapSel: '#desc-view-wrap',
-				viewSel: '#description',
-				editBtnSel: '#btn-edit-desc',
-				formSel: '#desc-editor',
-				textareaSel: '#desc-input',
-				cancelBtnSel: '#desc-cancel',
-				saveUrl: SAVE_URL
-			}).init();
-		}
-
-		// ----- Bootstrap flow -----
-		(function bootstrap() {
-			let id = readIdFromDom() || readIdFromUrl() || readIdFromGlobal();
-
-			if (id) {
-				setDomId(id);
-				initEditor();
-				return;
-			}
-
-			// If the id is not yet known (e.g. set later by your data loader),
-			// observe for it to appear and then initialise exactly once.
-			const root = getRoot();
-			const mo = new MutationObserver(() => {
-				const v = readIdFromDom();
-				if (v) {
-					mo.disconnect();
-					initEditor();
-				}
-			});
-			mo.observe(root, { attributes: true, attributeFilter: [ATTR_ID] });
-
-			// Also listen for an app event you might emit after fetching.
-			window.addEventListener('study:loaded', (e) => {
-				const maybeId = e?.detail?.id;
-				if (maybeId && !readIdFromDom()) {
-					setDomId(maybeId);
-					initEditor();
-				}
-			}, { once: true });
-
-			// Last resort log (helps during integration)
-			console.warn('study-bootstrap: study id not found yet; waiting for data-study-id attribute or study:loaded event.');
 		})();
 	</script>
 </body>
