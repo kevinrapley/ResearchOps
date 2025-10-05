@@ -1,19 +1,107 @@
+/**
+ * @file /components/guides/guide-editor.js
+ * @module GuideEditor
+ * @summary Render a Discussion Guide (Mustache → Markdown → Sanitised HTML).
+ *
+ * @description
+ * - Safely strips front-matter (`--- ... ---`) before Mustache rendering.
+ * - Renders only the Markdown body, keeping FM available (namespaced) via `context.meta`.
+ * - Does NOT flatten `meta` onto root (prevents `{project,study}` from being clobbered).
+ *
+ * @requires /lib/mustache.min.js
+ * @requires /lib/marked.min.js
+ * @requires /lib/purify.min.js
+ */
+
 import Mustache from '/lib/mustache.min.js';
 import { marked } from '/lib/marked.min.js';
 import DOMPurify from '/lib/purify.min.js';
 
-export async function renderGuide({ source, context, partials }) {
-	const md = Mustache.render(source, context, partials || {});
-	const raw = marked.parse(md, { mangle: false, headerIds: true, gfm: true });
-	const html = DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
-	return { md, html };
+/**
+ * Split a source string into `{ meta, body }`.
+ * FM format supported:
+ * 
+ * ---
+ * key: value
+ * another_key: 123
+ * ---
+ * # Markdown starts here
+ *
+ * Values remain strings except simple numbers/booleans.
+ * @param {string} src
+ * @returns {{ meta: Record<string, any>, body: string }}
+ */
+function splitFrontMatter(src = '') {
+	if (!src.startsWith('---')) return { meta: {}, body: src };
+	const end = src.indexOf('\n---', 3);
+	if (end === -1) return { meta: {}, body: src };
+
+	const yaml = src.slice(3, end).trim();
+	const body = src.slice(end + 4).replace(/^\n*/, '');
+
+	/** @type {Record<string, any>} */
+	const meta = {};
+	yaml.split('\n').forEach(line => {
+		const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+		if (!m) return;
+		let val = m[2];
+		if (/^\d+$/.test(val)) val = Number(val);
+		if (val === 'true') val = true;
+		if (val === 'false') val = false;
+		meta[m[1]] = val;
+	});
+
+	return { meta, body };
 }
 
+/**
+ * Render a guide: Mustache over Markdown body, then marked → DOMPurify.
+ *
+ * @param {{
+ *   source:   string,
+ *   context:  {
+ *     project?: any,
+ *     study?: any,
+ *     session?: any,
+ *     participant?: any,
+ *     meta?: Record<string, any>
+ *   },
+ *   partials?: Record<string,string>
+ * }} args
+ * @returns {Promise<{ md: string, html: string, meta?: Record<string, any> }>}
+ */
+export async function renderGuide({ source, context, partials }) {
+	const { meta: fm, body } = splitFrontMatter(source);
+
+	// Keep meta namespaced; never flatten into the root context.
+	// If page code already supplied context.meta, the FM keys just augment it.
+	const safeCtx = {
+		...(context || {}),
+		meta: { ...(context?.meta || {}), ...(fm || {}) }
+	};
+
+	// Mustache over the Markdown body only
+	const md = Mustache.render(body, safeCtx, partials || {});
+
+	// Markdown → HTML
+	const raw = marked.parse(md, { mangle: false, headerIds: true, gfm: true });
+
+	// Sanitise
+	const html = DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+
+	return { md, html, meta: fm };
+}
+
+/**
+ * Fetch partials by name from API; fallback to in-page registry.
+ * @param {string[]} names
+ * @returns {Promise<Record<string,string>>}
+ */
 export async function buildPartials(names) {
+	/** @type {Record<string,string>} */
 	const partials = {};
 	for (const name of names) {
 		try {
-			// Server pattern endpoint; fallback to client registry
 			const res = await fetch(`/api/patterns/${encodeURIComponent(name)}`);
 			if (res.ok) {
 				const p = await res.json();
@@ -22,7 +110,7 @@ export async function buildPartials(names) {
 				const local = window.__patternRegistry?.[name];
 				if (local) partials[name] = local;
 			}
-		} catch (e) {
+		} catch {
 			const local = window.__patternRegistry?.[name];
 			if (local) partials[name] = local;
 		}
@@ -30,14 +118,10 @@ export async function buildPartials(names) {
 	return partials;
 }
 
-/* Starter source for new guides */
+/* Starter source for new guides (kept minimal; FM is optional) */
 export const DEFAULT_SOURCE = `---
-title: {{study.title}} — Round 1
-language: en-GB
-timebox: 60
-roles: ["Facilitator","Notetaker"]
+version: 1
 ---
-
 # {{study.title}} — Discussion guide
 
 _Study:_ **{{study.title}}**  
@@ -55,7 +139,6 @@ _Project:_ **{{project.name}}**
 {{> probe_error_recovery_v1}}
 {{> probe_trust_signals_v1}}
 
-## Wrap-up
 {{> wrapup_debrief_v1}}
 
 {{> note_observer_grid_v1}}
