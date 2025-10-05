@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Guides — Study</title>
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/guides.css" media="screen" />
+
+	<script type="module" src="/components/layout.js"></script>
+	<script type="module" src="/components/guides/guides-page.js" defer></script>
+</head>
+
+<body class="govuk-body">
+	<x-include src="/partials/header.html" vars='{
+		"active":"Projects",
+		"subtitle":"Study — Guides"
+	}'></x-include>
+
+	<main id="main" class="container" role="main">
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="/pages/project/">Project</a></li>
+				<li><a id="breadcrumb-study" href="/pages/study/">Study</a></li>
+				<li aria-current="page">Guides</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<div class="page-header__titles">
+				<h1 class="govuk-heading-l">Discussion Guides</h1>
+				<p id="study-subtitle" class="muted">Study: <span data-bind="study.title">—</span></p>
+			</div>
+
+			<div class="page-header__actions" role="toolbar" aria-label="Guide actions">
+				<button id="btn-new" class="btn">＋ New guide</button>
+				<button id="btn-import" class="btn btn--secondary">⤒ Import .md</button>
+				<a id="back-to-study" class="btn btn--secondary" href="/pages/study/">← Back to Study</a>
+			</div>
+		</header>
+
+		<section id="guides-list-section" aria-labelledby="guides-list-title">
+			<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
+
+			<div class="table-wrap">
+				<table class="table" role="table">
+					<thead>
+						<tr>
+							<th scope="col">Title</th>
+							<th scope="col">Status</th>
+							<th scope="col">Version</th>
+							<th scope="col">Updated</th>
+							<th scope="col">Owner</th>
+							<th scope="col"><span class="sr-only">Actions</span></th>
+						</tr>
+					</thead>
+					<tbody id="guides-tbody">
+						<tr>
+							<td colspan="6" class="muted">Loading…</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<hr class="divider" />
+
+		<section id="editor-section" class="editor is-hidden" aria-labelledby="editor-title">
+			<div class="editor__header">
+				<h2 id="editor-title" class="govuk-heading-m">Guide editor</h2>
+				<div class="editor__meta">
+					<label for="guide-title" class="sr-only">Guide title</label>
+					<input id="guide-title" name="guide-title" class="input input--title" placeholder="Untitled guide" />
+					<span id="guide-status" class="tag" aria-live="polite">draft</span>
+				</div>
+
+				<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
+					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
+					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
+					<button id="btn-variables" class="btn btn--secondary">Variables</button>
+					<div class="toolbar-spacer" aria-hidden="true"></div>
+					<button id="btn-save" class="btn">💾 Save</button>
+					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
+					<div class="menu">
+						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
+						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
+							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
+							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
+							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
+							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<div class="editor__split" aria-label="Source and preview">
+				<section class="pane pane--source" aria-labelledby="source-title">
+					<h3 id="source-title" class="govuk-heading-s">Source (Markdown + Mustache)</h3>
+					<textarea id="guide-source" class="code" spellcheck="false" aria-describedby="lint-output"></textarea>
+					<div id="lint-output" class="lint" role="status" aria-live="polite"></div>
+				</section>
+
+				<section class="pane pane--preview" aria-labelledby="preview-title">
+					<h3 id="preview-title" class="govuk-heading-s">Live preview</h3>
+					<article id="guide-preview" class="preview" role="document" tabindex="0">
+						<p class="muted">Start typing to see a preview…</p>
+					</article>
+				</section>
+			</div>
+
+			<aside id="drawer-patterns" class="drawer" aria-labelledby="drawer-patterns-title" hidden>
+				<h3 id="drawer-patterns-title" class="govuk-heading-s">Pattern library</h3>
+				<input id="pattern-search" class="input" placeholder="Search patterns" />
+				<ul id="pattern-list" class="list-plain"></ul>
+				<button id="drawer-patterns-close" class="link-like">Close</button>
+			</aside>
+
+			<aside id="drawer-variables" class="drawer" aria-labelledby="drawer-variables-title" hidden>
+				<h3 id="drawer-variables-title" class="govuk-heading-s">Variables</h3>
+				<form id="variables-form" class="form-grid" aria-describedby="variables-help">
+					<p id="variables-help" class="muted">Edit front-matter without hand writing YAML.</p>
+				</form>
+				<button id="drawer-variables-close" class="link-like">Close</button>
+			</aside>
+		</section>
+
+		<div id="sr-live" class="sr-only" aria-live="polite"></div>
+	</main>
+
+	<x-include src="/partials/footer.html"></x-include>
+</body>
+
+</html>
