@@ -158,7 +158,11 @@
 					<button type="button" class="btn btn--outline" id="study-close" aria-label="Close add study dialog">✕</button>
 				</header>
 
-				<p id="study-desc" class="lede">Create a study and capture the method and a short description.</p>
+				<p id="study-desc" class="lede">Create a study and capture a clear title, method, and short description.</p>
+
+				<!-- NEW: Study Title -->
+				<label class="govuk-label" for="study-title-input">Study Title <span class="govuk-hint">(required)</span></label>
+				<input id="study-title-input" class="govuk-input" type="text" required aria-required="true" placeholder="e.g. Caseworker interview round — Jan 2025" />
 
 				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
 				<select id="study-method" class="govuk-input" required aria-required="true">
@@ -232,6 +236,7 @@
 		 * @typedef {Object} UIStudy
 		 * @property {string} id
 		 * @property {string} studyId
+		 * @property {string} title
 		 * @property {string} method
 		 * @property {string} status
 		 * @property {string} description
@@ -351,6 +356,7 @@
 				({
 					id: r.id || "",
 					studyId: r.studyId || "",
+					title: r.title || r.name || "",
 					method: r.method || "",
 					status: r.status || "",
 					description: r.description || "",
@@ -408,7 +414,7 @@
 			}
 
 			const edit = $("#btn-edit");
-			if (edit) edit.setAttribute("href", `/pages/start.html?id=${encodeURIComponent(project.id)}`);
+			if (edit) edit.setAttribute("href", `./start.html?id=${encodeURIComponent(project.id)}`);
 		}
 
 		/**
@@ -448,7 +454,8 @@
 			};
 
 			list.innerHTML = studies.map(s => {
-				const href = `/pages/study?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const href = `./study.html?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const linkText = (s.title || s.method || "Study").trim();
 				const status = (s.status || "").trim();
 				const meta = [status ? `<em>${escapeHtml(status)}</em>` : ""].filter(Boolean).join(" ");
 
@@ -470,7 +477,7 @@
 				return `
 <li class="item">
 	<div>
-		<a class="govuk-link" href="${href}">${escapeHtml(s.method || "Study")}</a>
+		<a class="govuk-link" href="${href}">${escapeHtml(linkText)}</a>
 		${meta ? ` — ${meta}` : ""}
 	</div>
 	${descHtml ? `<div class="lede" style="margin-top:4px;">${descHtml}</div>` : ""}
@@ -565,11 +572,12 @@
 			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
 				e.preventDefault();
 
+				const titleEl  = /** @type {HTMLInputElement|null} */ (document.getElementById("study-title-input"));
 				const methodEl = /** @type {HTMLSelectElement|null} */ ($("#study-method"));
 				const notesEl = /** @type {HTMLTextAreaElement|null} */ ($("#study-notes"));
 				const method = methodEl?.value?.trim();
 				const notes = notesEl?.value?.trim();
-				if (!method || !notes) return;
+				if (!title || !method || !notes) return;
 
 				const projectAirtableId = project.id || $("main")?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
@@ -583,6 +591,7 @@
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({
 							project_airtable_id: projectAirtableId,
+							title,
 							method,
 							description: notes,
 							status: "Planned",
