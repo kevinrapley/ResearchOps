@@ -22,6 +22,7 @@ AIRTABLE_TABLE_PROJECTS = "Projects"
 AIRTABLE_TABLE_DETAILS  = "Project Details"
 AIRTABLE_TABLE_STUDIES    = "Project Studies"
 AIRTABLE_TABLE_GUIDES = "Discussion Guides"
+AIRTABLE_TABLE_PARTIALS = "Partials"
 AUDIT = "true"
 
 # GitHub CSV repo details
