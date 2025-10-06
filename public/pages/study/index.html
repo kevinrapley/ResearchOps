@@ -30,7 +30,7 @@
 				<li aria-current="page">Study</li>
 			</ol>
 		</nav>
-		
+
 		<div class="actions-bar">
 			<a id="back-to-project" href="/pages/projects/" class="btn btn--secondary">← Back to Project</a>
 			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
@@ -120,7 +120,7 @@
 		 * @module StudyPage
 		 * @summary Fetches study data via Worker API and renders the page.
 		 * @description
-		 * - Title logic: prefer `study.title` (if present); otherwise compute “Method — YYYY-MM-DD”.
+		 * - Title logic: prefer `study.title`; otherwise compute “Method — YYYY-MM-DD”.
 		 * - Description is shown under the H1, never used as the title.
 		 * - “Discussion Guides” tile routes to `/pages/study/guides/?pid=…&sid=…`.
 		 */
@@ -131,9 +131,7 @@
 		const $ = (sel, root = document) => root.querySelector(sel);
 
 		/**
-		 * Compute Airtable-like fallback title:
-		 * LEFT(Description, 80) is *not* used for the H1; for the H1 we prefer 'Method — YYYY-MM-DD'
-		 * when an explicit `title` is not set.
+		 * Compute Airtable-like fallback title.
 		 * @param {{ method?: string, createdAt?: string }} s
 		 */
 		function fallbackTitle(s = {}) {
@@ -169,6 +167,20 @@
 			return js.studies;
 		}
 
+		/**
+		 * Fetch the single project from /api/projects (no /:id route exists).
+		 * @param {string} pid
+		 * @returns {Promise<{id:string,name:string}|null>}
+		 */
+		async function loadProject(pid) {
+			try {
+				const res = await fetch(`/api/projects`, { cache: "no-store" });
+				const js = await res.json().catch(() => ({}));
+				const list = Array.isArray(js?.projects) ? js.projects : [];
+				return list.find(p => p.id === pid) || null;
+			} catch { return null; }
+		}
+
 		/* ── bootstrap ─────────────────────────────────────────────── */
 
 		(async function init() {
@@ -181,18 +193,25 @@
 				// Back to project route
 				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
 
-				// Fetch the project studies and find this one
-				const studies = await loadStudies(pid);
+				// Fetch data
+				const [project, studies] = await Promise.all([
+					loadProject(pid),
+					loadStudies(pid)
+				]);
+
 				const study = studies.find(s => s.id === sid) || {};
 
 				// Breadcrumbs
-				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-				$("#breadcrumb-project").textContent = project?.name || "Project";
-				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-				$("#breadcrumb-study").textContent = pickTitle(study);
+				const projName = (project && project.name) ? project.name : "Project";
+				const bcProj = $("#breadcrumb-project");
+				if (bcProj) {
+					bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+					bcProj.textContent = projName;
+				}
+				// (No #breadcrumb-study element in this page’s HTML, so we don’t touch it.)
 
-				// Header + subtitle
-				$("#study-title").textContent = pickTitle(study);
+				// Header title
+				$("#study-title").textContent = pickH1Title(study);
 
 				// Key-value facts
 				$("#kv-method").textContent = (study.method || "—");
