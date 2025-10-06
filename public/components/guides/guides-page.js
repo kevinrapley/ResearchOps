@@ -89,8 +89,7 @@ async function hydrateCrumbs({ pid, sid }) {
 		const project = projects.find(p => p.id === pid) || { name: "(Unnamed project)" };
 
 		const studyRaw = Array.isArray(studiesRes) ?
-			(studiesRes.find(s => s.id === sid) || {}) :
-			{};
+			(studiesRes.find(s => s.id === sid) || {}) : {};
 
 		const study = ensureStudyTitle(studyRaw);
 
@@ -566,28 +565,145 @@ function onVarsEdit() {
 
 /* -------------------- export -------------------- */
 async function doExport(kind) {
-	var srcEl = $("#guide-source");
-	var source = (srcEl && srcEl.value) || "";
-	var ctx = window.__guideCtx || {};
-	var project = ctx.project || {};
-	var study = ctx.study || {};
-	var fm = readFrontMatter(source);
-	var meta = (fm && fm.meta) || {};
-	var context = buildContext({ project: project, study: study, session: {}, participant: {}, meta: meta });
-	var partials = await buildPartials(collectPartialNames(source)).catch(function() { return {}; });
-	var payload = { source: source, context: context, partials: partials, kind: kind };
-	var res = await fetch("/api/render", {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(payload)
-	});
-	if (!res.ok) { announce("Export failed"); return; }
-	var js = await res.json();
-	var a = document.createElement("a");
-	a.href = "data:application/octet-stream;base64," + js.blobBase64;
-	a.download = js.filename || ("guide." + kind);
+	const srcEl = $("#guide-source");
+	const source = srcEl?.value || "";
+	const title = $("#guide-title")?.value || "guide";
+	const sanitized = title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+	try {
+		switch (kind) {
+			case "md":
+				downloadText(source, `${sanitized}.md`, "text/markdown");
+				announce(`Exported ${title}.md`);
+				break;
+
+			case "html":
+				const preview = $("#guide-preview");
+				if (!preview) { announce("Preview not available"); return; }
+				const html = buildStandaloneHtml(preview.innerHTML, title);
+				downloadText(html, `${sanitized}.html`, "text/html");
+				announce(`Exported ${title}.html`);
+				break;
+
+			case "pdf":
+				// Requires jsPDF library
+				if (typeof window.jspdf === "undefined") {
+					announce("PDF export not available (library missing)");
+					return;
+				}
+				await exportPdf(title);
+				break;
+
+			case "docx":
+				// Requires docx.js library  
+				if (typeof window.docx === "undefined") {
+					announce("DOCX export not available (library missing)");
+					return;
+				}
+				await exportDocx(source, title);
+				break;
+
+			default:
+				announce("Unknown export format");
+		}
+	} catch (err) {
+		console.error("Export error:", err);
+		announce(`Export failed: ${err.message || "Unknown error"}`);
+	}
+}
+
+/**
+ * Download text content as a file.
+ * @param {string} content
+ * @param {string} filename
+ * @param {string} mimeType
+ */
+function downloadText(content, filename, mimeType) {
+	const blob = new Blob([content], { type: mimeType });
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = filename;
+	document.body.appendChild(a);
 	a.click();
-	announce("Exported " + (js.filename || kind));
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
+
+/**
+ * Build standalone HTML with inline styles.
+ * @param {string} bodyHtml
+ * @param {string} title
+ * @returns {string}
+ */
+function buildStandaloneHtml(bodyHtml, title) {
+	return `<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>${escapeHtml(title)}</title>
+	<style>
+		body { 
+			font-family: "GDS Transport", Arial, sans-serif; 
+			line-height: 1.5; 
+			max-width: 38em; 
+			margin: 2em auto; 
+			padding: 0 1em;
+			color: #0b0c0c;
+			}
+			
+		h1 { font-size: 2em; margin: 1em 0 0.5em; }
+		h2 { font-size: 1.5em; margin: 1em 0 0.5em; }
+		h3 { font-size: 1.25em; margin: 1em 0 0.5em; }
+		p { margin: 0 0 1em; }
+		
+		code { 
+			background: #f3f2f1; 
+			padding: 0.125em 0.25em; 
+			font-family: monospace; 
+			}
+			
+		pre { 
+			background: #f3f2f1; 
+			padding: 1em; 
+			overflow-x: auto; 
+			}
+	</style>
+</head>
+<body>
+	<h1>${escapeHtml(title)}</h1>
+	${bodyHtml}
+</body>
+</html>`;
+}
+
+/**
+ * Export as PDF using jsPDF (requires library loaded).
+ * @param {string} title
+ */
+async function exportPdf(title) {
+	const { jsPDF } = window.jspdf;
+	const doc = new jsPDF();
+
+	const preview = $("#guide-preview");
+	if (!preview) throw new Error("Preview not available");
+
+	// Simple text extraction (or use html2canvas for visual export)
+	const text = preview.textContent || "";
+	doc.text(text, 10, 10);
+	doc.save(`${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`);
+	announce(`Exported ${title}.pdf`);
+}
+
+/**
+ * Export as DOCX using docx.js (requires library loaded).
+ * @param {string} markdown
+ * @param {string} title
+ */
+async function exportDocx(markdown, title) {
+	// Placeholder - requires docx.js integration
+	announce("DOCX export coming soon");
 }
 
 /* -------------------- helpers -------------------- */
