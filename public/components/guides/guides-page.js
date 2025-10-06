@@ -429,7 +429,7 @@ async function onPublish() {
 	const title = ($("#guide-title")?.value || "").trim();
 	if (!id || !sid) { announce("Save the guide before publishing."); return; }
 
-	const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}/publish`;
+	const url = `/api/guides/${encodeURIComponent(id)}/publish`;
 	const res = await fetch(url, { method: "POST" });
 
 	if (res.ok) {
