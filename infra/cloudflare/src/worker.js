@@ -1031,8 +1031,12 @@ class ResearchOpsService {
 
 		// Build non-link fields (remember which Status key we used)
 		const fieldsTemplate = {};
-		const setIf = (names, val) => { if (val === undefined || val === null) return null; const k = names[0];
-			fieldsTemplate[k] = val; return k; };
+		const setIf = (names, val) => {
+			if (val === undefined || val === null) return null;
+			const k = names[0];
+			fieldsTemplate[k] = val;
+			return k;
+		};
 
 		setIf(GUIDE_FIELD_NAMES.title, String(p.title || "Untitled guide"));
 		const statusKey = setIf(GUIDE_FIELD_NAMES.status, String(p.status || "draft")); // <-- initial desired value
@@ -1071,7 +1075,8 @@ class ResearchOpsService {
 
 				// attempt 3: drop Status (let Airtable default or leave empty)
 				const {
-					[statusKey]: _drop, ...withoutStatus } = fields;
+					[statusKey]: _drop, ...withoutStatus
+				} = fields;
 				attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", withoutStatus, this.cfg.TIMEOUT_MS);
 				if (attempt.ok) {
 					const id = attempt.json.records?.[0]?.id;
@@ -1116,8 +1121,12 @@ class ResearchOpsService {
 
 		// Map incoming keys to preferred Airtable field names
 		const f = {};
-		const putIf = (names, val) => { if (val === undefined) return null; const key = names[0];
-			f[key] = val; return key; };
+		const putIf = (names, val) => {
+			if (val === undefined) return null;
+			const key = names[0];
+			f[key] = val;
+			return key;
+		};
 
 		putIf(GUIDE_FIELD_NAMES.title, typeof p.title === "string" ? p.title : undefined);
 		const statusKey = putIf(GUIDE_FIELD_NAMES.status, typeof p.status === "string" ? p.status : undefined);
@@ -1158,7 +1167,8 @@ class ResearchOpsService {
 
 			// 3rd attempt: omit Status
 			const {
-				[statusKey]: _drop, ...f3 } = f2;
+				[statusKey]: _drop, ...f3
+			} = f2;
 			res = await fetchWithTimeout(atUrl, {
 				method: "PATCH",
 				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -1206,11 +1216,12 @@ class ResearchOpsService {
 		const nextVer = Number.isFinite(cur) ? cur + 1 : 1;
 
 		const tryPatch = async (statusValue, note) => {
-			const fields = statusValue != null ?
-				{
-					[statusKey]: statusValue, [versionKey]: nextVer } :
-				{
-					[versionKey]: nextVer };
+			const fields = statusValue != null ? {
+				[statusKey]: statusValue,
+				[versionKey]: nextVer
+			} : {
+				[versionKey]: nextVer
+			};
 			const res = await fetchWithTimeout(atBase, {
 				method: "PATCH",
 				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -1237,6 +1248,44 @@ class ResearchOpsService {
 
 		this.log.error("airtable.guide.publish.fail", { status: r.status, text: r.txt });
 		return this.json({ error: `Airtable ${r.status}`, detail: r.txt }, r.status || 500, this.corsHeaders(origin));
+	}
+
+	async readGuide(origin, guideId) {
+		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}/${encodeURIComponent(guideId)}`;
+
+		const res = await fetchWithTimeout(atUrl, { headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` } }, this.cfg.TIMEOUT_MS);
+		const txt = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.guide.read.fail", { status: res.status, text: safeText(txt) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		let js;
+		try { js = JSON.parse(txt); } catch { js = {}; }
+		const f = js.fields || {};
+
+		// reuse your field-candidate logic
+		const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
+		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
+		const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
+		const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
+		const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
+
+		const guide = {
+			id: js.id,
+			title: titleKey ? f[titleKey] : "",
+			status: statusKey ? f[statusKey] : "draft",
+			version: verKey ? f[verKey] : 1,
+			sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
+			variables: (() => { try { return JSON.parse(f[varsKey] || "{}"); } catch { return {}; } })(),
+			createdAt: js.createdTime || ""
+		};
+
+		return this.json({ ok: true, guide }, 200, this.corsHeaders(origin));
 	}
 }
 
