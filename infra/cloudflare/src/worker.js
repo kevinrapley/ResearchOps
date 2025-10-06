@@ -889,6 +889,244 @@ class ResearchOpsService {
 			throw new Error(`GitHub write ${putRes.status}: ${safeText(t)}`);
 		}
 	}
+
+	/* --------------------- Guides (Discussion Guides) -------------------- */
+
+	/**
+	 * List guides linked to a Study.
+	 * - Requires ?study=<Airtable Study record id>
+	 * - Tolerates link field named "Study ↔", "Study", or "Studies"
+	 * - No fields[] projection (schema-safe)
+	 * @returns {Promise<Response>}
+	 */
+	async listGuides(origin, url) {
+		try {
+			const studyId = url.searchParams.get("study");
+			if (!studyId) {
+				return this.json({ ok: false, error: "Missing study query" }, 400, this.corsHeaders(origin));
+			}
+
+			const base = this.env.AIRTABLE_BASE_ID;
+			const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+			const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
+			const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+			const records = [];
+			let offset;
+
+			do {
+				const params = new URLSearchParams({ pageSize: "100" });
+				if (offset) params.set("offset", offset);
+
+				const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+				const bodyText = await resp.text();
+
+				if (!resp.ok) {
+					this.log.error("airtable.guides.list.fail", { status: resp.status, text: safeText(bodyText) });
+					return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(bodyText) }, resp.status, this.corsHeaders(origin));
+				}
+
+				/** @type {{records?: Array<{id:string, createdTime?:string, fields?: Record<string, any>}>, offset?: string}} */
+				let js;
+				try { js = JSON.parse(bodyText); } catch { js = { records: [] }; }
+
+				records.push(...(js.records || []));
+				offset = js.offset;
+			} while (offset);
+
+			const LINK_FIELDS = ["Study ↔", "Study", "Studies"];
+
+			const guides = records
+				.filter(r => {
+					const f = r.fields || {};
+					const linkArr = LINK_FIELDS.map(n => f[n]).find(v => Array.isArray(v));
+					return Array.isArray(linkArr) && linkArr.includes(studyId);
+				})
+				.map(r => {
+					const f = r.fields || {};
+					let vars = {};
+					try { if (typeof f["Variables (JSON)"] === "string") vars = JSON.parse(f["Variables (JSON)"]); } catch {}
+					const createdByName = (typeof f["Created By"] === "string" ? f["Created By"] :
+						(Array.isArray(f["Created By"]) && f["Created By"][0] && f["Created By"][0].name) ? f["Created By"][0].name : "");
+
+					return {
+						id: r.id,
+						title: f.Title || "Untitled",
+						status: f.Status || "draft",
+						version: Number.isFinite(+f.Version) ? +f.Version : 1,
+						sourceMarkdown: f["Source Markdown"] || "",
+						variables: vars,
+						createdBy: createdByName ? { name: createdByName } : undefined,
+						createdAt: r.createdTime || "",
+						updatedAt: f["Last Modified"] || f["Updated At"] || ""
+					};
+				})
+				.sort((a, b) => (Date.parse(b.updatedAt || b.createdAt) || 0) - (Date.parse(a.updatedAt || a.createdAt) || 0));
+
+			return this.json({ ok: true, guides }, 200, this.corsHeaders(origin));
+		} catch (err) {
+			this.log.error("guides.unexpected", { err: String(err?.message || err) });
+			return this.json({ ok: false, error: "Unexpected error listing guides", detail: String(err?.message || err) }, 500, this.corsHeaders(origin));
+		}
+	}
+
+	/**
+	 * Create a guide.
+	 * Input:
+	 *  { study_airtable_id:string, title?:string, status?:string, version?:number, sourceMarkdown?:string, variables?:object }
+	 * Defaults: status="draft", version=1
+	 */
+	async createGuide(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const errs = [];
+		if (!payload.study_airtable_id) errs.push("study_airtable_id");
+		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
+
+		let varsJson = "";
+		try { if (payload.variables) varsJson = JSON.stringify(payload.variables); } catch {}
+
+		// Accept any of the common link field names; we will write the most explicit "Study ↔".
+		const fields = {
+			"Title": (payload.title || "Untitled guide"),
+			"Status": (payload.status || "draft"),
+			"Version": Number.isFinite(+payload.version) ? +payload.version : 1,
+			"Source Markdown": String(payload.sourceMarkdown || ""),
+			"Variables (JSON)": varsJson || undefined,
+			"Study ↔": [payload.study_airtable_id]
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+
+		const res = await fetchWithTimeout(atUrl, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.guide.create.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+		let js;
+		try { js = JSON.parse(text); } catch { js = { records: [] }; }
+		const id = js.records?.[0]?.id;
+		return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Update a guide partially by record id.
+	 * Accepts: { title?, status?, version?, sourceMarkdown?, variables? }
+	 */
+	async updateGuide(request, origin, guideId) {
+		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
+
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		let varsJson = undefined;
+		if ("variables" in payload) {
+			try { varsJson = payload.variables == null ? "" : JSON.stringify(payload.variables); } catch {}
+		}
+
+		const fields = {
+			"Title": (typeof payload.title === "string" ? payload.title : undefined),
+			"Status": (typeof payload.status === "string" ? payload.status : undefined),
+			"Version": (Number.isFinite(+payload.version) ? +payload.version : undefined),
+			"Source Markdown": (typeof payload.sourceMarkdown === "string" ? payload.sourceMarkdown : undefined),
+			"Variables (JSON)": varsJson
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+		if (Object.keys(fields).length === 0) {
+			return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
+
+		const res = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ id: guideId, fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.guide.update.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Publish a guide: set Status="published" and bump Version by +1.
+	 * We first GET the record to read current Version.
+	 */
+	async publishGuide(origin, guideId) {
+		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const recUrl = `https://api.airtable.com/v0/${base}/${tGuides}/${encodeURIComponent(guideId)}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" };
+
+		// Read current
+		const getRes = await fetchWithTimeout(recUrl, { headers }, this.cfg.TIMEOUT_MS);
+		const getText = await getRes.text();
+		if (!getRes.ok) {
+			this.log.error("airtable.guide.get.fail", { status: getRes.status, text: safeText(getText) });
+			return this.json({ error: `Airtable ${getRes.status}`, detail: safeText(getText) }, getRes.status, this.corsHeaders(origin));
+		}
+		let g;
+		try { g = JSON.parse(getText); } catch { g = {}; }
+		const cur = Number(g?.fields?.Version);
+		const nextVersion = Number.isFinite(cur) ? (cur + 1) : 1;
+
+		// Patch
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
+		const patchRes = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers,
+			body: JSON.stringify({
+				records: [{
+					id: guideId,
+					fields: { "Status": "published", "Version": nextVersion }
+				}]
+			})
+		}, this.cfg.TIMEOUT_MS);
+
+		const patchText = await patchRes.text();
+		if (!patchRes.ok) {
+			this.log.error("airtable.guide.publish.fail", { status: patchRes.status, text: safeText(patchText) });
+			return this.json({ error: `Airtable ${patchRes.status}`, detail: safeText(patchText) }, patchRes.status, this.corsHeaders(origin));
+		}
+
+		return this.json({ ok: true, version: nextVersion, status: "published" }, 200, this.corsHeaders(origin));
+	}
 }
 
 /* =========================
@@ -1019,6 +1257,47 @@ export default {
 				 */
 				if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
 					return service.streamCsv(origin, env.GH_PATH_DETAILS);
+				}
+
+				/* --------------------- Guides -------------------- */
+				/**
+				 * List guides for a study.
+				 * @route GET /api/guides?study=<StudyRecordId>
+				 * @output { ok:true, guides:Array<...> }
+				 */
+				if (url.pathname === "/api/guides" && request.method === "GET") {
+					return service.listGuides(origin, url);
+				}
+
+				/**
+				 * Create a guide.
+				 * @route POST /api/guides
+				 * @input  { study_airtable_id:string, title?:string, status?:string, version?:number, sourceMarkdown?:string, variables?:object }
+				 * @output { ok:true, id:string }
+				 */
+				if (url.pathname === "/api/guides" && request.method === "POST") {
+					return service.createGuide(request, origin);
+				}
+
+				/**
+				 * Update a guide.
+				 * @route PATCH /api/guides/:id
+				 * @input  { title?, status?, version?, sourceMarkdown?, variables? }
+				 * @output { ok:true }
+				 */
+				if (url.pathname.startsWith("/api/guides/") && request.method === "PATCH") {
+					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
+					return service.updateGuide(request, origin, guideId);
+				}
+
+				/**
+				 * Publish a guide (status=published, version++).
+				 * @route POST /api/guides/:id/publish
+				 * @output { ok:true, version:number, status:"published" }
+				 */
+				if (url.pathname.startsWith("/api/guides/") && url.pathname.endsWith("/publish") && request.method === "POST") {
+					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length, -"/publish".length));
+					return service.publishGuide(origin, guideId);
 				}
 
 				/**
