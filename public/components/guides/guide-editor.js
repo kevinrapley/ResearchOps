@@ -56,10 +56,10 @@ function splitFrontMatter(src = '') {
 
 /**
  * Replace plain-text punctuation with typographic equivalents in inline contexts.
- * - `---` → em dash (—) when between non-hyphen characters
- * - `--`  → en dash (–) when between non-hyphen characters
- * 
- * Importantly, this avoids converting horizontal-rule lines (e.g. `---` alone on a line).
+ * - `---` → em dash (—) when between non-space characters
+ * - `--`  → en dash (–) when between non-space characters
+ *
+ * Avoids converting horizontal-rule lines (e.g. `---` alone on a line).
  *
  * @param {string} md
  * @returns {string}
@@ -67,48 +67,43 @@ function splitFrontMatter(src = '') {
 function typographize(md) {
 	if (!md) return md;
 
-	// Skip HR lines: keep lines that are only hyphens (---, ----, etc.)
-	// We’ll only transform dashes that appear *between* non-hyphen characters.
-	// Do em-dash first to avoid the triple-hyphen being partially consumed by the en-dash pass.
+	// Em dash: X---Y  => X—Y   (between non-space chars)
+	md = md.replace(/(\S)---(\S)/g, '$1—$2');
 
-	// Em dash: X---Y  => X—Y
-	md = md.replace(/(?<=\S)---(?=\S)/g, '—');
-
-	// En dash: X--Y   => X–Y
-	md = md.replace(/(?<=\S)--(?=\S)/g, '–');
+	// En dash: X--Y    => X–Y   (between non-space chars)
+	md = md.replace(/(\S)--(\S)/g, '$1–$2');
 
 	return md;
 }
 
 // Make `_emphasis_` robust (without breaking `*emphasis*`)
-if (!globalThis.__underscoreEmExtApplied) {
-	marked.use({
-		extensions: [{
-			name: 'underscore-em',
-			level: 'inline',
-			start(src) { return src.indexOf('_'); }, // quick hint for tokenizer
-			tokenizer(src) {
-				// Match single-underscore italics:
-				//  - `_..._`
-				//  - not `__...__`
-				//  - avoid code spans/backticks
-				//  - allow escaping as `\_` inside
-				const m = /^_((?:\\_|[^`_])+?)_(?!_)/.exec(src);
-				if (m) {
+try {
+	if (!globalThis.__underscoreEmExtApplied && typeof marked?.use === 'function') {
+		marked.use({
+			extensions: [{
+				name: 'underscore-em',
+				level: 'inline',
+				start(src) { return src.indexOf('_'); },
+				tokenizer(src) {
+					// single underscore, not double; skip code spans; allow \_ escapes
+					const m = /^_((?:\\_|[^`_])+?)_(?!_)/.exec(src);
+					if (!m) return;
 					return {
 						type: 'underscoreEm',
 						raw: m[0],
 						text: m[1].replace(/\\_/g, '_')
 					};
+				},
+				renderer(token) {
+					// basic inline render
+					return '<em>' + token.text + '</em>';
 				}
-				return undefined;
-			},
-			renderer(tok) {
-				return '<em>' + tok.text + '</em>';
-			}
-		}]
-	});
-	globalThis.__underscoreEmExtApplied = true;
+			}]
+		});
+		globalThis.__underscoreEmExtApplied = true;
+	}
+} catch (e) {
+	// Ignore—fallback to default marked behavior if extension fails
 }
 
 /**
