@@ -37,7 +37,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	const sid = url.searchParams.get("sid");
 
 	hydrateCrumbs({ pid, sid }).catch(console.warn);
-	loadGuides(sid).catch(console.warn);
+	// 👇 ask loadGuides to auto-open the newest guide once
+	loadGuides(sid, { autoOpen: true }).catch(console.warn);
 });
 
 /**
@@ -122,37 +123,50 @@ async function hydrateCrumbs(params) {
 }
 
 /**
- * Render list of guides for a study.
+ * Render list of guides for a study. Optionally auto-open newest once.
  * @param {string} studyId
+ * @param {{autoOpen?: boolean}} [opts]
  */
-/** Render list of guides for a study (nested endpoint). */
-async function loadGuides(studyId) {
+async function loadGuides(studyId, opts = {}) {
 	const tbody = $("#guides-tbody");
-	if (!tbody) return;
+	if (!tbody || !studyId) return;
+
+	let newestId = null;
+
 	try {
-		const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}/guides`, { cache: "no-store" });
-		// Accept either a bare array or { ok:true, guides:[...] }
-		const js = await res.json().catch(() => []);
-		const list = Array.isArray(js) ? js : (Array.isArray(js.guides) ? js.guides : []);
+		const res = await fetch(`/api/guides?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
+		const { guides = [] } = res.ok ? await res.json() : { guides: [] };
 
-		if (!list.length) {
+		// Defensive newest-first
+		guides.sort((a, b) => (Date.parse(b.createdAt || 0) || 0) - (Date.parse(a.createdAt || 0) || 0));
+		newestId = guides[0]?.id || null;
+
+		if (!guides.length) {
 			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
-			return;
+		} else {
+			tbody.innerHTML = "";
+			for (const g of guides) {
+				const tr = document.createElement("tr");
+				tr.innerHTML = `
+          <td>${escapeHtml(g.title || "Untitled")}</td>
+          <td>${escapeHtml(g.status || "draft")}</td>
+          <td>v${g.version || 0}</td>
+          <td>${new Date(g.updatedAt || g.createdAt).toLocaleString()}</td>
+          <td>${escapeHtml(g.createdBy?.name || "—")}</td>
+          <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
+				tbody.appendChild(tr);
+			}
+			$$('button[data-open]').forEach(b => b.addEventListener("click", () => {
+				window.__hasAutoOpened = true; // don’t fight user selection later
+				openGuide(b.dataset.open);
+			}));
 		}
 
-		tbody.innerHTML = "";
-		for (const g of list) {
-			const tr = document.createElement("tr");
-			tr.innerHTML = `
-        <td>${escapeHtml(g.title || "Untitled")}</td>
-        <td>${escapeHtml(g.status || "draft")}</td>
-        <td>v${g.version || 0}</td>
-        <td>${new Date(g.updatedAt || g.createdAt).toLocaleString()}</td>
-        <td>${escapeHtml(g.createdBy?.name || "—")}</td>
-        <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
-			tbody.appendChild(tr);
+		// Auto-open the newest guide once on initial load
+		if (opts.autoOpen && !window.__hasAutoOpened && !window.__openGuideId && newestId) {
+			window.__hasAutoOpened = true;
+			await openGuide(newestId);
 		}
-		$$('button[data-open]').forEach(b => b.addEventListener("click", () => openGuide(b.dataset.open)));
 	} catch (e) {
 		console.warn(e);
 		tbody.innerHTML = `<tr><td colspan="6">Failed to load guides.</td></tr>`;
@@ -353,9 +367,7 @@ async function onSave() {
 	const studyId = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
 	const id = window.__openGuideId;
 
-	const body = id ?
-		{ title, sourceMarkdown: source, variables } :
-		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
 	const method = id ? "PATCH" : "POST";
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
