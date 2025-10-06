@@ -21,6 +21,7 @@ AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
 AIRTABLE_TABLE_PROJECTS = "Projects"
 AIRTABLE_TABLE_DETAILS  = "Project Details"
 AIRTABLE_TABLE_STUDIES    = "Project Studies"
+AIRTABLE_TABLE_GUIDES = "Discussion Guides"
 AUDIT = "true"
 
 # GitHub CSV repo details
