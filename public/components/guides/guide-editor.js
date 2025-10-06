@@ -20,7 +20,7 @@ import DOMPurify from '/lib/purify.min.js';
 /**
  * Split a source string into `{ meta, body }`.
  * FM format supported:
- * 
+ *
  * ---
  * key: value
  * another_key: 123
@@ -33,77 +33,64 @@ import DOMPurify from '/lib/purify.min.js';
  */
 function splitFrontMatter(src = '') {
 	if (!src.startsWith('---')) return { meta: {}, body: src };
+
 	const end = src.indexOf('\n---', 3);
 	if (end === -1) return { meta: {}, body: src };
 
-	const yaml = src.slice(3, end).trim();
-	const body = src.slice(end + 4).replace(/^\n*/, '');
+	const yamlBlock = src.slice(3, end).trim();
+	const bodyStart = end + 4;
+	const body = src.substring(bodyStart).replace(/^\n*/, '');
 
 	/** @type {Record<string, any>} */
 	const meta = {};
-	yaml.split('\n').forEach(line => {
-		const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-		if (!m) return;
-		let val = m[2];
+	for (const line of yamlBlock.split(/\r?\n/)) {
+		const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+		if (!match) continue;
+		let [, key, val] = match;
 		if (/^\d+$/.test(val)) val = Number(val);
-		if (val === 'true') val = true;
-		if (val === 'false') val = false;
-		meta[m[1]] = val;
-	});
+		else if (val === 'true') val = true;
+		else if (val === 'false') val = false;
+		meta[key] = val;
+	}
 
 	return { meta, body };
+}
+
+/**
+ * Convert single-underscore emphasis `_text_` to `*text*` outside code spans/blocks.
+ * - Leaves double underscores, code blocks (```), and inline code (`code`) untouched.
+ * - Avoids lookbehind to stay Safari-compatible.
+ *
+ * @param {string} md
+ * @returns {string}
+ */
+function normalizeUnderscoreItalics(md) {
+	if (!md) return md;
+
+	const parts = md.split(/(```[\s\S]*?```)/g);
+	for (let i = 0; i < parts.length; i += 2) {
+		const segs = parts[i].split(/(`[^`]*`)/g);
+		for (let j = 0; j < segs.length; j += 2) {
+			segs[j] = segs[j].replace(/(^|[^_])_([^_\n][^_\n]*?)_(?!_)/g, '$1*$2*');
+		}
+		parts[i] = segs.join('');
+	}
+	return parts.join('');
 }
 
 /**
  * Replace plain-text punctuation with typographic equivalents in inline contexts.
  * - `---` → em dash (—) when between non-space characters
  * - `--`  → en dash (–) when between non-space characters
- *
  * Avoids converting horizontal-rule lines (e.g. `---` alone on a line).
- *
  * @param {string} md
  * @returns {string}
  */
 function typographize(md) {
 	if (!md) return md;
-
-	// Em dash: X---Y  => X—Y   (between non-space chars)
-	md = md.replace(/(\S)---(\S)/g, '$1—$2');
-
-	// En dash: X--Y    => X–Y   (between non-space chars)
-	md = md.replace(/(\S)--(\S)/g, '$1–$2');
-
+	md = md.replace(/(\S)---(\S)/g, '$1—$2'); // em dash
+	md = md.replace(/(\S)--(\S)/g, '$1–$2');  // en dash
 	return md;
-}
-
-// Make `_emphasis_` robust (without breaking `*emphasis*`)
-try {
-	if (!globalThis.__underscoreEmExtApplied && typeof marked?.use === 'function') {
-		marked.use({
-			extensions: [{
-				name: 'underscore-em',
-				level: 'inline',
-				start(src) { return src.indexOf('_'); },
-				tokenizer(src) {
-					// single underscore, not double; skip code spans; allow \_ escapes
-					const m = /^_((?:\\_|[^`_])+?)_(?!_)/.exec(src);
-					if (!m) return;
-					return {
-						type: 'underscoreEm',
-						raw: m[0],
-						text: m[1].replace(/\\_/g, '_')
-					};
-				},
-				renderer(token) {
-					// basic inline render
-					return '<em>' + token.text + '</em>';
-				}
-			}]
-		});
-		globalThis.__underscoreEmExtApplied = true;
-	}
-} catch (e) {
-	// Ignore—fallback to default marked behavior if extension fails
 }
 
 /**
@@ -125,8 +112,6 @@ try {
 export async function renderGuide({ source, context, partials }) {
 	const { meta: fm, body } = splitFrontMatter(source);
 
-	// Keep meta namespaced; never flatten into the root context.
-	// If page code already supplied context.meta, the FM keys just augment it.
 	const safeCtx = {
 		...(context || {}),
 		meta: { ...(context?.meta || {}), ...(fm || {}) }
@@ -135,31 +120,19 @@ export async function renderGuide({ source, context, partials }) {
 	// Mustache over the Markdown body only
 	const mdRaw = Mustache.render(body, safeCtx, partials || {});
 
-	// Optional typography pass (smart dashes etc.) that avoids HR lines
-	const md = typographize(mdRaw);
+	// Normalize underscores, then smart dashes (both Safari-safe)
+	const md = typographize(normalizeUnderscoreItalics(mdRaw));
 
 	// Markdown → HTML (expanded options)
 	const raw = marked.parse(md, {
-		// keep headings stable for TOC/links
 		mangle: false,
 		headerIds: true,
-
-		// GitHub-flavored markdown: tables, strikethrough, task-lists
 		gfm: true,
-
-		// Soft line breaks become <br> (useful for authoring)
 		breaks: true,
-
-		// Nicer list handling (e.g., auto-detect ordered vs unordered)
-		smartLists: true,
-
-		// Makes _underscore_ emphasis behave more like classic Markdown
-		pedantic: true
+		smartLists: true
 	});
 
-	// Sanitise
 	const html = DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
-
 	return { md, html, meta: fm };
 }
 
