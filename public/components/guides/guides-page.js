@@ -1,843 +1,1426 @@
 /**
- * @file guides-page.js
- * @module GuidesPage
- * @summary Discussion Guides hub (list + editor bootstrap).
- *
+ * @file worker.js
+ * @module ResearchOpsWorker
+ * @summary Cloudflare Worker for ResearchOps platform (Airtable + GitHub CSV).
  * @description
- * - Wires header actions (+ New, Import, Export) with delegated fallbacks.
- * - Loads project/study context for breadcrumbs & editor rendering.
- * - Opens a robust editor panel that shows even if optional imports fail.
+ * Serves static assets and exposes API routes for:
+ * - Health:
+ *   - `GET /api/health`
+ * - Projects:
+ *   - List projects (Airtable, newest-first via `record.createdTime`): `GET /api/projects`
+ *   - Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write):
+ *     `POST /api/projects`
+ * - Studies:
+ *   - Create study (Airtable primary; best-effort GitHub CSV dual-write): `POST /api/studies`
+ *   - List studies for a project: `GET /api/studies?project=<AirtableId>`
+ *   - Update study (partial): `PATCH /api/studies/:id`
+ * - CSV streaming from GitHub:
+ *   - `GET /api/projects.csv`, `GET /api/project-details.csv`
+ * - AI assist:
+ *   - Rule-guided rewrite for Description (Workers AI): `POST /api/ai-rewrite`
  *
- * @requires /lib/mustache.min.js
- * @requires /lib/marked.min.js
- * @requires /lib/purify.min.js
+ * @requires globalThis.fetch
+ * @requires globalThis.Request
+ * @requires globalThis.Response
+ *
+ * @typedef {Object} Env
+ * @property {string} ALLOWED_ORIGINS Comma-separated list of allowed origins for CORS.
+ * @property {string} AUDIT "true" to enable audit logs; otherwise "false".
+ * @property {string} AIRTABLE_BASE_ID Airtable base ID.
+ * @property {string} AIRTABLE_TABLE_PROJECTS Table name for projects.
+ * @property {string} AIRTABLE_TABLE_DETAILS  Table name for project details.
+ * @property {string} AIRTABLE_TABLE_STUDIES  Table name for studies (e.g., "Project Studies").
+ * @property {string} AIRTABLE_API_KEY Airtable API token.
+ * @property {string} GH_OWNER GitHub repository owner.
+ * @property {string} GH_REPO GitHub repository name.
+ * @property {string} GH_BRANCH GitHub branch (e.g., "main").
+ * @property {string} GH_PATH_PROJECTS Path to projects CSV file.
+ * @property {string} GH_PATH_DETAILS  Path to project-details CSV file.
+ * @property {string} GH_PATH_STUDIES  Path to studies CSV file.
+ * @property {string} GH_TOKEN GitHub access token.
+ * @property {any}    ASSETS Cloudflare static assets binding.
+ * @property {string} [MODEL] Workers AI model name (e.g., "@cf/meta/llama-3.1-8b-instruct").
+ * @property {string} [AIRTABLE_TABLE_AI_LOG] Optional Airtable table for counters-only AI logs (e.g., "AI_Usage").
+ * @property {any}    AI Cloudflare Workers AI binding (env.AI.run).
  */
 
-import Mustache from "/lib/mustache.min.js";
-import { marked } from "/lib/marked.min.js";
-import DOMPurify from "/lib/purify.min.js";
+// AI rewrite endpoint (Workers AI)
+import { aiRewrite } from './ai-rewrite.js';
 
-import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js";
+/* =========================
+ * @section Configuration
+ * ========================= *
 
-/** qS helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+/**
+ * Immutable configuration defaults.
+ * @constant
+ * @name DEFAULTS
+ * @type {Readonly<{
+ *   TIMEOUT_MS:number,
+ *   CSV_CACHE_CONTROL:string,
+ *   GH_API_VERSION:string,
+ *   LOG_BATCH_SIZE:number,
+ *   MAX_BODY_BYTES:number
+ * }>}
+ * @default
+ * @inner
+ */
 
-/* -------------------- boot -------------------- */
-window.addEventListener("DOMContentLoaded", async () => {
-	const url = new URL(location.href);
-	const pid = url.searchParams.get("pid");
-	const sid = url.searchParams.get("sid");
-
-	try { await hydrateCrumbs({ pid, sid }); } catch (e) { console.warn(e); }
-	try { await loadGuides(sid); } catch (e) { console.warn(e); }
-
-	wireGlobalActions();
-	wireEditor();
+const DEFAULTS = Object.freeze({
+	TIMEOUT_MS: 10_000,
+	CSV_CACHE_CONTROL: "no-store",
+	GH_API_VERSION: "2022-11-28",
+	LOG_BATCH_SIZE: 20,
+	MAX_BODY_BYTES: 512 * 1024 // 512KB
 });
 
-/**
- * Load all studies for a project (mirrors Study page behaviour).
- * @param {string} projectId Airtable project record id
- * @returns {Promise<Array<Object>>} studies
- * @throws {Error} when API contract fails
- */
-async function loadStudies(projectId) {
-	const url = "/api/studies?project=" + encodeURIComponent(projectId);
-	const res = await fetch(url, { cache: "no-store" });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok || js == null || js.ok !== true || !Array.isArray(js.studies)) {
-		throw new Error((js && js.error) || ("Studies fetch failed (" + res.status + ")"));
-	}
-	return js.studies;
-}
+/* =========================
+ * @section Batched logger
+ * ========================= */
 
 /**
- * Prefer a real title; otherwise compute “Method — YYYY-MM-DD”.
- * @param {{ title?:string, Title?:string, method?:string, createdAt?:string }} s
+ * Minimal batched console logger (prevents log spam).
+ * @class BatchLogger
+ * @public
+ * @inner
  */
-function pickTitle(s) {
-	s = s || {};
-	var t = (s.title || s.Title || "").trim();
-	if (t) return t;
-	var method = (s.method || "Study").trim();
-	var d = s.createdAt ? new Date(s.createdAt) : new Date();
-	var yyyy = d.getUTCFullYear();
-	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	var dd = String(d.getUTCDate()).padStart(2, "0");
-	return method + " — " + yyyy + "-" + mm + "-" + dd;
+class BatchLogger {
+	/**
+	 * Construct a BatchLogger.
+	 * @constructs BatchLogger
+	 * @param {{batchSize?:number}} [opts]
+	 */
+	constructor(opts = {}) {
+		/** @private */
+		this._batchSize = opts.batchSize || DEFAULTS.LOG_BATCH_SIZE;
+		/** @private */
+		this._buf = [];
+		/** @private */
+		this._destroyed = false;
+	}
+
+	/**
+	 * Buffer a log entry and flush when batch size is reached.
+	 * @param {"info"|"warn"|"error"} level
+	 * @param {string} msg
+	 * @param {unknown} [meta]
+	 * @returns {void}
+	 */
+	log(level, msg, meta) {
+		if (this._destroyed) return;
+		this._buf.push({ t: Date.now(), level, msg, meta });
+		if (this._buf.length >= this._batchSize) this.flush();
+	}
+
+	/** @returns {void} */
+	info(m, x) { this.log("info", m, x); }
+	/** @returns {void} */
+	warn(m, x) { this.log("warn", m, x); }
+	/** @returns {void} */
+	error(m, x) { this.log("error", m, x); }
+
+	/**
+	 * Flush the buffered entries to console.
+	 * @returns {void}
+	 */
+	flush() {
+		if (!this._buf.length) return;
+		try {
+			console.log("audit.batch", this._buf);
+		} catch {
+			for (const e of this._buf) {
+				try { console.log("audit.entry", e); } catch {}
+			}
+		} finally {
+			this._buf = [];
+		}
+	}
+
+	/** @returns {void} */
+	reset() { this._buf = []; }
+
+	/** @returns {void} */
+	destroy() {
+		this.flush();
+		this._destroyed = true;
+	}
+}
+
+/* =========================
+ * @section Helper functions
+ * ========================= */
+
+/**
+ * Fetch with a hard timeout.
+ * @async
+ * @function fetchWithTimeout
+ * @inner
+ * @param {RequestInfo | URL} resource
+ * @param {RequestInit} [init]
+ * @param {number} [timeoutMs=DEFAULTS.TIMEOUT_MS]
+ * @returns {Promise<Response>}
+ * @throws {Error} If aborted due to timeout.
+ */
+async function fetchWithTimeout(resource, init, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+	const controller = new AbortController();
+	const id = setTimeout(() => controller.abort("timeout"), timeoutMs);
+	try {
+		const initSafe = Object.assign({}, init || {});
+		initSafe.signal = controller.signal;
+		return await fetch(resource, initSafe);
+	} finally {
+		clearTimeout(id);
+	}
 }
 
 /**
- * Hydrate breadcrumbs, header subtitle, and guide context.
- * Ensures {{study.title}} is safe and never falls back to description.
+ * CSV-escape a single value.
+ * @function csvEscape
+ * @inner
+ * @param {unknown} val
+ * @returns {string}
  */
-async function hydrateCrumbs(params) {
-	var pid = params && params.pid;
-	var sid = params && params.sid;
-	try {
-		// Studies for locating the current study record
-		var studies = await loadStudies(pid);
-
-		// Resolve project.name robustly across shapes
-		var project = await resolveProject(pid, sid);
-
-		// Study + title
-		var studyRaw = Array.isArray(studies) ? (studies.find(function(s) { return s.id === sid; }) || {}) : {};
-		var study = ensureStudyTitle(studyRaw);
-
-		// ── Breadcrumbs
-		var bcProj = document.getElementById("breadcrumb-project");
-		if (bcProj) {
-			bcProj.href = "/pages/project-dashboard/?id=" + encodeURIComponent(pid);
-			bcProj.textContent = project.name || "Project";
-		}
-
-		var bcStudy = document.getElementById("breadcrumb-study");
-		if (bcStudy) {
-			bcStudy.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
-			bcStudy.textContent = study.title;
-		}
-
-		// Header subtitle + back link
-		var sub = document.querySelector('[data-bind="study.title"]');
-		if (sub) sub.textContent = study.title;
-
-		var back = document.getElementById("back-to-study");
-		if (back) back.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
-
-		try { document.title = "Discussion Guides — " + study.title; } catch (e) {}
-
-		// Store *normalised* context for the preview
-		window.__guideCtx = { project: project, study: study };
-
-	} catch (e) {
-		console.warn("Crumb hydrate failed", e);
-		window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
-	}
+function csvEscape(val) {
+	if (val == null) return "";
+	const s = String(val);
+	const needsQuotes = /[",\r\n]/.test(s);
+	const esc = s.replace(/"/g, '""');
+	return needsQuotes ? `"${esc}"` : esc;
 }
 
 /**
- * Render list of guides for a study.
- * @param {string} studyId
+ * Convert an array to a CSV line.
+ * @function toCsvLine
+ * @inner
+ * @param {Array<unknown>} arr
+ * @returns {string}
  */
-/** Render list of guides for a study (nested endpoint). */
-async function loadGuides(studyId) {
-	const tbody = $("#guides-tbody");
-	if (!tbody) return;
-	try {
-		const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}/guides`, { cache: "no-store" });
-		// Accept either a bare array or { ok:true, guides:[...] }
-		const js = await res.json().catch(() => []);
-		const list = Array.isArray(js) ? js : (Array.isArray(js.guides) ? js.guides : []);
-
-		if (!list.length) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
-			return;
-		}
-
-		tbody.innerHTML = "";
-		for (const g of list) {
-			const tr = document.createElement("tr");
-			tr.innerHTML = `
-        <td>${escapeHtml(g.title || "Untitled")}</td>
-        <td>${escapeHtml(g.status || "draft")}</td>
-        <td>v${g.version || 0}</td>
-        <td>${new Date(g.updatedAt || g.createdAt).toLocaleString()}</td>
-        <td>${escapeHtml(g.createdBy?.name || "—")}</td>
-        <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
-			tbody.appendChild(tr);
-		}
-		$$('button[data-open]').forEach(b => b.addEventListener("click", () => openGuide(b.dataset.open)));
-	} catch (e) {
-		console.warn(e);
-		tbody.innerHTML = `<tr><td colspan="6">Failed to load guides.</td></tr>`;
-	}
+function toCsvLine(arr) {
+	return arr.map(csvEscape).join(",") + "\n";
 }
 
-/* -------------------- global actions -------------------- */
-/** Attach top-level UI handlers with null-guards & delegation. */
-function wireGlobalActions() {
-	var newBtn = $("#btn-new");
-	if (newBtn) newBtn.addEventListener("click", onNewClick);
-
-	var importBtn = $("#btn-import");
-	if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
-
-	// Delegated fallback (works if DOM changes later)
-	document.addEventListener("click", function(e) {
-		var t = e.target;
-		var hasClosest = t && typeof t.closest === "function";
-		var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
-		if (newBtn2) {
-			e.preventDefault();
-			onNewClick(e);
-			return;
-		}
-
-		var exportMenu = $("#export-menu");
-		var menu = exportMenu ? exportMenu.closest(".menu") : null;
-		if (menu && (!hasClosest || !menu.contains(t))) {
-			menu.removeAttribute("aria-expanded");
-		}
-	});
-
-	var exportBtn = $("#btn-export");
-	if (exportBtn) {
-		exportBtn.addEventListener("click", function() {
-			var exportMenu = $("#export-menu");
-			var menu = exportMenu ? exportMenu.closest(".menu") : null;
-			if (!menu) return;
-			var expanded = menu.getAttribute("aria-expanded") === "true";
-			menu.setAttribute("aria-expanded", expanded ? "false" : "true");
-		});
-	}
-
-	var exportMenuEl = $("#export-menu");
-	if (exportMenuEl) {
-		exportMenuEl.addEventListener("click", function(e) {
-			var t = e.target;
-			var hasClosest = t && typeof t.closest === "function";
-			var target = hasClosest ? t.closest("[data-export]") : null;
-			if (target) doExport(target.getAttribute("data-export"));
-		});
-	}
+/**
+ * Base64 encode (UTF-8 safe).
+ * @function b64Encode
+ * @inner
+ * @param {string} s
+ * @returns {string}
+ */
+function b64Encode(s) {
+	return btoa(unescape(encodeURIComponent(s)));
 }
 
-function onNewClick(e) {
-	if (e && typeof e.preventDefault === "function") e.preventDefault();
-	startNewGuide();
+/**
+ * Base64 decode (UTF-8 safe).
+ * @function b64Decode
+ * @inner
+ * @param {string} b
+ * @returns {string}
+ */
+function b64Decode(b) {
+	const clean = (b || "").replace(/\n/g, "");
+	return decodeURIComponent(escape(atob(clean)));
 }
 
-/* -------------------- editor -------------------- */
-function wireEditor() {
-	var insertPat = $("#btn-insert-pattern");
-	if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
-
-	var patClose = $("#drawer-patterns-close");
-	if (patClose) patClose.addEventListener("click", closePatternDrawer);
-
-	var patSearch = $("#pattern-search");
-	if (patSearch) patSearch.addEventListener("input", onPatternSearch);
-
-	var varsBtn = $("#btn-variables");
-	if (varsBtn) varsBtn.addEventListener("click", openVariablesDrawer);
-
-	var varsClose = $("#drawer-variables-close");
-	if (varsClose) varsClose.addEventListener("click", closeVariablesDrawer);
-
-	var src = $("#guide-source");
-	if (src) src.addEventListener("input", debounce(preview, 150));
-
-	var title = $("#guide-title");
-	if (title) title.addEventListener("input", debounce(function() { announce("Title updated"); }, 400));
-
-	var tagBtn = $("#btn-insert-tag");
-	if (tagBtn) tagBtn.addEventListener("click", onInsertTag);
-
-	var saveBtn = $("#btn-save");
-	if (saveBtn) saveBtn.addEventListener("click", onSave);
-
-	var pubBtn = $("#btn-publish");
-	if (pubBtn) pubBtn.addEventListener("click", onPublish);
-
-	document.addEventListener("keydown", function(e) {
-		var k = e && e.key ? e.key.toLowerCase() : "";
-		if ((e.metaKey || e.ctrlKey) && k === "s") {
-			e.preventDefault();
-			onSave();
-		}
-	});
+/**
+ * Truncate long text for logs.
+ * @function safeText
+ * @inner
+ * @param {string} t
+ * @returns {string}
+ */
+function safeText(t) {
+	return t && t.length > 2048 ? t.slice(0, 2048) + "…" : t;
 }
 
-/** Open a new guide in the editor — always reveals the panel, even if optional imports fail. */
-async function startNewGuide() {
-	try {
-		var editor = $("#editor-section");
-		if (editor) editor.classList.remove("is-hidden");
-
-		// Basic safe defaults first (no external deps)
-		window.__openGuideId = undefined;
-
-		var titleEl = $("#guide-title");
-		if (titleEl) titleEl.value = "Untitled guide";
-
-		var statusEl = $("#guide-status");
-		if (statusEl) statusEl.textContent = "draft";
-
-		// Use imported DEFAULT_SOURCE if present, otherwise a tiny inline fallback
-		var defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ?
-			DEFAULT_SOURCE.trim() :
-			"---\nversion: 1\n---\n# New guide\n\nWelcome. Start writing…";
-
-		var srcEl = $("#guide-source");
-		if (srcEl) srcEl.value = defaultSrc;
-
-		// These are best-effort; failures shouldn't block the editor opening
-		try { populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []); } catch (err) { console.warn("Pattern list failed:", err); }
-		try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
-		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
-
-		if (titleEl) titleEl.focus();
-		announce("Started a new guide");
-	} catch (err) {
-		console.error("startNewGuide fatal:", err);
-		announce("Could not start a new guide");
-	}
+/**
+ * Parse date string to epoch ms; invalid → 0.
+ * @function toMs
+ * @inner
+ * @param {string} d
+ * @returns {number}
+ */
+function toMs(d) {
+	const n = Date.parse(d);
+	return Number.isFinite(n) ? n : 0;
 }
 
-async function openGuide(id) {
-	try {
-		const sid = window.__guideCtx?.study?.id;
-		if (!sid) throw new Error("Missing study id");
-		const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}`;
-		const res = await fetch(url, { cache: "no-store" });
-		const g = res.ok ? await res.json() : null;
-		if (!g) throw new Error("Not found");
+/**
+ * Normalise Markdown for Airtable Rich Text fields (server-side).
+ * - Normalises line endings to "\n"
+ * - Trims outer whitespace
+ * - Collapses >2 blank lines to 2
+ * - Converts tabs to N spaces (default 2)
+ * - Trims trailing spaces at line ends
+ * @inner
+ * @param {string} markdown
+ * @param {{collapseBlank?:boolean, tabSize?:number}} [opts]
+ * @returns {string}
+ */
+function mdToAirtableRich(markdown, opts = {}) {
+	const tabSize = Math.max(1, opts.tabSize ?? 2);
+	const collapseBlank = opts.collapseBlank ?? true;
 
-		window.__openGuideId = g.id;
-		$("#editor-section")?.classList.remove("is-hidden");
-		$("#guide-title") && ($("#guide-title").value = g.title || "Untitled");
-		$("#guide-status") && ($("#guide-status").textContent = g.status || "draft");
-		$("#guide-source") && ($("#guide-source").value = g.sourceMarkdown || "");
-		populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
-		populateVariablesForm(g.variables || {});
-		await preview();
-		announce(`Opened guide “${g.title || "Untitled"}”`);
-	} catch (e) {
-		console.warn(e);
-		announce("Failed to open guide");
-	}
+	let md = String(markdown ?? "");
+	md = md.replace(/\r\n?/g, "\n"); // normalise line endings
+	md = md.replace(/\t/g, " ".repeat(tabSize)); // tabs → spaces
+	md = md.split("\n").map(l => l.replace(/[ \t]+$/g, "")).join("\n"); // strip trailing ws per line
+	if (collapseBlank) md = md.replace(/\n{3,}/g, "\n\n"); // collapse 3+ blank lines
+	return md.trim();
 }
 
-async function preview() {
-	var srcEl = $("#guide-source");
-	if (!srcEl) return;
+/** Candidate names for the Guides↔Study link field */
+const GUIDE_LINK_FIELD_CANDIDATES = [
+	"Study ↔", "Study", "Project Study", "Study Link", "Study Record", "Studies"
+];
 
-	var source = srcEl.value || "";
-	var ctx = window.__guideCtx || {};
-	var project = ensureProjectName(ctx.project || {});
-	var study = ensureStudyTitle(ctx.study || {});
+/** Candidate names for other common fields in the Guides table */
+const GUIDE_FIELD_NAMES = {
+	title: ["Title", "Name"],
+	status: ["Status"],
+	version: ["Version", "Revision", "v"],
+	source: ["Source Markdown", "Markdown", "Source"],
+	variables: ["Variables (JSON)", "Variables", "Vars"]
+};
 
-	var fm = readFrontMatter(source);
-	var meta = clonePlainObject((fm && fm.meta) || {});
-	delete meta.project;
-	delete meta.study;
-	delete meta.session;
-	delete meta.participant;
-
-	var context = { project: project, study: study, session: {}, participant: {}, meta: meta };
-
-	var names = collectPartialNames(source);
-	var partials = {};
-	try { partials = await buildPartials(names); } catch (e) {}
-
-	var out = await renderGuide({ source: source, context: context, partials: partials });
-
-	var prev = $("#guide-preview");
-	if (prev) prev.innerHTML = out.html;
-
-	runLints({ source: source, context: context, partials: partials });
+/** Pick the first present key from `obj` that matches any of the candidates. */
+function pickFirstField(obj, candidates) {
+	for (const k of candidates)
+		if (k in obj) return k;
+	return null;
 }
 
-async function onSave() {
-	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
-	const source = $("#guide-source")?.value || "";
-	const fm = readFrontMatter(source);
-	const meta = (fm && fm.meta) || {};
-
-	const isNew = !window.__openGuideId;
-	const studyId = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
-
-	const body = isNew
-		? { study_airtable_id: studyId, title, sourceMarkdown: source, variables: meta, status: "draft", version: 1 }
-		: { title, sourceMarkdown: source, variables: meta };
-
-	const method = isNew ? "POST" : "PATCH";
-	const url = isNew ?
-		`/api/guides` :
-		`/api/guides/${encodeURIComponent(window.__openGuideId)}`;
-
-	const res = await fetch(url, {
+/**
+ * Attempt an Airtable write with a field name; on 422 UNKNOWN_FIELD_NAME, tell caller to try next.
+ * Returns {ok:true, json} OR {ok:false, retry:true, detail} for UNKNOWN_FIELD_NAME; OR {ok:false, retry:false, detail}
+ */
+async function airtableTryWrite(url, token, method, fields, timeoutMs) {
+	const res = await fetchWithTimeout(url, {
 		method,
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(body)
-	});
+		headers: {
+			"Authorization": `Bearer ${token}`,
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({ records: [{ fields }] })
+	}, timeoutMs);
 
+	const text = await res.text();
 	if (res.ok) {
-		// If we just created, remember the new record id for subsequent PATCHes
-		if (isNew) {
-			const js = await res.json().catch(() => ({}));
-			if (js && js.id) window.__openGuideId = js.id;
-		}
-		announce("Guide saved");
-		loadGuides(((window.__guideCtx || {}).study || {}).id);
-	} else {
-		let detail = "";
-		try { detail = await res.text(); } catch {}
-		announce(`Save failed: ${res.status} ${detail || ""}`.trim());
+		try { return { ok: true, json: JSON.parse(text) }; } catch { return { ok: true, json: { records: [] } }; }
 	}
+
+	// Detect UNKNOWN_FIELD_NAME to allow retry with another candidate
+	let retry = false;
+	try {
+		const js = JSON.parse(text);
+		retry = js?.error?.type === "UNKNOWN_FIELD_NAME";
+	} catch {}
+	return { ok: false, retry, detail: safeText(text), status: res.status };
 }
 
-async function onPublish() {
-	const id = window.__openGuideId;
-	const sid = window.__guideCtx?.study?.id;
-	const title = ($("#guide-title")?.value || "").trim();
-	if (!id || !sid) { announce("Save the guide before publishing."); return; }
-
-	const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}/publish`;
-	const res = await fetch(url, { method: "POST" });
-
-	if (res.ok) {
-		$("#guide-status").textContent = "published";
-		announce(`Published “${title || "Untitled"}”`);
-		loadGuides(sid);
-	} else {
-		const msg = await res.text().catch(() => "");
-		announce(`Publish failed: ${res.status} ${msg || ""}`.trim());
-	}
-}
-
-function importMarkdownFlow() {
-	const inp = document.createElement("input");
-	inp.type = "file";
-	inp.accept = ".md,text/markdown";
-	inp.addEventListener("change", async function() {
-		const file = inp.files && inp.files[0];
-		if (!file) return;
-		const text = await file.text();
-		await startNewGuide();
-		var srcEl = $("#guide-source");
-		if (srcEl) srcEl.value = text;
-		await preview();
-	});
-	inp.click();
-}
-
-/* -------------------- drawers: patterns -------------------- */
-function openPatternDrawer() {
-	var d = $("#drawer-patterns");
-	if (d) d.hidden = false;
-	var s = $("#pattern-search");
-	if (s) s.focus();
-	announce("Pattern drawer opened");
-}
-
-function closePatternDrawer() {
-	var d = $("#drawer-patterns");
-	if (d) d.hidden = true;
-	var b = $("#btn-insert-pattern");
-	if (b) b.focus();
-	announce("Pattern drawer closed");
-}
-
-function populatePatternList(items) {
-	var ul = $("#pattern-list");
-	if (!ul) return;
-	ul.innerHTML = "";
-	var arr = Array.isArray(items) ? items : [];
-	for (var i = 0; i < arr.length; i++) {
-		var p = arr[i];
-		var li = document.createElement("li");
-		li.innerHTML =
-			'<button class="btn btn--secondary" data-pattern="' + p.name + "_v" + p.version + '">' +
-			escapeHtml(p.title) + ' <span class="muted">(' + p.category + " · v" + p.version + ")</span>" +
-			"</button>";
-		ul.appendChild(li);
-	}
-	ul.addEventListener("click", function(e) {
-		var t = e.target;
-		var hasClosest = t && typeof t.closest === "function";
-		var b = hasClosest ? t.closest("button[data-pattern]") : null;
-		if (!b) return;
-		insertAtCursor($("#guide-source"), "\n{{> " + b.getAttribute("data-pattern") + "}}\n");
-		preview();
-		closePatternDrawer();
-	});
-}
-
-function onPatternSearch(e) {
-	var q = (e && e.target && e.target.value ? e.target.value : "").trim().toLowerCase();
-	var list = (typeof searchPatterns === "function") ? searchPatterns(q) : [];
-	populatePatternList(list);
-}
-
-/* -------------------- drawers: variables -------------------- */
-function openVariablesDrawer() {
-	var src = $("#guide-source");
-	var text = src ? src.value : "";
-	var fm = readFrontMatter(text);
-	populateVariablesForm((fm && fm.meta) || {});
-	var d = $("#drawer-variables");
-	if (d) {
-		d.hidden = false;
-		d.focus();
-	}
-}
-
-function closeVariablesDrawer() {
-	var d = $("#drawer-variables");
-	if (d) d.hidden = true;
-	var b = $("#btn-variables");
-	if (b) b.focus();
-}
-
-function populateVariablesForm(meta) {
-	var form = $("#variables-form");
-	if (!form) return;
-	form.innerHTML = "";
-	var entries = Object.entries(meta || {}).slice(0, 40);
-	for (var i = 0; i < entries.length; i++) {
-		var kv = entries[i];
-		var k = kv[0],
-			v = kv[1];
-		var id = "var-" + k;
-		var row = document.createElement("div");
-		row.innerHTML =
-			'<label for="' + id + '">' + escapeHtml(k) + "</label>" +
-			'<input id="' + id + '" class="input" value="' + escapeHtml(String(v)) + '" />';
-		form.appendChild(row);
-	}
-	form.addEventListener("input", debounce(onVarsEdit, 200));
-}
-
-function onVarsEdit() {
-	var srcEl = $("#guide-source");
-	var src = srcEl ? srcEl.value : "";
-	var fm = readFrontMatter(src);
-	var formVals = {};
-	var inputs = $$("#variables-form input");
-	for (var i = 0; i < inputs.length; i++) {
-		var id = inputs[i].id || "";
-		var key = id.replace(/^var-/, "");
-		formVals[key] = inputs[i].value;
-	}
-	var merged = clonePlainObject((fm && fm.meta) || {});
-	for (var k in formVals)
-		if (Object.prototype.hasOwnProperty.call(formVals, k)) merged[k] = formVals[k];
-	var rebuilt = writeFrontMatter(src, merged);
-	if (srcEl) srcEl.value = rebuilt;
-	preview();
-}
-
-/* -------------------- export -------------------- */
-async function doExport(kind) {
-	var srcEl = $("#guide-source");
-	var source = (srcEl && srcEl.value) || "";
-	var ctx = window.__guideCtx || {};
-	var project = ctx.project || {};
-	var study = ctx.study || {};
-	var fm = readFrontMatter(source);
-	var meta = (fm && fm.meta) || {};
-	var context = buildContext({ project: project, study: study, session: {}, participant: {}, meta: meta });
-	var partials = await buildPartials(collectPartialNames(source)).catch(function() { return {}; });
-	var payload = { source: source, context: context, partials: partials, kind: kind };
-	var res = await fetch("/api/render", {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(payload)
-	});
-	if (!res.ok) { announce("Export failed"); return; }
-	var js = await res.json();
-	var a = document.createElement("a");
-	a.href = "data:application/octet-stream;base64," + js.blobBase64;
-	a.download = js.filename || ("guide." + kind);
-	a.click();
-	announce("Exported " + (js.filename || kind));
-}
-
-/* -------------------- helpers -------------------- */
-
-function ensureStudyTitle(s) {
-	s = s || {};
-	var explicit = (s.title || s.Title || "").toString().trim();
-	var out = clonePlainObject(s);
-	if (explicit) { out.title = explicit; return out; }
-	var method = (s.method || "Study").trim();
-	var d = s.createdAt ? new Date(s.createdAt) : new Date();
-	var yyyy = d.getUTCFullYear();
-	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	var dd = String(d.getUTCDate()).padStart(2, "0");
-	out.title = method + " — " + yyyy + "-" + mm + "-" + dd;
-	return out;
-}
-
-/** Get the first non-empty string from a list of candidates. */
-function firstText() {
-	for (var i = 0; i < arguments.length; i++) {
-		var v = arguments[i];
-		if (typeof v === "string" && v.trim()) return v.trim();
-		if (Array.isArray(v) && v.length && typeof v[0] === "string" && v[0].trim()) return v[0].trim();
-	}
-	return "";
-}
-
-/** Return a readable label from a variety of shapes (string | array | object). */
-function toLabel(v) {
-	if (v == null) return "";
-	if (typeof v === "string") return v.trim();
-	if (Array.isArray(v)) {
-		for (var i = 0; i < v.length; i++) {
-			var t = toLabel(v[i]);
-			if (t) return t;
-		}
-		return "";
-	}
-	if (typeof v === "object") {
-		// Common object-y shapes: {name}, {Name}, {label}, {value}, Airtable cell objects
-		return toLabel(v.name || v.Name || v.label || v.Label || v.value || v.Value || v.text || v.Text);
-	}
-	return "";
-}
-
-/** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
-function ensureProjectName(p) {
-	if (!p || typeof p !== "object") return { name: "(Unnamed project)" };
-	const name = (p.name || p.Name || "").toString().trim();
-	return { ...p, name: name || "(Unnamed project)" };
-}
+/* =========================
+ * @section Core service
+ * ========================= */
 
 /**
- * Resolve a usable { id, name } for the current project without using 404 routes.
- * Order:
- *   1) /api/projects (list) → find matching record by id/localId/fields
- *   2) /api/studies?project=:pid → derive a project label from linked fields
- *   3) fallback placeholder
+ * ResearchOps HTTP service (Airtable + GitHub CSV).
+ * Encapsulates business logic for all API routes.
+ *
+ * @class ResearchOpsService
+ * @public
+ * @inner
  */
-async function resolveProject(pid, sid) {
-	// 1) Try list endpoint
-	try {
-		const r = await fetch("/api/projects", { cache: "no-store" });
-		if (r.ok) {
-			const js = await r.json().catch(() => ({}));
-			const arr = Array.isArray(js) ? js : (Array.isArray(js?.projects) ? js.projects : []);
-			if (Array.isArray(arr) && arr.length) {
-				const found = arr.find(p => {
-					const base = (p && p.project) ? p.project : p;
-					const fields = base && base.fields ? base.fields : null;
-					const ids = new Set([
-						base && base.id, base && base.ID, base && base.Id,
-						base && base.LocalId, base && base.localId,
-						fields && fields.id, fields && fields.Id, fields && fields.record_id
-					].filter(Boolean).map(String));
-					return ids.has(String(pid));
+class ResearchOpsService {
+	/**
+	 * Construct the service.
+	 * @constructs ResearchOpsService
+	 * @param {Env} env
+	 * @param {{cfg?:Partial<typeof DEFAULTS>, logger?:BatchLogger}} [opts]
+	 */
+	constructor(env, opts = {}) {
+		/** @public @readonly */
+		this.env = env;
+		/** @public @readonly */
+		this.cfg = Object.freeze({ ...DEFAULTS, ...(opts.cfg || {}) });
+		/** @private */
+		this.log = opts.logger || new BatchLogger({ batchSize: this.cfg.LOG_BATCH_SIZE });
+		/** @private */
+		this.destroyed = false;
+	}
+
+	/** @returns {void} */
+	reset() { this.log.reset(); }
+
+	/** @returns {void} */
+	destroy() {
+		if (this.destroyed) return;
+		this.log.destroy();
+		this.destroyed = true;
+	}
+
+	/**
+	 * Build CORS headers for the given origin.
+	 * @function corsHeaders
+	 * @inner
+	 * @param {string} origin
+	 * @returns {Record<string,string>}
+	 */
+	corsHeaders(origin) {
+		const allowed = (this.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+		const h = {
+			"Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+			"Access-Control-Allow-Headers": "Content-Type, Authorization",
+			"Vary": "Origin"
+		};
+		if (origin && allowed.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
+		return h;
+	}
+
+	/**
+	 * JSON response helper.
+	 * @function json
+	 * @inner
+	 * @param {unknown} body
+	 * @param {number} [status=200]
+	 * @param {HeadersInit} [headers]
+	 * @returns {Response}
+	 */
+	json(body, status = 200, headers = {}) {
+		const hdrs = Object.assign({ "Content-Type": "application/json" }, headers || {});
+		return new Response(JSON.stringify(body), { status, headers: hdrs });
+	}
+
+	/**
+	 * Health endpoint.
+	 * @async
+	 * @function health
+	 * @inner
+	 * @param {string} origin
+	 * @returns {Promise<Response>}
+	 */
+	async health(origin) {
+		return this.json({ ok: true, time: new Date().toISOString() }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * List projects from Airtable (joins latest Project Details).
+	 * - Uses Airtable `record.createdTime` for `createdAt`.
+	 * - Sorted newest-first server-side to guarantee stable ordering.
+	 */
+	async listProjectsFromAirtable(origin, url) {
+		const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
+		const view = url.searchParams.get("view") || undefined;
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tProjects = encodeURIComponent(this.env.AIRTABLE_TABLE_PROJECTS);
+		const tDetails = encodeURIComponent(this.env.AIRTABLE_TABLE_DETAILS);
+
+		// ---- 1) Projects
+		let atUrl = `https://api.airtable.com/v0/${base}/${tProjects}?pageSize=${limit}`;
+		if (view) atUrl += `&view=${encodeURIComponent(view)}`;
+
+		const pRes = await fetchWithTimeout(atUrl, {
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			}
+		}, this.cfg.TIMEOUT_MS);
+
+		const pText = await pRes.text();
+		if (!pRes.ok) {
+			this.log.error("airtable.list.fail", { status: pRes.status, text: safeText(pText) });
+			return this.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, this.corsHeaders(origin));
+		}
+
+		/** @type {{records: Array<{id:string,createdTime?:string,fields:Record<string,any>}>}} */
+		let pData;
+		try { pData = JSON.parse(pText); } catch { pData = { records: [] }; }
+
+		let projects = (pData.records || []).map(r => {
+			const f = r.fields || {};
+			return {
+				id: r.id,
+				name: f.Name || "",
+				description: f.Description || "",
+				"rops:servicePhase": f.Phase || "",
+				"rops:projectStatus": f.Status || "",
+				objectives: String(f.Objectives || "").split("\n").filter(Boolean),
+				user_groups: String(f.UserGroups || "").split(",").map(s => s.trim()).filter(Boolean),
+				stakeholders: (() => { try { return JSON.parse(f.Stakeholders || "[]"); } catch { return []; } })(),
+				createdAt: r.createdTime || f.CreatedAt || ""
+			};
+		});
+
+		// ---- 2) Project Details (pull lead researcher + email, latest)
+		const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
+		const dRes = await fetchWithTimeout(dUrl, {
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
+
+		if (dRes.ok) {
+			const dText = await dRes.text();
+			/** @type {{records:Array<{id:string,createdTime?:string,fields:Record<string,any>}>}} */
+			let dData;
+			try { dData = JSON.parse(dText); } catch { dData = { records: [] }; }
+
+			const detailsByProject = new Map();
+			for (const r of (dData.records || [])) {
+				const f = r.fields || {};
+				const linked = Array.isArray(f.Project) && f.Project[0];
+				if (!linked) continue;
+				const existing = detailsByProject.get(linked);
+				if (!existing || toMs(r.createdTime) > toMs(existing._createdAt)) {
+					detailsByProject.set(linked, {
+						lead_researcher: f["Lead Researcher"] || "",
+						lead_researcher_email: f["Lead Researcher Email"] || "",
+						notes: f.Notes || "",
+						_createdAt: r.createdTime || ""
+					});
+				}
+			}
+
+			projects = projects.map(p => {
+				const d = detailsByProject.get(p.id);
+				return d ? { ...p, lead_researcher: d.lead_researcher, lead_researcher_email: d.lead_researcher_email, notes: d.notes } : p;
+			});
+		} else {
+			const dt = await dRes.text().catch(() => "");
+			this.log.warn("airtable.details.join.fail", { status: dRes.status, detail: safeText(dt) });
+		}
+
+		projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+		return this.json({ ok: true, projects }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a project in Airtable (+ optional details), then append to GitHub CSV (best-effort).
+	 */
+	async createProject(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const errs = [];
+		if (!payload.name) errs.push("name");
+		if (!payload.description) errs.push("description");
+		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
+
+		const projectFields = {
+			Org: payload.org || "Home Office Biometrics",
+			Name: payload.name,
+			Description: payload.description,
+			Phase: typeof payload.phase === "string" ? payload.phase : undefined,
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			Objectives: (payload.objectives || []).join("\n"),
+			UserGroups: (payload.user_groups || []).join(", "),
+			Stakeholders: JSON.stringify(payload.stakeholders || []),
+			LocalId: payload.id || ""
+		};
+		for (const k of Object.keys(projectFields)) {
+			const v = projectFields[k];
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete projectFields[k];
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tProjects = encodeURIComponent(this.env.AIRTABLE_TABLE_PROJECTS);
+		const tDetails = encodeURIComponent(this.env.AIRTABLE_TABLE_DETAILS);
+		const atProjectsUrl = `https://api.airtable.com/v0/${base}/${tProjects}`;
+		const atDetailsUrl = `https://api.airtable.com/v0/${base}/${tDetails}`;
+
+		// Create project
+		const pRes = await fetchWithTimeout(atProjectsUrl, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields: projectFields }] })
+		}, this.cfg.TIMEOUT_MS);
+		const pText = await pRes.text();
+		if (!pRes.ok) {
+			this.log.error("airtable.create.fail", { status: pRes.status, text: safeText(pText) });
+			return this.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, this.corsHeaders(origin));
+		}
+		let pJson;
+		try { pJson = JSON.parse(pText); } catch { pJson = { records: [] }; }
+		const projectId = pJson.records?.[0]?.id;
+		if (!projectId) return this.json({ error: "Airtable response missing project id" }, 502, this.corsHeaders(origin));
+
+		// Optional details
+		let detailId = null;
+		const hasDetails = Boolean(payload.lead_researcher || payload.lead_researcher_email || payload.notes);
+		if (hasDetails) {
+			const detailsFields = {
+				Project: [projectId],
+				"Lead Researcher": payload.lead_researcher || "",
+				"Lead Researcher Email": payload.lead_researcher_email || "",
+				Notes: payload.notes || ""
+			};
+			for (const k of Object.keys(detailsFields)) {
+				const v = detailsFields[k];
+				if (typeof v === "string" && v.trim() === "") delete detailsFields[k];
+			}
+			const dRes = await fetchWithTimeout(atDetailsUrl, {
+				method: "POST",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ fields: detailsFields }] })
+			}, this.cfg.TIMEOUT_MS);
+			const dText = await dRes.text();
+			if (!dRes.ok) {
+				try { await fetchWithTimeout(`${atProjectsUrl}/${projectId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` } }, this.cfg.TIMEOUT_MS); } catch {}
+				this.log.error("airtable.details.fail", { status: dRes.status, text: safeText(dText) });
+				return this.json({ error: `Airtable details ${dRes.status}`, detail: safeText(dText) }, dRes.status, this.corsHeaders(origin));
+			}
+			try { detailId = JSON.parse(dText).records?.[0]?.id || null; } catch {}
+		}
+
+		// GitHub CSV (best-effort)
+		let csvOk = true,
+			csvError = null;
+		try {
+			const nowIso = new Date().toISOString();
+			const projectRow = [
+				payload.id || "",
+				payload.org || "Home Office Biometrics",
+				payload.name || "",
+				payload.description || "",
+				payload.phase || "",
+				payload.status || "",
+				(payload.objectives || []).join(" | "),
+				(payload.user_groups || []).join(" | "),
+				JSON.stringify(payload.stakeholders || []),
+				nowIso
+			];
+			await this.githubCsvAppend({
+				path: this.env.GH_PATH_PROJECTS,
+				header: ["LocalId", "Org", "Name", "Description", "Phase", "Status", "Objectives", "UserGroups", "Stakeholders", "CreatedAt"],
+				row: projectRow
+			});
+
+			if (hasDetails) {
+				const detailsRow = [
+					projectId,
+					payload.id || "",
+					payload.lead_researcher || "",
+					payload.lead_researcher_email || "",
+					payload.notes || "",
+					nowIso
+				];
+				await this.githubCsvAppend({
+					path: this.env.GH_PATH_DETAILS,
+					header: ["AirtableId", "LocalProjectId", "LeadResearcher", "LeadResearcherEmail", "Notes", "CreatedAt"],
+					row: detailsRow
 				});
-				if (found) return ensureProjectName(found);
 			}
+		} catch (e) {
+			csvOk = false;
+			csvError = String(e?.message || e);
+			this.log.warn("github.csv.append.fail", { err: csvError });
 		}
-	} catch (e) { /* ignore and fall through */ }
 
-	// 2) Derive from studies list for this project
-	try {
-		const r = await fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r.ok) {
-			const js = await r.json().catch(() => ({}));
-			const studies = Array.isArray(js) ? js : (Array.isArray(js?.studies) ? js.studies : []);
-			// Check if the payload already includes a project label
-			let name = firstText(
-				js?.project?.name, js?.project?.Name, js?.projectName
-			);
-			if (!name && studies.length) {
-				const s0 = studies[0];
-				// Attempt common places a linked project label might live
-				name = firstText(
-					s0?.project?.name, s0?.project?.Name, s0?.Project,
-					(s0?.fields && (s0.fields.Project || s0.fields.ProjectName || s0.fields.Name))
-				);
+		if (this.env.AUDIT === "true") this.log.info("project.created", { airtableId: projectId, hasDetails, csvOk });
+		return this.json({ ok: true, project_id: projectId, detail_id: detailId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a Study linked to a Project (Airtable primary) and append to GitHub CSV (best-effort).
+	 */
+	async createStudy(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const errs = [];
+		if (!payload.project_airtable_id) errs.push("project_airtable_id");
+		if (!payload.method) errs.push("method");
+		if (!payload.description) errs.push("description");
+		if (errs.length) return this.json({ error: "Missing required fields: " + errs.join(", ") }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atStudiesUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
+
+		const fields = {
+			Project: [payload.project_airtable_id],
+			Method: payload.method,
+			Description: mdToAirtableRich(payload.description || ""),
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			"Study ID": typeof payload.study_id === "string" ? payload.study_id : undefined
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
+
+		const sRes = await fetchWithTimeout(atStudiesUrl, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+		const sText = await sRes.text();
+		if (!sRes.ok) {
+			this.log.error("airtable.study.create.fail", { status: sRes.status, text: safeText(sText) });
+			return this.json({ error: `Airtable ${sRes.status}`, detail: safeText(sText) }, sRes.status, this.corsHeaders(origin));
+		}
+
+		let sJson;
+		try { sJson = JSON.parse(sText); } catch { sJson = { records: [] }; }
+		const studyId = sJson.records?.[0]?.id;
+		if (!studyId) return this.json({ error: "Airtable response missing study id" }, 502, this.corsHeaders(origin));
+
+		// Best-effort CSV
+		let csvOk = true,
+			csvError = null;
+		try {
+			const nowIso = new Date().toISOString();
+			const row = [
+				studyId,
+				payload.project_airtable_id,
+				payload.study_id || "",
+				payload.method || "",
+				payload.status || "",
+				payload.description || "",
+				nowIso
+			];
+			await this.githubCsvAppend({
+				path: this.env.GH_PATH_STUDIES,
+				header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
+				row
+			});
+		} catch (e) {
+			csvOk = false;
+			csvError = String(e?.message || e);
+			this.log.warn("github.csv.append.fail.study", { err: csvError });
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("study.created", { studyId, csvOk });
+		return this.json({ ok: true, study_id: studyId, csv_ok: csvOk, csv_error: csvOk ? undefined : csvError }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * List studies linked to a given project from Airtable.
+	 * - Requires ?project=<AirtableRecordId of Project>
+	 * - Paginates across all records
+	 * - Tolerates link field named "Project" or "Projects"
+	 * - Returns detailed errors instead of generic ones
+	 */
+	async listStudies(origin, url) {
+		try {
+			const projectId = url.searchParams.get("project");
+			if (!projectId) {
+				return this.json({ ok: false, error: "Missing project query" }, 400, this.corsHeaders(origin));
 			}
-			if (name) return { id: pid, name };
+
+			const base = this.env.AIRTABLE_BASE_ID;
+			const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+			const atBase = `https://api.airtable.com/v0/${base}/${tStudies}`;
+			const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+			const records = [];
+			let offset;
+
+			// Do NOT restrict fields[] — avoids UNKNOWN_FIELD_NAME on differing schemas
+			do {
+				const params = new URLSearchParams({ pageSize: "100" });
+				if (offset) params.set("offset", offset);
+
+				const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+				const bodyText = await resp.text();
+
+				if (!resp.ok) {
+					this.log.error("airtable.studies.list.fail", { status: resp.status, text: safeText(bodyText) });
+					// Return Airtable’s payload to the caller for visibility
+					return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(bodyText) }, resp.status, this.corsHeaders(origin));
+				}
+
+				/** @type {{records?: Array<{id:string, createdTime?:string, fields?: Record<string, any>}>, offset?: string}} */
+				let js;
+				try { js = JSON.parse(bodyText); } catch { js = { records: [] }; }
+
+				records.push(...(js.records || []));
+				offset = js.offset;
+			} while (offset);
+
+			// Work with common link field names
+			const LINK_FIELDS = ["Project", "Projects"];
+
+			const studies = records
+				.filter(r => {
+					const f = r.fields || {};
+					const linkArr = LINK_FIELDS.map(n => f[n]).find(v => Array.isArray(v));
+					return Array.isArray(linkArr) && linkArr.includes(projectId);
+				})
+				.map(r => {
+					const f = r.fields || {};
+					return {
+						id: r.id,
+						studyId: f["Study ID"] || "",
+						method: f.Method || "",
+						status: f.Status || "",
+						description: f.Description || "",
+						createdAt: r.createdTime || ""
+					};
+				})
+				.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+
+			return this.json({ ok: true, studies }, 200, this.corsHeaders(origin));
+		} catch (err) {
+			this.log.error("studies.unexpected", { err: String(err?.message || err) });
+			return this.json({ ok: false, error: "Unexpected error listing studies", detail: String(err?.message || err) }, 500, this.corsHeaders(origin));
 		}
-	} catch (e) { /* ignore */ }
+	}
 
-	// 3) Fallback
-	return { id: pid, name: "(Unnamed project)" };
-}
+	/**
+	 * Update a Study (Airtable partial update).
+	 * Accepts: { description?, method?, status?, study_id? }
+	 * Writes to Airtable fields: Description, Method, Status, "Study ID".
+	 */
+	async updateStudy(request, origin, studyId) {
+		if (!studyId) {
+			return this.json({ error: "Missing study id" }, 400, this.corsHeaders(origin));
+		}
 
-// ─────────────────────────────
-// Debug instrumentation (toggleable)
-// ─────────────────────────────
-(async () => {
-	const params = new URLSearchParams(location.search);
-	const isDebug = /^(1|true|yes)$/i.test(params.get("debug") || "");
-	const panel = document.getElementById("debug-panel");
-	const out = document.getElementById("debug-output");
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
 
-	if (!isDebug) return; // ← only runs when ?debug=1 or ?debug=true
+		/** @type {any} */
+		let payload;
+		try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
 
-	if (panel) panel.hidden = false;
-	if (out) out.textContent = "Fetching API data…";
+		const fields = {
+			Description: typeof payload.description === "string" ? mdToAirtableRich(payload.description) : undefined,
+			Method: typeof payload.method === "string" ? payload.method : undefined,
+			Status: typeof payload.status === "string" ? payload.status : undefined,
+			"Study ID": typeof payload.study_id === "string" ? payload.study_id : undefined
+		};
+		for (const k of Object.keys(fields)) {
+			const v = fields[k];
+			if (v === undefined || (typeof v === "string" && v.trim() === "")) delete fields[k];
+		}
 
-	try {
-		const pid = params.get("pid");
-		const sid = params.get("sid");
+		if (Object.keys(fields).length === 0) {
+			return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+		}
 
-		const [projRes, studyRes] = await Promise.all([
-			fetch("/api/projects?cache=no-store").then(r => r.json()).catch(() => ({})),
-			fetch(`/api/studies?project=${encodeURIComponent(pid)}`).then(r => r.json()).catch(() => ({}))
-		]);
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tStudies = encodeURIComponent(this.env.AIRTABLE_TABLE_STUDIES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tStudies}`;
 
-		const payload = {
-			params: { pid, sid },
-			projectList: projRes,
-			studyList: studyRes
+		const res = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				records: [{ id: studyId, fields }]
+			})
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.study.update.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("study.updated", { studyId, fields });
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Stream a CSV file from GitHub with proper headers.
+	 */
+	async streamCsv(origin, path) {
+		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
+		const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+		const headers = {
+			"Authorization": `Bearer ${GH_TOKEN}`,
+			"Accept": "application/vnd.github+json",
+			"X-GitHub-Api-Version": this.cfg.GH_API_VERSION
 		};
 
-		if (out) out.textContent = JSON.stringify(payload, null, 2);
-	} catch (err) {
-		if (out) out.textContent = "Debug fetch failed:\n" + String(err);
-	}
-})();
+		try {
+			const getRes = await fetchWithTimeout(
+				`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers },
+				this.cfg.TIMEOUT_MS
+			);
 
-function runLints(args) {
-	var source = args.source,
-		context = args.context,
-		partials = args.partials;
-	var out = $("#lint-output");
-	if (!out) return;
-	var warnings = [];
+			if (getRes.status === 404) {
+				this.log.warn("csv.not_found", { path });
+				return this.json({ error: "CSV file not found" }, 404, this.corsHeaders(origin));
+			}
 
-	// Undeclared partials
-	var parts = collectPartialNames(source);
-	for (var i = 0; i < parts.length; i++) {
-		var p = parts[i];
-		if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
-	}
+			if (!getRes.ok) {
+				const text = await getRes.text();
+				this.log.error("github.csv.read.fail", { status: getRes.status, text: safeText(text) });
+				return this.json({ error: `GitHub ${getRes.status}`, detail: safeText(text) },
+					getRes.status,
+					this.corsHeaders(origin)
+				);
+			}
 
-	// Simple tag existence check ({{study.something}})
-	var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
-	var m;
-	for (;;) {
-		m = tagRegex.exec(source);
-		if (!m) break;
-		var path = m[1].split(".");
-		var v = getPath(context, path);
-		if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
-	}
+			const js = await getRes.json();
+			const content = b64Decode(js.content);
 
-	out.textContent = warnings[0] || "No issues";
-}
+			const csvHeaders = {
+				"Content-Type": "text/csv; charset=utf-8",
+				"Content-Disposition": `attachment; filename="${path.split('/').pop() || 'data.csv'}"`,
+				"Cache-Control": this.cfg.CSV_CACHE_CONTROL,
+				...this.corsHeaders(origin)
+			};
 
-function collectPartialNames(src) {
-	var re = /{{>\s*([a-zA-Z0-9_\-]+)\s*}}/g;
-	var names = new Set();
-	var m;
-	for (;;) {
-		m = re.exec(src);
-		if (!m) break;
-		names.add(m[1]);
-	}
-	return Array.from(names);
-}
+			return new Response(content, { status: 200, headers: csvHeaders });
 
-function readFrontMatter(src) {
-	if (!src || src.indexOf("---") !== 0) return { meta: {}, body: src };
-	var end = src.indexOf("\n---", 3);
-	if (end === -1) return { meta: {}, body: src };
-	var yaml = src.slice(3, end).trim();
-	var body = src.slice(end + 4);
-	var meta = parseYamlLite(yaml);
-	return { meta: meta, body: body };
-}
-
-function writeFrontMatter(src, meta) {
-	var parsed = readFrontMatter(src);
-	var body = parsed.body;
-	var yaml = emitYamlLite(meta);
-	return "---\n" + yaml + "\n---\n" + body.replace(/^\n*/, "");
-}
-
-function parseYamlLite(y) {
-	var obj = {};
-	var lines = (y || "").split("\n");
-	for (var i = 0; i < lines.length; i++) {
-		var line = lines[i];
-		var m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-		if (!m) continue;
-		var val = m[2];
-		if (/^\d+$/.test(val)) val = Number(val);
-		if (val === "true") val = true;
-		if (val === "false") val = false;
-		obj[m[1]] = val;
-	}
-	return obj;
-}
-
-function emitYamlLite(o) {
-	var out = [];
-	for (var k in (o || {})) {
-		if (Object.prototype.hasOwnProperty.call(o, k)) {
-			out.push(k + ": " + String(o[k]));
+		} catch (e) {
+			this.log.error("csv.stream.error", { err: String(e?.message || e), path });
+			return this.json({ error: "Failed to stream CSV", detail: String(e?.message || e) },
+				500,
+				this.corsHeaders(origin)
+			);
 		}
 	}
-	return out.join("\n");
-}
 
-function insertAtCursor(textarea, snippet) {
-	if (!textarea) return;
-	var s = typeof textarea.selectionStart === "number" ? textarea.selectionStart : textarea.value.length;
-	var e = typeof textarea.selectionEnd === "number" ? textarea.selectionEnd : textarea.value.length;
-	var v = textarea.value;
-	textarea.value = v.slice(0, s) + snippet + v.slice(e);
-	textarea.selectionStart = textarea.selectionEnd = s + snippet.length;
-	textarea.dispatchEvent(new Event("input", { bubbles: true }));
-}
+	/**
+	 * Append a row to a GitHub-hosted CSV file (create if missing).
+	 */
+	async githubCsvAppend({ path, header, row }) {
+		const { GH_OWNER, GH_REPO, GH_BRANCH, GH_TOKEN } = this.env;
+		const base = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+		const headers = {
+			"Authorization": `Bearer ${GH_TOKEN}`,
+			"Accept": "application/vnd.github+json",
+			"X-GitHub-Api-Version": DEFAULTS.GH_API_VERSION,
+			"Content-Type": "application/json"
+		};
 
-function onInsertTag() {
-	var tags = [
-		"{{study.title}}", "{{project.name}}", "{{participant.id}}",
-		"{{#tasks}}…{{/tasks}}", "{{#study.remote}}…{{/study.remote}}"
-	];
-	var pick = prompt("Insert tag (example):\n" + tags.join("\n"));
-	if (pick) {
-		insertAtCursor($("#guide-source"), pick);
-		preview();
+		// Read current file
+		let sha = undefined,
+			content = "",
+			exists = false;
+		const getRes = await fetchWithTimeout(`${base}?ref=${encodeURIComponent(GH_BRANCH)}`, { headers }, this.cfg.TIMEOUT_MS);
+		if (getRes.status === 200) {
+			const js = await getRes.json();
+			sha = js.sha;
+			content = b64Decode(js.content);
+			exists = true;
+		} else if (getRes.status === 404) {
+			content = header.join(",") + "\n";
+		} else {
+			const t = await getRes.text();
+			throw new Error(`GitHub read ${getRes.status}: ${safeText(t)}`);
+		}
+
+		// Append row
+		content += toCsvLine(row);
+
+		const putBody = {
+			message: exists ? `chore: append row to ${path}` : `chore: create ${path} with header`,
+			content: b64Encode(content),
+			branch: GH_BRANCH
+		};
+		if (sha) putBody.sha = sha;
+
+		const putRes = await fetchWithTimeout(base, { method: "PUT", headers, body: JSON.stringify(putBody) }, this.cfg.TIMEOUT_MS);
+		if (!putRes.ok) {
+			const t = await putRes.text();
+			throw new Error(`GitHub write ${putRes.status}: ${safeText(t)}`);
+		}
+	}
+
+	/* --------------------- Guides (Discussion Guides) -------------------- */
+
+	/**
+	 * List guides for a study.
+	 * @route GET /api/guides?study=<StudyAirtableId>
+	 * @returns { ok:boolean, guides:Array }
+	 */
+	async listGuides(origin, url) {
+		const studyId = url.searchParams.get("study");
+		if (!studyId) {
+			return this.json({ ok: false, error: "Missing study query" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+		const records = [];
+		let offset;
+		do {
+			const params = new URLSearchParams({ pageSize: "100" });
+			if (offset) params.set("offset", offset);
+			const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+			const txt = await resp.text();
+
+			if (!resp.ok) {
+				this.log.error("airtable.guides.list.fail", { status: resp.status, text: safeText(txt) });
+				return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status, this.corsHeaders(origin));
+			}
+
+			let js;
+			try { js = JSON.parse(txt); } catch { js = { records: [] }; }
+			records.push(...(js.records || []));
+			offset = js.offset;
+		} while (offset);
+
+		// Find which field holds the link array (first candidate that exists and is an array)
+		const guides = [];
+		for (const r of records) {
+			const f = r.fields || {};
+			const linkKey = pickFirstField(f, GUIDE_LINK_FIELD_CANDIDATES);
+			const linkArr = linkKey ? f[linkKey] : undefined;
+			if (Array.isArray(linkArr) && linkArr.includes(studyId)) {
+				const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
+				const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
+				const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
+				const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
+				const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
+
+				guides.push({
+					id: r.id,
+					title: titleKey ? f[titleKey] : "",
+					status: statusKey ? f[statusKey] : "draft",
+					version: verKey ? f[verKey] : 1,
+					sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
+					variables: (() => { try { return JSON.parse(f[varsKey] || "{}"); } catch { return {}; } })(),
+					createdAt: r.createdTime || ""
+				});
+			}
+		}
+
+		guides.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+		return this.json({ ok: true, guides }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a guide for a study. Tries multiple link-field names until one works.
+	 * @route POST /api/guides
+	 * Body: { study_airtable_id, title?, status?, version?, sourceMarkdown?, variables? }
+	 */
+	async createGuide(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+		if (!p.study_airtable_id) return this.json({ error: "Missing field: study_airtable_id" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
+
+		// Build the non-link fields using best-effort field names
+		const fieldsTemplate = {};
+		const setIf = (names, val) => {
+			if (val === undefined || val === null) return;
+			for (const n of names) { fieldsTemplate[n] = val; break; }
+		};
+		setIf(GUIDE_FIELD_NAMES.title, String(p.title || "Untitled guide"));
+		setIf(GUIDE_FIELD_NAMES.status, String(p.status || "draft"));
+		setIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : 1);
+		setIf(GUIDE_FIELD_NAMES.source, mdToAirtableRich(p.sourceMarkdown || ""));
+		setIf(GUIDE_FIELD_NAMES.variables, typeof p.variables === "object" ? JSON.stringify(p.variables || {}) : String(p.variables || "{}"));
+
+		// Try link field candidates until one is accepted by Airtable
+		let lastDetail = "";
+		for (const linkName of GUIDE_LINK_FIELD_CANDIDATES) {
+			const fields = { ...fieldsTemplate, [linkName]: [p.study_airtable_id] };
+			const attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
+			if (attempt.ok) {
+				const id = attempt.json.records?.[0]?.id;
+				if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
+				if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName });
+				return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+			}
+			lastDetail = attempt.detail || lastDetail;
+			if (!attempt.retry) {
+				// Some other error; stop retrying
+				this.log.error("airtable.guide.create.fail", { status: attempt.status, detail: attempt.detail });
+				return this.json({ error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, this.corsHeaders(origin));
+			}
+		}
+
+		// If we’re here, every candidate produced UNKNOWN_FIELD_NAME
+		this.log.error("airtable.guide.create.linkfield.none_matched", { detail: lastDetail });
+		return this.json({
+			error: "Airtable 422",
+			detail: lastDetail || "No matching link field name found for the Guides↔Study relation. Please add a link-to-record field to your Discussion Guides table that links to the Project Studies table. Suggested names: " + GUIDE_LINK_FIELD_CANDIDATES.join(", ")
+		}, 422, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Update a guide (partial).
+	 * @route PATCH /api/guides/:id
+	 */
+	async updateGuide(request, origin, guideId) {
+		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
+
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			this.log.warn("request.too_large", { size: body.byteLength });
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
+
+		/** @type {any} */
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		// Map incoming keys to first matching Airtable field name
+		const f = {};
+		const putIf = (names, val) => {
+			if (val === undefined) return;
+			const key = names[0]; // write to the first preferred name
+			if (key) f[key] = val;
+		};
+		putIf(GUIDE_FIELD_NAMES.title, typeof p.title === "string" ? p.title : undefined);
+		putIf(GUIDE_FIELD_NAMES.status, typeof p.status === "string" ? p.status : undefined);
+		putIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : undefined);
+		putIf(GUIDE_FIELD_NAMES.source, typeof p.sourceMarkdown === "string" ? mdToAirtableRich(p.sourceMarkdown) : undefined);
+		putIf(GUIDE_FIELD_NAMES.variables, p.variables != null ? JSON.stringify(p.variables) : undefined);
+
+		if (Object.keys(f).length === 0) {
+			return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
+
+		const res = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ records: [{ id: guideId, fields: f }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const text = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.guide.update.fail", { status: res.status, text: safeText(text) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("guide.updated", { guideId });
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Publish a guide: set Status="published" and increment Version.
+	 * Uses flexible field names defined in GUIDE_FIELD_NAMES.
+	 * @returns {Response}
+	 */
+	async publishGuide(origin, guideId) {
+		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
+		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+		// 1) Read current record to discover fields + current version
+		const getUrl = `${atBase}?pageSize=1&filterByFormula=${encodeURIComponent(`RECORD_ID()="${guideId}"`)}`;
+		const getRes = await fetchWithTimeout(getUrl, { headers }, this.cfg.TIMEOUT_MS);
+		const getText = await getRes.text();
+		if (!getRes.ok) {
+			this.log.error("airtable.guide.read.fail", { status: getRes.status, text: safeText(getText) });
+			return this.json({ error: `Airtable ${getRes.status}`, detail: safeText(getText) }, getRes.status, this.corsHeaders(origin));
+		}
+
+		/** @type {{records?: Array<{id:string,fields?:Record<string,any>}>}} */
+		let js;
+		try { js = JSON.parse(getText); } catch { js = { records: [] }; }
+		const rec = js.records && js.records[0];
+		const f = (rec && rec.fields) || {};
+
+		// Determine actual field keys
+		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status) || GUIDE_FIELD_NAMES.status[0]; // write-safe default
+		const versionKey = pickFirstField(f, GUIDE_FIELD_NAMES.version) || GUIDE_FIELD_NAMES.version[0]; // write-safe default
+
+		// Current version → next
+		const currentVerRaw = f[versionKey];
+		const currentVer = Number.isFinite(currentVerRaw) ? Number(currentVerRaw) : parseInt(currentVerRaw, 10);
+		const nextVer = Number.isFinite(currentVer) ? currentVer + 1 : 1;
+
+		// 2) Patch status + version
+		const patchRes = await fetchWithTimeout(atBase, {
+			method: "PATCH",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				records: [{
+					id: guideId,
+					fields: {
+						[statusKey]: "published",
+						[versionKey]: nextVer
+					}
+				}]
+			})
+		}, this.cfg.TIMEOUT_MS);
+
+		const patchText = await patchRes.text();
+		if (!patchRes.ok) {
+			this.log.error("airtable.guide.publish.fail", { status: patchRes.status, text: safeText(patchText) });
+			return this.json({ error: `Airtable ${patchRes.status}`, detail: safeText(patchText) }, patchRes.status, this.corsHeaders(origin));
+		}
+
+		if (this.env.AUDIT === "true") this.log.info("guide.published", { guideId, version: nextVer });
+		return this.json({ ok: true, version: nextVer, status: "published" }, 200, this.corsHeaders(origin));
 	}
 }
 
-function debounce(fn, ms) {
-	ms = (typeof ms === "number") ? ms : 200;
-	var t;
-	return function() {
-		var args = arguments;
-		clearTimeout(t);
-		t = setTimeout(function() { fn.apply(null, args); }, ms);
+/* =========================
+ * @section Worker entrypoint
+ * ========================= */
+
+/**
+ * Default export: Cloudflare Worker `fetch` handler.
+ */
+export default {
+	async fetch(request, env, ctx) {
+		const service = new ResearchOpsService(env);
+		const url = new URL(request.url);
+		const origin = request.headers.get("Origin") || "";
+
+		try {
+			// API routes
+			if (url.pathname.startsWith("/api/")) {
+				// CORS preflight
+				if (request.method === "OPTIONS") {
+					return new Response(null, { headers: service.corsHeaders(origin) });
+				}
+
+				// Enforce ALLOWED_ORIGINS for API calls
+				const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+				if (origin && !allowed.includes(origin)) {
+					return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
+				}
+
+				// Route map
+				/**
+				 * Health check.
+				 * @route GET /api/health
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:boolean, time:string }
+				 */
+				if (url.pathname === "/api/health") {
+					return service.health(origin);
+				}
+
+				/* -------------------- Projects -------------------- */
+				/**
+				 * List projects (Airtable; newest-first by record.createdTime).
+				 * @route GET /api/projects
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @query  { limit?:number, view?:string }
+				 * @output { ok:true, projects:Array<{id:string,name:string,description:string,createdAt:string,...}> }
+				 */
+				if (url.pathname === "/api/projects" && request.method === "GET") {
+					return service.listProjectsFromAirtable(origin, url);
+				}
+
+				/**
+				 * Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write).
+				 * @route POST /api/projects
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { org?:string, name:string, description:string, phase?:string, status?:string, objectives?:string[], user_groups?:string[], stakeholders?:any[], id?:string, lead_researcher?:string, lead_researcher_email?:string, notes?:string }
+				 * @output { ok:true, project_id:string, detail_id?:string, csv_ok:boolean, csv_error?:string }
+				 */
+				if (url.pathname === "/api/projects" && request.method === "POST") {
+					return service.createProject(request, origin);
+				}
+
+				/* --------------------- Studies -------------------- */
+				/**
+				 * List studies for a project (Airtable).
+				 * @route GET /api/studies
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @query  { project:string } – Airtable record id of the Project
+				 * @output { ok:true, studies:Array<{id:string,studyId:string,method:string,status:string,description:string,createdAt:string}> }
+				 */
+				if (url.pathname === "/api/studies" && request.method === "GET") {
+					return service.listStudies(origin, url);
+				}
+
+				/**
+				 * Create study (Airtable primary; best-effort GitHub CSV dual-write).
+				 * @route POST /api/studies
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { project_airtable_id:string, method:string, description:string, status?:string, study_id?:string }
+				 * @output { ok:true, study_id:string, csv_ok:boolean, csv_error?:string }
+				 */
+				if (url.pathname === "/api/studies" && request.method === "POST") {
+					return service.createStudy(request, origin);
+				}
+
+				/**
+				 * Update study (partial; Airtable PATCH).
+				 * @route PATCH /api/studies/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @param  {string} id – Airtable record id of the Study
+				 * @input  { description?:string, method?:string, status?:string, study_id?:string }
+				 * @output { ok:true }
+				 */
+				if (url.pathname.startsWith("/api/studies/") && request.method === "PATCH") {
+					const studyId = decodeURIComponent(url.pathname.slice("/api/studies/".length));
+					return service.updateStudy(request, origin, studyId);
+				}
+
+				/* ---------------------- AI assist ----------------- */
+				/**
+				 * AI assist (rule-guided rewrite).
+				 * @route POST /api/ai-rewrite
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input  { text:string } – Step 1 Description (≥400 chars)
+				 * @output { summary:string, suggestions:Array<{category:string,tip:string,why:string,severity:"high"|"medium"|"low"}>, rewrite:string, flags:{possible_personal_data:boolean} }
+				 */
+				if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
+					return aiRewrite(request, env, origin);
+				}
+
+				/* --------------------- CSV streaming -------------- */
+				/**
+				 * Stream Projects CSV from GitHub (best-effort).
+				 * @route GET /api/projects.csv
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output text/csv
+				 */
+				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
+					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
+				}
+
+				/**
+				 * Stream Project Details CSV from GitHub (best-effort).
+				 * @route GET /api/project-details.csv
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output text/csv
+				 */
+				if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
+					return service.streamCsv(origin, env.GH_PATH_DETAILS);
+				}
+
+				/* --------------------- Guides -------------------- */
+				/**
+				 * List guides for a study.
+				 * @route GET /api/guides?study=<StudyRecordId>
+				 * @output { ok:true, guides:Array<...> }
+				 */
+				if (url.pathname === "/api/guides" && request.method === "GET") {
+					return service.listGuides(origin, url);
+				}
+
+				if (url.pathname === "/api/guides" && request.method === "POST") {
+					return service.createGuide(request, origin);
+				}
+
+				if (url.pathname.startsWith("/api/guides/") && request.method === "PATCH") {
+					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
+					return service.updateGuide(request, origin, guideId);
+				}
+
+				/**
+				 * Publish a guide (status=published, version++).
+				 * @route POST /api/guides/:id/publish
+				 * @output { ok:true, version:number, status:"published" }
+				 */
+				if (url.pathname.startsWith("/api/guides/") && url.pathname.endsWith("/publish") && request.method === "POST") {
+					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length, -"/publish".length));
+					return service.publishGuide(origin, guideId);
+				}
+
+				/**
+				 * Unknown API path.
+				 * @route * /api/**
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { error:"Not found" }
+				 */
+				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
+			}
+
+			// Static assets with SPA fallback
+			let resp = await env.ASSETS.fetch(request);
+			if (resp.status === 404) {
+				const indexReq = new Request(new URL("/index.html", url), request);
+				resp = await env.ASSETS.fetch(indexReq);
+			}
+			return resp;
+
+		} catch (e) {
+			service.log.error("unhandled.error", { err: String(e?.message || e) });
+			return new Response(JSON.stringify({ error: "Internal error" }), {
+				status: 500,
+				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+			});
+		} finally {
+			service.destroy();
+		}
+	}
+};
+
+/* =========================
+ * @section Test utilities (named exports)
+ * ========================= */
+
+/**
+ * Create a minimal mock Env for unit tests.
+ */
+export function createMockEnv(overrides = {}) {
+	return /** @type {Env} */ ({
+		ALLOWED_ORIGINS: "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev",
+		AUDIT: "false",
+		AIRTABLE_BASE_ID: "app_base",
+		AIRTABLE_TABLE_PROJECTS: "Projects",
+		AIRTABLE_TABLE_DETAILS: "Project Details",
+		AIRTABLE_TABLE_STUDIES: "Project Studies",
+		AIRTABLE_API_KEY: "key",
+		GH_OWNER: "owner",
+		GH_REPO: "repo",
+		GH_BRANCH: "main",
+		GH_PATH_PROJECTS: "data/projects.csv",
+		GH_PATH_DETAILS: "data/project-details.csv",
+		GH_PATH_STUDIES: "data/studies.csv",
+		GH_TOKEN: "gh",
+		ASSETS: { fetch: () => new Response("not-found", { status: 404 }) },
+		...overrides
+	});
+}
+
+/**
+ * Build a JSON Request for tests.
+ * @example
+ * const req = makeJsonRequest("/api/projects", { name:"X", description:"Y" });
+ */
+export function makeJsonRequest(path, body, init = {}) {
+	const reqInit = {
+		method: "POST",
+		headers: Object.assign({ "Content-Type": "application/json" },
+			init.headers || {}
+		),
+		body: JSON.stringify(body)
 	};
-}
 
-function getPath(obj, pathArr) {
-	var acc = obj;
-	for (var i = 0; i < pathArr.length; i++) {
-		var k = pathArr[i];
-		if (acc == null) return undefined;
-		if (typeof acc !== "object") return undefined;
-		if (!(k in acc)) return undefined;
-		acc = acc[k];
+	for (const k in init) {
+		if (k !== "headers") reqInit[k] = init[k];
 	}
-	return acc;
-}
 
-function escapeHtml(s) {
-	var str = (s == null ? "" : String(s));
-	return str
-		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
-
-/** Create a plain shallow clone of an object without using spread literals. */
-function clonePlainObject(obj) {
-	var out = {};
-	if (!obj || typeof obj !== "object") return out;
-	for (var key in obj) {
-		if (Object.prototype.hasOwnProperty.call(obj, key)) {
-			out[key] = obj[key];
-		}
-	}
-	return out;
-}
-
-function announce(msg) {
-	var sr = $("#sr-live");
-	if (sr) sr.textContent = msg;
+	return new Request(`https://example.test${path}`, reqInit);
 }
