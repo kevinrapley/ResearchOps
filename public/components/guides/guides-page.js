@@ -304,27 +304,50 @@ async function startNewGuide() {
 	}
 }
 
+// Replace your existing openGuide with this version
 async function openGuide(id) {
 	try {
-		const sid = window.__guideCtx?.study?.id;
-		if (!sid) throw new Error("Missing study id");
-		const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}`;
-		const res = await fetch(url, { cache: "no-store" });
-		const g = res.ok ? await res.json() : null;
-		if (!g) throw new Error("Not found");
+		let guide = null;
 
-		window.__openGuideId = g.id;
+		// 1) Try the direct endpoint (works after you add the Worker route in part B)
+		const res = await fetch(`/api/guides/${encodeURIComponent(id)}`, { cache: "no-store" });
+		if (res.ok) {
+			const js = await res.json().catch(() => ({}));
+			// support either { ok:true, guide:{...} } or the raw guide object
+			guide = js && (js.guide || js);
+		} else if (res.status !== 404) {
+			const txt = await res.text().catch(() => "");
+			throw new Error(`GET /api/guides/${id} ${res.status}: ${txt}`);
+		}
+
+		// 2) Fallback: re-fetch the list and pick the matching id
+		if (!guide) {
+			const sid = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
+			if (!sid) throw new Error("No study id available in context for fallback.");
+			const r2 = await fetch(`/api/guides?study=${encodeURIComponent(sid)}`, { cache: "no-store" });
+			if (!r2.ok) {
+				const t = await r2.text().catch(() => "");
+				throw new Error(`GET /api/guides?study=… ${r2.status}: ${t}`);
+			}
+			const { guides = [] } = await r2.json().catch(() => ({}));
+			guide = guides.find(g => g.id === id) || null;
+		}
+
+		if (!guide) throw new Error("Guide not found");
+
+		// ── populate editor
+		window.__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
-		$("#guide-title") && ($("#guide-title").value = g.title || "Untitled");
-		$("#guide-status") && ($("#guide-status").textContent = g.status || "draft");
-		$("#guide-source") && ($("#guide-source").value = g.sourceMarkdown || "");
+		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
+		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
+		$("#guide-source") && ($("#guide-source").value = guide.sourceMarkdown || "");
 		populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
-		populateVariablesForm(g.variables || {});
+		populateVariablesForm(guide.variables || {});
 		await preview();
-		announce(`Opened guide “${g.title || "Untitled"}”`);
+		announce(`Opened guide “${guide.title || "Untitled"}”`);
 	} catch (e) {
 		console.warn(e);
-		announce("Failed to open guide");
+		announce(`Failed to open guide: ${e && e.message ? e.message : "Unknown error"}`);
 	}
 }
 
