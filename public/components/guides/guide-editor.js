@@ -89,7 +89,7 @@ function normalizeUnderscoreItalics(md) {
 function typographize(md) {
 	if (!md) return md;
 	md = md.replace(/(\S)---(\S)/g, '$1—$2'); // em dash
-	md = md.replace(/(\S)--(\S)/g, '$1–$2');  // en dash
+	md = md.replace(/(\S)--(\S)/g, '$1–$2'); // en dash
 	return md;
 }
 
@@ -142,24 +142,33 @@ export async function renderGuide({ source, context, partials }) {
  * @returns {Promise<Record<string,string>>}
  */
 export async function buildPartials(names) {
-	/** @type {Record<string,string>} */
-	const partials = {};
+	const res = await fetch("/api/partials", { cache: "no-store" });
+	if (!res.ok) return {};
+
+	const { partials = [] } = await res.json();
+	const map = {};
+
 	for (const name of names) {
-		try {
-			const res = await fetch(`/api/patterns/${encodeURIComponent(name)}`);
-			if (res.ok) {
-				const p = await res.json();
-				partials[name] = p.sourceMarkdown || '';
-			} else {
-				const local = window.__patternRegistry?.[name];
-				if (local) partials[name] = local;
+		// Match name_v1 format
+		const match = name.match(/^(.+)_v(\d+)$/);
+		const baseName = match ? match[1] : name;
+		const version = match ? parseInt(match[2], 10) : 1;
+
+		const partial = partials.find(p =>
+			p.name === baseName && p.version === version
+		);
+
+		if (partial) {
+			// Fetch full source
+			const r2 = await fetch(`/api/partials/${partial.id}`, { cache: "no-store" });
+			if (r2.ok) {
+				const { partial: full } = await r2.json();
+				map[name] = full.source;
 			}
-		} catch {
-			const local = window.__patternRegistry?.[name];
-			if (local) partials[name] = local;
 		}
 	}
-	return partials;
+
+	return map;
 }
 
 /* Starter source for new guides (kept minimal; FM is optional) */
