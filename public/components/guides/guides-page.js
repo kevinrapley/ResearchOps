@@ -75,49 +75,56 @@ function pickTitle(s) {
 
 /**
  * Hydrate breadcrumbs, header subtitle, and guide context.
- * Ensures {{study.title}} is safe and never falls back to description.
+ * @param {{ pid: string, sid: string }} params
  */
-async function hydrateCrumbs(params) {
-	var pid = params && params.pid;
-	var sid = params && params.sid;
+async function hydrateCrumbs({ pid, sid }) {
 	try {
-		// Studies for locating the current study record
-		var studies = await loadStudies(pid);
+		// Fetch both project list and studies for full context
+		const [projectsRes, studiesRes] = await Promise.all([
+			fetch(`/api/projects`, { cache: "no-store" }),
+			loadStudies(pid)
+		]);
 
-		// Resolve project.name robustly across shapes
-		var project = await resolveProject(pid, sid);
+		const projects = projectsRes.ok ? (await projectsRes.json()).projects || [] : [];
+		const project = projects.find(p => p.id === pid) || { name: "(Unnamed project)" };
 
-		// Study + title
-		var studyRaw = Array.isArray(studies) ? (studies.find(function(s) { return s.id === sid; }) || {}) : {};
-		var study = ensureStudyTitle(studyRaw);
+		const studyRaw = Array.isArray(studiesRes) ?
+			(studiesRes.find(s => s.id === sid) || {}) :
+			{};
 
-		// ── Breadcrumbs
-		var bcProj = document.getElementById("breadcrumb-project");
+		const study = ensureStudyTitle(studyRaw);
+
+		// Breadcrumbs
+		const bcProj = document.getElementById("breadcrumb-project");
 		if (bcProj) {
-			bcProj.href = "/pages/project-dashboard/?id=" + encodeURIComponent(pid);
+			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
 			bcProj.textContent = project.name || "Project";
 		}
 
-		var bcStudy = document.getElementById("breadcrumb-study");
+		const bcStudy = document.getElementById("breadcrumb-study");
 		if (bcStudy) {
-			bcStudy.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
+			bcStudy.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 			bcStudy.textContent = study.title;
 		}
 
-		// Header subtitle + back link
-		var sub = document.querySelector('[data-bind="study.title"]');
+		const sub = document.querySelector('[data-bind="study.title"]');
 		if (sub) sub.textContent = study.title;
 
-		var back = document.getElementById("back-to-study");
-		if (back) back.href = "/pages/study/?pid=" + encodeURIComponent(pid) + "&sid=" + encodeURIComponent(sid);
+		const back = document.getElementById("back-to-study");
+		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 
-		try { document.title = "Discussion Guides — " + study.title; } catch (e) {}
+		document.title = `Discussion Guides — ${study.title}`;
 
-		// Store *normalised* context for the preview
-		window.__guideCtx = { project: project, study: study };
-
-	} catch (e) {
-		console.warn("Crumb hydrate failed", e);
+		// ✅ Expose both project + study to renderGuide()
+		window.__guideCtx = {
+			project: {
+				id: project.id,
+				name: project.name || "(Unnamed project)"
+			},
+			study
+		};
+	} catch (err) {
+		console.warn("Crumb hydrate failed", err);
 		window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
 	}
 }
