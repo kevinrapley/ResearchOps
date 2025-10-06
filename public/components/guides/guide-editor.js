@@ -126,6 +126,9 @@ export async function renderGuide({ source, context, partials }) {
 
 		// Nicer list handling (e.g., auto-detect ordered vs unordered)
 		smartLists: true
+		
+		  // Makes _underscore_ emphasis behave more like classic Markdown
+		pedantic: true
 	});
 
 	// Sanitise
