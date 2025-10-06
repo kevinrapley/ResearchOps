@@ -1440,11 +1440,15 @@ export default {
 
 				/**
 				 * Publish a guide (status=published, version++).
-				 * @route POST /api/guides/:id/publish
-				 * @output { ok:true, version:number, status:"published" }
+				 * Accepts: POST /api/guides/:id/publish  (trailing slash optional)
+				 * Returns: { ok:true, version:number, status:"published" }
 				 */
-				if (url.pathname.startsWith("/api/guides/") && url.pathname.endsWith("/publish") && request.method === "POST") {
-					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length, -"/publish".length));
+				if (
+					request.method === "POST" &&
+					/^\/api\/guides\/[^/]+\/publish\/?$/.test(url.pathname)
+				) {
+					const parts = url.pathname.split("/"); // ["", "api", "guides", ":id", "publish"]
+					const guideId = decodeURIComponent(parts[3]);
 					return service.publishGuide(origin, guideId);
 				}
 
