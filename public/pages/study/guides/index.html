@@ -22,40 +22,6 @@
 	}'></x-include>
 
 	<main id="main" class="container govuk-body" role="main">
-		<script>
-(async () => {
-  const pid = new URLSearchParams(location.search).get("pid");
-  const sid = new URLSearchParams(location.search).get("sid");
-  const out = document.createElement("pre");
-  out.style.background = "#fff5cc";
-  out.style.padding = "8px";
-  out.style.whiteSpace = "pre-wrap";
-  out.textContent = "🔍 Checking known guide endpoints…";
-  document.body.appendChild(out);
-
-  const eps = [
-    `/api/guides`,
-    `/api/guides?study=${sid}`,
-    `/api/studies/${sid}/guides`,
-    `/api/studies/${sid}/guides/${sid}`,
-    `/api/projects/${pid}/guides`,
-    `/api/projects/${pid}/studies/${sid}/guides`,
-    `/api/study-guides?study=${sid}`,
-    `/api/guide?study=${sid}`,
-    `/api/guide/${sid}`
-  ];
-
-  for (const ep of eps) {
-    try {
-      const res = await fetch(ep);
-      const txt = await res.text();
-      out.textContent += `\n\n${ep}\n${res.status}: ${txt.slice(0, 400)}`;
-    } catch (err) {
-      out.textContent += `\n\n${ep}\nERROR: ${err.message}`;
-    }
-  }
-})();
-</script>
 		<!-- Breadcrumb -->
 		<nav class="breadcrumbs" aria-label="Breadcrumb">
 			<ol>
