@@ -20,6 +20,15 @@
 	}'></x-include>
 
 	<main class="govuk-body" role="main">
+		<!-- BREADCRUMBS -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="#">Project</a></li>
+				<li aria-current="page">Dashboard</li>
+			</ol>
+		</nav>
+
 		<!-- HERO -->
 		<div class="dashboard-hero">
 			<p id="eyebrow-org" class="project-org"></p>
@@ -183,16 +192,16 @@
 
 		/**
 		 * @typedef {Object} UIProject
-		 * @property {string} id                - Airtable record id
-		 * @property {string} localId           - Local id fallback
-		 * @property {string} name              - Project name
-		 * @property {string} description       - Project description
-		 * @property {string} org               - Owning organisation
-		 * @property {string} phase             - Service phase
-		 * @property {string} status            - Current project status
-		 * @property {string[]} objectives      - List of project objectives
-		 * @property {string[]} user_groups     - Target user groups
-		 * @property {{name?:string, role?:string, email?:string}[]} stakeholders - Stakeholder contacts
+		 * @property {string} id
+		 * @property {string} localId
+		 * @property {string} name
+		 * @property {string} description
+		 * @property {string} org
+		 * @property {string} phase
+		 * @property {string} status
+		 * @property {string[]} objectives
+		 * @property {string[]} user_groups
+		 * @property {{name?:string, role?:string, email?:string}[]} stakeholders
 		 * @property {string} createdAt
 		 * @property {string} lead_researcher
 		 * @property {string} lead_researcher_email
@@ -211,31 +220,17 @@
 
 		/* ──────────────── DOM utils ──────────────── */
 
-		/** @param {string} s @param {ParentNode} [r=document] */
 		const $ = (s, r = document) => r.querySelector(s);
-
-		/** @param {string} s @param {ParentNode} [r=document] */
 		const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-
-		/** @param {string} sel @param {unknown} val @param {string} [fallback="—"] */
 		const setText = (sel, val, fallback = "—") => {
 			const el = $(sel);
 			if (el) el.textContent = (val ?? "").toString().trim() || fallback;
 		};
-
-		/** Parse date-ish string → epoch ms; invalid → 0. @param {string} d */
 		const toMs = (d) => { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; };
-
-		/** Client-side record id (demo). @returns {string} */
 		const makeStudyId = () => "rec" + Math.floor(Date.now() / 1000).toString(36);
 
 		/* ─────────────── Data loading ─────────────── */
 
-		/**
-		 * Fetch projects list from Worker API.
-		 * @returns {Promise<UIProject[]>}
-		 * @throws {Error} If HTTP or payload invalid.
-		 */
 		async function loadProjects() {
 			const res = await fetch("/api/projects", { cache: "no-store" });
 			const js = await res.json().catch(() => ({}));
@@ -257,22 +252,12 @@
 			}));
 		}
 
-		/**
-		 * Identify current project from ?id= param.
-		 * @param {UIProject[]} projects
-		 * @returns {UIProject|null}
-		 */
 		function pickProject(projects) {
 			const id = new URLSearchParams(location.search).get("id") || "";
 			if (!id) return null;
 			return projects.find(p => p.id === id || p.localId === id) || null;
 		}
 
-		/**
-		 * Fetch studies for a given project id.
-		 * @param {string} projectId
-		 * @returns {Promise<UIStudy[]>}
-		 */
 		async function loadStudies(projectId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
 			const res = await fetch(url, { cache: "no-store" });
@@ -291,12 +276,6 @@
 
 		/* ───────────── Title normalisation ───────────── */
 
-		/**
-		 * Generate default title matching Airtable formula:
-		 * LEFT(Description, 80) else "Method — YYYY-MM-DD".
-		 * @param {Partial<UIStudy>} [s={}]
-		 * @returns {string}
-		 */
 		function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
 			if (description && description.trim()) return description.trim().slice(0, 80);
 			const d = createdAt ? new Date(createdAt) : new Date();
@@ -306,22 +285,12 @@
 			return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
 		}
 
-		/**
-		 * Ensure every study object has a valid title.
-		 * @param {Partial<UIStudy>} s
-		 * @returns {UIStudy}
-		 */
 		function normalizeStudy(s = {}) {
 			return { ...s, title: s.title || s.Title || computeStudyTitle(s) };
 		}
 
 		/* ───────────────── Rendering ───────────────── */
 
-		/**
-		 * Populate project metadata into page.
-		 * @param {UIProject} project
-		 * @returns {void}
-		 */
 		function renderProject(project) {
 			setText("#eyebrow-org", project.org);
 			setText("#project-title", project.name, "Untitled project");
@@ -331,20 +300,21 @@
 			setText("#kv-client-name", project.org);
 			setText("#kv-lead-researcher", project.lead_researcher);
 			setText("#kv-lead-email", project.lead_researcher_email);
+
+			// Breadcrumbs
+			const bcProject = document.getElementById("breadcrumb-project");
+			if (bcProject) {
+				bcProject.textContent = project.name || "Project";
+				bcProject.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(project.id)}`);
+			}
+
+			// Expose project id + edit link
 			const main = document.querySelector("main");
 			if (main) main.dataset.projectAirtableId = project.id || "";
 			const edit = document.getElementById("btn-edit");
 			if (edit) edit.setAttribute("href", `./start/?id=${encodeURIComponent(project.id)}`);
 		}
 
-		/**
-		 * Render studies list (links to Study page).
-		 * Displays the Airtable Title field if available,
-		 * otherwise falls back to Method or a generated label.
-		 * @param {UIProject} project
-		 * @param {UIStudy[]} studies
-		 * @returns {void}
-		 */
 		function renderStudies(project, studies) {
 			const list = document.getElementById("studies-list");
 			if (!list) return;
@@ -354,7 +324,6 @@
 				return;
 			}
 
-			/** Escape HTML utility */
 			const escapeHtml = (s = "") =>
 				s.replace(/&/g, "&amp;")
 				.replace(/</g, "&lt;")
@@ -362,7 +331,6 @@
 				.replace(/"/g, "&quot;")
 				.replace(/'/g, "&#39;");
 
-			/** Truncate helper */
 			const truncateToWords = (text, maxLength = 170) => {
 				if (!text) return "";
 				if (text.length <= maxLength) return text;
@@ -370,7 +338,6 @@
 			};
 
 			list.innerHTML = studies.map(s => {
-				// ---- determine display title ----
 				const title =
 					s.title?.trim() ||
 					s.Title?.trim() ||
@@ -408,23 +375,18 @@
 
 		/* ───────── Add Study modal (accessible) ───────── */
 
-		/**
-		 * Wire the <dialog> to create a Study. Restores focus on close.
-		 * Posts: { project_airtable_id, method, description, status, study_id, title? }
-		 * @param {UIProject} project
-		 * @returns {void}
-		 */
 		function initStudyModal(project) {
-			/** @type {HTMLDialogElement|null} */
-			const dialog = /** @type {any} */ (document.getElementById("study-dialog"));
+			const dialog = /** @type {HTMLDialogElement|null} */ (document.getElementById("study-dialog"));
 			const openBtn = document.getElementById("btn-add-study");
 			const closeBtn = document.getElementById("study-close");
 			const cancelBtn = document.getElementById("study-cancel");
 			const submitBtn = document.getElementById("study-submit");
 			const form = dialog?.querySelector("form");
-			/** @type {Element|null} */
 			let lastFocus = null;
 			if (!dialog || !openBtn) return;
+
+			const $ = (sel, root = document) => root.querySelector(sel);
+			const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 			const open = () => {
 				lastFocus = document.activeElement;
@@ -443,7 +405,6 @@
 				}
 			};
 
-			// Focus trap + Escape support
 			dialog.addEventListener("keydown", (e) => {
 				if (e.key === "Escape") {
 					e.preventDefault();
@@ -471,7 +432,6 @@
 				}
 			});
 
-			// Click outside (backdrop) closes
 			dialog.addEventListener("click", (e) => {
 				const rect = dialog.getBoundingClientRect();
 				const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
@@ -482,7 +442,6 @@
 			closeBtn?.addEventListener("click", close);
 			cancelBtn?.addEventListener("click", close);
 
-			// Prefer form submit so Enter key works
 			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
 				e.preventDefault();
 
@@ -497,7 +456,6 @@
 				const projectAirtableId = project.id || document.querySelector("main")?.dataset?.projectAirtableId || "";
 				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
 
-				// Disable submit while posting
 				submitBtn?.setAttribute("disabled", "true");
 
 				try {
@@ -510,17 +468,15 @@
 							description: notes,
 							status: "Planned",
 							study_id: makeStudyId(),
-							title // ← NEW: optional field
+							title
 						})
 					});
 					const js = await res.json().catch(() => ({}));
 					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
 
-					// Refresh the list
 					const studies = await loadStudies(project.id);
 					renderStudies(project, studies);
 
-					// Clear inputs and close
 					if (methodEl) methodEl.value = "";
 					if (notesEl) notesEl.value = "";
 					if (titleEl) titleEl.value = "";
@@ -536,10 +492,6 @@
 
 		/* ──────────────── Bootstrap ──────────────── */
 
-		/**
-		 * Entrypoint: load, pick project, render, list studies, wire modal.
-		 * @returns {Promise<void>}
-		 */
 		(async function bootstrap() {
 			try {
 				const projects = await loadProjects();
