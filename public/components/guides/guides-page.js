@@ -350,22 +350,89 @@ async function preview() {
 }
 
 async function onSave() {
+	// Gather fields
 	var titleEl = $("#guide-title");
 	var title = (titleEl && titleEl.value ? titleEl.value.trim() : "") || "Untitled guide";
 	var srcEl = $("#guide-source");
 	var source = (srcEl && srcEl.value) || "";
 	var fm = readFrontMatter(source);
-	var body = { title: title, sourceMarkdown: source, variables: (fm && fm.meta) || {} };
+	var variables = (fm && fm.meta) || {};
+
+	// Context (must include study & project ids for new guides)
+	var ctx = window.__guideCtx || {};
+	var projectId = (ctx.project && (ctx.project.id || ctx.project.localId || ctx.project.ProjectId)) || "";
+	var studyId = (ctx.study && (ctx.study.id || ctx.study.studyId)) || "";
+
+	// Decide create vs update
 	var id = window.__openGuideId;
 	var method = id ? "PATCH" : "POST";
 	var url = id ? ("/api/guides/" + encodeURIComponent(id)) : "/api/guides";
-	const res = await fetch(url, { method: method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-	if (res.ok) {
+
+	if (!id && !studyId) {
+		announce("Save blocked: missing study id in context.");
+		const out = document.getElementById("debug-output");
+		if (out) {
+			out.textContent = (out.textContent || "") +
+				"\nSave blocked — no studyId in __guideCtx.\n__guideCtx:\n" +
+				JSON.stringify(window.__guideCtx || {}, null, 2);
+		}
+		return;
+	}
+	// Build payload
+	var body =
+		id ?
+		{ title: title, sourceMarkdown: source, variables: variables } // update
+		:
+		{
+			title: title,
+			sourceMarkdown: source,
+			variables: variables,
+			// 👇 include linkage on create
+			studyId: studyId, // most likely expected key
+			projectId: projectId // harmless if ignored; useful if required
+		};
+
+	try {
+		const res = await fetch(url, {
+			method: method,
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(body)
+		});
+
+		if (!res.ok) {
+			// Try to surface the server’s message
+			let msg = "Save failed";
+			try {
+				const err = await res.json();
+				if (err && (err.error || err.message)) msg = "Save failed: " + (err.error || err.message);
+			} catch (_) {
+				msg = "Save failed (HTTP " + res.status + ")";
+			}
+			announce(msg);
+			// Optional: also print into the debug panel if visible
+			const out = document.getElementById("debug-output");
+			if (out) out.textContent = (out.textContent || "") + "\n" + msg + "\nPayload:\n" + JSON.stringify(body, null, 2);
+			return;
+		}
+
+		// Success
 		announce("Guide saved");
+
+		// If this was a create, capture the new guide id so future saves PATCH
+		try {
+			const saved = await res.json();
+			if (!id && saved && (saved.id || saved.guideId)) {
+				window.__openGuideId = saved.id || saved.guideId;
+			}
+		} catch (_) {}
+
+		// Refresh list
 		var study = (window.__guideCtx && window.__guideCtx.study) || {};
 		loadGuides(study.id);
-	} else {
-		announce("Save failed");
+	} catch (err) {
+		announce("Save failed: " + String(err));
+		const out = document.getElementById("debug-output");
+		if (out) out.textContent = (out.textContent || "") + "\nSave failed exception:\n" + String(err);
 	}
 }
 
