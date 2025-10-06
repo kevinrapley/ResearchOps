@@ -123,38 +123,37 @@ async function hydrateCrumbs(params) {
  * Render list of guides for a study.
  * @param {string} studyId
  */
+/** Render list of guides for a study (nested endpoint). */
 async function loadGuides(studyId) {
-	var tbody = $("#guides-tbody");
+	const tbody = $("#guides-tbody");
 	if (!tbody) return;
 	try {
-		const res = await fetch("/api/guides?study=" + encodeURIComponent(studyId), { cache: "no-store" });
-		const list = res.ok ? await res.json() : [];
-		if (!Array.isArray(list) || !list.length) {
-			tbody.innerHTML = '<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>';
+		const res = await fetch(`/api/studies/${encodeURIComponent(studyId)}/guides`, { cache: "no-store" });
+		// Accept either a bare array or { ok:true, guides:[...] }
+		const js = await res.json().catch(() => []);
+		const list = Array.isArray(js) ? js : (Array.isArray(js.guides) ? js.guides : []);
+
+		if (!list.length) {
+			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
 			return;
 		}
+
 		tbody.innerHTML = "";
-		for (var i = 0; i < list.length; i++) {
-			var g = list[i];
-			var tr = document.createElement("tr");
-			tr.innerHTML =
-				'<td>' + escapeHtml(g.title || "Untitled") + "</td>" +
-				'<td>' + escapeHtml(g.status || "draft") + "</td>" +
-				"<td>v" + (g.version || 0) + "</td>" +
-				"<td>" + new Date(g.updatedAt || g.createdAt).toLocaleString() + "</td>" +
-				'<td>' + escapeHtml((g.createdBy && g.createdBy.name) || "—") + "</td>" +
-				'<td><button class="link-like" data-open="' + g.id + '">Open</button></td>';
+		for (const g of list) {
+			const tr = document.createElement("tr");
+			tr.innerHTML = `
+        <td>${escapeHtml(g.title || "Untitled")}</td>
+        <td>${escapeHtml(g.status || "draft")}</td>
+        <td>v${g.version || 0}</td>
+        <td>${new Date(g.updatedAt || g.createdAt).toLocaleString()}</td>
+        <td>${escapeHtml(g.createdBy?.name || "—")}</td>
+        <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
 			tbody.appendChild(tr);
 		}
-		var openBtns = $$('button[data-open]');
-		for (var j = 0; j < openBtns.length; j++) {
-			(function(btn) {
-				btn.addEventListener("click", function() { openGuide(btn.getAttribute("data-open")); });
-			})(openBtns[j]);
-		}
+		$$('button[data-open]').forEach(b => b.addEventListener("click", () => openGuide(b.dataset.open)));
 	} catch (e) {
 		console.warn(e);
-		tbody.innerHTML = '<tr><td colspan="6">Failed to load guides.</td></tr>';
+		tbody.innerHTML = `<tr><td colspan="6">Failed to load guides.</td></tr>`;
 	}
 }
 
@@ -291,28 +290,22 @@ async function startNewGuide() {
 
 async function openGuide(id) {
 	try {
-		const res = await fetch("/api/guides/" + encodeURIComponent(id));
+		const sid = window.__guideCtx?.study?.id;
+		if (!sid) throw new Error("Missing study id");
+		const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}`;
+		const res = await fetch(url, { cache: "no-store" });
 		const g = res.ok ? await res.json() : null;
 		if (!g) throw new Error("Not found");
 
 		window.__openGuideId = g.id;
-
-		var editor = $("#editor-section");
-		if (editor) editor.classList.remove("is-hidden");
-
-		var titleEl = $("#guide-title");
-		if (titleEl) titleEl.value = g.title || "Untitled";
-
-		var statusEl = $("#guide-status");
-		if (statusEl) statusEl.textContent = g.status || "draft";
-
-		var srcEl = $("#guide-source");
-		if (srcEl) srcEl.value = g.sourceMarkdown || "";
-
+		$("#editor-section")?.classList.remove("is-hidden");
+		$("#guide-title") && ($("#guide-title").value = g.title || "Untitled");
+		$("#guide-status") && ($("#guide-status").textContent = g.status || "draft");
+		$("#guide-source") && ($("#guide-source").value = g.sourceMarkdown || "");
 		populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
 		populateVariablesForm(g.variables || {});
 		await preview();
-		announce('Opened guide “' + (g.title || "Untitled") + '”');
+		announce(`Opened guide “${g.title || "Untitled"}”`);
 	} catch (e) {
 		console.warn(e);
 		announce("Failed to open guide");
@@ -350,106 +343,61 @@ async function preview() {
 }
 
 async function onSave() {
-	// Gather fields
-	var titleEl = $("#guide-title");
-	var title = (titleEl && titleEl.value ? titleEl.value.trim() : "") || "Untitled guide";
-	var srcEl = $("#guide-source");
-	var source = (srcEl && srcEl.value) || "";
-	var fm = readFrontMatter(source);
-	var variables = (fm && fm.meta) || {};
+	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
+	const source = $("#guide-source")?.value || "";
+	const fm = readFrontMatter(source);
+	const body = { title, sourceMarkdown: source, variables: fm.meta || {} };
 
-	// Context (must include study & project ids for new guides)
-	var ctx = window.__guideCtx || {};
-	var projectId = (ctx.project && (ctx.project.id || ctx.project.localId || ctx.project.ProjectId)) || "";
-	var studyId = (ctx.study && (ctx.study.id || ctx.study.studyId)) || "";
+	const sid = window.__guideCtx?.study?.id;
+	if (!sid) { announce("Missing study id"); return; }
 
-	// Decide create vs update
-	var id = window.__openGuideId;
-	var method = id ? "PATCH" : "POST";
-	var url = id ? ("/api/guides/" + encodeURIComponent(id)) : "/api/guides";
-
-	if (!id && !studyId) {
-		announce("Save blocked: missing study id in context.");
-		const out = document.getElementById("debug-output");
-		if (out) {
-			out.textContent = (out.textContent || "") +
-				"\nSave blocked — no studyId in __guideCtx.\n__guideCtx:\n" +
-				JSON.stringify(window.__guideCtx || {}, null, 2);
-		}
-		return;
+	let url, method;
+	if (window.__openGuideId) {
+		// Update existing
+		url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(window.__openGuideId)}`;
+		method = "PATCH";
+	} else {
+		// Create new
+		url = `/api/studies/${encodeURIComponent(sid)}/guides`;
+		method = "POST";
 	}
-	// Build payload
-	var body =
-		id ?
-		{ title: title, sourceMarkdown: source, variables: variables } // update
-		:
-		{
-			title: title,
-			sourceMarkdown: source,
-			variables: variables,
-			// 👇 include linkage on create
-			studyId: studyId, // most likely expected key
-			projectId: projectId // harmless if ignored; useful if required
-		};
 
-	try {
-		const res = await fetch(url, {
-			method: method,
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(body)
-		});
+	const res = await fetch(url, {
+		method,
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify(body)
+	});
 
-		if (!res.ok) {
-			// Try to surface the server’s message
-			let msg = "Save failed";
-			try {
-				const err = await res.json();
-				if (err && (err.error || err.message)) msg = "Save failed: " + (err.error || err.message);
-			} catch (_) {
-				msg = "Save failed (HTTP " + res.status + ")";
-			}
-			announce(msg);
-			// Optional: also print into the debug panel if visible
-			const out = document.getElementById("debug-output");
-			if (out) out.textContent = (out.textContent || "") + "\n" + msg + "\nPayload:\n" + JSON.stringify(body, null, 2);
-			return;
-		}
-
-		// Success
-		announce("Guide saved");
-
-		// If this was a create, capture the new guide id so future saves PATCH
+	if (res.ok) {
+		// If creation returned the new id, store it so Publish works immediately.
 		try {
-			const saved = await res.json();
-			if (!id && saved && (saved.id || saved.guideId)) {
-				window.__openGuideId = saved.id || saved.guideId;
-			}
-		} catch (_) {}
-
-		// Refresh list
-		var study = (window.__guideCtx && window.__guideCtx.study) || {};
-		loadGuides(study.id);
-	} catch (err) {
-		announce("Save failed: " + String(err));
-		const out = document.getElementById("debug-output");
-		if (out) out.textContent = (out.textContent || "") + "\nSave failed exception:\n" + String(err);
+			const js = await res.json();
+			if (js && js.id) window.__openGuideId = js.id;
+		} catch {}
+		announce("Guide saved");
+		loadGuides(sid);
+	} else {
+		const text = await res.text().catch(() => "");
+		announce(`Save failed: ${res.status} ${text || ""}`.trim());
 	}
 }
 
 async function onPublish() {
-	var id = window.__openGuideId;
-	var titleEl = $("#guide-title");
-	var title = titleEl && titleEl.value ? titleEl.value.trim() : "";
-	if (!id) { announce("Save the guide before publishing."); return; }
-	const res = await fetch("/api/guides/" + encodeURIComponent(id) + "/publish", { method: "POST" });
+	const id = window.__openGuideId;
+	const sid = window.__guideCtx?.study?.id;
+	const title = ($("#guide-title")?.value || "").trim();
+	if (!id || !sid) { announce("Save the guide before publishing."); return; }
+
+	const url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(id)}/publish`;
+	const res = await fetch(url, { method: "POST" });
+
 	if (res.ok) {
-		var statusEl = $("#guide-status");
-		if (statusEl) statusEl.textContent = "published";
-		announce('Published “' + (title || "Untitled") + '”');
-		var study = (window.__guideCtx && window.__guideCtx.study) || {};
-		loadGuides(study.id);
+		$("#guide-status").textContent = "published";
+		announce(`Published “${title || "Untitled"}”`);
+		loadGuides(sid);
 	} else {
-		announce("Publish failed");
+		const msg = await res.text().catch(() => "");
+		announce(`Publish failed: ${res.status} ${msg || ""}`.trim());
 	}
 }
 
