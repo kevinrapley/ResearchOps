@@ -346,21 +346,19 @@ async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
 	const source = $("#guide-source")?.value || "";
 	const fm = readFrontMatter(source);
-	const body = { title, sourceMarkdown: source, variables: fm.meta || {} };
+	const meta = (fm && fm.meta) || {};
 
-	const sid = window.__guideCtx?.study?.id;
-	if (!sid) { announce("Missing study id"); return; }
+	const isNew = !window.__openGuideId;
+	const studyId = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
 
-	let url, method;
-	if (window.__openGuideId) {
-		// Update existing
-		url = `/api/studies/${encodeURIComponent(sid)}/guides/${encodeURIComponent(window.__openGuideId)}`;
-		method = "PATCH";
-	} else {
-		// Create new
-		url = `/api/studies/${encodeURIComponent(sid)}/guides`;
-		method = "POST";
-	}
+	const body = isNew
+		? { study_airtable_id: studyId, title, sourceMarkdown: source, variables: meta, status: "draft", version: 1 }
+		: { title, sourceMarkdown: source, variables: meta };
+
+	const method = isNew ? "POST" : "PATCH";
+	const url = isNew ?
+		`/api/guides` :
+		`/api/guides/${encodeURIComponent(window.__openGuideId)}`;
 
 	const res = await fetch(url, {
 		method,
@@ -369,16 +367,17 @@ async function onSave() {
 	});
 
 	if (res.ok) {
-		// If creation returned the new id, store it so Publish works immediately.
-		try {
-			const js = await res.json();
+		// If we just created, remember the new record id for subsequent PATCHes
+		if (isNew) {
+			const js = await res.json().catch(() => ({}));
 			if (js && js.id) window.__openGuideId = js.id;
-		} catch {}
+		}
 		announce("Guide saved");
-		loadGuides(sid);
+		loadGuides(((window.__guideCtx || {}).study || {}).id);
 	} else {
-		const text = await res.text().catch(() => "");
-		announce(`Save failed: ${res.status} ${text || ""}`.trim());
+		let detail = "";
+		try { detail = await res.text(); } catch {}
+		announce(`Save failed: ${res.status} ${detail || ""}`.trim());
 	}
 }
 
