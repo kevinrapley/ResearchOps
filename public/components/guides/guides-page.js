@@ -580,26 +580,9 @@ function toLabel(v) {
 
 /** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
 function ensureProjectName(p) {
-	if (!p) p = {};
-	// Unwrap common “{ project: {…} }” envelope
-	var base = (p && p.project) ? p.project : p;
-	// Airtable “fields” (some APIs use Fields)
-	var f = (base && (base.fields || base.Fields)) ? (base.fields || base.Fields) : null;
-
-	// Try the most likely candidates in a broad sweep.
-	var name =
-		// direct on record
-		toLabel(base.name) || toLabel(base.Name) || toLabel(base.Project) || toLabel(base.ProjectName) || toLabel(base.project_name) ||
-		// inside fields
-		toLabel(f && (f.name)) || toLabel(f && (f.Name)) || toLabel(f && (f.Project)) || toLabel(f && (f.ProjectName)) ||
-		// plural/collection fallbacks sometimes used by “Projects” table exports
-		toLabel(base.Projects) || toLabel(f && (f.Projects)) ||
-		// super broad last-ditch: any “Project” property if present
-		toLabel(base["Project"]) || toLabel(f && f["Project"]);
-
-	if (!name) name = "(Unnamed project)";
-	base.name = name;
-	return base;
+	if (!p || typeof p !== "object") return { name: "(Unnamed project)" };
+	const name = (p.name || p.Name || "").toString().trim();
+	return { ...p, name: name || "(Unnamed project)" };
 }
 
 /**
@@ -658,73 +641,39 @@ async function resolveProject(pid, sid) {
 	return { id: pid, name: "(Unnamed project)" };
 }
 
-/* ──────────────────────────────────────────────────────────────
- * UI DEBUG PANEL — list endpoints version
- * Shows: /api/projects (list) and /api/studies?project=:pid
- * ────────────────────────────────────────────────────────────── */
-(function initApiDebugPanelList() {
+// ─────────────────────────────
+// Debug instrumentation (toggleable)
+// ─────────────────────────────
+(async () => {
+	const params = new URLSearchParams(location.search);
+	const isDebug = /^(1|true|yes)$/i.test(params.get("debug") || "");
+	const panel = document.getElementById("debug-panel");
+	const out = document.getElementById("debug-output");
+
+	if (!isDebug) return; // ← only runs when ?debug=1 or ?debug=true
+
+	if (panel) panel.hidden = false;
+	if (out) out.textContent = "Fetching API data…";
+
 	try {
-		const params = new URLSearchParams(location.search);
 		const pid = params.get("pid");
-		if (!pid) return;
+		const sid = params.get("sid");
 
-		const host =
-			document.querySelector(".actions-bar") ||
-			document.querySelector("main") ||
-			document.body;
+		const [projRes, studyRes] = await Promise.all([
+			fetch("/api/projects?cache=no-store").then(r => r.json()).catch(() => ({})),
+			fetch(`/api/studies?project=${encodeURIComponent(pid)}`).then(r => r.json()).catch(() => ({}))
+		]);
 
-		const wrap = document.createElement("section");
-		wrap.id = "api-debug-panel-list";
-		wrap.style.margin = "16px 0";
-		wrap.innerHTML = `
-      <details id="api-debug-details-list" style="border:1px solid #ddd; border-radius:6px; padding:8px; background:#fafafa;">
-        <summary style="cursor:pointer; font-weight:600;">API Debug (projects list + studies?project=…)</summary>
-        <div style="margin-top:8px; display:flex; gap:12px; flex-wrap:wrap;">
-          <button id="api-debug-refresh-list" class="btn btn--outline" type="button">Refresh</button>
-          <a id="api-debug-download-list" class="btn btn--secondary" href="#" download="debug-api-list.json">Download JSON</a>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
-          <div>
-            <h4 style="margin:4px 0;">/api/projects</h4>
-            <pre id="dbg-projects" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
-          </div>
-          <div>
-            <h4 style="margin:4px 0;">/api/studies?project=<code>${pid}</code></h4>
-            <pre id="dbg-studies-list" style="white-space:pre-wrap; font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px; background:#fff; border:1px solid #eee; border-radius:4px; max-height:40vh; overflow:auto;">(loading…)</pre>
-          </div>
-        </div>
-      </details>
-    `;
-		host.prepend(wrap);
+		const payload = {
+			params: { pid, sid },
+			projectList: projRes,
+			studyList: studyRes
+		};
 
-		async function refresh() {
-			const [projectsRes, studiesRes] = await Promise.allSettled([
-				fetch("/api/projects", { cache: "no-store" }).then(r => r.json()),
-				fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" }).then(r => r.json())
-			]);
-			const projects = projectsRes.status === "fulfilled" ? projectsRes.value : { error: String(projectsRes.reason || "fetch failed") };
-			const studies = studiesRes.status === "fulfilled" ? studiesRes.value : { error: String(studiesRes.reason || "fetch failed") };
-
-			const preP = document.getElementById("dbg-projects");
-			const preS = document.getElementById("dbg-studies-list");
-			if (preP) preP.textContent = JSON.stringify(projects, null, 2);
-			if (preS) preS.textContent = JSON.stringify(studies, null, 2);
-
-			const payload = { projects, studies };
-			const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-			const url = URL.createObjectURL(blob);
-			const dl = document.getElementById("api-debug-download-list");
-			if (dl) dl.href = url;
-		}
-
-		document.getElementById("api-debug-refresh-list").addEventListener("click", refresh);
-
-		if (params.get("debug") === "1") {
-			document.getElementById("api-debug-details-list").setAttribute("open", "true");
-		}
-
-		refresh();
-	} catch (e) { /* non-fatal */ }
+		if (out) out.textContent = JSON.stringify(payload, null, 2);
+	} catch (err) {
+		if (out) out.textContent = "Debug fetch failed:\n" + String(err);
+	}
 })();
 
 function runLints(args) {
