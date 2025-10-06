@@ -80,6 +80,37 @@ function typographize(md) {
 	return md;
 }
 
+// Make `_emphasis_` robust (without breaking `*emphasis*`)
+if (!globalThis.__underscoreEmExtApplied) {
+	marked.use({
+		extensions: [{
+			name: 'underscore-em',
+			level: 'inline',
+			start(src) { return src.indexOf('_'); }, // quick hint for tokenizer
+			tokenizer(src) {
+				// Match single-underscore italics:
+				//  - `_..._`
+				//  - not `__...__`
+				//  - avoid code spans/backticks
+				//  - allow escaping as `\_` inside
+				const m = /^_((?:\\_|[^`_])+?)_(?!_)/.exec(src);
+				if (m) {
+					return {
+						type: 'underscoreEm',
+						raw: m[0],
+						text: m[1].replace(/\\_/g, '_')
+					};
+				}
+				return undefined;
+			},
+			renderer(tok) {
+				return '<em>' + tok.text + '</em>';
+			}
+		}]
+	});
+	globalThis.__underscoreEmExtApplied = true;
+}
+
 /**
  * Render a guide: Mustache over Markdown body, then marked → DOMPurify.
  *
@@ -126,8 +157,8 @@ export async function renderGuide({ source, context, partials }) {
 
 		// Nicer list handling (e.g., auto-detect ordered vs unordered)
 		smartLists: true,
-		
-		  // Makes _underscore_ emphasis behave more like classic Markdown
+
+		// Makes _underscore_ emphasis behave more like classic Markdown
 		pedantic: true
 	});
 
