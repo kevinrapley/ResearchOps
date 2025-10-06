@@ -941,591 +941,280 @@ class ResearchOpsService {
 
 	/* --------------------- Guides (Discussion Guides) -------------------- */
 
-	/**
-	 * List guides for a study.
-	 * @route GET /api/guides?study=<StudyAirtableId>
-	 * @returns { ok:boolean, guides:Array }
-	 */
-	async listGuides(origin, url) {
-		const studyId = url.searchParams.get("study");
-		if (!studyId) {
-			return this.json({ ok: false, error: "Missing study query" }, 400, this.corsHeaders(origin));
+	/** Publish: POST /api/guides/:id/publish */
+	{
+		const m = url.pathname.match(/^\/api\/guides\/([^/]+)\/publish\/?$/);
+		if (request.method === "POST" && m) {
+			const guideId = decodeURIComponent(m[1]);
+			return service.publishGuide(origin, guideId);
 		}
+	}
 
-		const base = this.env.AIRTABLE_BASE_ID;
-		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES || "Discussion Guides");
-		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
-		const atUrl = atBase;
-		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+	/** Read one: GET /api/guides/:id */
+	{
+		const m = url.pathname.match(/^\/api\/guides\/([^/]+)\/?$/);
+		if (request.method === "GET" && m) {
+			const guideId = decodeURIComponent(m[1]);
+			return service.readGuide(origin, guideId);
+		}
+	}
 
-		const records = [];
-		let offset;
-		do {
-			const params = new URLSearchParams({ pageSize: "100" });
-			if (offset) params.set("offset", offset);
-			const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
-			const txt = await resp.text();
+	/** Update one: PATCH /api/guides/:id */
+	{
+		const m = url.pathname.match(/^\/api\/guides\/([^/]+)\/?$/);
+		if (request.method === "PATCH" && m) {
+			const guideId = decodeURIComponent(m[1]);
+			return service.updateGuide(request, origin, guideId);
+		}
+	}
 
-			if (!resp.ok) {
-				this.log.error("airtable.guides.list.fail", { status: resp.status, text: safeText(txt) });
-				return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status, this.corsHeaders(origin));
-			}
+	/** Create: POST /api/guides */
+	if (url.pathname === "/api/guides" && request.method === "POST") {
+		return service.createGuide(request, origin);
+	}
 
-			let js;
-			try { js = JSON.parse(txt); } catch { js = { records: [] }; }
-			records.push(...(js.records || []));
-			offset = js.offset;
-		} while (offset);
+	/** List for study: GET /api/guides?study=... */
+	if (url.pathname === "/api/guides" && request.method === "GET") {
+		return service.listGuides(origin, url);
+	}
 
-		// Find which field holds the link array (first candidate that exists and is an array)
-		const guides = [];
-		for (const r of records) {
-			const f = r.fields || {};
-			const linkKey = pickFirstField(f, GUIDE_LINK_FIELD_CANDIDATES);
-			const linkArr = linkKey ? f[linkKey] : undefined;
-			if (Array.isArray(linkArr) && linkArr.includes(studyId)) {
-				const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
-				const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
-				const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
-				const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
-				const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
+	/* =========================
+	 * @section Worker entrypoint
+	 * ========================= */
 
-				guides.push({
-					id: r.id,
-					title: titleKey ? f[titleKey] : "",
-					status: statusKey ? f[statusKey] : "draft",
-					version: verKey ? f[verKey] : 1,
-					sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
-					variables: (() => { try { return JSON.parse(f[varsKey] || "{}"); } catch { return {}; } })(),
-					createdAt: r.createdTime || ""
+	/**
+	 * Default export: Cloudflare Worker `fetch` handler.
+	 */
+	export default {
+		async fetch(request, env, ctx) {
+			const service = new ResearchOpsService(env);
+			const url = new URL(request.url);
+			const origin = request.headers.get("Origin") || "";
+
+			try {
+				// API routes
+				if (url.pathname.startsWith("/api/")) {
+					// CORS preflight
+					if (request.method === "OPTIONS") {
+						return new Response(null, { headers: service.corsHeaders(origin) });
+					}
+
+					// Enforce ALLOWED_ORIGINS for API calls
+					const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+					if (origin && !allowed.includes(origin)) {
+						return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
+					}
+
+					// Route map
+					/**
+					 * Health check.
+					 * @route GET /api/health
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @output { ok:boolean, time:string }
+					 */
+					if (url.pathname === "/api/health") {
+						return service.health(origin);
+					}
+
+					/* -------------------- Projects -------------------- */
+					/**
+					 * List projects (Airtable; newest-first by record.createdTime).
+					 * @route GET /api/projects
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @query  { limit?:number, view?:string }
+					 * @output { ok:true, projects:Array<{id:string,name:string,description:string,createdAt:string,...}> }
+					 */
+					if (url.pathname === "/api/projects" && request.method === "GET") {
+						return service.listProjectsFromAirtable(origin, url);
+					}
+
+					/**
+					 * Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write).
+					 * @route POST /api/projects
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @input  { org?:string, name:string, description:string, phase?:string, status?:string, objectives?:string[], user_groups?:string[], stakeholders?:any[], id?:string, lead_researcher?:string, lead_researcher_email?:string, notes?:string }
+					 * @output { ok:true, project_id:string, detail_id?:string, csv_ok:boolean, csv_error?:string }
+					 */
+					if (url.pathname === "/api/projects" && request.method === "POST") {
+						return service.createProject(request, origin);
+					}
+
+					/* --------------------- Studies -------------------- */
+					/**
+					 * List studies for a project (Airtable).
+					 * @route GET /api/studies
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @query  { project:string } – Airtable record id of the Project
+					 * @output { ok:true, studies:Array<{id:string,studyId:string,method:string,status:string,description:string,createdAt:string}> }
+					 */
+					if (url.pathname === "/api/studies" && request.method === "GET") {
+						return service.listStudies(origin, url);
+					}
+
+					/**
+					 * Create study (Airtable primary; best-effort GitHub CSV dual-write).
+					 * @route POST /api/studies
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @input  { project_airtable_id:string, method:string, description:string, status?:string, study_id?:string }
+					 * @output { ok:true, study_id:string, csv_ok:boolean, csv_error?:string }
+					 */
+					if (url.pathname === "/api/studies" && request.method === "POST") {
+						return service.createStudy(request, origin);
+					}
+
+					/**
+					 * Update study (partial; Airtable PATCH).
+					 * @route PATCH /api/studies/:id
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @param  {string} id – Airtable record id of the Study
+					 * @input  { description?:string, method?:string, status?:string, study_id?:string }
+					 * @output { ok:true }
+					 */
+					if (url.pathname.startsWith("/api/studies/") && request.method === "PATCH") {
+						const studyId = decodeURIComponent(url.pathname.slice("/api/studies/".length));
+						return service.updateStudy(request, origin, studyId);
+					}
+
+					/* ---------------------- AI assist ----------------- */
+					/**
+					 * AI assist (rule-guided rewrite).
+					 * @route POST /api/ai-rewrite
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @input  { text:string } – Step 1 Description (≥400 chars)
+					 * @output { summary:string, suggestions:Array<{category:string,tip:string,why:string,severity:"high"|"medium"|"low"}>, rewrite:string, flags:{possible_personal_data:boolean} }
+					 */
+					if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
+						return aiRewrite(request, env, origin);
+					}
+
+					/* --------------------- CSV streaming -------------- */
+					/**
+					 * Stream Projects CSV from GitHub (best-effort).
+					 * @route GET /api/projects.csv
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @output text/csv
+					 */
+					if (url.pathname === "/api/projects.csv" && request.method === "GET") {
+						return service.streamCsv(origin, env.GH_PATH_PROJECTS);
+					}
+
+					/**
+					 * Stream Project Details CSV from GitHub (best-effort).
+					 * @route GET /api/project-details.csv
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @output text/csv
+					 */
+					if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
+						return service.streamCsv(origin, env.GH_PATH_DETAILS);
+					}
+
+					/* --------------------- Guides -------------------- */
+					/**
+					 * List guides for a study.
+					 * @route GET /api/guides?study=<StudyRecordId>
+					 * @output { ok:true, guides:Array<...> }
+					 */
+					if (url.pathname === "/api/guides" && request.method === "GET") {
+						return service.listGuides(origin, url);
+					}
+
+					if (url.pathname === "/api/guides" && request.method === "POST") {
+						return service.createGuide(request, origin);
+					}
+
+					if (url.pathname.startsWith("/api/guides/") && request.method === "PATCH") {
+						const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
+						return service.updateGuide(request, origin, guideId);
+					}
+
+					/**
+					 * Publish a guide (status=published, version++).
+					 * Accepts: POST /api/guides/:id/publish  (trailing slash optional)
+					 * Returns: { ok:true, version:number, status:"published" }
+					 */
+					if (
+						request.method === "POST" &&
+						/^\/api\/guides\/[^/]+\/publish\/?$/.test(url.pathname)
+					) {
+						const parts = url.pathname.split("/"); // ["", "api", "guides", ":id", "publish"]
+						const guideId = decodeURIComponent(parts[3]);
+						return service.publishGuide(origin, guideId);
+					}
+
+					/**
+					 * Unknown API path.
+					 * @route * /api/**
+					 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+					 * @output { error:"Not found" }
+					 */
+					return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
+				}
+
+				// Static assets with SPA fallback
+				let resp = await env.ASSETS.fetch(request);
+				if (resp.status === 404) {
+					const indexReq = new Request(new URL("/index.html", url), request);
+					resp = await env.ASSETS.fetch(indexReq);
+				}
+				return resp;
+
+			} catch (e) {
+				service.log.error("unhandled.error", { err: String(e?.message || e) });
+				return new Response(JSON.stringify({ error: "Internal error" }), {
+					status: 500,
+					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 				});
+			} finally {
+				service.destroy();
 			}
 		}
-
-		guides.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-		return this.json({ ok: true, guides }, 200, this.corsHeaders(origin));
-	}
-
-	/**
-	 * Create a guide for a study. Tries multiple link-field names until one works.
-	 * @route POST /api/guides
-	 * Body: { study_airtable_id, title?, status?, version?, sourceMarkdown?, variables? }
-	 */
-	async createGuide(request, origin) {
-		const body = await request.arrayBuffer();
-		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
-			this.log.warn("request.too_large", { size: body.byteLength });
-			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
-		}
-
-		/** @type {any} */
-		let p;
-		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
-
-		if (!p.study_airtable_id)
-			return this.json({ error: "Missing field: study_airtable_id" }, 400, this.corsHeaders(origin));
-
-		const base = this.env.AIRTABLE_BASE_ID;
-		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
-		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
-
-		// Build non-link fields (remember which Status key we used)
-		const fieldsTemplate = {};
-		const setIf = (names, val) => {
-			if (val === undefined || val === null) return null;
-			const k = names[0];
-			fieldsTemplate[k] = val;
-			return k;
-		};
-
-		setIf(GUIDE_FIELD_NAMES.title, String(p.title || "Untitled guide"));
-		const statusKey = setIf(GUIDE_FIELD_NAMES.status, String(p.status || "draft")); // <-- initial desired value
-		setIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : 1);
-		setIf(GUIDE_FIELD_NAMES.source, mdToAirtableRich(p.sourceMarkdown || ""));
-		setIf(GUIDE_FIELD_NAMES.variables, typeof p.variables === "object" ? JSON.stringify(p.variables || {}) : String(p.variables || "{}"));
-
-		// Try link field candidates; for each, retry if Status select rejects "draft"
-		let lastDetail = "";
-		for (const linkName of GUIDE_LINK_FIELD_CANDIDATES) {
-			// attempt 1: as-is
-			let fields = { ...fieldsTemplate, [linkName]: [p.study_airtable_id] };
-			let attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
-			if (attempt.ok) {
-				const id = attempt.json.records?.[0]?.id;
-				if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
-				if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "none" });
-				return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
-			}
-			lastDetail = attempt.detail || lastDetail;
-
-			// If the problem is an invalid select option on Status, retry smartly
-			const is422 = attempt.status === 422;
-			const isSelectErr = /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(String(attempt.detail || ""));
-			if (is422 && isSelectErr && statusKey && typeof fields[statusKey] === "string") {
-				// attempt 2: capitalise (draft -> Draft)
-				const cap = fields[statusKey].charAt(0).toUpperCase() + fields[statusKey].slice(1);
-				fields = { ...fields, [statusKey]: cap };
-				attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
-				if (attempt.ok) {
-					const id = attempt.json.records?.[0]?.id;
-					if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
-					if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "capitalised" });
-					return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
-				}
-
-				// attempt 3: drop Status (let Airtable default or leave empty)
-				const {
-					[statusKey]: _drop, ...withoutStatus
-				} = fields;
-				attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", withoutStatus, this.cfg.TIMEOUT_MS);
-				if (attempt.ok) {
-					const id = attempt.json.records?.[0]?.id;
-					if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
-					if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "omitted" });
-					return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
-				}
-				lastDetail = attempt.detail || lastDetail;
-			}
-
-			// If UNKNOWN_FIELD_NAME for the link field, the caller loop continues to next candidate.
-			if (!attempt.retry) {
-				this.log.error("airtable.guide.create.fail", { status: attempt.status, detail: attempt.detail });
-				return this.json({ error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, this.corsHeaders(origin));
-			}
-		}
-
-		// No link field matched
-		this.log.error("airtable.guide.create.linkfield.none_matched", { detail: lastDetail });
-		return this.json({
-			error: "Airtable 422",
-			detail: lastDetail || "No matching link field name found for the Guides↔Study relation. Add a link-to-record field to your Discussion Guides table that links to Project Studies. Try: " + GUIDE_LINK_FIELD_CANDIDATES.join(", ")
-		}, 422, this.corsHeaders(origin));
-	}
-
-	/**
-	 * Update a guide (partial).
-	 * @route PATCH /api/guides/:id
-	 */
-	async updateGuide(request, origin, guideId) {
-		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
-
-		const body = await request.arrayBuffer();
-		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
-			this.log.warn("request.too_large", { size: body.byteLength });
-			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
-		}
-
-		/** @type {any} */
-		let p;
-		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
-
-		// Map incoming keys to preferred Airtable field names
-		const f = {};
-		const putIf = (names, val) => {
-			if (val === undefined) return null;
-			const key = names[0];
-			f[key] = val;
-			return key;
-		};
-
-		putIf(GUIDE_FIELD_NAMES.title, typeof p.title === "string" ? p.title : undefined);
-		const statusKey = putIf(GUIDE_FIELD_NAMES.status, typeof p.status === "string" ? p.status : undefined);
-		putIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : undefined);
-		putIf(GUIDE_FIELD_NAMES.source, typeof p.sourceMarkdown === "string" ? mdToAirtableRich(p.sourceMarkdown) : undefined);
-		putIf(GUIDE_FIELD_NAMES.variables, p.variables != null ? JSON.stringify(p.variables) : undefined);
-
-		if (Object.keys(f).length === 0) {
-			return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
-		}
-
-		const base = this.env.AIRTABLE_BASE_ID;
-		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
-		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
-
-		// try once
-		let res = await fetchWithTimeout(atUrl, {
-			method: "PATCH",
-			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
-			body: JSON.stringify({ records: [{ id: guideId, fields: f }] })
-		}, this.cfg.TIMEOUT_MS);
-
-		let text = await res.text();
-		if (res.ok) return this.json({ ok: true }, 200, this.corsHeaders(origin));
-
-		// If status is invalid select option, retry with capitalised or omit
-		const isSelectErr = /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(text);
-		if (res.status === 422 && isSelectErr && statusKey && typeof f[statusKey] === "string") {
-			// 2nd attempt: capitalised
-			const f2 = { ...f, [statusKey]: f[statusKey].charAt(0).toUpperCase() + f[statusKey].slice(1) };
-			res = await fetchWithTimeout(atUrl, {
-				method: "PATCH",
-				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
-				body: JSON.stringify({ records: [{ id: guideId, fields: f2 }] })
-			}, this.cfg.TIMEOUT_MS);
-			text = await res.text();
-			if (res.ok) return this.json({ ok: true, status_fallback: "capitalised" }, 200, this.corsHeaders(origin));
-
-			// 3rd attempt: omit Status
-			const {
-				[statusKey]: _drop, ...f3
-			} = f2;
-			res = await fetchWithTimeout(atUrl, {
-				method: "PATCH",
-				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
-				body: JSON.stringify({ records: [{ id: guideId, fields: f3 }] })
-			}, this.cfg.TIMEOUT_MS);
-			text = await res.text();
-			if (res.ok) return this.json({ ok: true, status_fallback: "omitted" }, 200, this.corsHeaders(origin));
-		}
-
-		this.log.error("airtable.guide.update.fail", { status: res.status, text: safeText(text) });
-		return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
-	}
-
-	/**
-	 * Publish a guide: set Status="published" and increment Version.
-	 * Uses flexible field names defined in GUIDE_FIELD_NAMES.
-	 * @returns {Response}
-	 */
-	async publishGuide(origin, guideId) {
-		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
-
-		const base = this.env.AIRTABLE_BASE_ID;
-		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
-		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
-		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
-
-		// Read current record (to find actual keys + version)
-		const getUrl = `${atBase}?pageSize=1&filterByFormula=${encodeURIComponent(`RECORD_ID()="${guideId}"`)}`;
-		const getRes = await fetchWithTimeout(getUrl, { headers }, this.cfg.TIMEOUT_MS);
-		const getText = await getRes.text();
-		if (!getRes.ok) {
-			this.log.error("airtable.guide.read.fail", { status: getRes.status, text: safeText(getText) });
-			return this.json({ error: `Airtable ${getRes.status}`, detail: safeText(getText) }, getRes.status, this.corsHeaders(origin));
-		}
-		/** @type {{records?: Array<{id:string,fields?:Record<string,any>}>}} */
-		let js;
-		try { js = JSON.parse(getText); } catch { js = { records: [] }; }
-		const rec = js.records?.[0];
-		const f = rec?.fields || {};
-
-		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status) || GUIDE_FIELD_NAMES.status[0];
-		const versionKey = pickFirstField(f, GUIDE_FIELD_NAMES.version) || GUIDE_FIELD_NAMES.version[0];
-
-		const cur = Number.isFinite(f[versionKey]) ? Number(f[versionKey]) : parseInt(f[versionKey], 10);
-		const nextVer = Number.isFinite(cur) ? cur + 1 : 1;
-
-		const tryPatch = async (statusValue, note) => {
-			const fields = statusValue != null ? {
-				[statusKey]: statusValue,
-				[versionKey]: nextVer
-			} : {
-				[versionKey]: nextVer
-			};
-			const res = await fetchWithTimeout(atBase, {
-				method: "PATCH",
-				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
-				body: JSON.stringify({ records: [{ id: guideId, fields }] })
-			}, this.cfg.TIMEOUT_MS);
-			const txt = await res.text();
-			return { ok: res.ok, status: res.status, txt: safeText(txt), note };
-		};
-
-		// 1) 'published'
-		let r = await tryPatch("published", "lowercase");
-		if (r.ok) return this.json({ ok: true, version: nextVer, status: "published" }, 200, this.corsHeaders(origin));
-
-		// If select error, try 'Published'
-		const selectErr = r.status === 422 && /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(r.txt);
-		if (selectErr) {
-			r = await tryPatch("Published", "capitalised");
-			if (r.ok) return this.json({ ok: true, version: nextVer, status: "Published", status_fallback: "capitalised" }, 200, this.corsHeaders(origin));
-
-			// final fallback: bump version only
-			r = await tryPatch(null, "omit-status");
-			if (r.ok) return this.json({ ok: true, version: nextVer, status: f[statusKey] || undefined, status_fallback: "omitted" }, 200, this.corsHeaders(origin));
-		}
-
-		this.log.error("airtable.guide.publish.fail", { status: r.status, text: r.txt });
-		return this.json({ error: `Airtable ${r.status}`, detail: r.txt }, r.status || 500, this.corsHeaders(origin));
-	}
-
-	async readGuide(origin, guideId) {
-		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
-
-		const base = this.env.AIRTABLE_BASE_ID;
-		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
-		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}/${encodeURIComponent(guideId)}`;
-
-		const res = await fetchWithTimeout(atUrl, { headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` } }, this.cfg.TIMEOUT_MS);
-		const txt = await res.text();
-		if (!res.ok) {
-			this.log.error("airtable.guide.read.fail", { status: res.status, text: safeText(txt) });
-			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
-		}
-
-		let js;
-		try { js = JSON.parse(txt); } catch { js = {}; }
-		const f = js.fields || {};
-
-		// reuse your field-candidate logic
-		const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
-		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
-		const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
-		const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
-		const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
-
-		const guide = {
-			id: js.id,
-			title: titleKey ? f[titleKey] : "",
-			status: statusKey ? f[statusKey] : "draft",
-			version: verKey ? f[verKey] : 1,
-			sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
-			variables: (() => { try { return JSON.parse(f[varsKey] || "{}"); } catch { return {}; } })(),
-			createdAt: js.createdTime || ""
-		};
-
-		return this.json({ ok: true, guide }, 200, this.corsHeaders(origin));
-	}
-}
-
-/* =========================
- * @section Worker entrypoint
- * ========================= */
-
-/**
- * Default export: Cloudflare Worker `fetch` handler.
- */
-export default {
-	async fetch(request, env, ctx) {
-		const service = new ResearchOpsService(env);
-		const url = new URL(request.url);
-		const origin = request.headers.get("Origin") || "";
-
-		try {
-			// API routes
-			if (url.pathname.startsWith("/api/")) {
-				// CORS preflight
-				if (request.method === "OPTIONS") {
-					return new Response(null, { headers: service.corsHeaders(origin) });
-				}
-
-				// Enforce ALLOWED_ORIGINS for API calls
-				const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
-				if (origin && !allowed.includes(origin)) {
-					return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
-				}
-
-				// Route map
-				/**
-				 * Health check.
-				 * @route GET /api/health
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @output { ok:boolean, time:string }
-				 */
-				if (url.pathname === "/api/health") {
-					return service.health(origin);
-				}
-
-				/* -------------------- Projects -------------------- */
-				/**
-				 * List projects (Airtable; newest-first by record.createdTime).
-				 * @route GET /api/projects
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @query  { limit?:number, view?:string }
-				 * @output { ok:true, projects:Array<{id:string,name:string,description:string,createdAt:string,...}> }
-				 */
-				if (url.pathname === "/api/projects" && request.method === "GET") {
-					return service.listProjectsFromAirtable(origin, url);
-				}
-
-				/**
-				 * Create project (Airtable primary + optional Details; best-effort GitHub CSV dual-write).
-				 * @route POST /api/projects
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @input  { org?:string, name:string, description:string, phase?:string, status?:string, objectives?:string[], user_groups?:string[], stakeholders?:any[], id?:string, lead_researcher?:string, lead_researcher_email?:string, notes?:string }
-				 * @output { ok:true, project_id:string, detail_id?:string, csv_ok:boolean, csv_error?:string }
-				 */
-				if (url.pathname === "/api/projects" && request.method === "POST") {
-					return service.createProject(request, origin);
-				}
-
-				/* --------------------- Studies -------------------- */
-				/**
-				 * List studies for a project (Airtable).
-				 * @route GET /api/studies
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @query  { project:string } – Airtable record id of the Project
-				 * @output { ok:true, studies:Array<{id:string,studyId:string,method:string,status:string,description:string,createdAt:string}> }
-				 */
-				if (url.pathname === "/api/studies" && request.method === "GET") {
-					return service.listStudies(origin, url);
-				}
-
-				/**
-				 * Create study (Airtable primary; best-effort GitHub CSV dual-write).
-				 * @route POST /api/studies
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @input  { project_airtable_id:string, method:string, description:string, status?:string, study_id?:string }
-				 * @output { ok:true, study_id:string, csv_ok:boolean, csv_error?:string }
-				 */
-				if (url.pathname === "/api/studies" && request.method === "POST") {
-					return service.createStudy(request, origin);
-				}
-
-				/**
-				 * Update study (partial; Airtable PATCH).
-				 * @route PATCH /api/studies/:id
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @param  {string} id – Airtable record id of the Study
-				 * @input  { description?:string, method?:string, status?:string, study_id?:string }
-				 * @output { ok:true }
-				 */
-				if (url.pathname.startsWith("/api/studies/") && request.method === "PATCH") {
-					const studyId = decodeURIComponent(url.pathname.slice("/api/studies/".length));
-					return service.updateStudy(request, origin, studyId);
-				}
-
-				/* ---------------------- AI assist ----------------- */
-				/**
-				 * AI assist (rule-guided rewrite).
-				 * @route POST /api/ai-rewrite
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @input  { text:string } – Step 1 Description (≥400 chars)
-				 * @output { summary:string, suggestions:Array<{category:string,tip:string,why:string,severity:"high"|"medium"|"low"}>, rewrite:string, flags:{possible_personal_data:boolean} }
-				 */
-				if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
-					return aiRewrite(request, env, origin);
-				}
-
-				/* --------------------- CSV streaming -------------- */
-				/**
-				 * Stream Projects CSV from GitHub (best-effort).
-				 * @route GET /api/projects.csv
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @output text/csv
-				 */
-				if (url.pathname === "/api/projects.csv" && request.method === "GET") {
-					return service.streamCsv(origin, env.GH_PATH_PROJECTS);
-				}
-
-				/**
-				 * Stream Project Details CSV from GitHub (best-effort).
-				 * @route GET /api/project-details.csv
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @output text/csv
-				 */
-				if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
-					return service.streamCsv(origin, env.GH_PATH_DETAILS);
-				}
-
-				/* --------------------- Guides -------------------- */
-				/**
-				 * List guides for a study.
-				 * @route GET /api/guides?study=<StudyRecordId>
-				 * @output { ok:true, guides:Array<...> }
-				 */
-				if (url.pathname === "/api/guides" && request.method === "GET") {
-					return service.listGuides(origin, url);
-				}
-
-				if (url.pathname === "/api/guides" && request.method === "POST") {
-					return service.createGuide(request, origin);
-				}
-
-				if (url.pathname.startsWith("/api/guides/") && request.method === "PATCH") {
-					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
-					return service.updateGuide(request, origin, guideId);
-				}
-
-				/**
-				 * Publish a guide (status=published, version++).
-				 * Accepts: POST /api/guides/:id/publish  (trailing slash optional)
-				 * Returns: { ok:true, version:number, status:"published" }
-				 */
-				if (
-					request.method === "POST" &&
-					/^\/api\/guides\/[^/]+\/publish\/?$/.test(url.pathname)
-				) {
-					const parts = url.pathname.split("/"); // ["", "api", "guides", ":id", "publish"]
-					const guideId = decodeURIComponent(parts[3]);
-					return service.publishGuide(origin, guideId);
-				}
-
-				/**
-				 * Unknown API path.
-				 * @route * /api/**
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @output { error:"Not found" }
-				 */
-				return service.json({ error: "Not found" }, 404, service.corsHeaders(origin));
-			}
-
-			// Static assets with SPA fallback
-			let resp = await env.ASSETS.fetch(request);
-			if (resp.status === 404) {
-				const indexReq = new Request(new URL("/index.html", url), request);
-				resp = await env.ASSETS.fetch(indexReq);
-			}
-			return resp;
-
-		} catch (e) {
-			service.log.error("unhandled.error", { err: String(e?.message || e) });
-			return new Response(JSON.stringify({ error: "Internal error" }), {
-				status: 500,
-				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-			});
-		} finally {
-			service.destroy();
-		}
-	}
-};
-
-/* =========================
- * @section Test utilities (named exports)
- * ========================= */
-
-/**
- * Create a minimal mock Env for unit tests.
- */
-export function createMockEnv(overrides = {}) {
-	return /** @type {Env} */ ({
-		ALLOWED_ORIGINS: "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev",
-		AUDIT: "false",
-		AIRTABLE_BASE_ID: "app_base",
-		AIRTABLE_TABLE_PROJECTS: "Projects",
-		AIRTABLE_TABLE_DETAILS: "Project Details",
-		AIRTABLE_TABLE_STUDIES: "Project Studies",
-		AIRTABLE_API_KEY: "key",
-		GH_OWNER: "owner",
-		GH_REPO: "repo",
-		GH_BRANCH: "main",
-		GH_PATH_PROJECTS: "data/projects.csv",
-		GH_PATH_DETAILS: "data/project-details.csv",
-		GH_PATH_STUDIES: "data/studies.csv",
-		GH_TOKEN: "gh",
-		ASSETS: { fetch: () => new Response("not-found", { status: 404 }) },
-		...overrides
-	});
-}
-
-/**
- * Build a JSON Request for tests.
- * @example
- * const req = makeJsonRequest("/api/projects", { name:"X", description:"Y" });
- */
-export function makeJsonRequest(path, body, init = {}) {
-	const reqInit = {
-		method: "POST",
-		headers: Object.assign({ "Content-Type": "application/json" },
-			init.headers || {}
-		),
-		body: JSON.stringify(body)
 	};
 
-	for (const k in init) {
-		if (k !== "headers") reqInit[k] = init[k];
+	/* =========================
+	 * @section Test utilities (named exports)
+	 * ========================= */
+
+	/**
+	 * Create a minimal mock Env for unit tests.
+	 */
+	export function createMockEnv(overrides = {}) {
+		return /** @type {Env} */ ({
+			ALLOWED_ORIGINS: "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev",
+			AUDIT: "false",
+			AIRTABLE_BASE_ID: "app_base",
+			AIRTABLE_TABLE_PROJECTS: "Projects",
+			AIRTABLE_TABLE_DETAILS: "Project Details",
+			AIRTABLE_TABLE_STUDIES: "Project Studies",
+			AIRTABLE_API_KEY: "key",
+			GH_OWNER: "owner",
+			GH_REPO: "repo",
+			GH_BRANCH: "main",
+			GH_PATH_PROJECTS: "data/projects.csv",
+			GH_PATH_DETAILS: "data/project-details.csv",
+			GH_PATH_STUDIES: "data/studies.csv",
+			GH_TOKEN: "gh",
+			ASSETS: { fetch: () => new Response("not-found", { status: 404 }) },
+			...overrides
+		});
 	}
 
-	return new Request(`https://example.test${path}`, reqInit);
-}
+	/**
+	 * Build a JSON Request for tests.
+	 * @example
+	 * const req = makeJsonRequest("/api/projects", { name:"X", description:"Y" });
+	 */
+	export function makeJsonRequest(path, body, init = {}) {
+		const reqInit = {
+			method: "POST",
+			headers: Object.assign({ "Content-Type": "application/json" },
+				init.headers || {}
+			),
+			body: JSON.stringify(body)
+		};
+
+		for (const k in init) {
+			if (k !== "headers") reqInit[k] = init[k];
+		}
+
+		return new Request(`https://example.test${path}`, reqInit);
+	}
