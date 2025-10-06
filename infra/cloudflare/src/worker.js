@@ -1021,48 +1021,79 @@ class ResearchOpsService {
 		/** @type {any} */
 		let p;
 		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
-		if (!p.study_airtable_id) return this.json({ error: "Missing field: study_airtable_id" }, 400, this.corsHeaders(origin));
+
+		if (!p.study_airtable_id)
+			return this.json({ error: "Missing field: study_airtable_id" }, 400, this.corsHeaders(origin));
 
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
 		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
 
-		// Build the non-link fields using best-effort field names
+		// Build non-link fields (remember which Status key we used)
 		const fieldsTemplate = {};
-		const setIf = (names, val) => {
-			if (val === undefined || val === null) return;
-			for (const n of names) { fieldsTemplate[n] = val; break; }
-		};
+		const setIf = (names, val) => { if (val === undefined || val === null) return null; const k = names[0];
+			fieldsTemplate[k] = val; return k; };
+
 		setIf(GUIDE_FIELD_NAMES.title, String(p.title || "Untitled guide"));
-		setIf(GUIDE_FIELD_NAMES.status, String(p.status || "draft"));
+		const statusKey = setIf(GUIDE_FIELD_NAMES.status, String(p.status || "draft")); // <-- initial desired value
 		setIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : 1);
 		setIf(GUIDE_FIELD_NAMES.source, mdToAirtableRich(p.sourceMarkdown || ""));
 		setIf(GUIDE_FIELD_NAMES.variables, typeof p.variables === "object" ? JSON.stringify(p.variables || {}) : String(p.variables || "{}"));
 
-		// Try link field candidates until one is accepted by Airtable
+		// Try link field candidates; for each, retry if Status select rejects "draft"
 		let lastDetail = "";
 		for (const linkName of GUIDE_LINK_FIELD_CANDIDATES) {
-			const fields = { ...fieldsTemplate, [linkName]: [p.study_airtable_id] };
-			const attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
+			// attempt 1: as-is
+			let fields = { ...fieldsTemplate, [linkName]: [p.study_airtable_id] };
+			let attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
 			if (attempt.ok) {
 				const id = attempt.json.records?.[0]?.id;
 				if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
-				if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName });
+				if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "none" });
 				return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
 			}
 			lastDetail = attempt.detail || lastDetail;
+
+			// If the problem is an invalid select option on Status, retry smartly
+			const is422 = attempt.status === 422;
+			const isSelectErr = /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(String(attempt.detail || ""));
+			if (is422 && isSelectErr && statusKey && typeof fields[statusKey] === "string") {
+				// attempt 2: capitalise (draft -> Draft)
+				const cap = fields[statusKey].charAt(0).toUpperCase() + fields[statusKey].slice(1);
+				fields = { ...fields, [statusKey]: cap };
+				attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", fields, this.cfg.TIMEOUT_MS);
+				if (attempt.ok) {
+					const id = attempt.json.records?.[0]?.id;
+					if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
+					if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "capitalised" });
+					return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+				}
+
+				// attempt 3: drop Status (let Airtable default or leave empty)
+				const {
+					[statusKey]: _drop, ...withoutStatus } = fields;
+				attempt = await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", withoutStatus, this.cfg.TIMEOUT_MS);
+				if (attempt.ok) {
+					const id = attempt.json.records?.[0]?.id;
+					if (!id) return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
+					if (this.env.AUDIT === "true") this.log.info("guide.created", { id, linkName, statusFallback: "omitted" });
+					return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+				}
+				lastDetail = attempt.detail || lastDetail;
+			}
+
+			// If UNKNOWN_FIELD_NAME for the link field, the caller loop continues to next candidate.
 			if (!attempt.retry) {
-				// Some other error; stop retrying
 				this.log.error("airtable.guide.create.fail", { status: attempt.status, detail: attempt.detail });
 				return this.json({ error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, this.corsHeaders(origin));
 			}
 		}
 
-		// If we’re here, every candidate produced UNKNOWN_FIELD_NAME
+		// No link field matched
 		this.log.error("airtable.guide.create.linkfield.none_matched", { detail: lastDetail });
 		return this.json({
 			error: "Airtable 422",
-			detail: lastDetail || "No matching link field name found for the Guides↔Study relation. Please add a link-to-record field to your Discussion Guides table that links to the Project Studies table. Suggested names: " + GUIDE_LINK_FIELD_CANDIDATES.join(", ")
+			detail: lastDetail || "No matching link field name found for the Guides↔Study relation. Add a link-to-record field to your Discussion Guides table that links to Project Studies. Try: " + GUIDE_LINK_FIELD_CANDIDATES.join(", ")
 		}, 422, this.corsHeaders(origin));
 	}
 
@@ -1083,15 +1114,13 @@ class ResearchOpsService {
 		let p;
 		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
 
-		// Map incoming keys to first matching Airtable field name
+		// Map incoming keys to preferred Airtable field names
 		const f = {};
-		const putIf = (names, val) => {
-			if (val === undefined) return;
-			const key = names[0]; // write to the first preferred name
-			if (key) f[key] = val;
-		};
+		const putIf = (names, val) => { if (val === undefined) return null; const key = names[0];
+			f[key] = val; return key; };
+
 		putIf(GUIDE_FIELD_NAMES.title, typeof p.title === "string" ? p.title : undefined);
-		putIf(GUIDE_FIELD_NAMES.status, typeof p.status === "string" ? p.status : undefined);
+		const statusKey = putIf(GUIDE_FIELD_NAMES.status, typeof p.status === "string" ? p.status : undefined);
 		putIf(GUIDE_FIELD_NAMES.version, Number.isFinite(p.version) ? p.version : undefined);
 		putIf(GUIDE_FIELD_NAMES.source, typeof p.sourceMarkdown === "string" ? mdToAirtableRich(p.sourceMarkdown) : undefined);
 		putIf(GUIDE_FIELD_NAMES.variables, p.variables != null ? JSON.stringify(p.variables) : undefined);
@@ -1104,23 +1133,43 @@ class ResearchOpsService {
 		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES);
 		const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}`;
 
-		const res = await fetchWithTimeout(atUrl, {
+		// try once
+		let res = await fetchWithTimeout(atUrl, {
 			method: "PATCH",
-			headers: {
-				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
-				"Content-Type": "application/json"
-			},
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
 			body: JSON.stringify({ records: [{ id: guideId, fields: f }] })
 		}, this.cfg.TIMEOUT_MS);
 
-		const text = await res.text();
-		if (!res.ok) {
-			this.log.error("airtable.guide.update.fail", { status: res.status, text: safeText(text) });
-			return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
+		let text = await res.text();
+		if (res.ok) return this.json({ ok: true }, 200, this.corsHeaders(origin));
+
+		// If status is invalid select option, retry with capitalised or omit
+		const isSelectErr = /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(text);
+		if (res.status === 422 && isSelectErr && statusKey && typeof f[statusKey] === "string") {
+			// 2nd attempt: capitalised
+			const f2 = { ...f, [statusKey]: f[statusKey].charAt(0).toUpperCase() + f[statusKey].slice(1) };
+			res = await fetchWithTimeout(atUrl, {
+				method: "PATCH",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ id: guideId, fields: f2 }] })
+			}, this.cfg.TIMEOUT_MS);
+			text = await res.text();
+			if (res.ok) return this.json({ ok: true, status_fallback: "capitalised" }, 200, this.corsHeaders(origin));
+
+			// 3rd attempt: omit Status
+			const {
+				[statusKey]: _drop, ...f3 } = f2;
+			res = await fetchWithTimeout(atUrl, {
+				method: "PATCH",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ id: guideId, fields: f3 }] })
+			}, this.cfg.TIMEOUT_MS);
+			text = await res.text();
+			if (res.ok) return this.json({ ok: true, status_fallback: "omitted" }, 200, this.corsHeaders(origin));
 		}
 
-		if (this.env.AUDIT === "true") this.log.info("guide.updated", { guideId });
-		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+		this.log.error("airtable.guide.update.fail", { status: res.status, text: safeText(text) });
+		return this.json({ error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, this.corsHeaders(origin));
 	}
 
 	/**
@@ -1136,7 +1185,7 @@ class ResearchOpsService {
 		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
 		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
 
-		// 1) Read current record to discover fields + current version
+		// Read current record (to find actual keys + version)
 		const getUrl = `${atBase}?pageSize=1&filterByFormula=${encodeURIComponent(`RECORD_ID()="${guideId}"`)}`;
 		const getRes = await fetchWithTimeout(getUrl, { headers }, this.cfg.TIMEOUT_MS);
 		const getText = await getRes.text();
@@ -1144,48 +1193,50 @@ class ResearchOpsService {
 			this.log.error("airtable.guide.read.fail", { status: getRes.status, text: safeText(getText) });
 			return this.json({ error: `Airtable ${getRes.status}`, detail: safeText(getText) }, getRes.status, this.corsHeaders(origin));
 		}
-
 		/** @type {{records?: Array<{id:string,fields?:Record<string,any>}>}} */
 		let js;
 		try { js = JSON.parse(getText); } catch { js = { records: [] }; }
-		const rec = js.records && js.records[0];
-		const f = (rec && rec.fields) || {};
+		const rec = js.records?.[0];
+		const f = rec?.fields || {};
 
-		// Determine actual field keys
-		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status) || GUIDE_FIELD_NAMES.status[0]; // write-safe default
-		const versionKey = pickFirstField(f, GUIDE_FIELD_NAMES.version) || GUIDE_FIELD_NAMES.version[0]; // write-safe default
+		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status) || GUIDE_FIELD_NAMES.status[0];
+		const versionKey = pickFirstField(f, GUIDE_FIELD_NAMES.version) || GUIDE_FIELD_NAMES.version[0];
 
-		// Current version → next
-		const currentVerRaw = f[versionKey];
-		const currentVer = Number.isFinite(currentVerRaw) ? Number(currentVerRaw) : parseInt(currentVerRaw, 10);
-		const nextVer = Number.isFinite(currentVer) ? currentVer + 1 : 1;
+		const cur = Number.isFinite(f[versionKey]) ? Number(f[versionKey]) : parseInt(f[versionKey], 10);
+		const nextVer = Number.isFinite(cur) ? cur + 1 : 1;
 
-		// 2) Patch status + version
-		const patchRes = await fetchWithTimeout(atBase, {
-			method: "PATCH",
-			headers: {
-				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				records: [{
-					id: guideId,
-					fields: {
-						[statusKey]: "published",
-						[versionKey]: nextVer
-					}
-				}]
-			})
-		}, this.cfg.TIMEOUT_MS);
+		const tryPatch = async (statusValue, note) => {
+			const fields = statusValue != null ?
+				{
+					[statusKey]: statusValue, [versionKey]: nextVer } :
+				{
+					[versionKey]: nextVer };
+			const res = await fetchWithTimeout(atBase, {
+				method: "PATCH",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ id: guideId, fields }] })
+			}, this.cfg.TIMEOUT_MS);
+			const txt = await res.text();
+			return { ok: res.ok, status: res.status, txt: safeText(txt), note };
+		};
 
-		const patchText = await patchRes.text();
-		if (!patchRes.ok) {
-			this.log.error("airtable.guide.publish.fail", { status: patchRes.status, text: safeText(patchText) });
-			return this.json({ error: `Airtable ${patchRes.status}`, detail: safeText(patchText) }, patchRes.status, this.corsHeaders(origin));
+		// 1) 'published'
+		let r = await tryPatch("published", "lowercase");
+		if (r.ok) return this.json({ ok: true, version: nextVer, status: "published" }, 200, this.corsHeaders(origin));
+
+		// If select error, try 'Published'
+		const selectErr = r.status === 422 && /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(r.txt);
+		if (selectErr) {
+			r = await tryPatch("Published", "capitalised");
+			if (r.ok) return this.json({ ok: true, version: nextVer, status: "Published", status_fallback: "capitalised" }, 200, this.corsHeaders(origin));
+
+			// final fallback: bump version only
+			r = await tryPatch(null, "omit-status");
+			if (r.ok) return this.json({ ok: true, version: nextVer, status: f[statusKey] || undefined, status_fallback: "omitted" }, 200, this.corsHeaders(origin));
 		}
 
-		if (this.env.AUDIT === "true") this.log.info("guide.published", { guideId, version: nextVer });
-		return this.json({ ok: true, version: nextVer, status: "published" }, 200, this.corsHeaders(origin));
+		this.log.error("airtable.guide.publish.fail", { status: r.status, text: r.txt });
+		return this.json({ error: `Airtable ${r.status}`, detail: r.txt }, r.status || 500, this.corsHeaders(origin));
 	}
 }
 
