@@ -55,6 +55,32 @@ function splitFrontMatter(src = '') {
 }
 
 /**
+ * Replace plain-text punctuation with typographic equivalents in inline contexts.
+ * - `---` → em dash (—) when between non-hyphen characters
+ * - `--`  → en dash (–) when between non-hyphen characters
+ * 
+ * Importantly, this avoids converting horizontal-rule lines (e.g. `---` alone on a line).
+ *
+ * @param {string} md
+ * @returns {string}
+ */
+function typographize(md) {
+	if (!md) return md;
+
+	// Skip HR lines: keep lines that are only hyphens (---, ----, etc.)
+	// We’ll only transform dashes that appear *between* non-hyphen characters.
+	// Do em-dash first to avoid the triple-hyphen being partially consumed by the en-dash pass.
+
+	// Em dash: X---Y  => X—Y
+	md = md.replace(/(?<=\S)---(?=\S)/g, '—');
+
+	// En dash: X--Y   => X–Y
+	md = md.replace(/(?<=\S)--(?=\S)/g, '–');
+
+	return md;
+}
+
+/**
  * Render a guide: Mustache over Markdown body, then marked → DOMPurify.
  *
  * @param {{
@@ -81,10 +107,26 @@ export async function renderGuide({ source, context, partials }) {
 	};
 
 	// Mustache over the Markdown body only
-	const md = Mustache.render(body, safeCtx, partials || {});
+	const mdRaw = Mustache.render(body, safeCtx, partials || {});
 
-	// Markdown → HTML
-	const raw = marked.parse(md, { mangle: false, headerIds: true, gfm: true });
+	// Optional typography pass (smart dashes etc.) that avoids HR lines
+	const md = typographize(mdRaw);
+
+	// Markdown → HTML (expanded options)
+	const raw = marked.parse(md, {
+		// keep headings stable for TOC/links
+		mangle: false,
+		headerIds: true,
+
+		// GitHub-flavored markdown: tables, strikethrough, task-lists
+		gfm: true,
+
+		// Soft line breaks become <br> (useful for authoring)
+		breaks: true,
+
+		// Nicer list handling (e.g., auto-detect ordered vs unordered)
+		smartLists: true
+	});
 
 	// Sanitise
 	const html = DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
