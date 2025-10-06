@@ -475,28 +475,301 @@ function closePatternDrawer() {
 }
 
 function populatePatternList(items) {
-	var ul = $("#pattern-list");
+	const ul = $("#pattern-list");
 	if (!ul) return;
 	ul.innerHTML = "";
-	var arr = Array.isArray(items) ? items : [];
-	for (var i = 0; i < arr.length; i++) {
-		var p = arr[i];
-		var li = document.createElement("li");
-		li.innerHTML =
-			'<button class="btn btn--secondary" data-pattern="' + p.name + "_v" + p.version + '">' +
-			escapeHtml(p.title) + ' <span class="muted">(' + p.category + " · v" + p.version + ")</span>" +
-			"</button>";
-		ul.appendChild(li);
+
+	const arr = Array.isArray(items) ? items : [];
+
+	// Group by category
+	const grouped = {};
+	for (const p of arr) {
+		const cat = p.category || "Uncategorised";
+		if (!grouped[cat]) grouped[cat] = [];
+		grouped[cat].push(p);
 	}
-	ul.addEventListener("click", function(e) {
-		var t = e.target;
-		var hasClosest = t && typeof t.closest === "function";
-		var b = hasClosest ? t.closest("button[data-pattern]") : null;
-		if (!b) return;
-		insertAtCursor($("#guide-source"), "\n{{> " + b.getAttribute("data-pattern") + "}}\n");
-		preview();
+
+	for (const [cat, patterns] of Object.entries(grouped)) {
+		// Category header
+		const header = document.createElement("li");
+		header.className = "pattern-category-header";
+		header.innerHTML = `<strong>${escapeHtml(cat)}</strong>`;
+		ul.appendChild(header);
+
+		// Patterns in category
+		for (const p of patterns) {
+			const li = document.createElement("li");
+			li.className = "pattern-item";
+			li.innerHTML = `
+				<div class="pattern-item__content">
+					<button class="btn btn--secondary btn--small" data-insert="${p.name}_v${p.version}">
+						Insert
+					</button>
+					<span class="pattern-item__title">${escapeHtml(p.title)}</span>
+					<span class="pattern-item__meta muted">v${p.version}</span>
+				</div>
+				<div class="pattern-item__actions">
+					<button class="link-like" data-view="${p.id}">View</button>
+					<button class="link-like" data-edit="${p.id}">Edit</button>
+					<button class="link-like" data-delete="${p.id}">Delete</button>
+				</div>
+			`;
+			ul.appendChild(li);
+		}
+	}
+
+	// Add new pattern button at bottom
+	const addLi = document.createElement("li");
+	addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
+	ul.appendChild(addLi);
+
+	// Wire handlers
+	ul.addEventListener("click", handlePatternClick);
+}
+
+async function handlePatternClick(e) {
+	const t = e.target;
+
+	// Insert pattern
+	if (t.dataset.insert) {
+		insertAtCursor($("#guide-source"), `\n{{> ${t.dataset.insert}}}\n`);
+		await preview();
 		closePatternDrawer();
+		announce("Pattern inserted");
+		return;
+	}
+
+	// View pattern
+	if (t.dataset.view) {
+		await viewPartial(t.dataset.view);
+		return;
+	}
+
+	// Edit pattern
+	if (t.dataset.edit) {
+		await editPartial(t.dataset.edit);
+		return;
+	}
+
+	// Delete pattern
+	if (t.dataset.delete) {
+		await deletePartial(t.dataset.delete);
+		return;
+	}
+
+	// New pattern
+	if (t.id === "btn-new-pattern") {
+		await createNewPartial();
+		return;
+	}
+}
+
+async function viewPartial(id) {
+	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { cache: "no-store" });
+	if (!res.ok) { announce("Failed to load partial"); return; }
+
+	const { partial } = await res.json();
+
+	const modal = document.createElement("div");
+	modal.className = "modal";
+	modal.innerHTML = `
+		<div class="modal__overlay"></div>
+		<div class="modal__content">
+			<h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
+			<dl class="govuk-summary-list">
+				<dt>Name:</dt><dd><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd>
+				<dt>Category:</dt><dd>${escapeHtml(partial.category)}</dd>
+				<dt>Status:</dt><dd>${escapeHtml(partial.status)}</dd>
+			</dl>
+			<h3 class="govuk-heading-s">Source</h3>
+			<pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
+			${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
+			<div class="modal__actions">
+				<button class="btn btn--secondary" data-close>Close</button>
+				<button class="btn" data-edit="${id}">Edit</button>
+			</div>
+		</div>
+	`;
+	document.body.appendChild(modal);
+
+	modal.addEventListener("click", async (e) => {
+		if (e.target.dataset.close || e.target.classList.contains("modal__overlay")) {
+			modal.remove();
+		}
+		if (e.target.dataset.edit) {
+			modal.remove();
+			await editPartial(e.target.dataset.edit);
+		}
 	});
+}
+
+async function editPartial(id) {
+	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { cache: "no-store" });
+	if (!res.ok) { announce("Failed to load partial"); return; }
+
+	const { partial } = await res.json();
+
+	const modal = document.createElement("div");
+	modal.className = "modal";
+	modal.innerHTML = `
+		<div class="modal__overlay"></div>
+		<div class="modal__content modal__content--large">
+			<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
+			<form id="partial-edit-form">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-title">Title</label>
+					<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-category">Category</label>
+					<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-source">Source (Mustache)</label>
+					<textarea class="code" id="partial-source" rows="15">${escapeHtml(partial.source)}</textarea>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-description">Description</label>
+					<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description)}</textarea>
+				</div>
+				<div class="modal__actions">
+					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+					<button type="submit" class="btn">Save changes</button>
+				</div>
+			</form>
+		</div>
+	`;
+	document.body.appendChild(modal);
+
+	const form = modal.querySelector("#partial-edit-form");
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+
+		const update = {
+			title: $("#partial-title").value,
+			category: $("#partial-category").value,
+			source: $("#partial-source").value,
+			description: $("#partial-description").value
+		};
+
+		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(update)
+		});
+
+		if (res.ok) {
+			announce("Partial updated");
+			modal.remove();
+			await refreshPatternList();
+		} else {
+			announce("Update failed");
+		}
+	});
+
+	modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
+}
+
+async function deletePartial(id) {
+	if (!confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) {
+		return;
+	}
+
+	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { method: "DELETE" });
+
+	if (res.ok) {
+		announce("Pattern deleted");
+		await refreshPatternList();
+	} else {
+		announce("Delete failed");
+	}
+}
+
+async function createNewPartial() {
+	const modal = document.createElement("div");
+	modal.className = "modal";
+	modal.innerHTML = `
+		<div class="modal__overlay"></div>
+		<div class="modal__content modal__content--large">
+			<h2 class="govuk-heading-m">Create new pattern</h2>
+			<form id="partial-create-form">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="new-partial-name">Name (no spaces)</label>
+					<input class="govuk-input" id="new-partial-name" placeholder="task_consent_v1" required />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="new-partial-title">Title</label>
+					<input class="govuk-input" id="new-partial-title" placeholder="Consent task introduction" required />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="new-partial-category">Category</label>
+					<select class="govuk-select" id="new-partial-category">
+						<option>Consent</option>
+						<option>Tasks</option>
+						<option>Questions</option>
+						<option>Debrief</option>
+						<option>Notes</option>
+						<option>Other</option>
+					</select>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="new-partial-source">Source (Mustache)</label>
+					<textarea class="code" id="new-partial-source" rows="15" required>## {{title}}
+
+Write your template here...</textarea>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="new-partial-description">Description</label>
+					<textarea class="govuk-textarea" id="new-partial-description" rows="3"></textarea>
+				</div>
+				<div class="modal__actions">
+					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+					<button type="submit" class="btn">Create pattern</button>
+				</div>
+			</form>
+		</div>
+	`;
+	document.body.appendChild(modal);
+
+	const form = modal.querySelector("#partial-create-form");
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+
+		const newPartial = {
+			name: $("#new-partial-name").value.replace(/\s+/g, "_").toLowerCase(),
+			title: $("#new-partial-title").value,
+			category: $("#new-partial-category").value,
+			source: $("#new-partial-source").value,
+			description: $("#new-partial-description").value,
+			version: 1,
+			status: "draft"
+		};
+
+		const res = await fetch("/api/partials", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(newPartial)
+		});
+
+		if (res.ok) {
+			announce("Pattern created");
+			modal.remove();
+			await refreshPatternList();
+		} else {
+			const err = await res.json().catch(() => ({}));
+			announce(`Create failed: ${err.error || "Unknown error"}`);
+		}
+	});
+
+	modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
+}
+
+async function refreshPatternList() {
+	const res = await fetch("/api/partials", { cache: "no-store" });
+	if (!res.ok) return;
+
+	const { partials = [] } = await res.json();
+	populatePatternList(partials);
 }
 
 function onPatternSearch(e) {
