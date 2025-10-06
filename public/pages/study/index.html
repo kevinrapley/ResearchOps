@@ -22,7 +22,15 @@
 
 	<!-- Use container to match global layout spacing -->
 	<main id="main" class="container govuk-body" role="main">
-
+		<!-- Breadcrumb -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="#">Project</a></li>
+				<li aria-current="page">Study</li>
+			</ol>
+		</nav>
+		
 		<div class="actions-bar">
 			<a id="back-to-project" href="/pages/projects/" class="btn btn--secondary">← Back to Project</a>
 			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
@@ -177,8 +185,14 @@
 				const studies = await loadStudies(pid);
 				const study = studies.find(s => s.id === sid) || {};
 
-				// Paint H1 using title (or computed fallback), not description
-				$("#study-title").textContent = pickH1Title(study);
+				// Breadcrumbs
+				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+				$("#breadcrumb-project").textContent = project?.name || "Project";
+				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+				$("#breadcrumb-study").textContent = pickTitle(study);
+
+				// Header + subtitle
+				$("#study-title").textContent = pickTitle(study);
 
 				// Key-value facts
 				$("#kv-method").textContent = (study.method || "—");
