@@ -14,6 +14,18 @@
  *   - Create study (Airtable primary; best-effort GitHub CSV dual-write): `POST /api/studies`
  *   - List studies for a project: `GET /api/studies?project=<AirtableId>`
  *   - Update study (partial): `PATCH /api/studies/:id`
+ * - Guides:
+ *   - List guides for a study: `GET /api/guides?study=<StudyAirtableId>`
+ *   - Create guide: `POST /api/guides`
+ *   - Read guide: `GET /api/guides/:id`
+ *   - Update guide: `PATCH /api/guides/:id`
+ *   - Publish guide: `POST /api/guides/:id/publish`
+ * - Partials:
+ *   - List partials: `GET /api/partials`
+ *   - Read partial: `GET /api/partials/:id`
+ *   - Create partial: `POST /api/partials`
+ *   - Update partial: `PATCH /api/partials/:id`
+ *   - Delete partial: `DELETE /api/partials/:id`
  * - CSV streaming from GitHub:
  *   - `GET /api/projects.csv`, `GET /api/project-details.csv`
  * - AI assist:
@@ -30,6 +42,8 @@
  * @property {string} AIRTABLE_TABLE_PROJECTS Table name for projects.
  * @property {string} AIRTABLE_TABLE_DETAILS  Table name for project details.
  * @property {string} AIRTABLE_TABLE_STUDIES  Table name for studies (e.g., "Project Studies").
+ * @property {string} AIRTABLE_TABLE_GUIDES   Table name for discussion guides (e.g., "Discussion Guides").
+ * @property {string} AIRTABLE_TABLE_PARTIALS Table name for partials (e.g., "Partials").
  * @property {string} AIRTABLE_API_KEY Airtable API token.
  * @property {string} GH_OWNER GitHub repository owner.
  * @property {string} GH_REPO GitHub repository name.
@@ -49,7 +63,7 @@ import { aiRewrite } from './ai-rewrite.js';
 
 /* =========================
  * @section Configuration
- * ========================= *
+ * ========================= */
 
 /**
  * Immutable configuration defaults.
@@ -65,7 +79,6 @@ import { aiRewrite } from './ai-rewrite.js';
  * @default
  * @inner
  */
-
 const DEFAULTS = Object.freeze({
 	TIMEOUT_MS: 10_000,
 	CSV_CACHE_CONTROL: "no-store",
@@ -368,7 +381,7 @@ class ResearchOpsService {
 	corsHeaders(origin) {
 		const allowed = (this.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 		const h = {
-			"Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+			"Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
 			"Access-Control-Allow-Headers": "Content-Type, Authorization",
 			"Vary": "Origin"
 		};
@@ -738,7 +751,7 @@ class ResearchOpsService {
 
 				if (!resp.ok) {
 					this.log.error("airtable.studies.list.fail", { status: resp.status, text: safeText(bodyText) });
-					// Return Airtable’s payload to the caller for visibility
+					// Return Airtable's payload to the caller for visibility
 					return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(bodyText) }, resp.status, this.corsHeaders(origin));
 				}
 
@@ -955,7 +968,6 @@ class ResearchOpsService {
 		const base = this.env.AIRTABLE_BASE_ID;
 		const tGuides = encodeURIComponent(this.env.AIRTABLE_TABLE_GUIDES || "Discussion Guides");
 		const atBase = `https://api.airtable.com/v0/${base}/${tGuides}`;
-		const atUrl = atBase;
 		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
 
 		const records = [];
@@ -1250,6 +1262,11 @@ class ResearchOpsService {
 		return this.json({ error: `Airtable ${r.status}`, detail: r.txt }, r.status || 500, this.corsHeaders(origin));
 	}
 
+	/**
+	 * Read a single guide by ID.
+	 * @route GET /api/guides/:id
+	 * @returns {Response}
+	 */
 	async readGuide(origin, guideId) {
 		if (!guideId) return this.json({ error: "Missing guide id" }, 400, this.corsHeaders(origin));
 
@@ -1286,6 +1303,191 @@ class ResearchOpsService {
 		};
 
 		return this.json({ ok: true, guide }, 200, this.corsHeaders(origin));
+	}
+
+	/* --------------------- Partials -------------------- */
+
+	/**
+	 * List all partials (for pattern drawer).
+	 * @route GET /api/partials
+	 * @returns {Response}
+	 */
+	async listPartials(origin) {
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
+		const url = `https://api.airtable.com/v0/${base}/${table}?sort%5B0%5D%5Bfield%5D=Category&sort%5B1%5D%5Bfield%5D=Name`;
+
+		const res = await fetchWithTimeout(url, {
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const txt = await res.text();
+			this.log.error("airtable.partials.list.fail", { status: res.status, text: safeText(txt) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		const { records = [] } = await res.json();
+		const partials = records.map(r => ({
+			id: r.id,
+			name: r.fields.Name || "",
+			title: r.fields.Title || "",
+			category: r.fields.Category || "Uncategorised",
+			version: r.fields.Version || 1,
+			status: r.fields.Status || "draft"
+		}));
+
+		return this.json({ ok: true, partials }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Read a single partial by ID.
+	 * @route GET /api/partials/:id
+	 * @returns {Response}
+	 */
+	async readPartial(origin, id) {
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
+		const url = `https://api.airtable.com/v0/${base}/${table}/${encodeURIComponent(id)}`;
+
+		const res = await fetchWithTimeout(url, {
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const txt = await res.text();
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		const rec = await res.json();
+		const partial = {
+			id: rec.id,
+			name: rec.fields.Name || "",
+			title: rec.fields.Title || "",
+			category: rec.fields.Category || "",
+			version: rec.fields.Version || 1,
+			source: rec.fields.Source || "",
+			description: rec.fields.Description || "",
+			status: rec.fields.Status || "draft"
+		};
+
+		return this.json({ ok: true, partial }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a new partial.
+	 * @route POST /api/partials
+	 * @returns {Response}
+	 */
+	async createPartial(request, origin) {
+		const body = await request.arrayBuffer();
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
+			return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin));
+		}
+
+		if (!p.name || !p.title || !p.source) {
+			return this.json({ error: "Missing required fields: name, title, source" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
+		const url = `https://api.airtable.com/v0/${base}/${table}`;
+
+		const fields = {
+			Name: p.name,
+			Title: p.title,
+			Category: p.category || "Uncategorised",
+			Version: p.version || 1,
+			Source: p.source,
+			Description: p.description || "",
+			Status: p.status || "draft"
+		};
+
+		const res = await fetchWithTimeout(url, {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const txt = await res.text();
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		const { records = [] } = await res.json();
+		const id = records[0]?.id;
+		return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Update a partial (partial update).
+	 * @route PATCH /api/partials/:id
+	 * @returns {Response}
+	 */
+	async updatePartial(request, origin, id) {
+		const body = await request.arrayBuffer();
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
+			return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin));
+		}
+
+		const fields = {};
+		if (p.title !== undefined) fields.Title = p.title;
+		if (p.source !== undefined) fields.Source = p.source;
+		if (p.description !== undefined) fields.Description = p.description;
+		if (p.status !== undefined) fields.Status = p.status;
+		if (p.category !== undefined) fields.Category = p.category;
+
+		if (Object.keys(fields).length === 0) {
+			return this.json({ error: "No fields to update" }, 400, this.corsHeaders(origin));
+		}
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
+		const url = `https://api.airtable.com/v0/${base}/${table}`;
+
+		const res = await fetchWithTimeout(url, {
+			method: "PATCH",
+			headers: {
+				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ records: [{ id, fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const txt = await res.text();
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Delete a partial.
+	 * @route DELETE /api/partials/:id
+	 * @returns {Response}
+	 */
+	async deletePartial(origin, id) {
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
+		const url = `https://api.airtable.com/v0/${base}/${table}/${encodeURIComponent(id)}`;
+
+		const res = await fetchWithTimeout(url, {
+			method: "DELETE",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
+		}, this.cfg.TIMEOUT_MS);
+
+		if (!res.ok) {
+			const txt = await res.text();
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
 	}
 }
 
@@ -1423,16 +1625,42 @@ export default {
 				/**
 				 * List guides for a study.
 				 * @route GET /api/guides?study=<StudyRecordId>
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
 				 * @output { ok:true, guides:Array<...> }
 				 */
 				if (url.pathname === "/api/guides" && request.method === "GET") {
 					return service.listGuides(origin, url);
 				}
 
+				/**
+				 * Create guide.
+				 * @route POST /api/guides
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input { study_airtable_id:string, title?:string, status?:string, version?:number, sourceMarkdown?:string, variables?:object }
+				 * @output { ok:true, id:string }
+				 */
 				if (url.pathname === "/api/guides" && request.method === "POST") {
 					return service.createGuide(request, origin);
 				}
 
+				/**
+				 * Read guide.
+				 * @route GET /api/guides/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:true, guide:{...} }
+				 */
+				if (url.pathname.startsWith("/api/guides/") && request.method === "GET" && !url.pathname.endsWith("/publish")) {
+					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
+					return service.readGuide(origin, guideId);
+				}
+
+				/**
+				 * Update guide.
+				 * @route PATCH /api/guides/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input { title?:string, status?:string, version?:number, sourceMarkdown?:string, variables?:object }
+				 * @output { ok:true }
+				 */
 				if (url.pathname.startsWith("/api/guides/") && request.method === "PATCH") {
 					const guideId = decodeURIComponent(url.pathname.slice("/api/guides/".length));
 					return service.updateGuide(request, origin, guideId);
@@ -1440,8 +1668,9 @@ export default {
 
 				/**
 				 * Publish a guide (status=published, version++).
-				 * Accepts: POST /api/guides/:id/publish  (trailing slash optional)
-				 * Returns: { ok:true, version:number, status:"published" }
+				 * @route POST /api/guides/:id/publish
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:true, version:number, status:"published" }
 				 */
 				if (
 					request.method === "POST" &&
@@ -1450,6 +1679,62 @@ export default {
 					const parts = url.pathname.split("/"); // ["", "api", "guides", ":id", "publish"]
 					const guideId = decodeURIComponent(parts[3]);
 					return service.publishGuide(origin, guideId);
+				}
+
+				/* --------------------- Partials -------------------- */
+				/**
+				 * List all partials (for pattern drawer).
+				 * @route GET /api/partials
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:true, partials:Array<{id, name, title, category, version, status}> }
+				 */
+				if (url.pathname === "/api/partials" && request.method === "GET") {
+					return service.listPartials(origin);
+				}
+
+				/**
+				 * Get single partial (for editing).
+				 * @route GET /api/partials/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:true, partial:{id, name, title, category, version, source, description, status} }
+				 */
+				if (url.pathname.startsWith("/api/partials/") && request.method === "GET") {
+					const partialId = decodeURIComponent(url.pathname.slice("/api/partials/".length));
+					return service.readPartial(origin, partialId);
+				}
+
+				/**
+				 * Create partial.
+				 * @route POST /api/partials
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input { name:string, title:string, category:string, source:string, description?:string }
+				 * @output { ok:true, id:string }
+				 */
+				if (url.pathname === "/api/partials" && request.method === "POST") {
+					return service.createPartial(request, origin);
+				}
+
+				/**
+				 * Update partial.
+				 * @route PATCH /api/partials/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input { title?, source?, description?, status?, category? }
+				 * @output { ok:true }
+				 */
+				if (url.pathname.startsWith("/api/partials/") && request.method === "PATCH") {
+					const partialId = decodeURIComponent(url.pathname.slice("/api/partials/".length));
+					return service.updatePartial(request, origin, partialId);
+				}
+
+				/**
+				 * Delete partial.
+				 * @route DELETE /api/partials/:id
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @output { ok:true }
+				 */
+				if (url.pathname.startsWith("/api/partials/") && request.method === "DELETE") {
+					const partialId = decodeURIComponent(url.pathname.slice("/api/partials/".length));
+					return service.deletePartial(origin, partialId);
 				}
 
 				/**
@@ -1496,6 +1781,8 @@ export function createMockEnv(overrides = {}) {
 		AIRTABLE_TABLE_PROJECTS: "Projects",
 		AIRTABLE_TABLE_DETAILS: "Project Details",
 		AIRTABLE_TABLE_STUDIES: "Project Studies",
+		AIRTABLE_TABLE_GUIDES: "Discussion Guides",
+		AIRTABLE_TABLE_PARTIALS: "Partials",
 		AIRTABLE_API_KEY: "key",
 		GH_OWNER: "owner",
 		GH_REPO: "repo",
