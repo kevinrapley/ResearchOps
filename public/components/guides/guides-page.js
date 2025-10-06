@@ -348,15 +348,15 @@ async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
 	const source = $("#guide-source")?.value || "";
 	const fm = readFrontMatter(source);
-	const studyId = (window.__guideCtx?.study || {}).id;
-	const body = {
-		study_airtable_id: studyId,
-		title,
-		sourceMarkdown: source,
-		variables: fm.meta || {}
-	};
+	const variables = fm.meta || {};
 
+	const studyId = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
 	const id = window.__openGuideId;
+
+	const body = id ?
+		{ title, sourceMarkdown: source, variables } :
+		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+
 	const method = id ? "PATCH" : "POST";
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
 
@@ -366,15 +366,18 @@ async function onSave() {
 		body: JSON.stringify(body)
 	});
 
-	const txt = await res.text().catch(() => "");
+	const js = await res.json().catch(() => ({}));
+
 	if (res.ok) {
-		announce("Guide saved");
-		loadGuides((window.__guideCtx?.study || {}).id);
-		if (!id) {
-			try { window.__openGuideId = (JSON.parse(txt).id) || window.__openGuideId; } catch {}
+		if (!id && js && js.id) {
+			// First save: remember the new Airtable record id so subsequent saves PATCH
+			window.__openGuideId = js.id;
 		}
+		announce("Guide saved");
+		// Refresh the list for this study
+		loadGuides(studyId);
 	} else {
-		announce(`Save failed: ${res.status} ${txt || ""}`);
+		announce(`Save failed: ${res.status} ${JSON.stringify(js)}`);
 	}
 }
 
