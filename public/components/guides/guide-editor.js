@@ -125,7 +125,7 @@ export async function renderGuide({ source, context, partials }) {
 		breaks: true,
 
 		// Nicer list handling (e.g., auto-detect ordered vs unordered)
-		smartLists: true
+		smartLists: true,
 		
 		  // Makes _underscore_ emphasis behave more like classic Markdown
 		pedantic: true
