@@ -39,6 +39,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	hydrateCrumbs({ pid, sid }).catch(console.warn);
 	// 👇 ask loadGuides to auto-open the newest guide once
 	loadGuides(sid, { autoOpen: true }).catch(console.warn);
+	// ✅ Load patterns from API on page load
+	refreshPatternList().catch(console.warn);
 });
 
 /**
@@ -274,13 +276,32 @@ function wireEditor() {
 	});
 }
 
+async function refreshPatternList() {
+	try {
+		const res = await fetch("/api/partials", { cache: "no-store" });
+		if (!res.ok) {
+			console.warn("Failed to fetch partials:", res.status);
+			populatePatternList([]); // Show empty list on error
+			return;
+		}
+
+		const data = await res.json();
+		const partials = data.partials || [];
+		
+		console.log("Loaded partials:", partials.length);
+		populatePatternList(partials);
+	} catch (err) {
+		console.error("Error refreshing pattern list:", err);
+		populatePatternList([]);
+	}
+}
+
 /** Open a new guide in the editor — always reveals the panel, even if optional imports fail. */
 async function startNewGuide() {
 	try {
 		var editor = $("#editor-section");
 		if (editor) editor.classList.remove("is-hidden");
 
-		// Basic safe defaults first (no external deps)
 		window.__openGuideId = undefined;
 
 		var titleEl = $("#guide-title");
@@ -289,7 +310,6 @@ async function startNewGuide() {
 		var statusEl = $("#guide-status");
 		if (statusEl) statusEl.textContent = "draft";
 
-		// Use imported DEFAULT_SOURCE if present, otherwise a tiny inline fallback
 		var defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ?
 			DEFAULT_SOURCE.trim() :
 			"---\nversion: 1\n---\n# New guide\n\nWelcome. Start writing…";
@@ -297,8 +317,12 @@ async function startNewGuide() {
 		var srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = defaultSrc;
 
-		// These are best-effort; failures shouldn't block the editor opening
-		try { populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []); } catch (err) { console.warn("Pattern list failed:", err); }
+		try { 
+			await refreshPatternList(); 
+		} catch (err) { 
+			console.warn("Pattern list failed:", err); 
+		}
+		
 		try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
 		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
 
@@ -315,18 +339,15 @@ async function openGuide(id) {
 	try {
 		let guide = null;
 
-		// 1) Try the direct endpoint (works after you add the Worker route in part B)
 		const res = await fetch(`/api/guides/${encodeURIComponent(id)}`, { cache: "no-store" });
 		if (res.ok) {
 			const js = await res.json().catch(() => ({}));
-			// support either { ok:true, guide:{...} } or the raw guide object
 			guide = js && (js.guide || js);
 		} else if (res.status !== 404) {
 			const txt = await res.text().catch(() => "");
 			throw new Error(`GET /api/guides/${id} ${res.status}: ${txt}`);
 		}
 
-		// 2) Fallback: re-fetch the list and pick the matching id
 		if (!guide) {
 			const sid = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
 			if (!sid) throw new Error("No study id available in context for fallback.");
@@ -341,16 +362,18 @@ async function openGuide(id) {
 
 		if (!guide) throw new Error("Guide not found");
 
-		// ── populate editor
 		window.__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
 		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
 		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
 		$("#guide-source") && ($("#guide-source").value = guide.sourceMarkdown || "");
-		populatePatternList(typeof listStarterPatterns === "function" ? listStarterPatterns() : []);
+		
+		// ✅ Load real patterns from API
+		await refreshPatternList();
+		
 		populateVariablesForm(guide.variables || {});
 		await preview();
-		announce(`Opened guide “${guide.title || "Untitled"}”`);
+		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
 		console.warn(e);
 		announce(`Failed to open guide: ${e && e.message ? e.message : "Unknown error"}`);
@@ -858,10 +881,30 @@ async function refreshPatternList() {
 	populatePatternList(partials);
 }
 
-function onPatternSearch(e) {
-	var q = (e && e.target && e.target.value ? e.target.value : "").trim().toLowerCase();
-	var list = (typeof searchPatterns === "function") ? searchPatterns(q) : [];
-	populatePatternList(list);
+async function onPatternSearch(e) {
+	const q = (e?.target?.value || "").trim().toLowerCase();
+	
+	if (!q) {
+		// No search query - show all
+		await refreshPatternList();
+		return;
+	}
+	
+	// Fetch and filter
+	try {
+		const res = await fetch("/api/partials", { cache: "no-store" });
+		if (!res.ok) return;
+		
+		const { partials = [] } = await res.json();
+		const filtered = partials.filter(p => {
+			const searchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
+			return searchText.includes(q);
+		});
+		
+		populatePatternList(filtered);
+	} catch (err) {
+		console.error("Pattern search error:", err);
+	}
 }
 
 /* -------------------- drawers: variables -------------------- */
