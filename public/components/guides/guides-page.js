@@ -235,6 +235,26 @@ function onNewClick(e) {
 	startNewGuide();
 }
 
+async function refreshPatternList() {
+	try {
+		const res = await fetch("/api/partials", { cache: "no-store" });
+		if (!res.ok) {
+			console.warn("Failed to fetch partials:", res.status);
+			populatePatternList([]); // Show empty list on error
+			return;
+		}
+
+		const data = await res.json();
+		const partials = data.partials || [];
+
+		console.log("Loaded partials:", partials.length);
+		populatePatternList(partials);
+	} catch (err) {
+		console.error("Error refreshing pattern list:", err);
+		populatePatternList([]);
+	}
+}
+
 /* -------------------- editor -------------------- */
 function wireEditor() {
 	var insertPat = $("#btn-insert-pattern");
@@ -276,26 +296,6 @@ function wireEditor() {
 	});
 }
 
-async function refreshPatternList() {
-	try {
-		const res = await fetch("/api/partials", { cache: "no-store" });
-		if (!res.ok) {
-			console.warn("Failed to fetch partials:", res.status);
-			populatePatternList([]); // Show empty list on error
-			return;
-		}
-
-		const data = await res.json();
-		const partials = data.partials || [];
-		
-		console.log("Loaded partials:", partials.length);
-		populatePatternList(partials);
-	} catch (err) {
-		console.error("Error refreshing pattern list:", err);
-		populatePatternList([]);
-	}
-}
-
 /** Open a new guide in the editor — always reveals the panel, even if optional imports fail. */
 async function startNewGuide() {
 	try {
@@ -317,12 +317,12 @@ async function startNewGuide() {
 		var srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = defaultSrc;
 
-		try { 
-			await refreshPatternList(); 
-		} catch (err) { 
-			console.warn("Pattern list failed:", err); 
+		try {
+			await refreshPatternList();
+		} catch (err) {
+			console.warn("Pattern list failed:", err);
 		}
-		
+
 		try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
 		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
 
@@ -367,10 +367,10 @@ async function openGuide(id) {
 		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
 		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
 		$("#guide-source") && ($("#guide-source").value = guide.sourceMarkdown || "");
-		
+
 		// ✅ Load real patterns from API
 		await refreshPatternList();
-		
+
 		populateVariablesForm(guide.variables || {});
 		await preview();
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
@@ -883,24 +883,24 @@ async function refreshPatternList() {
 
 async function onPatternSearch(e) {
 	const q = (e?.target?.value || "").trim().toLowerCase();
-	
+
 	if (!q) {
 		// No search query - show all
 		await refreshPatternList();
 		return;
 	}
-	
+
 	// Fetch and filter
 	try {
 		const res = await fetch("/api/partials", { cache: "no-store" });
 		if (!res.ok) return;
-		
+
 		const { partials = [] } = await res.json();
 		const filtered = partials.filter(p => {
 			const searchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
 			return searchText.includes(q);
 		});
-		
+
 		populatePatternList(filtered);
 	} catch (err) {
 		console.error("Pattern search error:", err);
