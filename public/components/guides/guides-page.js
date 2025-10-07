@@ -500,9 +500,13 @@ function populatePatternList(items) {
 		for (const p of patterns) {
 			const li = document.createElement("li");
 			li.className = "pattern-item";
+
+			// Build insert name: name + _v + version
+			const insertName = `${p.name}_v${p.version}`;
+
 			li.innerHTML = `
 				<div class="pattern-item__content">
-					<button class="btn btn--secondary btn--small" data-insert="${p.name}_v${p.version}">
+					<button class="btn btn--secondary btn--small" data-insert="${escapeHtml(insertName)}">
 						Insert
 					</button>
 					<span class="pattern-item__title">${escapeHtml(p.title)}</span>
@@ -532,10 +536,11 @@ async function handlePatternClick(e) {
 
 	// Insert pattern
 	if (t.dataset.insert) {
-		insertAtCursor($("#guide-source"), `\n{{> ${t.dataset.insert}}}\n`);
+		const name = t.dataset.insert;
+		insertAtCursor($("#guide-source"), `\n{{> ${name}}}\n`);
 		await preview();
 		closePatternDrawer();
-		announce("Pattern inserted");
+		announce(`Pattern ${name} inserted`);
 		return;
 	}
 
