@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.3.0
+   Version:    v1.1.1
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
    Date:       2025-10-07
@@ -13,24 +13,24 @@
 /* CSS DIRECTORY
 	1. = TOKENS
 	2. = LAYOUT
-	3. = LIST HEADER (above table)
-	4. = EDITOR (header, toolbar row, inputs)
-	5. = SPLIT PANES (source + preview)
-	6. = LINT OUTPUT
-	7. = MENUS (export dropdown)
-	8. = DRAWERS (patterns, variables)
-	9. = FORMS
-	10. = RESPONSIVE
+	3. = EDITOR (wrapper, toolbar, inputs)
+	4. = SPLIT PANES (source + preview)
+	5. = LINT OUTPUT
+	6. = MENUS (export dropdown)
+	7. = DRAWERS (patterns, variables)
+	8. = FORMS
+	9. = RESPONSIVE
 */
 
 /* === =TOKENS ============================================= */
 :root {
 	--guides-border: #d0d7de;
-	--guides-shadow: rgba(0,0,0,.08);
+	--guides-shadow: rgba(0, 0, 0, .08);
 	--guides-bg: #fff;
 	--guides-control-h: 36px;
-	--guides-gap: 10px;
-	}
+	--guide-source-base-h: 550px;
+	/* existing Source height */
+}
 
 /* === =LAYOUT ============================================= */
 .page-header {
@@ -39,89 +39,67 @@
 	justify-content: space-between;
 	gap: 16px;
 	margin-bottom: 12px;
-	}
+}
 
 .page-header__titles .muted {
 	margin: 6px 0 0 0;
-	}
+}
+
+/* Heading / toolbar row (buttons align with “Guides for this study”) */
+.guides-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 8px 0 12px;
+}
+
+.guides-header .govuk-heading-m {
+	margin: 0;
+}
+
+.guides-header .toolbar {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
 
 .divider {
 	border: 0;
 	border-top: 1px solid var(--guides-border);
 	margin: 16px 0;
-	}
-
-/* === =LIST HEADER (ABOVE TABLE) ========================== */
-/* “Guides for this study” + New / Import / Back — all on one baseline */
-.guides-header {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: var(--guides-gap);
-	margin: 8px 0 12px;
-	}
-
-.guides-header .govuk-heading-m {
-	margin: 0;
-	}
-
-.guides-header .toolbar {
-	display: flex;
-	align-items: baseline;
-	gap: var(--guides-gap);
-	white-space: nowrap;
-	}
-
-.guides-header .toolbar .btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: var(--guides-control-h);
-	padding: 0 12px;
-	line-height: 1;
-	}
+}
 
 /* === =EDITOR ============================================= */
 .editor {
 	display: grid;
-	grid-template-rows: auto auto 1fr;
+	grid-template-rows: auto 1fr;
 	gap: 12px;
 	min-height: 60vh;
-	}
+}
 
 .editor__header {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
+	display: grid;
+	align-items: end;
+	grid-template-columns: 1fr auto;
 	gap: 12px;
-	}
+}
 
-/* Editor toolbar sits under editor header and above split panes */
+/* Editor toolbar: title inline with Save / Publish / Export */
 .editor__toolbar {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: var(--guides-gap);
-	margin-top: -4px;
-	}
+	gap: 12px;
+	margin: 8px 0 16px;
+}
 
-/* Two groups: left (Tag/Pattern/Variables) and right (Save/Publish/Export/Title) */
-.toolbar-group {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--guides-gap);
-	flex-wrap: nowrap;
-	}
+/* Spacer pushes right-hand controls when needed */
+.toolbar-spacer {
+	flex: 1 1 auto;
+}
 
-.toolbar-group--left {
-	flex: 0 0 auto;
-	}
-
-.toolbar-group--right {
-	flex: 0 0 auto;
-	}
-
-/* Normalise heights for buttons and inputs in editor toolbar */
+/* Consistent control heights for this page only */
+.guides-header .toolbar .btn,
 .editor__toolbar .btn,
 .editor__toolbar input[type="text"],
 .editor__toolbar input[type="search"],
@@ -132,74 +110,78 @@
 	height: var(--guides-control-h);
 	padding: 0 12px;
 	line-height: 1;
-	box-sizing: border-box;
-	white-space: nowrap;
-	}
+}
 
-/* Right-side “Guide title” label + input */
-.label-inline {
-	display: inline-flex;
-	align-items: center;
-	height: var(--guides-control-h);
-	margin-right: 6px;
-	}
-
+/* Title field that sits inline with actions */
 #guide-title {
-	width: 300px;
-	max-width: 420px;
-	}
+	min-width: 280px;
+	flex: 0 1 360px;
+}
 
-/* Optional large title input style (for reuse elsewhere) */
+/* Legacy title input style (kept for reuse elsewhere) */
 .input--title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	padding: 8px 10px;
-	}
+}
 
 /* === =SPLIT PANES ======================================== */
+/* Fixed heights with vertical overflow:
+   Both Source and Preview are (base Source height + 150px). */
+#guide-source,
+#guide-preview {
+	height: var(--guide-source-base-h);
+	min-height: 0;
+	overflow-y: auto;
+	box-sizing: border-box;
+	-webkit-overflow-scrolling: touch;
+}
+
+#guide-source {
+	resize: none;
+}
+
 .editor__split {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
 	min-height: 50vh;
-	}
+}
 
 .pane {
 	display: flex;
 	flex-direction: column;
-	}
+}
 
 .code {
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-	min-height: 50vh;
 	padding: 12px;
 	border: 1px solid var(--guides-border);
 	border-radius: 4px;
-	resize: vertical;
 	line-height: 1.5;
-	}
+}
 
 .preview {
 	border: 1px solid var(--guides-border);
 	border-radius: 4px;
 	padding: 12px;
-	min-height: 50vh;
+	min-height: 0;
 	overflow: auto;
 	background: var(--guides-bg);
-	}
+	box-sizing: border-box;
+}
 
 /* === =LINT OUTPUT ======================================== */
 .lint {
 	margin-top: 6px;
 	min-height: 1.4em;
 	font-size: .95rem;
-	}
+}
 
-/* === =MENUS (export dropdown) ============================ */
+/* === =MENUS ============================================== */
 .menu {
 	position: relative;
-	flex: 0 0 auto;
-	}
+}
 
 .menu__list {
 	position: absolute;
@@ -214,16 +196,16 @@
 	border-radius: 4px;
 	box-shadow: 0 4px 18px var(--guides-shadow);
 	display: none;
-	}
+}
 
 .menu__list[aria-expanded="true"],
 .menu[aria-expanded="true"] .menu__list {
 	display: block;
-	}
+}
 
 .menu__list li {
 	list-style: none;
-	}
+}
 
 .menu__list button {
 	display: block;
@@ -233,7 +215,7 @@
 	border: 0;
 	background: transparent;
 	cursor: pointer;
-	}
+}
 
 /* === =DRAWERS ============================================ */
 .drawer {
@@ -245,20 +227,20 @@
 	height: 100%;
 	background: #fff;
 	border-left: 1px solid var(--guides-border);
-	box-shadow: -6px 0 18px rgba(0,0,0,.06);
+	box-shadow: -6px 0 18px rgba(0, 0, 0, .06);
 	padding: 16px;
 	overflow: auto;
-	}
+}
 
 .list-plain {
 	list-style: none;
 	margin: 8px 0 0 0;
 	padding: 0;
-	}
+}
 
-.list-plain li + li {
+.list-plain li+li {
 	margin-top: 8px;
-	}
+}
 
 .link-like {
 	background: none;
@@ -267,43 +249,48 @@
 	text-decoration: underline;
 	cursor: pointer;
 	padding: 8px 0;
-	}
+}
 
 /* === =FORMS ============================================== */
 .form-grid {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 8px;
-	}
+}
 
 .input {
 	border: 1px solid #b1b4b6;
 	border-radius: 2px;
 	padding: 8px 10px;
 	width: 100%;
-	box-sizing: border-box;
-	}
+}
 
 /* === =RESPONSIVE ========================================= */
 @media (max-width: 900px) {
 	.editor__split {
 		grid-template-columns: 1fr;
-		}
+	}
+}
+
+@media (max-width: 600px) {
+	.guides-header {
+		flex-wrap: wrap;
+		gap: 8px;
 	}
 
-@media (max-width: 720px) {
+	.guides-header .toolbar {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
 	.editor__toolbar {
 		flex-wrap: wrap;
-		row-gap: 8px;
-		}
-	.toolbar-group--right {
-		width: 100%;
-		justify-content: flex-start;
-		}
-	#guide-title {
-		width: 100%;
-		max-width: none;
-		}
 	}
+
+	#guide-title {
+		min-width: 200px;
+		flex: 1 1 200px;
+	}
+}
 
 /* transparency begins in the cascade */
