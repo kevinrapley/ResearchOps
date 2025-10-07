@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.1.1
+   Version:    v1.1.0
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
    Date:       2025-10-07
@@ -25,11 +25,10 @@
 /* === =TOKENS ============================================= */
 :root {
 	--guides-border: #d0d7de;
-	--guides-shadow: rgba(0, 0, 0, .08);
+	--guides-shadow: rgba(0,0,0,.08);
 	--guides-bg: #fff;
 	--guides-control-h: 36px;
 	--guide-source-base-h: 550px;
-	/* existing Source height */
 	}
 
 /* === =LAYOUT ============================================= */
@@ -126,8 +125,6 @@
 	}
 
 /* === =SPLIT PANES ======================================== */
-/* Fixed heights with vertical overflow:
-   Both Source and Preview are (base Source height + 150px). */
 #guide-source,
 #guide-preview {
 	height: var(--guide-source-base-h);
@@ -227,7 +224,7 @@
 	height: 100%;
 	background: #fff;
 	border-left: 1px solid var(--guides-border);
-	box-shadow: -6px 0 18px rgba(0, 0, 0, .06);
+	box-shadow: -6px 0 18px rgba(0,0,0,.06);
 	padding: 16px;
 	overflow: auto;
 	}
@@ -238,7 +235,7 @@
 	padding: 0;
 	}
 
-.list-plain li+li {
+.list-plain li + li {
 	margin-top: 8px;
 	}
 
@@ -277,16 +274,13 @@
 		flex-wrap: wrap;
 		gap: 8px;
 		}
-
 	.guides-header .toolbar {
 		flex-wrap: wrap;
 		gap: 8px;
 		}
-
 	.editor__toolbar {
 		flex-wrap: wrap;
 		}
-
 	#guide-title {
 		min-width: 200px;
 		flex: 1 1 200px;
