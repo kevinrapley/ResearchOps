@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.1.0
+   Version:    v1.1.1
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
    Date:       2025-10-07
@@ -28,6 +28,7 @@
 	--guides-shadow: rgba(0,0,0,.08);
 	--guides-bg: #fff;
 	--guides-control-h: 36px;
+	--guides-gap: 10px;
 	}
 
 /* === =LAYOUT ============================================= */
@@ -48,7 +49,7 @@
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--guides-gap);
 	margin: 8px 0 12px;
 	}
 
@@ -59,7 +60,8 @@
 .guides-header .toolbar {
 	display: flex;
 	align-items: baseline;
-	gap: 12px;
+	gap: var(--guides-gap);
+	white-space: nowrap;
 	}
 
 .divider {
@@ -83,17 +85,25 @@
 	gap: 12px;
 	}
 
-/* Editor toolbar: title inline with Save / Publish / Export */
+/* Editor toolbar: all on one line; title inline with actions */
 .editor__toolbar {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: var(--guides-gap);
 	margin: 8px 0 16px;
+	flex-wrap: nowrap;
 	}
 
-/* Spacer pushes right-hand controls when needed */
+.editor-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--guides-gap);
+	flex-wrap: nowrap;
+	}
+
 .toolbar-spacer {
 	flex: 1 1 auto;
+	min-width: 12px;
 	}
 
 /* Consistent control heights for this page only */
@@ -108,12 +118,15 @@
 	height: var(--guides-control-h);
 	padding: 0 12px;
 	line-height: 1;
+	box-sizing: border-box;
+	white-space: nowrap;
 	}
 
-/* Title field that sits inline with actions */
+/* Title field that sits inline and flexes to the space available */
 #guide-title {
-	min-width: 280px;
-	flex: 0 1 360px;
+	flex: 1 1 280px;
+	min-width: 220px;
+	max-width: 520px;
 	}
 
 /* Legacy title input style (kept for reuse elsewhere) */
@@ -165,6 +178,7 @@
 /* === =MENUS ============================================== */
 .menu {
 	position: relative;
+	flex: 0 0 auto;
 	}
 
 .menu__list {
@@ -247,6 +261,7 @@
 	border-radius: 2px;
 	padding: 8px 10px;
 	width: 100%;
+	box-sizing: border-box;
 	}
 
 /* === =RESPONSIVE ========================================= */
@@ -270,6 +285,7 @@
 		}
 	#guide-title {
 		min-width: 200px;
+		max-width: none;
 		flex: 1 1 200px;
 		}
 	}
