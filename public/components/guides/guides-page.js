@@ -639,23 +639,41 @@ async function viewPartial(id) {
 }
 
 async function editPartial(id) {
+	console.log("editPartial called with id:", id);
+
 	try {
-		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
-			cache: "no-store"
+		const url = `/api/partials/${encodeURIComponent(id)}`;
+		console.log("Fetching from:", url);
+
+		const res = await fetch(url, {
+			cache: "no-store",
+			headers: { "Accept": "application/json" }
 		});
 
+		console.log("Response status:", res.status);
+		const text = await res.text();
+		console.log("Response body:", text.substring(0, 200));
+
 		if (!res.ok) {
-			const error = await res.text();
-			console.error("Failed to load partial:", res.status, error);
 			announce(`Failed to load partial: ${res.status}`);
+			console.error("Error response:", text);
 			return;
 		}
 
-		const data = await res.json();
+		let data;
+		try {
+			data = JSON.parse(text);
+		} catch (e) {
+			announce("Failed to load partial: Invalid JSON");
+			console.error("JSON parse error:", e);
+			return;
+		}
+
+		console.log("Parsed data:", data);
 
 		if (!data.ok || !data.partial) {
-			console.error("Invalid response:", data);
 			announce("Failed to load partial: Invalid response");
+			console.error("Missing ok or partial:", data);
 			return;
 		}
 
@@ -682,7 +700,7 @@ async function editPartial(id) {
 					</div>
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="partial-description">Description</label>
-						<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description)}</textarea>
+						<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
 					</div>
 					<div class="modal__actions">
 						<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
@@ -697,18 +715,27 @@ async function editPartial(id) {
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
 
+			console.log("Submitting update...");
+
 			const update = {
-				title: $("#partial-title").value,
-				category: $("#partial-category").value,
-				source: $("#partial-source").value,
-				description: $("#partial-description").value
+				title: document.getElementById("partial-title").value,
+				category: document.getElementById("partial-category").value,
+				source: document.getElementById("partial-source").value,
+				description: document.getElementById("partial-description").value
 			};
+
+			console.log("Update payload:", update);
 
 			const updateRes = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
 				method: "PATCH",
-				headers: { "content-type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					"Accept": "application/json"
+				},
 				body: JSON.stringify(update)
 			});
+
+			console.log("Update response status:", updateRes.status);
 
 			if (updateRes.ok) {
 				announce("Partial updated");
@@ -717,82 +744,16 @@ async function editPartial(id) {
 			} else {
 				const errorText = await updateRes.text();
 				console.error("Update failed:", errorText);
-				announce("Update failed: " + updateRes.status);
+				announce(`Update failed: ${updateRes.status}`);
 			}
 		});
 
 		modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
+
 	} catch (err) {
-		console.error("Error in editPartial:", err);
+		console.error("Caught error in editPartial:", err);
 		announce("Failed to load partial: " + err.message);
 	}
-}
-
-async function editPartial(id) {
-	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { cache: "no-store" });
-	if (!res.ok) { announce("Failed to load partial"); return; }
-
-	const { partial } = await res.json();
-
-	const modal = document.createElement("div");
-	modal.className = "modal";
-	modal.innerHTML = `
-		<div class="modal__overlay"></div>
-		<div class="modal__content modal__content--large">
-			<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
-			<form id="partial-edit-form">
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-title">Title</label>
-					<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-category">Category</label>
-					<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-source">Source (Mustache)</label>
-					<textarea class="code" id="partial-source" rows="15">${escapeHtml(partial.source)}</textarea>
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-description">Description</label>
-					<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description)}</textarea>
-				</div>
-				<div class="modal__actions">
-					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-					<button type="submit" class="btn">Save changes</button>
-				</div>
-			</form>
-		</div>
-	`;
-	document.body.appendChild(modal);
-
-	const form = modal.querySelector("#partial-edit-form");
-	form.addEventListener("submit", async (e) => {
-		e.preventDefault();
-
-		const update = {
-			title: $("#partial-title").value,
-			category: $("#partial-category").value,
-			source: $("#partial-source").value,
-			description: $("#partial-description").value
-		};
-
-		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
-			method: "PATCH",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(update)
-		});
-
-		if (res.ok) {
-			announce("Partial updated");
-			modal.remove();
-			await refreshPatternList();
-		} else {
-			announce("Update failed");
-		}
-	});
-
-	modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
 }
 
 async function deletePartial(id) {
