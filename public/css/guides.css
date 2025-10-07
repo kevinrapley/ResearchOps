@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.1.2
+   Version:    v1.3.0
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
    Date:       2025-10-07
@@ -13,13 +13,14 @@
 /* CSS DIRECTORY
 	1. = TOKENS
 	2. = LAYOUT
-	3. = EDITOR (wrapper, toolbar, inputs)
-	4. = SPLIT PANES (source + preview)
-	5. = LINT OUTPUT
-	6. = MENUS (export dropdown)
-	7. = DRAWERS (patterns, variables)
-	8. = FORMS
-	9. = RESPONSIVE
+	3. = LIST HEADER (above table)
+	4. = EDITOR (header, toolbar row, inputs)
+	5. = SPLIT PANES (source + preview)
+	6. = LINT OUTPUT
+	7. = MENUS (export dropdown)
+	8. = DRAWERS (patterns, variables)
+	9. = FORMS
+	10. = RESPONSIVE
 */
 
 /* === =TOKENS ============================================= */
@@ -44,7 +45,14 @@
 	margin: 6px 0 0 0;
 	}
 
-/* Heading / toolbar row (buttons align with “Guides for this study”) */
+.divider {
+	border: 0;
+	border-top: 1px solid var(--guides-border);
+	margin: 16px 0;
+	}
+
+/* === =LIST HEADER (ABOVE TABLE) ========================== */
+/* “Guides for this study” + New / Import / Back — all on one baseline */
 .guides-header {
 	display: flex;
 	align-items: baseline;
@@ -64,50 +72,56 @@
 	white-space: nowrap;
 	}
 
-.divider {
-	border: 0;
-	border-top: 1px solid var(--guides-border);
-	margin: 16px 0;
+.guides-header .toolbar .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--guides-control-h);
+	padding: 0 12px;
+	line-height: 1;
 	}
 
 /* === =EDITOR ============================================= */
 .editor {
 	display: grid;
-	grid-template-rows: auto 1fr;
+	grid-template-rows: auto auto 1fr;
 	gap: 12px;
 	min-height: 60vh;
 	}
 
 .editor__header {
-	display: grid;
-	align-items: end;
-	grid-template-columns: 1fr auto;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
 	gap: 12px;
 	}
 
-/* Editor toolbar: single line, title flexes, actions fixed */
+/* Editor toolbar sits under editor header and above split panes */
 .editor__toolbar {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: var(--guides-gap);
-	margin: 8px 0 16px;
-	flex-wrap: nowrap;
+	margin-top: -4px;
 	}
 
-.editor-actions {
+/* Two groups: left (Tag/Pattern/Variables) and right (Save/Publish/Export/Title) */
+.toolbar-group {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--guides-gap);
 	flex-wrap: nowrap;
-	width: 100%;
 	}
 
-.toolbar-spacer {
-	flex: 0 0 12px;
+.toolbar-group--left {
+	flex: 0 0 auto;
 	}
 
-/* Normalise control heights and prevent shrinking of buttons */
-.guides-header .toolbar .btn,
+.toolbar-group--right {
+	flex: 0 0 auto;
+	}
+
+/* Normalise heights for buttons and inputs in editor toolbar */
 .editor__toolbar .btn,
 .editor__toolbar input[type="text"],
 .editor__toolbar input[type="search"],
@@ -120,17 +134,22 @@
 	line-height: 1;
 	box-sizing: border-box;
 	white-space: nowrap;
-	flex: 0 0 auto;
 	}
 
-/* Title sits before Save/Publish and flexes to fill space */
+/* Right-side “Guide title” label + input */
+.label-inline {
+	display: inline-flex;
+	align-items: center;
+	height: var(--guides-control-h);
+	margin-right: 6px;
+	}
+
 #guide-title {
-	flex: 1 1 360px;
-	min-width: 220px;
-	max-width: 640px;
+	width: 300px;
+	max-width: 420px;
 	}
 
-/* Legacy title input style for reuse elsewhere */
+/* Optional large title input style (for reuse elsewhere) */
 .input--title {
 	font-size: 1.25rem;
 	font-weight: 600;
@@ -176,7 +195,7 @@
 	font-size: .95rem;
 	}
 
-/* === =MENUS ============================================== */
+/* === =MENUS (export dropdown) ============================ */
 .menu {
 	position: relative;
 	flex: 0 0 auto;
@@ -272,22 +291,18 @@
 		}
 	}
 
-@media (max-width: 600px) {
-	.guides-header {
-		flex-wrap: wrap;
-		gap: 8px;
-		}
-	.guides-header .toolbar {
-		flex-wrap: wrap;
-		gap: 8px;
-		}
+@media (max-width: 720px) {
 	.editor__toolbar {
 		flex-wrap: wrap;
+		row-gap: 8px;
+		}
+	.toolbar-group--right {
+		width: 100%;
+		justify-content: flex-start;
 		}
 	#guide-title {
-		min-width: 200px;
+		width: 100%;
 		max-width: none;
-		flex: 1 1 200px;
 		}
 	}
 
