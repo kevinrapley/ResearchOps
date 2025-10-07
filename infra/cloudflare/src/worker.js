@@ -1691,6 +1691,17 @@ export default {
 				if (url.pathname === "/api/partials" && request.method === "GET") {
 					return service.listPartials(origin);
 				}
+				
+				/**
+				 * Create partial.
+				 * @route POST /api/partials
+				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
+				 * @input { name:string, title:string, category:string, source:string, description?:string }
+				 * @output { ok:true, id:string }
+				 */
+				if (url.pathname === "/api/partials" && request.method === "POST") {
+					return service.createPartial(request, origin);
+				}
 
 				/**
 				 * Get single partial (for editing).
@@ -1701,17 +1712,6 @@ export default {
 				if (url.pathname.startsWith("/api/partials/") && request.method === "GET") {
 					const partialId = decodeURIComponent(url.pathname.slice("/api/partials/".length));
 					return service.readPartial(origin, partialId);
-				}
-
-				/**
-				 * Create partial.
-				 * @route POST /api/partials
-				 * @access OFFICIAL-by-default; CORS enforced via ALLOWED_ORIGINS
-				 * @input { name:string, title:string, category:string, source:string, description?:string }
-				 * @output { ok:true, id:string }
-				 */
-				if (url.pathname === "/api/partials" && request.method === "POST") {
-					return service.createPartial(request, origin);
 				}
 
 				/**
