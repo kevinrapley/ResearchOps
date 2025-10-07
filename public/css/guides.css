@@ -1,9 +1,9 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.0.0
+   Version:    v1.1.0
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
-   Date:       2025-10-05
+   Date:       2025-10-07
    Build:      GOV.UK typography + colours; mobile-first
    Repo:       /css/guides.css
    License:    All rights reserved
@@ -27,6 +27,7 @@
 	--guides-border: #d0d7de;
 	--guides-shadow: rgba(0,0,0,.08);
 	--guides-bg: #fff;
+	--guides-control-h: 36px;
 	}
 
 /* === =LAYOUT ============================================= */
@@ -42,9 +43,23 @@
 	margin: 6px 0 0 0;
 	}
 
-.page-header__actions .btn + .btn,
-.page-header__actions .btn + a {
-	margin-left: 8px;
+/* Heading / toolbar row (buttons align with “Guides for this study”) */
+.guides-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 8px 0 12px;
+	}
+
+.guides-header .govuk-heading-m {
+	margin: 0;
+	}
+
+.guides-header .toolbar {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
 	}
 
 .divider {
@@ -68,20 +83,44 @@
 	gap: 12px;
 	}
 
+/* Editor toolbar: title inline with Save / Publish / Export */
+.editor__toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 8px 0 16px;
+	}
+
+/* Spacer pushes right-hand controls when needed */
+.toolbar-spacer {
+	flex: 1 1 auto;
+	}
+
+/* Consistent control heights for this page only */
+.guides-header .toolbar .btn,
+.editor__toolbar .btn,
+.editor__toolbar input[type="text"],
+.editor__toolbar input[type="search"],
+.editor__toolbar select {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--guides-control-h);
+	padding: 0 12px;
+	line-height: 1;
+	}
+
+/* Title field that sits inline with actions */
+#guide-title {
+	min-width: 280px;
+	flex: 0 1 360px;
+	}
+
+/* Legacy title input style (kept for reuse elsewhere) */
 .input--title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	padding: 8px 10px;
-	}
-
-.editor__toolbar {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	}
-
-.toolbar-spacer {
-	flex: 1 1 auto;
 	}
 
 /* === =SPLIT PANES ======================================== */
@@ -214,6 +253,24 @@
 @media (max-width: 900px) {
 	.editor__split {
 		grid-template-columns: 1fr;
+		}
+	}
+
+@media (max-width: 600px) {
+	.guides-header {
+		flex-wrap: wrap;
+		gap: 8px;
+		}
+	.guides-header .toolbar {
+		flex-wrap: wrap;
+		gap: 8px;
+		}
+	.editor__toolbar {
+		flex-wrap: wrap;
+		}
+	#guide-title {
+		min-width: 200px;
+		flex: 1 1 200px;
 		}
 	}
 
