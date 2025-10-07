@@ -1346,20 +1346,34 @@ class ResearchOpsService {
 	 * @returns {Response}
 	 */
 	async readPartial(origin, id) {
+		console.log("Service.readPartial called with:", { origin, id });
+
+		if (!id) {
+			console.error("Service.readPartial: No ID provided");
+			return this.json({ error: "Missing partial id" }, 400, this.corsHeaders(origin));
+		}
+
 		const base = this.env.AIRTABLE_BASE_ID;
 		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTIALS || "Partials");
 		const url = `https://api.airtable.com/v0/${base}/${table}/${encodeURIComponent(id)}`;
+
+		console.log("Service.readPartial: Fetching from Airtable:", url);
 
 		const res = await fetchWithTimeout(url, {
 			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
 		}, this.cfg.TIMEOUT_MS);
 
+		console.log("Service.readPartial: Airtable response status:", res.status);
+
 		if (!res.ok) {
 			const txt = await res.text();
+			console.error("Service.readPartial: Airtable error:", txt);
 			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
 		}
 
 		const rec = await res.json();
+		console.log("Service.readPartial: Got record:", rec.id);
+
 		const partial = {
 			id: rec.id,
 			name: rec.fields.Name || "",
@@ -1691,7 +1705,7 @@ export default {
 				if (url.pathname === "/api/partials" && request.method === "GET") {
 					return service.listPartials(origin);
 				}
-				
+
 				/**
 				 * Create partial.
 				 * @route POST /api/partials
