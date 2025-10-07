@@ -30,7 +30,7 @@
 	--guides-control-h: 36px;
 	--guide-source-base-h: 550px;
 	/* existing Source height */
-}
+	}
 
 /* === =LAYOUT ============================================= */
 .page-header {
@@ -39,11 +39,11 @@
 	justify-content: space-between;
 	gap: 16px;
 	margin-bottom: 12px;
-}
+	}
 
 .page-header__titles .muted {
 	margin: 6px 0 0 0;
-}
+	}
 
 /* Heading / toolbar row (buttons align with “Guides for this study”) */
 .guides-header {
@@ -52,23 +52,23 @@
 	justify-content: space-between;
 	gap: 12px;
 	margin: 8px 0 12px;
-}
+	}
 
 .guides-header .govuk-heading-m {
 	margin: 0;
-}
+	}
 
 .guides-header .toolbar {
 	display: flex;
 	align-items: baseline;
 	gap: 12px;
-}
+	}
 
 .divider {
 	border: 0;
 	border-top: 1px solid var(--guides-border);
 	margin: 16px 0;
-}
+	}
 
 /* === =EDITOR ============================================= */
 .editor {
@@ -76,14 +76,14 @@
 	grid-template-rows: auto 1fr;
 	gap: 12px;
 	min-height: 60vh;
-}
+	}
 
 .editor__header {
 	display: grid;
 	align-items: end;
 	grid-template-columns: 1fr auto;
 	gap: 12px;
-}
+	}
 
 /* Editor toolbar: title inline with Save / Publish / Export */
 .editor__toolbar {
@@ -91,12 +91,12 @@
 	align-items: center;
 	gap: 12px;
 	margin: 8px 0 16px;
-}
+	}
 
 /* Spacer pushes right-hand controls when needed */
 .toolbar-spacer {
 	flex: 1 1 auto;
-}
+	}
 
 /* Consistent control heights for this page only */
 .guides-header .toolbar .btn,
@@ -110,20 +110,20 @@
 	height: var(--guides-control-h);
 	padding: 0 12px;
 	line-height: 1;
-}
+	}
 
 /* Title field that sits inline with actions */
 #guide-title {
 	min-width: 280px;
 	flex: 0 1 360px;
-}
+	}
 
 /* Legacy title input style (kept for reuse elsewhere) */
 .input--title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	padding: 8px 10px;
-}
+	}
 
 /* === =SPLIT PANES ======================================== */
 /* Fixed heights with vertical overflow:
@@ -135,23 +135,23 @@
 	overflow-y: auto;
 	box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
-}
+	}
 
 #guide-source {
 	resize: none;
-}
+	}
 
 .editor__split {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
 	min-height: 50vh;
-}
+	}
 
 .pane {
 	display: flex;
 	flex-direction: column;
-}
+	}
 
 .code {
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -159,7 +159,7 @@
 	border: 1px solid var(--guides-border);
 	border-radius: 4px;
 	line-height: 1.5;
-}
+	}
 
 .preview {
 	border: 1px solid var(--guides-border);
@@ -169,19 +169,19 @@
 	overflow: auto;
 	background: var(--guides-bg);
 	box-sizing: border-box;
-}
+	}
 
 /* === =LINT OUTPUT ======================================== */
 .lint {
 	margin-top: 6px;
 	min-height: 1.4em;
 	font-size: .95rem;
-}
+	}
 
 /* === =MENUS ============================================== */
 .menu {
 	position: relative;
-}
+	}
 
 .menu__list {
 	position: absolute;
@@ -196,16 +196,16 @@
 	border-radius: 4px;
 	box-shadow: 0 4px 18px var(--guides-shadow);
 	display: none;
-}
+	}
 
 .menu__list[aria-expanded="true"],
 .menu[aria-expanded="true"] .menu__list {
 	display: block;
-}
+	}
 
 .menu__list li {
 	list-style: none;
-}
+	}
 
 .menu__list button {
 	display: block;
@@ -215,7 +215,7 @@
 	border: 0;
 	background: transparent;
 	cursor: pointer;
-}
+	}
 
 /* === =DRAWERS ============================================ */
 .drawer {
@@ -230,17 +230,17 @@
 	box-shadow: -6px 0 18px rgba(0, 0, 0, .06);
 	padding: 16px;
 	overflow: auto;
-}
+	}
 
 .list-plain {
 	list-style: none;
 	margin: 8px 0 0 0;
 	padding: 0;
-}
+	}
 
 .list-plain li+li {
 	margin-top: 8px;
-}
+	}
 
 .link-like {
 	background: none;
@@ -249,48 +249,48 @@
 	text-decoration: underline;
 	cursor: pointer;
 	padding: 8px 0;
-}
+	}
 
 /* === =FORMS ============================================== */
 .form-grid {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 8px;
-}
+	}
 
 .input {
 	border: 1px solid #b1b4b6;
 	border-radius: 2px;
 	padding: 8px 10px;
 	width: 100%;
-}
+	}
 
 /* === =RESPONSIVE ========================================= */
 @media (max-width: 900px) {
 	.editor__split {
 		grid-template-columns: 1fr;
+		}
 	}
-}
 
 @media (max-width: 600px) {
 	.guides-header {
 		flex-wrap: wrap;
 		gap: 8px;
-	}
+		}
 
 	.guides-header .toolbar {
 		flex-wrap: wrap;
 		gap: 8px;
-	}
+		}
 
 	.editor__toolbar {
 		flex-wrap: wrap;
-	}
+		}
 
 	#guide-title {
 		min-width: 200px;
 		flex: 1 1 200px;
+		}
 	}
-}
 
 /* transparency begins in the cascade */
