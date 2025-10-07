@@ -137,38 +137,70 @@ export async function renderGuide({ source, context, partials }) {
 }
 
 /**
- * Fetch partials by name from API; fallback to in-page registry.
- * @param {string[]} names
- * @returns {Promise<Record<string,string>>}
+ * Build partials map for Mustache rendering.
+ * Fetches partial source from /api/partials.
+ * @param {string[]} names - Array of partial names (e.g., ["intro_opening_v1", "consent_statement_v1"])
+ * @returns {Promise<Record<string, string>>} Map of partial name to source
  */
 export async function buildPartials(names) {
-	const res = await fetch("/api/partials", { cache: "no-store" });
-	if (!res.ok) return {};
+	if (!names || !names.length) return {};
 
-	const { partials = [] } = await res.json();
-	const map = {};
+	try {
+		// Fetch all partials list
+		const res = await fetch("/api/partials", { cache: "no-store" });
+		if (!res.ok) {
+			console.error("Failed to fetch partials list:", res.status);
+			return {};
+		}
 
-	for (const name of names) {
-		// Match name_v1 format
-		const match = name.match(/^(.+)_v(\d+)$/);
-		const baseName = match ? match[1] : name;
-		const version = match ? parseInt(match[2], 10) : 1;
+		const { partials = [] } = await res.json();
+		const map = {};
 
-		const partial = partials.find(p =>
-			p.name === baseName && p.version === version
-		);
+		// For each requested name, find matching partial and fetch its source
+		for (const name of names) {
+			// Match name (with or without version suffix)
+			// "intro_opening_v1" or "intro_opening"
+			const match = name.match(/^(.+?)(?:_v(\d+))?$/);
+			const baseName = match ? match[1] : name;
+			const version = match && match[2] ? parseInt(match[2], 10) : 1;
 
-		if (partial) {
+			// Find partial with matching name and version
+			const partial = partials.find(p =>
+				p.name === baseName && p.version === version
+			);
+
+			if (!partial) {
+				console.warn(`Partial not found: ${name} (base: ${baseName}, v${version})`);
+				continue;
+			}
+
 			// Fetch full source
-			const r2 = await fetch(`/api/partials/${partial.id}`, { cache: "no-store" });
-			if (r2.ok) {
-				const { partial: full } = await r2.json();
-				map[name] = full.source;
+			try {
+				const sourceRes = await fetch(`/api/partials/${encodeURIComponent(partial.id)}`, {
+					cache: "no-store"
+				});
+
+				if (!sourceRes.ok) {
+					console.error(`Failed to fetch partial ${name}:`, sourceRes.status);
+					continue;
+				}
+
+				const { partial: full } = await sourceRes.json();
+
+				// Store with the exact name used in template
+				map[name] = full.source || "";
+
+				console.log(`✓ Loaded partial: ${name}`);
+			} catch (err) {
+				console.error(`Error fetching partial ${name}:`, err);
 			}
 		}
-	}
 
-	return map;
+		return map;
+	} catch (err) {
+		console.error("Error building partials:", err);
+		return {};
+	}
 }
 
 /* Starter source for new guides (kept minimal; FM is optional) */
