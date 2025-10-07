@@ -39,16 +39,40 @@
 				<p id="study-subtitle" class="muted">Study: <span id="study-title" data-bind="study.title">—</span></p>
 			</div>
 
-			<div class="page-header__actions" role="toolbar" aria-label="Guide actions">
-				<button id="btn-new" class="btn">＋ New guide</button>
-				<button id="btn-import" class="btn btn--secondary">⤒ Import .md</button>
-				<a id="back-to-study" class="btn btn--secondary" href="#">← Back to Study</a>
+			<!-- Heading / toolbar row -->
+			<div class="guides-header" role="toolbar" aria-label="Discussion guide actions">
+				<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
+				<div class="toolbar">
+					<button id="btn-new" class="btn">＋ New guide</button>
+					<button id="btn-import" class="btn btn--secondary">⤒ Import .md</button>
+					<a id="back-to-study" class="btn btn--secondary" href="#">← Back to Study</a>
+				</div>
+			</div>
+
+			<!-- Editor toolbar row -->
+			<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
+				<div class="editor-actions">
+					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
+					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
+					<button id="btn-variables" class="btn btn--secondary">Variables</button>
+					<div class="toolbar-spacer" aria-hidden="true"></div>
+					<button id="btn-save" class="btn">💾 Save</button>
+					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
+					<input id="guide-title" type="text" value="New guide" placeholder="Guide title" />
+					<div class="menu">
+						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
+						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
+							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
+							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
+							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
+							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
+						</ul>
+					</div>
+				</div>
 			</div>
 		</header>
 
 		<section id="guides-list-section" aria-labelledby="guides-list-title">
-			<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
-
 			<div class="table-wrap">
 				<table class="table" role="table">
 					<thead>
@@ -75,29 +99,6 @@
 		<section id="editor-section" class="editor is-hidden" aria-labelledby="editor-title">
 			<div class="editor__header">
 				<h2 id="editor-title" class="govuk-heading-m">Guide editor</h2>
-				<div class="editor__meta">
-					<label for="guide-title" class="sr-only">Guide title</label>
-					<input id="guide-title" name="guide-title" class="input input--title" placeholder="Untitled guide" />
-					<span id="guide-status" class="tag" aria-live="polite">draft</span>
-				</div>
-
-				<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
-					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
-					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
-					<button id="btn-variables" class="btn btn--secondary">Variables</button>
-					<div class="toolbar-spacer" aria-hidden="true"></div>
-					<button id="btn-save" class="btn">💾 Save</button>
-					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
-					<div class="menu">
-						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
-						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
-							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
-							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
-							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
-							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
-						</ul>
-					</div>
-				</div>
 			</div>
 
 			<div class="editor__split" aria-label="Source and preview">
@@ -136,14 +137,14 @@
 			<h3>Debug output</h3>
 			<pre id="debug-output" class="debug-output">Debugging disabled.</pre>
 			<style>
-			.debug-panel {
-				margin-top: 24px;
-				padding: 12px;
-				background: #f3f2f1;
-				border: 1px solid #b1b4b6;
-				overflow-x: auto;
-				white-space: pre-wrap;
-				font-family: monospace;
+				.debug-panel {
+					margin-top: 24px;
+					padding: 12px;
+					background: #f3f2f1;
+					border: 1px solid #b1b4b6;
+					overflow-x: auto;
+					white-space: pre-wrap;
+					font-family: monospace;
 				}
 			</style>
 		</section>
