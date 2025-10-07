@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResearchOps UI • Guides stylesheet (scoped)
-   Version:    v1.1.0
+   Version:    v1.3.0
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
    Date:       2025-10-07
@@ -13,13 +13,14 @@
 /* CSS DIRECTORY
 	1. = TOKENS
 	2. = LAYOUT
-	3. = EDITOR (wrapper, toolbar, inputs)
-	4. = SPLIT PANES (source + preview)
-	5. = LINT OUTPUT
-	6. = MENUS (export dropdown)
-	7. = DRAWERS (patterns, variables)
-	8. = FORMS
-	9. = RESPONSIVE
+	3. = LIST HEADER (above table)
+	4. = EDITOR (header, toolbar row, inputs)
+	5. = SPLIT PANES (source + preview)
+	6. = LINT OUTPUT
+	7. = MENUS (export dropdown)
+	8. = DRAWERS (patterns, variables)
+	9. = FORMS
+	10. = RESPONSIVE
 */
 
 /* === =TOKENS ============================================= */
@@ -28,6 +29,7 @@
 	--guides-shadow: rgba(0,0,0,.08);
 	--guides-bg: #fff;
 	--guides-control-h: 36px;
+	--guides-gap: 10px;
 	--guide-source-base-h: 550px;
 	}
 
@@ -44,12 +46,19 @@
 	margin: 6px 0 0 0;
 	}
 
-/* Heading / toolbar row (buttons align with “Guides for this study”) */
+.divider {
+	border: 0;
+	border-top: 1px solid var(--guides-border);
+	margin: 16px 0;
+	}
+
+/* === =LIST HEADER (ABOVE TABLE) ========================== */
+/* “Guides for this study” + New / Import / Back — all on one baseline */
 .guides-header {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--guides-gap);
 	margin: 8px 0 12px;
 	}
 
@@ -60,45 +69,60 @@
 .guides-header .toolbar {
 	display: flex;
 	align-items: baseline;
-	gap: 12px;
+	gap: var(--guides-gap);
+	white-space: nowrap;
 	}
 
-.divider {
-	border: 0;
-	border-top: 1px solid var(--guides-border);
-	margin: 16px 0;
+.guides-header .toolbar .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--guides-control-h);
+	padding: 0 12px;
+	line-height: 1;
 	}
 
 /* === =EDITOR ============================================= */
 .editor {
 	display: grid;
-	grid-template-rows: auto 1fr;
+	grid-template-rows: auto auto 1fr;
 	gap: 12px;
 	min-height: 60vh;
 	}
 
 .editor__header {
-	display: grid;
-	align-items: end;
-	grid-template-columns: 1fr auto;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
 	gap: 12px;
 	}
 
-/* Editor toolbar: title inline with Save / Publish / Export */
+/* Editor toolbar sits under editor header and above split panes */
 .editor__toolbar {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	margin: 8px 0 16px;
+	justify-content: space-between;
+	gap: var(--guides-gap);
+	margin-top: -4px;
 	}
 
-/* Spacer pushes right-hand controls when needed */
-.toolbar-spacer {
-	flex: 1 1 auto;
+/* Two groups: left (Tag/Pattern/Variables) and right (Save/Publish/Export/Title) */
+.toolbar-group {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--guides-gap);
+	flex-wrap: nowrap;
 	}
 
-/* Consistent control heights for this page only */
-.guides-header .toolbar .btn,
+.toolbar-group--left {
+	flex: 0 0 auto;
+	}
+
+.toolbar-group--right {
+	flex: 0 0 auto;
+	}
+
+/* Normalise heights for buttons and inputs in editor toolbar */
 .editor__toolbar .btn,
 .editor__toolbar input[type="text"],
 .editor__toolbar input[type="search"],
@@ -109,15 +133,24 @@
 	height: var(--guides-control-h);
 	padding: 0 12px;
 	line-height: 1;
+	box-sizing: border-box;
+	white-space: nowrap;
 	}
 
-/* Title field that sits inline with actions */
+/* Right-side “Guide title” label + input */
+.label-inline {
+	display: inline-flex;
+	align-items: center;
+	height: var(--guides-control-h);
+	margin-right: 6px;
+	}
+
 #guide-title {
-	min-width: 280px;
-	flex: 0 1 360px;
+	width: 300px;
+	max-width: 420px;
 	}
 
-/* Legacy title input style (kept for reuse elsewhere) */
+/* Optional large title input style (for reuse elsewhere) */
 .input--title {
 	font-size: 1.25rem;
 	font-weight: 600;
@@ -125,6 +158,8 @@
 	}
 
 /* === =SPLIT PANES ======================================== */
+/* Fixed heights with vertical overflow:
+   Both Source and Preview are (base Source height + 150px). */
 #guide-source,
 #guide-preview {
 	height: var(--guide-source-base-h);
@@ -175,9 +210,10 @@
 	font-size: .95rem;
 	}
 
-/* === =MENUS ============================================== */
+/* === =MENUS (export dropdown) ============================ */
 .menu {
 	position: relative;
+	flex: 0 0 auto;
 	}
 
 .menu__list {
@@ -260,6 +296,7 @@
 	border-radius: 2px;
 	padding: 8px 10px;
 	width: 100%;
+	box-sizing: border-box;
 	}
 
 /* === =RESPONSIVE ========================================= */
@@ -269,21 +306,18 @@
 		}
 	}
 
-@media (max-width: 600px) {
-	.guides-header {
-		flex-wrap: wrap;
-		gap: 8px;
-		}
-	.guides-header .toolbar {
-		flex-wrap: wrap;
-		gap: 8px;
-		}
+@media (max-width: 720px) {
 	.editor__toolbar {
 		flex-wrap: wrap;
+		row-gap: 8px;
+		}
+	.toolbar-group--right {
+		width: 100%;
+		justify-content: flex-start;
 		}
 	#guide-title {
-		min-width: 200px;
-		flex: 1 1 200px;
+		width: 100%;
+		max-width: none;
 		}
 	}
 
