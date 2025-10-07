@@ -32,14 +32,14 @@
 			</ol>
 		</nav>
 
-		<!-- Header -->
+		<!-- Page header (titles only) -->
 		<header class="page-header">
 			<div class="page-header__titles">
 				<h1 class="govuk-heading-l">Discussion Guides</h1>
 				<p id="study-subtitle" class="muted">Study: <span id="study-title" data-bind="study.title">—</span></p>
 			</div>
 
-			<!-- Heading / toolbar row -->
+			<!-- List toolbar row (baseline-aligned with the h2) -->
 			<div class="guides-header" role="toolbar" aria-label="Discussion guide actions">
 				<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
 				<div class="toolbar">
@@ -48,33 +48,9 @@
 					<a id="back-to-study" class="btn btn--secondary" href="#">← Back to Study</a>
 				</div>
 			</div>
-
-			<!-- Editor toolbar row -->
-			<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
-				<div class="editor-actions">
-					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
-					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
-					<button id="btn-variables" class="btn btn--secondary">Variables</button>
-					<div class="toolbar-spacer" aria-hidden="true"></div>
-
-					<input id="guide-title" type="text" value="New guide" placeholder="Guide title" />
-
-					<button id="btn-save" class="btn">💾 Save</button>
-					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
-
-					<div class="menu">
-						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
-						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
-							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
-							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
-							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
-							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
-						</ul>
-					</div>
-				</div>
-			</div>
 		</header>
 
+		<!-- Guides table -->
 		<section id="guides-list-section" aria-labelledby="guides-list-title">
 			<div class="table-wrap">
 				<table class="table" role="table">
@@ -99,11 +75,38 @@
 
 		<hr class="divider" />
 
+		<!-- Editor section -->
 		<section id="editor-section" class="editor is-hidden" aria-labelledby="editor-title">
 			<div class="editor__header">
 				<h2 id="editor-title" class="govuk-heading-m">Guide editor</h2>
 			</div>
 
+			<!-- Editor toolbar row (left: Tag/Pattern/Variables; right: Save/Publish/Export/Title) -->
+			<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
+				<div class="toolbar-group toolbar-group--left">
+					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
+					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
+					<button id="btn-variables" class="btn btn--secondary">Variables</button>
+				</div>
+
+				<div class="toolbar-group toolbar-group--right">
+					<button id="btn-save" class="btn">💾 Save</button>
+					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
+					<div class="menu">
+						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
+						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
+							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
+							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
+							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
+							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
+						</ul>
+					</div>
+					<label for="guide-title" class="label-inline">Guide title</label>
+					<input id="guide-title" type="text" value="New guide" placeholder="Guide title" />
+				</div>
+			</div>
+
+			<!-- Source + preview split -->
 			<div class="editor__split" aria-label="Source and preview">
 				<section class="pane pane--source" aria-labelledby="source-title">
 					<h3 id="source-title" class="govuk-heading-s">Source (Markdown + Mustache)</h3>
@@ -119,6 +122,7 @@
 				</section>
 			</div>
 
+			<!-- Drawers (must remain after editor__split) -->
 			<aside id="drawer-patterns" class="drawer" aria-labelledby="drawer-patterns-title" hidden>
 				<h3 id="drawer-patterns-title" class="govuk-heading-s">Pattern library</h3>
 				<input id="pattern-search" class="input" placeholder="Search patterns" />
@@ -136,6 +140,7 @@
 		</section>
 
 		<div id="sr-live" class="sr-only" aria-live="polite"></div>
+
 		<section id="debug-panel" hidden class="debug-panel">
 			<h3>Debug output</h3>
 			<pre id="debug-output" class="debug-output">Debugging disabled.</pre>
@@ -164,15 +169,12 @@
 		 * - Title uses `study.title || study.Title || Method — YYYY-MM-DD`.
 		 * - Binds study name into breadcrumb and header subtitle.
 		 * - Routes “Back to Study” to `/pages/study/?pid=…&sid=…`.
+		 * - Exposes context for /components/guides/guides-page.js.
 		 */
 
 		const $ = (s, r = document) => r.querySelector(s);
 
-		/**
-		 * Compute fallback “Method — YYYY-MM-DD” title for studies missing a title field.
-		 * @param {{ method?: string, createdAt?: string }} s
-		 * @returns {string}
-		 */
+		/** Compute fallback “Method — YYYY-MM-DD” for studies missing a title. */
 		function fallbackTitle(s = {}) {
 			const method = (s.method || "Study").trim();
 			const d = s.createdAt ? new Date(s.createdAt) : new Date();
@@ -182,20 +184,12 @@
 			return `${method} — ${yyyy}-${mm}-${dd}`;
 		}
 
-		/**
-		 * Pick the best available title.
-		 * @param {{ title?: string, Title?: string, method?: string, createdAt?: string }} s
-		 * @returns {string}
-		 */
+		/** Pick the best available title. */
 		function pickTitle(s = {}) {
 			return (s.title || s.Title || "").trim() || fallbackTitle(s);
 		}
 
-		/**
-		 * Load studies for a project from the Worker API.
-		 * @param {string} projectId Airtable project record id
-		 * @returns {Promise<Array<Object>>}
-		 */
+		/** Load studies for a project from the Worker API. */
 		async function loadStudies(projectId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
 			const res = await fetch(url, { cache: "no-store" });
@@ -206,9 +200,7 @@
 			return js.studies;
 		}
 
-		/* ──────────────────────────────────────────────
-		 * Bootstrap
-		 * ────────────────────────────────────────────── */
+		/* ── Bootstrap ───────────────────────────────────────────────────── */
 		(async function init() {
 			try {
 				const usp = new URLSearchParams(location.search);
