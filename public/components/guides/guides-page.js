@@ -365,8 +365,10 @@ function wireEditor() {
 
 	// Title
 	const title = $("#guide-title");
-	if (title) title.addEventListener("input", debounce(function() { announce("Title updated");
-		validateGuide(); }, 400));
+	if (title) title.addEventListener("input", debounce(function() {
+		announce("Title updated");
+		validateGuide();
+	}, 400));
 
 	// Save/Publish
 	const saveBtn = $("#btn-save");
@@ -501,7 +503,7 @@ async function openGuide(id) {
  * Preview uses JSON variables
  */
 async function preview() {
-	const srcEl = $("#guide-source");
+	const srcEl = document.getElementById("guide-source");
 	if (!srcEl) return;
 
 	const source = stripFrontMatter(srcEl.value || "");
@@ -509,21 +511,29 @@ async function preview() {
 	const project = ensureProjectName(ctx.project || {});
 	const study = ensureStudyTitle(ctx.study || {});
 
-	const meta = (varManager && typeof varManager.getVariables === "function") ?
+	// Variables from manager
+	const vars = (varManager && typeof varManager.getVariables === "function") ?
 		varManager.getVariables() : {};
 
-	const context = { project: project, study: study, session: {}, participant: {}, meta: meta };
+	// Expose variables at root *and* under meta
+	const context = {
+		project,
+		study,
+		session: {},
+		participant: {},
+		...vars, // ← enables {{version}}
+		meta: vars // ← keeps {{meta.version}} working
+	};
 
 	const names = collectPartialNames(source);
 	let partials = {};
-	try { partials = await buildPartials(names); } catch (e) {}
+	try { partials = await buildPartials(names); } catch {}
 
-	const out = await renderGuide({ source: source, context: context, partials: partials });
-
-	const prev = $("#guide-preview");
+	const out = await renderGuide({ source, context, partials });
+	const prev = document.getElementById("guide-preview");
 	if (prev) prev.innerHTML = out.html;
 
-	runLints({ source: source, context: context, partials: partials });
+	runLints({ source, context, partials });
 }
 
 /* -------------------- save / publish -------------------- */
@@ -994,6 +1004,10 @@ function openVariablesDrawer() {
 		d.hidden = false;
 		d.focus();
 	}
+	// Ensure actions exist if someone navigates here very early
+	if (!document.getElementById("btn-save-vars")) {
+		populateVariablesFormEnhanced(varManager?.getVariables?.() || {});
+	}
 	announce("Variables drawer opened");
 }
 
@@ -1029,32 +1043,49 @@ function closeTagDialog() {
  * @param {Record<string, any>} jsonVars
  */
 function populateVariablesFormEnhanced(jsonVars) {
-	const form = $("#variables-form");
+	const form = document.getElementById("variables-form");
 	if (!form) return;
-	form.innerHTML = '<div id="variable-manager-container"></div>';
 
+	// Build the form content fresh (container + actions + status)
+	form.innerHTML = `
+    <div id="variable-manager-container"></div>
+
+    <div class="actions-row">
+      <button id="btn-save-vars" class="btn" type="button">💾 Save variables</button>
+      <button id="btn-reset-vars" class="btn btn--secondary" type="button">↺ Discard changes</button>
+      <button id="drawer-variables-close" class="link-like" type="button">Close</button>
+    </div>
+
+    <p id="variables-status" class="muted" aria-live="polite"></p>
+  `;
+
+	// Prepare initial values (keep strings readable; non-strings shown as JSON)
 	const initial = {};
 	const src = jsonVars || {};
 	for (const k in src) {
-		if (Object.prototype.hasOwnProperty.call(src, k)) {
-			// present editable strings in the UI; preserve types on save hereafter
-			initial[k] = typeof src[k] === "string" ? src[k] : JSON.stringify(src[k]);
-		}
+		if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
+		initial[k] = typeof src[k] === "string" ? src[k] : JSON.stringify(src[k]);
 	}
 
+	// (Re)create manager
 	varManager = new VariableManager({
-		containerId: 'variable-manager-container',
+		containerId: "variable-manager-container",
 		initialVariables: initial,
 		onChange: () => {
-			preview(); // preview always uses JSON-only variables
-			validateGuide(); // keep lint panel fresh
-			announce('Variables updated');
+			preview();
+			validateGuide();
 		},
 		onError: (msg) => {
-			console.error('[guides] Variable error:', msg);
-			announce(`Error: ${msg}`);
+			console.error("[guides] Variable error:", msg);
+			const s = document.getElementById("variables-status");
+			if (s) s.textContent = `Error: ${msg}`;
 		}
 	});
+
+	// Bind buttons NOW (since we just injected them)
+	document.getElementById("btn-save-vars")?.addEventListener("click", onSaveVariablesOnly);
+	document.getElementById("btn-reset-vars")?.addEventListener("click", onResetVariables);
+	document.getElementById("drawer-variables-close")?.addEventListener("click", closeVariablesDrawer);
 }
 
 /* -------------------- export / helpers / lints (mostly unchanged) -------------------- */
