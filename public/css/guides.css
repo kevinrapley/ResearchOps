@@ -288,7 +288,7 @@ textarea.code {
 /* Textarea - interactive layer with transparent text */
 .code-editor__textarea {
 	position: absolute; /* ← Must be absolute */
-	top: 24px;
+	top: 12px;
 	left: 0;
 	width: 100%;
 	height: 100%;
