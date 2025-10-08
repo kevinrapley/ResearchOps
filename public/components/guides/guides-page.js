@@ -1,17 +1,19 @@
 /**
  * @file guides-page.js
  * @module GuidesPage
- * @summary Discussion Guides hub (list + editor bootstrap).
+ * @summary Discussion Guides hub with enhanced variable management.
  *
  * @description
- * - Wires header actions (+ New, Import, Export) with delegated fallbacks.
- * - Loads project/study context for breadcrumbs & editor rendering.
- * - Opens a robust editor panel that shows even if optional imports fail.
- * - Provides Mustache syntax highlighting in the source editor.
+ * - Integrates VariableManager component for front-matter variables
+ * - Maintains existing YAML front-matter approach
+ * - Provides live validation and smart placeholders
+ * - All other functionality unchanged
  *
  * @requires /lib/mustache.min.js
  * @requires /lib/marked.min.js
  * @requires /lib/purify.min.js
+ * @requires /components/guides/variable-manager.js (NEW)
+ * @requires /components/guides/variable-utils.js (NEW)
  */
 
 import Mustache from "/lib/mustache.min.js";
@@ -22,9 +24,20 @@ import { buildContext } from "/components/guides/context.js";
 import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js";
 import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js";
 
+// ===== NEW: Variable management imports =====
+import { VariableManager } from "/components/guides/variable-manager.js";
+import {
+	validateTemplate,
+	formatValidationReport,
+	suggestVariables
+} from "/components/guides/variable-utils.js";
+
 /** qS helpers */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+// ===== NEW: Variable manager instance =====
+let varManager = null;
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
@@ -351,6 +364,8 @@ function wireEditor() {
 		src.addEventListener("input", debounce(function() {
 			syncHighlighting();
 			preview();
+			// ===== NEW: Validate on source change =====
+			validateGuide();
 		}, 150));
 
 		// CRITICAL: Sync scroll perfectly in both directions
@@ -417,7 +432,8 @@ async function startNewGuide() {
 			console.warn("Pattern list failed:", err);
 		}
 
-		try { populateVariablesForm({}); } catch (err) { console.warn("Variables form failed:", err); }
+		// ===== UPDATED: Use VariableManager instead =====
+		try { populateVariablesFormEnhanced({}); } catch (err) { console.warn("Variables form failed:", err); }
 		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
 
 		if (titleEl) titleEl.focus();
@@ -466,7 +482,10 @@ async function openGuide(id) {
 
 		await refreshPatternList();
 
-		populateVariablesForm(guide.variables || {});
+		// ===== UPDATED: Use VariableManager =====
+		const fm = readFrontMatter(guide.sourceMarkdown || "");
+		populateVariablesFormEnhanced(fm.meta || {});
+
 		await preview();
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
@@ -988,63 +1007,148 @@ async function onPatternSearch(e) {
 	}
 }
 
-/* -------------------- drawers: variables -------------------- */
+/* ============================================================================
+ * ENHANCED VARIABLES DRAWER with VariableManager
+ * ============================================================================ */
+
+/**
+ * Open variables drawer with VariableManager component.
+ */
 function openVariablesDrawer() {
-	var src = $("#guide-source");
-	var text = src ? src.value : "";
-	var fm = readFrontMatter(text);
-	populateVariablesForm((fm && fm.meta) || {});
-	var d = $("#drawer-variables");
+	const src = $("#guide-source");
+	const text = src ? src.value : "";
+	const fm = readFrontMatter(text);
+
+	// ===== NEW: Use VariableManager =====
+	populateVariablesFormEnhanced((fm && fm.meta) || {});
+
+	const d = $("#drawer-variables");
 	if (d) {
 		d.hidden = false;
 		d.focus();
 	}
+
+	announce("Variables drawer opened");
 }
 
 function closeVariablesDrawer() {
-	var d = $("#drawer-variables");
+	const d = $("#drawer-variables");
 	if (d) d.hidden = true;
-	var b = $("#btn-variables");
+	const b = $("#btn-variables");
 	if (b) b.focus();
+	announce("Variables drawer closed");
 }
 
-function populateVariablesForm(meta) {
-	var form = $("#variables-form");
+/**
+ * Populate variables form using VariableManager component.
+ * @param {Record<string, any>} meta - Front-matter variables
+ */
+function populateVariablesFormEnhanced(meta) {
+	const form = $("#variables-form");
 	if (!form) return;
-	form.innerHTML = "";
-	var entries = Object.entries(meta || {}).slice(0, 40);
-	for (var i = 0; i < entries.length; i++) {
-		var kv = entries[i];
-		var k = kv[0],
-			v = kv[1];
-		var id = "var-" + k;
-		var row = document.createElement("div");
-		row.innerHTML =
-			'<label for="' + id + '">' + escapeHtml(k) + "</label>" +
-			'<input id="' + id + '" class="input" value="' + escapeHtml(String(v)) + '" />';
-		form.appendChild(row);
+
+	// Clear existing content
+	form.innerHTML = '<div id="variable-manager-container"></div>';
+
+	const container = $("#variable-manager-container");
+	if (!container) return;
+
+	// Convert meta values to strings for VariableManager
+	const variables = {};
+	for (const key in (meta || {})) {
+		if (Object.prototype.hasOwnProperty.call(meta, key)) {
+			variables[key] = String(meta[key]);
+		}
 	}
-	form.addEventListener("input", debounce(onVarsEdit, 200));
+
+	// Create new VariableManager instance
+	varManager = new VariableManager({
+		containerId: 'variable-manager-container',
+		initialVariables: variables,
+		onChange: (updatedVariables) => {
+			console.log('[guides] Variables changed:', updatedVariables);
+			// Write back to front-matter
+			writeFrontMatterFromVariables(updatedVariables);
+			// Trigger preview update
+			preview();
+			// Validate
+			validateGuide();
+			announce('Variables updated');
+		},
+		onError: (msg) => {
+			console.error('[guides] Variable error:', msg);
+			announce(`Error: ${msg}`);
+		}
+	});
 }
 
-function onVarsEdit() {
-	var srcEl = $("#guide-source");
-	var src = srcEl ? srcEl.value : "";
-	var fm = readFrontMatter(src);
-	var formVals = {};
-	var inputs = $$("#variables-form input");
-	for (var i = 0; i < inputs.length; i++) {
-		var id = inputs[i].id || "";
-		var key = id.replace(/^var-/, "");
-		formVals[key] = inputs[i].value;
+/**
+ * Write variables back to front-matter in source.
+ * @param {Record<string, string>} variables
+ */
+function writeFrontMatterFromVariables(variables) {
+	const srcEl = $("#guide-source");
+	if (!srcEl) return;
+
+	const currentSource = srcEl.value;
+	const fm = readFrontMatter(currentSource);
+
+	// Convert string values back to appropriate types
+	const typedMeta = {};
+	for (const key in variables) {
+		if (Object.prototype.hasOwnProperty.call(variables, key)) {
+			const val = variables[key];
+			// Try to preserve types
+			if (/^\d+$/.test(val)) {
+				typedMeta[key] = Number(val);
+			} else if (val === "true") {
+				typedMeta[key] = true;
+			} else if (val === "false") {
+				typedMeta[key] = false;
+			} else {
+				typedMeta[key] = val;
+			}
+		}
 	}
-	var merged = clonePlainObject((fm && fm.meta) || {});
-	for (var k in formVals)
-		if (Object.prototype.hasOwnProperty.call(formVals, k)) merged[k] = formVals[k];
-	var rebuilt = writeFrontMatter(src, merged);
-	if (srcEl) srcEl.value = rebuilt;
-	preview();
+
+	// Merge with existing front-matter
+	const mergedMeta = { ...fm.meta, ...typedMeta };
+
+	// Write back to source
+	const rebuiltSource = writeFrontMatter(currentSource, mergedMeta);
+	srcEl.value = rebuiltSource;
+
+	// Update syntax highlighting
+	syncHighlighting();
 }
+
+/**
+ * Validate guide template with variables.
+ */
+function validateGuide() {
+	const srcEl = $("#guide-source");
+	const lintOutput = $("#lint-output");
+
+	if (!srcEl || !varManager) return;
+
+	const source = srcEl.value;
+	const fm = readFrontMatter(source);
+	const variables = varManager.getVariables();
+
+	// Only validate the body (after front-matter)
+	const template = fm.body || source;
+
+	const result = validateTemplate(template, variables);
+	const report = formatValidationReport(result);
+
+	if (lintOutput) {
+		lintOutput.innerHTML = report;
+	}
+}
+
+/* ============================================================================
+ * END ENHANCED VARIABLES
+ * ============================================================================ */
 
 /* -------------------- export -------------------- */
 async function doExport(kind) {
@@ -1436,3 +1540,11 @@ function announce(msg) {
 	var sr = $("#sr-live");
 	if (sr) sr.textContent = msg;
 }
+
+// Export for debugging
+window.guidesPage = {
+	varManager: () => varManager,
+	validateGuide,
+	openVariablesDrawer,
+	closeVariablesDrawer
+};
