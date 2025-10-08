@@ -177,7 +177,6 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
-	min-height: 50vh;
 	}
 
 .pane {
@@ -213,7 +212,6 @@ textarea.code {
 .code-editor {
 	position: relative;
 	width: 100%;
-	min-height: 400px;
 	border: 1px solid #b1b4b6;
 	border-radius: 4px;
 	background: #ffffff;
