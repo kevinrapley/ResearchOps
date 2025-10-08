@@ -212,10 +212,10 @@
 	border: 1px solid #b1b4b6;
 	border-radius: 4px;
 	overflow: hidden;
-	background: #fafafa;
+	background: #ffffff;
 	font-family: 'Courier New', Courier, monospace;
 	font-size: 14px;
-	line-height: 1.5;
+	line-height: 1.6;
 	}
 
 .code-editor__highlight {
@@ -231,6 +231,7 @@
 	word-wrap: break-word;
 	color: transparent;
 	z-index: 1;
+	background: transparent;
 	}
 
 .code-editor__highlight pre {
@@ -248,6 +249,7 @@
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
+	text-shadow: none;
 	}
 
 .code-editor__textarea {
@@ -272,52 +274,67 @@
 	}
 
 .code-editor__textarea:focus {
-	background: rgba(255, 255, 255, 0.3);
+	background: rgba(253, 253, 253, 0.5);
 	}
 
-/* Mustache syntax highlighting */
+/* Mustache syntax highlighting - optimized for light background */
 .token.mustache {
-	color: #d73a49;
+	color: #c7254e;
 	font-weight: 600;
 	}
 
 .token.mustache-tag {
-	color: #d73a49;
+	color: #c7254e;
 	}
 
 .token.mustache-variable {
-	color: #6f42c1;
+	color: #9b59b6;
+	font-weight: 500;
 	}
 
 .token.keyword {
-	color: #005cc5;
+	color: #3498db;
 	font-weight: 600;
 	}
 
 .token.comment {
-	color: #6a737d;
+	color: #95a5a6;
 	font-style: italic;
 	}
 
-/* Markdown syntax */
+/* Markdown syntax - light background optimized */
 .token.title {
-	color: #005cc5;
+	color: #2980b9;
 	font-weight: 700;
 	}
 
 .token.bold {
 	font-weight: 700;
+	color: #2c3e50;
 	}
 
 .token.italic {
 	font-style: italic;
+	color: #34495e;
 	}
 
 .token.code {
-	color: #032f62;
-	background: rgba(27, 31, 35, 0.05);
+	color: #e74c3c;
+	background: #f9f2f4;
 	padding: 2px 4px;
 	border-radius: 3px;
+	}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.code-editor {
+		min-height: 300px;
+		font-size: 13px;
+		}
+	
+	.code-editor__textarea {
+		min-height: 300px;
+		}
 	}
 
 /* === LIVE PREVIEW STYLES ================================ */
