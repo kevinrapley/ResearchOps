@@ -395,16 +395,15 @@
 
 				<div class="panel muted" id="variables-intro" aria-describedby="variables-help">
 					<p id="variables-help">
-						Variables let you personalise your discussion guide via Mustache tags like <code>{{participant.name}}</code>.
-						This editor stores variables as <strong>JSON</strong> (Airtable: <em>Variables (JSON)</em> column). No YAML required.
+						Variables personalise your guide using Mustache tags like <code>{{participant.name}}</code>.
+						This editor stores variables as <strong>JSON</strong> in Airtable (“Variables (JSON)”).
 					</p>
 					<ul>
-						<li><strong>Create</strong> a new variable with “+ Add”. Use short, semantic keys (e.g. <code>session.date</code>).</li>
-						<li><strong>Edit</strong> values inline. You can enter plain text, numbers, booleans, or full JSON (arrays/objects).</li>
-						<li><strong>Delete</strong> a variable with the “Delete” link on its row.</li>
-						<li><strong>Save</strong> writes the JSON back to Airtable without changing your Markdown body.</li>
+						<li><strong>Create</strong> with “+ Add”. Use short, semantic keys (e.g. <code>version</code> or <code>session.date</code>).</li>
+						<li><strong>Edit</strong> values inline. Accepts text, numbers, booleans, or JSON.</li>
+						<li><strong>Delete</strong> using the ✖ on a row (with confirmation).</li>
+						<li><strong>Save variables</strong> posts JSON back to Airtable without changing your Markdown body.</li>
 					</ul>
-					<p class="muted">Tip: nested keys like <code>participant.email</code> work as flat JSON fields (dot-notation) in Mustache.</p>
 				</div>
 
 				<form id="variables-form" class="form-grid">
