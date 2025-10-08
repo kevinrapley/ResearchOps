@@ -353,14 +353,15 @@ function wireEditor() {
 			preview();
 		}, 150));
 
-		// Sync scroll between textarea and highlight layer
-		src.addEventListener("scroll", function() {
+		// CRITICAL: Sync scroll perfectly in both directions
+		src.addEventListener("scroll", function(e) {
 			const highlight = $("#guide-source-highlight");
 			if (highlight) {
+				// Force exact scroll position sync
 				highlight.scrollTop = src.scrollTop;
 				highlight.scrollLeft = src.scrollLeft;
 			}
-		});
+		}, { passive: true });
 
 		// Initial highlighting
 		setTimeout(syncHighlighting, 100);
