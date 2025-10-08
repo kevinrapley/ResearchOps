@@ -547,20 +547,27 @@ textarea {
 /* === =FORMS & MODALS ==================================== */
 
 .modal {
-	display: none;
 	border: none;
-	padding: 0;
+	padding: 24px;
 	border-radius: 6px;
 	width: 90%;
-	max-width: 480px;
+	max-width: 600px;
 	background: #fff;
 	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 	}
 
-.modal[open] {
-	display: block;
+/* Native dialog backdrop */
+.modal::backdrop {
+	background: rgba(0, 0, 0, 0.6);
 	}
 
+/* Larger modal variant */
+.modal--large {
+	max-width: 90vw;
+	width: 800px;
+	}
+
+.modal h2,
 .modal h3 {
 	margin-top: 0;
 	}
@@ -570,6 +577,30 @@ textarea {
 	justify-content: flex-end;
 	gap: 8px;
 	margin-top: 16px;
+	}
+
+/* Code display in modals */
+.modal .code--readonly {
+	background: #f3f2f1;
+	padding: 12px;
+	border-radius: 4px;
+	overflow-x: auto;
+	max-height: 300px;
+	font-size: 12px;
+	white-space: pre;
+	}
+
+@media (max-width: 768px) {
+	.modal {
+		width: 95%;
+		max-width: none;
+		max-height: 90vh;
+		overflow-y: auto;
+		}
+	
+	.modal--large {
+		width: 95%;
+		}
 	}
 
 /* Rule/AI suggestion panel */
