@@ -209,104 +209,120 @@ textarea.code {
 	}
 	
 /* === CODE EDITOR WITH SYNTAX HIGHLIGHTING =============== */
-
 .code-editor {
 	position: relative;
 	width: 100%;
+	height: 550px; /* Fixed height */
 	border: 1px solid #b1b4b6;
 	border-radius: 4px;
 	background: #ffffff;
-	font-family: 'Courier New', Courier, monospace;
-	font-size: 14px;
-	line-height: 1.5;
+	overflow: hidden; /* Container clips both layers */
 	}
 
-/* Container for both layers with shared scroll */
-.code-editor__highlight,
-.code-editor__textarea {
-	/* Identical box model */
+/* Highlight backdrop - shows colored syntax */
+.code-editor__highlight {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: var(--guide-source-base-h);
-	min-height: 0;
+	height: 100%;
 	padding: 12px;
 	margin: 0;
-	border: none;
-	box-sizing: border-box;
+	border: 0;
+	overflow: auto;
+	pointer-events: none; /* Click through to textarea */
 	
-	/* Identical typography */
+	/* Typography - must match textarea exactly */
 	font-family: 'Courier New', Courier, monospace;
 	font-size: 14px;
+	font-weight: normal;
 	line-height: 1.5;
-	letter-spacing: normal;
+	letter-spacing: 0;
+	word-spacing: 0;
 	
-	/* Identical text behavior */
+	/* Text behavior - must match textarea exactly */
 	white-space: pre-wrap;
 	word-wrap: break-word;
-	word-break: normal;
 	overflow-wrap: break-word;
+	word-break: normal;
 	tab-size: 4;
 	-moz-tab-size: 4;
 	
-	/* Identical scrolling - CRITICAL */
-	overflow: auto;
-	overflow-x: auto;
-	overflow-y: auto;
-	}
-
-/* Highlight layer - non-interactive, shows colors */
-.code-editor__highlight {
-	pointer-events: none;
-	color: #0b0c0c;
-	z-index: 1;
+	color: #0b0c0c; /* Visible colored text */
 	background: transparent;
-	/* Hide scrollbars visually but keep scroll behavior */
-	scrollbar-width: none; /* Firefox */
-	-ms-overflow-style: none; /* IE/Edge */
+	z-index: 1;
+	
+	/* Hide scrollbars but keep scroll capability */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 	}
 
 .code-editor__highlight::-webkit-scrollbar {
-	display: none; /* Chrome/Safari */
+	display: none;
+	width: 0;
+	height: 0;
 	}
 
 .code-editor__highlight pre {
 	margin: 0;
 	padding: 0;
+	border: 0;
 	background: transparent;
-	border: none;
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
+	font: inherit;
 	white-space: inherit;
 	word-wrap: inherit;
 	}
 
 .code-editor__highlight code {
 	display: block;
-	padding: 0;
 	margin: 0;
+	padding: 0;
+	border: 0;
 	background: transparent;
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
+	font: inherit;
 	white-space: inherit;
 	word-wrap: inherit;
 	text-shadow: none;
-	letter-spacing: inherit;
 	}
 
-/* Textarea - interactive, transparent text */
+/* Textarea - interactive layer with transparent text */
 .code-editor__textarea {
-	position: relative; /* Changed from absolute to stack properly */
-	color: transparent;
+	position: absolute; /* ← Must be absolute */
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	padding: 12px;
+	margin: 0;
+	border: 0;
+	box-sizing: border-box;
+	
+	/* Typography - must match highlight exactly */
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.5;
+	letter-spacing: 0;
+	word-spacing: 0;
+	
+	/* Text behavior - must match highlight exactly */
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	word-break: normal;
+	tab-size: 4;
+	-moz-tab-size: 4;
+	
 	background: transparent;
-	resize: vertical;
-	outline: none;
-	caret-color: #0b0c0c;
-	z-index: 2;
+	color: transparent; /* Text invisible */
 	-webkit-text-fill-color: transparent;
+	
+	resize: none; /* ← Disable resize to keep layers synced */
+	outline: none;
+	overflow: auto;
+	
+	caret-color: #0b0c0c; /* Visible caret */
+	z-index: 2;
 	}
 
 .code-editor__textarea:focus {
@@ -314,13 +330,11 @@ textarea.code {
 	}
 
 .code-editor__textarea::selection {
-	background: rgba(29, 112, 184, 0.3);
-	color: rgba(29, 112, 184, 0.5);
+	background: rgba(29, 112, 184, 0.25);
 	}
 
 .code-editor__textarea::-moz-selection {
-	background: rgba(29, 112, 184, 0.3);
-	color: rgba(29, 112, 184, 0.5);
+	background: rgba(29, 112, 184, 0.25);
 	}
 
 /* Mustache syntax highlighting - optimized for light background */
