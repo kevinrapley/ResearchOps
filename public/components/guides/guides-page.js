@@ -701,9 +701,13 @@ async function editPartial(id) {
 		}
 
 		const { partial } = data;
+		console.log("✅ Got partial, creating modal...");
 
 		const modal = document.createElement("div");
 		modal.className = "modal";
+
+		console.log("✅ Modal element created");
+
 		modal.innerHTML = `
 			<div class="modal__overlay"></div>
 			<div class="modal__content modal__content--large">
@@ -732,13 +736,21 @@ async function editPartial(id) {
 				</form>
 			</div>
 		`;
+
+		console.log("✅ Modal HTML set");
+
 		document.body.appendChild(modal);
+		console.log("✅ Modal appended to body");
+		console.log("Modal element:", modal);
+		console.log("Modal classes:", modal.className);
+		console.log("Modal in DOM:", document.body.contains(modal));
 
 		const form = modal.querySelector("#partial-edit-form");
+		console.log("Form found:", !!form);
+
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
-
-			console.log("Submitting update...");
+			console.log("Form submitted");
 
 			const update = {
 				title: document.getElementById("partial-title").value,
@@ -771,10 +783,19 @@ async function editPartial(id) {
 			}
 		});
 
-		modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
+		const cancelBtn = modal.querySelector("[data-cancel]");
+		console.log("Cancel button found:", !!cancelBtn);
+
+		cancelBtn.addEventListener("click", () => {
+			console.log("Cancel clicked");
+			modal.remove();
+		});
+
+		console.log("✅ Event listeners attached");
 
 	} catch (err) {
-		console.error("Caught error in editPartial:", err);
+		console.error("💥 Caught error in editPartial:", err);
+		console.error("Error stack:", err.stack);
 		announce("Failed to load partial: " + err.message);
 	}
 }
