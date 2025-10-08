@@ -261,7 +261,20 @@ function highlightMustache(source) {
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;');
 
-	// Highlight Mustache tags (order matters!)
+	// Track Mustache tag positions to avoid highlighting markdown inside them
+	const mustacheTags = [];
+	const tagPattern = /\{\{[^}]*\}\}/g;
+	let match;
+	while ((match = tagPattern.exec(source)) !== null) {
+		mustacheTags.push({ start: match.index, end: match.index + match[0].length });
+	}
+
+	// Helper to check if position is inside a Mustache tag
+	function isInsideMustache(pos) {
+		return mustacheTags.some(tag => pos >= tag.start && pos < tag.end);
+	}
+
+	// Highlight Mustache tags FIRST (order matters!)
 	highlighted = highlighted
 		// Comments: {{! comment}}
 		.replace(/(\{\{!)([^}]*?)(\}\})/g,
@@ -277,18 +290,19 @@ function highlightMustache(source) {
 			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
 		// Variables: {{variable}}
 		.replace(/(\{\{)([^}#\/!&gt;]+?)(\}\})/g,
-			'<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>')
-		// Markdown headers
+			'<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>');
+
+	// Now apply Markdown highlighting OUTSIDE of Mustache tags
+	// Use a more specific regex that avoids matching inside <span> tags
+	highlighted = highlighted
+		// Headers (only at line start)
 		.replace(/^(#{1,6})\s+(.+)$/gm,
 			'<span class="token title">$1 $2</span>')
-		// Bold: **text** or __text__
-		.replace(/(\*\*|__)(?=\S)(.+?)(?<=\S)\1/g,
+		// Bold: **text** or __text__ (but not inside spans)
+		.replace(/(\*\*|__)(?=\S)([^*_<]+?)(?<=\S)\1/g,
 			'<span class="token bold">$1$2$1</span>')
-		// Italic: *text* or _text_
-		.replace(/(\*|_)(?=\S)(.+?)(?<=\S)\1/g,
-			'<span class="token italic">$1$2$1</span>')
-		// Inline code: `code`
-		.replace(/(`+)([^`]+?)\1/g,
+		// Inline code: `code` (but not inside spans)
+		.replace(/(`+)([^`<]+?)\1/g,
 			'<span class="token code">$1$2$1</span>');
 
 	return highlighted;
