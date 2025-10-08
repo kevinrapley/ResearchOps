@@ -13,6 +13,13 @@
 
 	<script type="module" src="/components/layout.js"></script>
 	<script type="module" src="/components/guides/guides-page.js" defer></script>
+
+	<!-- Prism.js for syntax highlighting -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
 </head>
 
 <body>
@@ -362,7 +369,15 @@
 			<div class="editor__split" aria-label="Source and preview">
 				<section class="pane pane--source" aria-labelledby="source-title">
 					<h3 id="source-title" class="govuk-heading-s">Source (Markdown + Mustache)</h3>
-					<textarea id="guide-source" class="code" spellcheck="false" aria-describedby="lint-output"></textarea>
+
+					<!-- Code editor with syntax highlighting -->
+					<div class="code-editor">
+						<div class="code-editor__highlight" id="guide-source-highlight" aria-hidden="true">
+							<pre class="language-markdown"><code id="guide-source-code"></code></pre>
+						</div>
+						<textarea id="guide-source" class="code-editor__textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-describedby="lint-output"></textarea>
+					</div>
+
 					<div id="lint-output" class="lint" role="status" aria-live="polite"></div>
 				</section>
 
