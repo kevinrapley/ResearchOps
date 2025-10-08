@@ -216,34 +216,60 @@ textarea.code {
 	min-height: 400px;
 	border: 1px solid #b1b4b6;
 	border-radius: 4px;
-	overflow: hidden;
 	background: #ffffff;
 	font-family: 'Courier New', Courier, monospace;
 	font-size: 14px;
 	line-height: 1.5;
 	}
 
-.code-editor__highlight {
+/* Container for both layers with shared scroll */
+.code-editor__highlight,
+.code-editor__textarea {
+	/* Identical box model */
 	position: absolute;
 	top: 0;
 	left: 0;
-	right: 0;
-	bottom: 0;
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
 	padding: 12px;
-	overflow: hidden; /* ← Changed from auto */
-	pointer-events: none;
+	margin: 0;
+	border: none;
+	box-sizing: border-box;
+	
+	/* Identical typography */
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 14px;
+	line-height: 1.5;
+	letter-spacing: normal;
+	
+	/* Identical text behavior */
 	white-space: pre-wrap;
 	word-wrap: break-word;
 	word-break: normal;
+	overflow-wrap: break-word;
 	tab-size: 4;
 	-moz-tab-size: 4;
+	
+	/* Identical scrolling - CRITICAL */
+	overflow: auto;
+	overflow-x: auto;
+	overflow-y: auto;
+	}
+
+/* Highlight layer - non-interactive, shows colors */
+.code-editor__highlight {
+	pointer-events: none;
 	color: #0b0c0c;
 	z-index: 1;
 	background: transparent;
-	font-family: 'Courier New', Courier, monospace; /* ← Explicit */
-	font-size: 14px; /* ← Explicit */
-	line-height: 1.5; /* ← Explicit */
-	letter-spacing: normal; /* ← Explicit */
+	/* Hide scrollbars visually but keep scroll behavior */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
+	}
+
+.code-editor__highlight::-webkit-scrollbar {
+	display: none; /* Chrome/Safari */
 	}
 
 .code-editor__highlight pre {
@@ -251,7 +277,6 @@ textarea.code {
 	padding: 0;
 	background: transparent;
 	border: none;
-	overflow: visible;
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
@@ -273,44 +298,30 @@ textarea.code {
 	letter-spacing: inherit;
 	}
 
+/* Textarea - interactive, transparent text */
 .code-editor__textarea {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	min-height: 400px;
-	padding: 12px;
-	margin: 0;
-	border: none;
-	background: transparent;
+	position: relative; /* Changed from absolute to stack properly */
 	color: transparent;
-	font-family: 'Courier New', Courier, monospace; /* ← Explicit */
-	font-size: 14px; /* ← Explicit */
-	line-height: 1.5; /* ← Explicit */
-	letter-spacing: normal; /* ← Explicit */
+	background: transparent;
 	resize: vertical;
 	outline: none;
-	overflow: auto;
-	white-space: pre-wrap;
-	word-wrap: break-word;
-	word-break: normal;
-	tab-size: 4;
-	-moz-tab-size: 4;
 	caret-color: #0b0c0c;
 	z-index: 2;
 	-webkit-text-fill-color: transparent;
-	box-sizing: border-box;
 	}
 
 .code-editor__textarea:focus {
-	background: rgba(253, 253, 253, 0.5);
+	background: rgba(253, 253, 253, 0.3);
 	}
 
 .code-editor__textarea::selection {
 	background: rgba(29, 112, 184, 0.3);
+	color: rgba(29, 112, 184, 0.5);
 	}
 
 .code-editor__textarea::-moz-selection {
 	background: rgba(29, 112, 184, 0.3);
+	color: rgba(29, 112, 184, 0.5);
 	}
 
 /* Mustache syntax highlighting - optimized for light background */
