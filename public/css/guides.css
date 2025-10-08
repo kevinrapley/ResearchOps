@@ -164,6 +164,7 @@
 #guide-preview {
 	height: var(--guide-source-base-h);
 	min-height: 0;
+	padding: 12px;
 	overflow-y: auto;
 	box-sizing: border-box;
 	-webkit-overflow-scrolling: touch;
@@ -228,6 +229,8 @@ textarea.code {
 	top: 0;
 	left: 0;
 	width: 100%;
+	height: var(--guide-source-base-h);
+	min-height: 0;
 	padding: 12px;
 	margin: 0;
 	border: none;
@@ -385,7 +388,7 @@ textarea.code {
 .preview {
 	padding: 24px;
 	background: white;
-	height: calc(var(--guide-source-base-h) -12px);
+	height: var(--guide-source-base-h);
 	overflow-y: auto;
 	}
 
