@@ -187,10 +187,15 @@
 
 .code {
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	line-height: 1.5;
+	}
+
+/* Only apply styles when it's a direct textarea */
+textarea.code {
 	padding: 12px;
 	border: 1px solid var(--guides-border);
 	border-radius: 4px;
-	line-height: 1.5;
+	background: #ffffff;
 	}
 
 .preview {
