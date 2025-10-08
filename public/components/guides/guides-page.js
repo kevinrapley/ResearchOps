@@ -7,6 +7,7 @@
  * - Wires header actions (+ New, Import, Export) with delegated fallbacks.
  * - Loads project/study context for breadcrumbs & editor rendering.
  * - Opens a robust editor panel that shows even if optional imports fail.
+ * - Provides Mustache syntax highlighting in the source editor.
  *
  * @requires /lib/mustache.min.js
  * @requires /lib/marked.min.js
@@ -27,19 +28,15 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
-	// 1) Make the UI live immediately
 	wireGlobalActions();
 	wireEditor();
 
-	// 2) Kick off data fetches in the background
 	const url = new URL(location.href);
 	const pid = url.searchParams.get("pid");
 	const sid = url.searchParams.get("sid");
 
 	hydrateCrumbs({ pid, sid }).catch(console.warn);
-	// 👇 ask loadGuides to auto-open the newest guide once
 	loadGuides(sid, { autoOpen: true }).catch(console.warn);
-	// ✅ Load patterns from API on page load
 	refreshPatternList().catch(console.warn);
 });
 
@@ -60,7 +57,7 @@ async function loadStudies(projectId) {
 }
 
 /**
- * Prefer a real title; otherwise compute “Method — YYYY-MM-DD”.
+ * Prefer a real title; otherwise compute "Method — YYYY-MM-DD".
  * @param {{ title?:string, Title?:string, method?:string, createdAt?:string }} s
  */
 function pickTitle(s) {
@@ -81,7 +78,6 @@ function pickTitle(s) {
  */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
-		// Fetch both project list and studies for full context
 		const [projectsRes, studiesRes] = await Promise.all([
 			fetch(`/api/projects`, { cache: "no-store" }),
 			loadStudies(pid)
@@ -95,7 +91,6 @@ async function hydrateCrumbs({ pid, sid }) {
 
 		const study = ensureStudyTitle(studyRaw);
 
-		// Breadcrumbs
 		const bcProj = document.getElementById("breadcrumb-project");
 		if (bcProj) {
 			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
@@ -116,7 +111,6 @@ async function hydrateCrumbs({ pid, sid }) {
 
 		document.title = `Discussion Guides — ${study.title}`;
 
-		// ✅ Expose both project + study to renderGuide()
 		window.__guideCtx = {
 			project: {
 				id: project.id,
@@ -145,7 +139,6 @@ async function loadGuides(studyId, opts = {}) {
 		const res = await fetch(`/api/guides?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
 		const { guides = [] } = res.ok ? await res.json() : { guides: [] };
 
-		// Defensive newest-first
 		guides.sort((a, b) => (Date.parse(b.createdAt || 0) || 0) - (Date.parse(a.createdAt || 0) || 0));
 		newestId = guides[0]?.id || null;
 
@@ -165,12 +158,11 @@ async function loadGuides(studyId, opts = {}) {
 				tbody.appendChild(tr);
 			}
 			$$('button[data-open]').forEach(b => b.addEventListener("click", () => {
-				window.__hasAutoOpened = true; // don’t fight user selection later
+				window.__hasAutoOpened = true;
 				openGuide(b.dataset.open);
 			}));
 		}
 
-		// Auto-open the newest guide once on initial load
 		if (opts.autoOpen && !window.__hasAutoOpened && !window.__openGuideId && newestId) {
 			window.__hasAutoOpened = true;
 			await openGuide(newestId);
@@ -182,7 +174,6 @@ async function loadGuides(studyId, opts = {}) {
 }
 
 /* -------------------- global actions -------------------- */
-/** Attach top-level UI handlers with null-guards & delegation. */
 function wireGlobalActions() {
 	var newBtn = $("#btn-new");
 	if (newBtn) newBtn.addEventListener("click", onNewClick);
@@ -190,7 +181,6 @@ function wireGlobalActions() {
 	var importBtn = $("#btn-import");
 	if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
 
-	// Delegated fallback (works if DOM changes later)
 	document.addEventListener("click", function(e) {
 		var t = e.target;
 		var hasClosest = t && typeof t.closest === "function";
@@ -240,7 +230,7 @@ async function refreshPatternList() {
 		const res = await fetch("/api/partials", { cache: "no-store" });
 		if (!res.ok) {
 			console.warn("Failed to fetch partials:", res.status);
-			populatePatternList([]); // Show empty list on error
+			populatePatternList([]);
 			return;
 		}
 
@@ -252,6 +242,75 @@ async function refreshPatternList() {
 	} catch (err) {
 		console.error("Error refreshing pattern list:", err);
 		populatePatternList([]);
+	}
+}
+
+/* -------------------- syntax highlighting -------------------- */
+
+/**
+ * Highlight Mustache and Markdown syntax in the source editor.
+ * @param {string} source
+ * @returns {string} Highlighted HTML
+ */
+function highlightMustache(source) {
+	if (!source) return '';
+
+	// Escape HTML first
+	let highlighted = source
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+
+	// Highlight Mustache tags (order matters!)
+	highlighted = highlighted
+		// Comments: {{! comment}}
+		.replace(/(\{\{!)([^}]*?)(\}\})/g,
+			'<span class="token comment">$1$2$3</span>')
+		// Partials: {{> partial_name}}
+		.replace(/(\{\{&gt;)\s*([^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">{{&gt;</span><span class="token keyword">$2</span><span class="token mustache-tag">}}</span></span>')
+		// Section start: {{#section}}
+		.replace(/(\{\{)(#[^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
+		// Section end: {{/section}}
+		.replace(/(\{\{)(\/[^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
+		// Variables: {{variable}}
+		.replace(/(\{\{)([^}#\/!&gt;]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>')
+		// Markdown headers
+		.replace(/^(#{1,6})\s+(.+)$/gm,
+			'<span class="token title">$1 $2</span>')
+		// Bold: **text** or __text__
+		.replace(/(\*\*|__)(?=\S)(.+?)(?<=\S)\1/g,
+			'<span class="token bold">$1$2$1</span>')
+		// Italic: *text* or _text_
+		.replace(/(\*|_)(?=\S)(.+?)(?<=\S)\1/g,
+			'<span class="token italic">$1$2$1</span>')
+		// Inline code: `code`
+		.replace(/(`+)([^`]+?)\1/g,
+			'<span class="token code">$1$2$1</span>');
+
+	return highlighted;
+}
+
+/**
+ * Sync highlighting with textarea content.
+ */
+function syncHighlighting() {
+	const textarea = document.getElementById('guide-source');
+	const codeElement = document.getElementById('guide-source-code');
+
+	if (!textarea || !codeElement) return;
+
+	const source = textarea.value;
+	codeElement.innerHTML = highlightMustache(source);
+
+	// Sync scroll position
+	const highlightContainer = document.getElementById('guide-source-highlight');
+	if (highlightContainer) {
+		highlightContainer.scrollTop = textarea.scrollTop;
+		highlightContainer.scrollLeft = textarea.scrollLeft;
 	}
 }
 
@@ -273,7 +332,25 @@ function wireEditor() {
 	if (varsClose) varsClose.addEventListener("click", closeVariablesDrawer);
 
 	var src = $("#guide-source");
-	if (src) src.addEventListener("input", debounce(preview, 150));
+	if (src) {
+		// Sync highlighting and preview on input
+		src.addEventListener("input", debounce(function() {
+			syncHighlighting();
+			preview();
+		}, 150));
+
+		// Sync scroll between textarea and highlight layer
+		src.addEventListener("scroll", function() {
+			const highlight = $("#guide-source-highlight");
+			if (highlight) {
+				highlight.scrollTop = src.scrollTop;
+				highlight.scrollLeft = src.scrollLeft;
+			}
+		});
+
+		// Initial highlighting
+		setTimeout(syncHighlighting, 100);
+	}
 
 	var title = $("#guide-title");
 	if (title) title.addEventListener("input", debounce(function() { announce("Title updated"); }, 400));
@@ -296,7 +373,6 @@ function wireEditor() {
 	});
 }
 
-/** Open a new guide in the editor — always reveals the panel, even if optional imports fail. */
 async function startNewGuide() {
 	try {
 		var editor = $("#editor-section");
@@ -317,6 +393,9 @@ async function startNewGuide() {
 		var srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = defaultSrc;
 
+		// ✅ Trigger highlighting
+		syncHighlighting();
+
 		try {
 			await refreshPatternList();
 		} catch (err) {
@@ -334,7 +413,6 @@ async function startNewGuide() {
 	}
 }
 
-// Replace your existing openGuide with this version
 async function openGuide(id) {
 	try {
 		let guide = null;
@@ -368,7 +446,9 @@ async function openGuide(id) {
 		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
 		$("#guide-source") && ($("#guide-source").value = guide.sourceMarkdown || "");
 
-		// ✅ Load real patterns from API
+		// ✅ Trigger highlighting
+		syncHighlighting();
+
 		await refreshPatternList();
 
 		populateVariablesForm(guide.variables || {});
@@ -434,11 +514,9 @@ async function onSave() {
 
 	if (res.ok) {
 		if (!id && js && js.id) {
-			// First save: remember the new Airtable record id so subsequent saves PATCH
 			window.__openGuideId = js.id;
 		}
 		announce("Guide saved");
-		// Refresh the list for this study
 		loadGuides(studyId);
 	} else {
 		announce(`Save failed: ${res.status} ${JSON.stringify(js)}`);
@@ -456,7 +534,7 @@ async function onPublish() {
 
 	if (res.ok) {
 		$("#guide-status").textContent = "published";
-		announce(`Published “${title || "Untitled"}”`);
+		announce(`Published "${title || "Untitled"}"`);
 		loadGuides(sid);
 	} else {
 		const msg = await res.text().catch(() => "");
@@ -475,6 +553,7 @@ function importMarkdownFlow() {
 		await startNewGuide();
 		var srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = text;
+		syncHighlighting();
 		await preview();
 	});
 	inp.click();
@@ -504,7 +583,6 @@ function populatePatternList(items) {
 
 	const arr = Array.isArray(items) ? items : [];
 
-	// Group by category
 	const grouped = {};
 	for (const p of arr) {
 		const cat = p.category || "Uncategorised";
@@ -513,18 +591,15 @@ function populatePatternList(items) {
 	}
 
 	for (const [cat, patterns] of Object.entries(grouped)) {
-		// Category header
 		const header = document.createElement("li");
 		header.className = "pattern-category-header";
 		header.innerHTML = `<strong>${escapeHtml(cat)}</strong>`;
 		ul.appendChild(header);
 
-		// Patterns in category
 		for (const p of patterns) {
 			const li = document.createElement("li");
 			li.className = "pattern-item";
 
-			// Build insert name: name + _v + version
 			const insertName = `${p.name}_v${p.version}`;
 
 			li.innerHTML = `
@@ -545,47 +620,41 @@ function populatePatternList(items) {
 		}
 	}
 
-	// Add new pattern button at bottom
 	const addLi = document.createElement("li");
 	addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
 	ul.appendChild(addLi);
 
-	// Wire handlers
 	ul.addEventListener("click", handlePatternClick);
 }
 
 async function handlePatternClick(e) {
 	const t = e.target;
 
-	// Insert pattern
 	if (t.dataset.insert) {
 		const name = t.dataset.insert;
 		insertAtCursor($("#guide-source"), `\n{{> ${name}}}\n`);
+		syncHighlighting();
 		await preview();
 		closePatternDrawer();
 		announce(`Pattern ${name} inserted`);
 		return;
 	}
 
-	// View pattern
 	if (t.dataset.view) {
 		await viewPartial(t.dataset.view);
 		return;
 	}
 
-	// Edit pattern
 	if (t.dataset.edit) {
 		await editPartial(t.dataset.edit);
 		return;
 	}
 
-	// Delete pattern
 	if (t.dataset.delete) {
 		await deletePartial(t.dataset.delete);
 		return;
 	}
 
-	// New pattern
 	if (t.id === "btn-new-pattern") {
 		await createNewPartial();
 		return;
@@ -663,20 +732,14 @@ async function viewPartial(id) {
 }
 
 async function editPartial(id) {
-	console.log("editPartial called with id:", id);
-
 	try {
 		const url = `/api/partials/${encodeURIComponent(id)}`;
-		console.log("Fetching from:", url);
-
 		const res = await fetch(url, {
 			cache: "no-store",
 			headers: { "Accept": "application/json" }
 		});
 
-		console.log("Response status:", res.status);
 		const text = await res.text();
-		console.log("Response body:", text.substring(0, 200));
 
 		if (!res.ok) {
 			announce(`Failed to load partial: ${res.status}`);
@@ -693,8 +756,6 @@ async function editPartial(id) {
 			return;
 		}
 
-		console.log("Parsed data:", data);
-
 		if (!data.ok || !data.partial) {
 			announce("Failed to load partial: Invalid response");
 			console.error("Missing ok or partial:", data);
@@ -702,45 +763,41 @@ async function editPartial(id) {
 		}
 
 		const { partial } = data;
-		console.log("✅ Got partial, creating modal...");
 
 		const modal = document.createElement("dialog");
 		modal.className = "modal";
 		modal.innerHTML = `
-	<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
-	<form id="partial-edit-form">
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="partial-title">Title</label>
-			<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
-		</div>
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="partial-category">Category</label>
-			<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
-		</div>
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="partial-source">Source (Mustache)</label>
-			<textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
-		</div>
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="partial-description">Description</label>
-			<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
-		</div>
-		<div class="modal-actions">
-			<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-			<button type="submit" class="btn">Save changes</button>
-		</div>
-	</form>
-`;
+			<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
+			<form id="partial-edit-form">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-title">Title</label>
+					<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-category">Category</label>
+					<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-source">Source (Mustache)</label>
+					<textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="partial-description">Description</label>
+					<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
+				</div>
+				<div class="modal-actions">
+					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+					<button type="submit" class="btn">Save changes</button>
+				</div>
+			</form>
+		`;
 
 		document.body.appendChild(modal);
-		modal.showModal(); // ← Use native dialog API
-
-		console.log("✅ Modal shown");
+		modal.showModal();
 
 		const form = modal.querySelector("#partial-edit-form");
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
-			console.log("Form submitted");
 
 			const update = {
 				title: document.getElementById("partial-title").value,
@@ -760,7 +817,7 @@ async function editPartial(id) {
 
 			if (updateRes.ok) {
 				announce("Partial updated");
-				modal.close(); // ← Use dialog.close()
+				modal.close();
 				modal.remove();
 				await refreshPatternList();
 			} else {
@@ -771,12 +828,10 @@ async function editPartial(id) {
 		});
 
 		modal.querySelector("[data-cancel]").addEventListener("click", () => {
-			console.log("Cancel clicked");
-			modal.close(); // ← Use dialog.close()
+			modal.close();
 			modal.remove();
 		});
 
-		// Close on backdrop click
 		modal.addEventListener("click", (e) => {
 			if (e.target === modal) {
 				modal.close();
@@ -785,8 +840,7 @@ async function editPartial(id) {
 		});
 
 	} catch (err) {
-		console.error("💥 Caught error in editPartial:", err);
-		console.error("Error stack:", err.stack);
+		console.error("Error in editPartial:", err);
 		announce("Failed to load partial: " + err.message);
 	}
 }
@@ -899,12 +953,10 @@ async function onPatternSearch(e) {
 	const q = (e?.target?.value || "").trim().toLowerCase();
 
 	if (!q) {
-		// No search query - show all
 		await refreshPatternList();
 		return;
 	}
 
-	// Fetch and filter
 	try {
 		const res = await fetch("/api/partials", { cache: "no-store" });
 		if (!res.ok) return;
@@ -1002,7 +1054,6 @@ async function doExport(kind) {
 				break;
 
 			case "pdf":
-				// Requires jsPDF library
 				if (typeof window.jspdf === "undefined") {
 					announce("PDF export not available (library missing)");
 					return;
@@ -1011,7 +1062,6 @@ async function doExport(kind) {
 				break;
 
 			case "docx":
-				// Requires docx.js library  
 				if (typeof window.docx === "undefined") {
 					announce("DOCX export not available (library missing)");
 					return;
@@ -1028,12 +1078,6 @@ async function doExport(kind) {
 	}
 }
 
-/**
- * Download text content as a file.
- * @param {string} content
- * @param {string} filename
- * @param {string} mimeType
- */
 function downloadText(content, filename, mimeType) {
 	const blob = new Blob([content], { type: mimeType });
 	const url = URL.createObjectURL(blob);
@@ -1046,12 +1090,6 @@ function downloadText(content, filename, mimeType) {
 	URL.revokeObjectURL(url);
 }
 
-/**
- * Build standalone HTML with inline styles.
- * @param {string} bodyHtml
- * @param {string} title
- * @returns {string}
- */
 function buildStandaloneHtml(bodyHtml, title) {
 	return `<!doctype html>
 <html lang="en-GB">
@@ -1094,10 +1132,6 @@ function buildStandaloneHtml(bodyHtml, title) {
 </html>`;
 }
 
-/**
- * Export as PDF using jsPDF (requires library loaded).
- * @param {string} title
- */
 async function exportPdf(title) {
 	const { jsPDF } = window.jspdf;
 	const doc = new jsPDF();
@@ -1105,20 +1139,13 @@ async function exportPdf(title) {
 	const preview = $("#guide-preview");
 	if (!preview) throw new Error("Preview not available");
 
-	// Simple text extraction (or use html2canvas for visual export)
 	const text = preview.textContent || "";
 	doc.text(text, 10, 10);
 	doc.save(`${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`);
 	announce(`Exported ${title}.pdf`);
 }
 
-/**
- * Export as DOCX using docx.js (requires library loaded).
- * @param {string} markdown
- * @param {string} title
- */
 async function exportDocx(markdown, title) {
-	// Placeholder - requires docx.js integration
 	announce("DOCX export coming soon");
 }
 
@@ -1138,7 +1165,6 @@ function ensureStudyTitle(s) {
 	return out;
 }
 
-/** Get the first non-empty string from a list of candidates. */
 function firstText() {
 	for (var i = 0; i < arguments.length; i++) {
 		var v = arguments[i];
@@ -1148,7 +1174,6 @@ function firstText() {
 	return "";
 }
 
-/** Return a readable label from a variety of shapes (string | array | object). */
 function toLabel(v) {
 	if (v == null) return "";
 	if (typeof v === "string") return v.trim();
@@ -1160,28 +1185,18 @@ function toLabel(v) {
 		return "";
 	}
 	if (typeof v === "object") {
-		// Common object-y shapes: {name}, {Name}, {label}, {value}, Airtable cell objects
 		return toLabel(v.name || v.Name || v.label || v.Label || v.value || v.Value || v.text || v.Text);
 	}
 	return "";
 }
 
-/** Normalise an Airtable-ish record (various wrappers/casings) to expose .name. */
 function ensureProjectName(p) {
 	if (!p || typeof p !== "object") return { name: "(Unnamed project)" };
 	const name = (p.name || p.Name || "").toString().trim();
 	return { ...p, name: name || "(Unnamed project)" };
 }
 
-/**
- * Resolve a usable { id, name } for the current project without using 404 routes.
- * Order:
- *   1) /api/projects (list) → find matching record by id/localId/fields
- *   2) /api/studies?project=:pid → derive a project label from linked fields
- *   3) fallback placeholder
- */
 async function resolveProject(pid, sid) {
-	// 1) Try list endpoint
 	try {
 		const r = await fetch("/api/projects", { cache: "no-store" });
 		if (r.ok) {
@@ -1201,21 +1216,18 @@ async function resolveProject(pid, sid) {
 				if (found) return ensureProjectName(found);
 			}
 		}
-	} catch (e) { /* ignore and fall through */ }
+	} catch (e) {}
 
-	// 2) Derive from studies list for this project
 	try {
 		const r = await fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" });
 		if (r.ok) {
 			const js = await r.json().catch(() => ({}));
 			const studies = Array.isArray(js) ? js : (Array.isArray(js?.studies) ? js.studies : []);
-			// Check if the payload already includes a project label
 			let name = firstText(
 				js?.project?.name, js?.project?.Name, js?.projectName
 			);
 			if (!name && studies.length) {
 				const s0 = studies[0];
-				// Attempt common places a linked project label might live
 				name = firstText(
 					s0?.project?.name, s0?.project?.Name, s0?.Project,
 					(s0?.fields && (s0.fields.Project || s0.fields.ProjectName || s0.fields.Name))
@@ -1223,22 +1235,18 @@ async function resolveProject(pid, sid) {
 			}
 			if (name) return { id: pid, name };
 		}
-	} catch (e) { /* ignore */ }
+	} catch (e) {}
 
-	// 3) Fallback
 	return { id: pid, name: "(Unnamed project)" };
 }
 
-// ─────────────────────────────
-// Debug instrumentation (toggleable)
-// ─────────────────────────────
 (async () => {
 	const params = new URLSearchParams(location.search);
 	const isDebug = /^(1|true|yes)$/i.test(params.get("debug") || "");
 	const panel = document.getElementById("debug-panel");
 	const out = document.getElementById("debug-output");
 
-	if (!isDebug) return; // ← only runs when ?debug=1 or ?debug=true
+	if (!isDebug) return;
 
 	if (panel) panel.hidden = false;
 	if (out) out.textContent = "Fetching API data…";
@@ -1272,14 +1280,12 @@ function runLints(args) {
 	if (!out) return;
 	var warnings = [];
 
-	// Undeclared partials
 	var parts = collectPartialNames(source);
 	for (var i = 0; i < parts.length; i++) {
 		var p = parts[i];
 		if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
 	}
 
-	// Simple tag existence check ({{study.something}})
 	var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
 	var m;
 	for (;;) {
@@ -1366,6 +1372,7 @@ function onInsertTag() {
 	var pick = prompt("Insert tag (example):\n" + tags.join("\n"));
 	if (pick) {
 		insertAtCursor($("#guide-source"), pick);
+		syncHighlighting();
 		preview();
 	}
 }
@@ -1399,7 +1406,6 @@ function escapeHtml(s) {
 		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-/** Create a plain shallow clone of an object without using spread literals. */
 function clonePlainObject(obj) {
 	var out = {};
 	if (!obj || typeof obj !== "object") return out;
