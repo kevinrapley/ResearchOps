@@ -234,7 +234,7 @@ textarea.code {
 	pointer-events: none;
 	white-space: pre-wrap;
 	word-wrap: break-word;
-	color: transparent;
+	color: #0b0c0c; /* ← Changed from transparent */
 	z-index: 1;
 	background: transparent;
 	}
@@ -265,7 +265,7 @@ textarea.code {
 	padding: 12px;
 	border: none;
 	background: transparent;
-	color: #0b0c0c;
+	color: transparent; /* ← Make text invisible */
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
@@ -274,12 +274,21 @@ textarea.code {
 	overflow: auto;
 	white-space: pre-wrap;
 	word-wrap: break-word;
-	caret-color: #0b0c0c;
+	caret-color: #0b0c0c; /* ← Keep cursor visible */
 	z-index: 2;
+	-webkit-text-fill-color: transparent; /* ← Safari fix */
 	}
 
 .code-editor__textarea:focus {
 	background: rgba(253, 253, 253, 0.5);
+	}
+
+.code-editor__textarea::selection {
+	background: rgba(29, 112, 184, 0.3); /* ← Selection highlight */
+	}
+
+.code-editor__textarea::-moz-selection {
+	background: rgba(29, 112, 184, 0.3);
 	}
 
 /* Mustache syntax highlighting - optimized for light background */
