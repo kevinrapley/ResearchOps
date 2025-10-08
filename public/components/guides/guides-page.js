@@ -615,42 +615,43 @@ async function viewPartial(id) {
 
 		const { partial } = data;
 
-		const modal = document.createElement("div");
+		const modal = document.createElement("dialog");
 		modal.className = "modal";
 		modal.innerHTML = `
-			<div class="modal__overlay"></div>
-			<div class="modal__content">
-				<h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
-				<dl class="govuk-summary-list">
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Name:</dt>
-						<dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd>
-					</div>
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Category:</dt>
-						<dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd>
-					</div>
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Status:</dt>
-						<dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd>
-					</div>
-				</dl>
-				<h3 class="govuk-heading-s">Source</h3>
-				<pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
-				${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
-				<div class="modal__actions">
-					<button class="btn btn--secondary" data-close>Close</button>
-					<button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
+			<h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
+			<dl class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Name:</dt>
+					<dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd>
 				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Category:</dt>
+					<dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Status:</dt>
+					<dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd>
+				</div>
+			</dl>
+			<h3 class="govuk-heading-s">Source</h3>
+			<pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
+			${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
+			<div class="modal-actions">
+				<button class="btn btn--secondary" data-close>Close</button>
+				<button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
 			</div>
 		`;
+
 		document.body.appendChild(modal);
+		modal.showModal();
 
 		modal.addEventListener("click", async (e) => {
-			if (e.target.dataset.close || e.target.classList.contains("modal__overlay")) {
+			if (e.target.dataset.close || e.target === modal) {
+				modal.close();
 				modal.remove();
 			}
 			if (e.target.dataset.edit) {
+				modal.close();
 				modal.remove();
 				await editPartial(e.target.dataset.edit);
 			}
@@ -703,51 +704,40 @@ async function editPartial(id) {
 		const { partial } = data;
 		console.log("✅ Got partial, creating modal...");
 
-		const modal = document.createElement("div");
+		const modal = document.createElement("dialog");
 		modal.className = "modal";
-
-		console.log("✅ Modal element created");
-
 		modal.innerHTML = `
-			<div class="modal__overlay"></div>
-			<div class="modal__content modal__content--large">
-				<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
-				<form id="partial-edit-form">
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="partial-title">Title</label>
-						<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="partial-category">Category</label>
-						<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="partial-source">Source (Mustache)</label>
-						<textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="partial-description">Description</label>
-						<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
-					</div>
-					<div class="modal__actions">
-						<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-						<button type="submit" class="btn">Save changes</button>
-					</div>
-				</form>
-			</div>
-		`;
-
-		console.log("✅ Modal HTML set");
+	<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
+	<form id="partial-edit-form">
+		<div class="govuk-form-group">
+			<label class="govuk-label" for="partial-title">Title</label>
+			<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
+		</div>
+		<div class="govuk-form-group">
+			<label class="govuk-label" for="partial-category">Category</label>
+			<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
+		</div>
+		<div class="govuk-form-group">
+			<label class="govuk-label" for="partial-source">Source (Mustache)</label>
+			<textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
+		</div>
+		<div class="govuk-form-group">
+			<label class="govuk-label" for="partial-description">Description</label>
+			<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
+		</div>
+		<div class="modal-actions">
+			<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+			<button type="submit" class="btn">Save changes</button>
+		</div>
+	</form>
+`;
 
 		document.body.appendChild(modal);
-		console.log("✅ Modal appended to body");
-		console.log("Modal element:", modal);
-		console.log("Modal classes:", modal.className);
-		console.log("Modal in DOM:", document.body.contains(modal));
+		modal.showModal(); // ← Use native dialog API
+
+		console.log("✅ Modal shown");
 
 		const form = modal.querySelector("#partial-edit-form");
-		console.log("Form found:", !!form);
-
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
 			console.log("Form submitted");
@@ -759,8 +749,6 @@ async function editPartial(id) {
 				description: document.getElementById("partial-description").value
 			};
 
-			console.log("Update payload:", update);
-
 			const updateRes = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
 				method: "PATCH",
 				headers: {
@@ -770,10 +758,9 @@ async function editPartial(id) {
 				body: JSON.stringify(update)
 			});
 
-			console.log("Update response status:", updateRes.status);
-
 			if (updateRes.ok) {
 				announce("Partial updated");
+				modal.close(); // ← Use dialog.close()
 				modal.remove();
 				await refreshPatternList();
 			} else {
@@ -783,15 +770,19 @@ async function editPartial(id) {
 			}
 		});
 
-		const cancelBtn = modal.querySelector("[data-cancel]");
-		console.log("Cancel button found:", !!cancelBtn);
-
-		cancelBtn.addEventListener("click", () => {
+		modal.querySelector("[data-cancel]").addEventListener("click", () => {
 			console.log("Cancel clicked");
+			modal.close(); // ← Use dialog.close()
 			modal.remove();
 		});
 
-		console.log("✅ Event listeners attached");
+		// Close on backdrop click
+		modal.addEventListener("click", (e) => {
+			if (e.target === modal) {
+				modal.close();
+				modal.remove();
+			}
+		});
 
 	} catch (err) {
 		console.error("💥 Caught error in editPartial:", err);
@@ -816,61 +807,60 @@ async function deletePartial(id) {
 }
 
 async function createNewPartial() {
-	const modal = document.createElement("div");
+	const modal = document.createElement("dialog");
 	modal.className = "modal";
 	modal.innerHTML = `
-		<div class="modal__overlay"></div>
-		<div class="modal__content modal__content--large">
-			<h2 class="govuk-heading-m">Create new pattern</h2>
-			<form id="partial-create-form">
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="new-partial-name">Name (no spaces)</label>
-					<input class="govuk-input" id="new-partial-name" placeholder="task_consent_v1" required />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="new-partial-title">Title</label>
-					<input class="govuk-input" id="new-partial-title" placeholder="Consent task introduction" required />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="new-partial-category">Category</label>
-					<select class="govuk-select" id="new-partial-category">
-						<option>Consent</option>
-						<option>Tasks</option>
-						<option>Questions</option>
-						<option>Debrief</option>
-						<option>Notes</option>
-						<option>Other</option>
-					</select>
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="new-partial-source">Source (Mustache)</label>
-					<textarea class="code" id="new-partial-source" rows="15" required>## {{title}}
+		<h2 class="govuk-heading-m">Create new pattern</h2>
+		<form id="partial-create-form">
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="new-partial-name">Name (no spaces)</label>
+				<input class="govuk-input" id="new-partial-name" placeholder="task_consent" required />
+			</div>
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="new-partial-title">Title</label>
+				<input class="govuk-input" id="new-partial-title" placeholder="Consent task introduction" required />
+			</div>
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="new-partial-category">Category</label>
+				<select class="govuk-select" id="new-partial-category">
+					<option>Consent</option>
+					<option>Tasks</option>
+					<option>Questions</option>
+					<option>Debrief</option>
+					<option>Notes</option>
+					<option>Other</option>
+				</select>
+			</div>
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="new-partial-source">Source (Mustache)</label>
+				<textarea class="code" id="new-partial-source" rows="15" required>## {{title}}
 
 Write your template here...</textarea>
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="new-partial-description">Description</label>
-					<textarea class="govuk-textarea" id="new-partial-description" rows="3"></textarea>
-				</div>
-				<div class="modal__actions">
-					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-					<button type="submit" class="btn">Create pattern</button>
-				</div>
-			</form>
-		</div>
+			</div>
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="new-partial-description">Description</label>
+				<textarea class="govuk-textarea" id="new-partial-description" rows="3"></textarea>
+			</div>
+			<div class="modal-actions">
+				<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+				<button type="submit" class="btn">Create pattern</button>
+			</div>
+		</form>
 	`;
+
 	document.body.appendChild(modal);
+	modal.showModal();
 
 	const form = modal.querySelector("#partial-create-form");
 	form.addEventListener("submit", async (e) => {
 		e.preventDefault();
 
 		const newPartial = {
-			name: $("#new-partial-name").value.replace(/\s+/g, "_").toLowerCase(),
-			title: $("#new-partial-title").value,
-			category: $("#new-partial-category").value,
-			source: $("#new-partial-source").value,
-			description: $("#new-partial-description").value,
+			name: document.getElementById("new-partial-name").value.replace(/\s+/g, "_").toLowerCase(),
+			title: document.getElementById("new-partial-title").value,
+			category: document.getElementById("new-partial-category").value,
+			source: document.getElementById("new-partial-source").value,
+			description: document.getElementById("new-partial-description").value,
 			version: 1,
 			status: "draft"
 		};
@@ -883,6 +873,7 @@ Write your template here...</textarea>
 
 		if (res.ok) {
 			announce("Pattern created");
+			modal.close();
 			modal.remove();
 			await refreshPatternList();
 		} else {
@@ -891,7 +882,17 @@ Write your template here...</textarea>
 		}
 	});
 
-	modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
+	modal.querySelector("[data-cancel]").addEventListener("click", () => {
+		modal.close();
+		modal.remove();
+	});
+
+	modal.addEventListener("click", (e) => {
+		if (e.target === modal) {
+			modal.close();
+			modal.remove();
+		}
+	});
 }
 
 async function onPatternSearch(e) {
