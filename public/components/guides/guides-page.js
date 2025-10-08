@@ -7,6 +7,8 @@
  * - Variables source of truth: Airtable “Variables (JSON)” column (guide.variables).
  * - Preview/render: Mustache uses ctx.meta from VariableManager JSON only.
  * - Save: PATCH/POST { title, sourceMarkdown, variables }
+ * - Drawers are mutually exclusive: opening **Variables** closes **Pattern/Tag**; opening **Pattern** closes **Variables/Tag**; opening **Tag** closes **Variables/Pattern**.
+ * - Variables drawer provides independent “Save variables” (PATCH variables only) and “Discard” to revert to last saved values.
  *
  * @requires /lib/mustache.min.js
  * @requires /lib/marked.min.js
@@ -323,22 +325,26 @@ function wireEditor() {
 	const resetVarsBtn = document.getElementById("btn-reset-vars");
 	if (resetVarsBtn) resetVarsBtn.addEventListener("click", onResetVariables);
 
-	var insertPat = $("#btn-insert-pattern");
+	// Pattern drawer
+	const insertPat = $("#btn-insert-pattern");
 	if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
-
-	var patClose = $("#drawer-patterns-close");
+	const patClose = $("#drawer-patterns-close");
 	if (patClose) patClose.addEventListener("click", closePatternDrawer);
-
-	var patSearch = $("#pattern-search");
+	const patSearch = $("#pattern-search");
 	if (patSearch) patSearch.addEventListener("input", onPatternSearch);
 
-	var varsBtn = $("#btn-variables");
+	// Variables drawer
+	const varsBtn = $("#btn-variables");
 	if (varsBtn) varsBtn.addEventListener("click", openVariablesDrawer);
-
-	var varsClose = $("#drawer-variables-close");
+	const varsClose = $("#drawer-variables-close");
 	if (varsClose) varsClose.addEventListener("click", closeVariablesDrawer);
 
-	var src = $("#guide-source");
+	// Tag dialog (mutual exclusivity with drawers)
+	const tagBtn = $("#btn-insert-tag");
+	if (tagBtn) tagBtn.addEventListener("click", openTagDialog);
+
+	// Source editor
+	const src = $("#guide-source");
 	if (src) {
 		src.addEventListener("input", debounce(function() {
 			syncHighlighting();
@@ -357,18 +363,18 @@ function wireEditor() {
 		setTimeout(syncHighlighting, 100);
 	}
 
-	var title = $("#guide-title");
-	if (title) title.addEventListener("input", debounce(function() { announce("Title updated"); }, 400));
+	// Title
+	const title = $("#guide-title");
+	if (title) title.addEventListener("input", debounce(function() { announce("Title updated");
+		validateGuide(); }, 400));
 
-	var tagBtn = $("#btn-insert-tag");
-	if (tagBtn) tagBtn.addEventListener("click", onInsertTag);
-
-	var saveBtn = $("#btn-save");
+	// Save/Publish
+	const saveBtn = $("#btn-save");
 	if (saveBtn) saveBtn.addEventListener("click", onSave);
-
-	var pubBtn = $("#btn-publish");
+	const pubBtn = $("#btn-publish");
 	if (pubBtn) pubBtn.addEventListener("click", onPublish);
 
+	// Cmd/Ctrl+S
 	document.addEventListener("keydown", function(e) {
 		var k = e && e.key ? e.key.toLowerCase() : "";
 		if ((e.metaKey || e.ctrlKey) && k === "s") {
@@ -407,6 +413,7 @@ async function startNewGuide() {
 		populateVariablesFormEnhanced({});
 
 		await preview();
+		validateGuide();
 		titleEl && titleEl.focus();
 		announce("Started a new guide");
 	} catch (err) {
@@ -482,6 +489,7 @@ async function openGuide(id) {
 		populateVariablesFormEnhanced(jsonVars || {});
 
 		await preview();
+		validateGuide();
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
 		console.warn(e);
@@ -656,6 +664,10 @@ function importMarkdownFlow() {
 /* -------------------- drawers: patterns -------------------- */
 
 function openPatternDrawer() {
+	// Mutual exclusivity
+	closeVariablesDrawer();
+	closeTagDialog();
+
 	$("#drawer-patterns")?.removeAttribute("hidden");
 	$("#pattern-search")?.focus();
 	announce("Pattern drawer opened");
@@ -972,9 +984,11 @@ Write your template here...</textarea>
 
 /* -------------------- variables drawer (JSON-only) -------------------- */
 
-/** Open Variables drawer seeded from VariableManager (JSON-only). */
+/** Open Variables drawer; ensure Pattern/Tag are closed first (mutual exclusivity). */
 function openVariablesDrawer() {
-	// We no longer parse YAML; just show current JSON variables
+	closePatternDrawer();
+	closeTagDialog();
+
 	const d = $("#drawer-variables");
 	if (d) {
 		d.hidden = false;
@@ -990,6 +1004,24 @@ function closeVariablesDrawer() {
 	const b = $("#btn-variables");
 	if (b) b.focus();
 	announce("Variables drawer closed");
+}
+
+/**
+ * Tag dialog open/close shims for mutual exclusivity.
+ * If you later replace the prompt-based flow with a real dialog,
+ * wire its show/hide here.
+ */
+function openTagDialog() {
+	// mutual exclusivity
+	closeVariablesDrawer();
+	closePatternDrawer();
+
+	// Current implementation uses a simple prompt for demo/insert:
+	onInsertTag();
+}
+
+function closeTagDialog() {
+	// No-op placeholder (kept for symmetry/future dialog integration)
 }
 
 /**
@@ -1166,6 +1198,10 @@ function insertAtCursor(textarea, snippet) {
 }
 
 function onInsertTag() {
+	// Mutual exclusivity: ensure Variables/Pattern are closed when opening Tag insert flow
+	closeVariablesDrawer();
+	closePatternDrawer();
+
 	var tags = [
 		"{{study.title}}", "{{project.name}}", "{{participant.id}}",
 		"{{#tasks}}…{{/tasks}}", "{{#study.remote}}…{{/study.remote}}"
@@ -1241,6 +1277,31 @@ function getPath(obj, pathArr) {
 		acc = acc[k];
 	}
 	return acc;
+}
+
+/**
+ * Basic, robust form validation for the editor pane.
+ * - Checks for required fields (title + body).
+ * - Does not replace runLints(); preview() will still run Mustache checks.
+ * - Updates #lint-output minimally if nothing else has populated it yet.
+ */
+function validateGuide() {
+	const problems = [];
+	const title = ($("#guide-title")?.value || "").trim();
+	const body = ($("#guide-source")?.value || "").trim();
+	if (!title) problems.push("Title is required.");
+	if (!body) problems.push("Guide body is empty.");
+
+	const el = $("#lint-output");
+	if (el) {
+		if (problems.length) {
+			el.innerHTML = `<ul>${problems.map(p => `<li>${escapeHtml(p)}</li>`).join("")}</ul>`;
+		} else if (!el.textContent || el.textContent === "No issues") {
+			// leave runLints() to populate more detailed info later
+			el.textContent = "No issues";
+		}
+	}
+	return problems;
 }
 
 /* -------------------- global actions -------------------- */
