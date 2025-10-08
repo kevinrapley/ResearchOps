@@ -873,14 +873,6 @@ Write your template here...</textarea>
 	modal.querySelector("[data-cancel]").addEventListener("click", () => modal.remove());
 }
 
-async function refreshPatternList() {
-	const res = await fetch("/api/partials", { cache: "no-store" });
-	if (!res.ok) return;
-
-	const { partials = [] } = await res.json();
-	populatePatternList(partials);
-}
-
 async function onPatternSearch(e) {
 	const q = (e?.target?.value || "").trim().toLowerCase();
 
