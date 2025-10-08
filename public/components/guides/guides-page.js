@@ -1,19 +1,21 @@
 /**
  * @file guides-page.js
  * @module GuidesPage
- * @summary Discussion Guides hub with enhanced variable management.
+ * @summary Discussion Guides hub (list + editor bootstrap) — JSON-only variables.
  *
  * @description
- * - Integrates VariableManager component for front-matter variables
- * - Maintains existing YAML front-matter approach
- * - Provides live validation and smart placeholders
- * - All other functionality unchanged
+ * - Variables source of truth: Airtable “Variables (JSON)” column (guide.variables).
+ * - Preview/render: Mustache uses ctx.meta from VariableManager JSON only.
+ * - Save: PATCH/POST { title, sourceMarkdown, variables }
  *
  * @requires /lib/mustache.min.js
  * @requires /lib/marked.min.js
  * @requires /lib/purify.min.js
- * @requires /components/guides/variable-manager.js (NEW)
- * @requires /components/guides/variable-utils.js (NEW)
+ * @requires /components/guides/context.js
+ * @requires /components/guides/guide-editor.js
+ * @requires /components/guides/patterns.js
+ * @requires /components/guides/variable-manager.js
+ * @requires /components/guides/variable-utils.js (validateTemplate/formatValidationReport/suggestVariables only)
  */
 
 import Mustache from "/lib/mustache.min.js";
@@ -24,7 +26,7 @@ import { buildContext } from "/components/guides/context.js";
 import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js";
 import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js";
 
-// ===== NEW: Variable management imports =====
+// Variable manager + validators (keep your existing utils for validation)
 import { VariableManager } from "/components/guides/variable-manager.js";
 import {
 	validateTemplate,
@@ -32,12 +34,79 @@ import {
 	suggestVariables
 } from "/components/guides/variable-utils.js";
 
-/** qS helpers */
+/* ============================================================================
+ * Local helpers for JSON-only mode (YAML stripping + legacy import)
+ * ============================================================================ */
+
+/** Strip a leading YAML front-matter block if present. Returns body only. */
+function stripFrontMatter(src) {
+	const fmRe = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+	return String(src || "").replace(fmRe, "");
+}
+
+/** Extract + strip front-matter (for one-time migration). */
+function extractAndStripFrontMatter(src) {
+	const fmRe = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+	const m = String(src || "").match(fmRe);
+	if (!m) return { stripped: String(src || ""), yaml: null };
+	return { stripped: String(src || "").replace(fmRe, ""), yaml: m[1] || "" };
+}
+
+/** Minimal defensive YAML-like parser for migration only (scalars + top-level arrays). */
+function parseSimpleYaml(yaml) {
+	const out = {};
+	if (!yaml || !yaml.trim()) return out;
+	const lines = yaml.split(/\r?\n/);
+	let currentKey = null;
+
+	for (let raw of lines) {
+		const line = raw.replace(/\t/g, "  ");
+		if (!line.trim()) continue;
+
+		// Array item under currentKey
+		if (/^\s*-\s+/.test(line) && currentKey) {
+			out[currentKey] = out[currentKey] || [];
+			out[currentKey].push(coerceScalar(line.replace(/^\s*-\s+/, "")));
+			continue;
+		}
+
+		// key: value
+		const kv = line.match(/^\s*([A-Za-z0-9_\-\.]+)\s*:\s*(.*)$/);
+		if (kv) {
+			const [, k, v] = kv;
+			if (v === "" || v == null) {
+				currentKey = k;
+				out[k] = out[k] || [];
+			} else {
+				currentKey = k;
+				out[k] = coerceScalar(v);
+			}
+		}
+	}
+
+	return out;
+
+	function coerceScalar(v) {
+		const s = String(v || "").trim();
+		if (/^(true|false)$/i.test(s)) return /^true$/i.test(s);
+		if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
+		if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+			return s.slice(1, -1);
+		}
+		return s;
+	}
+}
+
+/* ============================================================================
+ * qS helpers / small utilities
+ * ============================================================================ */
+
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-// ===== NEW: Variable manager instance =====
-let varManager = null;
+let varManager = null; // VariableManager instance (JSON-only)
+let __openGuideId = null; // currently open guide id
+let __guideCtx = { project: {}, study: {} }; // page context
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
@@ -53,12 +122,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	refreshPatternList().catch(console.warn);
 });
 
-/**
- * Load all studies for a project (mirrors Study page behaviour).
- * @param {string} projectId Airtable project record id
- * @returns {Promise<Array<Object>>} studies
- * @throws {Error} when API contract fails
- */
+/* -------------------- breadcrumbs / context -------------------- */
+
 async function loadStudies(projectId) {
 	const url = "/api/studies?project=" + encodeURIComponent(projectId);
 	const res = await fetch(url, { cache: "no-store" });
@@ -69,10 +134,6 @@ async function loadStudies(projectId) {
 	return js.studies;
 }
 
-/**
- * Prefer a real title; otherwise compute "Method — YYYY-MM-DD".
- * @param {{ title?:string, Title?:string, method?:string, createdAt?:string }} s
- */
 function pickTitle(s) {
 	s = s || {};
 	var t = (s.title || s.Title || "").trim();
@@ -85,10 +146,6 @@ function pickTitle(s) {
 	return method + " — " + yyyy + "-" + mm + "-" + dd;
 }
 
-/**
- * Hydrate breadcrumbs, header subtitle, and guide context.
- * @param {{ pid: string, sid: string }} params
- */
 async function hydrateCrumbs({ pid, sid }) {
 	try {
 		const [projectsRes, studiesRes] = await Promise.all([
@@ -124,24 +181,18 @@ async function hydrateCrumbs({ pid, sid }) {
 
 		document.title = `Discussion Guides — ${study.title}`;
 
-		window.__guideCtx = {
-			project: {
-				id: project.id,
-				name: project.name || "(Unnamed project)"
-			},
+		__guideCtx = {
+			project: { id: project.id, name: project.name || "(Unnamed project)" },
 			study
 		};
 	} catch (err) {
 		console.warn("Crumb hydrate failed", err);
-		window.__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
+		__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
 	}
 }
 
-/**
- * Render list of guides for a study. Optionally auto-open newest once.
- * @param {string} studyId
- * @param {{autoOpen?: boolean}} [opts]
- */
+/* -------------------- list + open -------------------- */
+
 async function loadGuides(studyId, opts = {}) {
 	const tbody = $("#guides-tbody");
 	if (!tbody || !studyId) return;
@@ -176,7 +227,7 @@ async function loadGuides(studyId, opts = {}) {
 			}));
 		}
 
-		if (opts.autoOpen && !window.__hasAutoOpened && !window.__openGuideId && newestId) {
+		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && newestId) {
 			window.__hasAutoOpened = true;
 			await openGuide(newestId);
 		}
@@ -186,57 +237,12 @@ async function loadGuides(studyId, opts = {}) {
 	}
 }
 
-/* -------------------- global actions -------------------- */
-function wireGlobalActions() {
-	var newBtn = $("#btn-new");
-	if (newBtn) newBtn.addEventListener("click", onNewClick);
-
-	var importBtn = $("#btn-import");
-	if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
-
-	document.addEventListener("click", function(e) {
-		var t = e.target;
-		var hasClosest = t && typeof t.closest === "function";
-		var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
-		if (newBtn2) {
-			e.preventDefault();
-			onNewClick(e);
-			return;
-		}
-
-		var exportMenu = $("#export-menu");
-		var menu = exportMenu ? exportMenu.closest(".menu") : null;
-		if (menu && (!hasClosest || !menu.contains(t))) {
-			menu.removeAttribute("aria-expanded");
-		}
-	});
-
-	var exportBtn = $("#btn-export");
-	if (exportBtn) {
-		exportBtn.addEventListener("click", function() {
-			var exportMenu = $("#export-menu");
-			var menu = exportMenu ? exportMenu.closest(".menu") : null;
-			if (!menu) return;
-			var expanded = menu.getAttribute("aria-expanded") === "true";
-			menu.setAttribute("aria-expanded", expanded ? "false" : "true");
-		});
-	}
-
-	var exportMenuEl = $("#export-menu");
-	if (exportMenuEl) {
-		exportMenuEl.addEventListener("click", function(e) {
-			var t = e.target;
-			var hasClosest = t && typeof t.closest === "function";
-			var target = hasClosest ? t.closest("[data-export]") : null;
-			if (target) doExport(target.getAttribute("data-export"));
-		});
-	}
-}
-
 function onNewClick(e) {
 	if (e && typeof e.preventDefault === "function") e.preventDefault();
 	startNewGuide();
 }
+
+/* -------------------- patterns -------------------- */
 
 async function refreshPatternList() {
 	try {
@@ -250,7 +256,6 @@ async function refreshPatternList() {
 		const data = await res.json();
 		const partials = data.partials || [];
 
-		console.log("Loaded partials:", partials.length);
 		populatePatternList(partials);
 	} catch (err) {
 		console.error("Error refreshing pattern list:", err);
@@ -258,23 +263,16 @@ async function refreshPatternList() {
 	}
 }
 
-/* -------------------- syntax highlighting -------------------- */
+/* -------------------- syntax highlighting (unchanged) -------------------- */
 
-/**
- * Highlight Mustache and Markdown syntax in the source editor.
- * @param {string} source
- * @returns {string} Highlighted HTML
- */
 function highlightMustache(source) {
 	if (!source) return '';
 
-	// Escape HTML first
 	let highlighted = source
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;');
 
-	// Track Mustache tag positions to avoid highlighting markdown inside them
 	const mustacheTags = [];
 	const tagPattern = /\{\{[^}]*\}\}/g;
 	let match;
@@ -282,58 +280,33 @@ function highlightMustache(source) {
 		mustacheTags.push({ start: match.index, end: match.index + match[0].length });
 	}
 
-	// Helper to check if position is inside a Mustache tag
 	function isInsideMustache(pos) {
 		return mustacheTags.some(tag => pos >= tag.start && pos < tag.end);
 	}
 
-	// Highlight Mustache tags FIRST (order matters!)
 	highlighted = highlighted
-		// Comments: {{! comment}}
-		.replace(/(\{\{!)([^}]*?)(\}\})/g,
-			'<span class="token comment">$1$2$3</span>')
-		// Partials: {{> partial_name}}
-		.replace(/(\{\{&gt;)\s*([^}]+?)(\}\})/g,
-			'<span class="token mustache"><span class="token mustache-tag">{{&gt;</span><span class="token keyword">$2</span><span class="token mustache-tag">}}</span></span>')
-		// Section start: {{#section}}
-		.replace(/(\{\{)(#[^}]+?)(\}\})/g,
-			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
-		// Section end: {{/section}}
-		.replace(/(\{\{)(\/[^}]+?)(\}\})/g,
-			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
-		// Variables: {{variable}}
-		.replace(/(\{\{)([^}#\/!&gt;]+?)(\}\})/g,
-			'<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>');
+		.replace(/(\{\{!)([^}]*?)(\}\})/g, '<span class="token comment">$1$2$3</span>')
+		.replace(/(\{\{&gt;)\s*([^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">{{&gt;</span><span class="token keyword">$2</span><span class="token mustache-tag">}}</span></span>')
+		.replace(/(\{\{)(#[^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
+		.replace(/(\{\{)(\/[^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
+		.replace(/(\{\{)([^}#\/!&gt;]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>');
 
-	// Now apply Markdown highlighting OUTSIDE of Mustache tags
-	// Use a more specific regex that avoids matching inside <span> tags
 	highlighted = highlighted
-		// Headers (only at line start)
-		.replace(/^(#{1,6})\s+(.+)$/gm,
-			'<span class="token title">$1 $2</span>')
-		// Bold: **text** or __text__ (but not inside spans)
-		.replace(/(\*\*|__)(?=\S)([^*_<]+?)(?<=\S)\1/g,
-			'<span class="token bold">$1$2$1</span>')
-		// Inline code: `code` (but not inside spans)
-		.replace(/(`+)([^`<]+?)\1/g,
-			'<span class="token code">$1$2$1</span>');
+		.replace(/^(#{1,6})\s+(.+)$/gm, '<span class="token title">$1 $2</span>')
+		.replace(/(\*\*|__)(?=\S)([^*_<]+?)(?<=\S)\1/g, '<span class="token bold">$1$2$1</span>')
+		.replace(/(`+)([^`<]+?)\1/g, '<span class="token code">$1$2$1</span>');
 
 	return highlighted;
 }
 
-/**
- * Sync highlighting with textarea content.
- */
 function syncHighlighting() {
 	const textarea = document.getElementById('guide-source');
 	const codeElement = document.getElementById('guide-source-code');
-
 	if (!textarea || !codeElement) return;
 
 	const source = textarea.value;
 	codeElement.innerHTML = highlightMustache(source);
 
-	// Sync scroll position
 	const highlightContainer = document.getElementById('guide-source-highlight');
 	if (highlightContainer) {
 		highlightContainer.scrollTop = textarea.scrollTop;
@@ -341,7 +314,8 @@ function syncHighlighting() {
 	}
 }
 
-/* -------------------- editor -------------------- */
+/* -------------------- editor wiring -------------------- */
+
 function wireEditor() {
 	var insertPat = $("#btn-insert-pattern");
 	if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
@@ -360,25 +334,20 @@ function wireEditor() {
 
 	var src = $("#guide-source");
 	if (src) {
-		// Sync highlighting and preview on input
 		src.addEventListener("input", debounce(function() {
 			syncHighlighting();
 			preview();
-			// ===== NEW: Validate on source change =====
 			validateGuide();
 		}, 150));
 
-		// CRITICAL: Sync scroll perfectly in both directions
-		src.addEventListener("scroll", function(e) {
+		src.addEventListener("scroll", function() {
 			const highlight = $("#guide-source-highlight");
 			if (highlight) {
-				// Force exact scroll position sync
 				highlight.scrollTop = src.scrollTop;
 				highlight.scrollLeft = src.scrollLeft;
 			}
 		}, { passive: true });
 
-		// Initial highlighting
 		setTimeout(syncHighlighting, 100);
 	}
 
@@ -403,40 +372,36 @@ function wireEditor() {
 	});
 }
 
+/* -------------------- new / open / preview -------------------- */
+
 async function startNewGuide() {
 	try {
-		var editor = $("#editor-section");
-		if (editor) editor.classList.remove("is-hidden");
+		$("#editor-section")?.classList.remove("is-hidden");
 
-		window.__openGuideId = undefined;
+		__openGuideId = null;
 
-		var titleEl = $("#guide-title");
+		const titleEl = $("#guide-title");
 		if (titleEl) titleEl.value = "Untitled guide";
 
-		var statusEl = $("#guide-status");
+		const statusEl = $("#guide-status");
 		if (statusEl) statusEl.textContent = "draft";
 
-		var defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ?
+		const defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ?
 			DEFAULT_SOURCE.trim() :
-			"---\nversion: 1\n---\n# New guide\n\nWelcome. Start writing…";
+			"# New guide\n\nWelcome. Start writing…";
 
-		var srcEl = $("#guide-source");
+		const srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = defaultSrc;
 
-		// ✅ Trigger highlighting
 		syncHighlighting();
 
-		try {
-			await refreshPatternList();
-		} catch (err) {
-			console.warn("Pattern list failed:", err);
-		}
+		try { await refreshPatternList(); } catch (err) { console.warn("Pattern list failed:", err); }
 
-		// ===== UPDATED: Use VariableManager instead =====
-		try { populateVariablesFormEnhanced({}); } catch (err) { console.warn("Variables form failed:", err); }
-		try { await preview(); } catch (err) { console.warn("Preview failed:", err); }
+		// JSON-only: clear variables drawer
+		populateVariablesFormEnhanced({});
 
-		if (titleEl) titleEl.focus();
+		await preview();
+		titleEl && titleEl.focus();
 		announce("Started a new guide");
 	} catch (err) {
 		console.error("startNewGuide fatal:", err);
@@ -444,6 +409,10 @@ async function startNewGuide() {
 	}
 }
 
+/**
+ * Open a guide and normalise for JSON-only mode.
+ * API expected shape: { id, title, sourceMarkdown, variables }
+ */
 async function openGuide(id) {
 	try {
 		let guide = null;
@@ -458,7 +427,7 @@ async function openGuide(id) {
 		}
 
 		if (!guide) {
-			const sid = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
+			const sid = __guideCtx?.study?.id || "";
 			if (!sid) throw new Error("No study id available in context for fallback.");
 			const r2 = await fetch(`/api/guides?study=${encodeURIComponent(sid)}`, { cache: "no-store" });
 			if (!r2.ok) {
@@ -471,20 +440,40 @@ async function openGuide(id) {
 
 		if (!guide) throw new Error("Guide not found");
 
-		window.__openGuideId = guide.id;
+		__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
 		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
 		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
-		$("#guide-source") && ($("#guide-source").value = guide.sourceMarkdown || "");
 
-		// ✅ Trigger highlighting
+		// JSON-only migration rules
+		let source = String(guide.sourceMarkdown || "");
+		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
+
+		if (!jsonVars || Object.keys(jsonVars).length === 0) {
+			// One-time import from YAML if present
+			const { stripped, yaml } = extractAndStripFrontMatter(source);
+			if (yaml) {
+				try {
+					const imported = parseSimpleYaml(yaml);
+					if (imported && Object.keys(imported).length) {
+						jsonVars = imported;
+					}
+				} catch {}
+				source = stripped;
+			} else {
+				source = stripFrontMatter(source);
+			}
+		} else {
+			source = stripFrontMatter(source);
+		}
+
+		$("#guide-source") && ($("#guide-source").value = source);
 		syncHighlighting();
 
 		await refreshPatternList();
 
-		// ===== UPDATED: Use VariableManager =====
-		const fm = readFrontMatter(guide.sourceMarkdown || "");
-		populateVariablesFormEnhanced(fm.meta || {});
+		// Variables drawer now seeded from JSON only
+		populateVariablesFormEnhanced(jsonVars || {});
 
 		await preview();
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
@@ -494,46 +483,51 @@ async function openGuide(id) {
 	}
 }
 
+/**
+ * Preview uses JSON variables
+ */
 async function preview() {
-	var srcEl = $("#guide-source");
+	const srcEl = $("#guide-source");
 	if (!srcEl) return;
 
-	var source = srcEl.value || "";
-	var ctx = window.__guideCtx || {};
-	var project = ensureProjectName(ctx.project || {});
-	var study = ensureStudyTitle(ctx.study || {});
+	const source = stripFrontMatter(srcEl.value || "");
+	const ctx = __guideCtx || {};
+	const project = ensureProjectName(ctx.project || {});
+	const study = ensureStudyTitle(ctx.study || {});
 
-	var fm = readFrontMatter(source);
-	var meta = clonePlainObject((fm && fm.meta) || {});
-	delete meta.project;
-	delete meta.study;
-	delete meta.session;
-	delete meta.participant;
+	const meta = (varManager && typeof varManager.getVariables === "function") ?
+		varManager.getVariables() :
+		{};
 
-	var context = { project: project, study: study, session: {}, participant: {}, meta: meta };
+	const context = { project: project, study: study, session: {}, participant: {}, meta: meta };
 
-	var names = collectPartialNames(source);
-	var partials = {};
+	const names = collectPartialNames(source);
+	let partials = {};
 	try { partials = await buildPartials(names); } catch (e) {}
 
-	var out = await renderGuide({ source: source, context: context, partials: partials });
+	const out = await renderGuide({ source: source, context: context, partials: partials });
 
-	var prev = $("#guide-preview");
+	const prev = $("#guide-preview");
 	if (prev) prev.innerHTML = out.html;
 
 	runLints({ source: source, context: context, partials: partials });
 }
 
+/* -------------------- save / publish -------------------- */
+
 async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
-	const source = $("#guide-source")?.value || "";
-	const fm = readFrontMatter(source);
-	const variables = fm.meta || {};
+	const source = stripFrontMatter($("#guide-source")?.value || "");
+	const variables = (varManager && typeof varManager.getVariables === "function") ?
+		varManager.getVariables() :
+		{};
 
-	const studyId = (window.__guideCtx && window.__guideCtx.study && window.__guideCtx.study.id) || "";
-	const id = window.__openGuideId;
+	const studyId = __guideCtx?.study?.id || "";
+	const id = __openGuideId;
 
-	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id ?
+		{ title, sourceMarkdown: source, variables } :
+		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
 	const method = id ? "PATCH" : "POST";
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
@@ -548,18 +542,18 @@ async function onSave() {
 
 	if (res.ok) {
 		if (!id && js && js.id) {
-			window.__openGuideId = js.id;
+			__openGuideId = js.id;
 		}
 		announce("Guide saved");
-		loadGuides(studyId);
+		if (studyId) loadGuides(studyId);
 	} else {
 		announce(`Save failed: ${res.status} ${JSON.stringify(js)}`);
 	}
 }
 
 async function onPublish() {
-	const id = window.__openGuideId;
-	const sid = window.__guideCtx?.study?.id;
+	const id = __openGuideId;
+	const sid = __guideCtx?.study?.id;
 	const title = ($("#guide-title")?.value || "").trim();
 	if (!id || !sid) { announce("Save the guide before publishing."); return; }
 
@@ -576,6 +570,8 @@ async function onPublish() {
 	}
 }
 
+/* -------------------- import (unchanged, but preview strips YAML) -------------------- */
+
 function importMarkdownFlow() {
 	const inp = document.createElement("input");
 	inp.type = "file";
@@ -585,28 +581,25 @@ function importMarkdownFlow() {
 		if (!file) return;
 		const text = await file.text();
 		await startNewGuide();
-		var srcEl = $("#guide-source");
+		const srcEl = $("#guide-source");
 		if (srcEl) srcEl.value = text;
 		syncHighlighting();
-		await preview();
+		await preview(); // will render with stripFrontMatter()
 	});
 	inp.click();
 }
 
 /* -------------------- drawers: patterns -------------------- */
+
 function openPatternDrawer() {
-	var d = $("#drawer-patterns");
-	if (d) d.hidden = false;
-	var s = $("#pattern-search");
-	if (s) s.focus();
+	$("#drawer-patterns")?.removeAttribute("hidden");
+	$("#pattern-search")?.focus();
 	announce("Pattern drawer opened");
 }
 
 function closePatternDrawer() {
-	var d = $("#drawer-patterns");
-	if (d) d.hidden = true;
-	var b = $("#btn-insert-pattern");
-	if (b) b.focus();
+	$("#drawer-patterns")?.setAttribute("hidden", "true");
+	$("#btn-insert-pattern")?.focus();
 	announce("Pattern drawer closed");
 }
 
@@ -674,48 +667,21 @@ async function handlePatternClick(e) {
 		return;
 	}
 
-	if (t.dataset.view) {
-		await viewPartial(t.dataset.view);
-		return;
-	}
+	if (t.dataset.view) { await viewPartial(t.dataset.view); return; }
+	if (t.dataset.edit) { await editPartial(t.dataset.edit); return; }
+	if (t.dataset.delete) { await deletePartial(t.dataset.delete); return; }
 
-	if (t.dataset.edit) {
-		await editPartial(t.dataset.edit);
-		return;
-	}
-
-	if (t.dataset.delete) {
-		await deletePartial(t.dataset.delete);
-		return;
-	}
-
-	if (t.id === "btn-new-pattern") {
-		await createNewPartial();
-		return;
-	}
+	if (t.id === "btn-new-pattern") { await createNewPartial(); return; }
 }
+
+/* -------------------- partials view/edit/create/delete (unchanged) -------------------- */
 
 async function viewPartial(id) {
 	try {
-		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
-			cache: "no-store"
-		});
-
-		if (!res.ok) {
-			const error = await res.text();
-			console.error("Failed to load partial:", res.status, error);
-			announce(`Failed to load partial: ${res.status}`);
-			return;
-		}
-
+		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { cache: "no-store" });
+		if (!res.ok) { announce(`Failed to load partial: ${res.status}`); return; }
 		const data = await res.json();
-
-		if (!data.ok || !data.partial) {
-			console.error("Invalid response:", data);
-			announce("Failed to load partial: Invalid response");
-			return;
-		}
-
+		if (!data.ok || !data.partial) { announce("Failed to load partial: Invalid response"); return; }
 		const { partial } = data;
 
 		const modal = document.createElement("dialog");
@@ -723,18 +689,9 @@ async function viewPartial(id) {
 		modal.innerHTML = `
 			<h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
 			<dl class="govuk-summary-list">
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Name:</dt>
-					<dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Category:</dt>
-					<dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Status:</dt>
-					<dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd>
-				</div>
+				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Name:</dt><dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd></div>
+				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Category:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd></div>
+				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Status:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd></div>
 			</dl>
 			<h3 class="govuk-heading-s">Source</h3>
 			<pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
@@ -744,7 +701,6 @@ async function viewPartial(id) {
 				<button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
 			</div>
 		`;
-
 		document.body.appendChild(modal);
 		modal.showModal();
 
@@ -768,33 +724,13 @@ async function viewPartial(id) {
 async function editPartial(id) {
 	try {
 		const url = `/api/partials/${encodeURIComponent(id)}`;
-		const res = await fetch(url, {
-			cache: "no-store",
-			headers: { "Accept": "application/json" }
-		});
-
+		const res = await fetch(url, { cache: "no-store", headers: { "Accept": "application/json" } });
 		const text = await res.text();
-
-		if (!res.ok) {
-			announce(`Failed to load partial: ${res.status}`);
-			console.error("Error response:", text);
-			return;
-		}
+		if (!res.ok) { announce(`Failed to load partial: ${res.status}`); return; }
 
 		let data;
-		try {
-			data = JSON.parse(text);
-		} catch (e) {
-			announce("Failed to load partial: Invalid JSON");
-			console.error("JSON parse error:", e);
-			return;
-		}
-
-		if (!data.ok || !data.partial) {
-			announce("Failed to load partial: Invalid response");
-			console.error("Missing ok or partial:", data);
-			return;
-		}
+		try { data = JSON.parse(text); } catch { announce("Failed to load partial: Invalid JSON"); return; }
+		if (!data.ok || !data.partial) { announce("Failed to load partial: Invalid response"); return; }
 
 		const { partial } = data;
 
@@ -825,7 +761,6 @@ async function editPartial(id) {
 				</div>
 			</form>
 		`;
-
 		document.body.appendChild(modal);
 		modal.showModal();
 
@@ -842,10 +777,7 @@ async function editPartial(id) {
 
 			const updateRes = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
 				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-					"Accept": "application/json"
-				},
+				headers: { "Content-Type": "application/json", "Accept": "application/json" },
 				body: JSON.stringify(update)
 			});
 
@@ -865,12 +797,9 @@ async function editPartial(id) {
 			modal.close();
 			modal.remove();
 		});
-
 		modal.addEventListener("click", (e) => {
-			if (e.target === modal) {
-				modal.close();
-				modal.remove();
-			}
+			if (e.target === modal) { modal.close();
+				modal.remove(); }
 		});
 
 	} catch (err) {
@@ -880,18 +809,10 @@ async function editPartial(id) {
 }
 
 async function deletePartial(id) {
-	if (!confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) {
-		return;
-	}
-
+	if (!confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) return;
 	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { method: "DELETE" });
-
-	if (res.ok) {
-		announce("Pattern deleted");
-		await refreshPatternList();
-	} else {
-		announce("Delete failed");
-	}
+	if (res.ok) { announce("Pattern deleted");
+		await refreshPatternList(); } else { announce("Delete failed"); }
 }
 
 async function createNewPartial() {
@@ -935,7 +856,6 @@ Write your template here...</textarea>
 			</div>
 		</form>
 	`;
-
 	document.body.appendChild(modal);
 	modal.showModal();
 
@@ -974,7 +894,6 @@ Write your template here...</textarea>
 		modal.close();
 		modal.remove();
 	});
-
 	modal.addEventListener("click", (e) => {
 		if (e.target === modal) {
 			modal.close();
@@ -983,54 +902,18 @@ Write your template here...</textarea>
 	});
 }
 
-async function onPatternSearch(e) {
-	const q = (e?.target?.value || "").trim().toLowerCase();
+/* -------------------- variables drawer (JSON-only) -------------------- */
 
-	if (!q) {
-		await refreshPatternList();
-		return;
-	}
-
-	try {
-		const res = await fetch("/api/partials", { cache: "no-store" });
-		if (!res.ok) return;
-
-		const { partials = [] } = await res.json();
-		const filtered = partials.filter(p => {
-			const searchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
-			return searchText.includes(q);
-		});
-
-		populatePatternList(filtered);
-	} catch (err) {
-		console.error("Pattern search error:", err);
-	}
-}
-
-/* ============================================================================
- * ENHANCED VARIABLES DRAWER with VariableManager
- * ============================================================================ */
-
-/**
- * Open variables drawer with VariableManager component.
- */
+/** Open Variables drawer seeded from VariableManager (JSON-only). */
 function openVariablesDrawer() {
-	const src = $("#guide-source");
-	const text = src ? src.value : "";
-	const fm = readFrontMatter(text);
-
-	// ===== NEW: Use VariableManager =====
-	populateVariablesFormEnhanced((fm && fm.meta) || {});
-
+	// We no longer parse YAML; just show current JSON variables
 	const d = $("#drawer-variables");
-	if (d) {
-		d.hidden = false;
-		d.focus();
-	}
-
+	if (d) { d.hidden = false;
+		d.focus(); }
 	announce("Variables drawer opened");
 }
 
+/** Close Variables drawer. */
 function closeVariablesDrawer() {
 	const d = $("#drawer-variables");
 	if (d) d.hidden = true;
@@ -1040,39 +923,29 @@ function closeVariablesDrawer() {
 }
 
 /**
- * Populate variables form using VariableManager component.
- * @param {Record<string, any>} meta - Front-matter variables
+ * Render the VariableManager UI with initial JSON variables.
+ * @param {Record<string, any>} jsonVars
  */
-function populateVariablesFormEnhanced(meta) {
+function populateVariablesFormEnhanced(jsonVars) {
 	const form = $("#variables-form");
 	if (!form) return;
-
-	// Clear existing content
 	form.innerHTML = '<div id="variable-manager-container"></div>';
 
-	const container = $("#variable-manager-container");
-	if (!container) return;
-
-	// Convert meta values to strings for VariableManager
-	const variables = {};
-	for (const key in (meta || {})) {
-		if (Object.prototype.hasOwnProperty.call(meta, key)) {
-			variables[key] = String(meta[key]);
+	const initial = {};
+	const src = jsonVars || {};
+	for (const k in src) {
+		if (Object.prototype.hasOwnProperty.call(src, k)) {
+			// present editable strings in the UI; preserve types on save hereafter
+			initial[k] = typeof src[k] === "string" ? src[k] : JSON.stringify(src[k]);
 		}
 	}
 
-	// Create new VariableManager instance
 	varManager = new VariableManager({
 		containerId: 'variable-manager-container',
-		initialVariables: variables,
-		onChange: (updatedVariables) => {
-			console.log('[guides] Variables changed:', updatedVariables);
-			// Write back to front-matter
-			writeFrontMatterFromVariables(updatedVariables);
-			// Trigger preview update
-			preview();
-			// Validate
-			validateGuide();
+		initialVariables: initial,
+		onChange: () => {
+			preview(); // preview always uses JSON-only variables
+			validateGuide(); // keep lint panel fresh
 			announce('Variables updated');
 		},
 		onError: (msg) => {
@@ -1082,75 +955,8 @@ function populateVariablesFormEnhanced(meta) {
 	});
 }
 
-/**
- * Write variables back to front-matter in source.
- * @param {Record<string, string>} variables
- */
-function writeFrontMatterFromVariables(variables) {
-	const srcEl = $("#guide-source");
-	if (!srcEl) return;
+/* -------------------- export / helpers / lints (mostly unchanged) -------------------- */
 
-	const currentSource = srcEl.value;
-	const fm = readFrontMatter(currentSource);
-
-	// Convert string values back to appropriate types
-	const typedMeta = {};
-	for (const key in variables) {
-		if (Object.prototype.hasOwnProperty.call(variables, key)) {
-			const val = variables[key];
-			// Try to preserve types
-			if (/^\d+$/.test(val)) {
-				typedMeta[key] = Number(val);
-			} else if (val === "true") {
-				typedMeta[key] = true;
-			} else if (val === "false") {
-				typedMeta[key] = false;
-			} else {
-				typedMeta[key] = val;
-			}
-		}
-	}
-
-	// Merge with existing front-matter
-	const mergedMeta = { ...fm.meta, ...typedMeta };
-
-	// Write back to source
-	const rebuiltSource = writeFrontMatter(currentSource, mergedMeta);
-	srcEl.value = rebuiltSource;
-
-	// Update syntax highlighting
-	syncHighlighting();
-}
-
-/**
- * Validate guide template with variables.
- */
-function validateGuide() {
-	const srcEl = $("#guide-source");
-	const lintOutput = $("#lint-output");
-
-	if (!srcEl || !varManager) return;
-
-	const source = srcEl.value;
-	const fm = readFrontMatter(source);
-	const variables = varManager.getVariables();
-
-	// Only validate the body (after front-matter)
-	const template = fm.body || source;
-
-	const result = validateTemplate(template, variables);
-	const report = formatValidationReport(result);
-
-	if (lintOutput) {
-		lintOutput.innerHTML = report;
-	}
-}
-
-/* ============================================================================
- * END ENHANCED VARIABLES
- * ============================================================================ */
-
-/* -------------------- export -------------------- */
 async function doExport(kind) {
 	const srcEl = $("#guide-source");
 	const source = srcEl?.value || "";
@@ -1160,31 +966,26 @@ async function doExport(kind) {
 	try {
 		switch (kind) {
 			case "md":
-				downloadText(source, `${sanitized}.md`, "text/markdown");
+				// Export the visible body
+				downloadText(stripFrontMatter(source), `${sanitized}.md`, "text/markdown");
 				announce(`Exported ${title}.md`);
 				break;
 
 			case "html":
-				const preview = $("#guide-preview");
-				if (!preview) { announce("Preview not available"); return; }
-				const html = buildStandaloneHtml(preview.innerHTML, title);
+				const previewEl = $("#guide-preview");
+				if (!previewEl) { announce("Preview not available"); return; }
+				const html = buildStandaloneHtml(previewEl.innerHTML, title);
 				downloadText(html, `${sanitized}.html`, "text/html");
 				announce(`Exported ${title}.html`);
 				break;
 
 			case "pdf":
-				if (typeof window.jspdf === "undefined") {
-					announce("PDF export not available (library missing)");
-					return;
-				}
+				if (typeof window.jspdf === "undefined") { announce("PDF export not available (library missing)"); return; }
 				await exportPdf(title);
 				break;
 
 			case "docx":
-				if (typeof window.docx === "undefined") {
-					announce("DOCX export not available (library missing)");
-					return;
-				}
+				if (typeof window.docx === "undefined") { announce("DOCX export not available (library missing)"); return; }
 				await exportDocx(source, title);
 				break;
 
@@ -1217,31 +1018,13 @@ function buildStandaloneHtml(bodyHtml, title) {
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>${escapeHtml(title)}</title>
 	<style>
-		body { 
-			font-family: "GDS Transport", Arial, sans-serif; 
-			line-height: 1.5; 
-			max-width: 38em; 
-			margin: 2em auto; 
-			padding: 0 1em;
-			color: #0b0c0c;
-			}
-			
+		body { font-family: "GDS Transport", Arial, sans-serif; line-height: 1.5; max-width: 38em; margin: 2em auto; padding: 0 1em; color: #0b0c0c; }
 		h1 { font-size: 2em; margin: 1em 0 0.5em; }
 		h2 { font-size: 1.5em; margin: 1em 0 0.5em; }
 		h3 { font-size: 1.25em; margin: 1em 0 0.5em; }
 		p { margin: 0 0 1em; }
-		
-		code { 
-			background: #f3f2f1; 
-			padding: 0.125em 0.25em; 
-			font-family: monospace; 
-			}
-			
-		pre { 
-			background: #f3f2f1; 
-			padding: 1em; 
-			overflow-x: auto; 
-			}
+		code { background: #f3f2f1; padding: 0.125em 0.25em; font-family: monospace; }
+		pre { background: #f3f2f1; padding: 1em; overflow-x: auto; }
 	</style>
 </head>
 <body>
@@ -1268,12 +1051,12 @@ async function exportDocx(markdown, title) {
 	announce("DOCX export coming soon");
 }
 
-/* -------------------- helpers -------------------- */
+/* -------------------- misc helpers & lints -------------------- */
 
 function ensureStudyTitle(s) {
 	s = s || {};
 	var explicit = (s.title || s.Title || "").toString().trim();
-	var out = clonePlainObject(s);
+	var out = { ...s };
 	if (explicit) { out.title = explicit; return out; }
 	var method = (s.method || "Study").trim();
 	var d = s.createdAt ? new Date(s.createdAt) : new Date();
@@ -1284,138 +1067,10 @@ function ensureStudyTitle(s) {
 	return out;
 }
 
-function firstText() {
-	for (var i = 0; i < arguments.length; i++) {
-		var v = arguments[i];
-		if (typeof v === "string" && v.trim()) return v.trim();
-		if (Array.isArray(v) && v.length && typeof v[0] === "string" && v[0].trim()) return v[0].trim();
-	}
-	return "";
-}
-
-function toLabel(v) {
-	if (v == null) return "";
-	if (typeof v === "string") return v.trim();
-	if (Array.isArray(v)) {
-		for (var i = 0; i < v.length; i++) {
-			var t = toLabel(v[i]);
-			if (t) return t;
-		}
-		return "";
-	}
-	if (typeof v === "object") {
-		return toLabel(v.name || v.Name || v.label || v.Label || v.value || v.Value || v.text || v.Text);
-	}
-	return "";
-}
-
 function ensureProjectName(p) {
 	if (!p || typeof p !== "object") return { name: "(Unnamed project)" };
 	const name = (p.name || p.Name || "").toString().trim();
 	return { ...p, name: name || "(Unnamed project)" };
-}
-
-async function resolveProject(pid, sid) {
-	try {
-		const r = await fetch("/api/projects", { cache: "no-store" });
-		if (r.ok) {
-			const js = await r.json().catch(() => ({}));
-			const arr = Array.isArray(js) ? js : (Array.isArray(js?.projects) ? js.projects : []);
-			if (Array.isArray(arr) && arr.length) {
-				const found = arr.find(p => {
-					const base = (p && p.project) ? p.project : p;
-					const fields = base && base.fields ? base.fields : null;
-					const ids = new Set([
-						base && base.id, base && base.ID, base && base.Id,
-						base && base.LocalId, base && base.localId,
-						fields && fields.id, fields && fields.Id, fields && fields.record_id
-					].filter(Boolean).map(String));
-					return ids.has(String(pid));
-				});
-				if (found) return ensureProjectName(found);
-			}
-		}
-	} catch (e) {}
-
-	try {
-		const r = await fetch("/api/studies?project=" + encodeURIComponent(pid), { cache: "no-store" });
-		if (r.ok) {
-			const js = await r.json().catch(() => ({}));
-			const studies = Array.isArray(js) ? js : (Array.isArray(js?.studies) ? js.studies : []);
-			let name = firstText(
-				js?.project?.name, js?.project?.Name, js?.projectName
-			);
-			if (!name && studies.length) {
-				const s0 = studies[0];
-				name = firstText(
-					s0?.project?.name, s0?.project?.Name, s0?.Project,
-					(s0?.fields && (s0.fields.Project || s0.fields.ProjectName || s0.fields.Name))
-				);
-			}
-			if (name) return { id: pid, name };
-		}
-	} catch (e) {}
-
-	return { id: pid, name: "(Unnamed project)" };
-}
-
-(async () => {
-	const params = new URLSearchParams(location.search);
-	const isDebug = /^(1|true|yes)$/i.test(params.get("debug") || "");
-	const panel = document.getElementById("debug-panel");
-	const out = document.getElementById("debug-output");
-
-	if (!isDebug) return;
-
-	if (panel) panel.hidden = false;
-	if (out) out.textContent = "Fetching API data…";
-
-	try {
-		const pid = params.get("pid");
-		const sid = params.get("sid");
-
-		const [projRes, studyRes] = await Promise.all([
-			fetch("/api/projects?cache=no-store").then(r => r.json()).catch(() => ({})),
-			fetch(`/api/studies?project=${encodeURIComponent(pid)}`).then(r => r.json()).catch(() => ({}))
-		]);
-
-		const payload = {
-			params: { pid, sid },
-			projectList: projRes,
-			studyList: studyRes
-		};
-
-		if (out) out.textContent = JSON.stringify(payload, null, 2);
-	} catch (err) {
-		if (out) out.textContent = "Debug fetch failed:\n" + String(err);
-	}
-})();
-
-function runLints(args) {
-	var source = args.source,
-		context = args.context,
-		partials = args.partials;
-	var out = $("#lint-output");
-	if (!out) return;
-	var warnings = [];
-
-	var parts = collectPartialNames(source);
-	for (var i = 0; i < parts.length; i++) {
-		var p = parts[i];
-		if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
-	}
-
-	var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
-	var m;
-	for (;;) {
-		m = tagRegex.exec(source);
-		if (!m) break;
-		var path = m[1].split(".");
-		var v = getPath(context, path);
-		if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
-	}
-
-	out.textContent = warnings[0] || "No issues";
 }
 
 function collectPartialNames(src) {
@@ -1428,49 +1083,6 @@ function collectPartialNames(src) {
 		names.add(m[1]);
 	}
 	return Array.from(names);
-}
-
-function readFrontMatter(src) {
-	if (!src || src.indexOf("---") !== 0) return { meta: {}, body: src };
-	var end = src.indexOf("\n---", 3);
-	if (end === -1) return { meta: {}, body: src };
-	var yaml = src.slice(3, end).trim();
-	var body = src.slice(end + 4);
-	var meta = parseYamlLite(yaml);
-	return { meta: meta, body: body };
-}
-
-function writeFrontMatter(src, meta) {
-	var parsed = readFrontMatter(src);
-	var body = parsed.body;
-	var yaml = emitYamlLite(meta);
-	return "---\n" + yaml + "\n---\n" + body.replace(/^\n*/, "");
-}
-
-function parseYamlLite(y) {
-	var obj = {};
-	var lines = (y || "").split("\n");
-	for (var i = 0; i < lines.length; i++) {
-		var line = lines[i];
-		var m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-		if (!m) continue;
-		var val = m[2];
-		if (/^\d+$/.test(val)) val = Number(val);
-		if (val === "true") val = true;
-		if (val === "false") val = false;
-		obj[m[1]] = val;
-	}
-	return obj;
-}
-
-function emitYamlLite(o) {
-	var out = [];
-	for (var k in (o || {})) {
-		if (Object.prototype.hasOwnProperty.call(o, k)) {
-			out.push(k + ": " + String(o[k]));
-		}
-	}
-	return out.join("\n");
 }
 
 function insertAtCursor(textarea, snippet) {
@@ -1506,6 +1118,49 @@ function debounce(fn, ms) {
 	};
 }
 
+function escapeHtml(s) {
+	var str = (s == null ? "" : String(s));
+	return str
+		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function announce(msg) {
+	var sr = $("#sr-live");
+	if (sr) sr.textContent = msg;
+}
+
+/**
+ * Lint: missing partials + missing values for {{path}}.
+ * Now checks against JSON-only context (no YAML).
+ */
+function runLints(args) {
+	var source = args.source,
+		context = args.context,
+		partials = args.partials;
+	var out = $("#lint-output");
+	if (!out) return;
+	var warnings = [];
+
+	var parts = collectPartialNames(source);
+	for (var i = 0; i < parts.length; i++) {
+		var p = parts[i];
+		if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
+	}
+
+	var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
+	var m;
+	for (;;) {
+		m = tagRegex.exec(source);
+		if (!m) break;
+		var path = m[1].split(".");
+		var v = getPath(context, path);
+		if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
+	}
+
+	out.textContent = warnings[0] || "No issues";
+}
+
 function getPath(obj, pathArr) {
 	var acc = obj;
 	for (var i = 0; i < pathArr.length; i++) {
@@ -1518,33 +1173,77 @@ function getPath(obj, pathArr) {
 	return acc;
 }
 
-function escapeHtml(s) {
-	var str = (s == null ? "" : String(s));
-	return str
-		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
+/* -------------------- global actions -------------------- */
 
-function clonePlainObject(obj) {
-	var out = {};
-	if (!obj || typeof obj !== "object") return out;
-	for (var key in obj) {
-		if (Object.prototype.hasOwnProperty.call(obj, key)) {
-			out[key] = obj[key];
+function wireGlobalActions() {
+	var newBtn = $("#btn-new");
+	if (newBtn) newBtn.addEventListener("click", onNewClick);
+
+	var importBtn = $("#btn-import");
+	if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
+
+	document.addEventListener("click", function(e) {
+		var t = e.target;
+		var hasClosest = t && typeof t.closest === "function";
+		var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
+		if (newBtn2) { e.preventDefault();
+			onNewClick(e); return; }
+
+		var exportMenu = $("#export-menu");
+		var menu = exportMenu ? exportMenu.closest(".menu") : null;
+		if (menu && (!hasClosest || !menu.contains(t))) {
+			menu.removeAttribute("aria-expanded");
 		}
+	});
+
+	var exportBtn = $("#btn-export");
+	if (exportBtn) {
+		exportBtn.addEventListener("click", function() {
+			var exportMenu = $("#export-menu");
+			var menu = exportMenu ? exportMenu.closest(".menu") : null;
+			if (!menu) return;
+			var expanded = menu.getAttribute("aria-expanded") === "true";
+			menu.setAttribute("aria-expanded", expanded ? "false" : "true");
+		});
 	}
-	return out;
+
+	var exportMenuEl = $("#export-menu");
+	if (exportMenuEl) {
+		exportMenuEl.addEventListener("click", function(e) {
+			var t = e.target;
+			var hasClosest = t && typeof t.closest === "function";
+			var target = hasClosest ? t.closest("[data-export]") : null;
+			if (target) doExport(target.getAttribute("data-export"));
+		});
+	}
 }
 
-function announce(msg) {
-	var sr = $("#sr-live");
-	if (sr) sr.textContent = msg;
+/* -------------------- search in patterns (unchanged) -------------------- */
+
+async function onPatternSearch(e) {
+	const q = (e?.target?.value || "").trim().toLowerCase();
+
+	if (!q) { await refreshPatternList(); return; }
+
+	try {
+		const res = await fetch("/api/partials", { cache: "no-store" });
+		if (!res.ok) return;
+
+		const { partials = [] } = await res.json();
+		const filtered = partials.filter(p => {
+			const searchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
+			return searchText.includes(q);
+		});
+
+		populatePatternList(filtered);
+	} catch (err) {
+		console.error("Pattern search error:", err);
+	}
 }
 
-// Export for debugging
+/* -------------------- expose for debugging -------------------- */
 window.guidesPage = {
 	varManager: () => varManager,
-	validateGuide,
 	openVariablesDrawer,
 	closeVariablesDrawer
 };

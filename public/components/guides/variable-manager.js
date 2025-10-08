@@ -26,244 +26,298 @@
  * @property {(msg: string) => void} [onError] - Error handler
  */
 
+import { clonePlainObject, smartParse, toDisplayString, shallowEqualByJSON } from "./variable-utils.js";
+
+const HTML = String.raw;
+
+/**
+ * @typedef {Object} VariableManagerOpts
+ * @property {string} containerId
+ * @property {Record<string, any>} [initialVariables]
+ * @property {(vars: Record<string, any>) => void} [onChange]
+ * @property {(msg: string) => void} [onError]
+ */
+
 export class VariableManager {
 	/**
-	 * Construct a VariableManager instance.
-	 * @param {VariableManagerConfig} config
+	 * @param {VariableManagerOpts} opts
 	 */
-	constructor(config) {
-		this.config = {
-			onError: (msg) => console.error(msg),
-			...config
-		};
+	constructor(opts) {
+		this.containerId = opts?.containerId;
+		this.container = (typeof document !== "undefined" && this.containerId) ?
+			document.getElementById(this.containerId) :
+			null;
 
-		/** @private */
-		this.variables = config.initialVariables || {};
+		this.onChange = typeof opts?.onChange === "function" ? opts.onChange : () => {};
+		this.onError = typeof opts?.onError === "function" ? opts.onError : () => {};
 
-		/** @private */
-		this.container = document.getElementById(config.containerId);
+		this.variables = clonePlainObject(opts?.initialVariables || {});
+		this._debounceTimer = null;
 
-		if (!this.container) {
-			throw new Error(`Container #${config.containerId} not found`);
-		}
-
+		this._ensureContainer();
 		this._render();
+		this._bind();
 	}
 
 	/**
-	 * Get all variables as a plain object.
-	 * @returns {Record<string, string>}
-	 */
-	getVariables() {
-		return { ...this.variables };
-	}
-
-	/**
-	 * Set variables (replaces existing).
-	 * @param {Record<string, string>} vars
-	 * @returns {void}
+	 * Replace all variables with a new object and re-render.
+	 * @param {Record<string, any>} vars
 	 */
 	setVariables(vars) {
-		this.variables = { ...vars };
+		const next = clonePlainObject(vars || {});
+		if (shallowEqualByJSON(this.variables, next)) return;
+		this.variables = next;
 		this._render();
-		this._notifyChange();
+		this._emitChange();
+	}
+
+	/**
+	 * Current variables snapshot (cloned).
+	 * @returns {Record<string, any>}
+	 */
+	getVariables() {
+		return clonePlainObject(this.variables);
 	}
 
 	/**
 	 * Add or update a single variable.
 	 * @param {string} key
-	 * @param {string} value
-	 * @returns {void}
+	 * @param {any} value
 	 */
-	setVariable(key, value) {
-		const cleaned = this._cleanKey(key);
-		if (!cleaned) {
-			this.config.onError('Variable key must contain alphanumeric characters');
+	set(key, value) {
+		if (!key || typeof key !== "string") return;
+		this.variables[key] = value;
+		this._renderRow(key); // cheap partial update
+		this._emitChange();
+	}
+
+	/**
+	 * Remove a single variable by key.
+	 * @param {string} key
+	 */
+	remove(key) {
+		if (!(key in this.variables)) return;
+		delete this.variables[key];
+		this._removeRowEl(key);
+		this._emitChange();
+	}
+
+	/* ---------------- private ---------------- */
+
+	_ensureContainer() {
+		if (!this.container) {
+			throw new Error(`[VariableManager] container "${this.containerId}" not found`);
+		}
+	}
+
+	_render() {
+		const keys = Object.keys(this.variables);
+		this.container.innerHTML = HTML`
+			<div class="vm-grid" role="group" aria-label="Variables editor">
+				<div class="vm-row vm-row--header">
+					<div class="vm-col vm-col--key"><strong>Key</strong></div>
+					<div class="vm-col vm-col--val"><strong>Value (JSON or text)</strong></div>
+					<div class="vm-col vm-col--act">
+						<button type="button" class="btn btn--secondary" data-vm-add>+ Add</button>
+					</div>
+				</div>
+				${keys.length ? "" : HTML`
+					<div class="vm-row vm-row--empty">
+						<div class="vm-col vm-col--empty" colspan="3">No variables yet.</div>
+					</div>
+				`}
+				${keys.map(k => this._rowHtml(k, this.variables[k])).join("")}
+			</div>
+		`;
+	}
+
+	_rowHtml(key, value) {
+		const idSafe = this._idForKey(key);
+		const valueText = toDisplayString(value);
+		return HTML`
+			<div class="vm-row" data-vm-row="${escapeHtml(key)}" id="vm-row-${idSafe}">
+				<div class="vm-col vm-col--key">
+					<input class="vm-input vm-input--key" type="text" value="${escapeAttr(key)}" aria-label="Variable key">
+				</div>
+				<div class="vm-col vm-col--val">
+					<textarea class="vm-input vm-input--val" rows="2" aria-label="Variable value">${escapeHtml(valueText)}</textarea>
+				</div>
+				<div class="vm-col vm-col--act">
+					<button type="button" class="link-like" data-vm-del="${escapeAttr(key)}" aria-label="Delete ${escapeAttr(key)}">Delete</button>
+				</div>
+			</div>
+		`;
+	}
+
+	_renderRow(key) {
+		const id = `vm-row-${this._idForKey(key)}`;
+		const el = document.getElementById(id);
+		if (!el) {
+			// full re-render if target row no longer exists
+			this._render();
+			this._bind();
 			return;
 		}
-		this.variables[cleaned] = String(value);
-		this._render();
-		this._notifyChange();
+		el.outerHTML = this._rowHtml(key, this.variables[key]);
+		// re-bind events for this row
+		const fresh = document.getElementById(id);
+		this._bindRow(fresh);
 	}
 
-	/**
-	 * Delete a variable by key.
-	 * @param {string} key
-	 * @returns {void}
-	 */
-	deleteVariable(key) {
-		delete this.variables[key];
-		this._render();
-		this._notifyChange();
+	_removeRowEl(key) {
+		const id = `vm-row-${this._idForKey(key)}`;
+		const el = document.getElementById(id);
+		if (el && el.parentNode) el.parentNode.removeChild(el);
+
+		// show empty state if last removed
+		if (Object.keys(this.variables).length === 0) this._render();
 	}
 
-	/**
-	 * Render Mustache template with current variables.
-	 * @param {string} template - Source Markdown with {{variable}} syntax
-	 * @returns {string} Rendered text
-	 */
-	render(template) {
-		if (typeof window.Mustache === 'undefined') {
-			this.config.onError('Mustache.js not loaded');
-			return template;
+	_bind() {
+		// Add button
+		const add = this.container.querySelector("[data-vm-add]");
+		if (add) add.addEventListener("click", () => this._onAdd());
+
+		// Rows
+		const rows = Array.from(this.container.querySelectorAll(".vm-row")).filter(r => !r.classList.contains("vm-row--header") && !r.classList.contains("vm-row--empty"));
+		rows.forEach(r => this._bindRow(r));
+	}
+
+	_bindRow(rowEl) {
+		if (!rowEl) return;
+
+		// delete
+		const delBtn = rowEl.querySelector("[data-vm-del]");
+		if (delBtn) {
+			delBtn.addEventListener("click", () => {
+				const key = rowEl.getAttribute("data-vm-row");
+				this.remove(key);
+			});
 		}
 
+		// key change
+		const keyInput = rowEl.querySelector(".vm-input--key");
+		if (keyInput) {
+			keyInput.addEventListener("input", () => this._debounced(() => this._onKeyChange(rowEl, keyInput.value)));
+			keyInput.addEventListener("blur", () => this._onKeyCommit(rowEl, keyInput.value));
+		}
+
+		// value change
+		const valInput = rowEl.querySelector(".vm-input--val");
+		if (valInput) {
+			valInput.addEventListener("input", () => this._debounced(() => this._onValueChange(rowEl, valInput.value)));
+			valInput.addEventListener("blur", () => this._onValueCommit(rowEl, valInput.value));
+		}
+	}
+
+	_onAdd() {
+		// Generate a unique key name
+		let base = "var";
+		let i = 1;
+		let key = `${base}${i}`;
+		while (Object.prototype.hasOwnProperty.call(this.variables, key)) {
+			i += 1;
+			key = `${base}${i}`;
+		}
+		this.variables[key] = "";
+		this._render();
+		this._bind();
+
+		// focus the brand new key field
+		const row = document.getElementById(`vm-row-${this._idForKey(key)}`);
+		const keyInput = row?.querySelector(".vm-input--key");
+		keyInput?.focus();
+		this._emitChange();
+	}
+
+	_onKeyChange(rowEl, nextKeyRaw) {
+		// live feedback only (no commit yet)
+		const oldKey = rowEl.getAttribute("data-vm-row");
+		const nextKey = (nextKeyRaw ?? "").trim();
+		if (!nextKey || nextKey === oldKey) return;
+
+		if (Object.prototype.hasOwnProperty.call(this.variables, nextKey)) {
+			// duplicate key visual cue (simple)
+			rowEl.classList.add("vm-row--dup");
+		} else {
+			rowEl.classList.remove("vm-row--dup");
+		}
+	}
+
+	_onKeyCommit(rowEl, nextKeyRaw) {
+		const oldKey = rowEl.getAttribute("data-vm-row");
+		const nextKey = (nextKeyRaw ?? "").trim();
+		if (!nextKey || nextKey === oldKey) return;
+
+		if (Object.prototype.hasOwnProperty.call(this.variables, nextKey)) {
+			this.onError?.(`Key "${nextKey}" already exists`);
+			// revert UI
+			const keyInput = rowEl.querySelector(".vm-input--key");
+			if (keyInput) keyInput.value = oldKey;
+			rowEl.classList.remove("vm-row--dup");
+			return;
+		}
+
+		// rename key (preserve value)
+		const val = this.variables[oldKey];
+		delete this.variables[oldKey];
+		this.variables[nextKey] = val;
+
+		// update row state
+		rowEl.setAttribute("data-vm-row", nextKey);
+		rowEl.id = `vm-row-${this._idForKey(nextKey)}`;
+		const delBtn = rowEl.querySelector("[data-vm-del]");
+		if (delBtn) delBtn.setAttribute("data-vm-del", nextKey);
+
+		this._emitChange();
+	}
+
+	_onValueChange(_rowEl, _raw) {
+		// live typing; parse on blur/commit for fewer churn events
+	}
+
+	_onValueCommit(rowEl, raw) {
+		const key = rowEl.getAttribute("data-vm-row");
 		try {
-			return window.Mustache.render(template, this.variables);
+			this.variables[key] = smartParse(raw);
+			this._emitChange();
 		} catch (err) {
-			this.config.onError(`Template error: ${err.message}`);
-			return template;
+			this.onError?.("Invalid value");
 		}
 	}
 
-	/**
-	 * Extract variable keys from a template string.
-	 * @param {string} template
-	 * @returns {string[]} Array of unique variable keys
-	 */
-	static extractKeys(template) {
-		const pattern = /\{\{([a-zA-Z0-9_-]+)\}\}/g;
-		const matches = [];
-		let match;
-		while ((match = pattern.exec(template)) !== null) {
-			if (!matches.includes(match[1])) {
-				matches.push(match[1]);
-			}
-		}
-		return matches;
-	}
-
-	/** @private */
-	_cleanKey(key) {
-		return String(key).replace(/[^a-zA-Z0-9_-]/g, '');
-	}
-
-	/** @private */
-	_notifyChange() {
-		if (this.config.onChange) {
-			this.config.onChange(this.getVariables());
+	_emitChange() {
+		try {
+			this.onChange(clonePlainObject(this.variables));
+		} catch (e) {
+			// Fail-safe: never throw to the UI
+			console.error("[VariableManager] onChange error:", e);
 		}
 	}
 
-	/** @private */
-	_render() {
-		const keys = Object.keys(this.variables).sort();
-
-		this.container.innerHTML = `
-			<div class="variable-manager">
-				<div class="variable-header">
-					<h3 class="govuk-heading-s">Guide variables</h3>
-					<button type="button" class="govuk-button govuk-button--secondary" data-action="add">
-						Add variable
-					</button>
-				</div>
-				
-				<div class="variable-list" role="list">
-					${keys.length === 0 ? this._emptyState() : keys.map(k => this._renderRow(k)).join('')}
-				</div>
-				
-				<details class="govuk-details">
-					<summary class="govuk-details__summary">
-						<span class="govuk-details__summary-text">How to use variables</span>
-					</summary>
-					<div class="govuk-details__text">
-						<p>Variables let you personalise guides without editing every occurrence.</p>
-						<p>In your Markdown, use: <code>{{variableName}}</code></p>
-						<p>Example: &ldquo;Welcome {{participantName}}, today we&rsquo;ll test {{featureName}}.&rdquo;</p>
-					</div>
-				</details>
-			</div>
-		`;
-
-		this._attachEvents();
+	_debounced(fn, ms = 150) {
+		clearTimeout(this._debounceTimer);
+		this._debounceTimer = setTimeout(fn, ms);
 	}
 
-	/** @private */
-	_emptyState() {
-		return `
-			<div class="variable-empty" role="listitem">
-				<p class="govuk-body">No variables yet. Add one to get started.</p>
-			</div>
-		`;
+	_idForKey(key) {
+		return String(key).replace(/[^a-z0-9\-_]/gi, "_");
 	}
+}
 
-	/** @private */
-	_renderRow(key) {
-		const value = this.variables[key];
-		const escapedValue = this._escapeHtml(value);
+/* ---------------- utilities ---------------- */
 
-		return `
-			<div class="variable-row" role="listitem" data-key="${this._escapeHtml(key)}">
-				<div class="variable-content">
-					<span class="variable-key">{{${this._escapeHtml(key)}}}</span>
-					<span class="variable-value">${escapedValue}</span>
-				</div>
-				<div class="variable-actions">
-					<button type="button" class="govuk-link" data-action="edit" data-key="${this._escapeHtml(key)}">
-						Edit
-					</button>
-					<button type="button" class="govuk-link govuk-link--destructive" data-action="delete" data-key="${this._escapeHtml(key)}">
-						Delete
-					</button>
-				</div>
-			</div>
-		`;
-	}
+function escapeHtml(s) {
+	const str = s == null ? "" : String(s);
+	return str
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
 
-	/** @private */
-	_escapeHtml(str) {
-		const div = document.createElement('div');
-		div.textContent = str;
-		return div.innerHTML;
-	}
-
-	/** @private */
-	_attachEvents() {
-		this.container.addEventListener('click', (e) => {
-			const btn = e.target.closest('button[data-action]');
-			if (!btn) return;
-
-			const action = btn.dataset.action;
-			const key = btn.dataset.key;
-
-			if (action === 'add') this._promptAdd();
-			if (action === 'edit' && key) this._promptEdit(key);
-			if (action === 'delete' && key) this._confirmDelete(key);
-		});
-	}
-
-	/** @private */
-	_promptAdd() {
-		const key = prompt('Variable key (letters, numbers, hyphens, underscores):');
-		if (!key) return;
-
-		const value = prompt('Value:');
-		if (value === null) return;
-
-		this.setVariable(key, value);
-	}
-
-	/** @private */
-	_promptEdit(key) {
-		const current = this.variables[key];
-		const value = prompt(`Edit value for {{${key}}}:`, current);
-		if (value === null) return;
-
-		this.setVariable(key, value);
-	}
-
-	/** @private */
-	_confirmDelete(key) {
-		if (!confirm(`Delete variable {{${key}}}?`)) return;
-		this.deleteVariable(key);
-	}
-
-	/**
-	 * Factory method for quick initialisation.
-	 * @param {VariableManagerConfig} config
-	 * @returns {VariableManager}
-	 */
-	static init(config) {
-		return new VariableManager(config);
-	}
+function escapeAttr(s) {
+	// Attribute-safe encoding (reuse HTML escaper for simplicity)
+	return escapeHtml(s);
 }
