@@ -317,6 +317,12 @@ function syncHighlighting() {
 /* -------------------- editor wiring -------------------- */
 
 function wireEditor() {
+	const saveVarsBtn = document.getElementById("btn-save-vars");
+	if (saveVarsBtn) saveVarsBtn.addEventListener("click", onSaveVariablesOnly);
+
+	const resetVarsBtn = document.getElementById("btn-reset-vars");
+	if (resetVarsBtn) resetVarsBtn.addEventListener("click", onResetVariables);
+
 	var insertPat = $("#btn-insert-pattern");
 	if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
 
@@ -496,8 +502,7 @@ async function preview() {
 	const study = ensureStudyTitle(ctx.study || {});
 
 	const meta = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() :
-		{};
+		varManager.getVariables() : {};
 
 	const context = { project: project, study: study, session: {}, participant: {}, meta: meta };
 
@@ -519,15 +524,12 @@ async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
 	const source = stripFrontMatter($("#guide-source")?.value || "");
 	const variables = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() :
-		{};
+		varManager.getVariables() : {};
 
 	const studyId = __guideCtx?.study?.id || "";
 	const id = __openGuideId;
 
-	const body = id ?
-		{ title, sourceMarkdown: source, variables } :
-		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
 	const method = id ? "PATCH" : "POST";
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
@@ -567,6 +569,68 @@ async function onPublish() {
 	} else {
 		const msg = await res.text().catch(() => "");
 		announce(`Publish failed: ${res.status} ${msg || ""}`.trim());
+	}
+}
+
+async function onSaveVariablesOnly() {
+	try {
+		const id = window.__openGuideId;
+		const statusEl = document.getElementById("variables-status");
+
+		// If the guide hasn't been created yet, create it first via your normal save path
+		if (!id) {
+			statusEl && (statusEl.textContent = "Creating guide and saving variables…");
+			await onSave(); // creates draft + sets __openGuideId
+		}
+
+		const guideId = window.__openGuideId;
+		if (!guideId) {
+			throw new Error("No guide id available to save variables");
+		}
+
+		const variables = window.guidesPage?.varManager?.().getVariables?.() || {};
+		statusEl && (statusEl.textContent = "Saving variables…");
+
+		const res = await fetch(`/api/guides/${encodeURIComponent(guideId)}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ variables })
+		});
+
+		if (!res.ok) {
+			const txt = await res.text().catch(() => "");
+			throw new Error(`Save failed (${res.status}): ${txt}`);
+		}
+
+		statusEl && (statusEl.textContent = "Variables saved to Airtable.");
+		announce("Variables saved");
+	} catch (err) {
+		console.error("[guides] save variables:", err);
+		const statusEl = document.getElementById("variables-status");
+		statusEl && (statusEl.textContent = `Error: ${err.message || "Failed to save variables"}`);
+		announce("Failed to save variables");
+	}
+}
+
+async function onResetVariables() {
+	try {
+		const id = window.__openGuideId;
+		const statusEl = document.getElementById("variables-status");
+		if (!id) {
+			// No guide yet → just clear editor state
+			window.guidesPage?.varManager?.().setVariables?.({});
+			statusEl && (statusEl.textContent = "Variables cleared.");
+			preview();
+			return;
+		}
+		statusEl && (statusEl.textContent = "Reverting to last saved variables…");
+		await openGuide(id); // re-fetches and repopulates from API/Airtable
+		statusEl && (statusEl.textContent = "Variables reverted to last saved.");
+		announce("Variables reverted");
+	} catch (err) {
+		console.error("[guides] reset variables:", err);
+		const statusEl = document.getElementById("variables-status");
+		statusEl && (statusEl.textContent = `Error: ${err.message || "Failed to reset variables"}`);
 	}
 }
 
@@ -798,8 +862,10 @@ async function editPartial(id) {
 			modal.remove();
 		});
 		modal.addEventListener("click", (e) => {
-			if (e.target === modal) { modal.close();
-				modal.remove(); }
+			if (e.target === modal) {
+				modal.close();
+				modal.remove();
+			}
 		});
 
 	} catch (err) {
@@ -811,8 +877,10 @@ async function editPartial(id) {
 async function deletePartial(id) {
 	if (!confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) return;
 	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { method: "DELETE" });
-	if (res.ok) { announce("Pattern deleted");
-		await refreshPatternList(); } else { announce("Delete failed"); }
+	if (res.ok) {
+		announce("Pattern deleted");
+		await refreshPatternList();
+	} else { announce("Delete failed"); }
 }
 
 async function createNewPartial() {
@@ -908,8 +976,10 @@ Write your template here...</textarea>
 function openVariablesDrawer() {
 	// We no longer parse YAML; just show current JSON variables
 	const d = $("#drawer-variables");
-	if (d) { d.hidden = false;
-		d.focus(); }
+	if (d) {
+		d.hidden = false;
+		d.focus();
+	}
 	announce("Variables drawer opened");
 }
 
@@ -1186,8 +1256,11 @@ function wireGlobalActions() {
 		var t = e.target;
 		var hasClosest = t && typeof t.closest === "function";
 		var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
-		if (newBtn2) { e.preventDefault();
-			onNewClick(e); return; }
+		if (newBtn2) {
+			e.preventDefault();
+			onNewClick(e);
+			return;
+		}
 
 		var exportMenu = $("#export-menu");
 		var menu = exportMenu ? exportMenu.closest(".menu") : null;
