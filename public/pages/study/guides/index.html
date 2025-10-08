@@ -392,10 +392,32 @@
 
 			<aside id="drawer-variables" class="drawer" aria-labelledby="drawer-variables-title" hidden>
 				<h3 id="drawer-variables-title" class="govuk-heading-s">Variables</h3>
-				<form id="variables-form" class="form-grid" aria-describedby="variables-help">
-					<p id="variables-help" class="muted">Edit front-matter without hand writing YAML.</p>
+
+				<div class="panel muted" id="variables-intro" aria-describedby="variables-help">
+					<p id="variables-help">
+						Variables let you personalise your discussion guide via Mustache tags like <code>{{participant.name}}</code>.
+						This editor stores variables as <strong>JSON</strong> (Airtable: <em>Variables (JSON)</em> column). No YAML required.
+					</p>
+					<ul>
+						<li><strong>Create</strong> a new variable with “+ Add”. Use short, semantic keys (e.g. <code>session.date</code>).</li>
+						<li><strong>Edit</strong> values inline. You can enter plain text, numbers, booleans, or full JSON (arrays/objects).</li>
+						<li><strong>Delete</strong> a variable with the “Delete” link on its row.</li>
+						<li><strong>Save</strong> writes the JSON back to Airtable without changing your Markdown body.</li>
+					</ul>
+					<p class="muted">Tip: nested keys like <code>participant.email</code> work as flat JSON fields (dot-notation) in Mustache.</p>
+				</div>
+
+				<form id="variables-form" class="form-grid">
+					<div id="variable-manager-container"></div>
+
+					<div class="actions-row">
+						<button id="btn-save-vars" class="btn" type="button">💾 Save variables</button>
+						<button id="btn-reset-vars" class="btn btn--secondary" type="button">↺ Discard changes</button>
+						<button id="drawer-variables-close" class="link-like" type="button">Close</button>
+					</div>
+
+					<p id="variables-status" class="muted" aria-live="polite"></p>
 				</form>
-				<button id="drawer-variables-close" class="link-like">Close</button>
 			</aside>
 		</section>
 
