@@ -202,6 +202,409 @@
 	background: var(--guides-bg);
 	box-sizing: border-box;
 	}
+	
+/* === CODE EDITOR WITH SYNTAX HIGHLIGHTING =============== */
+
+.code-editor {
+	position: relative;
+	width: 100%;
+	min-height: 400px;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #fafafa;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 14px;
+	line-height: 1.5;
+	}
+
+.code-editor__highlight {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 12px;
+	overflow: auto;
+	pointer-events: none;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	color: transparent;
+	z-index: 1;
+	}
+
+.code-editor__highlight pre {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	overflow: visible;
+	}
+
+.code-editor__highlight code {
+	display: block;
+	padding: 0;
+	background: transparent;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	}
+
+.code-editor__textarea {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+	padding: 12px;
+	border: none;
+	background: transparent;
+	color: #0b0c0c;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	resize: vertical;
+	outline: none;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	caret-color: #0b0c0c;
+	z-index: 2;
+	}
+
+.code-editor__textarea:focus {
+	background: rgba(255, 255, 255, 0.3);
+	}
+
+/* Mustache syntax highlighting */
+.token.mustache {
+	color: #d73a49;
+	font-weight: 600;
+	}
+
+.token.mustache-tag {
+	color: #d73a49;
+	}
+
+.token.mustache-variable {
+	color: #6f42c1;
+	}
+
+.token.keyword {
+	color: #005cc5;
+	font-weight: 600;
+	}
+
+.token.comment {
+	color: #6a737d;
+	font-style: italic;
+	}
+
+/* Markdown syntax */
+.token.title {
+	color: #005cc5;
+	font-weight: 700;
+	}
+
+.token.bold {
+	font-weight: 700;
+	}
+
+.token.italic {
+	font-style: italic;
+	}
+
+.token.code {
+	color: #032f62;
+	background: rgba(27, 31, 35, 0.05);
+	padding: 2px 4px;
+	border-radius: 3px;
+	}
+
+/* === LIVE PREVIEW STYLES ================================ */
+
+.preview {
+	padding: 24px;
+	background: white;
+	min-height: 400px;
+	overflow-y: auto;
+	}
+
+/* Remove the placeholder styling when there's content */
+.preview:not(:empty) .muted {
+	display: none;
+	}
+
+/* Typography */
+.preview h1 {
+	font-size: 2rem;
+	font-weight: 700;
+	margin: 0 0 1.5rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid #b1b4b6;
+	color: #0b0c0c;
+	line-height: 1.2;
+	}
+
+.preview h2 {
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 2rem 0 1rem;
+	color: #0b0c0c;
+	line-height: 1.3;
+	}
+
+.preview h3 {
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 1.5rem 0 0.75rem;
+	color: #0b0c0c;
+	line-height: 1.4;
+	}
+
+.preview h4 {
+	font-size: 1.1rem;
+	font-weight: 700;
+	margin: 1.25rem 0 0.5rem;
+	color: #0b0c0c;
+	}
+
+.preview h5,
+.preview h6 {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 1rem 0 0.5rem;
+	color: #505a5f;
+	}
+
+.preview p {
+	margin: 0 0 1rem;
+	line-height: 1.6;
+	color: #0b0c0c;
+	}
+
+.preview p:last-child {
+	margin-bottom: 0;
+	}
+
+/* Lists */
+.preview ul,
+.preview ol {
+	margin: 0 0 1rem 1.5rem;
+	padding: 0;
+	}
+
+.preview li {
+	margin-bottom: 0.5rem;
+	line-height: 1.6;
+	}
+
+.preview ul {
+	list-style-type: disc;
+	}
+
+.preview ol {
+	list-style-type: decimal;
+	}
+
+.preview ul ul {
+	list-style-type: circle;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	}
+
+.preview ol ol,
+.preview ul ol {
+	list-style-type: lower-alpha;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+	}
+
+/* Horizontal rules */
+.preview hr {
+	border: none;
+	border-top: 2px solid #b1b4b6;
+	margin: 2rem 0;
+	}
+
+/* Blockquotes */
+.preview blockquote {
+	border-left: 4px solid #1d70b8;
+	padding: 1rem 1.5rem;
+	margin: 1rem 0;
+	background: #f3f2f1;
+	color: #505a5f;
+	}
+
+.preview blockquote p:last-child {
+	margin-bottom: 0;
+	}
+
+/* Code */
+.preview code {
+	background: #f3f2f1;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-family: 'Courier New', monospace;
+	font-size: 0.9em;
+	color: #d73a49;
+	}
+
+.preview pre {
+	background: #f6f8fa;
+	border: 1px solid #e1e4e8;
+	border-radius: 4px;
+	padding: 1rem;
+	overflow-x: auto;
+	margin: 1rem 0;
+	}
+
+.preview pre code {
+	background: transparent;
+	padding: 0;
+	color: #0b0c0c;
+	font-size: 0.85rem;
+	}
+
+/* Tables */
+.preview table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1rem 0;
+	font-size: 0.95rem;
+	}
+
+.preview th,
+.preview td {
+	border: 1px solid #b1b4b6;
+	padding: 0.75rem;
+	text-align: left;
+	}
+
+.preview th {
+	background: #f3f2f1;
+	font-weight: 700;
+	}
+
+.preview tr:nth-child(even) {
+	background: #f8f8f8;
+	}
+
+/* Links */
+.preview a {
+	color: #1d70b8;
+	text-decoration: underline;
+	}
+
+.preview a:hover {
+	color: #003078;
+	}
+
+.preview a:visited {
+	color: #4c2c92;
+	}
+
+/* Strong and emphasis */
+.preview strong {
+	font-weight: 700;
+	}
+
+.preview em {
+	font-style: italic;
+	}
+
+/* Checkboxes (task lists) */
+.preview input[type="checkbox"] {
+	margin-right: 0.5rem;
+	}
+
+.preview li input[type="checkbox"] {
+	margin-left: -1.5rem;
+	}
+
+/* Images */
+.preview img {
+	max-width: 100%;
+	height: auto;
+	margin: 1rem 0;
+	border-radius: 4px;
+	border: 1px solid #b1b4b6;
+	}
+
+/* Definition lists */
+.preview dl {
+	margin: 1rem 0;
+	}
+
+.preview dt {
+	font-weight: 700;
+	margin-top: 1rem;
+	}
+
+.preview dd {
+	margin-left: 2rem;
+	margin-bottom: 0.5rem;
+	}
+
+/* GOV.UK style details/summary */
+.preview details {
+	margin: 1rem 0;
+	}
+
+.preview summary {
+	cursor: pointer;
+	font-weight: 700;
+	color: #1d70b8;
+	}
+
+.preview summary:hover {
+	color: #003078;
+	}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.code-editor {
+		min-height: 300px;
+		font-size: 13px;
+		}
+	
+	.code-editor__textarea {
+		min-height: 300px;
+		}
+	
+	.preview {
+		padding: 16px;
+		}
+	
+	.preview h1 {
+		font-size: 1.75rem;
+		}
+	
+	.preview h2 {
+		font-size: 1.35rem;
+		}
+	
+	.preview h3 {
+		font-size: 1.15rem;
+		}
+	}
+
+/* Print styles for preview */
+@media print {
+	.preview {
+		padding: 0;
+		}
+	
+	.preview a {
+		color: #0b0c0c;
+		text-decoration: none;
+		}
+	
+	.preview a::after {
+		content: " (" attr(href) ")";
+		font-size: 0.8em;
+		color: #505a5f;
+		}
+	}
 
 /* === =LINT OUTPUT ======================================== */
 .lint {
