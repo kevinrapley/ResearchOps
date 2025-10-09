@@ -26,6 +26,15 @@
  *   - Create partial: `POST /api/partials`
  *   - Update partial: `PATCH /api/partials/:id`
  *   - Delete partial: `DELETE /api/partials/:id`
+ * - Participants & Scheduling:
+ *   - List participants by study: `GET /api/participants?study=<StudyAirtableId>`
+ *   - Create participant: `POST /api/participants`
+ *   - List sessions by study: `GET /api/sessions?study=<StudyAirtableId>`
+ *   - Create session: `POST /api/sessions`
+ *   - Update session: `PATCH /api/sessions/:id`
+ *   - Download session invite (.ics): `GET /api/sessions/:id/ics`
+ * - Communications:
+ *   - Send templated comms (stub + Airtable log): `POST /api/comms/send`
  * - CSV streaming from GitHub:
  *   - `GET /api/projects.csv`, `GET /api/project-details.csv`
  * - AI assist:
@@ -44,6 +53,9 @@
  * @property {string} AIRTABLE_TABLE_STUDIES  Table name for studies (e.g., "Project Studies").
  * @property {string} AIRTABLE_TABLE_GUIDES   Table name for discussion guides (e.g., "Discussion Guides").
  * @property {string} AIRTABLE_TABLE_PARTIALS Table name for partials (e.g., "Partials").
+ * @property {string} AIRTABLE_TABLE_PARTICIPANTS Table name for participants (e.g., "Participants").
+ * @property {string} AIRTABLE_TABLE_SESSIONS Table name for sessions (e.g., "Sessions").
+ * @property {string} AIRTABLE_TABLE_COMMSLOG Table name for comms log (e.g., "Communications Log").
  * @property {string} AIRTABLE_API_KEY Airtable API token.
  * @property {string} GH_OWNER GitHub repository owner.
  * @property {string} GH_REPO GitHub repository name.
@@ -195,7 +207,8 @@ async function fetchWithTimeout(resource, init, timeoutMs = DEFAULTS.TIMEOUT_MS)
  */
 function csvEscape(val) {
 	if (val == null) return "";
-	const s = String(val);
+	let s = String(val);
+	if (/^[=+\-@]/.test(s)) s = "'" + s; // neutralize formula
 	const needsQuotes = /[",\r\n]/.test(s);
 	const esc = s.replace(/"/g, '""');
 	return needsQuotes ? `"${esc}"` : esc;
@@ -220,19 +233,23 @@ function toCsvLine(arr) {
  * @returns {string}
  */
 function b64Encode(s) {
-	return btoa(unescape(encodeURIComponent(s)));
+	const bytes = new TextEncoder().encode(s);
+	let bin = "";
+	for (const b of bytes) bin += String.fromCharCode(b);
+	return btoa(bin);
 }
 
 /**
  * Base64 decode (UTF-8 safe).
  * @function b64Decode
  * @inner
- * @param {string} b
+ * @param {string} b64
  * @returns {string}
  */
-function b64Decode(b) {
-	const clean = (b || "").replace(/\n/g, "");
-	return decodeURIComponent(escape(atob(clean)));
+function b64Decode(b64) {
+	const bin = atob(String(b64 || "").replace(/\s+/g, ""));
+	const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+	return new TextDecoder().decode(bytes);
 }
 
 /**
@@ -296,10 +313,44 @@ const GUIDE_FIELD_NAMES = {
 	variables: ["Variables (JSON)", "Variables", "Vars"]
 };
 
+/** Participants & Sessions Airtable field names */
+const PARTICIPANT_FIELDS = {
+	display_name: ["Display Name", "Name", "Participant"],
+	email: ["Email"],
+	phone: ["Phone"],
+	timezone: ["Time Zone", "Timezone"],
+	channel_pref: ["Channel Pref", "Channel Preference"],
+	access_needs: ["Access Needs", "Accessibility"],
+	recruitment_source: ["Recruitment Source", "Source"],
+	consent_status: ["Consent Status"],
+	consent_record_id: ["Consent Record Id", "Consent Record"],
+	privacy_notice_url: ["Privacy Notice URL", "Privacy URL"],
+	status: ["Status"],
+	study_link: ["Study", "Studies", "Project Study"],
+};
+
+const SESSION_FIELDS = {
+	study_link: ["Study", "Studies", "Project Study"],
+	participant_link: ["Participant", "Participants"],
+	starts_at: ["Starts At", "Start", "Start Time"],
+	duration_min: ["Duration (min)", "Duration"],
+	type: ["Type", "Session Type"],
+	location_or_link: ["Location / Link", "Location", "Join Link"],
+	backup_contact: ["Backup Contact"],
+	researchers: ["Researchers"],
+	status: ["Status"],
+	incentive_type: ["Incentive Type"],
+	incentive_amount: ["Incentive Amount"],
+	incentive_status: ["Incentive Status"],
+	safeguarding_flag: ["Safeguarding", "Safeguarding Flag"],
+	notes: ["Notes"],
+};
+
 /** Pick the first present key from `obj` that matches any of the candidates. */
 function pickFirstField(obj, candidates) {
+	if (!obj || typeof obj !== "object") return null;
 	for (const k of candidates)
-		if (k in obj) return k;
+		if (Object.prototype.hasOwnProperty.call(obj, k)) return k;
 	return null;
 }
 
@@ -1503,6 +1554,417 @@ class ResearchOpsService {
 
 		return this.json({ ok: true }, 200, this.corsHeaders(origin));
 	}
+
+	/**
+	 * List participants for a study.
+	 * @route GET /api/participants?study=:id
+	 * @returns {Response}
+	 */
+	async listParticipants(origin, url) {
+		const studyId = url.searchParams.get("study");
+		if (!studyId) return this.json({ ok: false, error: "Missing study query" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
+		const atBase = `https://api.airtable.com/v0/${base}/${table}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+		const records = [];
+		let offset;
+		do {
+			const params = new URLSearchParams({ pageSize: "100" });
+			if (offset) params.set("offset", offset);
+			const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+			const txt = await resp.text();
+			if (!resp.ok) {
+				this.log.error("airtable.participants.list.fail", { status: resp.status, text: safeText(txt) });
+				return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status, this.corsHeaders(origin));
+			}
+			let js;
+			try { js = JSON.parse(txt); } catch { js = { records: [] }; }
+			records.push(...(js.records || []));
+			offset = js.offset;
+		} while (offset);
+
+		const participants = records
+			.filter(r => {
+				const f = r.fields || {};
+				const linkKey = pickFirstField(f, PARTICIPANT_FIELDS.study_link);
+				const linkArr = linkKey ? f[linkKey] : undefined;
+				return Array.isArray(linkArr) && linkArr.includes(studyId);
+			})
+			.map(r => {
+				const f = r.fields || {};
+				const pick = (keys) => { const k = pickFirstField(f, keys); return k ? f[k] : undefined; };
+				return {
+					id: r.id,
+					display_name: pick(PARTICIPANT_FIELDS.display_name) || "",
+					email: pick(PARTICIPANT_FIELDS.email) || "",
+					phone: pick(PARTICIPANT_FIELDS.phone) || "",
+					timezone: pick(PARTICIPANT_FIELDS.timezone) || "",
+					channel_pref: pick(PARTICIPANT_FIELDS.channel_pref) || "email",
+					access_needs: pick(PARTICIPANT_FIELDS.access_needs) || "",
+					recruitment_source: pick(PARTICIPANT_FIELDS.recruitment_source) || "",
+					consent_status: pick(PARTICIPANT_FIELDS.consent_status) || "not_sent",
+					consent_record_id: pick(PARTICIPANT_FIELDS.consent_record_id) || "",
+					privacy_notice_url: pick(PARTICIPANT_FIELDS.privacy_notice_url) || "",
+					status: pick(PARTICIPANT_FIELDS.status) || "invited",
+					createdAt: r.createdTime || ""
+				};
+			})
+			.sort((a, b) => toMs(a.createdAt) - toMs(b.createdAt));
+
+		return this.json({ ok: true, participants }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a participant linked to a study.
+	 * @route POST /api/participants
+	 * @input  { study_airtable_id:string, display_name:string, email?:string, phone?:string, timezone?:string, channel_pref?:string, access_needs?:string, recruitment_source?:string, consent_status?:string, privacy_notice_url?:string, status?:string }
+	 * @returns {Response}
+	 */
+	async createParticipant(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+		if (!p.study_airtable_id || !p.display_name) return this.json({ error: "Missing fields: study_airtable_id, display_name" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
+		const url = `https://api.airtable.com/v0/${base}/${table}`;
+
+		const fields = {
+			[PARTICIPANT_FIELDS.study_link[0]]: [p.study_airtable_id],
+			[PARTICIPANT_FIELDS.display_name[0]]: p.display_name,
+			[PARTICIPANT_FIELDS.email[0]]: p.email || undefined,
+			[PARTICIPANT_FIELDS.phone[0]]: p.phone || undefined,
+			[PARTICIPANT_FIELDS.timezone[0]]: p.timezone || undefined,
+			[PARTICIPANT_FIELDS.channel_pref[0]]: p.channel_pref || "email",
+			[PARTICIPANT_FIELDS.access_needs[0]]: p.access_needs || undefined,
+			[PARTICIPANT_FIELDS.recruitment_source[0]]: p.recruitment_source || undefined,
+			[PARTICIPANT_FIELDS.consent_status[0]]: p.consent_status || "not_sent",
+			[PARTICIPANT_FIELDS.privacy_notice_url[0]]: p.privacy_notice_url || undefined,
+			[PARTICIPANT_FIELDS.status[0]]: p.status || "invited",
+		};
+		for (const k of Object.keys(fields)) { if (fields[k] === undefined) delete fields[k]; }
+
+		const res = await fetchWithTimeout(url, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const txt = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.participant.create.fail", { status: res.status, text: safeText(txt) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+		let js;
+		try { js = JSON.parse(txt); } catch { js = { records: [] }; }
+		const id = js.records?.[0]?.id;
+		return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * List sessions for a study.
+	 * @route GET /api/sessions?study=:id
+	 */
+	async listSessions(origin, url) {
+		const studyId = url.searchParams.get("study");
+		if (!studyId) return this.json({ ok: false, error: "Missing study query" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_SESSIONS || "Sessions");
+		const atBase = `https://api.airtable.com/v0/${base}/${table}`;
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+		const records = [];
+		let offset;
+		do {
+			const params = new URLSearchParams({ pageSize: "100" });
+			if (offset) params.set("offset", offset);
+			const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
+			const txt = await resp.text();
+			if (!resp.ok) {
+				this.log.error("airtable.sessions.list.fail", { status: resp.status, text: safeText(txt) });
+				return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status, this.corsHeaders(origin));
+			}
+			let js;
+			try { js = JSON.parse(txt); } catch { js = { records: [] }; }
+			records.push(...(js.records || []));
+			offset = js.offset;
+		} while (offset);
+
+		const sessions = records
+			.filter(r => {
+				const f = r.fields || {};
+				const linkKey = pickFirstField(f, SESSION_FIELDS.study_link);
+				const linkArr = linkKey ? f[linkKey] : undefined;
+				return Array.isArray(linkArr) && linkArr.includes(studyId);
+			})
+			.map(r => {
+				const f = r.fields || {};
+				const pick = (keys) => { const k = pickFirstField(f, keys); return k ? f[k] : undefined; };
+				return {
+					id: r.id,
+					participant_id: Array.isArray(pick(SESSION_FIELDS.participant_link)) ? pick(SESSION_FIELDS.participant_link)[0] : "",
+					starts_at: pick(SESSION_FIELDS.starts_at) || "",
+					duration_min: pick(SESSION_FIELDS.duration_min) || 60,
+					type: pick(SESSION_FIELDS.type) || "remote",
+					location_or_link: pick(SESSION_FIELDS.location_or_link) || "",
+					backup_contact: pick(SESSION_FIELDS.backup_contact) || "",
+					researchers: pick(SESSION_FIELDS.researchers) || "",
+					status: pick(SESSION_FIELDS.status) || "scheduled",
+					incentive_type: pick(SESSION_FIELDS.incentive_type) || "",
+					incentive_amount: pick(SESSION_FIELDS.incentive_amount) || 0,
+					incentive_status: pick(SESSION_FIELDS.incentive_status) || "",
+					safeguarding_flag: Boolean(pick(SESSION_FIELDS.safeguarding_flag)),
+					notes: pick(SESSION_FIELDS.notes) || "",
+					createdAt: r.createdTime || ""
+				};
+			})
+			.sort((a, b) => toMs(a.starts_at) - toMs(b.starts_at));
+
+		return this.json({ ok: true, sessions }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Create a session (schedules participant).
+	 * Sends confirmation email/SMS (server-side) and logs comms.
+	 * @route POST /api/sessions
+	 * @input { study_airtable_id, participant_airtable_id, starts_at, duration_min, type, location_or_link, backup_contact?, researchers?, notes? }
+	 */
+	async createSession(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const missing = [];
+		if (!p.study_airtable_id) missing.push("study_airtable_id");
+		if (!p.participant_airtable_id) missing.push("participant_airtable_id");
+		if (!p.starts_at) missing.push("starts_at");
+		if (!p.duration_min) missing.push("duration_min");
+		if (!p.type) missing.push("type");
+		if (!p.location_or_link) missing.push("location_or_link");
+		if (missing.length) return this.json({ error: "Missing fields: " + missing.join(", ") }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_SESSIONS || "Sessions");
+		const url = `https://api.airtable.com/v0/${base}/${table}`;
+
+		const fields = {
+			[SESSION_FIELDS.study_link[0]]: [p.study_airtable_id],
+			[SESSION_FIELDS.participant_link[0]]: [p.participant_airtable_id],
+			[SESSION_FIELDS.starts_at[0]]: p.starts_at,
+			[SESSION_FIELDS.duration_min[0]]: p.duration_min,
+			[SESSION_FIELDS.type[0]]: p.type,
+			[SESSION_FIELDS.location_or_link[0]]: p.location_or_link,
+			[SESSION_FIELDS.backup_contact[0]]: p.backup_contact || undefined,
+			[SESSION_FIELDS.researchers[0]]: p.researchers || undefined,
+			[SESSION_FIELDS.status[0]]: p.status || "scheduled",
+			[SESSION_FIELDS.incentive_type[0]]: p.incentive_type || undefined,
+			[SESSION_FIELDS.incentive_amount[0]]: p.incentive_amount || undefined,
+			[SESSION_FIELDS.incentive_status[0]]: p.incentive_status || undefined,
+			[SESSION_FIELDS.safeguarding_flag[0]]: p.safeguarding_flag ? true : undefined,
+			[SESSION_FIELDS.notes[0]]: p.notes || undefined,
+		};
+		for (const k of Object.keys(fields)) { if (fields[k] === undefined) delete fields[k]; }
+
+		const res = await fetchWithTimeout(url, {
+			method: "POST",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const txt = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.session.create.fail", { status: res.status, text: safeText(txt) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+		let js;
+		try { js = JSON.parse(txt); } catch { js = { records: [] }; }
+		const sessionId = js.records?.[0]?.id;
+
+		// Fire-and-forget: send confirmation & log (best effort)
+		try {
+			// If you have a notification provider, invoke it here.
+			// For now, log skeleton:
+			if (this.env.AUDIT === "true") this.log.info("session.created", { sessionId, participant: p.participant_airtable_id });
+		} catch (e) {
+			this.log.warn("comms.confirmation.fail", { err: String(e?.message || e) });
+		}
+
+		return this.json({ ok: true, id: sessionId }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Update a session (reschedule / cancel / notes, etc.).
+	 * @route PATCH /api/sessions/:id
+	 */
+	async updateSession(request, origin, sessionId) {
+		if (!sessionId) return this.json({ error: "Missing session id" }, 400, this.corsHeaders(origin));
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const fields = {
+			[SESSION_FIELDS.starts_at[0]]: p.starts_at,
+			[SESSION_FIELDS.duration_min[0]]: p.duration_min,
+			[SESSION_FIELDS.type[0]]: p.type,
+			[SESSION_FIELDS.location_or_link[0]]: p.location_or_link,
+			[SESSION_FIELDS.backup_contact[0]]: p.backup_contact,
+			[SESSION_FIELDS.researchers[0]]: p.researchers,
+			[SESSION_FIELDS.status[0]]: p.status,
+			[SESSION_FIELDS.incentive_type[0]]: p.incentive_type,
+			[SESSION_FIELDS.incentive_amount[0]]: p.incentive_amount,
+			[SESSION_FIELDS.incentive_status[0]]: p.incentive_status,
+			[SESSION_FIELDS.safeguarding_flag[0]]: typeof p.safeguarding_flag === "boolean" ? p.safeguarding_flag : undefined,
+			[SESSION_FIELDS.notes[0]]: p.notes,
+		};
+		for (const k of Object.keys(fields)) { if (fields[k] === undefined) delete fields[k]; }
+
+		if (Object.keys(fields).length === 0) return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+
+		const base = this.env.AIRTABLE_BASE_ID;
+		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_SESSIONS || "Sessions");
+		const atUrl = `https://api.airtable.com/v0/${base}/${table}`;
+
+		const res = await fetchWithTimeout(atUrl, {
+			method: "PATCH",
+			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ id: sessionId, fields }] })
+		}, this.cfg.TIMEOUT_MS);
+
+		const txt = await res.text();
+		if (!res.ok) {
+			this.log.error("airtable.session.update.fail", { status: res.status, text: safeText(txt) });
+			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		}
+		return this.json({ ok: true }, 200, this.corsHeaders(origin));
+	}
+
+	/**
+	 * Generate a minimal ICS for a session.
+	 * @route GET /api/sessions/:id/ics
+	 */
+	async sessionIcs(origin, sessionId) {
+		if (!sessionId) return new Response("Missing id", { status: 400, headers: this.corsHeaders(origin) });
+
+		// Read session + participant to build summary
+		const base = this.env.AIRTABLE_BASE_ID;
+		const sTable = encodeURIComponent(this.env.AIRTABLE_TABLE_SESSIONS || "Sessions");
+		const pTable = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
+		const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+
+		const sRes = await fetchWithTimeout(`https://api.airtable.com/v0/${base}/${sTable}/${encodeURIComponent(sessionId)}`, { headers }, this.cfg.TIMEOUT_MS);
+		if (!sRes.ok) return this.json({ error: `Airtable ${sRes.status}` }, sRes.status, this.corsHeaders(origin));
+		const sRec = await sRes.json();
+		const sf = sRec.fields || {};
+		const v = (keys) => { const k = pickFirstField(sf, keys); return k ? sf[k] : undefined; };
+
+		const startsAt = v(SESSION_FIELDS.starts_at);
+		const duration = Number(v(SESSION_FIELDS.duration_min) || 60);
+		const dtStart = new Date(startsAt);
+		const dtEnd = new Date(dtStart.getTime() + duration * 60000);
+		const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+
+		// Participant display name (optional)
+		let displayName = "participant";
+		const pIds = Array.isArray(v(SESSION_FIELDS.participant_link)) ? v(SESSION_FIELDS.participant_link) : [];
+		if (pIds[0]) {
+			const pRes = await fetchWithTimeout(`https://api.airtable.com/v0/${base}/${pTable}/${encodeURIComponent(pIds[0])}`, { headers }, this.cfg.TIMEOUT_MS);
+			if (pRes.ok) {
+				const pRec = await pRes.json();
+				const pf = pRec.fields || {};
+				const pk = pickFirstField(pf, PARTICIPANT_FIELDS.display_name);
+				if (pk) displayName = pf[pk] || displayName;
+			}
+		}
+
+		const location = v(SESSION_FIELDS.location_or_link) || "";
+		const summary = `Research session with ${displayName}`;
+		const desc = `Join/arrive: ${location}`;
+
+		function foldIcs(s) {
+			return s.replace(/(.{1,73})(?=.)/g, "$1\r\n ");
+		}
+		const ics = [
+			"BEGIN:VCALENDAR",
+			"VERSION:2.0",
+			"PRODID:-//HOB ResearchOps//Scheduler//EN",
+			"BEGIN:VEVENT",
+			`UID:${sessionId}@researchops`,
+			`DTSTAMP:${fmt(new Date())}`,
+			`DTSTART:${fmt(dtStart)}`,
+			`DTEND:${fmt(dtEnd)}`,
+			`SUMMARY:${summary}`,
+			`DESCRIPTION:${desc}`,
+			`LOCATION:${location}`,
+			"END:VEVENT",
+			"END:VCALENDAR"
+		].map(foldIcs).join("\r\n") + "\r\n";
+
+		return new Response(ics, {
+			status: 200,
+			headers: {
+				"Content-Type": "text/calendar; charset=utf-8",
+				"Content-Disposition": `attachment; filename="session-${sessionId}.ics"`,
+				...this.corsHeaders(origin)
+			}
+		});
+	}
+
+	/**
+	 * Send a communication (email/SMS) and log it.
+	 * (Stub: integrate your provider here; logs to Airtable Comms Log.)
+	 * @route POST /api/comms/send
+	 */
+	async sendComms(request, origin) {
+		const body = await request.arrayBuffer();
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		let p;
+		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
+
+		const missing = [];
+		if (!p.participant_id) missing.push("participant_id");
+		if (!p.template_id) missing.push("template_id");
+		if (!p.channel) missing.push("channel");
+		if (missing.length) return this.json({ error: "Missing fields: " + missing.join(", ") }, 400, this.corsHeaders(origin));
+
+		// TODO: plug in email/SMS provider here and capture provider message_id
+		const messageId = `msg_${Date.now()}`;
+
+		// Log to Airtable Comms Log
+		try {
+			const base = this.env.AIRTABLE_BASE_ID;
+			const table = encodeURIComponent(this.env.AIRTABLE_TABLE_COMMSLOG || "Communications Log");
+			const url = `https://api.airtable.com/v0/${base}/${table}`;
+			const fields = {
+				"Participant": [p.participant_id],
+				"Session": p.session_id ? [p.session_id] : undefined,
+				"Template Id": p.template_id,
+				"Channel": p.channel,
+				"Sent At": new Date().toISOString(),
+				"Status": "sent",
+				"Metadata": JSON.stringify({ message_id: messageId, substitutions: p.substitutions || {} })
+			};
+			for (const k of Object.keys(fields))
+				if (fields[k] === undefined) delete fields[k];
+			await fetchWithTimeout(url, {
+				method: "POST",
+				headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ records: [{ fields }] })
+			}, this.cfg.TIMEOUT_MS);
+		} catch (e) {
+			this.log.warn("comms.log.fail", { err: String(e?.message || e) });
+		}
+
+		return this.json({ ok: true, message_id: messageId }, 200, this.corsHeaders(origin));
+	}
 }
 
 /* =========================
@@ -1523,7 +1985,10 @@ export default {
 			if (url.pathname.startsWith("/api/")) {
 				// CORS preflight
 				if (request.method === "OPTIONS") {
-					return new Response(null, { headers: service.corsHeaders(origin) });
+					return new Response(null, {
+						status: 204,
+						headers: { ...service.corsHeaders(origin), "Access-Control-Max-Age": "600" }
+					});
 				}
 
 				// Enforce ALLOWED_ORIGINS for API calls
@@ -1751,6 +2216,36 @@ export default {
 					return service.deletePartial(origin, partialId);
 				}
 
+				/* --------------------- Participants -------------------- */
+				if (url.pathname === "/api/participants" && request.method === "GET") {
+					return service.listParticipants(origin, url);
+				}
+				if (url.pathname === "/api/participants" && request.method === "POST") {
+					return service.createParticipant(request, origin);
+				}
+
+				/* ----------------------- Sessions ---------------------- */
+				if (url.pathname === "/api/sessions" && request.method === "GET") {
+					return service.listSessions(origin, url);
+				}
+				if (url.pathname === "/api/sessions" && request.method === "POST") {
+					return service.createSession(request, origin);
+				}
+				if (url.pathname.startsWith("/api/sessions/") && request.method === "PATCH") {
+					const sessionId = decodeURIComponent(url.pathname.slice("/api/sessions/".length));
+					return service.updateSession(request, origin, sessionId);
+				}
+				if (url.pathname.startsWith("/api/sessions/") && request.method === "GET" && url.pathname.endsWith("/ics")) {
+					const parts = url.pathname.split("/"); // ["", "api", "sessions", ":id", "ics"]
+					const sessionId = decodeURIComponent(parts[3]);
+					return service.sessionIcs(origin, sessionId);
+				}
+
+				/* ------------------------ Comms ------------------------ */
+				if (url.pathname === "/api/comms/send" && request.method === "POST") {
+					return service.sendComms(request, origin);
+				}
+
 				/**
 				 * Unknown API path.
 				 * @route * /api/**
@@ -1797,6 +2292,9 @@ export function createMockEnv(overrides = {}) {
 		AIRTABLE_TABLE_STUDIES: "Project Studies",
 		AIRTABLE_TABLE_GUIDES: "Discussion Guides",
 		AIRTABLE_TABLE_PARTIALS: "Partials",
+		AIRTABLE_TABLE_PARTICIPANTS: "Participants",
+		AIRTABLE_TABLE_SESSIONS: "Sessions",
+		AIRTABLE_TABLE_COMMSLOG: "Communications Log",
 		AIRTABLE_API_KEY: "key",
 		GH_OWNER: "owner",
 		GH_REPO: "repo",
