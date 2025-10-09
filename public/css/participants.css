@@ -1,0 +1,169 @@
+/* ==========================================================================
+   ResearchOps UI • Participants stylesheet (scoped)
+   Version:    v1.0.0-beta
+   Service:    Home Office Biometrics — ResearchOps
+   Author:     Kevin Rapley
+   Date:       2025-10-09
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/participants.css
+   License:    All rights reserved
+   NAV KEY:    "="  (Find "=" to jump sections)
+   ========================================================================== */
+
+/* CSS DIRECTORY
+	1. = TOKENS
+	2. = LAYOUT
+	3. = TABLES (participants, sessions)
+	4. = FORMS
+	5. = COMPONENTS (badges, pills, messages)
+	6. = RESPONSIVE
+*/
+
+/* === =TOKENS ============================================= */
+:root {
+	--participants-border: #d0d7de;
+	--participants-bg: #fff;
+	--participants-muted: #505a5f;
+	--participants-ok: #00703c;
+	--participants-err: #d4351c;
+	--participants-pill-bg: #e8edff;
+	--participants-shadow: rgba(0,0,0,.05);
+	}
+
+/* === =LAYOUT ============================================= */
+.container {
+	display: block;
+	padding-bottom: 3rem;
+	}
+
+.card {
+	border: 1px solid var(--participants-border);
+	border-radius: 8px;
+	background: var(--participants-bg);
+	box-shadow: 0 1px 2px var(--participants-shadow);
+	padding: 16px;
+	margin-bottom: 32px;
+	}
+
+.badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: #f3f2f1;
+	color: #0b0c0c;
+	font-weight: 600;
+	font-size: .875rem;
+	}
+
+/* === =TABLES ============================================= */
+.table {
+	border: 1px solid var(--participants-border);
+	border-radius: 8px;
+	overflow: hidden;
+	font-size: .9375rem;
+	margin-top: 12px;
+	}
+
+.table__header {
+	display: grid;
+	grid-template-columns: 2fr 2fr 1fr 1fr;
+	background: #f8f8f8;
+	padding: 10px 12px;
+	font-weight: 700;
+	color: #0b0c0c;
+	}
+
+.rowi {
+	display: grid;
+	grid-template-columns: 2fr 2fr 1fr 1fr;
+	align-items: center;
+	padding: 10px 12px;
+	border-top: 1px solid #e5e5e5;
+	}
+
+.rowi:nth-child(even) {
+	background: #fcfcfc;
+	}
+
+.rowi:hover {
+	background: #f3f2f1;
+	}
+
+/* === =FORMS ============================================== */
+.form__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	}
+
+.msg {
+	font-size: .9rem;
+	}
+
+.msg.ok {
+	color: var(--participants-ok);
+	}
+
+.msg.err {
+	color: var(--participants-err);
+	}
+
+/* === =COMPONENTS ========================================= */
+.pill {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--participants-pill-bg);
+	font-size: .75rem;
+	font-weight: 600;
+	color: #0b0c0c;
+	}
+
+button.secondary,
+a.secondary {
+	display: inline-block;
+	background: #fff;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	color: #0b0c0c;
+	padding: 4px 10px;
+	font-size: .875rem;
+	text-decoration: none;
+	cursor: pointer;
+	}
+
+button.secondary:hover,
+a.secondary:hover {
+	background: #f3f2f1;
+	}
+
+button.secondary:focus-visible,
+a.secondary:focus-visible {
+	outline: 3px solid #0b0c0c;
+	outline-offset: 0;
+	box-shadow: 0 0 0 3px #fd0;
+	}
+
+/* === =RESPONSIVE ========================================= */
+@media (max-width: 780px) {
+	.table__header,
+	.rowi {
+		grid-template-columns: 1fr;
+		gap: 6px;
+		}
+	.table__header {
+		font-size: .875rem;
+		}
+	.rowi {
+		font-size: .875rem;
+		padding: 8px 10px;
+		}
+	}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		}
+	}
+
+/* transparency begins in the cascade */
