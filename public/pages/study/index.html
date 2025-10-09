@@ -52,7 +52,7 @@
 			<!-- Inline editor (hidden by default) -->
 			<form id="desc-editor" class="panel" hidden>
 				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
-				<textarea id="desc-input" class="govuk-input" rows="8" spellcheck="true" autocomplete="off"></textarea>
+				<textarea id="desc-input" class="govuk-textarea" rows="8" spellcheck="true" autocomplete="off"></textarea>
 
 				<details class="note" style="margin-top:8px;">
 					<summary>Markdown cheat sheet (allowed)</summary>
@@ -92,12 +92,12 @@
 
 		<!-- Materials hubs -->
 		<nav class="board" aria-label="Study setup">
-			<a href="#" class="board__item" aria-disabled="true">Produce consent forms</a>
-			<a href="#" class="board__item" aria-disabled="true">Manage consent</a>
-			<a href="#" class="board__item" aria-disabled="true">Schedule participants</a>
-			<a id="link-guides" href="#" class="board__item" aria-disabled="true">Discussion Guides</a>
-			<a href="#" class="board__item" aria-disabled="true">Note takers &amp; observers</a>
-			<a href="#" class="board__item" aria-disabled="true">Begin a session</a>
+			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Produce consent forms</a>
+			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Manage consent</a>
+			<a id="participants" href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Schedule participants</a>
+			<a id="link-guides" href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Discussion Guides</a>
+			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Note takers &amp; observers</a>
+			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Begin a session</a>
 		</nav>
 
 		<section class="section">
@@ -228,13 +228,28 @@
 					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
 				);
 
-				// Enable “Discussion Guides” route
-				const guides = $("#link-guides");
-				if (guides) {
-					const url = `/pages/study/guides/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-					guides.setAttribute("href", url);
-					guides.removeAttribute("aria-disabled");
+				/** @param {HTMLAnchorElement|null} el @param {string} href */
+				function enableTile(el, href) {
+					if (!el) return;
+					el.setAttribute('href', href);
+					el.removeAttribute('aria-disabled');
+					el.removeAttribute('tabindex');
+					el.classList.remove('link--disabled');
 				}
+
+				// Enable “Discussion Guides” route
+				const guides = $('#link-guides');
+				enableTile(
+					guides,
+					`/pages/study/guides/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`
+				);
+
+				// Enable “Schedule Participants” route
+				const participants = $('#participants');
+				enableTile(
+					participants,
+					`/pages/study/participants/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`
+				);
 
 				// Expose id for inline editor wiring (if needed elsewhere)
 				document.body.setAttribute("data-study-id", sid);
