@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Discussion Guides — Study</title>
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/guides.css" media="screen" />
+	<link rel="stylesheet" href="/css/participants.css" media="screen" />
+
+	<script type="module" src="/components/layout.js"></script>
+</head>
+
+<body>
+	<x-include src="/partials/header.html" vars='{
+    "active":"Projects",
+    "subtitle":"Study — Participants"
+  }'></x-include>
+
+	<main id="main" class="container govuk-body" role="main">
+		<!-- Breadcrumb -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="#">Project</a></li>
+				<li><a id="breadcrumb-study" href="#">Study</a></li>
+				<li aria-current="page">Participants</li>
+			</ol>
+		</nav>
+
+		<div class="govuk-!-margin-bottom-4">
+			<strong id="studyBadge" class="badge">Study:</strong>
+		</div>
+
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<section class="govuk-!-margin-bottom-7">
+					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h2>
+					<p class="govuk-hint">Invite and manage participants for this study.</p>
+
+					<div class="table card" id="participantsTable" role="table" aria-label="Participants">
+						<div class="rowh table__header" role="row">
+							<div role="columnheader">Name</div>
+							<div role="columnheader">Contact</div>
+							<div role="columnheader">Status</div>
+							<div role="columnheader">Actions</div>
+						</div>
+						<!-- rows injected by scheduler.js -->
+					</div>
+				</section>
+
+				<section>
+					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
+					<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
+
+					<div class="table card" id="sessionsTable" role="table" aria-label="Sessions">
+						<div class="rowh table__header" role="row">
+							<div role="columnheader">When</div>
+							<div role="columnheader">Participant</div>
+							<div role="columnheader">Status</div>
+							<div role="columnheader">Actions</div>
+						</div>
+						<!-- rows injected by scheduler.js -->
+					</div>
+				</section>
+			</div>
+
+			<div class="govuk-grid-column-one-half">
+				<section class="card govuk-!-margin-bottom-7">
+					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Add participant</h2>
+
+					<form id="addParticipantForm" class="form" novalidate>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="p_display">Display name</label>
+							<input class="govuk-input" id="p_display" name="display_name" required autocomplete="off" />
+						</div>
+
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_email">Email</label>
+									<input class="govuk-input" id="p_email" name="email" type="email" autocomplete="off" />
+								</div>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_phone">Phone</label>
+									<input class="govuk-input" id="p_phone" name="phone" autocomplete="off" />
+								</div>
+							</div>
+						</div>
+
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_tz">Time zone</label>
+									<input class="govuk-input" id="p_tz" name="timezone" placeholder="Europe/London" autocomplete="off" />
+								</div>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_channel">Channel preference</label>
+									<select class="govuk-select" id="p_channel" name="channel_pref">
+										<option value="email">email</option>
+										<option value="sms">sms</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="p_access">Access needs (optional)</label>
+							<textarea class="govuk-textarea" id="p_access" name="access_needs" rows="2"></textarea>
+						</div>
+
+						<div class="form__actions">
+							<button class="govuk-button" type="submit" data-module="govuk-button">Create participant</button>
+							<span id="addParticipantMsg" class="msg" role="status" aria-live="polite"></span>
+						</div>
+					</form>
+				</section>
+
+				<section class="card">
+					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Schedule a session</h2>
+
+					<form id="scheduleForm" class="form" novalidate>
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_participant">Participant</label>
+									<select class="govuk-select" id="s_participant" required></select>
+								</div>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_type">Type</label>
+									<select class="govuk-select" id="s_type">
+										<option value="remote">remote</option>
+										<option value="in-person">in-person</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_datetime">Start (local)</label>
+									<input class="govuk-input" id="s_datetime" type="datetime-local" required />
+								</div>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_duration">Duration (min)</label>
+									<input class="govuk-input" id="s_duration" type="number" min="15" step="5" value="60" required />
+								</div>
+							</div>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="s_location">Location / Join link</label>
+							<input class="govuk-input" id="s_location" required />
+						</div>
+
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_backup">Backup contact</label>
+									<input class="govuk-input" id="s_backup" />
+								</div>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="s_researchers">Researchers</label>
+									<input class="govuk-input" id="s_researchers" />
+								</div>
+							</div>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="s_notes">Notes</label>
+							<textarea class="govuk-textarea" id="s_notes" rows="2"></textarea>
+						</div>
+
+						<div class="form__actions">
+							<button class="govuk-button" type="submit" data-module="govuk-button">Create session</button>
+							<span id="scheduleMsg" class="msg" role="status" aria-live="polite"></span>
+						</div>
+					</form>
+				</section>
+			</div>
+		</div>
+	</main>
+
+	<x-include src="/partials/footer.html"></x-include>
+
+	<script type="module" src="/pages/study/participants/scheduler.js"></script>
+</body>
+
+</html>
