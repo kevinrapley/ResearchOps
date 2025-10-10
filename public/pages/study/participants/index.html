@@ -4,12 +4,11 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Discussion Guides — Study</title>
+	<title>Study — Participants</title>
 
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/guides.css" media="screen" />
 	<link rel="stylesheet" href="/css/participants.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
@@ -17,9 +16,9 @@
 
 <body>
 	<x-include src="/partials/header.html" vars='{
-    "active":"Projects",
-    "subtitle":"Study — Participants"
-  }'></x-include>
+		"active":"Projects",
+		"subtitle":"Study — Participants"
+	}'></x-include>
 
 	<main id="main" class="container govuk-body" role="main">
 		<!-- Breadcrumb -->
@@ -36,13 +35,23 @@
 			<strong id="studyBadge" class="badge">Study:</strong>
 		</div>
 
-		<div class="govuk-grid-row">
+		<!-- Participants row -->
+		<div class="govuk-grid-row govuk-!-margin-bottom-7">
+			<!-- Left: table or empty state -->
 			<div class="govuk-grid-column-one-half">
-				<section class="govuk-!-margin-bottom-7">
-					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h2>
+				<section aria-labelledby="participants-h">
+					<h2 id="participants-h" class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h2>
 					<p class="govuk-hint">Invite and manage participants for this study.</p>
 
-					<div class="table card" id="participantsTable" role="table" aria-label="Participants">
+					<!-- Empty state (hidden when there are participants) -->
+					<div id="participantsEmpty" class="empty card" hidden>
+						<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No participants yet</h3>
+						<p>Add your first participant to begin scheduling sessions.</p>
+						<a href="#addParticipantForm" class="btn btn--primary">Add a participant</a>
+					</div>
+
+					<!-- Table (hidden when none) -->
+					<div class="table card" id="participantsTable" role="table" aria-label="Participants" hidden>
 						<div class="rowh table__header" role="row">
 							<div role="columnheader">Name</div>
 							<div role="columnheader">Contact</div>
@@ -52,26 +61,12 @@
 						<!-- rows injected by scheduler.js -->
 					</div>
 				</section>
-
-				<section>
-					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
-					<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
-
-					<div class="table card" id="sessionsTable" role="table" aria-label="Sessions">
-						<div class="rowh table__header" role="row">
-							<div role="columnheader">When</div>
-							<div role="columnheader">Participant</div>
-							<div role="columnheader">Status</div>
-							<div role="columnheader">Actions</div>
-						</div>
-						<!-- rows injected by scheduler.js -->
-					</div>
-				</section>
 			</div>
 
+			<!-- Right: Add participant -->
 			<div class="govuk-grid-column-one-half">
-				<section class="card govuk-!-margin-bottom-7">
-					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Add participant</h2>
+				<section class="card" aria-labelledby="addp-h">
+					<h2 id="addp-h" class="govuk-heading-l govuk-!-margin-bottom-3">Add participant</h2>
 
 					<form id="addParticipantForm" class="form" novalidate>
 						<div class="govuk-form-group">
@@ -94,22 +89,14 @@
 							</div>
 						</div>
 
-						<div class="govuk-grid-row">
-							<div class="govuk-grid-column-one-half">
-								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_tz">Time zone</label>
-									<input class="govuk-input" id="p_tz" name="timezone" placeholder="Europe/London" autocomplete="off" />
-								</div>
-							</div>
-							<div class="govuk-grid-column-one-half">
-								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_channel">Channel preference</label>
-									<select class="govuk-select" id="p_channel" name="channel_pref">
-										<option value="email">email</option>
-										<option value="sms">sms</option>
-									</select>
-								</div>
-							</div>
+						<!-- Time zone removed (not present in Airtable) -->
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="p_channel">Channel preference</label>
+							<select class="govuk-select" id="p_channel" name="channel_pref">
+								<option value="email">email</option>
+								<option value="sms">sms</option>
+							</select>
 						</div>
 
 						<div class="govuk-form-group">
@@ -123,9 +110,46 @@
 						</div>
 					</form>
 				</section>
+			</div>
+		</div>
 
-				<section class="card">
-					<h2 class="govuk-heading-l govuk-!-margin-bottom-3">Schedule a session</h2>
+		<!-- Sessions row -->
+		<div class="govuk-grid-row">
+			<!-- Left: table or empty state -->
+			<div class="govuk-grid-column-one-half">
+				<section aria-labelledby="sessions-h">
+					<h2 id="sessions-h" class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
+					<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
+
+					<!-- Empty state (hidden when sessions exist) -->
+					<div id="sessionsEmpty" class="empty card" hidden>
+						<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No sessions yet</h3>
+						<p>Schedule a session once you’ve added at least one participant.</p>
+						<a href="#scheduleForm" class="btn btn--primary" id="scheduleCta">Schedule a session</a>
+					</div>
+
+					<!-- Table (hidden when none) -->
+					<div class="table card" id="sessionsTable" role="table" aria-label="Sessions" hidden>
+						<div class="rowh table__header" role="row">
+							<div role="columnheader">When</div>
+							<div role="columnheader">Participant</div>
+							<div role="columnheader">Status</div>
+							<div role="columnheader">Actions</div>
+						</div>
+						<!-- rows injected by scheduler.js -->
+					</div>
+				</section>
+			</div>
+
+			<!-- Right: Schedule session -->
+			<div class="govuk-grid-column-one-half">
+				<section class="card" aria-labelledby="schedules-h">
+					<h2 id="schedules-h" class="govuk-heading-l govuk-!-margin-bottom-3">Schedule a session</h2>
+
+					<!-- Info banner if no participants; form will be disabled -->
+					<div id="noParticipantsBanner" class="note" role="status" hidden>
+						Add at least one participant to enable scheduling.
+					</div>
 
 					<form id="scheduleForm" class="form" novalidate>
 						<div class="govuk-grid-row">
@@ -187,7 +211,7 @@
 						</div>
 
 						<div class="form__actions">
-							<button class="govuk-button" type="submit" data-module="govuk-button">Create session</button>
+							<button id="scheduleBtn" class="govuk-button" type="submit" data-module="govuk-button">Create session</button>
 							<span id="scheduleMsg" class="msg" role="status" aria-live="polite"></span>
 						</div>
 					</form>
