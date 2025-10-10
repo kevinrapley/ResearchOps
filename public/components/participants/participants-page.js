@@ -1,114 +1,115 @@
 /**
  * @file /components/participants/participants-page.js
- * @summary Fetch + render participants table and wire the schedule select.
- * - Exposes window.renderParticipantsTable(rows)
- * - Dispatches both "participants-rendered" and "participants_rendered"
- *   CustomEvents (Safari-safe, no colons)
+ * @summary Renders the participants list and emits Safari-safe events.
  */
 
 const $ = (s, r = document) => r.querySelector(s);
 
-/** Read pid/sid from URL. Throws if absent. */
-function getIds() {
+/** Read pid/sid from querystring. */
+function readIds() {
 	const usp = new URLSearchParams(location.search);
-	const pid = usp.get("pid") || "";
-	const sid = usp.get("sid") || "";
-	if (!pid || !sid) throw new Error("Missing pid or sid in URL");
-	return { pid, sid };
+	return {
+		pid: usp.get("pid") || "",
+		sid: usp.get("sid") || ""
+	};
 }
 
-/** Fetch participants for the study id. */
+/** Fetch participants for a study. */
 async function fetchParticipants(studyId) {
 	const url = `/api/participants?study=${encodeURIComponent(studyId)}`;
-	console.log("[participants] GET", url);
+	console.info("[participants] GET", url);
 	const res = await fetch(url, { cache: "no-store" });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok || js?.ok !== true || !Array.isArray(js.participants)) {
-		throw new Error(js?.error || `participants fetch failed (${res.status})`);
+		throw new Error(js?.error || `Participants fetch failed (${res.status})`);
 	}
+	console.info("[participants] loaded", js.participants.length);
 	return js.participants;
 }
 
-/** Render rows into the table body. */
-function drawRows(rows) {
-	const tbody = $("#participants-tbody");
-	if (!tbody) return;
+/** Create one row element for the participants table. */
+function makeRow(p) {
+	const row = document.createElement("div");
+	row.className = "row";
+	row.setAttribute("role", "row");
 
-	if (!rows.length) {
-		tbody.innerHTML = `<tr><td colspan="5" class="muted">No participants yet.</td></tr>`;
-		return;
-	}
+	const name = `${p.display_name || p.name || "—"}`;
+	const contactBits = []
+	if (p.email) contactBits.push(p.email);
+	if (p.phone) contactBits.push(p.phone);
+	const contact = contactBits.join(" · ") || "—";
+	const status = p.status || "new";
 
-	const html = rows.map(p => {
-		const name = p.display_name || p.name || "—";
-		const email = p.email || "—";
-		const phone = p.phone || "—";
-		const channel = p.channel_pref || p.channel || "—";
-		const status = p.status || "invited";
-		return `
-      <tr>
-        <td>${escapeHtml(name)}</td>
-        <td>${email ? `<a href="mailto:${escapeAttr(email)}">${escapeHtml(email)}</a>` : "—"}</td>
-        <td>${escapeHtml(phone)}</td>
-        <td>${escapeHtml(channel)}</td>
-        <td>${escapeHtml(status)}</td>
-      </tr>
-    `;
-	}).join("");
-
-	tbody.innerHTML = html;
+	row.innerHTML = `
+    <div role="cell">${escapeHtml(name)}</div>
+    <div role="cell">${escapeHtml(contact)}</div>
+    <div role="cell">${escapeHtml(status)}</div>
+    <div role="cell">
+      <button class="btn btn--secondary" data-action="schedule" data-id="${p.id}">Schedule</button>
+    </div>
+  `;
+	return row;
 }
 
-/** Populate the schedule participant select. */
-function populateScheduleSelect(rows) {
-	const sel = $("#s_participant");
-	if (!sel) return;
-	sel.innerHTML = rows.map(p => {
-		const id = p.id || "";
-		const label = p.display_name || p.name || p.email || "Participant";
-		return `<option value="${escapeAttr(id)}">${escapeHtml(label)}</option>`;
-	}).join("");
-}
-
-/** Safe HTML/text helpers */
-function escapeHtml(str) {
+/** Escape HTML text content. */
+function escapeHtml(s) {
 	const d = document.createElement("div");
-	d.textContent = String(str ?? "");
+	d.textContent = String(s ?? "");
 	return d.innerHTML;
 }
 
-function escapeAttr(str) {
-	// very light attr escape; using textContent via a <span> and reading innerHTML also works
-	return String(str ?? "").replace(/"/g, "&quot;");
+/**
+ * Render the whole participants table (replaces body rows).
+ * Exposed on window for other modules to reuse.
+ * @param {Array<Object>} participants
+ */
+export function renderParticipantsTable(participants) {
+	const $table = $("#participantsTable");
+	if (!$table) return;
+
+	// Remove any previous data rows (keep the header .table__header)
+	const prev = Array.from($table.querySelectorAll(".row")).filter(el => !el.classList.contains("table__header"));
+	prev.forEach(el => el.remove());
+
+	// Append new rows
+	const frag = document.createDocumentFragment();
+	participants.forEach(p => frag.appendChild(makeRow(p)));
+	$table.appendChild(frag);
+
+	// Toggle visibility vs empty panel
+	const has = participants.length > 0;
+	const $empty = $("#participantsEmpty");
+	if ($empty) $empty.hidden = has;
+	$table.hidden = !has;
+
+	// Emit Safari-safe rendered events
+	const detail = { detail: { count: participants.length } };
+	window.dispatchEvent(new CustomEvent("participants-rendered", detail));
+	window.dispatchEvent(new CustomEvent("participants_rendered", detail));
+	// Legacy (may throw on some Safari versions if used elsewhere, but here it’s fine to keep
+	// for back-compat; remove if you want to be strict)
+	try { window.dispatchEvent(new CustomEvent("participants:rendered", detail)); } catch {}
+
+	return participants.length;
 }
 
-/** Fire both Safari-safe custom events. */
-function announceRendered(count) {
-	try { window.dispatchEvent(new CustomEvent("participants-rendered", { detail: { count } })); } catch {}
-	try { window.dispatchEvent(new CustomEvent("participants_rendered", { detail: { count } })); } catch {}
-}
-
-/** Public API: make available globally for any legacy callers. */
-function renderParticipantsTable(rows) {
-	drawRows(rows);
-	populateScheduleSelect(rows);
-	// Show/hide containers is handled by the page glue listener
-	announceRendered(rows.length || 0);
-}
+// Also attach on window for non-module callers
+// (e.g., scheduler or inline scripts)
 window.renderParticipantsTable = renderParticipantsTable;
 
-/* ── Bootstrap ────────────────────────────────────────────────────────── */
-(async function init() {
+/** Boot: load & render once on page load. */
+(async function boot() {
 	try {
-		const { sid } = getIds();
-		const rows = await fetchParticipants(sid);
-		console.log("[participants] loaded", rows.length);
-		renderParticipantsTable(rows);
+		const { sid } = readIds();
+		if (!sid) throw new Error("Missing sid");
+		const participants = await fetchParticipants(sid);
+		renderParticipantsTable(participants);
 	} catch (err) {
 		console.error("[participants] init error:", err);
-		// Keep something visible for the user:
-		const tbody = $("#participants-tbody");
-		if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="muted">Failed to load participants.</td></tr>`;
-		announceRendered(0);
+		// Still emit an event so glue can toggle UI to "empty"
+		try {
+			window.dispatchEvent(new CustomEvent("participants-rendered", { detail: { count: 0 } }));
+			window.dispatchEvent(new CustomEvent("participants_rendered", { detail: { count: 0 } }));
+		} catch {}
 	}
 })();
