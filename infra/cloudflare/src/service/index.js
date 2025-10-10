@@ -1,7 +1,7 @@
 /**
  * @file src/service/index.js
  * @module service
- * @summary Composed API service (Airtable + GitHub CSV) for ResearchOps Worker.
+ * @summary Composed API service (Airtable + GitHub CSV + AI rewrite) for ResearchOps Worker.
  */
 
 import { DEFAULTS } from "../core/constants.js";
@@ -16,7 +16,7 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
-import * as Csv from "./ai-rewrite.js";
+import * as AI from "./ai-rewrite.js";
 
 /**
  * @typedef {Object} Env
@@ -208,15 +208,9 @@ export class ResearchOpsService {
 
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
-	
-		/* ─────────────── AI Rewrite ─────────────── */
-	/**
-	 * Run AI-assisted rewrite (used by /api/ai-rewrite route).
-	 * Delegates to Cloudflare AI binding through ai-rewrite.js.
-	 *
-	 * @param {Request} req
-	 * @param {string} origin
-	 * @returns {Promise<Response>}
-	 */
-	runAiRewrite = (req, origin) => AIRewrite.runAiRewrite(this, req, origin);
+
+	/* ─────────────── AI Rewrite ─────────────── */
+
+	/** @type {(req:Request, origin:string)=>Promise<Response>} */
+	runAiRewrite = (req, origin) => AI.runAiRewrite(this, req, origin);
 }
