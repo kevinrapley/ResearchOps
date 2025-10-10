@@ -19,150 +19,153 @@
 	6. = RESPONSIVE
 */
 
-/* === =TOKENS ============================================= */
+/* 1. = TOKENS
+   -------------------------------------------------------------------------- */
 :root {
-	--participants-border: #d0d7de;
-	--participants-bg: #fff;
-	--participants-muted: #505a5f;
-	--participants-ok: #00703c;
-	--participants-err: #d4351c;
-	--participants-pill-bg: #e8edff;
-	--participants-shadow: rgba(0,0,0,.05);
+	--rops-border: var(--govuk-border-colour, #b1b4b6);
+	--rops-surface: var(--govuk-colour-white, #ffffff);
+	--rops-surface-alt: #f3f2f1;
+	--rops-text: var(--govuk-text-colour, #0b0c0c);
+	--rops-muted: #505a5f;
+	--rops-radius: 4px;
+	--rops-gap: 24px;
+	--rops-gap-sm: 12px;
+	--rops-shadow: 0 1px 1px rgba(0,0,0,.05);
 	}
 
-/* === =LAYOUT ============================================= */
-.container {
-	display: block;
-	padding-bottom: 3rem;
+/* 2. = LAYOUT
+   -------------------------------------------------------------------------- */
+.grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--rops-gap);
+	align-items: start;
+	}
+
+.grid--two {
+	grid-template-columns: 1fr 1fr;
+	}
+
+.section {
+	margin-block-end: 2rem;
 	}
 
 .card {
-	border: 1px solid var(--participants-border);
-	border-radius: 8px;
-	background: var(--participants-bg);
-	box-shadow: 0 1px 2px var(--participants-shadow);
-	padding: 16px;
-	margin-bottom: 32px;
+	background: var(--rops-surface);
+	border: 1px solid var(--rops-border);
+	border-radius: var(--rops-radius);
+	padding: 24px;
+	box-shadow: var(--rops-shadow);
 	}
 
-.badge {
-	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 999px;
-	background: #f3f2f1;
-	color: #0b0c0c;
-	font-weight: 600;
-	font-size: .875rem;
-	}
-
-/* === =TABLES ============================================= */
+/* 3. = TABLES (participants, sessions)
+   -------------------------------------------------------------------------- */
 .table {
-	border: 1px solid var(--participants-border);
-	border-radius: 8px;
+	width: 100%;
+	background: var(--rops-surface);
+	border: 1px solid var(--rops-border);
+	border-radius: var(--rops-radius);
 	overflow: hidden;
-	font-size: .9375rem;
-	margin-top: 12px;
+	}
+
+.table__header,
+.table__row {
+	display: grid;
+	grid-template-columns: 2fr 2fr 1fr 1fr;
+	align-items: center;
+	padding: 12px 16px;
 	}
 
 .table__header {
-	display: grid;
-	grid-template-columns: 2fr 2fr 1fr 1fr;
-	background: #f8f8f8;
-	padding: 10px 12px;
+	background: var(--rops-surface-alt);
 	font-weight: 700;
-	color: #0b0c0c;
 	}
 
-.rowi {
-	display: grid;
+.table__row {
+	border-block-start: 1px solid var(--rops-border);
+	}
+
+.table__cell {
+	overflow-wrap: anywhere;
+	}
+
+.table--sessions .table__header,
+.table--sessions .table__row {
 	grid-template-columns: 2fr 2fr 1fr 1fr;
-	align-items: center;
-	padding: 10px 12px;
-	border-top: 1px solid #e5e5e5;
 	}
 
-.rowi:nth-child(even) {
-	background: #fcfcfc;
+/* Empty-state blocks replace tables when no data is present */
+.empty-state {
+	display: grid;
+	gap: 8px;
+	place-items: center;
+	text-align: center;
+	padding: 32px;
+	border: 1px dashed var(--rops-border);
+	border-radius: var(--rops-radius);
+	background: var(--rops-surface-alt);
+	color: var(--rops-muted);
 	}
 
-.rowi:hover {
-	background: #f3f2f1;
+/* 4. = FORMS
+   -------------------------------------------------------------------------- */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rops-gap-sm);
 	}
 
-/* === =FORMS ============================================== */
 .form__actions {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
+	margin-top: 4px;
 	}
 
 .msg {
-	font-size: .9rem;
+	font-size: .875rem;
+	color: var(--rops-muted);
+	min-height: 1.25rem;
 	}
 
-.msg.ok {
-	color: var(--participants-ok);
+/* 5. = COMPONENTS (badges, pills, messages)
+   -------------------------------------------------------------------------- */
+.badge {
+	display: inline-block;
+	font-weight: 700;
+	background: var(--rops-surface-alt);
+	border: 1px solid var(--rops-border);
+	border-radius: 99px;
+	padding: 2px 10px;
+	line-height: 1.6;
 	}
 
-.msg.err {
-	color: var(--participants-err);
-	}
-
-/* === =COMPONENTS ========================================= */
 .pill {
 	display: inline-block;
+	border-radius: 99px;
 	padding: 2px 8px;
-	border-radius: 999px;
-	background: var(--participants-pill-bg);
-	font-size: .75rem;
-	font-weight: 600;
-	color: #0b0c0c;
-	}
-
-button.secondary,
-a.secondary {
-	display: inline-block;
-	background: #fff;
-	border: 1px solid #b1b4b6;
-	border-radius: 4px;
-	color: #0b0c0c;
-	padding: 4px 10px;
 	font-size: .875rem;
-	text-decoration: none;
-	cursor: pointer;
+	border: 1px solid var(--rops-border);
+	background: var(--rops-surface);
 	}
 
-button.secondary:hover,
-a.secondary:hover {
-	background: #f3f2f1;
+.btn--small {
+	font-size: .9rem;
+	line-height: 1.4;
+	padding: 4px 10px;
 	}
 
-button.secondary:focus-visible,
-a.secondary:focus-visible {
-	outline: 3px solid #0b0c0c;
-	outline-offset: 0;
-	box-shadow: 0 0 0 3px #fd0;
+/* Disabled navigation tile (board links) */
+.link--disabled {
+	pointer-events: none;
+	opacity: .5;
 	}
 
-/* === =RESPONSIVE ========================================= */
-@media (max-width: 780px) {
-	.table__header,
-	.rowi {
-		grid-template-columns: 1fr;
-		gap: 6px;
-		}
-	.table__header {
-		font-size: .875rem;
-		}
-	.rowi {
-		font-size: .875rem;
-		padding: 8px 10px;
-		}
-	}
-
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
+/* 6. = RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (min-width: 900px) {
+	.grid {
+		grid-template-columns: 1fr 1fr;
 		}
 	}
 
