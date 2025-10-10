@@ -45,63 +45,65 @@
  * Any non-/api requests fall through to static ASSETS with SPA index.html fallback.
  */
 
-import { ResearchOpsService } from "./service.js"; // shim -> ../service/index.js
-import { aiRewrite } from "../service/ai-rewrite.js"; // lives alongside other service modules
+import { ResearchOpsService } from "./service.js";
+import { aiRewrite } from "./ai-rewrite.js";
 
 /**
- * Quick test for “is this an API path?”
+ * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
+ * Also removes accidental multiple slashes.
  * @param {string} pathname
- * @returns {boolean}
- */
-function isApiPath(pathname) {
-	return pathname.startsWith("/api/");
-}
-
-/**
- * Require origin to be in env.ALLOWED_ORIGINS for API routes (if Origin header present).
- * @param {ResearchOpsService} service
- * @param {string} origin
- * @returns {null|Response}
- */
-function enforceAllowedOrigin(service, origin) {
-	const allowed = (service.env.ALLOWED_ORIGINS || "")
-		.split(",")
-		.map(s => s.trim())
-		.filter(Boolean);
-	if (origin && !allowed.includes(origin)) {
-		return service.json({ error: "Origin not allowed" }, 403, service.corsHeaders(origin));
-	}
-	return null;
-}
-
-/**
- * Extract a path segment safely by index.
- * Example: seg("/api/guides/rec123/publish", 3) -> "rec123"
- * @param {string} pathname
- * @param {number} idx
  * @returns {string}
  */
-function seg(pathname, idx) {
-	const parts = pathname.split("/"); // ["", "api", "..."]
-	return decodeURIComponent(parts[idx] || "");
+function canonicalizePath(pathname) {
+	let p = pathname;
+
+	// Collapse duplicate segment runs: /pages/pages/... -> /pages/...
+	p = p.replace(/\/(pages|components|partials|css|js|images|img|assets)\/(\1\/)+/g, "/$1/");
+
+	// Collapse any triple/double slashes (excluding scheme).
+	p = p.replace(/\/{2,}/g, "/");
+
+	// Remove trailing /index.html -> /
+	p = p.replace(/\/index\.html$/i, "/");
+
+	return p;
+}
+
+/**
+ * Issue a redirect if canonical path differs (preserve query/hash).
+ * @param {Request} request
+ * @param {string} canonicalPath
+ * @returns {Response|null}
+ */
+function maybeRedirect(request, canonicalPath) {
+	const url = new URL(request.url);
+	if (url.pathname !== canonicalPath) {
+		url.pathname = canonicalPath;
+		// 302 for safety (avoid caching), switch to 301 once you’re confident
+		return Response.redirect(url.toString(), 302);
+	}
+	return null;
 }
 
 /**
  * @async
  * @function handleRequest
  * @description Entry router for all /api/ routes and asset fallback.
- * @param {Request} request
- * @param {Env} env
- * @returns {Promise<Response>}
  */
 export async function handleRequest(request, env) {
 	const service = new ResearchOpsService(env);
 	const url = new URL(request.url);
-	const pathname = url.pathname;
 	const origin = request.headers.get("Origin") || "";
 
+	// ── Canonicalize path early
+	{
+		const canonical = canonicalizePath(url.pathname);
+		const redirect = maybeRedirect(request, canonical);
+		if (redirect) return redirect;
+	}
+
 	try {
-		// CORS preflight (always answer quickly)
+		// CORS preflight
 		if (request.method === "OPTIONS") {
 			return new Response(null, {
 				status: 204,
@@ -109,126 +111,28 @@ export async function handleRequest(request, env) {
 			});
 		}
 
-		// API: common guard — enforce ALLOWED_ORIGINS
-		if (isApiPath(pathname)) {
-			const guard = enforceAllowedOrigin(service, origin);
-			if (guard) return guard;
-		}
+		// ─────────── Routes (extend as you have them) ───────────
+		if (url.pathname === "/api/health") return service.health(origin);
 
-		/* ────────────────────────── Health & AI ────────────────────────── */
-		if (pathname === "/api/health" && request.method === "GET") {
-			return service.health(origin);
-		}
-		if (pathname === "/api/ai-rewrite" && request.method === "POST") {
+		if (url.pathname === "/api/ai-rewrite" && request.method === "POST")
 			return aiRewrite(request, env, origin);
-		}
 
-		/* ────────────────────────── Projects ───────────────────────────── */
-		if (pathname === "/api/projects" && request.method === "GET") {
-			return service.listProjectsFromAirtable(origin, url);
-		}
-		// Optional: only wire POST if the composed service implements it
-		if (pathname === "/api/projects" && request.method === "POST" && typeof service.createProject === "function") {
-			return service.createProject(request, origin);
-		}
+		if (url.pathname.startsWith("/api/projects"))
+			return request.method === "GET" ?
+				service.listProjectsFromAirtable(origin, url) :
+				service.createProject?.(request, origin);
 
-		// CSV streams
-		if (pathname === "/api/projects.csv" && request.method === "GET") {
-			return service.streamCsv(origin, env.GH_PATH_PROJECTS);
-		}
-		if (pathname === "/api/project-details.csv" && request.method === "GET") {
-			return service.streamCsv(origin, env.GH_PATH_DETAILS);
-		}
-		if (pathname === "/api/studies.csv" && request.method === "GET" && env.GH_PATH_STUDIES) {
-			return service.streamCsv(origin, env.GH_PATH_STUDIES);
-		}
-
-		/* ────────────────────────── Studies ────────────────────────────── */
-		if (pathname === "/api/studies" && request.method === "GET") {
+		if (url.pathname === "/api/studies" && request.method === "GET")
 			return service.listStudies(origin, url);
-		}
-		if (pathname === "/api/studies" && request.method === "POST") {
+
+		if (url.pathname === "/api/studies" && request.method === "POST")
 			return service.createStudy(request, origin);
-		}
-		if (pathname.startsWith("/api/studies/") && request.method === "PATCH") {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing study id" }, 400, service.corsHeaders(origin));
-			return service.updateStudy(request, origin, id);
-		}
 
-		/* ────────────────────────── Guides ─────────────────────────────── */
-		if (pathname === "/api/guides" && request.method === "GET") {
-			return service.listGuides(origin, url);
-		}
-		if (pathname === "/api/guides" && request.method === "POST") {
-			return service.createGuide(request, origin);
-		}
-		// /api/guides/:id/publish
-		if (/^\/api\/guides\/[^/]+\/publish\/?$/.test(pathname) && request.method === "POST") {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing guide id" }, 400, service.corsHeaders(origin));
-			return service.publishGuide(origin, id);
-		}
-		// /api/guides/:id (GET read, PATCH update)
-		if (pathname.startsWith("/api/guides/")) {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing guide id" }, 400, service.corsHeaders(origin));
-			if (request.method === "GET") return service.readGuide(origin, id);
-			if (request.method === "PATCH") return service.updateGuide(request, origin, id);
-		}
-
-		/* ────────────────────────── Partials ───────────────────────────── */
-		if (pathname === "/api/partials" && request.method === "GET") {
-			return service.listPartials(origin);
-		}
-		if (pathname === "/api/partials" && request.method === "POST") {
-			return service.createPartial(request, origin);
-		}
-		if (pathname.startsWith("/api/partials/")) {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing partial id" }, 400, service.corsHeaders(origin));
-			if (request.method === "GET") return service.readPartial(origin, id);
-			if (request.method === "PATCH") return service.updatePartial(request, origin, id);
-			if (request.method === "DELETE") return service.deletePartial(origin, id);
-		}
-
-		/* ─────────────────────── Participants ──────────────────────────── */
-		if (pathname === "/api/participants" && request.method === "GET") {
-			return service.listParticipants(origin, url);
-		}
-		if (pathname === "/api/participants" && request.method === "POST") {
-			return service.createParticipant(request, origin);
-		}
-
-		/* ────────────────────────── Sessions ───────────────────────────── */
-		if (pathname === "/api/sessions" && request.method === "GET") {
-			return service.listSessions(origin, url);
-		}
-		if (pathname === "/api/sessions" && request.method === "POST") {
-			return service.createSession(request, origin);
-		}
-		if (pathname.startsWith("/api/sessions/") && request.method === "PATCH") {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing session id" }, 400, service.corsHeaders(origin));
-			return service.updateSession(request, origin, id);
-		}
-		if (pathname.startsWith("/api/sessions/") && request.method === "GET" && pathname.endsWith("/ics")) {
-			const id = seg(pathname, 3);
-			if (!id) return service.json({ error: "Missing session id" }, 400, service.corsHeaders(origin));
-			return service.sessionIcs(origin, id);
-		}
-
-		/* ─────────────────────────── Comms ─────────────────────────────── */
-		if (pathname === "/api/comms/send" && request.method === "POST") {
-			return service.sendComms(request, origin);
-		}
-
-		/* ───────────────────── Static assets fallback ──────────────────── */
-		// Not an API route, or unknown API path → serve ASSETS with SPA fallback.
+		// Static fallback (serve assets/pages)
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
-			const indexReq = new Request(new URL("/index.html", url), request);
-			resp = await env.ASSETS.fetch(indexReq);
+			// Try SPA-style fallback
+			resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
 		}
 		return resp;
 
