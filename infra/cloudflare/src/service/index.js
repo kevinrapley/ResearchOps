@@ -16,6 +16,7 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
+import * as Csv from "./ai-rewrite.js";
 
 /**
  * @typedef {Object} Env
@@ -207,4 +208,15 @@ export class ResearchOpsService {
 
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
+	
+		/* ─────────────── AI Rewrite ─────────────── */
+	/**
+	 * Run AI-assisted rewrite (used by /api/ai-rewrite route).
+	 * Delegates to Cloudflare AI binding through ai-rewrite.js.
+	 *
+	 * @param {Request} req
+	 * @param {string} origin
+	 * @returns {Promise<Response>}
+	 */
+	runAiRewrite = (req, origin) => AIRewrite.runAiRewrite(this, req, origin);
 }
