@@ -1,7 +1,7 @@
 /**
  * @file src/service/index.js
  * @module service
- * @summary Composed API service (Airtable + GitHub CSV + AI rewrite) for ResearchOps Worker.
+ * @summary Composed API service (Airtable + GitHub CSV) for ResearchOps Worker.
  */
 
 import { DEFAULTS } from "../core/constants.js";
@@ -16,7 +16,6 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
-import * as AI from "./ai-rewrite.js";
 
 /**
  * @typedef {Object} Env
@@ -55,12 +54,6 @@ import * as AI from "./ai-rewrite.js";
  * @property {(body:unknown, status?:number, headers?:HeadersInit)=>Response} json
  */
 
-/**
- * Build CORS headers for the given origin based on env.ALLOWED_ORIGINS.
- * @param {Env} env
- * @param {string} origin
- * @returns {Record<string,string>}
- */
 function corsHeaders(env, origin) {
 	const allowed = (env.ALLOWED_ORIGINS || "")
 		.split(",")
@@ -75,11 +68,6 @@ function corsHeaders(env, origin) {
 	return h;
 }
 
-/**
- * ResearchOps HTTP service (composed from feature modules).
- * Encapsulates business logic for all API routes.
- * @class ResearchOpsService
- */
 export class ResearchOpsService {
 	/**
 	 * @param {Env} env
@@ -98,119 +86,82 @@ export class ResearchOpsService {
 		/** @type {(origin:string)=>Record<string,string>} */
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		/** @type {(body:unknown, status?:number, headers?:HeadersInit)=>Response} */
-		this.json = (body, status = 200, headers = {}) =>
-			jsonHelper(body, status, headers);
+		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
 	}
 
-	/** @returns {void} */
 	reset() { this.log.reset(); }
-
-	/** @returns {void} */
-	destroy() {
-		if (this.destroyed) return;
-		this.log.destroy();
-		this.destroyed = true;
-	}
+	destroy() { if (!this.destroyed) { this.log.destroy();
+			this.destroyed = true; } }
 
 	/* ─────────────── Health ─────────────── */
-
-	/**
-	 * Health probe.
-	 * @param {string} origin
-	 * @returns {Promise<Response>}
-	 */
 	async health(origin) {
 		return this.json({ ok: true, time: new Date().toISOString() }, 200, this.corsHeaders(origin));
 	}
 
 	/* ─────────────── Projects ─────────────── */
-
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listProjectsFromAirtable = (origin, url) =>
 		Projects.listProjectsFromAirtable(this, origin, url);
 
-	/* ─────────────── CSV streaming / appends ─────────────── */
+	/** @type {(origin:string, projectId:string)=>Promise<Response>} */
+	getProjectById = (origin, projectId) =>
+		Projects.getProjectById(this, origin, projectId);
 
+	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
 	streamCsv = (origin, path) => Csv.streamCsv(this, origin, path);
-
 	/** @type {(args:{path:string, header:string[], row:(string|number)[]})=>Promise<void>} */
 	githubCsvAppend = (args) => Csv.githubCsvAppend(this, args);
 
 	/* ─────────────── Studies ─────────────── */
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createStudy = (req, origin) => Studies.createStudy(this, req, origin);
-
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listStudies = (origin, url) => Studies.listStudies(this, origin, url);
-
 	/** @type {(req:Request, origin:string, studyId:string)=>Promise<Response>} */
 	updateStudy = (req, origin, studyId) => Studies.updateStudy(this, req, origin, studyId);
 
 	/* ─────────────── Guides ─────────────── */
-
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createGuide = (req, origin) => Guides.createGuide(this, req, origin);
-
 	/** @type {(req:Request, origin:string, guideId:string)=>Promise<Response>} */
 	updateGuide = (req, origin, guideId) => Guides.updateGuide(this, req, origin, guideId);
-
 	/** @type {(origin:string, guideId:string)=>Promise<Response>} */
 	publishGuide = (origin, guideId) => Guides.publishGuide(this, origin, guideId);
-
 	/** @type {(origin:string, guideId:string)=>Promise<Response>} */
 	readGuide = (origin, guideId) => Guides.readGuide(this, origin, guideId);
 
 	/* ─────────────── Partials ─────────────── */
-
 	/** @type {(origin:string)=>Promise<Response>} */
 	listPartials = (origin) => Partials.listPartials(this, origin);
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createPartial = (req, origin) => Partials.createPartial(this, req, origin);
-
 	/** @type {(origin:string, id:string)=>Promise<Response>} */
 	readPartial = (origin, id) => Partials.readPartial(this, origin, id);
-
 	/** @type {(req:Request, origin:string, id:string)=>Promise<Response>} */
 	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, origin, id);
-
 	/** @type {(origin:string, id:string)=>Promise<Response>} */
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
-
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listParticipants = (origin, url) => Participants.listParticipants(this, origin, url);
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createParticipant = (req, origin) => Participants.createParticipant(this, req, origin);
 
 	/* ─────────────── Sessions ─────────────── */
-
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listSessions = (origin, url) => Sessions.listSessions(this, origin, url);
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createSession = (req, origin) => Sessions.createSession(this, req, origin);
-
 	/** @type {(req:Request, origin:string, sessionId:string)=>Promise<Response>} */
 	updateSession = (req, origin, sessionId) => Sessions.updateSession(this, req, origin, sessionId);
-
 	/** @type {(origin:string, sessionId:string)=>Promise<Response>} */
 	sessionIcs = (origin, sessionId) => Sessions.sessionIcs(this, origin, sessionId);
 
 	/* ─────────────── Comms ─────────────── */
-
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
-
-	/* ─────────────── AI Rewrite ─────────────── */
-
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
-	runAiRewrite = (req, origin) => AI.runAiRewrite(this, req, origin);
 }
