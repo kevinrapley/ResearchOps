@@ -13,6 +13,7 @@
 </head>
 
 <body>
+	<x-include src="/partials/debug-boot.html"></x-include>
 	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
 			"active":"Projects",
@@ -350,7 +351,7 @@
 <article class="card" aria-labelledby="project-title-${projectId}">
 	<p class="project-org">${org}</p>
 	<h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
-		<a class="govuk-link" href="/pages/project-dashboard?id=${projectId}" rel="bookmark">${p.name}</a>
+		<a class="govuk-link" href="./pages/project-dashboard/?id=${projectId}" rel="bookmark">${p.name}</a>
 	</h2>
 
 	<p class="project-meta">
