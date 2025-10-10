@@ -355,6 +355,28 @@ async function handleCreateSession(e, studyId) {
 	await refreshSessions(studyId);
 }
 
+/**
+ * Load participants for a study.
+ * @async
+ * @function fetchParticipants
+ * @param {string} sid Airtable Study record id
+ * @returns {Promise<Array<Object>>} Array of participant objects
+ * @throws {Error} When response not ok or invalid
+ */
+async function fetchParticipants(sid) {
+  const url = `/api/participants?study=${encodeURIComponent(sid)}`;
+  console.info("[participants] GET", url);
+  const res = await fetch(url, { cache: "no-store" });
+
+  let js = null;
+  try { js = await res.json(); } catch {}
+  if (!res.ok || js?.ok !== true) {
+    const detail = js?.detail || js?.error || `HTTP ${res.status}`;
+    throw new Error(`Participants fetch failed: ${detail}`);
+  }
+  return Array.isArray(js.participants) ? js.participants : [];
+}
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Orchestrators                                                             */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -402,6 +424,12 @@ async function refreshSessions(studyId) {
 		const sid = usp.get("sid") || "";
 		if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
+		// Load participants
+		const participants = await fetchParticipants(sid);
+
+		console.log(`[participants] loaded ${participants.length}`);
+		renderParticipantsTable(participants);
+
 		// Breadcrumb hydration (reuse projects list to get project name)
 		try {
 			const res = await fetch(`/api/projects`, { cache: "no-store" });
@@ -446,13 +474,14 @@ async function refreshSessions(studyId) {
 				const pidVal = btn.getAttribute("data-part");
 				if (pidSel && pidVal) {
 					pidSel.value = pidVal;
-					/** @type {HTMLInputElement} */ ($("#s_datetime"))?.focus();
+					/** @type {HTMLInputElement} */
+					($("#s_datetime"))?.focus();
 				}
-				/** @type {HTMLElement} */ ($("#scheduleForm"))?.scrollIntoView({ behavior: "smooth", block: "start" });
+				/** @type {HTMLElement} */
+				($("#scheduleForm"))?.scrollIntoView({ behavior: "smooth", block: "start" });
 			});
 		}
 	} catch (err) {
-		console.error("[participants] init error:", err);
-		alert("Could not load participants page.");
+		console.error("[participants] init error:", err instanceof Error ? `${err.name}: ${err.message}` : err);
 	}
 })();
