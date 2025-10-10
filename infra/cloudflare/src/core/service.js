@@ -4,8 +4,8 @@
  * @summary Core API service (Airtable + GitHub CSV) for ResearchOps Worker.
  */
 
-import { DEFAULTS } from "./core/constants.js";
-import { BatchLogger } from "./core/logger.js";
+import { DEFAULTS } from "./constants.js";
+import { BatchLogger } from "./logger.js";
 import {
 	fetchWithTimeout,
 	toCsvLine,
@@ -16,13 +16,13 @@ import {
 	mdToAirtableRich,
 	pickFirstField,
 	airtableTryWrite
-} from "./core/utils.js";
+} from "./utils.js";
 import {
 	GUIDE_LINK_FIELD_CANDIDATES,
 	GUIDE_FIELD_NAMES,
 	PARTICIPANT_FIELDS,
 	SESSION_FIELDS
-} from "./core/fields.js";
+} from "./fields.js";
 
 /**
  * @typedef {Object} Env
