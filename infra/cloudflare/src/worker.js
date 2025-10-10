@@ -3,7 +3,7 @@
  * @summary Cloudflare Worker entrypoint.
  */
 
-import { handleRequest } from "./router.js";
+import { handleRequest } from "./core/router.js";
 
 export default {
 	async fetch(request, env, ctx) {
