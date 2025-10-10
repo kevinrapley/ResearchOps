@@ -14,7 +14,7 @@
 
 <body>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="./partials/header.html" vars='{
+	<x-include src="/partials/header.html" vars='{
 			"active":"Search",
 			"subtitle":"Search"
 		}'>
@@ -42,7 +42,7 @@
 		<div id="results"></div>
 	</div>
 
-	<x-include src="./partials/footer.html"></x-include>
+	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module">
 		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
