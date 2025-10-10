@@ -14,7 +14,7 @@
 
 <body>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="./partials/header.html" vars='{"active":"Consent","subtitle":"Consent"}'>
+	<x-include src="/partials/header.html" vars='{"active":"Consent","subtitle":"Consent"}'>
 	</x-include>
 
 	<div class="card">
@@ -43,7 +43,7 @@
 		<div id="consents" class="govuk-body"></div>
 	</div>
 
-	<x-include src="./partials/footer.html"></x-include>
+	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module">
 		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
