@@ -14,6 +14,7 @@
 	<script type="module" src="/components/layout.js"></script>
 	<!-- NEW: wire the participants page module -->
 	<script type="module" src="/components/participants/participants-page.js" defer></script>
+	<script type="module" src="/pages/study/participants/scheduler.js" defer></script>
 </head>
 
 <body>
@@ -461,15 +462,13 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<!-- Existing sessions wiring -->
-	<script type="module" src="/pages/study/participants/scheduler.js" defer></script>
-
 	<!-- NEW: Page glue for breadcrumbs + empty/table toggle -->
 	<script type="module">
 		/**
-		 * @file participants-page.glue.js
+		 * @file participants-page.glue.js (Safari-safe)
 		 * - Sets breadcrumb + badge text
-		 * - Listens for participants-rendered events to toggle empty/table
+		 * - Listens for participants-rendered / participants_rendered
+		 * - Toggles empty state vs table without throwing
 		 */
 		const $ = (s, r = document) => r.querySelector(s);
 
@@ -486,7 +485,7 @@
 
 		async function getProject(pid) {
 			const r = await fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" });
-			return r.ok ? r.json() : {};
+			try { return r.ok ? await r.json() : {}; } catch { return {}; }
 		}
 		async function getStudies(pid) {
 			const r = await fetch(`/api/studies?project=${encodeURIComponent(pid)}`, { cache: "no-store" });
@@ -495,61 +494,70 @@
 		}
 
 		(function init() {
-			(async () => {
+			try {
 				const usp = new URLSearchParams(location.search);
 				const pid = usp.get("pid") || "";
 				const sid = usp.get("sid") || "";
 				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				const [project, studies] = await Promise.all([getProject(pid), getStudies(pid)]);
-				const study = studies.find(s => s.id === sid) || {};
+				Promise.all([getProject(pid), getStudies(pid)]).then(([project, studies]) => {
+					const study = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
 
-				// Breadcrumbs
-				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-				$("#breadcrumb-project").textContent = project?.name || "Project";
-				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-				$("#breadcrumb-study").textContent = pickTitle(study);
-
-				// Badge
-				const badge = $("#studyBadge");
-				if (badge) badge.textContent = `Study: ${pickTitle(study)}`;
-
-				// Toggle containers when participants render
-				const $empty = $("#participantsEmpty");
-				const $table = $("#participantsTable"); // correct id in your HTML
-
-				function applyCount(n) {
-					if ($empty && $table) {
-						const has = Number(n) > 0;
-						$empty.hidden = has;
-						$table.hidden = !has;
+					// Breadcrumbs (guarded)
+					const bcProj = $("#breadcrumb-project");
+					if (bcProj) {
+						bcProj.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
+						bcProj.textContent = project?.name || "Project";
 					}
-					// Enable/disable scheduling helpers
+					const bcStudy = $("#breadcrumb-study");
+					if (bcStudy) {
+						bcStudy.setAttribute("href", `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`);
+						bcStudy.textContent = pickTitle(study);
+					}
+
+					// Badge
+					const badge = $("#studyBadge");
+					if (badge) badge.textContent = `Study: ${pickTitle(study)}`;
+
+					// Toggle helpers
+					const $empty = $("#participantsEmpty");
+					const $table = $("#participantsTable");
 					const noP = $("#noParticipantsBanner");
-					if (noP) noP.hidden = Number(n) > 0;
 					const sel = $("#s_participant");
-					if (sel) sel.disabled = Number(n) === 0;
 					const btn = $("#scheduleBtn");
-					if (btn) btn.disabled = Number(n) === 0;
-				}
 
-				const onRendered = (e) => {
-					const n = e?.detail?.count ?? 0;
-					console.info("[participants] rendered count =", n);
-					applyCount(n);
-				};
+					function applyCount(n) {
+						const has = n > 0;
+						if ($empty) $empty.hidden = has;
+						if ($table) $table.hidden = !has;
+						if (noP) noP.hidden = has;
+						if (sel) sel.disabled = !has;
+						if (btn) btn.disabled = !has;
+					}
 
-				// Listen to all variants (Safari-safe)
-				window.addEventListener("participants-rendered", onRendered);
-				window.addEventListener("participants_rendered", onRendered);
-				window.addEventListener("participants:rendered", onRendered); // legacy fallback
+					// Listen to Safari-safe event names
+					const onRendered = (e) => {
+						const n = e?.detail?.count ?? 0;
+						console.info("[participants] rendered count =", n);
+						applyCount(n);
+					};
+					window.addEventListener("participants-rendered", onRendered);
+					window.addEventListener("participants_rendered", onRendered);
 
-				// If the participants module already ran before this glue mounted,
-				// it exposed window.renderParticipantsTable and we can infer count from DOM:
-				if (window.renderParticipantsTable) {
-					// no-op; we'll wait for its event
-				}
-			})().catch(err => console.error("[participants] glue init error:", err));
+					// If the renderer fired before we attached listeners, check table now
+					// (participants-page.js shows/hides #participantsTable; we mirror that)
+					const lateHasRows = $table && !$table.hidden;
+					if (lateHasRows) applyCount(($table.querySelectorAll(".row").length || 1));
+
+				}).catch(err => {
+					console.error("[participants] glue async error:", err);
+				});
+
+			} catch (err) {
+				// Previous “string did not match the expected pattern” showed up here in Safari.
+				// We guard everything above and never use colon-based event names in glue.
+				console.error("[participants] glue init error:", err);
+			}
 		})();
 	</script>
 </body>
