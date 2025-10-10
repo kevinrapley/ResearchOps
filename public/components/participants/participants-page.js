@@ -1,76 +1,57 @@
 /**
- * @file participants-page.js
- * @summary Study Participants list: fetch + render + basic UI wiring.
- * @description
- * - Reads pid & sid from the URL
- * - Fetches /api/participants?study=:sid
- * - Renders accessible table with empty/error states
- * - No Time Zone column (removed by request)
+ * @file /components/participants/participants-page.js
+ * @summary Fetch + render participants table and wire the schedule select.
+ * - Exposes window.renderParticipantsTable(rows)
+ * - Dispatches both "participants-rendered" and "participants_rendered"
+ *   CustomEvents (Safari-safe, no colons)
  */
 
 const $ = (s, r = document) => r.querySelector(s);
 
-/* ───────────────────────── Data access ───────────────────────── */
-
-/**
- * Fetch participants for a given Study Airtable ID.
- * @param {string} sid
- * @returns {Promise<Array<object>>}
- */
-async function fetchParticipants(sid) {
-	const url = `/api/participants?study=${encodeURIComponent(sid)}`;
-	console.info("[participants] GET", url);
-
-	const res = await fetch(url, { cache: "no-store" });
-
-	let js = null;
-	try { js = await res.json(); } catch {}
-
-	if (!res.ok || js?.ok !== true) {
-		const detail = js?.detail || js?.error || `HTTP ${res.status}`;
-		throw new Error(`Participants fetch failed: ${detail}`);
-	}
-
-	return Array.isArray(js.participants) ? js.participants : [];
+/** Read pid/sid from URL. Throws if absent. */
+function getIds() {
+	const usp = new URLSearchParams(location.search);
+	const pid = usp.get("pid") || "";
+	const sid = usp.get("sid") || "";
+	if (!pid || !sid) throw new Error("Missing pid or sid in URL");
+	return { pid, sid };
 }
 
-/* ───────────────────────── Rendering ───────────────────────── */
-
-/**
- * Render participants into the table body.
- * Expects a <tbody id="participants-tbody"> in the DOM.
- * @param {Array<object>} rows
- */
-function renderParticipantsTable(rows) {
-	const tbody = $("#participants-tbody");
-	if (!tbody) {
-		console.warn("[participants] missing #participants-tbody");
-		return;
+/** Fetch participants for the study id. */
+async function fetchParticipants(studyId) {
+	const url = `/api/participants?study=${encodeURIComponent(studyId)}`;
+	console.log("[participants] GET", url);
+	const res = await fetch(url, { cache: "no-store" });
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok || js?.ok !== true || !Array.isArray(js.participants)) {
+		throw new Error(js?.error || `participants fetch failed (${res.status})`);
 	}
+	return js.participants;
+}
 
-	if (!Array.isArray(rows) || rows.length === 0) {
-		tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="muted">No participants yet.</td>
-      </tr>
-    `;
+/** Render rows into the table body. */
+function drawRows(rows) {
+	const tbody = $("#participants-tbody");
+	if (!tbody) return;
+
+	if (!rows.length) {
+		tbody.innerHTML = `<tr><td colspan="5" class="muted">No participants yet.</td></tr>`;
 		return;
 	}
 
 	const html = rows.map(p => {
-		const name = escapeHtml(p.display_name || "");
-		const email = escapeHtml(p.email || "");
-		const phone = escapeHtml(p.phone || "");
-		const channel = escapeHtml(p.channel_pref || "");
-		const status = escapeHtml(p.status || "");
-
+		const name = p.display_name || p.name || "—";
+		const email = p.email || "—";
+		const phone = p.phone || "—";
+		const channel = p.channel_pref || p.channel || "—";
+		const status = p.status || "invited";
 		return `
       <tr>
-        <td>${name || "—"}</td>
-        <td>${email || "—"}</td>
-        <td>${phone || "—"}</td>
-        <td>${channel || "—"}</td>
-        <td>${status || "—"}</td>
+        <td>${escapeHtml(name)}</td>
+        <td>${email ? `<a href="mailto:${escapeAttr(email)}">${escapeHtml(email)}</a>` : "—"}</td>
+        <td>${escapeHtml(phone)}</td>
+        <td>${escapeHtml(channel)}</td>
+        <td>${escapeHtml(status)}</td>
       </tr>
     `;
 	}).join("");
@@ -78,57 +59,56 @@ function renderParticipantsTable(rows) {
 	tbody.innerHTML = html;
 }
 
-/**
- * Render a one-row error into the table.
- * @param {string} msg
- */
-function renderParticipantsError(msg) {
-	const tbody = $("#participants-tbody");
-	if (!tbody) return;
-	tbody.innerHTML = `
-    <tr>
-      <td colspan="5" class="error">Could not load participants: ${escapeHtml(msg)}</td>
-    </tr>
-  `;
+/** Populate the schedule participant select. */
+function populateScheduleSelect(rows) {
+	const sel = $("#s_participant");
+	if (!sel) return;
+	sel.innerHTML = rows.map(p => {
+		const id = p.id || "";
+		const label = p.display_name || p.name || p.email || "Participant";
+		return `<option value="${escapeAttr(id)}">${escapeHtml(label)}</option>`;
+	}).join("");
 }
 
-/**
- * Very small HTML escaper for cell text.
- * @param {string} s
- * @returns {string}
- */
-function escapeHtml(s) {
-	const div = document.createElement("div");
-	div.textContent = String(s ?? "");
-	return div.innerHTML;
+/** Safe HTML/text helpers */
+function escapeHtml(str) {
+	const d = document.createElement("div");
+	d.textContent = String(str ?? "");
+	return d.innerHTML;
 }
 
-/* ───────────────────────── Bootstrap ───────────────────────── */
+function escapeAttr(str) {
+	// very light attr escape; using textContent via a <span> and reading innerHTML also works
+	return String(str ?? "").replace(/"/g, "&quot;");
+}
 
-async function init() {
+/** Fire both Safari-safe custom events. */
+function announceRendered(count) {
+	try { window.dispatchEvent(new CustomEvent("participants-rendered", { detail: { count } })); } catch {}
+	try { window.dispatchEvent(new CustomEvent("participants_rendered", { detail: { count } })); } catch {}
+}
+
+/** Public API: make available globally for any legacy callers. */
+function renderParticipantsTable(rows) {
+	drawRows(rows);
+	populateScheduleSelect(rows);
+	// Show/hide containers is handled by the page glue listener
+	announceRendered(rows.length || 0);
+}
+window.renderParticipantsTable = renderParticipantsTable;
+
+/* ── Bootstrap ────────────────────────────────────────────────────────── */
+(async function init() {
 	try {
-		console.log("🐛 Debug console initialized");
-
-		// Expect ?pid=…&sid=…
-		const usp = new URLSearchParams(location.search);
-		const sid = usp.get("sid");
-		if (!sid) throw new Error("Missing sid in URL");
-
+		const { sid } = getIds();
 		const rows = await fetchParticipants(sid);
-		console.info("[participants] loaded", rows.length);
+		console.log("[participants] loaded", rows.length);
 		renderParticipantsTable(rows);
 	} catch (err) {
 		console.error("[participants] init error:", err);
-		renderParticipantsError(err?.message || String(err));
+		// Keep something visible for the user:
+		const tbody = $("#participants-tbody");
+		if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="muted">Failed to load participants.</td></tr>`;
+		announceRendered(0);
 	}
-}
-
-document.addEventListener("DOMContentLoaded", init);
-
-/* ───────────────────────── Optional: export for tests ───────────────────────── */
-export {
-	fetchParticipants,
-	renderParticipantsTable,
-	renderParticipantsError,
-	init
-};
+})();
