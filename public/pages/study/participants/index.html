@@ -188,14 +188,22 @@
 			const originalWarn = console.warn;
 			const originalInfo = console.info;
 
-			console.log = function() { originalLog.apply(console, arguments);
-				addLog('log', arguments); };
-			console.error = function() { originalError.apply(console, arguments);
-				addLog('error', arguments); };
-			console.warn = function() { originalWarn.apply(console, arguments);
-				addLog('warn', arguments); };
-			console.info = function() { originalInfo.apply(console, arguments);
-				addLog('info', arguments); };
+			console.log = function() {
+				originalLog.apply(console, arguments);
+				addLog('log', arguments);
+			};
+			console.error = function() {
+				originalError.apply(console, arguments);
+				addLog('error', arguments);
+			};
+			console.warn = function() {
+				originalWarn.apply(console, arguments);
+				addLog('warn', arguments);
+			};
+			console.info = function() {
+				originalInfo.apply(console, arguments);
+				addLog('info', arguments);
+			};
 
 			window.addEventListener('error', function(e) {
 				addLog('error', [`💥 ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`]);
@@ -461,8 +469,7 @@
 		/**
 		 * @file participants-page.glue.js
 		 * - Sets breadcrumb + badge text
-		 * - Listens for participants:rendered {detail:{count}} from participants-page.js
-		 *   to toggle empty state vs table
+		 * - Listens for participants-rendered events to toggle empty/table
 		 */
 		const $ = (s, r = document) => r.querySelector(s);
 
@@ -487,8 +494,8 @@
 			return js?.ok && Array.isArray(js.studies) ? js.studies : [];
 		}
 
-		(async function init() {
-			try {
+		(function init() {
+			(async () => {
 				const usp = new URLSearchParams(location.search);
 				const pid = usp.get("pid") || "";
 				const sid = usp.get("sid") || "";
@@ -504,39 +511,45 @@
 				$("#breadcrumb-study").textContent = pickTitle(study);
 
 				// Badge
-				$("#studyBadge").textContent = `Study: ${pickTitle(study)}`;
+				const badge = $("#studyBadge");
+				if (badge) badge.textContent = `Study: ${pickTitle(study)}`;
 
-				// Toggle table/empty once the participants module renders
+				// Toggle containers when participants render
 				const $empty = $("#participantsEmpty");
-				const $tableWrap = $("#participantsTableWrap");
+				const $table = $("#participantsTable"); // correct id in your HTML
 
 				function applyCount(n) {
-					if (n > 0) {
-						$empty.hidden = true;
-						$tableWrap.hidden = false;
-					} else {
-						$empty.hidden = false;
-						$tableWrap.hidden = true;
+					if ($empty && $table) {
+						const has = Number(n) > 0;
+						$empty.hidden = has;
+						$table.hidden = !has;
 					}
+					// Enable/disable scheduling helpers
+					const noP = $("#noParticipantsBanner");
+					if (noP) noP.hidden = Number(n) > 0;
+					const sel = $("#s_participant");
+					if (sel) sel.disabled = Number(n) === 0;
+					const btn = $("#scheduleBtn");
+					if (btn) btn.disabled = Number(n) === 0;
 				}
 
-				// Listen for event from participants-page.js
-				window.addEventListener("participants:rendered", (e) => {
+				const onRendered = (e) => {
 					const n = e?.detail?.count ?? 0;
 					console.info("[participants] rendered count =", n);
 					applyCount(n);
-					// Enable/disable scheduling helpers too
-					const noP = $("#noParticipantsBanner");
-					if (noP) noP.hidden = n > 0;
-					const sel = $("#s_participant");
-					if (sel) sel.disabled = n === 0;
-					const btn = $("#scheduleBtn");
-					if (btn) btn.disabled = n === 0;
-				});
+				};
 
-			} catch (err) {
-				console.error("[participants] glue init error:", err);
-			}
+				// Listen to all variants (Safari-safe)
+				window.addEventListener("participants-rendered", onRendered);
+				window.addEventListener("participants_rendered", onRendered);
+				window.addEventListener("participants:rendered", onRendered); // legacy fallback
+
+				// If the participants module already ran before this glue mounted,
+				// it exposed window.renderParticipantsTable and we can infer count from DOM:
+				if (window.renderParticipantsTable) {
+					// no-op; we'll wait for its event
+				}
+			})().catch(err => console.error("[participants] glue init error:", err));
 		})();
 	</script>
 </body>
