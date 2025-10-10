@@ -3,12 +3,12 @@
 		<div class="govuk-heading-m" style="margin-bottom:8px">{{project_name}}</div>
 	{{/project_name}}
 	<nav class="tabs govuk-body">
-		<a data-project-nav="Dashboard" href="/pages/project-dashboard?id={{project_id}}">Dashboard</a>
-		<a data-project-nav="Planning" href="/pages/project-planning?id={{project_id}}">Planning</a>
-		<a data-project-nav="Participants" href="/pages/participants?id={{project_id}}">Participants</a>
-		<a data-project-nav="Stakeholders" href="/pages/stakeholders?id={{project_id}}">Stakeholders</a>
-		<a data-project-nav="Notes" href="/pages/notes?id={{project_id}}">Notes</a>
-		<a data-project-nav="Outcomes" href="/pages/outcomes?id={{project_id}}">Outcomes</a>
+		<a data-project-nav="Dashboard" href="/pages/project-dashboard/?id={{project_id}}">Dashboard</a>
+		<a data-project-nav="Planning" href="/pages/project-dashboard/?id={{project_id}}#planning">Planning</a>
+		<a data-project-nav="Participants" href="/pages/project-dashboard/?id={{project_id}}#planning">Participants</a>
+		<a data-project-nav="Stakeholders" href="/pages/project-dashboard/?id={{project_id}}#stakeholders">Stakeholders</a>
+		<a data-project-nav="Notes" href="/project_pages/notes/?id={{project_id}}">Notes</a>
+		<a data-project-nav="Outcomes" href="/pages/project-dashboard/?id={{project_id}}#outcomes">Outcomes</a>
 	</nav>
 	<hr />
 </div>
