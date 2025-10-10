@@ -1,0 +1,27 @@
+<!--
+  @file /partials/debug-boot.html
+  @summary Lightweight conditional loader that injects the full debug console
+           only when `?debug=true` is present. Safe to include globally.
+-->
+<script type="module">
+	// Only run after DOM is ready so we can safely append into <body>.
+	const ready = (fn) => (document.readyState === "loading") ?
+		document.addEventListener("DOMContentLoaded", fn, { once: true }) :
+		fn();
+
+	ready(() => {
+		const usp = new URLSearchParams(location.search);
+		if (usp.get("debug") !== "true") return;
+
+		// Avoid duplicate injection if boot partial appears more than once.
+		if (document.getElementById("debug-console") || document.querySelector('x-include[src="/partials/debug.html"]')) {
+			console.info("🐛 Debug already loaded; skipping duplicate injection.");
+			return;
+		}
+
+		console.info("🐛 Debug mode enabled — loading /partials/debug.html");
+		const inc = document.createElement("x-include");
+		inc.setAttribute("src", "/partials/debug.html");
+		document.body.appendChild(inc);
+	});
+</script>
