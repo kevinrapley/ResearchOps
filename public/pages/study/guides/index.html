@@ -71,10 +71,12 @@
 			align-items: center;
 			justify-content: space-between;
 			border-bottom: 1px solid #333;
+			gap: 8px;
 		}
 
 		.debug-console__header span {
 			font-weight: bold;
+			margin-right: auto;
 		}
 
 		.debug-console__btn {
@@ -83,7 +85,6 @@
 			border: none;
 			padding: 6px 12px;
 			border-radius: 4px;
-			margin-left: 8px;
 			cursor: pointer;
 			font-size: 12px;
 		}
@@ -211,7 +212,6 @@
 				try { return { json: JSON.parse(text), raw: text }; } catch { return { json: null, raw: text }; }
 			}
 
-			// Export current buffer as JSON (attach to window for convenience)
 			function debugExport() {
 				const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
 				const url = URL.createObjectURL(blob);
@@ -236,7 +236,6 @@
 					const ms = Math.round(performance.now() - started);
 					let info = { status: res.status, ok: res.ok, ms };
 
-					// Attempt to parse JSON (non-destructively) for visibility
 					try {
 						const clone = res.clone();
 						const { json, raw } = await getJsonOrText(clone);
@@ -308,12 +307,13 @@
 	<div id="debug-console" class="debug-console" hidden>
 		<div class="debug-console__header">
 			<span>🐛 Debug Console</span>
-			<button id="debug-clear" class="debug-console__btn">Clear</button>
-			<button id="debug-close" class="debug-console__btn">Close</button>
+			<button id="debug-export" class="debug-console__btn" type="button" title="Download logs as JSON">Export</button>
+			<button id="debug-clear" class="debug-console__btn" type="button">Clear</button>
+			<button id="debug-close" class="debug-console__btn" type="button">Close</button>
 		</div>
 		<div id="debug-output" class="debug-console__output"></div>
 	</div>
-	<button id="debug-toggle" class="debug-toggle">🐛</button>
+	<button id="debug-toggle" class="debug-toggle" aria-label="Toggle debug console">🐛</button>
 
 	<!-- Rest of your page continues here -->
 	<div class="app-layout">
@@ -505,7 +505,6 @@
 
 		const $ = (s, r = document) => r.querySelector(s);
 
-		/** Compute fallback “Method — YYYY-MM-DD” for studies missing a title. */
 		function fallbackTitle(s = {}) {
 			const method = (s.method || "Study").trim();
 			const d = s.createdAt ? new Date(s.createdAt) : new Date();
@@ -515,12 +514,10 @@
 			return `${method} — ${yyyy}-${mm}-${dd}`;
 		}
 
-		/** Pick the best available title. */
 		function pickTitle(s = {}) {
 			return (s.title || s.Title || "").trim() || fallbackTitle(s);
 		}
 
-		/** Load studies for a project from the Worker API. */
 		async function loadStudies(projectId) {
 			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
 			const res = await fetch(url, { cache: "no-store" });
@@ -539,7 +536,6 @@
 				const sid = usp.get("sid") || "";
 				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-				// Fetch both project and study for context
 				const [projRes, studies] = await Promise.all([
 					fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" }),
 					loadStudies(pid)
@@ -547,17 +543,14 @@
 				const project = projRes.ok ? await projRes.json() : {};
 				const study = studies.find(s => s.id === sid) || {};
 
-				// Breadcrumbs
 				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
 				$("#breadcrumb-project").textContent = project?.name || "Project";
 				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 				$("#breadcrumb-study").textContent = pickTitle(study);
 
-				// Header + subtitle
 				$("#study-title").textContent = pickTitle(study);
 				$("#back-to-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 
-				// Context exposed for guides-page.js
 				window.__guideCtx = { project, study };
 			} catch (err) {
 				console.error("[guides] init error:", err);
