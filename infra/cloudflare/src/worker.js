@@ -318,7 +318,6 @@ const PARTICIPANT_FIELDS = {
 	display_name: ["Display Name", "Name", "Participant"],
 	email: ["Email"],
 	phone: ["Phone"],
-	timezone: ["Time Zone", "Timezone"],
 	channel_pref: ["Channel Pref", "Channel Preference"],
 	access_needs: ["Access Needs", "Accessibility"],
 	recruitment_source: ["Recruitment Source", "Source"],
@@ -326,7 +325,7 @@ const PARTICIPANT_FIELDS = {
 	consent_record_id: ["Consent Record Id", "Consent Record"],
 	privacy_notice_url: ["Privacy Notice URL", "Privacy URL"],
 	status: ["Status"],
-	study_link: ["Study", "Studies", "Project Study"],
+	study_link: ["Study ID", "Project Studies", "Study", "Studies", "Project Study"],
 };
 
 const SESSION_FIELDS = {
@@ -1618,53 +1617,145 @@ class ResearchOpsService {
 	}
 
 	/**
-	 * Create a participant linked to a study.
+	 * Create a participant linked to a study (resilient to schema + select options).
 	 * @route POST /api/participants
-	 * @input  { study_airtable_id:string, display_name:string, email?:string, phone?:string, timezone?:string, channel_pref?:string, access_needs?:string, recruitment_source?:string, consent_status?:string, privacy_notice_url?:string, status?:string }
+	 * @input  { study_airtable_id:string, display_name:string, email?:string, phone?:string,
+	 *           channel_pref?:string, access_needs?:string, recruitment_source?:string,
+	 *           consent_status?:string, privacy_notice_url?:string, status?:string }
 	 * @returns {Response}
 	 */
 	async createParticipant(request, origin) {
 		const body = await request.arrayBuffer();
-		if (body.byteLength > this.cfg.MAX_BODY_BYTES) return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
+			return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+		}
 
+		/** @type {any} */
 		let p;
 		try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin)); }
-		if (!p.study_airtable_id || !p.display_name) return this.json({ error: "Missing fields: study_airtable_id, display_name" }, 400, this.corsHeaders(origin));
+
+		const missing = [];
+		if (!p.study_airtable_id) missing.push("study_airtable_id");
+		if (!p.display_name) missing.push("display_name");
+		if (missing.length) {
+			return this.json({ error: "Missing fields: " + missing.join(", ") }, 400, this.corsHeaders(origin));
+		}
 
 		const base = this.env.AIRTABLE_BASE_ID;
 		const table = encodeURIComponent(this.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
-		const url = `https://api.airtable.com/v0/${base}/${table}`;
+		const atUrl = `https://api.airtable.com/v0/${base}/${table}`;
 
-		const fields = {
-			[PARTICIPANT_FIELDS.study_link[0]]: [p.study_airtable_id],
-			[PARTICIPANT_FIELDS.display_name[0]]: p.display_name,
-			[PARTICIPANT_FIELDS.email[0]]: p.email || undefined,
-			[PARTICIPANT_FIELDS.phone[0]]: p.phone || undefined,
-			[PARTICIPANT_FIELDS.timezone[0]]: p.timezone || undefined,
-			[PARTICIPANT_FIELDS.channel_pref[0]]: p.channel_pref || "email",
-			[PARTICIPANT_FIELDS.access_needs[0]]: p.access_needs || undefined,
-			[PARTICIPANT_FIELDS.recruitment_source[0]]: p.recruitment_source || undefined,
-			[PARTICIPANT_FIELDS.consent_status[0]]: p.consent_status || "not_sent",
-			[PARTICIPANT_FIELDS.privacy_notice_url[0]]: p.privacy_notice_url || undefined,
-			[PARTICIPANT_FIELDS.status[0]]: p.status || "invited",
+		// ---- Build a base fields template using preferred names (first in each list)
+		// Non-select, free-text fields (only include if present so we don't trip UNKNOWN_FIELD_NAME)
+		const fieldsTemplate = {};
+		const setIf = (names, val) => {
+			if (val === undefined || val === null || String(val).trim() === "") return null;
+			fieldsTemplate[names[0]] = val;
+			return names[0];
 		};
-		for (const k of Object.keys(fields)) { if (fields[k] === undefined) delete fields[k]; }
 
-		const res = await fetchWithTimeout(url, {
-			method: "POST",
-			headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
-			body: JSON.stringify({ records: [{ fields }] })
-		}, this.cfg.TIMEOUT_MS);
+		setIf(PARTICIPANT_FIELDS.display_name, p.display_name);
+		setIf(PARTICIPANT_FIELDS.email, p.email);
+		setIf(PARTICIPANT_FIELDS.phone, p.phone);
+		setIf(PARTICIPANT_FIELDS.access_needs, p.access_needs);
+		setIf(PARTICIPANT_FIELDS.recruitment_source, p.recruitment_source);
+		setIf(PARTICIPANT_FIELDS.privacy_notice_url, p.privacy_notice_url);
+		// NOTE: You said Time Zone is not in Airtable; we only include if provided.
+		setIf(PARTICIPANT_FIELDS.timezone, p.timezone);
 
-		const txt = await res.text();
-		if (!res.ok) {
-			this.log.error("airtable.participant.create.fail", { status: res.status, text: safeText(txt) });
-			return this.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, this.corsHeaders(origin));
+		// Select-ish fields we may need to retry with Capitalised or omit
+		const selects = {
+			channel_pref: { key: PARTICIPANT_FIELDS.channel_pref[0], val: p.channel_pref ?? "email" },
+			consent_status: { key: PARTICIPANT_FIELDS.consent_status[0], val: p.consent_status ?? "not_sent" },
+			status: { key: PARTICIPANT_FIELDS.status[0], val: p.status ?? "invited" }
+		};
+
+		// Helper to try a POST with a specific link field & select variants
+		const tryCreate = async (linkFieldName, variant) => {
+			// variant: "lower" (as provided), "caps" (Capitalised), "omit" (drop the failing one)
+			const f = { ...fieldsTemplate, [linkFieldName]: [p.study_airtable_id] };
+
+			// Apply select values according to variant
+			const addSelect = (obj) => {
+				for (const [name, meta] of Object.entries(selects)) {
+					if (variant?.omit === name) continue;
+					if (!meta.key) continue;
+					let v = meta.val;
+					if (variant?.caps === name && typeof v === "string" && v) {
+						v = v.charAt(0).toUpperCase() + v.slice(1);
+					}
+					obj[meta.key] = v;
+				}
+			};
+			addSelect(f);
+
+			return await airtableTryWrite(atUrl, this.env.AIRTABLE_API_KEY, "POST", f, this.cfg.TIMEOUT_MS);
+		};
+
+		// ---- Iterate link-field candidates first
+		let lastDetail = "";
+		for (const linkName of PARTICIPANT_FIELDS.study_link) {
+			// 1) try as-is (lowercase select values)
+			let attempt = await tryCreate(linkName, { variant: "lower" });
+			if (attempt.ok) {
+				const id = attempt.json.records?.[0]?.id;
+				if (this.env.AUDIT === "true") this.log.info("participant.created", { id, linkName, statusFallback: "none" });
+				return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+			}
+			lastDetail = attempt.detail || lastDetail;
+
+			// If select options invalid, retry with Capitalised
+			const isSelectErr = attempt.status === 422 && /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(String(attempt.detail || ""));
+			if (isSelectErr) {
+				// 2) capitalise each of the select fields (one shot)
+				attempt = await tryCreate(linkName, { caps: "channel_pref" /* placeholder */ });
+				// The helper capitalises only a named field; do three passes:
+				if (!attempt.ok) {
+					// Try capitalising all three in succession
+					attempt = await tryCreate(linkName, { caps: "channel_pref" });
+					if (!attempt.ok) attempt = await tryCreate(linkName, { caps: "status" });
+					if (!attempt.ok) attempt = await tryCreate(linkName, { caps: "consent_status" });
+				}
+				if (attempt.ok) {
+					const id = attempt.json.records?.[0]?.id;
+					if (this.env.AUDIT === "true") this.log.info("participant.created", { id, linkName, statusFallback: "capitalised" });
+					return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+				}
+
+				// 3) final fallback: omit each problematic select field (try a few permutations)
+				let ok = false,
+					createdId = null,
+					detail = attempt.detail;
+				const omitOrder = ["channel_pref", "status", "consent_status"];
+				for (const omit of omitOrder) {
+					const r = await tryCreate(linkName, { omit });
+					if (r.ok) {
+						ok = true;
+						createdId = r.json.records?.[0]?.id || null;
+						break;
+					}
+					detail = r.detail || detail;
+				}
+				if (ok) {
+					if (this.env.AUDIT === "true") this.log.info("participant.created", { id: createdId, linkName, statusFallback: "omitted_select" });
+					return this.json({ ok: true, id: createdId }, 200, this.corsHeaders(origin));
+				}
+				lastDetail = detail || lastDetail;
+			}
+
+			// If UNKNOWN_FIELD_NAME for the link field, loop continues to next candidate.
+			if (!attempt.retry) {
+				this.log.error("airtable.participant.create.fail", { status: attempt.status, detail: attempt.detail });
+				return this.json({ error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, this.corsHeaders(origin));
+			}
 		}
-		let js;
-		try { js = JSON.parse(txt); } catch { js = { records: [] }; }
-		const id = js.records?.[0]?.id;
-		return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+
+		// No link-field candidate worked
+		this.log.error("airtable.participant.create.linkfield.none_matched", { detail: lastDetail });
+		return this.json({
+			error: "Airtable 422",
+			detail: lastDetail || "No matching link field name found for Participants↔Study relation. Try fields: " + PARTICIPANT_FIELDS.study_link.join(", ")
+		}, 422, this.corsHeaders(origin));
 	}
 
 	/**
