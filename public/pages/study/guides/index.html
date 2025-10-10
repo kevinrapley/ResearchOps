@@ -147,24 +147,28 @@
 	</style>
 	<script>
 		/**
-		 * @file guides-page.js
-		 * @module GuidesPage
+		 * @file guides-page-debug.js
+		 * @summary iPad-friendly in-page debug console + network tap for /pages/study/guides/.
+		 * - Captures console logs, errors, and unhandled rejections
+		 * - Instruments window.fetch and XHR to log request/response details
+		 * - Provides utility helpers to inspect responses when JSON parsing fails
 		 */
-
-		/* ==================== DEBUG CONSOLE (iPad-friendly) ==================== */
 		(function() {
+			/* ====================== Ring buffer + UI ====================== */
 			const logs = [];
-			const maxLogs = 100;
+			const maxLogs = 200;
+
+			function escapeHtml(str) {
+				const div = document.createElement('div');
+				div.textContent = String(str);
+				return div.innerHTML;
+			}
 
 			function addLog(type, args) {
 				const timestamp = new Date().toLocaleTimeString();
 				const message = Array.from(args).map(arg => {
 					if (typeof arg === 'object') {
-						try {
-							return JSON.stringify(arg, null, 2);
-						} catch {
-							return String(arg);
-						}
+						try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
 					}
 					return String(arg);
 				}).join(' ');
@@ -182,77 +186,123 @@
 				}
 			}
 
-			// Intercept console methods
+			/* ====================== Console interception ====================== */
 			const originalLog = console.log;
 			const originalError = console.error;
 			const originalWarn = console.warn;
 			const originalInfo = console.info;
 
-			console.log = function() {
-				originalLog.apply(console, arguments);
-				addLog('log', arguments);
-			};
+			console.log = function() { try { originalLog.apply(console, arguments); } finally { addLog('log', arguments); } };
+			console.error = function() { try { originalError.apply(console, arguments); } finally { addLog('error', arguments); } };
+			console.warn = function() { try { originalWarn.apply(console, arguments); } finally { addLog('warn', arguments); } };
+			console.info = function() { try { originalInfo.apply(console, arguments); } finally { addLog('info', arguments); } };
 
-			console.error = function() {
-				originalError.apply(console, arguments);
-				addLog('error', arguments);
-			};
-
-			console.warn = function() {
-				originalWarn.apply(console, arguments);
-				addLog('warn', arguments);
-			};
-
-			console.info = function() {
-				originalInfo.apply(console, arguments);
-				addLog('info', arguments);
-			};
-
-			// Catch uncaught errors
+			/* ====================== Global error taps ====================== */
 			window.addEventListener('error', function(e) {
 				addLog('error', [`💥 ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`]);
 			});
-
-			// Catch unhandled promise rejections
 			window.addEventListener('unhandledrejection', function(e) {
 				addLog('error', [`⚠️ Unhandled Promise: ${e.reason}`]);
 			});
 
-			// Wire up debug console UI
+			/* ====================== Helpers ====================== */
+			async function getJsonOrText(res) {
+				const text = await res.text().catch(() => '');
+				try { return { json: JSON.parse(text), raw: text }; } catch { return { json: null, raw: text }; }
+			}
+
+			// Export current buffer as JSON (attach to window for convenience)
+			function debugExport() {
+				const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.download = `debug-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+				a.href = url;
+				a.click();
+				setTimeout(() => URL.revokeObjectURL(url), 1000);
+			}
+			window.debugExport = debugExport;
+
+			/* ====================== fetch instrumentation ====================== */
+			const _fetch = window.fetch.bind(window);
+			window.fetch = async function(input, init) {
+				const url = (typeof input === 'string') ? input : (input && input.url) || String(input);
+				const method = (init && init.method) || (input && input.method) || 'GET';
+				const started = performance.now();
+
+				console.info(`[net] ${method} ${url}`);
+				try {
+					const res = await _fetch(input, init);
+					const ms = Math.round(performance.now() - started);
+					let info = { status: res.status, ok: res.ok, ms };
+
+					// Attempt to parse JSON (non-destructively) for visibility
+					try {
+						const clone = res.clone();
+						const { json, raw } = await getJsonOrText(clone);
+						if (json) {
+							console.info(`[net] ← ${method} ${url} ${res.status} (${ms}ms)`, json);
+						} else {
+							const snippet = raw && raw.slice ? raw.slice(0, 400) : raw;
+							console.info(`[net] ← ${method} ${url} ${res.status} (${ms}ms) [text]`, snippet);
+						}
+					} catch {
+						console.warn(`[net] ← ${method} ${url} ${res.status} (${ms}ms) [unreadable body]`, info);
+					}
+					return res;
+				} catch (err) {
+					const ms = Math.round(performance.now() - started);
+					console.error(`[net] ✖ ${method} ${url} failed after ${ms}ms`, err);
+					throw err;
+				}
+			};
+
+			/* ====================== XHR instrumentation (legacy) ====================== */
+			(function() {
+				const XHR = window.XMLHttpRequest;
+				if (!XHR) return;
+				const open = XHR.prototype.open;
+				const send = XHR.prototype.send;
+
+				XHR.prototype.open = function(method, url) {
+					this.__debug = { method, url, start: 0 };
+					return open.apply(this, arguments);
+				};
+				XHR.prototype.send = function(body) {
+					if (this.__debug) this.__debug.start = performance.now();
+					this.addEventListener('loadend', () => {
+						const d = this.__debug || {};
+						const ms = d.start ? Math.round(performance.now() - d.start) : 0;
+						const status = this.status;
+						let snippet = '';
+						try { snippet = (this.responseText || '').slice(0, 400); } catch {}
+						const label = status ? `[xhr] ← ${d.method} ${d.url} ${status} (${ms}ms)` : `[xhr] ← ${d.method} ${d.url} (${ms}ms)`;
+						if (status >= 200 && status < 300) console.info(label, snippet);
+						else console.warn(label, snippet);
+					});
+					return send.apply(this, arguments);
+				};
+			})();
+
+			/* ====================== UI wiring ====================== */
 			window.addEventListener('DOMContentLoaded', function() {
 				const toggle = document.getElementById('debug-toggle');
 				const debugConsole = document.getElementById('debug-console');
 				const closeBtn = document.getElementById('debug-close');
 				const clearBtn = document.getElementById('debug-clear');
+				const exportBtn = document.getElementById('debug-export');
 
-				if (toggle && debugConsole) {
-					toggle.addEventListener('click', function() {
-						debugConsole.hidden = !debugConsole.hidden;
-					});
-				}
-
-				if (closeBtn && debugConsole) {
-					closeBtn.addEventListener('click', function() {
-						debugConsole.hidden = true;
-					});
-				}
-
-				if (clearBtn) {
-					clearBtn.addEventListener('click', function() {
-						logs.length = 0;
-						const output = document.getElementById('debug-output');
-						if (output) output.innerHTML = '';
-					});
-				}
+				if (toggle && debugConsole) toggle.addEventListener('click', () => { debugConsole.hidden = !debugConsole.hidden; });
+				if (closeBtn && debugConsole) closeBtn.addEventListener('click', () => { debugConsole.hidden = true; });
+				if (clearBtn) clearBtn.addEventListener('click', () => {
+					logs.length = 0;
+					const output = document.getElementById('debug-output');
+					if (output) output.innerHTML = '';
+				});
+				if (exportBtn) exportBtn.addEventListener('click', () => debugExport());
 
 				console.log('🐛 Debug console initialized');
 			});
-
-			function escapeHtml(str) {
-				const div = document.createElement('div');
-				div.textContent = str;
-				return div.innerHTML;
-			}
 		})();
 	</script>
 	<div id="debug-console" class="debug-console" hidden>
