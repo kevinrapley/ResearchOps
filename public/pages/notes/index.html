@@ -4,8 +4,8 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Consent — ResearchOps</title>
-
+	<title>Notes — ResearchOps</title>
+	
 	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="./css/screen.css" media="screen" />
@@ -13,35 +13,30 @@
 </head>
 
 <body>
-	<x-include src="./partials/header.html" vars='{"active":"Consent","subtitle":"Consent"}'>
+	<x-include src="/partials/debug-boot.html"></x-include>
+	<x-include
+		src="./partials/header.html"
+		vars='{"active":"Notes","subtitle":"Notes"}'>	
 	</x-include>
 
 	<div class="card">
-		<h2 class="govuk-heading-m">Link consent to a session</h2>
-		<label class="govuk-body">Session
-			<select id="session"></select>
-		</label>
-		<label class="govuk-body">Lawful basis
-			<select id="basis">
-				<option value="dpv:PublicInterest">Public task / Public interest</option>
-				<option value="dpv:Consent">Consent</option>
-			</select>
-		</label>
-		<label class="govuk-body">Retention (ISO 8601, e.g., P12M)
-			<input id="ret" class="govuk-input" value="P12M" />
-		</label>
-		<label class="govuk-body">Notes (optional)
-			<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
-		</label>
-		<button id="link" class="govuk-button">Link consent</button>
+		<h2 class="govuk-heading-m">Select a session</h2>
+		<select id="session"></select>
+	</div>
+
+	<div class="card">
+		<h2 class="govuk-heading-m">Add a note</h2>
+		<textarea id="text" placeholder="Avoid PII; describe behaviour, quotes, observations"></textarea>
+		<input id="tags" class="govuk-input" placeholder="Tags (comma-separated, e.g., Usability, Navigation)" />
+		<button id="save" class="govuk-button">Save note</button>
 		<div id="status" class="govuk-hint"></div>
 	</div>
 
 	<div class="card">
-		<h2 class="govuk-heading-m">Existing consent records</h2>
-		<div id="consents" class="govuk-body"></div>
+		<h2 class="govuk-heading-m">Notes in this session</h2>
+		<div id="notes"></div>
 	</div>
-
+	
 	<x-include src="./partials/footer.html"></x-include>
 
 	<script type="module">
@@ -59,33 +54,45 @@
 				opt.textContent = `${s.name || "(Untitled)"} — ${formatDate(s["schema:startDate"]||s.created)}`;
 				sel.appendChild(opt);
 			});
+			return sel.value || null;
 		}
 
-		async function loadConsents() {
-			const list = await sdk.search({ type: "Consent" });
-			const div = document.getElementById('consents');
-			div.innerHTML = list.map(c => `
-    <div style="border-top:1px solid #b1b4b6; padding:8px 0">
-      <strong>${c.id}</strong>
-      <div class="govuk-hint">Session: ${c.hasTarget}</div>
-      <div class="govuk-hint">Basis: ${c.LawfulBasis} • Retention: ${c.RetentionSchedule}</div>
-      <div class="govuk-hint">${c.description||""}</div>
-    </div>`).join("");
+		async function loadNotes(sessionId) {
+			const allNotes = await sdk.search({ type: "Note" });
+			const allTags = await sdk.search({ type: "Tag" }); // fetch once
+
+			const div = document.getElementById('notes');
+			const filtered = allNotes.filter(n => n.hasTarget === sessionId);
+
+			div.innerHTML = filtered.map(n => {
+				const tags = allTags.filter(t => t.hasTarget === n.id);
+				const tagsHtml = tags.map(t => `<span class="tag">${t.name}</span>`).join("");
+				return `<div class="item">
+      <strong>${formatDate(n.created)}</strong>
+      <div class="govuk-body">${n.hasBody}</div>
+      <div>${tagsHtml || '<span class="govuk-hint">No tags</span>'}</div>
+    </div>`;
+			}).join("") || '<div class="govuk-hint">No notes yet.</div>';
 		}
 
-		document.getElementById('link').onclick = async () => {
-			const sessionId = document.getElementById('session').value;
-			if (!sessionId) return alert("Create a session first.");
-			const basis = document.getElementById('basis').value;
-			const ret = document.getElementById('ret').value || "P12M";
-			const notes = document.getElementById('notes').value;
-			const c = await sdk.linkConsent(sessionId, { lawfulBasis: basis, retentionISO8601: ret, notes });
-			document.getElementById('status').textContent = `Linked consent ${c.id}`;
-			await loadConsents();
+		document.getElementById('session').onchange = async e => {
+			await loadNotes(e.target.value);
+		};
+		document.getElementById('save').onclick = async () => {
+			const sid = document.getElementById('session').value;
+			if (!sid) return alert("Create/select a session first.");
+			const text = document.getElementById('text').value.trim();
+			if (!text) return alert("Enter a note.");
+			const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean);
+			const n = await sdk.addNote(sid, { text, tags });
+			document.getElementById('status').textContent = `Saved note ${n.id}`;
+			await loadNotes(sid);
+			document.getElementById('text').value = "";
+			document.getElementById('tags').value = "";
 		};
 
-		await populateSessions();
-		await loadConsents();
+		const first = await populateSessions();
+		if (first) await loadNotes(first);
 	</script>
 </body>
 
