@@ -1,93 +1,120 @@
 /**
  * @file components/layout.js
- * @module layout
- * @summary Site-wide layout helpers loaded on every page.
+ * @summary Defines <x-include> for HTML partials with Mustache-style rendering and debug gating.
  *
- * Adds a root-absolute path normalizer so relative href/src (like "components/foo.js")
- * are rewritten to "/components/foo.js" before the browser tries to fetch them.
- * Also touches <x-include> elements (if present) before they load.
+ * Usage:
+ *   <x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Project Dashboard"}'></x-include>
+ *   <x-include src="/partials/debug.html" debug-only></x-include>  // only renders if ?debug=true is in URL
  */
 
-import "./x-include.js";
+class XInclude extends HTMLElement {
+	static get observedAttributes() { return ["src", "vars", "debug-only"]; }
 
-/**
- * Return true if a URL string already has a safe/absolute scheme we should not modify.
- * @param {string} s
- */
-function hasAllowedScheme(s) {
-	return /^(?:\/|https?:|data:|mailto:|tel:|#|javascript:)/i.test(s);
-}
-
-/**
- * Convert a possibly-relative local URL to a root-absolute one.
- * @param {string} u
- * @returns {string}
- */
-function toRootAbsolute(u) {
-	const s = (u || "").trim();
-	if (!s || hasAllowedScheme(s)) return s;
-	return "/" + s.replace(/^\.?\//, "");
-}
-
-/**
- * Normalize attributes on a Node in-place.
- * @param {Element} el
- */
-function normalizeEl(el) {
-	// Generic href/src attributes
-	if (el.hasAttribute && el.hasAttribute("href")) {
-		const v = el.getAttribute("href");
-		el.setAttribute("href", toRootAbsolute(v));
-	}
-	if (el.hasAttribute && el.hasAttribute("src")) {
-		const v = el.getAttribute("src");
-		el.setAttribute("src", toRootAbsolute(v));
+	constructor() {
+		super();
+		this.attachShadow({ mode: "open" });
 	}
 
-	// <x-include src="...">
-	if (el.tagName && el.tagName.toLowerCase() === "x-include" && el.hasAttribute("src")) {
-		const v = el.getAttribute("src");
-		el.setAttribute("src", toRootAbsolute(v));
+	connectedCallback() { this.render(); }
+	attributeChangedCallback() { this.render(); }
+
+	get src() { return this.getAttribute("src") || ""; }
+	get varsAttr() { return this.getAttribute("vars") || ""; }
+	get debugOnly() { return this.hasAttribute("debug-only"); }
+
+	/**
+	 * Tiny Mustache-ish renderer (supports: {{key}}, {{{key}}}, sections {{#key}}...{{/key}} for truthy/arrays).
+	 * This is intentionally minimal to avoid external deps. If you prefer full Mustache, swap this out.
+	 */
+	renderTemplate(tpl, data = {}) {
+		if (!tpl) return "";
+
+		// Sections (truthy or arrays)
+		tpl = tpl.replace(/\{\{#([\w.[\]-]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_, key, inner) => {
+			const val = this.lookup(data, key);
+			if (Array.isArray(val)) {
+				return val.map(item => this.renderTemplate(inner, { ...data, ".": item })).join("");
+			}
+			if (val) {
+				// For truthy non-array, render once with same data
+				return this.renderTemplate(inner, data);
+			}
+			return "";
+		});
+
+		// Triple stash (no escape)
+		tpl = tpl.replace(/\{\{\{\s*([\w.[\]-]+)\s*\}\}\}/g, (_, key) => {
+			const v = this.lookup(data, key);
+			return v == null ? "" : String(v);
+		});
+
+		// Double stash (escaped)
+		tpl = tpl.replace(/\{\{\s*([\w.[\]-]+)\s*\}\}/g, (_, key) => {
+			const v = this.lookup(data, key);
+			return this.escapeHtml(v == null ? "" : String(v));
+		});
+
+		return tpl;
 	}
-}
 
-/**
- * Normalize all elements currently in the DOM.
- */
-function normalizeDocument() {
-	// Anything with href or src
-	document.querySelectorAll("[href], [src]").forEach(normalizeEl);
-	// Explicitly include <x-include> even if it had neither attr at query time
-	document.querySelectorAll("x-include").forEach(normalizeEl);
-}
+	lookup(obj, path) {
+		if (path === "." || path === "this") return obj;
+		return path.split(".").reduce((acc, k) => (acc != null ? acc[k] : undefined), obj);
+	}
 
-/**
- * Mutation observer to normalize dynamic inserts early.
- */
-function startObserver() {
-	const mo = new MutationObserver((muts) => {
-		for (const m of muts) {
-			m.addedNodes && m.addedNodes.forEach((n) => {
-				if (n.nodeType === Node.ELEMENT_NODE) {
-					normalizeEl( /** @type {Element} */ (n));
-					// Also walk children, in case a subtree was appended
-					n.querySelectorAll && n.querySelectorAll("[href], [src], x-include").forEach(normalizeEl);
-				}
-			});
+	escapeHtml(str) {
+		const div = document.createElement("div");
+		div.textContent = str;
+		return div.innerHTML;
+	}
+
+	parseVars() {
+		const raw = this.varsAttr.trim();
+		if (!raw) return {};
+		try {
+			// Allow JSON in single-quoted attribute
+			return JSON.parse(raw);
+		} catch {
+			console.warn("[x-include] vars is not valid JSON; ignoring:", raw);
+			return {};
 		}
-	});
-	mo.observe(document.documentElement, { childList: true, subtree: true });
+	}
+
+	async fetchText(url) {
+		const res = await fetch(url, { credentials: "same-origin", cache: "no-store" });
+		if (!res.ok) throw new Error(`Fetch failed ${res.status}: ${url}`);
+		return res.text();
+	}
+
+	async render() {
+		const url = new URL(location.href);
+		if (this.debugOnly && url.searchParams.get("debug") !== "true") {
+			this.shadowRoot.innerHTML = ""; // don’t render when debug-only and ?debug=true not set
+			return;
+		}
+
+		const src = this.src;
+		if (!src) {
+			this.shadowRoot.innerHTML = "<!-- x-include: missing src -->";
+			return;
+		}
+
+		// Enforce root-absolute to avoid nested path issues
+		const path = src.startsWith("/") ? src : `/${src.replace(/^\/+/, "")}`;
+
+		try {
+			const tpl = await this.fetchText(path);
+			const data = this.parseVars();
+			const html = this.renderTemplate(tpl, data);
+			// Adopt styles from the page, so we don’t isolate content
+			this.shadowRoot.innerHTML = `<div part="content">${html}</div>`;
+			// Re-upgrade any nested custom elements
+			await Promise.resolve();
+		} catch (err) {
+			console.error("[x-include] render error", { src: path, err });
+			this.shadowRoot.innerHTML = `<!-- x-include error: ${this.escapeHtml(String(err?.message || err))} -->`;
+		}
+	}
 }
 
-(function boot() {
-	// Run ASAP; if DOM is ready, do it now. Otherwise, on DOMContentLoaded.
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", () => {
-			normalizeDocument();
-			startObserver();
-		}, { once: true });
-	} else {
-		normalizeDocument();
-		startObserver();
-	}
-})();
+customElements.define("x-include", XInclude);
