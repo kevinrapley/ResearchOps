@@ -158,12 +158,15 @@
 			function addLog(type, args) {
 				const timestamp = new Date().toLocaleTimeString();
 				const message = Array.from(args).map(arg => {
-					if (typeof arg === 'object') {
-						try {
-							return JSON.stringify(arg, null, 2);
-						} catch {
-							return String(arg);
-						}
+					if (arg instanceof Error) {
+						// Show useful error info
+						const name = arg.name || "Error";
+						const msg = arg.message || String(arg);
+						const stk = arg.stack ? `\n${arg.stack}` : "";
+						return `${name}: ${msg}${stk}`;
+					}
+					if (typeof arg === 'object' && arg !== null) {
+						try { return JSON.stringify(arg, null, 2); } catch { return String(arg); }
 					}
 					return String(arg);
 				}).join(' ');
