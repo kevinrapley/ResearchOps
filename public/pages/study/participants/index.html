@@ -12,6 +12,8 @@
 	<link rel="stylesheet" href="/css/participants.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
+	<!-- NEW: wire the participants page module -->
+	<script type="module" src="/components/participants/participants-page.js" defer></script>
 </head>
 
 <body>
@@ -146,11 +148,9 @@
 	</style>
 	<script>
 		/**
-		 * @file guides-page.js
-		 * @module GuidesPage
+		 * @file participants-page-debug.js
 		 */
 
-		/* ==================== DEBUG CONSOLE (iPad-friendly) ==================== */
 		(function() {
 			const logs = [];
 			const maxLogs = 100;
@@ -159,7 +159,6 @@
 				const timestamp = new Date().toLocaleTimeString();
 				const message = Array.from(args).map(arg => {
 					if (arg instanceof Error) {
-						// Show useful error info
 						const name = arg.name || "Error";
 						const msg = arg.message || String(arg);
 						const stk = arg.stack ? `\n${arg.stack}` : "";
@@ -184,68 +183,40 @@
 				}
 			}
 
-			// Intercept console methods
 			const originalLog = console.log;
 			const originalError = console.error;
 			const originalWarn = console.warn;
 			const originalInfo = console.info;
 
-			console.log = function() {
-				originalLog.apply(console, arguments);
-				addLog('log', arguments);
-			};
+			console.log = function() { originalLog.apply(console, arguments);
+				addLog('log', arguments); };
+			console.error = function() { originalError.apply(console, arguments);
+				addLog('error', arguments); };
+			console.warn = function() { originalWarn.apply(console, arguments);
+				addLog('warn', arguments); };
+			console.info = function() { originalInfo.apply(console, arguments);
+				addLog('info', arguments); };
 
-			console.error = function() {
-				originalError.apply(console, arguments);
-				addLog('error', arguments);
-			};
-
-			console.warn = function() {
-				originalWarn.apply(console, arguments);
-				addLog('warn', arguments);
-			};
-
-			console.info = function() {
-				originalInfo.apply(console, arguments);
-				addLog('info', arguments);
-			};
-
-			// Catch uncaught errors
 			window.addEventListener('error', function(e) {
 				addLog('error', [`💥 ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`]);
 			});
-
-			// Catch unhandled promise rejections
 			window.addEventListener('unhandledrejection', function(e) {
 				addLog('error', [`⚠️ Unhandled Promise: ${e.reason}`]);
 			});
 
-			// Wire up debug console UI
 			window.addEventListener('DOMContentLoaded', function() {
 				const toggle = document.getElementById('debug-toggle');
 				const debugConsole = document.getElementById('debug-console');
 				const closeBtn = document.getElementById('debug-close');
 				const clearBtn = document.getElementById('debug-clear');
 
-				if (toggle && debugConsole) {
-					toggle.addEventListener('click', function() {
-						debugConsole.hidden = !debugConsole.hidden;
-					});
-				}
-
-				if (closeBtn && debugConsole) {
-					closeBtn.addEventListener('click', function() {
-						debugConsole.hidden = true;
-					});
-				}
-
-				if (clearBtn) {
-					clearBtn.addEventListener('click', function() {
-						logs.length = 0;
-						const output = document.getElementById('debug-output');
-						if (output) output.innerHTML = '';
-					});
-				}
+				if (toggle && debugConsole) toggle.addEventListener('click', () => { debugConsole.hidden = !debugConsole.hidden; });
+				if (closeBtn && debugConsole) closeBtn.addEventListener('click', () => { debugConsole.hidden = true; });
+				if (clearBtn) clearBtn.addEventListener('click', () => {
+					logs.length = 0;
+					const output = document.getElementById('debug-output');
+					if (output) output.innerHTML = '';
+				});
 
 				console.log('🐛 Debug console initialized');
 			});
@@ -269,9 +240,9 @@
 
 	<!-- Rest of your page continues here -->
 	<x-include src="/partials/header.html" vars='{
-		"active":"Projects",
-		"subtitle":"Study — Participants"
-	}'></x-include>
+    "active":"Projects",
+    "subtitle":"Study — Participants"
+  }'></x-include>
 
 	<main id="main" class="container govuk-body" role="main">
 		<!-- Breadcrumb -->
@@ -303,15 +274,24 @@
 						<a href="#addParticipantForm" class="btn btn--primary">Add a participant</a>
 					</div>
 
-					<!-- Table (hidden when none) -->
-					<div class="table card" id="participantsTable" role="table" aria-label="Participants" hidden>
-						<div class="rowh table__header" role="row">
-							<div role="columnheader">Name</div>
-							<div role="columnheader">Contact</div>
-							<div role="columnheader">Status</div>
-							<div role="columnheader">Actions</div>
-						</div>
-						<!-- rows injected by scheduler.js -->
+					<!-- NEW: Semantic table target for the module -->
+					<div class="table-wrap" id="participantsTableWrap" hidden>
+						<table class="table" role="table" aria-label="Participants">
+							<thead>
+								<tr>
+									<th scope="col">Name</th>
+									<th scope="col">Email</th>
+									<th scope="col">Phone</th>
+									<th scope="col">Channel</th>
+									<th scope="col">Status</th>
+								</tr>
+							</thead>
+							<tbody id="participants-tbody">
+								<tr>
+									<td colspan="5" class="muted">Loading…</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</section>
 			</div>
@@ -473,7 +453,92 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
+	<!-- Existing sessions wiring -->
 	<script type="module" src="/pages/study/participants/scheduler.js"></script>
+
+	<!-- NEW: Page glue for breadcrumbs + empty/table toggle -->
+	<script type="module">
+		/**
+		 * @file participants-page.glue.js
+		 * - Sets breadcrumb + badge text
+		 * - Listens for participants:rendered {detail:{count}} from participants-page.js
+		 *   to toggle empty state vs table
+		 */
+		const $ = (s, r = document) => r.querySelector(s);
+
+		function fallbackTitle(s = {}) {
+			const method = (s.method || "Study").trim();
+			const d = s.createdAt ? new Date(s.createdAt) : new Date();
+			const yyyy = d.getUTCFullYear();
+			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+			const dd = String(d.getUTCDate()).padStart(2, "0");
+			return `${method} — ${yyyy}-${mm}-${dd}`;
+		}
+
+		function pickTitle(s = {}) { return (s.title || s.Title || "").trim() || fallbackTitle(s); }
+
+		async function getProject(pid) {
+			const r = await fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" });
+			return r.ok ? r.json() : {};
+		}
+		async function getStudies(pid) {
+			const r = await fetch(`/api/studies?project=${encodeURIComponent(pid)}`, { cache: "no-store" });
+			const js = await r.json().catch(() => ({}));
+			return js?.ok && Array.isArray(js.studies) ? js.studies : [];
+		}
+
+		(async function init() {
+			try {
+				const usp = new URLSearchParams(location.search);
+				const pid = usp.get("pid") || "";
+				const sid = usp.get("sid") || "";
+				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
+
+				const [project, studies] = await Promise.all([getProject(pid), getStudies(pid)]);
+				const study = studies.find(s => s.id === sid) || {};
+
+				// Breadcrumbs
+				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
+				$("#breadcrumb-project").textContent = project?.name || "Project";
+				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+				$("#breadcrumb-study").textContent = pickTitle(study);
+
+				// Badge
+				$("#studyBadge").textContent = `Study: ${pickTitle(study)}`;
+
+				// Toggle table/empty once the participants module renders
+				const $empty = $("#participantsEmpty");
+				const $tableWrap = $("#participantsTableWrap");
+
+				function applyCount(n) {
+					if (n > 0) {
+						$empty.hidden = true;
+						$tableWrap.hidden = false;
+					} else {
+						$empty.hidden = false;
+						$tableWrap.hidden = true;
+					}
+				}
+
+				// Listen for event from participants-page.js
+				window.addEventListener("participants:rendered", (e) => {
+					const n = e?.detail?.count ?? 0;
+					console.info("[participants] rendered count =", n);
+					applyCount(n);
+					// Enable/disable scheduling helpers too
+					const noP = $("#noParticipantsBanner");
+					if (noP) noP.hidden = n > 0;
+					const sel = $("#s_participant");
+					if (sel) sel.disabled = n === 0;
+					const btn = $("#scheduleBtn");
+					if (btn) btn.disabled = n === 0;
+				});
+
+			} catch (err) {
+				console.error("[participants] glue init error:", err);
+			}
+		})();
+	</script>
 </body>
 
 </html>
