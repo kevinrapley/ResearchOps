@@ -1,116 +1,93 @@
-// examples/components/layout.js
-// Safari-safe <x-include> with variables, block conditionals, and guarded DOM ops (light DOM)
+/**
+ * @file components/layout.js
+ * @module layout
+ * @summary Site-wide layout helpers loaded on every page.
+ *
+ * Adds a root-absolute path normalizer so relative href/src (like "components/foo.js")
+ * are rewritten to "/components/foo.js" before the browser tries to fetch them.
+ * Also touches <x-include> elements (if present) before they load.
+ */
 
-(function() {
-	"use strict";
+import "./x-include.js";
 
-	// ---- Guarded DOM helpers -------------------------------------------------
-	function qs(root, sel) {
-		try { return (root || document).querySelector(sel) || null; } catch { return null; }
+/**
+ * Return true if a URL string already has a safe/absolute scheme we should not modify.
+ * @param {string} s
+ */
+function hasAllowedScheme(s) {
+	return /^(?:\/|https?:|data:|mailto:|tel:|#|javascript:)/i.test(s);
+}
+
+/**
+ * Convert a possibly-relative local URL to a root-absolute one.
+ * @param {string} u
+ * @returns {string}
+ */
+function toRootAbsolute(u) {
+	const s = (u || "").trim();
+	if (!s || hasAllowedScheme(s)) return s;
+	return "/" + s.replace(/^\.?\//, "");
+}
+
+/**
+ * Normalize attributes on a Node in-place.
+ * @param {Element} el
+ */
+function normalizeEl(el) {
+	// Generic href/src attributes
+	if (el.hasAttribute && el.hasAttribute("href")) {
+		const v = el.getAttribute("href");
+		el.setAttribute("href", toRootAbsolute(v));
+	}
+	if (el.hasAttribute && el.hasAttribute("src")) {
+		const v = el.getAttribute("src");
+		el.setAttribute("src", toRootAbsolute(v));
 	}
 
-	function qsa(root, sel) {
-		try { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); } catch { return []; }
+	// <x-include src="...">
+	if (el.tagName && el.tagName.toLowerCase() === "x-include" && el.hasAttribute("src")) {
+		const v = el.getAttribute("src");
+		el.setAttribute("src", toRootAbsolute(v));
 	}
+}
 
-	function setText(el, text) {
-		if (el) el.textContent = text;
-	}
+/**
+ * Normalize all elements currently in the DOM.
+ */
+function normalizeDocument() {
+	// Anything with href or src
+	document.querySelectorAll("[href], [src]").forEach(normalizeEl);
+	// Explicitly include <x-include> even if it had neither attr at query time
+	document.querySelectorAll("x-include").forEach(normalizeEl);
+}
 
-	function setHTML(el, html) {
-		if (el) el.innerHTML = html;
-	}
-
-	function toggleClass(el, cls, on) {
-		if (el && el.classList) el.classList.toggle(cls, !!on);
-	}
-
-	// --- <x-include> with variables & dual active states (main + project) ---
-	class XInclude extends HTMLElement {
-		static get observedAttributes() { return ['src', 'vars', 'title', 'subtitle', 'active', 'active_project', 'org', 'build']; }
-		connectedCallback() { this.load(); }
-		attributeChangedCallback() { this.load(); }
-
-		// Collect variables from attributes + optional JSON in `vars`
-		getVars() {
-			const base = {
-				title: this.getAttribute('title') || 'Research Operations',
-				subtitle: this.getAttribute('subtitle') || 'Internal Demo',
-				active: this.getAttribute('active') || '', // header active
-				active_project: this.getAttribute('active_project') || '', // project tabs active
-				org: this.getAttribute('org') || 'Home Office Biometrics',
-				build: this.getAttribute('build') || 'ResearchOps v1.0.0 (demo)',
-				year: String(new Date().getFullYear())
-			};
-			const extras = this.getAttribute('vars');
-			if (!extras) return base;
-			try { return { ...base, ...JSON.parse(extras) }; } catch { return base; }
-		}
-
-		async load() {
-			const src = this.getAttribute('src');
-			if (!src) return;
-
-			// fetch HTML first (keep variable in outer scope for Safari)
-			let text = '';
-			try {
-				const resp = await fetch(src, { credentials: 'same-origin' });
-				text = await resp.text();
-			} catch (e) {
-				this.innerHTML = `<div style="color:#d4351c">Include failed (fetch): ${e.message || e}</div>`;
-				return;
-			}
-
-			// process template
-			try {
-				const vars = this.getVars();
-
-				// --- block truthy: {{#var}}...{{/var}}
-				text = text.replace(/{{#\s*([a-zA-Z0-9_]+)\s*}}([\s\S]*?){{\/\s*\1\s*}}/g,
-					function(_m, key, inner) {
-						const v = vars[key];
-						return (v !== undefined && v !== null && String(v).length > 0) ? inner : '';
-					});
-
-				// --- block falsy: {{^var}}...{{/var}}
-				text = text.replace(/{{\^\s*([a-zA-Z0-9_]+)\s*}}([\s\S]*?){{\/\s*\1\s*}}/g,
-					function(_m, key, inner) {
-						const v = vars[key];
-						return (v === undefined || v === null || String(v).length === 0) ? inner : '';
-					});
-
-				// --- simple replacements: {{var}}
-				Object.keys(vars).forEach(function(k) {
-					// global, case-sensitive
-					const rx = new RegExp('{{\\s*' + k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\s*}}', 'g');
-					text = text.replace(rx, String(vars[k]));
-				});
-
-				this.innerHTML = text; // light DOM — styles apply
-
-				// highlight active main nav
-				const activeMain = (vars.active || '').toLowerCase();
-				if (activeMain) {
-					Array.prototype.forEach.call(this.querySelectorAll('a[data-nav]'), function(a) {
-						const key = (a.getAttribute('data-nav') || a.textContent || '').trim().toLowerCase();
-						a.classList.toggle('active', key === activeMain);
-					});
+/**
+ * Mutation observer to normalize dynamic inserts early.
+ */
+function startObserver() {
+	const mo = new MutationObserver((muts) => {
+		for (const m of muts) {
+			m.addedNodes && m.addedNodes.forEach((n) => {
+				if (n.nodeType === Node.ELEMENT_NODE) {
+					normalizeEl( /** @type {Element} */ (n));
+					// Also walk children, in case a subtree was appended
+					n.querySelectorAll && n.querySelectorAll("[href], [src], x-include").forEach(normalizeEl);
 				}
-
-				// highlight active project tab
-				const activeProj = (vars.active_project || '').toLowerCase();
-				if (activeProj) {
-					Array.prototype.forEach.call(this.querySelectorAll('a[data-project-nav]'), function(a) {
-						const key = (a.getAttribute('data-project-nav') || a.textContent || '').trim().toLowerCase();
-						a.classList.toggle('active', key === activeProj);
-					});
-				}
-			} catch (e) {
-				this.innerHTML = `<div style="color:#d4351c">Include failed (template): ${e.message || e}</div>`;
-			}
+			});
 		}
-	}
-	// register component (guarded)
-	try { customElements.define('x-include', XInclude); } catch { /* already defined */ }
+	});
+	mo.observe(document.documentElement, { childList: true, subtree: true });
+}
 
+(function boot() {
+	// Run ASAP; if DOM is ready, do it now. Otherwise, on DOMContentLoaded.
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", () => {
+			normalizeDocument();
+			startObserver();
+		}, { once: true });
+	} else {
+		normalizeDocument();
+		startObserver();
+	}
 })();
