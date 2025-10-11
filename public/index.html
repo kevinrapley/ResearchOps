@@ -1,20 +1,15 @@
 <!doctype html>
 <html lang="en">
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>ResearchOps Demo Suite</title>
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<script type="module" src="/components/layout.js"></script>
-</head>
+<x-include 
+	src="/partials/html-head.html"
+	vars="{'title':'ResearchOps Demo Suite'}">
+</x-include>
 
 <body>
 	<x-include
 		src="/partials/header.html" 
-		vars='{"active":"Home","subtitle":"Objective-driven user research, applied with rigour."}'>
+		vars="{'active':'Home','subtitle':'Objective orientated applied user research done well.'}">
 	</x-include>
 
 	<main class="govuk-body" role="main">
@@ -34,7 +29,7 @@
 					</p>
 
 					<p class="cta">
-						<a class="govuk-button" href="./start.html" role="button" draggable="false">
+						<a class="govuk-button" href="/pages/start/" role="button" draggable="false">
 							Go to start research project service
 						</a>
 					</p>
@@ -54,7 +49,7 @@
 					</p>
 
 					<p class="cta">
-						<a class="govuk-button" href="./objectives.html" role="button" draggable="false">
+						<a class="govuk-button" href="/pages/project-dashboard/#objectives" role="button" draggable="false">
 							Go to objective definition service
 						</a>
 					</p>
@@ -74,7 +69,7 @@
 					</p>
 
 					<p class="cta">
-						<a class="govuk-button" href="./participants.html" role="button" draggable="false">
+						<a class="govuk-button" href="/pages/project-dashboard/#planning" role="button" draggable="false">
 							Go to participant management service
 						</a>
 					</p>
