@@ -3,8 +3,20 @@
 	<base href="/" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{{title}}</title>
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	
+	<!-- Global styles -->
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	
+	{{#include_css}}
+	<!-- Page specific styles -->
+	<link rel="stylesheet" href="{{.}}" />
+	{{/include_css}}
+	
+	<!-- Layout + custom elements -->
+	<script type="module" src="/components/layout.js"></script>
+	{{#include_js}}
+	<script type="module" src="{{.}}" defer></script>
+	{{/include_js}}
 </head>
