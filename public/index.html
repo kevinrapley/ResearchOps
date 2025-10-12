@@ -1,10 +1,20 @@
 <!doctype html>
 <html lang="en">
 
-<x-include
-	src="/partials/html-head.html"
-	vars='{"title":"ResearchOps Demo Suite"}'>
-</x-include>
+<head>
+	<meta charset="utf-8" />
+	<base href="/" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>ResearchOps Demo Suite</title>
+	
+	<!-- Global styles -->
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	
+	<!-- Layout + custom elements -->
+	<script type="module" src="/components/layout.js"></script>
+</head>
 
 <body>
 	<x-include
