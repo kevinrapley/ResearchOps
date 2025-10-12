@@ -117,19 +117,15 @@ let __patternCache = [];
 // Helper to show service/fallback status in the Patterns drawer
 function setPatternStatus(message) {
 	const drawer = document.getElementById("drawer-patterns");
-	if (!drawer) return;
-	let p = drawer.querySelector("#pattern-status");
+	const list = document.getElementById("pattern-list");
+	if (!drawer || !list) { console.warn("[patterns] status:", msg); return; }
+	let p = drawer.getElementById("pattern-status");
 	if (!p) {
 		p = document.createElement("p");
 		p.id = "pattern-status";
 		p.className = "muted";
-		// insert just under the title if present, else at top
-		const title = document.getElementById("drawer-patterns-title");
-		if (title && title.parentNode) {
-			title.insertAdjacentElement("afterend", p);
-		} else {
-			drawer.prepend(p);
-		}
+		// Insert just above the list
+		drawer.insertBefore(p, list)
 	}
 	p.textContent = message || "";
 }
@@ -320,33 +316,38 @@ function onNewClick(e) {
 async function refreshPatternList() {
 	// Try API endpoints first
 	const urls = ["/api/partials", "/api/patterns"];
+
 	for (const url of urls) {
 		try {
 			const data = await fetchJSON(
-				url, { headers: { Accept: "application/json" } }, { allowHeuristics: false }
+				url, { headers: { Accept: "application/json" } }, { allowHeuristics: false } // don't try to parse HTML SPA fallback
 			);
+
 			const partials = Array.isArray(data?.partials) ? data.partials :
 				Array.isArray(data) ? data :
 				[];
-			__patternServiceAvailable = true;
-			populatePatternList(partials);
-			setPatternStatus(""); // clear any warning
-			return;
+
+			if (partials.length) {
+				populatePatternList(partials);
+				setPatternStatus(""); // clear any prior warning
+				return;
+			}
+
+			// If we got JSON but it's empty, just go to fallback below
+			console.warn(`refreshPatternList: ${url} returned empty JSON array`);
 		} catch (e) {
 			console.warn(`refreshPatternList: ${url} failed`, e.message);
-			// try next url
+			// Continue to next url
 		}
 	}
 
-	// If we reach here, both endpoints failed → fall back to local starters
+	// If we reach here, both endpoints failed or returned empty — fall back to local starters
 	try {
-		// listStarterPatterns may return sync OR a Promise — handle both
 		let starters = [];
 		const maybe = (typeof listStarterPatterns === "function") ? listStarterPatterns() : [];
 		starters = (maybe && typeof maybe.then === "function") ? await maybe : maybe;
 
 		if (Array.isArray(starters) && starters.length) {
-			__patternServiceAvailable = false;
 			populatePatternList(starters);
 			setPatternStatus("Pattern service unavailable — showing local starter patterns.");
 			return;
@@ -356,7 +357,6 @@ async function refreshPatternList() {
 	}
 
 	// Nothing available at all
-	__patternServiceAvailable = false;
 	populatePatternList([]);
 	setPatternStatus("No patterns available (API returned HTML).");
 }
