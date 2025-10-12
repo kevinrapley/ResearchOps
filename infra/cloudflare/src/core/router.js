@@ -214,18 +214,19 @@ export async function handleRequest(request, env) {
 			});
 		}
 
-		// ─────────── Partials (Patterns) ───────────
+		// ─────────── Partials ───────────
 		if (url.pathname.startsWith("/api/partials")) {
-			// Patterns:
-			// GET    /api/partials
-			// POST   /api/partials
-			// GET    /api/partials/:id
-			// PATCH  /api/partials/:id
-			// DELETE /api/partials/:id
+			// Supported:
+			// GET    /api/partials             (list)
+			// POST   /api/partials             (create)
+			// GET    /api/partials/:id         (read)
+			// PATCH  /api/partials/:id         (update)
+			// DELETE /api/partials/:id         (delete)
 
+			// Match path param variant: /api/partials/:id
 			const idMatch = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
 
-			// GET /api/partials
+			// GET /api/partials (list)
 			if (request.method === "GET" && url.pathname === "/api/partials") {
 				if (typeof service.listPartials === "function") {
 					return service.listPartials(origin, url);
@@ -236,7 +237,7 @@ export async function handleRequest(request, env) {
 				});
 			}
 
-			// POST /api/partials
+			// POST /api/partials (create)
 			if (request.method === "POST" && url.pathname === "/api/partials") {
 				if (typeof service.createPartial === "function") {
 					return service.createPartial(request, origin);
@@ -247,14 +248,16 @@ export async function handleRequest(request, env) {
 				});
 			}
 
-			// /api/partials/:id
+			// /api/partials/:id (read/update/delete via ?id=)
 			if (idMatch) {
 				const [, partialId] = idMatch;
+				const urlWithId = new URL(url.toString());
+				urlWithId.searchParams.set("id", partialId);
 
 				// GET /api/partials/:id
 				if (request.method === "GET") {
 					if (typeof service.readPartial === "function") {
-						return service.readPartial(partialId, origin);
+						return service.readPartial(origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "readPartial not implemented" }), {
 						status: 501,
@@ -265,7 +268,7 @@ export async function handleRequest(request, env) {
 				// PATCH /api/partials/:id
 				if (request.method === "PATCH") {
 					if (typeof service.updatePartial === "function") {
-						return service.updatePartial(partialId, request, origin);
+						return service.updatePartial(request, origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "updatePartial not implemented" }), {
 						status: 501,
@@ -276,7 +279,7 @@ export async function handleRequest(request, env) {
 				// DELETE /api/partials/:id
 				if (request.method === "DELETE") {
 					if (typeof service.deletePartial === "function") {
-						return service.deletePartial(partialId, origin);
+						return service.deletePartial(origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "deletePartial not implemented" }), {
 						status: 501,
@@ -292,21 +295,28 @@ export async function handleRequest(request, env) {
 			});
 		}
 
-		// Static fallback (serve assets/pages)
-		let resp = await env.ASSETS.fetch(request);
-		if (resp.status === 404) {
-			// Try SPA-style fallback
-			resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
-		}
-		return resp;
-
-	} catch (e) {
-		service.log.error("unhandled.error", { err: String(e?.message || e) });
-		return new Response(JSON.stringify({ error: "Internal error" }), {
-			status: 500,
+		// Method/shape not matched
+		return new Response(JSON.stringify({ ok: false, error: "Invalid /api/partials route" }), {
+			status: 404,
 			headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 		});
-	} finally {
-		service.destroy();
 	}
+
+	// Static fallback (serve assets/pages)
+	let resp = await env.ASSETS.fetch(request);
+	if (resp.status === 404) {
+		// Try SPA-style fallback
+		resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+	}
+	return resp;
+
+} catch (e) {
+	service.log.error("unhandled.error", { err: String(e?.message || e) });
+	return new Response(JSON.stringify({ error: "Internal error" }), {
+		status: 500,
+		headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+	});
+} finally {
+	service.destroy();
+}
 }
