@@ -1,19 +1,14 @@
 /**
  * @file components/layout.js
- * @summary Defines <x-include> for HTML partials with Mustache-style rendering and debug gating.
+ * @summary <x-include> for HTML partials with Mustache-style rendering and debug gating.
  *
  * Usage:
  *   <x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Project Dashboard"}'></x-include>
- *   <x-include src="/partials/debug.html" debug-only></x-include>  // only renders if ?debug=true is in URL
+ *   <x-include src="/partials/debug.html" debug-only></x-include>  // renders only if ?debug=true
  */
 
 class XInclude extends HTMLElement {
 	static get observedAttributes() { return ["src", "vars", "debug-only"]; }
-
-	constructor() {
-		super();
-		this.attachShadow({ mode: "open" });
-	}
 
 	connectedCallback() { this.render(); }
 	attributeChangedCallback() { this.render(); }
@@ -22,33 +17,26 @@ class XInclude extends HTMLElement {
 	get varsAttr() { return this.getAttribute("vars") || ""; }
 	get debugOnly() { return this.hasAttribute("debug-only"); }
 
-	/**
-	 * Tiny Mustache-ish renderer (supports: {{key}}, {{{key}}}, sections {{#key}}...{{/key}} for truthy/arrays).
-	 * This is intentionally minimal to avoid external deps. If you prefer full Mustache, swap this out.
-	 */
+	// --- Tiny Mustache-ish renderer -----------------------------------------
 	renderTemplate(tpl, data = {}) {
 		if (!tpl) return "";
 
-		// Sections (truthy or arrays)
+		// Sections: {{#key}}...{{/key}} (arrays or truthy values)
 		tpl = tpl.replace(/\{\{#([\w.[\]-]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (_, key, inner) => {
 			const val = this.lookup(data, key);
 			if (Array.isArray(val)) {
 				return val.map(item => this.renderTemplate(inner, { ...data, ".": item })).join("");
 			}
-			if (val) {
-				// For truthy non-array, render once with same data
-				return this.renderTemplate(inner, data);
-			}
-			return "";
+			return val ? this.renderTemplate(inner, data) : "";
 		});
 
-		// Triple stash (no escape)
+		// Triple-stash {{{key}}} (unescaped)
 		tpl = tpl.replace(/\{\{\{\s*([\w.[\]-]+)\s*\}\}\}/g, (_, key) => {
 			const v = this.lookup(data, key);
 			return v == null ? "" : String(v);
 		});
 
-		// Double stash (escaped)
+		// Double-stash {{key}} (escaped)
 		tpl = tpl.replace(/\{\{\s*([\w.[\]-]+)\s*\}\}/g, (_, key) => {
 			const v = this.lookup(data, key);
 			return this.escapeHtml(v == null ? "" : String(v));
@@ -71,13 +59,7 @@ class XInclude extends HTMLElement {
 	parseVars() {
 		const raw = this.varsAttr.trim();
 		if (!raw) return {};
-		try {
-			// Allow JSON in single-quoted attribute
-			return JSON.parse(raw);
-		} catch {
-			console.warn("[x-include] vars is not valid JSON; ignoring:", raw);
-			return {};
-		}
+		try { return JSON.parse(raw); } catch { console.warn("[x-include] vars JSON invalid; ignoring:", raw); return {}; }
 	}
 
 	async fetchText(url) {
@@ -86,33 +68,42 @@ class XInclude extends HTMLElement {
 		return res.text();
 	}
 
+	// Ensure any <script> inside the included HTML actually runs
+	activateScripts(root) {
+		const scripts = Array.from(root.querySelectorAll("script"));
+		for (const old of scripts) {
+			const s = document.createElement("script");
+			// Copy attributes (type, src, async, defer, etc.)
+			for (const { name, value } of Array.from(old.attributes)) s.setAttribute(name, value);
+			if (!old.src) s.textContent = old.textContent;
+			old.replaceWith(s);
+		}
+	}
+
 	async render() {
-		const url = new URL(location.href);
-		if (this.debugOnly && url.searchParams.get("debug") !== "true") {
-			this.shadowRoot.innerHTML = ""; // don’t render when debug-only and ?debug=true not set
-			return;
-		}
-
-		const src = this.src;
-		if (!src) {
-			this.shadowRoot.innerHTML = "<!-- x-include: missing src -->";
-			return;
-		}
-
-		// Enforce root-absolute to avoid nested path issues
-		const path = src.startsWith("/") ? src : `/${src.replace(/^\/+/, "")}`;
-
 		try {
+			// Debug gating
+			if (this.debugOnly) {
+				const isDebug = new URL(location.href).searchParams.get("debug") === "true";
+				if (!isDebug) { this.innerHTML = ""; return; }
+			}
+
+			// Normalize to root-absolute
+			if (!this.src) { this.innerHTML = "<!-- x-include: missing src -->"; return; }
+			const path = this.src.startsWith("/") ? this.src : `/${this.src.replace(/^\/+/, "")}`;
+
 			const tpl = await this.fetchText(path);
-			const data = this.parseVars();
-			const html = this.renderTemplate(tpl, data);
-			// Adopt styles from the page, so we don’t isolate content
-			this.shadowRoot.innerHTML = `<div part="content">${html}</div>`;
-			// Re-upgrade any nested custom elements
-			await Promise.resolve();
+			const html = this.renderTemplate(tpl, this.parseVars());
+
+			// LIGHT DOM render so page CSS applies
+			this.innerHTML = html;
+
+			// Make any scripts inside the partial execute
+			this.activateScripts(this);
+
 		} catch (err) {
-			console.error("[x-include] render error", { src: path, err });
-			this.shadowRoot.innerHTML = `<!-- x-include error: ${this.escapeHtml(String(err?.message || err))} -->`;
+			console.error("[x-include] render error", { src: this.src, err });
+			this.innerHTML = `<!-- x-include error: ${this.escapeHtml(String(err?.message || err))} -->`;
 		}
 	}
 }
