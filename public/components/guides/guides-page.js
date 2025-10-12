@@ -115,19 +115,30 @@ let __patternServiceAvailable = false;
 let __patternCache = [];
 
 // Helper to show service/fallback status in the Patterns drawer
-function setPatternStatus(message) {
+/**
+ * Show or update a muted status line inside the Patterns drawer.
+ * Handles cases where the API returns HTML instead of JSON (SPA fallback).
+ */
+function setPatternStatus(msg) {
 	const drawer = document.getElementById("drawer-patterns");
 	const list = document.getElementById("pattern-list");
-	if (!drawer || !list) { console.warn("[patterns] status:", msg); return; }
-	let p = drawer.getElementById("pattern-status");
+	if (!drawer || !list) {
+		console.warn("[patterns] status:", msg);
+		return;
+	}
+
+	// Create or reuse the message element
+	let p = document.getElementById("pattern-status");
 	if (!p) {
 		p = document.createElement("p");
 		p.id = "pattern-status";
 		p.className = "muted";
-		// Insert just above the list
-		drawer.insertBefore(p, list)
+		p.style.margin = "0 0 8px 0";
+		// Insert above the list for clear visibility
+		list.parentNode.insertBefore(p, list);
 	}
-	p.textContent = message || "";
+
+	p.textContent = msg || "";
 }
 
 /* -------------------- boot -------------------- */
@@ -324,8 +335,7 @@ async function refreshPatternList() {
 			);
 
 			const partials = Array.isArray(data?.partials) ? data.partials :
-				Array.isArray(data) ? data :
-				[];
+				Array.isArray(data) ? data : [];
 
 			if (partials.length) {
 				populatePatternList(partials);
