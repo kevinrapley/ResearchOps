@@ -130,14 +130,14 @@ export async function handleRequest(request, env) {
 
 		// ─────────── Guides ───────────
 		if (url.pathname.startsWith("/api/guides")) {
-			// Patterns:
+			// Supported:
 			// GET    /api/guides?study=:id
 			// POST   /api/guides
 			// GET    /api/guides/:id
 			// PATCH  /api/guides/:id
 			// POST   /api/guides/:id/publish
 
-			// /api/guides/:id or /api/guides/:id/publish
+			// Path with id (and optional /publish)
 			const idMatch = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
 
 			// GET /api/guides?study=...
@@ -166,10 +166,15 @@ export async function handleRequest(request, env) {
 			if (idMatch) {
 				const [, guideId, publishSuffix] = idMatch;
 
+				// Normalize: service expects id in query (?id=...)
+				const urlWithId = new URL(url.toString());
+				urlWithId.searchParams.set("id", guideId);
+
 				// POST /api/guides/:id/publish
 				if (publishSuffix === "publish" && request.method === "POST") {
 					if (typeof service.publishGuide === "function") {
-						return service.publishGuide(guideId, origin);
+						// service uses URL search params for id
+						return service.publishGuide(origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "publishGuide not implemented" }), {
 						status: 501,
@@ -180,7 +185,8 @@ export async function handleRequest(request, env) {
 				// GET /api/guides/:id
 				if (request.method === "GET") {
 					if (typeof service.readGuide === "function") {
-						return service.readGuide(guideId, origin);
+						// pass origin + URL so service can read ?id=
+						return service.readGuide(origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "readGuide not implemented" }), {
 						status: 501,
@@ -191,7 +197,8 @@ export async function handleRequest(request, env) {
 				// PATCH /api/guides/:id
 				if (request.method === "PATCH") {
 					if (typeof service.updateGuide === "function") {
-						return service.updateGuide(guideId, request, origin);
+						// pass request + origin + URL (?id=...)
+						return service.updateGuide(request, origin, urlWithId);
 					}
 					return new Response(JSON.stringify({ ok: false, error: "updateGuide not implemented" }), {
 						status: 501,
