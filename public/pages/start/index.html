@@ -13,7 +13,6 @@
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="debug-shim.js" defer></script>
 
 	<!-- Step 1 owner: imports copilot-suggester internally and sets window.__descAssistActive -->
 	<script type="module" src="/js/start-description-assist.js" defer></script>
@@ -26,7 +25,7 @@
 </head>
 
 <body>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+	<x-include src="/partials/debug-boot.html"></x-include>
 	<x-include src="/partials/header.html" vars='{
 			"active":"Start Research Project",
 			"subtitle":"Define service phase, set status, add stakeholders and objectives"
@@ -162,8 +161,7 @@
 	</main>
 
 	<!-- Global footer -->
-	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
-	</x-include>
+	<x-include src="/partials/footer.html"></x-include>
 </body>
 
 </html>
