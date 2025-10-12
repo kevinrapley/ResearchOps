@@ -110,6 +110,30 @@ let varManager = null; // VariableManager instance (JSON-only)
 let __openGuideId = null; // currently open guide id
 let __guideCtx = { project: {}, study: {} }; // page context
 
+// Service health + in-memory cache for search/fallback
+let __patternServiceAvailable = false;
+let __patternCache = [];
+
+// Helper to show service/fallback status in the Patterns drawer
+function setPatternStatus(message) {
+	const drawer = document.getElementById("drawer-patterns");
+	if (!drawer) return;
+	let p = drawer.querySelector("#pattern-status");
+	if (!p) {
+		p = document.createElement("p");
+		p.id = "pattern-status";
+		p.className = "muted";
+		// insert just under the title if present, else at top
+		const title = document.getElementById("drawer-patterns-title");
+		if (title && title.parentNode) {
+			title.insertAdjacentElement("afterend", p);
+		} else {
+			drawer.prepend(p);
+		}
+	}
+	p.textContent = message || "";
+}
+
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
 	wireGlobalActions();
@@ -294,20 +318,41 @@ function onNewClick(e) {
 /* -------------------- patterns -------------------- */
 
 async function refreshPatternList() {
+	// Try API endpoints first
 	const urls = ["/api/partials", "/api/patterns"];
 	for (const url of urls) {
 		try {
-			const data = await fetchJSON(url, {}, { allowHeuristics: false });
+			const data = await fetchJSON(url, { headers: { Accept: "application/json" } }, { allowHeuristics: false });
 			const partials = Array.isArray(data?.partials) ? data.partials :
 				Array.isArray(data) ? data :
 				[];
+			__patternServiceAvailable = true;
 			populatePatternList(partials);
+			setPatternStatus(""); // clear any warning
 			return;
 		} catch (e) {
 			console.warn(`refreshPatternList: ${url} failed`, e.message);
+			// continue to the next url
 		}
 	}
+
+	// If we reach here, both endpoints failed → fall back to local starters
+	try {
+		const starters = await listStarterPatterns().catch(() => []);
+		if (Array.isArray(starters) && starters.length) {
+			__patternServiceAvailable = false;
+			populatePatternList(starters);
+			setPatternStatus("Pattern service unavailable — showing local starter patterns.");
+			return;
+		}
+	} catch (e) {
+		console.warn("refreshPatternList: starter fallback failed", e);
+	}
+
+	// Nothing available at all
+	__patternServiceAvailable = false;
 	populatePatternList([]);
+	setPatternStatus("No patterns available (API returned HTML).");
 }
 
 /* -------------------- syntax highlighting (unchanged) -------------------- */
@@ -582,15 +627,12 @@ async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
 	const source = stripFrontMatter($("#guide-source")?.value || "");
 	const variables = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() :
-		{};
+		varManager.getVariables() : {};
 
 	const studyId = __guideCtx?.study?.id || "";
 	const id = __openGuideId;
 
-	const body = id ?
-		{ title, sourceMarkdown: source, variables } :
-		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
 	const method = id ? "PATCH" : "POST";
@@ -717,8 +759,19 @@ function openPatternDrawer() {
 	closeVariablesDrawer();
 	closeTagDialog();
 
-	$("#drawer-patterns")?.removeAttribute("hidden");
-	$("#pattern-search")?.focus();
+	const drawer = $("#drawer-patterns");
+	if (drawer) {
+		drawer.removeAttribute("hidden");
+		$("#pattern-search")?.focus();
+	}
+
+	// NEW: if list is empty or only has “No patterns found.”, (re)load now
+	const ul = $("#pattern-list");
+	const needsLoad = !ul || ul.children.length === 0 || (ul.children.length === 1 && ul.firstElementChild?.classList.contains("muted"));
+	if (needsLoad) {
+		refreshPatternList();
+	}
+
 	announce("Pattern drawer opened");
 }
 
@@ -734,7 +787,25 @@ function populatePatternList(items) {
 	ul.innerHTML = "";
 
 	const arr = Array.isArray(items) ? items : [];
+	__patternCache = arr.slice(); // NEW: keep a copy for client-side search
 
+	if (!arr.length) {
+		const li = document.createElement("li");
+		li.className = "muted";
+		li.textContent = "No patterns found.";
+		ul.appendChild(li);
+
+		// Still offer “+ New pattern” if you want creation regardless of API
+		const addLi = document.createElement("li");
+		addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
+		ul.appendChild(addLi);
+
+		ul.removeEventListener("click", handlePatternClick);
+		ul.addEventListener("click", handlePatternClick);
+		return;
+	}
+
+	// Group by category
 	const grouped = {};
 	for (const p of arr) {
 		const cat = p.category || "Uncategorised";
@@ -755,19 +826,19 @@ function populatePatternList(items) {
 			const insertName = `${p.name}_v${p.version}`;
 
 			li.innerHTML = `
-				<div class="pattern-item__content">
-					<button class="btn btn--secondary btn--small" data-insert="${escapeHtml(insertName)}">
-						Insert
-					</button>
-					<span class="pattern-item__title">${escapeHtml(p.title)}</span>
-					<span class="pattern-item__meta muted">v${p.version}</span>
-				</div>
-				<div class="pattern-item__actions">
-					<button class="link-like" data-view="${p.id}">View</button>
-					<button class="link-like" data-edit="${p.id}">Edit</button>
-					<button class="link-like" data-delete="${p.id}">Delete</button>
-				</div>
-			`;
+        <div class="pattern-item__content">
+          <button class="btn btn--secondary btn--small" data-insert="${escapeHtml(insertName)}">
+            Insert
+          </button>
+          <span class="pattern-item__title">${escapeHtml(p.title)}</span>
+          <span class="pattern-item__meta muted">v${p.version}</span>
+        </div>
+        <div class="pattern-item__actions">
+          <button class="link-like" data-view="${p.id ?? ""}" ${p.id ? "" : "disabled"}>View</button>
+          <button class="link-like" data-edit="${p.id ?? ""}" ${p.id ? "" : "disabled"}>Edit</button>
+          <button class="link-like" data-delete="${p.id ?? ""}" ${p.id ? "" : "disabled"}>Delete</button>
+        </div>
+      `;
 			ul.appendChild(li);
 		}
 	}
@@ -776,6 +847,7 @@ function populatePatternList(items) {
 	addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
 	ul.appendChild(addLi);
 
+	ul.removeEventListener("click", handlePatternClick);
 	ul.addEventListener("click", handlePatternClick);
 }
 
@@ -1418,14 +1490,16 @@ function wireGlobalActions() {
 
 async function onPatternSearch(e) {
 	const q = (e?.target?.value || "").trim().toLowerCase();
-	if (!q) { await refreshPatternList(); return; }
+	if (!q) {
+		// Re-render from cache when query is cleared
+		populatePatternList(__patternCache);
+		return;
+	}
 
+	// If the service is up, we could re-query the API; however the cache provides a snappier UX.
+	// Filter the in-memory cache (works for both API and fallback starters).
 	try {
-		const res = await fetch("/api/partials", { cache: "no-store" });
-		if (!res.ok) { populatePatternList([]); return; }
-		const data = await safeJson(res);
-		const partials = Array.isArray(data?.partials) ? data.partials : [];
-		const filtered = partials.filter(p => {
+		const filtered = (__patternCache || []).filter(p => {
 			const s = `${p?.name ?? ""} ${p?.title ?? ""} ${p?.category ?? ""}`.toLowerCase();
 			return s.includes(q);
 		});
