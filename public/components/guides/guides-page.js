@@ -322,7 +322,9 @@ async function refreshPatternList() {
 	const urls = ["/api/partials", "/api/patterns"];
 	for (const url of urls) {
 		try {
-			const data = await fetchJSON(url, { headers: { Accept: "application/json" } }, { allowHeuristics: false });
+			const data = await fetchJSON(
+				url, { headers: { Accept: "application/json" } }, { allowHeuristics: false }
+			);
 			const partials = Array.isArray(data?.partials) ? data.partials :
 				Array.isArray(data) ? data :
 				[];
@@ -332,13 +334,17 @@ async function refreshPatternList() {
 			return;
 		} catch (e) {
 			console.warn(`refreshPatternList: ${url} failed`, e.message);
-			// continue to the next url
+			// try next url
 		}
 	}
 
 	// If we reach here, both endpoints failed → fall back to local starters
 	try {
-		const starters = await listStarterPatterns().catch(() => []);
+		// listStarterPatterns may return sync OR a Promise — handle both
+		let starters = [];
+		const maybe = (typeof listStarterPatterns === "function") ? listStarterPatterns() : [];
+		starters = (maybe && typeof maybe.then === "function") ? await maybe : maybe;
+
 		if (Array.isArray(starters) && starters.length) {
 			__patternServiceAvailable = false;
 			populatePatternList(starters);
