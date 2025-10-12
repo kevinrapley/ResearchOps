@@ -32,3 +32,9 @@ GH_BRANCH = "main"
 GH_PATH_PROJECTS = "data/projects.csv"
 GH_PATH_DETAILS  = "data/project-details.csv"
 GH_PATH_STUDIES  = "data/studies.csv"
+
+# Route binding
+routes = [
+  { pattern = "https://researchops.pages.dev/api/*", zone_name = "pages.dev" },
+  { pattern = "https://rops-api.digikev-kevin-rapley.workers.dev/api/*", custom_domain = false }
+]
