@@ -86,7 +86,9 @@ body {
 	margin-right: 12px;
 	}
 
-.nav a.active {
+.nav[data-active="Home"] .govuk-link[data-nav="Home"],
+.nav[data-active="Start Research Project"] .govuk-link[data-nav="Start Research Project"],
+.nav[data-active="Projects"] .govuk-link[data-nav="Projects"] {
 	font-weight: 700;
 	text-decoration: none;
 	border-bottom: 3px solid #1d70b8;
