@@ -7,6 +7,12 @@
  *   <x-include src="/partials/debug.html" debug-only></x-include>  // renders only if ?debug=true
  */
 
+import "./x-include.js";
+
+window.addEventListener("DOMContentLoaded", () => {
+	console.info("[layout] ready — <x-include> registered globally");
+});
+
 class XInclude extends HTMLElement {
 	static get observedAttributes() { return ["src", "vars", "debug-only"]; }
 
