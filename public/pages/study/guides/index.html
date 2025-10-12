@@ -4,19 +4,25 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="sda-auto" content="true" />
 	<title>Discussion Guides — Study</title>
 
+	<!-- Global styles -->
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	
+	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
 
+	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js"></script>
 	<script type="module" src="/components/guides/guides-page.js" defer></script>
 </head>
 
 <body>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+	<x-include src="/partials/debug.html"></x-include>
+	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
 		"active":"Projects",
 		"subtitle":"Study — Discussion Guides"
@@ -169,22 +175,6 @@
 		</section>
 
 		<div id="sr-live" class="sr-only" aria-live="polite"></div>
-
-		<section id="debug-panel" hidden class="debug-panel">
-			<h3>Debug output</h3>
-			<pre id="debug-output" class="debug-output">Debugging disabled.</pre>
-			<style>
-				.debug-panel {
-					margin-top: 24px;
-					padding: 12px;
-					background: #f3f2f1;
-					border: 1px solid #b1b4b6;
-					overflow-x: auto;
-					white-space: pre-wrap;
-					font-family: monospace;
-				}
-			</style>
-		</section>
 	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
