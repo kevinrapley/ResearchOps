@@ -222,3 +222,80 @@ export function whenIncludesReady(root = document) {
 		n.addEventListener("x-include:error", done, { once: true });
 	})));
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// Debug mode: URL-driven (no boot partial). Visible ?debug=true while active.
+// - Active IFF current page has ?debug=true
+// - Injects /partials/debug.html once when active
+// - Appends ?debug=true to same-origin links while active
+// - Removing the param and reloading disables debug
+// ───────────────────────────────────────────────────────────────────────────
+(() => {
+	const DEBUG_PARAM = "debug";
+	const DEBUG_VALUE = "true";
+	const CONSOLE_ID = "debug-console"; // id inside /partials/debug.html
+
+	// Parse once for current load
+	const usp = new URLSearchParams(location.search);
+	const isActive = usp.get(DEBUG_PARAM) === DEBUG_VALUE;
+
+	// If active, enforce visible URL has ?debug=true (idempotent)
+	if (isActive && !usp.has(DEBUG_PARAM)) {
+		const u = new URL(location.href);
+		u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
+		history.replaceState(history.state, "", u);
+	}
+
+	// Inject console if active (and not already present)
+	const injectDebug = () => {
+		if (!isActive) return;
+		if (document.getElementById(CONSOLE_ID) ||
+			document.querySelector('x-include[src="/partials/debug.html"]')) {
+			return;
+		}
+		const inc = document.createElement("x-include");
+		inc.setAttribute("src", "/partials/debug.html");
+		document.body.appendChild(inc);
+	};
+
+	// Decorate same-origin <a> clicks while active (keeps URL param on nav)
+	const decorateLinks = () => {
+		if (!isActive) return;
+		document.addEventListener("click", (e) => {
+			const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+			if (!a) return;
+
+			const raw = a.getAttribute("href") || "";
+			if (!raw || raw.startsWith("#") || raw.startsWith("mailto:") ||
+				raw.startsWith("tel:") || raw.startsWith("javascript:")) return;
+
+			let url;
+			try { url = new URL(a.href, location.href); } catch { return; }
+			if (url.origin !== location.origin) return; // only same-origin
+			if (url.searchParams.get(DEBUG_PARAM) === DEBUG_VALUE) return; // already set
+
+			url.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
+
+			// Update the anchor’s href (so the *visible* URL on the next page includes it)
+			a.href = url.pathname + (url.search ? "?" + url.searchParams.toString() : "") + (url.hash || "");
+		}, { capture: true });
+	};
+
+	// Run once DOM is ready
+	const ready = (fn) =>
+		(document.readyState === "loading") ?
+		document.addEventListener("DOMContentLoaded", fn, { once: true }) :
+		fn();
+
+	ready(() => {
+		// If active, make sure this page’s visible URL shows ?debug=true as well
+		if (isActive && !new URLSearchParams(location.search).has(DEBUG_PARAM)) {
+			const u = new URL(location.href);
+			u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
+			history.replaceState(history.state, "", u);
+		}
+
+		injectDebug();
+		decorateLinks();
+	});
+})();
