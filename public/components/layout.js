@@ -235,15 +235,14 @@ export function whenIncludesReady(root = document) {
 	const DEBUG_VALUE = "true";
 	const CONSOLE_ID = "debug-console"; // id inside /partials/debug.html
 
-	// Parse once for current load
 	const usp = new URLSearchParams(location.search);
 	const isActive = usp.get(DEBUG_PARAM) === DEBUG_VALUE;
 
-	// If active, enforce visible URL has ?debug=true (idempotent)
+	// If active, ensure the current visible URL has ?debug=true (Safari needs string)
 	if (isActive && !usp.has(DEBUG_PARAM)) {
 		const u = new URL(location.href);
 		u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
-		history.replaceState(history.state, "", u);
+		history.replaceState(history.state, "", u.href); // <— was `u`
 	}
 
 	// Inject console if active (and not already present)
@@ -258,44 +257,69 @@ export function whenIncludesReady(root = document) {
 		document.body.appendChild(inc);
 	};
 
-	// Decorate same-origin <a> clicks while active (keeps URL param on nav)
-	const decorateLinks = () => {
+	function shouldDecorate(href) {
+		if (!href) return false;
+		// leave hashes, mailto, tel, javascript, data alone
+		if (/^(#|mailto:|tel:|javascript:|data:)/i.test(href)) return false;
+		try {
+			const u = new URL(href, location.href);
+			if (u.origin !== location.origin) return false; // only same-origin
+		} catch {
+			return false; // malformed hrefs
+		}
+		return true;
+	}
+
+	// Batch pass: make sure existing anchors include ?debug=true in their hrefs
+	function addDebugParamToLinks() {
+		if (!isActive) return;
+		document.querySelectorAll("a[href]").forEach(a => {
+			const raw = a.getAttribute("href") || "";
+			if (!shouldDecorate(raw)) return;
+			try {
+				const u = new URL(raw, location.href);
+				if (u.searchParams.get(DEBUG_PARAM) !== DEBUG_VALUE) {
+					u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
+					a.setAttribute("href", u.pathname + u.search + u.hash);
+				}
+			} catch {
+				/* ignore bad hrefs */
+			}
+		});
+	}
+
+	// Click-time safeguard: ensure any same-origin nav keeps ?debug=true
+	function decorateClicks() {
 		if (!isActive) return;
 		document.addEventListener("click", (e) => {
 			const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
 			if (!a) return;
-
 			const raw = a.getAttribute("href") || "";
-			if (!raw || raw.startsWith("#") || raw.startsWith("mailto:") ||
-				raw.startsWith("tel:") || raw.startsWith("javascript:")) return;
-
-			let url;
-			try { url = new URL(a.href, location.href); } catch { return; }
-			if (url.origin !== location.origin) return; // only same-origin
-			if (url.searchParams.get(DEBUG_PARAM) === DEBUG_VALUE) return; // already set
-
-			url.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
-
-			// Update the anchor’s href (so the *visible* URL on the next page includes it)
-			a.href = url.pathname + (url.search ? "?" + url.searchParams.toString() : "") + (url.hash || "");
+			if (!shouldDecorate(raw)) return;
+			try {
+				const u = new URL(a.href, location.href); // absolute at this point
+				if (u.searchParams.get(DEBUG_PARAM) === DEBUG_VALUE) return;
+				u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
+				a.href = u.pathname + u.search + u.hash; // visible URL will include it
+			} catch { /* ignore */ }
 		}, { capture: true });
-	};
+	}
 
-	// Run once DOM is ready
 	const ready = (fn) =>
 		(document.readyState === "loading") ?
 		document.addEventListener("DOMContentLoaded", fn, { once: true }) :
 		fn();
 
 	ready(() => {
-		// If active, make sure this page’s visible URL shows ?debug=true as well
+		// (Redundant safety for Safari: ensure ?debug=true is visible)
 		if (isActive && !new URLSearchParams(location.search).has(DEBUG_PARAM)) {
 			const u = new URL(location.href);
 			u.searchParams.set(DEBUG_PARAM, DEBUG_VALUE);
-			history.replaceState(history.state, "", u);
+			history.replaceState(history.state, "", u.href); // <— ensure string
 		}
 
 		injectDebug();
-		decorateLinks();
+		addDebugParamToLinks(); // <— now called
+		decorateClicks();
 	});
 })();
