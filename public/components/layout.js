@@ -69,8 +69,11 @@ class XInclude extends HTMLElement {
 		}
 	}
 
-	esc(str) { const d = document.createElement("div");
-		d.textContent = String(str ?? ""); return d.innerHTML; }
+	esc(str) {
+		const d = document.createElement("div");
+		d.textContent = String(str ?? "");
+		return d.innerHTML;
+	}
 
 	lookup(obj, path) {
 		if (path === "." || path === "this") return obj;
@@ -158,6 +161,7 @@ class XInclude extends HTMLElement {
 
 			const html = this.renderTemplate(text, data);
 			this.innerHTML = html;
+			this.executeScripts();
 
 			this.applyActiveNav();
 			await Promise.resolve(); // allow upgrades
@@ -187,6 +191,22 @@ class XInclude extends HTMLElement {
 			el.querySelectorAll(".active").forEach(a => a.classList.remove("active"));
 			el.querySelectorAll(`[data-nav="${CSS.escape(target)}"]`).forEach(a => a.classList.add("active"));
 		});
+	}
+
+	executeScripts() {
+		// Re-execute any <script> tags that were inserted via innerHTML.
+		const scripts = Array.from(this.querySelectorAll("script"));
+		for (const old of scripts) {
+			const s = document.createElement("script");
+			// copy attributes (type, src, async, defer, crossorigin, etc.)
+			for (const { name, value } of Array.from(old.attributes)) {
+				s.setAttribute(name, value);
+			}
+			// copy inline code
+			if (!s.src) s.textContent = old.textContent || "";
+			// Replace in DOM → this triggers execution
+			old.replaceWith(s);
+		}
 	}
 }
 
