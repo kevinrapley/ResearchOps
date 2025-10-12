@@ -261,20 +261,44 @@ function onNewClick(e) {
 /* -------------------- patterns -------------------- */
 
 async function refreshPatternList() {
-	try {
-		const res = await fetch("/api/partials", { cache: "no-store" });
-		if (!res.ok) {
-			console.warn("Failed to fetch partials:", res.status);
-			populatePatternList([]); // render empty list, no crash
-			return;
+	// Try /api/partials first; fall back to /api/patterns
+	const urls = ["/api/partials", "/api/patterns"];
+
+	for (const url of urls) {
+		try {
+			const res = await fetch(url, {
+				cache: "no-store",
+				headers: { "Accept": "application/json" }
+			});
+
+			if (!res.ok) {
+				console.warn(`refreshPatternList: ${url} -> ${res.status}`);
+				continue; // try next url
+			}
+
+			const ct = (res.headers.get("content-type") || "").toLowerCase();
+			if (!ct.includes("application/json")) {
+				// It’s HTML (likely an SPA fallback). Don’t .json() this.
+				const snippet = (await res.text()).slice(0, 300).replace(/\s+/g, " ").trim();
+				console.warn(`refreshPatternList: Non-JSON from ${url}`, snippet);
+				continue; // try next url
+			}
+
+			const data = await res.json();
+			const partials = Array.isArray(data?.partials) ? data.partials :
+				Array.isArray(data) ? data :
+				[];
+
+			populatePatternList(partials);
+			return; // success
+		} catch (err) {
+			console.warn(`refreshPatternList: ${url} error`, err);
+			// try next url
 		}
-		const data = await safeJson(res); // ← robust parsing
-		const partials = Array.isArray(data?.partials) ? data.partials : [];
-		populatePatternList(partials);
-	} catch (err) {
-		console.error("Error refreshing pattern list:", err);
-		populatePatternList([]); // keep UI usable
 	}
+
+	// If we get here, all endpoints failed — render an empty list gracefully.
+	populatePatternList([]);
 }
 
 /* -------------------- syntax highlighting (unchanged) -------------------- */
