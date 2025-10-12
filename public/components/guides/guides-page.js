@@ -124,6 +124,20 @@ window.addEventListener("DOMContentLoaded", () => {
 	refreshPatternList().catch(console.warn);
 });
 
+async function safeJson(res) {
+	const ctype = (res.headers.get("content-type") || "").toLowerCase();
+	const text = await res.text(); // read once
+	if (ctype.includes("application/json")) {
+		try { return JSON.parse(text); } catch (e) {
+			const snippet = text.slice(0, 200);
+			throw new SyntaxError(`Invalid JSON (${res.status}). Snippet: ${snippet}`);
+		}
+	}
+	// Non-JSON response (likely HTML error page / proxy)
+	const snippet = text.slice(0, 200);
+	throw new SyntaxError(`Non-JSON response (${res.status}). Snippet: ${snippet}`);
+}
+
 /* -------------------- breadcrumbs / context -------------------- */
 
 async function loadStudies(projectId) {
@@ -251,17 +265,15 @@ async function refreshPatternList() {
 		const res = await fetch("/api/partials", { cache: "no-store" });
 		if (!res.ok) {
 			console.warn("Failed to fetch partials:", res.status);
-			populatePatternList([]);
+			populatePatternList([]); // render empty list, no crash
 			return;
 		}
-
-		const data = await res.json();
-		const partials = data.partials || [];
-
+		const data = await safeJson(res); // ← robust parsing
+		const partials = Array.isArray(data?.partials) ? data.partials : [];
 		populatePatternList(partials);
 	} catch (err) {
 		console.error("Error refreshing pattern list:", err);
-		populatePatternList([]);
+		populatePatternList([]); // keep UI usable
 	}
 }
 
@@ -1387,22 +1399,21 @@ function wireGlobalActions() {
 
 async function onPatternSearch(e) {
 	const q = (e?.target?.value || "").trim().toLowerCase();
-
 	if (!q) { await refreshPatternList(); return; }
 
 	try {
 		const res = await fetch("/api/partials", { cache: "no-store" });
-		if (!res.ok) return;
-
-		const { partials = [] } = await res.json();
+		if (!res.ok) { populatePatternList([]); return; }
+		const data = await safeJson(res);
+		const partials = Array.isArray(data?.partials) ? data.partials : [];
 		const filtered = partials.filter(p => {
-			const searchText = `${p.name} ${p.title} ${p.category}`.toLowerCase();
-			return searchText.includes(q);
+			const s = `${p?.name ?? ""} ${p?.title ?? ""} ${p?.category ?? ""}`.toLowerCase();
+			return s.includes(q);
 		});
-
 		populatePatternList(filtered);
 	} catch (err) {
 		console.error("Pattern search error:", err);
+		populatePatternList([]);
 	}
 }
 
