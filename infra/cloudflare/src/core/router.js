@@ -128,6 +128,163 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/studies" && request.method === "POST")
 			return service.createStudy(request, origin);
 
+		// ─────────── Guides ───────────
+		if (url.pathname.startsWith("/api/guides")) {
+			// Patterns:
+			// GET    /api/guides?study=:id
+			// POST   /api/guides
+			// GET    /api/guides/:id
+			// PATCH  /api/guides/:id
+			// POST   /api/guides/:id/publish
+
+			// /api/guides/:id or /api/guides/:id/publish
+			const idMatch = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
+
+			// GET /api/guides?study=...
+			if (request.method === "GET" && url.searchParams.has("study")) {
+				if (typeof service.listGuides === "function") {
+					return service.listGuides(origin, url);
+				}
+				return new Response(JSON.stringify({ ok: false, error: "listGuides not implemented" }), {
+					status: 501,
+					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+				});
+			}
+
+			// POST /api/guides
+			if (request.method === "POST" && url.pathname === "/api/guides") {
+				if (typeof service.createGuide === "function") {
+					return service.createGuide(request, origin);
+				}
+				return new Response(JSON.stringify({ ok: false, error: "createGuide not implemented" }), {
+					status: 501,
+					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+				});
+			}
+
+			// /api/guides/:id or /api/guides/:id/publish
+			if (idMatch) {
+				const [, guideId, publishSuffix] = idMatch;
+
+				// POST /api/guides/:id/publish
+				if (publishSuffix === "publish" && request.method === "POST") {
+					if (typeof service.publishGuide === "function") {
+						return service.publishGuide(guideId, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "publishGuide not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+
+				// GET /api/guides/:id
+				if (request.method === "GET") {
+					if (typeof service.readGuide === "function") {
+						return service.readGuide(guideId, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "readGuide not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+
+				// PATCH /api/guides/:id
+				if (request.method === "PATCH") {
+					if (typeof service.updateGuide === "function") {
+						return service.updateGuide(guideId, request, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "updateGuide not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+			}
+
+			// Method/shape not matched
+			return new Response(JSON.stringify({ ok: false, error: "Invalid /api/guides route" }), {
+				status: 404,
+				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+			});
+		}
+
+		// ─────────── Partials (Patterns) ───────────
+		if (url.pathname.startsWith("/api/partials")) {
+			// Patterns:
+			// GET    /api/partials
+			// POST   /api/partials
+			// GET    /api/partials/:id
+			// PATCH  /api/partials/:id
+			// DELETE /api/partials/:id
+
+			const idMatch = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
+
+			// GET /api/partials
+			if (request.method === "GET" && url.pathname === "/api/partials") {
+				if (typeof service.listPartials === "function") {
+					return service.listPartials(origin, url);
+				}
+				return new Response(JSON.stringify({ ok: false, error: "listPartials not implemented" }), {
+					status: 501,
+					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+				});
+			}
+
+			// POST /api/partials
+			if (request.method === "POST" && url.pathname === "/api/partials") {
+				if (typeof service.createPartial === "function") {
+					return service.createPartial(request, origin);
+				}
+				return new Response(JSON.stringify({ ok: false, error: "createPartial not implemented" }), {
+					status: 501,
+					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+				});
+			}
+
+			// /api/partials/:id
+			if (idMatch) {
+				const [, partialId] = idMatch;
+
+				// GET /api/partials/:id
+				if (request.method === "GET") {
+					if (typeof service.readPartial === "function") {
+						return service.readPartial(partialId, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "readPartial not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+
+				// PATCH /api/partials/:id
+				if (request.method === "PATCH") {
+					if (typeof service.updatePartial === "function") {
+						return service.updatePartial(partialId, request, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "updatePartial not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+
+				// DELETE /api/partials/:id
+				if (request.method === "DELETE") {
+					if (typeof service.deletePartial === "function") {
+						return service.deletePartial(partialId, origin);
+					}
+					return new Response(JSON.stringify({ ok: false, error: "deletePartial not implemented" }), {
+						status: 501,
+						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+					});
+				}
+			}
+
+			// Method/shape not matched
+			return new Response(JSON.stringify({ ok: false, error: "Invalid /api/partials route" }), {
+				status: 404,
+				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
+			});
+		}
+
 		// Static fallback (serve assets/pages)
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
