@@ -218,3 +218,28 @@ export function whenIncludesReady(root = document) {
 		n.addEventListener("x-include:error", done, { once: true });
 	})));
 }
+
+// Auto-fill footer vars if missing
+document.addEventListener("DOMContentLoaded", () => {
+	const nowYear = new Date().getFullYear();
+	const defaultVars = {
+		year: nowYear,
+		org: "Home Office Biometrics",
+		build: "ResearchOps v1.0.0",
+	};
+
+	for (const node of document.querySelectorAll('x-include[src="/partials/footer.html"]')) {
+		if (!node.hasAttribute("vars")) {
+			node.setAttribute("vars", JSON.stringify(defaultVars));
+		} else {
+			// Merge existing vars with defaults (existing wins)
+			try {
+				const current = JSON.parse(node.getAttribute("vars"));
+				const merged = { ...defaultVars, ...current };
+				node.setAttribute("vars", JSON.stringify(merged));
+			} catch {
+				node.setAttribute("vars", JSON.stringify(defaultVars));
+			}
+		}
+	}
+});
