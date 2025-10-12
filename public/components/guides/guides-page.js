@@ -124,28 +124,65 @@ window.addEventListener("DOMContentLoaded", () => {
 	refreshPatternList().catch(console.warn);
 });
 
-async function safeJson(res) {
-	const ctype = (res.headers.get("content-type") || "").toLowerCase();
-	const text = await res.text(); // read once
-	if (ctype.includes("application/json")) {
+async function safeJson(res, opts = {}) {
+	const {
+		allowHeuristics = true, // try parse if body looks like JSON even w/o header
+			emptyAs = null // what to return for empty bodies
+	} = opts;
+
+	const ct = res.headers.get("content-type") || "";
+	const isJsonCT = /(\/|\+)json\b/i.test(ct); // matches application/json and application/*+json
+	const text = await res.text(); // body can be read only once
+
+	// Empty/No-Content cases
+	if (res.status === 204 || res.status === 205 || res.status === 304 || text.trim() === "") {
+		return emptyAs; // e.g., null
+	}
+
+	// Proper JSON content-type
+	if (isJsonCT) {
 		try { return JSON.parse(text); } catch (e) {
 			const snippet = text.slice(0, 200);
-			throw new SyntaxError(`Invalid JSON (${res.status}). Snippet: ${snippet}`);
+			throw new SyntaxError(`Invalid JSON (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
 		}
 	}
-	// Non-JSON response (likely HTML error page / proxy)
-	const snippet = text.slice(0, 200);
-	throw new SyntaxError(`Non-JSON response (${res.status}). Snippet: ${snippet}`);
+
+	// Heuristic: looks like JSON (server forgot the header)
+	if (allowHeuristics && /^[\s\uFEFF\u200B]*[{\[]/.test(text)) {
+		try { return JSON.parse(text); } catch (e) {
+			const snippet = text.slice(0, 200);
+			throw new SyntaxError(`Looks like JSON but failed to parse (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
+		}
+	}
+
+	// Not JSON
+	const snippet = text.slice(0, 200).replace(/\s+/g, " ").trim();
+	throw new TypeError(`Non-JSON response (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
+}
+
+async function fetchJSON(url, options = {}, safeOpts = {}) {
+	const res = await fetch(url, {
+		cache: "no-store",
+		headers: { Accept: "application/json", ...(options.headers || {}) },
+		...options
+	});
+	const data = await safeJson(res, safeOpts); // consumes the body safely
+	if (!res.ok) {
+		const err = new Error(`HTTP ${res.status} for ${url}`);
+		err.status = res.status;
+		err.data = data;
+		throw err;
+	}
+	return data;
 }
 
 /* -------------------- breadcrumbs / context -------------------- */
 
 async function loadStudies(projectId) {
-	const url = "/api/studies?project=" + encodeURIComponent(projectId);
-	const res = await fetch(url, { cache: "no-store" });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok || js == null || js.ok !== true || !Array.isArray(js.studies)) {
-		throw new Error((js && js.error) || ("Studies fetch failed (" + res.status + ")"));
+	const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
+	const js = await fetchJSON(url).catch(() => ({}));
+	if (js == null || js.ok !== true || !Array.isArray(js.studies)) {
+		throw new Error((js && js.error) || "Studies fetch failed");
 	}
 	return js.studies;
 }
@@ -164,17 +201,13 @@ function pickTitle(s) {
 
 async function hydrateCrumbs({ pid, sid }) {
 	try {
-		const [projectsRes, studiesRes] = await Promise.all([
-			fetch(`/api/projects`, { cache: "no-store" }),
+		const [projects, studies] = await Promise.all([
+			fetchJSON(`/api/projects`).then(d => d.projects || []).catch(() => []),
 			loadStudies(pid)
 		]);
 
-		const projects = projectsRes.ok ? (await projectsRes.json()).projects || [] : [];
 		const project = projects.find(p => p.id === pid) || { name: "(Unnamed project)" };
-
-		const studyRaw = Array.isArray(studiesRes) ?
-			(studiesRes.find(s => s.id === sid) || {}) : {};
-
+		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
 		const study = ensureStudyTitle(studyRaw);
 
 		const bcProj = document.getElementById("breadcrumb-project");
@@ -216,8 +249,8 @@ async function loadGuides(studyId, opts = {}) {
 	let newestId = null;
 
 	try {
-		const res = await fetch(`/api/guides?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
-		const { guides = [] } = res.ok ? await res.json() : { guides: [] };
+		const data = await fetchJSON(`/api/guides?study=${encodeURIComponent(studyId)}`).catch(() => ({}));
+		const guides = Array.isArray(data?.guides) ? data.guides : [];
 
 		guides.sort((a, b) => (Date.parse(b.createdAt || 0) || 0) - (Date.parse(a.createdAt || 0) || 0));
 		newestId = guides[0]?.id || null;
@@ -261,43 +294,19 @@ function onNewClick(e) {
 /* -------------------- patterns -------------------- */
 
 async function refreshPatternList() {
-	// Try /api/partials first; fall back to /api/patterns
 	const urls = ["/api/partials", "/api/patterns"];
-
 	for (const url of urls) {
 		try {
-			const res = await fetch(url, {
-				cache: "no-store",
-				headers: { "Accept": "application/json" }
-			});
-
-			if (!res.ok) {
-				console.warn(`refreshPatternList: ${url} -> ${res.status}`);
-				continue; // try next url
-			}
-
-			const ct = (res.headers.get("content-type") || "").toLowerCase();
-			if (!ct.includes("application/json")) {
-				// It’s HTML (likely an SPA fallback). Don’t .json() this.
-				const snippet = (await res.text()).slice(0, 300).replace(/\s+/g, " ").trim();
-				console.warn(`refreshPatternList: Non-JSON from ${url}`, snippet);
-				continue; // try next url
-			}
-
-			const data = await res.json();
+			const data = await fetchJSON(url, {}, { allowHeuristics: false });
 			const partials = Array.isArray(data?.partials) ? data.partials :
 				Array.isArray(data) ? data :
 				[];
-
 			populatePatternList(partials);
-			return; // success
-		} catch (err) {
-			console.warn(`refreshPatternList: ${url} error`, err);
-			// try next url
+			return;
+		} catch (e) {
+			console.warn(`refreshPatternList: ${url} failed`, e.message);
 		}
 	}
-
-	// If we get here, all endpoints failed — render an empty list gracefully.
 	populatePatternList([]);
 }
 
@@ -468,24 +477,19 @@ async function openGuide(id) {
 	try {
 		let guide = null;
 
-		const res = await fetch(`/api/guides/${encodeURIComponent(id)}`, { cache: "no-store" });
-		if (res.ok) {
-			const js = await res.json().catch(() => ({}));
+		// Try direct
+		try {
+			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`);
 			guide = js && (js.guide || js);
-		} else if (res.status !== 404) {
-			const txt = await res.text().catch(() => "");
-			throw new Error(`GET /api/guides/${id} ${res.status}: ${txt}`);
-		}
-
-		if (!guide) {
+		} catch (err) {
+			if (err.status !== 404) {
+				throw err;
+			}
+			// 404 → fall back to list
 			const sid = __guideCtx?.study?.id || "";
 			if (!sid) throw new Error("No study id available in context for fallback.");
-			const r2 = await fetch(`/api/guides?study=${encodeURIComponent(sid)}`, { cache: "no-store" });
-			if (!r2.ok) {
-				const t = await r2.text().catch(() => "");
-				throw new Error(`GET /api/guides?study=… ${r2.status}: ${t}`);
-			}
-			const { guides = [] } = await r2.json().catch(() => ({}));
+			const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`).catch(() => ({}));
+			const guides = Array.isArray(list?.guides) ? list.guides : [];
 			guide = guides.find(g => g.id === id) || null;
 		}
 
@@ -578,32 +582,31 @@ async function onSave() {
 	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
 	const source = stripFrontMatter($("#guide-source")?.value || "");
 	const variables = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() : {};
+		varManager.getVariables() :
+		{};
 
 	const studyId = __guideCtx?.study?.id || "";
 	const id = __openGuideId;
 
-	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id ?
+		{ title, sourceMarkdown: source, variables } :
+		{ study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
-	const method = id ? "PATCH" : "POST";
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
+	const method = id ? "PATCH" : "POST";
 
-	const res = await fetch(url, {
-		method,
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(body)
-	});
+	try {
+		const js = await fetchJSON(
+			url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, { emptyAs: {} }
+		);
 
-	const js = await res.json().catch(() => ({}));
-
-	if (res.ok) {
 		if (!id && js && js.id) {
 			__openGuideId = js.id;
 		}
 		announce("Guide saved");
 		if (studyId) loadGuides(studyId);
-	} else {
-		announce(`Save failed: ${res.status} ${JSON.stringify(js)}`);
+	} catch (err) {
+		announce(`Save failed: ${err.status || "?"} ${JSON.stringify(err.data || {})}`);
 	}
 }
 
@@ -800,29 +803,27 @@ async function handlePatternClick(e) {
 
 async function viewPartial(id) {
 	try {
-		const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { cache: "no-store" });
-		if (!res.ok) { announce(`Failed to load partial: ${res.status}`); return; }
-		const data = await res.json();
-		if (!data.ok || !data.partial) { announce("Failed to load partial: Invalid response"); return; }
+		const data = await fetchJSON(`/api/partials/${encodeURIComponent(id)}`).catch(() => null);
+		if (!data?.ok || !data?.partial) { announce("Failed to load partial: Invalid response"); return; }
 		const { partial } = data;
 
 		const modal = document.createElement("dialog");
 		modal.className = "modal";
 		modal.innerHTML = `
-			<h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
-			<dl class="govuk-summary-list">
-				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Name:</dt><dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd></div>
-				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Category:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd></div>
-				<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Status:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd></div>
-			</dl>
-			<h3 class="govuk-heading-s">Source</h3>
-			<pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
-			${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
-			<div class="modal-actions">
-				<button class="btn btn--secondary" data-close>Close</button>
-				<button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
-			</div>
-		`;
+      <h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Name:</dt><dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd></div>
+        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Category:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd></div>
+        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Status:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd></div>
+      </dl>
+      <h3 class="govuk-heading-s">Source</h3>
+      <pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
+      ${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
+      <div class="modal-actions">
+        <button class="btn btn--secondary" data-close>Close</button>
+        <button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
+      </div>
+    `;
 		document.body.appendChild(modal);
 		modal.showModal();
 
@@ -845,44 +846,38 @@ async function viewPartial(id) {
 
 async function editPartial(id) {
 	try {
-		const url = `/api/partials/${encodeURIComponent(id)}`;
-		const res = await fetch(url, { cache: "no-store", headers: { "Accept": "application/json" } });
-		const text = await res.text();
-		if (!res.ok) { announce(`Failed to load partial: ${res.status}`); return; }
-
-		let data;
-		try { data = JSON.parse(text); } catch { announce("Failed to load partial: Invalid JSON"); return; }
-		if (!data.ok || !data.partial) { announce("Failed to load partial: Invalid response"); return; }
+		const data = await fetchJSON(`/api/partials/${encodeURIComponent(id)}`).catch(() => null);
+		if (!data?.ok || !data?.partial) { announce("Failed to load partial: Invalid response"); return; }
 
 		const { partial } = data;
 
 		const modal = document.createElement("dialog");
 		modal.className = "modal";
 		modal.innerHTML = `
-			<h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
-			<form id="partial-edit-form">
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-title">Title</label>
-					<input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-category">Category</label>
-					<input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-source">Source (Mustache)</label>
-					<textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="partial-description">Description</label>
-					<textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
-				</div>
-				<div class="modal-actions">
-					<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-					<button type="submit" class="btn">Save changes</button>
-				</div>
-			</form>
-		`;
+      <h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
+      <form id="partial-edit-form">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="partial-title">Title</label>
+          <input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="partial-category">Category</label>
+          <input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="partial-source">Source (Mustache)</label>
+          <textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="partial-description">Description</label>
+          <textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
+          <button type="submit" class="btn">Save changes</button>
+        </div>
+      </form>
+    `;
 		document.body.appendChild(modal);
 		modal.showModal();
 
