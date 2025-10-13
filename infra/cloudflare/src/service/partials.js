@@ -5,7 +5,7 @@
  */
 
 import { fetchWithTimeout, safeText } from "../core/utils.js";
-import { getRecord } from "../internals/airtable.js";
+import { getRecord } from "./internals/airtable.js";
 
 /**
  * List all partials (for pattern drawer).
