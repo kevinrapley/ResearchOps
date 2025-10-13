@@ -151,21 +151,36 @@ window.addEventListener("DOMContentLoaded", () => {
 			const url = new URL(location.href);
 			const pid = url.searchParams.get("pid");
 			const sid = url.searchParams.get("sid");
-			const gid = url.searchParams.get("gid"); // optional
+			const gid = url.searchParams.get("gid"); // optional direct-open
 
+			// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
 			await hydrateCrumbs({ pid, sid });
 
-			try { await refreshPatternList(); } catch (e) { console.warn(e); }
+			// Patterns don’t block guides table; failure shouldn’t stall the UI
+			try { await refreshPatternList(); } catch (e) { console.warn("patterns:", e); }
 
+			// If gid provided, try to open it first (does not block loadGuides)
 			if (gid) {
 				try { await openGuide(gid);
 					window.__hasAutoOpened = true; } catch (err) { console.warn("Boot open gid:", err); }
 			}
 
+			// Always render the table; it manages its own loading/fallback UI
 			await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
+
 		} catch (err) {
 			console.warn("Boot fatal:", err);
 			announce("Failed to initialise the page.");
+			// As a last resort, unstick any “Loading…” spinners we know about
+			const stuck = document.querySelector("#guides-loading, [data-role='guides-loading']");
+			if (stuck) stuck.hidden = true;
+			const tbody =
+				document.querySelector("#guides-tbody") ||
+				document.querySelector("#guides-table tbody") ||
+				document.querySelector("[data-guides-tbody]");
+			if (tbody) {
+				tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides.</td></tr>`;
+			}
 		}
 	})();
 });
