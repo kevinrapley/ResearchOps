@@ -144,52 +144,45 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// Guides
-		if (url.pathname.startsWith("/api/guides")) {
-			if (url.pathname === "/api/guides" && request.method === "GET") {
-				return service.listGuides(origin, url);
+		// ─────────── Guides ───────────
+		if (url.pathname === "/api/guides" && request.method === "GET") {
+			return service.listGuides(origin, url);
+		}
+		if (url.pathname === "/api/guides" && request.method === "POST") {
+			return service.createGuide(request, origin);
+		}
+		if (url.pathname.startsWith("/api/guides/")) {
+			const guideId = url.pathname.split("/").pop();
+			if (request.method === "GET") {
+				return service.readGuide(origin, guideId);
 			}
-			if (url.pathname === "/api/guides" && request.method === "POST") {
-				return service.createGuide(request, origin);
+			if (request.method === "PATCH") {
+				return service.updateGuide(request, origin, guideId);
 			}
-			if (/^\/api\/guides\/[^/]+$/.test(url.pathname) && request.method === "GET") {
-				const id = url.pathname.split("/").pop();
-				return readGuide(env, (o) => service.corsHeaders(o), id);
-			}
-			const gm = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
-			if (gm) {
-				const [, guideId, action] = gm;
-				const urlWithId = new URL(url.toString());
-				urlWithId.searchParams.set("id", guideId);
-				if (action === "publish" && request.method === "POST") {
-					return service.publishGuide(origin, urlWithId);
-				}
-				if (request.method === "GET") return service.readGuide(origin, urlWithId);
-				if (request.method === "PATCH") return service.updateGuide(request, origin, urlWithId);
+			if (request.method === "POST" && url.pathname.endsWith("/publish")) {
+				// /api/guides/:id/publish
+				const id = url.pathname.split("/").slice(-2, -1)[0];
+				return service.publishGuide(origin, id);
 			}
 		}
 
-		// Partials
-		if (url.pathname.startsWith("/api/partials")) {
-			if (url.pathname === "/api/partials" && request.method === "GET") {
-				// list, or single by ?id=…
-				return service.listPartials(origin, url);
+		// ─────────── Partials ───────────
+		if (url.pathname === "/api/partials" && request.method === "GET") {
+			return service.listPartials(origin, url);
+		}
+		if (url.pathname === "/api/partials" && request.method === "POST") {
+			return service.createPartial(request, origin);
+		}
+		if (url.pathname.startsWith("/api/partials/")) {
+			const partialId = url.pathname.split("/").pop();
+			if (request.method === "GET") {
+				return service.readPartial(origin, partialId);
 			}
-			if (url.pathname === "/api/partials" && request.method === "POST") {
-				return service.createPartial(request, origin);
+			if (request.method === "PATCH") {
+				return service.updatePartial(request, origin, partialId);
 			}
-			if (/^\/api\/partials\/[^/]+$/.test(url.pathname) && request.method === "GET") {
-				const id = url.pathname.split("/").pop();
-				return readPartial(env, (o) => service.corsHeaders(o), id);
-			}
-			const pm = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
-			if (pm) {
-				const [, partialId] = pm;
-				const urlWithId = new URL(url.toString());
-				urlWithId.searchParams.set("id", partialId);
-				if (request.method === "GET") return service.readPartial(origin, urlWithId);
-				if (request.method === "PATCH") return service.updatePartial(request, origin, urlWithId);
-				if (request.method === "DELETE") return service.deletePartial(origin, urlWithId);
+			if (request.method === "DELETE") {
+				return service.deletePartial(origin, partialId);
 			}
 		}
 
