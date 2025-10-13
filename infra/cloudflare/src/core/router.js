@@ -47,6 +47,8 @@
 
 import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
+import { readPartial } from "../service/features/partials.js";
+import { readGuide } from "../service/features/guides.js";
 
 /**
  * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
@@ -150,6 +152,10 @@ export async function handleRequest(request, env) {
 			if (url.pathname === "/api/guides" && request.method === "POST") {
 				return service.createGuide(request, origin);
 			}
+			if (/^\/api\/guides\/[^/]+$/.test(url.pathname) && request.method === "GET") {
+				const id = url.pathname.split("/").pop();
+				return readGuideById(env, (o) => service.corsHeaders(o), id);
+			}
 			const gm = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
 			if (gm) {
 				const [, guideId, action] = gm;
@@ -171,6 +177,10 @@ export async function handleRequest(request, env) {
 			}
 			if (url.pathname === "/api/partials" && request.method === "POST") {
 				return service.createPartial(request, origin);
+			}
+			if (/^\/api\/partials\/[^/]+$/.test(url.pathname) && request.method === "GET") {
+				const id = url.pathname.split("/").pop();
+				return readPartialById(env, (o) => service.corsHeaders(o), id);
 			}
 			const pm = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
 			if (pm) {
