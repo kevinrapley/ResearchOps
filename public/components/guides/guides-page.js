@@ -143,8 +143,10 @@ function setPatternStatus(msg) {
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
-	(void async function boot() {
+	(async function boot() {
 		try {
+			console.log("[guides] Boot starting...");
+
 			installLoadingKiller();
 			wireGlobalActions();
 			wireEditor();
@@ -154,27 +156,49 @@ window.addEventListener("DOMContentLoaded", () => {
 			const sid = url.searchParams.get("sid");
 			const gid = url.searchParams.get("gid"); // optional direct-open
 
+			console.log("[guides] URL params - pid:", pid, "sid:", sid, "gid:", gid);
+
+			if (!pid || !sid) {
+				console.error("[guides] Missing required URL parameters");
+				announce("Missing project or study ID in URL");
+				const tbody = document.querySelector("#guides-tbody");
+				if (tbody) {
+					tbody.innerHTML = '<tr><td colspan="6" class="muted">Error: Missing project or study ID in URL</td></tr>';
+				}
+				return;
+			}
+
 			// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
 			await hydrateCrumbs({ pid, sid });
+			console.log("[guides] Context hydrated:", __guideCtx);
 
-			// Patterns don’t block guides table; failure shouldn’t stall the UI
-			try { await refreshPatternList(); } catch (e) { console.warn("patterns:", e); }
+			// Patterns don't block guides table; failure shouldn't stall the UI
+			try {
+				await refreshPatternList();
+				console.log("[guides] Patterns loaded");
+			} catch (e) {
+				console.warn("[guides] Pattern load failed:", e);
+			}
 
 			// If gid provided, try to open it first (does not block loadGuides)
 			if (gid) {
 				try {
 					await openGuide(gid);
 					window.__hasAutoOpened = true;
-				} catch (err) { console.warn("Boot open gid:", err); }
+					console.log("[guides] Opened guide from URL:", gid);
+				} catch (err) {
+					console.warn("[guides] Boot open gid failed:", err);
+				}
 			}
 
 			// Always render the table; it manages its own loading/fallback UI
+			console.log("[guides] Loading guides for study:", sid);
 			await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
 
 		} catch (err) {
-			console.warn("Boot fatal:", err);
+			console.error("[guides] Boot fatal:", err);
 			announce("Failed to initialise the page.");
-			// As a last resort, unstick any “Loading…” spinners we know about
+			// As a last resort, unstick any "Loading…" spinners we know about
 			const stuck = document.querySelector("#guides-loading, [data-role='guides-loading']");
 			if (stuck) stuck.hidden = true;
 			const tbody =
@@ -182,7 +206,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				document.querySelector("#guides-table tbody") ||
 				document.querySelector("[data-guides-tbody]");
 			if (tbody) {
-				tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
 			}
 		}
 	})();
@@ -323,8 +347,10 @@ function nukeGuidesLoadingUI() {
 	];
 	// Hide known elements
 	for (const sel of KNOWN) {
-		document.querySelectorAll(sel).forEach(el => { el.hidden = true;
-			el.setAttribute("aria-hidden", "true"); });
+		document.querySelectorAll(sel).forEach(el => {
+			el.hidden = true;
+			el.setAttribute("aria-hidden", "true");
+		});
 	}
 
 	// Remove nodes whose *only* visible text is "Loading…/Loading..."
@@ -359,7 +385,7 @@ function installLoadingKiller() {
 
 /**
  * Ensure a guides table skeleton exists and return its <tbody>.
- * This prevents “stuck on Loading…” when the original DOM isn’t present
+ * This prevents "stuck on Loading…" when the original DOM isn't present
  * or when a loader placeholder never gets replaced.
  */
 function ensureGuidesTableSkeleton() {
@@ -373,6 +399,7 @@ function ensureGuidesTableSkeleton() {
 
 	// Try to find a sensible container to mount into
 	let host =
+		document.querySelector("#guides-list-section") ||
 		document.querySelector("#guides-section") ||
 		document.querySelector("[data-guides-section]") ||
 		document.querySelector("#editor-section") ||
@@ -382,33 +409,27 @@ function ensureGuidesTableSkeleton() {
 	// Create a minimal table structure
 	const wrapper = document.createElement("div");
 	wrapper.id = "guides-fallback-wrapper";
+	wrapper.className = "table-wrap";
 	wrapper.innerHTML = `
-    <div class="card" id="guides-card">
-      <div class="card-header">
-        <h2 class="govuk-heading-m">Guides for this study</h2>
-      </div>
-      <div class="card-body">
-        <table class="govuk-table" id="guides-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Version</th>
-              <th>Updated</th>
-              <th>Author</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="guides-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    <table class="table" role="table" id="guides-table">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Status</th>
+          <th scope="col">Version</th>
+          <th scope="col">Updated</th>
+          <th scope="col">Owner</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="guides-tbody"></tbody>
+    </table>
   `;
 	host.appendChild(wrapper);
 	return wrapper.querySelector("#guides-tbody");
 }
 
-/** Hide any visible “Loading…” elements we know about (be aggressive). */
+/** Hide any visible "Loading…" elements we know about (be aggressive). */
 function hideGuidesLoadingUI() {
 	const candidates = [
 		"#guides-loading",
@@ -430,27 +451,21 @@ function hideGuidesLoadingUI() {
 }
 
 async function loadGuides(studyId, opts = {}) {
-	// Always prepare a tbody to paint into (re-use your existing helper if present)
-	const tbody = (typeof ensureGuidesTableSkeleton === "function") ?
-		ensureGuidesTableSkeleton() :
-		(document.querySelector("#guides-tbody") || (() => {
-			const host = document.querySelector("#guides-section") || document.querySelector("main") || document.body;
-			const shell = document.createElement("div");
-			shell.innerHTML = `
-          <table class="govuk-table" id="guides-table">
-            <thead>
-              <tr>
-                <th>Title</th><th>Status</th><th>Version</th><th>Updated</th><th>Author</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="guides-tbody"></tbody>
-          </table>`;
-			host.appendChild(shell);
-			return shell.querySelector("#guides-tbody");
-		})());
+	console.log("[guides] loadGuides called with studyId:", studyId);
+
+	// Always prepare a tbody to paint into
+	const tbody = ensureGuidesTableSkeleton();
+	console.log("[guides] tbody element:", tbody);
 
 	// Small helpers
-	const paint = (html) => { if (tbody) tbody.innerHTML = html; };
+	const paint = (html) => {
+		if (tbody) {
+			tbody.innerHTML = html;
+			console.log("[guides] painted:", html.substring(0, 100));
+		} else {
+			console.error("[guides] tbody is null, cannot paint");
+		}
+	};
 	const row = (msg) => `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
 
 	// Show loading row, then *immediately* kill any external loaders
@@ -468,14 +483,19 @@ async function loadGuides(studyId, opts = {}) {
 	// Safety timeout: if the network hangs, we still unstick the UI
 	const ac = new AbortController();
 	const timer = setTimeout(() => {
+		console.warn("[guides] Request timed out after 8s");
 		try { ac.abort(); } catch {}
 	}, 8000);
 
 	try {
-		// Fetch with heuristics so HTML-with-JSON-body won’t break us
+		console.log("[guides] Fetching from:", `/api/guides?study=${encodeURIComponent(studyId)}`);
+
+		// Fetch with heuristics so HTML-with-JSON-body won't break us
 		const data = await fetchJSON(
 			`/api/guides?study=${encodeURIComponent(studyId)}`, { headers: { Accept: "application/json" }, signal: ac.signal }, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
 		);
+
+		console.log("[guides] Received data:", data);
 
 		// Defensive shape checks
 		if (!data || typeof data !== "object") {
@@ -486,6 +506,8 @@ async function loadGuides(studyId, opts = {}) {
 		}
 
 		const guides = Array.isArray(data.guides) ? data.guides : [];
+		console.log("[guides] Parsed guides array:", guides.length, "items");
+
 		guides.sort((a, b) =>
 			(Date.parse(b.updatedAt || b.createdAt || 0) || 0) -
 			(Date.parse(a.updatedAt || a.createdAt || 0) || 0)
@@ -501,17 +523,38 @@ async function loadGuides(studyId, opts = {}) {
 		const fr = document.createDocumentFragment();
 		for (const g of guides) {
 			const tr = document.createElement("tr");
+
+			// Format the updated date
+			let dateStr = "—";
+			try {
+				const date = new Date(g.updatedAt || g.createdAt || 0);
+				if (!isNaN(date.getTime())) {
+					dateStr = date.toLocaleString('en-GB', {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit'
+					});
+				}
+			} catch (e) {
+				console.warn("[guides] Date parsing error:", e);
+			}
+
 			tr.innerHTML = `
         <td>${escapeHtml(g.title || "Untitled")}</td>
         <td>${escapeHtml(g.status || "draft")}</td>
         <td>v${Number.isFinite(g.version) ? g.version : (parseInt(g.version,10) || 0)}</td>
-        <td>${new Date(g.updatedAt || g.createdAt || 0).toLocaleString()}</td>
+        <td>${dateStr}</td>
         <td>${escapeHtml(g.createdBy?.name || "—")}</td>
         <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
 			fr.appendChild(tr);
 		}
+
+		// Clear and append
 		paint("");
 		tbody.appendChild(fr);
+		console.log("[guides] Table populated with", guides.length, "rows");
 
 		// Wire open buttons
 		tbody.querySelectorAll('button[data-open]').forEach(btn => {
@@ -524,15 +567,17 @@ async function loadGuides(studyId, opts = {}) {
 		// Auto-open newest if requested
 		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && guides[0]?.id) {
 			window.__hasAutoOpened = true;
+			console.log("[guides] Auto-opening first guide:", guides[0].id);
 			try { await openGuide(guides[0].id); } catch (e) { console.warn("autoOpen failed:", e); }
 		}
 
-		// Success: nuke any external “Loading…” remnants
+		// Success: nuke any external "Loading…" remnants
 		nukeGuidesLoadingUI();
+		console.log("[guides] Load complete, UI updated");
 
 	} catch (err) {
 		const aborted = err && (err.name === "AbortError");
-		console.warn("[guides] loadGuides error:", err);
+		console.error("[guides] loadGuides error:", err);
 		paint(row(aborted ? "Network is slow. Please try again." : "Failed to load guides."));
 		nukeGuidesLoadingUI();
 	} finally {
