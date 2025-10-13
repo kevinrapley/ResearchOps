@@ -25,7 +25,7 @@ export function makeTableUrl(env, tableName) {
 }
 
 /**
- * Build the Authorization header for Airtable calls.
+ * Build the Authorization + common headers for Airtable calls.
  *
  * @param {import("../index.js").Env} env
  * @returns {Record<string,string>}
@@ -33,7 +33,8 @@ export function makeTableUrl(env, tableName) {
 export function authHeaders(env) {
 	return {
 		"Authorization": `Bearer ${env.AIRTABLE_API_KEY}`,
-		"Content-Type": "application/json"
+		"Content-Type": "application/json",
+		"Accept": "application/json"
 	};
 }
 
@@ -52,7 +53,7 @@ export function authHeaders(env) {
 export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const pageSize = Math.min(Math.max(parseInt(String(opts.pageSize ?? 100), 10), 1), 100);
 	const base = makeTableUrl(env, tableName);
-	const headers = { "Authorization": `Bearer ${env.AIRTABLE_API_KEY}` };
+	const headers = authHeaders(env);
 
 	const all = [];
 	let offset;
@@ -88,22 +89,60 @@ export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TI
 
 /**
  * Read a single record by ID.
+ * If Airtable returns 404 (NOT_FOUND), fall back to a filtered list using
+ * filterByFormula: RECORD_ID() = 'id' (some integrations/views can cause
+ * the record endpoint to 404 even when the record is visible in list queries).
  *
  * @async
  * @param {import("../index.js").Env} env
  * @param {string} tableName
  * @param {string} id
  * @param {number} [timeoutMs=DEFAULTS.TIMEOUT_MS]
- * @returns {Promise<any>}
- * @throws {Error} on HTTP failure
+ * @returns {Promise<any>} Airtable single-record JSON (shape: { id, fields, createdTime })
+ * @throws {Error} on HTTP failure (non-404) or if not found in fallback
  */
 export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
-	const headers = { "Authorization": `Bearer ${env.AIRTABLE_API_KEY}` };
-	const res = await fetchWithTimeout(url, { headers }, timeoutMs);
-	const txt = await res.text();
-	if (!res.ok) throw new Error(`Airtable ${res.status}: ${safeText(txt)}`);
-	try { return JSON.parse(txt); } catch { return {}; }
+	const headers = authHeaders(env);
+
+	// Primary: record endpoint
+	{
+		const res = await fetchWithTimeout(url, { headers }, timeoutMs);
+		const txt = await res.text();
+		if (res.ok) {
+			try { return JSON.parse(txt); } catch { return {}; }
+		}
+		// If NOT_FOUND, we’ll try a query-based fallback next
+		if (res.status !== 404) {
+			throw new Error(`Airtable ${res.status}: ${safeText(txt)}`);
+		}
+	}
+
+	// Fallback: list with filterByFormula on RECORD_ID()
+	{
+		const base = makeTableUrl(env, tableName);
+		const params = new URLSearchParams({
+			pageSize: "1",
+			filterByFormula: `RECORD_ID()='${id}'`
+		});
+		const listUrl = `${base}?${params.toString()}`;
+		const res2 = await fetchWithTimeout(listUrl, { headers }, timeoutMs);
+		const txt2 = await res2.text();
+
+		if (!res2.ok) {
+			throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
+		}
+
+		/** @type {{records?: Array<any>}} */
+		let js2;
+		try { js2 = JSON.parse(txt2); } catch { js2 = { records: [] }; }
+		const rec = (js2.records || [])[0];
+		if (!rec) {
+			// Still not found → surface a clear NOT_FOUND error
+			throw new Error(`Airtable 404: NOT_FOUND (record ${id} in table "${tableName}")`);
+		}
+		return rec;
+	}
 }
 
 /**
