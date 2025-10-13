@@ -154,12 +154,12 @@ window.addEventListener("DOMContentLoaded", () => {
 			const gid = url.searchParams.get("gid"); // optional
 
 			await hydrateCrumbs({ pid, sid });
-			
+
 			try { await refreshPatternList(); } catch (e) { console.warn(e); }
 
 			if (gid) {
-				try { await openGuide(gid); window.__hasAutoOpened = true; }
-				catch (err) { console.warn("Boot open gid:", err); }
+				try { await openGuide(gid);
+					window.__hasAutoOpened = true; } catch (err) { console.warn("Boot open gid:", err); }
 			}
 
 			await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
@@ -289,75 +289,121 @@ async function hydrateCrumbs({ pid, sid }) {
 /* -------------------- list + open -------------------- */
 
 async function loadGuides(studyId, opts = {}) {
-	const tbody = $("#guides-tbody");
-	const tableWrap = $("#guides-table-wrap"); // optional wrapper if you have one
-	const loadingEl = $("#guides-loading"); // optional “Loading…” element if present
+	// Find a tbody in a few tolerant ways (any of these will do)
+	const tbody =
+		document.querySelector("#guides-tbody") ||
+		document.querySelector("#guides-table tbody") ||
+		document.querySelector("[data-guides-tbody]");
 
-	// If there’s nowhere to render, bail gracefully.
+	// Elements that may show a “Loading…” spinner/text
+	const loadingEls = [
+		document.querySelector("#guides-loading"),
+		document.querySelector('[data-role="guides-loading"]')
+	].filter(Boolean);
+
+	// Helper to show a loading state inside the tbody (if present)
+	function showLoadingRow(msg = "Loading…") {
+		if (tbody) {
+			tbody.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
+		}
+		loadingEls.forEach(el => { el.hidden = false; });
+	}
+
+	// Helper to show a terminal message and always clear any external spinners
+	function showTerminalRow(msg) {
+		if (tbody) {
+			tbody.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
+		}
+		loadingEls.forEach(el => { el.hidden = true; });
+	}
+
+	// If nowhere to render, at least stop any external spinners and bail.
 	if (!tbody) {
-		console.warn("[guides] loadGuides: no #guides-tbody found");
+		console.warn("[guides] loadGuides: no tbody found (#guides-tbody / #guides-table tbody / [data-guides-tbody])");
+		loadingEls.forEach(el => { el.hidden = true; });
 		return;
 	}
 
-	// Clear table first time to avoid permanent “Loading…”
-	tbody.innerHTML = `<tr><td colspan="6" class="muted">Loading…</td></tr>`;
+	// Kick off with a visible loading row (prevents “stuck on Loading…” if we error)
+	showLoadingRow("Loading…");
 
+	// No study id: stop early with a clear message
 	if (!studyId) {
 		console.warn("[guides] loadGuides: no studyId provided");
-		tbody.innerHTML = `<tr><td colspan="6" class="muted">No study selected.</td></tr>`;
+		showTerminalRow("No study selected.");
 		return;
 	}
 
 	let newestId = null;
 
+	// Safety timer: if nothing completes in time, unstick the UI
+	let safetyTimer = setTimeout(() => {
+		console.warn("[guides] loadGuides: safety timer tripped — showing fallback message.");
+		showTerminalRow("Taking longer than expected… still loading guides.");
+	}, 6000);
+
 	try {
-		// Use the hardened fetchJSON helper so SPA HTML fallbacks don’t choke us.
+		// Prefer JSON; allow heuristic parsing if server forgot the header
 		const data = await fetchJSON(
-			`/api/guides?study=${encodeURIComponent(studyId)}`, {}, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
+			`/api/guides?study=${encodeURIComponent(studyId)}`, { headers: { Accept: "application/json" } }, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
 		);
 
-		const guides = Array.isArray(data?.guides) ? data.guides : [];
+		// Validate shape
+		if (!data || typeof data !== "object") {
+			console.warn("[guides] loadGuides: unexpected payload shape:", data);
+			showTerminalRow("Failed to load guides.");
+			return;
+		}
 
-		// Sort newest first by createdAt (fallback to 0)
-		guides.sort((a, b) => (Date.parse(b.createdAt || 0) || 0) - (Date.parse(a.createdAt || 0) || 0));
+		const guides = Array.isArray(data.guides) ? data.guides : [];
+		guides.sort(
+			(a, b) =>
+			(Date.parse(b.updatedAt || b.createdAt || 0) || 0) -
+			(Date.parse(a.updatedAt || a.createdAt || 0) || 0)
+		);
 		newestId = guides[0]?.id || null;
 
 		if (!guides.length) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">No guides yet. Create one to get started.</td></tr>`;
-		} else {
-			// Rebuild rows
-			tbody.innerHTML = "";
-			for (const g of guides) {
-				const tr = document.createElement("tr");
-				tr.innerHTML = `
-          <td>${escapeHtml(g.title || "Untitled")}</td>
-          <td>${escapeHtml(g.status || "draft")}</td>
-          <td>v${g.version || 0}</td>
-          <td>${new Date(g.updatedAt || g.createdAt || 0).toLocaleString()}</td>
-          <td>${escapeHtml(g.createdBy?.name || "—")}</td>
-          <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
-				tbody.appendChild(tr);
-			}
-
-			// Wire open buttons
-			$$('button[data-open]').forEach(b => b.addEventListener("click", () => {
-				window.__hasAutoOpened = true;
-				openGuide(b.dataset.open);
-			}));
+			showTerminalRow("No guides yet. Create one to get started.");
+			return;
 		}
 
-		// Auto-open newest if requested and nothing currently open
+		// Build rows
+		tbody.innerHTML = "";
+		for (const g of guides) {
+			const tr = document.createElement("tr");
+			tr.innerHTML = `
+        <td>${escapeHtml(g.title || "Untitled")}</td>
+        <td>${escapeHtml(g.status || "draft")}</td>
+        <td>v${g.version || 0}</td>
+        <td>${new Date(g.updatedAt || g.createdAt || 0).toLocaleString()}</td>
+        <td>${escapeHtml(g.createdBy?.name || "—")}</td>
+        <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
+			tbody.appendChild(tr);
+		}
+
+		// Wire open buttons
+		Array.from(tbody.querySelectorAll('button[data-open]')).forEach(b =>
+			b.addEventListener("click", () => {
+				window.__hasAutoOpened = true;
+				openGuide(b.dataset.open);
+			})
+		);
+
+		// Auto-open newest if requested
 		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && newestId) {
 			window.__hasAutoOpened = true;
 			await openGuide(newestId);
 		}
 
-	} catch (e) {
-		console.warn("[guides] loadGuides error:", e);
-		tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to load guides.</td></tr>`;
+		// Success → hide any external “Loading…” elements
+		loadingEls.forEach(el => { el.hidden = true; });
+
+	} catch (err) {
+		console.warn("[guides] loadGuides error:", err);
+		showTerminalRow("Failed to load guides.");
 	} finally {
-		// Ensure any “Loading…” placeholder is hidden/cleared
-		if (loadingEl) loadingEl.hidden = true;
+		clearTimeout(safetyTimer);
 	}
 }
 
