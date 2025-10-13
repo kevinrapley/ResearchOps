@@ -545,18 +545,15 @@ async function openGuide(id) {
 		// 1) Try the single-record endpoint
 		try {
 			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`);
-			// Some services return { guide }, others return the object directly
 			guide = js?.guide ?? js ?? null;
 		} catch (err) {
-			// If the server returns 404 (Airtable NOT_FOUND), fall back to the list-by-study
-			console.warn(`GET /api/guides/${id} failed; falling back to list`, err?.message || err);
+			console.warn(`GET /api/guides/${id} failed; will try list fallback`, err?.message || err);
 		}
 
-		// 2) Fallback: pull from the study list if /:id didn’t work
+		// 2) Fallback: list-by-study (some stacks only include full body here)
 		if (!guide) {
 			const sid = __guideCtx?.study?.id || "";
 			if (!sid) throw new Error("No study id available in context for fallback.");
-
 			const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`);
 			const guides = Array.isArray(list?.guides) ? list.guides : [];
 			guide = guides.find(g => g.id === id) || null;
@@ -564,44 +561,73 @@ async function openGuide(id) {
 
 		if (!guide) throw new Error("Guide not found");
 
-		// 3) Set UI chrome
+		// 3) Extract title/status
 		__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
-		if ($("#guide-title")) $("#guide-title").value = guide.title || "Untitled";
-		if ($("#guide-status")) $("#guide-status").textContent = guide.status || "draft";
+		const tEl = $("#guide-title");
+		if (tEl) tEl.value = guide.title || "Untitled";
+		const sEl = $("#guide-status");
+		if (sEl) sEl.textContent = guide.status || "draft";
 
-		// 4) JSON-only migration rules
-		let source = String(guide.sourceMarkdown || "");
+		// 4) Pull body + variables. Some list endpoints omit body — defend here.
+		let source = typeof guide.sourceMarkdown === "string" ? guide.sourceMarkdown : "";
 		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
 
+		// If source is still empty, last-ditch: refetch via list and merge the matching record (if any)
+		if (!source.trim()) {
+			try {
+				const sid = __guideCtx?.study?.id || "";
+				if (sid) {
+					const list2 = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`);
+					const guides2 = Array.isArray(list2?.guides) ? list2.guides : [];
+					const full = guides2.find(g => g.id === id);
+					if (full?.sourceMarkdown) source = String(full.sourceMarkdown);
+					if (!jsonVars && full?.variables) jsonVars = full.variables;
+				}
+			} catch (err) {
+				console.warn("Secondary hydrate attempt failed:", err?.message || err);
+			}
+		}
+
+		// 5) JSON-only migration (strip YAML; import once if YAML exists)
 		if (!jsonVars || Object.keys(jsonVars).length === 0) {
-			// One-time import from YAML if present
-			const { stripped, yaml } = extractAndStripFrontMatter(source);
+			const { stripped, yaml } = extractAndStripFrontMatter(source || "");
 			if (yaml) {
 				try {
 					const imported = parseSimpleYaml(yaml);
-					if (imported && Object.keys(imported).length) {
-						jsonVars = imported;
-					}
-				} catch { /* ignore YAML parse errors; keep going */ }
+					if (imported && Object.keys(imported).length) jsonVars = imported;
+				} catch { /* ignore YAML parse errors */ }
 				source = stripped;
 			} else {
-				source = stripFrontMatter(source);
+				source = stripFrontMatter(source || "");
 			}
 		} else {
-			source = stripFrontMatter(source);
+			source = stripFrontMatter(source || "");
 		}
 
-		// 5) Seed editor + variables drawer
-		if ($("#guide-source")) $("#guide-source").value = source;
-		syncHighlighting();
+		// 6) Seed the editor body (force input event so downstream listeners run)
+		const srcEl = $("#guide-source");
+		if (srcEl) {
+			srcEl.value = source || ""; // even if empty, write what we have
+			srcEl.dispatchEvent(new Event("input", { bubbles: true })); // keep highlighter/preview in sync
+		} else {
+			console.warn('[guides] #guide-source not found in DOM');
+		}
 
+		// 7) Refresh patterns + variables drawer
 		await refreshPatternList();
 		populateVariablesFormEnhanced(jsonVars || {});
 
-		// 6) Render + lint
+		// 8) Render + lint
 		await preview();
 		validateGuide();
+
+		// Simple debug breadcrumb to confirm what we loaded
+		console.debug("[guides] openGuide loaded", {
+			id: guide.id,
+			title: guide.title,
+			sourceLen: (source || "").length
+		});
 
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
@@ -1483,16 +1509,18 @@ function getPath(obj, pathArr) {
 function validateGuide() {
 	const problems = [];
 	const title = ($("#guide-title")?.value || "").trim();
-	const body = ($("#guide-source")?.value || "").trim();
+	const bodyEl = $("#guide-source");
+	const body = (bodyEl?.value || "").trim();
+
 	if (!title) problems.push("Title is required.");
 	if (!body) problems.push("Guide body is empty.");
 
 	const el = $("#lint-output");
 	if (el) {
 		if (problems.length) {
+			// Only speak once the editor is visible and the textarea actually exists
 			el.innerHTML = `<ul>${problems.map(p => `<li>${escapeHtml(p)}</li>`).join("")}</ul>`;
 		} else if (!el.textContent || el.textContent === "No issues") {
-			// leave runLints() to populate more detailed info later
 			el.textContent = "No issues";
 		}
 	}
