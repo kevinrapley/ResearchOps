@@ -542,93 +542,73 @@ async function openGuide(id) {
 	try {
 		let guide = null;
 
-		// 1) Try the single-record endpoint
+		// 1) Primary: fetch by record id
 		try {
 			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`);
-			guide = js?.guide ?? js ?? null;
+			guide = js && (js.guide || js);
 		} catch (err) {
-			console.warn(`GET /api/guides/${id} failed; will try list fallback`, err?.message || err);
+			// If this was a 404, we'll consider fallback below
+			console.warn("openGuide: fetch by id failed", err);
 		}
 
-		// 2) Fallback: list-by-study (some stacks only include full body here)
+		// 2) Fallback: if not found and we DO have a study id, re-list and pick by id
 		if (!guide) {
 			const sid = __guideCtx?.study?.id || "";
-			if (!sid) throw new Error("No study id available in context for fallback.");
-			const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`);
-			const guides = Array.isArray(list?.guides) ? list.guides : [];
+			if (!sid) {
+				announce("Could not open guide (no study context available for fallback).");
+				return; // graceful exit — don’t throw
+			}
+			const r2 = await fetch(`/api/guides?study=${encodeURIComponent(sid)}`, { cache: "no-store" });
+			if (!r2.ok) {
+				const t = await r2.text().catch(() => "");
+				announce(`Could not load guides for fallback (${r2.status}).`);
+				console.warn(`GET /api/guides?study=… ${r2.status}: ${t}`);
+				return;
+			}
+			const { guides = [] } = await r2.json().catch(() => ({}));
 			guide = guides.find(g => g.id === id) || null;
 		}
 
-		if (!guide) throw new Error("Guide not found");
-
-		// 3) Extract title/status
-		__openGuideId = guide.id;
-		$("#editor-section")?.classList.remove("is-hidden");
-		const tEl = $("#guide-title");
-		if (tEl) tEl.value = guide.title || "Untitled";
-		const sEl = $("#guide-status");
-		if (sEl) sEl.textContent = guide.status || "draft";
-
-		// 4) Pull body + variables. Some list endpoints omit body — defend here.
-		let source = typeof guide.sourceMarkdown === "string" ? guide.sourceMarkdown : "";
-		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
-
-		// If source is still empty, last-ditch: refetch via list and merge the matching record (if any)
-		if (!source.trim()) {
-			try {
-				const sid = __guideCtx?.study?.id || "";
-				if (sid) {
-					const list2 = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`);
-					const guides2 = Array.isArray(list2?.guides) ? list2.guides : [];
-					const full = guides2.find(g => g.id === id);
-					if (full?.sourceMarkdown) source = String(full.sourceMarkdown);
-					if (!jsonVars && full?.variables) jsonVars = full.variables;
-				}
-			} catch (err) {
-				console.warn("Secondary hydrate attempt failed:", err?.message || err);
-			}
+		if (!guide) {
+			announce("Guide not found.");
+			return;
 		}
 
-		// 5) JSON-only migration (strip YAML; import once if YAML exists)
+		__openGuideId = guide.id;
+		$("#editor-section")?.classList.remove("is-hidden");
+		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
+		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
+
+		// JSON-only migration rules
+		let source = String(guide.sourceMarkdown || "");
+		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
+
 		if (!jsonVars || Object.keys(jsonVars).length === 0) {
-			const { stripped, yaml } = extractAndStripFrontMatter(source || "");
+			// One-time import from YAML if present
+			const { stripped, yaml } = extractAndStripFrontMatter(source);
 			if (yaml) {
 				try {
 					const imported = parseSimpleYaml(yaml);
 					if (imported && Object.keys(imported).length) jsonVars = imported;
-				} catch { /* ignore YAML parse errors */ }
+				} catch {}
 				source = stripped;
 			} else {
-				source = stripFrontMatter(source || "");
+				source = stripFrontMatter(source);
 			}
 		} else {
-			source = stripFrontMatter(source || "");
+			source = stripFrontMatter(source);
 		}
 
-		// 6) Seed the editor body (force input event so downstream listeners run)
-		const srcEl = $("#guide-source");
-		if (srcEl) {
-			srcEl.value = source || ""; // even if empty, write what we have
-			srcEl.dispatchEvent(new Event("input", { bubbles: true })); // keep highlighter/preview in sync
-		} else {
-			console.warn('[guides] #guide-source not found in DOM');
-		}
+		$("#guide-source") && ($("#guide-source").value = source);
+		syncHighlighting();
 
-		// 7) Refresh patterns + variables drawer
 		await refreshPatternList();
+
+		// Variables drawer now seeded from JSON only
 		populateVariablesFormEnhanced(jsonVars || {});
 
-		// 8) Render + lint
 		await preview();
 		validateGuide();
-
-		// Simple debug breadcrumb to confirm what we loaded
-		console.debug("[guides] openGuide loaded", {
-			id: guide.id,
-			title: guide.title,
-			sourceLen: (source || "").length
-		});
-
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
 		console.warn(e);
