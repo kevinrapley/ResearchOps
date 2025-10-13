@@ -20,7 +20,7 @@ import {
 } from "../core/utils.js";
 import { GUIDE_LINK_FIELD_CANDIDATES, GUIDE_FIELD_NAMES } from "../core/fields.js";
 import { airtableTryWrite } from "../core/utils.js";
-import { getRecord } from "../internals/airtable.js";
+import { getRecord } from "./internals/airtable.js";
 
 /**
  * List guides for a study.
