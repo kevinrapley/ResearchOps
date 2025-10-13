@@ -161,8 +161,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			// If gid provided, try to open it first (does not block loadGuides)
 			if (gid) {
-				try { await openGuide(gid);
-					window.__hasAutoOpened = true; } catch (err) { console.warn("Boot open gid:", err); }
+				try {
+					await openGuide(gid);
+					window.__hasAutoOpened = true;
+				} catch (err) { console.warn("Boot open gid:", err); }
 			}
 
 			// Always render the table; it manages its own loading/fallback UI
@@ -303,17 +305,87 @@ async function hydrateCrumbs({ pid, sid }) {
 
 /* -------------------- list + open -------------------- */
 
-async function loadGuides(studyId, opts = {}) {
-	// Find a tbody in a few tolerant ways (any of these will do)
-	const tbody =
+/**
+ * Ensure a guides table skeleton exists and return its <tbody>.
+ * This prevents “stuck on Loading…” when the original DOM isn’t present
+ * or when a loader placeholder never gets replaced.
+ */
+function ensureGuidesTableSkeleton() {
+	// Try to find an existing tbody first
+	let tbody =
 		document.querySelector("#guides-tbody") ||
 		document.querySelector("#guides-table tbody") ||
 		document.querySelector("[data-guides-tbody]");
 
+	if (tbody) return tbody;
+
+	// Try to find a sensible container to mount into
+	let host =
+		document.querySelector("#guides-section") ||
+		document.querySelector("[data-guides-section]") ||
+		document.querySelector("#editor-section") ||
+		document.querySelector("main") ||
+		document.body;
+
+	// Create a minimal table structure
+	const wrapper = document.createElement("div");
+	wrapper.id = "guides-fallback-wrapper";
+	wrapper.innerHTML = `
+    <div class="card" id="guides-card">
+      <div class="card-header">
+        <h2 class="govuk-heading-m">Guides for this study</h2>
+      </div>
+      <div class="card-body">
+        <table class="govuk-table" id="guides-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Version</th>
+              <th>Updated</th>
+              <th>Author</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="guides-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+	host.appendChild(wrapper);
+	return wrapper.querySelector("#guides-tbody");
+}
+
+/** Hide any visible “Loading…” elements we know about (be aggressive). */
+function hideGuidesLoadingUI() {
+	const candidates = [
+		"#guides-loading",
+		"[data-role='guides-loading']",
+		"[data-guides-loading]",
+		"#guides-spinner",
+		".js-guides-loading"
+	];
+	for (const sel of candidates) {
+		document.querySelectorAll(sel).forEach(el => { el.hidden = true; });
+	}
+	// Also hide blatant text-only loaders that were left in the DOM
+	document.querySelectorAll("div, span, p, td").forEach(el => {
+		const txt = (el.textContent || "").trim().toLowerCase();
+		if (txt === "loading…" || txt === "loading..." || txt === "loading") {
+			el.hidden = true;
+		}
+	});
+}
+
+async function loadGuides(studyId, opts = {}) {
+	// Always ensure we have a <tbody> to paint into
+	const tbody = ensureGuidesTableSkeleton();
+
 	// Elements that may show a “Loading…” spinner/text
 	const loadingEls = [
 		document.querySelector("#guides-loading"),
-		document.querySelector('[data-role="guides-loading"]')
+		document.querySelector('[data-role="guides-loading"]'),
+		document.querySelector("[data-guides-loading]")
 	].filter(Boolean);
 
 	// Helper to show a loading state inside the tbody (if present)
@@ -330,13 +402,7 @@ async function loadGuides(studyId, opts = {}) {
 			tbody.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
 		}
 		loadingEls.forEach(el => { el.hidden = true; });
-	}
-
-	// If nowhere to render, at least stop any external spinners and bail.
-	if (!tbody) {
-		console.warn("[guides] loadGuides: no tbody found (#guides-tbody / #guides-table tbody / [data-guides-tbody])");
-		loadingEls.forEach(el => { el.hidden = true; });
-		return;
+		hideGuidesLoadingUI();
 	}
 
 	// Kick off with a visible loading row (prevents “stuck on Loading…” if we error)
@@ -408,11 +474,12 @@ async function loadGuides(studyId, opts = {}) {
 		// Auto-open newest if requested
 		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && newestId) {
 			window.__hasAutoOpened = true;
-			await openGuide(newestId);
+			try { await openGuide(newestId); } catch (e) { console.warn("autoOpen:", e); }
 		}
 
 		// Success → hide any external “Loading…” elements
 		loadingEls.forEach(el => { el.hidden = true; });
+		hideGuidesLoadingUI();
 
 	} catch (err) {
 		console.warn("[guides] loadGuides error:", err);
