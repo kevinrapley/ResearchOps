@@ -366,65 +366,55 @@ export async function readGuide(svc, origin, guideId) {
 	}
 
 	try {
-		const table = svc.env.AIRTABLE_TABLE_GUIDES || "Discussion Guides";
-		const rec = await getRecord(svc.env, table, guideId);
+		// Use resilient getter
+		const rec = await getRecord(svc.env, svc.env.AIRTABLE_TABLE_GUIDES, guideId);
 		const f = rec?.fields || {};
 
-		// Title / Status / Version (be liberal with keys)
-		const title =
-			f.Title ?? f.title ?? "Untitled guide";
+		// Map flexible field names back to the shape expected by the UI
+		const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
+		const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
+		const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
+		const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
+		const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
 
-		const status =
-			f.Status ?? f.status ?? "Draft";
-
-		// Prefer explicit numeric version, fall back to variables/front-matter/default
-		const fmVersion = extractFrontmatterVersion(
-			// Use the same source field precedence as below
-			f["Source Markdown"] ?? f.sourceMarkdown ?? f.Body ?? f.Markdown ?? ""
-		);
-		const versionRaw =
-			f.Version ?? f.version ?? fmVersion ?? 1;
-		const version = Number(versionRaw) || 1;
-
-		// Markdown body: support multiple field names (Airtable often uses spaces)
-		const sourceMarkdown =
-			f["Source Markdown"] ?? f.sourceMarkdown ?? f.Body ?? f.Markdown ?? "";
-
-		// Variables can be stored as JSON string or object; parse safely
-		let variables = {};
-		const varsRaw = f.Variables ?? f.variables;
-		if (varsRaw != null) {
+		// Variables may be stored as JSON string
+		let vars = {};
+		if (varsKey && f[varsKey] != null) {
 			try {
-				variables = typeof varsRaw === "string" ? JSON.parse(varsRaw) : varsRaw;
+				vars = typeof f[varsKey] === "string" ? JSON.parse(f[varsKey]) : f[varsKey];
 			} catch {
-				variables = {};
+				vars = {};
 			}
 		}
-
-		// Ensure {{version}} always works for your templates
-		if (!variables || typeof variables !== "object") variables = {};
-		if (variables.version == null) variables.version = String(version);
 
 		const payload = {
 			ok: true,
 			guide: {
 				id: rec.id,
-				title,
-				status,
-				version,
-				sourceMarkdown,
-				variables
+				title: titleKey ? f[titleKey] : "Untitled",
+				status: statusKey ? f[statusKey] : "Draft",
+				version: verKey ? f[verKey] : 1,
+				// If source field was stored via mdToAirtableRich, it’s just markdown text in Airtable.
+				sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
+				variables: vars
 			}
 		};
 
-		return svc.json(payload, 200, svc.corsHeaders(origin));
+		return new Response(JSON.stringify(payload), {
+			status: 200,
+			headers: { "Content-Type": "application/json", ...svc.corsHeaders(origin) }
+		});
+
 	} catch (err) {
 		const msg = String(err?.message || "");
 		const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
 		const body = isNotFound ?
-			{ error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) } :
+			{ error: "Airtable 404", detail: "{\"error\":\"NOT_FOUND\"}" } :
 			{ error: "Airtable error", detail: msg };
 
-		return svc.json(body, isNotFound ? 404 : 500, svc.corsHeaders(origin));
+		return new Response(JSON.stringify(body), {
+			status: isNotFound ? 404 : 500,
+			headers: { "Content-Type": "application/json", ...svc.corsHeaders(origin) }
+		});
 	}
 }
