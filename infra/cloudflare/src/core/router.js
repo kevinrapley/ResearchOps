@@ -111,212 +111,150 @@ export async function handleRequest(request, env) {
 			});
 		}
 
-		// ─────────── Routes (extend as you have them) ───────────
-		if (url.pathname === "/api/health") return service.health(origin);
+		// ─────────── Health ───────────
+		if (url.pathname === "/api/health") {
+			return service.health(origin);
+		}
 
-		if (url.pathname === "/api/ai-rewrite" && request.method === "POST")
+		// ─────────── AI Assist ───────────
+		if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
 			return aiRewrite(request, env, origin);
+		}
 
-		if (url.pathname.startsWith("/api/projects"))
-			return request.method === "GET" ?
-				service.listProjectsFromAirtable(origin, url) :
-				service.createProject?.(request, origin);
+		// ─────────── Projects ───────────
+		if (url.pathname.startsWith("/api/projects")) {
+			if (request.method === "GET") {
+				return service.listProjectsFromAirtable(origin, url);
+			}
+			if (request.method === "POST" && typeof service.createProject === "function") {
+				return service.createProject(request, origin);
+			}
+		}
 
-		if (url.pathname === "/api/studies" && request.method === "GET")
+		// ─────────── Studies ───────────
+		if (url.pathname === "/api/studies" && request.method === "GET") {
 			return service.listStudies(origin, url);
-
-		if (url.pathname === "/api/studies" && request.method === "POST")
+		}
+		if (url.pathname === "/api/studies" && request.method === "POST") {
 			return service.createStudy(request, origin);
+		}
+		// Optional: PATCH /api/studies/:id
+		{
+			const m = url.pathname.match(/^\/api\/studies\/([^/]+)$/);
+			if (m && request.method === "PATCH" && typeof service.updateStudy === "function") {
+				const urlWithId = new URL(url.toString());
+				urlWithId.searchParams.set("id", m[1]);
+				return service.updateStudy(request, origin, urlWithId);
+			}
+		}
 
 		// ─────────── Guides ───────────
 		if (url.pathname.startsWith("/api/guides")) {
-			// Supported:
-			// GET    /api/guides?study=:id
-			// POST   /api/guides
-			// GET    /api/guides/:id
-			// PATCH  /api/guides/:id
-			// POST   /api/guides/:id/publish
-
-			// Path with id (and optional /publish)
-			const idMatch = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
-
-			// GET /api/guides?study=...
-			if (request.method === "GET" && url.searchParams.has("study")) {
-				if (typeof service.listGuides === "function") {
-					return service.listGuides(origin, url);
-				}
-				return new Response(JSON.stringify({ ok: false, error: "listGuides not implemented" }), {
-					status: 501,
-					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-				});
+			// GET /api/guides?study=:id (list)
+			if (request.method === "GET" && url.pathname === "/api/guides") {
+				return service.listGuides(origin, url);
 			}
-
-			// POST /api/guides
+			// POST /api/guides (create)
 			if (request.method === "POST" && url.pathname === "/api/guides") {
-				if (typeof service.createGuide === "function") {
-					return service.createGuide(request, origin);
-				}
-				return new Response(JSON.stringify({ ok: false, error: "createGuide not implemented" }), {
-					status: 501,
-					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-				});
+				return service.createGuide(request, origin);
 			}
 
-			// /api/guides/:id or /api/guides/:id/publish
-			if (idMatch) {
-				const [, guideId, publishSuffix] = idMatch;
-
-				// Normalize: service expects id in query (?id=...)
+			// /api/guides/:id and /api/guides/:id/publish
+			const gm = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
+			if (gm) {
+				const [, guideId, action] = gm;
 				const urlWithId = new URL(url.toString());
 				urlWithId.searchParams.set("id", guideId);
 
 				// POST /api/guides/:id/publish
-				if (publishSuffix === "publish" && request.method === "POST") {
-					if (typeof service.publishGuide === "function") {
-						// service uses URL search params for id
-						return service.publishGuide(origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "publishGuide not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+				if (action === "publish" && request.method === "POST") {
+					return service.publishGuide(origin, urlWithId);
 				}
 
 				// GET /api/guides/:id
 				if (request.method === "GET") {
-					if (typeof service.readGuide === "function") {
-						// pass origin + URL so service can read ?id=
-						return service.readGuide(origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "readGuide not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+					return service.readGuide(origin, urlWithId);
 				}
-
 				// PATCH /api/guides/:id
 				if (request.method === "PATCH") {
-					if (typeof service.updateGuide === "function") {
-						// pass request + origin + URL (?id=...)
-						return service.updateGuide(request, origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "updateGuide not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+					return service.updateGuide(request, origin, urlWithId);
 				}
 			}
-
-			// Method/shape not matched
-			return new Response(JSON.stringify({ ok: false, error: "Invalid /api/guides route" }), {
-				status: 404,
-				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-			});
 		}
 
 		// ─────────── Partials ───────────
 		if (url.pathname.startsWith("/api/partials")) {
-			// Supported:
-			// GET    /api/partials             (list)
-			// POST   /api/partials             (create)
-			// GET    /api/partials/:id         (read)
-			// PATCH  /api/partials/:id         (update)
-			// DELETE /api/partials/:id         (delete)
-
-			// Match path param variant: /api/partials/:id
-			const idMatch = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
-
 			// GET /api/partials (list)
 			if (request.method === "GET" && url.pathname === "/api/partials") {
-				if (typeof service.listPartials === "function") {
-					return service.listPartials(origin, url);
-				}
-				return new Response(JSON.stringify({ ok: false, error: "listPartials not implemented" }), {
-					status: 501,
-					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-				});
+				return service.listPartials(origin, url);
 			}
-
 			// POST /api/partials (create)
 			if (request.method === "POST" && url.pathname === "/api/partials") {
-				if (typeof service.createPartial === "function") {
-					return service.createPartial(request, origin);
-				}
-				return new Response(JSON.stringify({ ok: false, error: "createPartial not implemented" }), {
-					status: 501,
-					headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-				});
+				return service.createPartial(request, origin);
 			}
 
-			// /api/partials/:id (read/update/delete via ?id=)
-			if (idMatch) {
-				const [, partialId] = idMatch;
+			// /api/partials/:id (read/update/delete)
+			const pm = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
+			if (pm) {
+				const [, partialId] = pm;
 				const urlWithId = new URL(url.toString());
 				urlWithId.searchParams.set("id", partialId);
 
-				// GET /api/partials/:id
 				if (request.method === "GET") {
-					if (typeof service.readPartial === "function") {
-						return service.readPartial(origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "readPartial not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+					return service.readPartial(origin, urlWithId);
 				}
-
-				// PATCH /api/partials/:id
 				if (request.method === "PATCH") {
-					if (typeof service.updatePartial === "function") {
-						return service.updatePartial(request, origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "updatePartial not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+					return service.updatePartial(request, origin, urlWithId);
 				}
-
-				// DELETE /api/partials/:id
 				if (request.method === "DELETE") {
-					if (typeof service.deletePartial === "function") {
-						return service.deletePartial(origin, urlWithId);
-					}
-					return new Response(JSON.stringify({ ok: false, error: "deletePartial not implemented" }), {
-						status: 501,
-						headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-					});
+					return service.deletePartial(origin, urlWithId);
 				}
 			}
-
-			// Method/shape not matched
-			return new Response(JSON.stringify({ ok: false, error: "Invalid /api/partials route" }), {
-				status: 404,
-				headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-			});
 		}
 
-		// Method/shape not matched
-		return new Response(JSON.stringify({ ok: false, error: "Invalid /api/partials route" }), {
-			status: 404,
+		// ─────────── Participants (optional) ───────────
+		if (url.pathname === "/api/participants" && request.method === "GET" && typeof service.listParticipants === "function") {
+			return service.listParticipants(origin, url);
+		}
+		if (url.pathname === "/api/participants" && request.method === "POST" && typeof service.createParticipant === "function") {
+			return service.createParticipant(request, origin);
+		}
+
+		// ─────────── Sessions (optional) ───────────
+		if (url.pathname === "/api/sessions" && request.method === "GET" && typeof service.listSessions === "function") {
+			return service.listSessions(origin, url);
+		}
+		if (url.pathname === "/api/sessions" && request.method === "POST" && typeof service.createSession === "function") {
+			return service.createSession(request, origin);
+		} {
+			const sm = url.pathname.match(/^\/api\/sessions\/([^/]+)(?:\/ics)?$/);
+			if (sm && request.method === "PATCH" && typeof service.updateSession === "function") {
+				const urlWithId = new URL(url.toString());
+				urlWithId.searchParams.set("id", sm[1]);
+				return service.updateSession(request, origin, urlWithId);
+			}
+			if (sm && /\/ics$/.test(url.pathname) && request.method === "GET" && typeof service.sessionIcs === "function") {
+				const urlWithId = new URL(url.toString());
+				urlWithId.searchParams.set("id", sm[1]);
+				return service.sessionIcs(origin, urlWithId);
+			}
+		}
+
+		// ─────────── Static fallback (assets + SPA) ───────────
+		let resp = await env.ASSETS.fetch(request);
+		if (resp.status === 404) {
+			resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+		}
+		return resp;
+
+	} catch (e) {
+		service.log?.error?.("unhandled.error", { err: String(e?.message || e) });
+		return new Response(JSON.stringify({ error: "Internal error" }), {
+			status: 500,
 			headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 		});
+	} finally {
+		// Always release resources
+		try { service.destroy(); } catch {}
 	}
-
-	// Static fallback (serve assets/pages)
-	let resp = await env.ASSETS.fetch(request);
-	if (resp.status === 404) {
-		// Try SPA-style fallback
-		resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
-	}
-	return resp;
-
-} catch (e) {
-	service.log.error("unhandled.error", { err: String(e?.message || e) });
-	return new Response(JSON.stringify({ error: "Internal error" }), {
-		status: 500,
-		headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-	});
-} finally {
-	service.destroy();
-}
 }
