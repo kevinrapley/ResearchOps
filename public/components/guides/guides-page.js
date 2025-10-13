@@ -145,6 +145,7 @@ function setPatternStatus(msg) {
 window.addEventListener("DOMContentLoaded", () => {
 	(void async function boot() {
 		try {
+			installLoadingKiller();
 			wireGlobalActions();
 			wireEditor();
 
@@ -306,6 +307,57 @@ async function hydrateCrumbs({ pid, sid }) {
 /* -------------------- list + open -------------------- */
 
 /**
+ * Aggressively hide/remove any "Loading…" UI that might linger.
+ * - Hides known spinners
+ * - Removes stray text nodes / wrappers containing only Loading…, Loading..., or Loading
+ * - Works even if they were injected later by other scripts
+ */
+function nukeGuidesLoadingUI() {
+	const KNOWN = [
+		"#guides-loading",
+		"[data-role='guides-loading']",
+		"[data-guides-loading]",
+		"#guides-spinner",
+		".js-guides-loading",
+		"[aria-busy='true']",
+	];
+	// Hide known elements
+	for (const sel of KNOWN) {
+		document.querySelectorAll(sel).forEach(el => { el.hidden = true;
+			el.setAttribute("aria-hidden", "true"); });
+	}
+
+	// Remove nodes whose *only* visible text is "Loading…/Loading..."
+	const LOADING_RE = /^(loading…?|loading\.\.\.)$/i;
+	const candidates = Array.from(document.querySelectorAll("div, span, p, td, li, h2, h3, h4"));
+	for (const el of candidates) {
+		const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+		if (LOADING_RE.test(text)) {
+			// If this looks like a naked loader stub, remove it outright
+			if (!el.querySelector("button,table,tbody,thead,tr,td")) {
+				el.remove();
+			} else {
+				el.hidden = true;
+				el.setAttribute("aria-hidden", "true");
+			}
+		}
+	}
+}
+
+/**
+ * Observe future DOM mutations for any newly inserted "Loading…" nodes
+ * and squash them immediately. Call once on boot.
+ */
+function installLoadingKiller() {
+	try {
+		const obs = new MutationObserver(() => nukeGuidesLoadingUI());
+		obs.observe(document.documentElement, { childList: true, subtree: true });
+		// One immediate pass too
+		nukeGuidesLoadingUI();
+	} catch { /* no-op */ }
+}
+
+/**
  * Ensure a guides table skeleton exists and return its <tbody>.
  * This prevents “stuck on Loading…” when the original DOM isn’t present
  * or when a loader placeholder never gets replaced.
@@ -378,120 +430,117 @@ function hideGuidesLoadingUI() {
 }
 
 async function loadGuides(studyId, opts = {}) {
-	// Always ensure we have a <tbody> to paint into
-	const tbody = ensureGuidesTableSkeleton();
+	// Always prepare a tbody to paint into (re-use your existing helper if present)
+	const tbody = (typeof ensureGuidesTableSkeleton === "function") ?
+		ensureGuidesTableSkeleton() :
+		(document.querySelector("#guides-tbody") || (() => {
+			const host = document.querySelector("#guides-section") || document.querySelector("main") || document.body;
+			const shell = document.createElement("div");
+			shell.innerHTML = `
+          <table class="govuk-table" id="guides-table">
+            <thead>
+              <tr>
+                <th>Title</th><th>Status</th><th>Version</th><th>Updated</th><th>Author</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="guides-tbody"></tbody>
+          </table>`;
+			host.appendChild(shell);
+			return shell.querySelector("#guides-tbody");
+		})());
 
-	// Elements that may show a “Loading…” spinner/text
-	const loadingEls = [
-		document.querySelector("#guides-loading"),
-		document.querySelector('[data-role="guides-loading"]'),
-		document.querySelector("[data-guides-loading]")
-	].filter(Boolean);
+	// Small helpers
+	const paint = (html) => { if (tbody) tbody.innerHTML = html; };
+	const row = (msg) => `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
 
-	// Helper to show a loading state inside the tbody (if present)
-	function showLoadingRow(msg = "Loading…") {
-		if (tbody) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
-		}
-		loadingEls.forEach(el => { el.hidden = false; });
-	}
+	// Show loading row, then *immediately* kill any external loaders
+	paint(row("Loading…"));
+	nukeGuidesLoadingUI();
 
-	// Helper to show a terminal message and always clear any external spinners
-	function showTerminalRow(msg) {
-		if (tbody) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
-		}
-		loadingEls.forEach(el => { el.hidden = true; });
-		hideGuidesLoadingUI();
-	}
-
-	// Kick off with a visible loading row (prevents “stuck on Loading…” if we error)
-	showLoadingRow("Loading…");
-
-	// No study id: stop early with a clear message
+	// If no study id, finish now
 	if (!studyId) {
-		console.warn("[guides] loadGuides: no studyId provided");
-		showTerminalRow("No study selected.");
+		console.warn("[guides] loadGuides: no studyId");
+		paint(row("No study selected."));
+		nukeGuidesLoadingUI();
 		return;
 	}
 
-	let newestId = null;
-
-	// Safety timer: if nothing completes in time, unstick the UI
-	let safetyTimer = setTimeout(() => {
-		console.warn("[guides] loadGuides: safety timer tripped — showing fallback message.");
-		showTerminalRow("Taking longer than expected… still loading guides.");
-	}, 6000);
+	// Safety timeout: if the network hangs, we still unstick the UI
+	const ac = new AbortController();
+	const timer = setTimeout(() => {
+		try { ac.abort(); } catch {}
+	}, 8000);
 
 	try {
-		// Prefer JSON; allow heuristic parsing if server forgot the header
+		// Fetch with heuristics so HTML-with-JSON-body won’t break us
 		const data = await fetchJSON(
-			`/api/guides?study=${encodeURIComponent(studyId)}`, { headers: { Accept: "application/json" } }, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
+			`/api/guides?study=${encodeURIComponent(studyId)}`, { headers: { Accept: "application/json" }, signal: ac.signal }, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
 		);
 
-		// Validate shape
+		// Defensive shape checks
 		if (!data || typeof data !== "object") {
-			console.warn("[guides] loadGuides: unexpected payload shape:", data);
-			showTerminalRow("Failed to load guides.");
+			console.warn("[guides] unexpected payload:", data);
+			paint(row("Failed to load guides."));
+			nukeGuidesLoadingUI();
 			return;
 		}
 
 		const guides = Array.isArray(data.guides) ? data.guides : [];
-		guides.sort(
-			(a, b) =>
+		guides.sort((a, b) =>
 			(Date.parse(b.updatedAt || b.createdAt || 0) || 0) -
 			(Date.parse(a.updatedAt || a.createdAt || 0) || 0)
 		);
-		newestId = guides[0]?.id || null;
 
 		if (!guides.length) {
-			showTerminalRow("No guides yet. Create one to get started.");
+			paint(row("No guides yet. Create one to get started."));
+			nukeGuidesLoadingUI();
 			return;
 		}
 
-		// Build rows
-		tbody.innerHTML = "";
+		// Render rows
+		const fr = document.createDocumentFragment();
 		for (const g of guides) {
 			const tr = document.createElement("tr");
 			tr.innerHTML = `
         <td>${escapeHtml(g.title || "Untitled")}</td>
         <td>${escapeHtml(g.status || "draft")}</td>
-        <td>v${g.version || 0}</td>
+        <td>v${Number.isFinite(g.version) ? g.version : (parseInt(g.version,10) || 0)}</td>
         <td>${new Date(g.updatedAt || g.createdAt || 0).toLocaleString()}</td>
         <td>${escapeHtml(g.createdBy?.name || "—")}</td>
         <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
-			tbody.appendChild(tr);
+			fr.appendChild(tr);
 		}
+		paint("");
+		tbody.appendChild(fr);
 
 		// Wire open buttons
-		Array.from(tbody.querySelectorAll('button[data-open]')).forEach(b =>
-			b.addEventListener("click", () => {
+		tbody.querySelectorAll('button[data-open]').forEach(btn => {
+			btn.addEventListener("click", () => {
 				window.__hasAutoOpened = true;
-				openGuide(b.dataset.open);
-			})
-		);
+				openGuide(btn.dataset.open);
+			});
+		});
 
 		// Auto-open newest if requested
-		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && newestId) {
+		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && guides[0]?.id) {
 			window.__hasAutoOpened = true;
-			try { await openGuide(newestId); } catch (e) { console.warn("autoOpen:", e); }
+			try { await openGuide(guides[0].id); } catch (e) { console.warn("autoOpen failed:", e); }
 		}
 
-		// Success → hide any external “Loading…” elements
-		loadingEls.forEach(el => { el.hidden = true; });
-		hideGuidesLoadingUI();
+		// Success: nuke any external “Loading…” remnants
+		nukeGuidesLoadingUI();
 
 	} catch (err) {
+		const aborted = err && (err.name === "AbortError");
 		console.warn("[guides] loadGuides error:", err);
-		showTerminalRow("Failed to load guides.");
+		paint(row(aborted ? "Network is slow. Please try again." : "Failed to load guides."));
+		nukeGuidesLoadingUI();
 	} finally {
-		clearTimeout(safetyTimer);
+		clearTimeout(timer);
+		// One more sweep in case anything re-inserted a loader
+		setTimeout(nukeGuidesLoadingUI, 0);
+		setTimeout(nukeGuidesLoadingUI, 300);
 	}
-}
-
-function onNewClick(e) {
-	if (e && typeof e.preventDefault === "function") e.preventDefault();
-	startNewGuide();
 }
 
 /* -------------------- patterns -------------------- */
