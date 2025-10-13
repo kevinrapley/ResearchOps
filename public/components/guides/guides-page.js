@@ -1781,6 +1781,24 @@ function validateGuide() {
 
 /* -------------------- global actions -------------------- */
 
+/**
+ * Handle "New guide" button click
+ */
+async function onNewClick(e) {
+	if (e) e.preventDefault();
+	try {
+		await startNewGuide();
+		// Scroll editor into view
+		const editor = document.getElementById("editor-section");
+		if (editor) {
+			editor.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	} catch (err) {
+		console.error("[guides] Failed to start new guide:", err);
+		announce("Failed to create new guide");
+	}
+}
+
 function wireGlobalActions() {
 	var newBtn = $("#btn-new");
 	if (newBtn) newBtn.addEventListener("click", onNewClick);
