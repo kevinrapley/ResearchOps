@@ -143,16 +143,42 @@ function setPatternStatus(msg) {
 
 /* -------------------- boot -------------------- */
 window.addEventListener("DOMContentLoaded", () => {
-	wireGlobalActions();
-	wireEditor();
+	// Run the boot flow sequentially so study context is ready
+	(void async function boot() {
+		try {
+			wireGlobalActions();
+			wireEditor();
 
-	const url = new URL(location.href);
-	const pid = url.searchParams.get("pid");
-	const sid = url.searchParams.get("sid");
+			const url = new URL(location.href);
+			const pid = url.searchParams.get("pid");
+			const sid = url.searchParams.get("sid");
+			const gid = url.searchParams.get("gid"); // optional: open this guide first
 
-	hydrateCrumbs({ pid, sid }).catch(console.warn);
-	loadGuides(sid, { autoOpen: true }).catch(console.warn);
-	refreshPatternList().catch(console.warn);
+			// 1) Ensure project/study context is hydrated before anything else
+			await hydrateCrumbs({ pid, sid });
+
+			// 2) Refresh patterns (independent of study)
+			try { await refreshPatternList(); } catch (e) { console.warn(e); }
+
+			// 3) If a specific guide id is requested, try that first
+			if (gid) {
+				try {
+					await openGuide(gid);
+					window.__hasAutoOpened = true; // prevent additional auto-open
+				} catch (err) {
+					console.warn("Boot: failed to open gid param:", err);
+					announce("Could not open the requested guide; showing list instead.");
+				}
+			}
+
+			// 4) Load guides for the study (auto-open newest only if nothing opened yet)
+			await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
+
+		} catch (err) {
+			console.warn("Boot fatal:", err);
+			announce("Failed to initialise the page.");
+		}
+	})();
 });
 
 async function safeJson(res, opts = {}) {
@@ -540,44 +566,47 @@ async function startNewGuide() {
  */
 async function openGuide(id) {
 	try {
+		if (!id) throw new Error("No guide id provided to openGuide().");
+
 		let guide = null;
 
-		// 1) Primary: fetch by record id
+		// 1) Preferred path: load by Airtable record id
 		try {
-			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`);
-			guide = js && (js.guide || js);
+			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`).catch((e) => {
+				console.warn("openGuide: fetch by id failed", e);
+				return null;
+			});
+			if (js && (js.guide || js.id || js.title)) {
+				guide = js.guide || js; // tolerate both API response shapes
+			}
 		} catch (err) {
-			// If this was a 404, we'll consider fallback below
-			console.warn("openGuide: fetch by id failed", err);
+			console.warn("openGuide: fetch by id threw", err);
 		}
 
-		// 2) Fallback: if not found and we DO have a study id, re-list and pick by id
+		// 2) Optional fallback: list-by-study → find guide in list
 		if (!guide) {
 			const sid = __guideCtx?.study?.id || "";
-			if (!sid) {
+			if (sid) {
+				try {
+					const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`, {}, { emptyAs: { guides: [] } });
+					const arr = Array.isArray(list?.guides) ? list.guides : [];
+					guide = arr.find(g => g.id === id) || null;
+				} catch (err) {
+					console.warn("openGuide: list fallback failed", err);
+				}
+			} else {
+				// No study context yet → don't hard-fail; just announce and bail cleanly
 				announce("Could not open guide (no study context available for fallback).");
-				return; // graceful exit — don’t throw
-			}
-			const r2 = await fetch(`/api/guides?study=${encodeURIComponent(sid)}`, { cache: "no-store" });
-			if (!r2.ok) {
-				const t = await r2.text().catch(() => "");
-				announce(`Could not load guides for fallback (${r2.status}).`);
-				console.warn(`GET /api/guides?study=… ${r2.status}: ${t}`);
 				return;
 			}
-			const { guides = [] } = await r2.json().catch(() => ({}));
-			guide = guides.find(g => g.id === id) || null;
 		}
 
-		if (!guide) {
-			announce("Guide not found.");
-			return;
-		}
+		if (!guide) throw new Error("Guide not found");
 
 		__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
-		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
-		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
+		if ($("#guide-title")) $("#guide-title").value = guide.title || "Untitled";
+		if ($("#guide-status")) $("#guide-status").textContent = guide.status || "draft";
 
 		// JSON-only migration rules
 		let source = String(guide.sourceMarkdown || "");
@@ -589,7 +618,9 @@ async function openGuide(id) {
 			if (yaml) {
 				try {
 					const imported = parseSimpleYaml(yaml);
-					if (imported && Object.keys(imported).length) jsonVars = imported;
+					if (imported && Object.keys(imported).length) {
+						jsonVars = imported;
+					}
 				} catch {}
 				source = stripped;
 			} else {
@@ -599,7 +630,7 @@ async function openGuide(id) {
 			source = stripFrontMatter(source);
 		}
 
-		$("#guide-source") && ($("#guide-source").value = source);
+		if ($("#guide-source")) $("#guide-source").value = source;
 		syncHighlighting();
 
 		await refreshPatternList();
@@ -610,6 +641,7 @@ async function openGuide(id) {
 		await preview();
 		validateGuide();
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
+
 	} catch (e) {
 		console.warn(e);
 		announce(`Failed to open guide: ${e && e.message ? e.message : "Unknown error"}`);
