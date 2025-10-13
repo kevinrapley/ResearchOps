@@ -20,6 +20,7 @@ import {
 } from "../core/utils.js";
 import { GUIDE_LINK_FIELD_CANDIDATES, GUIDE_FIELD_NAMES } from "../core/fields.js";
 import { airtableTryWrite } from "../core/utils.js";
+import { getRecord } from "../internals/airtable.js";
 
 /**
  * List guides for a study.
@@ -338,46 +339,55 @@ export async function publishGuide(svc, origin, guideId) {
 }
 
 /**
- * Read a single guide by ID.
+ * Read a guide by Airtable record id.
+ * - Uses resilient getRecord() which falls back to filterByFormula(RECORD_ID()) on 404.
+ * @summary Guides feature handlers
  * @route GET /api/guides/:id
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {string} guideId
  * @returns {Promise<Response>}
  */
-export async function readGuide(svc, origin, guideId) {
-	if (!guideId) return svc.json({ error: "Missing guide id" }, 400, svc.corsHeaders(origin));
+export async function readGuide(env, corsHeaders, id) {
+  if (!id) {
+    return new Response(JSON.stringify({ error: "Missing guide id" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...corsHeaders("") }
+    });
+  }
 
-	const base = svc.env.AIRTABLE_BASE_ID;
-	const tGuides = encodeURIComponent(svc.env.AIRTABLE_TABLE_GUIDES);
-	const atUrl = `https://api.airtable.com/v0/${base}/${tGuides}/${encodeURIComponent(guideId)}`;
+  try {
+    const rec = await getRecord(env, env.AIRTABLE_TABLE_GUIDES, id);
+    const f = rec?.fields || {};
 
-	const res = await fetchWithTimeout(atUrl, { headers: { "Authorization": `Bearer ${svc.env.AIRTABLE_API_KEY}` } }, svc.cfg.TIMEOUT_MS);
-	const txt = await res.text();
-	if (!res.ok) {
-		svc.log.error("airtable.guide.read.fail", { status: res.status, text: safeText(txt) });
-		return svc.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, svc.corsHeaders(origin));
-	}
+    // Align field names with what your UI expects (based on your list payloads)
+    const payload = {
+      ok: true,
+      guide: {
+        id: rec.id,
+        title: f.title || f.Title || "Untitled",
+        status: f.status || f.Status || "Draft",
+        version: f.version ?? f.Version ?? 1,
+        sourceMarkdown: f.sourceMarkdown || f.SourceMarkdown || "",
+        variables: f.variables || f.Variables || {}
+      }
+    };
 
-	let js;
-	try { js = JSON.parse(txt); } catch { js = {}; }
-	const f = js.fields || {};
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders("") }
+    });
 
-	const titleKey = pickFirstField(f, GUIDE_FIELD_NAMES.title);
-	const statusKey = pickFirstField(f, GUIDE_FIELD_NAMES.status);
-	const verKey = pickFirstField(f, GUIDE_FIELD_NAMES.version);
-	const srcKey = pickFirstField(f, GUIDE_FIELD_NAMES.source);
-	const varsKey = pickFirstField(f, GUIDE_FIELD_NAMES.variables);
+  } catch (err) {
+    const msg = String(err?.message || "");
+    const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
+    const body = isNotFound
+      ? { error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) }
+      : { error: "Airtable error", detail: msg };
 
-	const guide = {
-		id: js.id,
-		title: titleKey ? f[titleKey] : "",
-		status: statusKey ? f[statusKey] : "draft",
-		version: verKey ? f[verKey] : 1,
-		sourceMarkdown: srcKey ? (f[srcKey] || "") : "",
-		variables: (() => { try { return JSON.parse(f[varsKey] || "{}"); } catch { return {}; } })(),
-		createdAt: js.createdTime || ""
-	};
-
-	return svc.json({ ok: true, guide }, 200, svc.corsHeaders(origin));
+    return new Response(JSON.stringify(body), {
+      status: isNotFound ? 404 : 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders("") }
+    });
+  }
 }
