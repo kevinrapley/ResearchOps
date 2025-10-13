@@ -511,7 +511,10 @@ async function startNewGuide() {
 			"# New guide\n\nWelcome. Start writing…";
 
 		const srcEl = $("#guide-source");
-		if (srcEl) srcEl.value = defaultSrc;
+		if (srcEl) {
+			// Force seed if empty
+			srcEl.value = (srcEl.value && srcEl.value.trim()) ? srcEl.value : defaultSrc;
+		}
 
 		syncHighlighting();
 
@@ -522,6 +525,7 @@ async function startNewGuide() {
 
 		await preview();
 		validateGuide();
+
 		titleEl && titleEl.focus();
 		announce("Started a new guide");
 	} catch (err) {
@@ -538,30 +542,35 @@ async function openGuide(id) {
 	try {
 		let guide = null;
 
-		// Try direct
+		// 1) Try the single-record endpoint
 		try {
 			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`);
-			guide = js && (js.guide || js);
+			// Some services return { guide }, others return the object directly
+			guide = js?.guide ?? js ?? null;
 		} catch (err) {
-			if (err.status !== 404) {
-				throw err;
-			}
-			// 404 → fall back to list
+			// If the server returns 404 (Airtable NOT_FOUND), fall back to the list-by-study
+			console.warn(`GET /api/guides/${id} failed; falling back to list`, err?.message || err);
+		}
+
+		// 2) Fallback: pull from the study list if /:id didn’t work
+		if (!guide) {
 			const sid = __guideCtx?.study?.id || "";
 			if (!sid) throw new Error("No study id available in context for fallback.");
-			const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`).catch(() => ({}));
+
+			const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`);
 			const guides = Array.isArray(list?.guides) ? list.guides : [];
 			guide = guides.find(g => g.id === id) || null;
 		}
 
 		if (!guide) throw new Error("Guide not found");
 
+		// 3) Set UI chrome
 		__openGuideId = guide.id;
 		$("#editor-section")?.classList.remove("is-hidden");
-		$("#guide-title") && ($("#guide-title").value = guide.title || "Untitled");
-		$("#guide-status") && ($("#guide-status").textContent = guide.status || "draft");
+		if ($("#guide-title")) $("#guide-title").value = guide.title || "Untitled";
+		if ($("#guide-status")) $("#guide-status").textContent = guide.status || "draft";
 
-		// JSON-only migration rules
+		// 4) JSON-only migration rules
 		let source = String(guide.sourceMarkdown || "");
 		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
 
@@ -574,7 +583,7 @@ async function openGuide(id) {
 					if (imported && Object.keys(imported).length) {
 						jsonVars = imported;
 					}
-				} catch {}
+				} catch { /* ignore YAML parse errors; keep going */ }
 				source = stripped;
 			} else {
 				source = stripFrontMatter(source);
@@ -583,16 +592,17 @@ async function openGuide(id) {
 			source = stripFrontMatter(source);
 		}
 
-		$("#guide-source") && ($("#guide-source").value = source);
+		// 5) Seed editor + variables drawer
+		if ($("#guide-source")) $("#guide-source").value = source;
 		syncHighlighting();
 
 		await refreshPatternList();
-
-		// Variables drawer now seeded from JSON only
 		populateVariablesFormEnhanced(jsonVars || {});
 
+		// 6) Render + lint
 		await preview();
 		validateGuide();
+
 		announce(`Opened guide "${guide.title || "Untitled"}"`);
 	} catch (e) {
 		console.warn(e);
@@ -605,9 +615,19 @@ async function openGuide(id) {
  */
 async function preview() {
 	const srcEl = document.getElementById("guide-source");
-	if (!srcEl) return;
+	const prev = document.getElementById("guide-preview");
+	if (!srcEl || !prev) return;
 
-	const source = stripFrontMatter(srcEl.value || "");
+	// Always read the current body (front-matter is stripped only for rendering)
+	const sourceRaw = srcEl.value || "";
+	const source = stripFrontMatter(sourceRaw);
+
+	// If the editor is somehow empty, show a helpful placeholder in the preview
+	if (!source.trim()) {
+		prev.innerHTML = `<p class="muted">No content yet. Start typing in the editor…</p>`;
+		return;
+	}
+
 	const ctx = __guideCtx || {};
 	const project = ensureProjectName(ctx.project || {});
 	const study = ensureStudyTitle(ctx.study || {});
@@ -622,18 +642,43 @@ async function preview() {
 		study,
 		session: {},
 		participant: {},
-		...vars, // ← enables {{version}}
-		meta: vars // ← keeps {{meta.version}} working
+		...vars,
+		meta: vars
 	};
 
+	// Try building any referenced partials, but don't fail preview if they 404
 	const names = collectPartialNames(source);
 	let partials = {};
-	try { partials = await buildPartials(names); } catch {}
+	try {
+		partials = await buildPartials(names);
+	} catch (e) {
+		console.warn("buildPartials failed; rendering without partials", e);
+		partials = {};
+	}
 
-	const out = await renderGuide({ source, context, partials });
-	const prev = document.getElementById("guide-preview");
-	if (prev) prev.innerHTML = out.html;
+	// Render. If for any reason html comes back falsy, fall back to raw markdown.
+	let html = "";
+	try {
+		const out = await renderGuide({ source, context, partials });
+		html = (out && typeof out.html === "string") ? out.html : "";
+	} catch (e) {
+		console.warn("renderGuide failed; falling back to raw markdown", e);
+		html = ""; // will be replaced by fallback below
+	}
 
+	if (!html.trim()) {
+		// Fallback: show the user's markdown as-is (sanitized), so the panel is never blank
+		try {
+			const md = marked.parse(source);
+			prev.innerHTML = DOMPurify.sanitize(md);
+		} catch {
+			prev.textContent = source; // last-resort, plain text
+		}
+	} else {
+		prev.innerHTML = html;
+	}
+
+	// Lints still run against the computed context/partials
 	runLints({ source, context, partials });
 }
 
