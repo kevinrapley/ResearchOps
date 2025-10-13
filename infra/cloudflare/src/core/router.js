@@ -48,8 +48,6 @@
 import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
 import { readPartial } from "../service/partials.js";
-import { readGuide } from "../service/guides.js";
-
 import {
   listGuides,
   createGuide,
