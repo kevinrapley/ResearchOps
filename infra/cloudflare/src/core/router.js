@@ -12,7 +12,6 @@
  *   - GET  /api/projects               (list)
  *   - GET  /api/projects.csv           (CSV stream from GitHub)
  *   - GET  /api/project-details.csv    (CSV stream from GitHub)
- *   // NOTE: createProject is optional; only wired if provided by the service
  *   - POST /api/projects               (create; only if service.createProject exists)
  * - Studies:
  *   - GET  /api/studies?project=:id    (list by project)
@@ -47,14 +46,6 @@
 
 import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
-import { readPartial } from "../service/partials.js";
-import {
-  listGuides,
-  createGuide,
-  updateGuide,
-  publishGuide,
-  readGuide
-} from "../service/guides.js";
 
 /**
  * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
@@ -87,7 +78,7 @@ function maybeRedirect(request, canonicalPath) {
 	const url = new URL(request.url);
 	if (url.pathname !== canonicalPath) {
 		url.pathname = canonicalPath;
-		// 302 for safety (avoid caching), switch to 301 once you’re confident
+		// 302 for safety (avoid caching), switch to 301 once you're confident
 		return Response.redirect(url.toString(), 302);
 	}
 	return null;
@@ -119,38 +110,63 @@ export async function handleRequest(request, env) {
 			});
 		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// Health
-		if (url.pathname === "/api/health") return service.health(origin);
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/health") {
+			return service.health(origin);
+		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// AI Assist
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
 			return aiRewrite(request, env, origin);
 		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// Projects
-		if (url.pathname.startsWith("/api/projects")) {
-			if (request.method === "GET") return service.listProjectsFromAirtable(origin, url);
-			if (request.method === "POST" && typeof service.createProject === "function") {
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/projects" && request.method === "GET") {
+			return service.listProjectsFromAirtable(origin, url);
+		}
+		if (url.pathname === "/api/projects" && request.method === "POST") {
+			if (typeof service.createProject === "function") {
 				return service.createProject(request, origin);
 			}
 		}
+		if (url.pathname === "/api/projects.csv" && request.method === "GET") {
+			return service.streamCsv(origin, env.GH_PATH_PROJECTS);
+		}
+		if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
+			return service.streamCsv(origin, env.GH_PATH_DETAILS);
+		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// Studies
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/studies" && request.method === "GET") {
 			return service.listStudies(origin, url);
 		}
 		if (url.pathname === "/api/studies" && request.method === "POST") {
 			return service.createStudy(request, origin);
-		} {
-			const m = url.pathname.match(/^\/api\/studies\/([^/]+)$/);
-			if (m && request.method === "PATCH" && typeof service.updateStudy === "function") {
-				const urlWithId = new URL(url.toString());
-				urlWithId.searchParams.set("id", m[1]);
-				return service.updateStudy(request, origin, urlWithId);
+		}
+		if (url.pathname.startsWith("/api/studies/")) {
+			const match = url.pathname.match(/^\/api\/studies\/([^/]+)$/);
+			if (match && request.method === "PATCH") {
+				const studyId = decodeURIComponent(match[1]);
+				return service.updateStudy(request, origin, studyId);
+			}
+		}
+		if (url.pathname === "/api/studies.csv" && request.method === "GET") {
+			if (env.GH_PATH_STUDIES) {
+				return service.streamCsv(origin, env.GH_PATH_STUDIES);
 			}
 		}
 
-		// ─────────── Guides ───────────
+		// ─────────────────────────────────────────────────────────────────
+		// Guides
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/guides" && request.method === "GET") {
 			return service.listGuides(origin, url);
 		}
@@ -158,72 +174,131 @@ export async function handleRequest(request, env) {
 			return service.createGuide(request, origin);
 		}
 		if (url.pathname.startsWith("/api/guides/")) {
-			const guideId = url.pathname.split("/").pop();
-			if (request.method === "GET") {
-				return service.readGuide(origin, guideId);
+			const parts = url.pathname.split("/").filter(Boolean);
+			// parts: ["api", "guides", ":id"] or ["api", "guides", ":id", "publish"]
+
+			if (parts.length === 3) {
+				// /api/guides/:id
+				const guideId = decodeURIComponent(parts[2]);
+
+				if (request.method === "GET") {
+					return service.readGuide(origin, guideId);
+				}
+				if (request.method === "PATCH") {
+					return service.updateGuide(request, origin, guideId);
+				}
 			}
-			if (request.method === "PATCH") {
-				return service.updateGuide(request, origin, guideId);
-			}
-			if (request.method === "POST" && url.pathname.endsWith("/publish")) {
+
+			if (parts.length === 4 && parts[3] === "publish") {
 				// /api/guides/:id/publish
-				const id = url.pathname.split("/").slice(-2, -1)[0];
-				return service.publishGuide(origin, id);
+				const guideId = decodeURIComponent(parts[2]);
+
+				if (request.method === "POST") {
+					return service.publishGuide(origin, guideId);
+				}
 			}
 		}
 
-		// ─────────── Partials ───────────
+		// ─────────────────────────────────────────────────────────────────
+		// Partials
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/partials" && request.method === "GET") {
-			return service.listPartials(origin, url);
+			return service.listPartials(origin);
 		}
 		if (url.pathname === "/api/partials" && request.method === "POST") {
 			return service.createPartial(request, origin);
 		}
 		if (url.pathname.startsWith("/api/partials/")) {
-			const partialId = url.pathname.split("/").pop();
-			if (request.method === "GET") {
-				return service.readPartial(origin, partialId);
-			}
-			if (request.method === "PATCH") {
-				return service.updatePartial(request, origin, partialId);
-			}
-			if (request.method === "DELETE") {
-				return service.deletePartial(origin, partialId);
+			const parts = url.pathname.split("/").filter(Boolean);
+			// parts: ["api", "partials", ":id"]
+
+			if (parts.length === 3) {
+				const partialId = decodeURIComponent(parts[2]);
+
+				if (request.method === "GET") {
+					return service.readPartial(origin, partialId);
+				}
+				if (request.method === "PATCH") {
+					return service.updatePartial(request, origin, partialId);
+				}
+				if (request.method === "DELETE") {
+					return service.deletePartial(origin, partialId);
+				}
 			}
 		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// Participants (optional)
-		if (url.pathname === "/api/participants" && request.method === "GET" && typeof service.listParticipants === "function") {
-			return service.listParticipants(origin, url);
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/participants" && request.method === "GET") {
+			if (typeof service.listParticipants === "function") {
+				return service.listParticipants(origin, url);
+			}
 		}
-		if (url.pathname === "/api/participants" && request.method === "POST" && typeof service.createParticipant === "function") {
-			return service.createParticipant(request, origin);
+		if (url.pathname === "/api/participants" && request.method === "POST") {
+			if (typeof service.createParticipant === "function") {
+				return service.createParticipant(request, origin);
+			}
 		}
 
+		// ─────────────────────────────────────────────────────────────────
 		// Sessions (optional)
-		if (url.pathname === "/api/sessions" && request.method === "GET" && typeof service.listSessions === "function") {
-			return service.listSessions(origin, url);
-		}
-		if (url.pathname === "/api/sessions" && request.method === "POST" && typeof service.createSession === "function") {
-			return service.createSession(request, origin);
-		} {
-			const sm = url.pathname.match(/^\/api\/sessions\/([^/]+)(?:\/ics)?$/);
-			if (sm && request.method === "PATCH" && typeof service.updateSession === "function") {
-				const urlWithId = new URL(url.toString());
-				urlWithId.searchParams.set("id", sm[1]);
-				return service.updateSession(request, origin, urlWithId);
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/sessions" && request.method === "GET") {
+			if (typeof service.listSessions === "function") {
+				return service.listSessions(origin, url);
 			}
-			if (sm && /\/ics$/.test(url.pathname) && request.method === "GET" && typeof service.sessionIcs === "function") {
-				const urlWithId = new URL(url.toString());
-				urlWithId.searchParams.set("id", sm[1]);
-				return service.sessionIcs(origin, urlWithId);
+		}
+		if (url.pathname === "/api/sessions" && request.method === "POST") {
+			if (typeof service.createSession === "function") {
+				return service.createSession(request, origin);
+			}
+		}
+		if (url.pathname.startsWith("/api/sessions/")) {
+			const match = url.pathname.match(/^\/api\/sessions\/([^/]+)(\/ics)?$/);
+			if (match) {
+				const sessionId = decodeURIComponent(match[1]);
+				const isIcs = match[2] === "/ics";
+
+				if (request.method === "PATCH" && !isIcs) {
+					if (typeof service.updateSession === "function") {
+						return service.updateSession(request, origin, sessionId);
+					}
+				}
+				if (request.method === "GET" && isIcs) {
+					if (typeof service.sessionIcs === "function") {
+						return service.sessionIcs(origin, sessionId);
+					}
+				}
 			}
 		}
 
-		// Static fallback (assets + SPA)
+		// ─────────────────────────────────────────────────────────────────
+		// Comms (optional)
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/comms/send" && request.method === "POST") {
+			if (typeof service.sendComms === "function") {
+				return service.sendComms(request, origin);
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// Unknown API route
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname.startsWith("/api/")) {
+			return service.json({ error: "Not found", path: url.pathname },
+				404,
+				service.corsHeaders(origin)
+			);
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// Static assets with SPA fallback
+		// ─────────────────────────────────────────────────────────────────
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
-			resp = await env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+			const indexReq = new Request(new URL("/index.html", url), request);
+			resp = await env.ASSETS.fetch(indexReq);
 		}
 		return resp;
 
@@ -234,6 +309,8 @@ export async function handleRequest(request, env) {
 			headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 		});
 	} finally {
-		try { service.destroy(); } catch {}
+		try {
+			service.destroy();
+		} catch {}
 	}
 }
