@@ -23,6 +23,18 @@ import { airtableTryWrite } from "../core/utils.js";
 import { getRecord } from "./internals/airtable.js";
 
 /**
+ * Pull `version: X` from YAML front-matter at the top of a Markdown doc.
+ */
+function extractFrontmatterVersion(md = "") {
+	if (!/^---\s*\n/.test(md)) return null;
+	const m = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+	if (!m) return null;
+	const yaml = m[1];
+	const v = yaml.match(/^\s*version\s*:\s*("?)([^"\n]+)\1\s*$/mi);
+	return v ? String(v[2]).trim() : null;
+}
+
+/**
  * List guides for a study.
  * @route GET /api/guides?study=<StudyAirtableId>
  * @param {import("./index.js").ResearchOpsService} svc
@@ -158,7 +170,8 @@ export async function createGuide(svc, request, origin) {
 
 			// attempt 3: drop Status (let Airtable default)
 			const {
-				[statusKey]: _drop, ...withoutStatus } = fields;
+				[statusKey]: _drop, ...withoutStatus
+			} = fields;
 			attempt = await airtableTryWrite(atUrl, svc.env.AIRTABLE_API_KEY, "POST", withoutStatus, svc.cfg.TIMEOUT_MS);
 			if (attempt.ok) {
 				const id = attempt.json.records?.[0]?.id;
@@ -254,7 +267,8 @@ export async function updateGuide(svc, request, origin, guideId) {
 
 		// 3rd attempt: omit Status
 		const {
-			[statusKey]: _drop, ...f3 } = f2;
+			[statusKey]: _drop, ...f3
+		} = f2;
 		res = await fetchWithTimeout(atUrl, {
 			method: "PATCH",
 			headers: { "Authorization": `Bearer ${svc.env.AIRTABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -340,54 +354,77 @@ export async function publishGuide(svc, origin, guideId) {
 
 /**
  * Read a guide by Airtable record id.
- * - Uses resilient getRecord() which falls back to filterByFormula(RECORD_ID()) on 404.
- * @summary Guides feature handlers
  * @route GET /api/guides/:id
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {string} guideId
  * @returns {Promise<Response>}
  */
-export async function readGuide(env, corsHeaders, id) {
-  if (!id) {
-    return new Response(JSON.stringify({ error: "Missing guide id" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json", ...corsHeaders("") }
-    });
-  }
+export async function readGuide(svc, origin, guideId) {
+	if (!guideId) {
+		return svc.json({ error: "Missing guide id" }, 400, svc.corsHeaders(origin));
+	}
 
-  try {
-    const rec = await getRecord(env, env.AIRTABLE_TABLE_GUIDES, id);
-    const f = rec?.fields || {};
+	try {
+		const table = svc.env.AIRTABLE_TABLE_GUIDES || "Discussion Guides";
+		const rec = await getRecord(svc.env, table, guideId);
+		const f = rec?.fields || {};
 
-    // Align field names with what your UI expects (based on your list payloads)
-    const payload = {
-      ok: true,
-      guide: {
-        id: rec.id,
-        title: f.title || f.Title || "Untitled",
-        status: f.status || f.Status || "Draft",
-        version: f.version ?? f.Version ?? 1,
-        sourceMarkdown: f.sourceMarkdown || f.SourceMarkdown || "",
-        variables: f.variables || f.Variables || {}
-      }
-    };
+		// Title / Status / Version (be liberal with keys)
+		const title =
+			f.Title ?? f.title ?? "Untitled guide";
 
-    return new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders("") }
-    });
+		const status =
+			f.Status ?? f.status ?? "Draft";
 
-  } catch (err) {
-    const msg = String(err?.message || "");
-    const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
-    const body = isNotFound
-      ? { error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) }
-      : { error: "Airtable error", detail: msg };
+		// Prefer explicit numeric version, fall back to variables/front-matter/default
+		const fmVersion = extractFrontmatterVersion(
+			// Use the same source field precedence as below
+			f["Source Markdown"] ?? f.sourceMarkdown ?? f.Body ?? f.Markdown ?? ""
+		);
+		const versionRaw =
+			f.Version ?? f.version ?? fmVersion ?? 1;
+		const version = Number(versionRaw) || 1;
 
-    return new Response(JSON.stringify(body), {
-      status: isNotFound ? 404 : 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders("") }
-    });
-  }
+		// Markdown body: support multiple field names (Airtable often uses spaces)
+		const sourceMarkdown =
+			f["Source Markdown"] ?? f.sourceMarkdown ?? f.Body ?? f.Markdown ?? "";
+
+		// Variables can be stored as JSON string or object; parse safely
+		let variables = {};
+		const varsRaw = f.Variables ?? f.variables;
+		if (varsRaw != null) {
+			try {
+				variables = typeof varsRaw === "string" ? JSON.parse(varsRaw) : varsRaw;
+			} catch {
+				variables = {};
+			}
+		}
+
+		// Ensure {{version}} always works for your templates
+		if (!variables || typeof variables !== "object") variables = {};
+		if (variables.version == null) variables.version = String(version);
+
+		const payload = {
+			ok: true,
+			guide: {
+				id: rec.id,
+				title,
+				status,
+				version,
+				sourceMarkdown,
+				variables
+			}
+		};
+
+		return svc.json(payload, 200, svc.corsHeaders(origin));
+	} catch (err) {
+		const msg = String(err?.message || "");
+		const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
+		const body = isNotFound ?
+			{ error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) } :
+			{ error: "Airtable error", detail: msg };
+
+		return svc.json(body, isNotFound ? 404 : 500, svc.corsHeaders(origin));
+	}
 }
