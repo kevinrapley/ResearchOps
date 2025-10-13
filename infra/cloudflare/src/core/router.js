@@ -47,8 +47,8 @@
 
 import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
-import { readPartial } from "../service/features/partials.js";
-import { readGuide } from "../service/features/guides.js";
+import { readPartial } from "../service/partials.js";
+import { readGuide } from "../service/guides.js";
 
 /**
  * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
