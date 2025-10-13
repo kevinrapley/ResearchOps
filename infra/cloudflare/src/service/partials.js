@@ -5,6 +5,7 @@
  */
 
 import { fetchWithTimeout, safeText } from "../core/utils.js";
+import { getRecord } from "../internals/airtable.js";
 
 /**
  * List all partials (for pattern drawer).
@@ -41,41 +42,55 @@ export async function listPartials(svc, origin) {
 }
 
 /**
- * Read a single partial by ID.
+ * Read a partial by Airtable record id.
+ * Uses resilient getRecord() with RECORD_ID() fallback.
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {string} id
  * @returns {Promise<Response>}
  */
-export async function readPartial(svc, origin, id) {
-	if (!id) return svc.json({ error: "Missing partial id" }, 400, svc.corsHeaders(origin));
-
-	const base = svc.env.AIRTABLE_BASE_ID;
-	const table = encodeURIComponent(svc.env.AIRTABLE_TABLE_PARTIALS || "Partials");
-	const url = `https://api.airtable.com/v0/${base}/${table}/${encodeURIComponent(id)}`;
-
-	const res = await fetchWithTimeout(url, {
-		headers: { "Authorization": `Bearer ${svc.env.AIRTABLE_API_KEY}` }
-	}, svc.cfg.TIMEOUT_MS);
-
-	if (!res.ok) {
-		const txt = await res.text();
-		return svc.json({ error: `Airtable ${res.status}`, detail: safeText(txt) }, res.status, svc.corsHeaders(origin));
+export async function readPartial(env, corsHeaders, id) {
+	if (!id) {
+		return new Response(JSON.stringify({ error: "Missing partial id" }), {
+			status: 400,
+			headers: { "Content-Type": "application/json", ...corsHeaders("") }
+		});
 	}
 
-	const rec = await res.json();
-	const partial = {
-		id: rec.id,
-		name: rec.fields.Name || "",
-		title: rec.fields.Title || "",
-		category: rec.fields.Category || "",
-		version: rec.fields.Version || 1,
-		source: rec.fields.Source || "",
-		description: rec.fields.Description || "",
-		status: rec.fields.Status || "draft"
-	};
+	try {
+		const rec = await getRecord(env, env.AIRTABLE_TABLE_PARTIALS, id);
+		const fields = rec?.fields || {};
 
-	return svc.json({ ok: true, partial }, 200, svc.corsHeaders(origin));
+		const payload = {
+			ok: true,
+			partial: {
+				id: rec.id,
+				name: fields.name || fields.Name || "",
+				title: fields.title || fields.Title || "",
+				category: fields.category || fields.Category || "",
+				version: fields.version ?? fields.Version ?? 1,
+				status: fields.status || fields.Status || "Draft",
+				source: fields.source || fields.Source || ""
+			}
+		};
+
+		return new Response(JSON.stringify(payload), {
+			status: 200,
+			headers: { "Content-Type": "application/json", ...corsHeaders("") }
+		});
+
+	} catch (err) {
+		const msg = String(err?.message || "");
+		const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
+		const body = isNotFound ?
+			{ error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) } :
+			{ error: "Airtable error", detail: msg };
+
+		return new Response(JSON.stringify(body), {
+			status: isNotFound ? 404 : 500,
+			headers: { "Content-Type": "application/json", ...corsHeaders("") }
+		});
+	}
 }
 
 /**
