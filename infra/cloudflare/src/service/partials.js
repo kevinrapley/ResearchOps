@@ -49,47 +49,51 @@ export async function listPartials(svc, origin) {
  * @param {string} id
  * @returns {Promise<Response>}
  */
-export async function readPartial(env, corsHeaders, id) {
+export async function readPartial(svc, origin, id) {
 	if (!id) {
-		return new Response(JSON.stringify({ error: "Missing partial id" }), {
-			status: 400,
-			headers: { "Content-Type": "application/json", ...corsHeaders("") }
-		});
+		return svc.json({ error: "Missing partial id" }, 400, svc.corsHeaders(origin));
 	}
 
 	try {
-		const rec = await getRecord(env, env.AIRTABLE_TABLE_PARTIALS, id);
-		const fields = rec?.fields || {};
+		const tableName = svc.env.AIRTABLE_TABLE_PARTIALS || "Partials";
+		const rec = await getRecord(svc.env, tableName, id);
+		
+		if (!rec) {
+			return svc.json({ 
+				error: "Partial not found",
+				detail: `No record found with id: ${id}` 
+			}, 404, svc.corsHeaders(origin));
+		}
+
+		const fields = rec.fields || {};
 
 		const payload = {
 			ok: true,
 			partial: {
 				id: rec.id,
-				name: fields.name || fields.Name || "",
-				title: fields.title || fields.Title || "",
-				category: fields.category || fields.Category || "",
-				version: fields.version ?? fields.Version ?? 1,
-				status: fields.status || fields.Status || "Draft",
-				source: fields.source || fields.Source || ""
+				name: fields.Name || fields.name || "",
+				title: fields.Title || fields.title || "",
+				category: fields.Category || fields.category || "Uncategorised",
+				version: fields.Version ?? fields.version ?? 1,
+				status: fields.Status || fields.status || "Draft",
+				source: fields.Source || fields.source || "",
+				description: fields.Description || fields.description || ""
 			}
 		};
 
-		return new Response(JSON.stringify(payload), {
-			status: 200,
-			headers: { "Content-Type": "application/json", ...corsHeaders("") }
-		});
+		return svc.json(payload, 200, svc.corsHeaders(origin));
 
 	} catch (err) {
+		svc.log.error("partials.read.error", { err: String(err?.message || err), id });
+		
 		const msg = String(err?.message || "");
-		const isNotFound = /Airtable\s*404/i.test(msg) || /NOT_FOUND/i.test(msg);
-		const body = isNotFound ?
-			{ error: "Airtable 404", detail: JSON.stringify({ error: "NOT_FOUND" }) } :
-			{ error: "Airtable error", detail: msg };
-
-		return new Response(JSON.stringify(body), {
-			status: isNotFound ? 404 : 500,
-			headers: { "Content-Type": "application/json", ...corsHeaders("") }
-		});
+		const isNotFound = /404|NOT_FOUND/i.test(msg);
+		
+		return svc.json(
+			{ error: isNotFound ? "Partial not found" : "Internal server error", detail: msg },
+			isNotFound ? 404 : 500,
+			svc.corsHeaders(origin)
+		);
 	}
 }
 
@@ -102,8 +106,15 @@ export async function readPartial(env, corsHeaders, id) {
  */
 export async function createPartial(svc, request, origin) {
 	const body = await request.arrayBuffer();
+	if (body.byteLength > svc.cfg.MAX_BODY_BYTES) {
+		svc.log.warn("request.too_large", { size: body.byteLength });
+		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
+	}
+
 	let p;
-	try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
+	try { 
+		p = JSON.parse(new TextDecoder().decode(body)); 
+	} catch {
 		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
@@ -153,9 +164,20 @@ export async function createPartial(svc, request, origin) {
  * @returns {Promise<Response>}
  */
 export async function updatePartial(svc, request, origin, id) {
+	if (!id) {
+		return svc.json({ error: "Missing partial id" }, 400, svc.corsHeaders(origin));
+	}
+
 	const body = await request.arrayBuffer();
+	if (body.byteLength > svc.cfg.MAX_BODY_BYTES) {
+		svc.log.warn("request.too_large", { size: body.byteLength });
+		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
+	}
+
 	let p;
-	try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
+	try { 
+		p = JSON.parse(new TextDecoder().decode(body)); 
+	} catch {
 		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
@@ -199,6 +221,10 @@ export async function updatePartial(svc, request, origin, id) {
  * @returns {Promise<Response>}
  */
 export async function deletePartial(svc, origin, id) {
+	if (!id) {
+		return svc.json({ error: "Missing partial id" }, 400, svc.corsHeaders(origin));
+	}
+
 	const base = svc.env.AIRTABLE_BASE_ID;
 	const table = encodeURIComponent(svc.env.AIRTABLE_TABLE_PARTIALS || "Partials");
 	const url = `https://api.airtable.com/v0/${base}/${table}/${encodeURIComponent(id)}`;
