@@ -154,7 +154,7 @@ export async function handleRequest(request, env) {
 			}
 			if (/^\/api\/guides\/[^/]+$/.test(url.pathname) && request.method === "GET") {
 				const id = url.pathname.split("/").pop();
-				return readGuideById(env, (o) => service.corsHeaders(o), id);
+				return readGuide(env, (o) => service.corsHeaders(o), id);
 			}
 			const gm = url.pathname.match(/^\/api\/guides\/([^/]+)(?:\/(publish))?$/);
 			if (gm) {
@@ -180,7 +180,7 @@ export async function handleRequest(request, env) {
 			}
 			if (/^\/api\/partials\/[^/]+$/.test(url.pathname) && request.method === "GET") {
 				const id = url.pathname.split("/").pop();
-				return readPartialById(env, (o) => service.corsHeaders(o), id);
+				return readPartial(env, (o) => service.corsHeaders(o), id);
 			}
 			const pm = url.pathname.match(/^\/api\/partials\/([^/]+)$/);
 			if (pm) {
