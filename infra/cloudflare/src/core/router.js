@@ -48,8 +48,7 @@ import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
 
 /**
- * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
- * Also removes accidental multiple slashes.
+ * Collapse any duplicated static segments and normalize trailing slashes.
  * @param {string} pathname
  * @returns {string}
  */
@@ -64,6 +63,11 @@ function canonicalizePath(pathname) {
 
 	// Remove trailing /index.html -> /
 	p = p.replace(/\/index\.html$/i, "/");
+
+	// Remove trailing slash from API paths (but keep root /)
+	if (p.startsWith("/api/") && p.endsWith("/") && p !== "/api/") {
+		p = p.slice(0, -1);
+	}
 
 	return p;
 }
@@ -94,11 +98,13 @@ export async function handleRequest(request, env) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
 
-	// ── Canonicalize path early
+	// ── Canonicalize path early (removes trailing slashes from API paths)
 	{
 		const canonical = canonicalizePath(url.pathname);
 		const redirect = maybeRedirect(request, canonical);
 		if (redirect) return redirect;
+		// Update url.pathname to the canonical version for consistent routing
+		url.pathname = canonical;
 	}
 
 	try {
@@ -176,11 +182,11 @@ export async function handleRequest(request, env) {
 		if (url.pathname.startsWith("/api/guides/")) {
 			const parts = url.pathname.split("/").filter(Boolean);
 			// parts: ["api", "guides", ":id"] or ["api", "guides", ":id", "publish"]
-
+			
 			if (parts.length === 3) {
 				// /api/guides/:id
 				const guideId = decodeURIComponent(parts[2]);
-
+				
 				if (request.method === "GET") {
 					return service.readGuide(origin, guideId);
 				}
@@ -188,11 +194,11 @@ export async function handleRequest(request, env) {
 					return service.updateGuide(request, origin, guideId);
 				}
 			}
-
+			
 			if (parts.length === 4 && parts[3] === "publish") {
 				// /api/guides/:id/publish
 				const guideId = decodeURIComponent(parts[2]);
-
+				
 				if (request.method === "POST") {
 					return service.publishGuide(origin, guideId);
 				}
@@ -211,10 +217,10 @@ export async function handleRequest(request, env) {
 		if (url.pathname.startsWith("/api/partials/")) {
 			const parts = url.pathname.split("/").filter(Boolean);
 			// parts: ["api", "partials", ":id"]
-
+			
 			if (parts.length === 3) {
 				const partialId = decodeURIComponent(parts[2]);
-
+				
 				if (request.method === "GET") {
 					return service.readPartial(origin, partialId);
 				}
@@ -259,7 +265,7 @@ export async function handleRequest(request, env) {
 			if (match) {
 				const sessionId = decodeURIComponent(match[1]);
 				const isIcs = match[2] === "/ics";
-
+				
 				if (request.method === "PATCH" && !isIcs) {
 					if (typeof service.updateSession === "function") {
 						return service.updateSession(request, origin, sessionId);
@@ -286,7 +292,8 @@ export async function handleRequest(request, env) {
 		// Unknown API route
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname.startsWith("/api/")) {
-			return service.json({ error: "Not found", path: url.pathname },
+			return service.json(
+				{ error: "Not found", path: url.pathname },
 				404,
 				service.corsHeaders(origin)
 			);
@@ -311,6 +318,6 @@ export async function handleRequest(request, env) {
 	} finally {
 		try {
 			service.destroy();
-		} catch {}
+		} catch { }
 	}
 }
