@@ -50,6 +50,14 @@ import { aiRewrite } from "./ai-rewrite.js";
 import { readPartial } from "../service/partials.js";
 import { readGuide } from "../service/guides.js";
 
+import {
+  listGuides,
+  createGuide,
+  updateGuide,
+  publishGuide,
+  readGuide
+} from "../service/guides.js";
+
 /**
  * Collapse any duplicated static segments (pages|components|partials|css|js|images|assets).
  * Also removes accidental multiple slashes.
