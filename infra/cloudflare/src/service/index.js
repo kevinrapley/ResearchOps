@@ -10,6 +10,7 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
+import * as journals from './journals.js';
 import * as Guides from "./guides.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
@@ -106,6 +107,18 @@ export class ResearchOpsService {
 	/** @type {(origin:string, projectId:string)=>Promise<Response>} */
 	getProjectById = (origin, projectId) =>
 		Projects.getProjectById(this, origin, projectId);
+		
+	/* Journal Entries */
+	listJournalEntries = (origin, url) =>
+		journals.listJournalEntries.bind(this);
+	createJournalEntry = (req, origin) =>
+		journals.createJournalEntry.bind(this);
+	getJournalEntry = (origin, entryId) =>
+		journals.getJournalEntry.bind(this);
+	updateJournalEntry = (req, origin, entryId) =>
+		journals.updateJournalEntry.bind(this);
+	deleteJournalEntry = (origin, entryId) =>
+		journals.deleteJournalEntry.bind(this);
 
 	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
