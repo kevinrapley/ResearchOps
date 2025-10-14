@@ -15,7 +15,9 @@
 
 /* CSS DIRECTORY
 	1. = JOURNAL
-	2. = RESPONSIVE
+	2. = CODING INTERFACE
+	3. = CAQDAS INTERFACE
+	4. = RESPONSIVE
 */
 
 /* === =JOURNAL ============================================ */
@@ -198,6 +200,292 @@
 	font-size: 3rem;
 	margin-bottom: var(--space-200);
 	opacity: 0.5;
+	}
+	
+/* === =CODING INTERFACE =================================== */
+
+.coding-panel {
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 320px;
+	height: 100vh;
+	background: #ffffff;
+	border-left: 1px solid var(--color-border);
+	padding: var(--space-300);
+	overflow-y: auto;
+	box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+	z-index: 100;
+	}
+
+.selected-text-display {
+	background: #fef7e0;
+	border: 1px solid #f5c857;
+	border-radius: var(--radius-100);
+	padding: var(--space-200);
+	margin-bottom: var(--space-300);
+	font-style: italic;
+	}
+
+/* Coded text highlighting */
+.coded-segment {
+	background-color: var(--code-color, #e8f0fe);
+	border-bottom: 2px solid var(--code-color-dark, #1976d2);
+	cursor: pointer;
+	position: relative;
+	}
+
+.coded-segment:hover::after {
+	content: attr(data-codes);
+	position: absolute;
+	bottom: 100%;
+	left: 0;
+	background: var(--color-text);
+	color: #ffffff;
+	padding: 4px 8px;
+	border-radius: var(--radius-100);
+	font-size: 0.75rem;
+	white-space: nowrap;
+	z-index: 10;
+	}
+
+/* Codebook tree */
+.codebook {
+	max-height: 300px;
+	overflow-y: auto;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-100);
+	padding: var(--space-100);
+	}
+
+.code-item {
+	padding: var(--space-100);
+	cursor: pointer;
+	border-radius: var(--radius-100);
+	display: flex;
+	align-items: center;
+	gap: var(--space-100);
+	}
+
+.code-item:hover {
+	background: #f0f0f0;
+	}
+
+.code-item.selected {
+	background: var(--color-accent);
+	color: #ffffff;
+	}
+
+.code-color-indicator {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	}
+
+/* Analysis visualizations */
+.analysis-view {
+	margin-top: var(--space-400);
+	}
+
+.co-occurrence-matrix {
+	overflow-x: auto;
+	}
+
+.timeline-visualization {
+	height: 200px;
+	position: relative;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-100);
+	}
+	
+/* === =CAQDAS INTERFACE =================================== */
+
+/* Tabbed navigation */
+.analysis-tabs {
+	display: flex;
+	gap: 2px;
+	margin-bottom: var(--space-400);
+	border-bottom: 2px solid var(--color-border);
+	}
+
+.analysis-tabs button[role="tab"] {
+	padding: 12px 24px;
+	background: #f0f0f0;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	font-weight: 400;
+	transition: all 0.2s ease;
+	}
+
+.analysis-tabs button[role="tab"][aria-selected="true"] {
+	background: #ffffff;
+	border-bottom-color: var(--color-accent);
+	font-weight: 600;
+	}
+
+/* Codeable text */
+.codeable-text {
+	user-select: text;
+	position: relative;
+	}
+
+.coded-segment {
+	background-color: var(--code-bg, #e8f5e9);
+	border-bottom: 2px solid var(--code-color, #4caf50);
+	padding: 0 2px;
+	cursor: pointer;
+	position: relative;
+	}
+
+.coded-segment:hover {
+	filter: brightness(0.95);
+	}
+
+/* Text selection */
+::selection {
+	background-color: #ffd54f;
+	color: #000;
+	}
+
+/* Coding panel */
+.coding-panel {
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 400px;
+	height: 100vh;
+	background: #ffffff;
+	border-left: 2px solid var(--color-border);
+	box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+	overflow-y: auto;
+	z-index: 1000;
+	}
+
+.panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: var(--space-300);
+	border-bottom: 1px solid var(--color-border);
+	}
+
+.selected-text-preview {
+	padding: var(--space-300);
+	background: #fef7e0;
+	border-left: 4px solid #f5c857;
+	margin: var(--space-300);
+	}
+
+.selected-text-preview blockquote {
+	margin: 8px 0 0;
+	font-style: italic;
+	}
+
+/* Codebook tree */
+.codebook-tree {
+	max-height: 300px;
+	overflow-y: auto;
+	border: 1px solid var(--color-border);
+	margin: var(--space-300);
+	}
+
+.code-item {
+	padding: 8px 12px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	}
+
+.code-item:hover {
+	background: #f5f5f5;
+	}
+
+.code-item.selected {
+	background: var(--color-accent);
+	color: #ffffff;
+	}
+
+.code-item[aria-level="2"] {
+	padding-left: 28px;
+	}
+
+.code-item[aria-level="3"] {
+	padding-left: 44px;
+	}
+
+/* Coding confidence */
+.coding-confidence fieldset {
+	border: 1px solid var(--color-border);
+	padding: var(--space-200);
+	margin: var(--space-300);
+	}
+
+.coding-confidence label {
+	display: inline-block;
+	margin-right: var(--space-200);
+	}
+
+/* Analysis views */
+.analysis-options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: var(--space-300);
+	margin-bottom: var(--space-400);
+	}
+
+.analysis-btn {
+	padding: var(--space-300);
+	text-align: center;
+	background: #ffffff;
+	border: 2px solid var(--color-border);
+	border-radius: var(--radius-100);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	}
+
+.analysis-btn:hover {
+	border-color: var(--color-accent);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+/* Memo cards */
+.memo-card {
+	background: #f8f9fa;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-100);
+	padding: var(--space-300);
+	margin-bottom: var(--space-300);
+	}
+
+.memo-type-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: var(--radius-100);
+	font-size: 0.85rem;
+	font-weight: 600;
+	}
+
+.memo-type-badge[data-type="analytical"] {
+	background: #e3f2fd;
+	color: #1976d2;
+	}
+
+.memo-type-badge[data-type="methodological"] {
+	background: #f3e5f5;
+	color: #7b1fa2;
+	}
+
+.memo-type-badge[data-type="theoretical"] {
+	background: #fff3e0;
+	color: #f57c00;
+	}
+
+.memo-type-badge[data-type="reflexive"] {
+	background: #e8f5e9;
+	color: #388e3c;
 	}
 
 /* === =RESPONSIVE (Journal) ============================== */
