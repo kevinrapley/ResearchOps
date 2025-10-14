@@ -1,68 +1,68 @@
 /**
  * @file src/service/reflection/code-applications.js
- * @module service/code-applications
- * @summary List Code Applications for a given Project.
+ * @module service/reflection/code-applications
+ * @summary List Code Applications linked to a Project (CAQDAS support).
  *
  * Route: GET /api/code-applications?project=<AirtableProjectId>
  *
- * Output (200):
- * [
- *   { id, name, vendor, status, createdAt }
- * ]
+ * Response (200):
+ *   { ok:true, applications: [{ id, name, vendor, status, createdAt }] }
  */
 
-import { json } from "../internals/responders.js";
-import { listRecords } from "../internals/airtable.js";
+import { listAll } from "../internals/airtable.js";
 
 /**
  * Handler: GET /api/code-applications
- * @param {import('../index.js').ResearchOpsService} svc
+ * @param {import("../index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {URL} url
  * @returns {Promise<Response>}
  */
 export async function listCodeApplications(svc, origin, url) {
-	const projectId =
-		url.searchParams.get("project") ||
-		url.searchParams.get("pid") ||
-		"";
+	const projectId = url.searchParams.get("project") || "";
 
 	if (!projectId) {
-		return json({ error: "Missing ?project" }, 400);
+		return svc.json({ ok: false, error: "Missing ?project" }, 400, svc.corsHeaders(origin));
 	}
 
-	// Dev-friendly behaviour when Airtable isn’t configured.
+	// Dev-friendly: if Airtable bindings are missing, succeed with empty payload.
 	if (!svc?.env?.AIRTABLE_API_KEY || !svc?.env?.AIRTABLE_BASE_ID) {
-		return json([], 200, {
-			"cache-control": "no-store",
-			"x-dev-note": "Airtable not configured; returning []"
+		return svc.json({ ok: true, applications: [] }, 200, svc.corsHeaders(origin));
+	}
+
+	const tableName = svc.env.AIRTABLE_TABLE_CODE_APPS || "Code Applications";
+
+	// Pull (paged) records. Filtering is done client-side for reliability across link-field variants.
+	const { records } = await listAll(svc.env, tableName, { pageSize: 100 }, svc.cfg.TIMEOUT_MS);
+
+	const LINK_FIELDS = ["Project", "Projects"]; // tolerate single or multi link field names
+	const out = [];
+
+	for (const r of records) {
+		const f = r?.fields || {};
+
+		// Identify matching links to the given projectId, across "Project" or "Projects" variants.
+		let linked = false;
+		for (const lf of LINK_FIELDS) {
+			const v = f[lf];
+			if (Array.isArray(v) && v.includes(projectId)) {
+				linked = true;
+				break;
+			}
+		}
+		if (!linked) continue;
+
+		out.push({
+			id: r.id,
+			name: f.Name || f.Application || f.App || "—",
+			vendor: f.Vendor || f.Supplier || "—",
+			status: f.Status || "unknown",
+			createdAt: r.createdTime || f.CreatedAt || ""
 		});
 	}
 
-	// ── Airtable config
-	const table = "Code Applications";
-	const view = "Grid view";
+	// Sort newest first for a stable UI.
+	out.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 
-	// If {Project} is a linked-record field, FIND against ARRAYJOIN is robust.
-	const filterByFormula = `FIND('${projectId}', ARRAYJOIN({Project}))`;
-
-	const { ok, records, status, error } = await listRecords(svc.env, {
-		table,
-		view,
-		filterByFormula
-	});
-
-	if (!ok) {
-		return json({ error: error || "Upstream Airtable error" }, status || 502);
-	}
-
-	const out = records.map(r => ({
-		id: r.id,
-		name: r.fields?.Name ?? r.fields?.name ?? "—",
-		vendor: r.fields?.Vendor ?? r.fields?.vendor ?? "—",
-		status: r.fields?.Status ?? r.fields?.status ?? "unknown",
-		createdAt: r.createdTime
-	}));
-
-	return json(out, 200, { "cache-control": "no-store" });
+	return svc.json({ ok: true, applications: out }, 200, svc.corsHeaders(origin));
 }
