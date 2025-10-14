@@ -1,731 +1,424 @@
 /**
  * @file caqdas-interface.js
- * @module CAQDASInterface
- * @summary Complete CAQDAS functionality for qualitative research.
+ * @summary Journals / CAQDAS UI wiring: codes, memos, timeline, co-occurrence, retrieval, export, and code applications list.
  * @description
- * Integrates journal entries, coding, memos, and analysis tools
- * for comprehensive qualitative data analysis.
+ *  - Buttons:
+ *    + Add Code            → POST /api/codes
+ *    + New Memo            → POST /api/memos?project=…
+ *    📊 Timeline View      → GET  /api/analysis/timeline?project=…
+ *    🔗 Code Co-occurrence → GET  /api/analysis/cooccurrence?project=…
+ *    🔍 Code Retrieval     → GET  /api/analysis/retrieval?project=…&q=…
+ *    📤 Export Analysis    → GET  /api/analysis/export?project=… (download)
+ *    (Also) Code Applications list → GET /api/code-applications?project=…
+ *
+ *  - Rendering targets (create these containers in your HTML if not present):
+ *      <ul id="codes-list"></ul>
+ *      <section id="timeline"></section>
+ *      <section id="cooccurrence"></section>
+ *      <section id="retrieval"></section>
+ *      <ul id="code-applications-list"></ul>
+ *
+ *  - Button IDs expected:
+ *      #btn-add-code
+ *      #btn-new-memo
+ *      #btn-timeline
+ *      #btn-cooccurrence
+ *      #btn-retrieval
+ *      #btn-export-analysis
+ *
+ *  - This file is self-contained and defensive: it will not throw; it flashes user-friendly messages.
  */
 
-/* =========================
- * Configuration
- * ========================= */
+/* -------------------- tiny DOM helpers -------------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-const CONFIG = Object.freeze({
-	API_BASE: window.location.origin,
-	TIMEOUT_MS: 10_000,
-	CATEGORY_LABELS: {
-		perceptions: 'Evolving perceptions',
-		procedures: 'Day-to-day procedures',
-		decisions: 'Methodological decision points',
-		introspections: 'Personal introspections'
-	},
-	MEMO_TYPES: {
-		analytical: 'Analytical',
-		methodological: 'Methodological',
-		theoretical: 'Theoretical',
-		reflexive: 'Reflexive'
+/* -------------------- flash region (accessible) -------------------- */
+function flash(message) {
+	let el = $("#flash");
+	if (!el) {
+		el = document.createElement("div");
+		el.id = "flash";
+		el.setAttribute("role", "status");
+		el.setAttribute("aria-live", "polite");
+		el.style.margin = "12px 0";
+		el.style.padding = "12px";
+		el.style.border = "1px solid #d0d7de";
+		el.style.background = "#fff";
+		document.querySelector("main")?.prepend(el);
 	}
-});
-
-/* =========================
- * State Management
- * ========================= */
-
-const state = {
-	projectId: null,
-	currentTab: 'journal',
-	entries: [],
-	codes: [],
-	memos: [],
-	codeApplications: [],
-	currentFilter: 'all',
-	currentMemoFilter: 'all',
-	formVisible: false,
-	selectedText: null,
-	selectedEntry: null,
-	selectedCode: null
-};
-
-/* =========================
- * Utilities
- * ========================= */
-
-async function fetchWithTimeout(url, init, timeoutMs = CONFIG.TIMEOUT_MS) {
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort('timeout'), timeoutMs);
-	try {
-		return await fetch(url, { ...init, signal: controller.signal });
-	} finally {
-		clearTimeout(id);
-	}
-}
-
-function showStatus(message, type, elementId = 'form-status') {
-	const el = document.getElementById(elementId);
-	if (!el) return;
 	el.textContent = message;
-	el.className = `status ${type === 'error' ? 'error-message' : 'success-message'}`;
-	setTimeout(() => {
-		el.textContent = '';
-		el.className = 'status';
-	}, 5000);
 }
 
-function getUrlParams() {
-	const params = new URLSearchParams(window.location.search);
-	return { id: params.get('id') };
-}
-
-function formatDatetime(isoString) {
-	if (!isoString) return '—';
+/* -------------------- fetch helpers -------------------- */
+async function httpJSON(url, opts = {}, timeoutMs = 30000) {
+	const ctrl = new AbortController();
+	const t = setTimeout(() => ctrl.abort(), timeoutMs);
+	let res;
 	try {
-		const d = new Date(isoString);
-		const now = new Date();
-		const diffMs = now - d;
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
-
-		if (diffMins < 1) return 'Just now';
-		if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
-		if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-		if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-
-		return d.toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	} catch {
-		return isoString;
+		res = await fetch(url, { cache: "no-store", signal: ctrl.signal, ...opts });
+	} finally {
+		clearTimeout(t);
 	}
-}
-
-function escapeHtml(str) {
-	const div = document.createElement('div');
-	div.textContent = str;
-	return div.innerHTML;
-}
-
-/* =========================
- * Tab Management
- * ========================= */
-
-function setupTabs() {
-	const tabs = document.querySelectorAll('[role="tab"]');
-	tabs.forEach(tab => {
-		tab.addEventListener('click', (e) => {
-			const tabId = e.target.id.replace('-tab', '');
-			switchTab(tabId);
-		});
-	});
-}
-
-function switchTab(tabName) {
-	state.currentTab = tabName;
-
-	// Update tab states
-	document.querySelectorAll('[role="tab"]').forEach(tab => {
-		const isSelected = tab.id === `${tabName}-tab`;
-		tab.setAttribute('aria-selected', isSelected);
-	});
-
-	// Update panel visibility
-	document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
-		panel.hidden = panel.id !== `${tabName}-panel`;
-	});
-
-	// Load data for the selected tab
-	switch (tabName) {
-		case 'journal':
-			loadEntries();
-			break;
-		case 'codes':
-			loadCodes();
-			break;
-		case 'memos':
-			loadMemos();
-			break;
-		case 'analysis':
-			loadAnalysis();
-			break;
+	if (!res.ok) {
+		const detail = await res.text().catch(() => "");
+		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
 	}
+	const ct = (res.headers.get("content-type") || "").toLowerCase();
+	if (!ct.includes("application/json")) return {};
+	return res.json();
 }
 
-/* =========================
- * Journal Functionality
- * ========================= */
-
-async function loadEntries() {
-	if (!state.projectId) return;
-
-	try {
-		const url = `${CONFIG.API_BASE}/api/journal-entries?project=${encodeURIComponent(state.projectId)}`;
-		const res = await fetchWithTimeout(url);
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-		const data = await res.json();
-		state.entries = data.entries || [];
-
-		// Load code applications for entries
-		await loadCodeApplications();
-		renderEntries();
-	} catch (err) {
-		console.error('Failed to load journal entries:', err);
-		showStatus('Could not load journal entries', 'error');
-	}
-}
-
-function renderEntries() {
-	const container = document.getElementById('entries-container');
-	if (!container) return;
-
-	const filtered = state.currentFilter === 'all' ?
-		state.entries :
-		state.entries.filter(e => e.category === state.currentFilter);
-
-	if (filtered.length === 0) {
-		container.innerHTML = `
-			<div class="empty-journal">
-				<div class="empty-journal-icon" aria-hidden="true">📔</div>
-				<p><strong>No entries yet</strong></p>
-				<p>Start documenting your research journey by adding your first journal entry.</p>
-			</div>
-		`;
+/* -------------------- renderers -------------------- */
+function renderCodes(list) {
+	const ul = $("#codes-list");
+	if (!ul) return;
+	ul.innerHTML = "";
+	if (!Array.isArray(list) || !list.length) {
+		const li = document.createElement("li");
+		li.textContent = "No codes yet.";
+		ul.appendChild(li);
 		return;
 	}
-
-	container.innerHTML = filtered.map(entry => {
-		const codedSegments = state.codeApplications.filter(app => app.entry_id === entry.id);
-		const relatedMemos = state.memos.filter(memo =>
-			memo.linkedEntries && memo.linkedEntries.includes(entry.id)
-		);
-
-		return `
-			<article class="entry-card" data-category="${entry.category}" data-id="${entry.id}">
-				<div class="entry-header">
-					<div class="entry-meta">
-						<time class="entry-timestamp" datetime="${entry.createdAt}">
-							${formatDatetime(entry.createdAt)}
-						</time>
-						${entry.author ? `<span class="entry-author">by ${escapeHtml(entry.author)}</span>` : ''}
-					</div>
-					<span class="entry-category-badge" data-category="${entry.category}">
-						${CONFIG.CATEGORY_LABELS[entry.category] || entry.category}
-					</span>
-				</div>
-				
-				<div class="entry-content codeable-text" data-entry-id="${entry.id}">
-					${renderCodeableText(entry.content, codedSegments)}
-				</div>
-				
-				<div class="coding-status">
-					<span class="coded-segments-count">
-						${codedSegments.length} coded segment${codedSegments.length !== 1 ? 's' : ''}
-					</span>
-					${relatedMemos.length > 0 ? 
-						`<span class="has-memos">📝 ${relatedMemos.length} memo${relatedMemos.length !== 1 ? 's' : ''}</span>` : 
-						''
-					}
-				</div>
-				
-				${entry.tags && entry.tags.length > 0 ? `
-					<div style="margin-top: var(--space-200);">
-						${entry.tags.map(tag => `<span class="badge">${escapeHtml(tag)}</span>`).join(' ')}
-					</div>
-				` : ''}
-				
-				<div class="entry-actions">
-					<button type="button" class="btn-secondary btn-icon code-entry" data-id="${entry.id}">
-						Code
-					</button>
-					<button type="button" class="btn-secondary btn-icon add-memo" data-id="${entry.id}">
-						Add Memo
-					</button>
-					<button type="button" class="btn-secondary btn-icon view-codes" data-id="${entry.id}">
-						View Codes
-					</button>
-					<button type="button" class="btn-secondary btn-icon edit-entry" data-id="${entry.id}">
-						Edit
-					</button>
-					<button type="button" class="btn-secondary btn-icon delete-entry" data-id="${entry.id}">
-						Delete
-					</button>
-				</div>
-			</article>
-		`;
-	}).join('');
-
-	// Attach event listeners
-	setupEntryEventListeners();
+	for (const c of list) {
+		const li = document.createElement("li");
+		li.textContent = c.name || "—";
+		if (c.color) {
+			li.style.borderLeft = `8px solid ${c.color}`;
+			li.style.paddingLeft = "8px";
+		}
+		ul.appendChild(li);
+	}
 }
 
-function renderCodeableText(content, codedSegments) {
-	// Sort coded segments by position
-	const sorted = [...codedSegments].sort((a, b) => a.start_pos - b.start_pos);
-
-	if (sorted.length === 0) {
-		return escapeHtml(content);
+function renderTimeline(entries) {
+	const wrap = $("#timeline");
+	if (!wrap) return;
+	wrap.innerHTML = "";
+	if (!Array.isArray(entries) || !entries.length) {
+		wrap.textContent = "No journal entries yet.";
+		return;
 	}
+	for (const e of entries) {
+		const item = document.createElement("article");
+		item.className = "entry";
 
-	let html = '';
-	let lastEnd = 0;
+		const h = document.createElement("h4");
+		const when = e.createdAt ? new Date(e.createdAt) : new Date();
+		h.textContent = when.toLocaleString();
 
-	sorted.forEach(segment => {
-		// Add text before this segment
-		if (segment.start_pos > lastEnd) {
-			html += escapeHtml(content.substring(lastEnd, segment.start_pos));
+		const p = document.createElement("p");
+		p.textContent = e.body || "—";
+
+		if (Array.isArray(e.codeIds) && e.codeIds.length) {
+			const meta = document.createElement("div");
+			meta.style.fontSize = "0.9em";
+			meta.style.opacity = "0.8";
+			meta.textContent = `Codes: ${e.codeIds.join(", ")}`;
+			item.appendChild(meta);
 		}
 
-		// Add coded segment
-		const code = state.codes.find(c => c.id === segment.code_id);
-		const codeLabel = code ? code.name : 'Unknown';
-		const codeColor = code ? code.color : '#505a5f';
-
-		html += `<span class="coded-segment" 
-			data-code-id="${segment.code_id}"
-			data-application-id="${segment.id}"
-			style="--code-bg: ${codeColor}22; --code-color: ${codeColor};"
-			title="Code: ${codeLabel}">`;
-		html += escapeHtml(content.substring(segment.start_pos, segment.end_pos));
-		html += '</span>';
-
-		lastEnd = segment.end_pos;
-	});
-
-	// Add remaining text
-	if (lastEnd < content.length) {
-		html += escapeHtml(content.substring(lastEnd));
-	}
-
-	return html;
-}
-
-function setupEntryEventListeners() {
-	// Code button
-	document.querySelectorAll('.code-entry').forEach(btn => {
-		btn.addEventListener('click', (e) => {
-			const entryId = e.target.dataset.id;
-			state.selectedEntry = state.entries.find(e => e.id === entryId);
-			showCodingInstructions();
-		});
-	});
-
-	// Text selection
-	document.querySelectorAll('.codeable-text').forEach(el => {
-		el.addEventListener('mouseup', handleTextSelection);
-	});
-
-	// Other buttons...
-	document.querySelectorAll('.delete-entry').forEach(btn => {
-		btn.addEventListener('click', handleDeleteEntry);
-	});
-}
-
-function handleTextSelection(e) {
-	const selection = window.getSelection();
-	const text = selection.toString().trim();
-
-	if (text && text.length > 3) {
-		const entryId = e.currentTarget.dataset.entryId;
-		state.selectedEntry = state.entries.find(e => e.id === entryId);
-		state.selectedText = {
-			text: text,
-			range: selection.getRangeAt(0),
-			entryId: entryId
-		};
-
-		showCodingPanel();
+		item.appendChild(h);
+		item.appendChild(p);
+		wrap.appendChild(item);
 	}
 }
 
-function showCodingInstructions() {
-	alert('Select text in this entry to apply codes');
-}
-
-function showCodingPanel() {
-	const panel = document.getElementById('coding-panel');
-	const display = document.getElementById('selected-text-display');
-
-	display.textContent = state.selectedText.text;
-	renderCodingCodebook();
-
-	panel.hidden = false;
-}
-
-/* =========================
- * Coding Functionality
- * ========================= */
-
-async function loadCodes() {
-	if (!state.projectId) return;
-
-	try {
-		const url = `${CONFIG.API_BASE}/api/codes?project=${encodeURIComponent(state.projectId)}`;
-		const res = await fetchWithTimeout(url);
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-		const data = await res.json();
-		state.codes = data.codes || [];
-		renderCodebook();
-	} catch (err) {
-		console.error('Failed to load codes:', err);
+function renderCooccurrence(graph) {
+	const out = $("#cooccurrence");
+	if (!out) return;
+	out.innerHTML = "";
+	const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
+	const links = Array.isArray(graph?.links) ? graph.links : [];
+	if (!links.length) {
+		out.textContent = "No co-occurrences yet.";
+		return;
 	}
+	/* Minimal tabular view for now */
+	const table = document.createElement("table");
+	table.style.borderCollapse = "collapse";
+	table.style.width = "100%";
+
+	const thead = document.createElement("thead");
+	const thr = document.createElement("tr");
+	for (const h of ["Source", "Target", "Weight"]) {
+		const th = document.createElement("th");
+		th.textContent = h;
+		th.style.borderBottom = "1px solid #d0d7de";
+		th.style.textAlign = "left";
+		th.style.padding = "6px";
+		thr.appendChild(th);
+	}
+	thead.appendChild(thr);
+	table.appendChild(thead);
+
+	const map = new Map(nodes.map(n => [n.id, n.label || n.name || n.id]));
+	const tbody = document.createElement("tbody");
+	for (const link of links) {
+		const tr = document.createElement("tr");
+		const tdA = document.createElement("td");
+		const tdB = document.createElement("td");
+		const tdW = document.createElement("td");
+		tdA.textContent = map.get(link.source) || link.source;
+		tdB.textContent = map.get(link.target) || link.target;
+		tdW.textContent = String(link.weight ?? 1);
+		[tdA, tdB, tdW].forEach(td => { td.style.padding = "6px";
+			td.style.borderBottom = "1px solid #f0f2f4"; });
+		tr.appendChild(tdA);
+		tr.appendChild(tdB);
+		tr.appendChild(tdW);
+		tbody.appendChild(tr);
+	}
+	table.appendChild(tbody);
+	out.appendChild(table);
 }
 
-async function loadCodeApplications() {
-	if (!state.projectId) return;
+function renderRetrieval(results) {
+	const out = $("#retrieval");
+	if (!out) return;
+	out.innerHTML = "";
+	if (!Array.isArray(results) || !results.length) {
+		out.textContent = "No matches.";
+		return;
+	}
+	for (const r of results) {
+		const block = document.createElement("article");
+		block.style.border = "1px solid #d0d7de";
+		block.style.padding = "8px";
+		block.style.margin = "8px 0";
 
-	try {
-		const url = `${CONFIG.API_BASE}/api/code-applications?project=${encodeURIComponent(state.projectId)}`;
-		const res = await fetchWithTimeout(url);
-		if (!res.ok) {
-			const detail = await res.text().catch(() => "");
-			throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
+		const head = document.createElement("div");
+		head.style.fontWeight = "bold";
+		head.textContent = `Entry ${r.entryId}`;
+
+		const p = document.createElement("p");
+		p.textContent = r.snippet || "—";
+
+		const tags = document.createElement("div");
+		for (const c of (r.codes || [])) {
+			const b = document.createElement("span");
+			b.textContent = c.name || c.id;
+			b.style.border = "1px solid #d0d7de";
+			b.style.padding = "2px 6px";
+			b.style.marginRight = "6px";
+			b.style.borderRadius = "3px";
+			tags.appendChild(b);
 		}
 
-		const data = await res.json();
-		state.codeApplications = data.applications || [];
-	} catch (err) {
-		console.error('Failed to load code applications:', err);
+		block.appendChild(head);
+		block.appendChild(p);
+		block.appendChild(tags);
+		out.appendChild(block);
 	}
 }
 
-function renderCodebook() {
-	const container = document.getElementById('codebook-display');
-	if (!container) return;
-
-	if (state.codes.length === 0) {
-		container.innerHTML = '<p>No codes yet. Add your first code to start coding.</p>';
+function renderCodeApplications(apps) {
+	const ul = $("#code-applications-list");
+	if (!ul) return;
+	ul.innerHTML = "";
+	if (!Array.isArray(apps) || !apps.length) {
+		const li = document.createElement("li");
+		li.textContent = "No code applications recorded for this project.";
+		ul.appendChild(li);
 		return;
 	}
-
-	// Render hierarchical code structure
-	container.innerHTML = renderCodeTree(null, 1);
+	for (const a of apps) {
+		const li = document.createElement("li");
+		const name = a.name || "—";
+		const vendor = a.vendor ? ` · ${a.vendor}` : "";
+		const status = a.status ? ` · ${a.status}` : "";
+		li.textContent = `${name}${vendor}${status}`;
+		ul.appendChild(li);
+	}
 }
 
-function renderCodeTree(parentId, level) {
-	const codes = state.codes.filter(c => c.parent === parentId);
-
-	return codes.map(code => `
-		<div class="code-item" aria-level="${level}" data-code-id="${code.id}">
-			<span class="code-color-indicator" style="background-color: ${code.color};"></span>
-			<span class="code-name">${escapeHtml(code.name)}</span>
-			${code.definition ? `<span class="code-definition">${escapeHtml(code.definition)}</span>` : ''}
-		</div>
-		${renderCodeTree(code.id, level + 1)}
-	`).join('');
+/* -------------------- data loaders -------------------- */
+async function loadCodes(projectId) {
+	const data = await httpJSON(`/api/codes?project=${encodeURIComponent(projectId)}`).catch((e) => {
+		console.error(e);
+		return { codes: [] };
+	});
+	return Array.isArray(data?.codes) ? data.codes : [];
 }
 
-function renderCodingCodebook() {
-	const container = document.getElementById('coding-codebook');
-	if (!container) return;
-
-	container.innerHTML = state.codes.map(code => `
-		<div class="code-item selectable" data-code-id="${code.id}">
-			<span class="code-color-indicator" style="background-color: ${code.color};"></span>
-			<span>${escapeHtml(code.name)}</span>
-		</div>
-	`).join('');
-
-	// Add selection handlers
-	container.querySelectorAll('.code-item').forEach(item => {
-		item.addEventListener('click', (e) => {
-			container.querySelectorAll('.code-item').forEach(i => i.classList.remove('selected'));
-			item.classList.add('selected');
-			state.selectedCode = item.dataset.codeId;
-		});
+async function createCode(projectId, name) {
+	return httpJSON("/api/codes", {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ name, projectId })
+	}).catch((e) => {
+		throw e;
 	});
 }
 
-async function applyCode() {
-	if (!state.selectedText || !state.selectedCode) return;
-
-	const confidence = document.querySelector('input[name="confidence"]:checked').value;
-	const memo = document.getElementById('coding-memo-input').value;
-
-	// Calculate text position
-	const content = state.selectedEntry.content;
-	const startPos = content.indexOf(state.selectedText.text);
-	const endPos = startPos + state.selectedText.text.length;
-
-	const payload = {
-		entry_id: state.selectedText.entryId,
-		code_id: state.selectedCode,
-		text_segment: state.selectedText.text,
-		start_pos: startPos,
-		end_pos: endPos,
-		confidence: confidence,
-		notes: memo,
-		coder: 'current-user' // Would come from auth
-	};
-
-	try {
-		const res = await fetchWithTimeout(`${CONFIG.API_BASE}/api/code-applications`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload)
-		});
-
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-		// Refresh data
-		await loadCodeApplications();
-		await loadEntries();
-
-		// Close panel
-		document.getElementById('coding-panel').hidden = true;
-		state.selectedText = null;
-		state.selectedCode = null;
-
-	} catch (err) {
-		console.error('Failed to apply code:', err);
-		showStatus('Failed to apply code', 'error');
-	}
+async function loadTimeline(projectId) {
+	const data = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(projectId)}`).catch((e) => {
+		console.error(e);
+		return { timeline: [] };
+	});
+	return Array.isArray(data?.timeline) ? data.timeline : [];
 }
 
-/* =========================
- * Memo Functionality
- * ========================= */
-
-async function loadMemos() {
-	if (!state.projectId) return;
-
-	try {
-		const url = `${CONFIG.API_BASE}/api/memos?project=${encodeURIComponent(state.projectId)}`;
-		const res = await fetchWithTimeout(url);
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-		const data = await res.json();
-		state.memos = data.memos || [];
-		renderMemos();
-	} catch (err) {
-		console.error('Failed to load memos:', err);
-	}
+async function loadCooccurrence(projectId) {
+	const data = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(projectId)}`).catch((e) => {
+		console.error(e);
+		return { nodes: [], links: [] };
+	});
+	return { nodes: data.nodes || [], links: data.links || [] };
 }
 
-function renderMemos() {
-	const container = document.getElementById('memos-container');
-	if (!container) return;
+async function loadRetrieval(projectId, q) {
+	const data = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(projectId)}&q=${encodeURIComponent(q)}`).catch((e) => {
+		console.error(e);
+		return { results: [] };
+	});
+	return Array.isArray(data?.results) ? data.results : [];
+}
 
-	const filtered = state.currentMemoFilter === 'all' ?
-		state.memos :
-		state.memos.filter(m => m.memoType === state.currentMemoFilter);
+async function loadCodeApplications(projectId) {
+	const res = await fetch(`/api/code-applications?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
+	if (!res.ok) {
+		const detail = await res.text().catch(() => "");
+		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
+	}
+	const data = await res.json().catch(() => ({}));
+	// handler may return { ok:true, applications:[…] } or bare array []; support both
+	const apps = Array.isArray(data) ? data : (Array.isArray(data.applications) ? data.applications : []);
+	return apps;
+}
 
-	if (filtered.length === 0) {
-		container.innerHTML = '<p>No memos yet.</p>';
+/* -------------------- orchestration -------------------- */
+async function refreshAll(projectId) {
+	const [codes, timeline, graph, apps] = await Promise.all([
+		loadCodes(projectId),
+		loadTimeline(projectId),
+		loadCooccurrence(projectId),
+		loadCodeApplications(projectId).catch((e) => {
+			console.warn("Code applications load failed:", e?.message || e);
+			return [];
+		})
+	]);
+
+	renderCodes(codes);
+	renderTimeline(timeline);
+	renderCooccurrence(graph);
+	renderCodeApplications(apps);
+}
+
+/* -------------------- UI wiring -------------------- */
+function initCaqdasInterface() {
+	const url = new URL(location.href);
+	const projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
+
+	const btnAddCode = $("#btn-add-code");
+	const btnNewMemo = $("#btn-new-memo");
+	const btnTimeline = $("#btn-timeline");
+	const btnCooc = $("#btn-cooccurrence");
+	const btnRetrieval = $("#btn-retrieval");
+	const btnExportAnalysis = $("#btn-export-analysis");
+
+	if (!projectId) {
+		flash("No project id found in URL. Some features are disabled.");
 		return;
 	}
 
-	container.innerHTML = filtered.map(memo => `
-		<article class="memo-card">
-			<div class="memo-header">
-				<span class="memo-type-badge" data-type="${memo.memoType}">
-					${CONFIG.MEMO_TYPES[memo.memoType]}
-				</span>
-				<time>${formatDatetime(memo.createdAt)}</time>
-			</div>
-			<div class="memo-content">
-				${escapeHtml(memo.content)}
-			</div>
-			${memo.linkedEntries.length > 0 ? 
-				`<div class="memo-links">Linked to ${memo.linkedEntries.length} entries</div>` : 
-				''
+	// initial population
+	refreshAll(projectId).catch((e) => {
+		console.error(e);
+		flash("Initial load failed. Check network/API.");
+	});
+
+	/* + Add Code */
+	if (btnAddCode) {
+		btnAddCode.addEventListener("click", async (e) => {
+			e.preventDefault();
+			const name = prompt("New code label:");
+			if (!name) return;
+			try {
+				await createCode(projectId, name);
+				flash(`Code “${name}” created.`);
+				await refreshAll(projectId);
+			} catch (err) {
+				console.error(err);
+				flash(`Could not create code. ${err.message}`);
 			}
-		</article>
-	`).join('');
-}
-
-/* =========================
- * Analysis Functionality
- * ========================= */
-
-async function loadAnalysis() {
-	// Placeholder for analysis loading
-	const container = document.getElementById('analysis-container');
-	container.innerHTML = '<p>Select an analysis tool above to begin.</p>';
-}
-
-/* =========================
- * Form Handlers
- * ========================= */
-
-async function handleAddEntry(e) {
-	e.preventDefault();
-	const form = e.target;
-	const formData = new FormData(form);
-
-	const payload = {
-		project_airtable_id: state.projectId,
-		category: formData.get('category'),
-		content: formData.get('content'),
-		tags: formData.get('tags') ?
-			formData.get('tags').split(',').map(t => t.trim()).filter(Boolean) : []
-	};
-
-	if (!payload.category || !payload.content) {
-		showStatus('Category and entry content are required', 'error');
-		return;
-	}
-
-	try {
-		const url = `${CONFIG.API_BASE}/api/journal-entries`;
-		const res = await fetchWithTimeout(url, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload)
-		});
-
-		if (!res.ok) {
-			const errData = await res.json().catch(() => ({}));
-			throw new Error(errData.error || `HTTP ${res.status}`);
-		}
-
-		showStatus('Entry saved successfully', 'success');
-		form.reset();
-		toggleForm(false);
-		await loadEntries();
-
-	} catch (err) {
-		console.error('Failed to add entry:', err);
-		showStatus(`Error: ${err.message}`, 'error');
-	}
-}
-
-async function handleDeleteEntry(e) {
-	const entryId = e.target.dataset.id;
-
-	if (!confirm('Are you sure you want to delete this journal entry? This cannot be undone.')) {
-		return;
-	}
-
-	try {
-		const url = `${CONFIG.API_BASE}/api/journal-entries/${encodeURIComponent(entryId)}`;
-		const res = await fetchWithTimeout(url, { method: 'DELETE' });
-
-		if (!res.ok) {
-			const errData = await res.json().catch(() => ({}));
-			throw new Error(errData.error || `HTTP ${res.status}`);
-		}
-
-		await loadEntries();
-
-	} catch (err) {
-		console.error('Failed to delete entry:', err);
-		showStatus(`Error: ${err.message}`, 'error');
-	}
-}
-
-function handleFilter(e) {
-	const btn = e.target.closest('.filter-btn');
-	if (!btn) return;
-
-	const filter = btn.dataset.filter;
-	state.currentFilter = filter;
-
-	document.querySelectorAll('.filter-btn').forEach(b => {
-		b.classList.toggle('active', b === btn);
-	});
-
-	renderEntries();
-}
-
-function toggleForm(show) {
-	const form = document.getElementById('entry-form');
-	const toggleBtn = document.getElementById('toggle-form-btn');
-
-	if (show === undefined) {
-		state.formVisible = !state.formVisible;
-	} else {
-		state.formVisible = show;
-	}
-
-	if (form) {
-		form.hidden = !state.formVisible;
-	}
-
-	if (toggleBtn) {
-		toggleBtn.textContent = state.formVisible ? '✕ Close form' : '+ New entry';
-	}
-
-	if (state.formVisible) {
-		const firstField = document.getElementById('entry-category');
-		if (firstField) firstField.focus();
-	}
-}
-
-/* =========================
- * Initialization
- * ========================= */
-
-async function init() {
-	const params = getUrlParams();
-	state.projectId = params.id;
-
-	if (!state.projectId) {
-		console.error('Missing project ID in URL');
-		return;
-	}
-
-	// Update breadcrumb link
-	const projectLink = document.getElementById('project-link');
-	if (projectLink) {
-		projectLink.href = `/pages/project-dashboard/?id=${state.projectId}`;
-	}
-
-	// Setup tabs
-	setupTabs();
-
-	// Journal form handlers
-	const addEntryForm = document.getElementById('add-entry-form');
-	const toggleFormBtn = document.getElementById('toggle-form-btn');
-	const cancelFormBtn = document.getElementById('cancel-form-btn');
-	const filterGroup = document.querySelector('.filter-group');
-
-	if (addEntryForm) {
-		addEntryForm.addEventListener('submit', handleAddEntry);
-	}
-
-	if (toggleFormBtn) {
-		toggleFormBtn.addEventListener('click', () => toggleForm());
-	}
-
-	if (cancelFormBtn) {
-		cancelFormBtn.addEventListener('click', () => toggleForm(false));
-	}
-
-	if (filterGroup) {
-		filterGroup.addEventListener('click', handleFilter);
-	}
-
-	// Coding panel handlers
-	const applyCodeBtn = document.getElementById('apply-code-btn');
-	const cancelCodingBtn = document.getElementById('cancel-coding-btn');
-	const closePanelBtn = document.querySelector('.close-panel');
-
-	if (applyCodeBtn) {
-		applyCodeBtn.addEventListener('click', applyCode);
-	}
-
-	if (cancelCodingBtn) {
-		cancelCodingBtn.addEventListener('click', () => {
-			document.getElementById('coding-panel').hidden = true;
 		});
 	}
 
-	if (closePanelBtn) {
-		closePanelBtn.addEventListener('click', () => {
-			document.getElementById('coding-panel').hidden = true;
+	/* + New Memo (server if available; graceful fallback) */
+	if (btnNewMemo) {
+		btnNewMemo.addEventListener("click", async (e) => {
+			e.preventDefault();
+			const body = prompt("Memo text:");
+			if (!body) return;
+			try {
+				const res = await fetch(`/api/memos?project=${encodeURIComponent(projectId)}`, {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ body })
+				});
+				if (!res.ok) {
+					const t = await res.text().catch(() => "");
+					throw new Error(`HTTP ${res.status}${t ? ` — ${t}` : ""}`);
+				}
+				flash("Memo created.");
+				await refreshAll(projectId);
+			} catch (err) {
+				console.error(err);
+				flash("Memo endpoint not available. Add memos via Journals for now.");
+			}
 		});
 	}
 
-	// Load initial data
-	await loadCodes();
-	await loadEntries();
+	/* 📊 Timeline View: set mode and refresh timeline only */
+	if (btnTimeline) {
+		btnTimeline.addEventListener("click", async (e) => {
+			e.preventDefault();
+			document.body.dataset.caqdasView = "timeline";
+			const data = await loadTimeline(projectId);
+			renderTimeline(data);
+			flash("Timeline updated.");
+		});
+	}
+
+	/* 🔗 Co-occurrence: set mode and refresh graph */
+	if (btnCooc) {
+		btnCooc.addEventListener("click", async (e) => {
+			e.preventDefault();
+			document.body.dataset.caqdasView = "cooccurrence";
+			const graph = await loadCooccurrence(projectId);
+			renderCooccurrence(graph);
+			flash("Co-occurrence updated.");
+		});
+	}
+
+	/* 🔍 Retrieval: prompt query, set mode and render results */
+	if (btnRetrieval) {
+		btnRetrieval.addEventListener("click", async (e) => {
+			e.preventDefault();
+			const q = prompt("Find text or code label:");
+			if (!q) return;
+			const results = await loadRetrieval(projectId, q);
+			document.body.dataset.caqdasView = "retrieval";
+			renderRetrieval(results);
+			flash(`Retrieved ${results.length} results.`);
+		});
+	}
+
+	/* 📤 Export Analysis: download JSON (server streaming) */
+	if (btnExportAnalysis) {
+		btnExportAnalysis.addEventListener("click", (e) => {
+			e.preventDefault();
+			const a = document.createElement("a");
+			a.href = `/api/analysis/export?project=${encodeURIComponent(projectId)}`;
+			a.download = `analysis-${projectId}.json`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			flash("Export started.");
+		});
+	}
 }
 
-// Start
-init();
+/* -------------------- bootstrap -------------------- */
+document.addEventListener("DOMContentLoaded", initCaqdasInterface);
