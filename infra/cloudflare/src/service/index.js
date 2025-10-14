@@ -18,6 +18,7 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
+import = as CodeApplications from "./reflection/coding-applications.js"
 
 /**
  * @typedef {Object} Env
@@ -92,8 +93,12 @@ export class ResearchOpsService {
 	}
 
 	reset() { this.log.reset(); }
-	destroy() { if (!this.destroyed) { this.log.destroy();
-			this.destroyed = true; } }
+	destroy() {
+		if (!this.destroyed) {
+			this.log.destroy();
+			this.destroyed = true;
+		}
+	}
 
 	/* ─────────────── Health ─────────────── */
 	async health(origin) {
@@ -106,13 +111,17 @@ export class ResearchOpsService {
 
 	/** @type {(origin:string, projectId:string)=>Promise<Response>} */
 	getProjectById = (origin, projectId) => Projects.getProjectById(this, origin, projectId);
-		
+
 	/* ─────────────── Journal Entries ─────────────── */
 	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
 	createJournalEntry = (req, origin) => Journals.createJournalEntry(this, req, origin);
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
+
+	/* ─────────────── Code Applications ─────────────── */
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
 
 	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
