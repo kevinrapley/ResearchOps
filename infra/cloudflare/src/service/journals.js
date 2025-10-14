@@ -278,7 +278,7 @@ export async function createJournalEntry(svc, request, origin) {
 
 	if (p.initial_memo) {
 		// Auto-create an analytical memo for this entry
-		const { createMemo } = await import('./memos.js');
+		const { createMemo } = await import('./reflection/memos.js');
 
 		const memoPayload = {
 			project_id: p.project_airtable_id,
