@@ -1,117 +1,167 @@
 /**
  * @file src/service/journals.js
  * @module service/journals
- * @summary Reflexive journal handling for qualitatitve research.
+ * @summary Reflexive journal handling for qualitative research.
  */
+
+import { fetchWithTimeout, safeText, toMs, mdToAirtableRich } from "../core/utils.js";
+import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from "./internals/airtable.js";
 
 /**
  * List journal entries for a project.
- * @route GET /api/journal-entries?project=<ProjectAirtableId>
- * @returns { ok:boolean, entries:Array<{id,category,content,tags,author,createdAt}> }
+ * @param {import("./index.js").ResearchOpsService} svc
+ * @param {string} origin
+ * @param {URL} url
+ * @returns {Promise<Response>}
  */
-async listJournalEntries(origin, url) {
+export async function listJournalEntries(svc, origin, url) {
 	const projectId = url.searchParams.get("project");
 	if (!projectId) {
-		return this.json({ ok: false, error: "Missing project query" }, 400, this.corsHeaders(origin));
+		return svc.json({ ok: false, error: "Missing project query" }, 400, svc.corsHeaders(origin));
 	}
 
-	const base = this.env.AIRTABLE_BASE_ID;
-	const tJournal = encodeURIComponent(this.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries");
-	const atBase = `https://api.airtable.com/v0/${base}/${tJournal}`;
-	const headers = { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` };
+	try {
+		const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
+		const { records } = await listAll(svc.env, tableName, { pageSize: 100 }, svc.cfg.TIMEOUT_MS);
 
-	const records = [];
-	let offset;
+		// Filter to this project (handle "Project" or "Projects" field name)
+		const LINK_FIELDS = ["Project", "Projects"];
+		const entries = [];
 
-	do {
-		const params = new URLSearchParams({ pageSize: "100" });
-		if (offset) params.set("offset", offset);
-		const resp = await fetchWithTimeout(`${atBase}?${params.toString()}`, { headers }, this.cfg.TIMEOUT_MS);
-		const txt = await resp.text();
+		for (const r of records) {
+			const f = r.fields || {};
+			const linkKey = LINK_FIELDS.find(k => Array.isArray(f[k]));
+			const linkArr = linkKey ? f[linkKey] : undefined;
 
-		if (!resp.ok) {
-			this.log.error("airtable.journal.list.fail", { status: resp.status, text: safeText(txt) });
-			return this.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status, this.corsHeaders(origin));
-		}
+			if (Array.isArray(linkArr) && linkArr.includes(projectId)) {
+				// Parse tags (could be comma-separated string or array)
+				let tags = [];
+				if (Array.isArray(f.Tags)) {
+					tags = f.Tags;
+				} else if (typeof f.Tags === 'string') {
+					tags = f.Tags.split(',').map(t => t.trim()).filter(Boolean);
+				}
 
-		let js;
-		try { js = JSON.parse(txt); } catch { js = { records: [] }; }
-		records.push(...(js.records || []));
-		offset = js.offset;
-	} while (offset);
-
-	// Filter to this project (handle "Project" or "Projects" field name)
-	const LINK_FIELDS = ["Project", "Projects"];
-	const entries = [];
-
-	for (const r of records) {
-		const f = r.fields || {};
-		const linkKey = LINK_FIELDS.find(k => Array.isArray(f[k]));
-		const linkArr = linkKey ? f[linkKey] : undefined;
-
-		if (Array.isArray(linkArr) && linkArr.includes(projectId)) {
-			// Parse tags (could be comma-separated string or array)
-			let tags = [];
-			if (Array.isArray(f.Tags)) {
-				tags = f.Tags;
-			} else if (typeof f.Tags === 'string') {
-				tags = f.Tags.split(',').map(t => t.trim()).filter(Boolean);
+				entries.push({
+					id: r.id,
+					category: f.Category || "procedures",
+					content: f.Content || "",
+					tags: tags,
+					author: f.Author || "",
+					createdAt: r.createdTime || ""
+				});
 			}
-
-			entries.push({
-				id: r.id,
-				category: f.Category || "procedures",
-				content: f.Content || "",
-				tags: tags,
-				author: f.Author || "",
-				createdAt: r.createdTime || ""
-			});
 		}
+
+		// Sort newest first
+		entries.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+		return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
+
+	} catch (err) {
+		svc.log.error("journal.list.error", { err: String(err?.message || err) });
+		return svc.json({
+			ok: false,
+			error: "Failed to list journal entries",
+			detail: String(err?.message || err)
+		}, 500, svc.corsHeaders(origin));
+	}
+}
+
+/**
+ * Get a single journal entry by ID.
+ * @param {import("./index.js").ResearchOpsService} svc
+ * @param {string} origin
+ * @param {string} entryId
+ * @returns {Promise<Response>}
+ */
+export async function getJournalEntry(svc, origin, entryId) {
+	if (!entryId) {
+		return svc.json({ error: "Missing entry id" }, 400, svc.corsHeaders(origin));
 	}
 
-	// Sort newest first
-	entries.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-	return this.json({ ok: true, entries }, 200, this.corsHeaders(origin));
+	try {
+		const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
+		const rec = await getRecord(svc.env, tableName, entryId, svc.cfg.TIMEOUT_MS);
+
+		if (!rec) {
+			return svc.json({
+				error: "Entry not found",
+				detail: `No record found with id: ${entryId}`
+			}, 404, svc.corsHeaders(origin));
+		}
+
+		const f = rec.fields || {};
+
+		// Parse tags
+		let tags = [];
+		if (Array.isArray(f.Tags)) {
+			tags = f.Tags;
+		} else if (typeof f.Tags === 'string') {
+			tags = f.Tags.split(',').map(t => t.trim()).filter(Boolean);
+		}
+
+		const entry = {
+			id: rec.id,
+			category: f.Category || "procedures",
+			content: f.Content || "",
+			tags: tags,
+			author: f.Author || "",
+			createdAt: rec.createdTime || ""
+		};
+
+		return svc.json({ ok: true, entry }, 200, svc.corsHeaders(origin));
+
+	} catch (err) {
+		svc.log.error("journal.get.error", { err: String(err?.message || err), entryId });
+
+		const msg = String(err?.message || "");
+		const isNotFound = /404|NOT_FOUND/i.test(msg);
+
+		return svc.json({ error: isNotFound ? "Entry not found" : "Internal server error", detail: msg },
+			isNotFound ? 404 : 500,
+			svc.corsHeaders(origin)
+		);
+	}
 }
 
 /**
  * Create a journal entry.
- * @route POST /api/journal-entries
- * Body: { project_airtable_id, category, content, tags?, author? }
+ * @param {import("./index.js").ResearchOpsService} svc
+ * @param {Request} request
+ * @param {string} origin
+ * @returns {Promise<Response>}
  */
-async createJournalEntry(request, origin) {
+export async function createJournalEntry(svc, request, origin) {
 	const body = await request.arrayBuffer();
-	if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
-		this.log.warn("request.too_large", { size: body.byteLength });
-		return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+	if (body.byteLength > svc.cfg.MAX_BODY_BYTES) {
+		svc.log.warn("request.too_large", { size: body.byteLength });
+		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
 	}
 
 	let p;
-	try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
-		return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin));
+	try {
+		p = JSON.parse(new TextDecoder().decode(body));
+	} catch {
+		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
 	if (!p.project_airtable_id || !p.category || !p.content) {
-		return this.json({
+		return svc.json({
 			error: "Missing required fields: project_airtable_id, category, content"
-		}, 400, this.corsHeaders(origin));
+		}, 400, svc.corsHeaders(origin));
 	}
 
 	// Validate category
 	const validCategories = ["perceptions", "procedures", "decisions", "introspections"];
 	if (!validCategories.includes(p.category)) {
-		return this.json({
+		return svc.json({
 			error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
-		}, 400, this.corsHeaders(origin));
+		}, 400, svc.corsHeaders(origin));
 	}
-
-	const base = this.env.AIRTABLE_BASE_ID;
-	const tJournal = encodeURIComponent(this.env.AIRTABLE_TABLE_JOURNAL);
-	const atUrl = `https://api.airtable.com/v0/${base}/${tJournal}`;
 
 	// Try multiple link field name candidates
 	const LINK_FIELDS = ["Project", "Projects"];
-	let lastDetail = "";
+	const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
 
 	for (const linkName of LINK_FIELDS) {
 		// Format tags for Airtable (comma-separated string)
@@ -133,70 +183,69 @@ async createJournalEntry(request, origin) {
 			}
 		}
 
-		const res = await fetchWithTimeout(atUrl, {
-			method: "POST",
-			headers: {
-				"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({ records: [{ fields }] })
-		}, this.cfg.TIMEOUT_MS);
+		try {
+			const result = await createRecords(svc.env, tableName, [{ fields }], svc.cfg.TIMEOUT_MS);
+			const id = result.records?.[0]?.id;
 
-		const text = await res.text();
-
-		if (res.ok) {
-			let js;
-			try { js = JSON.parse(text); } catch { js = { records: [] }; }
-			const id = js.records?.[0]?.id;
 			if (!id) {
-				return this.json({ error: "Airtable response missing id" }, 502, this.corsHeaders(origin));
+				return svc.json({ error: "Airtable response missing id" }, 502, svc.corsHeaders(origin));
 			}
-			if (this.env.AUDIT === "true") {
-				this.log.info("journal.entry.created", { id, category: p.category, linkName });
+
+			if (svc.env.AUDIT === "true") {
+				svc.log.info("journal.entry.created", { id, category: p.category, linkName });
 			}
-			return this.json({ ok: true, id }, 200, this.corsHeaders(origin));
+
+			return svc.json({ ok: true, id }, 200, svc.corsHeaders(origin));
+
+		} catch (err) {
+			const msg = String(err?.message || "");
+
+			// If UNKNOWN_FIELD_NAME, try next candidate
+			if (msg.includes("422") && /UNKNOWN_FIELD_NAME/i.test(msg)) {
+				continue;
+			}
+
+			// Other error - bail out
+			svc.log.error("airtable.journal.create.fail", { err: msg });
+			return svc.json({
+				error: "Failed to create journal entry",
+				detail: safeText(msg)
+			}, 500, svc.corsHeaders(origin));
 		}
-
-		lastDetail = text;
-
-		// If UNKNOWN_FIELD_NAME, try next candidate
-		if (res.status === 422 && /UNKNOWN_FIELD_NAME/i.test(text)) continue;
-
-		// Other error
-		this.log.error("airtable.journal.create.fail", { status: res.status, text: safeText(text) });
-		return this.json({
-			error: `Airtable ${res.status}`,
-			detail: safeText(text)
-		}, res.status, this.corsHeaders(origin));
 	}
 
 	// No link field matched
-	this.log.error("airtable.journal.create.linkfield.none_matched", { detail: lastDetail });
-	return this.json({
-		error: "Airtable 422",
+	svc.log.error("airtable.journal.create.linkfield.none_matched");
+	return svc.json({
+		error: "Field configuration error",
 		detail: `No matching link field name found. Add a link-to-record field in Journal Entries table that links to Projects. Try: ${LINK_FIELDS.join(", ")}`
-	}, 422, this.corsHeaders(origin));
+	}, 422, svc.corsHeaders(origin));
 }
 
 /**
  * Update a journal entry (partial).
- * @route PATCH /api/journal-entries/:id
- * Body: { category?, content?, tags? }
+ * @param {import("./index.js").ResearchOpsService} svc
+ * @param {Request} request
+ * @param {string} origin
+ * @param {string} entryId
+ * @returns {Promise<Response>}
  */
-async updateJournalEntry(request, origin, entryId) {
+export async function updateJournalEntry(svc, request, origin, entryId) {
 	if (!entryId) {
-		return this.json({ error: "Missing entry id" }, 400, this.corsHeaders(origin));
+		return svc.json({ error: "Missing entry id" }, 400, svc.corsHeaders(origin));
 	}
 
 	const body = await request.arrayBuffer();
-	if (body.byteLength > this.cfg.MAX_BODY_BYTES) {
-		this.log.warn("request.too_large", { size: body.byteLength });
-		return this.json({ error: "Payload too large" }, 413, this.corsHeaders(origin));
+	if (body.byteLength > svc.cfg.MAX_BODY_BYTES) {
+		svc.log.warn("request.too_large", { size: body.byteLength });
+		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
 	}
 
 	let p;
-	try { p = JSON.parse(new TextDecoder().decode(body)); } catch {
-		return this.json({ error: "Invalid JSON" }, 400, this.corsHeaders(origin));
+	try {
+		p = JSON.parse(new TextDecoder().decode(body));
+	} catch {
+		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
 	const fields = {};
@@ -204,9 +253,9 @@ async updateJournalEntry(request, origin, entryId) {
 	if (typeof p.category === "string") {
 		const validCategories = ["perceptions", "procedures", "decisions", "introspections"];
 		if (!validCategories.includes(p.category)) {
-			return this.json({
+			return svc.json({
 				error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
-			}, 400, this.corsHeaders(origin));
+			}, 400, svc.corsHeaders(origin));
 		}
 		fields.Category = p.category;
 	}
@@ -221,70 +270,55 @@ async updateJournalEntry(request, origin, entryId) {
 	}
 
 	if (Object.keys(fields).length === 0) {
-		return this.json({ error: "No updatable fields provided" }, 400, this.corsHeaders(origin));
+		return svc.json({ error: "No updatable fields provided" }, 400, svc.corsHeaders(origin));
 	}
 
-	const base = this.env.AIRTABLE_BASE_ID;
-	const tJournal = encodeURIComponent(this.env.AIRTABLE_TABLE_JOURNAL);
-	const atUrl = `https://api.airtable.com/v0/${base}/${tJournal}`;
+	try {
+		const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
+		await patchRecords(svc.env, tableName, [{ id: entryId, fields }], svc.cfg.TIMEOUT_MS);
 
-	const res = await fetchWithTimeout(atUrl, {
-		method: "PATCH",
-		headers: {
-			"Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}`,
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({ records: [{ id: entryId, fields }] })
-	}, this.cfg.TIMEOUT_MS);
+		if (svc.env.AUDIT === "true") {
+			svc.log.info("journal.entry.updated", { entryId, fields });
+		}
 
-	const text = await res.text();
+		return svc.json({ ok: true }, 200, svc.corsHeaders(origin));
 
-	if (!res.ok) {
-		this.log.error("airtable.journal.update.fail", { status: res.status, text: safeText(text) });
-		return this.json({
-			error: `Airtable ${res.status}`,
-			detail: safeText(text)
-		}, res.status, this.corsHeaders(origin));
+	} catch (err) {
+		svc.log.error("journal.update.error", { err: String(err?.message || err), entryId });
+		return svc.json({
+			error: "Failed to update journal entry",
+			detail: safeText(String(err?.message || err))
+		}, 500, svc.corsHeaders(origin));
 	}
-
-	if (this.env.AUDIT === "true") {
-		this.log.info("journal.entry.updated", { entryId, fields });
-	}
-
-	return this.json({ ok: true }, 200, this.corsHeaders(origin));
 }
 
 /**
  * Delete a journal entry.
- * @route DELETE /api/journal-entries/:id
+ * @param {import("./index.js").ResearchOpsService} svc
+ * @param {string} origin
+ * @param {string} entryId
+ * @returns {Promise<Response>}
  */
-async deleteJournalEntry(origin, entryId) {
+export async function deleteJournalEntry(svc, origin, entryId) {
 	if (!entryId) {
-		return this.json({ error: "Missing entry id" }, 400, this.corsHeaders(origin));
+		return svc.json({ error: "Missing entry id" }, 400, svc.corsHeaders(origin));
 	}
 
-	const base = this.env.AIRTABLE_BASE_ID;
-	const tJournal = encodeURIComponent(this.env.AIRTABLE_TABLE_JOURNAL);
-	const atUrl = `https://api.airtable.com/v0/${base}/${tJournal}/${encodeURIComponent(entryId)}`;
+	try {
+		const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
+		await deleteRecord(svc.env, tableName, entryId, svc.cfg.TIMEOUT_MS);
 
-	const res = await fetchWithTimeout(atUrl, {
-		method: "DELETE",
-		headers: { "Authorization": `Bearer ${this.env.AIRTABLE_API_KEY}` }
-	}, this.cfg.TIMEOUT_MS);
+		if (svc.env.AUDIT === "true") {
+			svc.log.info("journal.entry.deleted", { entryId });
+		}
 
-	const text = await res.text();
+		return svc.json({ ok: true }, 200, svc.corsHeaders(origin));
 
-	if (!res.ok) {
-		this.log.error("airtable.journal.delete.fail", { status: res.status, text: safeText(text) });
-		return this.json({
-			error: `Airtable ${res.status}`,
-			detail: safeText(text)
-		}, res.status, this.corsHeaders(origin));
+	} catch (err) {
+		svc.log.error("journal.delete.error", { err: String(err?.message || err), entryId });
+		return svc.json({
+			error: "Failed to delete journal entry",
+			detail: safeText(String(err?.message || err))
+		}, 500, svc.corsHeaders(origin));
 	}
-
-	if (this.env.AUDIT === "true") {
-		this.log.info("journal.entry.deleted", { entryId });
-	}
-
-	return this.json({ ok: true }, 200, this.corsHeaders(origin));
 }
