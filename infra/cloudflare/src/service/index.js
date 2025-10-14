@@ -18,7 +18,7 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
-import * as CodeApplications from "./reflection/coding-applications.js"
+import * as CodeApplications from "reflection/coding-applications.js"
 
 /**
  * @typedef {Object} Env
