@@ -68,6 +68,50 @@ export async function listJournalEntries(svc, origin, url) {
 }
 
 /**
+ * Get memos linked to a specific journal entry
+ * @param {string} entryId - Journal entry ID
+ * @returns {Promise<Array>} Related memos
+ */
+export async function getRelatedMemos(svc, origin, entryId) {
+	// Import listMemos from memos module
+	const { listMemos } = await import('./memos.js');
+
+	// Create URL with entry filter
+	const url = new URL(`${svc.env.API_BASE}/api/memos`);
+	url.searchParams.set('project', svc.env.CURRENT_PROJECT_ID);
+	url.searchParams.set('entry', entryId);
+
+	return listMemos(svc, origin, url);
+}
+
+/**
+ * Create a memo linked to this journal entry
+ * @param {Object} journalEntry - The journal entry to link
+ * @param {Object} memoData - Memo content and type
+ */
+export async function createLinkedMemo(svc, request, origin, entryId) {
+	const { createMemo } = await import('./memos.js');
+
+	// Parse the incoming memo data
+	const body = await request.json();
+
+	// Ensure the memo is linked to this entry
+	const memoPayload = {
+		...body,
+		linked_entries: [entryId, ...(body.linked_entries || [])]
+	};
+
+	// Create new request with modified payload
+	const memoRequest = new Request(request.url, {
+		method: 'POST',
+		headers: request.headers,
+		body: JSON.stringify(memoPayload)
+	});
+
+	return createMemo(svc, memoRequest, origin);
+}
+
+/**
  * Get a single journal entry by ID.
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
@@ -122,6 +166,24 @@ export async function getJournalEntry(svc, origin, entryId) {
 			svc.corsHeaders(origin)
 		);
 	}
+
+	const entry = {
+		id: rec.id,
+		category: f.Category || "procedures",
+		content: f.Content || "",
+		tags: tags,
+		author: f.Author || "",
+		createdAt: rec.createdTime || ""
+	};
+
+	// Optionally include related memos
+	if (url.searchParams.get('include_memos') === 'true') {
+		const memosResponse = await getRelatedMemos(svc, origin, entryId);
+		const memosData = await memosResponse.json();
+		entry.relatedMemos = memosData.memos || [];
+	}
+
+	return svc.json({ ok: true, entry }, 200, svc.corsHeaders(origin));
 }
 
 /**
@@ -212,6 +274,27 @@ export async function createJournalEntry(svc, request, origin) {
 				detail: safeText(msg)
 			}, 500, svc.corsHeaders(origin));
 		}
+	}
+
+	if (p.initial_memo) {
+		// Auto-create an analytical memo for this entry
+		const { createMemo } = await import('./memos.js');
+
+		const memoPayload = {
+			project_id: p.project_airtable_id,
+			memo_type: 'analytical',
+			content: p.initial_memo,
+			linked_entries: [entryId],
+			author: p.author
+		};
+
+		const memoRequest = new Request(`${CONFIG.API_BASE}/api/memos`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(memoPayload)
+		});
+
+		await createMemo(svc, memoRequest, origin);
 	}
 
 	// No link field matched
@@ -321,4 +404,26 @@ export async function deleteJournalEntry(svc, origin, entryId) {
 			detail: safeText(String(err?.message || err))
 		}, 500, svc.corsHeaders(origin));
 	}
+}
+
+const ENTRY_TYPES = {
+	JOURNAL: ['perceptions', 'procedures', 'decisions', 'introspections'],
+	MEMO: ['analytical', 'methodological', 'theoretical', 'reflexive']
+};
+
+// Allow memos to link to specific codes or journal entries
+export async function createMemo(svc, request, origin) {
+	const body = await request.json();
+
+	const fields = {
+		Project: [body.project_id],
+		Type: 'memo',
+		MemoType: body.memo_type,
+		Content: mdToAirtableRich(body.content),
+		LinkedEntries: body.linked_entries || [],
+		LinkedCodes: body.linked_codes || [],
+		Author: body.author
+	};
+
+	// Rest of creation logic...
 }
