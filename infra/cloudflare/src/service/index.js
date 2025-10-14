@@ -10,7 +10,8 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
-import * as Journals from './journals.js';
+import * as Journals from "./journals.js";
+import * as Memos from "./reflection/memos.js"
 import * as Guides from "./guides.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
