@@ -154,27 +154,32 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
 			return service.streamCsv(origin, env.GH_PATH_DETAILS);
 		}
-		
+
 		// ─────────────────────────────────────────────────────────────────
 		// Journal Entries
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/journal-entries" && request.method === "GET") {
 			return service.listJournalEntries(origin, url);
 		}
-		
+
 		if (url.pathname === "/api/journal-entries" && request.method === "POST") {
 			return service.createJournalEntry(request, origin);
 		}
-		
-		if (url.pathname.startsWith("/api/journal-entries/") && request.method === "PATCH") {
+
+		if (url.pathname.startsWith("/api/journal-entries/")) {
 			const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
-			return service.updateJournalEntry(request, origin, entryId);
+
+			if (request.method === "GET") {
+				return service.getJournalEntry(origin, entryId);
+			}
+			if (request.method === "PATCH") {
+				return service.updateJournalEntry(request, origin, entryId);
+			}
+			if (request.method === "DELETE") {
+				return service.deleteJournalEntry(origin, entryId);
+			}
 		}
 
-		if (url.pathname.startsWith("/api/journal-entries/") && request.method === "DELETE") {
-			const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
-			return service.deleteJournalEntry(origin, entryId);
-		}
 		// ─────────────────────────────────────────────────────────────────
 		// Studies
 		// ─────────────────────────────────────────────────────────────────
@@ -209,11 +214,11 @@ export async function handleRequest(request, env) {
 		if (url.pathname.startsWith("/api/guides/")) {
 			const parts = url.pathname.split("/").filter(Boolean);
 			// parts: ["api", "guides", ":id"] or ["api", "guides", ":id", "publish"]
-			
+
 			if (parts.length === 3) {
 				// /api/guides/:id
 				const guideId = decodeURIComponent(parts[2]);
-				
+
 				if (request.method === "GET") {
 					return service.readGuide(origin, guideId);
 				}
@@ -221,11 +226,11 @@ export async function handleRequest(request, env) {
 					return service.updateGuide(request, origin, guideId);
 				}
 			}
-			
+
 			if (parts.length === 4 && parts[3] === "publish") {
 				// /api/guides/:id/publish
 				const guideId = decodeURIComponent(parts[2]);
-				
+
 				if (request.method === "POST") {
 					return service.publishGuide(origin, guideId);
 				}
@@ -244,10 +249,10 @@ export async function handleRequest(request, env) {
 		if (url.pathname.startsWith("/api/partials/")) {
 			const parts = url.pathname.split("/").filter(Boolean);
 			// parts: ["api", "partials", ":id"]
-			
+
 			if (parts.length === 3) {
 				const partialId = decodeURIComponent(parts[2]);
-				
+
 				if (request.method === "GET") {
 					return service.readPartial(origin, partialId);
 				}
@@ -292,7 +297,7 @@ export async function handleRequest(request, env) {
 			if (match) {
 				const sessionId = decodeURIComponent(match[1]);
 				const isIcs = match[2] === "/ics";
-				
+
 				if (request.method === "PATCH" && !isIcs) {
 					if (typeof service.updateSession === "function") {
 						return service.updateSession(request, origin, sessionId);
@@ -319,8 +324,7 @@ export async function handleRequest(request, env) {
 		// Unknown API route
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname.startsWith("/api/")) {
-			return service.json(
-				{ error: "Not found", path: url.pathname },
+			return service.json({ error: "Not found", path: url.pathname },
 				404,
 				service.corsHeaders(origin)
 			);
@@ -345,6 +349,6 @@ export async function handleRequest(request, env) {
 	} finally {
 		try {
 			service.destroy();
-		} catch { }
+		} catch {}
 	}
 }
