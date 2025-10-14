@@ -14,7 +14,7 @@
 </head>
 
 <body>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+	<x-include src="/partials/debug-boot.html"></x-include>
 	<x-include src="/partials/header.html" vars='{
 		"active":"Projects",
 		"subtitle":"Project Dashboard"
@@ -56,7 +56,7 @@
 
 		<!-- NAV BOARD -->
 		<nav class="board">
-			<a href="#" class="board__item">Reflexive Journal</a>
+			<a href="/pages/project/journals/?id=" id="journal-link" class="board__item">Reflexive Journal</a>
 			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
 			<a href="#planning" class="board__item">Research Planning</a>
 			<a href="#outcomes" class="board__item">Research Outcomes</a>
@@ -178,7 +178,7 @@
 		</dialog>
 	</main>
 
-	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<x-include src="/partials/footer.html"></x-include>
 
 	<!-- JS -->
 	<script type="module">
@@ -509,6 +509,18 @@
 			} catch (err) {
 				console.error(err);
 				alert("Could not load project.");
+			}
+		})();
+
+		// Update the journal link with the project ID
+		(function() {
+			const params = new URLSearchParams(window.location.search);
+			const projectId = params.get('id');
+			if (projectId) {
+				const journalLink = document.getElementById('journal-link');
+				if (journalLink) {
+					journalLink.href = `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`;
+				}
 			}
 		})();
 	</script>
