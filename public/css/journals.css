@@ -1,0 +1,238 @@
+/* ==========================================================================
+   ResearchOps UI • Reflexive Journal styles
+   Version:    v1.0.0-beta
+   Service:    Home Office Biometrics — ResearchOps
+   Author:     Kevin Rapley
+   Date:       2025-10-09
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/journal.css
+   License:    All rights reserved
+   Purpose:    Journal entry cards, filters, and category-based theming
+   Standards:  GOV.UK colours; mobile-first; WCAG 2.2 AA
+   NAV KEY:    "="  (Find "=" to jump sections)
+   ========================================================================== 
+*/
+
+/* CSS DIRECTORY
+	1. = JOURNAL
+	2. = RESPONSIVE
+*/
+
+/* === =JOURNAL ============================================ */
+
+.journal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--space-400);
+	flex-wrap: wrap;
+	gap: var(--space-200);
+	}
+
+.journal-header h1 {
+	margin: 0;
+	}
+
+.filter-group {
+	display: flex;
+	gap: var(--space-200);
+	flex-wrap: wrap;
+	margin-bottom: var(--space-300);
+	}
+
+.filter-btn {
+	padding: 8px 16px;
+	border: 2px solid var(--color-border);
+	border-radius: var(--radius-100);
+	background: #ffffff;
+	color: var(--color-text);
+	font-size: 0.9rem;
+	font-weight: 400;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-family: inherit;
+	}
+
+.filter-btn:hover {
+	border-color: var(--color-accent);
+	}
+
+.filter-btn.active {
+	background: var(--color-accent);
+	color: #ffffff;
+	border-color: var(--color-accent);
+	font-weight: 600;
+	}
+
+.filter-btn:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 0;
+	box-shadow: 0 0 0 3px #fd0;
+	}
+
+.entry-form {
+	background: #f8f8f8;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-100);
+	padding: var(--space-300);
+	margin-bottom: var(--space-400);
+	}
+
+.entry-form h2 {
+	margin-top: 0;
+	font-size: 1.25rem;
+	}
+
+.journal-entries {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-300);
+	}
+
+.entry-card {
+	background: #ffffff;
+	border: 1px solid var(--color-border);
+	border-left: 4px solid var(--color-accent);
+	border-radius: var(--radius-100);
+	padding: var(--space-300);
+	transition: box-shadow 0.2s ease;
+	}
+
+.entry-card:hover {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+/* Category-specific border colours */
+.entry-card[data-category="perceptions"] {
+	border-left-color: #1d70b8;
+	}
+
+.entry-card[data-category="procedures"] {
+	border-left-color: #00703c;
+	}
+
+.entry-card[data-category="decisions"] {
+	border-left-color: #f47738;
+	}
+
+.entry-card[data-category="introspections"] {
+	border-left-color: #912b88;
+	}
+
+.entry-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: var(--space-200);
+	gap: var(--space-200);
+	}
+
+.entry-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	}
+
+.entry-timestamp {
+	font-size: 0.9rem;
+	color: var(--color-grey);
+	}
+
+.entry-author {
+	font-size: 0.85rem;
+	color: var(--color-grey);
+	}
+
+.entry-category-badge {
+	padding: 4px 10px;
+	border-radius: var(--radius-100);
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	line-height: 1.2;
+	}
+
+/* Category-specific badge colours */
+.entry-category-badge[data-category="perceptions"] {
+	background: #d5e8f3;
+	color: #1d70b8;
+	}
+
+.entry-category-badge[data-category="procedures"] {
+	background: #cce2d8;
+	color: #00703c;
+	}
+
+.entry-category-badge[data-category="decisions"] {
+	background: #fdeee5;
+	color: #f47738;
+	}
+
+.entry-category-badge[data-category="introspections"] {
+	background: #f3e7f1;
+	color: #912b88;
+	}
+
+.entry-content {
+	line-height: 1.6;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	}
+
+.entry-actions {
+	margin-top: var(--space-200);
+	padding-top: var(--space-200);
+	border-top: 1px solid #e8e8e8;
+	display: flex;
+	gap: var(--space-100);
+	}
+
+.empty-journal {
+	text-align: center;
+	padding: var(--space-400);
+	color: var(--color-grey);
+	}
+
+.empty-journal-icon {
+	font-size: 3rem;
+	margin-bottom: var(--space-200);
+	opacity: 0.5;
+	}
+
+/* === =RESPONSIVE (Journal) ============================== */
+
+@media (max-width: 640px) {
+	.journal-header {
+		flex-direction: column;
+		align-items: flex-start;
+		}
+	
+	.filter-group {
+		width: 100%;
+		}
+	
+	.filter-btn {
+		flex: 1;
+		min-width: 0;
+		font-size: 0.85rem;
+		padding: 6px 12px;
+		}
+	
+	.entry-header {
+		flex-direction: column;
+		}
+	
+	.entry-category-badge {
+		align-self: flex-start;
+		}
+	}
+
+@media (prefers-reduced-motion: reduce) {
+	.filter-btn,
+	.entry-card {
+		transition: none;
+		}
+	}
+
+/* transparency begins in the cascade */
