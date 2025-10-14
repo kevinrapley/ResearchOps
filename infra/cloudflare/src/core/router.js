@@ -181,6 +181,28 @@ export async function handleRequest(request, env) {
 		}
 
 		// ─────────────────────────────────────────────────────────────────
+		// Memos
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/memos" && request.method === "GET") {
+			return listMemos(service, origin, url);
+		}
+		if (url.pathname === "/api/memos" && request.method === "POST") {
+			return createMemo(service, request, origin);
+		}
+		if (url.pathname.startsWith("/api/memos/") && request.method === "PATCH") {
+			const memoId = decodeURIComponent(url.pathname.slice("/api/memos/".length));
+			return updateMemo(service, request, origin, memoId);
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// Coding Applications
+		// ─────────────────────────────────────────────────────────────────
+
+		if (url.pathname === "/api/code-applications" && request.method === "GET") {
+			return service.listCodeApplications(origin, url);
+		}
+
+		// ─────────────────────────────────────────────────────────────────
 		// Studies
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/studies" && request.method === "GET") {
