@@ -10,7 +10,7 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
-import * as journals from './journals.js';
+import * as Journals from './journals.js';
 import * as Guides from "./guides.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
@@ -101,24 +101,17 @@ export class ResearchOpsService {
 
 	/* ─────────────── Projects ─────────────── */
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
-	listProjectsFromAirtable = (origin, url) =>
-		Projects.listProjectsFromAirtable(this, origin, url);
+	listProjectsFromAirtable = (origin, url) => Projects.listProjectsFromAirtable(this, origin, url);
 
 	/** @type {(origin:string, projectId:string)=>Promise<Response>} */
-	getProjectById = (origin, projectId) =>
-		Projects.getProjectById(this, origin, projectId);
+	getProjectById = (origin, projectId) => Projects.getProjectById(this, origin, projectId);
 		
-	/* Journal Entries */
-	listJournalEntries = (origin, url) =>
-		journals.listJournalEntries(this, origin, url);
-	createJournalEntry = (req, origin) =>
-		journals.createJournalEntry(this, req, origin);
-	getJournalEntry = (origin, entryId) =>
-		journals.getJournalEntry(this, origin, entryId);
-	updateJournalEntry = (req, origin, entryId) =>
-		journals.updateJournalEntry(this, req, origin, entryId);
-	deleteJournalEntry = (origin, entryId) =>
-		journals.deleteJournalEntry(this, origin, entryId);
+	/* ─────────────── Journal Entries ─────────────── */
+	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
+	createJournalEntry = (req, origin) => Journals.createJournalEntry(this, req, origin);
+	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
+	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
+	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
 
 	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
