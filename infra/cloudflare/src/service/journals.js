@@ -74,7 +74,7 @@ export async function listJournalEntries(svc, origin, url) {
  */
 export async function getRelatedMemos(svc, origin, entryId) {
 	// Import listMemos from memos module
-	const { listMemos } = await import('./memos.js');
+	const { listMemos } = await import('./reflection/memos.js');
 
 	// Create URL with entry filter
 	const url = new URL(`${svc.env.API_BASE}/api/memos`);
@@ -90,7 +90,7 @@ export async function getRelatedMemos(svc, origin, entryId) {
  * @param {Object} memoData - Memo content and type
  */
 export async function createLinkedMemo(svc, request, origin, entryId) {
-	const { createMemo } = await import('./memos.js');
+	const { createMemo } = await import('./reflection/memos.js');
 
 	// Parse the incoming memo data
 	const body = await request.json();
