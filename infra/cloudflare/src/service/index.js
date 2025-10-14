@@ -110,15 +110,15 @@ export class ResearchOpsService {
 		
 	/* Journal Entries */
 	listJournalEntries = (origin, url) =>
-		journals.listJournalEntries.bind(this);
+		journals.listJournalEntries(this, origin, url);
 	createJournalEntry = (req, origin) =>
-		journals.createJournalEntry.bind(this);
+		journals.createJournalEntry(this, req, origin);
 	getJournalEntry = (origin, entryId) =>
-		journals.getJournalEntry.bind(this);
+		journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) =>
-		journals.updateJournalEntry.bind(this);
+		journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) =>
-		journals.deleteJournalEntry.bind(this);
+		journals.deleteJournalEntry(this, origin, entryId);
 
 	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
