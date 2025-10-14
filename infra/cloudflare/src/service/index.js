@@ -10,15 +10,19 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
-import * as Journals from "./journals.js";
-import * as Memos from "./reflection/memos.js"
 import * as Guides from "./guides.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
-import * as CodeApplications from "./reflection/code-applications.js"
+
+/* Reflexive Journals */
+import * as Journals from "./journals.js";
+import * as Memos from "./reflection/memos.js"
+import * as CodeApplications from "./reflection/code-applications.js";
+import * as Codes from "./reflection/codes.js";
+import * as Analysis from "./reflection/analysis.js";
 
 /**
  * @typedef {Object} Env
@@ -122,6 +126,22 @@ export class ResearchOpsService {
 	/* ─────────────── Code Applications ─────────────── */
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
+	
+	/* ─────────────── Codes ─────────────── */
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
+	/** @type {(req:Request, origin:string)=>Promise<Response>} */
+	createCode = (req, origin) => Codes.createCode(this, req, origin);
+
+	/* ─────────────── Analysis ─────────────── */
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	timeline = (origin, url) => Analysis.timeline(this, origin, url);
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	cooccurrence = (origin, url) => Analysis.cooccurrence(this, origin, url);
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	retrieval = (origin, url) => Analysis.retrieval(this, origin, url);
+	/** @type {(origin:string, url:URL)=>Promise<Response>} */
+	exportAnalysis = (origin, url) => Analysis.exportAnalysis(this, origin, url);
 
 	/* ─────────────── CSV ─────────────── */
 	/** @type {(origin:string, path:string)=>Promise<Response>} */
