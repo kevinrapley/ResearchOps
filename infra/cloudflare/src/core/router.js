@@ -180,9 +180,7 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
-		// Memos
-		// ─────────────────────────────────────────────────────────────────
+		/* ─────────────── Memos ─────────────── */
 		if (url.pathname === "/api/memos" && request.method === "GET") {
 			return listMemos(service, origin, url);
 		}
@@ -194,12 +192,31 @@ export async function handleRequest(request, env) {
 			return updateMemo(service, request, origin, memoId);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
-		// Coding Applications
-		// ─────────────────────────────────────────────────────────────────
-
+		/* ─────────────── Code Applications ─────────────── */
 		if (url.pathname === "/api/code-applications" && request.method === "GET") {
 			return service.listCodeApplications(origin, url);
+		}
+
+		/* ─────────────── Codes ─────────────── */
+		if (url.pathname === "/api/codes" && request.method === "GET") {
+			return service.listCodes(origin, url);
+		}
+		if (url.pathname === "/api/codes" && request.method === "POST") {
+			return service.createCode(request, origin);
+		}
+
+		/* ─────────────── Analysis ─────────────── */
+		if (url.pathname === "/api/analysis/timeline" && request.method === "GET") {
+			return service.timeline(origin, url);
+		}
+		if (url.pathname === "/api/analysis/cooccurrence" && request.method === "GET") {
+			return service.cooccurrence(origin, url);
+		}
+		if (url.pathname === "/api/analysis/retrieval" && request.method === "GET") {
+			return service.retrieval(origin, url);
+		}
+		if (url.pathname === "/api/analysis/export" && request.method === "GET") {
+			return service.exportAnalysis(origin, url);
 		}
 
 		// ─────────────────────────────────────────────────────────────────
