@@ -9,37 +9,44 @@
  * - AI Assist:
  *   - POST /api/ai-rewrite
  * - Projects:
- *   - GET  /api/projects               (list)
- *   - GET  /api/projects.csv           (CSV stream from GitHub)
- *   - GET  /api/project-details.csv    (CSV stream from GitHub)
- *   - POST /api/projects               (create; only if service.createProject exists)
+ *   - GET  /api/projects                           (list)
+ *   - GET  /api/projects.csv                       (CSV stream from GitHub)
+ *   - GET  /api/project-details.csv                (CSV stream from GitHub)
+ *   - POST /api/projects                           (create; only if service.createProject exists)
+ * - Journals:
+ *   - GET /api/journal-entries                     (list)
+ *   - GET /api/journal-entries?project=:id         (list by project)
+ *   - POST /api/journal-entries                    (create)
+ *   - GET /api/journal-entries/:id.                (read)
+ *   - PATCH /api/journal-entries/:id               (update)
+ *   - DELETE /api/journal-entries/:id              (delete)
  * - Studies:
- *   - GET  /api/studies?project=:id    (list by project)
- *   - POST /api/studies                (create)
- *   - PATCH /api/studies/:id           (update)
- *   - GET  /api/studies.csv            (CSV stream from GitHub; optional path if configured)
+ *   - GET  /api/studies?project=:id                (list by project)
+ *   - POST /api/studies                            (create)
+ *   - PATCH /api/studies/:id                       (update)
+ *   - GET  /api/studies.csv                        (CSV stream from GitHub; optional path if configured)
  * - Guides:
- *   - GET  /api/guides?study=:id       (list by study)
- *   - POST /api/guides                 (create)
- *   - GET  /api/guides/:id             (read)
- *   - PATCH /api/guides/:id            (update)
- *   - POST /api/guides/:id/publish     (publish)
+ *   - GET  /api/guides?study=:id                   (list by study)
+ *   - POST /api/guides                             (create)
+ *   - GET  /api/guides/:id                         (read)
+ *   - PATCH /api/guides/:id                        (update)
+ *   - POST /api/guides/:id/publish                 (publish)
  * - Partials:
- *   - GET    /api/partials             (list)
- *   - POST   /api/partials             (create)
- *   - GET    /api/partials/:id         (read)
- *   - PATCH  /api/partials/:id         (update)
- *   - DELETE /api/partials/:id         (delete)
+ *   - GET    /api/partials                         (list)
+ *   - POST   /api/partials                         (create)
+ *   - GET    /api/partials/:id                     (read)
+ *   - PATCH  /api/partials/:id                     (update)
+ *   - DELETE /api/partials/:id                     (delete)
  * - Participants:
- *   - GET  /api/participants?study=:id (list by study)
- *   - POST /api/participants           (create)
+ *   - GET  /api/participants?study=:id             (list by study)
+ *   - POST /api/participants                       (create)
  * - Sessions:
- *   - GET   /api/sessions?study=:id    (list by study)
- *   - POST  /api/sessions              (create)
- *   - PATCH /api/sessions/:id          (update)
- *   - GET   /api/sessions/:id/ics      (download .ics)
+ *   - GET   /api/sessions?study=:id                (list by study)
+ *   - POST  /api/sessions                          (create)
+ *   - PATCH /api/sessions/:id                      (update)
+ *   - GET   /api/sessions/:id/ics                  (download .ics)
  * - Comms:
- *   - POST /api/comms/send             (send + log)
+ *   - POST /api/comms/send                         (send + log)
  *
  * Any non-/api requests fall through to static ASSETS with SPA index.html fallback.
  */
@@ -147,7 +154,27 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
 			return service.streamCsv(origin, env.GH_PATH_DETAILS);
 		}
+		
+		// ─────────────────────────────────────────────────────────────────
+		// Journal Entries
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/journal-entries" && request.method === "GET") {
+			return service.listJournalEntries(origin, url);
+		}
+		
+		if (url.pathname === "/api/journal-entries" && request.method === "POST") {
+			return service.createJournalEntry(request, origin);
+		}
+		
+		if (url.pathname.startsWith("/api/journal-entries/") && request.method === "PATCH") {
+			const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
+			return service.updateJournalEntry(request, origin, entryId);
+		}
 
+		if (url.pathname.startsWith("/api/journal-entries/") && request.method === "DELETE") {
+			const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
+			return service.deleteJournalEntry(origin, entryId);
+		}
 		// ─────────────────────────────────────────────────────────────────
 		// Studies
 		// ─────────────────────────────────────────────────────────────────
