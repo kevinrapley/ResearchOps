@@ -7,13 +7,13 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title property="dcterms:title">Reflexive Journal &mdash; ResearchOps</title>
+	<title property="dcterms:title">Reflexive Journal &amp; Analysis &mdash; ResearchOps</title>
 	<meta property="dcterms:creator" content="Home Office Biometrics">
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css">
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css">
 	<link rel="stylesheet" href="/css/screen.css">
 	<link rel="stylesheet" href="/css/journal.css">
-	
+
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
@@ -22,505 +22,293 @@
 	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
 		"active":"Projects",
-		"subtitle":"Study — Discussion Guides"
+		"subtitle":"Research Analysis"
 	}'></x-include>
 
 	<nav class="breadcrumbs" aria-label="Breadcrumb">
 		<a href="/pages/projects/">Projects</a> &rarr;
 		<a href="#" id="project-link">Project Dashboard</a> &rarr;
-		<span>Reflexive Journal</span>
+		<span>Journal &amp; Analysis</span>
 	</nav>
 
 	<header role="banner" class="journal-header">
 		<div>
-			<h2 property="dcterms:title">Reflexive Journal</h2>
-			<p class="hint">Document your research process, decisions, and reflections</p>
+			<h2 property="dcterms:title">Reflexive Journal &amp; Analysis</h2>
+			<p class="hint">Document and analyze your research journey</p>
 		</div>
-		<button type="button" class="btn" id="toggle-form-btn">
-			+ New entry
-		</button>
 	</header>
+
+	<!-- Tab navigation -->
+	<nav class="analysis-tabs" role="tablist" aria-label="Analysis views">
+		<button role="tab" aria-selected="true" aria-controls="journal-panel" id="journal-tab">
+			Journal Entries
+		</button>
+		<button role="tab" aria-selected="false" aria-controls="codes-panel" id="codes-tab">
+			Codes
+		</button>
+		<button role="tab" aria-selected="false" aria-controls="memos-panel" id="memos-tab">
+			Memos
+		</button>
+		<button role="tab" aria-selected="false" aria-controls="analysis-panel" id="analysis-tab">
+			Analysis
+		</button>
+	</nav>
 
 	<main id="content" role="main">
 
-		<!-- Entry form (initially hidden) -->
-		<section class="entry-form" id="entry-form" hidden>
-			<h3 id="form-heading">Add journal entry</h3>
-			<form id="add-entry-form" novalidate>
+		<!-- Journal Panel (default visible) -->
+		<div role="tabpanel" id="journal-panel" aria-labelledby="journal-tab">
 
-				<div class="form-group">
-					<label for="entry-category">
-						Category
-						<span aria-hidden="true">*</span>
-					</label>
-					<select id="entry-category" name="category" required aria-required="true">
-						<option value="perceptions">Evolving perceptions</option>
-						<option value="procedures">Day-to-day procedures</option>
-						<option value="decisions">Methodological decision points</option>
-						<option value="introspections">Personal introspections</option>
-					</select>
-					<span class="hint">Select the type of reflection</span>
-				</div>
-
-				<div class="form-group">
-					<label for="entry-content">
-						Entry
-						<span aria-hidden="true">*</span>
-					</label>
-					<textarea id="entry-content" name="content" rows="8" required aria-required="true" aria-describedby="content-hint"></textarea>
-					<span class="hint" id="content-hint">Write freely; this is a private space for research reflection</span>
-				</div>
-
-				<div class="form-group">
-					<label for="entry-tags">Tags (optional)</label>
-					<input type="text" id="entry-tags" name="tags" placeholder="e.g. recruitment, ethics, bias">
-					<span class="hint">Comma-separated keywords for easier retrieval</span>
-				</div>
-
-				<div style="display: flex; gap: var(--space-200);">
-					<button type="submit" class="btn">Save entry</button>
-					<button type="button" class="btn-secondary" id="cancel-form-btn">Cancel</button>
-				</div>
-
-				<div id="form-status" class="status" aria-live="polite" aria-atomic="true"></div>
-			</form>
-		</section>
-
-		<!-- Filter controls -->
-		<section aria-label="Filter entries">
-			<div class="filter-group" role="group" aria-label="Filter by category">
-				<button type="button" class="filter-btn active" data-filter="all">All entries</button>
-				<button type="button" class="filter-btn" data-filter="perceptions">Perceptions</button>
-				<button type="button" class="filter-btn" data-filter="procedures">Procedures</button>
-				<button type="button" class="filter-btn" data-filter="decisions">Decisions</button>
-				<button type="button" class="filter-btn" data-filter="introspections">Introspections</button>
+			<div class="panel-header">
+				<button type="button" class="btn" id="toggle-form-btn">
+					+ New entry
+				</button>
 			</div>
-		</section>
 
-		<!-- Journal entries -->
-		<section aria-labelledby="entries-heading" aria-live="polite">
-			<h3 id="entries-heading" class="visually-hidden">Journal entries</h3>
-			<div class="journal-entries" id="entries-container">
-				<!-- Entries rendered here -->
-				<div class="empty-journal">
-					<div class="empty-journal-icon" aria-hidden="true">📔</div>
-					<p><strong>No entries yet</strong></p>
-					<p>Start documenting your research journey by adding your first journal entry.</p>
+			<!-- Entry form (initially hidden) -->
+			<section class="entry-form" id="entry-form" hidden>
+				<h3 id="form-heading">Add journal entry</h3>
+				<form id="add-entry-form" novalidate>
+
+					<div class="form-group">
+						<label for="entry-category">
+							Category
+							<span aria-hidden="true">*</span>
+						</label>
+						<select id="entry-category" name="category" required aria-required="true">
+							<option value="perceptions">Evolving perceptions</option>
+							<option value="procedures">Day-to-day procedures</option>
+							<option value="decisions">Methodological decision points</option>
+							<option value="introspections">Personal introspections</option>
+						</select>
+						<span class="hint">Select the type of reflection</span>
+					</div>
+
+					<div class="form-group">
+						<label for="entry-content">
+							Entry
+							<span aria-hidden="true">*</span>
+						</label>
+						<textarea id="entry-content" name="content" rows="8" required aria-required="true" aria-describedby="content-hint"></textarea>
+						<span class="hint" id="content-hint">Write freely; this is a private space for research reflection</span>
+					</div>
+
+					<div class="form-group">
+						<label for="entry-tags">Tags (optional)</label>
+						<input type="text" id="entry-tags" name="tags" placeholder="e.g. recruitment, ethics, bias">
+						<span class="hint">Comma-separated keywords for easier retrieval</span>
+					</div>
+
+					<div style="display: flex; gap: var(--space-200);">
+						<button type="submit" class="btn">Save entry</button>
+						<button type="button" class="btn-secondary" id="cancel-form-btn">Cancel</button>
+					</div>
+
+					<div id="form-status" class="status" aria-live="polite" aria-atomic="true"></div>
+				</form>
+			</section>
+
+			<!-- Filter controls -->
+			<section aria-label="Filter entries">
+				<div class="filter-group" role="group" aria-label="Filter by category">
+					<button type="button" class="filter-btn active" data-filter="all">All entries</button>
+					<button type="button" class="filter-btn" data-filter="perceptions">Perceptions</button>
+					<button type="button" class="filter-btn" data-filter="procedures">Procedures</button>
+					<button type="button" class="filter-btn" data-filter="decisions">Decisions</button>
+					<button type="button" class="filter-btn" data-filter="introspections">Introspections</button>
+				</div>
+			</section>
+
+			<!-- Journal entries -->
+			<section aria-labelledby="entries-heading" aria-live="polite">
+				<h3 id="entries-heading" class="visually-hidden">Journal entries</h3>
+				<div class="journal-entries" id="entries-container">
+					<div class="empty-journal">
+						<div class="empty-journal-icon" aria-hidden="true">📔</div>
+						<p><strong>No entries yet</strong></p>
+						<p>Start documenting your research journey by adding your first journal entry.</p>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<!-- Codes Panel -->
+		<div role="tabpanel" id="codes-panel" aria-labelledby="codes-tab" hidden>
+			<div class="panel-header">
+				<h3>Codebook Management</h3>
+				<button type="button" class="btn" id="new-code-btn">+ Add Code</button>
+			</div>
+
+			<!-- Code form (initially hidden) -->
+			<section class="code-form" id="code-form" hidden>
+				<h4>Add new code</h4>
+				<form id="add-code-form" novalidate>
+					<div class="form-group">
+						<label for="code-name">Code name <span aria-hidden="true">*</span></label>
+						<input type="text" id="code-name" name="name" required aria-required="true">
+					</div>
+
+					<div class="form-group">
+						<label for="code-definition">Definition</label>
+						<textarea id="code-definition" name="definition" rows="3"></textarea>
+						<span class="hint">Describe when to use this code</span>
+					</div>
+
+					<div class="form-group">
+						<label for="code-color">Color</label>
+						<input type="color" id="code-color" name="color" value="#1d70b8">
+					</div>
+
+					<div class="form-group">
+						<label for="parent-code">Parent code (optional)</label>
+						<select id="parent-code" name="parent">
+							<option value="">None (top-level code)</option>
+						</select>
+					</div>
+
+					<div style="display: flex; gap: var(--space-200);">
+						<button type="submit" class="btn">Save Code</button>
+						<button type="button" class="btn-secondary" id="cancel-code-btn">Cancel</button>
+					</div>
+				</form>
+			</section>
+
+			<div class="codebook-display" id="codebook-display">
+				<!-- Hierarchical code tree rendered here -->
+			</div>
+		</div>
+
+		<!-- Memos Panel -->
+		<div role="tabpanel" id="memos-panel" aria-labelledby="memos-tab" hidden>
+			<div class="panel-header">
+				<h3>Research Memos</h3>
+				<button type="button" class="btn" id="new-memo-btn">+ New Memo</button>
+			</div>
+
+			<!-- Memo form (initially hidden) -->
+			<section class="memo-form" id="memo-form" hidden>
+				<h4>Create memo</h4>
+				<form id="add-memo-form" novalidate>
+					<div class="form-group">
+						<label for="memo-type">Memo type <span aria-hidden="true">*</span></label>
+						<select id="memo-type" name="memo_type" required aria-required="true">
+							<option value="analytical">Analytical</option>
+							<option value="methodological">Methodological</option>
+							<option value="theoretical">Theoretical</option>
+							<option value="reflexive">Reflexive</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="memo-title">Title</label>
+						<input type="text" id="memo-title" name="title">
+					</div>
+
+					<div class="form-group">
+						<label for="memo-content">Content <span aria-hidden="true">*</span></label>
+						<textarea id="memo-content" name="content" rows="10" required aria-required="true"></textarea>
+					</div>
+
+					<div style="display: flex; gap: var(--space-200);">
+						<button type="submit" class="btn">Save Memo</button>
+						<button type="button" class="btn-secondary" id="cancel-memo-btn">Cancel</button>
+					</div>
+				</form>
+			</section>
+
+			<div class="memo-filters">
+				<button type="button" class="filter-btn active" data-memo-filter="all">All</button>
+				<button type="button" class="filter-btn" data-memo-filter="analytical">Analytical</button>
+				<button type="button" class="filter-btn" data-memo-filter="methodological">Methodological</button>
+				<button type="button" class="filter-btn" data-memo-filter="theoretical">Theoretical</button>
+				<button type="button" class="filter-btn" data-memo-filter="reflexive">Reflexive</button>
+			</div>
+
+			<div class="memos-list" id="memos-container">
+				<!-- Memos rendered here -->
+			</div>
+		</div>
+
+		<!-- Analysis Panel -->
+		<div role="tabpanel" id="analysis-panel" aria-labelledby="analysis-tab" hidden>
+			<div class="analysis-tools">
+				<h3>Analysis Tools</h3>
+
+				<div class="analysis-options">
+					<button type="button" class="analysis-btn" data-analysis="timeline">
+						📊 Timeline View
+					</button>
+					<button type="button" class="analysis-btn" data-analysis="co-occurrence">
+						🔗 Code Co-occurrence
+					</button>
+					<button type="button" class="analysis-btn" data-analysis="retrieval">
+						🔍 Code Retrieval
+					</button>
+					<button type="button" class="analysis-btn" data-analysis="export">
+						📤 Export Analysis
+					</button>
 				</div>
 			</div>
-		</section>
+
+			<div class="analysis-view" id="analysis-container">
+				<!-- Analysis visualisations rendered here -->
+			</div>
+		</div>
 
 	</main>
 
+	<!-- Coding panel (initially hidden, overlays content) -->
+	<aside id="coding-panel" class="coding-panel" hidden aria-label="Apply codes">
+		<div class="panel-header">
+			<h3>Apply Codes</h3>
+			<button type="button" class="close-panel" aria-label="Close coding panel">✕</button>
+		</div>
+
+		<div class="selected-text-preview">
+			<h4>Selected text:</h4>
+			<blockquote id="selected-text-display"></blockquote>
+		</div>
+
+		<div class="code-search">
+			<label for="code-search-input" class="visually-hidden">Search codes</label>
+			<input type="search" id="code-search-input" placeholder="Search codes&hellip;">
+		</div>
+
+		<div class="codebook-tree" id="coding-codebook" role="tree">
+			<!-- Code list for selection -->
+		</div>
+
+		<div class="coding-confidence">
+			<fieldset>
+				<legend>Confidence level</legend>
+				<label>
+					<input type="radio" name="confidence" value="low">
+					Low
+				</label>
+				<label>
+					<input type="radio" name="confidence" value="medium" checked>
+					Medium
+				</label>
+				<label>
+					<input type="radio" name="confidence" value="high">
+					High
+				</label>
+			</fieldset>
+		</div>
+
+		<div class="coding-memo">
+			<label for="coding-memo-input">Coding memo (optional)</label>
+			<textarea id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?"></textarea>
+		</div>
+
+		<div class="panel-actions">
+			<button type="button" class="btn" id="apply-code-btn">Apply Code</button>
+			<button type="button" class="btn-secondary" id="cancel-coding-btn">Cancel</button>
+		</div>
+	</aside>
+
 	<x-include src="/partials/footer.html"></x-include>
-
-	<script type="module">
-		/**
-		 * @file reflexive-journal.js
-		 * @module ReflexiveJournal
-		 * @summary Manages reflexive journal entries for research projects.
-		 * @description
-		 * Supports qualitative research practice by enabling researchers to document
-		 * perceptions, procedures, decisions, and introspections throughout the project lifecycle.
-		 * Follows GOV.UK Service Manual guidance on research documentation and transparency.
-		 * @requires /api/journal-entries (GET, POST, PATCH, DELETE)
-		 */
-
-		/* =========================
-		 * Configuration
-		 * ========================= */
-
-		const CONFIG = Object.freeze({
-			API_BASE: window.location.origin,
-			TIMEOUT_MS: 10_000,
-			CATEGORY_LABELS: {
-				perceptions: 'Evolving perceptions',
-				procedures: 'Day-to-day procedures',
-				decisions: 'Methodological decision points',
-				introspections: 'Personal introspections'
-			}
-		});
-
-		/* =========================
-		 * State
-		 * ========================= */
-
-		const state = {
-			projectId: null,
-			entries: [],
-			currentFilter: 'all',
-			formVisible: false
-		};
-
-		/* =========================
-		 * Utilities
-		 * ========================= */
-
-		/**
-		 * Fetch with timeout.
-		 * @param {string} url
-		 * @param {RequestInit} [init]
-		 * @param {number} [timeoutMs]
-		 * @returns {Promise<Response>}
-		 */
-		async function fetchWithTimeout(url, init, timeoutMs = CONFIG.TIMEOUT_MS) {
-			const controller = new AbortController();
-			const id = setTimeout(() => controller.abort('timeout'), timeoutMs);
-			try {
-				return await fetch(url, { ...init, signal: controller.signal });
-			} finally {
-				clearTimeout(id);
-			}
-		}
-
-		/**
-		 * Display status message.
-		 * @param {string} message
-		 * @param {'success'|'error'} type
-		 */
-		function showStatus(message, type) {
-			const el = document.getElementById('form-status');
-			if (!el) return;
-			el.textContent = message;
-			el.className = `status ${type === 'error' ? 'error-message' : 'success-message'}`;
-			setTimeout(() => {
-				el.textContent = '';
-				el.className = 'status';
-			}, 5000);
-		}
-
-		/**
-		 * Parse URL parameters.
-		 * @returns {{id:string|null}}
-		 */
-		function getUrlParams() {
-			const params = new URLSearchParams(window.location.search);
-			return { id: params.get('id') };
-		}
-
-		/**
-		 * Format datetime for display.
-		 * @param {string} isoString
-		 * @returns {string}
-		 */
-		function formatDatetime(isoString) {
-			if (!isoString) return '—';
-			try {
-				const d = new Date(isoString);
-				const now = new Date();
-				const diffMs = now - d;
-				const diffMins = Math.floor(diffMs / 60000);
-				const diffHours = Math.floor(diffMs / 3600000);
-				const diffDays = Math.floor(diffMs / 86400000);
-
-				// Relative time for recent entries
-				if (diffMins < 1) return 'Just now';
-				if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
-				if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-				if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-
-				// Absolute date for older entries
-				return d.toLocaleDateString('en-GB', {
-					day: 'numeric',
-					month: 'short',
-					year: 'numeric',
-					hour: '2-digit',
-					minute: '2-digit'
-				});
-			} catch {
-				return isoString;
-			}
-		}
-
-		/**
-		 * Escape HTML.
-		 * @param {string} str
-		 * @returns {string}
-		 */
-		function escapeHtml(str) {
-			const div = document.createElement('div');
-			div.textContent = str;
-			return div.innerHTML;
-		}
-
-		/* =========================
-		 * Journal Entries
-		 * ========================= */
-
-		/**
-		 * Load journal entries from API.
-		 * @async
-		 */
-		async function loadEntries() {
-			if (!state.projectId) return;
-
-			try {
-				const url = `${CONFIG.API_BASE}/api/journal-entries?project=${encodeURIComponent(state.projectId)}`;
-				const res = await fetchWithTimeout(url);
-				if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-				const data = await res.json();
-				state.entries = data.entries || [];
-				renderEntries();
-			} catch (err) {
-				console.error('Failed to load journal entries:', err);
-				showStatus('Could not load journal entries', 'error');
-			}
-		}
-
-		/**
-		 * Render journal entries.
-		 */
-		function renderEntries() {
-			const container = document.getElementById('entries-container');
-			if (!container) return;
-
-			// Filter entries
-			const filtered = state.currentFilter === 'all' ?
-				state.entries :
-				state.entries.filter(e => e.category === state.currentFilter);
-
-			// Empty state
-			if (filtered.length === 0) {
-				const emptyMsg = state.currentFilter === 'all' ?
-					'No entries yet. Start documenting your research journey by adding your first journal entry.' :
-					`No ${CONFIG.CATEGORY_LABELS[state.currentFilter].toLowerCase()} entries yet.`;
-
-				container.innerHTML = `
-					<div class="empty-journal">
-						<div class="empty-journal-icon" aria-hidden="true">📔</div>
-						<p><strong>${state.currentFilter === 'all' ? 'No entries yet' : 'No matching entries'}</strong></p>
-						<p>${emptyMsg}</p>
-					</div>
-				`;
-				return;
-			}
-
-			// Render entries
-			container.innerHTML = filtered.map(entry => `
-				<article class="entry-card" data-category="${entry.category}" data-id="${entry.id}">
-					<div class="entry-header">
-						<div class="entry-meta">
-							<time class="entry-timestamp" datetime="${entry.createdAt}">
-								${formatDatetime(entry.createdAt)}
-							</time>
-							${entry.author ? `<span class="entry-author">by ${escapeHtml(entry.author)}</span>` : ''}
-						</div>
-						<span class="entry-category-badge" data-category="${entry.category}">
-							${CONFIG.CATEGORY_LABELS[entry.category] || entry.category}
-						</span>
-					</div>
-					<div class="entry-content">${escapeHtml(entry.content)}</div>
-					${entry.tags && entry.tags.length > 0 ? `
-						<div style="margin-top: var(--space-200);">
-							${entry.tags.map(tag => `<span class="badge">${escapeHtml(tag)}</span>`).join(' ')}
-						</div>
-					` : ''}
-					<div class="entry-actions">
-						<button type="button" class="btn-secondary btn-icon edit-entry" data-id="${entry.id}" aria-label="Edit entry from ${formatDatetime(entry.createdAt)}">
-							Edit
-						</button>
-						<button type="button" class="btn-secondary btn-icon delete-entry" data-id="${entry.id}" aria-label="Delete entry from ${formatDatetime(entry.createdAt)}">
-							Delete
-						</button>
-					</div>
-				</article>
-			`).join('');
-
-			// Attach event listeners
-			container.querySelectorAll('.edit-entry').forEach(btn => {
-				btn.addEventListener('click', handleEditEntry);
-			});
-			container.querySelectorAll('.delete-entry').forEach(btn => {
-				btn.addEventListener('click', handleDeleteEntry);
-			});
-		}
-
-		/**
-		 * Toggle form visibility.
-		 */
-		function toggleForm(show) {
-			const form = document.getElementById('entry-form');
-			const toggleBtn = document.getElementById('toggle-form-btn');
-
-			if (show === undefined) {
-				state.formVisible = !state.formVisible;
-			} else {
-				state.formVisible = show;
-			}
-
-			if (form) {
-				form.hidden = !state.formVisible;
-			}
-
-			if (toggleBtn) {
-				toggleBtn.textContent = state.formVisible ? '✕ Close form' : '+ New entry';
-			}
-
-			// Focus first field when opening
-			if (state.formVisible) {
-				const firstField = document.getElementById('entry-category');
-				if (firstField) firstField.focus();
-			}
-		}
-
-		/**
-		 * Handle add entry form submission.
-		 * @param {Event} e
-		 */
-		async function handleAddEntry(e) {
-			e.preventDefault();
-			const form = e.target;
-			const formData = new FormData(form);
-
-			const payload = {
-				project_airtable_id: state.projectId,
-				category: formData.get('category'),
-				content: formData.get('content'),
-				tags: formData.get('tags') ?
-					formData.get('tags').split(',').map(t => t.trim()).filter(Boolean) : []
-			};
-
-			// Validation
-			if (!payload.category || !payload.content) {
-				showStatus('Category and entry content are required', 'error');
-				return;
-			}
-
-			try {
-				const url = `${CONFIG.API_BASE}/api/journal-entries`;
-				const res = await fetchWithTimeout(url, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload)
-				});
-
-				if (!res.ok) {
-					const errData = await res.json().catch(() => ({}));
-					throw new Error(errData.error || `HTTP ${res.status}`);
-				}
-
-				showStatus('Entry saved successfully', 'success');
-				form.reset();
-				toggleForm(false);
-				await loadEntries();
-
-			} catch (err) {
-				console.error('Failed to add entry:', err);
-				showStatus(`Error: ${err.message}`, 'error');
-			}
-		}
-
-		/**
-		 * Handle edit entry (placeholder for future enhancement).
-		 * @param {Event} e
-		 */
-		function handleEditEntry(e) {
-			const entryId = e.target.dataset.id;
-			// TODO: Implement edit functionality
-			alert('Edit functionality coming soon. Entry ID: ' + entryId);
-		}
-
-		/**
-		 * Handle delete entry.
-		 * @param {Event} e
-		 */
-		async function handleDeleteEntry(e) {
-			const entryId = e.target.dataset.id;
-
-			if (!confirm('Are you sure you want to delete this journal entry? This cannot be undone.')) {
-				return;
-			}
-
-			try {
-				const url = `${CONFIG.API_BASE}/api/journal-entries/${encodeURIComponent(entryId)}`;
-				const res = await fetchWithTimeout(url, { method: 'DELETE' });
-
-				if (!res.ok) {
-					const errData = await res.json().catch(() => ({}));
-					throw new Error(errData.error || `HTTP ${res.status}`);
-				}
-
-				await loadEntries();
-
-			} catch (err) {
-				console.error('Failed to delete entry:', err);
-				showStatus(`Error: ${err.message}`, 'error');
-			}
-		}
-
-		/**
-		 * Handle filter button clicks.
-		 * @param {Event} e
-		 */
-		function handleFilter(e) {
-			const btn = e.target.closest('.filter-btn');
-			if (!btn) return;
-
-			const filter = btn.dataset.filter;
-			state.currentFilter = filter;
-
-			// Update active state
-			document.querySelectorAll('.filter-btn').forEach(b => {
-				b.classList.toggle('active', b === btn);
-			});
-
-			renderEntries();
-		}
-
-		/* =========================
-		 * Initialization
-		 * ========================= */
-
-		/**
-		 * Initialize the page.
-		 * @async
-		 */
-		async function init() {
-			const params = getUrlParams();
-			state.projectId = params.id;
-
-			if (!state.projectId) {
-				console.error('Missing project ID in URL');
-				return;
-			}
-
-			// Update breadcrumb link
-			const projectLink = document.getElementById('project-link');
-			if (projectLink) {
-				projectLink.href = `/pages/project-dashboard/?id=${state.projectId}`;
-			}
-
-			// Attach event listeners
-			const addEntryForm = document.getElementById('add-entry-form');
-			const toggleFormBtn = document.getElementById('toggle-form-btn');
-			const cancelFormBtn = document.getElementById('cancel-form-btn');
-			const filterGroup = document.querySelector('.filter-group');
-
-			if (addEntryForm) {
-				addEntryForm.addEventListener('submit', handleAddEntry);
-			}
-
-			if (toggleFormBtn) {
-				toggleFormBtn.addEventListener('click', () => toggleForm());
-			}
-
-			if (cancelFormBtn) {
-				cancelFormBtn.addEventListener('click', () => toggleForm(false));
-			}
-
-			if (filterGroup) {
-				filterGroup.addEventListener('click', handleFilter);
-			}
-
-			// Load entries
-			await loadEntries();
-		}
-
-		// Start
-		init();
-	</script>
-
+	<script type="module" src="/js/caqdas-interface.js" defer></script>
 </body>
 
 </html>
