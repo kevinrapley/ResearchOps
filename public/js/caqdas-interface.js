@@ -382,7 +382,10 @@ async function loadCodeApplications() {
 	try {
 		const url = `${CONFIG.API_BASE}/api/code-applications?project=${encodeURIComponent(state.projectId)}`;
 		const res = await fetchWithTimeout(url);
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
+		if (!res.ok) {
+			const detail = await res.text().catch(() => "");
+			throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
+		}
 
 		const data = await res.json();
 		state.codeApplications = data.applications || [];
