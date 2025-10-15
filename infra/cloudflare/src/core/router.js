@@ -231,6 +231,44 @@ export async function handleRequest(request, env) {
 			}
 		}
 
+		// ──────────────────────────────
+		// Journal Excerpts
+		// ──────────────────────────────
+
+		// Create an excerpt
+		router.post("/api/journal/excerpts", async (req, env, ctx) => {
+			return createExcerpt(req, env, ctx);
+		});
+
+		// List excerpts by entry id (?entry=<AirtableEntryId>)
+		router.get("/api/journal/excerpts", async (req, env, ctx) => {
+			return listExcerpts(req, env, ctx);
+		});
+
+		// Partial update by excerpt record id
+		router.patch("/api/journal/excerpts/:id", async (req, env, ctx, params) => {
+			return updateExcerpt(req, env, ctx, params.id);
+		});
+
+		/* ─────────────── Excerpts ─────────────── */
+		if (url.pathname === "/api/excerpts" && request.method === "GET") {
+			// Supports optional filter: ?entry=<AirtableJournalEntryId>
+			// Example: /api/excerpts?entry=${encodeURIComponent(entryId)}
+			return service.listExcerpts(origin, url);
+		}
+
+		if (url.pathname === "/api/excerpts" && request.method === "POST") {
+			// Body: { entryId, start, end, text, createdAt?, author?, codes?, memos?, muralWidgetId?, syncedAt? }
+			return service.createExcerpt(request, origin);
+		}
+
+		if (url.pathname.startsWith("/api/excerpts/") && request.method === "PATCH") {
+			// Partial updates to a specific excerpt
+			// Example: /api/excerpts/${encodeURIComponent(excerptId)}
+			const excerptId = decodeURIComponent(url.pathname.slice("/api/excerpts/".length));
+			return service.updateExcerpt(request, origin, excerptId);
+		}
+
 		/* ─────────────── Memos ─────────────── */
 		if (url.pathname === "/api/memos" && request.method === "GET") {
 			return service.listMemos(origin, url);
