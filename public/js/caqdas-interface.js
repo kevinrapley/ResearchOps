@@ -53,7 +53,6 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 
 /**
  * JSON fetch with error text details and content-type guard.
- * Adds the error text to the thrown Error.message for on-screen debugging.
  * @param {string} url
  * @param {RequestInit} [init]
  * @param {number} [timeoutMs]
@@ -275,61 +274,18 @@ async function onDeleteEntry(e) {
 }
 
 /**
- * Quick inline “create entry” when the page has no form section.
- * Prompts for category and content then POSTs to the API.
- * @returns {Promise<void>}
- */
-async function quickCreateEntry() {
-	const category = prompt("Category (e.g., perceptions, procedures, decisions, introspections):") || "";
-	const content = prompt("Entry content:") || "";
-	if (!category.trim() || !content.trim()) {
-		flash("Category and content are required.");
-		return;
-	}
-	const payload = {
-		project_airtable_id: state.projectId,
-		category: category.trim(),
-		content: content.trim(),
-		tags: []
-	};
-	try {
-		await httpJSON("/api/journal-entries", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(payload)
-		});
-		flash("Entry saved.");
-		await loadEntries();
-	} catch (err) {
-		console.error("quickCreateEntry error:", err);
-		flash(`Could not save entry. ${err?.message || ""}`.trim());
-	}
-}
-
-/**
  * Wires the “+ New entry” toggle and submit handlers.
- * Primary trigger: #new-entry-btn.
- * If no section/form exists, falls back to quickCreateEntry().
+ * Primary trigger: #toggle-form-btn (and supports #new-entry-btn alias).
+ * Uses the dedicated inline form section: #entry-form and #add-entry-form.
  */
 function setupNewEntryWiring() {
-	const section =
-		$("#add-entry-section") ||
-		$("#new-entry-section") ||
-		document.querySelector('[data-section="add-entry"]');
+	// Dedicated inline form section used on your page
+	const section = $("#entry-form");
+	const form = $("#add-entry-form");
 
-	const form =
-		$("#add-entry-form") ||
-		$("#new-entry-form") ||
-		section?.querySelector("form");
-
-	const toggleBtn =
-		$("#new-entry-btn") || // primary id you provided
-		$("#toggle-form-btn");
-
-	const cancelBtn =
-		$("#cancel-form-btn") ||
-		$("#cancel-entry-btn") ||
-		section?.querySelector('[data-role="cancel"]');
+	// Primary trigger on this page; also accept the alias you mentioned
+	const toggleBtn = $("#toggle-form-btn") || $("#new-entry-btn");
+	const cancelBtn = $("#cancel-form-btn") || $("#cancel-entry-btn") || section?.querySelector('[data-role="cancel"]');
 
 	/**
 	 * Shows/hides the new-entry section.
@@ -342,16 +298,8 @@ function setupNewEntryWiring() {
 		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
 	}
 
-	// Button wiring
-	if (toggleBtn) {
-		toggleBtn.addEventListener("click", async () => {
-			// If there is no section on this page, fall back to quick create
-			if (!section) {
-				await quickCreateEntry();
-			} else {
-				toggleForm();
-			}
-		});
+	if (toggleBtn && section) {
+		toggleBtn.addEventListener("click", () => toggleForm());
 	}
 
 	if (cancelBtn && section) {
@@ -361,7 +309,6 @@ function setupNewEntryWiring() {
 		});
 	}
 
-	// Form submit wiring (only if a form exists)
 	if (form && section) {
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
