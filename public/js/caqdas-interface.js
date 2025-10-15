@@ -470,7 +470,7 @@ function setupAddCodeWiring() {
 	const btn = document.getElementById("new-code-btn");
 	const form = document.getElementById("code-form");
 	const nameInput = document.getElementById("code-name");
-	const colorInput = document.getElementById("code-color");
+	const colourInput = document.getElementById("code-color");
 	const descInput = document.getElementById("code-description");
 	const parentInput = document.getElementById("code-parent");
 	const cancelBtn = document.getElementById("cancel-code-btn");
@@ -505,11 +505,20 @@ function setupAddCodeWiring() {
 			flash("Please enter a code name.");
 			return;
 		}
-
+		
+		/** @type {{
+     	*  name: string;
+     	*  projectId: string|null;
+     	*  colour?: string;
+     	*  description?: string;
+     	*  parentId?: string;
+     	*  linked_memos?: string[];
+     	*  linked_entries?: string[];
+     	* }} */
 		const payload = {
 			name,
 			projectId: state.projectId,
-			color: (colorInput?.value || "").trim(),
+			colour: (colourInput?.value || "").trim(),
 			description: (descInput?.value || "").trim(),
 			parentId: (parentInput?.value || "").trim()
 		};
@@ -523,7 +532,7 @@ function setupAddCodeWiring() {
 
 			// Reset inputs
 			if (nameInput) nameInput.value = "";
-			if (colorInput) colorInput.value = "";
+			if (colourInput) colourInput.value = "";
 			if (descInput) descInput.value = "";
 			if (parentInput) parentInput.value = "";
 
@@ -534,7 +543,7 @@ function setupAddCodeWiring() {
 			// Clean any accidental query params left by browser autofill
 			if (location.search.includes("name=")) {
 				const url = new URL(location.href);
-				["name", "definition", "color", "parent"].forEach(p => url.searchParams.delete(p));
+				["name", "definition", "colour", "parent"].forEach(p => url.searchParams.delete(p));
 				history.replaceState(null, "", url.toString());
 			}
 		} catch (err) {
