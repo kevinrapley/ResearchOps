@@ -173,7 +173,7 @@
 				</form>
 			</section>
 
-			<div class="codebook-display" id="codebook-display">
+			<div class="codebook-display" id="codebook-display" data-role="codes-container">
 				<!-- Hierarchical code tree rendered here -->
 			</div>
 		</div>
@@ -224,34 +224,74 @@
 				<button type="button" class="filter-btn" data-memo-filter="reflexive">Reflexive</button>
 			</div>
 
-			<div class="memos-list" id="memos-container">
+			<div class="memos-list" id="memos-container" data-role="memos-container">
 				<!-- Memos rendered here -->
 			</div>
 		</div>
 
 		<!-- Analysis Panel -->
 		<div role="tabpanel" id="analysis-panel" aria-labelledby="analysis-tab" hidden>
-			<div class="analysis-tools">
-				<h3>Analysis Tools</h3>
+			<div class="analysis-tools govuk-!-margin-bottom-4">
+				<h3 class="govuk-heading-m">Analysis Tools</h3>
 
-				<div class="analysis-options">
-					<button type="button" class="analysis-btn" data-analysis="timeline">
+				<div class="analysis-options govuk-button-group">
+					<button type="button" class="govuk-button analysis-btn" data-module="govuk-button" data-analysis="timeline">
 						📊 Timeline View
 					</button>
-					<button type="button" class="analysis-btn" data-analysis="co-occurrence">
+					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="co-occurrence">
 						🔗 Code Co-occurrence
 					</button>
-					<button type="button" class="analysis-btn" data-analysis="retrieval">
+					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="retrieval">
 						🔍 Code Retrieval
 					</button>
-					<button type="button" class="analysis-btn" data-analysis="export">
+					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="export">
 						📤 Export Analysis
 					</button>
 				</div>
 			</div>
 
-			<div class="analysis-view" id="analysis-container">
-				<!-- Analysis visualisations rendered here -->
+			<div class="analysis-view" id="analysis-container" data-role="analysis-container">
+				<!-- Timeline -->
+				<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite">
+					<!-- Timeline entries render here -->
+				</section>
+
+				<!-- Co-occurrence -->
+				<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite">
+					<!-- Code co-occurrence table/graph renders here -->
+				</section>
+
+				<!-- Retrieval (controls + results) -->
+				<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
+					<form id="retrieval-form" class="govuk-form-group" novalidate>
+						<label class="govuk-label" for="retrieval-q">Search term</label>
+						<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
+						<div class="govuk-hint">Searches code names and journal text.</div>
+						<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
+					</form>
+					<div id="retrieval-results" class="govuk-!-margin-top-3">
+						<!-- Retrieval results render here -->
+					</div>
+				</section>
+
+				<!-- Shared JSON viewer (raw data + download) -->
+				<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer">
+					<summary class="govuk-details__summary">
+						<span class="govuk-details__summary-text">View raw JSON</span>
+					</summary>
+					
+					<div class="govuk-details__text">
+						<div class="govuk-button-group">
+							<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
+							<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
+						</div>
+						
+						<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON">
+							
+							<code id="json-code"></code>
+						</pre>
+					</div>
+				</details>
 			</div>
 		</div>
 
