@@ -629,95 +629,417 @@ function setupNewMemoWiring() {
 }
 
 /* =========================
- * Analysis
+ * ANALYSIS TOOLS
  * ========================= */
+/**
+ * 
+ * Wires the Analysis panel buttons and renders dedicated UIs for:
+ *  - Timeline View
+ *  - Code Co-occurrence
+ *  - Code Retrieval
+ *  - Export Analysis
+ *
+ * Assumes these globals/utilities exist elsewhere in your file:
+ *   - state.projectId : string
+ *   - httpJSON(url, init?) : Promise<any>
+ *   - escapeHtml(str) : string
+ *   - formatWhen(iso) : string
+ *   - flash(msg) : void
+ *   - $ and $$ query helpers (optional, only used lightly)
+ *
+ * Works with this HTML structure:
+ *   <div role="tabpanel" id="analysis-panel" ...>
+ *     <div class="analysis-options">
+ *       <button class="analysis-btn" data-analysis="timeline">...</button>
+ *       <button class="analysis-btn" data-analysis="co-occurrence">...</button>
+ *       <button class="analysis-btn" data-analysis="retrieval">...</button>
+ *       <button class="analysis-btn" data-analysis="export">...</button>
+ *     </div>
+ *     <div id="analysis-container" data-role="analysis-container"></div>
+ *   </div>
+ */
+
+/* --------------------------
+ * Container + DOM helpers (scoped to Analysis panel)
+ * -------------------------- */
 
 /**
- * Loads timeline and co-occurrence for the current project.
- * Provides immediate placeholders so the UI feels responsive.
+ * Return the host container that receives analysis render output.
+ * @returns {HTMLElement|null}
+ */
+function getAnalysisContainer() {
+	return document.querySelector('[data-role="analysis-container"]') || document.getElementById('analysis-container');
+}
+
+/**
+ * Ensure an analysis subsection exists inside the host container; create if missing.
+ * @param {string} id - The section element id (e.g., "analysis-timeline").
+ * @param {string} [headingText] - Optional heading text prepended inside the section.
+ * @returns {HTMLElement|null}
+ */
+function ensureSection(id, headingText) {
+	const host = getAnalysisContainer();
+	if (!host) return null;
+	let sec = document.getElementById(id);
+	if (sec) return sec;
+
+	sec = document.createElement('section');
+	sec.id = id;
+	sec.setAttribute('aria-live', 'polite');
+	sec.className = 'analysis-section';
+	if (headingText) {
+		const h = document.createElement('h3');
+		h.className = 'analysis-section__heading';
+		h.textContent = headingText;
+		sec.appendChild(h);
+	}
+	host.appendChild(sec);
+	return sec;
+}
+
+/**
+ * Create a DOM element from a string of HTML.
+ * @param {string} html
+ * @returns {HTMLElement}
+ */
+function elFromHTML(html) {
+	const t = document.createElement('template');
+	t.innerHTML = html.trim();
+	return /** @type {HTMLElement} */ (t.content.firstChild);
+}
+
+/* --------------------------
+ * JSON Viewer (self-creates inside Analysis container)
+ * -------------------------- */
+/**
+ * Ensure a `<details>` JSON viewer exists with Copy/Download actions.
+ * @returns {{ codeEl: HTMLElement|null }}
+ */
+function ensureJsonViewer() {
+	const host = getAnalysisContainer();
+	if (!host) return { codeEl: null };
+
+	let details = document.getElementById('json-viewer');
+	if (!details) {
+		details = document.createElement('details');
+		details.id = 'json-viewer';
+		details.innerHTML = `
+      <summary><span>View raw JSON</span></summary>
+      <div>
+        <div class="analysis-json-actions">
+          <button type="button" id="json-copy">Copy JSON</button>
+          <button type="button" id="json-download">Download JSON</button>
+        </div>
+        <pre tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
+      </div>`;
+		host.appendChild(details);
+		setupJsonButtons();
+	}
+	return { codeEl: document.getElementById('json-code') };
+}
+
+/**
+ * Syntax-highlight JSON for display within <pre><code>.
+ * Note: colouring relies on simple <span> wrappers; provide styles in your CSS if desired.
+ * @param {unknown} obj
+ * @returns {string}
+ */
+function jsonSyntaxHighlight(obj) {
+	const json = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+	const esc = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" } [c]));
+	return esc
+		// keys
+		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, m => `<span class="k">${m}</span>`)
+		// strings
+		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, m => `<span class="s">${m}</span>`)
+		// numbers
+		.replace(/\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, m => `<span class="n">${m}</span>`)
+		// booleans/null
+		.replace(/\b(true|false|null)\b/g, m => `<span class="b">${m}</span>`);
+}
+
+/**
+ * Populate the JSON viewer with data and filename metadata (for download).
+ * @param {unknown} data
+ * @param {string} [filename="analysis.json"]
+ */
+function updateJsonPanel(data, filename = "analysis.json") {
+	const { codeEl } = ensureJsonViewer();
+	if (!codeEl) return;
+	codeEl.innerHTML = jsonSyntaxHighlight(data);
+	codeEl.dataset.filename = filename;
+}
+
+/**
+ * Wire the JSON viewer Copy/Download buttons (called once on first creation).
+ */
+function setupJsonButtons() {
+	const copyBtn = document.getElementById("json-copy");
+	const dlBtn = document.getElementById("json-download");
+	const code = document.getElementById("json-code");
+
+	copyBtn?.addEventListener("click", async () => {
+		try {
+			await navigator.clipboard.writeText(code?.textContent || "");
+			flash("JSON copied.");
+		} catch {
+			flash("Copy failed.");
+		}
+	});
+
+	dlBtn?.addEventListener("click", () => {
+		const raw = code?.textContent || "{}";
+		const blob = new Blob([raw], { type: "application/json;charset=utf-8" });
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = code?.dataset.filename || "analysis.json";
+		a.click();
+		setTimeout(() => URL.revokeObjectURL(a.href), 0);
+	});
+}
+
+/* --------------------------
+ * Timeline View
+ * -------------------------- */
+/**
+ * Fetch and render a chronological view of journal entries.
+ * Renders GOV.UK-style summary cards (structure), degrades gracefully as a list.
+ * Also updates the shared JSON viewer with the response.
  * @returns {Promise<void>}
  */
-async function loadAnalysis() {
-	if (!state.projectId) return;
-
-	const timelineSel = $("#analysis-timeline");
-	const coocSel = $("#analysis-cooccurrence");
-	const retrievalSel = $("#analysis-retrieval");
-
-	if (timelineSel) timelineSel.innerHTML = "<p>Loading timeline…</p>";
-	if (coocSel) coocSel.innerHTML = "<p>Loading co-occurrence…</p>";
-	if (retrievalSel) retrievalSel.innerHTML = "<p>Ready for search.</p>";
-
-	try {
-		const t = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
-		state.analysis.timeline = Array.isArray(t?.timeline) ? t.timeline : [];
-		renderTimeline(state.analysis.timeline);
-
-		const g = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
-		state.analysis.graph = { nodes: g.nodes || [], links: g.links || [] };
-		renderCooccurrence(state.analysis.graph);
-	} catch (e) {
-		console.error(e);
-		if (timelineSel) timelineSel.innerHTML = "<p>Timeline unavailable.</p>";
-		if (coocSel) coocSel.innerHTML = "<p>Co-occurrence unavailable.</p>";
-	}
-}
-
-/**
- * Renders the analysis timeline.
- * @param {JournalEntry[]} items
- */
-function renderTimeline(items) {
-	const wrap = $("#analysis-timeline");
+async function runTimeline() {
+	const wrap = ensureSection("analysis-timeline", "Timeline");
 	if (!wrap) return;
+	wrap.innerHTML = '<p>Loading timeline…</p>';
+
+	const res = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
+	const items = Array.isArray(res?.timeline) ? res.timeline : [];
+	updateJsonPanel({ timeline: items }, `timeline-${state.projectId}.json`);
 
 	if (!items.length) {
-		wrap.innerHTML = "<p>No journal entries yet.</p>";
+		wrap.innerHTML = '<p class="hint">No journal entries yet.</p>';
 		return;
 	}
 
-	wrap.innerHTML = items.map(en => `
-		<article class="entry">
-			<header><time>${formatWhen(en.createdAt)}</time></header>
-			<p>${escapeHtml(en.body || "")}</p>
-		</article>
-	`).join("");
+	wrap.innerHTML = `
+    <ul class="analysis-list">
+      ${items.map(en => `
+        <li class="analysis-list__item">
+          <div class="summary-card">
+            <div class="summary-card__title-row">
+              <h4 class="summary-card__title">${formatWhen(en.createdAt)}</h4>
+              ${en.category ? `<span class="tag">${escapeHtml(en.category)}</span>` : ""}
+            </div>
+            <div class="summary-card__content">
+              <dl class="summary">
+                <div class="summary__row">
+                  <dt class="summary__key">Entry</dt>
+                  <dd class="summary__value">${escapeHtml(en.body || en.content || "")}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+/* --------------------------
+ * Code Co-occurrence
+ * -------------------------- */
+/**
+ * Utility to get a node's human label from id.
+ * @param {{id:string,label?:string,name?:string}[]} nodes
+ * @param {string} id
+ * @returns {string}
+ */
+function nodeLabel(nodes, id) {
+	const n = nodes.find(n => n.id === id);
+	return n?.label || n?.name || String(id);
 }
 
 /**
- * Renders the co-occurrence table.
- * @param {CooccurrenceGraph} graph
+ * Fetch and render a simple, accessible co-occurrence table (source–target–weight).
+ * Also updates the shared JSON viewer with the response.
+ * @returns {Promise<void>}
  */
-function renderCooccurrence(graph) {
-	const wrap = $("#analysis-cooccurrence");
+async function runCooccurrence() {
+	const wrap = ensureSection("analysis-cooccurrence", "Code co-occurrence");
 	if (!wrap) return;
+	wrap.innerHTML = '<p>Loading co-occurrence…</p>';
 
-	const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
-	const links = Array.isArray(graph.links) ? graph.links : [];
+	const res = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
+	const nodes = Array.isArray(res?.nodes) ? res.nodes : [];
+	const links = Array.isArray(res?.links) ? res.links : [];
+	updateJsonPanel({ nodes, links }, `cooccurrence-${state.projectId}.json`);
 
 	if (!links.length) {
-		wrap.innerHTML = "<p>No co-occurrences yet.</p>";
+		wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>';
 		return;
 	}
 
-	const nameById = new Map(nodes.map(n => [n.id, n.label || n.name || n.id]));
-	const rows = links.map(l => `
-		<tr>
-			<td>${escapeHtml(nameById.get(l.source) || String(l.source))}</td>
-			<td>${escapeHtml(nameById.get(l.target) || String(l.target))}</td>
-			<td>${escapeHtml(String(l.weight ?? 1))}</td>
-		</tr>
-	`).join("");
-
+	links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
 	wrap.innerHTML = `
-		<table class="table">
-			<thead>
-				<tr><th>Source</th><th>Target</th><th>Weight</th></tr>
-			</thead>
-			<tbody>${rows}</tbody>
-		</table>
-	`;
+    <table class="table">
+      <caption>Code pairs by strength</caption>
+      <thead>
+        <tr><th>Source</th><th>Target</th><th>Weight</th></tr>
+      </thead>
+      <tbody>
+        ${links.map(l => `
+          <tr>
+            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.source))}</span></td>
+            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.target))}</span></td>
+            <td>${escapeHtml(String(l.weight ?? 1))}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
+
+/* --------------------------
+ * Code Retrieval
+ * -------------------------- */
+/**
+ * Ensure the Retrieval form exists and wire submit to render results.
+ * Also updates the shared JSON viewer with the results.
+ */
+function setupRetrievalUI() {
+	const wrap = ensureSection("analysis-retrieval", "Code/text retrieval");
+	if (!wrap) return;
+
+	// Build form only once if it doesn't exist
+	if (!document.getElementById("retrieval-form")) {
+		const form = document.createElement("form");
+		form.id = "retrieval-form";
+		form.noValidate = true;
+		form.innerHTML = `
+      <label for="retrieval-q">Search term</label>
+      <input id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
+      <div class="hint">Searches code names and journal text.</div>
+      <button type="submit">Run search</button>
+      <div id="retrieval-results" class="analysis-results"><p class="hint">Enter a term and run search.</p></div>`;
+		wrap.appendChild(form);
+	}
+
+	const form = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
+	const input = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
+	const results = document.getElementById("retrieval-results");
+	if (!form || !input || !results) return;
+
+	// Prevent duplicate listeners in case of re-initialisation
+	form.replaceWith(form.cloneNode(true));
+	const newForm = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
+	const newInput = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
+	const newResults = document.getElementById("retrieval-results");
+
+	newForm.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const q = (newInput.value || "").trim();
+		if (!q) { newResults.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
+
+		newResults.innerHTML = '<p>Searching…</p>';
+		const res = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(state.projectId)}&q=${encodeURIComponent(q)}`);
+		const out = Array.isArray(res?.results) ? res.results : [];
+		updateJsonPanel({ query: q, results: out }, `retrieval-${state.projectId}.json`);
+
+		if (!out.length) {
+			newResults.innerHTML = '<p class="hint">No matches found.</p>';
+			return;
+		}
+
+		newResults.innerHTML = `
+      <ul class="analysis-list analysis-list--spaced" aria-live="polite">
+        ${out.map(r => `
+          <li>
+            <h5 class="analysis-subheading">
+              ${r.codes.map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join(" ")}
+            </h5>
+            <p>${highlightSnippet(r.snippet, q)}</p>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+	});
+}
+
+/**
+ * Wrap search matches with <mark>.
+ * @param {string} text
+ * @param {string} term
+ * @returns {string}
+ */
+function highlightSnippet(text, term) {
+	if (!text || !term) return escapeHtml(text || "");
+	const escTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return escapeHtml(text).replace(new RegExp(escTerm, "ig"), m => `<mark>${m}</mark>`);
+}
+
+/* --------------------------
+ * Export Analysis
+ * -------------------------- */
+/**
+ * Assemble an export payload (timeline + co-occurrence) and surface it in the JSON viewer.
+ * Users can then click "Download JSON" to save the file locally.
+ * @returns {Promise<void>}
+ */
+async function runExport() {
+	try {
+		const [timeline, cooc] = await Promise.all([
+			httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`),
+			httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`)
+		]);
+		const payload = {
+			projectId: state.projectId,
+			generatedAt: new Date().toISOString(),
+			timeline: timeline.timeline || [],
+			nodes: cooc.nodes || [],
+			links: cooc.links || []
+		};
+		updateJsonPanel(payload, `analysis-${state.projectId}.json`);
+		flash("Export ready in JSON panel. Use Download JSON.");
+	} catch (e) {
+		console.error(e);
+		flash("Failed to prepare export.");
+	}
+}
+
+/* --------------------------
+ * Wiring: attach to .analysis-btn[data-analysis] buttons
+ * -------------------------- */
+/**
+ * Initialise the Analysis tools panel:
+ *  - Delegates button clicks (timeline / co-occurrence / retrieval / export).
+ *  - Creates friendly placeholders and retrieval UI.
+ * Call this once in your page initialiser.
+ */
+function setupAnalysisTools() {
+	const panel = document.getElementById('analysis-panel') || document;
+	panel.addEventListener('click', (e) => {
+		const btn = e.target && typeof e.target.closest === 'function' ?
+			/** @type {HTMLElement|null} */ (e.target.closest('.analysis-btn[data-analysis]')) :
+			null;
+		if (!btn) return;
+		const mode = btn.dataset.analysis;
+		if (mode === 'timeline') return void runTimeline();
+		if (mode === 'co-occurrence') return void runCooccurrence();
+		if (mode === 'retrieval') return void setupRetrievalUI();
+		if (mode === 'export') return void runExport();
+	});
+
+	// Friendly placeholders, built only once:
+	ensureSection("analysis-timeline", "Timeline")
+		?.replaceChildren(elFromHTML('<p class="hint">Timeline not loaded yet.</p>'));
+	ensureSection("analysis-cooccurrence", "Code co-occurrence")
+		?.replaceChildren(elFromHTML('<p class="hint">Co-occurrence not loaded yet.</p>'));
+	setupRetrievalUI(); // creates the form + empty state if missing
+}
+
+// NOTE: Call setupAnalysisTools() from your main init() after state.projectId is set.
+// Example:
+// document.addEventListener("DOMContentLoaded", () => { /* set state.projectId ... */ setupAnalysisTools(); });
 
 /* =========================
  * Bootstrap
