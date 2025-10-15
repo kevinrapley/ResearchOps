@@ -60,12 +60,12 @@ import { aiRewrite } from "./ai-rewrite.js";
  * @returns {string}
  */
 function canonicalizePath(pathname) {
-	let p = pathname;
+	let p = pathname || "/";
 
 	// Collapse duplicate segment runs: /pages/pages/... -> /pages/...
 	p = p.replace(/\/(pages|components|partials|css|js|images|img|assets)\/(\1\/)+/g, "/$1/");
 
-	// Collapse any triple/double slashes (excluding scheme).
+	// Collapse any triple/double slashes (excluding scheme)
 	p = p.replace(/\/{2,}/g, "/");
 
 	// Remove trailing /index.html -> /
@@ -76,68 +76,48 @@ function canonicalizePath(pathname) {
 		p = p.slice(0, -1);
 	}
 
-	// Diagnostic: Airtable create capability
-	if (url.pathname === "/api/_diag/airtable") {
-		if (request.method === "OPTIONS") {
-			return new Response(null, { headers: service.corsHeaders(origin) });
-		}
-		if (request.method === "POST") {
-			return service.diagAirtableCreate(request, origin);
-		}
-		return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
-	}
-
-	return p;
+	return p; // <-- IMPORTANT: return only a string; no routing here
 }
 
 export async function routeRequest(service, request) {
-  const origin = request.headers.get("Origin") || "*";
-  const url = new URL(request.url);
-  const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase(); // normalize
+	const origin = request.headers.get("Origin") || "*";
+	const url = new URL(request.url);
+	const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase();
 
-  try {
-    // CORS preflight (optional)
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: service.corsHeaders(origin) });
-    }
+	try {
+		if (request.method === "OPTIONS") {
+			return new Response(null, { headers: service.corsHeaders(origin) });
+		}
 
-    /* ─────────────── Journals: list ─────────────── */
-    if (p === "/api/journal-entries" && request.method === "GET") {
-      return service.listJournalEntries(origin, url);   // <— pass (origin, url)
-    }
+		// Journals GET
+		if (p === "/api/journal-entries" && request.method === "GET") {
+			return service.listJournalEntries(origin, url);
+		}
 
-    /* ─────────────── Journals: create ─────────────── */
-    if (p === "/api/journal-entries" && request.method === "POST") {
-      return service.createJournalEntry(request, origin); // <— pass (request, origin)
-    }
+		// Journals POST
+		if (p === "/api/journal-entries" && request.method === "POST") {
+			return service.createJournalEntry(request, origin);
+		}
 
-    /* ─────────────── Journals: delete ─────────────── */
-    if (p.startsWith("/api/journal-entries/") && request.method === "DELETE") {
-      const entryId = decodeURIComponent(p.split("/").pop());
-      return service.deleteJournalEntry(origin, entryId); // <— pass (origin, entryId)
-    }
+		// Journals DELETE
+		if (p.startsWith("/api/journal-entries/") && request.method === "DELETE") {
+			const entryId = decodeURIComponent(p.split("/").pop());
+			return service.deleteJournalEntry(origin, entryId);
+		}
 
-    /* ─────────────── Diagnostics ─────────────── */
-    if (p === "/api/_diag/airtable" || p === "/api/diag/airtable") {
-      if (request.method === "GET" || request.method === "POST") {
-        return service.diagAirtableCreate(request, origin);
-      }
-      return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
-    }
-
-    // 404 JSON (no HTML)
-    return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
-      status: 404,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-    });
-  } catch (e) {
-    const msg = String(e?.message || e || "");
-    service?.log?.error?.("router.fatal", { err: msg, path: url.pathname, method: request.method });
-    return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
-      status: 500,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-    });
-  }
+		// 404 JSON (avoid HTML error page)
+		return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
+			status: 404,
+			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+		});
+	} catch (e) {
+		const msg = String(e?.message || e || "");
+		service?.log?.error?.("router.fatal", { err: msg, path: url.pathname, method: request.method });
+		return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
+			status: 500,
+			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+		});
+	}
 }
 
 /**
@@ -182,6 +162,16 @@ export async function handleRequest(request, env) {
 				status: 204,
 				headers: { ...service.corsHeaders(origin), "Access-Control-Max-Age": "600" }
 			});
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// Diagnostics (Airtable create capability)
+		// ─────────────────────────────────────────────────────────────────
+		if (
+			(url.pathname === "/api/_diag/airtable" || url.pathname === "/api/diag/airtable") &&
+			(request.method === "GET" || request.method === "POST")
+		) {
+			return service.diagAirtableCreate(request, origin);
 		}
 
 		// ─────────────────────────────────────────────────────────────────
@@ -243,14 +233,14 @@ export async function handleRequest(request, env) {
 
 		/* ─────────────── Memos ─────────────── */
 		if (url.pathname === "/api/memos" && request.method === "GET") {
-			return listMemos(service, origin, url);
+			return service.listMemos(origin, url);
 		}
 		if (url.pathname === "/api/memos" && request.method === "POST") {
-			return createMemo(service, request, origin);
+			return service.createMemo(request, origin);
 		}
 		if (url.pathname.startsWith("/api/memos/") && request.method === "PATCH") {
 			const memoId = decodeURIComponent(url.pathname.slice("/api/memos/".length));
-			return updateMemo(service, request, origin, memoId);
+			return service.updateMemo(request, origin, memoId);
 		}
 
 		/* ─────────────── Code Applications ─────────────── */
