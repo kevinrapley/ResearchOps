@@ -135,8 +135,6 @@
 	margin-left: 6px;
 	}
 
-/* transparency begins in the cascade */
-
 /* Category-specific border colours */
 .entry-card[data-category="perceptions"] {
 	border-left-color: #1d70b8;
