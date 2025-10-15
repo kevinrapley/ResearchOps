@@ -167,9 +167,15 @@ export async function handleRequest(request, env) {
 	try {
 		// CORS preflight
 		if (request.method === "OPTIONS") {
+			const origin = request.headers.get("Origin") || "";
 			return new Response(null, {
 				status: 204,
-				headers: { ...service.corsHeaders(origin), "Access-Control-Max-Age": "600" }
+				headers: {
+					...service.corsHeaders(origin),
+					"Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					"Access-Control-Max-Age": "86400",
+				}
 			});
 		}
 
