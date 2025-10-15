@@ -1090,6 +1090,18 @@ function setupAnalysisTools() {
  * Bootstrap
  * ========================= */
 
+// Back-compat: satisfy older calls to loadAnalysis()
+function loadAnalysis() {
+  try {
+    // Ensure the analysis buttons, placeholders, and retrieval form are wired
+    if (typeof setupAnalysisTools === "function") setupAnalysisTools();
+  } catch (e) {
+    console.debug("[analysis] loadAnalysis noop/shim failed:", e);
+  }
+  // Keep a promise interface if callers await it
+  return Promise.resolve();
+}
+
 /**
  * Entry-point: reads project id, wires UI, and loads initial data.
  * @returns {Promise<void>}
