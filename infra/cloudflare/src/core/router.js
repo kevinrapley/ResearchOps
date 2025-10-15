@@ -76,21 +76,21 @@ function canonicalizePath(pathname) {
 		p = p.slice(0, -1);
 	}
 
+	const rawPath = url.pathname || "/";
+	const p = rawPath.replace(/\/+$/, "").toLowerCase(); // strip trailing slashes + case-fold
+
+	// Diagnostic: Airtable create capability
+	if (url.pathname === "/api/_diag/airtable") {
+		if (request.method === "OPTIONS") {
+			return new Response(null, { headers: service.corsHeaders(origin) });
+		}
+		if (request.method === "POST") {
+			return service.diagAirtableCreate(request, origin);
+		}
+		return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
+	}
+
 	return p;
-}
-
-const rawPath = url.pathname || "/";
-const p = rawPath.replace(/\/+$/, "").toLowerCase(); // strip trailing slashes + case-fold
-
-// Diagnostic: Airtable create capability
-if (url.pathname === "/api/_diag/airtable") {
-	if (request.method === "OPTIONS") {
-		return new Response(null, { headers: service.corsHeaders(origin) });
-	}
-	if (request.method === "POST") {
-		return service.diagAirtableCreate(request, origin);
-	}
-	return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
 }
 
 /**
