@@ -369,9 +369,15 @@ export async function handleRequest(request, env) {
 			);
 		}
 
-		// ...
-		if (url.pathname === "/api/_diag/airtable" && request.method === "POST") {
-			return service.diagAirtableCreate(request, origin);
+		// Diagnostic: Airtable create capability
+		if (url.pathname === "/api/_diag/airtable") {
+			if (request.method === "OPTIONS") {
+				return new Response(null, { headers: service.corsHeaders(origin) });
+			}
+			if (request.method === "POST") {
+				return service.diagAirtableCreate(request, origin);
+			}
+			return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
 		}
 
 		// ─────────────────────────────────────────────────────────────────
