@@ -369,6 +369,11 @@ export async function handleRequest(request, env) {
 			);
 		}
 
+		// ...
+		if (url.pathname === "/api/_diag/airtable" && request.method === "POST") {
+			return service.diagAirtableCreate(request, origin);
+		}
+
 		// ─────────────────────────────────────────────────────────────────
 		// Static assets with SPA fallback
 		// ─────────────────────────────────────────────────────────────────
