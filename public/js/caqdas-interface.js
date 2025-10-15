@@ -606,6 +606,7 @@ function renderCooccurrence(graph) {
  */
 async function init() {
 	const url = new URL(location.href);
+	project: state.projectId,
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
 
 	if (!state.projectId) {
