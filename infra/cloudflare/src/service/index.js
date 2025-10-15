@@ -19,6 +19,7 @@ import * as Csv from "./csv.js";
 
 /* Reflexive Journals */
 import * as Journals from "./journals.js";
+import * as Excerpts from "./excerpts.js";
 import * as Memos from "./memos.js";
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
@@ -125,6 +126,11 @@ export class ResearchOpsService {
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
+
+	/* ─────────────── Excerpts ─────────────── */
+	listExcerpts = (origin, url) => Excerpts.listExcerpts(this, origin, url);
+	createExcerpt = (req, origin) => Excerpts.createExcerpt(this, req, origin);
+	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, req, origin, excerptId);
 
 	/* ─────────────── Memos ─────────────── */
 	listMemos = (origin, url) => Memos.listMemos(this, origin, url);
