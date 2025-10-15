@@ -114,6 +114,20 @@ export async function handleRequest(request, env) {
 		url.pathname = canonical;
 	}
 
+	const rawPath = url.pathname || "/";
+	const p = rawPath.replace(/\/+$/, "").toLowerCase(); // strip trailing slashes + case-fold
+
+	// Diagnostic: Airtable create capability
+	if (url.pathname === "/api/_diag/airtable") {
+		if (request.method === "OPTIONS") {
+			return new Response(null, { headers: service.corsHeaders(origin) });
+		}
+		if (request.method === "POST") {
+			return service.diagAirtableCreate(request, origin);
+		}
+		return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
+	}
+
 	try {
 		// CORS preflight
 		if (request.method === "OPTIONS") {
@@ -367,17 +381,6 @@ export async function handleRequest(request, env) {
 				404,
 				service.corsHeaders(origin)
 			);
-		}
-
-		// Diagnostic: Airtable create capability
-		if (url.pathname === "/api/_diag/airtable") {
-			if (request.method === "OPTIONS") {
-				return new Response(null, { headers: service.corsHeaders(origin) });
-			}
-			if (request.method === "POST") {
-				return service.diagAirtableCreate(request, origin);
-			}
-			return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
 		}
 
 		// ─────────────────────────────────────────────────────────────────
