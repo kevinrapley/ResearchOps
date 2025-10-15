@@ -4,6 +4,48 @@
  * @summary Journals/CAQDAS UI: tabs, entries, codes, memos, analysis.
  */
 
+import { initJournalExcerpts } from "/components/journal-excerpts.js";
+
+const entryForm = document.getElementById("entry-form");
+const entryTextarea = document.getElementById("entry-content");
+
+let excerptMgr = null;
+
+function initExcerpts(entryId) {
+	excerptMgr = initJournalExcerpts({
+		entryId, // supply the real entry id after save
+		textarea: "#entry-content",
+		list: "#excerpts-list",
+		addBtn: "#btn-add-excerpt"
+	});
+
+	entryTextarea.addEventListener("excerpt:created", (e) => {
+		// Persist a single excerpt (POST)
+		// fetch("/api/journal/excerpts", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify(e.detail.excerpt) });
+	});
+
+	entryTextarea.addEventListener("excerpts:changed", (e) => {
+		// Optionally persist the whole set
+		// fetch("/api/journal/excerpts/sync", { method: "PUT", headers: {"content-type":"application/json"}, body: JSON.stringify(e.detail.excerpts) });
+	});
+}
+
+/* Example: after a new entry is saved, call initExcerpts with the returned id */
+document.getElementById("add-entry-form")?.addEventListener("submit", async (ev) => {
+	ev.preventDefault();
+	const form = ev.currentTarget;
+	const payload = {
+		category: form.category.value,
+		content: form.content.value,
+		tags: form.tags.value
+	};
+	// const res = await fetch("/api/journal/entries", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify(payload) });
+	// const saved = await res.json();
+
+	const fakeId = crypto.randomUUID(); // replace with saved.id
+	if (!excerptMgr) initExcerpts(fakeId);
+});
+
 /* =========================
  * Config + tiny helpers
  * ========================= */
@@ -128,7 +170,7 @@ function flash(msg) {
  * @typedef {Object} Code
  * @property {string} id
  * @property {string} name
- * @property {string} [color]
+ * @property {string} [colour]
  * @property {string} [description]
  */
 
@@ -505,16 +547,16 @@ function setupAddCodeWiring() {
 			flash("Please enter a code name.");
 			return;
 		}
-		
+
 		/** @type {{
-     	*  name: string;
-     	*  projectId: string|null;
-     	*  colour?: string;
-     	*  description?: string;
-     	*  parentId?: string;
-     	*  linked_memos?: string[];
-     	*  linked_entries?: string[];
-     	* }} */
+		 *  name: string;
+		 *  projectId: string|null;
+		 *  colour?: string;
+		 *  description?: string;
+		 *  parentId?: string;
+		 *  linked_memos?: string[];
+		 *  linked_entries?: string[];
+		 * }} */
 		const payload = {
 			name,
 			projectId: state.projectId,
@@ -1101,14 +1143,14 @@ function setupAnalysisTools() {
 
 // Back-compat: satisfy older calls to loadAnalysis()
 function loadAnalysis() {
-  try {
-    // Ensure the analysis buttons, placeholders, and retrieval form are wired
-    if (typeof setupAnalysisTools === "function") setupAnalysisTools();
-  } catch (e) {
-    console.debug("[analysis] loadAnalysis noop/shim failed:", e);
-  }
-  // Keep a promise interface if callers await it
-  return Promise.resolve();
+	try {
+		// Ensure the analysis buttons, placeholders, and retrieval form are wired
+		if (typeof setupAnalysisTools === "function") setupAnalysisTools();
+	} catch (e) {
+		console.debug("[analysis] loadAnalysis noop/shim failed:", e);
+	}
+	// Keep a promise interface if callers await it
+	return Promise.resolve();
 }
 
 /**
