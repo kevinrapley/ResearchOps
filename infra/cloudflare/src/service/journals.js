@@ -5,7 +5,7 @@
  */
 
 import { fetchWithTimeout, safeText, toMs, mdToAirtableRich } from "../core/utils.js";
-import { airtableCreate, isTableId, listAll, getRecord, createRecords, patchRecords, deleteRecord } from "./internals/airtable.js";
+import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from "./internals/airtable.js";
 
 /**
  * List journal entries for a project.
