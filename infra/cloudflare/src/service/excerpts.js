@@ -18,7 +18,7 @@
  */
 
 import { airtable } from "../lib/airtable.js";
-import { jsonResponse } from "../lib/http.js";
+import { json as jsonHelper } from "./internals/responders.js";
 
 /* ──────────────── CREATE ──────────────── */
 /**
