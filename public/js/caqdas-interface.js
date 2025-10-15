@@ -9,25 +9,55 @@ import { initJournalExcerpts } from "/components/journal-excerpts.js";
 const entryForm = document.getElementById("entry-form");
 const entryTextarea = document.getElementById("entry-content");
 
-let excerptMgr = null;
+// After saving a journal entry, initialise with real entry id
+let excerptMgr;
 
-function initExcerpts(entryId) {
+function bootExcerpts(entryId) {
 	excerptMgr = initJournalExcerpts({
-		entryId, // supply the real entry id after save
+		entryId,
 		textarea: "#entry-content",
 		list: "#excerpts-list",
 		addBtn: "#btn-add-excerpt"
 	});
 
-	entryTextarea.addEventListener("excerpt:created", (e) => {
-		// Persist a single excerpt (POST)
-		// fetch("/api/journal/excerpts", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify(e.detail.excerpt) });
+	const textarea = document.getElementById("entry-content");
+
+	textarea.addEventListener("excerpt:created", async (e) => {
+		const payload = e.detail.excerpt;
+		// POST create
+		await fetch("/api/journal/excerpts", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(payload)
+		});
 	});
 
-	entryTextarea.addEventListener("excerpts:changed", (e) => {
-		// Optionally persist the whole set
-		// fetch("/api/journal/excerpts/sync", { method: "PUT", headers: {"content-type":"application/json"}, body: JSON.stringify(e.detail.excerpts) });
+	textarea.addEventListener("excerpts:changed", async (e) => {
+		// Optional: batch sync here if you prefer
 	});
+
+	// On load (edit mode), pull existing ones:
+	// const res = await fetch(`/api/journal/excerpts?entry=${encodeURIComponent(entryId)}`);
+	// const { records } = await res.json();
+	// excerptMgr.setExcerpts(records.records?.map(r => airtableToExcerpt(r)) ?? []);
+}
+
+// Map Airtable record → excerpt object if you render from server
+function airtableToExcerpt(r) {
+	const f = r.fields || {};
+	return {
+		id: r.id,
+		entryId: Array.isArray(f["Entry ID"]) ? f["Entry ID"][0] : f["Entry ID"],
+		start: f["Start"],
+		end: f["End"],
+		text: f["Text"],
+		createdAt: f["Created At"],
+		author: f["Author"] ?? null,
+		codes: f["Codes"] ?? [],
+		memos: f["Memos"] ?? [],
+		muralWidgetId: f["Mural Widget ID"] ?? "",
+		syncedAt: f["Synced At"] ?? null
+	};
 }
 
 /* Example: after a new entry is saved, call initExcerpts with the returned id */
