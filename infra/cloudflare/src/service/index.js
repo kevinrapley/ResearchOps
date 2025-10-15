@@ -20,7 +20,6 @@ import * as Csv from "./csv.js";
 /* Reflexive Journals */
 import * as Journals from "./journals.js";
 import * as Memos from "./memos.js";
-import * as Memos from "./reflection/memos.js"
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
 import * as Analysis from "./reflection/analysis.js";
