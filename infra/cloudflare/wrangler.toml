@@ -1,40 +1,40 @@
-name = "rops-api"
-main = "src/worker.js"
-compatibility_date = "2025-09-26"
+name                             = "rops-api"
+main                             = "src/worker.js"
+compatibility_date               = "2025-09-26"
 
 [assets]
-binding = "ASSETS"
-directory = "../../public"
+binding                          = "ASSETS"
+directory                        = "../../public"
 
 [ai]
-binding = "AI"
+binding                          = "AI"
 
 [vars]
-MODEL = "@cf/meta/llama-3.1-8b-instruct"
-AIRTABLE_TABLE_AI_LOG = "AI_Usage"
+MODEL                            = "@cf/meta/llama-3.1-8b-instruct"
+AIRTABLE_TABLE_AI_LOG            = "AI_Usage"
 
 # CORS
-ALLOWED_ORIGINS = "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
+ALLOWED_ORIGINS                  = "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
 
 # Airtable
-AIRTABLE_BASE_ID = "appkpzVvkof4RFtkh"
-AIRTABLE_TABLE_PROJECTS = "Projects"
-AIRTABLE_TABLE_DETAILS  = "Project Details"
-AIRTABLE_TABLE_JOURNALS = "Journal Entries"
-AIRTABLE_TABLE_STUDIES    = "Project Studies"
-AIRTABLE_TABLE_GUIDES = "Discussion Guides"
-AIRTABLE_TABLE_PARTIALS = "Partials"
-AIRTABLE_TABLE_CODES = "Codes"
+AIRTABLE_BASE_ID                 = "appkpzVvkof4RFtkh"
+AIRTABLE_TABLE_PROJECTS          = "Projects"
+AIRTABLE_TABLE_DETAILS           = "Project Details"
+AIRTABLE_TABLE_JOURNALS          = "Journal Entries"
+AIRTABLE_TABLE_STUDIES.          = "Project Studies"
+AIRTABLE_TABLE_GUIDES            = "Discussion Guides"
+AIRTABLE_TABLE_PARTIALS          = "Partials"
+AIRTABLE_TABLE_CODES             = "Codes"
 AIRTABLE_TABLE_CODE_APPLICATIONS = "Code Applications"
 AUDIT = "true"
 
 # GitHub CSV repo details
-GH_OWNER = "kevinrapley"
-GH_REPO = "ResearchOps"
-GH_BRANCH = "main"
-GH_PATH_PROJECTS = "data/projects.csv"
-GH_PATH_DETAILS  = "data/project-details.csv"
-GH_PATH_STUDIES  = "data/studies.csv"
+GH_OWNER                         = "kevinrapley"
+GH_REPO                          = "ResearchOps"
+GH_BRANCH                        = "main"
+GH_PATH_PROJECTS                 = "data/projects.csv"
+GH_PATH_DETAILS                  = "data/project-details.csv"
+GH_PATH_STUDIES                  = "data/studies.csv"
 
 # Route binding
 routes = [
