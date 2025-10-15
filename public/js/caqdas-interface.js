@@ -431,22 +431,53 @@ function renderCodes() {
 }
 
 /**
- * Wires the Codes panel quick-add flow.
- * Expects: #new-code-btn, #code-form (hidden), #save-code-btn, #cancel-code-btn, inputs #code-name, #code-color, #code-description, optional #code-parent.
+ * @function setupAddCodeWiring
+ * @description
+ * Handles all client-side interactions for the “Add Code” workflow, including:
+ *  - Displaying and hiding the code creation form.
+ *  - Submitting new code data to the API.
+ *  - Resetting form fields and refreshing the code list.
+ *
+ * Expected HTML structure:
+ * ```html
+ * <button id="new-code-btn" type="button">+ Add Code</button>
+ *
+ * <form id="code-form" hidden novalidate>
+ *   <label for="code-name">Code name</label>
+ *   <input id="code-name" name="name" />
+ *
+ *   <label for="code-color">Color</label>
+ *   <input id="code-color" name="color" />
+ *
+ *   <label for="code-description">Description</label>
+ *   <textarea id="code-description" name="description"></textarea>
+ *
+ *   <label for="code-parent">Parent code</label>
+ *   <input id="code-parent" name="parent" />
+ *
+ *   <button id="save-code-btn" type="submit">Save</button>
+ *   <button id="cancel-code-btn" type="button">Cancel</button>
+ * </form>
+ * ```
+ *
+ * Dependencies:
+ *  - `state.projectId` : global identifier for the current project
+ *  - `httpJSON(url, init)` : JSON fetch helper
+ *  - `loadCodes()` : refreshes code list
+ *  - `flash(msg)` : small UI message banner
  */
 function setupAddCodeWiring() {
-	const btn = $("#new-code-btn");
-	const form = $("#code-form");
-	const nameInput = $("#code-name");
-	const colorInput = $("#code-color");
-	const descInput = $("#code-description");
-	const parentInput = $("#code-parent"); // optional
-	const saveBtn = $("#save-code-btn");
-	const cancelBtn = $("#cancel-code-btn");
+	const btn = document.getElementById("new-code-btn");
+	const form = document.getElementById("code-form");
+	const nameInput = document.getElementById("code-name");
+	const colorInput = document.getElementById("code-color");
+	const descInput = document.getElementById("code-description");
+	const parentInput = document.getElementById("code-parent");
+	const cancelBtn = document.getElementById("cancel-code-btn");
 
 	/**
-	 * Shows/hides the inline code form.
-	 * @param {boolean} show
+	 * Toggle form visibility.
+	 * @param {boolean} show - True to show form, false to hide it.
 	 */
 	function showForm(show) {
 		if (!form) return;
@@ -454,50 +485,63 @@ function setupAddCodeWiring() {
 		if (show) nameInput?.focus();
 	}
 
-	if (btn) {
-		btn.addEventListener("click", () => showForm(form?.hidden ?? true));
-	}
+	btn?.addEventListener("click", () => showForm(form?.hidden ?? true));
 
-	if (cancelBtn) {
-		cancelBtn.addEventListener("click", (e) => {
-			e.preventDefault();
+	cancelBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		showForm(false);
+	});
+
+	/**
+	 * Handle form submission for creating a new code.
+	 * @param {SubmitEvent} e
+	 */
+	form?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const name = (nameInput?.value || "").trim();
+		if (!name) {
+			flash("Please enter a code name.");
+			return;
+		}
+
+		const payload = {
+			name,
+			projectId: state.projectId,
+			color: (colorInput?.value || "").trim(),
+			description: (descInput?.value || "").trim(),
+			parentId: (parentInput?.value || "").trim()
+		};
+
+		try {
+			await httpJSON("/api/codes", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+
+			// Reset inputs
+			if (nameInput) nameInput.value = "";
+			if (colorInput) colorInput.value = "";
+			if (descInput) descInput.value = "";
+			if (parentInput) parentInput.value = "";
+
 			showForm(false);
-		});
-	}
+			flash(`Code “${payload.name}” created.`);
+			await loadCodes();
 
-	if (saveBtn) {
-		saveBtn.addEventListener("click", async (e) => {
-			e.preventDefault();
-			const name = ( /** @type {HTMLInputElement|null} */ (nameInput))?.value?.trim() || "";
-			if (!name) { flash("Please enter a code name."); return; }
-
-			const payload = {
-				name,
-				projectId: state.projectId,
-				color: ( /** @type {HTMLInputElement|null} */ (colorInput))?.value?.trim() || "",
-				description: ( /** @type {HTMLInputElement|null} */ (descInput))?.value?.trim() || "",
-				parentId: ( /** @type {HTMLInputElement|null} */ (parentInput))?.value?.trim() || ""
-			};
-
-			try {
-				await httpJSON("/api/codes", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify(payload)
-				});
-				if (nameInput) nameInput.value = "";
-				if (colorInput) colorInput.value = "";
-				if (descInput) descInput.value = "";
-				if (parentInput) parentInput.value = "";
-				showForm(false);
-				flash(`Code “${payload.name}” created.`);
-				await loadCodes();
-			} catch (err) {
-				console.error(err);
-				flash(`Could not create code. ${err?.message || ""}`.trim());
+			// Clean any accidental query params left by browser autofill
+			if (location.search.includes("name=")) {
+				const url = new URL(location.href);
+				["name", "definition", "color", "parent"].forEach(p => url.searchParams.delete(p));
+				history.replaceState(null, "", url.toString());
 			}
-		});
-	}
+		} catch (err) {
+			console.error(err);
+			flash("Could not create code.");
+		}
+	});
 }
 
 /* =========================
@@ -1019,7 +1063,8 @@ function setupAnalysisTools() {
 	const panel = document.getElementById('analysis-panel') || document;
 	panel.addEventListener('click', (e) => {
 		const btn = e.target && typeof e.target.closest === 'function' ?
-			/** @type {HTMLElement|null} */ (e.target.closest('.analysis-btn[data-analysis]')) :
+			/** @type {HTMLElement|null} */
+			(e.target.closest('.analysis-btn[data-analysis]')) :
 			null;
 		if (!btn) return;
 		const mode = btn.dataset.analysis;
