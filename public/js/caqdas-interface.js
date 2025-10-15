@@ -314,7 +314,9 @@ function setupNewEntryWiring() {
 			e.preventDefault();
 			const fd = new FormData( /** @type {HTMLFormElement} */ (form));
 			const payload = {
-				project_airtable_id: state.projectId,
+				// send BOTH keys so your Worker can accept either format
+				project: state.projectId, // <— add this
+				project_airtable_id: state.projectId, // keep this for backward compat
 				category: (fd.get("category") || "").toString(),
 				content: (fd.get("content") || "").toString(),
 				tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
