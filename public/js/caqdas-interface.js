@@ -1,40 +1,54 @@
 /**
  * @file caqdas-interface.js
- * @summary Journals / CAQDAS UI wiring: codes, memos, timeline, co-occurrence, retrieval, export, and code applications list.
- * @description
- *  - Buttons:
- *    + Add Code            → POST /api/codes
- *    + New Memo            → POST /api/memos?project=…
- *    📊 Timeline View      → GET  /api/analysis/timeline?project=…
- *    🔗 Code Co-occurrence → GET  /api/analysis/cooccurrence?project=…
- *    🔍 Code Retrieval     → GET  /api/analysis/retrieval?project=…&q=…
- *    📤 Export Analysis    → GET  /api/analysis/export?project=… (download)
- *    (Also) Code Applications list → GET /api/code-applications?project=…
- *
- *  - Rendering targets (create these containers in your HTML if not present):
- *      <ul id="codes-list"></ul>
- *      <section id="timeline"></section>
- *      <section id="cooccurrence"></section>
- *      <section id="retrieval"></section>
- *      <ul id="code-applications-list"></ul>
- *
- *  - Button IDs expected:
- *      #btn-add-code
- *      #btn-new-memo
- *      #btn-timeline
- *      #btn-cooccurrence
- *      #btn-retrieval
- *      #btn-export-analysis
- *
- *  - This file is self-contained and defensive: it will not throw; it flashes user-friendly messages.
+ * @module CAQDASInterface
+ * @summary Journals/CAQDAS UI: tabs, entries, codes, memos, analysis, export.
  */
 
-/* -------------------- tiny DOM helpers -------------------- */
+/* =========================
+ * Config + tiny helpers
+ * ========================= */
+const CONFIG = Object.freeze({
+	API_BASE: window.location.origin,
+	TIMEOUT_MS: 15000
+});
+
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-/* -------------------- flash region (accessible) -------------------- */
-function flash(message) {
+async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
+	const ctrl = new AbortController();
+	const t = setTimeout(() => ctrl.abort(), timeoutMs);
+	try {
+		return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init });
+	} finally {
+		clearTimeout(t);
+	}
+}
+
+async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
+	const res = await fetchWithTimeout(url, init, timeoutMs);
+	if (!res.ok) {
+		const detail = await res.text().catch(() => "");
+		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
+	}
+	const ct = (res.headers.get("content-type") || "").toLowerCase();
+	return ct.includes("application/json") ? res.json() : {};
+}
+
+function escapeHtml(s) {
+	if (!s) return "";
+	const d = document.createElement("div");
+	d.textContent = s;
+	return d.innerHTML;
+}
+
+function formatWhen(iso) {
+	if (!iso) return "—";
+	const d = new Date(iso);
+	return d.toLocaleString();
+}
+
+function flash(msg) {
 	let el = $("#flash");
 	if (!el) {
 		el = document.createElement("div");
@@ -45,380 +59,408 @@ function flash(message) {
 		el.style.padding = "12px";
 		el.style.border = "1px solid #d0d7de";
 		el.style.background = "#fff";
-		document.querySelector("main")?.prepend(el);
+		$("main")?.prepend(el);
 	}
-	el.textContent = message;
+	el.textContent = msg;
 }
 
-/* -------------------- fetch helpers -------------------- */
-async function httpJSON(url, opts = {}, timeoutMs = 30000) {
-	const ctrl = new AbortController();
-	const t = setTimeout(() => ctrl.abort(), timeoutMs);
-	let res;
+/* =========================
+ * State
+ * ========================= */
+const state = {
+	projectId: null,
+	currentTab: "journal",
+	entries: [],
+	codes: [],
+	memos: [],
+	analysis: { timeline: [], graph: { nodes: [], links: [] }, results: [] }
+};
+
+/* =========================
+ * Tabs (1) currentTarget fix
+ * ========================= */
+function setupTabs() {
+	$$('[role="tab"]').forEach(tab => {
+		tab.addEventListener("click", (e) => {
+			const id = e.currentTarget.id || ""; // ← important
+			const tabName = id.replace("-tab", "");
+			switchTab(tabName);
+		});
+	});
+}
+
+function switchTab(name) {
+	state.currentTab = name;
+
+	$$('[role="tab"]').forEach(tab => {
+		tab.setAttribute("aria-selected", tab.id === `${name}-tab`);
+	});
+	$$('[role="tabpanel"]').forEach(panel => {
+		panel.hidden = panel.id !== `${name}-panel`;
+	});
+
+	// load per tab
+	if (name === "journal") loadEntries();
+	if (name === "codes") loadCodes();
+	if (name === "memos") loadMemos();
+	if (name === "analysis") loadAnalysis();
+}
+
+/* =========================
+ * Journal (+ New entry) (2)
+ * ========================= */
+async function loadEntries() {
+	if (!state.projectId) return;
 	try {
-		res = await fetch(url, { cache: "no-store", signal: ctrl.signal, ...opts });
-	} finally {
-		clearTimeout(t);
-	}
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
-	}
-	const ct = (res.headers.get("content-type") || "").toLowerCase();
-	if (!ct.includes("application/json")) return {};
-	return res.json();
-}
-
-/* -------------------- renderers -------------------- */
-function renderCodes(list) {
-	const ul = $("#codes-list");
-	if (!ul) return;
-	ul.innerHTML = "";
-	if (!Array.isArray(list) || !list.length) {
-		const li = document.createElement("li");
-		li.textContent = "No codes yet.";
-		ul.appendChild(li);
-		return;
-	}
-	for (const c of list) {
-		const li = document.createElement("li");
-		li.textContent = c.name || "—";
-		if (c.color) {
-			li.style.borderLeft = `8px solid ${c.color}`;
-			li.style.paddingLeft = "8px";
-		}
-		ul.appendChild(li);
+		const data = await httpJSON(`/api/journal-entries?project=${encodeURIComponent(state.projectId)}`);
+		state.entries = Array.isArray(data?.entries) ? data.entries : [];
+		renderEntries();
+	} catch (e) {
+		console.error(e);
+		flash("Could not load journal entries.");
 	}
 }
 
-function renderTimeline(entries) {
-	const wrap = $("#timeline");
+function renderEntries() {
+	const wrap = $("#journal-entries");
 	if (!wrap) return;
-	wrap.innerHTML = "";
-	if (!Array.isArray(entries) || !entries.length) {
-		wrap.textContent = "No journal entries yet.";
+
+	if (!state.entries.length) {
+		wrap.innerHTML = "<p>No journal entries yet.</p>";
 		return;
 	}
-	for (const e of entries) {
-		const item = document.createElement("article");
-		item.className = "entry";
 
-		const h = document.createElement("h4");
-		const when = e.createdAt ? new Date(e.createdAt) : new Date();
-		h.textContent = when.toLocaleString();
+	wrap.innerHTML = state.entries.map(en => `
+		<article class="journal-card" data-id="${en.id}">
+			<header class="journal-header">
+				<strong>${escapeHtml(en.category || "—")}</strong>
+				<time>${formatWhen(en.createdAt)}</time>
+			</header>
+			<p>${escapeHtml(en.content || en.body || "")}</p>
+			<footer class="journal-footer">
+				<button class="btn btn--secondary btn-small" data-act="delete" data-id="${en.id}">Delete</button>
+			</footer>
+		</article>
+		`).join("");
 
-		const p = document.createElement("p");
-		p.textContent = e.body || "—";
+	// delete handlers
+	$$('[data-act="delete"]', wrap).forEach(btn => {
+		btn.addEventListener("click", onDeleteEntry);
+	});
+}
 
-		if (Array.isArray(e.codeIds) && e.codeIds.length) {
-			const meta = document.createElement("div");
-			meta.style.fontSize = "0.9em";
-			meta.style.opacity = "0.8";
-			meta.textContent = `Codes: ${e.codeIds.join(", ")}`;
-			item.appendChild(meta);
-		}
+async function onDeleteEntry(e) {
+	const id = e.currentTarget.dataset.id;
+	if (!id) return;
+	if (!confirm("Delete this entry?")) return;
 
-		item.appendChild(h);
-		item.appendChild(p);
-		wrap.appendChild(item);
+	try {
+		await httpJSON(`/api/journal-entries/${encodeURIComponent(id)}`, { method: "DELETE" });
+		flash("Entry deleted.");
+		await loadEntries();
+	} catch (err) {
+		console.error(err);
+		flash("Could not delete entry.");
 	}
+}
+
+function setupNewEntryWiring() {
+	const form = $("#add-entry-form");
+	const toggleBtn = $("#toggle-form-btn");
+	const cancelBtn = $("#cancel-form-btn");
+	const section = $("#add-entry-section");
+
+	function toggleForm(force) {
+		const show = typeof force === "boolean" ? force : section.hidden;
+		section.hidden = !show;
+		if (show) $("#entry-content")?.focus();
+	}
+
+	if (toggleBtn) {
+		toggleBtn.addEventListener("click", () => toggleForm());
+	}
+	if (cancelBtn) {
+		cancelBtn.addEventListener("click", () => toggleForm(false));
+	}
+	if (form) {
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const fd = new FormData(form);
+			const payload = {
+				project_airtable_id: state.projectId,
+				category: (fd.get("category") || "").toString(),
+				content: (fd.get("content") || "").toString(),
+				tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
+			};
+			if (!payload.category || !payload.content) {
+				flash("Category and content are required.");
+				return;
+			}
+			try {
+				await httpJSON("/api/journal-entries", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
+				});
+				form.reset();
+				toggleForm(false);
+				flash("Entry saved.");
+				await loadEntries();
+			} catch (err) {
+				console.error(err);
+				flash("Could not save entry.");
+			}
+		});
+	}
+}
+
+/* =========================
+ * Codes (+ Add Code) (3)
+ * ========================= */
+async function loadCodes() {
+	if (!state.projectId) return;
+	try {
+		const data = await httpJSON(`/api/codes?project=${encodeURIComponent(state.projectId)}`);
+		state.codes = Array.isArray(data?.codes) ? data.codes : [];
+		renderCodes();
+	} catch (e) {
+		console.error(e);
+		flash("Could not load codes.");
+	}
+}
+
+function renderCodes() {
+	const wrap = $("#codes-container");
+	if (!wrap) return;
+
+	if (!state.codes.length) {
+		wrap.innerHTML = "<p>No codes yet.</p>";
+		return;
+	}
+
+	wrap.innerHTML = state.codes.map(c => `
+		<article class="code-card" data-id="${c.id}">
+			<header>
+				<span class="code-swatch" style="background-color:${c.color || "#505a5f"};"></span>
+				<strong>${escapeHtml(c.name || "—")}</strong>
+			</header>
+			${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
+		</article>
+		`).join("");
+}
+
+function setupAddCodeWiring() {
+	const btn = $("#new-code-btn"); // trigger button
+	const form = $("#code-form"); // small inline form container
+	const nameInput = $("#code-name");
+	const colorInput = $("#code-color");
+	const descInput = $("#code-description");
+	const parentInput = $("#code-parent"); // optional
+	const saveBtn = $("#save-code-btn");
+	const cancelBtn = $("#cancel-code-btn");
+
+	function showForm(show) {
+		if (!form) return;
+		form.hidden = !show;
+		if (show) nameInput?.focus();
+	}
+
+	if (btn) {
+		btn.addEventListener("click", () => showForm(form?.hidden ?? true));
+	}
+
+	if (cancelBtn) {
+		cancelBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			showForm(false);
+		});
+	}
+
+	if (saveBtn) {
+		saveBtn.addEventListener("click", async (e) => {
+			e.preventDefault();
+			const name = (nameInput?.value || "").trim();
+			if (!name) { flash("Please enter a code name."); return; }
+
+			const payload = {
+				name,
+				projectId: state.projectId,
+				color: (colorInput?.value || "").trim(),
+				description: (descInput?.value || "").trim(),
+				parentId: (parentInput?.value || "").trim()
+			};
+
+			try {
+				await httpJSON("/api/codes", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
+				});
+				nameInput && (nameInput.value = "");
+				colorInput && (colorInput.value = "");
+				descInput && (descInput.value = "");
+				parentInput && (parentInput.value = "");
+				showForm(false);
+				flash(`Code “${payload.name}” created.`);
+				await loadCodes();
+			} catch (err) {
+				console.error(err);
+				flash("Could not create code.");
+			}
+		});
+	}
+}
+
+/* =========================
+ * Memos (4) load immediately
+ * ========================= */
+async function loadMemos() {
+	if (!state.projectId) return;
+	try {
+		const data = await httpJSON(`/api/memos?project=${encodeURIComponent(state.projectId)}`);
+		state.memos = Array.isArray(data?.memos) ? data.memos : [];
+		renderMemos();
+	} catch (e) {
+		console.error(e);
+		renderMemos(true);
+	}
+}
+
+function renderMemos(error = false) {
+	const wrap = $("#memos-container");
+	if (!wrap) return;
+
+	if (error) {
+		wrap.innerHTML = "<p>Could not load memos.</p>";
+		return;
+	}
+	if (!state.memos.length) {
+		wrap.innerHTML = "<p>No memos yet.</p>";
+		return;
+	}
+
+	wrap.innerHTML = state.memos.map(m => `
+		<article class="memo-card">
+			<header>
+				<strong>${escapeHtml(m.memoType || "Memo")}</strong>
+				<time>${formatWhen(m.createdAt)}</time>
+			</header>
+			<p>${escapeHtml(m.content || "")}</p>
+		</article>
+		`).join("");
+}
+
+/* =========================
+ * Analysis (4) load immediately
+ * ========================= */
+async function loadAnalysis() {
+	if (!state.projectId) return;
+
+	const timelineSel = $("#analysis-timeline");
+	const coocSel = $("#analysis-cooccurrence");
+	const retrievalSel = $("#analysis-retrieval");
+
+	// set placeholders so UI "feels alive"
+	timelineSel && (timelineSel.innerHTML = "<p>Loading timeline…</p>");
+	coocSel && (coocSel.innerHTML = "<p>Loading co-occurrence…</p>");
+	retrievalSel && (retrievalSel.innerHTML = "<p>Ready for search.</p>");
+
+	try {
+		// timeline
+		const t = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
+		state.analysis.timeline = Array.isArray(t?.timeline) ? t.timeline : [];
+		renderTimeline(state.analysis.timeline);
+
+		// co-occurrence
+		const g = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
+		state.analysis.graph = { nodes: g.nodes || [], links: g.links || [] };
+		renderCooccurrence(state.analysis.graph);
+	} catch (e) {
+		console.error(e);
+		timelineSel && (timelineSel.innerHTML = "<p>Timeline unavailable.</p>");
+		coocSel && (coocSel.innerHTML = "<p>Co-occurrence unavailable.</p>");
+	}
+}
+
+function renderTimeline(items) {
+	const wrap = $("#analysis-timeline");
+	if (!wrap) return;
+
+	if (!items.length) {
+		wrap.innerHTML = "<p>No journal entries yet.</p>";
+		return;
+	}
+
+	wrap.innerHTML = items.map(en => `
+		<article class="entry">
+			<header><time>${formatWhen(en.createdAt)}</time></header>
+			<p>${escapeHtml(en.body || "")}</p>
+		</article>
+		`).join("");
 }
 
 function renderCooccurrence(graph) {
-	const out = $("#cooccurrence");
-	if (!out) return;
-	out.innerHTML = "";
-	const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
-	const links = Array.isArray(graph?.links) ? graph.links : [];
+	const wrap = $("#analysis-cooccurrence");
+	if (!wrap) return;
+
+	const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+	const links = Array.isArray(graph.links) ? graph.links : [];
+
 	if (!links.length) {
-		out.textContent = "No co-occurrences yet.";
+		wrap.innerHTML = "<p>No co-occurrences yet.</p>";
 		return;
 	}
-	/* Minimal tabular view for now */
-	const table = document.createElement("table");
-	table.style.borderCollapse = "collapse";
-	table.style.width = "100%";
-
-	const thead = document.createElement("thead");
-	const thr = document.createElement("tr");
-	for (const h of ["Source", "Target", "Weight"]) {
-		const th = document.createElement("th");
-		th.textContent = h;
-		th.style.borderBottom = "1px solid #d0d7de";
-		th.style.textAlign = "left";
-		th.style.padding = "6px";
-		thr.appendChild(th);
-	}
-	thead.appendChild(thr);
-	table.appendChild(thead);
 
 	const map = new Map(nodes.map(n => [n.id, n.label || n.name || n.id]));
-	const tbody = document.createElement("tbody");
-	for (const link of links) {
-		const tr = document.createElement("tr");
-		const tdA = document.createElement("td");
-		const tdB = document.createElement("td");
-		const tdW = document.createElement("td");
-		tdA.textContent = map.get(link.source) || link.source;
-		tdB.textContent = map.get(link.target) || link.target;
-		tdW.textContent = String(link.weight ?? 1);
-		[tdA, tdB, tdW].forEach(td => { td.style.padding = "6px";
-			td.style.borderBottom = "1px solid #f0f2f4"; });
-		tr.appendChild(tdA);
-		tr.appendChild(tdB);
-		tr.appendChild(tdW);
-		tbody.appendChild(tr);
-	}
-	table.appendChild(tbody);
-	out.appendChild(table);
+	const rows = links.map(l => `
+		<tr>
+			<td>${escapeHtml(map.get(l.source) || String(l.source))}</td>
+			<td>${escapeHtml(map.get(l.target) || String(l.target))}</td>
+			<td>${escapeHtml(String(l.weight ?? 1))}</td>
+		</tr>
+		`).join("");
+
+	wrap.innerHTML = `
+		<table class="table">
+			<thead>
+				<tr><th>Source</th><th>Target</th><th>Weight</th></tr>
+			</thead>
+			<tbody>${rows}</tbody>
+		</table>
+		`;
 }
 
-function renderRetrieval(results) {
-	const out = $("#retrieval");
-	if (!out) return;
-	out.innerHTML = "";
-	if (!Array.isArray(results) || !results.length) {
-		out.textContent = "No matches.";
+/* =========================
+ * Bootstrap
+ * ========================= */
+async function init() {
+	const url = new URL(location.href);
+	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
+
+	if (!state.projectId) {
+		flash("No project id in URL. Some features disabled.");
 		return;
 	}
-	for (const r of results) {
-		const block = document.createElement("article");
-		block.style.border = "1px solid #d0d7de";
-		block.style.padding = "8px";
-		block.style.margin = "8px 0";
 
-		const head = document.createElement("div");
-		head.style.fontWeight = "bold";
-		head.textContent = `Entry ${r.entryId}`;
+	// Tabs (1)
+	setupTabs();
 
-		const p = document.createElement("p");
-		p.textContent = r.snippet || "—";
+	// New entry wiring (2)
+	setupNewEntryWiring();
 
-		const tags = document.createElement("div");
-		for (const c of (r.codes || [])) {
-			const b = document.createElement("span");
-			b.textContent = c.name || c.id;
-			b.style.border = "1px solid #d0d7de";
-			b.style.padding = "2px 6px";
-			b.style.marginRight = "6px";
-			b.style.borderRadius = "3px";
-			tags.appendChild(b);
-		}
+	// Add Code wiring (3)
+	setupAddCodeWiring();
 
-		block.appendChild(head);
-		block.appendChild(p);
-		block.appendChild(tags);
-		out.appendChild(block);
-	}
-}
-
-function renderCodeApplications(apps) {
-	const ul = $("#code-applications-list");
-	if (!ul) return;
-	ul.innerHTML = "";
-	if (!Array.isArray(apps) || !apps.length) {
-		const li = document.createElement("li");
-		li.textContent = "No code applications recorded for this project.";
-		ul.appendChild(li);
-		return;
-	}
-	for (const a of apps) {
-		const li = document.createElement("li");
-		const name = a.name || "—";
-		const vendor = a.vendor ? ` · ${a.vendor}` : "";
-		const status = a.status ? ` · ${a.status}` : "";
-		li.textContent = `${name}${vendor}${status}`;
-		ul.appendChild(li);
-	}
-}
-
-/* -------------------- data loaders -------------------- */
-async function loadCodes(projectId) {
-	const data = await httpJSON(`/api/codes?project=${encodeURIComponent(projectId)}`).catch((e) => {
-		console.error(e);
-		return { codes: [] };
-	});
-	return Array.isArray(data?.codes) ? data.codes : [];
-}
-
-async function createCode(projectId, name) {
-	return httpJSON("/api/codes", {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({ name, projectId })
-	}).catch((e) => {
-		throw e;
-	});
-}
-
-async function loadTimeline(projectId) {
-	const data = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(projectId)}`).catch((e) => {
-		console.error(e);
-		return { timeline: [] };
-	});
-	return Array.isArray(data?.timeline) ? data.timeline : [];
-}
-
-async function loadCooccurrence(projectId) {
-	const data = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(projectId)}`).catch((e) => {
-		console.error(e);
-		return { nodes: [], links: [] };
-	});
-	return { nodes: data.nodes || [], links: data.links || [] };
-}
-
-async function loadRetrieval(projectId, q) {
-	const data = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(projectId)}&q=${encodeURIComponent(q)}`).catch((e) => {
-		console.error(e);
-		return { results: [] };
-	});
-	return Array.isArray(data?.results) ? data.results : [];
-}
-
-async function loadCodeApplications(projectId) {
-	const res = await fetch(`/api/code-applications?project=${encodeURIComponent(projectId)}`, { cache: "no-store" });
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
-	}
-	const data = await res.json().catch(() => ({}));
-	// handler may return { ok:true, applications:[…] } or bare array []; support both
-	const apps = Array.isArray(data) ? data : (Array.isArray(data.applications) ? data.applications : []);
-	return apps;
-}
-
-/* -------------------- orchestration -------------------- */
-async function refreshAll(projectId) {
-	const [codes, timeline, graph, apps] = await Promise.all([
-		loadCodes(projectId),
-		loadTimeline(projectId),
-		loadCooccurrence(projectId),
-		loadCodeApplications(projectId).catch((e) => {
-			console.warn("Code applications load failed:", e?.message || e);
-			return [];
-		})
+	// Load everything once (4 ensures memos/analysis feel alive on page load)
+	await Promise.allSettled([
+		loadEntries(),
+		loadCodes(),
+		loadMemos(),
+		loadAnalysis()
 	]);
 
-	renderCodes(codes);
-	renderTimeline(timeline);
-	renderCooccurrence(graph);
-	renderCodeApplications(apps);
+	// Set default visible tab content
+	switchTab("journal");
 }
 
-/* -------------------- UI wiring -------------------- */
-function initCaqdasInterface() {
-	const url = new URL(location.href);
-	const projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
-
-	const btnAddCode = $("#btn-add-code");
-	const btnNewMemo = $("#btn-new-memo");
-	const btnTimeline = $("#btn-timeline");
-	const btnCooc = $("#btn-cooccurrence");
-	const btnRetrieval = $("#btn-retrieval");
-	const btnExportAnalysis = $("#btn-export-analysis");
-
-	if (!projectId) {
-		flash("No project id found in URL. Some features are disabled.");
-		return;
-	}
-
-	// initial population
-	refreshAll(projectId).catch((e) => {
-		console.error(e);
-		flash("Initial load failed. Check network/API.");
-	});
-
-	/* + Add Code */
-	if (btnAddCode) {
-		btnAddCode.addEventListener("click", async (e) => {
-			e.preventDefault();
-			const name = prompt("New code label:");
-			if (!name) return;
-			try {
-				await createCode(projectId, name);
-				flash(`Code “${name}” created.`);
-				await refreshAll(projectId);
-			} catch (err) {
-				console.error(err);
-				flash(`Could not create code. ${err.message}`);
-			}
-		});
-	}
-
-	/* + New Memo (server if available; graceful fallback) */
-	if (btnNewMemo) {
-		btnNewMemo.addEventListener("click", async (e) => {
-			e.preventDefault();
-			const body = prompt("Memo text:");
-			if (!body) return;
-			try {
-				const res = await fetch(`/api/memos?project=${encodeURIComponent(projectId)}`, {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify({ body })
-				});
-				if (!res.ok) {
-					const t = await res.text().catch(() => "");
-					throw new Error(`HTTP ${res.status}${t ? ` — ${t}` : ""}`);
-				}
-				flash("Memo created.");
-				await refreshAll(projectId);
-			} catch (err) {
-				console.error(err);
-				flash("Memo endpoint not available. Add memos via Journals for now.");
-			}
-		});
-	}
-
-	/* 📊 Timeline View: set mode and refresh timeline only */
-	if (btnTimeline) {
-		btnTimeline.addEventListener("click", async (e) => {
-			e.preventDefault();
-			document.body.dataset.caqdasView = "timeline";
-			const data = await loadTimeline(projectId);
-			renderTimeline(data);
-			flash("Timeline updated.");
-		});
-	}
-
-	/* 🔗 Co-occurrence: set mode and refresh graph */
-	if (btnCooc) {
-		btnCooc.addEventListener("click", async (e) => {
-			e.preventDefault();
-			document.body.dataset.caqdasView = "cooccurrence";
-			const graph = await loadCooccurrence(projectId);
-			renderCooccurrence(graph);
-			flash("Co-occurrence updated.");
-		});
-	}
-
-	/* 🔍 Retrieval: prompt query, set mode and render results */
-	if (btnRetrieval) {
-		btnRetrieval.addEventListener("click", async (e) => {
-			e.preventDefault();
-			const q = prompt("Find text or code label:");
-			if (!q) return;
-			const results = await loadRetrieval(projectId, q);
-			document.body.dataset.caqdasView = "retrieval";
-			renderRetrieval(results);
-			flash(`Retrieved ${results.length} results.`);
-		});
-	}
-
-	/* 📤 Export Analysis: download JSON (server streaming) */
-	if (btnExportAnalysis) {
-		btnExportAnalysis.addEventListener("click", (e) => {
-			e.preventDefault();
-			const a = document.createElement("a");
-			a.href = `/api/analysis/export?project=${encodeURIComponent(projectId)}`;
-			a.download = `analysis-${projectId}.json`;
-			document.body.appendChild(a);
-			a.click();
-			a.remove();
-			flash("Export started.");
-		});
-	}
-}
-
-/* -------------------- bootstrap -------------------- */
-document.addEventListener("DOMContentLoaded", initCaqdasInterface);
+document.addEventListener("DOMContentLoaded", init);
