@@ -199,14 +199,14 @@ export async function getJournalEntry(svc, origin, entryId) {
  * @returns {Promise<Response>}
  */
 export async function createJournalEntry(svc, request, origin) {
-	// 1) Guard payload size
+	// Size guard
 	const buf = await request.arrayBuffer();
 	if (svc?.cfg?.MAX_BODY_BYTES && buf.byteLength > svc.cfg.MAX_BODY_BYTES) {
 		svc?.log?.warn?.("request.too_large", { size: buf.byteLength });
 		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
 	}
 
-	// 2) Parse JSON
+	// Parse JSON
 	/** @type {{project?:string, project_airtable_id?:string, category?:string, content?:string, tags?:string[]|string, author?:string, initial_memo?:string}} */
 	let p;
 	try {
@@ -215,17 +215,18 @@ export async function createJournalEntry(svc, request, origin) {
 		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
-	// 3) Normalise inputs
+	// Normalise inputs
 	const projectId = (p.project || p.project_airtable_id || "").trim();
 	const category = (p.category || "").trim();
 	const content = (p.content || "").trim();
 
 	if (!projectId || !category || !content) {
 		return svc.json({
-			error: "Missing required fields: project or project_airtable_id, category, content"
+			error: "Missing required fields: project (or project_airtable_id), category, content"
 		}, 400, svc.corsHeaders(origin));
 	}
 
+	// Category validation
 	const VALID = ["perceptions", "procedures", "decisions", "introspections"];
 	if (!VALID.includes(category)) {
 		return svc.json({
@@ -233,35 +234,34 @@ export async function createJournalEntry(svc, request, origin) {
 		}, 400, svc.corsHeaders(origin));
 	}
 
-	// 4) Resolve table (repo uses singular env var)
-	const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
+	// Resolve table strictly per your rule
+	const tableRef = svc.env.AIRTABLE_TABLE_JOURNAL || "Journals";
 
-	// 5) Imports that exist in the repo
-	const { mdToAirtableRich, safeText } = await import("../core/utils.js");
+	// Import only what exists in this repo
 	const { createRecords } = await import("./internals/airtable.js");
+	const { safeText } = await import("../core/utils.js").catch(() => ({ safeText: (x) => String(x || "") }));
 
-	// 6) Tags normalisation
-	const tags = Array.isArray(p.tags) ?
+	// Tags: accept array or comma-delimited string; store as comma-delimited text
+	const tagsArr = Array.isArray(p.tags) ?
 		p.tags.map(String).map(s => s.trim()).filter(Boolean) :
 		String(p.tags || "").split(",").map(s => s.trim()).filter(Boolean);
-	const tagsStr = tags.join(", ");
+	const tagsStr = tagsArr.join(", ");
 
-	// 7) Try common link + content field names to fit different base schemas
+	// Try common link + content field names to fit different base schemas
 	const LINK_FIELDS = ["Project", "Projects"];
 	const CONTENT_FIELDS = ["Content", "Body", "Notes"];
 
 	for (const linkName of LINK_FIELDS) {
 		for (const contentField of CONTENT_FIELDS) {
-			/** @type {Record<string, any>} */
 			const fields = {
-				[linkName]: [projectId], // link to Projects (recXXXX…)
+				[linkName]: [projectId], // link-to-record (recXXXX…)
 				Category: category,
-				[contentField]: mdToAirtableRich(content),
+				[contentField]: content, // plain text; no rich-text helper needed
 				Tags: tagsStr,
 				Author: p.author || ""
 			};
 
-			// Drop empty values
+			// Drop empties
 			for (const k of Object.keys(fields)) {
 				const v = fields[k];
 				if (
@@ -272,21 +272,21 @@ export async function createJournalEntry(svc, request, origin) {
 			}
 
 			try {
-				const result = await createRecords(svc.env, tableName, [{ fields }], svc?.cfg?.TIMEOUT_MS);
+				const result = await createRecords(svc.env, tableRef, [{ fields }], svc?.cfg?.TIMEOUT_MS);
 				const entryId = result?.records?.[0]?.id;
 				if (!entryId) {
 					return svc.json({ error: "Airtable response missing id" }, 502, svc.corsHeaders(origin));
 				}
 
 				if (svc.env.AUDIT === "true") {
-					svc?.log?.info?.("journal.entry.created", { entryId, linkName, contentField, tableName });
+					svc?.log?.info?.("journal.entry.created", { entryId, linkName, contentField, tableRef });
 				}
 
-				// Optional: create initial memo (best-effort, errors ignored)
+				// Optional memo only after success (best-effort, ignore errors)
 				if (p.initial_memo) {
 					try {
 						const { createMemo } = await import("./reflection/memos.js");
-						const req = new Request("https://local/inline", {
+						const memoReq = new Request("https://local/inline", {
 							method: "POST",
 							headers: { "content-type": "application/json" },
 							body: JSON.stringify({
@@ -297,22 +297,21 @@ export async function createJournalEntry(svc, request, origin) {
 								author: p.author
 							})
 						});
-						await createMemo(svc, req, origin);
+						await createMemo(svc, memoReq, origin);
 					} catch (memoErr) {
 						svc?.log?.warn?.("journal.entry.memo.create_fail", { err: String(memoErr || "") });
 					}
 				}
 
 				return svc.json({ ok: true, id: entryId }, 201, svc.corsHeaders(origin));
-
 			} catch (err) {
 				const msg = String(err?.message || err || "");
-				// If Airtable says an unknown field, try the next candidate
+				// If Airtable says the field name is unknown, try the next candidate
 				if (/422/.test(msg) && /UNKNOWN_FIELD_NAME/i.test(msg)) {
 					continue;
 				}
-				// Otherwise surface the upstream error for fast diagnosis
-				svc?.log?.error?.("airtable.journal.create.fail", { err: msg, linkName, contentField, tableName });
+				// Otherwise surface the upstream error so the client shows more than "Internal error"
+				svc?.log?.error?.("airtable.journal.create.fail", { err: msg, linkName, contentField, tableRef });
 				return svc.json({
 					error: "Failed to create journal entry",
 					detail: safeText(msg)
@@ -321,11 +320,11 @@ export async function createJournalEntry(svc, request, origin) {
 		}
 	}
 
-	// No field combination worked
-	svc?.log?.error?.("airtable.journal.create.schema_mismatch", { tableName });
+	// No link/content field matched this base
+	svc?.log?.error?.("airtable.journal.create.schema_mismatch", { tableRef });
 	return svc.json({
 		error: "Field configuration error",
-		detail: `No matching link/content field names. Ensure "${tableName}" has a link field to Projects (e.g. ${LINK_FIELDS.join(" / ")}) and one of: ${CONTENT_FIELDS.join(" / ")}.`
+		detail: `No matching link/content field names. Ensure "${tableRef}" has a link-to-record to Projects (try: Project/Projects) and one of: Content/Body/Notes.`
 	}, 422, svc.corsHeaders(origin));
 }
 
