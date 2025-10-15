@@ -15,55 +15,49 @@ import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from ".
  * @returns {Promise<Response>}
  */
 export async function listJournalEntries(svc, origin, url) {
-	const projectId = url.searchParams.get("project");
-	if (!projectId) {
-		return svc.json({ ok: false, error: "Missing project query" }, 400, svc.corsHeaders(origin));
-	}
-
 	try {
-		const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
-		const { records } = await listAll(svc.env, tableName, { pageSize: 100 }, svc.cfg.TIMEOUT_MS);
-
-		// Filter to this project (handle "Project" or "Projects" field name)
-		const LINK_FIELDS = ["Project", "Projects"];
-		const entries = [];
-
-		for (const r of records) {
-			const f = r.fields || {};
-			const linkKey = LINK_FIELDS.find(k => Array.isArray(f[k]));
-			const linkArr = linkKey ? f[linkKey] : undefined;
-
-			if (Array.isArray(linkArr) && linkArr.includes(projectId)) {
-				// Parse tags (could be comma-separated string or array)
-				let tags = [];
-				if (Array.isArray(f.Tags)) {
-					tags = f.Tags;
-				} else if (typeof f.Tags === 'string') {
-					tags = f.Tags.split(',').map(t => t.trim()).filter(Boolean);
-				}
-
-				entries.push({
-					id: r.id,
-					category: f.Category || "procedures",
-					content: f.Content || "",
-					tags: tags,
-					author: f.Author || "",
-					createdAt: r.createdTime || ""
-				});
-			}
+		const projectId = url.searchParams.get("project") || "";
+		if (!projectId) {
+			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
 		}
 
-		// Sort newest first
-		entries.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-		return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
+		// If Airtable creds absent, just return empty (keeps UI alive)
+		if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
+			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
+		}
 
-	} catch (err) {
-		svc.log.error("journal.list.error", { err: String(err?.message || err) });
-		return svc.json({
-			ok: false,
-			error: "Failed to list journal entries",
-			detail: String(err?.message || err)
-		}, 500, svc.corsHeaders(origin));
+		const tableRef = svc.env.AIRTABLE_TABLE_JOURNAL || "Journals";
+		const { listAll } = await import("./internals/airtable.js");
+
+		// Filter by either link field name without downloading whole table
+		const esc = projectId.replace(/"/g, '\\"');
+		const filterByFormula = `OR(FIND("${esc}", ARRAYJOIN(Project)), FIND("${esc}", ARRAYJOIN(Projects)))`;
+
+		const { records } = await listAll(
+			svc.env,
+			tableRef, { pageSize: 100, filterByFormula },
+			svc?.cfg?.TIMEOUT_MS
+		);
+
+		const entries = (records || []).map((r) => {
+			const f = r.fields || {};
+			return {
+				id: r.id,
+				category: f.Category || "—",
+				content: f.Content || f.Body || f.Notes || "",
+				tags: Array.isArray(f.Tags) ? f.Tags : String(f.Tags || "")
+					.split(",").map(s => s.trim()).filter(Boolean),
+				createdAt: r.createdTime || f.Created || ""
+			};
+		});
+
+		// sort newest first on the client if you prefer; here we keep created order
+		return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
+	} catch (e) {
+		const msg = String(e?.message || e || "");
+		svc?.log?.error?.("journals.list.fail", { err: msg });
+		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
+		return svc.json({ ok: false, error: "Failed to load journal entries", detail: msg }, status, svc.corsHeaders(origin));
 	}
 }
 
