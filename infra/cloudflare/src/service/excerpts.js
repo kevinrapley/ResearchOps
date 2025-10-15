@@ -17,7 +17,7 @@
  *  - Synced At          (Date)
  */
 
-import { airtable } from "./internals/airtable.js";
+import { getRecord } from "./internals/airtable.js";
 import { json as jsonHelper } from "./internals/responders.js";
 
 /* ──────────────── CREATE ──────────────── */
