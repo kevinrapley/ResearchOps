@@ -7,14 +7,40 @@
 /* =========================
  * Config + tiny helpers
  * ========================= */
+
+/**
+ * Global configuration for the CAQDAS interface.
+ * @readonly
+ * @type {{API_BASE: string, TIMEOUT_MS: number}}
+ */
 const CONFIG = Object.freeze({
 	API_BASE: window.location.origin,
 	TIMEOUT_MS: 15000
 });
 
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+/**
+ * Shorthand for querySelector.
+ * @param {string} selector
+ * @param {ParentNode} [root=document]
+ * @returns {HTMLElement|null}
+ */
+const $ = (selector, root = document) => root.querySelector(selector);
 
+/**
+ * Shorthand for querySelectorAll (arrayified).
+ * @param {string} selector
+ * @param {ParentNode} [root=document]
+ * @returns {HTMLElement[]}
+ */
+const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+/**
+ * fetch() with AbortController timeout.
+ * @param {RequestInfo|URL} url
+ * @param {RequestInit} [init]
+ * @param {number} [timeoutMs]
+ * @returns {Promise<Response>}
+ */
 async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -25,6 +51,13 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	}
 }
 
+/**
+ * JSON fetch with error text details and content-type guard.
+ * @param {string} url
+ * @param {RequestInit} [init]
+ * @param {number} [timeoutMs]
+ * @returns {Promise<any>}
+ */
 async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const res = await fetchWithTimeout(url, init, timeoutMs);
 	if (!res.ok) {
@@ -35,6 +68,11 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	return ct.includes("application/json") ? res.json() : {};
 }
 
+/**
+ * HTML-escape text for safe insertion.
+ * @param {string} s
+ * @returns {string}
+ */
 function escapeHtml(s) {
 	if (!s) return "";
 	const d = document.createElement("div");
@@ -42,12 +80,21 @@ function escapeHtml(s) {
 	return d.innerHTML;
 }
 
+/**
+ * Formats an ISO datetime string for display.
+ * @param {string} iso
+ * @returns {string}
+ */
 function formatWhen(iso) {
 	if (!iso) return "—";
 	const d = new Date(iso);
 	return d.toLocaleString();
 }
 
+/**
+ * Lightweight flash/status banner.
+ * @param {string} msg
+ */
 function flash(msg) {
 	let el = $("#flash");
 	if (!el) {
@@ -67,6 +114,49 @@ function flash(msg) {
 /* =========================
  * State
  * ========================= */
+
+/**
+ * @typedef {Object} JournalEntry
+ * @property {string} id
+ * @property {string} category
+ * @property {string} [content]
+ * @property {string} [body]
+ * @property {string} createdAt
+ */
+
+/**
+ * @typedef {Object} Code
+ * @property {string} id
+ * @property {string} name
+ * @property {string} [color]
+ * @property {string} [description]
+ */
+
+/**
+ * @typedef {Object} Memo
+ * @property {string} id
+ * @property {string} memoType
+ * @property {string} content
+ * @property {string} createdAt
+ */
+
+/**
+ * @typedef {Object} CooccurrenceGraph
+ * @property {{id:string,label?:string,name?:string}[]} nodes
+ * @property {{source:string,target:string,weight?:number}[]} links
+ */
+
+/**
+ * Application state (in-memory).
+ * @type {{
+ *  projectId: string|null,
+ *  currentTab: 'journal'|'codes'|'memos'|'analysis',
+ *  entries: JournalEntry[],
+ *  codes: Code[],
+ *  memos: Memo[],
+ *  analysis: { timeline: JournalEntry[], graph: CooccurrenceGraph, results: any[] }
+ * }}
+ */
 const state = {
 	projectId: null,
 	currentTab: "journal",
@@ -77,18 +167,26 @@ const state = {
 };
 
 /* =========================
- * Tabs (1) currentTarget fix
+ * Tabs
  * ========================= */
+
+/**
+ * Attach click handlers to ARIA tabs using currentTarget for reliability.
+ */
 function setupTabs() {
 	$$('[role="tab"]').forEach(tab => {
 		tab.addEventListener("click", (e) => {
-			const id = e.currentTarget.id || ""; // ← important
+			const id = /** @type {HTMLElement} */ (e.currentTarget).id || "";
 			const tabName = id.replace("-tab", "");
 			switchTab(tabName);
 		});
 	});
 }
 
+/**
+ * Switches the visible tab and triggers data loads for the selected panel.
+ * @param {'journal'|'codes'|'memos'|'analysis'} name
+ */
 function switchTab(name) {
 	state.currentTab = name;
 
@@ -99,7 +197,6 @@ function switchTab(name) {
 		panel.hidden = panel.id !== `${name}-panel`;
 	});
 
-	// load per tab
 	if (name === "journal") loadEntries();
 	if (name === "codes") loadCodes();
 	if (name === "memos") loadMemos();
@@ -107,8 +204,13 @@ function switchTab(name) {
 }
 
 /* =========================
- * Journal (+ New entry) (2)
+ * Journal
  * ========================= */
+
+/**
+ * Loads journal entries for the current project and renders them.
+ * @returns {Promise<void>}
+ */
 async function loadEntries() {
 	if (!state.projectId) return;
 	try {
@@ -121,6 +223,9 @@ async function loadEntries() {
 	}
 }
 
+/**
+ * Renders the journal entries list.
+ */
 function renderEntries() {
 	const wrap = $("#journal-entries");
 	if (!wrap) return;
@@ -141,16 +246,20 @@ function renderEntries() {
 				<button class="btn btn--secondary btn-small" data-act="delete" data-id="${en.id}">Delete</button>
 			</footer>
 		</article>
-		`).join("");
+	`).join("");
 
-	// delete handlers
 	$$('[data-act="delete"]', wrap).forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
 }
 
+/**
+ * Deletes a journal entry and refreshes the list.
+ * @param {MouseEvent} e
+ * @returns {Promise<void>}
+ */
 async function onDeleteEntry(e) {
-	const id = e.currentTarget.dataset.id;
+	const id = /** @type {HTMLElement} */ (e.currentTarget).dataset.id;
 	if (!id) return;
 	if (!confirm("Delete this entry?")) return;
 
@@ -164,28 +273,60 @@ async function onDeleteEntry(e) {
 	}
 }
 
+/**
+ * Wires the “+ New entry” toggle and submit handlers.
+ * Supports `#new-entry-btn` as the trigger button.
+ * Tolerates alternate section/form IDs when markup differs.
+ */
 function setupNewEntryWiring() {
-	const form = $("#add-entry-form");
-	const toggleBtn = $("#toggle-form-btn");
-	const cancelBtn = $("#cancel-form-btn");
-	const section = $("#add-entry-section");
+	const section =
+		$("#add-entry-section") ||
+		$("#new-entry-section") ||
+		document.querySelector('[data-section="add-entry"]');
 
+	const form =
+		$("#add-entry-form") ||
+		$("#new-entry-form") ||
+		section?.querySelector("form");
+
+	// primary trigger button id requested by you
+	const toggleBtn =
+		$("#new-entry-btn") ||
+		$("#toggle-form-btn");
+
+	const cancelBtn =
+		$("#cancel-form-btn") ||
+		$("#cancel-entry-btn") ||
+		section?.querySelector('[data-role="cancel"]');
+
+	// If there is no section on this page, safely no-op.
+	if (!section) return;
+
+	/**
+	 * Shows/hides the new-entry section.
+	 * @param {boolean} [force]
+	 */
 	function toggleForm(force) {
 		const show = typeof force === "boolean" ? force : section.hidden;
 		section.hidden = !show;
-		if (show) $("#entry-content")?.focus();
+		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
 	}
 
 	if (toggleBtn) {
 		toggleBtn.addEventListener("click", () => toggleForm());
 	}
+
 	if (cancelBtn) {
-		cancelBtn.addEventListener("click", () => toggleForm(false));
+		cancelBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			toggleForm(false);
+		});
 	}
+
 	if (form) {
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
-			const fd = new FormData(form);
+			const fd = new FormData( /** @type {HTMLFormElement} */ (form));
 			const payload = {
 				project_airtable_id: state.projectId,
 				category: (fd.get("category") || "").toString(),
@@ -202,7 +343,8 @@ function setupNewEntryWiring() {
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(payload)
 				});
-				form.reset();
+				/** @type {HTMLFormElement} */
+				(form).reset?.();
 				toggleForm(false);
 				flash("Entry saved.");
 				await loadEntries();
@@ -215,8 +357,13 @@ function setupNewEntryWiring() {
 }
 
 /* =========================
- * Codes (+ Add Code) (3)
+ * Codes
  * ========================= */
+
+/**
+ * Loads codes for the current project and renders them.
+ * @returns {Promise<void>}
+ */
 async function loadCodes() {
 	if (!state.projectId) return;
 	try {
@@ -229,6 +376,9 @@ async function loadCodes() {
 	}
 }
 
+/**
+ * Renders the code cards list.
+ */
 function renderCodes() {
 	const wrap = $("#codes-container");
 	if (!wrap) return;
@@ -246,12 +396,16 @@ function renderCodes() {
 			</header>
 			${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
 		</article>
-		`).join("");
+	`).join("");
 }
 
+/**
+ * Wires the Codes panel quick-add flow.
+ * Expects: #new-code-btn, #code-form (hidden), #save-code-btn, #cancel-code-btn, and inputs #code-name, #code-color, #code-description, optional #code-parent.
+ */
 function setupAddCodeWiring() {
-	const btn = $("#new-code-btn"); // trigger button
-	const form = $("#code-form"); // small inline form container
+	const btn = $("#new-code-btn");
+	const form = $("#code-form");
 	const nameInput = $("#code-name");
 	const colorInput = $("#code-color");
 	const descInput = $("#code-description");
@@ -259,6 +413,10 @@ function setupAddCodeWiring() {
 	const saveBtn = $("#save-code-btn");
 	const cancelBtn = $("#cancel-code-btn");
 
+	/**
+	 * Shows/hides the inline code form.
+	 * @param {boolean} show
+	 */
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
@@ -279,15 +437,15 @@ function setupAddCodeWiring() {
 	if (saveBtn) {
 		saveBtn.addEventListener("click", async (e) => {
 			e.preventDefault();
-			const name = (nameInput?.value || "").trim();
+			const name = ( /** @type {HTMLInputElement|null} */ (nameInput))?.value?.trim() || "";
 			if (!name) { flash("Please enter a code name."); return; }
 
 			const payload = {
 				name,
 				projectId: state.projectId,
-				color: (colorInput?.value || "").trim(),
-				description: (descInput?.value || "").trim(),
-				parentId: (parentInput?.value || "").trim()
+				color: ( /** @type {HTMLInputElement|null} */ (colorInput))?.value?.trim() || "",
+				description: ( /** @type {HTMLInputElement|null} */ (descInput))?.value?.trim() || "",
+				parentId: ( /** @type {HTMLInputElement|null} */ (parentInput))?.value?.trim() || ""
 			};
 
 			try {
@@ -296,10 +454,10 @@ function setupAddCodeWiring() {
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(payload)
 				});
-				nameInput && (nameInput.value = "");
-				colorInput && (colorInput.value = "");
-				descInput && (descInput.value = "");
-				parentInput && (parentInput.value = "");
+				if (nameInput) nameInput.value = "";
+				if (colorInput) colorInput.value = "";
+				if (descInput) descInput.value = "";
+				if (parentInput) parentInput.value = "";
 				showForm(false);
 				flash(`Code “${payload.name}” created.`);
 				await loadCodes();
@@ -312,8 +470,13 @@ function setupAddCodeWiring() {
 }
 
 /* =========================
- * Memos (4) load immediately
+ * Memos
  * ========================= */
+
+/**
+ * Loads memos for the current project and renders them.
+ * @returns {Promise<void>}
+ */
 async function loadMemos() {
 	if (!state.projectId) return;
 	try {
@@ -326,6 +489,10 @@ async function loadMemos() {
 	}
 }
 
+/**
+ * Renders memos; shows a friendly message on error/empty.
+ * @param {boolean} [error=false]
+ */
 function renderMemos(error = false) {
 	const wrap = $("#memos-container");
 	if (!wrap) return;
@@ -347,12 +514,18 @@ function renderMemos(error = false) {
 			</header>
 			<p>${escapeHtml(m.content || "")}</p>
 		</article>
-		`).join("");
+	`).join("");
 }
 
 /* =========================
- * Analysis (4) load immediately
+ * Analysis
  * ========================= */
+
+/**
+ * Loads timeline and co-occurrence for the current project.
+ * Provides immediate placeholders so the UI feels responsive.
+ * @returns {Promise<void>}
+ */
 async function loadAnalysis() {
 	if (!state.projectId) return;
 
@@ -360,28 +533,29 @@ async function loadAnalysis() {
 	const coocSel = $("#analysis-cooccurrence");
 	const retrievalSel = $("#analysis-retrieval");
 
-	// set placeholders so UI "feels alive"
-	timelineSel && (timelineSel.innerHTML = "<p>Loading timeline…</p>");
-	coocSel && (coocSel.innerHTML = "<p>Loading co-occurrence…</p>");
-	retrievalSel && (retrievalSel.innerHTML = "<p>Ready for search.</p>");
+	if (timelineSel) timelineSel.innerHTML = "<p>Loading timeline…</p>";
+	if (coocSel) coocSel.innerHTML = "<p>Loading co-occurrence…</p>";
+	if (retrievalSel) retrievalSel.innerHTML = "<p>Ready for search.</p>";
 
 	try {
-		// timeline
 		const t = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
 		state.analysis.timeline = Array.isArray(t?.timeline) ? t.timeline : [];
 		renderTimeline(state.analysis.timeline);
 
-		// co-occurrence
 		const g = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
 		state.analysis.graph = { nodes: g.nodes || [], links: g.links || [] };
 		renderCooccurrence(state.analysis.graph);
 	} catch (e) {
 		console.error(e);
-		timelineSel && (timelineSel.innerHTML = "<p>Timeline unavailable.</p>");
-		coocSel && (coocSel.innerHTML = "<p>Co-occurrence unavailable.</p>");
+		if (timelineSel) timelineSel.innerHTML = "<p>Timeline unavailable.</p>";
+		if (coocSel) coocSel.innerHTML = "<p>Co-occurrence unavailable.</p>";
 	}
 }
 
+/**
+ * Renders the analysis timeline.
+ * @param {JournalEntry[]} items
+ */
 function renderTimeline(items) {
 	const wrap = $("#analysis-timeline");
 	if (!wrap) return;
@@ -396,9 +570,13 @@ function renderTimeline(items) {
 			<header><time>${formatWhen(en.createdAt)}</time></header>
 			<p>${escapeHtml(en.body || "")}</p>
 		</article>
-		`).join("");
+	`).join("");
 }
 
+/**
+ * Renders the co-occurrence table.
+ * @param {CooccurrenceGraph} graph
+ */
 function renderCooccurrence(graph) {
 	const wrap = $("#analysis-cooccurrence");
 	if (!wrap) return;
@@ -411,14 +589,14 @@ function renderCooccurrence(graph) {
 		return;
 	}
 
-	const map = new Map(nodes.map(n => [n.id, n.label || n.name || n.id]));
+	const nameById = new Map(nodes.map(n => [n.id, n.label || n.name || n.id]));
 	const rows = links.map(l => `
 		<tr>
-			<td>${escapeHtml(map.get(l.source) || String(l.source))}</td>
-			<td>${escapeHtml(map.get(l.target) || String(l.target))}</td>
+			<td>${escapeHtml(nameById.get(l.source) || String(l.source))}</td>
+			<td>${escapeHtml(nameById.get(l.target) || String(l.target))}</td>
 			<td>${escapeHtml(String(l.weight ?? 1))}</td>
 		</tr>
-		`).join("");
+	`).join("");
 
 	wrap.innerHTML = `
 		<table class="table">
@@ -427,12 +605,17 @@ function renderCooccurrence(graph) {
 			</thead>
 			<tbody>${rows}</tbody>
 		</table>
-		`;
+	`;
 }
 
 /* =========================
  * Bootstrap
  * ========================= */
+
+/**
+ * Entry-point: reads project id, wires UI, and loads initial data.
+ * @returns {Promise<void>}
+ */
 async function init() {
 	const url = new URL(location.href);
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
@@ -442,16 +625,10 @@ async function init() {
 		return;
 	}
 
-	// Tabs (1)
 	setupTabs();
-
-	// New entry wiring (2)
 	setupNewEntryWiring();
-
-	// Add Code wiring (3)
 	setupAddCodeWiring();
 
-	// Load everything once (4 ensures memos/analysis feel alive on page load)
 	await Promise.allSettled([
 		loadEntries(),
 		loadCodes(),
@@ -459,7 +636,6 @@ async function init() {
 		loadAnalysis()
 	]);
 
-	// Set default visible tab content
 	switchTab("journal");
 }
 
