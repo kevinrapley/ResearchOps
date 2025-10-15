@@ -69,18 +69,19 @@
 			<section class="entry-form" id="entry-form" hidden>
 				<h3 id="form-heading">Add journal entry</h3>
 				<form id="add-entry-form" novalidate>
-
 					<div class="form-group">
 						<label for="entry-category">
 							Category
 							<span aria-hidden="true">*</span>
 						</label>
+						
 						<select id="entry-category" name="category" required aria-required="true">
 							<option value="perceptions">Evolving perceptions</option>
 							<option value="procedures">Day-to-day procedures</option>
 							<option value="decisions">Methodological decision points</option>
 							<option value="introspections">Personal introspections</option>
 						</select>
+						
 						<span class="hint">Select the type of reflection</span>
 					</div>
 
@@ -89,18 +90,37 @@
 							Entry
 							<span aria-hidden="true">*</span>
 						</label>
+						
 						<textarea id="entry-content" name="content" rows="8" required aria-required="true" aria-describedby="content-hint"></textarea>
+						
+						<!-- Excerpt controls (uses selection in #entry-content) -->
+						<div class="journal__toolbar">
+							<button type="button" class="btn" id="btn-add-excerpt">➕ Add excerpt (Ctrl+Shift+E)</button>
+						</div>
+
+						<section class="excerpts-panel" aria-labelledby="excerpts-title">
+							
+							<h4 id="excerpts-title" class="govuk-heading-s">Excerpts</h4>
+							
+							<ol id="excerpts-list" class="excerpts-list" aria-live="polite" aria-relevant="additions removals">
+								<!-- rendered by JS -->
+							</ol>
+						</section>
+						
 						<span class="hint" id="content-hint">Write freely; this is a private space for research reflection</span>
 					</div>
 
 					<div class="form-group">
 						<label for="entry-tags">Tags (optional)</label>
-						<input type="text" id="entry-tags" name="tags" placeholder="e.g. recruitment, ethics, bias">
+						
+						<input type="text" id="entry-tags" name="tags" placeholder="e.g. recruitment, ethics, bias" />
+						
 						<span class="hint">Comma-separated keywords for easier retrieval</span>
 					</div>
 
 					<div style="display: flex; gap: var(--space-200);">
 						<button type="submit" class="btn">Save entry</button>
+						
 						<button type="button" class="btn-secondary" id="cancel-form-btn">Cancel</button>
 					</div>
 
@@ -122,9 +142,11 @@
 			<!-- Journal entries -->
 			<section aria-labelledby="entries-heading" aria-live="polite">
 				<h3 id="entries-heading" class="visually-hidden">Journal entries</h3>
+				
 				<div class="journal-entries" id="entries-container" data-role="journal-entries">
 					<div class="empty-journal">
 						<div class="empty-journal-icon" aria-hidden="true">📔</div>
+						
 						<p><strong>No entries yet</strong></p>
 						<p>Start documenting your research journey by adding your first journal entry.</p>
 					</div>
@@ -136,6 +158,7 @@
 		<div role="tabpanel" id="codes-panel" aria-labelledby="codes-tab" hidden>
 			<div class="panel-header">
 				<h3>Codebook Management</h3>
+				
 				<button type="button" class="btn" id="new-code-btn">+ Add Code</button>
 			</div>
 
@@ -145,22 +168,27 @@
 				<form id="add-code-form" novalidate>
 					<div class="form-group">
 						<label for="code-name">Code name <span aria-hidden="true">*</span></label>
-						<input type="text" id="code-name" name="name" required aria-required="true">
+						
+						<input type="text" id="code-name" name="name" required aria-required="true" />
 					</div>
 
 					<div class="form-group">
 						<label for="code-definition">Definition</label>
+						
 						<textarea id="code-definition" name="definition" rows="3"></textarea>
+						
 						<span class="hint">Describe when to use this code</span>
 					</div>
 
 					<div class="form-group">
 						<label for="code-color">Color</label>
-						<input type="color" id="code-color" name="color" value="#1d70b8">
+						
+						<input type="color" id="code-color" name="color" value="#1d70b8" />
 					</div>
 
 					<div class="form-group">
 						<label for="parent-code">Parent code (optional)</label>
+						
 						<select id="parent-code" name="parent">
 							<option value="">None (top-level code)</option>
 						</select>
@@ -182,6 +210,7 @@
 		<div role="tabpanel" id="memos-panel" aria-labelledby="memos-tab" hidden>
 			<div class="panel-header">
 				<h3>Research Memos</h3>
+				
 				<button type="button" class="btn" id="new-memo-btn">+ New Memo</button>
 			</div>
 
@@ -191,6 +220,7 @@
 				<form id="add-memo-form" novalidate>
 					<div class="form-group">
 						<label for="memo-type">Memo type <span aria-hidden="true">*</span></label>
+						
 						<select id="memo-type" name="memo_type" required aria-required="true">
 							<option value="analytical">Analytical</option>
 							<option value="methodological">Methodological</option>
@@ -201,11 +231,13 @@
 
 					<div class="form-group">
 						<label for="memo-title">Title</label>
-						<input type="text" id="memo-title" name="title">
+						
+						<input type="text" id="memo-title" name="title" />
 					</div>
 
 					<div class="form-group">
 						<label for="memo-content">Content <span aria-hidden="true">*</span></label>
+						
 						<textarea id="memo-content" name="content" rows="10" required aria-required="true"></textarea>
 					</div>
 
@@ -236,16 +268,16 @@
 
 				<div class="analysis-options govuk-button-group">
 					<button type="button" class="govuk-button analysis-btn" data-module="govuk-button" data-analysis="timeline">
-						📊 Timeline View
+						Timeline View
 					</button>
 					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="co-occurrence">
-						🔗 Code Co-occurrence
+						Code Co-occurrence
 					</button>
 					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="retrieval">
-						🔍 Code Retrieval
+						Code Retrieval
 					</button>
 					<button type="button" class="govuk-button govuk-button--secondary analysis-btn" data-module="govuk-button" data-analysis="export">
-						📤 Export Analysis
+						Export Analysis
 					</button>
 				</div>
 			</div>
@@ -265,10 +297,14 @@
 				<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
 					<form id="retrieval-form" class="govuk-form-group" novalidate>
 						<label class="govuk-label" for="retrieval-q">Search term</label>
+						
 						<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
+						
 						<div class="govuk-hint">Searches code names and journal text.</div>
+						
 						<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
 					</form>
+					
 					<div id="retrieval-results" class="govuk-!-margin-top-3">
 						<!-- Retrieval results render here -->
 					</div>
@@ -279,15 +315,15 @@
 					<summary class="govuk-details__summary">
 						<span class="govuk-details__summary-text">View raw JSON</span>
 					</summary>
-					
+
 					<div class="govuk-details__text">
 						<div class="govuk-button-group">
 							<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
 							<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
 						</div>
-						
+
 						<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON">
-							
+
 							<code id="json-code"></code>
 						</pre>
 					</div>
@@ -321,16 +357,19 @@
 		<div class="coding-confidence">
 			<fieldset>
 				<legend>Confidence level</legend>
+				
 				<label>
-					<input type="radio" name="confidence" value="low">
+					<input type="radio" name="confidence" value="low" />
 					Low
 				</label>
+				
 				<label>
-					<input type="radio" name="confidence" value="medium" checked>
+					<input type="radio" name="confidence" value="medium" checked />
 					Medium
 				</label>
+				
 				<label>
-					<input type="radio" name="confidence" value="high">
+					<input type="radio" name="confidence" value="high" />
 					High
 				</label>
 			</fieldset>
@@ -338,16 +377,19 @@
 
 		<div class="coding-memo">
 			<label for="coding-memo-input">Coding memo (optional)</label>
+			
 			<textarea id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?"></textarea>
 		</div>
 
 		<div class="panel-actions">
 			<button type="button" class="btn" id="apply-code-btn">Apply Code</button>
+			
 			<button type="button" class="btn-secondary" id="cancel-coding-btn">Cancel</button>
 		</div>
 	</aside>
 
 	<x-include src="/partials/footer.html"></x-include>
+	
 	<script type="module" src="/js/caqdas-interface.js" defer></script>
 </body>
 
