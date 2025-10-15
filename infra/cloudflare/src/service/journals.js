@@ -15,50 +15,63 @@ import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from ".
  * @returns {Promise<Response>}
  */
 export async function listJournalEntries(svc, origin, url) {
-	try {
-		const projectId = url.searchParams.get("project") || "";
-		if (!projectId) {
-			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
-		}
+  try {
+    const projectId = url.searchParams.get("project") || "";
+    if (!projectId) {
+      return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
+    }
 
-		// If Airtable creds absent, just return empty (keeps UI alive)
-		if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
-			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
-		}
+    // If Airtable creds absent, don’t crash the UI
+    if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
+      return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
+    }
 
-		const tableRef = svc.env.AIRTABLE_TABLE_JOURNAL || "Journals";
-		const { listAll } = await import("./internals/airtable.js");
+    const tableRef = svc.env.AIRTABLE_TABLE_JOURNAL || "Journals";
 
-		// Filter by either link field name without downloading whole table
-		const esc = projectId.replace(/"/g, '\\"');
-		const filterByFormula = `OR(FIND("${esc}", ARRAYJOIN(Project)), FIND("${esc}", ARRAYJOIN(Projects)))`;
+    // Import from the path that exists in your repo
+    const { listAll } = await import("./internals/airtable.js").catch((e) => {
+      throw new Error(`Import failed: service/internals/airtable.js — ${e?.message || e}`);
+    });
 
-		const { records } = await listAll(
-			svc.env,
-			tableRef, { pageSize: 100, filterByFormula },
-			svc?.cfg?.TIMEOUT_MS
-		);
+    // Keep it simple first: fetch + filter in Worker (avoids formula pitfalls)
+    const res = await listAll(svc.env, tableRef, { pageSize: 100 }, svc?.cfg?.TIMEOUT_MS);
 
-		const entries = (records || []).map((r) => {
-			const f = r.fields || {};
-			return {
-				id: r.id,
-				category: f.Category || "—",
-				content: f.Content || f.Body || f.Notes || "",
-				tags: Array.isArray(f.Tags) ? f.Tags : String(f.Tags || "")
-					.split(",").map(s => s.trim()).filter(Boolean),
-				createdAt: r.createdTime || f.Created || ""
-			};
-		});
+    // Tolerate helper returning either {records} or an array
+    const records = Array.isArray(res?.records) ? res.records
+                  : Array.isArray(res)            ? res
+                  : [];
 
-		// sort newest first on the client if you prefer; here we keep created order
-		return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
-	} catch (e) {
-		const msg = String(e?.message || e || "");
-		svc?.log?.error?.("journals.list.fail", { err: msg });
-		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
-		return svc.json({ ok: false, error: "Failed to load journal entries", detail: msg }, status, svc.corsHeaders(origin));
-	}
+    // Filter entries linked to the requested project
+    const entries = [];
+    for (const r of records) {
+      const f = r?.fields || {};
+      const projects = Array.isArray(f.Project)  ? f.Project
+                     : Array.isArray(f.Projects) ? f.Projects
+                     : [];
+      if (!projects.includes(projectId)) continue;
+
+      entries.push({
+        id: r.id,
+        category: f.Category || "—",
+        content:  f.Content || f.Body || f.Notes || "",
+        tags: Array.isArray(f.Tags)
+          ? f.Tags
+          : String(f.Tags || "").split(",").map(s => s.trim()).filter(Boolean),
+        createdAt: r.createdTime || f.Created || ""
+      });
+    }
+
+    return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
+  } catch (e) {
+    const msg = String(e?.message || e || "");
+    svc?.log?.error?.("journals.list.fail", { err: msg });
+    const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
+    return svc.json(
+      { ok: false, error: "Failed to load journal entries", detail: msg },
+      status,
+      svc.corsHeaders(origin)
+    );
+  }
 }
 
 /**
