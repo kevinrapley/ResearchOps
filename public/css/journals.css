@@ -103,6 +103,39 @@
 .entry-card:hover {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
+	
+/* Journal excerpts */
+.journal__toolbar {
+	margin: 8px 0 16px 0;
+	}
+
+.excerpts-panel {
+	margin-top: 8px;
+	}
+
+.excerpts-list {
+	margin: 0;
+	padding-left: 16px;
+	}
+
+.excerpt-item {
+	margin: 6px 0;
+	border-left: 3px solid var(--guides-border, #d0d7de);
+	padding-left: 8px;
+	}
+
+.excerpt-item__meta {
+	display: inline-block;
+	font-size: .9rem;
+	opacity: .8;
+	margin-right: 8px;
+	}
+
+.excerpt-item__actions .btn {
+	margin-left: 6px;
+	}
+
+/* transparency begins in the cascade */
 
 /* Category-specific border colours */
 .entry-card[data-category="perceptions"] {
