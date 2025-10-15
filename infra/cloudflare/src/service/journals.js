@@ -188,75 +188,65 @@ export async function getJournalEntry(svc, origin, entryId) {
 
 /**
  * Create a journal entry.
+ * - Accepts `project` or `project_airtable_id`
+ * - Validates category
+ * - Tries common link/content field names to match your base
+ * - Uses existing Airtable internals: createRecords()
+ *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {Request} request
  * @param {string} origin
  * @returns {Promise<Response>}
  */
 export async function createJournalEntry(svc, request, origin) {
-	// Size guard
-	const bodyBuf = await request.arrayBuffer();
-	if (svc?.cfg?.MAX_BODY_BYTES && bodyBuf.byteLength > svc.cfg.MAX_BODY_BYTES) {
-		svc?.log?.warn?.("request.too_large", { size: bodyBuf.byteLength });
+	// 1) Guard payload size
+	const buf = await request.arrayBuffer();
+	if (svc?.cfg?.MAX_BODY_BYTES && buf.byteLength > svc.cfg.MAX_BODY_BYTES) {
+		svc?.log?.warn?.("request.too_large", { size: buf.byteLength });
 		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
 	}
 
-	// Parse JSON
+	// 2) Parse JSON
 	/** @type {{project?:string, project_airtable_id?:string, category?:string, content?:string, tags?:string[]|string, author?:string, initial_memo?:string}} */
 	let p;
 	try {
-		p = JSON.parse(new TextDecoder().decode(bodyBuf));
+		p = JSON.parse(new TextDecoder().decode(buf));
 	} catch {
 		return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin));
 	}
 
-	// Accept both keys for compatibility
+	// 3) Normalise inputs
 	const projectId = (p.project || p.project_airtable_id || "").trim();
 	const category = (p.category || "").trim();
 	const content = (p.content || "").trim();
 
 	if (!projectId || !category || !content) {
 		return svc.json({
-			error: "Missing required fields",
-			detail: "project (or project_airtable_id), category, content"
+			error: "Missing required fields: project or project_airtable_id, category, content"
 		}, 400, svc.corsHeaders(origin));
 	}
 
-	// Validate category
 	const VALID = ["perceptions", "procedures", "decisions", "introspections"];
 	if (!VALID.includes(category)) {
 		return svc.json({
-			error: "Invalid category",
-			detail: `Must be one of: ${VALID.join(", ")}`
+			error: `Invalid category. Must be one of: ${VALID.join(", ")}`
 		}, 400, svc.corsHeaders(origin));
 	}
 
-	// Table resolution (prefer ID over name)
-	const tableRef =
-		(svc.env.AIRTABLE_TABLE_JOURNALS_ID && /^tbl\w+/i.test(svc.env.AIRTABLE_TABLE_JOURNALS_ID)) ?
-		svc.env.AIRTABLE_TABLE_JOURNALS_ID :
-		(svc.env.AIRTABLE_TABLE_JOURNALS || "Journal Entries");
+	// 4) Resolve table (repo uses singular env var)
+	const tableName = svc.env.AIRTABLE_TABLE_JOURNAL || "Journal Entries";
 
-	// Optional helpers
-	let toRich;
-	try {
-		const { mdToAirtableRich } = await import("./internals/richtext.js");
-		toRich = mdToAirtableRich;
-	} catch {
-		toRich = (s) => s; // plain text fallback
-	}
-
-	// Import Airtable client
+	// 5) Imports that exist in the repo
+	const { mdToAirtableRich, safeText } = await import("../core/utils.js");
 	const { createRecords } = await import("./internals/airtable.js");
-	const { safeText } = await import("./internals/util.js").catch(() => ({ safeText: (x) => String(x || "") }));
 
-	// Tags: accept array or comma-delimited string; use comma-delimited text by default
-	const tagsArray = Array.isArray(p.tags) ?
+	// 6) Tags normalisation
+	const tags = Array.isArray(p.tags) ?
 		p.tags.map(String).map(s => s.trim()).filter(Boolean) :
 		String(p.tags || "").split(",").map(s => s.trim()).filter(Boolean);
-	const tagsText = tagsArray.join(", ");
+	const tagsStr = tags.join(", ");
 
-	// We will try combinations of link-field and content-field names to match your base
+	// 7) Try common link + content field names to fit different base schemas
 	const LINK_FIELDS = ["Project", "Projects"];
 	const CONTENT_FIELDS = ["Content", "Body", "Notes"];
 
@@ -264,80 +254,78 @@ export async function createJournalEntry(svc, request, origin) {
 		for (const contentField of CONTENT_FIELDS) {
 			/** @type {Record<string, any>} */
 			const fields = {
-				[linkName]: [projectId], // link to Projects table record (recXXXX)
+				[linkName]: [projectId], // link to Projects (recXXXX…)
 				Category: category,
-				[contentField]: toRich(content),
-				Tags: tagsText,
+				[contentField]: mdToAirtableRich(content),
+				Tags: tagsStr,
 				Author: p.author || ""
 			};
 
-			// Drop empty values so we don't upset Airtable
+			// Drop empty values
 			for (const k of Object.keys(fields)) {
 				const v = fields[k];
 				if (
-					v === undefined ||
-					v === null ||
+					v === undefined || v === null ||
 					(typeof v === "string" && v.trim() === "") ||
 					(Array.isArray(v) && v.length === 0)
-				) {
-					delete fields[k];
-				}
+				) delete fields[k];
 			}
 
 			try {
-				const result = await createRecords(svc.env, tableRef, [{ fields }], svc?.cfg?.TIMEOUT_MS);
-				const id = result?.records?.[0]?.id;
-				if (!id) {
+				const result = await createRecords(svc.env, tableName, [{ fields }], svc?.cfg?.TIMEOUT_MS);
+				const entryId = result?.records?.[0]?.id;
+				if (!entryId) {
 					return svc.json({ error: "Airtable response missing id" }, 502, svc.corsHeaders(origin));
 				}
 
 				if (svc.env.AUDIT === "true") {
-					svc?.log?.info?.("journal.entry.created", { id, category, linkName, contentField, tableRef });
+					svc?.log?.info?.("journal.entry.created", { entryId, linkName, contentField, tableName });
 				}
 
-				// Optional follow-on memo (kept synchronous here; ignore failures)
+				// Optional: create initial memo (best-effort, errors ignored)
 				if (p.initial_memo) {
 					try {
 						const { createMemo } = await import("./reflection/memos.js");
-						const memoReq = new Request("https://internal.local/inline", {
+						const req = new Request("https://local/inline", {
 							method: "POST",
 							headers: { "content-type": "application/json" },
 							body: JSON.stringify({
 								project_id: projectId,
 								memo_type: "analytical",
 								content: p.initial_memo,
-								linked_entries: [id],
+								linked_entries: [entryId],
 								author: p.author
 							})
 						});
-						await createMemo(svc, memoReq, origin);
+						await createMemo(svc, req, origin);
 					} catch (memoErr) {
 						svc?.log?.warn?.("journal.entry.memo.create_fail", { err: String(memoErr || "") });
 					}
 				}
 
-				return svc.json({ ok: true, id }, 201, svc.corsHeaders(origin));
+				return svc.json({ ok: true, id: entryId }, 201, svc.corsHeaders(origin));
+
 			} catch (err) {
 				const msg = String(err?.message || err || "");
-				// If the failure is clearly about an unknown field, try the next candidate
+				// If Airtable says an unknown field, try the next candidate
 				if (/422/.test(msg) && /UNKNOWN_FIELD_NAME/i.test(msg)) {
 					continue;
 				}
-				// Otherwise, surface the upstream error text for fast diagnosis
-				svc?.log?.error?.("airtable.journal.create.fail", { err: msg, linkName, contentField, tableRef });
+				// Otherwise surface the upstream error for fast diagnosis
+				svc?.log?.error?.("airtable.journal.create.fail", { err: msg, linkName, contentField, tableName });
 				return svc.json({
 					error: "Failed to create journal entry",
-					detail: safeText ? safeText(msg) : msg
+					detail: safeText(msg)
 				}, 500, svc.corsHeaders(origin));
 			}
 		}
 	}
 
-	// If we got here, neither Project/Projects nor Content/Body/Notes matched your base
-	svc?.log?.error?.("airtable.journal.create.link_or_content_field.none_matched", { tableRef });
+	// No field combination worked
+	svc?.log?.error?.("airtable.journal.create.schema_mismatch", { tableName });
 	return svc.json({
 		error: "Field configuration error",
-		detail: `No matching link/content field names found. Add a link-to-record field in "${tableRef}" that links to Projects (try: ${LINK_FIELDS.join(", ")}), and ensure one of ${CONTENT_FIELDS.join(", ")} exists.`
+		detail: `No matching link/content field names. Ensure "${tableName}" has a link field to Projects (e.g. ${LINK_FIELDS.join(" / ")}) and one of: ${CONTENT_FIELDS.join(" / ")}.`
 	}, 422, svc.corsHeaders(origin));
 }
 
