@@ -76,9 +76,6 @@ function canonicalizePath(pathname) {
 		p = p.slice(0, -1);
 	}
 
-	const rawPath = url.pathname || "/";
-	const p = rawPath.replace(/\/+$/, "").toLowerCase(); // strip trailing slashes + case-fold
-
 	// Diagnostic: Airtable create capability
 	if (url.pathname === "/api/_diag/airtable") {
 		if (request.method === "OPTIONS") {
