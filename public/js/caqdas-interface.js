@@ -223,8 +223,7 @@ async function loadEntries() {
 
 		// Accept either {entries:[...]} or a raw array (belt & braces)
 		const entries = Array.isArray(data?.entries) ? data.entries :
-			Array.isArray(data) ? data :
-			[];
+			Array.isArray(data) ? data : [];
 
 		// Normalize minimal shape for render
 		state.entries = entries.map(e => ({
@@ -526,27 +525,107 @@ async function loadMemos() {
  * @param {boolean} [error=false]
  */
 function renderMemos(error = false) {
-	const wrap = $("#memos-container");
+	const wrap = document.querySelector('[data-role="memos-container"]') || document.getElementById("memos-container");
 	if (!wrap) return;
 
 	if (error) {
 		wrap.innerHTML = "<p>Could not load memos.</p>";
 		return;
 	}
-	if (!state.memos.length) {
+
+	const activeFilter = document.querySelector('.filter-btn.active')?.dataset.memoFilter || "all";
+	const items = (state.memos || []).filter(m => {
+		if (activeFilter === "all") return true;
+		const t = (m.memoType || m.type || "").toLowerCase();
+		return t === activeFilter.toLowerCase();
+	});
+
+	if (!items.length) {
 		wrap.innerHTML = "<p>No memos yet.</p>";
 		return;
 	}
 
-	wrap.innerHTML = state.memos.map(m => `
-		<article class="memo-card">
-			<header>
-				<strong>${escapeHtml(m.memoType || "Memo")}</strong>
-				<time>${formatWhen(m.createdAt)}</time>
-			</header>
-			<p>${escapeHtml(m.content || "")}</p>
-		</article>
-	`).join("");
+	wrap.innerHTML = items.map(m => `
+    <article class="memo-card" data-id="${m.id || ""}">
+      <header class="memo-header">
+        <strong>${escapeHtml(m.title || m.memoType || "Memo")}</strong>
+        <time>${formatWhen(m.createdAt)}</time>
+      </header>
+      ${m.title ? `<p class="memo-title">${escapeHtml(m.title)}</p>` : ""}
+      <p>${escapeHtml(m.content || "")}</p>
+    </article>
+  `).join("");
+}
+
+/**
+ * Wire the "+ New Memo" button, form show/hide, submit, and filter chips.
+ * Matches your exact HTML:
+ *  - #new-memo-btn
+ *  - #memo-form (section)
+ *  - #add-memo-form
+ *  - #cancel-memo-btn
+ *  - .filter-btn[data-memo-filter]
+ */
+function setupNewMemoWiring() {
+	const newBtn = document.getElementById("new-memo-btn");
+	const formSection = document.getElementById("memo-form");
+	const form = document.getElementById("add-memo-form");
+	const cancelBtn = document.getElementById("cancel-memo-btn");
+
+	function toggleForm(show) {
+		if (!formSection) return;
+		const shouldShow = typeof show === "boolean" ? show : formSection.hidden;
+		formSection.hidden = !shouldShow;
+		if (shouldShow) form?.querySelector("#memo-content, textarea, input, select")?.focus();
+	}
+
+	if (newBtn) newBtn.addEventListener("click", () => toggleForm(true));
+	if (cancelBtn) cancelBtn.addEventListener("click", () => toggleForm(false));
+
+	if (form) {
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const fd = new FormData(form);
+
+			const payload = {
+				project_id: state.projectId,
+				memo_type: (fd.get("memo_type") || "analytical").toString(),
+				title: (fd.get("title") || "").toString(), // optional; server will ignore if unused
+				content: (fd.get("content") || "").toString(),
+				// you can add author/linked_entries here later if you surface them in the form
+			};
+
+			if (!payload.content.trim()) {
+				flash("Content is required.");
+				return;
+			}
+
+			try {
+				await httpJSON("/api/memos", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
+				});
+				form.reset();
+				toggleForm(false);
+				flash("Memo created.");
+				await loadMemos();
+			} catch (err) {
+				console.error(err);
+				flash("Could not create memo.");
+			}
+		});
+	}
+
+	// Filters
+	document.querySelectorAll('.filter-btn[data-memo-filter]').forEach(btn => {
+		btn.addEventListener("click", (e) => {
+			const target = e.currentTarget;
+			document.querySelectorAll('.filter-btn[data-memo-filter]').forEach(b => b.classList.remove("active"));
+			target.classList.add("active");
+			renderMemos(); // re-render with the new filter
+		});
+	});
 }
 
 /* =========================
@@ -661,6 +740,7 @@ async function init() {
 	setupTabs();
 	setupNewEntryWiring();
 	setupAddCodeWiring();
+	setupNewMemoWiring();
 
 	await Promise.allSettled([
 		loadEntries(),
