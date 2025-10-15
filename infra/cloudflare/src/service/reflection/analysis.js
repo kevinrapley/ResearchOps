@@ -16,50 +16,65 @@
  */
 
 import { listAll } from "../internals/airtable.js";
-const isTableId = (s) => typeof s === "string" && /^tbl[a-zA-Z0-9]{14,}$/.test(s);
 
-function ok(svc, origin, data) { return svc.json({ ok: true, ...data }, 200, svc.corsHeaders(origin)); }
+/* ---------- helpers ---------- */
+function ok(svc, origin, data) {
+	return svc.json({ ok: true, ...data }, 200, svc.corsHeaders(origin));
+}
 
-function bad(svc, origin, msg) { return svc.json({ ok: false, error: msg }, 400, svc.corsHeaders(origin)); }
+function bad(svc, origin, msg) {
+	return svc.json({ ok: false, error: msg }, 400, svc.corsHeaders(origin));
+}
 
 function err(svc, origin, status, msg) {
 	svc.log?.error?.("analysis.error", { err: msg });
 	return svc.json({ ok: false, error: msg }, status, svc.corsHeaders(origin));
 }
 
+/* ---------- fetchers ---------- */
 async function fetchCodesByProject(svc, projectId) {
-	const tableRef = isTableId(svc.env.AIRTABLE_TABLE_CODES_ID) ? svc.env.AIRTABLE_TABLE_CODES_ID : (svc.env.AIRTABLE_TABLE_CODES || "Codes");
+	const tableRef = svc.env.AIRTABLE_TABLE_CODES || "Codes";
 	const { records } = await listAll(svc.env, tableRef, { pageSize: 100 }, svc.cfg?.TIMEOUT_MS);
+
 	const LINK_FIELDS = ["Project", "Projects"];
 	const map = new Map();
+
 	for (const r of records) {
 		const f = r?.fields || {};
 		const linked = LINK_FIELDS.some((lf) => Array.isArray(f[lf]) && f[lf].includes(projectId));
 		if (!linked) continue;
 		map.set(r.id, { id: r.id, name: f.Name || "—" });
 	}
+
 	return map;
 }
 
 async function fetchJournalsByProject(svc, projectId) {
-	const tableRef = isTableId(svc.env.AIRTABLE_TABLE_JOURNALS_ID) ? svc.env.AIRTABLE_TABLE_JOURNALS_ID : (svc.env.AIRTABLE_TABLE_JOURNALS || "Journals");
+	const tableRef = svc.env.AIRTABLE_TABLE_JOURNAL || "Journals";
 	const { records } = await listAll(svc.env, tableRef, { pageSize: 100 }, svc.cfg?.TIMEOUT_MS);
+
 	const out = [];
 	for (const r of records) {
 		const f = r?.fields || {};
-		const projects = Array.isArray(f.Project) ? f.Project : Array.isArray(f.Projects) ? f.Projects : [];
+		const projects = Array.isArray(f.Project) ?
+			f.Project :
+			Array.isArray(f.Projects) ?
+			f.Projects :
+			[];
 		if (!projects.includes(projectId)) continue;
+
 		out.push({
 			id: r.id,
-			body: f.Body || f.Notes || "",
+			body: f.Body || f.Content || f.Notes || "",
 			codeIds: Array.isArray(f.Codes) ? f.Codes : [],
 			createdAt: r.createdTime || f.Created || ""
 		});
 	}
+
 	return out;
 }
 
-/* ─────────────── Timeline ─────────────── */
+/* ---------- timeline ---------- */
 export async function timeline(svc, origin, url) {
 	const projectId = url.searchParams.get("project") || "";
 	if (!projectId) return bad(svc, origin, "Missing ?project");
@@ -79,7 +94,7 @@ export async function timeline(svc, origin, url) {
 	}
 }
 
-/* ─────────────── Co-occurrence ─────────────── */
+/* ---------- co-occurrence ---------- */
 export async function cooccurrence(svc, origin, url) {
 	const projectId = url.searchParams.get("project") || "";
 	if (!projectId) return bad(svc, origin, "Missing ?project");
@@ -94,8 +109,7 @@ export async function cooccurrence(svc, origin, url) {
 			fetchJournalsByProject(svc, projectId)
 		]);
 
-		// Build pairs within each entry
-		const pairCounts = new Map(); // key "a|b" sorted
+		const pairCounts = new Map();
 		for (const e of entries) {
 			const ids = e.codeIds.filter((id) => codesMap.has(id));
 			ids.sort();
@@ -107,16 +121,18 @@ export async function cooccurrence(svc, origin, url) {
 			}
 		}
 
-		// Nodes (codes used at least once)
 		const used = new Set();
 		for (const key of pairCounts.keys()) {
 			const [a, b] = key.split("|");
 			used.add(a);
 			used.add(b);
 		}
-		const nodes = Array.from(used).map((id) => ({ id, label: codesMap.get(id)?.name || id }));
 
-		// Links
+		const nodes = Array.from(used).map((id) => ({
+			id,
+			label: codesMap.get(id)?.name || id
+		}));
+
 		const links = Array.from(pairCounts.entries()).map(([key, count]) => {
 			const [source, target] = key.split("|");
 			return { source, target, weight: count };
@@ -130,7 +146,7 @@ export async function cooccurrence(svc, origin, url) {
 	}
 }
 
-/* ─────────────── Retrieval ─────────────── */
+/* ---------- retrieval ---------- */
 export async function retrieval(svc, origin, url) {
 	const projectId = url.searchParams.get("project") || "";
 	const q = (url.searchParams.get("q") || "").toLowerCase().trim();
@@ -175,13 +191,20 @@ export async function retrieval(svc, origin, url) {
 	}
 }
 
-/* ─────────────── Export ─────────────── */
+/* ---------- export ---------- */
 export async function exportAnalysis(svc, origin, url) {
 	const projectId = url.searchParams.get("project") || "";
 	if (!projectId) return bad(svc, origin, "Missing ?project");
 
 	if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
-		return ok(svc, origin, { export: { projectId, generatedAt: new Date().toISOString(), codes: [], timeline: [] } });
+		return ok(svc, origin, {
+			export: {
+				projectId,
+				generatedAt: new Date().toISOString(),
+				codes: [],
+				timeline: []
+			}
+		});
 	}
 
 	try {
