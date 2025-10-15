@@ -90,6 +90,29 @@ function canonicalizePath(pathname) {
 	return p;
 }
 
+export async function routeRequest(service, request) {
+	const origin = request.headers.get("Origin") || "*";
+	const url = new URL(request.url);
+
+	try {
+		// … your existing routes (including /api/journal-entries GET) …
+		// return a Response for matched routes
+
+		// fallthrough 404
+		return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
+			status: 404,
+			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+		});
+	} catch (e) {
+		const msg = String(e?.message || e || "");
+		service?.log?.error?.("router.fatal", { err: msg });
+		return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
+			status: 500,
+			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+		});
+	}
+}
+
 /**
  * Issue a redirect if canonical path differs (preserve query/hash).
  * @param {Request} request
