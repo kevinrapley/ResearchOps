@@ -212,43 +212,87 @@ function switchTab(name) {
  * @returns {Promise<void>}
  */
 async function loadEntries() {
-	if (!state.projectId) return;
-	try {
-		const data = await httpJSON(`/api/journal-entries?project=${encodeURIComponent(state.projectId)}`);
-		state.entries = Array.isArray(data?.entries) ? data.entries : [];
-		renderEntries();
-	} catch (e) {
-		console.error("loadEntries error:", e);
-		flash(`Could not load journal entries. ${e?.message || ""}`.trim());
+	if (!state.projectId) {
+		console.debug("[journals] skip load: no projectId");
+		return;
 	}
+
+	try {
+		const url = `/api/journal-entries?project=${encodeURIComponent(state.projectId)}`;
+		const data = await httpJSON(url);
+
+		// Accept either {entries:[...]} or a raw array (belt & braces)
+		const entries = Array.isArray(data?.entries) ? data.entries :
+			Array.isArray(data) ? data :
+			[];
+
+		// Normalize minimal shape for render
+		state.entries = entries.map(e => ({
+			id: e.id,
+			category: e.category || "—",
+			content: e.content ?? e.body ?? "",
+			tags: Array.isArray(e.tags) ? e.tags : String(e.tags || "")
+				.split(",").map(s => s.trim()).filter(Boolean),
+			createdAt: e.createdAt || e.created_at || ""
+		}));
+
+		console.debug("[journals] loaded", { count: state.entries.length, sample: state.entries[0] });
+		renderEntries();
+	} catch (err) {
+		console.error("loadEntries error:", err);
+		flash(`Could not load journal entries. ${err && err.message ? err.message : ""}`);
+		// still render the placeholder so the section is deterministic
+		state.entries = [];
+		renderEntries();
+	}
+}
+
+// try multiple containers so we don't depend on a single id
+function getJournalContainer() {
+	return (
+		document.querySelector("#journal-entries") ||
+		document.querySelector('[data-role="journal-entries"]') ||
+		document.querySelector("#entries") ||
+		document.querySelector("#journalList")
+	);
 }
 
 /**
  * Renders the journal entries list.
  */
 function renderEntries() {
-	const wrap = $("#journal-entries");
-	if (!wrap) return;
+	const wrap = getJournalContainer();
+	if (!wrap) {
+		console.warn("[journals] container not found; tried #journal-entries, [data-role=journal-entries], #entries, #journalList");
+		return;
+	}
+
+	// Ensure the panel is visible if we're on the Journal tab
+	const panel = document.getElementById("journal-panel");
+	if (panel && state.currentTab === "journal") {
+		panel.hidden = false;
+	}
 
 	if (!state.entries.length) {
-		wrap.innerHTML = "<p>No journal entries yet.</p>";
+		wrap.innerHTML = "<p>No entries yet.</p>";
 		return;
 	}
 
 	wrap.innerHTML = state.entries.map(en => `
 		<article class="journal-card" data-id="${en.id}">
 			<header class="journal-header">
-				<strong>${escapeHtml(en.category || "—")}</strong>
+				<strong>${escapeHtml(en.category)}</strong>
 				<time>${formatWhen(en.createdAt)}</time>
 			</header>
-			<p>${escapeHtml(en.content || en.body || "")}</p>
+			<p>${escapeHtml(en.content)}</p>
 			<footer class="journal-footer">
 				<button class="btn btn--secondary btn-small" data-act="delete" data-id="${en.id}">Delete</button>
 			</footer>
 		</article>
 	`).join("");
 
-	$$('[data-act="delete"]', wrap).forEach(btn => {
+	// hook delete handlers
+	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
 }
@@ -607,7 +651,7 @@ function renderCooccurrence(graph) {
 async function init() {
 	const url = new URL(location.href);
 	project: state.projectId,
-	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
+		state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
 
 	if (!state.projectId) {
 		flash("No project id in URL. Some features disabled.");
