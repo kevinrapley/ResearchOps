@@ -91,26 +91,53 @@ function canonicalizePath(pathname) {
 }
 
 export async function routeRequest(service, request) {
-	const origin = request.headers.get("Origin") || "*";
-	const url = new URL(request.url);
+  const origin = request.headers.get("Origin") || "*";
+  const url = new URL(request.url);
+  const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase(); // normalize
 
-	try {
-		// … your existing routes (including /api/journal-entries GET) …
-		// return a Response for matched routes
+  try {
+    // CORS preflight (optional)
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: service.corsHeaders(origin) });
+    }
 
-		// fallthrough 404
-		return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
-			status: 404,
-			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-		});
-	} catch (e) {
-		const msg = String(e?.message || e || "");
-		service?.log?.error?.("router.fatal", { err: msg });
-		return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
-			status: 500,
-			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-		});
-	}
+    /* ─────────────── Journals: list ─────────────── */
+    if (p === "/api/journal-entries" && request.method === "GET") {
+      return service.listJournalEntries(origin, url);   // <— pass (origin, url)
+    }
+
+    /* ─────────────── Journals: create ─────────────── */
+    if (p === "/api/journal-entries" && request.method === "POST") {
+      return service.createJournalEntry(request, origin); // <— pass (request, origin)
+    }
+
+    /* ─────────────── Journals: delete ─────────────── */
+    if (p.startsWith("/api/journal-entries/") && request.method === "DELETE") {
+      const entryId = decodeURIComponent(p.split("/").pop());
+      return service.deleteJournalEntry(origin, entryId); // <— pass (origin, entryId)
+    }
+
+    /* ─────────────── Diagnostics ─────────────── */
+    if (p === "/api/_diag/airtable" || p === "/api/diag/airtable") {
+      if (request.method === "GET" || request.method === "POST") {
+        return service.diagAirtableCreate(request, origin);
+      }
+      return new Response("Method Not Allowed", { status: 405, headers: service.corsHeaders(origin) });
+    }
+
+    // 404 JSON (no HTML)
+    return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
+      status: 404,
+      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+    });
+  } catch (e) {
+    const msg = String(e?.message || e || "");
+    service?.log?.error?.("router.fatal", { err: msg, path: url.pathname, method: request.method });
+    return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
+      status: 500,
+      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+    });
+  }
 }
 
 /**
