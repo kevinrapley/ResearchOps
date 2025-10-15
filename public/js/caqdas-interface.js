@@ -12,6 +12,39 @@ const entryTextarea = document.getElementById("entry-content");
 // After saving a journal entry, initialise with real entry id
 let excerptMgr;
 
+// Guard all Journal-specific code so the rest of the page keeps working.
+document.addEventListener("DOMContentLoaded", async () => {
+	try {
+		const textarea = document.querySelector("#entry-content");
+		if (textarea) {
+			// Lazy-load only when the journal editor exists
+			const mod = await import("/components/journal-excerpts.js");
+			const initJournalExcerpts = mod.initJournalExcerpts;
+
+			// You may already set entryId after save; for now, a placeholder:
+			const entryId = textarea.dataset.entryId || null;
+
+			const mgr = initJournalExcerpts({
+				entryId,
+				textarea: "#entry-content",
+				list: "#excerpts-list",
+				addBtn: "#btn-add-excerpt"
+			});
+
+			// Persist safely (won’t throw if API missing)
+			textarea.addEventListener("excerpt:created", (e) => {
+				fetch("/api/excerpts", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(e.detail.excerpt)
+				}).catch(console.warn);
+			});
+		}
+	} catch (err) {
+		console.error("[journal] init failed:", err);
+	}
+});
+
 function bootExcerpts(entryId) {
 	excerptMgr = initJournalExcerpts({
 		entryId,
@@ -28,7 +61,7 @@ function bootExcerpts(entryId) {
 		await fetch("/api/journal/excerpts", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify(payload)
+			body: JSON.stringify(entryId, start, end, text, author)
 		});
 	});
 
