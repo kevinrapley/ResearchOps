@@ -120,9 +120,7 @@ export class ResearchOpsService {
 	/* ─────────────── Journal Entries ─────────────── */
 	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
 	createJournalEntry = (req, origin) => Journals.createJournalEntry(this, req, origin);
-	// ✅ add this line using the same style:
 	diagAirtableCreate = (req, origin) => Journals.diagAirtableCreate(this, req, origin);
-
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
@@ -146,6 +144,7 @@ export class ResearchOpsService {
 	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
 	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
+	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
 
 	/* ─────────────── Analysis ─────────────── */
 	/** @type {(origin:string, url:URL)=>Promise<Response>} */
