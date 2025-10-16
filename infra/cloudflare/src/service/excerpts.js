@@ -22,40 +22,6 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 const TABLE = "Excerpts";
 
-/* ──────────────── CREATE ──────────────── */
-/**
- * POST /api/excerpts
- * Body: { entryId, start, end, text, createdAt?, author?, codes?, memos?, muralWidgetId?, syncedAt? }
- */
-export async function createExcerpt(request, origin) {
-	let body;
-	try {
-		body = await request.json();
-	} catch {
-		return jsonResponse({ ok: false, error: "Invalid JSON" }, 400);
-	}
-
-	if (!body.entryId || typeof body.text !== "string") {
-		return jsonResponse({ ok: false, error: "Missing required fields" }, 400);
-	}
-
-	const fields = {
-		"Entry ID": Array.isArray(body.entryId) ? body.entryId : [body.entryId],
-		"Start": Number(body.start) || 0,
-		"End": Number(body.end) || 0,
-		"Text": body.text,
-		"Created At": body.createdAt || new Date().toISOString(),
-		"Author": body.author || "Unknown",
-		"Codes": body.codes || [],
-		"Memos": body.memos || [],
-		"Mural Widget ID": body.muralWidgetId || "",
-		"Synced At": body.syncedAt || null
-	};
-
-	const record = await airtable.create("Excerpts", fields);
-	return jsonResponse({ ok: true, record }, 201);
-}
-
 /* ──────────────── LIST ──────────────── */
 /**
  * GET /api/excerpts?entry=<entryId>
@@ -102,7 +68,11 @@ export async function updateExcerpt(request, origin, excerptId) {
 	return jsonResponse({ ok: true, record });
 }
 
-/** POST /api/excerpts */
+/* ──────────────── CREATE ──────────────── */
+/**
+ * POST /api/excerpts
+ * Body: { entryId, start, end, text, createdAt?, author?, codes?, memos?, muralWidgetId?, syncedAt? }
+ */
 export async function createExcerpt(service, request, origin) {
 	try {
 		const body = await request.json().catch(() => ({}));
