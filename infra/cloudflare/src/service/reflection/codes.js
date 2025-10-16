@@ -2,7 +2,7 @@
  * @file service/reflection/codes.js
  * @summary Codes service (list/create/update) for CAQDAS.
  */
-import { listAll, createRecords, patchRecords } from "../../internals/airtable.js";
+import { listAll, createRecords, patchRecords } from "../internals/airtable.js";
 
 const TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || "Codes";
 
