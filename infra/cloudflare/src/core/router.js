@@ -1,3 +1,17 @@
+if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
+  return new Response(JSON.stringify({
+    ok: true,
+    time: new Date().toISOString(),
+    note: "direct route"
+  }), {
+    status: 200,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    }
+  });
+}
+
 /**
  * @file src/core/router.js
  * @module core/router
