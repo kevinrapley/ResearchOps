@@ -1,154 +1,96 @@
 /**
- * @file src/service/reflection/codes.js
- * @module service/reflection/codes
- * @summary Codes CRUD-lite + retrieval/co-occurrence helpers for CAQDAS UI.
- *
- * Routes:
- *   GET  /api/codes?project=<rec...>
- *   POST /api/codes            { name, projectId, color?, description?, parentId? }
+ * @file service/reflection/codes.js
+ * @summary Codes service (list/create/update) for CAQDAS.
  */
+import { listAll, createRecords, patchRecords } from "../../internals/airtable.js";
 
-import { listAll } from "../internals/airtable.js";
+const TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || "Codes";
 
-/** quick table-id detector */
-const isTableId = (s) => typeof s === "string" && /^tbl[a-zA-Z0-9]{14,}$/.test(s);
-
-/** minimal Airtable POST (kept local to this module to avoid changing internals) */
-async function airtableCreate(env, tableRef, fields, timeoutMs = 120000) {
-	const base = env.AIRTABLE_BASE_ID;
-	const token = env.AIRTABLE_API_KEY || env.AIRTABLE_ACCESS_TOKEN;
-	if (!base || !token) throw new Error("Airtable credentials missing");
-
-	const url = `https://api.airtable.com/v0/${encodeURIComponent(base)}/${encodeURIComponent(tableRef)}`;
-	const body = JSON.stringify({ fields });
-	const ctrl = new AbortController();
-	const t = setTimeout(() => ctrl.abort(), timeoutMs);
-
-	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			"authorization": `Bearer ${token}`,
-			"content-type": "application/json"
-		},
-		body,
-		signal: ctrl.signal
-	}).catch((e) => { throw new Error(`Airtable POST failed: ${String(e)}`); });
-	clearTimeout(t);
-
-	const text = await res.text();
-	if (!res.ok) throw new Error(`Airtable ${res.status}: ${text}`);
-	return JSON.parse(text);
+// Helper: map Airtable record → UI code object
+function mapCodeRecord(r) {
+	const f = r.fields || {};
+	return {
+		id: r.id,
+		name: f["Name"] || f["Code"] || f["Short Name"] || "",
+		description: f["Definition"] || f["Description"] || "",
+		colour: f["Colour"] || f["Color"] || "#505a5f",
+		parentId: Array.isArray(f["Parent"]) ? f["Parent"][0] : (f["Parent"] || null),
+		projectIds: Array.isArray(f["Project ID"]) ? f["Project ID"] : (f["Project ID"] ? [f["Project ID"]] : [])
+	};
 }
 
-/**
- * GET /api/codes?project=rec...
- */
-export async function listCodes(svc, origin, url) {
-	const projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
-	if (!projectId) {
-		return svc.json({ ok: false, error: "Missing ?project" }, 400, svc.corsHeaders(origin));
-	}
-
-	// dev-friendly noop
-	if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
-		return svc.json({ ok: true, codes: [] }, 200, svc.corsHeaders(origin));
-	}
-
-	const tableId = svc.env.AIRTABLE_TABLE_CODES_ID || "";
-	const tableName = svc.env.AIRTABLE_TABLE_CODES || "Codes";
-	const tableRef = isTableId(tableId) ? tableId : tableName;
-
+/** GET /api/codes?project=recXXXXXXXX */
+export async function listCodes(service, origin, url) {
 	try {
-		const { records } = await listAll(svc.env, tableRef, { pageSize: 100 }, svc.cfg?.TIMEOUT_MS);
-		const LINK_FIELDS = ["Project", "Projects"];
-		const out = [];
+		const project = url.searchParams.get("project") || "";
+		const extraParams = project ?
+			{ filterByFormula: `FIND('${project}', ARRAYJOIN({Project ID}))` } :
+			undefined;
 
-		for (const r of records) {
-			const f = r?.fields || {};
-			const linked = LINK_FIELDS.some((lf) => Array.isArray(f[lf]) && f[lf].includes(projectId));
-			if (!linked) continue;
+		const { records } = await listAll(service.env, TABLE(service), { extraParams });
+		const codes = (records || []).map(mapCodeRecord);
 
-			out.push({
-				id: r.id,
-				name: f.Name || "—",
-				color: f.Color || "",
-				description: f.Description || "",
-				parentId: (Array.isArray(f.Parent) && f.Parent[0]) || "",
-				projectIds: LINK_FIELDS.flatMap((lf) => Array.isArray(f[lf]) ? f[lf] : [])
-			});
+		return service.json({ ok: true, codes }, 200, service.corsHeaders(origin));
+	} catch (err) {
+		service.log.error("codes.list", { err: String(err) });
+		return service.json({ ok: false, error: "Internal error" }, 500, service.corsHeaders(origin));
+	}
+}
+
+/** POST /api/codes */
+export async function createCode(service, request, origin) {
+	try {
+		const body = await request.json().catch(() => ({}));
+		const name = (body.name || "").trim();
+		if (!name) {
+			return service.json({ ok: false, error: "name is required" }, 400, service.corsHeaders(origin));
 		}
 
-		// basic stable sort
-		out.sort((a, b) => a.name.localeCompare(b.name));
-		return svc.json({ ok: true, codes: out }, 200, svc.corsHeaders(origin));
+		const fields = {
+			"Name": name,
+			"Definition": body.description || body.definition || "",
+			"Colour": body.colour || body.color || "#1d70b8"
+		};
+
+		const projectId = body.projectId || body.project || null;
+		if (projectId) fields["Project ID"] = [projectId];
+
+		const parentId = body.parentId || body.parent || null;
+		if (parentId) fields["Parent"] = [parentId];
+
+		const resp = await createRecords(service.env, TABLE(service), [{ fields }]);
+		const record = (resp.records || [])[0] || null;
+
+		return service.json({ ok: true, record }, 201, service.corsHeaders(origin));
 	} catch (err) {
-		const msg = String(err || "");
-		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
-		svc.log?.error?.("codes.list.error", { err: msg });
-		return svc.json({ ok: false, error: msg }, status, svc.corsHeaders(origin));
+		service.log.error("codes.create", { err: String(err) });
+		return service.json({ ok: false, error: "Internal error" }, 500, service.corsHeaders(origin));
 	}
 }
 
-/**
- * POST /api/codes
- * Body: { name, projectId, color?, description?, parentId? }
- */
-export async function createCode(svc, req, origin) {
-	let payload = {};
-	try { payload = await req.json(); } catch { /* ignore */ }
-
-	const name = (payload.name || "").trim();
-	const projectId = (payload.projectId || "").trim();
-	const color = (payload.color || "").trim();
-	const description = (payload.description || "").trim();
-	const parentId = (payload.parentId || "").trim();
-
-	if (!name || !projectId) {
-		return svc.json({ ok: false, error: "Missing 'name' or 'projectId'." }, 400, svc.corsHeaders(origin));
-	}
-
-	// dev-friendly stub if env missing
-	if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
-		const fake = {
-			id: `dev_${Date.now()}`,
-			name,
-			color,
-			description,
-			parentId,
-			projectIds: [projectId]
-		};
-		return svc.json({ ok: true, code: fake, dev: true }, 200, svc.corsHeaders(origin));
-	}
-
-	const tableId = svc.env.AIRTABLE_TABLE_CODES_ID || "";
-	const tableName = svc.env.AIRTABLE_TABLE_CODES || "Codes";
-	const tableRef = isTableId(tableId) ? tableId : tableName;
-
+/** PATCH /api/codes/:id (optional) */
+export async function updateCode(service, request, origin, codeId) {
 	try {
-		const fields = {
-			"Name": name,
-			"Project": [projectId]
-		};
-		if (color) fields["Color"] = color;
-		if (description) fields["Description"] = description;
-		if (parentId) fields["Parent"] = [parentId];
+		const body = await request.json().catch(() => ({}));
+		const fields = {};
+		if ("name" in body) fields["Name"] = body.name || "";
+		if ("description" in body || "definition" in body) fields["Definition"] = body.description || body.definition || "";
+		if ("colour" in body || "color" in body) fields["Colour"] = body.colour || body.color || "#1d70b8";
+		if ("parentId" in body || "parent" in body) {
+			const v = body.parentId || body.parent || null;
+			fields["Parent"] = v ? [v] : [];
+		}
+		if ("projectId" in body || "project" in body) {
+			const v = body.projectId || body.project || null;
+			fields["Project ID"] = v ? [v] : [];
+		}
 
-		const rec = await airtableCreate(svc.env, tableRef, fields, svc.cfg?.TIMEOUT_MS);
-		const r = rec?.id ? rec : (rec?.records?.[0] || rec); // support bulk/one
+		const resp = await patchRecords(service.env, TABLE(service), [{ id: codeId, fields }]);
+		const record = (resp.records || [])[0] || null;
 
-		const out = {
-			id: r.id,
-			name,
-			color,
-			description,
-			parentId,
-			projectIds: [projectId]
-		};
-		return svc.json({ ok: true, code: out }, 201, svc.corsHeaders(origin));
+		return service.json({ ok: true, record }, 200, service.corsHeaders(origin));
 	} catch (err) {
-		const msg = String(err || "");
-		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
-		svc.log?.error?.("codes.create.error", { err: msg });
-		return svc.json({ ok: false, error: msg }, status, svc.corsHeaders(origin));
+		service.log.error("codes.update", { err: String(err) });
+		return service.json({ ok: false, error: "Internal error" }, 500, service.corsHeaders(origin));
 	}
 }
