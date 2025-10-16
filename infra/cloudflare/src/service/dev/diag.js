@@ -7,7 +7,7 @@
  */
 
 import { makeTableUrl, authHeaders } from "../internals/airtable.js";
-import { fetchWithTimeout, safeText } from "../core/utils.js";
+import { fetchWithTimeout, safeText } from "../../core/utils.js";
 
 /**
  * GET /api/_diag/airtable?table=<TableName>&project=<recId>&field=Project&nofilter=0
