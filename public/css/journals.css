@@ -12,13 +12,85 @@
    ========================================================================== */
 
 /* CSS DIRECTORY
-	1. =FILTER CHIPS (category filters)
-	2. =ENTRY CARDS
-	3. =CATEGORY BADGES
-	4. =EDIT MODE
-	5. =CODING INTERFACE
-	6. =RESPONSIVE
+	1. =GOV.UK TABS
+	2. =FILTER CHIPS (category filters)
+	3. =ENTRY CARDS
+	4. =CATEGORY BADGES
+	5. =EDIT MODE
+	6. =EXCERPTS
+	7. =CODING INTERFACE
+	8. =RESPONSIVE
 */
+
+/* === =GOV.UK TABS ========================================= */
+
+.govuk-tabs {
+	margin-bottom: 24px;
+	}
+
+.govuk-tabs__title {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	border: 0;
+	white-space: nowrap;
+	}
+
+.govuk-tabs__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+.govuk-tabs__list-item {
+	margin-right: 0;
+	}
+
+.govuk-tabs__tab {
+	display: block;
+	padding: 12px 20px;
+	border-bottom: 4px solid transparent;
+	color: #1d70b8;
+	text-decoration: none;
+	font-weight: 400;
+	}
+
+.govuk-tabs__tab:hover {
+	color: #003078;
+	}
+
+.govuk-tabs__tab:focus {
+	outline: 3px solid transparent;
+	color: #0b0c0c;
+	background-color: #fd0;
+	box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+	text-decoration: none;
+	}
+
+.govuk-tabs__list-item--selected .govuk-tabs__tab {
+	color: #0b0c0c;
+	border-bottom-color: #1d70b8;
+	font-weight: 600;
+	}
+
+.govuk-tabs__list-item--selected .govuk-tabs__tab:hover {
+	color: #0b0c0c;
+	}
+
+.govuk-tabs__panel {
+	margin-top: 24px;
+	}
+
+.govuk-tabs__panel--hidden {
+	display: none;
+	}
 
 /* === =FILTER CHIPS (distinct from tabs) =================== */
 
