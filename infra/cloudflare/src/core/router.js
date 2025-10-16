@@ -1,17 +1,3 @@
-if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
-  return new Response(JSON.stringify({
-    ok: true,
-    time: new Date().toISOString(),
-    note: "direct route"
-  }), {
-    status: 200,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store"
-    }
-  });
-}
-
 /**
  * @file src/core/router.js
  * @module core/router
@@ -98,6 +84,19 @@ export async function routeRequest(service, request) {
 	const url = new URL(request.url);
 	const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase();
 
+	if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
+  		return new Response(JSON.stringify({
+    		ok: true,
+    		time: new Date().toISOString(),
+    		note: "direct route"
+  		}), {
+    		status: 200,
+    		headers: {
+      		"content-type": "application/json; charset=utf-8",
+      		"cache-control": "no-store"
+    		}
+  		});
+	}
 	try {
 		if (request.method === "OPTIONS") {
 			return new Response(null, { headers: service.corsHeaders(origin) });
