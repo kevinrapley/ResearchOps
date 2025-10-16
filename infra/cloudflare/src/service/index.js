@@ -25,6 +25,9 @@ import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
 import * as Analysis from "./reflection/analysis.js";
 
+/* Diagnostics */
+import * as Diag from "./dev/diag.js";
+
 /**
  * @typedef {Object} Env
  * @property {string} ALLOWED_ORIGINS
