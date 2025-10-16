@@ -173,11 +173,8 @@ export async function handleRequest(request, env) {
 		// ─────────────────────────────────────────────────────────────────
 		// Diagnostics (Airtable create capability)
 		// ─────────────────────────────────────────────────────────────────
-		if (
-			(url.pathname === "/api/_diag/airtable" || url.pathname === "/api/diag/airtable") &&
-			(request.method === "GET" || request.method === "POST")
-		) {
-			return service.diagAirtableCreate(request, origin);
+		if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
+			return service.airtableProbe(origin, url);
 		}
 
 		// ─────────────────────────────────────────────────────────────────
@@ -298,6 +295,11 @@ export async function handleRequest(request, env) {
 		}
 		if (url.pathname === "/api/codes" && request.method === "POST") {
 			return service.createCode(request, origin);
+		}
+		if (url.pathname.startsWith("/api/codes/") && request.method === "PATCH") {
+			const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
+			return service.updateCode?.(request, origin, codeId) ?? service.createCode(request, origin);
+			// fallback: no-op or remove
 		}
 
 		/* ─────────────── Analysis ─────────────── */
