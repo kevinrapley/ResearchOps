@@ -76,27 +76,36 @@ function canonicalizePath(pathname) {
 		p = p.slice(0, -1);
 	}
 
-	return p; // <-- IMPORTANT: return only a string; no routing here
+	return p;
 }
 
+/**
+ * Lightweight router used by some call sites; not the main entry in Cloudflare.
+ * Retained for compatibility.
+ * @param {ResearchOpsService} service
+ * @param {Request} request
+ * @returns {Promise<Response>}
+ */
 export async function routeRequest(service, request) {
 	const origin = request.headers.get("Origin") || "*";
 	const url = new URL(request.url);
 	const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase();
 
+	// Direct ping (no service dependencies)
 	if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
-  		return new Response(JSON.stringify({
-    		ok: true,
-    		time: new Date().toISOString(),
-    		note: "direct route"
-  		}), {
-    		status: 200,
-    		headers: {
-      		"content-type": "application/json; charset=utf-8",
-      		"cache-control": "no-store"
-    		}
-  		});
+		return new Response(JSON.stringify({
+			ok: true,
+			time: new Date().toISOString(),
+			note: "direct route"
+		}), {
+			status: 200,
+			headers: {
+				"content-type": "application/json; charset=utf-8",
+				"cache-control": "no-store"
+			}
+		});
 	}
+
 	try {
 		if (request.method === "OPTIONS") {
 			return new Response(null, { headers: service.corsHeaders(origin) });
@@ -143,7 +152,7 @@ function maybeRedirect(request, canonicalPath) {
 	const url = new URL(request.url);
 	if (url.pathname !== canonicalPath) {
 		url.pathname = canonicalPath;
-		// 302 for safety (avoid caching), switch to 301 once you're confident
+		// 302 for safety (avoid caching). Switch to 301 once confirmed.
 		return Response.redirect(url.toString(), 302);
 	}
 	return null;
@@ -153,32 +162,46 @@ function maybeRedirect(request, canonicalPath) {
  * @async
  * @function handleRequest
  * @description Entry router for all /api/ routes and asset fallback.
+ * @param {Request} request
+ * @param {Env} env
+ * @returns {Promise<Response>}
  */
 export async function handleRequest(request, env) {
 	const service = new ResearchOpsService(env);
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
 
-	// ── Canonicalize path early (removes trailing slashes from API paths)
+	// Canonicalise path early (removes trailing slashes from API paths)
 	{
 		const canonical = canonicalizePath(url.pathname);
 		const redirect = maybeRedirect(request, canonical);
 		if (redirect) return redirect;
-		// Update url.pathname to the canonical version for consistent routing
 		url.pathname = canonical;
 	}
 
 	try {
+		// Early diagnostic ping (verifies this handler runs)
+		if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
+			return new Response(JSON.stringify({
+				ok: true,
+				time: new Date().toISOString(),
+				note: "handleRequest"
+			}), {
+				status: 200,
+				headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+			});
+		}
+
 		// CORS preflight
 		if (request.method === "OPTIONS") {
-			const origin = request.headers.get("Origin") || "";
+			const reqOrigin = request.headers.get("Origin") || "";
 			return new Response(null, {
 				status: 204,
 				headers: {
-					...service.corsHeaders(origin),
+					...service.corsHeaders(reqOrigin),
 					"Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
 					"Access-Control-Allow-Headers": "Content-Type, Authorization",
-					"Access-Control-Max-Age": "86400",
+					"Access-Control-Max-Age": "86400"
 				}
 			});
 		}
@@ -187,16 +210,9 @@ export async function handleRequest(request, env) {
 		// Diagnostics (Airtable create capability)
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
+			// Requires service.airtableProbe to be implemented
 			return service.airtableProbe(origin, url);
 		}
-
-		/* ─────────────── Diagnostics (temporary) ─────────────── */
-if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
-  return service.ping(origin);
-}
-if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
-  return service.airtableProbe(origin, url);
-}
 
 		// ─────────────────────────────────────────────────────────────────
 		// Health
@@ -236,11 +252,9 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 		if (url.pathname === "/api/journal-entries" && request.method === "GET") {
 			return service.listJournalEntries(origin, url);
 		}
-
 		if (url.pathname === "/api/journal-entries" && request.method === "POST") {
 			return service.createJournalEntry(request, origin);
 		}
-
 		if (url.pathname.startsWith("/api/journal-entries/")) {
 			const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
 
@@ -256,44 +270,24 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 		}
 
 		// ──────────────────────────────
-		// Journal Excerpts
+		// Journal Excerpts (explicit routes)
 		// ──────────────────────────────
-
-		// Create an excerpt
-		router.post("/api/journal/excerpts", async (req, env, ctx) => {
-			return createExcerpt(req, env, ctx);
-		});
-
-		// List excerpts by entry id (?entry=<AirtableEntryId>)
-		router.get("/api/journal/excerpts", async (req, env, ctx) => {
-			return listExcerpts(req, env, ctx);
-		});
-
-		// Partial update by excerpt record id
-		router.patch("/api/journal/excerpts/:id", async (req, env, ctx, params) => {
-			return updateExcerpt(req, env, ctx, params.id);
-		});
-
-		/* ─────────────── Excerpts ─────────────── */
 		if (url.pathname === "/api/excerpts" && request.method === "GET") {
-			// Supports optional filter: ?entry=<AirtableJournalEntryId>
-			// Example: /api/excerpts?entry=${encodeURIComponent(entryId)}
+			// Optional filter: ?entry=<AirtableJournalEntryId>
 			return service.listExcerpts(origin, url);
 		}
-
 		if (url.pathname === "/api/excerpts" && request.method === "POST") {
 			// Body: { entryId, start, end, text, createdAt?, author?, codes?, memos?, muralWidgetId?, syncedAt? }
 			return service.createExcerpt(request, origin);
 		}
-
 		if (url.pathname.startsWith("/api/excerpts/") && request.method === "PATCH") {
-			// Partial updates to a specific excerpt
-			// Example: /api/excerpts/${encodeURIComponent(excerptId)}
 			const excerptId = decodeURIComponent(url.pathname.slice("/api/excerpts/".length));
 			return service.updateExcerpt(request, origin, excerptId);
 		}
 
-		/* ─────────────── Memos ─────────────── */
+		// ─────────────────────────────────────────────────────────────────
+		// Memos
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/memos" && request.method === "GET") {
 			return service.listMemos(origin, url);
 		}
@@ -305,12 +299,16 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 			return service.updateMemo(request, origin, memoId);
 		}
 
-		/* ─────────────── Code Applications ─────────────── */
+		// ─────────────────────────────────────────────────────────────────
+		// Code Applications
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/code-applications" && request.method === "GET") {
 			return service.listCodeApplications(origin, url);
 		}
 
-		/* ─────────────── Codes ─────────────── */
+		// ─────────────────────────────────────────────────────────────────
+		// Codes
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/codes" && request.method === "GET") {
 			return service.listCodes(origin, url);
 		}
@@ -319,11 +317,14 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 		}
 		if (url.pathname.startsWith("/api/codes/") && request.method === "PATCH") {
 			const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
-			return service.updateCode?.(request, origin, codeId) ?? service.createCode(request, origin);
-			// fallback: no-op or remove
+			return (typeof service.updateCode === "function")
+				? service.updateCode(request, origin, codeId)
+				: service.createCode(request, origin);
 		}
 
-		/* ─────────────── Analysis ─────────────── */
+		// ─────────────────────────────────────────────────────────────────
+		// Analysis
+		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname === "/api/analysis/timeline" && request.method === "GET") {
 			return service.timeline(origin, url);
 		}
@@ -481,7 +482,8 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 		// Unknown API route
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname.startsWith("/api/")) {
-			return service.json({ error: "Not found", path: url.pathname },
+			return service.json(
+				{ error: "Not found", path: url.pathname },
 				404,
 				service.corsHeaders(origin)
 			);
@@ -504,8 +506,6 @@ if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
 			headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
 		});
 	} finally {
-		try {
-			service.destroy();
-		} catch {}
+		try { service.destroy(); } catch { /* no-op */ }
 	}
 }
