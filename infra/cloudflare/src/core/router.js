@@ -177,6 +177,14 @@ export async function handleRequest(request, env) {
 			return service.airtableProbe(origin, url);
 		}
 
+		/* ─────────────── Diagnostics (temporary) ─────────────── */
+if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
+  return service.ping(origin);
+}
+if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
+  return service.airtableProbe(origin, url);
+}
+
 		// ─────────────────────────────────────────────────────────────────
 		// Health
 		// ─────────────────────────────────────────────────────────────────
