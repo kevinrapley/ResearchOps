@@ -22,52 +22,6 @@ import { json as jsonHelper } from "./internals/responders.js";
 
 const TABLE = "Excerpts";
 
-/* ──────────────── LIST ──────────────── */
-/**
- * GET /api/excerpts?entry=<entryId>
- */
-export async function listExcerpts(origin, url) {
-	const entryId = url.searchParams.get("entry");
-	if (!entryId) {
-		return jsonResponse({ ok: false, error: "Missing ?entry parameter" }, 400);
-	}
-
-	const filterByFormula = `{Entry ID} = '${entryId}'`;
-	const records = await airtable.list("Excerpts", {
-		maxRecords: 1000,
-		filterByFormula
-	});
-
-	return jsonResponse({ ok: true, records });
-}
-
-/* ──────────────── UPDATE ──────────────── */
-/**
- * PATCH /api/excerpts/:id
- */
-export async function updateExcerpt(request, origin, excerptId) {
-	let body;
-	try {
-		body = await request.json();
-	} catch {
-		return jsonResponse({ ok: false, error: "Invalid JSON" }, 400);
-	}
-
-	const fields = {};
-
-	if ("start" in body) fields["Start"] = Number(body.start);
-	if ("end" in body) fields["End"] = Number(body.end);
-	if ("text" in body) fields["Text"] = body.text;
-	if ("author" in body) fields["Author"] = body.author;
-	if ("codes" in body) fields["Codes"] = body.codes || [];
-	if ("memos" in body) fields["Memos"] = body.memos || [];
-	if ("muralWidgetId" in body) fields["Mural Widget ID"] = body.muralWidgetId || "";
-	if ("syncedAt" in body) fields["Synced At"] = body.syncedAt || new Date().toISOString();
-
-	const record = await airtable.update("Excerpts", excerptId, fields);
-	return jsonResponse({ ok: true, record });
-}
-
 /* ──────────────── CREATE ──────────────── */
 /**
  * POST /api/excerpts
@@ -106,7 +60,10 @@ export async function createExcerpt(service, request, origin) {
 	}
 }
 
-/** GET /api/excerpts?entry=<JournalEntryId> */
+/* ──────────────── LIST ──────────────── */
+/**
+ * GET /api/excerpts?entry=<entryId>
+ */
 export async function listExcerpts(service, origin, url) {
 	try {
 		const entryId = url.searchParams.get("entry");
@@ -125,7 +82,10 @@ export async function listExcerpts(service, origin, url) {
 	}
 }
 
-/** PATCH /api/excerpts/:id */
+/* ──────────────── UPDATE ──────────────── */
+/**
+ * PATCH /api/excerpts/:id
+ */
 export async function updateExcerpt(service, request, origin, excerptId) {
 	try {
 		const body = await request.json().catch(() => ({}));
