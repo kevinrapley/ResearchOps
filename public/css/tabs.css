@@ -1,0 +1,91 @@
+/* ==========================================================================
+   ResearchOps UI • Tabs (GOV.UK-style)
+   Version:    v1.0.0
+   Service:    Home Office Biometrics — ResearchOps
+   Author:     Kevin Rapley
+   Date:       2025-10-19
+   Build:      Mobile-first; WCAG 2.2 AA
+   Repo:       /css/tabs.css
+   License:    All rights reserved
+   Purpose:    Visual layer for .govuk-tabs markup used in Journals
+   ========================================================================== 
+*/
+
+/* Root wrapper spacing (kept light; page CSS can override) */
+.govuk-tabs {
+	margin-top: 24px;
+	margin-bottom: 24px;
+	}
+
+/* Title shown only in no-JS / small screens contexts typically */
+.govuk-tabs__title {
+	margin: 0 0 8px 0;
+	font-size: 1rem;
+	font-weight: 700;
+	}
+
+/* Horizontal tab list */
+.govuk-tabs__list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	list-style: none;
+	margin: 0;
+	padding: 0 0 4px 0;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+/* Tab as an anchor */
+.govuk-tabs__tab {
+	display: inline-block;
+	text-decoration: none;
+	padding: 8px 12px;
+	border-bottom: 4px solid transparent;
+	color: #0b0c0c;
+	line-height: 1.4;
+	}
+
+/* Hover / focus */
+.govuk-tabs__tab:hover {
+	background: #f3f2f1;
+	}
+
+.govuk-tabs__tab:focus-visible {
+	outline: 3px solid #fd0;
+	outline-offset: 0;
+	box-shadow: 0 0 0 3px #0b0c0c;
+	}
+
+/* Selected state driven by .govuk-tabs__list-item--selected on the LI */
+.govuk-tabs__list-item--selected .govuk-tabs__tab {
+	border-bottom-color: #1d70b8;
+	font-weight: 700;
+	}
+
+/* Panels: keep visible by default for progressive enhancement */
+.govuk-tabs__panel {
+	margin-top: 16px;
+	}
+
+/* JS hides non-active panels using this class */
+.govuk-tabs__panel--hidden {
+	display: none;
+	}
+
+/* Small visual tweak for headings inside panels */
+.govuk-tabs__panel .govuk-heading-m,
+.govuk-tabs__panel .govuk-heading-l {
+	margin-top: 0;
+	}
+
+/* Responsive */
+@media (max-width: 640px) {
+	.govuk-tabs__list {
+		gap: 4px;
+		}
+	.govuk-tabs__tab {
+		padding: 8px 10px;
+		}
+	}
+
+/* transparency begins in the cascade */
