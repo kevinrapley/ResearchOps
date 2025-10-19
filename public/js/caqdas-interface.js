@@ -169,10 +169,14 @@ function setupNewEntryWiring() {
 		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
 	}
 
-	toggleBtn?.addEventListener("click", (e) => { e.preventDefault();
-		toggleForm(); });
-	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
-		toggleForm(false); });
+	toggleBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		toggleForm();
+	});
+	cancelBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		toggleForm(false);
+	});
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -212,16 +216,20 @@ function setupNewEntryWiring() {
  * ========================= */
 
 /** Build/ensure the Add Code form exists (hidden by default). */
+/** Build/ensure the Add Code form exists (hidden by default). */
 function ensureCodeForm() {
-	let form = $("#code-form");
+	let form = document.getElementById("code-form");
 	if (form) return form;
-	const host = $("#codes-panel") || $("#codes");
+
+	const host = document.getElementById("codes-panel") || document.getElementById("codes");
 	if (!host) return null;
 
 	form = document.createElement("form");
 	form.id = "code-form";
 	form.hidden = true;
 	form.noValidate = true;
+
+	// Swatch + hex input live inside .color-field
 	form.innerHTML = `
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-name">Code name</label>
@@ -229,13 +237,34 @@ function ensureCodeForm() {
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="code-color">Colour</label>
-      <!-- Native colour-wheel; returns a hex string (e.g. "#ff0000") -->
-      <input class="govuk-input" id="code-color" name="color" type="color" value="#505a5f" />
-      <div class="govuk-hint">Sent to Airtable as a hex code.</div>
+      <label class="govuk-label" id="code-colour-label" for="code-colour-hex">Colour</label>
+
+      <div class="color-field">
+        <input
+          id="code-colour"
+          name="color_swatch"
+          type="color"
+          value="#505a5f"
+          aria-labelledby="code-colour-label code-colour-hex"
+        />
+        <input
+          class="govuk-input color-field__hex"
+          id="code-colour-hex"
+          name="color"        <!-- this is what we POST -->
+          inputmode="text"
+          autocomplete="off"
+          spellcheck="false"
+          pattern="^#([0-9A-Fa-f]{6})$"
+          aria-describedby="code-colour-hint"
+          value="#505a5f"
+        />
+      </div>
+
+      <div id="code-colour-hint" class="govuk-hint">
+        Pick a colour or type a 6-digit hex (for example <code>#ff0000</code>). Sent to Airtable as a hex code.
+      </div>
     </div>
 
-    <!-- Parent wrapper hidden until there are existing codes -->
     <div class="govuk-form-group" id="code-parent-wrap" hidden>
       <label class="govuk-label" for="code-parent">Parent code (optional)</label>
       <select class="govuk-select" id="code-parent" name="parent">
@@ -254,28 +283,56 @@ function ensureCodeForm() {
       <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
     </div>
   `;
+
 	host.appendChild(form);
+
+	// Wire the swatch <-> hex synchronisation for this form
+	wireColourSync(form);
+
 	return form;
+}
+
+/** Keep the <input type="color"> and the hex text field in sync (accessible). */
+function wireColourSync(scope = document) {
+	const swatch = scope.querySelector('#code-colour');
+	const hex = scope.querySelector('#code-colour-hex');
+	if (!swatch || !hex) return;
+
+	// swatch → hex
+	swatch.addEventListener('input', () => {
+		const v = swatch.value || '';
+		if (/^#[0-9a-f]{6}$/i.test(v)) {
+			hex.value = v.toLowerCase();
+			hex.setCustomValidity('');
+		}
+	});
+
+	// hex → swatch (only update when valid)
+	hex.addEventListener('input', () => {
+		const v = (hex.value || '').trim();
+		if (/^#[0-9a-f]{6}$/i.test(v)) {
+			swatch.value = v;
+			hex.setCustomValidity('');
+		} else {
+			hex.setCustomValidity('Enter a 6-digit hexadecimal colour, like #ff0000.');
+		}
+	});
 }
 
 /** Populate the Parent dropdown and show/hide wrapper depending on code count. */
 function refreshParentSelector() {
-	const wrap = $("#code-parent-wrap");
-	const select = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	const wrap = document.getElementById("code-parent-wrap");
+	const select = /** @type {HTMLSelectElement|null} */ (document.getElementById("code-parent"));
 	if (!wrap || !select) return;
 
-	// Show only if there are codes to choose from
 	const hasCodes = (state.codes || []).length > 0;
 	wrap.hidden = !hasCodes;
 	if (!hasCodes) {
-		// Reset to default option
 		select.innerHTML = `<option value="">— None —</option>`;
 		return;
 	}
 
-	// Preserve current selection (if any)
 	const current = select.value;
-	// Build options: keep "None" + each code
 	const options = [
 		`<option value="">— None —</option>`,
 		...state.codes.map(c =>
@@ -285,53 +342,21 @@ function refreshParentSelector() {
 	select.innerHTML = options.join("");
 }
 
-async function loadCodes() {
-	if (!state.projectId) return;
-	try {
-		const data = await httpJSON(`/api/codes?project=${encodeURIComponent(state.projectId)}`);
-		state.codes = Array.isArray(data?.codes) ? data.codes : [];
-		renderCodes();
-		// Update the Parent dropdown when codes list changes
-		refreshParentSelector();
-	} catch (e) {
-		console.error(e);
-		renderCodes(true);
-		flash(`Could not load codes. ${e?.message || ""}`.trim());
-	}
-}
-
-function renderCodes(error = false) {
-	const wrap = $("#codes-container");
-	if (!wrap) return;
-	if (error) { wrap.innerHTML = "<p>Could not load codes.</p>"; return; }
-	if (!state.codes.length) { wrap.innerHTML = "<p>No codes yet.</p>"; return; }
-
-	wrap.innerHTML = state.codes.map(c => `
-    <article class="code-card" data-id="${c.id}">
-      <header>
-        <span class="code-swatch" style="background-color:${c.colour || c.color || "#505a5f"};"></span>
-        <strong>${escapeHtml(c.name || "—")}</strong>
-      </header>
-      ${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
-    </article>
-  `).join("");
-}
-
+/** Show/submit Code form (uses hex field value for POST). */
 function setupAddCodeWiring() {
-	const btn = $("#new-code-btn");
+	const btn = document.getElementById("new-code-btn");
 	const form = ensureCodeForm();
-	const nameInput = /** @type {HTMLInputElement|null} */ ($("#code-name"));
-	const colourInput = /** @type {HTMLInputElement|null} */ ($("#code-color")); // type=color → hex
-	const descInput = /** @type {HTMLTextAreaElement|null} */ ($("#code-description"));
-	const parentSel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
-	const cancelBtn = $("#cancel-code-btn");
+	const nameInput = /** @type {HTMLInputElement|null} */ (document.getElementById("code-name"));
+	const hexInput = /** @type {HTMLInputElement|null} */ (document.getElementById("code-colour-hex")); // <- POST this
+	const descInput = /** @type {HTMLTextAreaElement|null} */ (document.getElementById("code-description"));
+	const parentSel = /** @type {HTMLSelectElement|null} */ (document.getElementById("code-parent"));
+	const cancelBtn = document.getElementById("cancel-code-btn");
 
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
 		if (show) {
-			// Always refresh dropdown just-in-time (handles races)
-			refreshParentSelector();
+			refreshParentSelector(); // populate parent list just-in-time
 			nameInput?.focus();
 		}
 	}
@@ -348,21 +373,21 @@ function setupAddCodeWiring() {
 		const name = (nameInput?.value || "").trim();
 		if (!name) { flash("Please enter a code name."); return; }
 
-		// Ensure we have a hex code (input type=color returns hex already)
-		let hex = (colourInput?.value || "").trim();
+		// Normalise hex; prefer the hex text field (accessible + validated)
+		let hex = (hexInput?.value || "").trim().toLowerCase();
 		if (!/^#[0-9a-f]{6}$/i.test(hex)) {
-			// Normalise 3-digit or missing into a 6-digit hex; default fallback
+			// Accept #rgb and expand; else default
 			if (/^#[0-9a-f]{3}$/i.test(hex)) {
-				hex = "#" + hex.slice(1).split("").map(ch => ch + ch).join("");
+				hex = '#' + hex.slice(1).split('').map(ch => ch + ch).join('');
 			} else {
-				hex = "#505a5f";
+				hex = '#505a5f';
 			}
 		}
 
 		const payload = {
 			name,
 			projectId: state.projectId,
-			colour: hex, // <— send to Airtable as hex
+			colour: hex, // ← send to Airtable as hex
 			description: (descInput?.value || "").trim(),
 			parentId: (parentSel?.value || "").trim() || undefined
 		};
@@ -374,15 +399,18 @@ function setupAddCodeWiring() {
 				body: JSON.stringify(payload)
 			});
 
+			// Reset inputs
 			if (nameInput) nameInput.value = "";
-			if (colourInput) colourInput.value = "#505a5f";
+			if (hexInput) hexInput.value = "#505a5f";
+			const swatch = document.getElementById('code-colour');
+			if (swatch) swatch.value = "#505a5f";
 			if (descInput) descInput.value = "";
 			if (parentSel) parentSel.value = "";
 
 			showForm(false);
 			flash(`Code “${payload.name}” created.`);
-			await loadCodes(); // refresh list
-			refreshParentSelector(); // refresh dropdown with the new code included
+			await loadCodes();
+			refreshParentSelector();
 		} catch (err) {
 			console.error(err);
 			flash("Could not create code.");
@@ -485,10 +513,14 @@ function setupNewMemoWiring() {
 		if (shouldShow) form?.querySelector("#memo-content, textarea, input, select")?.focus();
 	}
 
-	newBtn?.addEventListener("click", (e) => { e.preventDefault();
-		toggleForm(true); });
-	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
-		toggleForm(false); });
+	newBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		toggleForm(true);
+	});
+	cancelBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		toggleForm(false);
+	});
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -800,7 +832,8 @@ async function runExport() {
 function setupAnalysisTools() {
 	const handler = (e) => {
 		const target = e.target && typeof e.target.closest === 'function' ?
-			/** @type {HTMLElement|null} */ (e.target.closest('[data-analysis]')) :
+			/** @type {HTMLElement|null} */
+			(e.target.closest('[data-analysis]')) :
 			null;
 		if (!target) return;
 		e.preventDefault();
@@ -856,8 +889,10 @@ async function init() {
 	// If Journal is the active tab at first paint, ensure visible and load
 	if (isJournalActiveOnLoad()) {
 		const p = document.getElementById("journal-entries");
-		if (p) { p.classList.remove("govuk-tabs__panel--hidden");
-			p.removeAttribute("hidden"); }
+		if (p) {
+			p.classList.remove("govuk-tabs__panel--hidden");
+			p.removeAttribute("hidden");
+		}
 		await loadEntries();
 	}
 
