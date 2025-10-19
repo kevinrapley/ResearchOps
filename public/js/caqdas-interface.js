@@ -3,11 +3,11 @@
  * @module CAQDASInterface
  * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (works with your HTML).
  *
- * This file:
- *  - Loads entries/codes/memos for the project (?project= or ?id=)
- *  - Wires buttons: Add journal entry / Add code / Add memo
- *  - Wires Analysis buttons: Timeline / Co-occurrence / Retrieval / Export
- *  - Plays nicely with your GOV.UK-style tabs + custom `tab:shown` event
+ * This version:
+ *  - Buttons work for: Add journal entry, Add code, Add memo, Timeline, Co-occurrence, Retrieval, Export.
+ *  - Codebook management: uses a colour-wheel picker (<input type="color">) and
+ *    sends a hex code (e.g. "#ff0000") to Airtable in `colour`.
+ *  - Parent code is a dropdown of existing codes, and is only shown when the project already has codes.
  */
 
 /* =========================
@@ -79,7 +79,7 @@ function flash(msg) {
 const state = {
 	projectId: null,
 	entries: [],
-	codes: [],
+	codes: [], // <- used to populate Parent dropdown
 	memos: []
 };
 
@@ -207,7 +207,11 @@ function setupNewEntryWiring() {
 
 /* =========================
  * Codes: ensure form + load + render + add
+ *  - Colour field uses <input type="color">, value is hex (e.g. "#ff0000")
+ *  - Parent dropdown shows only when codes exist, populated from state.codes
  * ========================= */
+
+/** Build/ensure the Add Code form exists (hidden by default). */
 function ensureCodeForm() {
 	let form = $("#code-form");
 	if (form) return form;
@@ -221,20 +225,30 @@ function ensureCodeForm() {
 	form.innerHTML = `
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-name">Code name</label>
-      <input class="govuk-input" id="code-name" name="name" />
+      <input class="govuk-input" id="code-name" name="name" required />
     </div>
+
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-color">Colour</label>
-      <input class="govuk-input" id="code-color" name="color" />
+      <!-- Native colour-wheel; returns a hex string (e.g. "#ff0000") -->
+      <input class="govuk-input" id="code-color" name="color" type="color" value="#505a5f" />
+      <div class="govuk-hint">Sent to Airtable as a hex code.</div>
     </div>
+
+    <!-- Parent wrapper hidden until there are existing codes -->
+    <div class="govuk-form-group" id="code-parent-wrap" hidden>
+      <label class="govuk-label" for="code-parent">Parent code (optional)</label>
+      <select class="govuk-select" id="code-parent" name="parent">
+        <option value="">— None —</option>
+      </select>
+      <div class="govuk-hint">Choose an existing code as the parent.</div>
+    </div>
+
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-description">Description</label>
       <textarea class="govuk-textarea" id="code-description" name="description" rows="3"></textarea>
     </div>
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="code-parent">Parent code (optional)</label>
-      <input class="govuk-input" id="code-parent" name="parent" />
-    </div>
+
     <div class="govuk-button-group">
       <button id="save-code-btn" class="govuk-button" type="submit">Save</button>
       <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
@@ -244,12 +258,41 @@ function ensureCodeForm() {
 	return form;
 }
 
+/** Populate the Parent dropdown and show/hide wrapper depending on code count. */
+function refreshParentSelector() {
+	const wrap = $("#code-parent-wrap");
+	const select = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	if (!wrap || !select) return;
+
+	// Show only if there are codes to choose from
+	const hasCodes = (state.codes || []).length > 0;
+	wrap.hidden = !hasCodes;
+	if (!hasCodes) {
+		// Reset to default option
+		select.innerHTML = `<option value="">— None —</option>`;
+		return;
+	}
+
+	// Preserve current selection (if any)
+	const current = select.value;
+	// Build options: keep "None" + each code
+	const options = [
+		`<option value="">— None —</option>`,
+		...state.codes.map(c =>
+			`<option value="${escapeHtml(c.id)}"${c.id === current ? " selected" : ""}>${escapeHtml(c.name || c.id)}</option>`
+		)
+	];
+	select.innerHTML = options.join("");
+}
+
 async function loadCodes() {
 	if (!state.projectId) return;
 	try {
 		const data = await httpJSON(`/api/codes?project=${encodeURIComponent(state.projectId)}`);
 		state.codes = Array.isArray(data?.codes) ? data.codes : [];
 		renderCodes();
+		// Update the Parent dropdown when codes list changes
+		refreshParentSelector();
 	} catch (e) {
 		console.error(e);
 		renderCodes(true);
@@ -277,16 +320,20 @@ function renderCodes(error = false) {
 function setupAddCodeWiring() {
 	const btn = $("#new-code-btn");
 	const form = ensureCodeForm();
-	const nameInput = $("#code-name");
-	const colourInput = $("#code-color");
-	const descInput = $("#code-description");
-	const parentInput = $("#code-parent");
+	const nameInput = /** @type {HTMLInputElement|null} */ ($("#code-name"));
+	const colourInput = /** @type {HTMLInputElement|null} */ ($("#code-color")); // type=color → hex
+	const descInput = /** @type {HTMLTextAreaElement|null} */ ($("#code-description"));
+	const parentSel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
 	const cancelBtn = $("#cancel-code-btn");
 
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
-		if (show) nameInput?.focus();
+		if (show) {
+			// Always refresh dropdown just-in-time (handles races)
+			refreshParentSelector();
+			nameInput?.focus();
+		}
 	}
 
 	btn?.addEventListener("click", (e) => { e.preventDefault();
@@ -301,12 +348,23 @@ function setupAddCodeWiring() {
 		const name = (nameInput?.value || "").trim();
 		if (!name) { flash("Please enter a code name."); return; }
 
+		// Ensure we have a hex code (input type=color returns hex already)
+		let hex = (colourInput?.value || "").trim();
+		if (!/^#[0-9a-f]{6}$/i.test(hex)) {
+			// Normalise 3-digit or missing into a 6-digit hex; default fallback
+			if (/^#[0-9a-f]{3}$/i.test(hex)) {
+				hex = "#" + hex.slice(1).split("").map(ch => ch + ch).join("");
+			} else {
+				hex = "#505a5f";
+			}
+		}
+
 		const payload = {
 			name,
 			projectId: state.projectId,
-			colour: (colourInput?.value || "").trim(),
+			colour: hex, // <— send to Airtable as hex
 			description: (descInput?.value || "").trim(),
-			parentId: (parentInput?.value || "").trim()
+			parentId: (parentSel?.value || "").trim() || undefined
 		};
 
 		try {
@@ -317,13 +375,14 @@ function setupAddCodeWiring() {
 			});
 
 			if (nameInput) nameInput.value = "";
-			if (colourInput) colourInput.value = "";
+			if (colourInput) colourInput.value = "#505a5f";
 			if (descInput) descInput.value = "";
-			if (parentInput) parentInput.value = "";
+			if (parentSel) parentSel.value = "";
 
 			showForm(false);
 			flash(`Code “${payload.name}” created.`);
-			await loadCodes();
+			await loadCodes(); // refresh list
+			refreshParentSelector(); // refresh dropdown with the new code included
 		} catch (err) {
 			console.error(err);
 			flash("Could not create code.");
@@ -791,7 +850,7 @@ async function init() {
 	setupNewMemoWiring();
 	setupAnalysisTools();
 
-	// Load non-journal data early
+	// Load codes/memos early (codes used to populate Parent dropdown)
 	await Promise.allSettled([loadCodes(), loadMemos()]);
 
 	// If Journal is the active tab at first paint, ensure visible and load
