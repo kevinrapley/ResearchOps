@@ -144,6 +144,20 @@
 				});
 			}
 		}
+		
+		// Initial selection: hash or first tab
+		if (!applyHash()) {
+			const first = $('.govuk-tabs__tab', container);
+			if (first) {
+				selectById((first.getAttribute('href') || '').slice(1), {
+					updateHash: false,
+					focusTab: false
+				});
+			}
+		}
+
+		// Done: prevent pre-init CSS from hiding anything now
+		container.classList.add('is-ready');
 	}
 
 	document.addEventListener('DOMContentLoaded', function() {
