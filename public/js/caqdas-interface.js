@@ -217,6 +217,7 @@ function setupNewEntryWiring() {
 
 /** Build/ensure the Add Code form exists (hidden by default). */
 /** Build/ensure the Add Code form exists (hidden by default). */
+/** Build/ensure the Add Code form exists (hidden by default). */
 function ensureCodeForm() {
 	let form = document.getElementById("code-form");
 	if (form) return form;
@@ -229,7 +230,6 @@ function ensureCodeForm() {
 	form.hidden = true;
 	form.noValidate = true;
 
-	// Swatch + hex input live inside .color-field
 	form.innerHTML = `
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-name">Code name</label>
@@ -238,30 +238,25 @@ function ensureCodeForm() {
 
     <div class="govuk-form-group">
       <label class="govuk-label" id="code-colour-label" for="code-colour-hex">Colour</label>
-
       <div class="color-field">
         <input
+		  class="color-field"
           id="code-colour"
           name="color_swatch"
           type="color"
           value="#505a5f"
           aria-labelledby="code-colour-label code-colour-hex"
-        />
+        >
         <input
           class="govuk-input color-field__hex"
           id="code-colour-hex"
-          name="color"        <!-- this is what we POST -->
+          name="color"
           inputmode="text"
           autocomplete="off"
           spellcheck="false"
           pattern="^#([0-9A-Fa-f]{6})$"
-          aria-describedby="code-colour-hint"
           value="#505a5f"
-        />
-      </div>
-
-      <div id="code-colour-hint" class="govuk-hint">
-        Pick a colour or type a 6-digit hex (for example <code>#ff0000</code>). Sent to Airtable as a hex code.
+        >
       </div>
     </div>
 
@@ -270,7 +265,6 @@ function ensureCodeForm() {
       <select class="govuk-select" id="code-parent" name="parent">
         <option value="">— None —</option>
       </select>
-      <div class="govuk-hint">Choose an existing code as the parent.</div>
     </div>
 
     <div class="govuk-form-group">
@@ -280,13 +274,13 @@ function ensureCodeForm() {
 
     <div class="govuk-button-group">
       <button id="save-code-btn" class="govuk-button" type="submit">Save</button>
-      <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+      <button id="cancel-memo-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
     </div>
   `;
 
 	host.appendChild(form);
 
-	// Wire the swatch <-> hex synchronisation for this form
+	// Keep swatch and hex input in sync
 	wireColourSync(form);
 
 	return form;
@@ -361,10 +355,14 @@ function setupAddCodeWiring() {
 		}
 	}
 
-	btn?.addEventListener("click", (e) => { e.preventDefault();
-		showForm(form?.hidden ?? true); });
-	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
-		showForm(false); });
+	btn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		showForm(form?.hidden ?? true);
+	});
+	cancelBtn?.addEventListener("click", (e) => {
+		e.preventDefault();
+		showForm(false);
+	});
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
