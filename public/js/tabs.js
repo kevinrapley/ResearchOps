@@ -1,12 +1,11 @@
 /**
- * ResearchOps Tabs (GOV.UK-style behaviour)
- * Version:  v1.0.0
+ * ResearchOps Tabs (GOV.UK-style behaviour) — no CSS.escape dependency
+ * Version:  v1.0.1
  * Purpose:  Enhance .govuk-tabs markup with ARIA, keyboard, hash sync, and events.
  * License:  All rights reserved
  */
 
 (function() {
-	/** qS helpers */
 	const $ = (s, r = document) => r.querySelector(s);
 	const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
@@ -16,25 +15,20 @@
 		const list = $('.govuk-tabs__list', container);
 		const items = $$('.govuk-tabs__list > li', container);
 		const panels = $$('.govuk-tabs__panel', container);
-
 		if (!list || !items.length || !panels.length) return;
 
-		// Apply ARIA roles and relationships
+		// ARIA wiring
 		list.setAttribute('role', 'tablist');
 
 		items.forEach((li, idx) => {
 			const a = $('.govuk-tabs__tab', li);
 			if (!a) return;
 
-			// Ensure link has an id
-			if (!a.id) {
-				a.id = `tab_${container.id || 'tabs'}_${idx}`;
-			}
+			if (!a.id) a.id = `tab_${container.id || 'tabs'}_${idx}`;
 
-			// Ensure href points to a panel id
+			// target id
 			let targetId = (a.getAttribute('href') || '').replace(/^#/, '');
 			if (!targetId) {
-				// Fallback: pair by index
 				const p = panels[idx];
 				if (p && p.id) {
 					targetId = p.id;
@@ -49,116 +43,110 @@
 		});
 
 		panels.forEach((p) => {
-			const labelledBy = findTabForPanel(container, p)?.id || '';
+			const tab = $(`.govuk-tabs__tab[aria-controls="${p.id}"]`, container);
+			if (tab) p.setAttribute('aria-labelledby', tab.id);
 			p.setAttribute('role', 'tabpanel');
-			if (labelledBy) p.setAttribute('aria-labelledby', labelledBy);
 		});
 
-		// State
-		function findTabForPanel(root, panelEl) {
-			const id = panelEl.id;
-			return $(`.govuk-tabs__tab[href="#${CSS.escape(id)}"]`, root);
-		}
-
 		function selectById(id, { updateHash = true, focusTab = false } = {}) {
-			// Resolve tab/panel
-			const targetPanel = $(`#${CSS.escape(id)}`, container);
-			const targetTab = $(`.govuk-tabs__tab[href="#${CSS.escape(id)}"]`, container);
-			if (!targetPanel || !targetTab) return;
+			if (!id) return;
 
-			// Toggle selected class on LI wrappers
+			// Resolve elements without CSS.escape
+			const targetPanel = document.getElementById(id);
+			const targetTab = $(`.govuk-tabs__tab[aria-controls="${id}"]`, container);
+
+			// Ensure they belong to this container
+			if (!targetPanel || !container.contains(targetPanel) || !targetTab) return;
+
+			// Toggle selected class on <li>
 			items.forEach((li) => li.classList.remove('govuk-tabs__list-item--selected'));
 			const li = targetTab.closest('li');
 			if (li) li.classList.add('govuk-tabs__list-item--selected');
 
-			// Tabs ARIA and focus order
+			// Tabs state
 			$$('.govuk-tabs__tab', container).forEach((t) => {
-				t.setAttribute('aria-selected', t === targetTab ? 'true' : 'false');
-				t.setAttribute('tabindex', t === targetTab ? '0' : '-1');
+				const isActive = t === targetTab;
+				t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+				t.setAttribute('tabindex', isActive ? '0' : '-1');
 			});
 
-			// Panels visibility
+			// Panels visibility (class + hidden attr for robustness)
 			panels.forEach((p) => {
-				if (p === targetPanel) {
-					p.classList.remove('govuk-tabs__panel--hidden');
+				const show = p === targetPanel;
+				p.classList.toggle('govuk-tabs__panel--hidden', !show);
+				if (show) {
+					p.removeAttribute('hidden');
 				} else {
-					p.classList.add('govuk-tabs__panel--hidden');
+					p.setAttribute('hidden', '');
 				}
 			});
 
-			// Optional focus
 			if (focusTab) targetTab.focus({ preventScroll: true });
 
-			// Update URL hash (enables back/forward)
 			if (updateHash) {
 				const newHash = `#${id}`;
-				if (location.hash !== newHash) {
-					// Use pushState to keep back-stack entries like the DS behaviour
-					history.pushState(null, '', newHash);
-				}
+				if (location.hash !== newHash) history.pushState(null, '', newHash);
 			}
 
-			// Notify listeners once the panel is shown
 			targetPanel.dispatchEvent(new CustomEvent('tab:shown', {
 				bubbles: true,
 				detail: { id, container }
 			}));
 		}
 
-		// Click handling (use event delegation)
+		// Clicks
 		list.addEventListener('click', (e) => {
 			const a = e.target.closest('.govuk-tabs__tab');
 			if (!a) return;
-			const id = (a.getAttribute('href') || '').replace(/^#/, '');
+			const id = (a.getAttribute('href') || '').slice(1);
 			if (!id) return;
 			e.preventDefault();
 			selectById(id, { updateHash: true, focusTab: true });
 		});
 
-		// Keyboard navigation on the tablist
+		// Keyboard
 		list.addEventListener('keydown', (e) => {
 			const tabs = $$('.govuk-tabs__tab', list);
-			const currentIndex = tabs.findIndex((t) => t.getAttribute('tabindex') === '0');
-			if (currentIndex < 0) return;
+			const i = tabs.findIndex((t) => t.getAttribute('tabindex') === '0');
+			if (i < 0) return;
 
 			let next = null;
-			if (e.key === 'ArrowRight') next = tabs[(currentIndex + 1) % tabs.length];
-			if (e.key === 'ArrowLeft') next = tabs[(currentIndex - 1 + tabs.length) % tabs.length];
+			if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+			if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
 			if (e.key === 'Home') next = tabs[0];
 			if (e.key === 'End') next = tabs[tabs.length - 1];
 
 			if (next) {
 				e.preventDefault();
-				const id = (next.getAttribute('href') || '').replace(/^#/, '');
+				const id = (next.getAttribute('href') || '').slice(1);
 				selectById(id, { updateHash: true, focusTab: true });
 			}
 		});
 
-		// Hash navigation (back/forward / deep links)
+		// Hash / back-forward
 		function applyHash() {
-			const id = (location.hash || '').replace(/^#/, '');
+			const id = (location.hash || '').slice(1);
 			if (!id) return false;
-			const tab = $(`.govuk-tabs__tab[href="#${CSS.escape(id)}"]`, container);
+			const tab = $(`.govuk-tabs__tab[aria-controls="${id}"]`, container);
 			if (!tab) return false;
 			selectById(id, { updateHash: false, focusTab: false });
 			return true;
 		}
-
 		window.addEventListener('hashchange', applyHash);
 
 		// Initial selection: hash or first tab
 		if (!applyHash()) {
 			const first = $('.govuk-tabs__tab', container);
 			if (first) {
-				const id = (first.getAttribute('href') || '').replace(/^#/, '');
-				selectById(id, { updateHash: false, focusTab: false });
+				selectById((first.getAttribute('href') || '').slice(1), {
+					updateHash: false,
+					focusTab: false
+				});
 			}
 		}
 	}
 
-	// Boot all tab containers on DOM ready
 	document.addEventListener('DOMContentLoaded', function() {
 		$$('.govuk-tabs').forEach(initContainer);
 	});
-
 })();
