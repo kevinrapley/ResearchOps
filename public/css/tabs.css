@@ -77,11 +77,6 @@
 .govuk-tabs__panel .govuk-heading-l {
 	margin-top: 0;
 	}
-
-/* Pre-init: when JS is present but tabs haven’t initialised yet */
-.js .govuk-tabs:not(.is-ready) .govuk-tabs__panel:not(:first-of-type) {
-	display: none;
-	}
 	
 /* Responsive */
 @media (max-width: 640px) {
