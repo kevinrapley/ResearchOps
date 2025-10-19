@@ -9,8 +9,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title property="dcterms:title">Reflexive Journal &amp; Analysis &mdash; ResearchOps</title>
 	<meta property="dcterms:creator" content="Home Office Biometrics">
-	<link rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/govuk-frontend@5.4.1/dist/govuk-frontend.min.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/govuk-frontend@5.4.1/dist/govuk-frontend.min.css" />
 	<link rel="stylesheet" href="/css/screen.css">
 	<link rel="stylesheet" href="/css/journal.css">
 
@@ -278,6 +277,47 @@
 				}
 			}
 		});
+		(function() {
+			const tabs = document.querySelector('#journals-tabs');
+			if (!tabs) return;
+
+			// Call once when a tab becomes visible.
+			function activate(tabId) {
+				if (!tabId) return;
+				if (tabId === "codes" && !window.__codesReady) {
+					window.__codesReady = true;
+					// If your codes module exposes an init, call it here:
+					if (window.initCodes) window.initCodes();
+					// Otherwise, trigger a custom event many modules already listen for:
+					document.dispatchEvent(new CustomEvent("journal:codes:ready"));
+				}
+				if (tabId === "memos" && !window.__memosReady) {
+					window.__memosReady = true;
+					if (window.initMemos) window.initMemos();
+					document.dispatchEvent(new CustomEvent("journal:memos:ready"));
+				}
+			}
+
+			// Clicks on tabs
+			tabs.addEventListener('click', (e) => {
+				const a = e.target.closest('.govuk-tabs__tab');
+				if (!a) return;
+				const id = a.getAttribute('href')?.slice(1);
+				// Delay to let GOV.UK toggle classes/hidden state
+				setTimeout(() => activate(id), 0);
+			});
+
+			// Deep links / back-forward navigation
+			window.addEventListener('hashchange', () => {
+				activate(location.hash.replace(/^#/, ''));
+			});
+
+			// First paint: honour #hash or default tab
+			document.addEventListener('DOMContentLoaded', () => {
+				const initial = (location.hash || '#journal-entries').replace(/^#/, '');
+				activate(initial);
+			});
+		})();
 	</script>
 </body>
 
