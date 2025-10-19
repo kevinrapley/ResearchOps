@@ -448,6 +448,26 @@
 	margin: 8px 0 0;
 	font-style: italic;
 	}
+	
+#code-color {
+	width: 80px;
+	height: 38px;
+	padding: 0;
+	cursor: pointer;
+	border: 1px solid var(--govuk-border-colour, #b1b4b6);
+	border-radius: 4px;
+	background: none;
+	vertical-align: middle;
+	}
+
+#code-color::-webkit-color-swatch-wrapper {
+	padding: 0;
+	}
+
+#code-color::-webkit-color-swatch {
+	border: none;
+	border-radius: 3px;
+	}
 
 /* Codebook tree */
 .codebook-tree {
