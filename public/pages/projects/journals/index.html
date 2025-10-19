@@ -1,440 +1,328 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB" prefix="
+  dcterms: http://purl.org/dc/terms/
+  schema:  https://schema.org/
+">
 
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="sda-auto" content="true" />
-	<title>Projects — ResearchOps Demo Suite</title>
-
+	<meta property="dcterms:creator" content="Home Office Biometrics" />
+	<title property="dcterms:title">Reflexive Journal &amp; Analysis &mdash; ResearchOps</title>
+	
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css">
+	<link rel="stylesheet" href="/css/tabs.css" />
+	<link rel="stylesheet" href="/css/journal.css">
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
+	<script>document.documentElement.classList.add('js');</script>
 </head>
 
-<body>
-	<x-include src="/partials/debug.html"></x-include>
+<body typeof="schema:WebPage">
 	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
-			"active":"Projects",
-			"subtitle":"Browse projects created in this demo suite"
-		}'>
-	</x-include>
+		"active":"Projects",
+		"subtitle":"Research Analysis"
+	}'></x-include>
 
-	<main class="govuk-body" role="main">
-		<h1 class="govuk-heading-l" style="margin-top:0">Projects</h1>
-		<div id="list"></div>
-	</main>
+	<nav class="breadcrumbs" aria-label="Breadcrumb">
+		<a href="/pages/projects/">Projects</a> &rarr;
+		<a href="#" id="project-link">Project Dashboard</a> &rarr;
+		<span>Journal &amp; Analysis</span>
+	</nav>
 
-	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
-	</x-include>
+	<header role="banner" class="journal-header">
+		<div>
+			<h2 property="dcterms:title">Reflexive Journal &amp; Analysis</h2>
+			<p class="hint">Document and analyze your research journey</p>
+		</div>
+	</header>
 
-	<script type="module">
-		/**
-		 * @file projects-ui.js (inline)
-		 * @module ProjectsUI
-		 * @description
-		 * Projects list UI with Airtable-first read and CSV fallback.
-		 * Adds createdAt mapping and sorts newest-first. Class-based client,
-		 * lifecycle (reset/destroy), timeout/abort, batched logging, and JSDoc.
-		 */
+	<main id="content" role="main">
+		<!-- GOV.UK Tabs Component -->
+		<div class="govuk-tabs" data-module="govuk-tabs" id="journals-tabs">
+			<h2 class="govuk-tabs__title">Contents</h2>
 
-		/* =========================
-		 * @section Configuration
-		 * ========================= */
-		const CONFIG = Object.freeze({
-			API_BASE: "", // empty = same origin (recommended)
-			FETCH_TIMEOUT_MS: 12_000,
-			LOG_BATCH_INTERVAL_MS: 500,
-			CACHE: "no-store",
-			SHOW_SOURCE_NOTE: false
-		});
+			<ul class="govuk-tabs__list">
+				<li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+					<a class="govuk-tabs__tab" href="#journal-entries">Journal entries</a>
+				</li>
+				<li class="govuk-tabs__list-item">
+					<a class="govuk-tabs__tab" href="#codes">Codes</a>
+				</li>
+				<li class="govuk-tabs__list-item">
+					<a class="govuk-tabs__tab" href="#memos">Memos</a>
+				</li>
+				<li class="govuk-tabs__list-item">
+					<a class="govuk-tabs__tab" href="#analysis">Analysis</a>
+				</li>
+			</ul>
 
-		/* =========================
-		 * @section Utilities
-		 * ========================= */
-		const apiBase = CONFIG.API_BASE || `${location.origin}`;
+			<!-- Panel: Journal entries -->
+			<div class="govuk-tabs__panel" id="journal-entries">
+				<h3 class="govuk-heading-m">Journal entries</h3>
 
-		/** Parse a date safely to ms (NaN -> 0). */
-		function toMs(d) {
-			const n = Date.parse(d);
-			return Number.isFinite(n) ? n : 0;
-		}
+				<div id="journal-entries-panel">
+					<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">
+						Add journal entry
+					</button>
 
-		/**
-		 * @class Emitter
-		 * @classdesc Lightweight emitter.
-		 */
-		class Emitter {
-			/** @type {Record<string, Array<{fn:Function}>>} */
-			#m = Object.create(null);
-			on(evt, fn) {
-				(this.#m[evt] ||= []).push({ fn });
-				return () => this.off(evt, fn);
-			}
-			off(evt, fn) { const a = this.#m[evt]; if (!a) return; const i = a.findIndex(l => l.fn === fn); if (i >= 0) a.splice(i, 1); }
-			emit(evt, payload) {
-				(this.#m[evt] || []).forEach(l => l.fn(payload));
-			}
-			reset() { this.#m = Object.create(null); }
-		}
+					<!-- Entry form (initially hidden) -->
+					<div class="govuk-form-group" id="entry-form" hidden>
+						<form id="add-entry-form" novalidate>
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
+								<select class="govuk-select" id="entry-category" name="category" required>
+									<option value="perceptions">Evolving perceptions</option>
+									<option value="procedures">Day-to-day procedures</option>
+									<option value="decisions">Methodological decision points</option>
+									<option value="introspections">Personal introspections</option>
+								</select>
+							</div>
 
-		/**
-		 * @class BatchedLogger
-		 * @classdesc Batched console logger.
-		 */
-		class BatchedLogger {
-			#q = [];
-			#timer = null;
-			#interval = CONFIG.LOG_BATCH_INTERVAL_MS;
-			log(level, msg, meta) {
-				this.#q.push({ t: new Date().toISOString(), level, msg, meta });
-				if (!this.#timer) this.#timer = setTimeout(() => this.#flush(), this.#interval);
-			}
-			#flush() {
-				const batch = this.#q.splice(0);
-				this.#timer = null;
-				if (!batch.length) return;
-				console.groupCollapsed(`[ProjectsUI] ${batch.length} event(s)`);
-				for (const e of batch) {
-					const line = `${e.t} [${e.level}] ${e.msg}`;
-					if (e.level === "error") console.error(line, e.meta ?? "");
-					else if (e.level === "warn") console.warn(line, e.meta ?? "");
-					else console.log(line, e.meta ?? "");
-				}
-				console.groupEnd();
-			}
-			reset() {
-				clearTimeout(this.#timer);
-				this.#timer = null;
-				this.#q.length = 0;
-			}
-			destroy() { this.reset(); }
-		}
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-label--s" for="entry-content">Entry</label>
+								<div id="content-hint" class="govuk-hint">Write freely; this is a private space for research reflection</div>
+								<textarea class="govuk-textarea" id="entry-content" name="content" rows="8" required aria-describedby="content-hint"></textarea>
+							</div>
 
-		/* =========================
-		 * @section CSV helpers
-		 * ========================= */
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
+								<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
+								<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint" />
+							</div>
 
-		/**
-		 * @function parseCSV
-		 */
-		function parseCSV(text) {
-			const rows = [];
-			let row = [],
-				field = "",
-				inQuotes = false;
-			for (let i = 0; i < text.length; i++) {
-				const c = text[i],
-					n = text[i + 1];
-				if (inQuotes) {
-					if (c === '"' && n === '"') {
-						field += '"';
-						i++;
-					} else if (c === '"') { inQuotes = false; } else { field += c; }
-				} else {
-					if (c === '"') inQuotes = true;
-					else if (c === ',') {
-						row.push(field);
-						field = "";
-					} else if (c === '\r') { /* ignore */ } else if (c === '\n') {
-						row.push(field);
-						rows.push(row);
-						row = [];
-						field = "";
-					} else { field += c; }
-				}
-			}
-			if (field.length || row.length) {
-				row.push(field);
-				rows.push(row);
-			}
-			return rows;
-		}
+							<div class="govuk-button-group">
+								<button type="submit" class="govuk-button" data-module="govuk-button">Save entry</button>
+								<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-form-btn">Cancel</button>
+							</div>
+						</form>
+					</div>
 
-		/**
-		 * @function safeJsonArray
-		 */
-		function safeJsonArray(s) {
-			try { const v = JSON.parse(String(s)); return Array.isArray(v) ? v : []; } catch { return []; }
-		}
+					<!-- Filter chips (visually distinct from tabs) -->
+					<div class="journal-filters" role="group" aria-label="Filter entries by category">
+						<h4 class="govuk-heading-s">Filter by category</h4>
+						<div class="filter-chips">
+							<button type="button" class="filter-chip filter-chip--active" data-filter="all">All entries</button>
+							<button type="button" class="filter-chip" data-filter="perceptions">Perceptions</button>
+							<button type="button" class="filter-chip" data-filter="procedures">Procedures</button>
+							<button type="button" class="filter-chip" data-filter="decisions">Decisions</button>
+							<button type="button" class="filter-chip" data-filter="introspections">Introspections</button>
+						</div>
+					</div>
 
-		/**
-		 * @function mapProjectRow
-		 * @description Map CSV row -> UI model (adds createdAt)
-		 */
-		function mapProjectRow(header, row) {
-			const idx = (name) => header.indexOf(name);
-			const get = (name) => { const i = idx(name); return i >= 0 ? (row[i] ?? "") : ""; };
-
-			const name = get("Name");
-			const description = get("Description");
-			const phase = get("Phase") || "Discovery";
-			const status = get("Status") || "Planning research";
-			const objectives = (get("Objectives") || "").split("|").map(s => s.trim()).filter(Boolean);
-			const user_groups = (get("UserGroups") || "").split("|").map(s => s.trim()).filter(Boolean);
-			let stakeholders = [];
-			try { stakeholders = JSON.parse(get("Stakeholders") || "[]"); } catch { stakeholders = []; }
-
-			return {
-				id: get("LocalId") || undefined,
-				name,
-				description,
-				stakeholders,
-				objectives,
-				user_groups,
-				createdAt: get("CreatedAt") || "", // <- used for sorting
-				['rops:servicePhase']: phase,
-				['rops:projectStatus']: status
-			};
-		}
-
-		/* =========================
-		 * @section Projects Data Client
-		 * ========================= */
-		/**
-		 * @typedef {Object} UIProject
-		 * @property {string=} id
-		 * @property {string} name
-		 * @property {string} description
-		 * @property {Array<{name:string,role?:string,email?:string}>} stakeholders
-		 * @property {string[]} objectives
-		 * @property {string[]} user_groups
-		 * @property {string} createdAt
-		 * @property {string} ['rops:servicePhase']
-		 * @property {string} ['rops:projectStatus']
-		 */
-
-		/**
-		 * @class ProjectsDataClient
-		 * @classdesc 
-		 */
-		class ProjectsDataClient {
-			#apiBase;
-			#emitter = new Emitter();
-			#logger = new BatchedLogger();
-			#aborts = new Set();
-			/** @type {{source:'airtable'|'csv'|null, projects:UIProject[]}} */
-			state = { source: null, projects: [] };
-
-			constructor(apiBaseIn = apiBase) { this.#apiBase = apiBaseIn; }
-			reset() {
-				for (const c of this.#aborts) c.abort();
-				this.#aborts.clear();
-				this.state = { source: null, projects: [] };
-				this.#logger.reset();
-				this.#emitter.emit("reset");
-			}
-			destroy() {
-				this.reset();
-				this.#emitter.reset();
-				this.#logger.destroy();
-			}
-			on(evt, fn) { return this.#emitter.on(evt, fn); }
-
-			async #fetchJson(url) {
-				const ctl = new AbortController();
-				this.#aborts.add(ctl);
-				const timer = setTimeout(() => ctl.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
-				try {
-					const res = await fetch(url, { signal: ctl.signal, credentials: "omit", cache: CONFIG.CACHE });
-					const text = await res.text();
-					let data;
-					try { data = JSON.parse(text); } catch { data = { ok: false, parseError: true, raw: text }; }
-					return { ok: res.ok, status: res.status, data };
-				} finally {
-					clearTimeout(timer);
-					this.#aborts.delete(ctl);
-				}
-			}
-
-			/** Primary: Airtable via Worker /api/projects (maps createdAt) */
-			async listFromAirtable() {
-				const url = `${this.#apiBase}/api/projects`;
-				this.#logger.log("info", "GET /api/projects (airtable)");
-				const { ok, status, data } = await this.#fetchJson(url);
-				if (!ok || !data?.ok) {
-					const m = `Airtable list failed (${status})`;
-					this.#logger.log("warn", m, { status, data });
-					throw new Error(m);
-				}
-				const projects = (data.projects || []).map((p) => {
-					// normalise fields from either Airtable-raw or UI-shaped worker
-					const name = p.Name ?? p.name ?? "";
-					const description = p.Description ?? p.description ?? "";
-					const phase = p.Phase ?? p["rops:servicePhase"] ?? "";
-					const status = p.Status ?? p["rops:projectStatus"] ?? "";
-
-					const stakeholders = Array.isArray(p.Stakeholders) ? p.Stakeholders :
-						Array.isArray(p.stakeholders) ? p.stakeholders :
-						p.Stakeholders ? safeJsonArray(p.Stakeholders) :
-						p.stakeholders ? safeJsonArray(p.stakeholders) : [];
-
-					const objectivesRaw = p.Objectives ?? p.objectives ?? "";
-					const objectives = Array.isArray(objectivesRaw) ?
-						objectivesRaw :
-						String(objectivesRaw).split("\n").map(s => s.trim()).filter(Boolean);
-
-					const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
-					const user_groups = Array.isArray(groupsRaw) ?
-						groupsRaw :
-						String(groupsRaw).split(",").map(s => s.trim()).filter(Boolean);
-
-					const createdAt = p.CreatedAt ?? p.createdAt ?? p.createdTime ?? "";
-
-					return {
-						id: p.LocalId || p.id,
-						name,
-						description,
-						stakeholders,
-						objectives,
-						user_groups,
-						createdAt,
-						['rops:servicePhase']: phase,
-						['rops:projectStatus']: status
-					};
-				});
-				this.state = { source: "airtable", projects };
-				this.#emitter.emit("update", this.state);
-				return projects;
-			}
-
-			/** Fallback: CSV via /api/projects.csv (maps CreatedAt column) */
-			async listFromCsv() {
-				const ctl = new AbortController();
-				this.#aborts.add(ctl);
-				const timer = setTimeout(() => ctl.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
-				try {
-					const res = await fetch(`${this.#apiBase}/api/projects.csv`, { cache: CONFIG.CACHE, signal: ctl.signal });
-					if (!res.ok) throw new Error(`CSV fetch failed (${res.status})`);
-					const text = await res.text();
-					const rows = parseCSV(text);
-					if (!rows.length) {
-						this.state = { source: "csv", projects: [] };
-						this.#emitter.emit("update", this.state);
-						return [];
-					}
-					const [headerRow, ...dataRows] = rows;
-					const header = headerRow.map(h => (h || "").trim());
-					const projects = dataRows
-						.filter(r => r && r.some(cell => (cell || "").trim().length))
-						.map(r => mapProjectRow(header, r));
-					this.state = { source: "csv", projects };
-					this.#emitter.emit("update", this.state);
-					return projects;
-				} finally {
-					clearTimeout(timer);
-					this.#aborts.delete(ctl);
-				}
-			}
-
-			/** Prefer Airtable; fallback to CSV */
-			async listProjects() {
-				try { return await this.listFromAirtable(); } catch (e) { this.#logger.log("warn", "Falling back to CSV", { error: String(e?.message || e) }); return await this.listFromCsv(); }
-			}
-		}
-
-		/* =========================
-		 * @section UI bootstrap
-		 * ========================= */
-		const container = document.getElementById("list");
-		const client = new ProjectsDataClient(apiBase);
-
-		function card(p) {
-			const org = p.org || p.Org || "Home Office Biometrics";
-			const projectId = encodeURIComponent(p.id || p.LocalId || "");
-			const phase = p["rops:servicePhase"] || "";
-			const status = p["rops:projectStatus"] || "";
-			const groups = (p.user_groups || []).map(g => `<li><span class="tag">${g}</span></li>`).join("");
-
-			return `
-<article class="card" aria-labelledby="project-title-${projectId}">
-	<p class="project-org">${org}</p>
-	<h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
-		<a class="govuk-link" href="/pages/project-dashboard/?id=${projectId}" rel="bookmark">${p.name}</a>
-	</h2>
-
-	<p class="project-meta">
-		<strong>Phase:</strong> ${phase} · <strong>Status:</strong> ${status}
-	</p>
-
-	${p.description ? `<section class="project-summary"><p>${p.description}</p></section>` : ""}
-
-	${(p.user_groups && p.user_groups.length) ? `
-	<section class="user-groups" aria-labelledby="user-groups-${projectId}">
-		<h3 id="user-groups-${projectId}" class="project-groups-title">User Groups</h3>
-		<ul class="tags" role="list">
-			${groups}
-		</ul>
-	</section>` : ""}
-
-	<section class="project-extra">
-		<details class="project-details">
-			<summary class="govuk-link">Stakeholders &amp; Objectives</summary>
-			<div class="details-columns">
-				<div>
-					<h4 class="govuk-heading-s">Stakeholders</h4>
-					<ul role="list">
-						${(p.stakeholders || []).map(s => {
-							const name = s.name || "";
-							const role = s.role ? ` — ${s.role}` : "";
-							const email = s.email ? ` <a href="mailto:${s.email}" class="govuk-link">${s.email}</a>` : "";
-							return `<li>${name}${role}${email}</li>`;
-						}).join("") || "<li class='lede'>None</li>"}
-					</ul>
-				</div>
-				<div>
-					<h4 class="govuk-heading-s">Objectives</h4>
-					<ul role="list">
-						${(p.objectives || []).map(o => `<li>${o}</li>`).join("") || "<li class='lede'>None</li>"}
-					</ul>
+					<!-- Journal entries list -->
+					<div id="entries-container" class="govuk-!-margin-top-6">
+						<!-- cards render here -->
+						<div class="empty-state" id="empty-journal" hidden>
+							<p class="govuk-body">No entries match the current filter.</p>
+						</div>
+					</div>
 				</div>
 			</div>
-		</details>
-	</section>
-</article>`;
-		}
 
-		function render(projects, source) {
-			// NEW: newest-first by createdAt (Airtable CreatedAt or record.createdTime; CSV CreatedAt column)
-			projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+			<!-- Panel: Codes -->
+			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="codes">
+				<h3 class="govuk-heading-m">Codebook management</h3>
+				<div id="codes-panel">
+					<button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">Add code</button>
+					<div id="codes-container"></div>
+				</div>
+			</div>
 
-			if (!projects.length) {
-				container.innerHTML = '<p class="lede">No projects yet. <a class="govuk-link" href="./pages/start/">Create one</a>.</p>';
-				return;
+			<!-- Panel: Memos -->
+			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="memos">
+				<h3 class="govuk-heading-m">Research memos</h3>
+				<div id="memos-panel">
+					<button type="button" class="govuk-button" data-module="govuk-button" id="new-memo-btn">Add memo</button>
+
+					<div class="memo-filters govuk-!-margin-top-4">
+						<h4 class="govuk-heading-s">Filter by memo type</h4>
+						<div class="filter-chips">
+							<button type="button" class="filter-chip filter-chip--active" data-memo-filter="all">All</button>
+							<button type="button" class="filter-chip" data-memo-filter="analytical">Analytical</button>
+							<button type="button" class="filter-chip" data-memo-filter="methodological">Methodological</button>
+							<button type="button" class="filter-chip" data-memo-filter="theoretical">Theoretical</button>
+							<button type="button" class="filter-chip" data-memo-filter="reflexive">Reflexive</button>
+						</div>
+					</div>
+
+					<div id="memos-container" class="govuk-!-margin-top-6"></div>
+				</div>
+			</div>
+
+			<!-- Panel: Analysis -->
+			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="analysis">
+				<h3 class="govuk-heading-m">Analysis tools</h3>
+				<div id="analysis-panel">
+					<div class="govuk-button-group">
+						<button type="button" class="govuk-button" data-analysis="timeline">Timeline view</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="co-occurrence">Code co-occurrence</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="retrieval">Code retrieval</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="export">Export analysis</button>
+					</div>
+
+					<div id="analysis-container" class="govuk-!-margin-top-6" data-role="analysis-container">
+						<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
+						<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
+
+						<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
+							<form id="retrieval-form" class="govuk-form-group" novalidate>
+								<label class="govuk-label" for="retrieval-q">Search term</label>
+								<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
+								<div class="govuk-hint">Searches code names and journal text.</div>
+								<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
+							</form>
+							<div id="retrieval-results" class="govuk-!-margin-top-3"></div>
+						</section>
+
+						<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer">
+							<summary class="govuk-details__summary">
+								<span class="govuk-details__summary-text">View raw JSON</span>
+							</summary>
+							<div class="govuk-details__text">
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
+									<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
+								</div>
+								<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
+							</div>
+						</details>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- Coding panel (initially hidden, overlays content) -->
+	<aside id="coding-panel" class="coding-panel" hidden aria-label="Apply codes">
+		<div class="panel-header">
+			<h3>Apply Codes</h3>
+			<button type="button" class="close-panel" aria-label="Close coding panel">✕</button>
+		</div>
+
+		<div class="selected-text-preview">
+			<h4>Selected text:</h4>
+			<blockquote id="selected-text-display"></blockquote>
+		</div>
+
+		<div class="code-search">
+			<label for="code-search-input" class="visually-hidden">Search codes</label>
+			<input type="search" id="code-search-input" placeholder="Search codes&hellip;">
+		</div>
+
+		<div class="codebook-tree" id="coding-codebook" role="tree">
+			<!-- Code list for selection -->
+		</div>
+
+		<div class="coding-confidence">
+			<fieldset>
+				<legend>Confidence level</legend>
+
+				<label>
+					<input type="radio" name="confidence" value="low" />
+					Low
+				</label>
+
+				<label>
+					<input type="radio" name="confidence" value="medium" checked />
+					Medium
+				</label>
+
+				<label>
+					<input type="radio" name="confidence" value="high" />
+					High
+				</label>
+			</fieldset>
+		</div>
+
+		<div class="coding-memo">
+			<label for="coding-memo-input">Coding memo (optional)</label>
+
+			<textarea id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?"></textarea>
+		</div>
+
+		<div class="panel-actions">
+			<button type="button" class="btn" id="apply-code-btn">Apply Code</button>
+
+			<button type="button" class="btn-secondary" id="cancel-coding-btn">Cancel</button>
+		</div>
+	</aside>
+
+	<x-include src="/partials/footer.html"></x-include>
+
+	<script type="module" src="/components/journal-tabs.js" defer></script>
+	<script type="module" src="/components/journal-excerpts.js" defer></script>
+	<script type="module" src="/js/caqdas-interface.js" defer></script>
+	<!-- GOV.UK Frontend JS (enhances tabs + stores #hash for back/forward nav) -->
+	<script type="module" src="/js/tabs.js" defer></script>
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Already initialised by your script:
+			if (window.GOVUKFrontend && typeof window.GOVUKFrontend.initAll === "function") {
+				window.GOVUKFrontend.initAll();
 			}
-			container.innerHTML = projects.map(card).join("");
-			if (CONFIG.SHOW_SOURCE_NOTE) {
-				const srcNote = document.createElement("p");
-				srcNote.className = "lede";
-				srcNote.textContent = `Source: ${source}`;
-				container.prepend(srcNote);
-			}
-		}
 
-		(async () => {
-			try {
-				const projects = await client.listProjects();
-				render(projects, client.state.source);
-			} catch (e) {
-				container.innerHTML = `<p class="lede">Could not load projects (${e?.message || e}).</p>`;
+			// Allow ?tab=<id> as an alias for #<id>, e.g. ?tab=codes or ?tab=analysis
+			const params = new URLSearchParams(location.search);
+			const tab = params.get("tab");
+			if (tab) {
+				const link = document.querySelector('.govuk-tabs__tab[href="#' + CSS.escape(tab) + '"]');
+				if (link) {
+					// Update the hash so GOV.UK Tabs will select it (and back/forward works)
+					if (location.hash !== "#" + tab) {
+						history.replaceState(null, "", location.pathname + location.search + "#" + tab);
+					}
+					// Click to trigger selection without scrolling
+					link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+				}
 			}
-		})();
-
-		/* =========================
-		 * @section Test / Mock exports
-		 * ========================= */
-		window.__rops = Object.freeze({
-			CONFIG,
-			ProjectsDataClient,
-			parseCSV,
-			toMs,
-			reset: () => client.reset(),
-			destroy: () => client.destroy()
 		});
+		(function() {
+			const tabs = document.querySelector('#journals-tabs');
+			if (!tabs) return;
+
+			// Call once when a tab becomes visible.
+			function activate(tabId) {
+				if (!tabId) return;
+				if (tabId === "codes" && !window.__codesReady) {
+					window.__codesReady = true;
+					// If your codes module exposes an init, call it here:
+					if (window.initCodes) window.initCodes();
+					// Otherwise, trigger a custom event many modules already listen for:
+					document.dispatchEvent(new CustomEvent("journal:codes:ready"));
+				}
+				if (tabId === "memos" && !window.__memosReady) {
+					window.__memosReady = true;
+					if (window.initMemos) window.initMemos();
+					document.dispatchEvent(new CustomEvent("journal:memos:ready"));
+				}
+			}
+
+			// Clicks on tabs
+			tabs.addEventListener('click', (e) => {
+				const a = e.target.closest('.govuk-tabs__tab');
+				if (!a) return;
+				const id = a.getAttribute('href')?.slice(1);
+				// Delay to let GOV.UK toggle classes/hidden state
+				setTimeout(() => activate(id), 0);
+			});
+
+			// Deep links / back-forward navigation
+			window.addEventListener('hashchange', () => {
+				activate(location.hash.replace(/^#/, ''));
+			});
+
+			// First paint: honour #hash or default tab
+			document.addEventListener('DOMContentLoaded', () => {
+				const initial = (location.hash || '#journal-entries').replace(/^#/, '');
+				activate(initial);
+			});
+		})();
 	</script>
 </body>
 
