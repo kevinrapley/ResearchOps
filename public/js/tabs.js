@@ -8,6 +8,11 @@
 (function() {
 	const $ = (s, r = document) => r.querySelector(s);
 	const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+	
+	function ensureVisible(el) {
+	el.classList.remove('govuk-tabs__panel--hidden');
+	el.removeAttribute('hidden');
+}
 
 	function initContainer(container) {
 		if (!container) return;
@@ -51,6 +56,8 @@
 			const targetPanel = document.getElementById(id);
 			const targetTab = $(`.govuk-tabs__tab[aria-controls="${id}"]`, container);
 			if (!targetPanel || !container.contains(targetPanel) || !targetTab) return;
+			
+			ensureVisible(targetPanel);
 
 			items.forEach((li) => li.classList.remove('govuk-tabs__list-item--selected'));
 			targetTab.closest('li')?.classList.add('govuk-tabs__list-item--selected');
