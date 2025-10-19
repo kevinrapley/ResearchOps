@@ -1,107 +1,29 @@
 /**
  * @file caqdas-interface.js
  * @module CAQDASInterface
- * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (aligned with GOV.UK-style tabs).
+ * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (works with your HTML).
+ *
+ * This file:
+ *  - Loads entries/codes/memos for the project (?project= or ?id=)
+ *  - Wires buttons: Add journal entry / Add code / Add memo
+ *  - Wires Analysis buttons: Timeline / Co-occurrence / Retrieval / Export
+ *  - Plays nicely with your GOV.UK-style tabs + custom `tab:shown` event
  */
 
-import { initJournalExcerpts } from "/components/journal-excerpts.js";
-
 /* =========================
- * Tiny DOM helpers
+ * DOM helpers
  * ========================= */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 /* =========================
- * Excerpts boot (optional)
- * ========================= */
-
-const entryForm = document.getElementById("entry-form");
-const entryTextarea = document.getElementById("entry-content");
-
-// After saving a journal entry, initialise with real entry id
-let excerptMgr;
-
-function bootExcerpts(entryId) {
-	excerptMgr = initJournalExcerpts({
-		entryId,
-		textarea: "#entry-content",
-		list: "#excerpts-list",
-		addBtn: "#btn-add-excerpt"
-	});
-
-	const textarea = document.getElementById("entry-content");
-
-	textarea.addEventListener("excerpt:created", async (e) => {
-		const payload = e.detail.excerpt;
-		// POST create (replace with real payload fields)
-		await fetch("/api/journal/excerpts", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(payload)
-		});
-	});
-
-	textarea.addEventListener("excerpts:changed", async (e) => {
-		// Optional: batch sync here
-	});
-}
-
-// Map Airtable record → excerpt object (if you render from server)
-function airtableToExcerpt(r) {
-	const f = r.fields || {};
-	return {
-		id: r.id,
-		entryId: Array.isArray(f["Entry ID"]) ? f["Entry ID"][0] : f["Entry ID"],
-		start: f["Start"],
-		end: f["End"],
-		text: f["Text"],
-		createdAt: f["Created At"],
-		author: f["Author"] ?? null,
-		codes: f["Codes"] ?? [],
-		memos: f["Memos"] ?? [],
-		muralWidgetId: f["Mural Widget ID"] ?? "",
-		syncedAt: f["Synced At"] ?? null
-	};
-}
-
-/* Example: after a new entry is saved, call initExcerpts with the returned id */
-document.getElementById("add-entry-form")?.addEventListener("submit", async (ev) => {
-	ev.preventDefault();
-	const form = ev.currentTarget;
-	const payload = {
-		category: form.category.value,
-		content: form.content.value,
-		tags: form.tags.value
-	};
-	// const res = await fetch("/api/journal/entries", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify(payload) });
-	// const saved = await res.json();
-
-	const fakeId = crypto.randomUUID(); // replace with saved.id
-	if (!excerptMgr) bootExcerpts(fakeId);
-});
-
-/* =========================
  * Config + HTTP helpers
  * ========================= */
-
-/**
- * Global configuration for the CAQDAS interface.
- * @readonly
- * @type {{API_BASE: string, TIMEOUT_MS: number}}
- */
 const CONFIG = Object.freeze({
 	API_BASE: window.location.origin,
 	TIMEOUT_MS: 15000
 });
 
-/**
- * fetch() with AbortController timeout.
- * @param {RequestInfo|URL} url
- * @param {RequestInit} [init]
- * @param {number} [timeoutMs]
- * @returns {Promise<Response>}
- */
 async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -112,13 +34,6 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	}
 }
 
-/**
- * JSON fetch with error text details and content-type guard.
- * @param {string} url
- * @param {RequestInit} [init]
- * @param {number} [timeoutMs]
- * @returns {Promise<any>}
- */
 async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const res = await fetchWithTimeout(url, init, timeoutMs);
 	if (!res.ok) {
@@ -129,11 +44,6 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	return ct.includes("application/json") ? res.json() : {};
 }
 
-/**
- * HTML-escape text for safe insertion.
- * @param {string} s
- * @returns {string}
- */
 function escapeHtml(s) {
 	if (!s) return "";
 	const d = document.createElement("div");
@@ -141,21 +51,12 @@ function escapeHtml(s) {
 	return d.innerHTML;
 }
 
-/**
- * Formats an ISO datetime string for display.
- * @param {string} iso
- * @returns {string}
- */
 function formatWhen(iso) {
 	if (!iso) return "—";
 	const d = new Date(iso);
 	return d.toLocaleString();
 }
 
-/**
- * Lightweight flash/status banner.
- * @param {string} msg
- */
 function flash(msg) {
 	let el = $("#flash");
 	if (!el) {
@@ -175,157 +76,76 @@ function flash(msg) {
 /* =========================
  * State
  * ========================= */
-
-/**
- * @typedef {Object} JournalEntry
- * @property {string} id
- * @property {string} category
- * @property {string} [content]
- * @property {string} [body]
- * @property {string} createdAt
- */
-
-/**
- * @typedef {Object} Code
- * @property {string} id
- * @property {string} name
- * @property {string} [colour]
- * @property {string} [description]
- */
-
-/**
- * @typedef {Object} Memo
- * @property {string} id
- * @property {string} memoType
- * @property {string} content
- * @property {string} createdAt
- */
-
-/**
- * @typedef {Object} CooccurrenceGraph
- * @property {{id:string,label?:string,name?:string}[]} nodes
- * @property {{source:string,target:string,weight?:number}[]} links
- */
-
-/**
- * Application state (in-memory).
- * @type {{
- *  projectId: string|null,
- *  entries: JournalEntry[],
- *  codes: Code[],
- *  memos: Memo[],
- *  analysis: { timeline: JournalEntry[], graph: CooccurrenceGraph, results: any[] }
- * }}
- */
 const state = {
 	projectId: null,
 	entries: [],
 	codes: [],
-	memos: [],
-	analysis: { timeline: [], graph: { nodes: [], links: [] }, results: [] }
+	memos: []
 };
 
 /* =========================
- * Journal
+ * Journal: load + render + add
  * ========================= */
-
-/**
- * Loads journal entries for the current project and renders them.
- * @returns {Promise<void>}
- */
 async function loadEntries() {
-	if (!state.projectId) {
-		console.debug("[journals] skip load: no projectId");
-		return;
-	}
-
+	if (!state.projectId) return;
 	try {
-		const url = `/api/journal-entries?project=${encodeURIComponent(state.projectId)}`;
-		const data = await httpJSON(url);
-
-		// Accept either {entries:[...]} or a raw array
-		const entries = Array.isArray(data?.entries) ? data.entries :
-			Array.isArray(data) ? data : [];
-
-		// Normalize shape for render
+		const data = await httpJSON(`/api/journal-entries?project=${encodeURIComponent(state.projectId)}`);
+		const entries = Array.isArray(data?.entries) ? data.entries : (Array.isArray(data) ? data : []);
 		state.entries = entries.map(e => ({
 			id: e.id,
 			category: e.category || "—",
 			content: e.content ?? e.body ?? "",
-			tags: Array.isArray(e.tags) ? e.tags : String(e.tags || "")
-				.split(",").map(s => s.trim()).filter(Boolean),
+			tags: Array.isArray(e.tags) ? e.tags : String(e.tags || "").split(",").map(s => s.trim()).filter(Boolean),
 			createdAt: e.createdAt || e.created_at || ""
 		}));
-
-		console.debug("[journals] loaded", { count: state.entries.length, sample: state.entries[0] });
 		renderEntries();
 	} catch (err) {
 		console.error("loadEntries error:", err);
-		flash(`Could not load journal entries. ${err && err.message ? err.message : ""}`);
-		// still render placeholder so the section is deterministic
 		state.entries = [];
 		renderEntries();
+		flash(`Could not load journal entries. ${err?.message || ""}`.trim());
 	}
 }
 
-// Always render inside the dedicated entries container
-function getJournalContainer() {
-	return document.getElementById("entries-container");
-}
-
-/**
- * Renders the journal entries list into #entries-container.
- */
 function renderEntries() {
-	const wrap = getJournalContainer();
-	if (!wrap) {
-		console.warn("[journals] #entries-container not found.");
-		return;
-	}
-
-	const empty = document.getElementById("empty-journal");
+	const wrap = $("#entries-container");
+	const empty = $("#empty-journal");
+	if (!wrap) return;
 
 	if (!state.entries.length) {
 		wrap.innerHTML = "";
 		if (empty) empty.hidden = false;
 		return;
 	}
-
 	if (empty) empty.hidden = true;
 
 	wrap.innerHTML = state.entries.map(en => `
-		<article class="entry-card" data-id="${en.id}" data-category="${en.category}">
-			<div class="entry-header">
-				<div class="entry-meta">
-					<span class="entry-category-badge" data-category="${en.category}">${escapeHtml(en.category)}</span>
-					<span class="entry-timestamp">${formatWhen(en.createdAt)}</span>
-				</div>
-				<div class="entry-actions">
-					<button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
-				</div>
-			</div>
-			<div class="entry-content">${escapeHtml(en.content || "")}</div>
-			<div class="entry-tags">
-				${(en.tags || []).map(t => `<span class="filter-chip">${escapeHtml(t)}</span>`).join("")}
-			</div>
-		</article>
-	`).join("");
+    <article class="entry-card" data-id="${en.id}" data-category="${en.category}">
+      <div class="entry-header">
+        <div class="entry-meta">
+          <span class="entry-category-badge" data-category="${en.category}">${escapeHtml(en.category)}</span>
+          <span class="entry-timestamp">${formatWhen(en.createdAt)}</span>
+        </div>
+        <div class="entry-actions">
+          <button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
+        </div>
+      </div>
+      <div class="entry-content">${escapeHtml(en.content || "")}</div>
+      <div class="entry-tags">
+        ${(en.tags || []).map(t => `<span class="filter-chip">${escapeHtml(t)}</span>`).join("")}
+      </div>
+    </article>
+  `).join("");
 
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
 }
 
-/**
- * Deletes a journal entry and refreshes the list.
- * @param {MouseEvent} e
- * @returns {Promise<void>}
- */
 async function onDeleteEntry(e) {
-	const id = /** @type {HTMLElement} */ (e.currentTarget).dataset.id;
+	const id = e.currentTarget?.dataset.id;
 	if (!id) return;
 	if (!confirm("Delete this entry?")) return;
-
 	try {
 		await httpJSON(`/api/journal-entries/${encodeURIComponent(id)}`, { method: "DELETE" });
 		flash("Entry deleted.");
@@ -336,24 +156,12 @@ async function onDeleteEntry(e) {
 	}
 }
 
-/**
- * Wires the “+ New entry” toggle and submit handlers.
- * Primary trigger: #toggle-form-btn (and supports #new-entry-btn alias).
- * Uses the dedicated inline form section: #entry-form and #add-entry-form.
- */
 function setupNewEntryWiring() {
-	// Dedicated inline form section used on your page
 	const section = $("#entry-form");
 	const form = $("#add-entry-form");
+	const toggleBtn = $("#new-entry-btn");
+	const cancelBtn = $("#cancel-form-btn");
 
-	// Primary trigger on this page; also accept the alias you mentioned
-	const toggleBtn = $("#toggle-form-btn") || $("#new-entry-btn");
-	const cancelBtn = $("#cancel-form-btn") || $("#cancel-entry-btn") || section?.querySelector('[data-role="cancel"]');
-
-	/**
-	 * Shows/hides the new-entry section.
-	 * @param {boolean} [force]
-	 */
 	function toggleForm(force) {
 		if (!section) return;
 		const show = typeof force === "boolean" ? force : section.hidden;
@@ -361,60 +169,81 @@ function setupNewEntryWiring() {
 		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
 	}
 
-	if (toggleBtn && section) {
-		toggleBtn.addEventListener("click", () => toggleForm());
-	}
+	toggleBtn?.addEventListener("click", (e) => { e.preventDefault();
+		toggleForm(); });
+	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
+		toggleForm(false); });
 
-	if (cancelBtn && section) {
-		cancelBtn.addEventListener("click", (e) => {
-			e.preventDefault();
+	form?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const fd = new FormData(form);
+		const payload = {
+			project: state.projectId,
+			project_airtable_id: state.projectId, // backwards compatibility
+			category: (fd.get("category") || "").toString(),
+			content: (fd.get("content") || "").toString(),
+			tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
+		};
+		if (!payload.category || !payload.content) {
+			flash("Category and content are required.");
+			return;
+		}
+		try {
+			await httpJSON("/api/journal-entries", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+			form.reset();
 			toggleForm(false);
-		});
-	}
-
-	if (form && section) {
-		form.addEventListener("submit", async (e) => {
-			e.preventDefault();
-			const fd = new FormData( /** @type {HTMLFormElement} */ (form));
-			const payload = {
-				// send BOTH keys so your Worker can accept either format
-				project: state.projectId,
-				project_airtable_id: state.projectId,
-				category: (fd.get("category") || "").toString(),
-				content: (fd.get("content") || "").toString(),
-				tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
-			};
-			if (!payload.category || !payload.content) {
-				flash("Category and content are required.");
-				return;
-			}
-			try {
-				await httpJSON("/api/journal-entries", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify(payload)
-				});
-				/** @type {HTMLFormElement} */
-				(form).reset?.();
-				toggleForm(false);
-				flash("Entry saved.");
-				await loadEntries();
-			} catch (err) {
-				console.error("add-entry submit error:", err);
-				flash(`Could not save entry. ${err?.message || ""}`.trim());
-			}
-		});
-	}
+			flash("Entry saved.");
+			await loadEntries();
+		} catch (err) {
+			console.error("add-entry submit error:", err);
+			flash(`Could not save entry. ${err?.message || ""}`.trim());
+		}
+	});
 }
 
 /* =========================
- * Codes
+ * Codes: ensure form + load + render + add
  * ========================= */
+function ensureCodeForm() {
+	let form = $("#code-form");
+	if (form) return form;
+	const host = $("#codes-panel") || $("#codes");
+	if (!host) return null;
 
-/**
- * Loads codes for the current project and renders them.
- * @returns {Promise<void>}
- */
+	form = document.createElement("form");
+	form.id = "code-form";
+	form.hidden = true;
+	form.noValidate = true;
+	form.innerHTML = `
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="code-name">Code name</label>
+      <input class="govuk-input" id="code-name" name="name" />
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="code-color">Colour</label>
+      <input class="govuk-input" id="code-color" name="color" />
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="code-description">Description</label>
+      <textarea class="govuk-textarea" id="code-description" name="description" rows="3"></textarea>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="code-parent">Parent code (optional)</label>
+      <input class="govuk-input" id="code-parent" name="parent" />
+    </div>
+    <div class="govuk-button-group">
+      <button id="save-code-btn" class="govuk-button" type="submit">Save</button>
+      <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+    </div>
+  `;
+	host.appendChild(form);
+	return form;
+}
+
 async function loadCodes() {
 	if (!state.projectId) return;
 	try {
@@ -423,44 +252,36 @@ async function loadCodes() {
 		renderCodes();
 	} catch (e) {
 		console.error(e);
+		renderCodes(true);
 		flash(`Could not load codes. ${e?.message || ""}`.trim());
 	}
 }
 
-/**
- * Renders the code cards list.
- */
-function renderCodes() {
+function renderCodes(error = false) {
 	const wrap = $("#codes-container");
 	if (!wrap) return;
-
-	if (!state.codes.length) {
-		wrap.innerHTML = "<p>No codes yet.</p>";
-		return;
-	}
+	if (error) { wrap.innerHTML = "<p>Could not load codes.</p>"; return; }
+	if (!state.codes.length) { wrap.innerHTML = "<p>No codes yet.</p>"; return; }
 
 	wrap.innerHTML = state.codes.map(c => `
-		<article class="code-card" data-id="${c.id}">
-			<header>
-				<span class="code-swatch" style="background-color:${c.colour || c.color || "#505a5f"};"></span>
-				<strong>${escapeHtml(c.name || "—")}</strong>
-			</header>
-			${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
-		</article>
-	`).join("");
+    <article class="code-card" data-id="${c.id}">
+      <header>
+        <span class="code-swatch" style="background-color:${c.colour || c.color || "#505a5f"};"></span>
+        <strong>${escapeHtml(c.name || "—")}</strong>
+      </header>
+      ${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
+    </article>
+  `).join("");
 }
 
-/**
- * Handles client-side interactions for the “Add Code” workflow.
- */
 function setupAddCodeWiring() {
-	const btn = document.getElementById("new-code-btn");
-	const form = document.getElementById("code-form");
-	const nameInput = document.getElementById("code-name");
-	const colourInput = document.getElementById("code-color");
-	const descInput = document.getElementById("code-description");
-	const parentInput = document.getElementById("code-parent");
-	const cancelBtn = document.getElementById("cancel-code-btn");
+	const btn = $("#new-code-btn");
+	const form = ensureCodeForm();
+	const nameInput = $("#code-name");
+	const colourInput = $("#code-color");
+	const descInput = $("#code-description");
+	const parentInput = $("#code-parent");
+	const cancelBtn = $("#cancel-code-btn");
 
 	function showForm(show) {
 		if (!form) return;
@@ -468,7 +289,8 @@ function setupAddCodeWiring() {
 		if (show) nameInput?.focus();
 	}
 
-	btn?.addEventListener("click", () => showForm(form?.hidden ?? true));
+	btn?.addEventListener("click", (e) => { e.preventDefault();
+		showForm(form?.hidden ?? true); });
 	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
 		showForm(false); });
 
@@ -477,10 +299,7 @@ function setupAddCodeWiring() {
 		e.stopPropagation();
 
 		const name = (nameInput?.value || "").trim();
-		if (!name) {
-			flash("Please enter a code name.");
-			return;
-		}
+		if (!name) { flash("Please enter a code name."); return; }
 
 		const payload = {
 			name,
@@ -497,7 +316,6 @@ function setupAddCodeWiring() {
 				body: JSON.stringify(payload)
 			});
 
-			// Reset inputs
 			if (nameInput) nameInput.value = "";
 			if (colourInput) colourInput.value = "";
 			if (descInput) descInput.value = "";
@@ -506,13 +324,6 @@ function setupAddCodeWiring() {
 			showForm(false);
 			flash(`Code “${payload.name}” created.`);
 			await loadCodes();
-
-			// Clean any accidental query params left by browser autofill
-			if (location.search.includes("name=")) {
-				const url = new URL(location.href);
-				["name", "definition", "colour", "parent"].forEach(p => url.searchParams.delete(p));
-				history.replaceState(null, "", url.toString());
-			}
 		} catch (err) {
 			console.error(err);
 			flash("Could not create code.");
@@ -521,13 +332,45 @@ function setupAddCodeWiring() {
 }
 
 /* =========================
- * Memos
+ * Memos: ensure form + load + render + add
  * ========================= */
+function ensureMemoForm() {
+	let form = $("#memo-form");
+	if (form) return form;
+	const host = $("#memos-panel") || $("#memos");
+	if (!host) return null;
 
-/**
- * Loads memos for the current project and renders them.
- * @returns {Promise<void>}
- */
+	form = document.createElement("form");
+	form.id = "memo-form";
+	form.hidden = true;
+	form.noValidate = true;
+	form.innerHTML = `
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="memo-type">Memo type</label>
+      <select class="govuk-select" id="memo-type" name="memo_type">
+        <option value="analytical">Analytical</option>
+        <option value="methodological">Methodological</option>
+        <option value="theoretical">Theoretical</option>
+        <option value="reflexive">Reflexive</option>
+      </select>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="memo-title">Title (optional)</label>
+      <input class="govuk-input" id="memo-title" name="title" />
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="memo-content">Content</label>
+      <textarea class="govuk-textarea" id="memo-content" name="content" rows="4" required></textarea>
+    </div>
+    <div class="govuk-button-group">
+      <button id="save-memo-btn" class="govuk-button" type="submit">Save</button>
+      <button id="cancel-memo-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+    </div>
+  `;
+	host.appendChild(form);
+	return form;
+}
+
 async function loadMemos() {
 	if (!state.projectId) return;
 	try {
@@ -540,21 +383,14 @@ async function loadMemos() {
 	}
 }
 
-/**
- * Renders memos; shows a friendly message on error/empty.
- * @param {boolean} [error=false]
- */
 function renderMemos(error = false) {
-	const wrap = document.querySelector('[data-role="memos-container"]') || document.getElementById("memos-container");
+	const wrap = $("#memos-container");
 	if (!wrap) return;
+	if (error) { wrap.innerHTML = "<p>Could not load memos.</p>"; return; }
 
-	if (error) {
-		wrap.innerHTML = "<p>Could not load memos.</p>";
-		return;
-	}
-
-	// Respect filter chips if present (fallback to "all")
-	const active = document.querySelector('.filter-btn.active')?.dataset.memoFilter ||
+	// Current filter (supports either .filter-btn or .filter-chip classes)
+	const active =
+		document.querySelector('.filter-btn.active')?.dataset.memoFilter ||
 		document.querySelector('.filter-chip.filter-chip--active')?.dataset.memoFilter ||
 		"all";
 
@@ -564,10 +400,7 @@ function renderMemos(error = false) {
 		return t === active.toLowerCase();
 	});
 
-	if (!items.length) {
-		wrap.innerHTML = "<p>No memos yet.</p>";
-		return;
-	}
+	if (!items.length) { wrap.innerHTML = "<p>No memos yet.</p>"; return; }
 
 	wrap.innerHTML = items.map(m => `
     <article class="memo-card" data-id="${m.id || ""}">
@@ -581,58 +414,49 @@ function renderMemos(error = false) {
   `).join("");
 }
 
-/**
- * Wire the "+ New Memo" button, form show/hide, submit, and filter chips.
- */
 function setupNewMemoWiring() {
-	const newBtn = document.getElementById("new-memo-btn");
-	const formSection = document.getElementById("memo-form");
-	const form = document.getElementById("add-memo-form");
-	const cancelBtn = document.getElementById("cancel-memo-btn");
+	const newBtn = $("#new-memo-btn");
+	const form = ensureMemoForm();
+	const cancelBtn = $("#cancel-memo-btn");
 
 	function toggleForm(show) {
-		if (!formSection) return;
-		const shouldShow = typeof show === "boolean" ? show : formSection.hidden;
-		formSection.hidden = !shouldShow;
+		if (!form) return;
+		const shouldShow = typeof show === "boolean" ? show : form.hidden;
+		form.hidden = !shouldShow;
 		if (shouldShow) form?.querySelector("#memo-content, textarea, input, select")?.focus();
 	}
 
-	if (newBtn) newBtn.addEventListener("click", () => toggleForm(true));
-	if (cancelBtn) cancelBtn.addEventListener("click", () => toggleForm(false));
+	newBtn?.addEventListener("click", (e) => { e.preventDefault();
+		toggleForm(true); });
+	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
+		toggleForm(false); });
 
-	if (form) {
-		form.addEventListener("submit", async (e) => {
-			e.preventDefault();
-			const fd = new FormData(form);
+	form?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const fd = new FormData(form);
+		const payload = {
+			project_id: state.projectId,
+			memo_type: (fd.get("memo_type") || "analytical").toString(),
+			title: (fd.get("title") || "").toString(),
+			content: (fd.get("content") || "").toString()
+		};
+		if (!payload.content.trim()) { flash("Content is required."); return; }
 
-			const payload = {
-				project_id: state.projectId,
-				memo_type: (fd.get("memo_type") || "analytical").toString(),
-				title: (fd.get("title") || "").toString(),
-				content: (fd.get("content") || "").toString()
-			};
-
-			if (!payload.content.trim()) {
-				flash("Content is required.");
-				return;
-			}
-
-			try {
-				await httpJSON("/api/memos", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify(payload)
-				});
-				form.reset();
-				toggleForm(false);
-				flash("Memo created.");
-				await loadMemos();
-			} catch (err) {
-				console.error(err);
-				flash("Could not create memo.");
-			}
-		});
-	}
+		try {
+			await httpJSON("/api/memos", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+			form.reset();
+			toggleForm(false);
+			flash("Memo created.");
+			await loadMemos();
+		} catch (err) {
+			console.error(err);
+			flash("Could not create memo.");
+		}
+	});
 
 	// Filter chips (both .filter-btn and .filter-chip variants)
 	document.querySelectorAll('[data-memo-filter]').forEach(btn => {
@@ -642,15 +466,14 @@ function setupNewMemoWiring() {
 			});
 			const target = /** @type {HTMLElement} */ (e.currentTarget);
 			target.classList.add(target.classList.contains("filter-chip") ? "filter-chip--active" : "active");
-			renderMemos(); // re-render with the new filter
+			renderMemos();
 		});
 	});
 }
 
 /* =========================
- * ANALYSIS TOOLS
+ * Analysis: sections + JSON viewer + actions
  * ========================= */
-
 function getAnalysisContainer() {
 	return document.querySelector('[data-role="analysis-container"]') || document.getElementById('analysis-container');
 }
@@ -660,7 +483,6 @@ function ensureSection(id, headingText) {
 	if (!host) return null;
 	let sec = document.getElementById(id);
 	if (sec) return sec;
-
 	sec = document.createElement('section');
 	sec.id = id;
 	sec.setAttribute('aria-live', 'polite');
@@ -830,6 +652,7 @@ function setupRetrievalUI() {
 	const wrap = ensureSection("analysis-retrieval", "Code/text retrieval");
 	if (!wrap) return;
 
+	// Build only once
 	if (!document.getElementById("retrieval-form")) {
 		const form = document.createElement("form");
 		form.id = "retrieval-form";
@@ -912,47 +735,37 @@ async function runExport() {
 }
 
 /**
- * Initialise the Analysis tools panel:
- *  - Delegates button clicks (timeline / co-occurrence / retrieval / export).
- *  - Creates friendly placeholders and retrieval UI.
- * Call this once in your page initialiser.
+ * Robust wiring for Analysis buttons.
+ * Delegates on #analysis-panel and (fallback) on document.
  */
 function setupAnalysisTools() {
-	const panel = document.getElementById('analysis-panel') || document;
-	panel.addEventListener('click', (e) => {
-		const btn = e.target && typeof e.target.closest === 'function' ?
+	const handler = (e) => {
+		const target = e.target && typeof e.target.closest === 'function' ?
 			/** @type {HTMLElement|null} */ (e.target.closest('[data-analysis]')) :
 			null;
-		if (!btn) return;
-		const mode = btn.dataset.analysis;
+		if (!target) return;
+		e.preventDefault();
+		const mode = target.dataset.analysis;
 		if (mode === 'timeline') return void runTimeline();
 		if (mode === 'co-occurrence') return void runCooccurrence();
 		if (mode === 'retrieval') return void setupRetrievalUI();
 		if (mode === 'export') return void runExport();
-	});
+	};
 
-	// Friendly placeholders, built only once:
+	(document.getElementById('analysis-panel') || document).addEventListener('click', handler);
+	document.addEventListener('click', handler); // belt-and-braces
+
+	// Friendly placeholders on first load
 	ensureSection("analysis-timeline", "Timeline")
 		?.replaceChildren(elFromHTML('<p class="hint">Timeline not loaded yet.</p>'));
 	ensureSection("analysis-cooccurrence", "Code co-occurrence")
 		?.replaceChildren(elFromHTML('<p class="hint">Co-occurrence not loaded yet.</p>'));
-	setupRetrievalUI(); // creates the form + empty state if missing
-}
-
-// Back-compat: satisfy older calls to loadAnalysis()
-function loadAnalysis() {
-	try { setupAnalysisTools(); } catch (e) { console.debug("[analysis] loadAnalysis noop/shim failed:", e); }
-	return Promise.resolve();
+	setupRetrievalUI(); // create retrieval form once
 }
 
 /* =========================
- * Boot logic (tabs-aware)
+ * Tabs integration helpers
  * ========================= */
-
-/**
- * Is "Journal entries" the active tab at initial load?
- * Checks selected LI → #hash → defaults to first tab (which is Journal).
- */
 function isJournalActiveOnLoad() {
 	const selected = document.querySelector(".govuk-tabs__list-item--selected .govuk-tabs__tab");
 	if (selected) return (selected.getAttribute("href") || "").replace(/^#/, "") === "journal-entries";
@@ -960,11 +773,9 @@ function isJournalActiveOnLoad() {
 	return true; // first tab in your markup is Journal
 }
 
-/**
- * Entry-point: reads project id, wires UI, and loads initial data.
- * Also listens for `tab:shown` to (re)load when the Journal tab becomes visible.
- * @returns {Promise<void>}
- */
+/* =========================
+ * Boot
+ * ========================= */
 async function init() {
 	const url = new URL(location.href);
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
@@ -974,18 +785,16 @@ async function init() {
 		return;
 	}
 
+	// Wire buttons/forms
 	setupNewEntryWiring();
 	setupAddCodeWiring();
 	setupNewMemoWiring();
+	setupAnalysisTools();
 
-	// Load non-journal panels immediately (cheap and keeps UI warm)
-	await Promise.allSettled([
-		loadCodes(),
-		loadMemos(),
-		loadAnalysis()
-	]);
+	// Load non-journal data early
+	await Promise.allSettled([loadCodes(), loadMemos()]);
 
-	// If Journal is active at first paint, unhide defensively and load now
+	// If Journal is the active tab at first paint, ensure visible and load
 	if (isJournalActiveOnLoad()) {
 		const p = document.getElementById("journal-entries");
 		if (p) { p.classList.remove("govuk-tabs__panel--hidden");
@@ -993,7 +802,7 @@ async function init() {
 		await loadEntries();
 	}
 
-	// Also load Journal entries whenever that tab is shown later (deep links / user click)
+	// Also reload entries when Journal tab becomes visible later
 	document.addEventListener("tab:shown", (e) => {
 		if (e?.detail?.id === "journal-entries") loadEntries();
 	});
