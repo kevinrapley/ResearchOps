@@ -10,7 +10,7 @@
 	<meta name="sda-auto" content="true" />
 	<meta property="dcterms:creator" content="Home Office Biometrics" />
 	<title property="dcterms:title">Reflexive Journal &amp; Analysis &mdash; ResearchOps</title>
-	
+
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css">
@@ -19,7 +19,6 @@
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
-	<script>document.documentElement.classList.add('js');</script>
 </head>
 
 <body typeof="schema:WebPage">
@@ -261,66 +260,44 @@
 	<!-- GOV.UK Frontend JS (enhances tabs + stores #hash for back/forward nav) -->
 	<script type="module" src="/js/tabs.js" defer></script>
 	<script>
-		document.addEventListener("DOMContentLoaded", function() {
-			// Already initialised by your script:
-			if (window.GOVUKFrontend && typeof window.GOVUKFrontend.initAll === "function") {
-				window.GOVUKFrontend.initAll();
-			}
-
-			// Allow ?tab=<id> as an alias for #<id>, e.g. ?tab=codes or ?tab=analysis
-			const params = new URLSearchParams(location.search);
-			const tab = params.get("tab");
-			if (tab) {
-				const link = document.querySelector('.govuk-tabs__tab[href="#' + CSS.escape(tab) + '"]');
-				if (link) {
-					// Update the hash so GOV.UK Tabs will select it (and back/forward works)
-					if (location.hash !== "#" + tab) {
-						history.replaceState(null, "", location.pathname + location.search + "#" + tab);
-					}
-					// Click to trigger selection without scrolling
-					link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-				}
-			}
-		});
 		(function() {
-			const tabs = document.querySelector('#journals-tabs');
-			if (!tabs) return;
-
-			// Call once when a tab becomes visible.
-			function activate(tabId) {
-				if (!tabId) return;
-				if (tabId === "codes" && !window.__codesReady) {
-					window.__codesReady = true;
-					// If your codes module exposes an init, call it here:
-					if (window.initCodes) window.initCodes();
-					// Otherwise, trigger a custom event many modules already listen for:
-					document.dispatchEvent(new CustomEvent("journal:codes:ready"));
-				}
-				if (tabId === "memos" && !window.__memosReady) {
-					window.__memosReady = true;
-					if (window.initMemos) window.initMemos();
-					document.dispatchEvent(new CustomEvent("journal:memos:ready"));
+			// When everything (including modules) has attached, activate the current tab once more.
+			function activateCurrent() {
+				var hash = (location.hash || '#journal-entries');
+				var id = hash.slice(1);
+				// Make sure the target panel is not hidden by any leftover attributes/classes.
+				var panel = document.getElementById(id);
+				if (panel) {
+					panel.classList.remove('govuk-tabs__panel--hidden');
+					panel.removeAttribute('hidden');
+					// Fire a synthetic activation so late listeners (entries/codes/memos) can populate.
+					panel.dispatchEvent(new CustomEvent('tab:shown', { bubbles: true, detail: { id: id, container: panel.closest('.govuk-tabs') } }));
 				}
 			}
 
-			// Clicks on tabs
-			tabs.addEventListener('click', (e) => {
-				const a = e.target.closest('.govuk-tabs__tab');
-				if (!a) return;
-				const id = a.getAttribute('href')?.slice(1);
-				// Delay to let GOV.UK toggle classes/hidden state
-				setTimeout(() => activate(id), 0);
+			// Support ?tab=codes as an alias for #codes
+			function applyQueryTab() {
+				var params = new URLSearchParams(location.search);
+				var qtab = params.get('tab');
+				if (!qtab) return;
+				// Prefer aria-controls (set by tabs.js), fall back to href
+				var link = document.querySelector('.govuk-tabs__tab[aria-controls="' + qtab + '"]') ||
+					document.querySelector('.govuk-tabs__tab[href="#' + qtab + '"]');
+				if (!link) return;
+				if (location.hash !== '#' + qtab) history.replaceState(null, '', location.pathname + location.search + '#' + qtab);
+				// Click to let tabs.js select properly
+				link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+			}
+
+			// Run after DOM is ready so tabs.js has initialised, then re-emit on next tick.
+			document.addEventListener('DOMContentLoaded', function() {
+				applyQueryTab();
+				setTimeout(activateCurrent, 0);
 			});
 
-			// Deep links / back-forward navigation
-			window.addEventListener('hashchange', () => {
-				activate(location.hash.replace(/^#/, ''));
-			});
-
-			// First paint: honour #hash or default tab
-			document.addEventListener('DOMContentLoaded', () => {
-				const initial = (location.hash || '#journal-entries').replace(/^#/, '');
-				activate(initial);
+			// If other modules load later and you still need a belt-and-braces kick, re-emit on window load.
+			window.addEventListener('load', function() {
+				setTimeout(activateCurrent, 0);
 			});
 		})();
 	</script>
