@@ -449,48 +449,46 @@
 	font-style: italic;
 	}
 	
-#code-color {
-	appearance: none;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	width: 52px;               /* square input */
-	height: 38px;              /* same as GOV.UK input height */
-	padding: 0;
-	border: 1px solid var(--govuk-border-colour, #b1b4b6);
-	border-radius: 4px;
-	background: none;
-	cursor: pointer;
+.color-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: nowrap;
+	}
+
+.color-field input[type="color"] {
+	all: unset;
 	display: inline-block;
-	vertical-align: middle;
-	margin-top: 2px;
+	width: 42px;
+	height: 38px;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	cursor: pointer;
+	padding: 0;
+	background: none;
+	box-sizing: border-box;
 	}
 
-/* remove GOV.UK .govuk-input width rule */
-#code-color.govuk-input {
-	width: 52px;
-	}
-
-/* refine native colour preview for Safari / Chrome */
-#code-color::-webkit-color-swatch-wrapper {
+.color-field input[type="color"]::-webkit-color-swatch-wrapper {
 	padding: 0;
 	}
-#code-color::-webkit-color-swatch {
+
+.color-field input[type="color"]::-webkit-color-swatch {
 	border: none;
 	border-radius: 3px;
 	}
 
-/* focus outline consistent with GOV.UK blue focus */
-#code-color:focus {
-	outline: 3px solid var(--govuk-focus-colour, #fd0);
+.color-field input[type="color"]:focus {
+	outline: 3px solid #fd0;
 	outline-offset: 0;
-	box-shadow: 0 0 0 3px var(--govuk-focus-colour, #fd0);
+	box-shadow: 0 0 0 3px #fd0;
 	}
 
-/* optional inline label layout */
-label[for="code-color"] {
-	display: inline-block;
-	margin-right: 12px;
-	vertical-align: middle;
+/* The text hex input beside it */
+.color-field__hex {
+	width: 9ch;
+	font-family: ui-monospace, monospace;
+	text-transform: lowercase;
 	}
 
 /* Codebook tree */
