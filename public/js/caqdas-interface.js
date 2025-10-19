@@ -1,13 +1,88 @@
 /**
  * @file caqdas-interface.js
  * @module CAQDASInterface
- * @summary Journals/CAQDAS UI: tabs, entries, codes, memos, analysis.
+ * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (aligned with GOV.UK-style tabs).
  */
 
-let excerptManagerInstance;
+import { initJournalExcerpts } from "/components/journal-excerpts.js";
 
 /* =========================
- * Config + tiny helpers
+ * Tiny DOM helpers
+ * ========================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+/* =========================
+ * Excerpts boot (optional)
+ * ========================= */
+
+const entryForm = document.getElementById("entry-form");
+const entryTextarea = document.getElementById("entry-content");
+
+// After saving a journal entry, initialise with real entry id
+let excerptMgr;
+
+function bootExcerpts(entryId) {
+	excerptMgr = initJournalExcerpts({
+		entryId,
+		textarea: "#entry-content",
+		list: "#excerpts-list",
+		addBtn: "#btn-add-excerpt"
+	});
+
+	const textarea = document.getElementById("entry-content");
+
+	textarea.addEventListener("excerpt:created", async (e) => {
+		const payload = e.detail.excerpt;
+		// POST create (replace with real payload fields)
+		await fetch("/api/journal/excerpts", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(payload)
+		});
+	});
+
+	textarea.addEventListener("excerpts:changed", async (e) => {
+		// Optional: batch sync here
+	});
+}
+
+// Map Airtable record → excerpt object (if you render from server)
+function airtableToExcerpt(r) {
+	const f = r.fields || {};
+	return {
+		id: r.id,
+		entryId: Array.isArray(f["Entry ID"]) ? f["Entry ID"][0] : f["Entry ID"],
+		start: f["Start"],
+		end: f["End"],
+		text: f["Text"],
+		createdAt: f["Created At"],
+		author: f["Author"] ?? null,
+		codes: f["Codes"] ?? [],
+		memos: f["Memos"] ?? [],
+		muralWidgetId: f["Mural Widget ID"] ?? "",
+		syncedAt: f["Synced At"] ?? null
+	};
+}
+
+/* Example: after a new entry is saved, call initExcerpts with the returned id */
+document.getElementById("add-entry-form")?.addEventListener("submit", async (ev) => {
+	ev.preventDefault();
+	const form = ev.currentTarget;
+	const payload = {
+		category: form.category.value,
+		content: form.content.value,
+		tags: form.tags.value
+	};
+	// const res = await fetch("/api/journal/entries", { method: "POST", headers: {"content-type":"application/json"}, body: JSON.stringify(payload) });
+	// const saved = await res.json();
+
+	const fakeId = crypto.randomUUID(); // replace with saved.id
+	if (!excerptMgr) bootExcerpts(fakeId);
+});
+
+/* =========================
+ * Config + HTTP helpers
  * ========================= */
 
 /**
@@ -19,22 +94,6 @@ const CONFIG = Object.freeze({
 	API_BASE: window.location.origin,
 	TIMEOUT_MS: 15000
 });
-
-/**
- * Shorthand for querySelector.
- * @param {string} selector
- * @param {ParentNode} [root=document]
- * @returns {HTMLElement|null}
- */
-const $ = (selector, root = document) => root.querySelector(selector);
-
-/**
- * Shorthand for querySelectorAll (arrayified).
- * @param {string} selector
- * @param {ParentNode} [root=document]
- * @returns {HTMLElement[]}
- */
-const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
 /**
  * fetch() with AbortController timeout.
@@ -108,14 +167,9 @@ function flash(msg) {
 		el.style.padding = "12px";
 		el.style.border = "1px solid #d0d7de";
 		el.style.background = "#fff";
-		el.style.borderRadius = "4px";
 		$("main")?.prepend(el);
 	}
 	el.textContent = msg;
-	// Auto-hide after 5 seconds
-	setTimeout(() => {
-		if (el.textContent === msg) el.textContent = "";
-	}, 5000);
 }
 
 /* =========================
@@ -123,61 +177,53 @@ function flash(msg) {
  * ========================= */
 
 /**
+ * @typedef {Object} JournalEntry
+ * @property {string} id
+ * @property {string} category
+ * @property {string} [content]
+ * @property {string} [body]
+ * @property {string} createdAt
+ */
+
+/**
+ * @typedef {Object} Code
+ * @property {string} id
+ * @property {string} name
+ * @property {string} [colour]
+ * @property {string} [description]
+ */
+
+/**
+ * @typedef {Object} Memo
+ * @property {string} id
+ * @property {string} memoType
+ * @property {string} content
+ * @property {string} createdAt
+ */
+
+/**
+ * @typedef {Object} CooccurrenceGraph
+ * @property {{id:string,label?:string,name?:string}[]} nodes
+ * @property {{source:string,target:string,weight?:number}[]} links
+ */
+
+/**
  * Application state (in-memory).
  * @type {{
  *  projectId: string|null,
- *  currentTab: 'journal'|'codes'|'memos'|'analysis',
- *  entries: Array<any>,
- *  codes: Array<any>,
- *  memos: Array<any>,
- *  analysis: { timeline: Array<any>, graph: { nodes: Array<any>, links: Array<any> }, results: Array<any> }
+ *  entries: JournalEntry[],
+ *  codes: Code[],
+ *  memos: Memo[],
+ *  analysis: { timeline: JournalEntry[], graph: CooccurrenceGraph, results: any[] }
  * }}
  */
 const state = {
 	projectId: null,
-	currentTab: "journal",
 	entries: [],
 	codes: [],
 	memos: [],
 	analysis: { timeline: [], graph: { nodes: [], links: [] }, results: [] }
 };
-
-/* =========================
- * Tabs
- * ========================= */
-
-/**
- * Attach click handlers to ARIA tabs using currentTarget for reliability.
- */
-function setupTabs() {
-	$$('[role="tab"]').forEach(tab => {
-		tab.addEventListener("click", (e) => {
-			const id = /** @type {HTMLElement} */ (e.currentTarget).id || "";
-			const tabName = id.replace("-tab", "");
-			switchTab(tabName);
-		});
-	});
-}
-
-/**
- * Switches the visible tab and triggers data loads for the selected panel.
- * @param {'journal'|'codes'|'memos'|'analysis'} name
- */
-function switchTab(name) {
-	state.currentTab = name;
-
-	$$('[role="tab"]').forEach(tab => {
-		tab.setAttribute("aria-selected", (tab.id === `${name}-tab`).toString());
-	});
-	$$('[role="tabpanel"]').forEach(panel => {
-		panel.hidden = panel.id !== `${name}-panel`;
-	});
-
-	if (name === "journal") loadEntries();
-	if (name === "codes") loadCodes();
-	if (name === "memos") loadMemos();
-	if (name === "analysis") loadAnalysis();
-}
 
 /* =========================
  * Journal
@@ -190,7 +236,6 @@ function switchTab(name) {
 async function loadEntries() {
 	if (!state.projectId) {
 		console.debug("[journals] skip load: no projectId");
-		renderEntries(); // Still render empty state
 		return;
 	}
 
@@ -198,11 +243,11 @@ async function loadEntries() {
 		const url = `/api/journal-entries?project=${encodeURIComponent(state.projectId)}`;
 		const data = await httpJSON(url);
 
-		// Accept either {entries:[...]} or a raw array (belt & braces)
+		// Accept either {entries:[...]} or a raw array
 		const entries = Array.isArray(data?.entries) ? data.entries :
 			Array.isArray(data) ? data : [];
 
-		// Normalize minimal shape for render
+		// Normalize shape for render
 		state.entries = entries.map(e => ({
 			id: e.id,
 			category: e.category || "—",
@@ -212,46 +257,60 @@ async function loadEntries() {
 			createdAt: e.createdAt || e.created_at || ""
 		}));
 
-		console.debug("[journals] loaded", { count: state.entries.length });
+		console.debug("[journals] loaded", { count: state.entries.length, sample: state.entries[0] });
 		renderEntries();
 	} catch (err) {
 		console.error("loadEntries error:", err);
 		flash(`Could not load journal entries. ${err && err.message ? err.message : ""}`);
+		// still render placeholder so the section is deterministic
 		state.entries = [];
 		renderEntries();
 	}
 }
 
+// Always render inside the dedicated entries container
+function getJournalContainer() {
+	return document.getElementById("entries-container");
+}
+
 /**
- * Renders the journal entries list.
+ * Renders the journal entries list into #entries-container.
  */
 function renderEntries() {
-	const wrap = $("#entries-container");
+	const wrap = getJournalContainer();
 	if (!wrap) {
-		console.warn("[journals] container #entries-container not found");
+		console.warn("[journals] #entries-container not found.");
 		return;
 	}
+
+	const empty = document.getElementById("empty-journal");
 
 	if (!state.entries.length) {
-		// Keep the empty state that's already in HTML
+		wrap.innerHTML = "";
+		if (empty) empty.hidden = false;
 		return;
 	}
 
+	if (empty) empty.hidden = true;
+
 	wrap.innerHTML = state.entries.map(en => `
-		<article class="journal-card" data-id="${en.id}">
-			<header class="journal-header">
-				<strong>${escapeHtml(en.category)}</strong>
-				<time>${formatWhen(en.createdAt)}</time>
-			</header>
-			<p>${escapeHtml(en.content)}</p>
-			${en.tags?.length ? `<div class="tags">${en.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join(' ')}</div>` : ''}
-			<footer class="journal-footer">
-				<button class="btn btn--secondary btn-small" data-act="delete" data-id="${en.id}">Delete</button>
-			</footer>
+		<article class="entry-card" data-id="${en.id}" data-category="${en.category}">
+			<div class="entry-header">
+				<div class="entry-meta">
+					<span class="entry-category-badge" data-category="${en.category}">${escapeHtml(en.category)}</span>
+					<span class="entry-timestamp">${formatWhen(en.createdAt)}</span>
+				</div>
+				<div class="entry-actions">
+					<button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
+				</div>
+			</div>
+			<div class="entry-content">${escapeHtml(en.content || "")}</div>
+			<div class="entry-tags">
+				${(en.tags || []).map(t => `<span class="filter-chip">${escapeHtml(t)}</span>`).join("")}
+			</div>
 		</article>
 	`).join("");
 
-	// Hook delete handlers
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
@@ -278,14 +337,18 @@ async function onDeleteEntry(e) {
 }
 
 /**
- * Wires the "+ New entry" toggle and submit handlers.
- * Fixed to use the correct button ID from HTML
+ * Wires the “+ New entry” toggle and submit handlers.
+ * Primary trigger: #toggle-form-btn (and supports #new-entry-btn alias).
+ * Uses the dedicated inline form section: #entry-form and #add-entry-form.
  */
 function setupNewEntryWiring() {
+	// Dedicated inline form section used on your page
 	const section = $("#entry-form");
 	const form = $("#add-entry-form");
-	const newBtn = $("#new-entry-btn"); // This is the actual button in HTML
-	const cancelBtn = $("#cancel-form-btn");
+
+	// Primary trigger on this page; also accept the alias you mentioned
+	const toggleBtn = $("#toggle-form-btn") || $("#new-entry-btn");
+	const cancelBtn = $("#cancel-form-btn") || $("#cancel-entry-btn") || section?.querySelector('[data-role="cancel"]');
 
 	/**
 	 * Shows/hides the new-entry section.
@@ -295,21 +358,13 @@ function setupNewEntryWiring() {
 		if (!section) return;
 		const show = typeof force === "boolean" ? force : section.hidden;
 		section.hidden = !show;
-		if (show) {
-			const textarea = $("#entry-content");
-			if (textarea) textarea.focus();
-		}
+		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
 	}
 
-	// Wire the new entry button
-	if (newBtn && section) {
-		newBtn.addEventListener("click", () => {
-			console.debug("New entry button clicked");
-			toggleForm(true);
-		});
+	if (toggleBtn && section) {
+		toggleBtn.addEventListener("click", () => toggleForm());
 	}
 
-	// Wire the cancel button
 	if (cancelBtn && section) {
 		cancelBtn.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -317,40 +372,32 @@ function setupNewEntryWiring() {
 		});
 	}
 
-	// Wire the form submission
-	if (form) {
+	if (form && section) {
 		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
-			const fd = new FormData(form);
+			const fd = new FormData( /** @type {HTMLFormElement} */ (form));
 			const payload = {
+				// send BOTH keys so your Worker can accept either format
 				project: state.projectId,
 				project_airtable_id: state.projectId,
 				category: (fd.get("category") || "").toString(),
 				content: (fd.get("content") || "").toString(),
 				tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
 			};
-
 			if (!payload.category || !payload.content) {
 				flash("Category and content are required.");
 				return;
 			}
-
 			try {
-				const result = await httpJSON("/api/journal-entries", {
+				await httpJSON("/api/journal-entries", {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(payload)
 				});
-
-				form.reset();
+				/** @type {HTMLFormElement} */
+				(form).reset?.();
 				toggleForm(false);
 				flash("Entry saved.");
-
-				// Initialize excerpts if we got an ID back
-				if (result.id && typeof window.initJournalExcerpts === 'function') {
-					await bootExcerpts(result.id);
-				}
-
 				await loadEntries();
 			} catch (err) {
 				console.error("add-entry submit error:", err);
@@ -377,8 +424,6 @@ async function loadCodes() {
 	} catch (e) {
 		console.error(e);
 		flash(`Could not load codes. ${e?.message || ""}`.trim());
-		state.codes = [];
-		renderCodes();
 	}
 }
 
@@ -386,66 +431,64 @@ async function loadCodes() {
  * Renders the code cards list.
  */
 function renderCodes() {
-	const wrap = $("#codebook-display");
+	const wrap = $("#codes-container");
 	if (!wrap) return;
 
 	if (!state.codes.length) {
-		wrap.innerHTML = "<p>No codes yet. Click '+ Add Code' to create your first code.</p>";
+		wrap.innerHTML = "<p>No codes yet.</p>";
 		return;
 	}
 
 	wrap.innerHTML = state.codes.map(c => `
 		<article class="code-card" data-id="${c.id}">
 			<header>
-				<span class="code-swatch" style="background-color:${c.color || c.colour || "#505a5f"};"></span>
+				<span class="code-swatch" style="background-color:${c.colour || c.color || "#505a5f"};"></span>
 				<strong>${escapeHtml(c.name || "—")}</strong>
 			</header>
-			${c.description || c.definition ? `<p>${escapeHtml(c.description || c.definition)}</p>` : ""}
+			${c.description ? `<p>${escapeHtml(c.description)}</p>` : ""}
 		</article>
 	`).join("");
 }
 
 /**
- * Wire the Add Code form
+ * Handles client-side interactions for the “Add Code” workflow.
  */
 function setupAddCodeWiring() {
-	const btn = $("#new-code-btn");
-	const form = $("#add-code-form");
-	const section = $("#code-form");
-	const cancelBtn = $("#cancel-code-btn");
+	const btn = document.getElementById("new-code-btn");
+	const form = document.getElementById("code-form");
+	const nameInput = document.getElementById("code-name");
+	const colourInput = document.getElementById("code-color");
+	const descInput = document.getElementById("code-description");
+	const parentInput = document.getElementById("code-parent");
+	const cancelBtn = document.getElementById("cancel-code-btn");
 
-	function toggleForm(show) {
-		if (!section) return;
-		section.hidden = !show;
-		if (show) $("#code-name")?.focus();
+	function showForm(show) {
+		if (!form) return;
+		form.hidden = !show;
+		if (show) nameInput?.focus();
 	}
 
-	btn?.addEventListener("click", () => {
-		console.debug("Add code button clicked");
-		toggleForm(true);
-	});
-
-	cancelBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		toggleForm(false);
-	});
+	btn?.addEventListener("click", () => showForm(form?.hidden ?? true));
+	cancelBtn?.addEventListener("click", (e) => { e.preventDefault();
+		showForm(false); });
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
-		const fd = new FormData(form);
+		e.stopPropagation();
 
-		const payload = {
-			name: (fd.get("name") || "").toString().trim(),
-			projectId: state.projectId,
-			colour: (fd.get("color") || "").toString().trim(),
-			description: (fd.get("definition") || "").toString().trim(),
-			parentId: (fd.get("parent") || "").toString().trim()
-		};
-
-		if (!payload.name) {
+		const name = (nameInput?.value || "").trim();
+		if (!name) {
 			flash("Please enter a code name.");
 			return;
 		}
+
+		const payload = {
+			name,
+			projectId: state.projectId,
+			colour: (colourInput?.value || "").trim(),
+			description: (descInput?.value || "").trim(),
+			parentId: (parentInput?.value || "").trim()
+		};
 
 		try {
 			await httpJSON("/api/codes", {
@@ -454,10 +497,22 @@ function setupAddCodeWiring() {
 				body: JSON.stringify(payload)
 			});
 
-			form.reset();
-			toggleForm(false);
-			flash(`Code "${payload.name}" created.`);
+			// Reset inputs
+			if (nameInput) nameInput.value = "";
+			if (colourInput) colourInput.value = "";
+			if (descInput) descInput.value = "";
+			if (parentInput) parentInput.value = "";
+
+			showForm(false);
+			flash(`Code “${payload.name}” created.`);
 			await loadCodes();
+
+			// Clean any accidental query params left by browser autofill
+			if (location.search.includes("name=")) {
+				const url = new URL(location.href);
+				["name", "definition", "colour", "parent"].forEach(p => url.searchParams.delete(p));
+				history.replaceState(null, "", url.toString());
+			}
 		} catch (err) {
 			console.error(err);
 			flash("Could not create code.");
@@ -481,8 +536,7 @@ async function loadMemos() {
 		renderMemos();
 	} catch (e) {
 		console.error(e);
-		state.memos = [];
-		renderMemos();
+		renderMemos(true);
 	}
 }
 
@@ -491,7 +545,7 @@ async function loadMemos() {
  * @param {boolean} [error=false]
  */
 function renderMemos(error = false) {
-	const wrap = $("#memos-container");
+	const wrap = document.querySelector('[data-role="memos-container"]') || document.getElementById("memos-container");
 	if (!wrap) return;
 
 	if (error) {
@@ -499,212 +553,450 @@ function renderMemos(error = false) {
 		return;
 	}
 
-	const activeFilter = document.querySelector('.filter-btn[data-memo-filter].active')?.dataset.memoFilter || "all";
+	// Respect filter chips if present (fallback to "all")
+	const active = document.querySelector('.filter-btn.active')?.dataset.memoFilter ||
+		document.querySelector('.filter-chip.filter-chip--active')?.dataset.memoFilter ||
+		"all";
+
 	const items = (state.memos || []).filter(m => {
-		if (activeFilter === "all") return true;
+		if (active === "all") return true;
 		const t = (m.memoType || m.type || "").toLowerCase();
-		return t === activeFilter.toLowerCase();
+		return t === active.toLowerCase();
 	});
 
 	if (!items.length) {
-		wrap.innerHTML = `<p>No ${activeFilter === 'all' ? '' : activeFilter} memos yet.</p>`;
+		wrap.innerHTML = "<p>No memos yet.</p>";
 		return;
 	}
 
 	wrap.innerHTML = items.map(m => `
-		<article class="memo-card" data-id="${m.id || ""}">
-			<header class="memo-header">
-				<strong>${escapeHtml(m.title || m.memoType || "Memo")}</strong>
-				<time>${formatWhen(m.createdAt)}</time>
-			</header>
-			${m.title && m.title !== m.memoType ? `<p class="memo-title">${escapeHtml(m.title)}</p>` : ""}
-			<p>${escapeHtml(m.content || "")}</p>
-		</article>
-	`).join("");
+    <article class="memo-card" data-id="${m.id || ""}">
+      <header class="memo-header">
+        <strong>${escapeHtml(m.title || m.memoType || "Memo")}</strong>
+        <time>${formatWhen(m.createdAt)}</time>
+      </header>
+      ${m.title ? `<p class="memo-title">${escapeHtml(m.title)}</p>` : ""}
+      <p>${escapeHtml(m.content || "")}</p>
+    </article>
+  `).join("");
 }
 
 /**
- * Wire the memo form and filter buttons
+ * Wire the "+ New Memo" button, form show/hide, submit, and filter chips.
  */
 function setupNewMemoWiring() {
-	const newBtn = $("#new-memo-btn");
-	const formSection = $("#memo-form");
-	const form = $("#add-memo-form");
-	const cancelBtn = $("#cancel-memo-btn");
+	const newBtn = document.getElementById("new-memo-btn");
+	const formSection = document.getElementById("memo-form");
+	const form = document.getElementById("add-memo-form");
+	const cancelBtn = document.getElementById("cancel-memo-btn");
 
 	function toggleForm(show) {
 		if (!formSection) return;
-		formSection.hidden = !show;
-		if (show) $("#memo-content")?.focus();
+		const shouldShow = typeof show === "boolean" ? show : formSection.hidden;
+		formSection.hidden = !shouldShow;
+		if (shouldShow) form?.querySelector("#memo-content, textarea, input, select")?.focus();
 	}
 
-	newBtn?.addEventListener("click", () => {
-		console.debug("New memo button clicked");
-		toggleForm(true);
-	});
+	if (newBtn) newBtn.addEventListener("click", () => toggleForm(true));
+	if (cancelBtn) cancelBtn.addEventListener("click", () => toggleForm(false));
 
-	cancelBtn?.addEventListener("click", () => toggleForm(false));
+	if (form) {
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const fd = new FormData(form);
 
-	form?.addEventListener("submit", async (e) => {
-		e.preventDefault();
-		const fd = new FormData(form);
+			const payload = {
+				project_id: state.projectId,
+				memo_type: (fd.get("memo_type") || "analytical").toString(),
+				title: (fd.get("title") || "").toString(),
+				content: (fd.get("content") || "").toString()
+			};
 
-		const payload = {
-			project_id: state.projectId,
-			memo_type: (fd.get("memo_type") || "analytical").toString(),
-			title: (fd.get("title") || "").toString(),
-			content: (fd.get("content") || "").toString(),
-		};
+			if (!payload.content.trim()) {
+				flash("Content is required.");
+				return;
+			}
 
-		if (!payload.content.trim()) {
-			flash("Content is required.");
-			return;
-		}
+			try {
+				await httpJSON("/api/memos", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify(payload)
+				});
+				form.reset();
+				toggleForm(false);
+				flash("Memo created.");
+				await loadMemos();
+			} catch (err) {
+				console.error(err);
+				flash("Could not create memo.");
+			}
+		});
+	}
 
-		try {
-			await httpJSON("/api/memos", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify(payload)
-			});
-			form.reset();
-			toggleForm(false);
-			flash("Memo created.");
-			await loadMemos();
-		} catch (err) {
-			console.error(err);
-			flash("Could not create memo.");
-		}
-	});
-
-	// Wire filter buttons
-	document.querySelectorAll('.filter-btn[data-memo-filter]').forEach(btn => {
+	// Filter chips (both .filter-btn and .filter-chip variants)
+	document.querySelectorAll('[data-memo-filter]').forEach(btn => {
 		btn.addEventListener("click", (e) => {
+			document.querySelectorAll('[data-memo-filter]').forEach(b => {
+				b.classList.remove("active", "filter-chip--active");
+			});
 			const target = /** @type {HTMLElement} */ (e.currentTarget);
-			document.querySelectorAll('.filter-btn[data-memo-filter]').forEach(b => b.classList.remove("active"));
-			target.classList.add("active");
-			renderMemos();
+			target.classList.add(target.classList.contains("filter-chip") ? "filter-chip--active" : "active");
+			renderMemos(); // re-render with the new filter
 		});
 	});
 }
 
 /* =========================
- * Analysis
+ * ANALYSIS TOOLS
  * ========================= */
 
-/**
- * Setup analysis tools - stub for now
- */
-function setupAnalysisTools() {
-	console.debug("Analysis tools setup");
-	// Analysis functionality would go here
+function getAnalysisContainer() {
+	return document.querySelector('[data-role="analysis-container"]') || document.getElementById('analysis-container');
+}
+
+function ensureSection(id, headingText) {
+	const host = getAnalysisContainer();
+	if (!host) return null;
+	let sec = document.getElementById(id);
+	if (sec) return sec;
+
+	sec = document.createElement('section');
+	sec.id = id;
+	sec.setAttribute('aria-live', 'polite');
+	sec.className = 'analysis-section';
+	if (headingText) {
+		const h = document.createElement('h3');
+		h.className = 'analysis-section__heading';
+		h.textContent = headingText;
+		sec.appendChild(h);
+	}
+	host.appendChild(sec);
+	return sec;
+}
+
+function elFromHTML(html) {
+	const t = document.createElement('template');
+	t.innerHTML = html.trim();
+	return /** @type {HTMLElement} */ (t.content.firstChild);
+}
+
+/* JSON viewer helpers */
+function ensureJsonViewer() {
+	const host = getAnalysisContainer();
+	if (!host) return { codeEl: null };
+
+	let details = document.getElementById('json-viewer');
+	if (!details) {
+		details = document.createElement('details');
+		details.id = 'json-viewer';
+		details.innerHTML = `
+      <summary><span>View raw JSON</span></summary>
+      <div>
+        <div class="analysis-json-actions">
+          <button type="button" id="json-copy">Copy JSON</button>
+          <button type="button" id="json-download">Download JSON</button>
+        </div>
+        <pre tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
+      </div>`;
+		host.appendChild(details);
+		setupJsonButtons();
+	}
+	return { codeEl: document.getElementById('json-code') };
+}
+
+function jsonSyntaxHighlight(obj) {
+	const json = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+	const esc = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" } [c]));
+	return esc
+		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, m => `<span class="k">${m}</span>`)
+		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, m => `<span class="s">${m}</span>`)
+		.replace(/\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, m => `<span class="n">${m}</span>`)
+		.replace(/\b(true|false|null)\b/g, m => `<span class="b">${m}</span>`);
+}
+
+function updateJsonPanel(data, filename = "analysis.json") {
+	const { codeEl } = ensureJsonViewer();
+	if (!codeEl) return;
+	codeEl.innerHTML = jsonSyntaxHighlight(data);
+	codeEl.dataset.filename = filename;
+}
+
+function setupJsonButtons() {
+	const copyBtn = document.getElementById("json-copy");
+	const dlBtn = document.getElementById("json-download");
+	const code = document.getElementById("json-code");
+
+	copyBtn?.addEventListener("click", async () => {
+		try {
+			await navigator.clipboard.writeText(code?.textContent || "");
+			flash("JSON copied.");
+		} catch {
+			flash("Copy failed.");
+		}
+	});
+
+	dlBtn?.addEventListener("click", () => {
+		const raw = code?.textContent || "{}";
+		const blob = new Blob([raw], { type: "application/json;charset=utf-8" });
+		const a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = code?.dataset.filename || "analysis.json";
+		a.click();
+		setTimeout(() => URL.revokeObjectURL(a.href), 0);
+	});
+}
+
+/* Analysis modes */
+function nodeLabel(nodes, id) {
+	const n = nodes.find(n => n.id === id);
+	return n?.label || n?.name || String(id);
+}
+
+async function runTimeline() {
+	const wrap = ensureSection("analysis-timeline", "Timeline");
+	if (!wrap) return;
+	wrap.innerHTML = '<p>Loading timeline…</p>';
+
+	const res = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
+	const items = Array.isArray(res?.timeline) ? res.timeline : [];
+	updateJsonPanel({ timeline: items }, `timeline-${state.projectId}.json`);
+
+	if (!items.length) {
+		wrap.innerHTML = '<p class="hint">No journal entries yet.</p>';
+		return;
+	}
+
+	wrap.innerHTML = `
+    <ul class="analysis-list">
+      ${items.map(en => `
+        <li class="analysis-list__item">
+          <div class="summary-card">
+            <div class="summary-card__title-row">
+              <h4 class="summary-card__title">${formatWhen(en.createdAt)}</h4>
+              ${en.category ? `<span class="tag">${escapeHtml(en.category)}</span>` : ""}
+            </div>
+            <div class="summary-card__content">
+              <dl class="summary">
+                <div class="summary__row">
+                  <dt class="summary__key">Entry</dt>
+                  <dd class="summary__value">${escapeHtml(en.body || en.content || "")}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+async function runCooccurrence() {
+	const wrap = ensureSection("analysis-cooccurrence", "Code co-occurrence");
+	if (!wrap) return;
+	wrap.innerHTML = '<p>Loading co-occurrence…</p>';
+
+	const res = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
+	const nodes = Array.isArray(res?.nodes) ? res.nodes : [];
+	const links = Array.isArray(res?.links) ? res.links : [];
+	updateJsonPanel({ nodes, links }, `cooccurrence-${state.projectId}.json`);
+
+	if (!links.length) {
+		wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>';
+		return;
+	}
+
+	links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+	wrap.innerHTML = `
+    <table class="table">
+      <caption>Code pairs by strength</caption>
+      <thead>
+        <tr><th>Source</th><th>Target</th><th>Weight</th></tr>
+      </thead>
+      <tbody>
+        ${links.map(l => `
+          <tr>
+            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.source))}</span></td>
+            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.target))}</span></td>
+            <td>${escapeHtml(String(l.weight ?? 1))}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function setupRetrievalUI() {
+	const wrap = ensureSection("analysis-retrieval", "Code/text retrieval");
+	if (!wrap) return;
+
+	if (!document.getElementById("retrieval-form")) {
+		const form = document.createElement("form");
+		form.id = "retrieval-form";
+		form.noValidate = true;
+		form.innerHTML = `
+      <label for="retrieval-q">Search term</label>
+      <input id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
+      <div class="hint">Searches code names and journal text.</div>
+      <button type="submit">Run search</button>
+      <div id="retrieval-results" class="analysis-results"><p class="hint">Enter a term and run search.</p></div>`;
+		wrap.appendChild(form);
+	}
+
+	const form = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
+	const input = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
+	const results = document.getElementById("retrieval-results");
+	if (!form || !input || !results) return;
+
+	// Prevent duplicate listeners
+	form.replaceWith(form.cloneNode(true));
+	const newForm = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
+	const newInput = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
+	const newResults = document.getElementById("retrieval-results");
+
+	newForm.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const q = (newInput.value || "").trim();
+		if (!q) { newResults.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
+
+		newResults.innerHTML = '<p>Searching…</p>';
+		const res = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(state.projectId)}&q=${encodeURIComponent(q)}`);
+		const out = Array.isArray(res?.results) ? res.results : [];
+		updateJsonPanel({ query: q, results: out }, `retrieval-${state.projectId}.json`);
+
+		if (!out.length) {
+			newResults.innerHTML = '<p class="hint">No matches found.</p>';
+			return;
+		}
+
+		newResults.innerHTML = `
+      <ul class="analysis-list analysis-list--spaced" aria-live="polite">
+        ${out.map(r => `
+          <li>
+            <h5 class="analysis-subheading">
+              ${r.codes.map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join(" ")}
+            </h5>
+            <p>${highlightSnippet(r.snippet, q)}</p>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+	});
+}
+
+function highlightSnippet(text, term) {
+	if (!text || !term) return escapeHtml(text || "");
+	const escTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return escapeHtml(text).replace(new RegExp(escTerm, "ig"), m => `<mark>${m}</mark>`);
+}
+
+async function runExport() {
+	try {
+		const [timeline, cooc] = await Promise.all([
+			httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`),
+			httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`)
+		]);
+		const payload = {
+			projectId: state.projectId,
+			generatedAt: new Date().toISOString(),
+			timeline: timeline.timeline || [],
+			nodes: cooc.nodes || [],
+			links: cooc.links || []
+		};
+		updateJsonPanel(payload, `analysis-${state.projectId}.json`);
+		flash("Export ready in JSON panel. Use Download JSON.");
+	} catch (e) {
+		console.error(e);
+		flash("Failed to prepare export.");
+	}
 }
 
 /**
- * Load analysis - stub for now
+ * Initialise the Analysis tools panel:
+ *  - Delegates button clicks (timeline / co-occurrence / retrieval / export).
+ *  - Creates friendly placeholders and retrieval UI.
+ * Call this once in your page initialiser.
  */
-async function loadAnalysis() {
-	setupAnalysisTools();
+function setupAnalysisTools() {
+	const panel = document.getElementById('analysis-panel') || document;
+	panel.addEventListener('click', (e) => {
+		const btn = e.target && typeof e.target.closest === 'function' ?
+			/** @type {HTMLElement|null} */ (e.target.closest('[data-analysis]')) :
+			null;
+		if (!btn) return;
+		const mode = btn.dataset.analysis;
+		if (mode === 'timeline') return void runTimeline();
+		if (mode === 'co-occurrence') return void runCooccurrence();
+		if (mode === 'retrieval') return void setupRetrievalUI();
+		if (mode === 'export') return void runExport();
+	});
+
+	// Friendly placeholders, built only once:
+	ensureSection("analysis-timeline", "Timeline")
+		?.replaceChildren(elFromHTML('<p class="hint">Timeline not loaded yet.</p>'));
+	ensureSection("analysis-cooccurrence", "Code co-occurrence")
+		?.replaceChildren(elFromHTML('<p class="hint">Co-occurrence not loaded yet.</p>'));
+	setupRetrievalUI(); // creates the form + empty state if missing
+}
+
+// Back-compat: satisfy older calls to loadAnalysis()
+function loadAnalysis() {
+	try { setupAnalysisTools(); } catch (e) { console.debug("[analysis] loadAnalysis noop/shim failed:", e); }
 	return Promise.resolve();
 }
 
 /* =========================
- * Journal Excerpts
+ * Boot logic (tabs-aware)
  * ========================= */
 
 /**
- * Initialize journal excerpts functionality
- * @param {string} entryId
+ * Is "Journal entries" the active tab at initial load?
+ * Checks selected LI → #hash → defaults to first tab (which is Journal).
  */
-async function bootExcerpts(entryId) {
-	try {
-		const mod = await import("/components/journal-excerpts.js");
-		const { initJournalExcerpts } = mod;
-
-		excerptManagerInstance = initJournalExcerpts({
-			entryId,
-			textarea: "#entry-content",
-			list: "#excerpts-list",
-			addBtn: "#btn-add-excerpt"
-		});
-
-		const textarea = document.getElementById("entry-content");
-		if (textarea) {
-			textarea.addEventListener("excerpt:created", async (e) => {
-				const payload = e.detail.excerpt;
-				try {
-					await fetch("/api/excerpts", {
-						method: "POST",
-						headers: { "content-type": "application/json" },
-						body: JSON.stringify({
-							entryId,
-							start: payload.start,
-							end: payload.end,
-							text: payload.text,
-							author: payload.author
-						})
-					});
-				} catch (err) {
-					console.warn("Failed to save excerpt:", err);
-				}
-			});
-		}
-	} catch (err) {
-		console.warn("Journal excerpts module not available:", err);
-	}
+function isJournalActiveOnLoad() {
+	const selected = document.querySelector(".govuk-tabs__list-item--selected .govuk-tabs__tab");
+	if (selected) return (selected.getAttribute("href") || "").replace(/^#/, "") === "journal-entries";
+	if (location.hash) return location.hash.replace(/^#/, "") === "journal-entries";
+	return true; // first tab in your markup is Journal
 }
-
-/* =========================
- * Bootstrap
- * ========================= */
 
 /**
  * Entry-point: reads project id, wires UI, and loads initial data.
+ * Also listens for `tab:shown` to (re)load when the Journal tab becomes visible.
  * @returns {Promise<void>}
  */
 async function init() {
-	console.debug("Initializing CAQDAS interface...");
-
 	const url = new URL(location.href);
-	// Fix: properly get the 'id' parameter
-	state.projectId = url.searchParams.get("id") || url.searchParams.get("project") || "";
+	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
 
 	if (!state.projectId) {
 		flash("No project id in URL. Some features disabled.");
-		console.warn("No project ID found in URL params");
-	} else {
-		console.debug("Project ID:", state.projectId);
-
-		// Update the project link
-		const projectLink = $("#project-link");
-		if (projectLink) {
-			projectLink.href = `/pages/projects/project.html?id=${encodeURIComponent(state.projectId)}`;
-		}
+		return;
 	}
 
-	// Wire up all UI components
-	setupTabs();
 	setupNewEntryWiring();
 	setupAddCodeWiring();
 	setupNewMemoWiring();
 
-	// Load initial data
+	// Load non-journal panels immediately (cheap and keeps UI warm)
 	await Promise.allSettled([
-		loadEntries(),
 		loadCodes(),
-		loadMemos()
+		loadMemos(),
+		loadAnalysis()
 	]);
 
-	// Switch to journal tab by default
-	switchTab("journal");
+	// If Journal is active at first paint, unhide defensively and load now
+	if (isJournalActiveOnLoad()) {
+		const p = document.getElementById("journal-entries");
+		if (p) { p.classList.remove("govuk-tabs__panel--hidden");
+			p.removeAttribute("hidden"); }
+		await loadEntries();
+	}
 
-	console.debug("CAQDAS interface initialized");
+	// Also load Journal entries whenever that tab is shown later (deep links / user click)
+	document.addEventListener("tab:shown", (e) => {
+		if (e?.detail?.id === "journal-entries") loadEntries();
+	});
 }
 
-// Start the app when DOM is ready
-if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", init);
-} else {
-	// DOM already loaded
-	init();
-}
+document.addEventListener("DOMContentLoaded", init);
