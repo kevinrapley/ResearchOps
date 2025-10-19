@@ -35,6 +35,54 @@
 	margin: 0;
 	}
 
+/* GOV.UK Tabs - Journals context */
+#journals-tabs {
+	margin-top: 24px;
+	margin-bottom: 24px;
+	}
+
+#journals-tabs .govuk-heading-m {
+	margin-top: 0;
+	}
+
+/* Distinguish filter chips from the tab row */
+#journals-tabs .filter-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	}
+
+#journals-tabs .filter-chip {
+	border: 1px solid #b1b4b6;
+	background: #fff;
+	border-radius: 20px;
+	padding: 6px 12px;
+	font-size: 16px;
+	line-height: 1.3;
+	cursor: pointer;
+	}
+
+#journals-tabs .filter-chip:hover {
+	background: #f3f2f1;
+	}
+
+#journals-tabs .filter-chip--active {
+	border-color: #1d70b8;
+	box-shadow: inset 0 0 0 1px #1d70b8;
+	}
+
+/* Utility: visually hidden */
+.visually-hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	border: 0 !important;
+	}
+
 .filter-group {
 	display: flex;
 	gap: var(--space-200);
@@ -235,20 +283,6 @@
 	
 /* === =CODING INTERFACE =================================== */
 
-.coding-panel {
-	position: fixed;
-	right: 0;
-	top: 0;
-	width: 320px;
-	height: 100vh;
-	background: #ffffff;
-	border-left: 1px solid var(--color-border);
-	padding: var(--space-300);
-	overflow-y: auto;
-	box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-	z-index: 100;
-	}
-
 .selected-text-display {
 	background: #fef7e0;
 	border: 1px solid #f5c857;
@@ -280,7 +314,7 @@
 	z-index: 10;
 	}
 
-/* Codebook tree */
+/* Codebook list (compact) */
 .codebook {
 	max-height: 300px;
 	overflow-y: auto;
@@ -380,7 +414,7 @@
 	color: #000;
 	}
 
-/* Coding panel */
+/* Coding panel (consolidated) */
 .coding-panel {
 	position: fixed;
 	right: 0;
@@ -392,6 +426,7 @@
 	box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
 	overflow-y: auto;
 	z-index: 1000;
+	padding: var(--space-300);
 	}
 
 .panel-header {
