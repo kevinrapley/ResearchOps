@@ -456,19 +456,27 @@
 	flex-wrap: nowrap;
 	}
 
-/* Circular colour picker variant */
+/* Circular colour picker - iOS-compatible */
 #code-colour input[type="color"] {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
 	display: inline-block;
 	width: 40px;
 	height: 40px;
-	border: 2px solid #0b0c0c;
+	min-width: 40px;
+	max-width: 40px;
+	min-height: 40px;
+	max-height: 40px;
+	border: 1px solid #0b0c0c;
 	border-radius: 50%;
 	cursor: pointer;
-	padding: 3px;
-	background: #ffffff;
+	padding: 0;
+	background: none;
 	box-sizing: border-box;
 	transition: box-shadow 0.15s ease, transform 0.1s ease;
 	overflow: hidden;
+	vertical-align: middle;
 	}
 
 #code-colour input[type="color"]:hover {
@@ -483,15 +491,16 @@
 #code-colour input[type="color"]::-webkit-color-swatch-wrapper {
 	padding: 0;
 	border-radius: 50%;
+	border: none;
 	}
 
 #code-colour input[type="color"]::-webkit-color-swatch {
-	border: 2px solid #ffffff;
+	border: 3px solid #ffffff;
 	border-radius: 50%;
 	}
 
 #code-colour input[type="color"]::-moz-color-swatch {
-	border: 2px solid #ffffff;
+	border: 3px solid #ffffff;
 	border-radius: 50%;
 	}
 
