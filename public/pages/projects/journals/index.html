@@ -15,10 +15,31 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css">
 	<link rel="stylesheet" href="/css/tabs.css" />
+	<link rel="stylesheet" href="/css/coloris.min.css" />
 	<link rel="stylesheet" href="/css/journal.css">
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/lib/coloris.min.js" defer></script>
+	<script>
+		// Initialize Coloris with GOV.UK-friendly styling
+		Coloris({
+			theme: 'pill',
+			themeMode: 'light',
+			formatToggle: false,
+			alpha: false,
+			swatches: [
+				'#1d70b8', // GOV.UK blue
+				'#00703c', // GOV.UK green
+				'#f47738', // GOV.UK orange
+				'#912b88', // GOV.UK purple
+				'#d4351c', // GOV.UK red
+				'#505a5f', // GOV.UK dark grey
+				'#ffdd00', // GOV.UK yellow
+				'#4c2c92', // GOV.UK dark purple
+			]
+		});
+	</script>
 </head>
 
 <body typeof="schema:WebPage">
