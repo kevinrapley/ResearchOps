@@ -280,48 +280,6 @@
 	<script type="module" src="/js/caqdas-interface.js" defer></script>
 	<!-- GOV.UK Frontend JS (enhances tabs + stores #hash for back/forward nav) -->
 	<script type="module" src="/js/tabs.js" defer></script>
-	<script>
-		(function() {
-			// When everything (including modules) has attached, activate the current tab once more.
-			function activateCurrent() {
-				var hash = (location.hash || '#journal-entries');
-				var id = hash.slice(1);
-				// Make sure the target panel is not hidden by any leftover attributes/classes.
-				var panel = document.getElementById(id);
-				if (panel) {
-					panel.classList.remove('govuk-tabs__panel--hidden');
-					panel.removeAttribute('hidden');
-					// Fire a synthetic activation so late listeners (entries/codes/memos) can populate.
-					panel.dispatchEvent(new CustomEvent('tab:shown', { bubbles: true, detail: { id: id, container: panel.closest('.govuk-tabs') } }));
-				}
-			}
-
-			// Support ?tab=codes as an alias for #codes
-			function applyQueryTab() {
-				var params = new URLSearchParams(location.search);
-				var qtab = params.get('tab');
-				if (!qtab) return;
-				// Prefer aria-controls (set by tabs.js), fall back to href
-				var link = document.querySelector('.govuk-tabs__tab[aria-controls="' + qtab + '"]') ||
-					document.querySelector('.govuk-tabs__tab[href="#' + qtab + '"]');
-				if (!link) return;
-				if (location.hash !== '#' + qtab) history.replaceState(null, '', location.pathname + location.search + '#' + qtab);
-				// Click to let tabs.js select properly
-				link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-			}
-
-			// Run after DOM is ready so tabs.js has initialised, then re-emit on next tick.
-			document.addEventListener('DOMContentLoaded', function() {
-				applyQueryTab();
-				setTimeout(activateCurrent, 0);
-			});
-
-			// If other modules load later and you still need a belt-and-braces kick, re-emit on window load.
-			window.addEventListener('load', function() {
-				setTimeout(activateCurrent, 0);
-			});
-		})();
-	</script>
 </body>
 
 </html>
