@@ -216,8 +216,6 @@ function setupNewEntryWiring() {
  * ========================= */
 
 /** Build/ensure the Add Code form exists (hidden by default). */
-/** Build/ensure the Add Code form exists (hidden by default). */
-/** Build/ensure the Add Code form exists (hidden by default). */
 function ensureCodeForm() {
 	let form = document.getElementById("code-form");
 	if (form) return form;
@@ -237,27 +235,19 @@ function ensureCodeForm() {
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" id="code-colour-label" for="code-colour-hex">Colour</label>
-      <div class="color-field">
-        <input
-		  class="color-field"
-          id="code-colour"
-          name="color_swatch"
-          type="color"
-          value="#505a5f"
-          aria-labelledby="code-colour-label code-colour-hex"
-        >
-        <input
-          class="govuk-input color-field__hex"
-          id="code-colour-hex"
-          name="color"
-          inputmode="text"
-          autocomplete="off"
-          spellcheck="false"
-          pattern="^#([0-9A-Fa-f]{6})$"
-          value="#505a5f"
-        >
-      </div>
+      <label class="govuk-label" for="code-colour">Colour</label>
+      <input 
+        class="govuk-input color-field__input" 
+        id="code-colour"
+        name="color"
+        type="text"
+        value="#505a5f"
+        data-coloris
+        inputmode="text"
+        autocomplete="off"
+        spellcheck="false"
+        pattern="^#([0-9A-Fa-f]{6})$"
+      >
     </div>
 
     <div class="govuk-form-group" id="code-parent-wrap" hidden>
@@ -274,43 +264,12 @@ function ensureCodeForm() {
 
     <div class="govuk-button-group">
       <button id="save-code-btn" class="govuk-button" type="submit">Save</button>
-      <button id="cancel-memo-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+      <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
     </div>
   `;
 
 	host.appendChild(form);
-
-	// Keep swatch and hex input in sync
-	wireColourSync(form);
-
 	return form;
-}
-
-/** Keep the <input type="color"> and the hex text field in sync (accessible). */
-function wireColourSync(scope = document) {
-	const swatch = scope.querySelector('#code-colour');
-	const hex = scope.querySelector('#code-colour-hex');
-	if (!swatch || !hex) return;
-
-	// swatch → hex
-	swatch.addEventListener('input', () => {
-		const v = swatch.value || '';
-		if (/^#[0-9a-f]{6}$/i.test(v)) {
-			hex.value = v.toLowerCase();
-			hex.setCustomValidity('');
-		}
-	});
-
-	// hex → swatch (only update when valid)
-	hex.addEventListener('input', () => {
-		const v = (hex.value || '').trim();
-		if (/^#[0-9a-f]{6}$/i.test(v)) {
-			swatch.value = v;
-			hex.setCustomValidity('');
-		} else {
-			hex.setCustomValidity('Enter a 6-digit hexadecimal colour, like #ff0000.');
-		}
-	});
 }
 
 /** Populate the Parent dropdown and show/hide wrapper depending on code count. */
@@ -340,17 +299,17 @@ function refreshParentSelector() {
 function setupAddCodeWiring() {
 	const btn = document.getElementById("new-code-btn");
 	const form = ensureCodeForm();
-	const nameInput = /** @type {HTMLInputElement|null} */ (document.getElementById("code-name"));
-	const hexInput = /** @type {HTMLInputElement|null} */ (document.getElementById("code-colour-hex")); // <- POST this
-	const descInput = /** @type {HTMLTextAreaElement|null} */ (document.getElementById("code-description"));
-	const parentSel = /** @type {HTMLSelectElement|null} */ (document.getElementById("code-parent"));
+	const nameInput = document.getElementById("code-name");
+	const colorInput = document.getElementById("code-colour"); // Now just the text input
+	const descInput = document.getElementById("code-description");
+	const parentSel = document.getElementById("code-parent");
 	const cancelBtn = document.getElementById("cancel-code-btn");
 
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
 		if (show) {
-			refreshParentSelector(); // populate parent list just-in-time
+			refreshParentSelector();
 			nameInput?.focus();
 		}
 	}
@@ -359,6 +318,7 @@ function setupAddCodeWiring() {
 		e.preventDefault();
 		showForm(form?.hidden ?? true);
 	});
+
 	cancelBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		showForm(false);
@@ -369,23 +329,28 @@ function setupAddCodeWiring() {
 		e.stopPropagation();
 
 		const name = (nameInput?.value || "").trim();
-		if (!name) { flash("Please enter a code name."); return; }
+		if (!name) {
+			flash("Please enter a code name.");
+			return;
+		}
 
-		// Normalise hex; prefer the hex text field (accessible + validated)
-		let hex = (hexInput?.value || "").trim().toLowerCase();
+		// Get hex directly from Coloris-managed input
+		let hex = (colorInput?.value || "").trim().toLowerCase();
+
+		// Validate and normalize hex
 		if (!/^#[0-9a-f]{6}$/i.test(hex)) {
-			// Accept #rgb and expand; else default
 			if (/^#[0-9a-f]{3}$/i.test(hex)) {
+				// Expand shorthand #rgb to #rrggbb
 				hex = '#' + hex.slice(1).split('').map(ch => ch + ch).join('');
 			} else {
-				hex = '#505a5f';
+				hex = '#505a5f'; // default fallback
 			}
 		}
 
 		const payload = {
 			name,
 			projectId: state.projectId,
-			colour: hex, // ← send to Airtable as hex
+			colour: hex,
 			description: (descInput?.value || "").trim(),
 			parentId: (parentSel?.value || "").trim() || undefined
 		};
@@ -397,16 +362,14 @@ function setupAddCodeWiring() {
 				body: JSON.stringify(payload)
 			});
 
-			// Reset inputs
+			// Reset form
 			if (nameInput) nameInput.value = "";
-			if (hexInput) hexInput.value = "#505a5f";
-			const swatch = document.getElementById('code-colour');
-			if (swatch) swatch.value = "#505a5f";
+			if (colorInput) colorInput.value = "#505a5f";
 			if (descInput) descInput.value = "";
 			if (parentSel) parentSel.value = "";
 
 			showForm(false);
-			flash(`Code “${payload.name}” created.`);
+			flash(`Code "${payload.name}" created.`);
 			await loadCodes();
 			refreshParentSelector();
 		} catch (err) {
