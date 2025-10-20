@@ -272,6 +272,52 @@ function ensureCodeForm() {
 	return form;
 }
 
+/**
+ * Load codes from API and update state
+ */
+async function loadCodes() {
+	if (!state.projectId) return;
+	try {
+		const data = await httpJSON(`/api/codes?project=${encodeURIComponent(state.projectId)}`);
+		state.codes = Array.isArray(data?.codes) ? data.codes : [];
+		renderCodes();
+	} catch (e) {
+		console.error('loadCodes error:', e);
+		state.codes = [];
+		renderCodes();
+	}
+}
+
+/**
+ * Render the codes list in the Codes panel
+ */
+function renderCodes() {
+	const container = document.getElementById("codes-container");
+	if (!container) return;
+
+	if (!state.codes || state.codes.length === 0) {
+		container.innerHTML = '<p class="govuk-body">No codes yet. Click "Add code" to create your first code.</p>';
+		return;
+	}
+
+	// Sort codes by name
+	const sorted = [...state.codes].sort((a, b) =>
+		(a.name || '').localeCompare(b.name || '')
+	);
+
+	container.innerHTML = `
+		<div class="codebook">
+			${sorted.map(code => `
+				<div class="code-item" data-id="${code.id}">
+					<span class="code-color-indicator" style="background-color: ${code.colour || '#505a5f'}"></span>
+					<span class="code-name">${escapeHtml(code.name || 'Unnamed')}</span>
+					${code.description ? `<p class="code-description">${escapeHtml(code.description)}</p>` : ''}
+				</div>
+			`).join('')}
+		</div>
+	`;
+}
+
 /** Populate the Parent dropdown and show/hide wrapper depending on code count. */
 function refreshParentSelector() {
 	const wrap = document.getElementById("code-parent-wrap");
@@ -820,10 +866,20 @@ function setupAnalysisTools() {
  * Tabs integration helpers
  * ========================= */
 function isJournalActiveOnLoad() {
+	// CRITICAL: Check hash FIRST before checking DOM state
+	const hash = (location.hash || '').replace(/^#/, '');
+	if (hash) {
+		return hash === 'journal-entries';
+	}
+
+	// Fallback: check selected tab in DOM
 	const selected = document.querySelector(".govuk-tabs__list-item--selected .govuk-tabs__tab");
-	if (selected) return (selected.getAttribute("href") || "").replace(/^#/, "") === "journal-entries";
-	if (location.hash) return location.hash.replace(/^#/, "") === "journal-entries";
-	return true; // first tab in your markup is Journal
+	if (selected) {
+		return (selected.getAttribute("href") || "").replace(/^#/, "") === "journal-entries";
+	}
+
+	// Default: first tab is Journal
+	return true;
 }
 
 /* =========================
@@ -847,19 +903,51 @@ async function init() {
 	// Load codes/memos early (codes used to populate Parent dropdown)
 	await Promise.allSettled([loadCodes(), loadMemos()]);
 
-	// If Journal is the active tab at first paint, ensure visible and load
-	if (isJournalActiveOnLoad()) {
-		const p = document.getElementById("journal-entries");
-		if (p) {
-			p.classList.remove("govuk-tabs__panel--hidden");
-			p.removeAttribute("hidden");
+	// CRITICAL: Check hash to determine which tab content to load initially
+	const initialHash = (location.hash || '#journal-entries').replace(/^#/, '');
+
+	// Load content for the active tab
+	if (initialHash === 'journal-entries') {
+		const panel = document.getElementById("journal-entries");
+		if (panel) {
+			panel.classList.remove("govuk-tabs__panel--hidden");
+			panel.removeAttribute("hidden");
 		}
 		await loadEntries();
+	} else if (initialHash === 'codes') {
+		const panel = document.getElementById("codes");
+		if (panel) {
+			panel.classList.remove("govuk-tabs__panel--hidden");
+			panel.removeAttribute("hidden");
+		}
+		await loadCodes(); // Already loaded above, but ensures display
+		renderCodes(); // Add this function if you have code rendering
+	} else if (initialHash === 'memos') {
+		const panel = document.getElementById("memos");
+		if (panel) {
+			panel.classList.remove("govuk-tabs__panel--hidden");
+			panel.removeAttribute("hidden");
+		}
+		await loadMemos(); // Already loaded above, but ensures display
+	} else if (initialHash === 'analysis') {
+		const panel = document.getElementById("analysis");
+		if (panel) {
+			panel.classList.remove("govuk-tabs__panel--hidden");
+			panel.removeAttribute("hidden");
+		}
 	}
 
-	// Also reload entries when Journal tab becomes visible later
+	// Listen for tab changes to load content on demand
 	document.addEventListener("tab:shown", (e) => {
-		if (e?.detail?.id === "journal-entries") loadEntries();
+		const tabId = e?.detail?.id;
+		if (tabId === "journal-entries") {
+			loadEntries();
+		} else if (tabId === "codes") {
+			// Codes already loaded, but could refresh here if needed
+			renderCodes();
+		} else if (tabId === "memos") {
+			// Memos already loaded, but could refresh here if needed
+		}
 	});
 }
 
