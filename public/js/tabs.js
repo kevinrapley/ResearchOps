@@ -5,14 +5,21 @@
  * License:  All rights reserved
  */
 
+// Convert ?tab= to hash before initialization
+const params = new URLSearchParams(location.search);
+const qtab = params.get('tab');
+if (qtab && !location.hash) {
+	history.replaceState(null, '', location.pathname + location.search + '#' + qtab);
+}
+
 (function() {
 	const $ = (s, r = document) => r.querySelector(s);
 	const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-	
+
 	function ensureVisible(el) {
-	el.classList.remove('govuk-tabs__panel--hidden');
-	el.removeAttribute('hidden');
-}
+		el.classList.remove('govuk-tabs__panel--hidden');
+		el.removeAttribute('hidden');
+	}
 
 	function initContainer(container) {
 		if (!container) return;
@@ -56,7 +63,7 @@
 			const targetPanel = document.getElementById(id);
 			const targetTab = $(`.govuk-tabs__tab[aria-controls="${id}"]`, container);
 			if (!targetPanel || !container.contains(targetPanel) || !targetTab) return;
-			
+
 			ensureVisible(targetPanel);
 
 			items.forEach((li) => li.classList.remove('govuk-tabs__list-item--selected'));
