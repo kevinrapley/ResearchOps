@@ -886,13 +886,15 @@ function isJournalActiveOnLoad() {
  * Boot
  * ========================= */
 async function init() {
+	// Support ?tab=codes as alias for #codes (convert before other logic runs)
+	const params = new URLSearchParams(location.search);
+	const qtab = params.get('tab');
+	if (qtab && !location.hash) {
+		history.replaceState(null, '', `${location.pathname}${location.search}#${qtab}`);
+	}
+	
 	const url = new URL(location.href);
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
-
-	if (!state.projectId) {
-		flash("No project id in URL. Some features disabled.");
-		return;
-	}
 
 	// Wire buttons/forms
 	setupNewEntryWiring();
