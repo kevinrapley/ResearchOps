@@ -49,21 +49,30 @@ function maybeDiag(service, url, extra) {
  */
 function mapCodeRecord(r) {
 	const f = r.fields || {};
-	const projectId =
-		Array.isArray(f["Project"]) ? (f["Project"][0] || null) :
-		("Project" in f ? (Array.isArray(f["Project"]) ? (f["Project"][0] || null) : (f["Project"] ?? null)) : null);
 
-	const parentId =
-		Array.isArray(f["Parent"]) ? (f["Parent"][0] || null) :
-		("Parent" in f ? (Array.isArray(f["Parent"]) ? (f["Parent"][0] || null) : (f["Parent"] ?? null)) : null);
+	let projectId = null;
+	if (Array.isArray(f["Project"])) {
+		projectId = f["Project"][0] || null;
+	} else if ("Project" in f) {
+		projectId = Array.isArray(f["Project"]) ? (f["Project"][0] || null) : (f["Project"] ?? null);
+	}
+
+	let parentId = null;
+	if (Array.isArray(f["Parent"])) {
+		parentId = f["Parent"][0] || null;
+	} else if ("Parent" in f) {
+		parentId = Array.isArray(f["Parent"]) ? (f["Parent"][0] || null) : (f["Parent"] ?? null);
+	}
+
+	const colourHex8 = normaliseHex8(f["Colour"] || f["Color"] || "#505a5fff");
 
 	return {
 		id: r.id,
 		name: f["Name"] || f["Code"] || f["Short Name"] || "",
-		description: f["Definition"] || f["Description"] || "",
-		colour: normaliseHex8(f["Colour"] || f["Color"] || "#1d70b8ff"),
-		parentId,
-		projectId
+		description: f["Description"] || "",
+		colour: colourHex8,
+		parentId: parentId,
+		projectId: projectId
 	};
 }
 
@@ -194,7 +203,7 @@ export async function listCodes(service, origin, url) {
  */
 export async function createCode(service, request, origin) {
 	const cors = service.corsHeaders(origin);
-	const urlObj = new URL(request.url); // so diag=1 on the query string works
+	const urlObj = new URL(request.url);
 
 	try {
 		const body = await request.json().catch(() => ({}));
@@ -206,83 +215,66 @@ export async function createCode(service, request, origin) {
 		const projectId = body.projectId || body.project || null;
 		const parentId = body.parentId || body.parent || null;
 
-		// Always normalise to 8-digit hex
-		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8";
+		// Always normalise to #RRGGBBAA
+		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8ff";
 		const colourHex8 = normaliseHex8(inputColour);
 
-		// Detect actual linked field label for the project (mirrors listCodes)
 		const table = TABLE(service);
-		let projectFieldLabel = "Project";
-		if (projectId) {
-			try {
-				const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
-				const detected = detectProjectFieldFromSample(sample.records || []);
-				if (detected) projectFieldLabel = detected;
-			} catch (_e) {
-				// keep default "Project"
-			}
-		}
 
-		// Build fields without spread
+		// Detect the linked Project field label (“Project”, “Project (link)”, etc.)
+		let projectFieldLabel = "Project";
+		try {
+			const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
+			const detected = detectProjectFieldFromSample(sample.records || []);
+			if (detected) projectFieldLabel = detected;
+		} catch (_e) { /* keep default */ }
+
+		// Build Airtable fields (no spread literals)
 		const fields = {};
 		fields["Name"] = name;
-		fields["Definition"] = body.description || body.definition || "";
-		fields["Colour"] = colourHex8; // #RRGGBBAA
+		fields["Colour"] = colourHex8;
 
-		if (projectId) fields[projectFieldLabel] = [projectId];
-		if (parentId) fields["Parent"] = [parentId];
+		const descVal = (body.description || "").trim();
+		if (descVal) {
+			fields["Description"] = descVal;
+		}
+		if (projectId) {
+			fields[projectFieldLabel] = [projectId];
+		}
+		if (parentId) {
+			fields["Parent"] = [parentId];
+		}
 
-		// DEBUG: server-side logging
-		service.log.info("codes.create: preflight", {
-			table,
-			projectFieldLabel,
-			fields
-		});
-
+		// Create
 		let resp;
 		try {
 			resp = await createRecords(service.env, table, [{ fields }]);
 		} catch (airErr) {
-			// Surface rich diagnostics when ?diag=1 is present
-			const bodyOut = { ok: false, error: "Internal error" };
+			const out = { ok: false, error: "Internal error" };
 			const diag = {
 				stage: "createRecords",
-				table,
-				fields,
+				table: table,
+				fields: fields,
 				airtableError: String(airErr)
 			};
-			const extra = maybeDiag(service, urlObj, diag);
-			if (extra) Object.assign(bodyOut, { diag: extra });
+			const maybe = maybeDiag(service, urlObj, diag);
+			if (maybe) out.diag = maybe;
 			service.log.error("codes.create airtable error", diag);
-			return service.json(bodyOut, 500, cors);
+			return service.json(out, 500, cors);
 		}
 
 		const record = (resp.records || [])[0] || null;
+		const bodyOut = { ok: true, record: record ? mapCodeRecord(record) : null };
+		const extra = maybeDiag(service, urlObj, { table: table, fieldsSubmitted: fields, rawResponse: resp });
+		if (extra) bodyOut.diag = extra;
 
-		// DEBUG: success log
-		service.log.info("codes.create: success", {
-			createdId: record?.id || null,
-			fieldsOut: record?.fields || null
-		});
-
-		const out = { ok: true, record: record ? mapCodeRecord(record) : null };
-
-		// If requested, echo diagnostics
-		const maybe = maybeDiag(service, urlObj, {
-			table,
-			projectFieldLabel,
-			fieldsSubmitted: fields,
-			rawResponse: resp
-		});
-		if (maybe) Object.assign(out, { diag: maybe });
-
-		return service.json(out, 201, cors);
+		return service.json(bodyOut, 201, cors);
 	} catch (err) {
-		const bodyOut = { ok: false, error: "Internal error" };
-		const extra = maybeDiag(service, urlObj, { stage: "handler-catch", err: String(err) });
-		if (extra) Object.assign(bodyOut, { diag: extra });
+		const out = { ok: false, error: "Internal error" };
+		const diag = maybeDiag(service, urlObj, { stage: "handler-catch", err: String(err) });
+		if (diag) out.diag = diag;
 		service.log.error("codes.create handler error", { err: String(err) });
-		return service.json(bodyOut, 500, cors);
+		return service.json(out, 500, cors);
 	}
 }
 
@@ -292,39 +284,61 @@ export async function createCode(service, request, origin) {
  */
 export async function updateCode(service, request, origin, codeId) {
 	const cors = service.corsHeaders(origin);
+	const urlObj = new URL(request.url);
+
 	try {
 		const body = await request.json().catch(() => ({}));
 		const fields = {};
 
-		if ("name" in body) fields["Name"] = body.name || "";
-		if ("description" in body || "definition" in body) {
-			fields["Definition"] = body.description || body.definition || "";
+		if ("name" in body) {
+			fields["Name"] = body.name || "";
 		}
 
-		// Always store 8-digit hex
+		if ("description" in body) {
+			fields["Description"] = body.description || "";
+		}
+
 		if ("colour" in body || "color" in body || "colour8" in body || "color8" in body) {
-			const input = body.colour8 ?? body.color8 ?? body.colour ?? body.color ?? "";
-			fields["Colour"] = normaliseHex8(input);
+			const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8ff";
+			fields["Colour"] = normaliseHex8(inputColour);
 		}
 
 		if ("parentId" in body || "parent" in body) {
 			const v = body.parentId || body.parent || null;
 			fields["Parent"] = v ? [v] : [];
 		}
+
 		if ("projectId" in body || "project" in body) {
 			const v = body.projectId || body.project || null;
+			// Keep using the canonical “Project” label for updates; adjust if your base uses a custom label.
 			fields["Project"] = v ? [v] : [];
 		}
 
-		const resp = await patchRecords(service.env, TABLE(service), [{ id: codeId, fields }]);
-		const record = (resp.records || [])[0] || null;
+		let resp;
+		try {
+			resp = await patchRecords(service.env, TABLE(service), [{ id: codeId, fields }]);
+		} catch (airErr) {
+			const out = { ok: false, error: "Internal error" };
+			const diag = {
+				stage: "patchRecords",
+				table: TABLE(service),
+				id: codeId,
+				fields: fields,
+				airtableError: String(airErr)
+			};
+			const maybe = maybeDiag(service, urlObj, diag);
+			if (maybe) out.diag = maybe;
+			service.log.error("codes.update airtable error", diag);
+			return service.json(out, 500, cors);
+		}
 
+		const record = (resp.records || [])[0] || null;
 		return service.json({ ok: true, record: record ? mapCodeRecord(record) : null }, 200, cors);
 	} catch (err) {
-		service.log.error("codes.update", { err: String(err) });
-		const body = { ok: false, error: "Internal error" };
-		const extra = maybeDiag(service, new URL("http://local/"), { diag: String(err) });
-		if (extra) Object.assign(body, extra);
-		return service.json(body, 500, cors);
+		const out = { ok: false, error: "Internal error" };
+		const diag = maybeDiag(service, urlObj, { stage: "handler-catch", err: String(err) });
+		if (diag) out.diag = diag;
+		service.log.error("codes.update handler error", { err: String(err) });
+		return service.json(out, 500, cors);
 	}
 }
