@@ -4,36 +4,41 @@
  * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (works with your HTML).
  *
  * This version:
- *  - Buttons work for: Add journal entry, Add code, Add memo, Timeline, Co-occurrence, Retrieval, Export.
+ *  - Buttons work for: Add journal entry, Add code, Add memo, Timeline, Co-occurrence, Retrieval, Export. 
  *  - Codebook management: uses a colour-wheel picker (<input type="color">) and
  *    sends a hex code (e.g. "#ff0000") to Airtable in `colour`.
  *  - Parent code is a dropdown of existing codes, and is only shown when the project already has codes.
  */
 
-/* =========================
+/* ---------------------------
  * DOM helpers
- * ========================= */
+ * --------------------------- */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-/* =========================
+/* ---------------------------
  * Config + HTTP helpers
- * ========================= */
-const CONFIG = Object.freeze({
-	API_BASE: window.location.origin,
-	TIMEOUT_MS: 15000
-});
+ * --------------------------- */
+const CONFIG = Object.freeze({ API_BASE: location.origin, TIMEOUT_MS: 15000 });
+
+function flash(msg) {
+	let el = $("#flash");
+	if (!el) {
+		el = document.createElement("div");
+		el.id = "flash";
+		el.role = "status";
+		el.ariaLive = "polite";
+		el.style.cssText = "margin:12px 0;padding:12px;border:1px solid #d0d7de;background:#fff;";
+		$("main")?.prepend(el);
+	}
+	el.textContent = msg;
+}
 
 async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), timeoutMs);
-	try {
-		return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init });
-	} finally {
-		clearTimeout(t);
-	}
+	try { return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init }); } finally { clearTimeout(t); }
 }
-
 async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const res = await fetchWithTimeout(url, init, timeoutMs);
 	if (!res.ok) {
@@ -43,55 +48,29 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ct = (res.headers.get("content-type") || "").toLowerCase();
 	return ct.includes("application/json") ? res.json() : {};
 }
+const esc = (s) => { if (!s) return ""; const d = document.createElement("div");
+	d.textContent = s; return d.innerHTML; };
+const when = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 
-function escapeHtml(s) {
-	if (!s) return "";
-	const d = document.createElement("div");
-	d.textContent = s;
-	return d.innerHTML;
-}
-
-function formatWhen(iso) {
-	if (!iso) return "—";
-	const d = new Date(iso);
-	return d.toLocaleString();
-}
-
-function flash(msg) {
-	let el = $("#flash");
-	if (!el) {
-		el = document.createElement("div");
-		el.id = "flash";
-		el.setAttribute("role", "status");
-		el.setAttribute("aria-live", "polite");
-		el.style.margin = "12px 0";
-		el.style.padding = "12px";
-		el.style.border = "1px solid #d0d7de";
-		el.style.background = "#fff";
-		$("main")?.prepend(el);
-	}
-	el.textContent = msg;
-}
-
-/* =========================
- * State
- * ========================= */
+/* ---------------------------
+ * App state
+ * --------------------------- */
 const state = {
 	projectId: null,
 	entries: [],
-	codes: [], // <- used to populate Parent dropdown
+	codes: [],
 	memos: []
 };
 
-/* =========================
- * Journal: load + render + add
- * ========================= */
+/* ---------------------------
+ * Journal
+ * --------------------------- */
 async function loadEntries() {
 	if (!state.projectId) return;
 	try {
 		const data = await httpJSON(`/api/journal-entries?project=${encodeURIComponent(state.projectId)}`);
-		const entries = Array.isArray(data?.entries) ? data.entries : (Array.isArray(data) ? data : []);
-		state.entries = entries.map(e => ({
+		const arr = Array.isArray(data?.entries) ? data.entries : (Array.isArray(data) ? data : []);
+		state.entries = arr.map(e => ({
 			id: e.id,
 			category: e.category || "—",
 			content: e.content ?? e.body ?? "",
@@ -100,7 +79,7 @@ async function loadEntries() {
 		}));
 		renderEntries();
 	} catch (err) {
-		console.error("loadEntries error:", err);
+		console.error(err);
 		state.entries = [];
 		renderEntries();
 		flash(`Could not load journal entries. ${err?.message || ""}`.trim());
@@ -123,17 +102,15 @@ function renderEntries() {
     <article class="entry-card" data-id="${en.id}" data-category="${en.category}">
       <div class="entry-header">
         <div class="entry-meta">
-          <span class="entry-category-badge" data-category="${en.category}">${escapeHtml(en.category)}</span>
-          <span class="entry-timestamp">${formatWhen(en.createdAt)}</span>
+          <span class="entry-category-badge" data-category="${en.category}">${esc(en.category)}</span>
+          <span class="entry-timestamp">${when(en.createdAt)}</span>
         </div>
         <div class="entry-actions">
           <button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
         </div>
       </div>
-      <div class="entry-content">${escapeHtml(en.content || "")}</div>
-      <div class="entry-tags">
-        ${(en.tags || []).map(t => `<span class="filter-chip">${escapeHtml(t)}</span>`).join("")}
-      </div>
+      <div class="entry-content">${esc(en.content)}</div>
+      <div class="entry-tags">${(en.tags||[]).map(t => `<span class="filter-chip">${esc(t)}</span>`).join("")}</div>
     </article>
   `).join("");
 
@@ -166,32 +143,25 @@ function setupNewEntryWiring() {
 		if (!section) return;
 		const show = typeof force === "boolean" ? force : section.hidden;
 		section.hidden = !show;
-		if (show)($("#entry-content") || section.querySelector("textarea, [contenteditable]"))?.focus();
+		if (show)($("#entry-content") || section.querySelector("textarea"))?.focus();
 	}
 
-	toggleBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		toggleForm();
-	});
-	cancelBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		toggleForm(false);
-	});
+	toggleBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(false); });
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const fd = new FormData(form);
 		const payload = {
 			project: state.projectId,
-			project_airtable_id: state.projectId, // backwards compatibility
+			project_airtable_id: state.projectId,
 			category: (fd.get("category") || "").toString(),
 			content: (fd.get("content") || "").toString(),
 			tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
 		};
-		if (!payload.category || !payload.content) {
-			flash("Category and content are required.");
-			return;
-		}
+		if (!payload.category || !payload.content) { flash("Category and content are required."); return; }
 		try {
 			await httpJSON("/api/journal-entries", {
 				method: "POST",
@@ -203,31 +173,38 @@ function setupNewEntryWiring() {
 			flash("Entry saved.");
 			await loadEntries();
 		} catch (err) {
-			console.error("add-entry submit error:", err);
+			console.error(err);
 			flash(`Could not save entry. ${err?.message || ""}`.trim());
 		}
 	});
 }
 
-/* =========================
- * Codes: ensure form + load + render + add
- *  - Colour field uses <input type="color">, value is hex (e.g. "#ff0000")
- *  - Parent dropdown shows only when codes exist, populated from state.codes
- * ========================= */
+/* ---------------------------
+ * Codes (Coloris + parent select)
+ * --------------------------- */
+function toHex8(input) {
+	if (!input) return "#505a5fff";
+	let v = String(input).trim().toLowerCase();
+	if (/^#[0-9a-f]{8}$/.test(v)) return v; // #rrggbbaa
+	if (/^#[0-9a-f]{6}$/.test(v)) return v + "ff"; // #rrggbb → +ff
+	if (/^#[0-9a-f]{3}$/.test(v)) // #rgb → #rrggbbff
+		return "#" + v.slice(1).split("").map(ch => ch + ch).join("") + "ff";
+	const ctx = document.createElement("canvas").getContext("2d");
+	try { ctx.fillStyle = v; } catch { return "#505a5fff"; }
+	const hex6 = ctx.fillStyle; // browser → #rrggbb
+	return /^#[0-9a-f]{6}$/i.test(hex6) ? hex6 + "ff" : "#505a5fff";
+}
 
-/** Build/ensure the Add Code form exists (hidden by default). */
 function ensureCodeForm() {
-	let form = document.getElementById("code-form");
+	let form = $("#code-form");
 	if (form) return form;
-
-	const host = document.getElementById("codes-panel") || document.getElementById("codes");
+	const host = $("#codes-panel") || $("#codes");
 	if (!host) return null;
 
 	form = document.createElement("form");
 	form.id = "code-form";
 	form.hidden = true;
 	form.noValidate = true;
-
 	form.innerHTML = `
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-name">Code name</label>
@@ -236,18 +213,7 @@ function ensureCodeForm() {
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-colour">Colour</label>
-      <input 
-        class="govuk-input color-field__input" 
-        id="code-colour"
-        name="color"
-        type="text"
-        value="#505a5f"
-        data-coloris
-        inputmode="text"
-        autocomplete="off"
-        spellcheck="false"
-        pattern="^#([0-9A-Fa-f]{6})$"
-      >
+      <input class="govuk-input" id="code-colour" name="colour" data-coloris value="#505a5fff" />
     </div>
 
     <div class="govuk-form-group" id="code-parent-wrap" hidden>
@@ -267,137 +233,99 @@ function ensureCodeForm() {
       <button id="cancel-code-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
     </div>
   `;
-
 	host.appendChild(form);
+
+	// Coloris (provided by /js vendor files you added)
+	if (window.Coloris) {
+		window.Coloris({
+			el: "#code-colour",
+			alpha: true,
+			forceAlpha: true, // always returns #RRGGBBAA
+			format: "hex",
+			themeMode: "light",
+			wrap: true
+		});
+	}
 	return form;
 }
 
-/**
- * Load codes from API and update state
- */
+function refreshParentSelector() {
+	const wrap = $("#code-parent-wrap");
+	const sel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	if (!wrap || !sel) return;
+	const hasCodes = (state.codes || []).length > 0;
+	wrap.hidden = !hasCodes;
+	sel.innerHTML = `<option value="">— None —</option>` +
+		state.codes.map(c => `<option value="${esc(c.id)}">${esc(c.name || c.id)}</option>`).join("");
+}
+
 async function loadCodes() {
 	if (!state.projectId) return;
 	try {
 		const data = await httpJSON(`/api/codes?project=${encodeURIComponent(state.projectId)}`);
 		state.codes = Array.isArray(data?.codes) ? data.codes : [];
 		renderCodes();
+		refreshParentSelector();
 	} catch (e) {
-		console.error('loadCodes error:', e);
-		state.codes = [];
-		renderCodes();
+		console.error(e);
+		renderCodes(true);
+		flash(`Could not load codes. ${e?.message || ""}`.trim());
 	}
 }
 
-/**
- * Render the codes list in the Codes panel
- */
-function renderCodes() {
-	const container = document.getElementById("codes-container");
-	if (!container) return;
+function renderCodes(error = false) {
+	const wrap = $("#codes-container");
+	if (!wrap) return;
+	if (error) { wrap.innerHTML = "<p>Could not load codes.</p>"; return; }
+	if (!state.codes.length) { wrap.innerHTML = "<p>No codes yet.</p>"; return; }
 
-	if (!state.codes || state.codes.length === 0) {
-		container.innerHTML = '<p class="govuk-body">No codes yet. Click "Add code" to create your first code.</p>';
-		return;
-	}
-
-	// Sort codes by name
-	const sorted = [...state.codes].sort((a, b) =>
-		(a.name || '').localeCompare(b.name || '')
-	);
-
-	container.innerHTML = `
-		<div class="codebook">
-			${sorted.map(code => `
-				<div class="code-item" data-id="${code.id}">
-					<span class="code-color-indicator" style="background-color: ${code.colour || '#505a5f'}"></span>
-					<span class="code-name">${escapeHtml(code.name || 'Unnamed')}</span>
-					${code.description ? `<p class="code-description">${escapeHtml(code.description)}</p>` : ''}
-				</div>
-			`).join('')}
-		</div>
-	`;
+	wrap.innerHTML = state.codes.map(c => {
+		const colour = toHex8(c.colour || c.color || "#505a5fff");
+		return `
+      <article class="code-card" data-id="${c.id}">
+        <header>
+          <span class="code-swatch" style="background-color:${colour};"></span>
+          <strong>${esc(c.name || "—")}</strong>
+        </header>
+        ${c.description ? `<p>${esc(c.description)}</p>` : ""}
+      </article>
+    `;
+	}).join("");
 }
 
-/** Populate the Parent dropdown and show/hide wrapper depending on code count. */
-function refreshParentSelector() {
-	const wrap = document.getElementById("code-parent-wrap");
-	const select = /** @type {HTMLSelectElement|null} */ (document.getElementById("code-parent"));
-	if (!wrap || !select) return;
-
-	const hasCodes = (state.codes || []).length > 0;
-	wrap.hidden = !hasCodes;
-	if (!hasCodes) {
-		select.innerHTML = `<option value="">— None —</option>`;
-		return;
-	}
-
-	const current = select.value;
-	const options = [
-		`<option value="">— None —</option>`,
-		...state.codes.map(c =>
-			`<option value="${escapeHtml(c.id)}"${c.id === current ? " selected" : ""}>${escapeHtml(c.name || c.id)}</option>`
-		)
-	];
-	select.innerHTML = options.join("");
-}
-
-/** Show/submit Code form (uses hex field value for POST). */
 function setupAddCodeWiring() {
-	const btn = document.getElementById("new-code-btn");
+	const btn = $("#new-code-btn");
 	const form = ensureCodeForm();
-	const nameInput = document.getElementById("code-name");
-	const colorInput = document.getElementById("code-colour"); // Now just the text input
-	const descInput = document.getElementById("code-description");
-	const parentSel = document.getElementById("code-parent");
-	const cancelBtn = document.getElementById("cancel-code-btn");
+	const nameEl = /** @type {HTMLInputElement|null} */ ($("#code-name"));
+	const colourEl = /** @type {HTMLInputElement|null} */ ($("#code-colour"));
+	const descEl = /** @type {HTMLTextAreaElement|null} */ ($("#code-description"));
+	const parentSel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	const cancelBtn = $("#cancel-code-btn");
 
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
-		if (show) {
-			refreshParentSelector();
-			nameInput?.focus();
-		}
+		if (show) { refreshParentSelector();
+			nameEl?.focus(); }
 	}
 
-	btn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		showForm(form?.hidden ?? true);
-	});
-
-	cancelBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		showForm(false);
-	});
+	btn?.addEventListener("click", e => { e.preventDefault();
+		showForm(form?.hidden ?? true); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		showForm(false); });
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
-		e.stopPropagation();
+		const name = (nameEl?.value || "").trim();
+		if (!name) { flash("Please enter a code name."); return; }
 
-		const name = (nameInput?.value || "").trim();
-		if (!name) {
-			flash("Please enter a code name.");
-			return;
-		}
-
-		// Get hex directly from Coloris-managed input
-		let hex = (colorInput?.value || "").trim().toLowerCase();
-
-		// Validate and normalize hex
-		if (!/^#[0-9a-f]{6}$/i.test(hex)) {
-			if (/^#[0-9a-f]{3}$/i.test(hex)) {
-				// Expand shorthand #rgb to #rrggbb
-				hex = '#' + hex.slice(1).split('').map(ch => ch + ch).join('');
-			} else {
-				hex = '#505a5f'; // default fallback
-			}
-		}
+		const colour = toHex8(colourEl?.value || "#505a5fff");
 
 		const payload = {
 			name,
 			projectId: state.projectId,
-			colour: hex,
-			description: (descInput?.value || "").trim(),
+			colour, // always #rrggbbaa
+			description: (descEl?.value || "").trim(),
 			parentId: (parentSel?.value || "").trim() || undefined
 		};
 
@@ -407,17 +335,13 @@ function setupAddCodeWiring() {
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify(payload)
 			});
-
-			// Reset form
-			if (nameInput) nameInput.value = "";
-			if (colorInput) colorInput.value = "#505a5f";
-			if (descInput) descInput.value = "";
+			if (nameEl) nameEl.value = "";
+			if (colourEl) colourEl.value = "#505a5fff";
+			if (descEl) descEl.value = "";
 			if (parentSel) parentSel.value = "";
-
 			showForm(false);
-			flash(`Code "${payload.name}" created.`);
+			flash(`Code “${payload.name}” created.`);
 			await loadCodes();
-			refreshParentSelector();
 		} catch (err) {
 			console.error(err);
 			flash("Could not create code.");
@@ -425,46 +349,9 @@ function setupAddCodeWiring() {
 	});
 }
 
-/* =========================
- * Memos: ensure form + load + render + add
- * ========================= */
-function ensureMemoForm() {
-	let form = $("#memo-form");
-	if (form) return form;
-	const host = $("#memos-panel") || $("#memos");
-	if (!host) return null;
-
-	form = document.createElement("form");
-	form.id = "memo-form";
-	form.hidden = true;
-	form.noValidate = true;
-	form.innerHTML = `
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="memo-type">Memo type</label>
-      <select class="govuk-select" id="memo-type" name="memo_type">
-        <option value="analytical">Analytical</option>
-        <option value="methodological">Methodological</option>
-        <option value="theoretical">Theoretical</option>
-        <option value="reflexive">Reflexive</option>
-      </select>
-    </div>
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="memo-title">Title (optional)</label>
-      <input class="govuk-input" id="memo-title" name="title" />
-    </div>
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="memo-content">Content</label>
-      <textarea class="govuk-textarea" id="memo-content" name="content" rows="4" required></textarea>
-    </div>
-    <div class="govuk-button-group">
-      <button id="save-memo-btn" class="govuk-button" type="submit">Save</button>
-      <button id="cancel-memo-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
-    </div>
-  `;
-	host.appendChild(form);
-	return form;
-}
-
+/* ---------------------------
+ * Memos
+ * --------------------------- */
 async function loadMemos() {
 	if (!state.projectId) return;
 	try {
@@ -482,7 +369,6 @@ function renderMemos(error = false) {
 	if (!wrap) return;
 	if (error) { wrap.innerHTML = "<p>Could not load memos.</p>"; return; }
 
-	// Current filter (supports either .filter-btn or .filter-chip classes)
 	const active =
 		document.querySelector('.filter-btn.active')?.dataset.memoFilter ||
 		document.querySelector('.filter-chip.filter-chip--active')?.dataset.memoFilter ||
@@ -499,37 +385,64 @@ function renderMemos(error = false) {
 	wrap.innerHTML = items.map(m => `
     <article class="memo-card" data-id="${m.id || ""}">
       <header class="memo-header">
-        <strong>${escapeHtml(m.title || m.memoType || "Memo")}</strong>
-        <time>${formatWhen(m.createdAt)}</time>
+        <strong>${esc(m.title || m.memoType || "Memo")}</strong>
+        <time>${when(m.createdAt)}</time>
       </header>
-      ${m.title ? `<p class="memo-title">${escapeHtml(m.title)}</p>` : ""}
-      <p>${escapeHtml(m.content || "")}</p>
+      ${m.title ? `<p class="memo-title">${esc(m.title)}</p>` : ""}
+      <p>${esc(m.content || "")}</p>
     </article>
   `).join("");
 }
 
 function setupNewMemoWiring() {
+	let form = $("#memo-form");
+	if (!form) {
+		form = document.createElement("form");
+		form.id = "memo-form";
+		form.hidden = true;
+		form.noValidate = true;
+		form.innerHTML = `
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="memo-type">Memo type</label>
+        <select class="govuk-select" id="memo-type" name="memo_type">
+          <option value="analytical">Analytical</option>
+          <option value="methodological">Methodological</option>
+          <option value="theoretical">Theoretical</option>
+          <option value="reflexive">Reflexive</option>
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="memo-title">Title (optional)</label>
+        <input class="govuk-input" id="memo-title" name="title" />
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="memo-content">Content</label>
+        <textarea class="govuk-textarea" id="memo-content" name="content" rows="4" required></textarea>
+      </div>
+      <div class="govuk-button-group">
+        <button id="save-memo-btn" class="govuk-button" type="submit">Save</button>
+        <button id="cancel-memo-btn" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+      </div>
+    `;
+		$("#memos-panel")?.appendChild(form);
+	}
+
 	const newBtn = $("#new-memo-btn");
-	const form = ensureMemoForm();
 	const cancelBtn = $("#cancel-memo-btn");
 
 	function toggleForm(show) {
 		if (!form) return;
-		const shouldShow = typeof show === "boolean" ? show : form.hidden;
-		form.hidden = !shouldShow;
-		if (shouldShow) form?.querySelector("#memo-content, textarea, input, select")?.focus();
+		const s = typeof show === "boolean" ? show : form.hidden;
+		form.hidden = !s ? true : false;
+		if (s) form.querySelector("#memo-content")?.focus();
 	}
 
-	newBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		toggleForm(true);
-	});
-	cancelBtn?.addEventListener("click", (e) => {
-		e.preventDefault();
-		toggleForm(false);
-	});
+	newBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(true); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(false); });
 
-	form?.addEventListener("submit", async (e) => {
+	form.addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const fd = new FormData(form);
 		const payload = {
@@ -556,79 +469,44 @@ function setupNewMemoWiring() {
 		}
 	});
 
-	// Filter chips (both .filter-btn and .filter-chip variants)
+	// Filter chips
 	document.querySelectorAll('[data-memo-filter]').forEach(btn => {
 		btn.addEventListener("click", (e) => {
 			document.querySelectorAll('[data-memo-filter]').forEach(b => {
 				b.classList.remove("active", "filter-chip--active");
 			});
-			const target = /** @type {HTMLElement} */ (e.currentTarget);
-			target.classList.add(target.classList.contains("filter-chip") ? "filter-chip--active" : "active");
+			const t = e.currentTarget;
+			if (t.classList.contains("filter-chip")) t.classList.add("filter-chip--active");
+			else t.classList.add("active");
 			renderMemos();
 		});
 	});
 }
 
-/* =========================
- * Analysis: sections + JSON viewer + actions
- * ========================= */
-function getAnalysisContainer() {
-	return document.querySelector('[data-role="analysis-container"]') || document.getElementById('analysis-container');
-}
-
+/* ---------------------------
+ * Analysis
+ * --------------------------- */
 function ensureSection(id, headingText) {
-	const host = getAnalysisContainer();
-	if (!host) return null;
 	let sec = document.getElementById(id);
 	if (sec) return sec;
-	sec = document.createElement('section');
+	sec = document.createElement("section");
 	sec.id = id;
-	sec.setAttribute('aria-live', 'polite');
-	sec.className = 'analysis-section';
+	sec.setAttribute("aria-live", "polite");
+	sec.className = "analysis-section";
 	if (headingText) {
-		const h = document.createElement('h3');
-		h.className = 'analysis-section__heading';
+		const h = document.createElement("h3");
+		h.className = "analysis-section__heading";
 		h.textContent = headingText;
 		sec.appendChild(h);
 	}
-	host.appendChild(sec);
+	($("#analysis-container") || document.body).appendChild(sec);
 	return sec;
-}
-
-function elFromHTML(html) {
-	const t = document.createElement('template');
-	t.innerHTML = html.trim();
-	return /** @type {HTMLElement} */ (t.content.firstChild);
-}
-
-/* JSON viewer helpers */
-function ensureJsonViewer() {
-	const host = getAnalysisContainer();
-	if (!host) return { codeEl: null };
-
-	let details = document.getElementById('json-viewer');
-	if (!details) {
-		details = document.createElement('details');
-		details.id = 'json-viewer';
-		details.innerHTML = `
-      <summary><span>View raw JSON</span></summary>
-      <div>
-        <div class="analysis-json-actions">
-          <button type="button" id="json-copy">Copy JSON</button>
-          <button type="button" id="json-download">Download JSON</button>
-        </div>
-        <pre tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
-      </div>`;
-		host.appendChild(details);
-		setupJsonButtons();
-	}
-	return { codeEl: document.getElementById('json-code') };
 }
 
 function jsonSyntaxHighlight(obj) {
 	const json = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-	const esc = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" } [c]));
-	return esc
+	const escP = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" } [c]));
+	return escP
 		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, m => `<span class="k">${m}</span>`)
 		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, m => `<span class="s">${m}</span>`)
 		.replace(/\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, m => `<span class="n">${m}</span>`)
@@ -636,38 +514,42 @@ function jsonSyntaxHighlight(obj) {
 }
 
 function updateJsonPanel(data, filename = "analysis.json") {
-	const { codeEl } = ensureJsonViewer();
-	if (!codeEl) return;
-	codeEl.innerHTML = jsonSyntaxHighlight(data);
-	codeEl.dataset.filename = filename;
+	let code = $("#json-code");
+	if (!code) {
+		const details = $("#json-viewer") || (() => {
+			const d = document.createElement("details");
+			d.id = "json-viewer";
+			d.innerHTML = `
+        <summary><span>View raw JSON</span></summary>
+        <div class="govuk-!-margin-top-2">
+          <div class="govuk-button-group">
+            <button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
+            <button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
+          </div>
+          <pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
+        </div>`;
+			$("#analysis-container")?.appendChild(d);
+			return d;
+		})();
+		code = $("#json-code");
+		$("#json-copy")?.addEventListener("click", async () => {
+			try { await navigator.clipboard.writeText(code?.textContent || "");
+				flash("JSON copied."); } catch { flash("Copy failed."); }
+		});
+		$("#json-download")?.addEventListener("click", () => {
+			const raw = code?.textContent || "{}";
+			const blob = new Blob([raw], { type: "application/json;charset=utf-8" });
+			const a = document.createElement("a");
+			a.href = URL.createObjectURL(blob);
+			a.download = filename;
+			a.click();
+			setTimeout(() => URL.revokeObjectURL(a.href), 0);
+		});
+	}
+	code.innerHTML = jsonSyntaxHighlight(data);
+	code.dataset.filename = filename;
 }
 
-function setupJsonButtons() {
-	const copyBtn = document.getElementById("json-copy");
-	const dlBtn = document.getElementById("json-download");
-	const code = document.getElementById("json-code");
-
-	copyBtn?.addEventListener("click", async () => {
-		try {
-			await navigator.clipboard.writeText(code?.textContent || "");
-			flash("JSON copied.");
-		} catch {
-			flash("Copy failed.");
-		}
-	});
-
-	dlBtn?.addEventListener("click", () => {
-		const raw = code?.textContent || "{}";
-		const blob = new Blob([raw], { type: "application/json;charset=utf-8" });
-		const a = document.createElement("a");
-		a.href = URL.createObjectURL(blob);
-		a.download = code?.dataset.filename || "analysis.json";
-		a.click();
-		setTimeout(() => URL.revokeObjectURL(a.href), 0);
-	});
-}
-
-/* Analysis modes */
 function nodeLabel(nodes, id) {
 	const n = nodes.find(n => n.id === id);
 	return n?.label || n?.name || String(id);
@@ -675,140 +557,102 @@ function nodeLabel(nodes, id) {
 
 async function runTimeline() {
 	const wrap = ensureSection("analysis-timeline", "Timeline");
-	if (!wrap) return;
-	wrap.innerHTML = '<p>Loading timeline…</p>';
-
+	wrap.innerHTML = "<p>Loading timeline…</p>";
 	const res = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
 	const items = Array.isArray(res?.timeline) ? res.timeline : [];
 	updateJsonPanel({ timeline: items }, `timeline-${state.projectId}.json`);
-
-	if (!items.length) {
-		wrap.innerHTML = '<p class="hint">No journal entries yet.</p>';
-		return;
-	}
-
+	if (!items.length) { wrap.innerHTML = '<p class="hint">No journal entries yet.</p>'; return; }
 	wrap.innerHTML = `
     <ul class="analysis-list">
       ${items.map(en => `
         <li class="analysis-list__item">
           <div class="summary-card">
             <div class="summary-card__title-row">
-              <h4 class="summary-card__title">${formatWhen(en.createdAt)}</h4>
-              ${en.category ? `<span class="tag">${escapeHtml(en.category)}</span>` : ""}
+              <h4 class="summary-card__title">${when(en.createdAt)}</h4>
+              ${en.category ? `<span class="tag">${esc(en.category)}</span>` : ""}
             </div>
             <div class="summary-card__content">
               <dl class="summary">
                 <div class="summary__row">
                   <dt class="summary__key">Entry</dt>
-                  <dd class="summary__value">${escapeHtml(en.body || en.content || "")}</dd>
+                  <dd class="summary__value">${esc(en.body || en.content || "")}</dd>
                 </div>
               </dl>
             </div>
           </div>
         </li>
       `).join("")}
-    </ul>
-  `;
+    </ul>`;
 }
 
 async function runCooccurrence() {
 	const wrap = ensureSection("analysis-cooccurrence", "Code co-occurrence");
-	if (!wrap) return;
-	wrap.innerHTML = '<p>Loading co-occurrence…</p>';
-
+	wrap.innerHTML = "<p>Loading co-occurrence…</p>";
 	const res = await httpJSON(`/api/analysis/cooccurrence?project=${encodeURIComponent(state.projectId)}`);
 	const nodes = Array.isArray(res?.nodes) ? res.nodes : [];
 	const links = Array.isArray(res?.links) ? res.links : [];
 	updateJsonPanel({ nodes, links }, `cooccurrence-${state.projectId}.json`);
-
-	if (!links.length) {
-		wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>';
-		return;
-	}
-
+	if (!links.length) { wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>'; return; }
 	links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
 	wrap.innerHTML = `
     <table class="table">
       <caption>Code pairs by strength</caption>
-      <thead>
-        <tr><th>Source</th><th>Target</th><th>Weight</th></tr>
-      </thead>
+      <thead><tr><th>Source</th><th>Target</th><th>Weight</th></tr></thead>
       <tbody>
         ${links.map(l => `
           <tr>
-            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.source))}</span></td>
-            <td><span class="tag">${escapeHtml(nodeLabel(nodes, l.target))}</span></td>
-            <td>${escapeHtml(String(l.weight ?? 1))}</td>
+            <td><span class="tag">${esc(nodeLabel(nodes, l.source))}</span></td>
+            <td><span class="tag">${esc(nodeLabel(nodes, l.target))}</span></td>
+            <td>${esc(String(l.weight ?? 1))}</td>
           </tr>
         `).join("")}
       </tbody>
-    </table>
-  `;
+    </table>`;
 }
 
 function setupRetrievalUI() {
-	const wrap = ensureSection("analysis-retrieval", "Code/text retrieval");
-	if (!wrap) return;
+	const form = /** @type {HTMLFormElement|null} */ ($("#retrieval-form"));
+	const results = $("#retrieval-results");
+	if (!form || !results) return;
 
-	// Build only once
-	if (!document.getElementById("retrieval-form")) {
-		const form = document.createElement("form");
-		form.id = "retrieval-form";
-		form.noValidate = true;
-		form.innerHTML = `
-      <label for="retrieval-q">Search term</label>
-      <input id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
-      <div class="hint">Searches code names and journal text.</div>
-      <button type="submit">Run search</button>
-      <div id="retrieval-results" class="analysis-results"><p class="hint">Enter a term and run search.</p></div>`;
-		wrap.appendChild(form);
-	}
-
-	const form = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
-	const input = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
-	const results = document.getElementById("retrieval-results");
-	if (!form || !input || !results) return;
-
-	// Prevent duplicate listeners
 	form.replaceWith(form.cloneNode(true));
-	const newForm = /** @type {HTMLFormElement} */ (document.getElementById("retrieval-form"));
-	const newInput = /** @type {HTMLInputElement} */ (document.getElementById("retrieval-q"));
-	const newResults = document.getElementById("retrieval-results");
+	const f = /** @type {HTMLFormElement} */ ($("#retrieval-form"));
+	const q = /** @type {HTMLInputElement} */ ($("#retrieval-q"));
 
-	newForm.addEventListener("submit", async (e) => {
+	f.addEventListener("submit", async (e) => {
 		e.preventDefault();
-		const q = (newInput.value || "").trim();
-		if (!q) { newResults.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
-
-		newResults.innerHTML = '<p>Searching…</p>';
-		const res = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(state.projectId)}&q=${encodeURIComponent(q)}`);
+		const term = (q?.value || "").trim();
+		if (!term) { results.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
+		results.innerHTML = "<p>Searching…</p>";
+		const res = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(state.projectId)}&q=${encodeURIComponent(term)}`);
 		const out = Array.isArray(res?.results) ? res.results : [];
-		updateJsonPanel({ query: q, results: out }, `retrieval-${state.projectId}.json`);
-
-		if (!out.length) {
-			newResults.innerHTML = '<p class="hint">No matches found.</p>';
-			return;
-		}
-
-		newResults.innerHTML = `
+		updateJsonPanel({ query: term, results: out }, `retrieval-${state.projectId}.json`);
+		if (!out.length) { results.innerHTML = '<p class="hint">No matches found.</p>'; return; }
+		const termRx = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+		results.innerHTML = `
       <ul class="analysis-list analysis-list--spaced" aria-live="polite">
         ${out.map(r => `
           <li>
             <h5 class="analysis-subheading">
-              ${r.codes.map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join(" ")}
+              ${r.codes.map(c => `<span class="tag">${esc(c.name)}</span>`).join(" ")}
             </h5>
-            <p>${highlightSnippet(r.snippet, q)}</p>
-          </li>
-        `).join("")}
-      </ul>
-    `;
+            <p>${esc(r.snippet).replace(termRx, m => `<mark>${m}</mark>`)}</p>
+          </li>`).join("")}
+      </ul>`;
 	});
 }
 
-function highlightSnippet(text, term) {
-	if (!text || !term) return escapeHtml(text || "");
-	const escTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	return escapeHtml(text).replace(new RegExp(escTerm, "ig"), m => `<mark>${m}</mark>`);
+function setupAnalysisButtons() {
+	(document.getElementById("analysis-panel") || document).addEventListener("click", (e) => {
+		const t = e.target?.closest?.("[data-analysis]");
+		if (!t) return;
+		e.preventDefault();
+		const mode = t.dataset.analysis;
+		if (mode === "timeline") return void runTimeline();
+		if (mode === "co-occurrence") return void runCooccurrence();
+		if (mode === "retrieval") return void setupRetrievalUI();
+		if (mode === "export") return void runExport();
+	});
 }
 
 async function runExport() {
@@ -832,96 +676,49 @@ async function runExport() {
 	}
 }
 
-/**
- * Robust wiring for Analysis buttons.
- * Delegates on #analysis-panel and (fallback) on document.
- */
-function setupAnalysisTools() {
-	const handler = (e) => {
-		const target = e.target && typeof e.target.closest === 'function' ?
-			/** @type {HTMLElement|null} */
-			(e.target.closest('[data-analysis]')) :
-			null;
-		if (!target) return;
-		e.preventDefault();
-		const mode = target.dataset.analysis;
-		if (mode === 'timeline') return void runTimeline();
-		if (mode === 'co-occurrence') return void runCooccurrence();
-		if (mode === 'retrieval') return void setupRetrievalUI();
-		if (mode === 'export') return void runExport();
-	};
-
-	(document.getElementById('analysis-panel') || document).addEventListener('click', handler);
-	document.addEventListener('click', handler); // belt-and-braces
-
-	// Friendly placeholders on first load
-	ensureSection("analysis-timeline", "Timeline")
-		?.replaceChildren(elFromHTML('<p class="hint">Timeline not loaded yet.</p>'));
-	ensureSection("analysis-cooccurrence", "Code co-occurrence")
-		?.replaceChildren(elFromHTML('<p class="hint">Co-occurrence not loaded yet.</p>'));
-	setupRetrievalUI(); // create retrieval form once
+/* ---------------------------
+ * Load-on-tab logic (no visibility changes here)
+ * --------------------------- */
+function activeTabId() {
+	if (location.hash) return location.hash.replace(/^#/, "");
+	const sel = $(".govuk-tabs__list-item--selected .govuk-tabs__tab");
+	return sel?.getAttribute("href")?.slice(1) || "journal-entries";
 }
 
-/* =========================
- * Tabs integration helpers
- * ========================= */
-function isJournalActiveOnLoad() {
-	// CRITICAL: Check hash FIRST before checking DOM state
-	const hash = (location.hash || '').replace(/^#/, '');
-	if (hash) {
-		return hash === 'journal-entries';
-	}
-
-	// Fallback: check selected tab in DOM
-	const selected = document.querySelector(".govuk-tabs__list-item--selected .govuk-tabs__tab");
-	if (selected) {
-		return (selected.getAttribute("href") || "").replace(/^#/, "") === "journal-entries";
-	}
-
-	// Default: first tab is Journal
-	return true;
+function loadForTab(id) {
+	if (id === "journal-entries") loadEntries();
+	if (id === "codes") loadCodes();
+	if (id === "memos") loadMemos();
+	// analysis tab only wires UI on demand; data loads via its buttons
 }
 
-/* =========================
- * Boot
- * ========================= */
+/* ---------------------------
+ * Bootstrap
+ * --------------------------- */
 async function init() {
 	const url = new URL(location.href);
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
 
-	if (!state.projectId) {
-		flash("No project id in URL. Some features disabled.");
-		return;
-	}
-
-	// Wire buttons/forms
 	setupNewEntryWiring();
 	setupAddCodeWiring();
 	setupNewMemoWiring();
-	setupAnalysisTools();
+	setupAnalysisButtons();
+	setupRetrievalUI();
 
-	// Load codes/memos early (codes used to populate Parent dropdown)
+	// Preload codes/memos (cheap) so parent dropdown & memos tab feel instant.
 	await Promise.allSettled([loadCodes(), loadMemos()]);
 
-	// DON'T manipulate panel visibility - tabs.js handles that
-	// ONLY load data for the initially active tab
-	const initialHash = (location.hash || '#journal-entries').replace(/^#/, '');
-	
-	if (initialHash === 'journal-entries') {
-		await loadEntries();
-	}
+	// Initial tab data load (visibility is handled by tabs.js)
+	loadForTab(activeTabId());
 
-	// Listen for tab changes to load content on demand
+	// When tabs.js switches tabs it should emit 'tab:shown' with {id}
 	document.addEventListener("tab:shown", (e) => {
-		const tabId = e?.detail?.id;
-		if (tabId === "journal-entries") {
-			loadEntries();
-		} else if (tabId === "codes") {
-			renderCodes(); // Refresh display
-		} else if (tabId === "memos") {
-			renderMemos(); // Refresh display
-		}
+		const id = e?.detail?.id;
+		if (id) loadForTab(id);
 	});
+
+	// Fallback for deep links/back/forward if tabs.js updates hash
+	window.addEventListener("hashchange", () => loadForTab(activeTabId()));
 }
 
 document.addEventListener("DOMContentLoaded", init);
