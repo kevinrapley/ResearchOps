@@ -194,7 +194,8 @@ export async function listCodes(service, origin, url) {
  */
 export async function createCode(service, request, origin) {
 	const cors = service.corsHeaders(origin);
-	const urlObj = new URL(request.url);
+	const urlObj = new URL(request.url); // so diag=1 on the query string works
+
 	try {
 		const body = await request.json().catch(() => ({}));
 		const name = (body.name || "").trim();
@@ -209,44 +210,79 @@ export async function createCode(service, request, origin) {
 		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8";
 		const colourHex8 = normaliseHex8(inputColour);
 
-		// Detect the actual linked Project field label (matches listCodes behaviour)
+		// Detect actual linked field label for the project (mirrors listCodes)
 		const table = TABLE(service);
 		let projectFieldLabel = "Project";
 		if (projectId) {
 			try {
 				const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
 				const detected = detectProjectFieldFromSample(sample.records || []);
-				if (detected) {
-					projectFieldLabel = detected;
-				}
+				if (detected) projectFieldLabel = detected;
 			} catch (_e) {
-				// fall back to default "Project"
+				// keep default "Project"
 			}
 		}
 
-		// Build fields object without spread literals
+		// Build fields without spread
 		const fields = {};
 		fields["Name"] = name;
 		fields["Definition"] = body.description || body.definition || "";
-		fields["Colour"] = colourHex8;
+		fields["Colour"] = colourHex8; // #RRGGBBAA
 
-		if (projectId) {
-			fields[projectFieldLabel] = [projectId];
-		}
-		if (parentId) {
-			fields["Parent"] = [parentId];
+		if (projectId) fields[projectFieldLabel] = [projectId];
+		if (parentId) fields["Parent"] = [parentId];
+
+		// DEBUG: server-side logging
+		service.log.info("codes.create: preflight", {
+			table,
+			projectFieldLabel,
+			fields
+		});
+
+		let resp;
+		try {
+			resp = await createRecords(service.env, table, [{ fields }]);
+		} catch (airErr) {
+			// Surface rich diagnostics when ?diag=1 is present
+			const bodyOut = { ok: false, error: "Internal error" };
+			const diag = {
+				stage: "createRecords",
+				table,
+				fields,
+				airtableError: String(airErr)
+			};
+			const extra = maybeDiag(service, urlObj, diag);
+			if (extra) Object.assign(bodyOut, { diag: extra });
+			service.log.error("codes.create airtable error", diag);
+			return service.json(bodyOut, 500, cors);
 		}
 
-		const resp = await createRecords(service.env, table, [{ fields }]);
 		const record = (resp.records || [])[0] || null;
-		return service.json({ ok: true, record: record ? mapCodeRecord(record) : null }, 201, cors);
+
+		// DEBUG: success log
+		service.log.info("codes.create: success", {
+			createdId: record?.id || null,
+			fieldsOut: record?.fields || null
+		});
+
+		const out = { ok: true, record: record ? mapCodeRecord(record) : null };
+
+		// If requested, echo diagnostics
+		const maybe = maybeDiag(service, urlObj, {
+			table,
+			projectFieldLabel,
+			fieldsSubmitted: fields,
+			rawResponse: resp
+		});
+		if (maybe) Object.assign(out, { diag: maybe });
+
+		return service.json(out, 201, cors);
 	} catch (err) {
-		service.log.error("codes.create", { err: String(err) });
-		const body = { ok: false, error: "Internal error" };
-		// Use the real request URL so `?diag=1` works
-		const extra = maybeDiag(service, urlObj, { diag: String(err) });
-		if (extra) Object.assign(body, extra);
-		return service.json(body, 500, cors);
+		const bodyOut = { ok: false, error: "Internal error" };
+		const extra = maybeDiag(service, urlObj, { stage: "handler-catch", err: String(err) });
+		if (extra) Object.assign(bodyOut, { diag: extra });
+		service.log.error("codes.create handler error", { err: String(err) });
+		return service.json(bodyOut, 500, cors);
 	}
 }
 
