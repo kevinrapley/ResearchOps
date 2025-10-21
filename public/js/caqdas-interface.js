@@ -203,7 +203,7 @@ function setupNewEntryWiring() {
  * Codes (Coloris + parent select)
  * --------------------------- */
 function toHex8(input) {
-	if (!input) return "#505a5fff";
+	if (!input) return "#1d70b8ff";
 	let v = String(input).trim().toLowerCase();
 	if (/^#[0-9a-f]{8}$/.test(v)) return v; // #rrggbbaa
 	if (/^#[0-9a-f]{6}$/.test(v)) return v + "ff"; // #rrggbb → +ff
