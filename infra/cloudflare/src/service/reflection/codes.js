@@ -61,7 +61,7 @@ function mapCodeRecord(r) {
 		id: r.id,
 		name: f["Name"] || f["Code"] || f["Short Name"] || "",
 		description: f["Definition"] || f["Description"] || "",
-		colour: f["Colour"] || f["Color"] || "#505a5f",
+		colour: normaliseHex8(f["Colour"] || f["Color"] || "#505a5fff"),
 		parentId,
 		projectId
 	};
@@ -211,10 +211,16 @@ export async function createCode(service, request, origin) {
 		const fields = {
 			"Name": name,
 			"Definition": body.description || body.definition || "",
-			"Colour": colourHex8, // always #RRGGBBAA
-			...(projectId ? { "Project": [projectId] } : {}),
-			...(parentId ? { "Parent": [parentId] } : {})
+			"Colour": colourHex8
 		};
+
+		if (projectId) {
+			fields["Project"] = [projectId];
+		}
+
+		if (parentId) {
+			fields["Parent"] = [parentId];
+		}
 
 		const resp = await createRecords(service.env, TABLE(service), [{ fields }]);
 		const record = (resp.records || [])[0] || null;
@@ -242,9 +248,13 @@ export async function updateCode(service, request, origin, codeId) {
 		if ("description" in body || "definition" in body) {
 			fields["Definition"] = body.description || body.definition || "";
 		}
-		if ("colour" in body || "color" in body) {
-			fields["Colour"] = body.colour || body.color || "#1d70b8";
+
+		// Always store 8-digit hex
+		if ("colour" in body || "color" in body || "colour8" in body || "color8" in body) {
+			const input = body.colour8 ?? body.color8 ?? body.colour ?? body.color ?? "";
+			fields["Colour"] = normaliseHex8(input);
 		}
+
 		if ("parentId" in body || "parent" in body) {
 			const v = body.parentId || body.parent || null;
 			fields["Parent"] = v ? [v] : [];
