@@ -165,17 +165,29 @@ function setupNewEntryWiring() {
 		const name = (nameEl?.value || "").trim();
 		if (!name) { flash("Please enter a code name."); return; }
 
-		const hex8 = toHex8(colourEl?.value || "#505a5fff");
-		const parentId = (parentSel?.value || "").trim() || undefined;
+		// Always send #RRGGBBAA (Coloris returns hex; we normalise defensively)
+		const colour = toHex8(colourEl?.value || "#1d70b8ff");
 
-		const payload = { name: name, projectId: state.projectId, colour: hex8, color: hex8, description: (descEl?.value || "").trim(), parentId: parentId };
+		const payload = {
+			name: name,
+			projectId: state.projectId,
+			colour: colour,
+			description: (descEl?.value || "").trim(),
+			parentId: (parentSel?.value || "").trim() || null
+		};
 
 		try {
-			await httpJSON("/api/codes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+			await httpJSON("/api/codes", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+
 			if (nameEl) nameEl.value = "";
-			if (colourEl) colourEl.value = "#505a5fff";
+			if (colourEl) colourEl.value = "#1d70b8ff";
 			if (descEl) descEl.value = "";
 			if (parentSel) parentSel.value = "";
+
 			form.hidden = true;
 			flash(`Code “${name}” created.`);
 			await loadCodes();
@@ -198,9 +210,9 @@ function toHex8(input) {
 	if (/^#[0-9a-f]{3}$/.test(v)) // #rgb → #rrggbbff
 		return "#" + v.slice(1).split("").map(ch => ch + ch).join("") + "ff";
 	const ctx = document.createElement("canvas").getContext("2d");
-	try { ctx.fillStyle = v; } catch { return "#505a5fff"; }
+	try { ctx.fillStyle = v; } catch { return "#1d70b8ff"; }
 	const hex6 = ctx.fillStyle; // browser → #rrggbb
-	return /^#[0-9a-f]{6}$/i.test(hex6) ? hex6 + "ff" : "#505a5fff";
+	return /^#[0-9a-f]{6}$/i.test(hex6) ? hex6 + "ff" : "#1d70b8ff";
 }
 
 function ensureCodeForm() {
