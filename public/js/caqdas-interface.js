@@ -234,28 +234,50 @@ function setupNewEntryWiring() {
 		}
 	});
 }
-
+/* ---------------------------
+ * Journal: filter chips (event delegation, keyboard accessible)
+ * --------------------------- */
 function setupEntryFilters() {
-	const chips = document.querySelectorAll('.filter-chip[data-filter]');
-	if (!chips.length) return;
+	const container = document.querySelector('#journal-entries-panel .filter-chips');
+	if (!container) return;
 
-	// Detect the initially active chip (fallback to "all")
-	const initial = document.querySelector('.filter-chip.filter-chip--active')?.dataset.filter || "all";
-	state.entryFilter = initial;
+	// Initial state from the already-active chip (fallback to "all")
+	const initial = container.querySelector('.filter-chip--active')?.dataset.filter || 'all';
+	state.entryFilter = (initial || 'all').toLowerCase();
 
-	chips.forEach(btn => {
-		btn.addEventListener('click', (e) => {
-			const target = /** @type {HTMLElement} */ (e.currentTarget);
-			const value = (target.dataset.filter || "all").toLowerCase();
+	// Clicks
+	container.addEventListener('click', (e) => {
+		const btn = e.target && e.target.closest ? e.target.closest('.filter-chip') : null;
+		if (!btn || !container.contains(btn)) return;
+		e.preventDefault();
 
-			// Toggle classes
-			chips.forEach(c => c.classList.remove('filter-chip--active'));
-			target.classList.add('filter-chip--active');
-
-			// Store + re-render
-			state.entryFilter = value;
-			renderEntries();
+		container.querySelectorAll('.filter-chip').forEach(b => {
+			b.classList.remove('filter-chip--active');
+			b.setAttribute('aria-pressed', 'false');
 		});
+
+		btn.classList.add('filter-chip--active');
+		btn.setAttribute('aria-pressed', 'true');
+
+		state.entryFilter = (btn.dataset.filter || 'all').toLowerCase();
+		renderEntries();
+	});
+
+	// Keyboard (Space/Enter)
+	container.addEventListener('keydown', (e) => {
+		const key = e.key || e.code;
+		if (key !== 'Enter' && key !== ' ') return;
+		const btn = e.target && e.target.closest ? e.target.closest('.filter-chip') : null;
+		if (!btn || !container.contains(btn)) return;
+		e.preventDefault();
+		btn.click();
+	});
+
+	// Ensure chips are toggle buttons for SRs
+	container.querySelectorAll('.filter-chip').forEach(b => {
+		b.setAttribute('role', 'button');
+		b.setAttribute('aria-pressed', b.classList.contains('filter-chip--active') ? 'true' : 'false');
+		b.tabIndex = b.tabIndex || 0;
 	});
 }
 
