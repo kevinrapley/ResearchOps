@@ -233,7 +233,7 @@ function ensureCodeForm() {
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="code-colour">Colour</label>
-      <input class="govuk-input" id="code-colour" name="colour" data-coloris value="#505a5fff" />
+      <input class="govuk-input" id="code-colour" name="colour" data-coloris value="#1d70b8ff" />
     </div>
 
     <div class="govuk-form-group" id="code-parent-wrap" hidden>
@@ -300,7 +300,7 @@ function renderCodes(error = false) {
 	if (!state.codes.length) { wrap.innerHTML = "<p>No codes yet.</p>"; return; }
 
 	wrap.innerHTML = state.codes.map(c => {
-		const colour = toHex8(c.colour || c.color || "#505a5fff");
+		const colour = toHex8(c.colour || c.color || "#1d70b8ff");
 		return `
       <article class="code-card" data-id="${c.id}">
         <header>
