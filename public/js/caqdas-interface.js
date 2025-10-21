@@ -117,27 +117,26 @@ async function loadEntries() {
 }
 
 function renderEntries() {
-	const wrap = $("#entries-container");
-	const empty = $("#empty-journal");
+	const wrap = document.getElementById("entries-container");
+	const empty = document.getElementById("empty-journal");
 	if (!wrap) return;
 
-	// Filter entries by active category
 	const filter = (state.entryFilter || "all").toLowerCase();
+
+	// choose the items to render based on the active filter
 	const items = (state.entries || []).filter(en => {
 		if (filter === "all") return true;
 		return String(en.category || "").toLowerCase() === filter;
 	});
 
-	// Empty state
-	if (!state.entries.length) {
+	if (!items.length) {
 		wrap.innerHTML = "";
 		if (empty) empty.hidden = false;
 		return;
 	}
 	if (empty) empty.hidden = true;
 
-	// Render only filtered items
-	wrap.innerHTML = state.entries.map(en => `
+	wrap.innerHTML = items.map(en => `
     <article class="entry-card" data-id="${en.id}" data-category="${en.category}">
       <div class="entry-header">
         <div class="entry-meta">
@@ -148,12 +147,14 @@ function renderEntries() {
           <button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
         </div>
       </div>
-      <div class="entry-content">${esc(en.content)}</div>
-      <div class="entry-tags">${(en.tags||[]).map(t => `<span class="filter-chip">${esc(t)}</span>`).join("")}</div>
+      <div class="entry-content">${esc(en.content || "")}</div>
+      <div class="entry-tags">
+        ${(en.tags || []).map(t => `<span class="filter-chip">${esc(t)}</span>`).join("")}
+      </div>
     </article>
   `).join("");
 
-	// Hook delete buttons
+	// hook delete handlers
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
@@ -241,14 +242,21 @@ function setupEntryFilters() {
 	const container = document.querySelector('#journal-entries-panel .filter-chips');
 	if (!container) return;
 
-	// Initial state from the already-active chip (fallback to "all")
+	// initialise from current active chip
 	const initial = container.querySelector('.filter-chip--active')?.dataset.filter || 'all';
 	state.entryFilter = (initial || 'all').toLowerCase();
 
-	// Clicks
+	// ensure chips are keyboard/ARIA-friendly
+	container.querySelectorAll('.filter-chip').forEach(b => {
+		b.setAttribute('role', 'button');
+		b.setAttribute('aria-pressed', b.classList.contains('filter-chip--active') ? 'true' : 'false');
+		if (!b.hasAttribute('tabindex')) b.tabIndex = 0;
+	});
+
+	// click to set filter
 	container.addEventListener('click', (e) => {
-		const btn = e.target && e.target.closest ? e.target.closest('.filter-chip') : null;
-		if (!btn || !container.contains(btn)) return;
+		const btn = e.target?.closest?.('.filter-chip');
+		if (!btn) return;
 		e.preventDefault();
 
 		container.querySelectorAll('.filter-chip').forEach(b => {
@@ -260,24 +268,16 @@ function setupEntryFilters() {
 		btn.setAttribute('aria-pressed', 'true');
 
 		state.entryFilter = (btn.dataset.filter || 'all').toLowerCase();
-		renderEntries();
+		renderEntries(); // re-render with filter applied
 	});
 
-	// Keyboard (Space/Enter)
+	// keyboard support (Enter/Space)
 	container.addEventListener('keydown', (e) => {
-		const key = e.key || e.code;
-		if (key !== 'Enter' && key !== ' ') return;
-		const btn = e.target && e.target.closest ? e.target.closest('.filter-chip') : null;
-		if (!btn || !container.contains(btn)) return;
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		const btn = e.target?.closest?.('.filter-chip');
+		if (!btn) return;
 		e.preventDefault();
 		btn.click();
-	});
-
-	// Ensure chips are toggle buttons for SRs
-	container.querySelectorAll('.filter-chip').forEach(b => {
-		b.setAttribute('role', 'button');
-		b.setAttribute('aria-pressed', b.classList.contains('filter-chip--active') ? 'true' : 'false');
-		b.tabIndex = b.tabIndex || 0;
 	});
 }
 
