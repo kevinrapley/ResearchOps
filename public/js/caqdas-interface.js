@@ -165,18 +165,26 @@ function setupNewEntryWiring() {
 		const name = (nameEl?.value || "").trim();
 		if (!name) { flash("Please enter a code name."); return; }
 
-		const hex8 = toHex8(colourEl?.value || "#505a5f");
+		// Always produce both formats
+		const hex8 = toHex8(colourEl?.value || "#505a5fff"); // #RRGGBBAA
+		const hex6 = hex8.slice(0, 7); // #RRGGBB
+
 		const parentId = (parentSel?.value || "").trim() || null;
 
 		const payload = {
 			name,
 			projectId: state.projectId,
+			// Prefer 8-digit (API now accepts it), also include 6-digit for older handlers
 			colour: hex8,
+			color: hex8,
+			colour6: hex6,
+			color6: hex6,
 			description: (descEl?.value || "").trim(),
 			...(parentId ? { parentId } : {})
 		};
 
-		const url = `/api/codes?project=${encodeURIComponent(state.projectId)}`;
+		// Add diag=1 so the server includes a concrete error message if it still fails
+		const url = `/api/codes?project=${encodeURIComponent(state.projectId)}&diag=1`;
 
 		try {
 			await httpJSON(url, {
@@ -184,12 +192,14 @@ function setupNewEntryWiring() {
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify(payload)
 			});
+
 			if (nameEl) nameEl.value = "";
 			if (colourEl) colourEl.value = "#505a5f";
 			if (descEl) descEl.value = "";
 			if (parentSel) parentSel.value = "";
-			showForm(false);
+
 			flash(`Code “${name}” created.`);
+			form.hidden = true;
 			await loadCodes();
 			refreshParentSelector();
 		} catch (err) {
