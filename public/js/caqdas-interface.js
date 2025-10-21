@@ -88,7 +88,8 @@ const state = {
 	projectId: null,
 	entries: [],
 	codes: [],
-	memos: []
+	memos: [],
+	entryFilter: "all"
 };
 
 /* ---------------------------
@@ -120,6 +121,14 @@ function renderEntries() {
 	const empty = $("#empty-journal");
 	if (!wrap) return;
 
+	// Filter entries by active category
+	const filter = (state.entryFilter || "all").toLowerCase();
+	const items = (state.entries || []).filter(en => {
+		if (filter === "all") return true;
+		return String(en.category || "").toLowerCase() === filter;
+	});
+
+	// Empty state
 	if (!state.entries.length) {
 		wrap.innerHTML = "";
 		if (empty) empty.hidden = false;
@@ -127,6 +136,7 @@ function renderEntries() {
 	}
 	if (empty) empty.hidden = true;
 
+	// Render only filtered items
 	wrap.innerHTML = state.entries.map(en => `
     <article class="entry-card" data-id="${en.id}" data-category="${en.category}">
       <div class="entry-header">
@@ -143,6 +153,7 @@ function renderEntries() {
     </article>
   `).join("");
 
+	// Hook delete buttons
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
@@ -221,6 +232,30 @@ function setupNewEntryWiring() {
 			console.error(err);
 			flash("Could not create code.");
 		}
+	});
+}
+
+function setupEntryFilters() {
+	const chips = document.querySelectorAll('.filter-chip[data-filter]');
+	if (!chips.length) return;
+
+	// Detect the initially active chip (fallback to "all")
+	const initial = document.querySelector('.filter-chip.filter-chip--active')?.dataset.filter || "all";
+	state.entryFilter = initial;
+
+	chips.forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = /** @type {HTMLElement} */ (e.currentTarget);
+			const value = (target.dataset.filter || "all").toLowerCase();
+
+			// Toggle classes
+			chips.forEach(c => c.classList.remove('filter-chip--active'));
+			target.classList.add('filter-chip--active');
+
+			// Store + re-render
+			state.entryFilter = value;
+			renderEntries();
+		});
 	});
 }
 
@@ -793,6 +828,7 @@ async function init() {
 	state.projectId = url.searchParams.get("project") || url.searchParams.get("id") || "";
 
 	setupNewEntryWiring();
+	setupEntryFilters();
 	setupAddCodeWiring();
 	setupNewMemoWiring();
 	setupAnalysisButtons();
