@@ -40,13 +40,38 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	try { return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init }); } finally { clearTimeout(t); }
 }
 async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
-	const res = await fetchWithTimeout(url, init, timeoutMs);
-	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(`HTTP ${res.status}${detail ? ` — ${detail}` : ""}`);
+	const ctrl = new AbortController();
+	const t = setTimeout(() => ctrl.abort(), timeoutMs);
+
+	// DEBUG: log outgoing request
+	console.groupCollapsed("[httpJSON] →", init?.method || "GET", url);
+	if (init?.headers) console.debug("headers:", init.headers);
+	if (init?.body) {
+		try { console.debug("body:", JSON.parse(init.body)); } catch { console.debug("body(text):", init.body); }
 	}
+	console.groupEnd();
+
+	let res;
+	try {
+		res = await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init });
+	} finally {
+		clearTimeout(t);
+	}
+
+	// DEBUG: log response (status + body text)
 	const ct = (res.headers.get("content-type") || "").toLowerCase();
-	return ct.includes("application/json") ? res.json() : {};
+	let rawText = "";
+	try { rawText = await res.clone().text(); } catch {}
+
+	console.groupCollapsed("[httpJSON] ←", res.status, url);
+	console.debug("ok:", res.ok, "status:", res.status, "content-type:", ct);
+	if (rawText) console.debug("raw:", rawText);
+	console.groupEnd();
+
+	if (!res.ok) {
+		throw new Error(`HTTP ${res.status}${rawText ? ` — ${rawText}` : ""}`);
+	}
+	return ct.includes("application/json") ? JSON.parse(rawText || "{}") : {};
 }
 const esc = (s) => {
 	if (!s) return "";
@@ -374,25 +399,39 @@ function setupAddCodeWiring() {
 		};
 
 		try {
-			await httpJSON("/api/codes", {
+			const payloadForLog = {
+				name: name,
+				projectId: state.projectId,
+				colour: hex8,
+				description: (descEl?.value || "").trim(),
+				parentId: parentId
+			};
+			console.groupCollapsed("[codes] POST payload");
+			console.debug(payloadForLog);
+			console.groupEnd();
+
+			// NOTE: add ?diag=1 so server returns diagnostics in JSON on error
+			const res = await httpJSON("/api/codes?diag=1", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
-				body: JSON.stringify(payload)
+				body: JSON.stringify(payloadForLog)
 			});
+
+			console.debug("[codes] POST ok:", res);
 
 			// reset fields
 			if (nameEl) nameEl.value = "";
-			if (colourEl) colourEl.value = "#505a5f"; // input value (no alpha); API received hex8 above
+			if (colourEl) colourEl.value = "#1d70b8ff";
 			if (descEl) descEl.value = "";
 			if (parentSel) parentSel.value = "";
 
 			showForm(false);
-			flash(`Code “${payload.name}” created.`);
+			flash(`Code “${name}” created.`);
 			await loadCodes();
 			refreshParentSelector();
 		} catch (err) {
-			console.error(err);
-			flash("Could not create code.");
+			console.error("[codes] POST failed:", err);
+			flash("Could not create code (see console for diagnostics).");
 		}
 	});
 }
