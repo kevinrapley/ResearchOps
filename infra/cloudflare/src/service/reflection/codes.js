@@ -13,6 +13,22 @@ import { listAll, createRecords, patchRecords } from "../internals/airtable.js";
 const DEFAULT_TABLE = "Codes";
 const TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || DEFAULT_TABLE;
 
+// Helper to normalise hexadecimal colour value to 8-digit alpha
+function normaliseHex8(v) {
+	let val = String(v || "").trim().toLowerCase();
+	if (!val.startsWith("#")) val = "#" + val;
+	// #RGB → #RRGGBB
+	if (/^#[0-9a-f]{3}$/.test(val)) {
+		val = "#" + val.slice(1).split("").map(ch => ch + ch).join("");
+	}
+	// #RRGGBB → #RRGGBBAA (opaque)
+	if (/^#[0-9a-f]{6}$/.test(val)) return val + "ff";
+	// #RRGGBBAA → keep
+	if (/^#[0-9a-f]{8}$/.test(val)) return val;
+	// Fallback to GOV.UK blue with full alpha
+	return "#1d70b8ff";
+}
+
 /**
  * Conditionally include diagnostics (dev or diag=1).
  * @param {import("../index.js").ServiceContext} service
@@ -189,10 +205,13 @@ export async function createCode(service, request, origin) {
 
 		// Default to "Project" column label; if your base uses a different label,
 		// the listCodes detector will still work for reading/filtering.
+		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8";
+		const colourHex8 = normaliseHex8(inputColour);
+
 		const fields = {
 			"Name": name,
 			"Definition": body.description || body.definition || "",
-			"Colour": body.colour || body.color || "#1d70b8",
+			"Colour": colourHex8, // always #RRGGBBAA
 			...(projectId ? { "Project": [projectId] } : {}),
 			...(parentId ? { "Parent": [parentId] } : {})
 		};
