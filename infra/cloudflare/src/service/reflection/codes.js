@@ -61,7 +61,7 @@ function mapCodeRecord(r) {
 		id: r.id,
 		name: f["Name"] || f["Code"] || f["Short Name"] || "",
 		description: f["Definition"] || f["Description"] || "",
-		colour: normaliseHex8(f["Colour"] || f["Color"] || "#505a5fff"),
+		colour: normaliseHex8(f["Colour"] || f["Color"] || "#1d70b8ff"),
 		parentId,
 		projectId
 	};
@@ -190,9 +190,11 @@ export async function listCodes(service, origin, url) {
 /**
  * POST /api/codes
  * Accepts scalar projectId; writes array for Airtable linked field.
+ * Stores colour as 8-digit hex (#RRGGBBAA).
  */
 export async function createCode(service, request, origin) {
 	const cors = service.corsHeaders(origin);
+	const urlObj = new URL(request.url);
 	try {
 		const body = await request.json().catch(() => ({}));
 		const name = (body.name || "").trim();
@@ -203,32 +205,46 @@ export async function createCode(service, request, origin) {
 		const projectId = body.projectId || body.project || null;
 		const parentId = body.parentId || body.parent || null;
 
-		// Default to "Project" column label; if your base uses a different label,
-		// the listCodes detector will still work for reading/filtering.
+		// Always normalise to 8-digit hex
 		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8";
 		const colourHex8 = normaliseHex8(inputColour);
 
-		const fields = {
-			"Name": name,
-			"Definition": body.description || body.definition || "",
-			"Colour": colourHex8
-		};
-
+		// Detect the actual linked Project field label (matches listCodes behaviour)
+		const table = TABLE(service);
+		let projectFieldLabel = "Project";
 		if (projectId) {
-			fields["Project"] = [projectId];
+			try {
+				const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
+				const detected = detectProjectFieldFromSample(sample.records || []);
+				if (detected) {
+					projectFieldLabel = detected;
+				}
+			} catch (_e) {
+				// fall back to default "Project"
+			}
 		}
 
+		// Build fields object without spread literals
+		const fields = {};
+		fields["Name"] = name;
+		fields["Definition"] = body.description || body.definition || "";
+		fields["Colour"] = colourHex8;
+
+		if (projectId) {
+			fields[projectFieldLabel] = [projectId];
+		}
 		if (parentId) {
 			fields["Parent"] = [parentId];
 		}
 
-		const resp = await createRecords(service.env, TABLE(service), [{ fields }]);
+		const resp = await createRecords(service.env, table, [{ fields }]);
 		const record = (resp.records || [])[0] || null;
 		return service.json({ ok: true, record: record ? mapCodeRecord(record) : null }, 201, cors);
 	} catch (err) {
 		service.log.error("codes.create", { err: String(err) });
 		const body = { ok: false, error: "Internal error" };
-		const extra = maybeDiag(service, new URL("http://local/"), { diag: String(err) }); // local URL to satisfy signature
+		// Use the real request URL so `?diag=1` works
+		const extra = maybeDiag(service, urlObj, { diag: String(err) });
 		if (extra) Object.assign(body, extra);
 		return service.json(body, 500, cors);
 	}
