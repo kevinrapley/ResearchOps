@@ -89,7 +89,8 @@ const state = {
 	entries: [],
 	codes: [],
 	memos: [],
-	entryFilter: "all"
+	entryFilter: "all",
+	memoFilter: "all"
 };
 
 /* ---------------------------
@@ -509,19 +510,16 @@ async function loadMemos() {
 }
 
 function renderMemos(error = false) {
-	const wrap = $("#memos-container");
+	const wrap = document.getElementById("memos-container");
 	if (!wrap) return;
 	if (error) { wrap.innerHTML = "<p>Could not load memos.</p>"; return; }
 
-	const active =
-		document.querySelector('.filter-btn.active')?.dataset.memoFilter ||
-		document.querySelector('.filter-chip.filter-chip--active')?.dataset.memoFilter ||
-		"all";
+	const filter = (state.memoFilter || "all").toLowerCase();
 
 	const items = (state.memos || []).filter(m => {
-		if (active === "all") return true;
+		if (filter === "all") return true;
 		const t = (m.memoType || m.type || "").toLowerCase();
-		return t === active.toLowerCase();
+		return t === filter;
 	});
 
 	if (!items.length) { wrap.innerHTML = "<p>No memos yet.</p>"; return; }
@@ -628,6 +626,49 @@ function setupNewMemoWiring() {
 			else t.classList.add("active");
 			renderMemos();
 		});
+	});
+}
+
+function setupMemoFilters() {
+	const container = document.querySelector('#memos-panel .filter-chips');
+	if (!container) return;
+
+	// initialise from current active chip
+	const initial = container.querySelector('.filter-chip--active')?.dataset.memoFilter || 'all';
+	state.memoFilter = (initial || 'all').toLowerCase();
+
+	// make chips accessible
+	container.querySelectorAll('.filter-chip').forEach(b => {
+		b.setAttribute('role', 'button');
+		b.setAttribute('aria-pressed', b.classList.contains('filter-chip--active') ? 'true' : 'false');
+		if (!b.hasAttribute('tabindex')) b.tabIndex = 0;
+	});
+
+	// click handler
+	container.addEventListener('click', (e) => {
+		const btn = e.target?.closest?.('.filter-chip');
+		if (!btn) return;
+		e.preventDefault();
+
+		container.querySelectorAll('.filter-chip').forEach(b => {
+			b.classList.remove('filter-chip--active');
+			b.setAttribute('aria-pressed', 'false');
+		});
+
+		btn.classList.add('filter-chip--active');
+		btn.setAttribute('aria-pressed', 'true');
+
+		state.memoFilter = (btn.dataset.memoFilter || 'all').toLowerCase();
+		renderMemos();
+	});
+
+	// keyboard (Enter/Space)
+	container.addEventListener('keydown', (e) => {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		const btn = e.target?.closest?.('.filter-chip');
+		if (!btn) return;
+		e.preventDefault();
+		btn.click();
 	});
 }
 
@@ -853,6 +894,7 @@ async function init() {
 	setupEntryFilters();
 	setupAddCodeWiring();
 	setupNewMemoWiring();
+	setupMemoFilters();
 	setupAnalysisButtons();
 	setupRetrievalUI();
 
