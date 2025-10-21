@@ -48,12 +48,8 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ct = (res.headers.get("content-type") || "").toLowerCase();
 	return ct.includes("application/json") ? res.json() : {};
 }
-const esc = (s) => {
-	if (!s) return "";
-	const d = document.createElement("div");
-	d.textContent = s;
-	return d.innerHTML;
-};
+const esc = (s) => { if (!s) return ""; const d = document.createElement("div");
+	d.textContent = s; return d.innerHTML; };
 const when = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 
 /* ---------------------------
@@ -150,14 +146,10 @@ function setupNewEntryWiring() {
 		if (show)($("#entry-content") || section.querySelector("textarea"))?.focus();
 	}
 
-	toggleBtn?.addEventListener("click", e => {
-		e.preventDefault();
-		toggleForm();
-	});
-	cancelBtn?.addEventListener("click", e => {
-		e.preventDefault();
-		toggleForm(false);
-	});
+	toggleBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(false); });
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -313,76 +305,70 @@ function setupAddCodeWiring() {
 	function showForm(show) {
 		if (!form) return;
 		form.hidden = !show;
-		if (show) {
-			refreshParentSelector();
-			nameEl?.focus();
-		}
+		if (show) { refreshParentSelector();
+			nameEl?.focus(); }
 	}
 
-	btn?.addEventListener("click", e => {
-		e.preventDefault();
-		showForm(form?.hidden ?? true);
-	});
-	cancelBtn?.addEventListener("click", e => {
-		e.preventDefault();
+	btn?.addEventListener("click", e => { e.preventDefault();
+		showForm(form?.hidden ?? true); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		showForm(false); });
+
+form?.addEventListener("submit", async (e) => {
+	e.preventDefault();
+
+	const name = (nameEl?.value || "").trim();
+	if (!name) { flash("Please enter a code name."); return; }
+
+	// Ensure we always send #RRGGBBAA
+	const hex8 = toHex8(colourEl?.value || "#505a5f");
+
+	const parentRaw = (parentSel?.value || "").trim();
+	const parentId = parentRaw || null;
+
+	// Send multiple aliases to satisfy stricter API schemas
+	const payload = {
+		name,
+
+		// project identifiers (aliases)
+		project: state.projectId,
+		projectId: state.projectId,
+		project_airtable_id: state.projectId,
+
+		// colour (aliases) as 8-digit hex
+		colour: hex8,
+		color: hex8,
+
+		// parent (aliases)
+		parentId: parentId || undefined,
+		parent_id: parentId || undefined,
+		parent: parentId || undefined,
+
+		description: (descEl?.value || "").trim()
+	};
+
+	try {
+		await httpJSON("/api/codes", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(payload)
+		});
+
+		// reset fields
+		if (nameEl) nameEl.value = "";
+		if (colourEl) colourEl.value = "#505a5f"; // input value (no alpha); API received hex8 above
+		if (descEl) descEl.value = "";
+		if (parentSel) parentSel.value = "";
+
 		showForm(false);
-	});
-
-	form?.addEventListener("submit", async (e) => {
-		e.preventDefault();
-
-		const name = (nameEl?.value || "").trim();
-		if (!name) { flash("Please enter a code name."); return; }
-
-		// Ensure we always send #RRGGBBAA
-		const hex8 = toHex8(colourEl?.value || "#505a5f");
-
-		const parentRaw = (parentSel?.value || "").trim();
-		const parentId = parentRaw || null;
-
-		// Send multiple aliases to satisfy stricter API schemas
-		const payload = {
-			name,
-
-			// project identifiers (aliases)
-			project: state.projectId,
-			projectId: state.projectId,
-			project_airtable_id: state.projectId,
-
-			// colour (aliases) as 8-digit hex
-			colour: hex8,
-			color: hex8,
-
-			// parent (aliases)
-			parentId: parentId || undefined,
-			parent_id: parentId || undefined,
-			parent: parentId || undefined,
-
-			description: (descEl?.value || "").trim()
-		};
-
-		try {
-			await httpJSON("/api/codes", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify(payload)
-			});
-
-			// reset fields
-			if (nameEl) nameEl.value = "";
-			if (colourEl) colourEl.value = "#505a5f"; // input value (no alpha); API received hex8 above
-			if (descEl) descEl.value = "";
-			if (parentSel) parentSel.value = "";
-
-			showForm(false);
-			flash(`Code “${payload.name}” created.`);
-			await loadCodes();
-			refreshParentSelector();
-		} catch (err) {
-			console.error(err);
-			flash("Could not create code.");
-		}
-	});
+		flash(`Code “${payload.name}” created.`);
+		await loadCodes();
+		refreshParentSelector();
+	} catch (err) {
+		console.error(err);
+		flash("Could not create code.");
+	}
+});
 }
 
 /* ---------------------------
@@ -473,14 +459,10 @@ function setupNewMemoWiring() {
 		if (s) form.querySelector("#memo-content")?.focus();
 	}
 
-	newBtn?.addEventListener("click", e => {
-		e.preventDefault();
-		toggleForm(true);
-	});
-	cancelBtn?.addEventListener("click", e => {
-		e.preventDefault();
-		toggleForm(false);
-	});
+	newBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(true); });
+	cancelBtn?.addEventListener("click", e => { e.preventDefault();
+		toggleForm(false); });
 
 	form.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -573,10 +555,8 @@ function updateJsonPanel(data, filename = "analysis.json") {
 		})();
 		code = $("#json-code");
 		$("#json-copy")?.addEventListener("click", async () => {
-			try {
-				await navigator.clipboard.writeText(code?.textContent || "");
-				flash("JSON copied.");
-			} catch { flash("Copy failed."); }
+			try { await navigator.clipboard.writeText(code?.textContent || "");
+				flash("JSON copied."); } catch { flash("Copy failed."); }
 		});
 		$("#json-download")?.addEventListener("click", () => {
 			const raw = code?.textContent || "{}";
