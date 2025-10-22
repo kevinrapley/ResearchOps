@@ -18,8 +18,11 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	function $all(s, r) { if (!r) r = document; return Array.from(r.querySelectorAll(s)); }
 
-	function esc(s) { var d = document.createElement('div');
-		d.textContent = String(s || ''); return d.innerHTML; }
+	function esc(s) {
+		var d = document.createElement('div');
+		d.textContent = String(s || '');
+		return d.innerHTML;
+	}
 
 	function when(iso) { return iso ? new Date(iso).toLocaleString() : '—'; }
 
@@ -48,21 +51,21 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return '#1d70b8ff';
 	}
 
-	function flash(msg) {
-		var el = $('#flash');
+	function flash(msg, asHtml = false) {
+		let el = document.getElementById('flash');
 		if (!el) {
 			el = document.createElement('div');
 			el.id = 'flash';
 			el.setAttribute('role', 'status');
 			el.setAttribute('aria-live', 'polite');
-			el.style.margin = '12px 0';
-			el.style.padding = '12px';
-			el.style.border = '1px solid #d0d7de';
-			el.style.background = '#fff';
-			var main = $('main');
-			if (main) main.prepend(el);
+			el.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #d0d7de;background:#fff;';
+			document.querySelector('main')?.prepend(el);
 		}
-		el.textContent = String(msg || '');
+		if (asHtml) {
+			el.innerHTML = msg;
+		} else {
+			el.textContent = msg;
+		}
 	}
 
 	function fetchJSON(url, init) {
@@ -210,10 +213,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			}
 		}
 
-		if (btnShow) btnShow.addEventListener('click', function(e) { e.preventDefault();
-			toggle(); });
-		if (btnCancel) btnCancel.addEventListener('click', function(e) { e.preventDefault();
-			toggle(false); });
+		if (btnShow) btnShow.addEventListener('click', function(e) {
+			e.preventDefault();
+			toggle();
+		});
+		if (btnCancel) btnCancel.addEventListener('click', function(e) {
+			e.preventDefault();
+			toggle(false);
+		});
 
 		if (form) {
 			form.addEventListener('submit', function(e) {
@@ -379,23 +386,76 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		});
 	}
 
+	// ---------- CODES (helpers for tree rendering) ----------
+	function buildCodeTree(list) {
+		// index by id
+		var byId = Object.create(null);
+		list.forEach(function(c) {
+			byId[c.id] = {
+				id: c.id,
+				name: c.name || '—',
+				description: c.description || '',
+				colour: c.colour || c.color || '#1d70b8ff',
+				parentId: c.parentId || null,
+				children: []
+			};
+		});
+		// link children
+		Object.keys(byId).forEach(function(id) {
+			var node = byId[id];
+			if (node.parentId && byId[node.parentId]) {
+				byId[node.parentId].children.push(node);
+			}
+		});
+		// roots = items without valid parent
+		var roots = [];
+		Object.keys(byId).forEach(function(id) {
+			var node = byId[id];
+			if (!node.parentId || !byId[node.parentId]) roots.push(node);
+		});
+		return roots;
+	}
+
+	function renderCodeNode(node, level) {
+		var indentPx = Math.max(0, (level - 1) * 16); // visual indent per level
+		var hasKids = node.children && node.children.length > 0;
+
+		var html =
+			'<li role="treeitem" aria-level="' + level + '" aria-expanded="' + (hasKids ? 'true' : 'false') + '">' +
+			'  <div class="code-node" style="margin-left:' + indentPx + 'px">' +
+			'    <span class="code-swatch" style="background-color:' + toHex8(node.colour) + ';"></span>' +
+			'    <strong class="code-name">' + esc(node.name) + '</strong>' +
+			(node.description ? '    <div class="code-desc">' + esc(node.description) + '</div>' : '') +
+			'  </div>';
+
+		if (hasKids) {
+			html += '<ul role="group">';
+			for (var i = 0; i < node.children.length; i += 1) {
+				html += renderCodeNode(node.children[i], level + 1);
+			}
+			html += '</ul>';
+		}
+
+		html += '</li>';
+		return html;
+	}
+
+	// ---------- CODES (render) ----------
 	function renderCodes(error) {
 		var wrap = document.getElementById('codes-container');
 		if (!wrap) return;
 		if (error) { wrap.innerHTML = '<p>Could not load codes.</p>'; return; }
 		if (!state.codes.length) { wrap.innerHTML = '<p>No codes yet.</p>'; return; }
 
-		var html = state.codes.map(function(c) {
-			var colour = toHex8(c.colour || c.color || '#1d70b8ff');
-			return '' +
-				'<article class="code-card" data-id="' + esc(c.id) + '">' +
-				'  <header>' +
-				'    <span class="code-swatch" style="background-color:' + colour + ';"></span>' +
-				'    <strong>' + esc(c.name || '—') + '</strong>' +
-				'  </header>' +
-				(c.description ? ('<p>' + esc(c.description) + '</p>') : '') +
-				'</article>';
-		}).join('');
+		var roots = buildCodeTree(state.codes);
+
+		var html = '' +
+			'<div class="codebook-tree" aria-label="Codebook hierarchy">' +
+			'  <ul class="code-tree" role="tree">' +
+			roots.map(function(n) { return renderCodeNode(n, 1); }).join('') +
+			'  </ul>' +
+			'</div>';
+
 		wrap.innerHTML = html;
 	}
 
@@ -417,10 +477,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			}
 		}
 
-		if (btn) btn.addEventListener('click', function(e) { e.preventDefault();
-			showForm(form ? form.hidden : true); });
-		if (cancelBtn) cancelBtn.addEventListener('click', function(e) { e.preventDefault();
-			showForm(false); });
+		if (btn) btn.addEventListener('click', function(e) {
+			e.preventDefault();
+			showForm(form ? form.hidden : true);
+		});
+		if (cancelBtn) cancelBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			showForm(false);
+		});
 		if (!form) return;
 
 		form.addEventListener('submit', function(e) {
@@ -451,7 +515,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				if (descEl) descEl.value = '';
 				if (parentSel) parentSel.value = '';
 				showForm(false);
-				flash('Code "' + name + '" created.');
+				flash('Code &ldquo;' + name + '&rdquo; created.', true);
 				return loadCodes();
 			}).catch(function(err) {
 				console.error('[codes] POST failed:', err);
@@ -552,10 +616,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			}
 		}
 
-		if (newBtn) newBtn.addEventListener('click', function(e) { e.preventDefault();
-			toggleForm(true); });
-		if (cancelBtn) cancelBtn.addEventListener('click', function(e) { e.preventDefault();
-			toggleForm(false); });
+		if (newBtn) newBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			toggleForm(true);
+		});
+		if (cancelBtn) cancelBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			toggleForm(false);
+		});
 
 		form.addEventListener('submit', function(e) {
 			e.preventDefault();
