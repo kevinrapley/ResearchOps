@@ -81,6 +81,21 @@ const esc = (s) => {
 };
 const when = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 
+// --- Routes for entry view/edit
+const ROUTES = {
+	viewEntry: (id) => `/pages/journal/entry?id=${encodeURIComponent(id)}`,
+	editEntry: (id) => `/pages/journal/edit?id=${encodeURIComponent(id)}`
+};
+
+// Truncate without cutting a word; adds “…” only if text was shortened
+function truncateWords(s, limit = 200) {
+	const text = String(s || "").trim();
+	if (text.length <= limit) return text;
+	const cut = text.slice(0, limit + 1);
+	const lastSpace = cut.lastIndexOf(" ");
+	return (lastSpace > 0 ? cut.slice(0, lastSpace) : text.slice(0, limit)) + "…";
+}
+
 /* ---------------------------
  * App state
  * --------------------------- */
@@ -122,38 +137,46 @@ function renderEntries() {
 	const empty = document.getElementById("empty-journal");
 	if (!wrap) return;
 
-	const filter = (state.entryFilter || "all").toLowerCase();
-
-	// choose the items to render based on the active filter
-	const items = (state.entries || []).filter(en => {
-		if (filter === "all") return true;
-		return String(en.category || "").toLowerCase() === filter;
-	});
-
-	if (!items.length) {
+	if (!state.entries.length) {
 		wrap.innerHTML = "";
 		if (empty) empty.hidden = false;
 		return;
 	}
 	if (empty) empty.hidden = true;
 
-	wrap.innerHTML = items.map(en => `
-    <article class="entry-card" data-id="${en.id}" data-category="${en.category}">
-      <div class="entry-header">
-        <div class="entry-meta">
-          <span class="entry-category-badge" data-category="${en.category}">${esc(en.category)}</span>
-          <span class="entry-timestamp">${when(en.createdAt)}</span>
+	wrap.innerHTML = state.entries.map(en => {
+		const snippet = truncateWords(en.content || "", 200);
+		const isTruncated = (snippet.length < (en.content || "").trim().length);
+
+		const tagsHTML = (en.tags || []).map(t => `
+      <span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>
+    `).join("");
+
+		return `
+      <article class="entry-card" data-id="${en.id}" data-category="${esc(en.category)}">
+        <header class="entry-header">
+          <div class="entry-meta">
+            <a class="entry-link" href="${ROUTES.viewEntry(en.id)}" aria-label="Open journal entry">
+              <span class="entry-category-badge" data-category="${esc(en.category)}">${esc(en.category)}</span>
+              <span class="entry-timestamp">${when(en.createdAt)}</span>
+            </a>
+          </div>
+
+          <div class="entry-actions" role="group" aria-label="Entry actions">
+            <a class="btn-quiet" href="${ROUTES.editEntry(en.id)}" aria-label="Edit entry">Edit</a>
+            <button class="btn-quiet danger" data-act="delete" data-id="${en.id}" aria-label="Delete entry">Delete</button>
+          </div>
+        </header>
+
+        <div class="entry-content">
+          ${esc(snippet)}
+          ${isTruncated ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}" aria-label="Read full entry">Read full entry</a>` : ""}
         </div>
-        <div class="entry-actions">
-          <button class="govuk-button govuk-button--secondary govuk-button--small" data-act="delete" data-id="${en.id}">Delete</button>
-        </div>
-      </div>
-      <div class="entry-content">${esc(en.content || "")}</div>
-      <div class="entry-tags">
-        ${(en.tags || []).map(t => `<span class="filter-chip">${esc(t)}</span>`).join("")}
-      </div>
-    </article>
-  `).join("");
+
+        <div class="entry-tags" aria-label="Tags">${tagsHTML}</div>
+      </article>
+    `;
+	}).join("");
 
 	// hook delete handlers
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
