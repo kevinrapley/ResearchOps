@@ -4,10 +4,9 @@
  * @summary Journals/CAQDAS UI: entries, codes, memos, analysis (works with your HTML).
  *
  * This version:
- *  - Buttons work for: Add journal entry, Add code, Add memo, Timeline, Co-occurrence, Retrieval, Export. 
- *  - Codebook management: uses a colour-wheel picker (<input type="color">) and
- *    sends a hex code (e.g. "#ff0000") to Airtable in `colour`.
- *  - Parent code is a dropdown of existing codes, and is only shown when the project already has codes.
+ *  - Codebook management: uses Coloris colour picker and always sends 8-digit hex (#RRGGBBAA).
+ *  - Parent code is a dropdown of existing codes, shown only when the project already has codes.
+ *  - Journal + Memo filter chips correctly filter and re-render items (click + keyboard).
  */
 
 /* ---------------------------
@@ -37,13 +36,18 @@ function flash(msg) {
 async function fetchWithTimeout(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), timeoutMs);
-	try { return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init }); } finally { clearTimeout(t); }
+	try {
+		return await fetch(url, { cache: "no-store", signal: ctrl.signal, ...init });
+	} finally {
+		clearTimeout(t);
+	}
 }
+
 async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), timeoutMs);
 
-	// DEBUG: log outgoing request
+	// DEBUG: outgoing
 	console.groupCollapsed("[httpJSON] →", init?.method || "GET", url);
 	if (init?.headers) console.debug("headers:", init.headers);
 	if (init?.body) {
@@ -58,11 +62,10 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 		clearTimeout(t);
 	}
 
-	// DEBUG: log response (status + body text)
+	// DEBUG: response
 	const ct = (res.headers.get("content-type") || "").toLowerCase();
 	let rawText = "";
 	try { rawText = await res.clone().text(); } catch {}
-
 	console.groupCollapsed("[httpJSON] ←", res.status, url);
 	console.debug("ok:", res.ok, "status:", res.status, "content-type:", ct);
 	if (rawText) console.debug("raw:", rawText);
@@ -73,13 +76,17 @@ async function httpJSON(url, init = {}, timeoutMs = CONFIG.TIMEOUT_MS) {
 	}
 	return ct.includes("application/json") ? JSON.parse(rawText || "{}") : {};
 }
-const esc = (s) => {
+
+function esc(s) {
 	if (!s) return "";
 	const d = document.createElement("div");
 	d.textContent = s;
 	return d.innerHTML;
-};
-const when = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
+}
+
+function when(iso) {
+	return iso ? new Date(iso).toLocaleString() : "—";
+}
 
 // --- Routes for entry view/edit
 const ROUTES = {
@@ -118,7 +125,7 @@ async function loadEntries() {
 		const arr = Array.isArray(data?.entries) ? data.entries : (Array.isArray(data) ? data : []);
 		state.entries = arr.map(e => ({
 			id: e.id,
-			category: e.category || "—",
+			category: (e.category || "—").toString(),
 			content: e.content ?? e.body ?? "",
 			tags: Array.isArray(e.tags) ? e.tags : String(e.tags || "").split(",").map(s => s.trim()).filter(Boolean),
 			createdAt: e.createdAt || e.created_at || ""
@@ -132,25 +139,30 @@ async function loadEntries() {
 	}
 }
 
+function filteredEntries() {
+	const f = (state.entryFilter || "all").toLowerCase();
+	if (f === "all") return state.entries;
+	return state.entries.filter(en => (en.category || "").toLowerCase() === f);
+}
+
 function renderEntries() {
 	const wrap = document.getElementById("entries-container");
 	const empty = document.getElementById("empty-journal");
 	if (!wrap) return;
 
-	if (!state.entries.length) {
+	const items = filteredEntries();
+
+	if (!items.length) {
 		wrap.innerHTML = "";
 		if (empty) empty.hidden = false;
 		return;
 	}
 	if (empty) empty.hidden = true;
 
-	wrap.innerHTML = state.entries.map(en => {
+	wrap.innerHTML = items.map(en => {
 		const snippet = truncateWords(en.content || "", 200);
 		const isTruncated = (snippet.length < (en.content || "").trim().length);
-
-		const tagsHTML = (en.tags || []).map(t => `
-      <span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>
-    `).join("");
+		const tagsHTML = (en.tags || []).map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`).join("");
 
 		return `
       <article class="entry-card" data-id="${en.id}" data-category="${esc(en.category)}">
@@ -161,7 +173,6 @@ function renderEntries() {
               <span class="entry-timestamp">${when(en.createdAt)}</span>
             </a>
           </div>
-
           <div class="entry-actions" role="group" aria-label="Entry actions">
             <a class="btn-quiet" href="${ROUTES.editEntry(en.id)}" aria-label="Edit entry">Edit</a>
             <button class="btn-quiet danger" data-act="delete" data-id="${en.id}" aria-label="Delete entry">Delete</button>
@@ -169,8 +180,7 @@ function renderEntries() {
         </header>
 
         <div class="entry-content">
-          ${esc(snippet)}
-          ${isTruncated ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}" aria-label="Read full entry">Read full entry</a>` : ""}
+          ${esc(snippet)}${isTruncated ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}" aria-label="Read full entry">Read full entry</a>` : ""}
         </div>
 
         <div class="entry-tags" aria-label="Tags">${tagsHTML}</div>
@@ -178,7 +188,7 @@ function renderEntries() {
     `;
 	}).join("");
 
-	// hook delete handlers
+	// Hook delete handlers
 	wrap.querySelectorAll('[data-act="delete"]').forEach(btn => {
 		btn.addEventListener("click", onDeleteEntry);
 	});
@@ -208,57 +218,53 @@ function setupNewEntryWiring() {
 		if (!section) return;
 		const show = typeof force === "boolean" ? force : section.hidden;
 		section.hidden = !show;
-		if (show)($("#entry-content") || section.querySelector("textarea"))?.focus();
+		if (show) {
+			($("#entry-content") || section.querySelector("textarea"))?.focus();
+		}
 	}
 
-	toggleBtn?.addEventListener("click", e => {
+	toggleBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		toggleForm();
 	});
-	cancelBtn?.addEventListener("click", e => {
+	cancelBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		toggleForm(false);
 	});
 
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
-
-		const name = (nameEl?.value || "").trim();
-		if (!name) { flash("Please enter a code name."); return; }
-
-		// Always send #RRGGBBAA (Coloris returns hex; we normalise defensively)
-		const colour = toHex8(colourEl?.value || "#1d70b8ff");
-
+		const fd = new FormData(form);
 		const payload = {
-			name: name,
-			projectId: state.projectId,
-			colour: colour,
-			description: (descEl?.value || "").trim(),
-			parentId: (parentSel?.value || "").trim() || null
+			project: state.projectId,
+			project_airtable_id: state.projectId,
+			category: (fd.get("category") || "").toString(),
+			content: (fd.get("content") || "").toString(),
+			tags: (fd.get("tags") || "").toString().split(",").map(s => s.trim()).filter(Boolean)
 		};
 
+		if (!payload.category || !payload.content) {
+			flash("Category and content are required.");
+			return;
+		}
+
 		try {
-			await httpJSON("/api/codes", {
+			await httpJSON("/api/journal-entries", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify(payload)
 			});
-
-			if (nameEl) nameEl.value = "";
-			if (colourEl) colourEl.value = "#1d70b8ff";
-			if (descEl) descEl.value = "";
-			if (parentSel) parentSel.value = "";
-
-			form.hidden = true;
-			flash(`Code “${name}” created.`);
-			await loadCodes();
-			refreshParentSelector();
+			form.reset();
+			toggleForm(false);
+			flash("Entry saved.");
+			await loadEntries();
 		} catch (err) {
 			console.error(err);
-			flash("Could not create code.");
+			flash(`Could not save entry. ${err?.message || ""}`.trim());
 		}
 	});
 }
+
 /* ---------------------------
  * Journal: filter chips (event delegation, keyboard accessible)
  * --------------------------- */
@@ -270,16 +276,16 @@ function setupEntryFilters() {
 	const initial = container.querySelector('.filter-chip--active')?.dataset.filter || 'all';
 	state.entryFilter = (initial || 'all').toLowerCase();
 
-	// ensure chips are keyboard/ARIA-friendly
+	// make chips accessible
 	container.querySelectorAll('.filter-chip').forEach(b => {
 		b.setAttribute('role', 'button');
 		b.setAttribute('aria-pressed', b.classList.contains('filter-chip--active') ? 'true' : 'false');
 		if (!b.hasAttribute('tabindex')) b.tabIndex = 0;
 	});
 
-	// click to set filter
+	// click handler
 	container.addEventListener('click', (e) => {
-		const btn = e.target?.closest?.('.filter-chip');
+		const btn = e.target && typeof e.target.closest === "function" ? e.target.closest('.filter-chip') : null;
 		if (!btn) return;
 		e.preventDefault();
 
@@ -292,13 +298,13 @@ function setupEntryFilters() {
 		btn.setAttribute('aria-pressed', 'true');
 
 		state.entryFilter = (btn.dataset.filter || 'all').toLowerCase();
-		renderEntries(); // re-render with filter applied
+		renderEntries();
 	});
 
-	// keyboard support (Enter/Space)
+	// keyboard (Enter/Space)
 	container.addEventListener('keydown', (e) => {
 		if (e.key !== 'Enter' && e.key !== ' ') return;
-		const btn = e.target?.closest?.('.filter-chip');
+		const btn = e.target && typeof e.target.closest === "function" ? e.target.closest('.filter-chip') : null;
 		if (!btn) return;
 		e.preventDefault();
 		btn.click();
@@ -311,10 +317,11 @@ function setupEntryFilters() {
 function toHex8(input) {
 	if (!input) return "#1d70b8ff";
 	let v = String(input).trim().toLowerCase();
-	if (/^#[0-9a-f]{8}$/.test(v)) return v; // #rrggbbaa
-	if (/^#[0-9a-f]{6}$/.test(v)) return v + "ff"; // #rrggbb → +ff
-	if (/^#[0-9a-f]{3}$/.test(v)) // #rgb → #rrggbbff
+	if (/^#[0-9a-f]{8}$/.test(v)) return v;           // #rrggbbaa
+	if (/^#[0-9a-f]{6}$/.test(v)) return v + "ff";    // #rrggbb → +ff
+	if (/^#[0-9a-f]{3}$/.test(v)) {                   // #rgb → #rrggbbff
 		return "#" + v.slice(1).split("").map(ch => ch + ch).join("") + "ff";
+	}
 	const ctx = document.createElement("canvas").getContext("2d");
 	try { ctx.fillStyle = v; } catch { return "#1d70b8ff"; }
 	const hex6 = ctx.fillStyle; // browser → #rrggbb
@@ -361,12 +368,12 @@ function ensureCodeForm() {
   `;
 	host.appendChild(form);
 
-	// Coloris (provided by /js vendor files you added)
+	// Coloris initialisation (guarantee hex8)
 	if (window.Coloris) {
 		window.Coloris({
 			el: "#code-colour",
 			alpha: true,
-			forceAlpha: true, // always returns #RRGGBBAA
+			forceAlpha: true,
 			format: "hex",
 			themeMode: "light",
 			wrap: true
@@ -377,12 +384,17 @@ function ensureCodeForm() {
 
 function refreshParentSelector() {
 	const wrap = $("#code-parent-wrap");
-	const sel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	const sel = $("#code-parent");
 	if (!wrap || !sel) return;
 	const hasCodes = (state.codes || []).length > 0;
 	wrap.hidden = !hasCodes;
-	sel.innerHTML = `<option value="">— None —</option>` +
-		state.codes.map(c => `<option value="${esc(c.id)}">${esc(c.name || c.id)}</option>`).join("");
+
+	let html = `<option value="">— None —</option>`;
+	for (let i = 0; i < state.codes.length; i++) {
+		const c = state.codes[i];
+		html += `<option value="${esc(c.id)}">${esc(c.name || c.id)}</option>`;
+	}
+	sel.innerHTML = html;
 }
 
 async function loadCodes() {
@@ -402,12 +414,19 @@ async function loadCodes() {
 function renderCodes(error = false) {
 	const wrap = $("#codes-container");
 	if (!wrap) return;
-	if (error) { wrap.innerHTML = "<p>Could not load codes.</p>"; return; }
-	if (!state.codes.length) { wrap.innerHTML = "<p>No codes yet.</p>"; return; }
-
-	wrap.innerHTML = state.codes.map(c => {
+	if (error) {
+		wrap.innerHTML = "<p>Could not load codes.</p>";
+		return;
+	}
+	if (!state.codes.length) {
+		wrap.innerHTML = "<p>No codes yet.</p>";
+		return;
+	}
+	let html = "";
+	for (let i = 0; i < state.codes.length; i++) {
+		const c = state.codes[i];
 		const colour = toHex8(c.colour || c.color || "#1d70b8ff");
-		return `
+		html += `
       <article class="code-card" data-id="${c.id}">
         <header>
           <span class="code-swatch" style="background-color:${colour};"></span>
@@ -416,16 +435,17 @@ function renderCodes(error = false) {
         ${c.description ? `<p>${esc(c.description)}</p>` : ""}
       </article>
     `;
-	}).join("");
+	}
+	wrap.innerHTML = html;
 }
 
 function setupAddCodeWiring() {
 	const btn = $("#new-code-btn");
 	const form = ensureCodeForm();
-	const nameEl = /** @type {HTMLInputElement|null} */ ($("#code-name"));
-	const colourEl = /** @type {HTMLInputElement|null} */ ($("#code-colour"));
-	const descEl = /** @type {HTMLTextAreaElement|null} */ ($("#code-description"));
-	const parentSel = /** @type {HTMLSelectElement|null} */ ($("#code-parent"));
+	const nameEl = $("#code-name");
+	const colourEl = $("#code-colour");
+	const descEl = $("#code-description");
+	const parentSel = $("#code-parent");
 	const cancelBtn = $("#cancel-code-btn");
 
 	function showForm(show) {
@@ -433,15 +453,15 @@ function setupAddCodeWiring() {
 		form.hidden = !show;
 		if (show) {
 			refreshParentSelector();
-			nameEl?.focus();
+			if (nameEl) nameEl.focus();
 		}
 	}
 
-	btn?.addEventListener("click", e => {
+	btn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		showForm(form?.hidden ?? true);
 	});
-	cancelBtn?.addEventListener("click", e => {
+	cancelBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		showForm(false);
 	});
@@ -450,57 +470,34 @@ function setupAddCodeWiring() {
 		e.preventDefault();
 
 		const name = (nameEl?.value || "").trim();
-		if (!name) { flash("Please enter a code name."); return; }
+		if (!name) {
+			flash("Please enter a code name.");
+			return;
+		}
 
-		// Ensure we always send #RRGGBBAA
-		const hex8 = toHex8(colourEl?.value || "#505a5f");
-
+		const hex8 = toHex8(colourEl?.value || "#1d70b8ff");
 		const parentRaw = (parentSel?.value || "").trim();
 		const parentId = parentRaw || null;
 
-		// Send multiple aliases to satisfy stricter API schemas
-		const payload = {
-			name,
-
-			// project identifiers (aliases)
-			project: state.projectId,
+		const payloadForLog = {
+			name: name,
 			projectId: state.projectId,
-			project_airtable_id: state.projectId,
-
-			// colour (aliases) as 8-digit hex
 			colour: hex8,
-			color: hex8,
-
-			// parent (aliases)
-			parentId: parentId || undefined,
-			parent_id: parentId || undefined,
-			parent: parentId || undefined,
-
-			description: (descEl?.value || "").trim()
+			description: (descEl?.value || "").trim(),
+			parentId: parentId
 		};
+		console.groupCollapsed("[codes] POST payload");
+		console.debug(payloadForLog);
+		console.groupEnd();
 
 		try {
-			const payloadForLog = {
-				name: name,
-				projectId: state.projectId,
-				colour: hex8,
-				description: (descEl?.value || "").trim(),
-				parentId: parentId
-			};
-			console.groupCollapsed("[codes] POST payload");
-			console.debug(payloadForLog);
-			console.groupEnd();
-
-			// NOTE: add ?diag=1 so server returns diagnostics in JSON on error
 			const res = await httpJSON("/api/codes?diag=1", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify(payloadForLog)
 			});
-
 			console.debug("[codes] POST ok:", res);
 
-			// reset fields
 			if (nameEl) nameEl.value = "";
 			if (colourEl) colourEl.value = "#1d70b8ff";
 			if (descEl) descEl.value = "";
@@ -535,28 +532,38 @@ async function loadMemos() {
 function renderMemos(error = false) {
 	const wrap = document.getElementById("memos-container");
 	if (!wrap) return;
-	if (error) { wrap.innerHTML = "<p>Could not load memos.</p>"; return; }
+	if (error) {
+		wrap.innerHTML = "<p>Could not load memos.</p>";
+		return;
+	}
 
 	const filter = (state.memoFilter || "all").toLowerCase();
-
 	const items = (state.memos || []).filter(m => {
 		if (filter === "all") return true;
 		const t = (m.memoType || m.type || "").toLowerCase();
 		return t === filter;
 	});
 
-	if (!items.length) { wrap.innerHTML = "<p>No memos yet.</p>"; return; }
+	if (!items.length) {
+		wrap.innerHTML = "<p>No memos yet.</p>";
+		return;
+	}
 
-	wrap.innerHTML = items.map(m => `
-    <article class="memo-card" data-id="${m.id || ""}">
-      <header class="memo-header">
-        <strong>${esc(m.title || m.memoType || "Memo")}</strong>
-        <time>${when(m.createdAt)}</time>
-      </header>
-      ${m.title ? `<p class="memo-title">${esc(m.title)}</p>` : ""}
-      <p>${esc(m.content || "")}</p>
-    </article>
-  `).join("");
+	let html = "";
+	for (let i = 0; i < items.length; i++) {
+		const m = items[i];
+		html += `
+      <article class="memo-card" data-id="${m.id || ""}">
+        <header class="memo-header">
+          <strong>${esc(m.title || m.memoType || "Memo")}</strong>
+          <time>${when(m.createdAt)}</time>
+        </header>
+        ${m.title ? `<p class="memo-title">${esc(m.title)}</p>` : ""}
+        <p>${esc(m.content || "")}</p>
+      </article>
+    `;
+	}
+	wrap.innerHTML = html;
 }
 
 function setupNewMemoWiring() {
@@ -602,11 +609,11 @@ function setupNewMemoWiring() {
 		if (s) form.querySelector("#memo-content")?.focus();
 	}
 
-	newBtn?.addEventListener("click", e => {
+	newBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		toggleForm(true);
 	});
-	cancelBtn?.addEventListener("click", e => {
+	cancelBtn?.addEventListener("click", (e) => {
 		e.preventDefault();
 		toggleForm(false);
 	});
@@ -620,7 +627,10 @@ function setupNewMemoWiring() {
 			title: (fd.get("title") || "").toString(),
 			content: (fd.get("content") || "").toString()
 		};
-		if (!payload.content.trim()) { flash("Content is required."); return; }
+		if (!payload.content.trim()) {
+			flash("Content is required.");
+			return;
+		}
 
 		try {
 			await httpJSON("/api/memos", {
@@ -636,19 +646,6 @@ function setupNewMemoWiring() {
 			console.error(err);
 			flash("Could not create memo.");
 		}
-	});
-
-	// Filter chips
-	document.querySelectorAll('[data-memo-filter]').forEach(btn => {
-		btn.addEventListener("click", (e) => {
-			document.querySelectorAll('[data-memo-filter]').forEach(b => {
-				b.classList.remove("active", "filter-chip--active");
-			});
-			const t = e.currentTarget;
-			if (t.classList.contains("filter-chip")) t.classList.add("filter-chip--active");
-			else t.classList.add("active");
-			renderMemos();
-		});
 	});
 }
 
@@ -669,7 +666,7 @@ function setupMemoFilters() {
 
 	// click handler
 	container.addEventListener('click', (e) => {
-		const btn = e.target?.closest?.('.filter-chip');
+		const btn = e.target && typeof e.target.closest === "function" ? e.target.closest('.filter-chip') : null;
 		if (!btn) return;
 		e.preventDefault();
 
@@ -688,7 +685,7 @@ function setupMemoFilters() {
 	// keyboard (Enter/Space)
 	container.addEventListener('keydown', (e) => {
 		if (e.key !== 'Enter' && e.key !== ' ') return;
-		const btn = e.target?.closest?.('.filter-chip');
+		const btn = e.target && typeof e.target.closest === "function" ? e.target.closest('.filter-chip') : null;
 		if (!btn) return;
 		e.preventDefault();
 		btn.click();
@@ -717,7 +714,7 @@ function ensureSection(id, headingText) {
 
 function jsonSyntaxHighlight(obj) {
 	const json = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-	const escP = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" } [c]));
+	const escP = json.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 	return escP
 		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, m => `<span class="k">${m}</span>`)
 		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, m => `<span class="s">${m}</span>`)
@@ -748,7 +745,9 @@ function updateJsonPanel(data, filename = "analysis.json") {
 			try {
 				await navigator.clipboard.writeText(code?.textContent || "");
 				flash("JSON copied.");
-			} catch { flash("Copy failed."); }
+			} catch {
+				flash("Copy failed.");
+			}
 		});
 		$("#json-download")?.addEventListener("click", () => {
 			const raw = code?.textContent || "{}";
@@ -775,7 +774,10 @@ async function runTimeline() {
 	const res = await httpJSON(`/api/analysis/timeline?project=${encodeURIComponent(state.projectId)}`);
 	const items = Array.isArray(res?.timeline) ? res.timeline : [];
 	updateJsonPanel({ timeline: items }, `timeline-${state.projectId}.json`);
-	if (!items.length) { wrap.innerHTML = '<p class="hint">No journal entries yet.</p>'; return; }
+	if (!items.length) {
+		wrap.innerHTML = '<p class="hint">No journal entries yet.</p>';
+		return;
+	}
 	wrap.innerHTML = `
     <ul class="analysis-list">
       ${items.map(en => `
@@ -806,7 +808,10 @@ async function runCooccurrence() {
 	const nodes = Array.isArray(res?.nodes) ? res.nodes : [];
 	const links = Array.isArray(res?.links) ? res.links : [];
 	updateJsonPanel({ nodes, links }, `cooccurrence-${state.projectId}.json`);
-	if (!links.length) { wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>'; return; }
+	if (!links.length) {
+		wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>';
+		return;
+	}
 	links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
 	wrap.innerHTML = `
     <table class="table">
@@ -825,47 +830,56 @@ async function runCooccurrence() {
 }
 
 function setupRetrievalUI() {
-	const form = /** @type {HTMLFormElement|null} */ ($("#retrieval-form"));
+	const form = $("#retrieval-form");
 	const results = $("#retrieval-results");
 	if (!form || !results) return;
 
 	form.replaceWith(form.cloneNode(true));
-	const f = /** @type {HTMLFormElement} */ ($("#retrieval-form"));
-	const q = /** @type {HTMLInputElement} */ ($("#retrieval-q"));
+	const f = $("#retrieval-form");
+	const q = $("#retrieval-q");
 
 	f.addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const term = (q?.value || "").trim();
-		if (!term) { results.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
+		if (!term) {
+			results.innerHTML = '<p class="hint">Enter a term to search.</p>';
+		 return;
+		}
 		results.innerHTML = "<p>Searching…</p>";
 		const res = await httpJSON(`/api/analysis/retrieval?project=${encodeURIComponent(state.projectId)}&q=${encodeURIComponent(term)}`);
 		const out = Array.isArray(res?.results) ? res.results : [];
 		updateJsonPanel({ query: term, results: out }, `retrieval-${state.projectId}.json`);
-		if (!out.length) { results.innerHTML = '<p class="hint">No matches found.</p>'; return; }
+		if (!out.length) {
+			results.innerHTML = '<p class="hint">No matches found.</p>';
+			return;
+		}
 		const termRx = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
-		results.innerHTML = `
-      <ul class="analysis-list analysis-list--spaced" aria-live="polite">
-        ${out.map(r => `
-          <li>
-            <h5 class="analysis-subheading">
-              ${r.codes.map(c => `<span class="tag">${esc(c.name)}</span>`).join(" ")}
-            </h5>
-            <p>${esc(r.snippet).replace(termRx, m => `<mark>${m}</mark>`)}</p>
-          </li>`).join("")}
-      </ul>`;
+		let html = '<ul class="analysis-list analysis-list--spaced" aria-live="polite">';
+		for (let i = 0; i < out.length; i++) {
+			const r = out[i];
+			const codesHTML = (r.codes || []).map(c => `<span class="tag">${esc(c.name)}</span>`).join(" ");
+			const snippet = esc(r.snippet).replace(termRx, m => `<mark>${m}</mark>`);
+			html += `
+        <li>
+          <h5 class="analysis-subheading">${codesHTML}</h5>
+          <p>${snippet}</p>
+        </li>`;
+		}
+		html += "</ul>";
+		results.innerHTML = html;
 	});
 }
 
 function setupAnalysisButtons() {
 	(document.getElementById("analysis-panel") || document).addEventListener("click", (e) => {
-		const t = e.target?.closest?.("[data-analysis]");
+		const t = e.target && typeof e.target.closest === "function" ? e.target.closest("[data-analysis]") : null;
 		if (!t) return;
 		e.preventDefault();
 		const mode = t.dataset.analysis;
-		if (mode === "timeline") return void runTimeline();
-		if (mode === "co-occurrence") return void runCooccurrence();
-		if (mode === "retrieval") return void setupRetrievalUI();
-		if (mode === "export") return void runExport();
+		if (mode === "timeline") { void runTimeline(); return; }
+		if (mode === "co-occurrence") { void runCooccurrence(); return; }
+		if (mode === "retrieval") { void setupRetrievalUI(); return; }
+		if (mode === "export") { void runExport(); return; }
 	});
 }
 
@@ -921,19 +935,19 @@ async function init() {
 	setupAnalysisButtons();
 	setupRetrievalUI();
 
-	// Preload codes/memos (cheap) so parent dropdown & memos tab feel instant.
+	// Preload codes/memos early (for parent dropdown + memos tab)
 	await Promise.allSettled([loadCodes(), loadMemos()]);
 
 	// Initial tab data load (visibility is handled by tabs.js)
 	loadForTab(activeTabId());
 
-	// When tabs.js switches tabs it should emit 'tab:shown' with {id}
+	// tabs.js should emit 'tab:shown' with {id}
 	document.addEventListener("tab:shown", (e) => {
 		const id = e?.detail?.id;
 		if (id) loadForTab(id);
 	});
 
-	// Fallback for deep links/back/forward if tabs.js updates hash
+	// Deep links/back/forward
 	window.addEventListener("hashchange", () => loadForTab(activeTabId()));
 }
 
