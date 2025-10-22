@@ -20,26 +20,6 @@
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="/lib/coloris.min.js" defer></script>
-	<script>
-		// Initialize Coloris with GOV.UK-friendly styling
-		Coloris({
-			theme: 'pill',
-			themeMode: 'light',
-			formatToggle: false,
-			alpha: false,
-			swatches: [
-				'#1d70b8', // GOV.UK blue
-				'#00703c', // GOV.UK green
-				'#f47738', // GOV.UK orange
-				'#912b88', // GOV.UK purple
-				'#d4351c', // GOV.UK red
-				'#505a5f', // GOV.UK dark grey
-				'#ffdd00', // GOV.UK yellow
-				'#4c2c92', // GOV.UK dark purple
-			]
-		});
-	</script>
 </head>
 
 <body typeof="schema:WebPage">
@@ -275,11 +255,17 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module" src="/components/journal-tabs.js" defer></script>
+	<!-- GOV.UK Frontend JS (tabs visibility) -->
+	<script src="/components/tabs.js" defer></script>
+
+	<!-- Page logic: renders Journal/Codes/Memos and calls CAQDAS exports -->
+	<script type="module" src="/js/journal-tabs.js" defer></script>
+
+	<!-- (Optional) If journal-excerpts is still used elsewhere on this page, keep it; otherwise remove -->
 	<script type="module" src="/components/journal-excerpts.js" defer></script>
-	<script type="module" src="/js/caqdas-interface.js" defer></script>
-	<!-- GOV.UK Frontend JS (enhances tabs + stores #hash for back/forward nav) -->
-	<script type="module" src="/js/tabs.js" defer></script>
+
+	<!-- Coloris must be a classic script so window.Coloris is available -->
+	<script src="/lib/coloris.min.js" defer></script>
 </body>
 
 </html>
