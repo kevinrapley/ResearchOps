@@ -168,10 +168,8 @@ function renderEntries() {
       <article class="entry-card" data-id="${en.id}" data-category="${esc(en.category)}">
         <header class="entry-header">
           <div class="entry-meta">
-            <a class="entry-link" href="${ROUTES.viewEntry(en.id)}" aria-label="Open journal entry">
-              <span class="entry-category-badge" data-category="${esc(en.category)}">${esc(en.category)}</span>
-              <span class="entry-timestamp">${when(en.createdAt)}</span>
-            </a>
+            <span class="entry-category-badge" data-category="${esc(en.category)}">${esc(en.category)}</span>
+            <span class="entry-timestamp">${when(en.createdAt)}</span>
           </div>
           <div class="entry-actions" role="group" aria-label="Entry actions">
             <a class="btn-quiet" href="${ROUTES.editEntry(en.id)}" aria-label="Edit entry">Edit</a>
