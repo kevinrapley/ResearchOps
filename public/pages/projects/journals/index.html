@@ -252,20 +252,13 @@
 			<button type="button" class="btn-secondary" id="cancel-coding-btn">Cancel</button>
 		</div>
 	</aside>
-
+	
 	<x-include src="/partials/footer.html"></x-include>
-
-	<!-- GOV.UK Frontend JS (tabs visibility) -->
-	<script src="/components/tabs.js" defer></script>
-
-	<!-- Page logic: renders Journal/Codes/Memos and calls CAQDAS exports -->
-	<script type="module" src="/js/journal-tabs.js" defer></script>
-
-	<!-- (Optional) If journal-excerpts is still used elsewhere on this page, keep it; otherwise remove -->
+	
+	<script src="/components/tabs.js"></script>
+	<script type="module" src="/js/journal-tabs.js"></script>
 	<script type="module" src="/components/journal-excerpts.js" defer></script>
-
-	<!-- Coloris must be a classic script so window.Coloris is available -->
-	<script src="/lib/coloris.min.js" defer></script>
+	<script src="/lib/coloris.min.js"></script>
 </body>
 
 </html>
