@@ -43,6 +43,26 @@ function maybeDiag(service, url, extra) {
 	return undefined;
 }
 
+function buildPaths(codes) {
+	const byId = new Map(codes.map(c => [c.id, c]));
+	const cache = new Map();
+
+	function pathFor(id, guard = 24) {
+		if (!id || !byId.has(id) || guard <= 0) return [];
+		if (cache.has(id)) return cache.get(id);
+		const cur = byId.get(id);
+		const up = pathFor(cur.parentId, guard - 1);
+		const out = up.concat(cur.name || cur.id);
+		cache.set(id, out);
+		return out;
+	}
+
+	return codes.reduce((acc, c) => {
+		acc[c.id] = pathFor(c.id).join(" / ");
+		return acc;
+	}, {});
+}
+
 /**
  * Map an Airtable record to API shape.
  * @param {any} r
@@ -182,6 +202,9 @@ export async function listCodes(service, origin, url) {
 
 		const codes = (records || []).map(mapCodeRecord);
 
+		const paths = buildPaths(codes);
+		for (const c of codes) c.path = paths[c.id] || c.name || c.id;
+
 		const body = { ok: true, codes };
 		const extra = maybeDiag(service, url, { table, formula, usedField });
 		if (extra) Object.assign(body, extra);
@@ -194,6 +217,80 @@ export async function listCodes(service, origin, url) {
 		service.log.error("codes.list", { err: String(err) });
 		return service.json(body, 500, cors);
 	}
+}
+
+/**
+ * Read a single code record's Parent field by record id.
+ * Uses filterByFormula to fetch exactly one record.
+ * @returns {Promise<string|null>} parentId or null
+ */
+async function readParentId(service, table, codeId) {
+	try {
+		const formula = "RECORD_ID() = '" + String(codeId) + "'";
+		const res = await listAll(service.env, table, { extraParams: { filterByFormula: formula, pageSize: "1" } });
+		const rec = Array.isArray(res && res.records) && res.records.length ? res.records[0] : null;
+		if (!rec || !rec.fields) return null;
+		const v = rec.fields["Parent"];
+		if (Array.isArray(v) && v.length) return v[0] || null;
+		if (typeof v === "string") return v || null;
+		return null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Compute hierarchical depth for a given record id by walking Parent chain.
+ * Level 1 = root (no parent). Level 2 = child. Level 3 = grandchild.
+ * @returns {Promise<number>} depth (>=1)
+ */
+async function computeDepthFromId(service, table, codeId) {
+	// If we were given a code id to measure, that id is at least level 1.
+	var depth = 1;
+	var current = String(codeId || "");
+
+	// Walk up parents until no parent exists or safety cap reached.
+	// Safety cap avoids infinite loops if a cycle were mistakenly created.
+	var guard = 12;
+	while (current && guard > 0) {
+		var parentId = await readParentId(service, table, current);
+		if (!parentId) break;
+		depth += 1;
+		current = parentId;
+		guard -= 1;
+	}
+	return depth;
+}
+
+/**
+ * Validate that creating/moving under parentId does not exceed level 3.
+ * Returns null if valid; otherwise returns an error object to send.
+ */
+async function validateDepthLimit(service, parentId) {
+	if (!parentId) return null;
+	var table = TABLE(service);
+	var parentDepth = await computeDepthFromId(service, table, parentId);
+	var newDepth = parentDepth + 1; // new node one level beneath selected parent
+	if (newDepth > 3) {
+		return { ok: false, error: "Codes are limited to 3 levels. Your selection would create level 4." };
+	}
+	return null;
+}
+
+/**
+ * Would moving `movingId` under `newParentId` create a cycle?
+ * Walk up from newParentId to root; if we meet movingId, it's a cycle.
+ */
+async function wouldCycle(service, table, movingId, newParentId) {
+	if (!movingId || !newParentId) return false;
+	if (movingId === newParentId) return true;
+	let cur = String(newParentId);
+	let guard = 24; // safety
+	while (cur && guard-- > 0) {
+		if (cur === movingId) return true;
+		cur = await readParentId(service, table, cur);
+	}
+	return false;
 }
 
 /**
@@ -245,6 +342,11 @@ export async function createCode(service, request, origin) {
 			fields["Parent"] = [parentId];
 		}
 
+		var depthErrCreate = await validateDepthLimit(service, parentId);
+		if (depthErrCreate) {
+			return service.json(depthErrCreate, 400, cors);
+		}
+
 		// Create
 		let resp;
 		try {
@@ -290,6 +392,38 @@ export async function updateCode(service, request, origin, codeId) {
 		const body = await request.json().catch(() => ({}));
 		const fields = {};
 
+		// Detect actual Project linked-record label (e.g. "Project (link)")
+		const table = TABLE(service);
+		let projectFieldLabel = "Project";
+		try {
+			const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
+			const detected = detectProjectFieldFromSample(sample.records || []);
+			if (detected) projectFieldLabel = detected;
+		} catch { /* keep default */ }
+
+		// ---------- compute requested parent up-front ----------
+		let requestedParent = null;
+		if ("parentId" in body || "parent" in body) {
+			requestedParent = body.parentId || body.parent || null;
+		}
+
+		// ---------- cycle + depth guards ----------
+		if (requestedParent) {
+			// 1) prevent cycles (self or descendant as parent)
+			if (await wouldCycle(service, table, codeId, requestedParent)) {
+				return service.json({ ok: false, error: "A code cannot be made a child of itself or its descendants." },
+					400,
+					cors
+				);
+			}
+			// 2) enforce 3-level maximum (prevent creating level 4)
+			const depthErr = await validateDepthLimit(service, requestedParent);
+			if (depthErr) {
+				return service.json(depthErr, 400, cors);
+			}
+		}
+
+		// ---------- field updates ----------
 		if ("name" in body) {
 			fields["Name"] = body.name || "";
 		}
@@ -304,26 +438,25 @@ export async function updateCode(service, request, origin, codeId) {
 		}
 
 		if ("parentId" in body || "parent" in body) {
-			const v = body.parentId || body.parent || null;
-			fields["Parent"] = v ? [v] : [];
+			fields["Parent"] = requestedParent ? [requestedParent] : [];
 		}
 
 		if ("projectId" in body || "project" in body) {
 			const v = body.projectId || body.project || null;
-			// Keep using the canonical “Project” label for updates; adjust if your base uses a custom label.
-			fields["Project"] = v ? [v] : [];
+			fields[projectFieldLabel] = v ? [v] : [];
 		}
 
+		// ---------- persist ----------
 		let resp;
 		try {
-			resp = await patchRecords(service.env, TABLE(service), [{ id: codeId, fields }]);
+			resp = await patchRecords(service.env, table, [{ id: codeId, fields }]);
 		} catch (airErr) {
 			const out = { ok: false, error: "Internal error" };
 			const diag = {
 				stage: "patchRecords",
-				table: TABLE(service),
+				table,
 				id: codeId,
-				fields: fields,
+				fields,
 				airtableError: String(airErr)
 			};
 			const maybe = maybeDiag(service, urlObj, diag);
