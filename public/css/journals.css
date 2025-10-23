@@ -377,21 +377,37 @@
 	margin: 0;
 	}
 
+/* Pull the colour from <data value="#rrggbbaa"> into a var; fallback to currentColor */
+.colour-swatch {
+	/* Fallback path first (older browsers) */
+	color: var(--code-colour, currentColor);
+	padding-left: 8px;
+	border-left: 6px solid currentColor;
+	}
+
+/* Progressive enhancement: use attr(value color) when supported */
+@supports (color: attr(value color)) {
+	.colour-swatch {
+		/* Read the `value` attribute as a typed color into --code-colour */
+		--code-colour: attr(value color);
+		color: var(--code-colour);
+		/* Swatch border already uses currentColor, which now equals --code-colour */
+		}
+	}
+
 .code-name {
 	font-weight: 700;
 	margin-bottom: 0.25rem;
 	}
 
+/* Indent the description so its text aligns with the *start* of the chip text, not the chip box */
 .code-desc {
 	margin: 0 0 0.75rem 0;
 	font-weight: 400;
+	padding-left: 7px;
 	}
 
-.colour-swatch {
-	padding-left: 8px;
-	border-left: 6px solid currentColor;
-	}
-
+/* Path chip (Theme | Code | Sub-code) */
 .path-chip {
 	display: inline-block;
 	margin-right: 6px;
@@ -403,15 +419,37 @@
 	vertical-align: middle;
 	}
 
+/* Light tints for nested lists derived from the swatch colour, when supported */
+@supports (background: color-mix(in srgb, red, white)) {
+	.coded-theme ul ul {
+		/* very faint bg to suggest nesting; mix toward white */
+		background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
+		}
+	}
+
 /* Tree styling using real list bullets (↳) */
 .coded-theme ul {
+	/* remove default indentation to get Theme Code 1 aligned with Theme Code 4 */
 	list-style-position: inside;
-	padding-left: 1rem;
+	padding-left: 0;
 	margin: 0.25rem 0;
 	}
 
+/* Top-level (Theme) uses no bullet */
+.coded-theme > ul > li {
+	list-style-type: none;
+	}
+
+/* Nested levels use ↳ */
 .coded-theme ul ul {
-	list-style-type: '\21B3 '; /* ↳ bullet character */
+	list-style-type: '\21B3 '; /* ↳ */
+	}
+
+/* Colour the marker to match the swatch colour where supported */
+@supports (color: attr(value color)) {
+	.coded-theme ul ul > li::marker {
+		color: var(--code-colour, #1d70b8);
+		}
 	}
 
 .coded-theme li {
@@ -422,6 +460,12 @@
 .coded-theme + .coded-theme {
 	border-top: 1px solid #d0d7de;
 	padding-top: 1rem;
+	}
+
+/* Space between the Add code button and the first theme */
+#codes-panel .govuk-button + .coded-theme,
+#codes-panel .govuk-button + .coded-themes {
+	margin-top: 16px;
 	}
 
 /* === =CAQDAS INTERFACE =================================== */
