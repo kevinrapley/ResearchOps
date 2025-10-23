@@ -372,6 +372,39 @@
 /* Space below “Add code” button */
 #new-code-btn { margin-bottom: 1rem; }
 
+/* Pull the colour from <data value="#rrggbbaa"> into a var; fallback to currentColor */
+.colour-swatch {
+	/* Fallback path first (older browsers) */
+	color: var(--code-colour, currentColor);
+	padding-left: 8px;
+	border-left: 6px solid currentColor;
+	}
+
+/* Progressive enhancement: use attr(value color) when supported */
+@supports (color: attr(value color)) {
+	.colour-swatch {
+		/* Read the `value` attribute as a typed color into --code-colour */
+		--code-colour: attr(value color);
+		color: var(--code-colour);
+		/* Swatch border already uses currentColor, which now equals --code-colour */
+		}
+	}
+	
+/* Light tints for nested lists derived from the swatch colour, when supported */
+@supports (background: color-mix(in srgb, red, white)) {
+	.coded-theme ul ul {
+		/* very faint bg to suggest nesting; mix toward white */
+		background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
+		}
+	}
+	
+/* Colour the marker to match the swatch colour where supported */
+@supports (color: attr(value color)) {
+	.coded-theme ul ul > li::marker {
+		color: var(--code-colour, #1d70b8);
+		}
+	}
+	
 /* Top-level theme list: no bullets, no extra indent */
 .coded-theme > ul {
 	list-style: none;
