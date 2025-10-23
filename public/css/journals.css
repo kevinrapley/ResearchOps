@@ -369,6 +369,16 @@
 	
 /* === =CODEBOOK TREE ===================================== */
 
+/* Space below “Add code” button */
+#new-code-btn { margin-bottom: 1rem; }
+
+/* Top-level theme list: no bullets, no extra indent */
+.coded-theme > ul {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+	}
+
 .coded-theme {
 	margin-bottom: 2rem;
 	}
@@ -377,37 +387,32 @@
 	margin: 0;
 	}
 
-/* Pull the colour from <data value="#rrggbbaa"> into a var; fallback to currentColor */
-.colour-swatch {
-	/* Fallback path first (older browsers) */
-	color: var(--code-colour, currentColor);
-	padding-left: 8px;
-	border-left: 6px solid currentColor;
+/* Make the term bold; description sits below */
+.coded-theme dt.code-name { 
+	font-weight: 700;
+	margin: 0 0 .25rem 0;
 	}
 
-/* Progressive enhancement: use attr(value color) when supported */
-@supports (color: attr(value color)) {
-	.colour-swatch {
-		/* Read the `value` attribute as a typed color into --code-colour */
-		--code-colour: attr(value color);
-		color: var(--code-colour);
-		/* Swatch border already uses currentColor, which now equals --code-colour */
-		}
+/* dd will align under the chip text via a JS-computed custom prop */
+.coded-theme dd.code-desc {
+	margin: 0 0 .75rem var(--chip-text-left, 0);
 	}
-
+	
 .code-name {
 	font-weight: 700;
 	margin-bottom: 0.25rem;
 	}
 
-/* Indent the description so its text aligns with the *start* of the chip text, not the chip box */
 .code-desc {
 	margin: 0 0 0.75rem 0;
 	font-weight: 400;
-	padding-left: 7px;
 	}
 
-/* Path chip (Theme | Code | Sub-code) */
+.colour-swatch {
+	padding-left: 8px;
+	border-left: 6px solid var(--code-colour, #1d70b8);
+	}
+
 .path-chip {
 	display: inline-block;
 	margin-right: 6px;
@@ -419,37 +424,11 @@
 	vertical-align: middle;
 	}
 
-/* Light tints for nested lists derived from the swatch colour, when supported */
-@supports (background: color-mix(in srgb, red, white)) {
-	.coded-theme ul ul {
-		/* very faint bg to suggest nesting; mix toward white */
-		background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
-		}
-	}
-
 /* Tree styling using real list bullets (↳) */
-.coded-theme ul {
-	/* remove default indentation to get Theme Code 1 aligned with Theme Code 4 */
-	list-style-position: inside;
-	padding-left: 0;
-	margin: 0.25rem 0;
-	}
-
-/* Top-level (Theme) uses no bullet */
-.coded-theme > ul > li {
-	list-style-type: none;
-	}
-
-/* Nested levels use ↳ */
 .coded-theme ul ul {
 	list-style-type: '\21B3 '; /* ↳ */
-	}
-
-/* Colour the marker to match the swatch colour where supported */
-@supports (color: attr(value color)) {
-	.coded-theme ul ul > li::marker {
-		color: var(--code-colour, #1d70b8);
-		}
+	list-style-position: inside;
+	padding-left: 1.25rem;
 	}
 
 .coded-theme li {
@@ -460,12 +439,6 @@
 .coded-theme + .coded-theme {
 	border-top: 1px solid #d0d7de;
 	padding-top: 1rem;
-	}
-
-/* Space between the Add code button and the first theme */
-#codes-panel .govuk-button + .coded-theme,
-#codes-panel .govuk-button + .coded-themes {
-	margin-top: 16px;
 	}
 
 /* === =CAQDAS INTERFACE =================================== */
