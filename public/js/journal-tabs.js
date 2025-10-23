@@ -464,6 +464,76 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return html;
 	}
 
+	// ---------- CODEBOOK: annotate depth + colour vars ----------
+	function annotateCodebookDepth(root) {
+		// root is the element containing the rendered codes (e.g., #codes-container)
+		if (!root) return;
+
+		function hex8To6(v) {
+			// normalise to #rrggbb (strip alpha; expand #rgb)
+			var s = String(v || "").trim().toLowerCase();
+			if (s.charAt(0) !== "#") s = "#" + s;
+			if (/^#[0-9a-f]{8}$/.test(s)) return s.slice(0, 7);
+			if (/^#[0-9a-f]{6}$/.test(s)) return s;
+			if (/^#[0-9a-f]{3}$/.test(s)) {
+				var r = s.charAt(1),
+					g = s.charAt(2),
+					b = s.charAt(3);
+				return "#" + r + r + g + g + b + b;
+			}
+			return "#1d70b8"; // GOV.UK blue fallback
+		}
+
+		function parseRGB(hex6) {
+			var h = hex6.replace("#", "");
+			var r = parseInt(h.slice(0, 2), 16);
+			var g = parseInt(h.slice(2, 4), 16);
+			var b = parseInt(h.slice(4, 6), 16);
+			return { r: r, g: g, b: b };
+		}
+
+		function toHex(n) {
+			var s = Math.max(0, Math.min(255, Math.round(n))).toString(16);
+			return s.length === 1 ? "0" + s : s;
+		}
+
+		function tint(hex6, k) {
+			// simple linear mix towards white to create a faint tint
+			var rgb = parseRGB(hex6);
+			var r = rgb.r + (255 - rgb.r) * k;
+			var g = rgb.g + (255 - rgb.g) * k;
+			var b = rgb.b + (255 - rgb.b) * k;
+			return "#" + toHex(r) + toHex(g) + toHex(b);
+		}
+
+		// For each theme article, lift the base colour from <data.colour-swatch>
+		var themes = root.querySelectorAll(".coded-theme");
+		for (var i = 0; i < themes.length; i += 1) {
+			var theme = themes[i];
+
+			// find the colour source inside this theme
+			var swatch = theme.querySelector("data.colour-swatch, data.colour-swatch[value]");
+			var base = swatch ? hex8To6(swatch.getAttribute("value") || swatch.value || "") : "#1d70b8";
+			var t1 = tint(base, 0.12); // light tint for level 2
+			var t2 = tint(base, 0.22); // slightly lighter for level 3
+
+			// expose to CSS as custom properties (scoped to the theme)
+			// (Uses inline style vars; no style attributes beyond the vars themselves.)
+			theme.style.setProperty("--code-colour", base);
+			theme.style.setProperty("--code-colour-l2", t1);
+			theme.style.setProperty("--code-colour-l3", t2);
+
+			// annotate levels on any treeitems for semantics/styling hooks
+			var items = theme.querySelectorAll("[role='treeitem']");
+			for (var j = 0; j < items.length; j += 1) {
+				var li = items[j];
+				var lvl = parseInt(li.getAttribute("aria-level") || "1", 10);
+				if (lvl !== lvl) lvl = 1; // NaN guard
+				li.setAttribute("data-level", String(lvl));
+			}
+		}
+	}
+
 	// ---------- CODES (render) ----------
 	function indexById(list) {
 		var m = Object.create(null);
@@ -567,6 +637,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		}
 
 		wrap.innerHTML = out.join('');
+		
+		annotateCodebookDepth(wrap);
 	}
 
 	function setupCodeAdd() {
