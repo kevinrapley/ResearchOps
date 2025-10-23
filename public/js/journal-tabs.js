@@ -51,6 +51,30 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return '#1d70b8ff';
 	}
 
+	// --- depth helpers (client-side, from in-memory state.codes) ---
+	function mapById(arr) {
+		var m = Object.create(null);
+		if (!Array.isArray(arr)) return m;
+		for (var i = 0; i < arr.length; i += 1) {
+			var c = arr[i];
+			if (c && c.id) m[c.id] = c;
+		}
+		return m;
+	}
+
+	function depthOf(codesById, id) {
+		var d = 1;
+		var cur = String(id || '');
+		var guard = 12;
+		while (cur && guard-- > 0) {
+			var node = codesById[cur];
+			if (!node || !node.parentId) break;
+			d += 1;
+			cur = node.parentId;
+		}
+		return d;
+	}
+
 	function flash(msg, asHtml = false) {
 		let el = document.getElementById('flash');
 		if (!el) {
