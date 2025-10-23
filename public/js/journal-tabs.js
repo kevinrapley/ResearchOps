@@ -504,14 +504,17 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		function updateParentWarning() {
 			if (!parentSel) return;
 			var pid = String(parentSel.value || '');
-			if (!pid) { parentWarning.hidden = true; if (saveBtn) saveBtn.disabled = false; return; }
+			if (!pid) {
+				parentWarning.hidden = true;
+				return;
+			}
 			var map = mapById(state.codes);
-			var d = depthOf(map, pid);
-			// If parent is level 3 already, the new child would be level 4 → warn & disable
-			var wouldBe = d + 1;
+			var parentDepth = depthOf(map, pid);
+			var wouldBe = parentDepth + 1; // new node would sit one level below the parent
 			var over = wouldBe > 3;
+
+			// Show inline hint if it would exceed depth, but do NOT disable Save.
 			parentWarning.hidden = !over;
-			if (saveBtn) saveBtn.disabled = !!over;
 		}
 		parentSel && parentSel.addEventListener('change', updateParentWarning);
 
