@@ -369,88 +369,48 @@
 	
 /* === =CODEBOOK TREE ===================================== */
 
-/* Space below “Add code” button */
-#new-code-btn { margin-bottom: 1rem; }
-
-/* Pull the colour from <data value="#rrggbbaa"> into a var; fallback to currentColor */
-.colour-swatch {
-	/* Fallback path first (older browsers) */
-	color: var(--code-colour, currentColor);
-	padding-left: 8px;
-	border-left: 6px solid currentColor;
+/* space below “Add code” */
+#new-code-btn {
+	margin-bottom: 1rem;
 	}
 
-/* Progressive enhancement: use attr(value color) when supported */
-@supports (color: attr(value color)) {
-	.colour-swatch {
-		/* Read the `value` attribute as a typed color into --code-colour */
-		--code-colour: attr(value color);
-		color: var(--code-colour);
-		/* Swatch border already uses currentColor, which now equals --code-colour */
-		}
-	}
-	
-/* Light tints for nested lists derived from the swatch colour, when supported */
-@supports (background: color-mix(in srgb, red, white)) {
-	.coded-theme ul ul {
-		/* very faint bg to suggest nesting; mix toward white */
-		background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
-		}
-	}
-	
-/* Colour the marker to match the swatch colour where supported */
-@supports (color: attr(value color)) {
-	.coded-theme ul ul > li::marker {
-		color: var(--code-colour, #1d70b8);
-		}
-	}
-	
-/* Top-level theme list: no bullets, no extra indent */
-.coded-theme > ul {
-	list-style: none;
-	padding-left: 0;
-	margin: 0;
-	}
-
+/* each theme gets colour vars via JS:
+   --code-colour, --code-colour-l2, --code-colour-l3 */
 .coded-theme {
 	margin-bottom: 2rem;
 	}
 
+/* top-level theme: either <dl> (no children) or <ul role="group"> (has children) */
 .coded-theme dl {
 	margin: 0;
 	}
 
-/* Make the term bold; description sits below */
-.coded-theme dt.code-name { 
+/* name bold; description below */
+.coded-theme dt.code-name {
 	font-weight: 700;
 	margin: 0 0 .25rem 0;
 	}
-	
-.code-name {
-	font-weight: 700;
-	margin-bottom: 0.25rem;
-	}
 
-.code-desc {
-	margin: 0 0 0.75rem 0;
+.coded-theme dd.code-desc {
+	margin: 0 0 .75rem 0;
 	font-weight: 400;
 	}
-	
-/* dd will align under the chip text */
-.coded-theme > ul dd.code-desc,
-.coded-theme > dl dd.code-desc {
-	margin: 0 0 .75rem 7px;
-	}
-	
-.coded-theme > ul ul dd.code-desc {
-	margin-left: 20px;
+
+/* align dd start under the TEXT inside the chip (not the chip box) */
+.coded-theme > dl dd.code-desc,
+.coded-theme > ul dd.code-desc {
+	margin-left: 7px;
 	}
 
+/* colour swatch: left rule uses the theme colour variable.
+   JS sets --code-colour; we don’t rely on attr() here. */
 .colour-swatch {
 	padding-left: 8px;
 	border-left: 6px solid var(--code-colour, #1d70b8);
+	color: var(--code-colour, #1d70b8);
 	}
 
+/* path chip */
 .path-chip {
 	display: inline-block;
 	margin-right: 6px;
@@ -462,18 +422,48 @@
 	vertical-align: middle;
 	}
 
-/* Tree styling using real list bullets (↳) */
+/* list/tree layout
+   - no bullets/indent at theme root
+   - bullets only for nested lists, using ↳ (U+21B3)
+   - ensure Theme Code 1 aligns with Theme Code 4 (no extra UL padding/margin) */
+.coded-theme > ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	}
+
+.coded-theme ul {
+	margin: 0;
+	padding: 0;
+	}
+
+/* nested levels: real list bullets with ↳, inside so marker aligns with text */
 .coded-theme ul ul {
-	list-style-type: '\21B3 '; /* ↳ */
+	list-style-type: '\21B3 ';
 	list-style-position: inside;
 	padding-left: 1.25rem;
 	}
 
+/* item spacing */
 .coded-theme li {
 	margin: 0.25rem 0;
 	}
 
-/* Keep top-level themes visually distinct */
+/* tint + marker colour by depth (vars provided by JS) */
+.coded-theme [role="treeitem"][data-level="2"] {
+	color: var(--code-colour-l2, inherit);
+	}
+
+.coded-theme [role="treeitem"][data-level="3"] {
+	color: var(--code-colour-l3, inherit);
+	}
+
+/* optional faint background hint for nested groups */
+.coded-theme ul ul {
+	background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
+	}
+
+/* keep top-level themes visually distinct */
 .coded-theme + .coded-theme {
 	border-top: 1px solid #d0d7de;
 	padding-top: 1rem;
