@@ -425,11 +425,6 @@
 	font-weight: 700;
 	margin: 0 0 .25rem 0;
 	}
-
-/* dd will align under the chip text via a JS-computed custom prop */
-.coded-theme dd.code-desc {
-	margin: 0 0 .75rem var(--chip-text-left, 0);
-	}
 	
 .code-name {
 	font-weight: 700;
@@ -439,6 +434,16 @@
 .code-desc {
 	margin: 0 0 0.75rem 0;
 	font-weight: 400;
+	}
+	
+/* dd will align under the chip text */
+.coded-theme > ul dd.code-desc,
+.coded-theme > dl dd.code-desc {
+	margin: 0 0 .75rem 7px;
+	}
+	
+.coded-theme > ul ul dd.code-desc {
+	margin-left: 25px;
 	}
 
 .colour-swatch {
