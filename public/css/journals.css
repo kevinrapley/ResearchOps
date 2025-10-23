@@ -406,7 +406,6 @@
 .colour-swatch {
 	padding-left: 8px;
 	border-left: 6px solid var(--code-colour, #1d70b8);
-	color: var(--code-colour, #1d70b8);
 	}
 
 /* path chip */
@@ -459,6 +458,7 @@
 
 /* optional faint background hint for nested groups */
 .coded-theme ul ul {
+	padding: 1rem inherit;
 	background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
 	}
 
