@@ -465,22 +465,108 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	}
 
 	// ---------- CODES (render) ----------
+	function indexById(list) {
+		var m = Object.create(null);
+		for (var i = 0; i < list.length; i += 1) m[list[i].id] = list[i];
+		return m;
+	}
+
+	function buildChildrenIndex(codes) {
+		var byParent = Object.create(null);
+		for (var i = 0; i < codes.length; i += 1) {
+			var p = codes[i].parentId || null;
+			if (!byParent[p]) byParent[p] = [];
+			byParent[p].push(codes[i]);
+		}
+		return byParent;
+	}
+
+	function hasDescendants(id, byParent) {
+		return Array.isArray(byParent[id]) && byParent[id].length > 0;
+	}
+
+	// Label per level
+	function levelLabel(level) {
+		if (level === 1) return "Theme";
+		if (level === 2) return "Code";
+		if (level === 3) return "Sub-code";
+		return "Code";
+	}
+
+	// Small GOV.UK-style chip element
+	function pathChipHTML(label) {
+		return '<span class="path-chip" aria-hidden="true">' + esc(label) + '</span>';
+	}
+
+	function colourSwatchNameHTML(name, colour) {
+		var safeName = esc(name || "—");
+		var safeVal = esc(colour || "#1d70b8ff");
+		return '<data value="' + safeVal + '" class="colour-swatch">' + safeName + '</data>';
+	}
+
+	function codeDLHTML(code, level) {
+		var nameHtml = colourSwatchNameHTML(code.name, code.colour);
+		var chip = pathChipHTML(levelLabel(level));
+		var desc = code.description ? '<dd class="code-desc">' + esc(code.description) + '</dd>' : '';
+		return '' +
+			'<dl>' +
+			'  <dt class="code-name">' + chip + ' ' + nameHtml + '</dt>' +
+			desc +
+			'</dl>';
+	}
+
+	// Recursive tree node renderer
+	function renderTreeNodeHTML(code, level, byParent) {
+		var html = '' +
+			'<li role="treeitem" aria-level="' + String(level) + '">' +
+			codeDLHTML(code, level);
+
+		var kids = byParent[code.id] || [];
+		if (kids.length && level < 3) {
+			html += '<ul>';
+			for (var i = 0; i < kids.length; i += 1) {
+				html += renderTreeNodeHTML(kids[i], level + 1, byParent);
+			}
+			html += '</ul>';
+		}
+		html += '</li>';
+		return html;
+	}
+
 	function renderCodes(error) {
 		var wrap = document.getElementById('codes-container');
 		if (!wrap) return;
 		if (error) { wrap.innerHTML = '<p>Could not load codes.</p>'; return; }
 		if (!state.codes.length) { wrap.innerHTML = '<p>No codes yet.</p>'; return; }
 
-		var roots = buildCodeTree(state.codes);
+		var byParent = buildChildrenIndex(state.codes);
+		var top = byParent[null] || byParent[undefined] || [];
 
-		var html = '' +
-			'<div class="codebook-tree" aria-label="Codebook hierarchy">' +
-			'  <ul class="code-tree" role="tree">' +
-			roots.map(function(n) { return renderCodeNode(n, 1); }).join('') +
-			'  </ul>' +
-			'</div>';
+		var out = [];
+		for (var i = 0; i < top.length; i += 1) {
+			var theme = top[i];
+			var themeIdAttr = 'theme-' + esc(theme.id);
 
-		wrap.innerHTML = html;
+			if (!hasDescendants(theme.id, byParent)) {
+				// Theme without descendants → single article, no UL
+				out.push(
+					'<article id="' + themeIdAttr + '" class="coded-theme">' +
+					codeDLHTML(theme, 1) +
+					'</article>'
+				);
+			} else {
+				// Theme with descendants → self-contained tree
+				var treeHtml = '' +
+					'<article id="' + themeIdAttr + '" class="coded-theme">' +
+					'  <ul role="group">' +
+					renderTreeNodeHTML(theme, 1, byParent) +
+					'  </ul>' +
+					'</article>';
+				out.push(treeHtml);
+			}
+		}
+
+		wrap.innerHTML = out.join('');
 	}
 
 	function setupCodeAdd() {
