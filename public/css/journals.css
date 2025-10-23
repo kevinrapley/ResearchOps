@@ -367,51 +367,59 @@
 	border-radius: var(--radius-100);
 	}
 	
-/* === CODEBOOK TREE (stronger selectors for Codes tab) === */
+/* === =CODEBOOK TREE ===================================== */
 
-#codes-panel .coded-theme { margin-bottom: 2rem; }
-
-#codes-panel .coded-theme dl { margin: 0; }
-
-#codes-panel .coded-theme dt.code-name {
-	font-weight: 700; 
-	margin: 0 0 .25rem 0; 
+.coded-theme {
+	margin-bottom: 2rem;
 	}
-	
-#codes-panel .coded-theme dd.code-desc { 
-	margin: 0 0 .75rem 0; 
+
+.coded-theme dl {
+	margin: 0;
+	}
+
+.code-name {
+	font-weight: 700;
+	margin-bottom: 0.25rem;
+	}
+
+.code-desc {
+	margin: 0 0 0.75rem 0;
 	font-weight: 400;
 	}
 
-#codes-panel .coded-theme .colour-swatch {
+.colour-swatch {
 	padding-left: 8px;
 	border-left: 6px solid currentColor;
 	}
 
-#codes-panel .coded-theme .path-chip {
+.path-chip {
 	display: inline-block;
 	margin-right: 6px;
 	padding: 1px 6px;
-	font-size: .8rem;
+	font-size: 0.8rem;
 	border-radius: 4px;
 	background: #f3f2f1;
 	color: #505a5f;
 	vertical-align: middle;
 	}
 
-/* remove bullets everywhere under .coded-theme and add ↳ for nested levels */
-#codes-panel .coded-theme ul { list-style: none; margin: .25rem 0 .25rem 1rem; padding: 0; }
-#codes-panel .coded-theme li { list-style: none; position: relative; }
-
-/* Only nested list items get the ↳ marker */
-#codes-panel .coded-theme ul ul > li::before {
-	content: "↳ ";
-	color: #505a5f;
-	margin-right: 4px;
+/* Tree styling using real list bullets (↳) */
+.coded-theme ul {
+	list-style-position: inside;
+	padding-left: 1rem;
+	margin: 0.25rem 0;
 	}
 
-/* visual separation between top-level themes */
-#codes-panel .coded-theme + .coded-theme {
+.coded-theme ul ul {
+	list-style-type: '\21B3 '; /* ↳ bullet character */
+	}
+
+.coded-theme li {
+	margin: 0.25rem 0;
+	}
+
+/* Keep top-level themes visually distinct */
+.coded-theme + .coded-theme {
 	border-top: 1px solid #d0d7de;
 	padding-top: 1rem;
 	}
