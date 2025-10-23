@@ -467,12 +467,57 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		var descEl = document.getElementById('code-description');
 		var parentSel = document.getElementById('code-parent');
 		var cancelBtn = document.getElementById('cancel-code-btn');
+		var saveBtn = document.getElementById('save-code-btn');
+		var parentWarning = document.createElement('p');
+		parentWarning.className = 'govuk-hint';
+		parentWarning.id = 'parent-depth-warning';
+		parentWarning.hidden = true;
+		parentWarning.textContent = 'You’re at the maximum depth (3). Consider reorganising.';
+
+		var parentWrap = document.getElementById('code-parent-wrap');
+		if (parentWrap) parentWrap.appendChild(parentWarning);
+
+		function updateParentWarning() {
+			if (!parentSel) return;
+			var pid = String(parentSel.value || '');
+			if (!pid) { parentWarning.hidden = true; if (saveBtn) saveBtn.disabled = false; return; }
+			var map = mapById(state.codes);
+			var d = depthOf(map, pid);
+			// If parent is level 3 already, the new child would be level 4 → warn & disable
+			var wouldBe = d + 1;
+			var over = wouldBe > 3;
+			parentWarning.hidden = !over;
+			if (saveBtn) saveBtn.disabled = !!over;
+		}
+		parentSel && parentSel.addEventListener('change', updateParentWarning);
+
+		// Call once when the form opens
+		updateParentWarning();
 
 		function showForm(show) {
 			if (!form) return;
 			form.hidden = !show;
 			if (show) {
 				refreshParentSelector();
+				// --- depth helpers (client-side, from in-memory state.codes) ---
+				function mapById(arr) {
+					var m = Object.create(null);
+					for (var i = 0; i < arr.length; i += 1) m[arr[i].id] = arr[i];
+					return m;
+				}
+
+				function depthOf(codesById, id, guard) {
+					var d = 1,
+						cur = id,
+						g = guard || 12;
+					while (cur && g-- > 0) {
+						var node = codesById[cur];
+						if (!node || !node.parentId) break;
+						d += 1;
+						cur = node.parentId;
+					}
+					return d;
+				}
 				if (nameEl) nameEl.focus();
 			}
 		}
@@ -519,7 +564,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				return loadCodes();
 			}).catch(function(err) {
 				console.error('[codes] POST failed:', err);
-				flash('Could not create code (see console for diagnostics).');
+				var msg = (err && err.response && err.response.error) ? String(err.response.error) : 'Could not create code (see console for diagnostics).';
+				flash(msg);
 			});
 		});
 	}
