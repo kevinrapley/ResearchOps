@@ -444,6 +444,8 @@
 	background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
 	}
 
+.coded-theme ul ul ul { padding: 0 1.25rem; }
+
 /* item spacing */
 .coded-theme li {
 	margin: 0.25rem 0;
