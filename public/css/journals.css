@@ -406,6 +406,7 @@
 .colour-swatch {
 	padding-left: 8px;
 	border-left: 6px solid var(--code-colour, #1d70b8);
+	color: var(--code-colour, #1d70b8);
 	}
 
 /* path chip */
@@ -439,7 +440,8 @@
 .coded-theme ul ul {
 	list-style-type: '\21B3 ';
 	list-style-position: inside;
-	padding-left: 1.25rem;
+	padding: 1rem 1.25rem;
+	background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
 	}
 
 /* item spacing */
@@ -454,12 +456,6 @@
 
 .coded-theme [role="treeitem"][data-level="3"] {
 	color: var(--code-colour-l3, inherit);
-	}
-
-/* optional faint background hint for nested groups */
-.coded-theme ul ul {
-	padding: 1rem inherit;
-	background: color-mix(in srgb, var(--code-colour, #1d70b8) 6%, white);
 	}
 
 /* keep top-level themes visually distinct */
