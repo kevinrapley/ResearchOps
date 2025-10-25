@@ -62,6 +62,24 @@
 			<a href="#outcomes" class="board__item">Research Outcomes</a>
 		</nav>
 
+		<!-- MURAL INTEGRATIONS -->
+		<section id="mural-integration" class="card">
+			<h2 class="govuk-heading-m">Mural</h2>
+
+			<p id="mural-status" class="status">
+				<span class="pill pill--neutral" aria-live="polite" aria-atomic="true">Checking&hellip;</span>
+			</p>
+
+			<div class="actions">
+				<button id="mural-connect" class="btn" type="button">Connect Mural</button>
+				<button id="mural-setup" class="btn btn--secondary" type="button" disabled>Create “Reflexive Journal”</button>
+			</div>
+
+			<p class="hint">
+				We’ll verify your Mural account is in the Home Office workspace, create a folder named after this project in your private room, and add a board called <em>Reflexive Journal</em>.
+			</p>
+		</section>
+
 		<!-- STAKEHOLDERS -->
 		<section id="stakeholders" class="section">
 			<header class="section__header">
@@ -524,6 +542,7 @@
 			}
 		})();
 	</script>
+	<script type="module" src="/components/mural-integration.js"></script>
 </body>
 
 </html>
