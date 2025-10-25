@@ -56,7 +56,7 @@ export class MuralServicePart {
 	async muralCallback(origin, url) {
 		const { env } = this.root;
 
-		// --- Safety guard: prevent Worker crash if MURAL_CLIENT_SECRET is missing ---
+		// --- Safety guard: don't crash the Worker if the secret isn't bound ---
 		if (!env.MURAL_CLIENT_SECRET) {
 			return this.root.json({
 					ok: false,
@@ -81,9 +81,11 @@ export class MuralServicePart {
 		try {
 			const st = JSON.parse(b64Decode(stateB64 || ""));
 			uid = st?.uid || "anon";
-		} catch {}
+		} catch {
+			// ignore bad state
+		}
 
-		// --- Token exchange ---
+		// --- Token exchange (guarded) ---
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
@@ -142,5 +144,19 @@ export class MuralServicePart {
 		const mural = await createMural(this.root.env, tokens.access_token, { title: "Reflexive Journal", roomId: room.id, folderId: folder.id });
 
 		return this.root.json({ ok: true, workspace: ws, room, folder, mural }, 200, this.root.corsHeaders(origin));
+	}
+
+	/** GET /api/mural/debug-env (TEMP: verify env bindings) */
+	async muralDebugEnv(origin) {
+		const { env } = this.root;
+		return this.root.json({
+				has_CLIENT_ID: Boolean(env.MURAL_CLIENT_ID),
+				has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
+				redirect_uri: env.MURAL_REDIRECT_URI,
+				scopes: env.MURAL_SCOPES || "(unset)"
+			},
+			200,
+			this.root.corsHeaders(origin)
+		);
 	}
 }
