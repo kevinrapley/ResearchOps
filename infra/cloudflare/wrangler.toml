@@ -45,6 +45,7 @@ MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
 [[kv_namespaces]]
 binding                               = "SESSION_KV"
 id                                    = "3f8c6abfa2e142bc86f3bca3d57f29a9"
+preview_id                            = "3f8c6abfa2e142bc86f3bca3d57f29a9"
 
 # Route binding
 routes = [
