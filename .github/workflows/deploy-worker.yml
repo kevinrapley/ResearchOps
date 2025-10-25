@@ -36,10 +36,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          wrangler whoami
-          wrangler kv namespace list --config infra/cloudflare/wrangler.toml
-          grep -E '885d8725473489f8edd9c3444a190f6|SESSION_KV' namespaces.txt >/dev/null \ 
-            || { echo "❌ SESSION_KV not visible to this token/account"; exit 1; }
+          set -euo pipefail
+          # List namespaces and save output to a file
+          wrangler kv namespace list --config infra/cloudflare/wrangler.toml | tee namespaces.txt
+          # Assert the KV you expect is visible
+          grep -E 'SESSION_KV|885d872547f3489f8edd9c3444a190f6' namespaces.txt >/dev/null
           echo "✅ KV namespace visible"
 
       - name: Put Worker secrets
