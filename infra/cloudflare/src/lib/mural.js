@@ -21,7 +21,33 @@ export const SCOPES = [
 	"murals:write"
 ];
 
+/* Base URLs */
 const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+const oauthBase = "https://app.mural.co/api/public/v1/authorization/oauth2";
+
+/* ------------------------------------------------------------------ */
+/* OAuth URL builder                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Builds the OAuth2 authorization URL for Mural.
+ * This is a redirect URL (should be opened in browser, not fetched).
+ */
+export function buildAuthUrl(env, state) {
+	const params = new URLSearchParams({
+		response_type: "code",
+		client_id: env.MURAL_CLIENT_ID,
+		redirect_uri: env.MURAL_REDIRECT_URI,
+		scope: SCOPES.join(" "),
+		state
+	});
+
+	return `${oauthBase}/?${params}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* JSON helpers                                                       */
+/* ------------------------------------------------------------------ */
 
 async function fetchJSON(url, opts = {}) {
 	const ctrl = new AbortController();
@@ -46,16 +72,9 @@ const withBearer = (token) => ({
 	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
 });
 
-export function buildAuthUrl(env, state) {
-	const params = new URLSearchParams({
-		response_type: "code",
-		client_id: env.MURAL_CLIENT_ID,
-		redirect_uri: env.MURAL_REDIRECT_URI,
-		scope: SCOPES.join(" "),
-		state
-	});
-	return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
-}
+/* ------------------------------------------------------------------ */
+/* OAuth2: Token exchange                                             */
+/* ------------------------------------------------------------------ */
 
 export async function exchangeAuthCode(env, code) {
 	const body = new URLSearchParams({
@@ -75,6 +94,10 @@ export async function exchangeAuthCode(env, code) {
 	return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
+/* ------------------------------------------------------------------ */
+/* User + Workspace helpers                                           */
+/* ------------------------------------------------------------------ */
+
 export async function getMe(env, token) {
 	return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
@@ -91,6 +114,10 @@ export async function verifyHomeOfficeWorkspace(env, token) {
 	if (!ws) ws = (data?.items || []).find(w => /home office/i.test(w?.name || ""));
 	return ws || null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Rooms + Folders                                                    */
+/* ------------------------------------------------------------------ */
 
 export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
@@ -111,7 +138,11 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
 		(username && r.name?.toLowerCase().includes(username.toLowerCase()))
 	);
 	if (!room) {
-		room = await createRoom(env, token, { name: `${username} — Private`, workspaceId, visibility: "private" });
+		room = await createRoom(env, token, {
+			name: `${username} — Private`,
+			workspaceId,
+			visibility: "private"
+		});
 	}
 	return room;
 }
@@ -130,10 +161,16 @@ export async function createFolder(env, token, roomId, name) {
 
 export async function ensureProjectFolder(env, token, roomId, projectName) {
 	const existing = await listFolders(env, token, roomId).catch(() => ({ items: [] }));
-	const found = (existing?.items || []).find(f => (f.name || "").trim().toLowerCase() === projectName.trim().toLowerCase());
+	const found = (existing?.items || []).find(
+		f => (f.name || "").trim().toLowerCase() === projectName.trim().toLowerCase()
+	);
 	if (found) return found;
 	return createFolder(env, token, roomId, projectName);
 }
+
+/* ------------------------------------------------------------------ */
+/* Murals                                                             */
+/* ------------------------------------------------------------------ */
 
 export async function createMural(env, token, { title, roomId, folderId }) {
 	return fetchJSON(`${apiBase(env)}/murals`, {
@@ -143,5 +180,8 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 	});
 }
 
-// small export bag used by service part
+/* ------------------------------------------------------------------ */
+/* Export internals                                                   */
+/* ------------------------------------------------------------------ */
+
 export const _int = { fetchJSON, withBearer, apiBase };
