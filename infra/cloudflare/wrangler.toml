@@ -44,5 +44,5 @@ MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
 
 [[kv_namespaces]]
 binding                               = "SESSION_KV"
-id                                    = "885d8725473489f8edd9c3444a190f6"
-preview_id                            = "885d8725473489f8edd9c3444a190f6"
+id                                    = "8e2d88969b9e4be694868931bdba92f2"
+preview_id                            = "8e2d88969b9e4be694868931bdba92f2"
