@@ -1,5 +1,5 @@
 name                                  = "rops-api"
-main                                  = "infra/cloudflare/src/worker.js"
+main                                  = "infra/cloudflare/worker.js"
 compatibility_date                    = "2025-09-26"
 
 [assets]
