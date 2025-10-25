@@ -36,7 +36,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          wrangler kv namespace list --format json --config infra/cloudflare/wrangler.toml > namespaces.json
+          wrangler kv namespace list --config infra/cloudflare/wrangler.toml
           node -e '
             const ns = require("./namespaces.json");
             const ok = Array.isArray(ns) && ns.some(x => (x.title || x.TITLE) && (x.id || x.NAMESPACE_ID) && String((x.id||x.NAMESPACE_ID)).startsWith("885d8725473489f8edd9c3444a190f6".slice(0,8)));
