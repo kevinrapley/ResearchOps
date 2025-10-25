@@ -21,6 +21,7 @@ jobs:
           test -n "${{ secrets.CF_ACCOUNT_ID }}" || (echo "CF_ACCOUNT_ID missing"; exit 1)
           test -n "${{ secrets.GH_PAT }}" || (echo "GH_PAT missing"; exit 1)
           test -n "${{ secrets.AIRTABLE_API_KEY }}" || (echo "AIRTABLE_API_KEY missing"; exit 1)
+          test -n "${{ secrets.MURAL_CLIENT_SECRET }}" || (echo "MURAL_CLIENT_SECRET missing"; exit 1)
 
       - name: Install Wrangler
         run: npm i -g wrangler@4.40.2
