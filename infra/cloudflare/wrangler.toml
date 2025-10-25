@@ -36,6 +36,16 @@ GH_PATH_PROJECTS                      = "data/projects.csv"
 GH_PATH_DETAILS                       = "data/project-details.csv"
 GH_PATH_STUDIES                       = "data/studies.csv"
 
+# Mural
+MURAL_CLIENT_ID                       = "3648c18f-8dbe-4217-a147-3bce1609c5b1"
+MURAL_REDIRECT_URI                    = "https://researchops.pages.dev/api/mural/callback"
+MURAL_HOME_OFFICE_WORKSPACE_ID        = "pppt6786"
+MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
+
+[[kv_namespaces]]
+binding                               = "SESSION_KV"
+id                                    = "3f8c6abfa2e142bc86f3bca3d57f29a9"
+
 # Route binding
 routes = [
   { pattern = "https://researchops.pages.dev/api/*", zone_name = "pages.dev" },
