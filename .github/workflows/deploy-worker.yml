@@ -32,17 +32,17 @@ jobs:
         run: wrangler whoami || true
 
       - name: Verify SESSION_KV exists in this account
-	    env:
-		  CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-		run: |
+        run: |
           wrangler kv:namespace list --format json --config infra/cloudflare/wrangler.toml > namespaces.json
           node -e '
             const ns = require("./namespaces.json");
             const ok = Array.isArray(ns) && ns.some(x => (x.title || x.TITLE) && (x.id || x.NAMESPACE_ID) && String((x.id||x.NAMESPACE_ID)).startsWith("885d8725473489f8edd9c3444a190f6".slice(0,8)));
             if (!ok) { console.error("SESSION_KV (885d8725473489f8edd9c3444a190f6) not visible to this token/account"); process.exit(1); }
           '
-		  
+
       - name: Put Worker secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
