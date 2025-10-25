@@ -22,6 +22,7 @@
 	9. =FORMS & MODALS
    10. =PAGINATION
    11. =UTILITIES (Tags, Notes, Motion)
+   12. =MURAL INTEGRATION
 */
 
 /* COLORS (GOV.UK / HOD)
@@ -726,7 +727,7 @@ select.govuk-input {
 	overflow: hidden;
 	clip: rect(0 0 0 0);
 	clip-path: inset(50%);
-	white-space: nowrap; /* prevent line breaks */
+	white-space: nowrap;
 	}
 
 /* Variant: becomes visible when focused (e.g., skip links) */
@@ -973,6 +974,68 @@ select.govuk-input {
 	
 #rops-debug button:hover {
 	border-color:#1d70b8;
+	}
+
+/* === =MURAL INTEGRATION (Project dashboard) ============== */
+
+#mural-integration .status {
+	margin: 0 0 8px 0;
+	}
+
+#mural-integration .actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+	}
+
+/* Pill utility */
+.pill {
+	display: inline-block;
+	padding: 4px 8px;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.95rem;
+	line-height: 1;
+	}
+
+.pill--neutral {
+	background: #f3f2f1;
+	color: #0b0c0c;
+	}
+
+.pill--ok {
+	background: #d1f7c4;
+	color: #0b3b0b;
+	}
+
+.pill--warn {
+	background: #fff3bf;
+	color: #594d00;
+	}
+
+.pill--err {
+	background: #fcd5ce;
+	color: #6e0800;
+	}
+
+/* Base hint text (complements .govuk-body + .hint rules above) */
+.hint {
+	color: #505a5f;
+	font-size: 0.95rem;
+	margin: 6px 0 0 0;
+	}
+
+#mural-integration a:focus,
+#mural-integration button:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	}
+
+@media (prefers-reduced-motion: reduce) {
+	.pill {
+		transition: none !important;
+		}
 	}
 
 /* transparency begins in the cascade */
