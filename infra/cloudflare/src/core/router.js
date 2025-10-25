@@ -477,6 +477,22 @@ export async function handleRequest(request, env) {
 				return service.sendComms(request, origin);
 			}
 		}
+		
+		// ─────────────────────────────────────────────────────────────────
+		// Mural (OAuth + setup)
+		// ─────────────────────────────────────────────────────────────────
+		if (url.pathname === "/api/mural/auth" && request.method === "GET") {
+			return service.mural.muralAuth(origin, url);
+		}
+		if (url.pathname === "/api/mural/callback" && request.method === "GET") {
+			return service.mural.muralCallback(origin, url);
+		}
+		if (url.pathname === "/api/mural/verify" && request.method === "GET") {
+			return service.mural.muralVerify(origin, url);
+		}
+		if (url.pathname === "/api/mural/setup" && request.method === "POST") {
+			return service.mural.muralSetup(request, origin);
+		}
 
 		// ─────────────────────────────────────────────────────────────────
 		// Unknown API route
