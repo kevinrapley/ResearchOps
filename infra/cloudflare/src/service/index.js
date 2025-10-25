@@ -1,7 +1,16 @@
 /**
  * @file src/service/index.js
  * @module service
- * @summary Composed API service (Airtable + GitHub CSV) for ResearchOps Worker.
+ * @summary Composed API service for ResearchOps Worker
+ * @description
+ * Combines domain modules (Projects, Studies, Guides, Participants, Sessions, Partials, Comms, CSV)
+ * and the Reflexive Journals suite (Journals, Excerpts, Memos, Codes, Analysis), plus external
+ * integrations (GitHub CSV mirror, Airtable) and **Mural OAuth + provisioning**:
+ *
+ * - Mural OAuth (auth-code) and token persistence (KV)
+ * - Workspace membership verification (Home Office)
+ * - Room + Folder ensure (per-user private room; folder = Project name)
+ * - “Reflexive Journal” mural creation inside that folder
  */
 
 import { DEFAULTS } from "../core/constants.js";
@@ -24,6 +33,9 @@ import * as Memos from "./memos.js";
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
 import * as Analysis from "./reflection/analysis.js";
+
+/* Integrations */
+import { MuralServicePart } from "./internals/mural.js";
 
 /* Diagnostics */
 import * as Diag from "./dev/diag.js";
@@ -53,6 +65,12 @@ import * as Diag from "./dev/diag.js";
  * @property {string} [MODEL]
  * @property {string} [AIRTABLE_TABLE_AI_LOG]
  * @property {any}    AI
+ * @property {KVNamespace} SESSION_KV
+ * @property {string} [MURAL_CLIENT_ID]
+ * @property {string} [MURAL_CLIENT_SECRET]
+ * @property {string} [MURAL_REDIRECT_URI]                 // e.g. https://host/api/mural/callback
+ * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]     // preferred over name match
+ * @property {string} [MURAL_API_BASE]                     // default: https://app.mural.co/api/public/v1
  */
 
 /**
@@ -63,6 +81,16 @@ import * as Diag from "./dev/diag.js";
  * @property {BatchLogger} log
  * @property {(origin:string)=>Record<string,string>} corsHeaders
  * @property {(body:unknown, status?:number, headers?:HeadersInit)=>Response} json
+ */
+
+/**
+ * Mural integration surface exposed by the composed service.
+ * Methods are called by router bindings:
+ * - GET  /api/mural/auth      → {@link MuralServicePart#muralAuth}
+ * - GET  /api/mural/callback  → {@link MuralServicePart#muralCallback}
+ * - GET  /api/mural/verify    → {@link MuralServicePart#muralVerify}
+ * - POST /api/mural/setup     → {@link MuralServicePart#muralSetup}
+ * @typedef {import("./internals/mural.js").MuralServicePart} MuralAPI
  */
 
 function corsHeaders(env, origin) {
@@ -98,6 +126,8 @@ export class ResearchOpsService {
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		/** @type {(body:unknown, status?:number, headers?:HeadersInit)=>Response} */
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
+		/** @type {MuralAPI} */
+		this.mural = new MuralServicePart(this);
 	}
 
 	reset() { this.log.reset(); }
@@ -106,6 +136,13 @@ export class ResearchOpsService {
 			this.log.destroy();
 			this.destroyed = true;
 		}
+	}
+	
+	json(payload, status = 200, headers = {}) {
+		return new Response(JSON.stringify(payload), {
+			status,
+			headers: { "content-type": "application/json; charset=utf-8", ...headers }
+		});
 	}
 
 	/* ─────────────── Health ─────────────── */
