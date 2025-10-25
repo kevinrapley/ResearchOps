@@ -54,9 +54,28 @@ export class MuralServicePart {
 
 	/** GET /api/mural/callback?code=&state= */
 	async muralCallback(origin, url) {
+		const { env } = this.root;
+
+		// --- Safety guard: prevent Worker crash if MURAL_CLIENT_SECRET is missing ---
+		if (!env.MURAL_CLIENT_SECRET) {
+			return this.root.json({
+					ok: false,
+					error: "missing_secret",
+					message: "MURAL_CLIENT_SECRET is not configured in Cloudflare secrets."
+				},
+				500,
+				this.root.corsHeaders(origin)
+			);
+		}
+
 		const code = url.searchParams.get("code");
 		const stateB64 = url.searchParams.get("state");
-		if (!code) return this.root.json({ ok: false, error: "missing_code" }, 400, this.root.corsHeaders(origin));
+		if (!code) {
+			return this.root.json({ ok: false, error: "missing_code" },
+				400,
+				this.root.corsHeaders(origin)
+			);
+		}
 
 		let uid = "anon";
 		try {
@@ -64,7 +83,21 @@ export class MuralServicePart {
 			uid = st?.uid || "anon";
 		} catch {}
 
-		const tokens = await exchangeAuthCode(this.root.env, code);
+		// --- Token exchange ---
+		let tokens;
+		try {
+			tokens = await exchangeAuthCode(env, code);
+		} catch (err) {
+			return this.root.json({
+					ok: false,
+					error: "token_exchange_failed",
+					message: err.message || "Unable to exchange OAuth code"
+				},
+				500,
+				this.root.corsHeaders(origin)
+			);
+		}
+
 		await this.saveTokens(uid, tokens);
 
 		const back = new URL("/pages/projects/", url);
