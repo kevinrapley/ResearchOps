@@ -38,12 +38,9 @@ jobs:
         run: |
           wrangler whoami
           wrangler kv namespace list --config infra/cloudflare/wrangler.toml
-          node -e '
-            const ns = require("./namespaces.json");
-            const ok = Array.isArray(ns) && ns.some(x => (x.title || x.TITLE) && (x.id || x.NAMESPACE_ID) && String((x.id||x.NAMESPACE_ID)).startsWith("885d8725473489f8edd9c3444a190f6".slice(0,8)));
-            if (!ok) { console.error("SESSION_KV (885d8725473489f8edd9c3444a190f6) not visible to this token/account"); process.exit(1); }
-          '
-          grep -E '885d8725473489f8edd9c3444a190f6|SESSION_KV' namespaces.txt
+          grep -E '885d8725473489f8edd9c3444a190f6|SESSION_KV' namespaces.txt >/dev/null \ 
+            || { echo "❌ SESSION_KV not visible to this token/account"; exit 1; }
+          echo "✅ KV namespace visible"
 
       - name: Put Worker secrets
         env:
