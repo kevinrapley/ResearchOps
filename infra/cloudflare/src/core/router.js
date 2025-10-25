@@ -47,6 +47,12 @@
  *   - GET   /api/sessions/:id/ics                  (download .ics)
  * - Comms:
  *   - POST /api/comms/send                         (send + log)
+ * - Mural:
+ *   - GET  /api/mural/auth                         (start OAuth)
+ *   - GET  /api/mural/callback                     (OAuth redirect)
+ *   - GET  /api/mural/verify                       (check connection + workspace)
+ *   - POST /api/mural/setup                        (create folder + “Reflexive Journal”)
+ *   - GET  /api/mural/debug-env                    (TEMP: show bound env vars)
  *
  * Any non-/api requests fall through to static ASSETS with SPA index.html fallback.
  */
@@ -317,9 +323,9 @@ export async function handleRequest(request, env) {
 		}
 		if (url.pathname.startsWith("/api/codes/") && request.method === "PATCH") {
 			const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
-			return (typeof service.updateCode === "function")
-				? service.updateCode(request, origin, codeId)
-				: service.createCode(request, origin);
+			return (typeof service.updateCode === "function") ?
+				service.updateCode(request, origin, codeId) :
+				service.createCode(request, origin);
 		}
 
 		// ─────────────────────────────────────────────────────────────────
@@ -477,7 +483,7 @@ export async function handleRequest(request, env) {
 				return service.sendComms(request, origin);
 			}
 		}
-		
+
 		// ─────────────────────────────────────────────────────────────────
 		// Mural (OAuth + setup)
 		// ─────────────────────────────────────────────────────────────────
@@ -493,13 +499,16 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/mural/setup" && request.method === "POST") {
 			return service.mural.muralSetup(request, origin);
 		}
+		// TEMP: env visibility to confirm secrets are bound to this deployment
+		if (url.pathname === "/api/mural/debug-env" && request.method === "GET") {
+			return service.mural.muralDebugEnv(origin);
+		}
 
 		// ─────────────────────────────────────────────────────────────────
 		// Unknown API route
 		// ─────────────────────────────────────────────────────────────────
 		if (url.pathname.startsWith("/api/")) {
-			return service.json(
-				{ error: "Not found", path: url.pathname },
+			return service.json({ error: "Not found", path: url.pathname },
 				404,
 				service.corsHeaders(origin)
 			);
