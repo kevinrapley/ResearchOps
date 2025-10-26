@@ -42,11 +42,14 @@ export class MuralServicePart {
 	// Routes
 	// ─────────────────────────────────────────────────────────────────
 
-	/** GET /api/mural/auth?uid=:uid[&return=:path] */
+	/** GET /api/mural/auth?uid=:uid[&return=:url] */
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
 		const ret = url.searchParams.get("return");
-		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+
+		// Only allow relative paths to avoid open-redirects
+		const safeReturn = (ret && /^\/[^\s]*$/.test(ret)) ? ret : "/pages/projects/";
+
 		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
 		const redirect = buildAuthUrl(this.root.env, state);
 		return Response.redirect(redirect, 302);
@@ -90,7 +93,7 @@ export class MuralServicePart {
 		await this.saveTokens(uid, tokens);
 
 		// Return to the page we came from, append mural=connected
-		const safeReturn = (stateObj?.return && stateObj.return.startsWith("/")) ?
+		const safeReturn = (stateObj?.return && /^\/[^\s]*$/.test(stateObj.return)) ?
 			stateObj.return :
 			"/pages/projects/";
 		const back = new URL(safeReturn, url);
@@ -128,7 +131,6 @@ export class MuralServicePart {
 	/** POST /api/mural/setup  body: { uid, projectName } */
 	async muralSetup(request, origin) {
 		const cors = this.root.corsHeaders(origin);
-		/** helpful step marker for error reporting */
 		let step = "parse_input";
 
 		try {
@@ -143,18 +145,36 @@ export class MuralServicePart {
 				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
 			}
 
-			step = "verify_workspace";
-			const ws = await verifyHomeOfficeWorkspace(this.root.env, tokens.access_token);
-			if (!ws) {
+			// Gate by company/tenant (NOT by workspace listing)
+			step = "verify_company";
+			const inCompany = await verifyHomeOfficeByCompany(this.root.env, tokens.access_token);
+			if (!inCompany) {
 				return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
 			}
 
+			// Work out which workspace ID to use for room/folder creation
 			step = "get_me";
 			const me = await getMe(this.root.env, tokens.access_token).catch(() => null);
-			const username = me?.value?.firstName || me?.name || "Private";
+
+			const configuredWsId = (this.root.env.MURAL_HOME_OFFICE_WORKSPACE_ID || "").trim();
+			const activeWsId = getActiveWorkspaceIdFromMe(me);
+			const workspaceId = configuredWsId || activeWsId;
+
+			if (!workspaceId) {
+				return this.root.json({ ok: false, error: "no_workspace_id", message: "Could not resolve a workspace id (set MURAL_HOME_OFFICE_WORKSPACE_ID or ensure lastActiveWorkspace is present)" },
+					400,
+					cors
+				);
+			}
+
+			const username =
+				me?.value?.firstName ||
+				me?.value?.name ||
+				me?.name ||
+				"Private";
 
 			step = "ensure_room";
-			const room = await ensureUserRoom(this.root.env, tokens.access_token, ws.id, username);
+			const room = await ensureUserRoom(this.root.env, tokens.access_token, workspaceId, username);
 
 			step = "ensure_folder";
 			const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, String(projectName).trim());
@@ -166,22 +186,20 @@ export class MuralServicePart {
 				folderId: folder.id
 			});
 
-			return this.root.json({ ok: true, workspace: ws, room, folder, mural }, 200, cors);
+			return this.root.json({ ok: true, workspace: { id: workspaceId }, room, folder, mural },
+				200,
+				cors
+			);
 
 		} catch (err) {
-			// Unwrap our library’s enriched errors if present
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
 
-			// Never throw — surface as JSON so the client can show it
-			return this.root.json({
-				ok: false,
-				error: "setup_failed",
-				step,
-				message,
-				upstream: body
-			}, status, cors);
+			return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body },
+				status,
+				cors
+			);
 		}
 	}
 
@@ -194,7 +212,8 @@ export class MuralServicePart {
 			has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
 			redirect_uri: env.MURAL_REDIRECT_URI || "(unset)",
 			scopes: env.MURAL_SCOPES || "(default)",
-			company_id: env.MURAL_COMPANY_ID || "(unset)"
+			company_id: env.MURAL_COMPANY_ID || "(unset)",
+			workspace_id: env.MURAL_HOME_OFFICE_WORKSPACE_ID || "(unset)"
 		}, 200, this.root.corsHeaders(origin));
 	}
 
@@ -202,7 +221,7 @@ export class MuralServicePart {
 	async muralDebugAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
 		const ret = url.searchParams.get("return");
-		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const safeReturn = (ret && /^\/[^\s]*$/.test(ret)) ? ret : "/pages/projects/";
 		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
 		const authUrl = buildAuthUrl(this.root.env, state);
 		return this.root.json({
