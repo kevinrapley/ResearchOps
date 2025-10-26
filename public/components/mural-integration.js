@@ -11,7 +11,7 @@
  *    Worker can redirect back after `/api/mural/callback`.
  * 2) On load, calls `/api/mural/verify?uid=…` to confirm:
  *    - user is authenticated with Mural; and
- *    - user is in the Home Office org/workspace (as enforced server-side).
+ *    - user is in the Home Office org/company (server enforces).
  * 3) “Create Reflexive Journal” → POST `/api/mural/setup` with `{ uid, projectName }`
  *    to ensure: Private room → Project folder → Mural board creation.
  *
@@ -43,15 +43,12 @@
 /* ─────────────────────────── In-page debug (for iPad) ─────────────────────────── */
 
 /**
- * Bridges `console.log/warn/error` to a visible on-page element when the URL
- * contains `?debug=true`. This is helpful on devices without a JS console (iPad).
+ * Bridges console output to a visible on-page element when the URL
+ * contains `?debug=true`. Handy on devices without a JS console (iPad).
  *
  * Side effects:
  * - Wraps `console.log`, `console.warn`, `console.error`.
  * - Appends text nodes into `#mural-debug` if present.
- *
- * Safe to run multiple times; wrappers are idempotent for the page lifecycle.
- * No-ops if `#mural-debug` is absent or `?debug=true` is not set.
  *
  * @private
  */
@@ -61,16 +58,16 @@
 		if (sp.get("debug") !== "true") return;
 		const box = document.getElementById("mural-debug");
 		if (!box) return;
-		/** @param {"log"|"warn"|"error"} lvl @param {IArguments|any[]} args */
 		const write = (lvl, args) => {
 			const div = document.createElement("div");
 			div.textContent = `[${lvl}] ${Array.from(args).map(String).join(" ")}`;
 			box.appendChild(div);
 		};
-		/** Patch console methods to mirror output into the box. */
 		["log", "warn", "error"].forEach((k) => {
 			const orig = console[k].bind(console);
-			console[k] = function() { try { write(k, arguments); } catch {} finally { orig.apply(console, arguments); } };
+			console[k] = function() {
+				try { write(k, arguments); } catch {} finally { orig.apply(console, arguments); }
+			};
 		});
 		window.addEventListener("error", e => console.error("window.error:", e.message || e));
 		window.addEventListener("unhandledrejection", e => console.error("unhandledrejection:", (e.reason && e.reason.message) || e.reason || ""));
@@ -88,14 +85,7 @@ const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 
 /**
  * Resolve the Worker API base.
- *
- * Reads in order:
- * - `window.ROPS_API_BASE`
- * - `document.documentElement.dataset.apiBase`
- * - `DEFAULT_API_BASE`
- *
  * Trailing slashes are removed.
- *
  * @returns {string} Absolute base URL (no trailing slash).
  */
 function resolveApiBase() {
@@ -106,30 +96,15 @@ function resolveApiBase() {
 	return base || DEFAULT_API_BASE;
 }
 
-/**
- * The effective Worker API base used by this module.
- * @constant {string}
- */
+/** @constant {string} */
 const API_BASE = resolveApiBase();
 
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
-/**
- * Shorthand query helper.
- * @param {string} selector
- * @param {ParentNode} [root=document]
- * @returns {Element|null}
- */
 const $ = (s, r = document) => r.querySelector(s);
 
 /**
  * Extract a project name from the page.
- *
- * Sources (first available wins):
- * - `<main data-project-name="…">`
- * - text content of `#project-title`
- * - `?projectName=…` query parameter
- *
  * @returns {string} The project name, or `""` if not found.
  */
 function getProjectName() {
@@ -144,38 +119,45 @@ function getProjectName() {
 	return (q && q.trim()) || "";
 }
 
+/* ─────────────────────────────────── UID handling ─────────────────────────────── */
+
+/** Key used to pin a stable uid across auth/verify/setup calls. */
+const UID_KEY = "mural.uid";
+
 /**
- * Get the current app user id for associating Mural tokens in KV.
- *
+ * Resolve a best-effort user id for associating Mural tokens in KV and pin it.
  * Sources:
- * - `window.USER.id` (if your app populates it)
+ * - `window.USER.id`
  * - `localStorage.userId`
- * - `"anon"` (fallback)
- *
- * @returns {string} A non-empty uid string.
+ * - `"anon"`
+ * @returns {string} A non-empty uid string (persisted in localStorage).
  */
 function getUid() {
-	if (window.USER?.id) return String(window.USER.id);
-	const st = localStorage.getItem("userId");
-	return (st && st.trim()) || "anon";
+	const pinned = localStorage.getItem(UID_KEY);
+	if (pinned && pinned.trim()) return pinned.trim();
+
+	let uid =
+		(window.USER?.id && String(window.USER.id)) ||
+		(localStorage.getItem("userId") || "").trim() ||
+		"anon";
+
+	uid = String(uid);
+	localStorage.setItem(UID_KEY, uid);
+	return uid;
 }
+
+/** Optional helper to clear the pinned uid (e.g., for re-auth flows). */
+function resetUid() {
+	localStorage.removeItem(UID_KEY);
+}
+
+/* ────────────────────────────────── Status pill ──────────────────────────────── */
 
 /**
  * Render a status pill into a host element.
- *
- * Expected CSS (suggested):
- * ```
- * .pill { display:inline-block; padding:2px 8px; border-radius:12px; border:1px solid; }
- * .pill--ok { border-color:#2a5b2b; background:#dff0d8; }
- * .pill--warn { border-color:#6b4e00; background:#fff3cd; }
- * .pill--err { border-color:#7a1212; background:#f8d7da; }
- * .pill--neutral { border-color:#b1b4b6; background:#f3f2f1; }
- * ```
- *
  * @param {HTMLElement|null} host
  * @param {"ok"|"warn"|"err"|"neutral"} kind
  * @param {string} text
- * @returns {void}
  */
 function setPill(host, kind, text) {
 	if (!host) return;
@@ -190,13 +172,6 @@ function setPill(host, kind, text) {
 
 /**
  * Verify the user’s Mural connection via the Worker.
- *
- * Endpoint: `GET {API_BASE}/api/mural/verify?uid=…`
- *
- * - `401` → `{ ok:false, reason:"not_authenticated" }`
- * - `403` (server-defined) may yield `{ ok:false, reason:"not_in_home_office_workspace" }`
- * - `200` → `{ ok:true, ... }`
- *
  * @param {string} uid
  * @returns {Promise<{ok:boolean, reason?:string, [k:string]:any}>}
  */
@@ -216,10 +191,6 @@ async function verify(uid) {
 
 /**
  * Request creation of the project folder and “Reflexive Journal” mural.
- *
- * Endpoint: `POST {API_BASE}/api/mural/setup`
- * Body: `{ uid:string, projectName:string }`
- *
  * @param {string} uid
  * @param {string} projectName
  * @returns {Promise<{ok:boolean, reason?:string, error?:string, mural?:{id?:string,url?:string}}>}
@@ -240,16 +211,15 @@ async function setup(uid, projectName) {
  * Kick off the OAuth flow by navigating to the Worker’s `/api/mural/auth`.
  * Includes a `return` parameter pointing back to the current page so the
  * Worker can redirect here after `/api/mural/callback`.
- *
  * @param {string} uid
- * @returns {void}
  */
 function startOAuth(uid) {
-	const returnTo = location.href; // come back to the exact dashboard view
+	localStorage.setItem(UID_KEY, String(uid || "anon")); // pin before leaving
+	const returnTo = location.href;
 	const url = new URL(`${API_BASE}/api/mural/auth`);
 	url.searchParams.set("uid", uid);
 	url.searchParams.set("return", returnTo);
-	console.log("[mural] redirecting to OAuth…");
+	console.log("[mural] redirecting to OAuth…", { uid });
 	location.assign(url.toString());
 }
 
@@ -257,16 +227,10 @@ function startOAuth(uid) {
 
 /**
  * Initialise the Mural integration on the Project dashboard.
- *
  * Wires:
  * - “Connect Mural” button → `startOAuth(uid)`
  * - “Create Reflexive Journal” button → `setup(uid, projectName)`
- *
- * Status is written to `#mural-status` if present (via {@link setPill}).
- * The Setup button is enabled after a successful verify; if the project
- * name is not resolvable on click, the user is prompted (to support iPad flows).
- *
- * @returns {void}
+ * Status is written to `#mural-status` if present.
  */
 function init() {
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
@@ -278,10 +242,10 @@ function init() {
 	}
 
 	const uid = getUid();
-	let projectName = getProjectName();
+	const projectName = getProjectName(); // ← authoritative; we will not prompt
 	console.log("[mural] resolved uid:", uid, "projectName:", projectName || "(empty)");
 
-	// Hint if we just returned from OAuth
+	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
@@ -293,8 +257,8 @@ function init() {
 		console.log("[mural] verify result:", res);
 		if (res.ok) {
 			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-			// Don’t hard-gate by projectName here; allow click + prompt if needed.
-			setupBtn.disabled = false;
+			// Enable setup only when we actually know the project name from the page.
+			setupBtn.disabled = !projectName;
 			connectBtn.textContent = "Re-connect Mural";
 		} else if (res.reason === "not_authenticated") {
 			setPill(statusEl, "warn", "Not connected");
@@ -315,13 +279,12 @@ function init() {
 	// Connect
 	connectBtn.addEventListener("click", () => startOAuth(uid));
 
-	// Setup
+	// Setup — strictly use the project name from the page; no prompt fallback.
 	setupBtn.addEventListener("click", async () => {
-		// Re-resolve in case the page populated it after load
 		if (!projectName) {
-			projectName = prompt("Enter a project name for the Mural folder:") || "";
-			projectName = projectName.trim();
-			if (!projectName) return alert("Project name is required.");
+			setPill(statusEl, "warn", "Missing project name on page");
+			alert("Project name not found on this page. Please ensure the dashboard includes either:\n• <main data-project-name=\"…\"> or\n• <h1 id=\"project-title\">…</h1>");
+			return;
 		}
 
 		const prev = setupBtn.textContent;
@@ -375,8 +338,9 @@ document.addEventListener("DOMContentLoaded", init);
  * @property {(uid:string) => Promise<{ok:boolean,reason?:string}>} verify
  * @property {(uid:string, projectName:string) => Promise<any>} setup
  * @property {(uid:string) => void} startOAuth
+ * @property {() => void} resetUid
  * @property {string} API_BASE
  */
 
 /** @type {MuralIntegrationAPI} */
-window.MuralIntegration = { init, verify, setup, startOAuth, API_BASE };
+window.MuralIntegration = { init, verify, setup, startOAuth, resetUid, API_BASE };
