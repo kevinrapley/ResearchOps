@@ -56,6 +56,7 @@ function getProjectName() {
 
 	// 4) query param
 	const sp = new URLSearchParams(location.search);
+  
 	const q = sp.get("projectName");
 	return (q && q.trim()) || "";
 }
@@ -93,19 +94,52 @@ function setPill(host, kind, text) {
 
 /* ────────────────────────────────── API wrappers ──────────────────────────────── */
 
+// ↓↓↓ ONLY THIS FUNCTION CHANGED ↓↓↓
 async function verify(uid) {
 	const url = new URL(`${API_BASE}/api/mural/verify`);
 	url.searchParams.set("uid", uid);
 	console.log("[mural] verifying uid:", uid, "→", url.toString());
-	const res = await fetch(url, { cache: "no-store", credentials: "omit" });
-	if (res.status === 401) return { ok: false, reason: "not_authenticated" };
-	if (!res.ok) {
-		const t = await res.text().catch(() => "");
-		console.error("[mural] verify error payload:", t);
-		return { ok: false, reason: "error", detail: t };
+
+	let data = null;
+	try {
+		const res = await fetch(url, { cache: "no-store", credentials: "omit" });
+
+		// 401 is explicit "not connected"
+		if (res.status === 401) {
+			console.warn("[mural] verify → 401 not_authenticated");
+			return { ok: false, reason: "not_authenticated" };
+		}
+
+		// Try to parse JSON either way (OK or not OK)
+		try {
+			data = await res.clone().json();
+		} catch {
+			// Fall back to text for diagnostics
+			const txt = await res.text().catch(() => "");
+			if (!res.ok) {
+				console.error("[mural] verify non-OK (no JSON):", res.status, txt);
+				return { ok: false, reason: "error", detail: txt || `HTTP ${res.status}` };
+			}
+			// OK but no JSON is unexpected; return a generic ok=false
+			console.warn("[mural] verify OK but no JSON body");
+			return { ok: false, reason: "error", detail: "Empty response" };
+		}
+
+		// If HTTP not OK, pass through structured reason/error from server
+		if (!res.ok) {
+			const reason = data?.reason || data?.error || "error";
+			console.error("[mural] verify non-OK:", res.status, data);
+			return { ok: false, reason, detail: data };
+		}
+
+		// Normal happy path
+		return data;
+	} catch (err) {
+		console.error("[mural] verify failed (network/exception):", err);
+		return { ok: false, reason: "error", detail: String(err?.message || err) };
 	}
-	return res.json();
 }
+// ↑↑↑ ONLY THIS FUNCTION CHANGED ↑↑↑
 
 async function setup(uid, projectName) {
 	console.log("[mural] setup →", { uid, projectName });
@@ -163,7 +197,6 @@ function watchProjectName() {
 
 /* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
-// Stricter extractor: prefer member canvas link; fall back to viewer/url if present.
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
 	return v?._canvasLink || v?.viewerUrl || v?.url || "";
