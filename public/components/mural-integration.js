@@ -39,6 +39,18 @@ const API_BASE = resolveApiBase();
 
 const $ = (s, r = document) => r.querySelector(s);
 
+function getProjectId() {
+	// Prefer URL param id= (Airtable id)
+	const id = new URLSearchParams(location.search).get("id");
+	if (id && id.trim()) return id.trim();
+
+	// Fallback: <main data-project-airtable-id="…">
+	const main = $("main[data-project-airtable-id]");
+	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
+
+	return ""; // unknown
+}
+
 function getProjectName() {
 	// 1) data attribute
 	const main = $("main[data-project-name]");
@@ -57,6 +69,30 @@ function getProjectName() {
 	const sp = new URLSearchParams(location.search);
 	const q = sp.get("projectName");
 	return (q && q.trim()) || "";
+}
+
+/* ────────────────────────────── Per-project open URL store ────────────────────── */
+
+function storageKeyForOpenUrl() {
+	const pid = getProjectId();
+	if (pid) return `mural.openUrl::id::${pid}`;
+	const pname = (getProjectName() || "").toLowerCase().trim();
+	return pname ? `mural.openUrl::name::${pname}` : "";
+}
+
+function getPersistedOpenUrl() {
+	try {
+		const key = storageKeyForOpenUrl();
+		return key ? (localStorage.getItem(key) || "").trim() : "";
+	} catch { return ""; }
+}
+
+function persistOpenUrl(url) {
+	try {
+		const key = storageKeyForOpenUrl();
+		if (!key || !url) return;
+		localStorage.setItem(key, String(url));
+	} catch { /* ignore */ }
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -162,10 +198,30 @@ function watchProjectName() {
 
 /* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
-// Replace your extractMuralOpenUrl with this stricter version:
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
+	// Prefer member/canvas link (full edit); otherwise fall back to the best we have.
 	return v?._canvasLink || v?.viewerUrl || v?.url || "";
+}
+
+/* ─────────────────────────── UI helpers: switch to OPEN ───────────────────────── */
+
+function switchButtonToOpen(setupBtn, openUrl) {
+	setupBtn.textContent = "Open “Reflexive Journal”";
+	setupBtn.disabled = false;
+	setupBtn.setAttribute("aria-disabled", "false");
+
+	if (setupBtn.__muralCreateHandler) {
+		setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
+		delete setupBtn.__muralCreateHandler;
+	}
+	if (setupBtn.__muralOpenHandler) {
+		setupBtn.removeEventListener("click", setupBtn.__muralOpenHandler);
+	}
+	setupBtn.__muralOpenHandler = function onOpenClick() {
+		if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+	};
+	setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
 }
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
@@ -215,20 +271,10 @@ function attachDirectListeners() {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
 					const openUrl = extractMuralOpenUrl(res);
+					if (openUrl) persistOpenUrl(openUrl);
 
-					// Switch button to OPEN state
-					setupBtn.textContent = "Open “Reflexive Journal”";
-					setupBtn.disabled = false;
-					setupBtn.setAttribute("aria-disabled", "false");
-
-					// Remove the create handler; attach the open handler
-					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
-					delete setupBtn.__muralCreateHandler;
-
-					setupBtn.__muralOpenHandler = function onOpenClick() {
-						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-					};
-					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
+					// Switch button → OPEN
+					switchButtonToOpen(setupBtn, openUrl);
 
 					// Auto-open once on creation
 					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
@@ -258,8 +304,7 @@ function attachDirectListeners() {
 				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
-
-				// Refresh status; enable state will be recomputed after verify returns
+				// Soft refresh; the server now auto-refreshes expired tokens
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
@@ -269,6 +314,12 @@ function attachDirectListeners() {
 		};
 
 		setupBtn.addEventListener("click", setupBtn.__muralCreateHandler);
+
+		/* NEW: If we already have an open URL for this project, show “Open …” immediately */
+		const persistedUrl = getPersistedOpenUrl();
+		if (persistedUrl) {
+			switchButtonToOpen(setupBtn, persistedUrl);
+		}
 	}
 }
 
@@ -276,11 +327,10 @@ function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	// Bind direct listeners to avoid duplicate delegated clicks
 	attachDirectListeners();
 
 	const uid = getUid();
-	console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
+	console.log("[mural] resolved uid:", uid, "projectId:", getProjectId() || "(none)", "projectName:", getProjectName() || "(empty)");
 
 	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
@@ -290,7 +340,7 @@ function init() {
 	}
 
 	// Verify, then compute setup enablement
-	verify(uid).then((res) => {
+	const runVerify = () => verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
 		lastVerifyOk = !!res?.ok;
 		updateSetupState();
@@ -313,10 +363,18 @@ function init() {
 		setPill(statusEl, "err", "Error checking status");
 	});
 
-	// React when <main data-project-name> is populated later by renderProject()
+	runVerify();
+
+	// NEW: tiny nicety — when the tab wakes, re-verify so the pill recovers
+	window.addEventListener("focus", runVerify);
+	document.addEventListener("visibilitychange", () => {
+		if (document.visibilityState === "visible") runVerify();
+	});
+
+	// React when <main data-project-name> later appears
 	watchProjectName();
 
-	// If your dashboard injects the buttons later, rebind direct listeners
+	// Rebind listeners if DOM changes later
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
