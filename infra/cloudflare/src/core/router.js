@@ -499,6 +499,10 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/mural/setup" && request.method === "POST") {
 			return service.mural.muralSetup(request, origin);
 		}
+		// Find existing “Reflexive Journal” (no creation)
+		if (url.pathname === "/api/mural/find" && request.method === "GET") {
+  			return service.mural.muralFind(origin, url);
+		}
 		// List user workspaces (TEMP)
 		if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
 			return service.mural.muralListWorkspaces(origin, url);
