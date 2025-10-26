@@ -16,9 +16,7 @@
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
  *
- * Notes:
- * - After successful creation, the Setup button switches to **Open “Reflexive Journal”**
- *   and opens the board in a new window. ARIA is kept in sync.
+ * Debug: logs to console.* (your existing debug console captures these).
  */
 
 /* eslint-env browser */
@@ -92,35 +90,14 @@ function setPill(host, kind, text) {
 	host.appendChild(span);
 }
 
-/* ───────────────────────────── ARIA + button helpers ─────────────────────────── */
+/* ───────────────────────────── ARIA helpers (minimal) ────────────────────────── */
 
-/**
- * Keep ARIA in sync whenever we toggle the primary action.
- * @param {HTMLButtonElement} btn
- * @param {boolean} disabled
- * @param {string} label
- */
-function syncAria(btn, disabled, label) {
+function setAriaDisabled(btn, disabled) {
 	btn.setAttribute("aria-disabled", String(disabled));
+}
+
+function setAriaLabel(btn, label) {
 	if (label) btn.setAttribute("aria-label", label);
-}
-
-/** Put the button into “Create Reflexive Journal” mode. */
-function setCreateMode(btn, enabled) {
-	btn.dataset.muralMode = "create";
-	btn.textContent = "Create “Reflexive Journal”";
-	btn.disabled = !enabled;
-	btn.onclick = null; // listener will reassign on next bind
-	syncAria(btn, btn.disabled, "Create Reflexive Journal board in Mural");
-}
-
-/** Put the button into “Open Reflexive Journal” mode with a concrete URL. */
-function setOpenMode(btn, url) {
-	btn.dataset.muralMode = "open";
-	btn.textContent = "Open “Reflexive Journal”";
-	btn.disabled = false;
-	btn.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
-	syncAria(btn, false, "Open Reflexive Journal in Mural");
 }
 
 /* ────────────────────────────────── API wrappers ──────────────────────────────── */
@@ -170,16 +147,28 @@ function updateSetupState() {
 	if (!setupBtn) return;
 	const name = getProjectName();
 	const shouldEnable = !!(lastVerifyOk && name);
-	// Always default to create mode on state recompute
-	setCreateMode(setupBtn, shouldEnable);
+	setupBtn.disabled = !shouldEnable;
+	setAriaDisabled(setupBtn, !shouldEnable);
+	// Keep label describing current action (create by default)
+	setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
 }
 
-/* If your page sets <main data-project-name="…"> later, watch and update. */
+/* Observe when <main data-project-name="…"> appears/changes */
 function watchProjectName() {
 	const main = document.querySelector("main");
 	if (!main) return;
-	const obs = new MutationObserver(() => updateSetupState());
+	const obs = new MutationObserver((mutations) => {
+		for (const m of mutations) {
+			if (m.type === "attributes" && m.attributeName === "data-project-name") {
+				updateSetupState();
+				return;
+			}
+			if (m.type === "childList") {
+				updateSetupState();
+			}
+		}
+	});
 	obs.observe(main, { attributes: true, attributeFilter: ["data-project-name"], childList: true, subtree: true });
 }
 
@@ -214,66 +203,65 @@ function attachDirectListeners() {
 				return;
 			}
 
-			// If we somehow ended up in OPEN mode (same session), just open.
-			if (setupBtn.dataset.muralMode === "open") {
-				const url = setupBtn.dataset.muralUrl;
-				if (url) {
-					window.open(url, "_blank", "noopener,noreferrer");
-					return;
-				}
-			}
-
 			const prev = setupBtn.textContent;
 			setupBtn.disabled = true;
-			syncAria(setupBtn, true, "Provisioning Reflexive Journal…");
+			setAriaDisabled(setupBtn, true);
+			setAriaLabel(setupBtn, "Provisioning Reflexive Journal…");
 			setupBtn.textContent = "Creating…";
 			setPill(statusEl, "neutral", "Provisioning Reflexive Journal…");
 
 			try {
 				const res = await setup(getUid(), name);
 				console.log("[mural] setup response:", res);
-
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
-
-					// Prefer explicit url/viewLink if returned by the API
-					const openUrl = res?.mural?.url || res?.mural?.viewLink || "";
-					if (openUrl) {
-						// Remember on the element only (no localStorage), then switch mode.
-						setupBtn.dataset.muralUrl = openUrl;
-						setOpenMode(setupBtn, openUrl);
-						// Optional: open immediately after creation
-						window.open(openUrl, "_blank", "noopener,noreferrer");
+					if (res?.mural?.url) {
+						// Switch to OPEN state
+						setupBtn.textContent = "Open “Reflexive Journal”";
+						setupBtn.disabled = false;
+						setAriaDisabled(setupBtn, false);
+						setAriaLabel(setupBtn, "Open Reflexive Journal in Mural");
+						setupBtn.onclick = () => window.open(res.mural.url, "_blank", "noopener");
 					} else {
-						// No URL available: stay in create mode but re-enable
-						setCreateMode(setupBtn, true);
+						// No URL returned; revert to CREATE and clear any old onclick
 						setupBtn.textContent = prev || "Create “Reflexive Journal”";
+						setupBtn.onclick = null;
+						setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
-					setCreateMode(setupBtn, false);
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setupBtn.onclick = null; // clear any previous open handler
+					setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 				} else if (res?.reason === "not_in_home_office_workspace") {
 					setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
-					setCreateMode(setupBtn, false);
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setupBtn.onclick = null;
+					setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 				} else {
 					setPill(statusEl, "err", res?.error || "Setup failed");
 					console.warn("[mural] setup error payload:", res);
-					setCreateMode(setupBtn, true); // allow retry
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setupBtn.onclick = null; // prevent stale open action
+					setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 					alert(`Mural setup failed:\n${JSON.stringify(res, null, 2)}`);
 				}
 			} catch (err) {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
-				setCreateMode(setupBtn, true);
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
+				setupBtn.onclick = null; // prevent stale open action
+				setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 			} finally {
-				// After any outcome, re-check verify to ensure the banner is right
+				// Re-enable unless we switched to OPEN mode (where we also keep enabled)
+				if (setupBtn.textContent !== "Open “Reflexive Journal”") {
+					setupBtn.disabled = false;
+					setAriaDisabled(setupBtn, false);
+				}
+				// Refresh status; enable state will be recomputed after verify returns
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
-					updateSetupState(); // will reset to Create mode if no URL was set above
+					updateSetupState();
 					if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
 				}).catch(() => {});
 			}
@@ -285,6 +273,7 @@ function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
+	// Bind direct listeners to avoid duplicate delegated clicks
 	attachDirectListeners();
 
 	const uid = getUid();
@@ -321,10 +310,10 @@ function init() {
 		setPill(statusEl, "err", "Error checking status");
 	});
 
-	// If your page sets the project name later, keep the enablement in sync
+	// React when <main data-project-name> is populated later by renderProject()
 	watchProjectName();
 
-	// Rebind direct listeners if nodes are injected later
+	// If your dashboard injects the buttons later, rebind direct listeners
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
