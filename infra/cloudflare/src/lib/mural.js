@@ -147,11 +147,20 @@ export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
+export async function createRoom(env, token, { name, workspaceId }) {
+	/**
+	 * Mural API (2025): /rooms no longer accepts “visibility”.
+	 * Required keys: { name, workspaceId } only.
+	 * Optional: { description, type }.
+	 */
 	return fetchJSON(`${apiBase(env)}/rooms`, {
 		method: "POST",
 		...withBearer(token),
-		body: JSON.stringify({ name, workspaceId, visibility })
+		body: JSON.stringify({
+			name,
+			workspaceId,
+			type: "private" // optional, still accepted; omit if error persists
+		})
 	});
 }
 
@@ -162,15 +171,13 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
 		Array.isArray(rooms) ? rooms : [];
 
 	let room = list.find(r =>
-		/(private)/i.test(r.visibility || "") ||
 		(username && (r.name || "").toLowerCase().includes(String(username).toLowerCase()))
 	);
 
 	if (!room) {
 		room = await createRoom(env, token, {
 			name: `${username} — Private`,
-			workspaceId,
-			visibility: "private"
+			workspaceId
 		});
 	}
 	return room;
