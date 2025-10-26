@@ -208,11 +208,11 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
-	return fetchJSON(`${apiBase(env)}/murals`, {
-		method: "POST",
-		...withBearer(token),
-		body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
-	});
+  return fetchJSON(`${apiBase(env)}/murals`, {
+    method: "POST",
+    ...withBearer(token),
+    body: JSON.stringify({ title, roomId, folderId })
+  });
 }
 
 /* ------------------------------------------------------------------ */
