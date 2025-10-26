@@ -180,16 +180,36 @@ export class MuralServicePart {
 			const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, String(projectName).trim());
 
 			step = "create_mural";
-			const mural = await createMural(this.root.env, tokens.access_token, {
+			const muralResp = await createMural(this.root.env, tokens.access_token, {
 				title: "Reflexive Journal",
 				roomId: room.id,
 				folderId: folder.id
 			});
 
-			return this.root.json({ ok: true, workspace: { id: workspaceId }, room, folder, mural },
-				200,
-				cors
-			);
+			// Normalize links so the client always gets a member URL
+			const mv = muralResp?.value || muralResp || {};
+			const memberUrl =
+				mv._canvasLink ||
+				// Fallback construction if _canvasLink isn’t present for some reason:
+				(mv.workspaceId && mv.id && mv.state ?
+					`https://app.mural.co/t/${mv.workspaceId}/m/${mv.workspaceId}/${String(mv.id).split(".").pop()}/${mv.state}` :
+					null);
+
+			const visitorUrl = mv?.visitorsSettings?.link || null;
+
+			return this.root.json({
+				ok: true,
+				workspace: { id: mv.workspaceId || ws.id },
+				room,
+				folder,
+				mural: {
+					id: mv.id,
+					url: memberUrl, // <- client should open THIS
+					visitorLink: visitorUrl, // (kept for reference/debug)
+					title: mv.title || "Reflexive Journal",
+					thumbnailUrl: mv.thumbnailUrl || null
+				}
+			}, 200, cors);
 
 		} catch (err) {
 			const status = Number(err?.status) || 500;
