@@ -220,29 +220,45 @@ function attachDirectListeners() {
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
-					const openUrl = extractMuralOpenUrl(res);
+					// Prefer a true member canvas URL over any visitor/share links.
+					const mv = (res.mural && (res.mural.value || res.mural)) || {};
+					const memberUrl = mv._canvasLink || res.mural?.url || null;
+					const visitorUrl =
+						mv?.visitorsSettings?.link ||
+						mv?.sharingSettings?.link ||
+						null;
 
-					// Switch button to OPEN state
+					// Helper: detect a visitor/share URL we must avoid for editing.
+					const looksVisitor = (u) => !!u && /\/invitation\/|sender=|key=|\/visitors\//i.test(u);
+
+					// Final URL we will open: member canvas if present, else last resort.
+					const openUrl = memberUrl || (looksVisitor(visitorUrl) ? null : visitorUrl);
+
+					// Update the button → "Open Reflexive Journal", ensure only one handler.
 					setupBtn.textContent = "Open “Reflexive Journal”";
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
-
-					// Remove the create handler; attach the open handler
-					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
-					delete setupBtn.__muralCreateHandler;
-
-					setupBtn.__muralOpenHandler = function onOpenClick() {
-						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-					};
-					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
-
-					// Auto-open once on creation
-					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-					else {
-						alert(
-							`Your Reflexive Journal board has been created in Mural.\n\n` +
-							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
-						);
+					setupBtn.replaceWith(setupBtn.cloneNode(true)); // removes previous listeners cleanly
+					const freshBtn = /** @type {HTMLButtonElement} */ (document.getElementById("mural-setup"));
+					if (freshBtn) {
+						freshBtn.textContent = "Open “Reflexive Journal”";
+						freshBtn.disabled = false;
+						freshBtn.setAttribute("aria-disabled", "false");
+						freshBtn.addEventListener("click", (e) => {
+							e.preventDefault();
+							const urlToOpen = openUrl || memberUrl || visitorUrl;
+							if (!urlToOpen) {
+								console.warn("[mural] no URL returned; cannot open");
+								alert("Could not determine the Mural board URL to open.");
+								return;
+							}
+							if (looksVisitor(urlToOpen) && memberUrl) {
+								// Belt & braces: if we detect visitor link but have member, force member.
+								console.log("[mural] forcing member canvas URL over visitor link");
+							}
+							const win = window.open(memberUrl || urlToOpen, "_blank", "noopener,noreferrer");
+							if (!win) alert("Pop-up blocked. Please allow pop-ups for this site and try again.");
+						});
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
