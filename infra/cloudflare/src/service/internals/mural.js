@@ -127,43 +127,62 @@ export class MuralServicePart {
 
 	/** POST /api/mural/setup  body: { uid, projectName } */
 	async muralSetup(request, origin) {
-		const { uid = "anon", projectName } = await request.json().catch(() => ({}));
-		if (!projectName || !String(projectName).trim()) {
-			return this.root.json({ ok: false, error: "projectName required" }, 400, this.root.corsHeaders(origin));
-		}
-		const tokens = await this.loadTokens(uid);
-		if (!tokens?.access_token) {
-			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
-		}
+		const cors = this.root.corsHeaders(origin);
+		/** helpful step marker for error reporting */
+		let step = "parse_input";
 
-		// Gate on company only
-		const inCompany = await verifyHomeOfficeByCompany(this.root.env, tokens.access_token).catch(() => false);
-		if (!inCompany) {
-			return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
+		try {
+			const { uid = "anon", projectName } = await request.json().catch(() => ({}));
+			if (!projectName || !String(projectName).trim()) {
+				return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
+			}
+
+			step = "load_tokens";
+			const tokens = await this.loadTokens(uid);
+			if (!tokens?.access_token) {
+				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
+			}
+
+			step = "verify_workspace";
+			const ws = await verifyHomeOfficeWorkspace(this.root.env, tokens.access_token);
+			if (!ws) {
+				return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
+			}
+
+			step = "get_me";
+			const me = await getMe(this.root.env, tokens.access_token).catch(() => null);
+			const username = me?.value?.firstName || me?.name || "Private";
+
+			step = "ensure_room";
+			const room = await ensureUserRoom(this.root.env, tokens.access_token, ws.id, username);
+
+			step = "ensure_folder";
+			const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, String(projectName).trim());
+
+			step = "create_mural";
+			const mural = await createMural(this.root.env, tokens.access_token, {
+				title: "Reflexive Journal",
+				roomId: room.id,
+				folderId: folder.id
+			});
+
+			return this.root.json({ ok: true, workspace: ws, room, folder, mural }, 200, cors);
+
+		} catch (err) {
+			// Unwrap our library’s enriched errors if present
+			const status = Number(err?.status) || 500;
+			const body = err?.body || null;
+			const message = String(err?.message || "setup_failed");
+
+			// Never throw — surface as JSON so the client can show it
+			return this.root.json({
+				ok: false,
+				error: "setup_failed",
+				step,
+				message,
+				upstream: body
+			}, status, cors);
 		}
-
-		// Use user's last active workspace for provisioning
-		const me = await getMe(this.root.env, tokens.access_token).catch(() => null);
-		const workspaceId = getActiveWorkspaceIdFromMe(me);
-		if (!workspaceId) {
-			return this.root.json({ ok: false, error: "no_active_workspace", message: "Could not determine user's active workspace" },
-				400,
-				this.root.corsHeaders(origin)
-			);
-		}
-
-		const room = await ensureUserRoom(this.root.env, tokens.access_token, workspaceId, me?.value?.firstName || "Private");
-		const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, String(projectName).trim());
-		const mural = await createMural(this.root.env, tokens.access_token, {
-			title: "Reflexive Journal",
-			roomId: room.id,
-			folderId: folder.id
-		});
-
-		return this.root.json({ ok: true, workspaceId, room, folder, mural },
-			200,
-			this.root.corsHeaders(origin)
-		);
 	}
 
 	/** GET /api/mural/debug-env (TEMP) */
