@@ -7,13 +7,22 @@
  * - MURAL_CLIENT_ID
  * - MURAL_CLIENT_SECRET
  * - MURAL_REDIRECT_URI  (must exactly match your registered redirect URI in Mural)
- * - (optional) MURAL_HOME_OFFICE_WORKSPACE_ID
- * - (optional) MURAL_API_BASE    default: https://app.mural.co/api/public/v1
- * - (optional) MURAL_SCOPES      space-separated, e.g. "identity:read workspaces:read rooms:read rooms:write murals:write"
+ * - (optional) MURAL_COMPANY_ID                     // e.g. "homeofficegovuk"
+ * - (optional) MURAL_API_BASE   default: https://app.mural.co/api/public/v1
+ * - (optional) MURAL_SCOPES     default: identity:read workspaces:read rooms:read rooms:write murals:write
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const API_TIMEOUT_MS = 15000;
+
+// Default scopes; can be overridden by env.MURAL_SCOPES (space-separated)
+export const DEFAULT_SCOPES = [
+	"identity:read",
+	"workspaces:read",
+	"rooms:read",
+	"rooms:write",
+	"murals:write"
+];
 
 /* ------------------------------------------------------------------ */
 /* Base URLs                                                          */
@@ -23,7 +32,7 @@ const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/
 const oauthBase = "https://app.mural.co/api/public/v1/authorization/oauth2";
 
 /* ------------------------------------------------------------------ */
-/* Helpers: safe state encode/decode                                  */
+/* Helpers: state encode/decode                                       */
 /* ------------------------------------------------------------------ */
 
 export function encodeState(obj) {
@@ -35,43 +44,21 @@ export function decodeState(str) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Scopes                                                             */
-/* ------------------------------------------------------------------ */
-
-/**
- * Resolve the OAuth scopes to request.
- * - If env.MURAL_SCOPES is set, use that (space-separated).
- * - Otherwise default to minimal read-only scopes that typically work everywhere.
- * @param {Env} env
- * @returns {string[]} scopes
- */
-export function getScopes(env) {
-	const raw = (env.MURAL_SCOPES || "").trim();
-	if (raw) return raw.split(/\s+/).filter(Boolean);
-	return ["identity:read", "workspaces:read"]; // minimal default
-}
-
-/* ------------------------------------------------------------------ */
 /* OAuth2: Authorization URL builder                                  */
 /* ------------------------------------------------------------------ */
 
-/**
- * Builds the Mural OAuth2 authorization URL (browser redirect target).
- * @param {Env} env
- * @param {object} stateObj - e.g., { uid, return }
- * @returns {string}
- */
 export function buildAuthUrl(env, stateObj) {
 	const state = encodeState(stateObj);
-	const scopes = getScopes(env);
+	const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
 	const params = new URLSearchParams({
 		response_type: "code",
 		client_id: env.MURAL_CLIENT_ID,
-		redirect_uri: env.MURAL_REDIRECT_URI, // must match app config exactly
-		scope: scopes.join(" "),
+		redirect_uri: env.MURAL_REDIRECT_URI,
+		scope: scopes,
 		state
 	});
-	return `${oauthBase}/?${params}`; // note trailing slash; no "/authorize"
+	// Correct endpoint: no "/authorize" suffix
+	return `${oauthBase}/?${params}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -92,7 +79,9 @@ async function fetchJSON(url, opts = {}) {
 			throw err;
 		}
 		return js;
-	} finally { clearTimeout(t); }
+	} finally {
+		clearTimeout(t);
+	}
 }
 
 const withBearer = (token) => ({
@@ -122,28 +111,36 @@ export async function exchangeAuthCode(env, code) {
 }
 
 /* ------------------------------------------------------------------ */
-/* User + Workspace helpers                                           */
+/* User profile + helpers                                            */
 /* ------------------------------------------------------------------ */
 
 export async function getMe(env, token) {
 	return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
 
-export async function getWorkspaces(env, token) {
-	return fetchJSON(`${apiBase(env)}/workspaces`, withBearer(token));
+export function getActiveWorkspaceIdFromMe(me) {
+	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
 }
 
-export async function verifyHomeOfficeWorkspace(env, token) {
-	const data = await getWorkspaces(env, token);
-	const targetId = env.MURAL_HOME_OFFICE_WORKSPACE_ID;
-	let ws = null;
-	if (targetId) ws = (data?.items || []).find(w => `${w.id}` === `${targetId}`);
-	if (!ws) ws = (data?.items || []).find(w => /home office/i.test(w?.name || ""));
-	return ws || null;
+/**
+ * Company (tenant) membership check. This is the **only** gate we use.
+ * True if the current user belongs to the expected company.
+ */
+export async function verifyHomeOfficeByCompany(env, token) {
+	const me = await getMe(env, token);
+	const v = me?.value || me || {};
+	const cid = (v.companyId || "").trim();
+	const cname = (v.companyName || "").trim();
+
+	const targetCompanyId = (env.MURAL_COMPANY_ID || "").trim(); // e.g. "homeofficegovuk"
+	if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
+
+	// Fallback by name if you don't want to set MURAL_COMPANY_ID
+	return Boolean(cname && /home\s*office/i.test(cname));
 }
 
 /* ------------------------------------------------------------------ */
-/* Rooms + Folders                                                    */
+/* Rooms + Folders + Murals                                           */
 /* ------------------------------------------------------------------ */
 
 export async function listRooms(env, token, workspaceId) {
@@ -159,13 +156,22 @@ export async function createRoom(env, token, { name, workspaceId, visibility = "
 }
 
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
-	const rooms = await listRooms(env, token, workspaceId);
-	let room = (rooms?.items || []).find(r =>
+	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
+	const list = Array.isArray(rooms?.items) ? rooms.items :
+		Array.isArray(rooms?.value) ? rooms.value :
+		Array.isArray(rooms) ? rooms : [];
+
+	let room = list.find(r =>
 		/(private)/i.test(r.visibility || "") ||
-		(username && r.name?.toLowerCase().includes(username.toLowerCase()))
+		(username && (r.name || "").toLowerCase().includes(String(username).toLowerCase()))
 	);
+
 	if (!room) {
-		room = await createRoom(env, token, { name: `${username} — Private`, workspaceId, visibility: "private" });
+		room = await createRoom(env, token, {
+			name: `${username} — Private`,
+			workspaceId,
+			visibility: "private"
+		});
 	}
 	return room;
 }
@@ -183,17 +189,16 @@ export async function createFolder(env, token, roomId, name) {
 }
 
 export async function ensureProjectFolder(env, token, roomId, projectName) {
-	const existing = await listFolders(env, token, roomId).catch(() => ({ items: [] }));
-	const found = (existing?.items || []).find(
-		f => (f.name || "").trim().toLowerCase() === projectName.trim().toLowerCase()
+	const existing = await listFolders(env, token, roomId).catch(() => ({ items: [], value: [] }));
+	const list = Array.isArray(existing?.items) ? existing.items :
+		Array.isArray(existing?.value) ? existing.value :
+		Array.isArray(existing) ? existing : [];
+	const found = list.find(f =>
+		(f.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase()
 	);
 	if (found) return found;
 	return createFolder(env, token, roomId, projectName);
 }
-
-/* ------------------------------------------------------------------ */
-/* Murals                                                             */
-/* ------------------------------------------------------------------ */
 
 export async function createMural(env, token, { title, roomId, folderId }) {
 	return fetchJSON(`${apiBase(env)}/murals`, {
@@ -204,7 +209,7 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Export internals                                                   */
+/* Export internals (for tests/debug)                                  */
 /* ------------------------------------------------------------------ */
 
-export const _int = { fetchJSON, withBearer, apiBase, encodeState, decodeState, getScopes };
+export const _int = { fetchJSON, withBearer, apiBase, encodeState, decodeState };
