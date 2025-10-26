@@ -162,24 +162,10 @@ function watchProjectName() {
 
 /* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
+// Replace your extractMuralOpenUrl with this stricter version:
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
-	// Prefer the member canvas link if the API gives it:
-	if (v?._canvasLink) return v._canvasLink;
-
-	// Construct a member canvas URL from id + state if needed.
-	// v.id looks like "pppt6786.1761503476791" → numeric id after the dot:
-	const ws = v?.workspaceId;
-	const state = v?.state;
-	const numericId = (typeof v?.id === "string" && v.id.includes(".")) ? v.id.split(".")[1] : null;
-
-	if (ws && numericId && state) {
-		// This matches the shape Mural returns in _canvasLink for members.
-		return `https://app.mural.co/t/${ws}/m/${ws}/${numericId}/${state}`;
-	}
-
-	// Last resort: if we truly have nothing, return empty so we don’t open a visitor/facilitator URL.
-	return "";
+	return v?._canvasLink || v?.viewerUrl || v?.url || "";
 }
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
@@ -221,82 +207,37 @@ function attachDirectListeners() {
 			setupBtn.textContent = "Creating…";
 			setPill(statusEl, "neutral", "Provisioning Reflexive Journal…");
 
-			// Pre-open tab to survive Safari’s popup blocker
-			const popup = window.open("about:blank", "_blank", "noopener");
-
 			try {
 				const res = await setup(getUid(), name);
 				console.log("[mural] setup response:", res);
 
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
+
 					const openUrl = extractMuralOpenUrl(res);
 
+					// Switch button to OPEN state
 					setupBtn.textContent = "Open “Reflexive Journal”";
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
 
-					// Replace handler to open on later clicks
+					// Remove the create handler; attach the open handler
 					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
 					delete setupBtn.__muralCreateHandler;
-					
-					setupBtn.__muralOpenHandler = () => {
-						// Auto-open once on creation (Safari/iPad safe)
-						if (openUrl) {
-							// Pre-open *synchronously* at click time so Safari won’t block it
-							// NOTE: if you already pre-open earlier in this handler, keep a single one.
-							const popup = window.open("about:blank", "_blank", "noopener");
 
-							if (popup) {
-								try {
-									// Try the simple navigation first
-									popup.location.replace(openUrl);
-								} catch (e1) {
-									try {
-										// Fallback navigation paths some Safari builds allow
-										popup.location.href = openUrl;
-									} catch (e2) {
-										try {
-											popup.opener = null;
-											popup.location.assign(openUrl);
-										} catch {
-											// Absolute fallback: write a tiny bridge page that self-redirects
-											try {
-												popup.document.open();
-												popup.document.write(
-													`<!doctype html><meta charset="utf-8">
-               <title>Opening Mural…</title>
-               <p style="font:16px system-ui">Opening your board… 
-               <a href="${openUrl.replace(/"/g, "&quot;")}" target="_self" rel="noreferrer">tap here if it doesn’t</a>.</p>
-               <script>location.replace(${JSON.stringify(openUrl)});<\/script>`
-												);
-												popup.document.close();
-											} catch {
-												popup.close();
-												window.open(openUrl, "_blank", "noopener,noreferrer");
-											}
-										}
-									}
-								}
-							} else {
-								// Popup blocked → fall back to direct open
-								window.open(openUrl, "_blank", "noopener,noreferrer");
-							}
-						} else {
-							alert(
-								`Your Reflexive Journal board has been created in Mural.\n\n` +
-								`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
-							);
-						}
+					setupBtn.__muralOpenHandler = function onOpenClick() {
+						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
 					};
 					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
 
-					// Redirect pre-opened tab to the new mural
-					if (popup && openUrl) popup.location = openUrl;
-					else alert(
-						`Your Reflexive Journal board has been created in Mural.\n\n` +
-						`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
-					);
+					// Auto-open once on creation
+					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+					else {
+						alert(
+							`Your Reflexive Journal board has been created in Mural.\n\n` +
+							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+						);
+					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
@@ -313,10 +254,12 @@ function attachDirectListeners() {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
-				if (popup && !popup.closed) popup.close();
 			} finally {
+				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
+
+				// Refresh status; enable state will be recomputed after verify returns
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
