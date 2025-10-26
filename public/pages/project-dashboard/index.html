@@ -11,6 +11,27 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<script type="module" src="/components/layout.js"></script>
+	<script>
+		window.API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
+		(function() {
+			const O = window.fetch;
+			window.fetch = function(input, init) {
+				// Rewrite string URLs like "/api/projects"
+				if (typeof input === "string" && input.startsWith("/api/")) {
+					input = window.API_BASE + input;
+				}
+				// Rewrite Request objects pointing at this origin + /api/*
+				else if (input instanceof Request) {
+					const u = new URL(input.url, location.href);
+					if (u.origin === location.origin && u.pathname.startsWith("/api/")) {
+						const rewritten = new URL(u.pathname + u.search + u.hash, window.API_BASE);
+						input = new Request(rewritten.toString(), input);
+					}
+				}
+				return O(input, init);
+			};
+		})();
+	</script>
 </head>
 
 <body>
