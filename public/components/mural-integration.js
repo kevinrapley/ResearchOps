@@ -239,8 +239,55 @@ function attachDirectListeners() {
 					// Replace handler to open on later clicks
 					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
 					delete setupBtn.__muralCreateHandler;
+					
 					setupBtn.__muralOpenHandler = () => {
-						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+						// Auto-open once on creation (Safari/iPad safe)
+						if (openUrl) {
+							// Pre-open *synchronously* at click time so Safari won’t block it
+							// NOTE: if you already pre-open earlier in this handler, keep a single one.
+							const popup = window.open("about:blank", "_blank", "noopener");
+
+							if (popup) {
+								try {
+									// Try the simple navigation first
+									popup.location.replace(openUrl);
+								} catch (e1) {
+									try {
+										// Fallback navigation paths some Safari builds allow
+										popup.location.href = openUrl;
+									} catch (e2) {
+										try {
+											popup.opener = null;
+											popup.location.assign(openUrl);
+										} catch {
+											// Absolute fallback: write a tiny bridge page that self-redirects
+											try {
+												popup.document.open();
+												popup.document.write(
+													`<!doctype html><meta charset="utf-8">
+               <title>Opening Mural…</title>
+               <p style="font:16px system-ui">Opening your board… 
+               <a href="${openUrl.replace(/"/g, "&quot;")}" target="_self" rel="noreferrer">tap here if it doesn’t</a>.</p>
+               <script>location.replace(${JSON.stringify(openUrl)});<\/script>`
+												);
+												popup.document.close();
+											} catch {
+												popup.close();
+												window.open(openUrl, "_blank", "noopener,noreferrer");
+											}
+										}
+									}
+								}
+							} else {
+								// Popup blocked → fall back to direct open
+								window.open(openUrl, "_blank", "noopener,noreferrer");
+							}
+						} else {
+							alert(
+								`Your Reflexive Journal board has been created in Mural.\n\n` +
+								`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+							);
+						}
 					};
 					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
 
