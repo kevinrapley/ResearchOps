@@ -41,7 +41,7 @@ MURAL_CLIENT_ID                       = "3648c18f-8dbe-4217-a147-3bce1609c5b1"
 MURAL_REDIRECT_URI                    = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
 MURAL_COMPANY_ID                      = "homeofficegovuk"
 MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
-MURAL_SCOPES                          = "identity:read workspaces:read"
+MURAL_SCOPES                          = "identity:read workspaces:read rooms:read rooms:write folders:read folders:write murals:read murals:write"
 
 [[kv_namespaces]]
 binding                               = "SESSION_KV"
