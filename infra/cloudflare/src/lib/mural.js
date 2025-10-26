@@ -208,16 +208,8 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
-	// Full edit for workspace members, no visitor link.
-	const payload = {
-		title,
-		roomId,
-		folderId,
-		visitorsSettings: {
-			visitors: "none",
-			workspaceMembers: "write"
-		}
-	};
+	// Minimal payload that your tenant accepts on create.
+	const payload = { title, roomId, folderId };
 
 	return fetchJSON(`${apiBase(env)}/murals`, {
 		method: "POST",
