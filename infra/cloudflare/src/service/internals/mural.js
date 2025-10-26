@@ -1,29 +1,27 @@
 /**
  * @file service/internals/mural.js
  * @module service/internals/mural
- * @summary Service part that encapsulates Mural routes logic.
- *
- * Depends on /lib/mural.js and a KV binding for session tokens.
+ * @summary Service part that encapsulates Mural routes logic (OAuth + provisioning).
  */
 
 import {
 	buildAuthUrl,
 	exchangeAuthCode,
-	verifyHomeOfficeWorkspace,
+	verifyHomeOfficeByCompany,
 	ensureUserRoom,
 	ensureProjectFolder,
 	createMural,
-	getMe
+	getMe,
+	getActiveWorkspaceIdFromMe
 } from "../../lib/mural.js";
 
 import { b64Encode, b64Decode } from "../../core/utils.js";
 
 /**
- * @typedef {import("../../service/index.js").ResearchOpsService} ResearchOpsService
+ * @typedef {import("../index.js").ResearchOpsService} ResearchOpsService
  */
 
 export class MuralServicePart {
-
 	/** @param {ResearchOpsService} root */
 	constructor(root) {
 		this.root = root;
@@ -44,10 +42,12 @@ export class MuralServicePart {
 	// Routes
 	// ─────────────────────────────────────────────────────────────────
 
-	/** GET /api/mural/auth?uid=:uid */
+	/** GET /api/mural/auth?uid=:uid[&return=:path] */
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
-		const state = b64Encode(JSON.stringify({ uid, ts: Date.now() }));
+		const ret = url.searchParams.get("return");
+		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
 		const redirect = buildAuthUrl(this.root.env, state);
 		return Response.redirect(redirect, 302);
 	}
@@ -56,13 +56,8 @@ export class MuralServicePart {
 	async muralCallback(origin, url) {
 		const { env } = this.root;
 
-		// --- Safety guard: don't crash the Worker if the secret isn't bound ---
 		if (!env.MURAL_CLIENT_SECRET) {
-			return this.root.json({
-					ok: false,
-					error: "missing_secret",
-					message: "MURAL_CLIENT_SECRET is not configured in Cloudflare secrets."
-				},
+			return this.root.json({ ok: false, error: "missing_secret", message: "MURAL_CLIENT_SECRET is not configured in Cloudflare secrets." },
 				500,
 				this.root.corsHeaders(origin)
 			);
@@ -71,30 +66,22 @@ export class MuralServicePart {
 		const code = url.searchParams.get("code");
 		const stateB64 = url.searchParams.get("state");
 		if (!code) {
-			return this.root.json({ ok: false, error: "missing_code" },
-				400,
-				this.root.corsHeaders(origin)
-			);
+			return this.root.json({ ok: false, error: "missing_code" }, 400, this.root.corsHeaders(origin));
 		}
 
 		let uid = "anon";
+		let stateObj = {};
 		try {
-			const st = JSON.parse(b64Decode(stateB64 || ""));
-			uid = st?.uid || "anon";
-		} catch {
-			// ignore bad state
-		}
+			stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			uid = stateObj?.uid || "anon";
+		} catch { /* ignore */ }
 
-		// --- Token exchange (guarded) ---
+		// code → tokens
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
 		} catch (err) {
-			return this.root.json({
-					ok: false,
-					error: "token_exchange_failed",
-					message: err.message || "Unable to exchange OAuth code"
-				},
+			return this.root.json({ ok: false, error: "token_exchange_failed", message: err?.message || "Unable to exchange OAuth code" },
 				500,
 				this.root.corsHeaders(origin)
 			);
@@ -102,8 +89,15 @@ export class MuralServicePart {
 
 		await this.saveTokens(uid, tokens);
 
-		const back = new URL("/pages/projects/", url);
-		back.searchParams.set("mural", "connected");
+		// Return to the page we came from, append mural=connected
+		const safeReturn = (stateObj?.return && stateObj.return.startsWith("/")) ?
+			stateObj.return :
+			"/pages/projects/";
+		const back = new URL(safeReturn, url);
+		const sp = new URLSearchParams(back.search);
+		sp.set("mural", "connected");
+		back.search = sp.toString();
+
 		return Response.redirect(back.toString(), 302);
 	}
 
@@ -114,40 +108,21 @@ export class MuralServicePart {
 		if (!tokens?.access_token) {
 			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
 		}
-		const ws = await verifyHomeOfficeWorkspace(this.root.env, tokens.access_token);
-		if (!ws) {
+
+		// Single gate: company/tenant membership
+		const inCompany = await verifyHomeOfficeByCompany(this.root.env, tokens.access_token).catch(() => false);
+		if (!inCompany) {
 			return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
 		}
+
+		// Provide useful context back to UI
 		const me = await getMe(this.root.env, tokens.access_token).catch(() => null);
-		return this.root.json({ ok: true, workspace: ws, me }, 200, this.root.corsHeaders(origin));
-	}
+		const activeWorkspaceId = getActiveWorkspaceIdFromMe(me);
 
-	/** GET /api/mural/workspaces?uid=:uid (TEMP) */
-	async muralListWorkspaces(origin, url) {
-		const uid = url.searchParams.get("uid") || "anon";
-		const tokens = await this.loadTokens(uid);
-		if (!tokens?.access_token) {
-			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
-		}
-		const res = await fetch("https://app.mural.co/api/public/v1/workspaces", {
-			headers: { authorization: `Bearer ${tokens.access_token}` }
-		});
-		const body = await res.json().catch(() => ({}));
-		return this.root.json({ status: res.status, body }, res.ok ? 200 : res.status, this.root.corsHeaders(origin));
-	}
-
-	/** GET /api/mural/me?uid=:uid (TEMP) */
-	async muralMe(origin, url) {
-		const uid = url.searchParams.get("uid") || "anon";
-		const tokens = await this.loadTokens(uid);
-		if (!tokens?.access_token) {
-			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
-		}
-		const res = await fetch("https://app.mural.co/api/public/v1/users/me", {
-			headers: { authorization: `Bearer ${tokens.access_token}` }
-		});
-		const body = await res.json().catch(() => ({}));
-		return this.root.json({ status: res.status, body }, res.ok ? 200 : res.status, this.root.corsHeaders(origin));
+		return this.root.json({ ok: true, me, activeWorkspaceId },
+			200,
+			this.root.corsHeaders(origin)
+		);
 	}
 
 	/** POST /api/mural/setup  body: { uid, projectName } */
@@ -161,30 +136,60 @@ export class MuralServicePart {
 			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
 		}
 
-		const ws = await verifyHomeOfficeWorkspace(this.root.env, tokens.access_token);
-		if (!ws) {
+		// Gate on company only
+		const inCompany = await verifyHomeOfficeByCompany(this.root.env, tokens.access_token).catch(() => false);
+		if (!inCompany) {
 			return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
 		}
 
+		// Use user's last active workspace for provisioning
 		const me = await getMe(this.root.env, tokens.access_token).catch(() => null);
-		const room = await ensureUserRoom(this.root.env, tokens.access_token, ws.id, me?.name || "Private");
-		const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, projectName.trim());
-		const mural = await createMural(this.root.env, tokens.access_token, { title: "Reflexive Journal", roomId: room.id, folderId: folder.id });
+		const workspaceId = getActiveWorkspaceIdFromMe(me);
+		if (!workspaceId) {
+			return this.root.json({ ok: false, error: "no_active_workspace", message: "Could not determine user's active workspace" },
+				400,
+				this.root.corsHeaders(origin)
+			);
+		}
 
-		return this.root.json({ ok: true, workspace: ws, room, folder, mural }, 200, this.root.corsHeaders(origin));
-	}
+		const room = await ensureUserRoom(this.root.env, tokens.access_token, workspaceId, me?.value?.firstName || "Private");
+		const folder = await ensureProjectFolder(this.root.env, tokens.access_token, room.id, String(projectName).trim());
+		const mural = await createMural(this.root.env, tokens.access_token, {
+			title: "Reflexive Journal",
+			roomId: room.id,
+			folderId: folder.id
+		});
 
-	/** GET /api/mural/debug-env (TEMP: verify env bindings) */
-	async muralDebugEnv(origin) {
-		const { env } = this.root;
-		return this.root.json({
-				has_CLIENT_ID: Boolean(env.MURAL_CLIENT_ID),
-				has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
-				redirect_uri: env.MURAL_REDIRECT_URI,
-				scopes: env.MURAL_SCOPES || "(unset)"
-			},
+		return this.root.json({ ok: true, workspaceId, room, folder, mural },
 			200,
 			this.root.corsHeaders(origin)
 		);
+	}
+
+	/** GET /api/mural/debug-env (TEMP) */
+	async muralDebugEnv(origin) {
+		const env = this.root.env || {};
+		return this.root.json({
+			ok: true,
+			has_CLIENT_ID: Boolean(env.MURAL_CLIENT_ID),
+			has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
+			redirect_uri: env.MURAL_REDIRECT_URI || "(unset)",
+			scopes: env.MURAL_SCOPES || "(default)",
+			company_id: env.MURAL_COMPANY_ID || "(unset)"
+		}, 200, this.root.corsHeaders(origin));
+	}
+
+	/** GET /api/mural/debug-auth (TEMP) */
+	async muralDebugAuth(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const ret = url.searchParams.get("return");
+		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
+		const authUrl = buildAuthUrl(this.root.env, state);
+		return this.root.json({
+			redirect_uri: this.root.env.MURAL_REDIRECT_URI,
+			scopes: this.root.env.MURAL_SCOPES || "(default)",
+			auth_url: authUrl
+		}, 200, this.root.corsHeaders(origin));
 	}
 }
