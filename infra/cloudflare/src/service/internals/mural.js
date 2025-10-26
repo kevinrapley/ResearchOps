@@ -122,6 +122,34 @@ export class MuralServicePart {
 		return this.root.json({ ok: true, workspace: ws, me }, 200, this.root.corsHeaders(origin));
 	}
 
+	/** GET /api/mural/workspaces?uid=:uid (TEMP) */
+	async muralListWorkspaces(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const tokens = await this.loadTokens(uid);
+		if (!tokens?.access_token) {
+			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
+		}
+		const res = await fetch("https://app.mural.co/api/public/v1/workspaces", {
+			headers: { authorization: `Bearer ${tokens.access_token}` }
+		});
+		const body = await res.json().catch(() => ({}));
+		return this.root.json({ status: res.status, body }, res.ok ? 200 : res.status, this.root.corsHeaders(origin));
+	}
+
+	/** GET /api/mural/me?uid=:uid (TEMP) */
+	async muralMe(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const tokens = await this.loadTokens(uid);
+		if (!tokens?.access_token) {
+			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
+		}
+		const res = await fetch("https://app.mural.co/api/public/v1/users/me", {
+			headers: { authorization: `Bearer ${tokens.access_token}` }
+		});
+		const body = await res.json().catch(() => ({}));
+		return this.root.json({ status: res.status, body }, res.ok ? 200 : res.status, this.root.corsHeaders(origin));
+	}
+
 	/** POST /api/mural/setup  body: { uid, projectName } */
 	async muralSetup(request, origin) {
 		const { uid = "anon", projectName } = await request.json().catch(() => ({}));
