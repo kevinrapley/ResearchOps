@@ -1,26 +1,40 @@
 /**
  * @file /public/components/mural-integration.js
  * @module muralIntegration
- * @summary Project dashboard → Connect to Mural (OAuth), verify connection, and create a
- *          “Reflexive Journal” board in a project folder.
+ * @summary
+ * Project dashboard → Connect to Mural (OAuth), verify connection, and create a
+ * “Reflexive Journal” board inside a project-named folder.
  *
- * DOM requirements:
- *   - <button id="mural-connect">
- *   - <button id="mural-setup">
- *   - <span   id="mural-status"></span>   (optional)
- *   - Project name available via:
- *       a) <main data-project-name="…">   OR
- *       b) <h1 id="project-title">…</h1>  OR
- *       c) ?projectName=… (URL)
+ * ## What this does (client-side flow)
+ * 1) “Connect Mural” → full-page redirect to `/api/mural/auth` (Worker) to
+ *    initiate OAuth. The current dashboard URL is passed in `return` so the
+ *    Worker can redirect back after `/api/mural/callback`.
+ * 2) On load, calls `/api/mural/verify?uid=…` to confirm:
+ *    - user is authenticated with Mural; and
+ *    - user is in the Home Office org/workspace (as enforced server-side).
+ * 3) “Create Reflexive Journal” → POST `/api/mural/setup` with `{ uid, projectName }`
+ *    to ensure: Private room → Project folder → Mural board creation.
  *
- * Config detection order for API base:
- *   1) window.ROPS_API_BASE
- *   2) <html data-api-base="https://…">
- *   3) DEFAULT_API_BASE (adjust below if needed)
+ * ## DOM requirements
+ * - <button id="mural-connect">
+ * - <button id="mural-setup">
+ * - <span   id="mural-status"></span>   (optional, used for status pills)
+ * - Project name available via one of:
+ *   a) <main data-project-name="…">, OR
+ *   b) <h1 id="project-title">…</h1>, OR
+ *   c) ?projectName=… (URL)
  *
- * Notes:
- * - Setup button is enabled after a successful verify even if a project name isn’t found;
- *   on click we’ll prompt for a name as a fallback so iPad flows still work.
+ * ## API base detection order (first match wins)
+ * 1) `window.ROPS_API_BASE`
+ * 2) `<html data-api-base="https://…">`
+ * 3) `DEFAULT_API_BASE` (edit this constant if needed)
+ *
+ * ## Debugging on iPad
+ * If the page URL contains `?debug=true` **and** the page includes an element
+ * with `id="mural-debug"`, console logs and errors are mirrored into that box.
+ *
+ * ## CORS
+ * Ensure your Worker allows the Pages origin in `ALLOWED_ORIGINS`.
  */
 
 /* eslint-env browser */
@@ -28,17 +42,32 @@
 
 /* ─────────────────────────── In-page debug (for iPad) ─────────────────────────── */
 
+/**
+ * Bridges `console.log/warn/error` to a visible on-page element when the URL
+ * contains `?debug=true`. This is helpful on devices without a JS console (iPad).
+ *
+ * Side effects:
+ * - Wraps `console.log`, `console.warn`, `console.error`.
+ * - Appends text nodes into `#mural-debug` if present.
+ *
+ * Safe to run multiple times; wrappers are idempotent for the page lifecycle.
+ * No-ops if `#mural-debug` is absent or `?debug=true` is not set.
+ *
+ * @private
+ */
 (function bridgeLogsToPage() {
 	try {
 		const sp = new URLSearchParams(location.search);
 		if (sp.get("debug") !== "true") return;
 		const box = document.getElementById("mural-debug");
 		if (!box) return;
+		/** @param {"log"|"warn"|"error"} lvl @param {IArguments|any[]} args */
 		const write = (lvl, args) => {
 			const div = document.createElement("div");
 			div.textContent = `[${lvl}] ${Array.from(args).map(String).join(" ")}`;
 			box.appendChild(div);
 		};
+		/** Patch console methods to mirror output into the box. */
 		["log", "warn", "error"].forEach((k) => {
 			const orig = console[k].bind(console);
 			console[k] = function() { try { write(k, arguments); } catch {} finally { orig.apply(console, arguments); } };
@@ -51,8 +80,24 @@
 
 /* ───────────────────────────────────── Config ─────────────────────────────────── */
 
+/**
+ * Fallback Worker API base if not provided by window or <html>.
+ * @constant {string}
+ */
 const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 
+/**
+ * Resolve the Worker API base.
+ *
+ * Reads in order:
+ * - `window.ROPS_API_BASE`
+ * - `document.documentElement.dataset.apiBase`
+ * - `DEFAULT_API_BASE`
+ *
+ * Trailing slashes are removed.
+ *
+ * @returns {string} Absolute base URL (no trailing slash).
+ */
 function resolveApiBase() {
 	const fromWindow = typeof window !== "undefined" && window.ROPS_API_BASE;
 	const fromHtml = document?.documentElement?.dataset?.apiBase;
@@ -61,12 +106,32 @@ function resolveApiBase() {
 	return base || DEFAULT_API_BASE;
 }
 
+/**
+ * The effective Worker API base used by this module.
+ * @constant {string}
+ */
 const API_BASE = resolveApiBase();
 
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
+/**
+ * Shorthand query helper.
+ * @param {string} selector
+ * @param {ParentNode} [root=document]
+ * @returns {Element|null}
+ */
 const $ = (s, r = document) => r.querySelector(s);
 
+/**
+ * Extract a project name from the page.
+ *
+ * Sources (first available wins):
+ * - `<main data-project-name="…">`
+ * - text content of `#project-title`
+ * - `?projectName=…` query parameter
+ *
+ * @returns {string} The project name, or `""` if not found.
+ */
 function getProjectName() {
 	const main = $("main[data-project-name]");
 	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
@@ -79,12 +144,39 @@ function getProjectName() {
 	return (q && q.trim()) || "";
 }
 
+/**
+ * Get the current app user id for associating Mural tokens in KV.
+ *
+ * Sources:
+ * - `window.USER.id` (if your app populates it)
+ * - `localStorage.userId`
+ * - `"anon"` (fallback)
+ *
+ * @returns {string} A non-empty uid string.
+ */
 function getUid() {
 	if (window.USER?.id) return String(window.USER.id);
 	const st = localStorage.getItem("userId");
 	return (st && st.trim()) || "anon";
 }
 
+/**
+ * Render a status pill into a host element.
+ *
+ * Expected CSS (suggested):
+ * ```
+ * .pill { display:inline-block; padding:2px 8px; border-radius:12px; border:1px solid; }
+ * .pill--ok { border-color:#2a5b2b; background:#dff0d8; }
+ * .pill--warn { border-color:#6b4e00; background:#fff3cd; }
+ * .pill--err { border-color:#7a1212; background:#f8d7da; }
+ * .pill--neutral { border-color:#b1b4b6; background:#f3f2f1; }
+ * ```
+ *
+ * @param {HTMLElement|null} host
+ * @param {"ok"|"warn"|"err"|"neutral"} kind
+ * @param {string} text
+ * @returns {void}
+ */
 function setPill(host, kind, text) {
 	if (!host) return;
 	host.innerHTML = "";
@@ -96,6 +188,18 @@ function setPill(host, kind, text) {
 
 /* ────────────────────────────────── API wrappers ──────────────────────────────── */
 
+/**
+ * Verify the user’s Mural connection via the Worker.
+ *
+ * Endpoint: `GET {API_BASE}/api/mural/verify?uid=…`
+ *
+ * - `401` → `{ ok:false, reason:"not_authenticated" }`
+ * - `403` (server-defined) may yield `{ ok:false, reason:"not_in_home_office_workspace" }`
+ * - `200` → `{ ok:true, ... }`
+ *
+ * @param {string} uid
+ * @returns {Promise<{ok:boolean, reason?:string, [k:string]:any}>}
+ */
 async function verify(uid) {
 	const url = new URL(`${API_BASE}/api/mural/verify`);
 	url.searchParams.set("uid", uid);
@@ -110,6 +214,16 @@ async function verify(uid) {
 	return res.json();
 }
 
+/**
+ * Request creation of the project folder and “Reflexive Journal” mural.
+ *
+ * Endpoint: `POST {API_BASE}/api/mural/setup`
+ * Body: `{ uid:string, projectName:string }`
+ *
+ * @param {string} uid
+ * @param {string} projectName
+ * @returns {Promise<{ok:boolean, reason?:string, error?:string, mural?:{id?:string,url?:string}}>}
+ */
 async function setup(uid, projectName) {
 	console.log("[mural] setup →", { uid, projectName });
 	const res = await fetch(`${API_BASE}/api/mural/setup`, {
@@ -122,6 +236,14 @@ async function setup(uid, projectName) {
 	return js;
 }
 
+/**
+ * Kick off the OAuth flow by navigating to the Worker’s `/api/mural/auth`.
+ * Includes a `return` parameter pointing back to the current page so the
+ * Worker can redirect here after `/api/mural/callback`.
+ *
+ * @param {string} uid
+ * @returns {void}
+ */
 function startOAuth(uid) {
 	const returnTo = location.href; // come back to the exact dashboard view
 	const url = new URL(`${API_BASE}/api/mural/auth`);
@@ -133,6 +255,19 @@ function startOAuth(uid) {
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
 
+/**
+ * Initialise the Mural integration on the Project dashboard.
+ *
+ * Wires:
+ * - “Connect Mural” button → `startOAuth(uid)`
+ * - “Create Reflexive Journal” button → `setup(uid, projectName)`
+ *
+ * Status is written to `#mural-status` if present (via {@link setPill}).
+ * The Setup button is enabled after a successful verify; if the project
+ * name is not resolvable on click, the user is prompted (to support iPad flows).
+ *
+ * @returns {void}
+ */
 function init() {
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 	const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
@@ -146,7 +281,7 @@ function init() {
 	let projectName = getProjectName();
 	console.log("[mural] resolved uid:", uid, "projectName:", projectName || "(empty)");
 
-	// Status hint if just returned from OAuth
+	// Hint if we just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
@@ -233,5 +368,15 @@ function init() {
 
 document.addEventListener("DOMContentLoaded", init);
 
-// Optional: expose minimal API for other scripts/tests
+/**
+ * Minimal public surface (useful for tests or other scripts on the page).
+ * @typedef {Object} MuralIntegrationAPI
+ * @property {() => void} init
+ * @property {(uid:string) => Promise<{ok:boolean,reason?:string}>} verify
+ * @property {(uid:string, projectName:string) => Promise<any>} setup
+ * @property {(uid:string) => void} startOAuth
+ * @property {string} API_BASE
+ */
+
+/** @type {MuralIntegrationAPI} */
 window.MuralIntegration = { init, verify, setup, startOAuth, API_BASE };
