@@ -138,7 +138,7 @@ function updateSetupState() {
 	const name = getProjectName();
 	const shouldEnable = !!(lastVerifyOk && name);
 	setupBtn.disabled = !shouldEnable;
-	setupBtn.setAttribute("aria-disabled", shouldEnable ? "false" : "true");
+	setupBtn.setAttribute("aria-disabled", String(!shouldEnable));
 	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
 }
 
@@ -160,13 +160,14 @@ function watchProjectName() {
 	obs.observe(main, { attributes: true, attributeFilter: ["data-project-name"], childList: true, subtree: true });
 }
 
-/* ───────────────────────────────────── Init ───────────────────────────────────── */
+/* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
-// small helpers local to the listener
-const isValidUrl = (u) => {
-	try { const x = new URL(u); return x.protocol === "https:"; } catch { return false; }
-};
-const looksVisitor = (u) => !!u && /\/invitation\/|sender=|key=|\/visitors\//i.test(u);
+function extractMuralOpenUrl(res) {
+	const v = res?.mural?.value || res?.mural || {};
+	return v?._canvasLink || v?.viewerUrl || v?.url || "";
+}
+
+/* ───────────────────────────────────── Init ───────────────────────────────────── */
 
 function attachDirectListeners() {
 	const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
@@ -183,19 +184,9 @@ function attachDirectListeners() {
 
 	if (setupBtn && !setupBtn.__muralBound) {
 		setupBtn.__muralBound = true;
-		setupBtn.addEventListener("click", async () => {
-			// If the button has been flipped into "open mode", just open and return.
-			if (setupBtn._muralMode === "open" && typeof setupBtn._muralOpenUrl === "string") {
-				const u = setupBtn._muralOpenUrl;
-				if (isValidUrl(u)) {
-					const win = window.open(u, "_blank", "noopener,noreferrer");
-					if (!win) alert("Pop-up blocked. Please allow pop-ups for this site.");
-				} else {
-					alert("Board URL missing or invalid.");
-				}
-				return;
-			}
 
+		// Keep a reference so we can remove this listener after creation.
+		setupBtn.__muralCreateHandler = async function onCreateClick() {
 			console.log("[mural] setup button clicked");
 			const name = getProjectName();
 			if (!name) {
@@ -218,33 +209,33 @@ function attachDirectListeners() {
 			try {
 				const res = await setup(getUid(), name);
 				console.log("[mural] setup response:", res);
+
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
-					// Prefer member canvas URL; fall back to any returned url if needed.
-					const mv = (res.mural && (res.mural.value || res.mural)) || {};
-					const memberUrl = mv._canvasLink || res.mural?.url || "";
-					const visitorUrl = mv?.visitorsSettings?.link || mv?.sharingSettings?.link || "";
+					const openUrl = extractMuralOpenUrl(res);
 
-					const openUrl = isValidUrl(memberUrl)
-						? memberUrl
-						: (isValidUrl(visitorUrl) && !looksVisitor(visitorUrl) ? visitorUrl : "");
-
-					// Flip button into "Open" mode, store the chosen URL, sync ARIA.
+					// Switch button to OPEN state
 					setupBtn.textContent = "Open “Reflexive Journal”";
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
-					setupBtn._muralMode = "open";
-					setupBtn._muralOpenUrl = openUrl || memberUrl || visitorUrl || "";
 
-					// Open immediately once upon creation if we have a usable URL.
-					if (isValidUrl(setupBtn._muralOpenUrl)) {
-						const win = window.open(setupBtn._muralOpenUrl, "_blank", "noopener,noreferrer");
-						if (!win) {
-							console.warn("[mural] pop-up was blocked on auto-open");
-						}
-					} else {
-						console.warn("[mural] no valid URL to open after creation");
+					// Remove the create handler; attach the open handler
+					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
+					delete setupBtn.__muralCreateHandler;
+
+					setupBtn.__muralOpenHandler = function onOpenClick() {
+						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+					};
+					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
+
+					// Auto-open once on creation
+					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+					else {
+						alert(
+							`Your Reflexive Journal board has been created in Mural.\n\n` +
+							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+						);
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
@@ -263,11 +254,10 @@ function attachDirectListeners() {
 				setPill(statusEl, "err", "Setup failed");
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
 			} finally {
-				// Re-enable if we didn't switch into open-mode above
-				if (setupBtn._muralMode !== "open") {
-					setupBtn.disabled = false;
-					setupBtn.setAttribute("aria-disabled", "false");
-				}
+				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
+				setupBtn.disabled = false;
+				setupBtn.setAttribute("aria-disabled", "false");
+
 				// Refresh status; enable state will be recomputed after verify returns
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
@@ -275,7 +265,9 @@ function attachDirectListeners() {
 					if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
 				}).catch(() => {});
 			}
-		});
+		};
+
+		setupBtn.addEventListener("click", setupBtn.__muralCreateHandler);
 	}
 }
 
