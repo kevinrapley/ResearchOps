@@ -16,9 +16,6 @@
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
  *
- * Project id (preferred key for persistence):
- * - ?id=… (URL) or <main data-project-airtable-id="…"> if present
- *
  * Debug: logs to console.* (your existing debug console captures these).
  */
 
@@ -32,7 +29,8 @@ const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 function resolveApiBase() {
 	const fromWindow = typeof window !== "undefined" && window.ROPS_API_BASE;
 	const fromHtml = document?.documentElement?.dataset?.apiBase;
-	const base = (fromWindow || fromHtml || DEFAULT_API_BASE || "").trim().replace(/\/+$/, "");
+	const base = (fromWindow || fromHtml || DEFAULT_API_BASE || "")
+		.trim().replace(/\/+$/, "");
 	console.log("[mural] API base:", base || "(unset)");
 	return base || DEFAULT_API_BASE;
 }
@@ -41,19 +39,6 @@ const API_BASE = resolveApiBase();
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
 const $ = (s, r = document) => r.querySelector(s);
-
-function getProjectId() {
-	// URL ?id=
-	const sp = new URLSearchParams(location.search);
-	const fromQs = (sp.get("id") || "").trim();
-	if (fromQs) return fromQs;
-
-	// <main data-project-airtable-id="...">
-	const main = $("main[data-project-airtable-id]");
-	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
-
-	return "";
-}
 
 function getProjectName() {
 	// 1) data attribute
@@ -73,26 +58,6 @@ function getProjectName() {
 	const sp = new URLSearchParams(location.search);
 	const q = sp.get("projectName");
 	return (q && q.trim()) || "";
-}
-
-/* ────────────────────────────── Persistence helpers ───────────────────────────── */
-
-function keyForProjectOpenUrl() {
-	const pid = getProjectId();
-	const pname = getProjectName();
-	return pid ? `mural.open::id::${pid}` : (pname ? `mural.open::name::${pname}` : "");
-}
-
-function saveOpenUrl(url) {
-	const key = keyForProjectOpenUrl();
-	if (!key || !url) return;
-	try { localStorage.setItem(key, url); } catch {}
-}
-
-function loadOpenUrl() {
-	const key = keyForProjectOpenUrl();
-	if (!key) return "";
-	try { return localStorage.getItem(key) || ""; } catch { return ""; }
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -147,33 +112,11 @@ async function setup(uid, projectName) {
 	const res = await fetch(`${API_BASE}/api/mural/setup`, {
 		method: "POST",
 		headers: { "content-type": "application/json" },
-		body: JSON.stringify({
-			uid,
-			projectName,
-			projectId: getProjectId() || undefined // server can store by id if available
-		})
+		body: JSON.stringify({ uid, projectName })
 	});
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) console.warn("[mural] setup non-200:", res.status, js);
 	return js;
-}
-
-async function findExisting(uid) {
-	const url = new URL(`${API_BASE}/api/mural/find`);
-	url.searchParams.set("uid", uid);
-	const pid = getProjectId(); const pname = getProjectName();
-	if (pid) url.searchParams.set("projectId", pid);
-	if (pname) url.searchParams.set("projectName", pname);
-	console.log("[mural] finding existing →", url.toString());
-
-	const res = await fetch(url, { cache: "no-store", credentials: "omit" });
-	if (res.status === 404) return null; // clean "not found"
-	if (!res.ok) {
-		const t = await res.text().catch(() => "");
-		console.warn("[mural] find non-200:", res.status, t);
-		return null;
-	}
-	return res.json().catch(() => null);
 }
 
 function startOAuth(uid) {
@@ -208,12 +151,10 @@ function watchProjectName() {
 		for (const m of mutations) {
 			if (m.type === "attributes" && m.attributeName === "data-project-name") {
 				updateSetupState();
-				tryInitOpenButtonFromStorage(); // if project name appears late, try open-state
 				return;
 			}
 			if (m.type === "childList") {
 				updateSetupState();
-				tryInitOpenButtonFromStorage();
 			}
 		}
 	});
@@ -222,44 +163,10 @@ function watchProjectName() {
 
 /* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
+// Stricter extractor: prefer member canvas link; fall back to viewer/url if present.
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
 	return v?._canvasLink || v?.viewerUrl || v?.url || "";
-}
-
-/* ───────────────────────────── Button toggle helpers ─────────────────────────── */
-
-function toggleButtonToOpen(url) {
-	if (!url) return;
-	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-	if (!setupBtn) return;
-
-	// Clean any "create" handler if present
-	if (setupBtn.__muralCreateHandler) {
-		setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
-		delete setupBtn.__muralCreateHandler;
-	}
-
-	setupBtn.textContent = "Open “Reflexive Journal”";
-	setupBtn.disabled = false;
-	setupBtn.setAttribute("aria-disabled", "false");
-
-	// Replace prior open handler
-	if (setupBtn.__muralOpenHandler) {
-		setupBtn.removeEventListener("click", setupBtn.__muralOpenHandler);
-	}
-	setupBtn.__muralOpenHandler = function onOpenClick() {
-		window.open(url, "_blank", "noopener,noreferrer");
-	};
-	setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
-}
-
-function tryInitOpenButtonFromStorage() {
-	const existing = loadOpenUrl();
-	if (existing) {
-		console.log("[mural] found saved Open URL; switching to Open state");
-		toggleButtonToOpen(existing);
-	}
 }
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
@@ -280,6 +187,7 @@ function attachDirectListeners() {
 	if (setupBtn && !setupBtn.__muralBound) {
 		setupBtn.__muralBound = true;
 
+		// Keep a reference so we can remove this listener after creation.
 		setupBtn.__muralCreateHandler = async function onCreateClick() {
 			console.log("[mural] setup button clicked");
 			const name = getProjectName();
@@ -308,16 +216,28 @@ function attachDirectListeners() {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
 					const openUrl = extractMuralOpenUrl(res);
-					if (openUrl) saveOpenUrl(openUrl);
 
 					// Switch button to OPEN state
-					if (openUrl) {
-						toggleButtonToOpen(openUrl);
-						// Auto-open once on creation
-						window.open(openUrl, "_blank", "noopener,noreferrer");
-					} else {
-						setupBtn.textContent = prev || "Create “Reflexive Journal”";
-						setPill(statusEl, "warn", "Created, but no URL returned");
+					setupBtn.textContent = "Open “Reflexive Journal”";
+					setupBtn.disabled = false;
+					setupBtn.setAttribute("aria-disabled", "false");
+
+					// Remove the create handler; attach the open handler
+					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
+					delete setupBtn.__muralCreateHandler;
+
+					setupBtn.__muralOpenHandler = function onOpenClick() {
+						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+					};
+					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
+
+					// Auto-open once on creation
+					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+					else {
+						alert(
+							`Your Reflexive Journal board has been created in Mural.\n\n` +
+							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+						);
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
@@ -336,6 +256,7 @@ function attachDirectListeners() {
 				setPill(statusEl, "err", "Setup failed");
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
 			} finally {
+				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
 
@@ -352,7 +273,7 @@ function attachDirectListeners() {
 	}
 }
 
-async function init() {
+function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
@@ -360,10 +281,7 @@ async function init() {
 	attachDirectListeners();
 
 	const uid = getUid();
-	console.log("[mural] resolved uid:", uid, "projectId:", getProjectId() || "(none)", "projectName:", getProjectName() || "(empty)");
-
-	// Try immediately to switch to OPEN from localStorage (fast path)
-	tryInitOpenButtonFromStorage();
+	console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
 
 	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
@@ -373,7 +291,7 @@ async function init() {
 	}
 
 	// Verify, then compute setup enablement
-	verify(uid).then(async (res) => {
+	verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
 		lastVerifyOk = !!res?.ok;
 		updateSetupState();
@@ -382,15 +300,6 @@ async function init() {
 			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
 			const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
 			if (connectBtn) connectBtn.textContent = "Re-connect Mural";
-
-			// If we DON'T already have a saved open URL, try server find (KV-backed)
-			if (!loadOpenUrl()) {
-				const found = await findExisting(uid);
-				if (found?.url) {
-					saveOpenUrl(found.url);
-					toggleButtonToOpen(found.url);
-				}
-			}
 		} else if (res.reason === "not_authenticated") {
 			setPill(statusEl, "warn", "Not connected");
 		} else if (res.reason === "not_in_home_office_workspace") {
