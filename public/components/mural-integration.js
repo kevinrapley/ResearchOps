@@ -37,19 +37,17 @@ const API_BASE = resolveApiBase();
 const $ = (s, r = document) => r.querySelector(s);
 
 function getProjectName() {
-	const main = $("main[data-project-name]");
+	const main = document.querySelector("main[data-project-name]");
 	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
 
-	const title = $("#project-title")?.textContent?.trim();
+	const title = document.getElementById("project-title")?.textContent?.trim();
 	if (title) return title;
 
 	const meta = document.querySelector('meta[name="project:name"]');
-	const metaName = meta?.getAttribute("content")?.trim();
-	if (metaName) return metaName;
+	if (meta?.content?.trim()) return meta.content.trim();
 
 	const sp = new URLSearchParams(location.search);
-	const q = sp.get("projectName");
-	return (q && q.trim()) || "";
+	return sp.get("projectName")?.trim() || "";
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -244,7 +242,7 @@ function init() {
 	verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
 		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-		const hasProjectName = !!getProjectName();
+		const hasProjectName = false;
 
 		if (res.ok) {
 			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
