@@ -164,7 +164,22 @@ function watchProjectName() {
 
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
-	return v?._canvasLink || v?.viewerUrl || v?.url || "";
+	// Prefer the member canvas link if the API gives it:
+	if (v?._canvasLink) return v._canvasLink;
+
+	// Construct a member canvas URL from id + state if needed.
+	// v.id looks like "pppt6786.1761503476791" → numeric id after the dot:
+	const ws = v?.workspaceId;
+	const state = v?.state;
+	const numericId = (typeof v?.id === "string" && v.id.includes(".")) ? v.id.split(".")[1] : null;
+
+	if (ws && numericId && state) {
+		// This matches the shape Mural returns in _canvasLink for members.
+		return `https://app.mural.co/t/${ws}/m/${ws}/${numericId}/${state}`;
+	}
+
+	// Last resort: if we truly have nothing, return empty so we don’t open a visitor/facilitator URL.
+	return "";
 }
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
