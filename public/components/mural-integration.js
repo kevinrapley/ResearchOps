@@ -221,37 +221,35 @@ function attachDirectListeners() {
 			setupBtn.textContent = "Creating…";
 			setPill(statusEl, "neutral", "Provisioning Reflexive Journal…");
 
+			// Pre-open tab to survive Safari’s popup blocker
+			const popup = window.open("about:blank", "_blank", "noopener");
+
 			try {
 				const res = await setup(getUid(), name);
 				console.log("[mural] setup response:", res);
 
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
-
 					const openUrl = extractMuralOpenUrl(res);
 
-					// Switch button to OPEN state
 					setupBtn.textContent = "Open “Reflexive Journal”";
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
 
-					// Remove the create handler; attach the open handler
+					// Replace handler to open on later clicks
 					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
 					delete setupBtn.__muralCreateHandler;
-
-					setupBtn.__muralOpenHandler = function onOpenClick() {
+					setupBtn.__muralOpenHandler = () => {
 						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
 					};
 					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
 
-					// Auto-open once on creation
-					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-					else {
-						alert(
-							`Your Reflexive Journal board has been created in Mural.\n\n` +
-							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
-						);
-					}
+					// Redirect pre-opened tab to the new mural
+					if (popup && openUrl) popup.location = openUrl;
+					else alert(
+						`Your Reflexive Journal board has been created in Mural.\n\n` +
+						`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+					);
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
@@ -268,12 +266,10 @@ function attachDirectListeners() {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
+				if (popup && !popup.closed) popup.close();
 			} finally {
-				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
-
-				// Refresh status; enable state will be recomputed after verify returns
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
