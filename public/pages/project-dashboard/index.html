@@ -10,28 +10,51 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<script type="module" src="/components/layout.js"></script>
 	<script>
+		// 1) Where your Worker lives
 		window.API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
+
+		// 2) Hardened rewrite for every /api/* call
 		(function() {
-			const O = window.fetch;
-			window.fetch = function(input, init) {
-				// Rewrite string URLs like "/api/projects"
-				if (typeof input === "string" && input.startsWith("/api/")) {
-					input = window.API_BASE + input;
-				}
-				// Rewrite Request objects pointing at this origin + /api/*
-				else if (input instanceof Request) {
-					const u = new URL(input.url, location.href);
-					if (u.origin === location.origin && u.pathname.startsWith("/api/")) {
-						const rewritten = new URL(u.pathname + u.search + u.hash, window.API_BASE);
-						input = new Request(rewritten.toString(), input);
+			const ORIGIN = window.API_BASE.replace(/\/+$/, "");
+			const origFetch = window.fetch;
+
+			function rewrite(input) {
+				// String URL
+				if (typeof input === "string") {
+					if (input.startsWith("/api/")) {
+						const url = ORIGIN + input;
+						console.debug("[api-shim] rewrite string →", url);
+						return url;
 					}
+					return input;
 				}
-				return O(input, init);
+
+				// Request object
+				if (input instanceof Request) {
+					try {
+						const u = new URL(input.url, location.href);
+						if (u.origin === location.origin && u.pathname.startsWith("/api/")) {
+							const rewritten = new URL(u.pathname + u.search + u.hash, ORIGIN).toString();
+							console.debug("[api-shim] rewrite Request →", rewritten);
+							// Clone the Request with the new URL (keep method/headers/body)
+							return new Request(rewritten, input);
+						}
+					} catch { /* ignore */ }
+				}
+
+				return input;
+			}
+
+			window.fetch = function(input, init) {
+				return origFetch(rewrite(input), init);
 			};
+
+			// Tiny self-test — remove if noisy
+			console.debug("[api-shim] active, API_BASE:", ORIGIN);
 		})();
 	</script>
+	<script type="module" src="/components/layout.js"></script>
 </head>
 
 <body>
