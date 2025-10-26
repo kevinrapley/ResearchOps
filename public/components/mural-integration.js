@@ -16,7 +16,9 @@
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
  *
- * Debug: logs to console.* (your existing debug console captures these).
+ * Notes:
+ * - After successful creation, the Setup button switches to **Open “Reflexive Journal”**
+ *   and opens the board in a new window. ARIA is kept in sync.
  */
 
 /* eslint-env browser */
@@ -79,21 +81,6 @@ function getUid() {
 
 function resetUid() { localStorage.removeItem(UID_KEY); }
 
-/* ─────────────────────────── Storage: per-project URL ─────────────────────────── */
-
-const URL_KEY_PREFIX = "mural.url::";
-/** Stable per-project storage key (by project name). */
-function urlKeyFor(projectName) { return `${URL_KEY_PREFIX}${(projectName || "").toLowerCase()}`; }
-
-function getStoredUrl(projectName) { return localStorage.getItem(urlKeyFor(projectName)) || null; }
-
-function setStoredUrl(projectName, url) {
-	if (!projectName || !url) return;
-	localStorage.setItem(urlKeyFor(projectName), url);
-}
-
-function clearStoredUrl(projectName) { if (projectName) localStorage.removeItem(urlKeyFor(projectName)); }
-
 /* ────────────────────────────────── Status pill ──────────────────────────────── */
 
 function setPill(host, kind, text) {
@@ -105,7 +92,7 @@ function setPill(host, kind, text) {
 	host.appendChild(span);
 }
 
-/* ───────────────────────────── Button state helpers ───────────────────────────── */
+/* ───────────────────────────── ARIA + button helpers ─────────────────────────── */
 
 /**
  * Keep ARIA in sync whenever we toggle the primary action.
@@ -118,21 +105,16 @@ function syncAria(btn, disabled, label) {
 	if (label) btn.setAttribute("aria-label", label);
 }
 
-/**
- * Put the button into “Create Reflexive Journal” mode.
- * Respects current enablement (verify + project name).
- */
+/** Put the button into “Create Reflexive Journal” mode. */
 function setCreateMode(btn, enabled) {
 	btn.dataset.muralMode = "create";
 	btn.textContent = "Create “Reflexive Journal”";
 	btn.disabled = !enabled;
-	btn.onclick = null;
+	btn.onclick = null; // listener will reassign on next bind
 	syncAria(btn, btn.disabled, "Create Reflexive Journal board in Mural");
 }
 
-/**
- * Put the button into “Open Reflexive Journal” mode and wire the click.
- */
+/** Put the button into “Open Reflexive Journal” mode with a concrete URL. */
 function setOpenMode(btn, url) {
 	btn.dataset.muralMode = "open";
 	btn.textContent = "Open “Reflexive Journal”";
@@ -183,29 +165,17 @@ function startOAuth(uid) {
 
 let lastVerifyOk = false;
 
-/**
- * Decide whether the setup button is enabled AND which mode it should be in.
- * - If we have a stored Mural URL for this project → “Open …”
- * - Else → “Create …”, enabled when verify OK + project name present
- */
 function updateSetupState() {
 	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
 	if (!setupBtn) return;
-
 	const name = getProjectName();
-	const persistedUrl = getStoredUrl(name);
-	const canCreate = Boolean(lastVerifyOk && name);
-
-	if (persistedUrl && lastVerifyOk) {
-		setOpenMode(setupBtn, persistedUrl);
-	} else {
-		setCreateMode(setupBtn, canCreate);
-	}
-
-	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| mode:", setupBtn.dataset.muralMode, "| enabled:", !setupBtn.disabled);
+	const shouldEnable = !!(lastVerifyOk && name);
+	// Always default to create mode on state recompute
+	setCreateMode(setupBtn, shouldEnable);
+	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
 }
 
-/* Observe when <main data-project-name="…"> appears/changes */
+/* If your page sets <main data-project-name="…"> later, watch and update. */
 function watchProjectName() {
 	const main = document.querySelector("main");
 	if (!main) return;
@@ -244,14 +214,13 @@ function attachDirectListeners() {
 				return;
 			}
 
-			// If already in OPEN mode, just open and bail.
+			// If we somehow ended up in OPEN mode (same session), just open.
 			if (setupBtn.dataset.muralMode === "open") {
-				const url = getStoredUrl(name);
+				const url = setupBtn.dataset.muralUrl;
 				if (url) {
 					window.open(url, "_blank", "noopener,noreferrer");
 					return;
 				}
-				// No URL (edge), fall back to create flow.
 			}
 
 			const prev = setupBtn.textContent;
@@ -263,16 +232,20 @@ function attachDirectListeners() {
 			try {
 				const res = await setup(getUid(), name);
 				console.log("[mural] setup response:", res);
+
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
-					if (res?.mural?.url) {
-						setStoredUrl(name, res.mural.url);
-						setOpenMode(setupBtn, res.mural.url);
-						// Open immediately after creation
-						window.open(res.mural.url, "_blank", "noopener,noreferrer");
+					// Prefer explicit url/viewLink if returned by the API
+					const openUrl = res?.mural?.url || res?.mural?.viewLink || "";
+					if (openUrl) {
+						// Remember on the element only (no localStorage), then switch mode.
+						setupBtn.dataset.muralUrl = openUrl;
+						setOpenMode(setupBtn, openUrl);
+						// Optional: open immediately after creation
+						window.open(openUrl, "_blank", "noopener,noreferrer");
 					} else {
-						// No URL returned; revert to create state but enabled
+						// No URL available: stay in create mode but re-enable
 						setCreateMode(setupBtn, true);
 						setupBtn.textContent = prev || "Create “Reflexive Journal”";
 					}
@@ -297,10 +270,10 @@ function attachDirectListeners() {
 				setCreateMode(setupBtn, true);
 				setupBtn.textContent = prev || "Create “Reflexive Journal”";
 			} finally {
-				// Refresh status; enable state will be recomputed after verify returns
+				// After any outcome, re-check verify to ensure the banner is right
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
-					updateSetupState();
+					updateSetupState(); // will reset to Create mode if no URL was set above
 					if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
 				}).catch(() => {});
 			}
@@ -312,7 +285,6 @@ function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	// Bind direct listeners to avoid duplicate delegated clicks
 	attachDirectListeners();
 
 	const uid = getUid();
@@ -329,19 +301,7 @@ function init() {
 	verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
 		lastVerifyOk = !!res?.ok;
-
-		// If a board URL is persisted for this project, switch to OPEN mode now.
-		const name = getProjectName();
-		const persistedUrl = getStoredUrl(name);
-		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-
-		if (setupBtn) {
-			if (persistedUrl && lastVerifyOk) {
-				setOpenMode(setupBtn, persistedUrl);
-			} else {
-				setCreateMode(setupBtn, Boolean(lastVerifyOk && name));
-			}
-		}
+		updateSetupState();
 
 		if (res.ok) {
 			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
@@ -361,21 +321,13 @@ function init() {
 		setPill(statusEl, "err", "Error checking status");
 	});
 
-	// React when <main data-project-name> is populated later by renderProject()
+	// If your page sets the project name later, keep the enablement in sync
 	watchProjectName();
 
 	// Rebind direct listeners if nodes are injected later
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
-	}
-
-	// On load: if we already know a URL for this project, display Open state
-	const name = getProjectName();
-	const persistedUrl = getStoredUrl(name);
-	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-	if (setupBtn && persistedUrl && lastVerifyOk) {
-		setOpenMode(setupBtn, persistedUrl);
 	}
 }
 
