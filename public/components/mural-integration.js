@@ -1,8 +1,9 @@
 /**
  * @file /public/components/mural-integration.js
  * @module muralIntegration
- * @summary Project dashboard → Connect to Mural, verify, and create a
- *          “Reflexive Journal” board inside a project-named folder.
+ * @summary
+ * Project dashboard → Connect to Mural (OAuth), verify connection, and create a
+ * “Reflexive Journal” board inside a project-named folder.
  *
  * DOM:
  * - <button id="mural-connect">
@@ -14,6 +15,8 @@
  * - <h1 id="project-title">…</h1>
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
+ *
+ * Debug: logs to console.* (your existing debug console captures these).
  */
 
 /* eslint-env browser */
@@ -37,17 +40,23 @@ const API_BASE = resolveApiBase();
 const $ = (s, r = document) => r.querySelector(s);
 
 function getProjectName() {
-	const main = document.querySelector("main[data-project-name]");
+	// 1) data attribute
+	const main = $("main[data-project-name]");
 	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
 
-	const title = document.getElementById("project-title")?.textContent?.trim();
+	// 2) title element
+	const title = $("#project-title")?.textContent?.trim();
 	if (title) return title;
 
+	// 3) meta tag
 	const meta = document.querySelector('meta[name="project:name"]');
-	if (meta?.content?.trim()) return meta.content.trim();
+	const metaName = meta?.getAttribute("content")?.trim();
+	if (metaName) return metaName;
 
+	// 4) query param
 	const sp = new URLSearchParams(location.search);
-	return sp.get("projectName")?.trim() || "";
+	const q = sp.get("projectName");
+	return (q && q.trim()) || "";
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -119,71 +128,42 @@ function startOAuth(uid) {
 	location.assign(url.toString());
 }
 
-/* ───────────────────────────────────── Click handlers ─────────────────────────── */
+/* ───────────────────────────── State + Enabling Logic ─────────────────────────── */
 
-async function handleSetupClick(statusEl, btn) {
-	const projectName = getProjectName(); // re-resolve at click time
-	console.log("[mural] setup click — projectName:", projectName || "(empty)");
+let lastVerifyOk = false;
 
-	if (btn.disabled) {
-		console.warn("[mural] setup clicked while disabled");
-		setPill(statusEl, "warn", "Connect and ensure a project name first");
-		return;
-	}
-	if (!projectName) {
-		setPill(statusEl, "warn", "Missing project name on page");
-		alert(
-			"Project name not found on this page. Please ensure the dashboard includes either:\n" +
-			"• <main data-project-name=\"…\"> or\n" +
-			"• <h1 id=\"project-title\">…</h1> or\n" +
-			"• <meta name=\"project:name\" content=\"…\">"
-		);
-		return;
-	}
+function updateSetupState() {
+	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
+	if (!setupBtn) return;
+	const name = getProjectName();
+	const shouldEnable = !!(lastVerifyOk && name);
+	setupBtn.disabled = !shouldEnable;
+	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
+}
 
-	const prev = btn.textContent;
-	btn.disabled = true;
-	btn.textContent = "Creating…";
-	setPill(statusEl, "neutral", "Provisioning Reflexive Journal…");
-
-	try {
-		const res = await setup(getUid(), projectName);
-		console.log("[mural] setup response:", res);
-		if (res?.ok) {
-			setPill(statusEl, "ok", "Folder + Reflexive Journal created");
-			if (res?.mural?.url) {
-				btn.textContent = "Open “Reflexive Journal”";
-				btn.onclick = () => window.open(res.mural.url, "_blank", "noopener");
-			} else {
-				btn.textContent = prev || "Create “Reflexive Journal”";
+/* Observe when <main data-project-name="…"> appears/changes */
+function watchProjectName() {
+	const main = document.querySelector("main");
+	if (!main) return;
+	const obs = new MutationObserver((mutations) => {
+		// Attribute change on data-project-name or content changes that may set the data attribute.
+		for (const m of mutations) {
+			if (m.type === "attributes" && m.attributeName === "data-project-name") {
+				updateSetupState();
+				return;
 			}
-		} else if (res?.reason === "not_authenticated") {
-			setPill(statusEl, "warn", "Please connect Mural first");
-			btn.textContent = prev || "Create “Reflexive Journal”";
-		} else if (res?.reason === "not_in_home_office_workspace") {
-			setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
-			btn.textContent = prev || "Create “Reflexive Journal”";
-		} else {
-			setPill(statusEl, "err", res?.error || "Setup failed");
-			console.warn("[mural] setup error payload:", res);
-			btn.textContent = prev || "Create “Reflexive Journal”";
-			alert(`Mural setup failed:\n${JSON.stringify(res, null, 2)}`);
+			if (m.type === "childList") {
+				// fall back in case the title is used instead of the data attribute
+				updateSetupState();
+			}
 		}
-	} catch (err) {
-		console.error("[mural] setup exception:", err);
-		setPill(statusEl, "err", "Setup failed");
-		btn.textContent = prev || "Create “Reflexive Journal”";
-	} finally {
-		btn.disabled = false;
-		verify(getUid()).then((res) => {
-			if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-		}).catch(() => {});
-	}
+	});
+	obs.observe(main, { attributes: true, attributeFilter: ["data-project-name"], childList: true, subtree: true });
 }
 
 /* ───────────────────────────────────── Init ───────────────────────────────────── */
 
-function attachListeners() {
+function attachDirectListeners() {
 	const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
 	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
@@ -195,29 +175,63 @@ function attachListeners() {
 			startOAuth(getUid());
 		});
 	}
+
 	if (setupBtn && !setupBtn.__muralBound) {
 		setupBtn.__muralBound = true;
 		setupBtn.addEventListener("click", async () => {
-			console.log("[mural] setup button clicked (direct)");
-			await handleSetupClick(statusEl, setupBtn);
-		});
-	}
-
-	// Delegated fallback (for late-inserted buttons); skip if a direct handler is present
-	if (!document.__muralDelegated) {
-		document.__muralDelegated = true;
-		document.addEventListener("click", async (e) => {
-			const t = e.target;
-			if (!(t instanceof Element) || t.__muralBound) return;
-			if (t.id === "mural-connect") {
-				console.log("[mural] connect button clicked (delegated)");
-				e.preventDefault();
-				startOAuth(getUid());
+			console.log("[mural] setup button clicked");
+			const name = getProjectName();
+			if (!name) {
+				setPill(statusEl, "warn", "Missing project name on page");
+				alert(
+					"Project name not found on this page. Please ensure the dashboard includes either:\n" +
+					"• <main data-project-name=\"…\"> or\n" +
+					"• <h1 id=\"project-title\">…</h1> or\n" +
+					"• <meta name=\"project:name\" content=\"…\">"
+				);
+				return;
 			}
-			if (t.id === "mural-setup") {
-				console.log("[mural] setup button clicked (delegated)");
-				e.preventDefault();
-				await handleSetupClick(statusEl, /** @type {HTMLButtonElement} */ (t));
+
+			const prev = setupBtn.textContent;
+			setupBtn.disabled = true;
+			setupBtn.textContent = "Creating…";
+			setPill(statusEl, "neutral", "Provisioning Reflexive Journal…");
+
+			try {
+				const res = await setup(getUid(), name);
+				console.log("[mural] setup response:", res);
+				if (res?.ok) {
+					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
+					if (res?.mural?.url) {
+						setupBtn.textContent = "Open “Reflexive Journal”";
+						setupBtn.onclick = () => window.open(res.mural.url, "_blank", "noopener");
+					} else {
+						setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					}
+				} else if (res?.reason === "not_authenticated") {
+					setPill(statusEl, "warn", "Please connect Mural first");
+					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+				} else if (res?.reason === "not_in_home_office_workspace") {
+					setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
+					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+				} else {
+					setPill(statusEl, "err", res?.error || "Setup failed");
+					console.warn("[mural] setup error payload:", res);
+					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					alert(`Mural setup failed:\n${JSON.stringify(res, null, 2)}`);
+				}
+			} catch (err) {
+				console.error("[mural] setup exception:", err);
+				setPill(statusEl, "err", "Setup failed");
+				setupBtn.textContent = prev || "Create “Reflexive Journal”";
+			} finally {
+				setupBtn.disabled = false;
+				// Refresh status; enable state will be recomputed after verify returns
+				verify(getUid()).then((res) => {
+					lastVerifyOk = !!res?.ok;
+					updateSetupState();
+					if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
+				}).catch(() => {});
 			}
 		});
 	}
@@ -227,47 +241,49 @@ function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	attachListeners();
+	// Bind direct listeners to avoid duplicate delegated clicks
+	attachDirectListeners();
 
 	const uid = getUid();
 	console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
 
-	// Initial pill
+	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
 		setPill(statusEl, "neutral", "Checking…");
 	}
 
+	// Verify, then compute setup enablement
 	verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
-		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-		const hasProjectName = false;
+		lastVerifyOk = !!res?.ok;
+		updateSetupState();
 
 		if (res.ok) {
 			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-			if (setupBtn) setupBtn.disabled = !hasProjectName;
 			const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
 			if (connectBtn) connectBtn.textContent = "Re-connect Mural";
 		} else if (res.reason === "not_authenticated") {
 			setPill(statusEl, "warn", "Not connected");
-			if (setupBtn) setupBtn.disabled = true;
 		} else if (res.reason === "not_in_home_office_workspace") {
 			setPill(statusEl, "err", "Not in Home Office workspace");
-			if (setupBtn) setupBtn.disabled = true;
 		} else {
 			setPill(statusEl, "err", "Error checking status");
-			if (setupBtn) setupBtn.disabled = true;
 		}
 	}).catch((e) => {
 		console.error("[mural] verify failed:", e);
+		lastVerifyOk = false;
+		updateSetupState();
 		setPill(statusEl, "err", "Error checking status");
-		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-		if (setupBtn) setupBtn.disabled = true;
 	});
 
+	// React when <main data-project-name> is populated later by renderProject()
+	watchProjectName();
+
+	// If your dashboard injects the buttons later, rebind direct listeners
 	if (!window.__muralObserver) {
-		window.__muralObserver = new MutationObserver(() => attachListeners());
+		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
 	}
 }
