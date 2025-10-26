@@ -499,6 +499,15 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/mural/setup" && request.method === "POST") {
 			return service.mural.muralSetup(request, origin);
 		}
+		// List user workspaces (TEMP)
+		if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
+			return service.mural.muralListWorkspaces(origin, url);
+		}
+
+		// Current user profile (TEMP)
+		if (url.pathname === "/api/mural/me" && request.method === "GET") {
+			return service.mural.muralMe(origin, url);
+		}
 		// TEMP: env visibility to confirm secrets are bound to this deployment
 		if (url.pathname === "/api/mural/debug-env" && request.method === "GET") {
 			return service.mural.muralDebugEnv(origin);
