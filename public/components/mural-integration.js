@@ -1,9 +1,8 @@
 /**
  * @file /public/components/mural-integration.js
  * @module muralIntegration
- * @summary
- * Project dashboard → Connect to Mural (OAuth), verify connection, and create a
- * “Reflexive Journal” board inside a project-named folder.
+ * @summary Project dashboard → Connect to Mural, verify, and create a
+ *          “Reflexive Journal” board inside a project-named folder.
  *
  * DOM:
  * - <button id="mural-connect">
@@ -15,8 +14,6 @@
  * - <h1 id="project-title">…</h1>
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
- *
- * Debug: logs to console.* (your existing debug console captures these).
  */
 
 /* eslint-env browser */
@@ -40,34 +37,19 @@ const API_BASE = resolveApiBase();
 const $ = (s, r = document) => r.querySelector(s);
 
 function getProjectName() {
-	// 1) data attribute
 	const main = $("main[data-project-name]");
 	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
 
-	// 2) title element
 	const title = $("#project-title")?.textContent?.trim();
 	if (title) return title;
 
-	// 3) meta tag
 	const meta = document.querySelector('meta[name="project:name"]');
 	const metaName = meta?.getAttribute("content")?.trim();
 	if (metaName) return metaName;
 
-	// 4) query param
 	const sp = new URLSearchParams(location.search);
 	const q = sp.get("projectName");
 	return (q && q.trim()) || "";
-}
-
-// Re-resolve at click time
-let projectNameAtClick = getProjectName();
-if (!projectNameAtClick) {
-	projectNameAtClick = prompt("Enter a project name for the Mural folder:") || "";
-	projectNameAtClick = projectNameAtClick.trim();
-	if (!projectNameAtClick) {
-		setPill(statusEl, "warn", "Project name is required");
-		return;
-	}
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -139,11 +121,10 @@ function startOAuth(uid) {
 	location.assign(url.toString());
 }
 
-/* ───────────────────────────────────── Init ───────────────────────────────────── */
+/* ───────────────────────────────────── Click handlers ─────────────────────────── */
 
-async function handleSetupClick(statusEl, btn, uid) {
-	// Always re-resolve project name at click time in case DOM updated
-	const projectName = getProjectNameAtClick();
+async function handleSetupClick(statusEl, btn) {
+	const projectName = getProjectName(); // re-resolve at click time
 	console.log("[mural] setup click — projectName:", projectName || "(empty)");
 
 	if (btn.disabled) {
@@ -196,19 +177,19 @@ async function handleSetupClick(statusEl, btn, uid) {
 		btn.textContent = prev || "Create “Reflexive Journal”";
 	} finally {
 		btn.disabled = false;
-		// Re-verify to refresh status (don’t block UI)
 		verify(getUid()).then((res) => {
 			if (res.ok) setPill(statusEl, "ok", "Connected to Mural (Home Office)");
 		}).catch(() => {});
 	}
 }
 
+/* ───────────────────────────────────── Init ───────────────────────────────────── */
+
 function attachListeners() {
 	const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
 	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	// Direct listeners (present-at-init case)
 	if (connectBtn && !connectBtn.__muralBound) {
 		connectBtn.__muralBound = true;
 		connectBtn.addEventListener("click", () => {
@@ -220,31 +201,25 @@ function attachListeners() {
 		setupBtn.__muralBound = true;
 		setupBtn.addEventListener("click", async () => {
 			console.log("[mural] setup button clicked (direct)");
-			await handleSetupClick(statusEl, setupBtn, getUid());
+			await handleSetupClick(statusEl, setupBtn);
 		});
 	}
 
-	// Delegated fallback (works if buttons appear later)
+	// Delegated fallback (for late-inserted buttons); skip if a direct handler is present
 	if (!document.__muralDelegated) {
 		document.__muralDelegated = true;
 		document.addEventListener("click", async (e) => {
 			const t = e.target;
-			if (!(t instanceof Element)) return;
-
-			// If a direct listener already bound, let it handle the event
-			if (t.__muralBound) return;
-
+			if (!(t instanceof Element) || t.__muralBound) return;
 			if (t.id === "mural-connect") {
 				console.log("[mural] connect button clicked (delegated)");
 				e.preventDefault();
 				startOAuth(getUid());
-				return;
 			}
 			if (t.id === "mural-setup") {
 				console.log("[mural] setup button clicked (delegated)");
 				e.preventDefault();
-				await handleSetupClick(document.querySelector("#mural-status"), /** @type {HTMLButtonElement} */ (t), getUid());
-				return;
+				await handleSetupClick(statusEl, /** @type {HTMLButtonElement} */ (t));
 			}
 		});
 	}
@@ -254,19 +229,18 @@ function init() {
 	console.log("[mural] init()");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	attachListeners(); // bind now (and again if new nodes appear)
+	attachListeners();
 
 	const uid = getUid();
 	console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
 
-	// Status hint if just returned from OAuth
+	// Initial pill
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
 		setPill(statusEl, "neutral", "Checking…");
 	}
 
-	// Verify, then enable/disable setup accordingly
 	verify(uid).then((res) => {
 		console.log("[mural] verify result:", res);
 		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
@@ -294,7 +268,6 @@ function init() {
 		if (setupBtn) setupBtn.disabled = true;
 	});
 
-	// If your dashboard injects the buttons later, a tiny observer helps:
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
