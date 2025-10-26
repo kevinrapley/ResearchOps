@@ -97,50 +97,86 @@ export async function routeRequest(service, request) {
 	const url = new URL(request.url);
 	const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase();
 
-	// Direct ping (no service dependencies)
-	if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
-		return new Response(JSON.stringify({
-			ok: true,
-			time: new Date().toISOString(),
-			note: "direct route"
-		}), {
+	// Simple ping
+	if (p === "/api/_diag/ping" && request.method === "GET") {
+		return new Response(JSON.stringify({ ok: true, time: new Date().toISOString(), note: "direct route" }), {
 			status: 200,
-			headers: {
-				"content-type": "application/json; charset=utf-8",
-				"cache-control": "no-store"
-			}
+			headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
 		});
 	}
 
 	try {
+		// CORS preflight
 		if (request.method === "OPTIONS") {
 			return new Response(null, { headers: service.corsHeaders(origin) });
 		}
 
-		// Journals GET
+		// ───────────────────── Health ─────────────────────
+		if (p === "/api/health" && request.method === "GET") {
+			return service.health(origin);
+		}
+
+		// ───────────────────── Projects ───────────────────
+		if (p === "/api/projects" && request.method === "GET") {
+			return service.listProjectsFromAirtable(origin, url);
+		}
+		if (p === "/api/projects" && request.method === "POST") {
+			if (typeof service.createProject === "function") {
+				return service.createProject(request, origin);
+			}
+		}
+
+		// ───────────────────── Studies ────────────────────
+		if (p === "/api/studies" && request.method === "GET") {
+			return service.listStudies(origin, url);
+		}
+		if (p === "/api/studies" && request.method === "POST") {
+			return service.createStudy(request, origin);
+		} {
+			const m = p.match(/^\/api\/studies\/([^/]+)$/);
+			if (m && request.method === "PATCH") {
+				return service.updateStudy(request, origin, decodeURIComponent(m[1]));
+			}
+		}
+
+		// ───────────────────── Journals (existing) ────────
 		if (p === "/api/journal-entries" && request.method === "GET") {
 			return service.listJournalEntries(origin, url);
 		}
-
-		// Journals POST
 		if (p === "/api/journal-entries" && request.method === "POST") {
 			return service.createJournalEntry(request, origin);
 		}
-
-		// Journals DELETE
 		if (p.startsWith("/api/journal-entries/") && request.method === "DELETE") {
 			const entryId = decodeURIComponent(p.split("/").pop());
 			return service.deleteJournalEntry(origin, entryId);
 		}
 
-		// 404 JSON (avoid HTML error page)
+		// ───────────────────── Mural (needed by dashboard) ─
+		if (p === "/api/mural/auth" && request.method === "GET") {
+			return service.mural.muralAuth(origin, url);
+		}
+		if (p === "/api/mural/callback" && request.method === "GET") {
+			return service.mural.muralCallback(origin, url);
+		}
+		if (p === "/api/mural/verify" && request.method === "GET") {
+			return service.mural.muralVerify(origin, url);
+		}
+		if (p === "/api/mural/setup" && request.method === "POST") {
+			return service.mural.muralSetup(request, origin);
+		}
+		// If you added “find”:
+		if (p === "/api/mural/find" && request.method === "GET") {
+			return service.mural.muralFind(origin, url);
+		}
+
+		// Fallback 404 (JSON)
 		return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
 			status: 404,
 			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
 		});
 	} catch (e) {
 		const msg = String(e?.message || e || "");
-		service?.log?.error?.("router.fatal", { err: msg, path: url.pathname, method: request.method });
+		service?.log?.error?.("router.direct.fatal", { err: msg, path: url.pathname, method: request.method });
 		return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
 			status: 500,
 			headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
@@ -501,7 +537,7 @@ export async function handleRequest(request, env) {
 		}
 		// Find existing “Reflexive Journal” (no creation)
 		if (url.pathname === "/api/mural/find" && request.method === "GET") {
-  			return service.mural.muralFind(origin, url);
+			return service.mural.muralFind(origin, url);
 		}
 		// List user workspaces (TEMP)
 		if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
