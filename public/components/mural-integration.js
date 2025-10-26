@@ -91,11 +91,9 @@ function setPill(host, kind, text) {
 }
 
 /* ───────────────────────────── ARIA helpers (minimal) ────────────────────────── */
-
 function setAriaDisabled(btn, disabled) {
 	btn.setAttribute("aria-disabled", String(disabled));
 }
-
 function setAriaLabel(btn, label) {
 	if (label) btn.setAttribute("aria-label", label);
 }
@@ -149,7 +147,6 @@ function updateSetupState() {
 	const shouldEnable = !!(lastVerifyOk && name);
 	setupBtn.disabled = !shouldEnable;
 	setAriaDisabled(setupBtn, !shouldEnable);
-	// Keep label describing current action (create by default)
 	setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
 }
@@ -215,23 +212,34 @@ function attachDirectListeners() {
 				console.log("[mural] setup response:", res);
 				if (res?.ok) {
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
-					if (res?.mural?.url) {
-						// Switch to OPEN state
-						setupBtn.textContent = "Open “Reflexive Journal”";
-						setupBtn.disabled = false;
-						setAriaDisabled(setupBtn, false);
-						setAriaLabel(setupBtn, "Open Reflexive Journal in Mural");
-						setupBtn.onclick = () => window.open(res.mural.url, "_blank", "noopener");
-					} else {
-						// No URL returned; revert to CREATE and clear any old onclick
-						setupBtn.textContent = prev || "Create “Reflexive Journal”";
-						setupBtn.onclick = null;
-						setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
-					}
+
+					// Always switch to OPEN state after success – even if no URL provided.
+					setupBtn.textContent = "Open “Reflexive Journal”";
+					setupBtn.disabled = false;
+					setAriaDisabled(setupBtn, false);
+					setAriaLabel(setupBtn, "Open Reflexive Journal in Mural");
+
+					// Prefer a URL if present; otherwise show a helpful finder message.
+					const openUrl =
+						res?.mural?.url ||
+						res?.mural?.viewerUrl ||
+						(res?.mural && res.mural.links && (res.mural.links.view || res.mural.links.viewer)) ||
+						"";
+
+					setupBtn.onclick = () => {
+						if (openUrl) {
+							window.open(openUrl, "_blank", "noopener");
+						} else {
+							alert(
+								"Your Reflexive Journal board has been created in Mural.\n\n" +
+								`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+							);
+						}
+					};
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
 					setupBtn.textContent = prev || "Create “Reflexive Journal”";
-					setupBtn.onclick = null; // clear any previous open handler
+					setupBtn.onclick = null;
 					setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 				} else if (res?.reason === "not_in_home_office_workspace") {
 					setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
@@ -253,7 +261,7 @@ function attachDirectListeners() {
 				setupBtn.onclick = null; // prevent stale open action
 				setAriaLabel(setupBtn, "Create Reflexive Journal board in Mural");
 			} finally {
-				// Re-enable unless we switched to OPEN mode (where we also keep enabled)
+				// Re-enable unless already in OPEN mode
 				if (setupBtn.textContent !== "Open “Reflexive Journal”") {
 					setupBtn.disabled = false;
 					setAriaDisabled(setupBtn, false);
