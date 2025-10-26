@@ -165,9 +165,9 @@ function watchProjectName() {
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
 	return (
-		v?.visitorsSettings?.link ||
-		v?._canvasLink ||
-		v?.sharingSettings?.link ||
+		v?._canvasLink || // member canvas URL (full write if you’re a member)
+		v?.sharingSettings?.link || // member invite link
+		v?.visitorsSettings?.link || // visitor link (last resort)
 		v?.viewerUrl ||
 		v?.url ||
 		""
