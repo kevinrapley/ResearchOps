@@ -20,7 +20,7 @@
 		"subtitle":"Project Dashboard"
 	}'></x-include>
 
-	<main class="govuk-body" role="main">
+	<main class="govuk-body" role="main" data-project-name="null">
 		<!-- BREADCRUMBS -->
 		<nav class="breadcrumbs" aria-label="Breadcrumb">
 			<ol>
@@ -320,18 +320,20 @@
 			setText("#kv-lead-researcher", project.lead_researcher);
 			setText("#kv-lead-email", project.lead_researcher_email);
 
-			// Breadcrumbs
+			const main = document.querySelector("main");
+			if (main) {
+				main.dataset.projectName = project.name || "";
+				main.dataset.projectAirtableId = project.id || "";
+			}
+
 			const bcProject = document.getElementById("breadcrumb-project");
 			if (bcProject) {
 				bcProject.textContent = project.name || "Project";
-				bcProject.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(project.id)}`);
+				bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(project.id)}`;
 			}
 
-			// Expose project id + edit link
-			const main = document.querySelector("main");
-			if (main) main.dataset.projectAirtableId = project.id || "";
 			const edit = document.getElementById("btn-edit");
-			if (edit) edit.setAttribute("href", `./start/?id=${encodeURIComponent(project.id)}`);
+			if (edit) edit.href = `./start/?id=${encodeURIComponent(project.id)}`;
 		}
 
 		function renderStudies(project, studies) {
