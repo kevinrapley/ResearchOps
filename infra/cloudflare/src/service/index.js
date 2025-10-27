@@ -2,15 +2,6 @@
  * @file src/service/index.js
  * @module service
  * @summary Composed API service for ResearchOps Worker
- * @description
- * Combines domain modules (Projects, Studies, Guides, Participants, Sessions, Partials, Comms, CSV)
- * and the Reflexive Journals suite (Journals, Excerpts, Memos, Codes, Analysis), plus external
- * integrations (GitHub CSV mirror, Airtable) and **Mural OAuth + provisioning**:
- *
- * - Mural OAuth (auth-code) and token persistence (KV)
- * - Workspace membership verification (Home Office)
- * - Room + Folder ensure (per-user private room; folder = Project name)
- * - “Reflexive Journal” mural creation inside that folder
  */
 
 import { DEFAULTS } from "../core/constants.js";
@@ -68,13 +59,13 @@ import * as Diag from "./dev/diag.js";
  * @property {KVNamespace} SESSION_KV
  * @property {string} [MURAL_CLIENT_ID]
  * @property {string} [MURAL_CLIENT_SECRET]
- * @property {string} [MURAL_REDIRECT_URI]                 // e.g. https://host/api/mural/callback
- * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]     // preferred over name match
- * @property {string} [MURAL_API_BASE]                     // default: https://app.mural.co/api/public/v1
+ * @property {string} [MURAL_REDIRECT_URI]
+ * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]
+ * @property {string} [MURAL_API_BASE]
+ * @property {string} [MURAL_REFLEXIVE_MURAL_ID]  // <- optional fallback for journal-sync
  */
 
 /**
- * Context wired into every handler.
  * @typedef {Object} ServiceContext
  * @property {Env} env
  * @property {Readonly<typeof DEFAULTS>} cfg
@@ -84,12 +75,6 @@ import * as Diag from "./dev/diag.js";
  */
 
 /**
- * Mural integration surface exposed by the composed service.
- * Methods are called by router bindings:
- * - GET  /api/mural/auth      → {@link MuralServicePart#muralAuth}
- * - GET  /api/mural/callback  → {@link MuralServicePart#muralCallback}
- * - GET  /api/mural/verify    → {@link MuralServicePart#muralVerify}
- * - POST /api/mural/setup     → {@link MuralServicePart#muralSetup}
  * @typedef {import("./internals/mural.js").MuralServicePart} MuralAPI
  */
 
@@ -137,13 +122,6 @@ export class ResearchOpsService {
 			this.destroyed = true;
 		}
 	}
-	
-	json(payload, status = 200, headers = {}) {
-		return new Response(JSON.stringify(payload), {
-			status,
-			headers: { "content-type": "application/json; charset=utf-8", ...headers }
-		});
-	}
 
 	/* ─────────────── Health ─────────────── */
 	async health(origin) {
@@ -151,10 +129,7 @@ export class ResearchOpsService {
 	}
 
 	/* ─────────────── Projects ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listProjectsFromAirtable = (origin, url) => Projects.listProjectsFromAirtable(this, origin, url);
-
-	/** @type {(origin:string, projectId:string)=>Promise<Response>} */
 	getProjectById = (origin, projectId) => Projects.getProjectById(this, origin, projectId);
 
 	/* ─────────────── Journal Entries ─────────────── */
@@ -176,81 +151,52 @@ export class ResearchOpsService {
 	updateMemo = (req, origin, memoId) => Memos.updateMemo(this, req, origin, memoId);
 
 	/* ─────────────── Code Applications ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
 
 	/* ─────────────── Codes ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
 
 	/* ─────────────── Analysis ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	timeline = (origin, url) => Analysis.timeline(this, origin, url);
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	cooccurrence = (origin, url) => Analysis.cooccurrence(this, origin, url);
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	retrieval = (origin, url) => Analysis.retrieval(this, origin, url);
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	exportAnalysis = (origin, url) => Analysis.exportAnalysis(this, origin, url);
 
 	/* ─────────────── CSV ─────────────── */
-	/** @type {(origin:string, path:string)=>Promise<Response>} */
 	streamCsv = (origin, path) => Csv.streamCsv(this, origin, path);
-	/** @type {(args:{path:string, header:string[], row:(string|number)[]})=>Promise<void>} */
 	githubCsvAppend = (args) => Csv.githubCsvAppend(this, args);
 
 	/* ─────────────── Studies ─────────────── */
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createStudy = (req, origin) => Studies.createStudy(this, req, origin);
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listStudies = (origin, url) => Studies.listStudies(this, origin, url);
-	/** @type {(req:Request, origin:string, studyId:string)=>Promise<Response>} */
 	updateStudy = (req, origin, studyId) => Studies.updateStudy(this, req, origin, studyId);
 
 	/* ─────────────── Guides ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createGuide = (req, origin) => Guides.createGuide(this, req, origin);
-	/** @type {(req:Request, origin:string, guideId:string)=>Promise<Response>} */
 	updateGuide = (req, origin, guideId) => Guides.updateGuide(this, req, origin, guideId);
-	/** @type {(origin:string, guideId:string)=>Promise<Response>} */
 	publishGuide = (origin, guideId) => Guides.publishGuide(this, origin, guideId);
-	/** @type {(origin:string, guideId:string)=>Promise<Response>} */
 	readGuide = (origin, guideId) => Guides.readGuide(this, origin, guideId);
 
 	/* ─────────────── Partials ─────────────── */
-	/** @type {(origin:string)=>Promise<Response>} */
 	listPartials = (origin) => Partials.listPartials(this, origin);
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createPartial = (req, origin) => Partials.createPartial(this, req, origin);
-	/** @type {(origin:string, id:string)=>Promise<Response>} */
 	readPartial = (origin, id) => Partials.readPartial(this, origin, id);
-	/** @type {(req:Request, origin:string, id:string)=>Promise<Response>} */
 	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, origin, id);
-	/** @type {(origin:string, id:string)=>Promise<Response>} */
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listParticipants = (origin, url) => Participants.listParticipants(this, origin, url);
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createParticipant = (req, origin) => Participants.createParticipant(this, req, origin);
 
 	/* ─────────────── Sessions ─────────────── */
-	/** @type {(origin:string, url:URL)=>Promise<Response>} */
 	listSessions = (origin, url) => Sessions.listSessions(this, origin, url);
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	createSession = (req, origin) => Sessions.createSession(this, req, origin);
-	/** @type {(req:Request, origin:string, sessionId:string)=>Promise<Response>} */
 	updateSession = (req, origin, sessionId) => Sessions.updateSession(this, req, origin, sessionId);
-	/** @type {(origin:string, sessionId:string)=>Promise<Response>} */
 	sessionIcs = (origin, sessionId) => Sessions.sessionIcs(this, origin, sessionId);
 
 	/* ─────────────── Comms ─────────────── */
-	/** @type {(req:Request, origin:string)=>Promise<Response>} */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
 }
