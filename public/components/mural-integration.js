@@ -10,11 +10,9 @@
  * - <button id="mural-setup">
  * - <span   id="mural-status"></span> (optional)
  *
- * Project name sources (first match wins):
- * - <main data-project-name="…">
- * - <h1 id="project-title">…</h1>
- * - <meta name="project:name" content="…">
- * - ?projectName=… (URL)
+ * Project identity:
+ * - Prefer project id (URL ?id=… or <main data-project-airtable-id>)
+ * - Fall back to project name (see getProjectName)
  *
  * Debug: logs to console.* (your existing debug console captures these).
  */
@@ -40,6 +38,14 @@ const API_BASE = resolveApiBase();
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
 const $ = (s, r = document) => r.querySelector(s);
+
+function getProjectId() {
+  // Prefer <main data-project-airtable-id>, then ?id
+  const mainId = document.querySelector("main")?.dataset?.projectAirtableId || "";
+  if (mainId && mainId.trim()) return mainId.trim();
+  const paramId = new URLSearchParams(location.search).get("id") || "";
+  return paramId.trim();
+}
 
 function getProjectName() {
   // 1) data attribute
@@ -161,6 +167,9 @@ function watchProjectName() {
     for (const m of mutations) {
       if (m.type === "attributes" && m.attributeName === "data-project-name") {
         updateSetupState();
+        // If we weren’t able to hydrate earlier because name was missing,
+        // try again now that it’s set.
+        if (lastVerifyOk) hydrateOpenUrlIfAvailable();
         return;
       }
       if (m.type === "childList") {
@@ -186,12 +195,8 @@ function extractMuralOpenUrl(res) {
 /* ─────────── Persisted Open URL helpers (localStorage-first) ─────────── */
 
 function projectKey() {
-  // Prefer a stable id if exposed on <main>; fall back to name
-  const id =
-    document.querySelector("main")?.dataset?.projectAirtableId ||
-    new URLSearchParams(location.search).get("id") ||
-    "";
-  const name = getProjectName() || "";
+  const id = getProjectId();
+  const name = getProjectName();
   return id
     ? `mural.open.${id}`
     : name
@@ -202,7 +207,9 @@ function projectKey() {
 function loadOpenUrl() {
   try {
     const k = projectKey();
-    return k ? localStorage.getItem(k) || "" : "";
+    const val = k ? localStorage.getItem(k) || "" : "";
+    if (val) console.log("[mural] localStorage URL hit for key:", k);
+    return val;
   } catch {
     return "";
   }
@@ -211,7 +218,10 @@ function loadOpenUrl() {
 function saveOpenUrl(url) {
   try {
     const k = projectKey();
-    if (k && url) localStorage.setItem(k, url);
+    if (k && url) {
+      localStorage.setItem(k, url);
+      console.log("[mural] localStorage URL saved for key:", k);
+    }
   } catch {}
 }
 
@@ -238,41 +248,57 @@ function switchButtonToOpen(url) {
 }
 
 /**
- * If we already know an Open URL (localStorage first, then server `/api/mural/find`),
- * flip the button to Open and persist the URL locally.
+ * Try to resolve an existing Open URL:
+ * 1) localStorage first (instant)
+ * 2) If connected:
+ *    2a) Try server/KV with projectId (preferred)
+ *    2b) If no hit and we have a projectName, try with projectName
  */
 async function hydrateOpenUrlIfAvailable() {
   // 1) localStorage first (instant)
   const localUrl = loadOpenUrl();
   if (localUrl) {
-    console.log("[mural] hydrate: localStorage hit");
     switchButtonToOpen(localUrl);
     return;
   }
 
-  // 2) Ask server/KV only if connected and we have a project name
+  // 2) Ask server/KV only if connected
   if (!lastVerifyOk) return;
+
+  const uid = getUid();
+  const id = getProjectId();
   const name = getProjectName();
-  if (!name) return;
 
-  try {
-    const uid = getUid();
-    const u = new URL(`${API_BASE}/api/mural/find`);
-    u.searchParams.set("uid", uid);
-    u.searchParams.set("projectName", name);
-    u.searchParams.set("title", "Reflexive Journal");
-
-    const res = await fetch(u, { cache: "no-store" });
-    const js = await res.json().catch(() => ({}));
-    if (res.ok && js?.ok && js?.url) {
-      console.log("[mural] hydrate: KV hit");
-      saveOpenUrl(js.url);
-      switchButtonToOpen(js.url);
-    } else {
-      console.log("[mural] hydrate: no existing URL found");
+  // helper to call /api/mural/find with params and adopt result
+  const tryFind = async (params) => {
+    try {
+      const u = new URL(`${API_BASE}/api/mural/find`);
+      u.searchParams.set("uid", uid);
+      u.searchParams.set("title", "Reflexive Journal");
+      Object.entries(params).forEach(([k, v]) => v && u.searchParams.set(k, v));
+      const res = await fetch(u, { cache: "no-store" });
+      const js = await res.json().catch(() => ({}));
+      if (res.ok && js?.ok && js?.url) {
+        console.log("[mural] hydrate: KV hit via", params);
+        saveOpenUrl(js.url);
+        switchButtonToOpen(js.url);
+        return true;
+      }
+    } catch (e) {
+      console.warn("[mural] hydrate find failed:", e);
     }
-  } catch (e) {
-    console.warn("[mural] hydrate failed:", e);
+    return false;
+  };
+
+  // 2a) by projectId (preferred; does not need name)
+  if (id) {
+    const ok = await tryFind({ projectId: id });
+    if (ok) return;
+  }
+
+  // 2b) by projectName (fallback)
+  if (name) {
+    await tryFind({ projectName: name });
   }
 }
 
@@ -382,7 +408,14 @@ function init() {
   attachDirectListeners();
 
   const uid = getUid();
-  console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
+  console.log(
+    "[mural] resolved uid:",
+    uid,
+    "projectId:",
+    getProjectId() || "(none)",
+    "projectName:",
+    getProjectName() || "(empty)"
+  );
 
   // Status hint if just returned from OAuth
   if (new URLSearchParams(location.search).get("mural") === "connected") {
