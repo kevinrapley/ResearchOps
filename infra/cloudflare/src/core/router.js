@@ -539,6 +539,10 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/mural/find" && request.method === "GET") {
 			return service.mural.muralFind(origin, url);
 		}
+		// POST /api/mural/journal-sync
+		if (req.method === "POST" && url.pathname === "/api/mural/journal-sync") {
+			return muralService.muralJournalSync(req, origin);
+		}
 		// List user workspaces (TEMP)
 		if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
 			return service.mural.muralListWorkspaces(origin, url);
