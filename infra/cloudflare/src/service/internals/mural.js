@@ -422,10 +422,11 @@ export class MuralServicePart {
 			return this.root.json({ ok: true, stickyId, action }, 200, cors);
 
 		} catch (err) {
+			console.error("muralJournalSync error", step, err?.message, err);
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "journal_sync_failed");
-
+		
 			return this.root.json({
 				ok: false,
 				error: "journal_sync_failed",
