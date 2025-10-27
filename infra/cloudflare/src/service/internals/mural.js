@@ -1,415 +1,468 @@
 /**
- * @file lib/mural.js
- * @module mural
- * @summary Mural OAuth + API helpers (pure functions; no routing).
- *
- * ENV required:
- * - MURAL_CLIENT_ID
- * - MURAL_CLIENT_SECRET
- * - MURAL_REDIRECT_URI  (must exactly match your registered redirect URI in Mural)
- * - (optional) MURAL_COMPANY_ID                     // e.g. "homeofficegovuk"
- * - (optional) MURAL_API_BASE   default: https://app.mural.co/api/public/v1
- * - (optional) MURAL_SCOPES     default: identity:read workspaces:read rooms:read rooms:write murals:write
+ * @file service/internals/mural.js
+ * @module service/internals/mural
+ * @summary Service part that encapsulates Mural routes logic (OAuth + provisioning + journal sync).
  */
 
-const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
-const API_TIMEOUT_MS = 15000;
+import {
+	buildAuthUrl,
+	exchangeAuthCode,
+	refreshAccessToken,
+	verifyHomeOfficeByCompany,
+	ensureUserRoom,
+	ensureProjectFolder,
+	createMural,
+	getMe,
+	getActiveWorkspaceIdFromMe,
 
-// Default scopes; can be overridden by env.MURAL_SCOPES (space-separated)
-export const DEFAULT_SCOPES = [
-  "identity:read",
-  "workspaces:read",
-  "rooms:read",
-  "rooms:write",
-  "murals:write"
-];
+	// low-level widgets/tags utilities
+	getWidgets,
+	createSticky,
+	updateSticky,
+	ensureTagsBlueberry,
+	applyTagsToSticky,
+	normaliseWidgets,
+	findLatestInCategory
+} from "../../lib/mural.js";
 
-/* ------------------------------------------------------------------ */
-/* Base URLs                                                          */
-/* ------------------------------------------------------------------ */
-
-const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
-const oauthBase = "https://app.mural.co/api/public/v1/authorization/oauth2";
-
-/* ------------------------------------------------------------------ */
-/* Helpers: state encode/decode                                       */
-/* ------------------------------------------------------------------ */
-
-export function encodeState(obj) {
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); } catch { return ""; }
-}
-
-export function decodeState(str) {
-  try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return {}; }
-}
-
-/* ------------------------------------------------------------------ */
-/* OAuth2: Authorization URL builder                                  */
-/* ------------------------------------------------------------------ */
-
-export function buildAuthUrl(env, stateObj) {
-  const state = encodeState(stateObj);
-  const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
-  const params = new URLSearchParams({
-    response_type: "code",
-    client_id: env.MURAL_CLIENT_ID,
-    redirect_uri: env.MURAL_REDIRECT_URI,
-    scope: scopes,
-    state
-  });
-  // Correct endpoint: no "/authorize" suffix
-  return `${oauthBase}/?${params}`;
-}
-
-/* ------------------------------------------------------------------ */
-/* JSON + Fetch helpers                                               */
-/* ------------------------------------------------------------------ */
-
-async function fetchJSON(url, opts = {}) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    const txt = await res.text();
-    let js = {};
-    try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
-    if (!res.ok) {
-      const err = new Error(js?.message || js?.error || `HTTP ${res.status}`);
-      err.status = res.status;
-      err.body = js;
-      throw err;
-    }
-    return js;
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-const withBearer = (token) => ({
-  headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
-});
-
-/* ------------------------------------------------------------------ */
-/* OAuth2: Token exchange / refresh                                   */
-/* ------------------------------------------------------------------ */
-
-export async function exchangeAuthCode(env, code) {
-  const body = new URLSearchParams({
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: env.MURAL_REDIRECT_URI,
-    client_id: env.MURAL_CLIENT_ID,
-    client_secret: env.MURAL_CLIENT_SECRET
-  });
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body
-  });
-  const js = await res.json();
-  if (!res.ok) throw new Error(js?.error_description || "Token exchange failed");
-  return js; // { access_token, refresh_token?, token_type, expires_in }
-}
-
-/** Refresh an expired access token using the refresh_token. */
-export async function refreshAccessToken(env, refreshToken) {
-  const body = new URLSearchParams({
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-    client_id: env.MURAL_CLIENT_ID,
-    client_secret: env.MURAL_CLIENT_SECRET
-  });
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body
-  });
-  const js = await res.json();
-  if (!res.ok) throw new Error(js?.error_description || "Token refresh failed");
-  return js; // { access_token, refresh_token?, expires_in, token_type }
-}
-
-/* ------------------------------------------------------------------ */
-/* User profile + helpers                                             */
-/* ------------------------------------------------------------------ */
-
-export async function getMe(env, token) {
-  return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
-}
-
-export function getActiveWorkspaceIdFromMe(me) {
-  return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
-}
+import { b64Encode, b64Decode } from "../../core/utils.js";
 
 /**
- * Company (tenant) membership check.
- * True if the current user belongs to the expected company.
- * - robust against stray whitespace and case differences.
+ * @typedef {import("../index.js").ResearchOpsService} ResearchOpsService
  */
-export async function verifyHomeOfficeByCompany(env, token) {
-  const me = await getMe(env, token);
-  const v = me?.value || me || {};
-  const cid = String(v.companyId || "").trim().toLowerCase();
-  const cname = String(v.companyName || "").trim().toLowerCase();
 
-  const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase(); // e.g. "homeofficegovuk"
-  if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
+const GRID_Y = 32;
+const DEFAULT_W = 240;
+const DEFAULT_H = 120;
 
-  // Fallback by name if you don't want to set MURAL_COMPANY_ID
-  return Boolean(cname && /home\s*office/.test(cname));
+export class MuralServicePart {
+	/** @param {ResearchOpsService} root */
+	constructor(root) {
+		this.root = root;
+	}
+
+	kvKey(uid) { return `mural:${uid}:tokens`; }
+
+	/**
+	 * Per-project mapping for the “Reflexive Journal” Mural board.
+	 * Stored as a single string muralId, or a JSON object if you want to track more fields.
+	 */
+	projectMuralKey(projectId) { return `mural:project:${projectId}:reflexive`; }
+
+	async saveTokens(uid, tokens) {
+		await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true });
+	}
+
+	async loadTokens(uid) {
+		const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid));
+		return raw ? JSON.parse(raw) : null;
+	}
+
+	/* ───────────────────────── internal helpers ───────────────────────── */
+
+	/**
+	 * Verify company membership and return { id } for the active workspace.
+	 * Throws if company check fails or no active workspace found.
+	 */
+	async _ensureWorkspace(env, accessToken) {
+		const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
+		if (!inCompany) throw Object.assign(new Error("not_in_home_office_workspace"), { code: 403 });
+
+		const me = await getMe(env, accessToken);
+		const wsId = getActiveWorkspaceIdFromMe(me);
+		if (!wsId) throw new Error("no_active_workspace");
+		return { id: wsId };
+	}
+
+	/**
+	 * Resolve the Reflexive Journal muralId for a project.
+	 * Priority: explicit body.muralId → KV mapping → null (caller must handle).
+	 */
+	async resolveReflexiveMuralId(projectId, explicitMuralId) {
+		if (explicitMuralId) return explicitMuralId;
+
+		if (!projectId) return null;
+		const raw = await this.root.env.SESSION_KV.get(this.projectMuralKey(projectId));
+		if (!raw) return null;
+
+		// stored either as plain string or JSON with { muralId }
+		try {
+			const js = JSON.parse(raw);
+			return js?.muralId || js?.id || null;
+		} catch {
+			return raw; // plain string
+		}
+	}
+
+	/**
+	 * Update/insert the project → mural mapping (used by setup and later syncs).
+	 */
+	async saveProjectMuralMapping(projectId, muralId, extra = null) {
+		if (!projectId || !muralId) return;
+		const value = extra ? JSON.stringify({ muralId, ...extra }) : muralId;
+		await this.root.env.SESSION_KV.put(this.projectMuralKey(projectId), value, { encryption: true });
+	}
+
+	/**
+	 * Acquire a valid access token, refreshing once on 401 if a refresh_token is present.
+	 * Returns { ok:boolean, token?:string } (kept simple for re-use).
+	 */
+	async _getValidAccessToken(uid) {
+		const tokens = await this.loadTokens(uid);
+		if (!tokens?.access_token) return { ok: false, reason: "not_authenticated" };
+
+		let accessToken = tokens.access_token;
+
+		// Probe a cheap call to verify token validity (company check); refresh on 401 once.
+		try {
+			await verifyHomeOfficeByCompany(this.root.env, accessToken);
+			return { ok: true, token: accessToken };
+		} catch (err) {
+			const status = Number(err?.status || 0);
+			if (status === 401 && tokens.refresh_token) {
+				try {
+					const refreshed = await refreshAccessToken(this.root.env, tokens.refresh_token);
+					const merged = { ...tokens, ...refreshed };
+					await this.saveTokens(uid, merged);
+					accessToken = merged.access_token;
+
+					// second probe to confirm
+					await verifyHomeOfficeByCompany(this.root.env, accessToken);
+					return { ok: true, token: accessToken };
+				} catch {
+					return { ok: false, reason: "not_authenticated" };
+				}
+			}
+			// Other failures we surface to caller
+			return { ok: false, reason: "error" };
+		}
+	}
+
+	/* ─────────────────────────────────────────────────────────────────── */
+	/* Routes                                                              */
+	/* ─────────────────────────────────────────────────────────────────── */
+
+	/** GET /api/mural/auth?uid=:uid[&return=:path] */
+	async muralAuth(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const ret = url.searchParams.get("return");
+		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
+		const redirect = buildAuthUrl(this.root.env, state);
+		return Response.redirect(redirect, 302);
+	}
+
+	/** GET /api/mural/callback?code=&state= */
+	async muralCallback(origin, url) {
+		const { env } = this.root;
+
+		if (!env.MURAL_CLIENT_SECRET) {
+			return this.root.json({
+				ok: false,
+				error: "missing_secret",
+				message: "MURAL_CLIENT_SECRET is not configured in Cloudflare secrets."
+			}, 500, this.root.corsHeaders(origin));
+		}
+
+		const code = url.searchParams.get("code");
+		const stateB64 = url.searchParams.get("state");
+		if (!code) {
+			return this.root.json({ ok: false, error: "missing_code" }, 400, this.root.corsHeaders(origin));
+		}
+
+		let uid = "anon";
+		let stateObj = {};
+		try {
+			stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			uid = stateObj?.uid || "anon";
+		} catch { /* ignore */ }
+
+		// code → tokens
+		let tokens;
+		try {
+			tokens = await exchangeAuthCode(env, code);
+		} catch (err) {
+			return this.root.json({
+				ok: false,
+				error: "token_exchange_failed",
+				message: err?.message || "Unable to exchange OAuth code"
+			}, 500, this.root.corsHeaders(origin));
+		}
+
+		await this.saveTokens(uid, tokens);
+
+		// Return to the page we came from, append mural=connected
+		const safeReturn = (stateObj?.return && stateObj.return.startsWith("/")) ?
+			stateObj.return : "/pages/projects/";
+		const back = new URL(safeReturn, url);
+		const sp = new URLSearchParams(back.search);
+		sp.set("mural", "connected");
+		back.search = sp.toString();
+
+		return Response.redirect(back.toString(), 302);
+ 	}
+
+	/** GET /api/mural/verify?uid=:uid */
+	async muralVerify(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const tokens = await this.loadTokens(uid);
+		if (!tokens?.access_token) {
+			return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
+		}
+
+		const { env } = this.root;
+		let accessToken = tokens.access_token;
+
+		// Try company/workspace check; if 401, refresh once and retry
+		try {
+			const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
+			if (!inCompany) {
+				return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
+			}
+		} catch (err) {
+			const status = Number(err?.status || 0);
+			if (status === 401 && tokens.refresh_token) {
+				try {
+					const refreshed = await refreshAccessToken(env, tokens.refresh_token);
+					const merged = { ...tokens, ...refreshed };
+					await this.saveTokens(uid, merged);
+					accessToken = merged.access_token;
+
+					const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
+					if (!inCompany) {
+						return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
+					}
+				} catch {
+					return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
+				}
+			} else {
+				// Not an auth issue; surface as generic error (so client shows an error pill)
+				return this.root.json({ ok: false, reason: "error", detail: String(err?.message || err) }, 500, this.root.corsHeaders(origin));
+			}
+		}
+
+		const me = await getMe(env, accessToken).catch(() => null);
+		const activeWorkspaceId = getActiveWorkspaceIdFromMe(me);
+
+		return this.root.json({ ok: true, me, activeWorkspaceId },
+			200,
+			this.root.corsHeaders(origin)
+		);
+	}
+
+	/** POST /api/mural/setup  body: { uid, projectName } */
+	async muralSetup(request, origin) {
+		const cors = this.root.corsHeaders(origin);
+		/** helpful step marker for error reporting */
+		let step = "parse_input";
+
+		try {
+			const { uid = "anon", projectName } = await request.json().catch(() => ({}));
+			if (!projectName || !String(projectName).trim()) {
+				return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
+			}
+
+			step = "load_tokens";
+			const tokens = await this.loadTokens(uid);
+			if (!tokens?.access_token) {
+				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
+			}
+
+			step = "verify_workspace";
+			// Ensure company membership and get active workspace
+			let accessToken = tokens.access_token;
+			let ws;
+			try {
+				ws = await this._ensureWorkspace(this.root.env, accessToken);
+			} catch (err) {
+				const code = Number(err?.status || err?.code || 0);
+				if (code === 401 && tokens.refresh_token) {
+					// refresh then retry once
+					const refreshed = await refreshAccessToken(this.root.env, tokens.refresh_token);
+					const merged = { ...tokens, ...refreshed };
+					await this.saveTokens(uid, merged);
+					accessToken = merged.access_token;
+					ws = await this._ensureWorkspace(this.root.env, accessToken);
+				} else if (String(err?.message) === "not_in_home_office_workspace") {
+					return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
+				} else {
+					throw err;
+				}
+			}
+
+			step = "get_me";
+			const me = await getMe(this.root.env, accessToken).catch(() => null);
+			const username = me?.value?.firstName || me?.name || "Private";
+
+			step = "ensure_room";
+			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
+
+			step = "ensure_folder";
+			const folder = await ensureProjectFolder(this.root.env, accessToken, room.id, String(projectName).trim());
+
+			step = "create_mural";
+			const mural = await createMural(this.root.env, accessToken, {
+				title: "Reflexive Journal",
+				roomId: room.id,
+				folderId: folder.id
+			});
+
+			// Persist the project → mural mapping (caller should pass projectId if available in future)
+			// If later you know projectId here, call saveProjectMuralMapping(projectId, mural.id)
+			return this.root.json({ ok: true, workspace: ws, room, folder, mural }, 200, cors);
+
+		} catch (err) {
+			// Unwrap our library’s enriched errors if present
+			const status = Number(err?.status) || 500;
+			const body = err?.body || null;
+			const message = String(err?.message || "setup_failed");
+
+			// Never throw — surface as JSON so the client can show it
+			return this.root.json({
+				ok: false,
+				error: "setup_failed",
+				step,
+				message,
+				upstream: body
+			}, status, cors);
+		}
+	}
+
+	/**
+	 * POST /api/mural/journal-sync
+	 * body: {
+	 *   uid?: string           // defaults to "anon"
+	 *   muralId?: string       // preferred; else resolved via projectId mapping
+	 *   projectId?: string     // used to resolve muralId if not given
+	 *   studyId?: string       // optional (not used here but reserved)
+	 *   category: string       // perceptions|procedures|decisions|introspections
+	 *   description: string    // journal entry text
+	 *   tags?: string[]        // additional journal tags to apply (Blueberry)
+	 * }
+	 */
+	async muralJournalSync(request, origin) {
+		const cors = this.root.corsHeaders(origin);
+		let step = "parse_input";
+
+		try {
+			const body = await request.json().catch(() => ({}));
+			const uid = String(body?.uid || "anon");
+			const category = String(body?.category || "").toLowerCase().trim();
+			const description = String(body?.description || "").trim();
+			const labels = Array.isArray(body?.tags) ? body.tags.filter(Boolean) : [];
+
+			if (!category || !description) {
+				return this.root.json({ ok: false, error: "missing_category_or_description" }, 400, cors);
+			}
+			if (!["perceptions", "procedures", "decisions", "introspections"].includes(category)) {
+				return this.root.json({ ok: false, error: "unsupported_category" }, 400, cors);
+			}
+
+			step = "resolve_mural_id";
+			const muralId = await this.resolveReflexiveMuralId(body.projectId, body.muralId);
+			if (!muralId) {
+				return this.root.json({
+					ok: false,
+					error: "no_mural_id",
+					message: "No muralId provided and no project mapping found. Pass body.muralId or map the project in KV."
+				}, 400, cors);
+			}
+
+			step = "access_token";
+			const tokenRes = await this._getValidAccessToken(uid);
+			if (!tokenRes.ok) {
+				const code = tokenRes.reason === "not_authenticated" ? 401 : 500;
+				return this.root.json({ ok: false, error: tokenRes.reason }, code, cors);
+			}
+			const accessToken = tokenRes.token;
+
+			step = "load_widgets";
+			const widgetsJs = await getWidgets(this.root.env, accessToken, muralId);
+			const stickyList = normaliseWidgets(widgetsJs?.widgets);
+			const last = findLatestInCategory(stickyList, category);
+
+			let stickyId = null;
+			let action = "";
+			let targetX = last?.x ?? 200;
+			let targetY = last?.y ?? 200;
+			let targetW = last?.width ?? DEFAULT_W;
+			let targetH = last?.height ?? DEFAULT_H;
+
+			step = "write_or_create";
+			if (last && (last.text || "").trim().length === 0) {
+				await updateSticky(this.root.env, accessToken, muralId, last.id, { text: description });
+				stickyId = last.id;
+				action = "updated-empty-sticky";
+			} else {
+				if (last) {
+					targetY = (last.y || 0) + (last.height || DEFAULT_H) + GRID_Y;
+					targetX = last.x || targetX;
+					targetW = last.width || targetW;
+					targetH = last.height || targetH;
+				}
+				const crt = await createSticky(this.root.env, accessToken, muralId, {
+					text: description,
+					x: Math.round(targetX),
+					y: Math.round(targetY),
+					width: Math.round(targetW),
+					height: Math.round(targetH)
+				});
+				stickyId = crt.id;
+				action = "created-new-sticky";
+			}
+
+			step = "tagging";
+			if (labels.length && stickyId) {
+				const tagIds = await ensureTagsBlueberry(this.root.env, accessToken, muralId, labels);
+				if (tagIds.length) {
+					await applyTagsToSticky(this.root.env, accessToken, muralId, stickyId, tagIds);
+				}
+			}
+
+			return this.root.json({ ok: true, stickyId, action }, 200, cors);
+
+		} catch (err) {
+			const status = Number(err?.status) || 500;
+			const body = err?.body || null;
+			const message = String(err?.message || "journal_sync_failed");
+
+			return this.root.json({
+				ok: false,
+				error: "journal_sync_failed",
+				step,
+				message,
+				upstream: body
+			}, status, cors);
+		}
+	}
+
+	/** GET /api/mural/debug-env (TEMP) */
+	async muralDebugEnv(origin) {
+		const env = this.root.env || {};
+		return this.root.json({
+			ok: true,
+			has_CLIENT_ID: Boolean(env.MURAL_CLIENT_ID),
+			has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
+			redirect_uri: env.MURAL_REDIRECT_URI || "(unset)",
+			scopes: env.MURAL_SCOPES || "(default)",
+			company_id: env.MURAL_COMPANY_ID || "(unset)"
+		}, 200, this.root.corsHeaders(origin));
+	}
+
+	/** GET /api/mural/debug-auth (TEMP) */
+	async muralDebugAuth(origin, url) {
+		const uid = url.searchParams.get("uid") || "anon";
+		const ret = url.searchParams.get("return");
+		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
+		const authUrl = buildAuthUrl(this.root.env, state);
+		return this.root.json({
+			redirect_uri: this.root.env.MURAL_REDIRECT_URI,
+			scopes: this.root.env.MURAL_SCOPES || "(default)",
+			auth_url: authUrl
+		}, 200, this.root.corsHeaders(origin));
+	}
 }
 
-/* ------------------------------------------------------------------ */
-/* Rooms + Folders + Murals                                           */
-/* ------------------------------------------------------------------ */
-
-export async function listRooms(env, token, workspaceId) {
-  return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
-}
-
-export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
-  return fetchJSON(`${apiBase(env)}/rooms`, {
-    method: "POST",
-    ...withBearer(token),
-    body: JSON.stringify({ name, workspaceId, visibility })
-  });
-}
-
-export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
-  const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
-  const list = Array.isArray(rooms?.items) ? rooms.items :
-    Array.isArray(rooms?.value) ? rooms.value :
-    Array.isArray(rooms) ? rooms : [];
-
-  let room = list.find(r =>
-    /(private)/i.test(r.visibility || "") ||
-    (username && (r.name || "").toLowerCase().includes(String(username).toLowerCase()))
-  );
-
-  if (!room) {
-    room = await createRoom(env, token, {
-      name: `${username} — Private`,
-      workspaceId,
-      visibility: "private"
-    });
-  }
-  return room;
-}
-
-export async function listFolders(env, token, roomId) {
-  return fetchJSON(`${apiBase(env)}/rooms/${roomId}/folders`, withBearer(token));
-}
-
-export async function createFolder(env, token, roomId, name) {
-  return fetchJSON(`${apiBase(env)}/rooms/${roomId}/folders`, {
-    method: "POST",
-    ...withBearer(token),
-    body: JSON.stringify({ name })
-  });
-}
-
-export async function ensureProjectFolder(env, token, roomId, projectName) {
-  const existing = await listFolders(env, token, roomId).catch(() => ({ items: [], value: [] }));
-  const list = Array.isArray(existing?.items) ? existing.items :
-    Array.isArray(existing?.value) ? existing.value :
-    Array.isArray(existing) ? existing : [];
-  const found = list.find(f =>
-    (f.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase()
-  );
-  if (found) return found;
-  return createFolder(env, token, roomId, projectName);
-}
-
-export async function createMural(env, token, { title, roomId, folderId }) {
-  // Keep payload minimal & compliant; avoid unsupported fields.
-  return fetchJSON(`${apiBase(env)}/murals`, {
-    method: "POST",
-    ...withBearer(token),
-    body: JSON.stringify({ title, roomId, folderId })
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Widgets + Tags (for Reflexive Journal sync)                        */
-/* ------------------------------------------------------------------ */
-
-/**
- * List widgets on a mural. API returns { widgets: [...] }.
- */
-export async function getWidgets(env, token, muralId) {
-  return fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets`, withBearer(token));
-}
-
-/**
- * Create a sticky note widget.
- * Minimal payload: { text, x, y, width, height }.
- */
-export async function createSticky(env, token, muralId, { text, x, y, width, height }) {
-  return fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets`, {
-    method: "POST",
-    ...withBearer(token),
-    body: JSON.stringify({
-      type: "sticky_note",
-      text,
-      x, y, width, height
-    })
-  });
-}
-
-/**
- * Update a sticky note (text/position/size).
- */
-export async function updateSticky(env, token, muralId, widgetId, patch) {
-  // PATCH is supported; fall back to PUT if needed
-  return fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/${widgetId}`, {
-    method: "PATCH",
-    ...withBearer(token),
-    body: JSON.stringify(patch || {})
-  });
-}
-
-/**
- * Ensure a set of tags exist in the mural, with the "Blueberry" colour.
- * Returns the array of tag IDs (existing or newly created).
- */
-export async function ensureTagsBlueberry(env, token, muralId, labels = []) {
-  const want = (labels || []).map(s => String(s || "").trim()).filter(Boolean);
-  if (!want.length) return [];
-
-  // 1) list existing tags
-  const existing = await fetchJSON(`${apiBase(env)}/murals/${muralId}/tags`, withBearer(token)).catch(() => ({}));
-  const list = Array.isArray(existing?.items) ? existing.items :
-               Array.isArray(existing?.value) ? existing.value :
-               Array.isArray(existing) ? existing : [];
-
-  const blueberry = "Blueberry"; // Mural’s standard name in your spec
-  const byName = Object.create(null);
-  for (const t of list) {
-    const name = String(t?.name || "").trim().toLowerCase();
-    byName[name] = t;
-  }
-
-  const tagIds = [];
-  for (const label of want) {
-    const key = label.toLowerCase();
-    if (byName[key]) {
-      tagIds.push(byName[key].id);
-      continue;
-    }
-    // create the tag with requested name and Blueberry colour
-    const created = await fetchJSON(`${apiBase(env)}/murals/${muralId}/tags`, {
-      method: "POST",
-      ...withBearer(token),
-      body: JSON.stringify({
-        name: label,
-        color: blueberry
-      })
-    });
-    if (created?.id) tagIds.push(created.id);
-  }
-  return tagIds;
-}
-
-/**
- * Apply the given tag IDs to a widget (sticky).
- */
-export async function applyTagsToSticky(env, token, muralId, widgetId, tagIds) {
-  if (!Array.isArray(tagIds) || !tagIds.length) return;
-  // some APIs support POST to /widgets/{id}/tags, others PATCH widget with tags array.
-  // Prefer a dedicated endpoint if available; otherwise PATCH widget:
-  return fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/${widgetId}`, {
-    method: "PATCH",
-    ...withBearer(token),
-    body: JSON.stringify({ tagIds })
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Client-side normalisers used by service layer                      */
-/* ------------------------------------------------------------------ */
-
-/**
- * Normalise the raw widget list to a thin array of stickies we care about.
- */
-export function normaliseWidgets(raw) {
-  const arr = Array.isArray(raw) ? raw : (Array.isArray(raw?.items) ? raw.items : []);
-  const out = [];
-  for (const w of arr) {
-    const type = (w?.type || w?.widgetType || "").toLowerCase();
-    if (type !== "sticky_note" && type !== "sticky" && type !== "stickynote") continue;
-
-    // Try to get a plain-text version for reliable category heuristics
-    const text = (typeof w?.text === "string" ? w.text
-                : typeof w?.content === "string" ? w.content
-                : w?.data?.text || "");
-
-    out.push({
-      id: w.id,
-      type: "sticky_note",
-      text: String(text || ""),
-      x: Number(w?.x ?? w?.position?.x ?? 0),
-      y: Number(w?.y ?? w?.position?.y ?? 0),
-      width: Number(w?.width ?? w?.size?.width ?? 240),
-      height: Number(w?.height ?? w?.size?.height ?? 120),
-      raw: w
-    });
-  }
-  return out;
-}
-
-/**
- * Heuristic: classify a sticky into one of the 4 RJ categories based on:
- * - explicit tag match (if widget already has a tag with that name), OR
- * - text prefix like "[perceptions]" / "#perceptions", OR
- * - fallback to column-like layout if your mural columns are aligned by X ranges (optional extension)
- *
- * For now we use a simple text-based heuristic so it works with any board.
- */
-function detectCategoryForSticky(sticky) {
-  const t = (sticky?.text || "").toLowerCase();
-
-  // Bracket or hash markers (users can add these in the title/first line)
-  if (/^\s*(\[|\#)\s*perceptions/.test(t)) return "perceptions";
-  if (/^\s*(\[|\#)\s*procedures/.test(t)) return "procedures";
-  if (/^\s*(\[|\#)\s*decisions/.test(t)) return "decisions";
-  if (/^\s*(\[|\#)\s*introspections/.test(t)) return "introspections";
-
-  // If tags already present in raw:
-  const tagNames = (sticky?.raw?.tags || sticky?.raw?.tagNames || [])
-    .map(x => String(x?.name || x).toLowerCase());
-  if (tagNames.includes("perceptions")) return "perceptions";
-  if (tagNames.includes("procedures")) return "procedures";
-  if (tagNames.includes("decisions")) return "decisions";
-  if (tagNames.includes("introspections")) return "introspections";
-
-  return null;
-}
-
-/**
- * Find the latest sticky within a given category.
- * “Latest” = greatest Y within that category, falling back to any sticky if none match.
- */
-export function findLatestInCategory(stickies, category) {
-  const list = Array.isArray(stickies) ? stickies : [];
-  let best = null;
-  for (const s of list) {
-    const cat = detectCategoryForSticky(s);
-    if (cat !== category) continue;
-    if (!best || Number(s.y) > Number(best.y)) best = s;
-  }
-  return best;
-}
-
-/* ------------------------------------------------------------------ */
-/* Export internals (for tests/debug)                                  */
-/* ------------------------------------------------------------------ */
-
-export const _int = {
-  fetchJSON,
-  withBearer,
-  apiBase,
-  encodeState,
-  decodeState
-};
-
-export { MuralServicePart };
+// Also provide a default export to satisfy bundlers/import styles that expect it.
+export default MuralServicePart;
