@@ -137,7 +137,6 @@ export class MuralServicePart {
 		}
 
 		await this.saveTokens(uid, tokens);
-
 		return Response.redirect("/pages/projects/?mural=connected", 302);
 	}
 
@@ -240,9 +239,3 @@ export class MuralServicePart {
 		}
 	}
 }
-
-// --------------------------------------------------------------------
-// Explicit exports (to satisfy both ESM and Wrangler bundler)
-// --------------------------------------------------------------------
-export { MuralServicePart };
-export default MuralServicePart;
