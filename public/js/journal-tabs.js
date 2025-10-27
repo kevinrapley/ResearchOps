@@ -275,8 +275,6 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				e.preventDefault();
 				var fd = new FormData(form);
 				var payload = {
-					project: state.projectId,
-					project_airtable_id: state.projectId,
 					category: String(fd.get('category') || ''),
 					content: String(fd.get('content') || ''),
 					tags: String(fd.get('tags') || '')
@@ -287,14 +285,17 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				}
 
 				// Parse the tag input; Airtable "Tags" is a text field → send comma-separated string
-				var parts = payload.tags ?
-					payload.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) :
-					[];
+				var parts = payload.tags
+					? payload.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+					: [];
 
 				// IMPORTANT:
-				// - Do NOT send project/project_airtable_id to avoid writing to a computed Airtable field.
+				// - Send project identifiers for the API validation layer,
+				//   but the server must not write them into Airtable if the field is computed.
 				// - Send tags as a string (comma-separated) to match a plain text field.
 				var body = {
+					project: state.projectId,
+					project_airtable_id: state.projectId,
 					category: payload.category,
 					content: payload.content,
 					tags: parts.join(', ')
@@ -309,11 +310,11 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					var created = (createdRes && createdRes.entry) ? createdRes.entry : (createdRes || {});
 
 					// Normalise tags from the server (string or array), fallback to our parsed list
-					var createdTags = Array.isArray(created.tags) ?
-						created.tags :
-						(typeof created.tags === 'string' ?
-							created.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) :
-							parts);
+					var createdTags = Array.isArray(created.tags)
+						? created.tags
+						: (typeof created.tags === 'string'
+							? created.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+							: parts);
 
 					// Build the minimal object the Mural sync expects
 					var syncEntry = {
