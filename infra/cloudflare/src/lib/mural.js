@@ -248,8 +248,14 @@ export async function getWidgets(env, token, muralId) {
  * Returns { id, ... } on success.
  */
 export async function createSticky(env, token, muralId, { text, x, y, width, height }) {
-	// Mural Public API v1 uses singular "sticky-note", not plural "stickies"
-	const body = { text, x, y, width, height };
+	const body = {
+		text,
+		x,
+		y,
+		width,
+		height,
+		shape: "rectangle"
+	};
 	const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/sticky-note`, {
 		method: "POST",
 		...withBearer(token),
