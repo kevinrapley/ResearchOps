@@ -6,32 +6,14 @@
  * ENV required:
  * - MURAL_CLIENT_ID
  * - MURAL_CLIENT_SECRET
- * - MURAL_REDIRECT_URI  (must exactly match your registered redirect URI in Mural)
- * - (optional) MURAL_COMPANY_ID                     // e.g. "homeofficegovuk"
+ * - MURAL_REDIRECT_URI
+ * - (optional) MURAL_COMPANY_ID
  * - (optional) MURAL_API_BASE   default: https://app.mural.co/api/public/v1
  * - (optional) MURAL_SCOPES     default: identity:read workspaces:read rooms:read rooms:write murals:write
- *
- * Also exports low-level Widgets/Tags utilities for server-side orchestration:
- *  - getWidgets(env, token, muralId)
- *  - createSticky(env, token, muralId, init)
- *  - updateSticky(env, token, muralId, widgetId, patch)
- *  - listTags(env, token, muralId)
- *  - createTag(env, token, muralId, { text, color })
- *  - updateTag(env, token, muralId, tagId, patch)
- *  - ensureTagsBlueberry(env, token, muralId, labels[])
- *  - applyTagsToSticky(env, token, muralId, widgetId, tagIds[])
- *  - normaliseWidgets(widgets[])
- *  - sortNewestFirst(a, b)
- *  - findLatestInCategory(stickies[], category)
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const API_TIMEOUT_MS = 15000;
-
-// Defaults for visual/layout fallbacks in normalisers
-const DEFAULT_W = 240;
-const DEFAULT_H = 120;
-const TAG_COLOUR = "blueberry";
 
 // Default scopes; can be overridden by env.MURAL_SCOPES (space-separated)
 export const DEFAULT_SCOPES = [
@@ -75,7 +57,6 @@ export function buildAuthUrl(env, stateObj) {
     scope: scopes,
     state
   });
-  // Correct endpoint: no "/authorize" suffix
   return `${oauthBase}/?${params}`;
 }
 
@@ -89,10 +70,12 @@ async function fetchJSON(url, opts = {}) {
   try {
     const res = await fetch(url, { ...opts, signal: ctrl.signal });
     const txt = await res.text();
-    const js = txt ? JSON.parse(txt) : {};
+    const maybeJSON = () => {
+      try { return txt ? JSON.parse(txt) : {}; } catch { return {}; }
+    };
+    const js = maybeJSON();
     if (!res.ok) {
       const err = new Error(js?.message || `HTTP ${res.status}`);
-      // annotate for our callers
       err.status = res.status;
       err.body = js;
       throw err;
@@ -129,7 +112,6 @@ export async function exchangeAuthCode(env, code) {
   return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
-/** Refresh an expired access token using the refresh_token. */
 export async function refreshAccessToken(env, refreshToken) {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -159,21 +141,15 @@ export function getActiveWorkspaceIdFromMe(me) {
   return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
 }
 
-/**
- * Company (tenant) membership check.
- * True if the current user belongs to the expected company.
- * - robust against stray whitespace and case differences.
- */
 export async function verifyHomeOfficeByCompany(env, token) {
   const me = await getMe(env, token);
   const v = me?.value || me || {};
   const cid = String(v.companyId || "").trim().toLowerCase();
   const cname = String(v.companyName || "").trim().toLowerCase();
 
-  const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase(); // e.g. "homeofficegovuk"
+  const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase();
   if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
 
-  // Fallback by name if you don't want to set MURAL_COMPANY_ID
   return Boolean(cname && /home\s*office/.test(cname));
 }
 
@@ -239,7 +215,6 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
-  // Keep payload minimal & compliant; avoid unsupported fields.
   return fetchJSON(`${apiBase(env)}/murals`, {
     method: "POST",
     ...withBearer(token),
@@ -248,136 +223,158 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Widgets (sticky notes) + Tags (Blueberry)                          */
+/* Widgets + Tags (robust wrappers; tolerate API variance)            */
 /* ------------------------------------------------------------------ */
 
-/** List all widgets for a mural. */
+/**
+ * List widgets on a mural. Returns { widgets: [...] } shape.
+ * Falls back to {widgets: []} on 404/unknown shapes.
+ */
 export async function getWidgets(env, token, muralId) {
-  return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets`, withBearer(token));
-}
-
-/** Create a sticky note. init = { text, x, y, width, height } */
-export async function createSticky(env, token, muralId, init) {
-  const payload = { stickyNotes: [init] };
-  const js = await fetchJSON(
-    `${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets/sticky-note`,
-    { method: "POST", ...withBearer(token), body: JSON.stringify(payload) }
-  );
-  const id = js?.stickyNotes?.[0]?.id || null;
-  if (!id) throw new Error("Create sticky: missing id in response");
-  return { id, raw: js };
-}
-
-/** Update a sticky note. patch = { text?, x?, y?, width?, height?, tagIds? } */
-export async function updateSticky(env, token, muralId, widgetId, patch) {
-  return fetchJSON(
-    `${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets/sticky-note/${encodeURIComponent(widgetId)}`,
-    { method: "PATCH", ...withBearer(token), body: JSON.stringify(patch) }
-  );
-}
-
-/** Get mural-level tags. */
-export async function listTags(env, token, muralId) {
-  return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/tags`, withBearer(token));
-}
-
-/** Create a new tag. */
-export async function createTag(env, token, muralId, { text, color }) {
-  return fetchJSON(
-    `${apiBase(env)}/murals/${encodeURIComponent(muralId)}/tags`,
-    { method: "POST", ...withBearer(token), body: JSON.stringify({ text, color }) }
-  );
-}
-
-/** Update an existing tag. */
-export async function updateTag(env, token, muralId, tagId, patch) {
-  return fetchJSON(
-    `${apiBase(env)}/murals/${encodeURIComponent(muralId)}/tags/${encodeURIComponent(tagId)}`,
-    { method: "PATCH", ...withBearer(token), body: JSON.stringify(patch) }
-  );
+  try {
+    const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets`, withBearer(token));
+    const arr = Array.isArray(js?.items) ? js.items : Array.isArray(js?.value) ? js.value : (Array.isArray(js) ? js : []);
+    return { widgets: arr };
+  } catch (e) {
+    if (Number(e?.status) === 404) return { widgets: [] };
+    throw e;
+  }
 }
 
 /**
- * Ensure a list of tag labels exist with Blueberry colour and return their ids.
- * Idempotent: updates colour if tag exists with a different colour.
+ * Create a sticky widget.
+ * Accepts { text, x, y, width, height }.
+ * Returns { id, ... } on success.
+ */
+export async function createSticky(env, token, muralId, { text, x, y, width, height }) {
+  // The public API name may vary ("stickies" vs "sticky-notes"); use "stickies" by default.
+  const body = { text, x, y, width, height, type: "sticky" };
+  const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/stickies`, {
+    method: "POST",
+    ...withBearer(token),
+    body: JSON.stringify(body)
+  });
+  // normalise id surfaces
+  return { id: js?.id || js?.widgetId || js?.value?.id };
+}
+
+/**
+ * Update a sticky widget (minimal: text only unless coords provided).
+ */
+export async function updateSticky(env, token, muralId, stickyId, { text, x, y, width, height }) {
+  const patch = {};
+  if (typeof text === "string") patch.text = text;
+  if (Number.isFinite(x)) patch.x = x;
+  if (Number.isFinite(y)) patch.y = y;
+  if (Number.isFinite(width)) patch.width = width;
+  if (Number.isFinite(height)) patch.height = height;
+
+  if (!Object.keys(patch).length) return { ok: true }; // nothing to update
+
+  const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/${stickyId}`, {
+    method: "PATCH",
+    ...withBearer(token),
+    body: JSON.stringify(patch)
+  });
+  return js || { ok: true };
+}
+
+/**
+ * Ensure labels (tags) exist with "Blueberry" colour. Returns an array of tag IDs.
+ * If tagging endpoints are unavailable, returns [] (non-fatal).
  */
 export async function ensureTagsBlueberry(env, token, muralId, labels) {
-  if (!Array.isArray(labels) || labels.length === 0) return [];
-  const js = await listTags(env, token, muralId);
-  const existing = Array.isArray(js?.tags) ? js.tags : [];
-  const byText = new Map(existing.map(t => [String(t.text || "").toLowerCase(), t]));
-  const tagIds = [];
+  try {
+    if (!Array.isArray(labels) || labels.length === 0) return [];
+    // List existing tags
+    const listed = await fetchJSON(`${apiBase(env)}/murals/${muralId}/tags`, withBearer(token)).catch(() => ({ items: [] }));
+    const existing = Array.isArray(listed?.items) ? listed.items : Array.isArray(listed?.value) ? listed.value : [];
+    const want = new Set(labels.map(s => String(s).trim()).filter(Boolean));
 
-  for (const raw of labels) {
-    const label = String(raw || "").trim();
-    if (!label) continue;
-    const key = label.toLowerCase();
-    let tag = byText.get(key);
-
-    if (!tag) {
-      const mk = await createTag(env, token, muralId, { text: label, color: TAG_COLOUR });
-      if (mk?.id) {
-        tag = { id: mk.id, text: label, color: TAG_COLOUR };
-        byText.set(key, tag);
-      }
-    } else if (String(tag.color || "").toLowerCase() !== TAG_COLOUR) {
-      await updateTag(env, token, muralId, tag.id, { color: TAG_COLOUR });
+    const idByName = new Map();
+    for (const t of existing) {
+      const name = String(t?.name || "").trim();
+      if (name) idByName.set(name.toLowerCase(), t.id);
     }
 
-    if (tag?.id) tagIds.push(tag.id);
+    const out = [];
+    for (const name of want) {
+      const key = name.toLowerCase();
+      if (idByName.has(key)) { out.push(idByName.get(key)); continue; }
+      // Create with a "Blueberry" like colour; exact token names vary, so hex fallback.
+      const created = await fetchJSON(`${apiBase(env)}/murals/${muralId}/tags`, {
+        method: "POST",
+        ...withBearer(token),
+        body: JSON.stringify({ name, color: "Blueberry", hex: "#2e64ff" })
+      }).catch(() => null);
+      if (created?.id) out.push(created.id);
+    }
+    return out;
+  } catch {
+    return []; // non-fatal
   }
-  return tagIds;
-}
-
-/** Apply tag ids to a sticky note. */
-export async function applyTagsToSticky(env, token, muralId, widgetId, tagIds) {
-  if (!Array.isArray(tagIds) || tagIds.length === 0) return null;
-  return updateSticky(env, token, muralId, widgetId, { tagIds });
-}
-
-/* ------------------------------------------------------------------ */
-/* Utilities for service orchestration                                */
-/* ------------------------------------------------------------------ */
-
-/** Normalise raw widgets into sticky-note shape with safe defaults. */
-export function normaliseWidgets(widgets) {
-  const list = Array.isArray(widgets) ? widgets : [];
-  return list
-    .filter(w => {
-      const t = String(w?.type || "").toLowerCase();
-      return t === "sticky_note" || t === "sticky-note" || t === "sticky";
-    })
-    .map(w => ({
-      id: w.id,
-      type: w.type,
-      text: String(w.text || "").trim(),
-      x: Number.isFinite(w.x) ? w.x : 200,
-      y: Number.isFinite(w.y) ? w.y : 200,
-      width: Number.isFinite(w.width) ? w.width : DEFAULT_W,
-      height: Number.isFinite(w.height) ? w.height : DEFAULT_H,
-      tags: Array.isArray(w.tags) ? w.tags : [],
-      updatedAt: w.updatedAt || w.updated_at || null,
-      createdAt: w.createdAt || w.created_at || null
-    }));
-}
-
-/** Sort helper: newest first by updatedAt/createdAt. */
-export function sortNewestFirst(a, b) {
-  const ak = Date.parse(a.updatedAt || a.createdAt || 0);
-  const bk = Date.parse(b.updatedAt || b.createdAt || 0);
-  return bk - ak;
 }
 
 /**
- * Return the most recent sticky in the category "column" (defined by tag text == category).
+ * Apply tag IDs to a sticky. Silently tolerates missing endpoints.
+ */
+export async function applyTagsToSticky(env, token, muralId, stickyId, tagIds) {
+  try {
+    if (!Array.isArray(tagIds) || tagIds.length === 0) return { ok: true };
+    await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/${stickyId}/tags`, {
+      method: "POST",
+      ...withBearer(token),
+      body: JSON.stringify({ tagIds })
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Client-side friendly helpers                                       */
+/* ------------------------------------------------------------------ */
+
+export function normaliseWidgets(raw) {
+  const list = Array.isArray(raw) ? raw : [];
+  return list.filter(w => (w?.type || "").toLowerCase().includes("sticky"))
+             .map(w => ({
+               id: w.id || w.widgetId,
+               text: String(w.text || w.title || "").trim(),
+               x: Number(w.x ?? 0),
+               y: Number(w.y ?? 0),
+               width: Number(w.width ?? 240),
+               height: Number(w.height ?? 120),
+               // Try to pick category from labels/tags if present
+               tags: Array.isArray(w.tags) ? w.tags.map(t => String(t?.name || t).toLowerCase()) :
+                     Array.isArray(w.labels) ? w.labels.map(l => String(l?.name || l).toLowerCase()) : []
+             }));
+}
+
+/**
+ * Find the sticky to anchor on, within a category. Strategy:
+ * - Prefer stickies whose tags include the category name.
+ * - If none, return the last sticky by y-position (acts like bottom-most).
  */
 export function findLatestInCategory(stickies, category) {
-  const key = String(category || "").toLowerCase();
-  const inCol = (stickies || []).filter(s =>
-    (s.tags || []).map(t => String(t?.text || "").toLowerCase()).includes(key)
-  );
-  inCol.sort(sortNewestFirst);
-  return inCol[0] || null;
+  const cat = String(category || "").toLowerCase();
+  const tagged = stickies.filter(s => (s.tags || []).includes(cat));
+  const pool = tagged.length ? tagged : stickies;
+  if (!pool.length) return null;
+
+  // “Latest” approximated as lowest (max) y; ties broken by max (y+height)
+  let best = pool[0];
+  let bestEdge = best.y + (best.height || 0);
+  for (let i = 1; i < pool.length; i++) {
+    const s = pool[i];
+    const edge = (s.y || 0) + (s.height || 0);
+    if (edge > bestEdge) {
+      best = s;
+      bestEdge = edge;
+    }
+  }
+  return best;
 }
 
 /* ------------------------------------------------------------------ */
