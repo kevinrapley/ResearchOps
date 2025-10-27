@@ -21,6 +21,7 @@ export const DEFAULT_SCOPES = [
   "workspaces:read",
   "rooms:read",
   "rooms:write",
+  "murals:read",
   "murals:write"
 ];
 
