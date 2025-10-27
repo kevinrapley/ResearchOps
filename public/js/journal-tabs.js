@@ -270,6 +270,60 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			toggle(false);
 		});
 
+		// Small helper: attempt create with query-param project first, then fallback with body.project
+		async function createJournalEntry(bodyBase) {
+			const urlQP = '/api/journal-entries?project=' + encodeURIComponent(state.projectId || '');
+			// 1) Try without project in body (server should use ?project=…)
+			let res = await fetch(urlQP, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(bodyBase)
+			});
+			if (res.ok) return res.json();
+
+			// If server demands project fields explicitly, retry once including them.
+			let text = await res.text().catch(() => '');
+			let wantsProject = false;
+			try {
+				const js = text ? JSON.parse(text) : {};
+				const detail = (js && (js.detail || js.message)) || '';
+				const err = (js && js.error) || '';
+				wantsProject =
+					res.status === 400 &&
+					/detail/i.test(detail + ' ' + err) &&
+					/(project|project_airtable_id)/i.test(detail + ' ' + err);
+			} catch { /* ignore parse error */ }
+
+			if (!wantsProject) {
+				// surface the original error
+				const e = new Error('HTTP ' + res.status + (text ? ' — ' + text : ''));
+				e.response = text;
+				throw e;
+			}
+
+			// 2) Fallback: include project fields in the body, plus a hint header the server can use to skip writing to computed “Project”.
+			const bodyWithProject = {
+				...bodyBase,
+				project: state.projectId,
+				project_airtable_id: state.projectId
+			};
+			const res2 = await fetch('/api/journal-entries', {
+				method: 'POST',
+				headers: {
+					'content-type': 'application/json',
+					'x-ro-skip-project': '1'
+				},
+				body: JSON.stringify(bodyWithProject)
+			});
+			const txt2 = await res2.text();
+			if (!res2.ok) {
+				const e2 = new Error('HTTP ' + res2.status + (txt2 ? ' — ' + txt2 : ''));
+				e2.response = txt2;
+				throw e2;
+			}
+			return txt2 ? JSON.parse(txt2) : {};
+		}
+
 		if (form) {
 			form.addEventListener('submit', function(e) {
 				e.preventDefault();
@@ -289,23 +343,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					? payload.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean)
 					: [];
 
-				// IMPORTANT:
-				// - Send project identifiers for the API validation layer,
-				//   but the server must not write them into Airtable if the field is computed.
-				// - Send tags as a string (comma-separated) to match a plain text field.
-				var body = {
-					project: state.projectId,
-					project_airtable_id: state.projectId,
+				// Body for primary attempt (no project fields)
+				var bodyBase = {
 					category: payload.category,
 					content: payload.content,
 					tags: parts.join(', ')
 				};
 
-				fetchJSON('/api/journal-entries', {
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify(body)
-				}).then(function(createdRes) {
+				createJournalEntry(bodyBase).then(function(createdRes) {
 					// Normalise the server response (works with {entry:{...}} or a flat object)
 					var created = (createdRes && createdRes.entry) ? createdRes.entry : (createdRes || {});
 
@@ -598,7 +643,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	function buildChildrenIndex(codes) {
 		var byParent = Object.create(null);
 		for (var i = 0; i < codes.length; i += 1) {
-			var p = codes[i].parentId || null;
+			var p = c
+			odes[i].parentId || null;
 			if (!byParent[p]) byParent[p] = [];
 			byParent[p].push(codes[i]);
 		}
