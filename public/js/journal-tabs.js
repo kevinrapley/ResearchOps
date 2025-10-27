@@ -107,6 +107,30 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		});
 	}
 
+	// === Mural sync: Reflexive Journal behaviour ===============================
+	async function _syncToMural(newEntry) {
+		try {
+			var payload = {
+				category: String(newEntry && newEntry.category || "").toLowerCase(), // perceptions|procedures|decisions|introspections
+				description: String(newEntry && newEntry.description || ""),
+				tags: Array.isArray(newEntry && newEntry.tags) ? newEntry.tags : [],
+				projectId: newEntry && newEntry.projectId || null, // optional: helps server pick the right “Reflexive Journal” board
+				studyId: newEntry && newEntry.studyId || null // optional
+			};
+
+			var res = await fetch("/api/mural/journal-sync", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+			if (!res.ok) {
+				console.warn("Mural journal-sync failed", await res.text());
+			}
+		} catch (err) {
+			console.warn("Mural journal-sync error", err);
+		}
+	}
+
 	// ---------- state ----------
 	var state = {
 		projectId: '',
@@ -274,7 +298,23 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify(body)
-				}).then(function() {
+				}).then(function(createdRes) {
+					// Normalise the server response (works with {entry:{...}} or a flat object)
+					var created = (createdRes && createdRes.entry) ? createdRes.entry : (createdRes || {});
+
+					// Build the minimal object the Mural sync expects
+					var syncEntry = {
+						category: String(created.category || body.category || '').toLowerCase(),
+						description: String(created.content || created.description || body.content || ''),
+						tags: Array.isArray(created.tags) ? created.tags : (Array.isArray(body.tags) ? body.tags : []),
+						projectId: state.projectId || created.project || created.project_id || null,
+						studyId: created.studyId || created.study_id || null
+					};
+
+					// Fire-and-forget Mural sync (don’t block UI)
+					_syncToMural(syncEntry);
+
+					// Reset UI + reload entries
 					form.reset();
 					toggle(false);
 					flash('Entry saved.');
@@ -637,7 +677,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		}
 
 		wrap.innerHTML = out.join('');
-		
+
 		annotateCodebookDepth(wrap);
 	}
 
