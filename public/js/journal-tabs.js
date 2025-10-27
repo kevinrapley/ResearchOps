@@ -285,13 +285,19 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					flash('Category and content are required.');
 					return;
 				}
-				var parts = payload.tags ? payload.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+
+				// Parse the tag input; Airtable "Tags" is a text field → send comma-separated string
+				var parts = payload.tags ?
+					payload.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) :
+					[];
+
+				// IMPORTANT:
+				// - Do NOT send project/project_airtable_id to avoid writing to a computed Airtable field.
+				// - Send tags as a string (comma-separated) to match a plain text field.
 				var body = {
-					project: payload.project,
-					project_airtable_id: payload.project_airtable_id,
 					category: payload.category,
 					content: payload.content,
-					tags: parts
+					tags: parts.join(', ')
 				};
 
 				fetchJSON('/api/journal-entries', {
@@ -302,11 +308,18 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					// Normalise the server response (works with {entry:{...}} or a flat object)
 					var created = (createdRes && createdRes.entry) ? createdRes.entry : (createdRes || {});
 
+					// Normalise tags from the server (string or array), fallback to our parsed list
+					var createdTags = Array.isArray(created.tags) ?
+						created.tags :
+						(typeof created.tags === 'string' ?
+							created.tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) :
+							parts);
+
 					// Build the minimal object the Mural sync expects
 					var syncEntry = {
-						category: String(created.category || body.category || '').toLowerCase(),
-						description: String(created.content || created.description || body.content || ''),
-						tags: Array.isArray(created.tags) ? created.tags : (Array.isArray(body.tags) ? body.tags : []),
+						category: String(created.category || payload.category || '').toLowerCase(),
+						description: String(created.content || created.description || payload.content || ''),
+						tags: createdTags,
 						projectId: state.projectId || created.project || created.project_id || null,
 						studyId: created.studyId || created.study_id || null
 					};
