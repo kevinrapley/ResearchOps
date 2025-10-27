@@ -411,3 +411,5 @@ export const _int = {
   encodeState,
   decodeState
 };
+
+export { MuralServicePart };
