@@ -1,7 +1,7 @@
 /**
  * @file service/internals/mural.js
  * @module service/internals/mural
- * @summary Mural routes and journal-sync integration.
+ * @summary Mural routes and journal-sync integration (Reflexive Journal).
  */
 
 import {
@@ -29,6 +29,9 @@ const GRID_Y = 32;
 const DEFAULT_W = 240;
 const DEFAULT_H = 120;
 
+/**
+ * Encapsulates all Mural OAuth, setup, and journal sync behaviours.
+ */
 export class MuralServicePart {
 	constructor(root) {
 		this.root = root;
@@ -93,15 +96,20 @@ export class MuralServicePart {
 					accessToken = merged.access_token;
 					await verifyHomeOfficeByCompany(this.root.env, accessToken);
 					return { ok: true, token: accessToken };
-				} catch {
+				} catch (rfErr) {
+					console.error("[mural] token refresh failed:", rfErr);
 					return { ok: false, reason: "not_authenticated" };
 				}
 			}
+			console.error("[mural] token validation failed:", err);
 			return { ok: false, reason: "error" };
 		}
 	}
 
-	/** GET /api/mural/auth?uid=:uid[&return=:path] */
+	// ────────────────────────────────────────────────────────────────
+	// Routes
+	// ────────────────────────────────────────────────────────────────
+
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
 		const ret = url.searchParams.get("return");
@@ -111,7 +119,6 @@ export class MuralServicePart {
 		return Response.redirect(redirect, 302);
 	}
 
-	/** GET /api/mural/callback?code=&state= */
 	async muralCallback(origin, url) {
 		const { env } = this.root;
 		if (!env.MURAL_CLIENT_SECRET) {
@@ -140,7 +147,6 @@ export class MuralServicePart {
 		return Response.redirect("/pages/projects/?mural=connected", 302);
 	}
 
-	/** GET /api/mural/verify?uid=:uid */
 	async muralVerify(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
 		const tokens = await this.loadTokens(uid);
@@ -151,8 +157,8 @@ export class MuralServicePart {
 		try {
 			const inCompany = await verifyHomeOfficeByCompany(this.root.env, accessToken);
 			if (!inCompany) return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
-		} catch {
-			return this.root.json({ ok: false, reason: "error" }, 500, this.root.corsHeaders(origin));
+		} catch (err) {
+			return this.root.json({ ok: false, reason: "error", detail: String(err?.message || err) }, 500, this.root.corsHeaders(origin));
 		}
 		const me = await getMe(this.root.env, accessToken).catch(() => null);
 		const activeWorkspaceId = getActiveWorkspaceIdFromMe(me);
@@ -179,15 +185,26 @@ export class MuralServicePart {
 
 			step = "resolve_mural_id";
 			const muralId = await this.resolveReflexiveMuralId(body.projectId, body.muralId);
-			if (!muralId) return this.root.json({ ok: false, error: "no_mural_id" }, 400, cors);
+			if (!muralId) {
+				return this.root.json({
+					ok: false,
+					error: "no_mural_id",
+					message: "No Reflexive Journal mural found or mapped."
+				}, 400, cors);
+			}
 
 			step = "access_token";
 			const tokenRes = await this._getValidAccessToken(uid);
-			if (!tokenRes.ok) return this.root.json({ ok: false, error: tokenRes.reason }, 401, cors);
+			if (!tokenRes.ok) {
+				return this.root.json({ ok: false, error: tokenRes.reason }, 401, cors);
+			}
 			const accessToken = tokenRes.token;
 
 			step = "load_widgets";
-			const widgetsJs = await getWidgets(this.root.env, accessToken, muralId);
+			const widgetsJs = await getWidgets(this.root.env, accessToken, muralId).catch((e) => {
+				throw Object.assign(new Error("widgets_load_failed"), { cause: e });
+			});
+
 			const stickyList = normaliseWidgets(widgetsJs?.widgets);
 			const last = findLatestInCategory(stickyList, category);
 
@@ -207,8 +224,6 @@ export class MuralServicePart {
 				if (last) {
 					targetY = (last.y || 0) + (last.height || DEFAULT_H) + GRID_Y;
 					targetX = last.x || targetX;
-					targetW = last.width || targetW;
-					targetH = last.height || targetH;
 				}
 				const crt = await createSticky(this.root.env, accessToken, muralId, {
 					text: description,
@@ -217,24 +232,28 @@ export class MuralServicePart {
 					width: Math.round(targetW),
 					height: Math.round(targetH)
 				});
-				stickyId = crt.id;
+				stickyId = crt?.id || null;
 				action = "created-new-sticky";
 			}
 
 			step = "tagging";
 			if (labels.length && stickyId) {
-				const tagIds = await ensureTagsBlueberry(this.root.env, accessToken, muralId, labels);
-				if (tagIds.length) await applyTagsToSticky(this.root.env, accessToken, muralId, stickyId, tagIds);
+				const tagIds = await ensureTagsBlueberry(this.root.env, accessToken, muralId, labels).catch(() => []);
+				if (tagIds.length) {
+					await applyTagsToSticky(this.root.env, accessToken, muralId, stickyId, tagIds).catch(() => null);
+				}
 			}
 
 			return this.root.json({ ok: true, stickyId, action }, 200, cors);
+
 		} catch (err) {
-			console.error("muralJournalSync error", step, err?.message);
+			console.error("[muralJournalSync]", step, err);
 			return this.root.json({
 				ok: false,
 				error: "journal_sync_failed",
 				step,
-				message: err?.message || "unknown"
+				message: err?.message || "unknown",
+				stack: err?.stack || null
 			}, 500, cors);
 		}
 	}
