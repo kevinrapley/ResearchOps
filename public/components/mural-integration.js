@@ -275,7 +275,7 @@ function attachDirectListeners() {
 					const openUrl = extractMuralOpenUrl(res);
 
 					// Switch button to OPEN state
-					setupBtn.textContent = "Open "Reflexive Journal"";
+					setupBtn.textContent = 'Open "Reflexive Journal"';
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
 
@@ -298,14 +298,14 @@ function attachDirectListeners() {
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
-					setupBtn.textContent = prev || "Create "Reflexive Journal"";
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 				} else if (res?.reason === "not_in_home_office_workspace") {
 					setPill(statusEl, "err", "Your Mural account isn't in Home Office");
-					setupBtn.textContent = prev || "Create "Reflexive Journal"";
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 				} else {
 					setPill(statusEl, "err", res?.error || "Setup failed");
 					console.warn("[mural] setup error payload:", res);
-					setupBtn.textContent = prev || "Create "Reflexive Journal"";
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 					alert(`Mural setup failed:\n${JSON.stringify(res, null, 2)}`);
 				}
 			} catch (err) {
