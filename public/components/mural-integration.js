@@ -311,7 +311,7 @@ function attachDirectListeners() {
 			} catch (err) {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
-				setupBtn.textContent = prev || "Create "Reflexive Journal"";
+				setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 			} finally {
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
