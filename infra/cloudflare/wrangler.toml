@@ -42,7 +42,7 @@ MURAL_REDIRECT_URI                    = "https://rops-api.digikev-kevin-rapley.w
 MURAL_COMPANY_ID                      = "homeofficegovuk"
 MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
 MURAL_SCOPES                          = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"
-#MURAL_REFLEXIVE_MURAL_ID              = "10f5ee9e277798ec161cb9b06fc111a131ae618e"
+MURAL_REFLEXIVE_MURAL_ID              = "10f5ee9e277798ec161cb9b06fc111a131ae618e"
 
 [[kv_namespaces]]
 binding                               = "SESSION_KV"
