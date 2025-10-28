@@ -29,25 +29,17 @@ const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 function resolveApiBase() {
 	const fromWindow = typeof window !== "undefined" && window.ROPS_API_BASE;
 	const fromHtml = document?.documentElement?.dataset?.apiBase;
-	const base = (fromWindow || fromHtml || DEFAULT_API_BASE || "")
-		.trim().replace(/\/+$/, "");
-	console.log("[dash] API base:", base || "(unset)");
-	return base || DEFAULT_API_BASE;
-}
-const API_BASE = resolveApiBase();
-
-fetch(`${API_BASE}/api/_diag/ping`).then(r => r.json()).then(j => {
-	console.log("[dash] worker ping ok:", j);
-}).catch(e => console.warn("[dash] worker ping failed:", e));
-
-function resolveApiBase() {
-	const fromWindow = typeof window !== "undefined" && window.ROPS_API_BASE;
-	const fromHtml = document?.documentElement?.dataset?.apiBase;
 	const base = (fromWindow || fromHtml || DEFAULT_API_BASE || "").trim().replace(/\/+$/, "");
 	console.log("[mural] API base:", base || "(unset)");
 	return base || DEFAULT_API_BASE;
 }
 const API_BASE = resolveApiBase();
+
+// Test the API immediately
+fetch(`${API_BASE}/api/health`)
+	.then(r => r.json())
+	.then(j => console.log("[mural] health check OK:", j))
+	.catch(e => console.error("[mural] health check FAILED:", e));
 
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
@@ -139,10 +131,10 @@ async function setup(uid, projectName) {
 	const res = await fetch(`${API_BASE}/api/mural/setup`, {
 		method: "POST",
 		headers: { "content-type": "application/json" },
-		body: JSON.stringify({
-			uid,
-			projectId,
-			projectName
+		body: JSON.stringify({ 
+			uid, 
+			projectId,      // ADD THIS
+			projectName 
 		})
 	});
 	const js = await res.json().catch(() => ({}));
