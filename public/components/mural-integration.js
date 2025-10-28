@@ -3,7 +3,7 @@
  * @module muralIntegration
  * @summary
  * Project dashboard → Connect to Mural (OAuth), verify connection, and create a
- * “Reflexive Journal” board inside a project-named folder.
+ * "Reflexive Journal" board inside a project-named folder.
  *
  * DOM:
  * - <button id="mural-connect">
@@ -115,31 +115,66 @@ async function verify(uid) {
 	const url = new URL(`${API_BASE}/api/mural/verify`);
 	url.searchParams.set("uid", uid);
 	console.log("[mural] verifying uid:", uid, "→", url.toString());
-	const res = await fetch(url, { cache: "no-store", credentials: "omit" });
-	if (res.status === 401) return { ok: false, reason: "not_authenticated" };
-	if (!res.ok) {
-		const t = await res.text().catch(() => "");
-		console.error("[mural] verify error payload:", t);
-		return { ok: false, reason: "error", detail: t };
+	
+	try {
+		const res = await fetch(url, { 
+			cache: "no-store", 
+			credentials: "omit",
+			signal: AbortSignal.timeout(10000) // 10s timeout
+		});
+		
+		console.log("[mural] verify response status:", res.status);
+		
+		if (res.status === 401) {
+			console.log("[mural] → not authenticated");
+			return { ok: false, reason: "not_authenticated" };
+		}
+		
+		if (!res.ok) {
+			const t = await res.text().catch(() => "");
+			console.error("[mural] verify error payload:", t);
+			return { ok: false, reason: "error", detail: t };
+		}
+		
+		const json = await res.json();
+		console.log("[mural] verify success:", json);
+		return json;
+	} catch (err) {
+		console.error("[mural] verify network error:", err);
+		return { ok: false, reason: "network_error", detail: String(err) };
 	}
-	return res.json();
 }
 
 async function setup(uid, projectName) {
-	const projectId = getProjectId(); // ADD THIS
+	const projectId = getProjectId();
 	console.log("[mural] setup →", { uid, projectId, projectName });
-	const res = await fetch(`${API_BASE}/api/mural/setup`, {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({ 
-			uid, 
-			projectId,      // ADD THIS
-			projectName 
-		})
-	});
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok) console.warn("[mural] setup non-200:", res.status, js);
-	return js;
+	
+	try {
+		const res = await fetch(`${API_BASE}/api/mural/setup`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ 
+				uid, 
+				projectId,
+				projectName 
+			}),
+			signal: AbortSignal.timeout(15000) // 15s timeout for setup
+		});
+		
+		console.log("[mural] setup response status:", res.status);
+		const js = await res.json().catch(() => ({}));
+		
+		if (!res.ok) {
+			console.warn("[mural] setup non-200:", res.status, js);
+		} else {
+			console.log("[mural] setup success:", js);
+		}
+		
+		return js;
+	} catch (err) {
+		console.error("[mural] setup error:", err);
+		return { ok: false, error: "Network error", detail: String(err) };
+	}
 }
 
 function startOAuth(uid) {
@@ -186,7 +221,6 @@ function watchProjectName() {
 
 /* ───────────────────────────── URL extraction helper ─────────────────────────── */
 
-// Replace your extractMuralOpenUrl with this stricter version:
 function extractMuralOpenUrl(res) {
 	const v = res?.mural?.value || res?.mural || {};
 	return v?._canvasLink || v?.viewerUrl || v?.url || "";
@@ -241,7 +275,7 @@ function attachDirectListeners() {
 					const openUrl = extractMuralOpenUrl(res);
 
 					// Switch button to OPEN state
-					setupBtn.textContent = "Open “Reflexive Journal”";
+					setupBtn.textContent = "Open "Reflexive Journal"";
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
 
@@ -259,31 +293,30 @@ function attachDirectListeners() {
 					else {
 						alert(
 							`Your Reflexive Journal board has been created in Mural.\n\n` +
-							`Look in your Private room → the “${name}” folder → “Reflexive Journal”.`
+							`Look in your Private room → the "${name}" folder → "Reflexive Journal".`
 						);
 					}
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
-					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setupBtn.textContent = prev || "Create "Reflexive Journal"";
 				} else if (res?.reason === "not_in_home_office_workspace") {
-					setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
-					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setPill(statusEl, "err", "Your Mural account isn't in Home Office");
+					setupBtn.textContent = prev || "Create "Reflexive Journal"";
 				} else {
 					setPill(statusEl, "err", res?.error || "Setup failed");
 					console.warn("[mural] setup error payload:", res);
-					setupBtn.textContent = prev || "Create “Reflexive Journal”";
+					setupBtn.textContent = prev || "Create "Reflexive Journal"";
 					alert(`Mural setup failed:\n${JSON.stringify(res, null, 2)}`);
 				}
 			} catch (err) {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
-				setupBtn.textContent = prev || "Create “Reflexive Journal”";
+				setupBtn.textContent = prev || "Create "Reflexive Journal"";
 			} finally {
-				// If still in "create" mode, re-enable; if switched to "open" mode we already re-enabled above.
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
 
-				// Refresh status; enable state will be recomputed after verify returns
+				// Refresh status
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
@@ -297,7 +330,7 @@ function attachDirectListeners() {
 }
 
 function init() {
-	console.log("[mural] init()");
+	console.log("[mural] init() starting");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
 	// Bind direct listeners to avoid duplicate delegated clicks
@@ -314,28 +347,33 @@ function init() {
 	}
 
 	// Verify, then compute setup enablement
-	verify(uid).then((res) => {
-		console.log("[mural] verify result:", res);
-		lastVerifyOk = !!res?.ok;
-		updateSetupState();
+	console.log("[mural] starting verify call...");
+	verify(uid)
+		.then((res) => {
+			console.log("[mural] ✓ verify completed:", res);
+			lastVerifyOk = !!res?.ok;
+			updateSetupState();
 
-		if (res.ok) {
-			setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-			const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
-			if (connectBtn) connectBtn.textContent = "Re-connect Mural";
-		} else if (res.reason === "not_authenticated") {
-			setPill(statusEl, "warn", "Not connected");
-		} else if (res.reason === "not_in_home_office_workspace") {
-			setPill(statusEl, "err", "Not in Home Office workspace");
-		} else {
+			if (res.ok) {
+				setPill(statusEl, "ok", "Connected to Mural (Home Office)");
+				const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
+				if (connectBtn) connectBtn.textContent = "Re-connect Mural";
+			} else if (res.reason === "not_authenticated") {
+				setPill(statusEl, "warn", "Not connected");
+			} else if (res.reason === "not_in_home_office_workspace") {
+				setPill(statusEl, "err", "Not in Home Office workspace");
+			} else if (res.reason === "network_error") {
+				setPill(statusEl, "err", "Network error - check connection");
+			} else {
+				setPill(statusEl, "err", "Error checking status");
+			}
+		})
+		.catch((e) => {
+			console.error("[mural] ✗ verify failed:", e);
+			lastVerifyOk = false;
+			updateSetupState();
 			setPill(statusEl, "err", "Error checking status");
-		}
-	}).catch((e) => {
-		console.error("[mural] verify failed:", e);
-		lastVerifyOk = false;
-		updateSetupState();
-		setPill(statusEl, "err", "Error checking status");
-	});
+		});
 
 	// React when <main data-project-name> is populated later by renderProject()
 	watchProjectName();
@@ -345,6 +383,8 @@ function init() {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
 	}
+	
+	console.log("[mural] init() completed");
 }
 
 /* Ensure init runs whether script loads early or late */
