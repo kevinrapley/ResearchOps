@@ -46,6 +46,10 @@
  *   - POST  /api/sessions                          (create)
  *   - PATCH /api/sessions/:id                      (update)
  *   - GET   /api/sessions/:id/ics                  (download .ics)
+ * - Session Notes:
+ *   - GET   /api/session-notes?session=:id         (list by session)
+ *   - POST  /api/session-notes                     (create)
+ *   - PATCH /api/session-notes/:id                 (update)
  * - Comms:
  *   - POST /api/comms/send                         (send + log)
  * - Mural:
@@ -487,6 +491,23 @@ export async function handleRequest(request, env) {
 						return service.sessionIcs(origin, sessionId);
 					}
 				}
+			}
+		}
+
+		// ─────────────────────────────────────────────────
+		// Session Notes
+		// ─────────────────────────────────────────────────
+		if (url.pathname === "/api/session-notes" && request.method === "GET") {
+			return service.listSessionNotes(origin, url);
+		}
+		if (url.pathname === "/api/session-notes" && request.method === "POST") {
+			return service.createSessionNote(request, origin);
+		}
+		if (url.pathname.startsWith("/api/session-notes/")) {
+			const match = url.pathname.match(/^\/api\/session-notes\/([^/]+)$/);
+			if (match && request.method === "PATCH") {
+				const noteId = decodeURIComponent(match[1]);
+				return service.updateSessionNote(request, origin, noteId);
 			}
 		}
 
