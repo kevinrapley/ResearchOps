@@ -65,14 +65,30 @@ function getProjectName() {
 	return (q && q.trim()) || "";
 }
 
+/* ─────────────────────── Project Mural ID storage ─────────────────────── */
+
+const MURAL_MAPPING_KEY_PREFIX = 'mural.project.';
+
+function saveMuralIdForProject(projectId, muralId) {
+	if (!projectId || !muralId) return;
+	localStorage.setItem(MURAL_MAPPING_KEY_PREFIX + projectId, muralId);
+	console.log('[mural] saved muralId for project:', projectId, '→', muralId);
+}
+
+function getMuralIdForProject(projectId) {
+	if (!projectId) return null;
+	return localStorage.getItem(MURAL_MAPPING_KEY_PREFIX + projectId);
+}
+
 function getProjectId() {
 	// Try URL parameters first
 	const sp = new URLSearchParams(location.search);
 	const fromUrl = sp.get('id') || sp.get('project') || sp.get('projectId');
 	if (fromUrl) return fromUrl.trim();
 
-	// Try data attribute
-	const main = $('main[data-project-id]');
+	// Try data attributes (check both variations)
+	const main = $('main');
+	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
 	if (main?.dataset?.projectId) return main.dataset.projectId.trim();
 
 	return '';
@@ -115,27 +131,27 @@ async function verify(uid) {
 	const url = new URL(`${API_BASE}/api/mural/verify`);
 	url.searchParams.set("uid", uid);
 	console.log("[mural] verifying uid:", uid, "→", url.toString());
-	
+
 	try {
-		const res = await fetch(url, { 
-			cache: "no-store", 
+		const res = await fetch(url, {
+			cache: "no-store",
 			credentials: "omit",
 			signal: AbortSignal.timeout(10000) // 10s timeout
 		});
-		
+
 		console.log("[mural] verify response status:", res.status);
-		
+
 		if (res.status === 401) {
 			console.log("[mural] → not authenticated");
 			return { ok: false, reason: "not_authenticated" };
 		}
-		
+
 		if (!res.ok) {
 			const t = await res.text().catch(() => "");
 			console.error("[mural] verify error payload:", t);
 			return { ok: false, reason: "error", detail: t };
 		}
-		
+
 		const json = await res.json();
 		console.log("[mural] verify success:", json);
 		return json;
@@ -148,28 +164,33 @@ async function verify(uid) {
 async function setup(uid, projectName) {
 	const projectId = getProjectId();
 	console.log("[mural] setup →", { uid, projectId, projectName });
-	
+
 	try {
 		const res = await fetch(`${API_BASE}/api/mural/setup`, {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ 
-				uid, 
+			body: JSON.stringify({
+				uid,
 				projectId,
-				projectName 
+				projectName
 			}),
-			signal: AbortSignal.timeout(15000) // 15s timeout for setup
+			signal: AbortSignal.timeout(15000)
 		});
-		
+
 		console.log("[mural] setup response status:", res.status);
 		const js = await res.json().catch(() => ({}));
-		
+
 		if (!res.ok) {
 			console.warn("[mural] setup non-200:", res.status, js);
 		} else {
 			console.log("[mural] setup success:", js);
+
+			// Save the Mural ID mapping for this project
+			if (js?.ok && js?.mural?.id && projectId) {
+				saveMuralIdForProject(projectId, js.mural.id);
+			}
 		}
-		
+
 		return js;
 	} catch (err) {
 		console.error("[mural] setup error:", err);
@@ -383,7 +404,7 @@ function init() {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
 	}
-	
+
 	console.log("[mural] init() completed");
 }
 
@@ -401,5 +422,7 @@ window.MuralIntegration = {
 	setup,
 	startOAuth,
 	resetUid,
+	getMuralIdForProject,
+	saveMuralIdForProject,
 	API_BASE
 };
