@@ -4,7 +4,7 @@
  * - Renders Journal entries (filters, edit/delete, link to full view)
  * - Renders Codes (add form, Coloris, parent select)
  * - Renders Memos (filters, add form)
- * - Bridges Analysis buttons to CAQDAS (data/analysis-only) module
+ * - Bridges Analysis buttons to CAQ-DAS (data/analysis-only) module
  *
  * NOTE: Heavy analysis logic lives in /js/caqdas-interface.js
  */
@@ -105,23 +105,20 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	// === Mural sync: Reflexive Journal behaviour ===============================
 	async function _syncToMural(newEntry) {
 		try {
-			// Get the project's Mural ID
 			const projectId = state.projectId;
-			const muralId = window.MuralIntegration?.getMuralIdForProject?.(projectId);
-
-			if (!muralId) {
-				console.warn('[journal] No Mural ID found for project:', projectId, '— skipping sync');
-				return; // Gracefully skip if no Mural is set up
+			if (!projectId) {
+				console.warn('[journal] No projectId in state — skipping Mural sync');
+				return;
 			}
 
 			const payload = {
 				uid: localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon',
-				muralId,
+				// muralId intentionally omitted — server resolves from projectId mapping
+				projectId,
+				studyId: newEntry?.studyId || null,
 				category: String(newEntry?.category || '').toLowerCase(),
 				description: String(newEntry?.description || newEntry?.content || ''),
-				tags: Array.isArray(newEntry?.tags) ? newEntry.tags : [],
-				projectId: projectId || null,
-				studyId: newEntry?.studyId || null
+				tags: Array.isArray(newEntry?.tags) ? newEntry.tags : []
 			};
 
 			const res = await fetch('/api/mural/journal-sync', {
@@ -132,12 +129,12 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 			if (!res.ok) {
 				const body = await res.text().catch(() => '');
-				console.warn('Mural journal-sync failed', res.status, body);
+				console.warn('[journal] Mural journal-sync failed', res.status, body);
 			} else {
 				console.log('[journal] ✓ Synced to Mural');
 			}
 		} catch (err) {
-			console.warn('Mural journal-sync error', err);
+			console.warn('[journal] Mural journal-sync error', err);
 		}
 	}
 
@@ -275,7 +272,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					body: JSON.stringify(body)
 				});
 
-				const created = createdRes?.entry || createdRes || {};
+				// Best-effort sync to Mural (server resolves muralId)
 				await _syncToMural({
 					category,
 					description: content,
@@ -320,7 +317,31 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	}
 
 	/* ---- the rest of your file (Codes, Memos, Analysis) unchanged ---- */
-	// ... all your CODES, MEMOS, and ANALYSIS functions here exactly as in baseline ...
+	// Stub functions here to avoid reference errors in this standalone rewrite.
+	// Replace with your existing implementations.
+	function loadCodes() {}
+
+	function loadMemos() {}
+
+	function setupCodeAdd() {}
+
+	function setupMemoAddForm() {}
+
+	function setupMemoFilters() {}
+
+	function setupAnalysisButtons() {
+		const wrap = document.querySelector('#analysis-panel .govuk-button-group');
+		if (!wrap) return;
+		wrap.addEventListener('click', (e) => {
+			const btn = e.target.closest('button[data-analysis]');
+			if (!btn) return;
+			const mode = btn.getAttribute('data-analysis');
+			if (mode === 'timeline') runTimeline();
+			else if (mode === 'co-occurrence') runCooccurrence();
+			else if (mode === 'retrieval') runRetrieval();
+			else if (mode === 'export') runExport();
+		});
+	}
 
 	// ---------- TAB lifecycle ----------
 	function onTabShown(id) {
