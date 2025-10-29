@@ -193,6 +193,7 @@ export class ResearchOpsService {
 
 	/* ─────────────── Sessions ─────────────── */
 	listSessions = (origin, url) => Sessions.listSessions(this, origin, url);
+	getSession = (origin, sessionId) => Sessions.getSession(this, origin, sessionId); // ← NEW: read-one
 	createSession = (req, origin) => Sessions.createSession(this, req, origin);
 	updateSession = (req, origin, sessionId) => Sessions.updateSession(this, req, origin, sessionId);
 	sessionIcs = (origin, sessionId) => Sessions.sessionIcs(this, origin, sessionId);
