@@ -115,6 +115,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			}
 
 			const payload = {
+				uid: localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon',
 				muralId,
 				category: String(newEntry?.category || '').toLowerCase(),
 				description: String(newEntry?.description || newEntry?.content || ''),
