@@ -1,10 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB" prefix="
+  dcterms: http://purl.org/dc/terms/
+  schema:  https://schema.org/
+">
 
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Project Dashboard — ResearchOps</title>
+
+	<!-- Project name hint for integrations (kept in sync by renderProject) -->
+	<meta name="project:name" content="">
 
 	<!-- Foundations -->
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
@@ -13,61 +19,82 @@
 	<script type="module" src="/components/layout.js"></script>
 </head>
 
-<body>
-	<x-include src="/partials/debug-boot.html"></x-include>
-	<x-include src="/partials/header.html" vars='{
-		"active":"Projects",
-		"subtitle":"Project Dashboard"
-	}'></x-include>
+<body typeof="schema:WebPage" resource="#page" about="#page" vocab="https://schema.org/">
 
-	<main class="govuk-body" role="main" data-project-name="null">
+	<!-- Page metadata -->
+	<meta property="schema:name" content="Project Dashboard — ResearchOps" />
+	<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+	<meta property="schema:dateModified" content="2025-10-29" />
+	<meta property="dcterms:language" content="en-GB" />
+
+	<main class="govuk-body" role="main" data-project-name="" typeof="schema:ResearchProject" resource="#project">
+
 		<!-- BREADCRUMBS -->
-		<nav class="breadcrumbs" aria-label="Breadcrumb">
+		<nav class="breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
 			<ol>
-				<li><a href="/pages/projects/">Projects</a></li>
-				<li><a id="breadcrumb-project" href="#">Project</a></li>
-				<li aria-current="page">Dashboard</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Projects</span>
+					</a>
+					<meta property="schema:position" content="1" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a id="breadcrumb-project" href="#" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Project</span>
+					</a>
+					<meta property="schema:position" content="2" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem" aria-current="page">
+					<span property="schema:name">Dashboard</span>
+					<meta property="schema:position" content="3" />
+				</li>
 			</ol>
 		</nav>
 
 		<!-- HERO -->
 		<div class="dashboard-hero">
-			<p id="eyebrow-org" class="project-org"></p>
-			<h1 id="project-title" class="govuk-heading-l"></h1>
-			<p id="project-subtitle" class="lede"></p>
-		</div>
+			<p id="eyebrow-org" class="project-org" property="schema:sourceOrganization" typeof="schema:Organization"></p>
 
-		<!-- ACTION BAR -->
-		<div class="actions-bar">
-			<a href="/pages/projects/" class="btn btn--secondary">← Return to Project List</a>
-			<a href="/pages/start/" class="btn" id="btn-edit">✎ Edit Project</a>
+			<h1 id="project-title" class="govuk-heading-l" property="schema:name"></h1>
+
+			<p id="project-subtitle" class="lede" property="schema:description"></p>
 		</div>
 
 		<!-- KEY INFORMATION -->
-		<section class="kv">
+		<section class="kv" typeof="schema:ResearchProject">
 			<ul class="kv__list">
-				<li><span class="kv__term">Service Stage</span>&nbsp;<span class="kv__desc" id="kv-service-stage">–</span></li>
-				<li><span class="kv__term">Project Stage</span>&nbsp;<span class="kv__desc" id="kv-project-stage">–</span></li>
-				<li><span class="kv__term">Client Name</span>&nbsp;<span class="kv__desc" id="kv-client-name">–</span></li>
-				<li><span class="kv__term">Lead Researcher</span>&nbsp;<span class="kv__desc" id="kv-lead-researcher">–</span></li>
-				<li><span class="kv__term">Lead Researcher Email</span>&nbsp;<span class="kv__desc" id="kv-lead-email">–</span></li>
+				<li><span class="kv__term">Service Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-service-stage" property="schema:phase">–</span>
+				</li>
+				<li><span class="kv__term">Project Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-project-stage" property="schema:projectStatus">–</span>
+				</li>
+				<li><span class="kv__term">Client Name</span>&nbsp;
+					<span class="kv__desc" id="kv-client-name" property="schema:client">–</span>
+				</li>
+				<li><span class="kv__term">Lead Researcher</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-researcher" property="schema:author" typeof="schema:Person"></span>
+				</li>
+				<li><span class="kv__term">Lead Researcher Email</span>&nbsp;
+					<a class="kv__desc" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
+				</li>
 			</ul>
 		</section>
 
 		<!-- NAV BOARD -->
-		<nav class="board">
-			<a href="/pages/project/journals/?id=" id="journal-link" class="board__item">Reflexive Journal</a>
-			<a href="#stakeholders" class="board__item">Stakeholder Management</a>
-			<a href="#planning" class="board__item">Research Planning</a>
-			<a href="#outcomes" class="board__item">Research Outcomes</a>
+		<nav class="board" typeof="schema:SiteNavigationElement">
+			<a href="/pages/project/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
+			<a href="#stakeholders" class="board__item" property="schema:relatedLink">Stakeholder Management</a>
+			<a href="#planning" class="board__item" property="schema:relatedLink">Research Planning</a>
+			<a href="#outcomes" class="board__item" property="schema:relatedLink">Research Outcomes</a>
 		</nav>
 
 		<!-- MURAL INTEGRATIONS -->
 		<section id="mural-integration" class="card">
 			<h2 class="govuk-heading-m">Mural</h2>
 
-			<p id="mural-status" class="status">
-				<span class="pill pill--neutral" aria-live="polite" aria-atomic="true">Checking&hellip;</span>
+			<p id="mural-status" class="status" aria-live="polite" aria-atomic="true">
+				<span class="pill pill--neutral">Checking&hellip;</span>
 			</p>
 
 			<div class="actions">
@@ -326,6 +353,10 @@
 				main.dataset.projectAirtableId = project.id || "";
 			}
 
+			// Keep <meta name="project:name"> in sync for integrations that read it.
+			const metaProject = document.querySelector('meta[name="project:name"]');
+			if (metaProject) metaProject.setAttribute("content", project.name || "");
+
 			const bcProject = document.getElementById("breadcrumb-project");
 			if (bcProject) {
 				bcProject.textContent = project.name || "Project";
@@ -544,6 +575,8 @@
 			}
 		})();
 	</script>
+
+	<!-- Mural integration (OAuth + setup). Relies on project name/id set by renderProject(). -->
 	<script type="module" src="/components/mural-integration.js"></script>
 </body>
 
