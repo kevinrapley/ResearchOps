@@ -1,5 +1,5 @@
 /**
- * @file /js/session-controller.js
+ * @file /components/session-controller.js
  * @summary Controller for study session UI: participant picker, consents, timer, and notes.
  * @description
  * - Participant dropdown (mock until wired to Airtable).
@@ -15,13 +15,14 @@
  *      and schema:temporalCoverage "<start>/<end>".
  */
 
-const $ = (s, r = document) => r.querySelector(s);
+const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 /* -------------------------------------------------------------------------- */
 /* Mock participants (replace with Airtable fetch later)                      */
 /* -------------------------------------------------------------------------- */
-const MOCK_PARTICIPANTS = [{
+const MOCK_PARTICIPANTS = [
+	{
 		id: "ptp_001",
 		airtableId: "recPARTICIPANT001",
 		pseudonym: "P01",
@@ -103,22 +104,23 @@ function getSessionAirtableId() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* RDFa helpers                                                               */
+/* RDFa helpers (now SAFE if #session-entity is missing)                      */
 /* -------------------------------------------------------------------------- */
-function clearChildren(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+function clearChildren(el){while(el?.firstChild)el.removeChild(el.firstChild);}
 
-function dd(text, rdfa = {}) { const el = document.createElement("dd"); if (text != null) el.textContent = text; for (const [k, v] of Object.entries(rdfa)) { if (v != null && v !== false) el.setAttribute(k, String(v)); } return el; }
+function dd(text,rdfa={}){const el=document.createElement("dd");if(text!=null)el.textContent=text;for(const[k,v]of Object.entries(rdfa)){if(v!=null&&v!==false)el.setAttribute(k,String(v));}return el;}
 
-function dt(text) {
-	const el = document.createElement("dt");
-	el.textContent = text;
-	return el;
-}
+function dt(text){const el=document.createElement("dt");el.textContent=text;return el;}
 
-function ensureOrSetMeta(parent, prop, value) {
+/**
+ * Ensure or set a <meta property="..."> under parent.
+ * If parent is null/undefined, this becomes a no-op.
+ */
+function ensureOrSetMeta(parent, prop, value){
+	if (!parent) return; // <- SAFETY: parent may be null if #session-entity is absent
 	let m = parent.querySelector(`meta[property="${prop}"]`);
-	if (!value) { m?.remove(); return; }
-	if (!m) {
+	if (!value){ m?.remove(); return; }
+	if (!m){
 		m = document.createElement("meta");
 		m.setAttribute("property", prop);
 		parent.appendChild(m);
@@ -126,14 +128,17 @@ function ensureOrSetMeta(parent, prop, value) {
 	m.setAttribute("content", value);
 }
 
-function setEventStatus(iri) {
+/**
+ * Set schema:eventStatus on #session-entity if present.
+ */
+function setEventStatus(iri){
 	const s = $("#session-entity");
-	if (!s) return;
+	if (!s) return; // safe no-op
 	let m = s.querySelector('meta[property="schema:eventStatus"]');
-	if (!iri) { m?.remove(); return; }
-	if (!m) {
+	if (!iri){ m?.remove(); return; }
+	if (!m){
 		m = document.createElement("meta");
-		m.setAttribute("property", "schema:eventStatus");
+		m.setAttribute("property","schema:eventStatus");
 		s.appendChild(m);
 	}
 	m.setAttribute("content", iri);
@@ -142,60 +147,65 @@ function setEventStatus(iri) {
 /* -------------------------------------------------------------------------- */
 /* Participant UI                                                             */
 /* -------------------------------------------------------------------------- */
-function populateParticipants(list) {
-	const sel = $("#participant-select");
-	list.forEach(p => {
-		const o = document.createElement("option");
-		o.value = p.id;
-		o.textContent = `${p.pseudonym} — ${p.name}`;
-		o.dataset.airtableId = p.airtableId || "";
+function populateParticipants(list){
+	const sel=$("#participant-select");
+	list.forEach(p=>{
+		const o=document.createElement("option");
+		o.value=p.id;o.textContent=`${p.pseudonym} — ${p.name}`;
+		o.dataset.airtableId=p.airtableId||"";
 		sel.appendChild(o);
 	});
 }
+function renderParticipantDetails(p){
+	const dl=$("#participant-details");clearChildren(dl);
+	dl.append(dt("Pseudonym"),dd(p.pseudonym,{"property":"schema:alternateName"}));
+	dl.append(dt("Name"),dd(p.name,{"property":"schema:name"}));
+	dl.append(dt("User type"),dd(p.userType,{"property":"schema:additionalType"}));
+	const date=p.session?.date||"";
+	if(date){
+		const human=new Date(date+"T00:00:00Z");
+		const text=human.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
+		dl.append(dt("Date"),dd(text,{"about":"#session","property":"schema:startDate","content":date}));
+	}else{
+		dl.append(dt("Date"),dd("—"));
+	}
+	const tStart=p.session?.start||"",tEnd=p.session?.end||"";
+	if(tStart&&tEnd){
+		const d=document.createElement("dd");
+		d.setAttribute("about","#session");
+		const t1=document.createElement("time");
+		t1.setAttribute("property","schema:startTime");
+		t1.setAttribute("datetime",tStart);
+		t1.textContent=tStart;
+		const sep=document.createTextNode("–");
+		const t2=document.createElement("time");
+		t2.setAttribute("property","schema:endTime");
+		t2.setAttribute("datetime",tEnd);
+		t2.textContent=tEnd;
+		d.append(t1,sep,t2);
+		dl.append(dt("Time"),d);
+	}else{
+		dl.append(dt("Time"),dd("—"));
+	}
 
-function renderParticipantDetails(p) {
-	const dl = $("#participant-details");
-	clearChildren(dl);
-	dl.append(dt("Pseudonym"), dd(p.pseudonym, { "property": "schema:alternateName" }));
-	dl.append(dt("Name"), dd(p.name, { "property": "schema:name" }));
-	dl.append(dt("User type"), dd(p.userType, { "property": "schema:additionalType" }));
-	const date = p.session?.date || "";
-	if (date) {
-		const human = new Date(date + "T00:00:00Z");
-		const text = human.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-		dl.append(dt("Date"), dd(text, { "about": "#session", "property": "schema:startDate", "content": date }));
-	} else { dl.append(dt("Date"), dd("—")); }
-	const tStart = p.session?.start || "",
-		tEnd = p.session?.end || "";
-	if (tStart && tEnd) {
-		const d = document.createElement("dd");
-		d.setAttribute("about", "#session");
-		const t1 = document.createElement("time");
-		t1.setAttribute("property", "schema:startTime");
-		t1.setAttribute("datetime", tStart);
-		t1.textContent = tStart;
-		const sep = document.createTextNode("–");
-		const t2 = document.createElement("time");
-		t2.setAttribute("property", "schema:endTime");
-		t2.setAttribute("datetime", tEnd);
-		t2.textContent = tEnd;
-		d.append(t1, sep, t2);
-		dl.append(dt("Time"), d);
-	} else { dl.append(dt("Time"), dd("—")); }
+	// Mirror onto #session-entity if present
+	const sessionEntity = $("#session-entity");
+	ensureOrSetMeta(sessionEntity, "schema:startDate", date || null);
+	ensureOrSetMeta(sessionEntity, "schema:startTime", tStart || null);
+	ensureOrSetMeta(sessionEntity, "schema:endTime",   tEnd || null);
 }
 
-function renderConsentSummary(p) {
-	const dl = $("#consent-summary");
-	clearChildren(dl);
-	const labels = { observers: "Observers", noteTakers: "Note-takers", recordVideo: "Record video", recordAudio: "Record audio", transcription: "Transcription", videoOn: "Video on" };
-	for (const [k, l] of Object.entries(labels)) {
-		if (!(p.consents && k in p.consents)) continue;
-		const ok = !!p.consents[k];
+function renderConsentSummary(p){
+	const dl=$("#consent-summary");clearChildren(dl);
+	const labels={observers:"Observers",noteTakers:"Note-takers",recordVideo:"Record video",recordAudio:"Record audio",transcription:"Transcription",videoOn:"Video on"};
+	for(const[k,l]of Object.entries(labels)){
+		if(!(p.consents&&k in p.consents)) continue;
+		const ok=!!p.consents[k];
 		dl.append(dt(l));
-		const d = document.createElement("dd");
-		d.setAttribute("property", "schema:acceptedAnswer");
-		d.setAttribute("content", String(ok));
-		d.innerHTML = ok ? '<span aria-label="consented">✔</span>' : '<span aria-label="not consented">✗</span>';
+		const d=document.createElement("dd");
+		d.setAttribute("property","schema:acceptedAnswer");
+		d.setAttribute("content",String(ok));
+		d.innerHTML=ok?'<span aria-label="consented">✔</span>':'<span aria-label="not consented">✗</span>';
 		dl.append(d);
 	}
 }
@@ -203,87 +213,71 @@ function renderConsentSummary(p) {
 /* -------------------------------------------------------------------------- */
 /* Timer controls                                                             */
 /* -------------------------------------------------------------------------- */
-function updateTimerView() {
-	const ms = sessionNowMs();
-	$("#timer-display").textContent = msToHMS(ms);
-	$("#timer-display").setAttribute("content", msToISODuration(ms));
+function updateTimerView(){
+	const ms=sessionNowMs();
+	$("#timer-display").textContent=msToHMS(ms);
+	$("#timer-display").setAttribute("content",msToISODuration(ms)); // RDFa schema:duration
 }
-
-function startTimer() {
+function startTimer(){
 	setEventStatus("https://schema.org/EventScheduled");
-	if (isRunning) return;
-	isRunning = true;
-	baseStart = nowMs();
-	if (!sessionAbsStartIso) {
-		sessionAbsStartIso = nowIsoUtc();
-		const d = new Date(sessionAbsStartIso);
-		const dateOnly = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`;
-		ensureOrSetMeta($("#session-entity"), "schema:startDate", dateOnly);
-		ensureOrSetMeta($("#session-entity"), "schema:startTime", sessionAbsStartIso);
+	if(isRunning) return;
+	isRunning=true;baseStart=nowMs();
+
+	if(!sessionAbsStartIso){
+		sessionAbsStartIso=nowIsoUtc();
+		const d=new Date(sessionAbsStartIso);
+		const dateOnly=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`;
+		const sess=$("#session-entity");
+		ensureOrSetMeta(sess,"schema:startDate",dateOnly);
+		ensureOrSetMeta(sess,"schema:startTime",sessionAbsStartIso);
 	}
-	$("#btn-start").disabled = true;
-	$("#btn-pause").disabled = false;
-	$("#btn-stop").disabled = false;
-	timerInterval = setInterval(updateTimerView, 250);
-}
 
-function pauseTimer() {
-	if (!isRunning) return;
-	elapsedMs = sessionNowMs();
-	isRunning = false;
+	$("#btn-start").disabled=true;
+	$("#btn-pause").disabled=false;
+	$("#btn-stop").disabled=false;
+	timerInterval=setInterval(updateTimerView,250);
+}
+function pauseTimer(){
+	if(!isRunning) return;
+	elapsedMs=sessionNowMs();
+	isRunning=false;
 	clearInterval(timerInterval);
 	updateTimerView();
-	$("#btn-start").disabled = false;
-	$("#btn-pause").disabled = true;
+	$("#btn-start").disabled=false;
+	$("#btn-pause").disabled=true;
 }
-
-function stopTimer() {
-	isRunning = false;
+function stopTimer(){
+	isRunning=false;
 	clearInterval(timerInterval);
-	ensureOrSetMeta($("#session-entity"), "schema:endTime", nowIsoUtc());
-	elapsedMs = 0;
-	baseStart = null;
+
+	const sess=$("#session-entity");
+	ensureOrSetMeta(sess,"schema:endTime",nowIsoUtc());
+
+	elapsedMs=0;baseStart=null;
 	updateTimerView();
-	$("#btn-start").disabled = false;
-	$("#btn-pause").disabled = true;
-	$("#btn-stop").disabled = true;
+	$("#btn-start").disabled=false;
+	$("#btn-pause").disabled=true;
+	$("#btn-stop").disabled=true;
+
 	resetDraftNote();
-	$("#note-editor").innerHTML = "";
+	$("#note-editor").innerHTML="";
 }
 
 /* -------------------------------------------------------------------------- */
 /* Framework switching                                                        */
 /* -------------------------------------------------------------------------- */
-const AEIOU = [
-	["activity", "Activities"],
-	["environment", "Environments"],
-	["interaction", "Interactions"],
-	["object", "Objects"],
-	["user", "Users"]
-];
-const POEMS = [
-	["people", "People"],
-	["objects", "Objects"],
-	["environments", "Environments"],
-	["messages", "Messages"],
-	["services", "Services"]
-];
-
-function setFramework(k) {
-	const s = $("#note-kind");
-	s.innerHTML = "";
-	let items = [];
-	if (k === "aeiou") items = AEIOU;
-	else if (k === "poems") items = POEMS;
-	else items = [
-		["idea", "Ideas/Notes"],
-		["quote", "Quote"],
-		["observation", "Observation"]
-	];
-	for (const [v, l] of items) {
-		const o = document.createElement("option");
-		o.value = v;
-		o.textContent = l;
+const AEIOU=[["activity","Activities"],["environment","Environments"],["interaction","Interactions"],["object","Objects"],["user","Users"]];
+const POEMS=[["people","People"],["objects","Objects"],["environments","Environments"],["messages","Messages"],["services","Services"]];
+function setFramework(k){
+	const s=$("#note-kind");
+	s.innerHTML="";
+	let items=[];
+	if(k==="aeiou") items=AEIOU;
+	else if(k==="poems") items=POEMS;
+	else items=[["idea","Ideas/Notes"],["quote","Quote"],["observation","Observation"]];
+	for(const[v,l]of items){
+		const o=document.createElement("option");
+		o.value=v;o.textContent=l;
 		s.appendChild(o);
 	}
 }
@@ -291,67 +285,78 @@ function setFramework(k) {
 /* -------------------------------------------------------------------------- */
 /* Editor behaviour: start note on first meaningful keystroke                 */
 /* -------------------------------------------------------------------------- */
-function editorHasMeaningfulText() { return ($("#note-editor").textContent || "").trim().length > 0; }
-
-function resetDraftNote() {
-	noteStartMs = null;
-	noteStartIso = null;
-	$("#note-timestamps").textContent = "";
-	$("#btn-save-note").disabled = true;
-}
-
-function onEditorInput() {
-	if (!editorHasMeaningfulText()) { resetDraftNote(); return; }
-	if (noteStartMs == null) {
-		noteStartMs = sessionNowMs();
-		noteStartIso = nowIsoUtc();
-		$("#btn-save-note").disabled = false;
-		$("#note-timestamps").textContent = `Started at ${msToHMS(noteStartMs)}`;
+function editorHasMeaningfulText(){return($("#note-editor").textContent||"").trim().length>0;}
+function resetDraftNote(){noteStartMs=null;noteStartIso=null;$("#note-timestamps").textContent="";$("#btn-save-note").disabled=true;}
+function onEditorInput(){
+	if(!editorHasMeaningfulText()){
+		resetDraftNote();
+		return;
+	}
+	if(noteStartMs==null){
+		noteStartMs=sessionNowMs();
+		noteStartIso=nowIsoUtc();
+		$("#btn-save-note").disabled=false;
+		$("#note-timestamps").textContent=`Started at ${msToHMS(noteStartMs)}`;
 	}
 }
 
 /* -------------------------------------------------------------------------- */
 /* Save note                                                                  */
 /* -------------------------------------------------------------------------- */
-async function saveNote() {
-	if (noteStartMs == null || !editorHasMeaningfulText()) { announce("Type in the editor to start a note before saving."); return; }
-	const savedAtMs = sessionNowMs();
-	const startedAt = msToHMS(noteStartMs);
-	const savedAt = msToHMS(savedAtMs);
-	const delta = msToHMS(Math.max(0, savedAtMs - noteStartMs));
-	const html = $("#note-editor").innerHTML.trim();
-	const framework = $("#framework").value;
-	const category = $("#note-kind").value;
-	const participantId = currentParticipant?.airtableId || null;
-	const startIso = noteStartIso || nowIsoUtc();
-	const endIso = nowIsoUtc();
-	const sessionId = getSessionAirtableId();
-	if (!sessionId) { announce("Missing session id. Unable to save note."); return; }
+async function saveNote(){
+	if(noteStartMs==null||!editorHasMeaningfulText()){
+		announce("Type in the editor to start a note before saving.");
+		return;
+	}
+	const savedAtMs=sessionNowMs();
+	const startedAt=msToHMS(noteStartMs);
+	const savedAt=msToHMS(savedAtMs);
+	const delta=msToHMS(Math.max(0,savedAtMs-noteStartMs));
+	const html=$("#note-editor").innerHTML.trim();
+	const framework=$("#framework").value;
+	const category=$("#note-kind").value;
+	const participantId=currentParticipant?.airtableId||null;
+	const startIso=noteStartIso||nowIsoUtc();
+	const endIso=nowIsoUtc();
+	const sessionId=getSessionAirtableId();
+	if(!sessionId){ announce("Missing session id. Unable to save note."); return; }
 
-	const payload = { session_airtable_id: sessionId, participant_airtable_id: participantId || undefined, framework: framework?.toUpperCase?.() === "NONE" ? "none" : framework, category, start_iso: startIso, end_iso: endIso, start_offset_ms: noteStartMs, end_offset_ms: savedAtMs, content_html: html };
+	const payload={
+		session_airtable_id:sessionId,
+		participant_airtable_id:participantId||undefined,
+		framework:framework?.toUpperCase?.()==="NONE"?"none":framework,
+		category,
+		start_iso:startIso,
+		end_iso:endIso,
+		start_offset_ms:noteStartMs,
+		end_offset_ms:savedAtMs,
+		content_html:html
+	};
 
-	let createdId = null;
-	try {
-		const res = await postJson("/api/session-notes", payload);
-		if (!res?.ok) throw new Error(res?.error || "Unknown error");
-		createdId = res.id || res.note?.id || null;
+	let createdId=null;
+	try{
+		const res=await postJson("/api/session-notes",payload);
+		if(!res?.ok) throw new Error(res?.error||"Unknown error");
+		createdId=res.id||res.note?.id||null;
 		announce("Note saved.");
-	} catch (e) {
-		console.error("session-note.save.fail", e);
+	}catch(e){
+		console.error("session-note.save.fail",e);
 		announce("Failed to save the note.");
 		return;
 	}
 
-	const note = { id: createdId || crypto.randomUUID(), participantId, framework, category, startedAtMs: noteStartMs, savedAtMs, startIso, endIso, contentHtml: html };
+	const note={id:createdId||crypto.randomUUID(),participantId,framework,category,startedAtMs:noteStartMs,savedAtMs,startIso,endIso,contentHtml:html};
 	notes.push(note);
-	const ul = $("#notes-list");
-	const li = document.createElement("li");
-	li.setAttribute("property", "schema:itemListElement");
-	li.setAttribute("typeof", "schema:ListItem");
-	const article = document.createElement("article");
-	article.setAttribute("typeof", "schema:CreativeWork");
-	article.setAttribute("resource", `#note-${note.id}`);
-	article.innerHTML = `
+
+	// Render saved note (RDFa)
+	const ul=$("#notes-list");
+	const li=document.createElement("li");
+	li.setAttribute("property","schema:itemListElement");
+	li.setAttribute("typeof","schema:ListItem");
+	const article=document.createElement("article");
+	article.setAttribute("typeof","schema:CreativeWork");
+	article.setAttribute("resource",`#note-${note.id}`);
+	article.innerHTML=`
 		<meta property="schema:startTime" content="${note.startIso}">
 		<meta property="schema:endTime" content="${note.endIso}">
 		<meta property="schema:dateCreated" content="${nowIsoUtc()}">
@@ -363,30 +368,28 @@ async function saveNote() {
 		<div class="note-body" property="schema:text">${html||"<em>(Empty note)</em>"}</div>`;
 	li.append(article);
 	ul.prepend(li);
+
+	// Ready for the next note
 	resetDraftNote();
-	$("#note-editor").innerHTML = "";
+	$("#note-editor").innerHTML="";
 }
 
-function announce(t) { $("#note-timestamps").textContent = t; }
+function announce(t){ $("#note-timestamps").textContent=t; }
 
 /* -------------------------------------------------------------------------- */
 /* Wire events                                                                */
 /* -------------------------------------------------------------------------- */
-function wireEvents() {
-	$("#btn-start").addEventListener("click", startTimer);
-	$("#btn-pause").addEventListener("click", pauseTimer);
-	$("#btn-stop").addEventListener("click", stopTimer);
-	$("#framework").addEventListener("change", (e) => setFramework(e.target.value));
-	$("#btn-save-note").addEventListener("click", saveNote);
-	$("#note-editor").addEventListener("input", onEditorInput);
-	$("#participant-select").addEventListener("change", (e) => {
-		const p = MOCK_PARTICIPANTS.find(x => x.id === e.target.value);
-		currentParticipant = p || null;
-		if (!p) {
-			$("#participant-details").innerHTML = "";
-			$("#consent-summary").innerHTML = "";
-			return;
-		}
+function wireEvents(){
+	$("#btn-start").addEventListener("click",startTimer);
+	$("#btn-pause").addEventListener("click",pauseTimer);
+	$("#btn-stop").addEventListener("click",stopTimer);
+	$("#framework").addEventListener("change",(e)=>setFramework(e.target.value));
+	$("#btn-save-note").addEventListener("click",saveNote);
+	$("#note-editor").addEventListener("input",onEditorInput);
+	$("#participant-select").addEventListener("change",(e)=>{
+		const p=MOCK_PARTICIPANTS.find(x=>x.id===e.target.value);
+		currentParticipant=p||null;
+		if(!p){ $("#participant-details").innerHTML=""; $("#consent-summary").innerHTML=""; return; }
 		renderParticipantDetails(p);
 		renderConsentSummary(p);
 	});
@@ -395,7 +398,7 @@ function wireEvents() {
 /* -------------------------------------------------------------------------- */
 /* Init                                                                       */
 /* -------------------------------------------------------------------------- */
-function init() {
+function init(){
 	setEventStatus("https://schema.org/EventScheduled");
 	populateParticipants(MOCK_PARTICIPANTS);
 	setFramework("none");
@@ -403,4 +406,4 @@ function init() {
 	resetDraftNote();
 	updateTimerView();
 }
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded",init);
