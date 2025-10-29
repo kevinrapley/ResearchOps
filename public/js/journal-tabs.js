@@ -15,8 +15,15 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 (function() {
 	// ---------- tiny helpers ----------
 	function $(s, r) { if (!r) r = document; return r.querySelector(s); }
+
 	function $all(s, r) { if (!r) r = document; return Array.from(r.querySelectorAll(s)); }
-	function esc(s) { const d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+
+	function esc(s) {
+		const d = document.createElement('div');
+		d.textContent = String(s || '');
+		return d.innerHTML;
+	}
+
 	function when(iso) { return iso ? new Date(iso).toLocaleString() : '—'; }
 
 	function truncateWords(s, limit) {
@@ -98,20 +105,39 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	// === Mural sync: Reflexive Journal behaviour ===============================
 	async function _syncToMural(newEntry) {
 		try {
+			// Get the project's Mural ID
+			const projectId = state.projectId;
+			const muralId = window.MuralIntegration?.getMuralIdForProject?.(projectId);
+
+			if (!muralId) {
+				console.warn('[journal] No Mural ID found for project:', projectId, '— skipping sync');
+				return; // Gracefully skip if no Mural is set up
+			}
+
 			const payload = {
+				muralId,
 				category: String(newEntry?.category || '').toLowerCase(),
-				description: String(newEntry?.description || ''),
+				description: String(newEntry?.description || newEntry?.content || ''),
 				tags: Array.isArray(newEntry?.tags) ? newEntry.tags : [],
-				projectId: newEntry?.projectId || null,
+				projectId: projectId || null,
 				studyId: newEntry?.studyId || null
 			};
+
 			const res = await fetch('/api/mural/journal-sync', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			if (!res.ok) console.warn('Mural journal-sync failed', await res.text());
-		} catch (err) { console.warn('Mural journal-sync error', err); }
+
+			if (!res.ok) {
+				const body = await res.text().catch(() => '');
+				console.warn('Mural journal-sync failed', res.status, body);
+			} else {
+				console.log('[journal] ✓ Synced to Mural');
+			}
+		} catch (err) {
+			console.warn('Mural journal-sync error', err);
+		}
 	}
 
 	// ---------- state ----------
@@ -130,9 +156,9 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			.then(data => {
 				const arr = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
 				state.entries = arr.map(e => {
-					let tags = Array.isArray(e.tags)
-						? e.tags
-						: String(e.tags || '').split(',').map(s => s.trim()).filter(Boolean);
+					let tags = Array.isArray(e.tags) ?
+						e.tags :
+						String(e.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 					return {
 						id: e.id,
 						category: e.category || '—',
@@ -143,7 +169,12 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				});
 				renderEntries();
 			})
-			.catch(err => { console.error('loadEntries', err); state.entries = []; renderEntries(); flash('Could not load journal entries.'); });
+			.catch(err => {
+				console.error('loadEntries', err);
+				state.entries = [];
+				renderEntries();
+				flash('Could not load journal entries.');
+			});
 	}
 
 	function currentEntryFilter() { return String(state.entryFilter || 'all').toLowerCase(); }
@@ -189,7 +220,10 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		const id = e.currentTarget?.getAttribute('data-id');
 		if (!id || !confirm('Delete this entry?')) return;
 		fetchJSON('/api/journal-entries/' + encodeURIComponent(id), { method: 'DELETE' })
-			.then(() => { flash('Entry deleted.'); loadEntries(); })
+			.then(() => {
+				flash('Entry deleted.');
+				loadEntries();
+			})
 			.catch(() => flash('Could not delete entry.'));
 	}
 
@@ -206,8 +240,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			if (s) document.getElementById('entry-content')?.focus();
 		}
 
-		btnShow?.addEventListener('click', e => { e.preventDefault(); toggle(true); });
-		btnCancel?.addEventListener('click', e => { e.preventDefault(); toggle(false); });
+		btnShow?.addEventListener('click', e => {
+			e.preventDefault();
+			toggle(true);
+		});
+		btnCancel?.addEventListener('click', e => {
+			e.preventDefault();
+			toggle(false);
+		});
 
 		if (!form) return;
 		form.addEventListener('submit', async e => {
@@ -270,7 +310,10 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				renderEntries();
 			});
 			b.addEventListener('keydown', e => {
-				if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click(); }
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					b.click();
+				}
 			});
 		});
 	}
