@@ -2,49 +2,80 @@
  * @file /js/session-controller.js
  * @summary Controller for study session UI: participant picker, consents, timer, and notes.
  * @description
- * - Populates participant dropdown (mock data placeholder).
+ * - Populates participant dropdown (mock data placeholder; replace with Airtable fetch later).
  * - Renders participant details with RDFa (schema.org) attributes.
  * - Renders consent summary with RDFa ItemList + acceptedAnswer content true/false.
  * - Session controls (start/pause/stop) with a visible hh:mm:ss timer and RDFa duration.
  * - Notes editor with framework + category; saved notes emitted as schema:ListItem/CreativeWork.
  * - Each saved note includes absolute UTC schema:startTime / schema:endTime metas,
- *   plus temporalCoverage using an absolute ISO-8601 interval.
+ *   plus temporalCoverage as an absolute ISO-8601 interval.
+ * - Save button posts to /api/session-notes. The returned Airtable record id is injected
+ *   into the RDFa resource as #note-<recordId> for stable anchoring.
+ *
+ * Accessibility:
+ * - Timer has role="timer" and updates politely for AT users.
+ * - Buttons have clear labels; toolbar buttons use execCommand for quick rich text.
  */
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-/* ---------------- Mock data until Airtable wiring ---------------- */
+/* -----------------------------------------------------------------------------
+   Mock data until Airtable wiring for participants
+   Replace with: fetch(`/api/participants?study=${encodeURIComponent(studyId)}`)
+   ----------------------------------------------------------------------------- */
 const MOCK_PARTICIPANTS = [{
 		id: "ptp_001",
+		airtableId: "recPARTICIPANT001",
 		pseudonym: "P01",
 		name: "Alex Johnson",
 		userType: "Public beta user",
 		session: { date: "2025-11-04", start: "10:00", end: "10:45" },
-		consents: { observers: true, noteTakers: true, recordVideo: false, recordAudio: true, transcription: true, videoOn: false }
+		consents: {
+			observers: true,
+			noteTakers: true,
+			recordVideo: false,
+			recordAudio: true,
+			transcription: true,
+			videoOn: false
+		}
 	},
 	{
 		id: "ptp_002",
+		airtableId: "recPARTICIPANT002",
 		pseudonym: "P02",
 		name: "Samira Ahmed",
 		userType: "Operational staff",
 		session: { date: "2025-11-04", start: "11:15", end: "12:00" },
-		consents: { observers: false, noteTakers: true, recordVideo: true, recordAudio: true, transcription: true, videoOn: true }
+		consents: {
+			observers: false,
+			noteTakers: true,
+			recordVideo: true,
+			recordAudio: true,
+			transcription: true,
+			videoOn: true
+		}
 	}
 ];
 
-/* ---------------- Timer state ---------------- */
+/* -----------------------------------------------------------------------------
+   State
+   ----------------------------------------------------------------------------- */
 let timerInterval = null;
 let baseStart = null; // epoch ms when session started (or resumed)
 let elapsedMs = 0; // accumulated elapsed when paused/resumed
 let isRunning = false;
 
-/* ---------------- Note state ---------------- */
 let pendingNoteStart = null; // session-relative ms when Add note clicked
 let pendingNoteStartAbsIso = null; // absolute UTC ISO when Add note clicked
-const notes = []; // in-memory list only (for now)
+let sessionAbsStartIso = null; // absolute ISO when the session first starts
 
-/* ---------------- Utilities ---------------- */
+let currentParticipant = null; // selected participant object (contains airtableId)
+const notes = []; // in-memory list (rendered and also saved to Airtable)
+
+/* -----------------------------------------------------------------------------
+   Utilities
+   ----------------------------------------------------------------------------- */
 function pad2(n) { return String(n).padStart(2, "0"); }
 
 function msToHMS(ms) {
@@ -69,23 +100,54 @@ function nowIsoUtc() { return new Date().toISOString(); }
 
 function sessionNowMs() { return isRunning ? (elapsedMs + (nowMs() - baseStart)) : elapsedMs; }
 
-/* ---------------- Session ID discovery for API PATCH ---------------- */
-function getSessionId() {
-	// Preferred: data-session-id on #main
-	const main = $("#main");
-	if (main && main.dataset.sessionId) return main.dataset.sessionId;
-
-	// Fallback: meta[property="schema:identifier"] inside #session-entity
-	const metaId = $("#session-entity meta[property='schema:identifier']");
-	if (metaId && metaId.getAttribute("content")) return metaId.getAttribute("content");
-
-	// Fallback: ?session=<id>
-	const u = new URL(location.href);
-	const qp = u.searchParams.get("session");
-	return qp || null;
+async function postJson(url, body) {
+	const res = await fetch(url, {
+		method: "POST",
+		headers: { "Content-Type": "application/json; charset=utf-8" },
+		body: JSON.stringify(body)
+	});
+	const txt = await res.text();
+	let js;
+	try { js = JSON.parse(txt); } catch { js = null; }
+	if (!res.ok || !js) {
+		throw new Error(js?.error || `HTTP ${res.status}: ${txt.slice(0, 200)}`);
+	}
+	return js;
 }
 
-/* ---------------- RDFa helpers ---------------- */
+/* Extract a session Airtable record id from either:
+   - URL ?session=recXXXXXXXXXXXXXX
+   - Hidden #session-entity meta[property="schema:identifier"] (content=<recId>)
+*/
+function getSessionAirtableId() {
+	const url = new URL(location.href);
+	const q = url.searchParams.get("session");
+	if (q) return q;
+	const sess = $("#session-entity");
+	if (sess) {
+		const m = sess.querySelector('meta[property="schema:identifier"]');
+		if (m?.content) return m.content.trim();
+	}
+	return null;
+}
+
+/* -----------------------------------------------------------------------------
+   Populate participant select
+   ----------------------------------------------------------------------------- */
+function populateParticipants(list) {
+	const select = $("#participant-select");
+	list.forEach(p => {
+		const opt = document.createElement("option");
+		opt.value = p.id;
+		opt.textContent = `${p.pseudonym} — ${p.name}`;
+		opt.setAttribute("data-airtable-id", p.airtableId || "");
+		select.appendChild(opt);
+	});
+}
+
+/* -----------------------------------------------------------------------------
+   RDFa helpers
+   ----------------------------------------------------------------------------- */
 function clearChildren(el) { while (el.firstChild) el.removeChild(el.firstChild); }
 
 function dd(text, rdfa = {}) {
@@ -104,7 +166,7 @@ function dt(text) {
 	return el;
 }
 
-/* ---------------- Set schema:eventStatus (top-level) ---------------- */
+/* Session status setter (schema:EventStatusType IRI) */
 function setEventStatus(iri) {
 	const sess = document.querySelector("#session-entity");
 	if (!sess) return;
@@ -118,18 +180,20 @@ function setEventStatus(iri) {
 	meta.setAttribute("content", iri);
 }
 
-/* ---------------- Populate participant select ---------------- */
-function populateParticipants(list) {
-	const select = $("#participant-select");
-	list.forEach(p => {
-		const opt = document.createElement("option");
-		opt.value = p.id;
-		opt.textContent = `${p.pseudonym} — ${p.name}`;
-		select.appendChild(opt);
-	});
+function ensureOrSetMeta(parent, prop, value) {
+	let meta = parent.querySelector(`meta[property="${prop}"]`);
+	if (!value) { if (meta) meta.remove(); return; }
+	if (!meta) {
+		meta = document.createElement("meta");
+		meta.setAttribute("property", prop);
+		parent.appendChild(meta);
+	}
+	meta.setAttribute("content", value);
 }
 
-/* ---------------- Render participant details ---------------- */
+/* -----------------------------------------------------------------------------
+   Render participant details & consents
+   ----------------------------------------------------------------------------- */
 function renderParticipantDetails(p) {
 	const dl = $("#participant-details"); // typeof Person, resource #participant
 	clearChildren(dl);
@@ -140,13 +204,13 @@ function renderParticipantDetails(p) {
 	// Name -> schema:name
 	dl.append(dt("Name"), dd(p.name, { "property": "schema:name" }));
 
-	// User type -> schema:additionalType (simple text label)
+	// User type -> schema:additionalType (label)
 	dl.append(dt("User type"), dd(p.userType, { "property": "schema:additionalType" }));
 
 	// Date -> about #session, startDate (ISO date in content attr, human text in node)
 	const date = p.session?.date || "";
 	if (date) {
-		const human = new Date(date + "T00:00:00Z"); // display only
+		const human = new Date(date + "T00:00:00Z"); // display-only
 		const humanText = human.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 		dl.append(dt("Date"), dd(humanText, { "about": "#session", "property": "schema:startDate", "content": date }));
 	} else {
@@ -159,22 +223,26 @@ function renderParticipantDetails(p) {
 	if (tStart && tEnd) {
 		const ddEl = document.createElement("dd");
 		ddEl.setAttribute("about", "#session");
+
 		const t1 = document.createElement("time");
 		t1.setAttribute("property", "schema:startTime");
 		t1.setAttribute("datetime", tStart);
 		t1.textContent = tStart;
+
 		const sep = document.createTextNode("–");
+
 		const t2 = document.createElement("time");
 		t2.setAttribute("property", "schema:endTime");
 		t2.setAttribute("datetime", tEnd);
 		t2.textContent = tEnd;
+
 		ddEl.append(t1, sep, t2);
 		dl.append(dt("Time"), ddEl);
 	} else {
 		dl.append(dt("Time"), dd("—"));
 	}
 
-	// Mirror onto hidden #session entity if present
+	// Mirror session data onto hidden #session-entity if present
 	const sessionEntity = $("#session-entity");
 	if (sessionEntity) {
 		ensureOrSetMeta(sessionEntity, "schema:startDate", date || null);
@@ -183,19 +251,6 @@ function renderParticipantDetails(p) {
 	}
 }
 
-function ensureOrSetMeta(parent, prop, value) {
-	// Finds an existing <meta property="prop"> and updates content, or creates/removes accordingly.
-	let meta = parent.querySelector(`meta[property="${prop}"]`);
-	if (!value) { if (meta) meta.remove(); return; }
-	if (!meta) {
-		meta = document.createElement("meta");
-		meta.setAttribute("property", prop);
-		parent.appendChild(meta);
-	}
-	meta.setAttribute("content", value);
-}
-
-/* ---------------- Render consent summary ---------------- */
 function renderConsentSummary(p) {
 	const dl = $("#consent-summary"); // typeof ItemList
 	clearChildren(dl);
@@ -220,23 +275,22 @@ function renderConsentSummary(p) {
 		const ddEl = document.createElement("dd");
 		ddEl.setAttribute("property", "schema:acceptedAnswer");
 		ddEl.setAttribute("content", String(ok));
-		ddEl.innerHTML = ok ? '<span aria-label="consented">✓</span>' : '<span aria-label="not consented">✗</span>';
+		ddEl.innerHTML = ok ? '<span aria-label="consented">✔</span>' : '<span aria-label="not consented">✗</span>';
 		dl.append(ddEl);
 	}
 }
 
-
-/* ---------------- Timer controls ---------------- */
+/* -----------------------------------------------------------------------------
+   Timer controls
+   ----------------------------------------------------------------------------- */
 function updateTimerView() {
 	const ms = sessionNowMs();
 	$("#timer-display").textContent = msToHMS(ms);
-	$("#timer-display").setAttribute("content", msToISODuration(ms)); // RDFa schema:duration
+	$("#timer-display").setAttribute("content", msToISODuration(ms)); // RDFa schema:duration (as ISO 8601)
 }
 
-let sessionAbsStartIso = null; // absolute ISO when the session first starts
-
 function startTimer() {
-	// Keep event marked as scheduled (Schema.org doesn't define "Started")
+	// Explicit status
 	setEventStatus("https://schema.org/EventScheduled");
 	if (isRunning) return;
 	isRunning = true;
@@ -274,44 +328,15 @@ function pauseTimer() {
 	$("#btn-pause").disabled = true;
 }
 
-/* ---- Backend PATCH helper (Ended at + Completed) ---- */
-async function patchSessionCompleted(endedAtIso) {
-	const sessionId = getSessionId();
-	if (!sessionId) {
-		console.warn("[session] No session id available for PATCH");
-		return;
-	}
-	try {
-		const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				ended_at: endedAtIso, // Airtable field: "Ended at" via service mapping
-				status: "completed"
-			})
-		});
-		if (!res.ok) {
-			const txt = await res.text().catch(() => "");
-			console.warn("[session] PATCH failed", res.status, txt);
-		}
-	} catch (err) {
-		console.warn("[session] PATCH error", err);
-	}
-}
-
 function stopTimer() {
 	isRunning = false;
 	clearInterval(timerInterval);
 
 	// Stamp absolute session end on stop
-	const endedIso = nowIsoUtc();
 	const sess = $("#session-entity");
 	if (sess) {
-		ensureOrSetMeta(sess, "schema:endTime", endedIso);
+		ensureOrSetMeta(sess, "schema:endTime", nowIsoUtc());
 	}
-
-	// Persist to backend (sets "Ended at" + status=completed; Duration Actual min is computed in Airtable)
-	patchSessionCompleted(endedIso);
 
 	elapsedMs = 0;
 	baseStart = null;
@@ -327,8 +352,9 @@ function stopTimer() {
 	$("#note-editor").innerHTML = "";
 }
 
-
-/* ---------------- Framework switching ---------------- */
+/* -----------------------------------------------------------------------------
+   Framework switching
+   ----------------------------------------------------------------------------- */
 const AEIOU = [
 	["activity", "Activities"],
 	["environment", "Environments"],
@@ -364,7 +390,9 @@ function setFramework(kind) {
 	}
 }
 
-/* ---------------- Editor formatting ---------------- */
+/* -----------------------------------------------------------------------------
+   Editor formatting toolbar
+   ----------------------------------------------------------------------------- */
 function bindFormatting() {
 	const toolbar = $(".note-toolbar__right");
 	toolbar.addEventListener("click", (e) => {
@@ -377,7 +405,9 @@ function bindFormatting() {
 	});
 }
 
-/* ---------------- Notes ---------------- */
+/* -----------------------------------------------------------------------------
+   Notes: begin & save
+   ----------------------------------------------------------------------------- */
 function beginNote() {
 	pendingNoteStart = sessionNowMs();
 	pendingNoteStartAbsIso = nowIsoUtc(); // absolute UTC at click
@@ -386,8 +416,12 @@ function beginNote() {
 	$("#note-timestamps").textContent = `Started at ${startedAt}`;
 }
 
-function saveNote() {
+/**
+ * Persist a note via API, then render in the DOM with RDFa, using the returned Airtable id.
+ */
+async function saveNote() {
 	if (pendingNoteStart == null) return;
+
 	const savedAtMs = sessionNowMs();
 	const startedAt = msToHMS(pendingNoteStart);
 	const savedAt = msToHMS(savedAtMs);
@@ -395,13 +429,52 @@ function saveNote() {
 	const html = $("#note-editor").innerHTML.trim();
 	const framework = $("#framework").value;
 	const category = $("#note-kind").value;
-	const participantId = $("#participant-select").value || null;
+	const participantId = currentParticipant?.airtableId || null;
 
 	const startIso = pendingNoteStartAbsIso || nowIsoUtc();
 	const endIso = nowIsoUtc();
 
+	// Basic UX guardrails
+	if (!html) {
+		announce("Empty note. Add some text before saving.");
+		return;
+	}
+	const sessionId = getSessionAirtableId();
+	if (!sessionId) {
+		announce("Missing session id. Unable to save note.");
+		return;
+	}
+
+	// Build payload (mirrors service/session-notes.js expectations)
+	const payload = {
+		session_airtable_id: sessionId,
+		participant_airtable_id: participantId || undefined,
+		framework: framework?.toUpperCase?.() === "NONE" ? "none" : framework,
+		category,
+		start_iso: startIso,
+		end_iso: endIso,
+		start_offset_ms: pendingNoteStart,
+		end_offset_ms: savedAtMs,
+		content_html: html,
+		author: undefined // optionally: inject researcher initials/name from context
+	};
+
+	// POST /api/session-notes
+	let createdId = null;
+	try {
+		const res = await postJson("/api/session-notes", payload);
+		if (!res?.ok) throw new Error(res?.error || "Unknown error");
+		createdId = res?.id || res?.note?.id || null;
+		announce("Note saved.");
+	} catch (err) {
+		console.error("session-note.save.fail", err);
+		announce("Failed to save the note. Please try again.");
+		return;
+	}
+
+	// Local model (optional)
 	const note = {
-		id: crypto.randomUUID(),
+		id: createdId || crypto.randomUUID(),
 		participantId,
 		framework,
 		category,
@@ -421,7 +494,9 @@ function saveNote() {
 
 	const article = document.createElement("article");
 	article.setAttribute("typeof", "schema:CreativeWork");
-	article.setAttribute("resource", `#note-${note.id}`);
+	// Use stable Airtable id anchor where possible
+	const resourceId = createdId ? `#note-${createdId}` : `#note-${note.id}`;
+	article.setAttribute("resource", resourceId);
 
 	const metaStart = document.createElement("meta");
 	metaStart.setAttribute("property", "schema:startTime");
@@ -451,16 +526,22 @@ function saveNote() {
 	metaAbout.setAttribute("property", "schema:about");
 	metaAbout.setAttribute("resource", "#participant");
 
-	const metaP = document.createElement("p");
-	metaP.className = "note-meta";
-	metaP.textContent = `Timestamp: ${startedAt} – ${savedAt} (Δ ${delta}) • ${framework.toUpperCase()} • ${category}`;
+	const metaAnchor = document.createElement("p");
+	metaAnchor.className = "note-meta";
+	metaAnchor.textContent = `Timestamp: ${startedAt} – ${savedAt} (Δ ${delta}) • ${framework.toUpperCase()} • ${category}`;
+	if (createdId) {
+		const small = document.createElement("small");
+		small.className = "note-id";
+		small.textContent = `  (#${createdId})`;
+		metaAnchor.appendChild(small);
+	}
 
 	const body = document.createElement("div");
 	body.className = "note-body";
 	body.setAttribute("property", "schema:text");
 	body.innerHTML = html || "<em>(Empty note)</em>";
 
-	article.append(metaStart, metaEnd, metaCreated, metaTempo, metaGenre, metaTechnique, metaAbout, metaP, body);
+	article.append(metaStart, metaEnd, metaCreated, metaTempo, metaGenre, metaTechnique, metaAbout, metaAnchor, body);
 	li.append(article);
 	ul.prepend(li);
 
@@ -472,7 +553,16 @@ function saveNote() {
 	$("#btn-save-note").disabled = true;
 }
 
-/* ---------------- Wire events ---------------- */
+/* Simple polite announcer for status changes */
+function announce(text) {
+	const live = $("#note-timestamps");
+	if (!live) return;
+	live.textContent = text;
+}
+
+/* -----------------------------------------------------------------------------
+   Event wiring
+   ----------------------------------------------------------------------------- */
 function wireEvents() {
 	$("#btn-start").addEventListener("click", startTimer);
 	$("#btn-pause").addEventListener("click", pauseTimer);
@@ -483,7 +573,10 @@ function wireEvents() {
 	$("#btn-save-note").addEventListener("click", saveNote);
 
 	$("#participant-select").addEventListener("change", (e) => {
-		const p = MOCK_PARTICIPANTS.find(x => x.id === e.target.value);
+		const selId = e.target.value;
+		const p = MOCK_PARTICIPANTS.find(x => x.id === selId);
+		currentParticipant = p || null;
+
 		if (!p) {
 			$("#participant-details").innerHTML = "";
 			$("#consent-summary").innerHTML = "";
@@ -494,15 +587,24 @@ function wireEvents() {
 	});
 }
 
-/* ---------------- Init ---------------- */
+/* -----------------------------------------------------------------------------
+   Init
+   ----------------------------------------------------------------------------- */
 function init() {
-	// Explicit default status per Schema.org EventStatusType
+	// Default status: EventScheduled (explicit)
 	setEventStatus("https://schema.org/EventScheduled");
+
+	// Participants (mock)
 	populateParticipants(MOCK_PARTICIPANTS);
+
+	// Framework defaults
 	setFramework("none");
 	bindFormatting();
 	wireEvents();
 	updateTimerView();
+
+	// Enable Save only after a note is begun
+	$("#btn-save-note").disabled = true;
 }
 
 document.addEventListener("DOMContentLoaded", init);
