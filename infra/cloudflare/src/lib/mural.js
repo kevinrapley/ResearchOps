@@ -9,7 +9,7 @@
  * - MURAL_REDIRECT_URI
  * - (optional) MURAL_COMPANY_ID
  * - (optional) MURAL_API_BASE   default: https://app.mural.co/api/public/v1
- * - (optional) MURAL_SCOPES     default: identity:read workspaces:read rooms:read rooms:write murals:write
+ * - (optional) MURAL_SCOPES     default: identity:read workspaces:read rooms:read rooms:write murals:read murals:write
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -44,19 +44,38 @@ export function decodeState(str) {
 	try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return {}; }
 }
 
+function isProbablyBase64(s) {
+	// Lightweight heuristic: valid base64 alphabet (+/0-9A-Za-z=), length multiple of 4
+	return typeof s === "string" && /^[A-Za-z0-9+/]+=*$/.test(s) && s.length % 4 === 0;
+}
+
 /* ------------------------------------------------------------------ */
 /* OAuth2: Authorization URL builder                                  */
 /* ------------------------------------------------------------------ */
 
-export function buildAuthUrl(env, stateObj) {
-	const state = encodeState(stateObj);
+/**
+ * Build the OAuth authorization URL.
+ * Accepts either:
+ *  - state: Object → will be JSON+base64 encoded, or
+ *  - state: String (already encoded) → passed through unchanged
+ */
+export function buildAuthUrl(env, state) {
+	const stateParam = (state && typeof state === "object") ?
+		encodeState(state) :
+		(typeof state === "string" ? state : "");
+
+	// (Optional) sanity: if a raw string sneaks in that's not base64, still allow it
+	const finalState = (typeof stateParam === "string" && (isProbablyBase64(stateParam) || stateParam === "")) ?
+		stateParam :
+		encodeState(stateParam); // ensure it becomes base64
+
 	const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
 	const params = new URLSearchParams({
 		response_type: "code",
 		client_id: env.MURAL_CLIENT_ID,
 		redirect_uri: env.MURAL_REDIRECT_URI,
 		scope: scopes,
-		state
+		state: finalState
 	});
 	return `${oauthBase}/?${params}`;
 }
@@ -387,4 +406,4 @@ export function findLatestInCategory(stickies, category) {
 /* Export internals (for tests/debug)                                  */
 /* ------------------------------------------------------------------ */
 
-export const _int = { fetchJSON, withBearer, apiBase, encodeState, decodeState };
+export const _int = { fetchJSON, withBearer, apiBase, encodeState, decodeState, isProbablyBase64 };
