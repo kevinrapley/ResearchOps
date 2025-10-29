@@ -1,7 +1,8 @@
 /**
  * @file /partials/debug.js
- * @summary Wires up an in-page debug console + console interception + fetch/xhr taps.
- *          Safe to load multiple times (idempotent).
+ * @summary In-page debug console + console interception + fetch/xhr taps.
+ *          Idempotent, with smart classification so failure-looking "logs"
+ *          get styled as warn/error (not green).
  */
 
 /** Guard against double-wiring */
@@ -20,8 +21,28 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
     return div.innerHTML;
   }
 
+  /** Heuristics to reclassify misleading "log" lines */
+  function classify(type, message) {
+    if (type !== "log") return type;
+
+    const msg = message.toLowerCase();
+
+    // Strong error signals → "error"
+    if (
+      /\b(http\s*5\d\d|500|502|503|504|uncaught|exception|token\s*error|failed|denied|forbidden)\b/.test(msg)
+      || /\b(error|fatal|unavailable|not\s*authenticated|not\s*authorised|unauthori[sz]ed)\b/.test(msg)
+    ) return "error";
+
+    // Weaker / degraded signals → "warn"
+    if (/\b(false|timeout|retry|degraded|not\s*in\s*home\s*office|not\s*found|no\s*active\s*workspace)\b/.test(msg))
+      return "warn";
+
+    return type;
+  }
+
   function addLog(type, args) {
     const timestamp = new Date().toLocaleTimeString();
+
     const message = Array.from(args).map(arg => {
       if (arg instanceof Error) {
         const name = arg.name || "Error";
@@ -35,13 +56,15 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
       return String(arg);
     }).join(" ");
 
-    logs.push({ type, timestamp, message });
+    const visualType = classify(type, message);
+
+    logs.push({ type: visualType, timestamp, message });
     if (logs.length > maxLogs) logs.shift();
 
     const output = $("#debug-output");
     if (output) {
       const entry = document.createElement("div");
-      entry.className = `debug-${type}`;
+      entry.className = `debug-${visualType}`;
       entry.innerHTML = `<span class="debug-timestamp">${timestamp}</span>${escapeHtml(message)}`;
       output.appendChild(entry);
       output.scrollTop = output.scrollHeight;
@@ -74,18 +97,15 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
     try {
       const res = await _fetch(input, init);
       const ms = Math.round(performance.now() - started);
-      try {
-        const clone = res.clone();
-        const text  = await clone.text();
-        try {
-          const json = JSON.parse(text);
-          console.info(`[net] ← ${method} ${url} ${res.status} (${ms}ms)`, json);
-        } catch {
-          console.info(`[net] ← ${method} ${url} ${res.status} (${ms}ms) [text]`, text.slice(0, 400));
-        }
-      } catch {
-        console.warn(`[net] ← ${method} ${url} ${res.status} (${ms}ms) [unreadable body]`);
-      }
+      let bodyText = "";
+      try { bodyText = await res.clone().text(); } catch {}
+
+      // Reclassify based on HTTP status
+      const label = `[net] ← ${method} ${url} ${res.status} (${ms}ms)`;
+      if (res.status >= 500)      console.error(label, bodyText.slice(0, 400) || "(empty)");
+      else if (res.status >= 400) console.warn(label,  bodyText.slice(0, 400) || "(empty)");
+      else                        console.info(label,  bodyText.slice(0, 400) || "(empty)");
+
       return res;
     } catch (err) {
       const ms = Math.round(performance.now() - started);
@@ -111,13 +131,15 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
         const d = this.__debug || {};
         const ms = d.start ? Math.round(performance.now() - d.start) : 0;
         const status = this.status;
-        let snippet = "";
-        try { snippet = (this.responseText || "").slice(0, 400); } catch {}
         const label = status
           ? `[xhr] ← ${d.method} ${d.url} ${status} (${ms}ms)`
           : `[xhr] ← ${d.method} ${d.url} (${ms}ms)`;
-        if (status >= 200 && status < 300) console.info(label, snippet);
-        else console.warn(label, snippet);
+
+        const snippet = (() => { try { return (this.responseText || "").slice(0, 400); } catch { return ""; } })();
+
+        if (status >= 500)      console.error(label, snippet);
+        else if (status >= 400) console.warn(label,  snippet);
+        else                    console.info(label,  snippet);
       });
       return send.apply(this, arguments);
     };
