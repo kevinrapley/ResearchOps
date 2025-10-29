@@ -21,14 +21,7 @@ const MOCK_PARTICIPANTS = [{
 		name: "Alex Johnson",
 		userType: "Public beta user",
 		session: { date: "2025-11-04", start: "10:00", end: "10:45" },
-		consents: {
-			observers: true,
-			noteTakers: true,
-			recordVideo: false,
-			recordAudio: true,
-			transcription: true,
-			videoOn: false
-		}
+		consents: { observers: true, noteTakers: true, recordVideo: false, recordAudio: true, transcription: true, videoOn: false }
 	},
 	{
 		id: "ptp_002",
@@ -36,14 +29,7 @@ const MOCK_PARTICIPANTS = [{
 		name: "Samira Ahmed",
 		userType: "Operational staff",
 		session: { date: "2025-11-04", start: "11:15", end: "12:00" },
-		consents: {
-			observers: false,
-			noteTakers: true,
-			recordVideo: true,
-			recordAudio: true,
-			transcription: true,
-			videoOn: true
-		}
+		consents: { observers: false, noteTakers: true, recordVideo: true, recordAudio: true, transcription: true, videoOn: true }
 	}
 ];
 
@@ -83,15 +69,20 @@ function nowIsoUtc() { return new Date().toISOString(); }
 
 function sessionNowMs() { return isRunning ? (elapsedMs + (nowMs() - baseStart)) : elapsedMs; }
 
-/* ---------------- Populate participant select ---------------- */
-function populateParticipants(list) {
-	const select = $("#participant-select");
-	list.forEach(p => {
-		const opt = document.createElement("option");
-		opt.value = p.id;
-		opt.textContent = `${p.pseudonym} â ${p.name}`;
-		select.appendChild(opt);
-	});
+/* ---------------- Session ID discovery for API PATCH ---------------- */
+function getSessionId() {
+	// Preferred: data-session-id on #main
+	const main = $("#main");
+	if (main && main.dataset.sessionId) return main.dataset.sessionId;
+
+	// Fallback: meta[property="schema:identifier"] inside #session-entity
+	const metaId = $("#session-entity meta[property='schema:identifier']");
+	if (metaId && metaId.getAttribute("content")) return metaId.getAttribute("content");
+
+	// Fallback: ?session=<id>
+	const u = new URL(location.href);
+	const qp = u.searchParams.get("session");
+	return qp || null;
 }
 
 /* ---------------- RDFa helpers ---------------- */
@@ -113,40 +104,53 @@ function dt(text) {
 	return el;
 }
 
+/* ---------------- Set schema:eventStatus (top-level) ---------------- */
+function setEventStatus(iri) {
+	const sess = document.querySelector("#session-entity");
+	if (!sess) return;
+	let meta = sess.querySelector('meta[property="schema:eventStatus"]');
+	if (!iri) { if (meta) meta.remove(); return; }
+	if (!meta) {
+		meta = document.createElement("meta");
+		meta.setAttribute("property", "schema:eventStatus");
+		sess.appendChild(meta);
+	}
+	meta.setAttribute("content", iri);
+}
+
+/* ---------------- Populate participant select ---------------- */
+function populateParticipants(list) {
+	const select = $("#participant-select");
+	list.forEach(p => {
+		const opt = document.createElement("option");
+		opt.value = p.id;
+		opt.textContent = `${p.pseudonym} — ${p.name}`;
+		select.appendChild(opt);
+	});
+}
+
 /* ---------------- Render participant details ---------------- */
 function renderParticipantDetails(p) {
 	const dl = $("#participant-details"); // typeof Person, resource #participant
 	clearChildren(dl);
 
 	// Pseudonym -> schema:alternateName
-	dl.append(
-		dt("Pseudonym"),
-		dd(p.pseudonym, { "property": "schema:alternateName" })
-	);
+	dl.append(dt("Pseudonym"), dd(p.pseudonym, { "property": "schema:alternateName" }));
 
 	// Name -> schema:name
-	dl.append(
-		dt("Name"),
-		dd(p.name, { "property": "schema:name" })
-	);
+	dl.append(dt("Name"), dd(p.name, { "property": "schema:name" }));
 
 	// User type -> schema:additionalType (simple text label)
-	dl.append(
-		dt("User type"),
-		dd(p.userType, { "property": "schema:additionalType" })
-	);
+	dl.append(dt("User type"), dd(p.userType, { "property": "schema:additionalType" }));
 
 	// Date -> about #session, startDate (ISO date in content attr, human text in node)
 	const date = p.session?.date || "";
 	if (date) {
 		const human = new Date(date + "T00:00:00Z"); // display only
 		const humanText = human.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-		dl.append(
-			dt("Date"),
-			dd(humanText, { "about": "#session", "property": "schema:startDate", "content": date })
-		);
+		dl.append(dt("Date"), dd(humanText, { "about": "#session", "property": "schema:startDate", "content": date }));
 	} else {
-		dl.append(dt("Date"), dd("â"));
+		dl.append(dt("Date"), dd("—"));
 	}
 
 	// Time -> about #session, startTime + endTime as <time> elements
@@ -159,19 +163,18 @@ function renderParticipantDetails(p) {
 		t1.setAttribute("property", "schema:startTime");
 		t1.setAttribute("datetime", tStart);
 		t1.textContent = tStart;
-		const sep = document.createTextNode("â");
+		const sep = document.createTextNode("–");
 		const t2 = document.createElement("time");
 		t2.setAttribute("property", "schema:endTime");
 		t2.setAttribute("datetime", tEnd);
 		t2.textContent = tEnd;
 		ddEl.append(t1, sep, t2);
-
 		dl.append(dt("Time"), ddEl);
 	} else {
-		dl.append(dt("Time"), dd("â"));
+		dl.append(dt("Time"), dd("—"));
 	}
 
-	// Also mirror session data onto the hidden #session entity if present
+	// Mirror onto hidden #session entity if present
 	const sessionEntity = $("#session-entity");
 	if (sessionEntity) {
 		ensureOrSetMeta(sessionEntity, "schema:startDate", date || null);
@@ -183,24 +186,7 @@ function renderParticipantDetails(p) {
 function ensureOrSetMeta(parent, prop, value) {
 	// Finds an existing <meta property="prop"> and updates content, or creates/removes accordingly.
 	let meta = parent.querySelector(`meta[property="${prop}"]`);
-	if (!value) {
-		if (meta) meta.remove();
-		return;
-	}
-
-	/* Set eventStatus with a fully-qualified EventStatusType IRI */
-	function setEventStatus(iri) {
-		const sess = document.querySelector("#session-entity");
-		if (!sess) return;
-		let meta = sess.querySelector('meta[property="schema:eventStatus"]');
-		if (!iri) { if (meta) meta.remove(); return; }
-		if (!meta) {
-			meta = document.createElement("meta");
-			meta.setAttribute("property", "schema:eventStatus");
-			sess.appendChild(meta);
-		}
-		meta.setAttribute("content", iri);
-	}
+	if (!value) { if (meta) meta.remove(); return; }
 	if (!meta) {
 		meta = document.createElement("meta");
 		meta.setAttribute("property", prop);
@@ -234,7 +220,7 @@ function renderConsentSummary(p) {
 		const ddEl = document.createElement("dd");
 		ddEl.setAttribute("property", "schema:acceptedAnswer");
 		ddEl.setAttribute("content", String(ok));
-		ddEl.innerHTML = ok ? '<span aria-label="consented">â</span>' : '<span aria-label="not consented">â</span>';
+		ddEl.innerHTML = ok ? '<span aria-label="consented">✓</span>' : '<span aria-label="not consented">✗</span>';
 		dl.append(ddEl);
 	}
 }
@@ -250,7 +236,7 @@ function updateTimerView() {
 let sessionAbsStartIso = null; // absolute ISO when the session first starts
 
 function startTimer() {
-	// Ensure event marked as scheduled when starting
+	// Keep event marked as scheduled (Schema.org doesn't define "Started")
 	setEventStatus("https://schema.org/EventScheduled");
 	if (isRunning) return;
 	isRunning = true;
@@ -288,15 +274,44 @@ function pauseTimer() {
 	$("#btn-pause").disabled = true;
 }
 
+/* ---- Backend PATCH helper (Ended at + Completed) ---- */
+async function patchSessionCompleted(endedAtIso) {
+	const sessionId = getSessionId();
+	if (!sessionId) {
+		console.warn("[session] No session id available for PATCH");
+		return;
+	}
+	try {
+		const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				ended_at: endedAtIso, // Airtable field: "Ended at" via service mapping
+				status: "completed"
+			})
+		});
+		if (!res.ok) {
+			const txt = await res.text().catch(() => "");
+			console.warn("[session] PATCH failed", res.status, txt);
+		}
+	} catch (err) {
+		console.warn("[session] PATCH error", err);
+	}
+}
+
 function stopTimer() {
 	isRunning = false;
 	clearInterval(timerInterval);
 
 	// Stamp absolute session end on stop
+	const endedIso = nowIsoUtc();
 	const sess = $("#session-entity");
 	if (sess) {
-		ensureOrSetMeta(sess, "schema:endTime", nowIsoUtc());
+		ensureOrSetMeta(sess, "schema:endTime", endedIso);
 	}
+
+	// Persist to backend (sets "Ended at" + status=completed; Duration Actual min is computed in Airtable)
+	patchSessionCompleted(endedIso);
 
 	elapsedMs = 0;
 	baseStart = null;
@@ -438,7 +453,7 @@ function saveNote() {
 
 	const metaP = document.createElement("p");
 	metaP.className = "note-meta";
-	metaP.textContent = `Timestamp: ${startedAt} â ${savedAt} (Î ${delta}) â¢ ${framework.toUpperCase()} â¢ ${category}`;
+	metaP.textContent = `Timestamp: ${startedAt} – ${savedAt} (Δ ${delta}) • ${framework.toUpperCase()} • ${category}`;
 
 	const body = document.createElement("div");
 	body.className = "note-body";
@@ -481,7 +496,7 @@ function wireEvents() {
 
 /* ---------------- Init ---------------- */
 function init() {
-	// Default status: EventScheduled (explicit)
+	// Explicit default status per Schema.org EventStatusType
 	setEventStatus("https://schema.org/EventScheduled");
 	populateParticipants(MOCK_PARTICIPANTS);
 	setFramework("none");
