@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en-GB" prefix="
+  dcterms: http://purl.org/dc/terms/
+  schema:  https://schema.org/
+">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="sda-auto" content="true" />
+	<title>Research session — ResearchOps</title>
+
+	<!-- Project name hint for integrations (kept in sync by renderProject) -->
+	<meta name="project:name" content="">
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/session.css" media="screen" />
+
+	<script type="module" src="/components/layout.js"></script>
+	<script type="module" src="/components/session-controller.js" defer></script>
+</head>
+
+<body class="govuk-body" typeof="schema:WebPage" resource="#page" about="#page" vocab="https://schema.org/">
+
+	<!-- Page metadata -->
+	<meta property="schema:name" content="Research Session — ResearchOps" />
+	<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+	<meta property="schema:dateModified" content="2025-10-29" />
+	<meta property="dcterms:language" content="en-GB" />
+
+	<x-include src="/partials/header.html" vars='{
+		"active":"Projects",
+		"subtitle":"Study session"
+	}'></x-include>
+
+	<main id="main" class="session-page" role="main" aria-describedby="page-desc" data-project-name="" typeof="schema:ResearchProject" resource="#project">
+		<header class="page-header">
+			<h1 class="govuk-heading-l">Begin a session</h1>
+			<p id="page-desc" class="govuk-body">Select a participant scheduled to this study and manage your live note‑taking session.</p>
+		</header>
+
+		<section class="picker">
+			<h2 class="govuk-heading-m">Select participant</h2>
+			<div class="picker__row">
+				<label for="participant-select" class="govuk-label">Participant</label>
+				<select id="participant-select" class="govuk-select" aria-describedby="participant-help">
+					<option value="" selected>— Choose a participant —</option>
+				</select>
+				<p id="participant-help" class="govuk-hint">This list will be populated from Airtable for the current study.</p>
+			</div>
+
+			<div class="columns">
+				<section class="panel" aria-labelledby="participant-details-title">
+					<h3 id="participant-details-title" class="govuk-heading-s">Participant details</h3>
+					<dl class="data-list" id="participant-details">
+						<!-- Filled by controller -->
+					</dl>
+				</section>
+
+				<section class="panel" aria-labelledby="consent-summary-title">
+					<h3 id="consent-summary-title" class="govuk-heading-s">Consent summary</h3>
+					<dl class="data-list" id="consent-summary">
+						<!-- Filled by controller -->
+					</dl>
+				</section>
+			</div>
+		</section>
+
+		<hr class="divider" />
+
+		<section class="session-controls" aria-labelledby="controls-title">
+			<h2 id="controls-title" class="govuk-heading-m">Session controls</h2>
+
+			<div class="controls-row">
+				<button id="btn-start" class="btn">&#x25B6; Start</button>
+				<button id="btn-pause" class="btn btn--secondary" disabled>&#x23f8; Pause</button>
+				<button id="btn-stop" class="btn btn--warn" disabled>&#x23F9; Stop</button>
+				<div class="timer" role="timer" aria-live="polite" aria-atomic="true">
+					<span id="timer-display">00:00:00</span>
+				</div>
+			</div>
+		</section>
+
+		<section class="notes" aria-labelledby="notes-title">
+			<h2 id="notes-title" class="govuk-heading-m">Notes</h2>
+
+			<div class="note-toolbar">
+				<div class="note-toolbar__left">
+					<label for="framework" class="govuk-label">Note framework</label>
+					<select id="framework" class="govuk-select">
+						<option value="none" selected>None</option>
+						<option value="aeiou">AEIOU</option>
+						<option value="poems">POEMS</option>
+					</select>
+
+					<label for="note-kind" class="govuk-label">Category</label>
+					<select id="note-kind" class="govuk-select">
+						<option value="idea">Ideas/Notes</option>
+						<option value="quote">Quote</option>
+						<option value="observation">Observation</option>
+					</select>
+				</div>
+
+				<div class="note-toolbar__right" aria-label="Formatting">
+					<button class="btn btn--tiny" data-cmd="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+					<button class="btn btn--tiny" data-cmd="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+					<button class="btn btn--tiny" data-cmd="underline" title="Underline (Ctrl+U)"><span style="text-decoration:underline">U</span></button>
+					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="blockquote" title="Blockquote">“”</button>
+					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
+					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="h3" title="Sub‑heading">H3</button>
+					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
+				</div>
+			</div>
+
+			<div class="editor-wrap">
+				<div id="note-editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true"></div>
+			</div>
+
+			<div class="note-actions">
+				<button id="btn-add-note" class="btn btn--secondary" disabled>＋ Add note</button>
+				<button id="btn-save-note" class="btn" disabled>💾 Save</button>
+				<span id="note-timestamps" class="timestamps" aria-live="polite"></span>
+			</div>
+
+			<section aria-labelledby="saved-notes-title" class="saved-notes">
+				<h3 id="saved-notes-title" class="govuk-heading-s">Saved notes</h3>
+				<ul id="notes-list" class="notes-list"></ul>
+			</section>
+		</section>
+	</main>
+
+	<x-include src="/partials/footer.html"></x-include>
+</body>
+
+</html>
