@@ -3,7 +3,7 @@
  * @module muralIntegration
  * @summary
  * Project dashboard → Connect to Mural (OAuth), verify connection, and create a
- * "Reflexive Journal" board inside a project-named folder.
+ * "Reflexive Journal" board inside a project-named folder (Airtable-backed; no localStorage mapping).
  *
  * DOM:
  * - <button id="mural-connect">
@@ -15,8 +15,6 @@
  * - <h1 id="project-title">…</h1>
  * - <meta name="project:name" content="…">
  * - ?projectName=… (URL)
- *
- * Debug: logs to console.* (your existing debug console captures these).
  */
 
 /* eslint-env browser */
@@ -24,74 +22,48 @@
 
 /* ───────────────────────────────────── Config ─────────────────────────────────── */
 
-const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
+const FALLBACK_API_BASE = ""; // empty → same origin
 
 function resolveApiBase() {
-	const fromWindow = typeof window !== "undefined" && window.ROPS_API_BASE;
-	const fromHtml = document?.documentElement?.dataset?.apiBase;
-	const base = (fromWindow || fromHtml || DEFAULT_API_BASE || "").trim().replace(/\/+$/, "");
-	console.log("[mural] API base:", base || "(unset)");
-	return base || DEFAULT_API_BASE;
+	const fromWindow = (typeof window !== "undefined" && window.ROPS_API_BASE) || "";
+	const fromHtml = document?.documentElement?.dataset?.apiBase || "";
+	const base = (fromWindow || fromHtml || FALLBACK_API_BASE).trim().replace(/\/+$/, "");
+	const resolved = base || location.origin;
+	console.log("[mural] API base:", resolved);
+	return resolved;
 }
 const API_BASE = resolveApiBase();
-
-// Test the API immediately
-fetch(`${API_BASE}/api/health`)
-	.then(r => r.json())
-	.then(j => console.log("[mural] health check OK:", j))
-	.catch(e => console.error("[mural] health check FAILED:", e));
 
 /* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
 const $ = (s, r = document) => r.querySelector(s);
 
 function getProjectName() {
-	// 1) data attribute
 	const main = $("main[data-project-name]");
 	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
 
-	// 2) title element
 	const title = $("#project-title")?.textContent?.trim();
 	if (title) return title;
 
-	// 3) meta tag
 	const meta = document.querySelector('meta[name="project:name"]');
 	const metaName = meta?.getAttribute("content")?.trim();
 	if (metaName) return metaName;
 
-	// 4) query param
 	const sp = new URLSearchParams(location.search);
 	const q = sp.get("projectName");
 	return (q && q.trim()) || "";
 }
 
-/* ─────────────────────── Project Mural ID storage ─────────────────────── */
-
-const MURAL_MAPPING_KEY_PREFIX = 'mural.project.';
-
-function saveMuralIdForProject(projectId, muralId) {
-	if (!projectId || !muralId) return;
-	localStorage.setItem(MURAL_MAPPING_KEY_PREFIX + projectId, muralId);
-	console.log('[mural] saved muralId for project:', projectId, '→', muralId);
-}
-
-function getMuralIdForProject(projectId) {
-	if (!projectId) return null;
-	return localStorage.getItem(MURAL_MAPPING_KEY_PREFIX + projectId);
-}
-
 function getProjectId() {
-	// Try URL parameters first
 	const sp = new URLSearchParams(location.search);
-	const fromUrl = sp.get('id') || sp.get('project') || sp.get('projectId');
+	const fromUrl = sp.get("id") || sp.get("project") || sp.get("projectId");
 	if (fromUrl) return fromUrl.trim();
 
-	// Try data attributes (check both variations)
-	const main = $('main');
+	const main = $("main");
 	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
 	if (main?.dataset?.projectId) return main.dataset.projectId.trim();
 
-	return '';
+	return "";
 }
 
 /* ─────────────────────────────────── UID handling ─────────────────────────────── */
@@ -107,7 +79,7 @@ function getUid() {
 		(localStorage.getItem("userId") || "").trim() ||
 		"anon";
 
-	uid = String(uid);
+	uid = String(uid || "anon");
 	localStorage.setItem(UID_KEY, uid);
 	return uid;
 }
@@ -125,39 +97,47 @@ function setPill(host, kind, text) {
 	host.appendChild(span);
 }
 
+/* ────────────────────────────────── Fetch helpers ─────────────────────────────── */
+
+async function fetchJSON(url, opts = {}, timeoutMs = 15000) {
+	const ctrl = new AbortController();
+	const to = setTimeout(() => ctrl.abort(), timeoutMs);
+	try {
+		const res = await fetch(url, { ...opts, signal: ctrl.signal });
+		const txt = await res.text();
+		let js = {};
+		try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
+		if (!res.ok || js?.ok === false) {
+			const err = new Error(js?.message || js?.error || `HTTP ${res.status}`);
+			err.status = res.status;
+			err.body = js;
+			throw err;
+		}
+		return js;
+	} finally {
+		clearTimeout(to);
+	}
+}
+
 /* ────────────────────────────────── API wrappers ──────────────────────────────── */
 
 async function verify(uid) {
-	const url = new URL(`${API_BASE}/api/mural/verify`);
+	const url = new URL("/api/mural/verify", API_BASE);
 	url.searchParams.set("uid", uid);
 	console.log("[mural] verifying uid:", uid, "→", url.toString());
 
 	try {
-		const res = await fetch(url, {
-			cache: "no-store",
-			credentials: "omit",
-			signal: AbortSignal.timeout(10000) // 10s timeout
-		});
-
-		console.log("[mural] verify response status:", res.status);
-
-		if (res.status === 401) {
-			console.log("[mural] → not authenticated");
-			return { ok: false, reason: "not_authenticated" };
-		}
-
-		if (!res.ok) {
-			const t = await res.text().catch(() => "");
-			console.error("[mural] verify error payload:", t);
-			return { ok: false, reason: "error", detail: t };
-		}
-
-		const json = await res.json();
-		console.log("[mural] verify success:", json);
-		return json;
+		const js = await fetchJSON(url.toString(), { cache: "no-store", credentials: "omit" }, 10000);
+		console.log("[mural] verify success:", js);
+		return js;
 	} catch (err) {
-		console.error("[mural] verify network error:", err);
-		return { ok: false, reason: "network_error", detail: String(err) };
+		const status = Number(err?.status || 0);
+		if (status === 401) return { ok: false, reason: "not_authenticated" };
+		if (status === 403 && (err?.body?.reason === "not_in_home_office_workspace")) {
+			return { ok: false, reason: "not_in_home_office_workspace" };
+		}
+		console.error("[mural] verify error:", err);
+		return { ok: false, reason: "error", detail: String(err?.message || err) };
 	}
 }
 
@@ -166,45 +146,26 @@ async function setup(uid, projectName) {
 	console.log("[mural] setup →", { uid, projectId, projectName });
 
 	try {
-		const res = await fetch(`${API_BASE}/api/mural/setup`, {
+		const js = await fetchJSON(new URL("/api/mural/setup", API_BASE).toString(), {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({
-				uid,
-				projectId,
-				projectName
-			}),
-			signal: AbortSignal.timeout(15000)
+			body: JSON.stringify({ uid, projectId, projectName })
 		});
-
-		console.log("[mural] setup response status:", res.status);
-		const js = await res.json().catch(() => ({}));
-
-		if (!res.ok) {
-			console.warn("[mural] setup non-200:", res.status, js);
-		} else {
-			console.log("[mural] setup success:", js);
-
-			// Save the Mural ID mapping for this project
-			if (js?.ok && js?.mural?.id && projectId) {
-				saveMuralIdForProject(projectId, js.mural.id);
-			}
-		}
-
+		console.log("[mural] setup success:", js);
 		return js;
 	} catch (err) {
-		console.error("[mural] setup error:", err);
-		return { ok: false, error: "Network error", detail: String(err) };
+		console.warn("[mural] setup failed:", err);
+		return { ok: false, error: "setup_failed", detail: String(err?.message || err) };
 	}
 }
 
 function startOAuth(uid) {
-	localStorage.setItem(UID_KEY, String(uid || "anon")); // pin before leaving
+	localStorage.setItem(UID_KEY, String(uid || "anon"));
 	const returnTo = location.href;
-	const url = new URL(`${API_BASE}/api/mural/auth`);
+	const url = new URL("/api/mural/auth", API_BASE);
 	url.searchParams.set("uid", uid);
 	url.searchParams.set("return", returnTo);
-	console.log("[mural] redirecting to OAuth…", { uid });
+	console.log("[mural] redirecting to OAuth…", { uid, returnTo });
 	location.assign(url.toString());
 }
 
@@ -265,7 +226,6 @@ function attachDirectListeners() {
 	if (setupBtn && !setupBtn.__muralBound) {
 		setupBtn.__muralBound = true;
 
-		// Keep a reference so we can remove this listener after creation.
 		setupBtn.__muralCreateHandler = async function onCreateClick() {
 			console.log("[mural] setup button clicked");
 			const name = getProjectName();
@@ -295,12 +255,10 @@ function attachDirectListeners() {
 
 					const openUrl = extractMuralOpenUrl(res);
 
-					// Switch button to OPEN state
 					setupBtn.textContent = 'Open "Reflexive Journal"';
 					setupBtn.disabled = false;
 					setupBtn.setAttribute("aria-disabled", "false");
 
-					// Remove the create handler; attach the open handler
 					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
 					delete setupBtn.__muralCreateHandler;
 
@@ -309,7 +267,6 @@ function attachDirectListeners() {
 					};
 					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
 
-					// Auto-open once on creation
 					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
 					else {
 						alert(
@@ -337,7 +294,6 @@ function attachDirectListeners() {
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
 
-				// Refresh status
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
@@ -354,21 +310,17 @@ function init() {
 	console.log("[mural] init() starting");
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
-	// Bind direct listeners to avoid duplicate delegated clicks
 	attachDirectListeners();
 
 	const uid = getUid();
 	console.log("[mural] resolved uid:", uid, "projectName:", getProjectName() || "(empty)");
 
-	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
 		setPill(statusEl, "neutral", "Checking…");
 	}
 
-	// Verify, then compute setup enablement
-	console.log("[mural] starting verify call...");
 	verify(uid)
 		.then((res) => {
 			console.log("[mural] ✓ verify completed:", res);
@@ -396,10 +348,8 @@ function init() {
 			setPill(statusEl, "err", "Error checking status");
 		});
 
-	// React when <main data-project-name> is populated later by renderProject()
 	watchProjectName();
 
-	// If your dashboard injects the buttons later, rebind direct listeners
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
@@ -422,7 +372,7 @@ window.MuralIntegration = {
 	setup,
 	startOAuth,
 	resetUid,
-	getMuralIdForProject,
-	saveMuralIdForProject,
+	getProjectId,
+	getProjectName,
 	API_BASE
 };
