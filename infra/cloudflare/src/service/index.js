@@ -25,6 +25,9 @@ import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
 import * as Analysis from "./reflection/analysis.js";
 
+/* Session Notes */
+import * as SessionNotes from "./session-notes.js";
+
 /* Integrations */
 import { MuralServicePart } from "./internals/mural.js";
 
@@ -43,6 +46,7 @@ import * as Diag from "./dev/diag.js";
  * @property {string} AIRTABLE_TABLE_PARTIALS
  * @property {string} AIRTABLE_TABLE_PARTICIPANTS
  * @property {string} AIRTABLE_TABLE_SESSIONS
+ * @property {string} AIRTABLE_TABLE_SESSION_NOTES
  * @property {string} AIRTABLE_TABLE_COMMSLOG
  * @property {string} AIRTABLE_API_KEY
  * @property {string} GH_OWNER
@@ -62,20 +66,7 @@ import * as Diag from "./dev/diag.js";
  * @property {string} [MURAL_REDIRECT_URI]
  * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]
  * @property {string} [MURAL_API_BASE]
- * @property {string} [MURAL_REFLEXIVE_MURAL_ID]  // <- optional fallback for journal-sync
- */
-
-/**
- * @typedef {Object} ServiceContext
- * @property {Env} env
- * @property {Readonly<typeof DEFAULTS>} cfg
- * @property {BatchLogger} log
- * @property {(origin:string)=>Record<string,string>} corsHeaders
- * @property {(body:unknown, status?:number, headers?:HeadersInit)=>Response} json
- */
-
-/**
- * @typedef {import("./internals/mural.js").MuralServicePart} MuralAPI
+ * @property {string} [MURAL_REFLEXIVE_MURAL_ID]
  */
 
 function corsHeaders(env, origin) {
@@ -107,11 +98,8 @@ export class ResearchOpsService {
 		/** @type {boolean} */
 		this.destroyed = false;
 
-		/** @type {(origin:string)=>Record<string,string>} */
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
-		/** @type {(body:unknown, status?:number, headers?:HeadersInit)=>Response} */
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
-		/** @type {MuralAPI} */
 		this.mural = new MuralServicePart(this);
 	}
 
@@ -193,10 +181,15 @@ export class ResearchOpsService {
 
 	/* ─────────────── Sessions ─────────────── */
 	listSessions = (origin, url) => Sessions.listSessions(this, origin, url);
-	getSession = (origin, sessionId) => Sessions.getSession(this, origin, sessionId); // ← NEW: read-one
+	getSession = (origin, sessionId) => Sessions.getSession(this, origin, sessionId);
 	createSession = (req, origin) => Sessions.createSession(this, req, origin);
 	updateSession = (req, origin, sessionId) => Sessions.updateSession(this, req, origin, sessionId);
 	sessionIcs = (origin, sessionId) => Sessions.sessionIcs(this, origin, sessionId);
+
+	/* ─────────────── Session Notes ─────────────── */
+	listSessionNotes = (origin, url) => SessionNotes.listSessionNotes(this, origin, url);
+	createSessionNote = (req, origin) => SessionNotes.createSessionNote(this, req, origin);
+	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, req, origin, noteId);
 
 	/* ─────────────── Comms ─────────────── */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
