@@ -42,6 +42,7 @@
  *   - POST /api/participants                       (create)
  * - Sessions:
  *   - GET   /api/sessions?study=:id                (list by study)
+ *   - GET   /api/sessions/:id                      (read one)
  *   - POST  /api/sessions                          (create)
  *   - PATCH /api/sessions/:id                      (update)
  *   - GET   /api/sessions/:id/ics                  (download .ics)
@@ -126,47 +127,16 @@ export async function routeRequest(service, request) {
 			}
 		}
 
-		// ───────────────────── Studies ────────────────────
-		if (p === "/api/studies" && request.method === "GET") {
-			return service.listStudies(origin, url);
-		}
-		if (p === "/api/studies" && request.method === "POST") {
-			return service.createStudy(request, origin);
-		} {
-			const m = p.match(/^\/api\/studies\/([^/]+)$/);
-			if (m && request.method === "PATCH") {
-				return service.updateStudy(request, origin, decodeURIComponent(m[1]));
+		// ───────────────────── Sessions (compat read-one) ─
+		if (p.startsWith("/api/sessions/") && request.method === "GET") {
+			const parts = p.split("/").filter(Boolean); // ["api","sessions",":id"] or ["api","sessions",":id","ics"]
+			if (parts.length >= 3 && parts[0] === "api" && parts[1] === "sessions") {
+				const sessionId = decodeURIComponent(parts[2]);
+				// If trailing segment is "ics", let main router handle in handleRequest.
+				if (parts[3] !== "ics" && typeof service.getSession === "function") {
+					return service.getSession(origin, sessionId);
+				}
 			}
-		}
-
-		// ───────────────────── Journals (existing) ────────
-		if (p === "/api/journal-entries" && request.method === "GET") {
-			return service.listJournalEntries(origin, url);
-		}
-		if (p === "/api/journal-entries" && request.method === "POST") {
-			return service.createJournalEntry(request, origin);
-		}
-		if (p.startsWith("/api/journal-entries/") && request.method === "DELETE") {
-			const entryId = decodeURIComponent(p.split("/").pop());
-			return service.deleteJournalEntry(origin, entryId);
-		}
-
-		// ───────────────────── Mural (needed by dashboard) ─
-		if (p === "/api/mural/auth" && request.method === "GET") {
-			return service.mural.muralAuth(origin, url);
-		}
-		if (p === "/api/mural/callback" && request.method === "GET") {
-			return service.mural.muralCallback(origin, url);
-		}
-		if (p === "/api/mural/verify" && request.method === "GET") {
-			return service.mural.muralVerify(origin, url);
-		}
-		if (p === "/api/mural/setup" && request.method === "POST") {
-			return service.mural.muralSetup(request, origin);
-		}
-		// If you added “find”:
-		if (p === "/api/mural/find" && request.method === "GET") {
-			return service.mural.muralFind(origin, url);
 		}
 
 		// Fallback 404 (JSON)
@@ -248,31 +218,30 @@ export async function handleRequest(request, env) {
 			});
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Diagnostics (Airtable create capability)
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
-			// Requires service.airtableProbe to be implemented
 			return service.airtableProbe(origin, url);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Health
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/health") {
 			return service.health(origin);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// AI Assist
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
 			return aiRewrite(request, env, origin);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Projects
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/projects" && request.method === "GET") {
 			return service.listProjectsFromAirtable(origin, url);
 		}
@@ -288,9 +257,9 @@ export async function handleRequest(request, env) {
 			return service.streamCsv(origin, env.GH_PATH_DETAILS);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Journal Entries
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/journal-entries" && request.method === "GET") {
 			return service.listJournalEntries(origin, url);
 		}
@@ -311,9 +280,9 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ──────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Journal Excerpts (explicit routes)
-		// ──────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/excerpts" && request.method === "GET") {
 			// Optional filter: ?entry=<AirtableJournalEntryId>
 			return service.listExcerpts(origin, url);
@@ -327,9 +296,9 @@ export async function handleRequest(request, env) {
 			return service.updateExcerpt(request, origin, excerptId);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Memos
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/memos" && request.method === "GET") {
 			return service.listMemos(origin, url);
 		}
@@ -341,16 +310,16 @@ export async function handleRequest(request, env) {
 			return service.updateMemo(request, origin, memoId);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Code Applications
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/code-applications" && request.method === "GET") {
 			return service.listCodeApplications(origin, url);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Codes
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/codes" && request.method === "GET") {
 			return service.listCodes(origin, url);
 		}
@@ -364,9 +333,9 @@ export async function handleRequest(request, env) {
 				service.createCode(request, origin);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Analysis
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/analysis/timeline" && request.method === "GET") {
 			return service.timeline(origin, url);
 		}
@@ -380,9 +349,9 @@ export async function handleRequest(request, env) {
 			return service.exportAnalysis(origin, url);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Studies
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/studies" && request.method === "GET") {
 			return service.listStudies(origin, url);
 		}
@@ -402,9 +371,9 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Guides
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/guides" && request.method === "GET") {
 			return service.listGuides(origin, url);
 		}
@@ -437,9 +406,9 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Partials
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/partials" && request.method === "GET") {
 			return service.listPartials(origin);
 		}
@@ -465,9 +434,9 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Participants (optional)
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/participants" && request.method === "GET") {
 			if (typeof service.listParticipants === "function") {
 				return service.listParticipants(origin, url);
@@ -479,9 +448,9 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Sessions (optional)
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/sessions" && request.method === "GET") {
 			if (typeof service.listSessions === "function") {
 				return service.listSessions(origin, url);
@@ -498,11 +467,21 @@ export async function handleRequest(request, env) {
 				const sessionId = decodeURIComponent(match[1]);
 				const isIcs = match[2] === "/ics";
 
+				// Read one session
+				if (request.method === "GET" && !isIcs) {
+					if (typeof service.getSession === "function") {
+						return service.getSession(origin, sessionId);
+					}
+				}
+
+				// Update a session
 				if (request.method === "PATCH" && !isIcs) {
 					if (typeof service.updateSession === "function") {
 						return service.updateSession(request, origin, sessionId);
 					}
 				}
+
+				// ICS export
 				if (request.method === "GET" && isIcs) {
 					if (typeof service.sessionIcs === "function") {
 						return service.sessionIcs(origin, sessionId);
@@ -511,18 +490,18 @@ export async function handleRequest(request, env) {
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Comms (optional)
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/comms/send" && request.method === "POST") {
 			if (typeof service.sendComms === "function") {
 				return service.sendComms(request, origin);
 			}
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Mural (OAuth + setup)
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname === "/api/mural/auth" && request.method === "GET") {
 			return service.mural.muralAuth(origin, url);
 		}
@@ -540,14 +519,13 @@ export async function handleRequest(request, env) {
 			return service.mural.muralFind(origin, url);
 		}
 		// POST /api/mural/journal-sync
-		if (url.pathname === "/api/mural/journal-sync" && request.method === "POST") {
-    		return service.mural.muralJournalSync(request, origin);
+		if (request.method === "POST" && url.pathname === "/api/mural/journal-sync") {
+			return service.mural.muralJournalSync(request, origin);
 		}
 		// List user workspaces (TEMP)
 		if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
 			return service.mural.muralListWorkspaces(origin, url);
 		}
-
 		// Current user profile (TEMP)
 		if (url.pathname === "/api/mural/me" && request.method === "GET") {
 			return service.mural.muralMe(origin, url);
@@ -557,9 +535,9 @@ export async function handleRequest(request, env) {
 			return service.mural.muralDebugEnv(origin);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Unknown API route
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		if (url.pathname.startsWith("/api/")) {
 			return service.json({ error: "Not found", path: url.pathname },
 				404,
@@ -567,9 +545,9 @@ export async function handleRequest(request, env) {
 			);
 		}
 
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		// Static assets with SPA fallback
-		// ─────────────────────────────────────────────────────────────────
+		// ─────────────────────────────────────────────────
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
 			const indexReq = new Request(new URL("/index.html", url), request);
