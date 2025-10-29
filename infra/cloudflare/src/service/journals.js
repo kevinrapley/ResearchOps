@@ -21,7 +21,7 @@ export async function listJournalEntries(svc, origin, url) {
       return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
     }
 
-    // If Airtable creds absent, don’t crash the UI
+    // If Airtable creds absent, don't crash the UI
     if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
       return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
     }
@@ -180,7 +180,7 @@ export async function getJournalEntry(svc, origin, entryId) {
  * Create a journal entry.
  * - Accepts `project` or `project_airtable_id`
  * - Validates category
- * - Writes ONLY non-computed fields to Airtable (does NOT write Project/Projects)
+ * - Writes non-computed fields to Airtable INCLUDING the Project link field
  * - Tries common content field names to fit your base
  *
  * @param {import("./index.js").ResearchOpsService} svc
@@ -240,7 +240,7 @@ export async function createJournalEntry(svc, request, origin) {
 		const tagsStr = tagsArr.join(", ");
 
 		// Try common schema variants for the content field ONLY.
-		// IMPORTANT: Do NOT include Project/Projects — it’s computed in your base.
+		// IMPORTANT: Now we DO include Project as it's a writable linked record field
 		const CONTENT_FIELDS = ["Content", "Body", "Notes"];
 
 		for (const contentField of CONTENT_FIELDS) {
@@ -248,8 +248,9 @@ export async function createJournalEntry(svc, request, origin) {
 				Category: category,
 				[contentField]: content,
 				Tags: tagsStr,
-				Author: _safe(p.author)
-				// NO "Project"/"Projects" here (computed / derived in your Airtable)
+				Author: _safe(p.author),
+				// Link to Project (array of record IDs for linked record field)
+				Project: [projectId]
 			};
 
 			// Drop empties
