@@ -16,42 +16,34 @@
  */
 
 (() => {
-	/* ─────────────── env / routing ─────────────── */
+	/* ─────────────── config / helpers ─────────────── */
 
-	// Prefer explicit global if you set it in <script> before this file.
-	// Otherwise: if we're on Pages, talk to the workers.dev API; if we're already on workers/dev, use same-origin.
-	const API_BASE =
-		window.ROPS_API_BASE
-		|| (location.origin.includes("pages.dev")
-			? "https://rops-api.digikev-kevin-rapley.workers.dev"
-			: location.origin);
+	// Centralised API origin so every call (verify/resolve/setup/auth) uses the same backend.
+	// Prefer a per-environment value on <html data-api-origin="https://rops-api…">,
+	// else a global window.API_ORIGIN, else same-origin (empty string).
+	const API_ORIGIN =
+		(window.API_ORIGIN && String(window.API_ORIGIN)) ||
+		(document.documentElement?.dataset?.apiOrigin || "").trim() ||
+		"";
 
-	function buildAbsoluteReturnUrl() {
-		// Return the current page (origin + path + query). This lets the Worker bounce us back to Pages.
-		return location.origin + location.pathname + location.search;
-	}
-
-	/* ─────────────── helpers ─────────────── */
+	const api = (path) => `${API_ORIGIN}${path}`;
 
 	const $ = (s, r = document) => r.querySelector(s);
-	const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 	const byId = (id) => document.getElementById(id);
-
 	const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-	function jsonFetch(url, init) {
-		return fetch(url, init).then(async (res) => {
-			const txt = await res.text().catch(() => "");
-			let body = {};
-			try { body = txt ? JSON.parse(txt) : {}; } catch { /* noop */ }
-			if (!res.ok) {
-				const err = new Error((body && (body.error || body.message)) || `HTTP ${res.status}`);
-				err.status = res.status;
-				err.body = body;
-				throw err;
-			}
-			return body;
-		});
+	async function jsonFetch(url, init) {
+		const res = await fetch(url, init);
+		const txt = await res.text().catch(() => "");
+		let body = {};
+		try { body = txt ? JSON.parse(txt) : {}; } catch { /* noop */ }
+		if (!res.ok) {
+			const err = new Error((body && (body.error || body.message)) || `HTTP ${res.status}`);
+			err.status = res.status;
+			err.body = body;
+			throw err;
+		}
+		return body;
 	}
 
 	function pill(el, variant, text) {
@@ -81,7 +73,7 @@
 	// Local cache: projectId → { muralId, boardUrl, ts }
 	const RESOLVE_CACHE = new Map();
 
-	/* ─────────────── UI state wiring ─────────────── */
+	/* ─────────────── UI elements ─────────────── */
 
 	const els = {
 		section: byId("mural-integration"),
@@ -91,7 +83,8 @@
 	};
 
 	function disableAll() {
-		if (els.btnConnect) els.btnConnect.disabled = false; // allow connect
+		// Allow Connect even when other controls disabled
+		if (els.btnConnect) els.btnConnect.disabled = false;
 		if (els.btnSetup) els.btnSetup.disabled = true;
 	}
 
@@ -108,7 +101,7 @@
 					projectId,
 					projectName
 				};
-				const js = await jsonFetch(`${API_BASE}/api/mural/setup`, {
+				const js = await jsonFetch(api("/api/mural/setup"), {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(body)
@@ -161,27 +154,26 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			const ret = buildAbsoluteReturnUrl(); // absolute Pages (or current) URL
-			const url = `${API_BASE}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(ret)}`;
-			location.href = url;
+			// Return to the Pages dashboard after OAuth completes.
+			const back = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+			// IMPORTANT: call the same-origin API base the rest of the module uses
+			// to avoid PATH_NOT_FOUND and redirect_uri mismatches.
+			const href = api(`/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(back)}`);
+			location.href = href;
 		};
 	}
 
 	/* ─────────────── API wrappers ─────────────── */
 
 	async function verify() {
-		const u = `${API_BASE}/api/mural/verify?uid=${encodeURIComponent(uid())}`;
-		return jsonFetch(u);
+		return jsonFetch(api(`/api/mural/verify?uid=${encodeURIComponent(uid())}`));
 	}
 
 	async function resolveBoard(projectId) {
 		const cached = RESOLVE_CACHE.get(projectId);
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
-		const u = `${API_BASE}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`;
-		const js = await jsonFetch(u).catch((err) => {
-			throw err;
-		});
+		const js = await jsonFetch(api(`/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`));
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
 		if (rec.muralId) RESOLVE_CACHE.set(projectId, rec);
 		return rec;
@@ -303,7 +295,7 @@
 		if (!els.section) return;
 
 		// Early health check to reassure users (non-blocking)
-		jsonFetch(`${API_BASE}/api/health`).then(h => {
+		jsonFetch(api("/api/health")).then(h => {
 			console.log("[mural] health check OK:", h);
 		}).catch(() => { /* ignore */ });
 
