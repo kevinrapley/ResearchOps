@@ -14,9 +14,9 @@
  *  - Active         (Checkbox)           [optional, default true]
  *  - Created At     (Created time)
  *
- * Resolution order for a board used by journal-sync / resolve:
+ * Resolution order for a board used by journal-sync:
  *   1) Explicit body.muralId
- *   2) Airtable: newest Primary?/Created match for (projectId[, uid], purpose, Active=true)
+ *   2) Airtable: first record for (projectId[, uid], purpose, Active=true) sorted by {Primary? desc}, {Created At desc}
  *   3) Deprecated env.MURAL_REFLEXIVE_MURAL_ID (warning)
  */
 
@@ -30,7 +30,6 @@ import {
 	createMural,
 	getMe,
 	getActiveWorkspaceIdFromMe,
-	// widgets/tags utilities for journal sync
 	getWidgets,
 	createSticky,
 	updateSticky,
@@ -49,12 +48,10 @@ import { b64Encode, b64Decode } from "../../core/utils.js";
 const GRID_Y = 32;
 const DEFAULT_W = 240;
 const DEFAULT_H = 120;
-
-// Default purpose label (single-select in Airtable)
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 
-/** Cheap in-process cache for hot resolutions (evicted on worker cold starts) */
-const _memCache = new Map(); // key: `${projectId}·${uid||"-"}·${purpose}` → { muralId, boardUrl, workspaceId, primary, ts }
+/** In-process soft cache (evicted on cold starts) */
+const _memCache = new Map(); // key: `${projectId}·${uid||""}·${purpose}` → { muralId, boardUrl, workspaceId, ts, primary }
 
 /* ───────────────────────── Airtable helpers ───────────────────────── */
 
@@ -69,86 +66,80 @@ function _encodeTableUrl(env, tableName) {
 	return `https://api.airtable.com/v0/${encodeURIComponent(env.AIRTABLE_BASE_ID)}/${encodeURIComponent(tableName)}`;
 }
 
-/**
- * Query Airtable for "Mural Boards".
- *
- * IMPORTANT: we DO NOT use `filterByFormula` for `Project` because:
- * - If "Project" is a linked-record field, simple equality fails or needs gnarly formulas.
- * - To be robust, we fetch a small, sorted window and filter in the Worker.
- *
- * We still keep the list small by:
- *  - sorting by Primary? desc, Created At desc
- *  - maxRecords default 25
- */
-async function _airtableListBoards(env, { max = 25 } = {}) {
-	const url = new URL(_encodeTableUrl(env, "Mural Boards"));
-	url.searchParams.set("maxRecords", String(max));
+/** Escape double quotes for filterByFormula string literals */
+function _esc(v) {
+	return String(v ?? "").replace(/"/g, '\\"');
+}
 
-	url.searchParams.append("sort[0][field]", "Primary?");
-	url.searchParams.append("sort[0][direction]", "desc");
-	url.searchParams.append("sort[1][field]", "Created At");
-	url.searchParams.append("sort[1][direction]", "desc");
+/**
+ * Build an Airtable filter that works for both:
+ *  - {Project} as single line text → `{Project} = "rec..."`
+ *  - {Project} as linked record    → `FIND("rec...", ARRAYJOIN({Project}))`
+ * We OR those two checks so either schema matches.
+ * We then AND with optional UID, Purpose, and Active=true (by default).
+ */
+function _buildBoardsFilter({ projectId, uid, purpose, active = true }) {
+	const ands = [];
+
+	if (projectId) {
+		const pid = _esc(projectId);
+		const linkedMatch = `FIND("${pid}", ARRAYJOIN({Project}))`; // linked-record-safe
+		const textMatch = `{Project} = "${pid}"`; // text-safe
+		ands.push(`OR(${linkedMatch}, ${textMatch})`);
+	}
+
+	if (uid) ands.push(`{UID} = "${_esc(uid)}"`);
+	if (purpose) ands.push(`{Purpose} = "${_esc(purpose)}"`);
+	if (typeof active === "boolean") ands.push(`{Active} = ${active ? "1" : "0"}`);
+
+	return ands.length ? `AND(${ands.join(",")})` : "";
+}
+
+/**
+ * Query Airtable for Mural Boards records.
+ * Sorted by Primary? desc, Created At desc.
+ */
+async function _airtableListBoards(env, { projectId, uid, purpose, active = true, max = 10 }) {
+	const url = new URL(_encodeTableUrl(env, "Mural Boards"));
+	const filterByFormula = _buildBoardsFilter({ projectId, uid, purpose, active });
+	if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
+	url.searchParams.set("maxRecords", String(max));
+	url.searchParams.set("sort", JSON.stringify([
+		{ field: "Primary?", direction: "desc" },
+		{ field: "Created At", direction: "desc" }
+	]));
 
 	const res = await fetch(url.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
-
 	if (!res.ok) {
-		console.error("[mural] Airtable list failed", res.status, url.toString(), js);
 		throw Object.assign(new Error("airtable_list_failed"), { status: res.status, body: js });
 	}
 	return Array.isArray(js.records) ? js.records : [];
 }
 
-/** Create a board mapping row in Airtable (tolerates linked or text Project). */
-async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = true, active = true }) {
+/** Create a board mapping row in Airtable. */
+async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
 	const url = _encodeTableUrl(env, "Mural Boards");
-
-	// Try to satisfy both shapes:
-	// - Linked record: Project: [ "recXXXX" ]
-	// - Plain text:    Project: "recXXXX"
-	// Airtable will ignore shape mismatches rather than erroring on unknown fields.
-	const fields = {
-		"Project": [projectId], // works if it's a linked-record
-		"UID": uid,
-		"Purpose": purpose,
-		"Mural ID": muralId,
-		"Board URL": boardUrl,
-		"Workspace ID": workspaceId,
-		"Primary?": !!primary,
-		"Active": !!active
+	const body = {
+		records: [{
+			fields: {
+				"Project": projectId,
+				"UID": uid,
+				"Purpose": purpose,
+				"Mural ID": muralId,
+				"Board URL": boardUrl,
+				"Workspace ID": workspaceId,
+				"Primary?": !!primary,
+				"Active": !!active
+			}
+		}]
 	};
-
-	const body = { records: [{ fields }] };
 	const res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(body) });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
 		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
 	}
 	return js;
-}
-
-/** Match helpers — tolerate Project as linked-record array OR string. */
-function _matchesProject(f, projectId) {
-	if (!projectId) return true;
-	const v = f?.Project;
-	if (Array.isArray(v)) return v.includes(projectId);
-	return String(v || "") === String(projectId);
-}
-
-function _matchesUid(f, uid) {
-	if (!uid) return true;
-	return String(f?.UID || "") === String(uid);
-}
-
-function _matchesPurpose(f, purpose) {
-	if (!purpose) return true;
-	return String(f?.Purpose || "") === String(purpose);
-}
-
-function _isActive(f, active = true) {
-	if (typeof active !== "boolean") return true;
-	const v = !!f?.Active;
-	return active ? v === true : v === false;
 }
 
 /* ───────────────────────── Class ───────────────────────── */
@@ -159,17 +150,10 @@ export class MuralServicePart {
 		this.root = root;
 	}
 
-	// ── Tokens in KV
+	// KV tokens
 	kvKey(uid) { return `mural:${uid}:tokens`; }
-
-	async saveTokens(uid, tokens) {
-		await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true });
-	}
-
-	async loadTokens(uid) {
-		const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid));
-		return raw ? JSON.parse(raw) : null;
-	}
+	async saveTokens(uid, tokens) { await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true }); }
+	async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
 
 	/* ───────────────────────── internal helpers ───────────────────────── */
 
@@ -184,54 +168,28 @@ export class MuralServicePart {
 	}
 
 	/**
-	 * Resolve a Mural board by (projectId, [uid], purpose).
+	 * Resolve a Mural board by (projectId[, uid], purpose).
 	 * Priority:
-	 *  1) explicitMuralId
-	 *  2) Airtable "Mural Boards" (in-memory cached; tolerant filters)
+	 *  1) explicitMuralId (if provided)
+	 *  2) Airtable "Mural Boards" (cached)
 	 *  3) env.MURAL_REFLEXIVE_MURAL_ID (deprecated)
-	 *
-	 * @param {object} p
-	 * @param {string=} p.projectId
-	 * @param {string=} p.uid
-	 * @param {string=} p.purpose
-	 * @param {string=} p.explicitMuralId
-	 * @returns {Promise<{ muralId: string, boardUrl?: string, workspaceId?: string } | null>}
 	 */
 	async resolveBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, explicitMuralId }) {
 		// 1) Explicit
-		if (explicitMuralId) {
-			return { muralId: String(explicitMuralId) };
-		}
+		if (explicitMuralId) return { muralId: String(explicitMuralId) };
 
-		const uidKey = uid && uid !== "anon" ? uid : "-";
-		const cacheKey = `${projectId || "-"}·${uidKey}·${purpose || "-"}`;
-		const cached = _memCache.get(cacheKey);
-		if (cached && (Date.now() - cached.ts < 60_000)) {
-			return { muralId: cached.muralId, boardUrl: cached.boardUrl, workspaceId: cached.workspaceId };
-		}
-
-		// 2) Airtable — fetch a small set and filter in-process.
-		if (this.root?.env?.AIRTABLE_BASE_ID && (this.root?.env?.AIRTABLE_API_KEY || this.root?.env?.AIRTABLE_ACCESS_TOKEN)) {
-			const rows = await _airtableListBoards(this.root.env, { max: 25 });
-
-			// First pass: match with uid (if provided)
-			let match = rows.find(r => {
-				const f = r?.fields || {};
-				return _matchesProject(f, projectId) && _matchesUid(f, uidKey !== "-" ? uid : "") &&
-					_matchesPurpose(f, purpose) && _isActive(f, true) && !!f["Mural ID"];
-			});
-
-			// Fallback: match by project only (uid not required)
-			if (!match) {
-				match = rows.find(r => {
-					const f = r?.fields || {};
-					return _matchesProject(f, projectId) && _matchesPurpose(f, purpose) &&
-						_isActive(f, true) && !!f["Mural ID"];
-				});
+		// 2) Airtable lookup. We now allow uid to be absent (falls back to project-only).
+		if (projectId) {
+			const cacheKey = `${projectId}·${uid || ""}·${purpose}`;
+			const cached = _memCache.get(cacheKey);
+			if (cached && (Date.now() - cached.ts < 60_000)) {
+				return { muralId: cached.muralId, boardUrl: cached.boardUrl, workspaceId: cached.workspaceId };
 			}
 
-			if (match?.fields) {
-				const f = match.fields;
+			const rows = await _airtableListBoards(this.root.env, { projectId, uid, purpose, active: true, max: 5 });
+			const top = rows[0];
+			if (top?.fields) {
+				const f = top.fields;
 				const rec = {
 					muralId: String(f["Mural ID"] || ""),
 					boardUrl: f["Board URL"] || null,
@@ -255,34 +213,11 @@ export class MuralServicePart {
 		return null;
 	}
 
-	/**
-	 * Save/register a Mural board mapping to Airtable (and refresh in-memory cache).
-	 */
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl = null, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
-
-		// Persist to Airtable (best-effort)
-		try {
-			await _airtableCreateBoard(this.root.env, {
-				projectId,
-				uid,
-				purpose,
-				muralId,
-				boardUrl,
-				workspaceId,
-				primary,
-				active: true
-			});
-		} catch (e) {
-			// Don’t fail the UX if Airtable is temporarily unhappy; log it.
-			this.root?.log?.warn?.("mural.register.airtable_fail", { err: String(e?.message || e) });
-		}
-
-		// Hot cache for immediate refresh after creation
-		const uidKey = uid && uid !== "anon" ? uid : "-";
-		const cacheKey = `${projectId}·${uidKey}·${purpose}`;
+		await _airtableCreateBoard(this.root.env, { projectId, uid, purpose, muralId, boardUrl, workspaceId, primary, active: true });
+		const cacheKey = `${projectId}·${uid}·${purpose}`;
 		_memCache.set(cacheKey, { muralId, boardUrl, workspaceId, ts: Date.now(), primary: !!primary });
-
 		return { ok: true };
 	}
 
@@ -439,7 +374,6 @@ export class MuralServicePart {
 			}
 
 			step = "verify_workspace";
-			// Ensure company membership and get active workspace
 			let accessToken = tokens.access_token;
 			let ws;
 			try {
@@ -483,7 +417,7 @@ export class MuralServicePart {
 					uid,
 					purpose: PURPOSE_REFLEXIVE,
 					muralId: mural.id,
-					boardUrl: mural?.viewLink || null,
+					boardUrl: mural?.viewLink || mural?.viewerUrl || mural?._canvasLink || null,
 					workspaceId: ws.id,
 					primary: true
 				});
@@ -495,65 +429,39 @@ export class MuralServicePart {
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
-			return this.root.json({
-				ok: false,
-				error: "setup_failed",
-				step,
-				message,
-				upstream: body
-			}, status, cors);
+			return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body }, status, cors);
 		}
 	}
 
 	/**
-	 * GET /api/mural/resolve?projectId=recXXXX[&uid=u07...][&purpose=reflexive_journal]
-	 * Returns: { ok:true, muralId, boardUrl?, workspaceId? } or 404 { ok:false, error:"not_found" }
+	 * GET /api/mural/resolve?projectId=rec...&uid=anon&purpose=reflexive_journal
+	 * Returns { ok:true, muralId, boardUrl? } or 404 {ok:false,error:"not_found"}.
+	 * uid is optional (falls back to project-only resolution).
 	 */
 	async muralResolve(origin, url) {
 		const cors = this.root.corsHeaders(origin);
-		const projectId = url.searchParams.get("projectId") || "";
-		const uid = url.searchParams.get("uid") || "";
-		const purpose = url.searchParams.get("purpose") || PURPOSE_REFLEXIVE;
-
-		if (!projectId) {
-			return this.root.json({ ok: false, error: "projectId_required" }, 400, cors);
-		}
-
 		try {
-			// Try with uid (if present), then without
-			let rec = await this.resolveBoard({ projectId, uid, purpose });
-			if (!rec && uid) rec = await this.resolveBoard({ projectId, uid: "", purpose });
+			const projectId = url.searchParams.get("projectId") || "";
+			const uid = url.searchParams.get("uid") || "";
+			const purpose = url.searchParams.get("purpose") || PURPOSE_REFLEXIVE;
 
-			if (!rec?.muralId) {
+			if (!projectId) {
+				return this.root.json({ ok: false, error: "missing_projectId" }, 400, cors);
+			}
+
+			const resolved = await this.resolveBoard({ projectId, uid: uid || undefined, purpose });
+			if (!resolved?.muralId) {
 				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
 			}
-			return this.root.json({ ok: true, muralId: rec.muralId, boardUrl: rec.boardUrl || null, workspaceId: rec.workspaceId || null }, 200, cors);
-		} catch (err) {
-			const msg = String(err?.message || err);
+			return this.root.json({ ok: true, muralId: resolved.muralId, boardUrl: resolved.boardUrl || null }, 200, cors);
+		} catch (e) {
+			const msg = String(e?.message || e || "");
 			return this.root.json({ ok: false, error: "resolve_failed", detail: msg }, 500, cors);
 		}
 	}
 
 	/**
-	 * (Optional) GET /api/mural/find?projectId=… or ?title=…&projectId=…
-	 * Alias for resolve; kept for compatibility with earlier client code.
-	 */
-	async muralFind(origin, url) {
-		return this.muralResolve(origin, url);
-	}
-
-	/**
-	 * POST /api/mural/journal-sync
-	 * body: {
-	 *   uid?: string
-	 *   muralId?: string            // optional; if absent we resolve via Airtable
-	 *   projectId?: string          // strongly recommended for resolver
-	 *   purpose?: string            // defaults to "reflexive_journal"
-	 *   studyId?: string            // (ignored here but kept for future)
-	 *   category: string            // perceptions|procedures|decisions|introspections
-	 *   description: string
-	 *   tags?: string[]
-	 * }
+	 * POST /api/mural/journal-sync  (unchanged flow, uses resolveBoard)
 	 */
 	async muralJournalSync(request, origin) {
 		const cors = this.root.corsHeaders(origin);
@@ -577,7 +485,7 @@ export class MuralServicePart {
 			step = "resolve_board";
 			const resolved = await this.resolveBoard({
 				projectId: body.projectId,
-				uid,
+				uid: uid || undefined,
 				purpose,
 				explicitMuralId: body.muralId
 			});
@@ -586,7 +494,7 @@ export class MuralServicePart {
 				return this.root.json({
 					ok: false,
 					error: "no_mural_id",
-					message: "No board found for (projectId, uid, purpose) and no explicit muralId provided."
+					message: "No board found for (projectId[, uid], purpose) and no explicit muralId provided."
 				}, 404, cors);
 			}
 
@@ -648,17 +556,11 @@ export class MuralServicePart {
 			const body = err?.body || null;
 			const message = String(err?.message || "journal_sync_failed");
 
-			return this.root.json({
-				ok: false,
-				error: "journal_sync_failed",
-				step,
-				message,
-				upstream: body
-			}, status, cors);
+			return this.root.json({ ok: false, error: "journal_sync_failed", step, message, upstream: body }, status, cors);
 		}
 	}
 
-	/** GET /api/mural/debug-env (TEMP) */
+	/** TEMP debug */
 	async muralDebugEnv(origin) {
 		const env = this.root.env || {};
 		return this.root.json({
@@ -673,7 +575,6 @@ export class MuralServicePart {
 		}, 200, this.root.corsHeaders(origin));
 	}
 
-	/** GET /api/mural/debug-auth (TEMP) */
 	async muralDebugAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
 		const ret = url.searchParams.get("return");
