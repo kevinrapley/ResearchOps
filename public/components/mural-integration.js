@@ -2,14 +2,19 @@
  * @file /public/components/mural-integration.js
  * @module muralIntegration
  * @summary
- * Connects the project dashboard to Mural (OAuth + verify + provision).
- * Persists the "Reflexive Journal" board id and restores the OPEN state on refresh.
+ * Project dashboard → Connect to Mural (OAuth), verify connection, and create/open a
+ * "Reflexive Journal" board inside a project-named folder.
+ *
+ * DOM:
+ * - <button id="mural-connect">
+ * - <button id="mural-setup">
+ * - <span   id="mural-status"></span> (optional)
  */
 
 /* eslint-env browser */
 "use strict";
 
-/* ───────────────────────── Config ───────────────────────── */
+/* ───────────────────────────────────── Config ─────────────────────────────────── */
 
 const DEFAULT_API_BASE = "https://rops-api.digikev-kevin-rapley.workers.dev";
 
@@ -22,50 +27,44 @@ function resolveApiBase() {
 }
 const API_BASE = resolveApiBase();
 
-/* warm liveness check (optional) */
-fetch(`${API_BASE}/api/health`).then(r => r.json())
+// Test the API immediately (non-fatal)
+fetch(`${API_BASE}/api/health`)
+	.then(r => r.json())
 	.then(j => console.log("[mural] health check OK:", j))
-	.catch(e => console.error("[mural] health check FAILED:", e));
+	.catch(e => console.warn("[mural] health check FAILED (non-fatal):", e));
 
-/* ───────────────────────── DOM utils ───────────────────────── */
+/* ─────────────────────────────────── DOM helpers ───────────────────────────────── */
 
 const $ = (s, r = document) => r.querySelector(s);
 
 function getProjectName() {
+	// 1) data attribute
 	const main = $("main[data-project-name]");
-	if (main?.dataset?.projectName) return main.dataset.projectName.trim();
+	if (main?.dataset?.projectName && main.dataset.projectName !== "null") return main.dataset.projectName.trim();
 
+	// 2) title element
 	const title = $("#project-title")?.textContent?.trim();
 	if (title) return title;
 
+	// 3) meta tag
 	const meta = document.querySelector('meta[name="project:name"]');
 	const metaName = meta?.getAttribute("content")?.trim();
 	if (metaName) return metaName;
 
+	// 4) query param
 	const sp = new URLSearchParams(location.search);
-	return sp.get("projectName")?.trim() || "";
+	const q = sp.get("projectName");
+	return (q && q.trim()) || "";
 }
 
-function getProjectId() {
-	const sp = new URLSearchParams(location.search);
-	const fromUrl = sp.get("id") || sp.get("project") || sp.get("projectId");
-	if (fromUrl) return fromUrl.trim();
+/* ─────────────────────── Project Mural ID storage ─────────────────────── */
 
-	const main = $("main");
-	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
-	if (main?.dataset?.projectId) return main.dataset.projectId.trim();
-
-	return "";
-}
-
-/* ───────────────────────── Persisted mapping ───────────────────────── */
-
-const MURAL_MAPPING_KEY_PREFIX = "mural.project.";
+const MURAL_MAPPING_KEY_PREFIX = 'mural.project.';
 
 function saveMuralIdForProject(projectId, muralId) {
 	if (!projectId || !muralId) return;
 	localStorage.setItem(MURAL_MAPPING_KEY_PREFIX + projectId, muralId);
-	console.log("[mural] saved muralId for project:", projectId, "→", muralId);
+	console.log('[mural] saved muralId for project:', projectId, '→', muralId);
 }
 
 function getMuralIdForProject(projectId) {
@@ -73,7 +72,21 @@ function getMuralIdForProject(projectId) {
 	return localStorage.getItem(MURAL_MAPPING_KEY_PREFIX + projectId);
 }
 
-/* ───────────────────────── UID handling ───────────────────────── */
+function getProjectId() {
+	// Try URL parameters first
+	const sp = new URLSearchParams(location.search);
+	const fromUrl = sp.get('id') || sp.get('project') || sp.get('projectId');
+	if (fromUrl) return fromUrl.trim();
+
+	// Try data attributes (check both variations)
+	const main = $('main');
+	if (main?.dataset?.projectAirtableId) return main.dataset.projectAirtableId.trim();
+	if (main?.dataset?.projectId) return main.dataset.projectId.trim();
+
+	return '';
+}
+
+/* ─────────────────────────────────── UID handling ─────────────────────────────── */
 
 const UID_KEY = "mural.uid";
 
@@ -86,13 +99,14 @@ function getUid() {
 		(localStorage.getItem("userId") || "").trim() ||
 		"anon";
 
+	uid = String(uid);
 	localStorage.setItem(UID_KEY, uid);
 	return uid;
 }
 
 function resetUid() { localStorage.removeItem(UID_KEY); }
 
-/* ───────────────────────── Status pill ───────────────────────── */
+/* ────────────────────────────────── Status pill ──────────────────────────────── */
 
 function setPill(host, kind, text) {
 	if (!host) return;
@@ -103,24 +117,49 @@ function setPill(host, kind, text) {
 	host.appendChild(span);
 }
 
-/* ───────────────────────── API wrappers ───────────────────────── */
+function friendlyStatusForVerify(res) {
+	if (!res) return { kind: "err", text: "Error checking status" };
+	if (res.ok) return { kind: "ok", text: "Connected to Mural (Home Office)" };
+	if (res.reason === "not_authenticated") return { kind: "warn", text: "Not connected" };
+	if (res.reason === "not_in_home_office_workspace") return { kind: "err", text: "Not in Home Office workspace" };
+	if (res.reason === "network_error") return { kind: "err", text: "Network issue connecting to Mural" };
+	return { kind: "err", text: "Error checking status" };
+}
+
+function friendlyStatusForResolve(errStatus, detail) {
+	if (errStatus === 404) return { kind: "neutral", text: "No Reflexive Journal yet" };
+	if (errStatus === 500 && /airtable/i.test(detail || "")) {
+		return { kind: "err", text: "Airtable lookup error — board mapping unavailable" };
+	}
+	return { kind: "err", text: "Couldn’t check existing board" };
+}
+
+/* ────────────────────────────────── API wrappers ──────────────────────────────── */
 
 async function verify(uid) {
 	const url = new URL(`${API_BASE}/api/mural/verify`);
 	url.searchParams.set("uid", uid);
+	console.log("[mural] verifying uid:", uid, "→", url.toString());
+
 	try {
 		const res = await fetch(url, {
 			cache: "no-store",
 			credentials: "omit",
 			signal: AbortSignal.timeout(10000)
 		});
-		if (res.status >= 500) return { ok: false, reason: "service_unavailable" };
-		if (res.status === 401) return { ok: false, reason: "not_authenticated" };
-		if (res.status === 403) return { ok: false, reason: "not_in_home_office_workspace" };
-		if (!res.ok) return { ok: false, reason: "error", detail: `HTTP ${res.status}` };
-		return await res.json();
+
+		if (res.status === 401) {
+			return { ok: false, reason: "not_authenticated" };
+		}
+
+		if (!res.ok) {
+			const t = await res.text().catch(() => "");
+			return { ok: false, reason: "error", detail: t };
+		}
+
+		const json = await res.json();
+		return json;
 	} catch (err) {
-		console.error("[mural] verify network error:", err);
 		return { ok: false, reason: "network_error", detail: String(err) };
 	}
 }
@@ -134,147 +173,172 @@ async function setup(uid, projectName) {
 			body: JSON.stringify({ uid, projectId, projectName }),
 			signal: AbortSignal.timeout(15000)
 		});
+
 		const js = await res.json().catch(() => ({}));
 
-		// Robustly pick the mural id regardless of shape
-		const newId = js?.mural?.id || js?.mural?.value?.id || js?.muralId || null;
-		if (js?.ok && newId && projectId) saveMuralIdForProject(projectId, newId);
+		// Save the Mural ID mapping for this project
+		if (res.ok && js?.mural?.id && projectId) {
+			saveMuralIdForProject(projectId, js.mural.id);
+		}
 
 		return js;
 	} catch (err) {
-		console.error("[mural] setup error:", err);
 		return { ok: false, error: "Network error", detail: String(err) };
-	}
-}
-
-/**
- * Best-effort mapping fetch from server (Airtable source-of-truth).
- * Non-fatal if the route isn’t present; we just return nulls.
- */
-async function resolveMapping(projectId) {
-	if (!projectId) return { muralId: null, openUrl: "" };
-	try {
-		const u = new URL(`${API_BASE}/api/mural/resolve`);
-		u.searchParams.set("projectId", projectId);
-		const res = await fetch(u, { cache: "no-store", signal: AbortSignal.timeout(8000) });
-		if (!res.ok) return { muralId: null, openUrl: "" };
-		const js = await res.json().catch(() => ({}));
-		const muralId = js?.muralId || js?.mural?.id || null;
-		const openUrl = js?.openUrl || js?.mural?._canvasLink || js?.mural?.url || "";
-		return { muralId, openUrl };
-	} catch {
-		return { muralId: null, openUrl: "" };
 	}
 }
 
 function startOAuth(uid) {
 	localStorage.setItem(UID_KEY, String(uid || "anon")); // pin before leaving
+	const returnTo = location.href;
 	const url = new URL(`${API_BASE}/api/mural/auth`);
 	url.searchParams.set("uid", uid);
-	url.searchParams.set("return", location.href);
+	url.searchParams.set("return", returnTo);
 	location.assign(url.toString());
 }
 
-/* ───────────────────────── State + enabling ───────────────────────── */
+/**
+ * Try to resolve an existing “Reflexive Journal” board for this project+uid.
+ * Returns {ok:true, muralId, boardUrl?} when found; nullish when not.
+ */
+async function resolveExistingBoard() {
+	const projectId = getProjectId();
+	if (!projectId) return null;
+
+	// Prefer authoritative API, fall back to localStorage mapping if present.
+	try {
+		const url = new URL(`${API_BASE}/api/mural/resolve`);
+		url.searchParams.set("projectId", projectId);
+		const uid = getUid();
+		if (uid && uid !== "anon") url.searchParams.set("uid", uid);
+
+		const res = await fetch(url.toString(), { cache: "no-store", signal: AbortSignal.timeout(10000) });
+		if (res.ok) {
+			const js = await res.json().catch(() => ({}));
+			if (js?.ok && js?.muralId) {
+				// Persist mapping locally too
+				saveMuralIdForProject(projectId, js.muralId);
+				return { ok: true, muralId: js.muralId, boardUrl: js.boardUrl || "" };
+			}
+			return null;
+		}
+
+		// Handle common error modes gracefully in the UI
+		const txt = await res.text().catch(() => "");
+		console.warn("[mural] resolve failed", res.status, txt);
+		const statusEl = $("#mural-status");
+		const pretty = friendlyStatusForResolve(res.status, txt);
+		setPill(statusEl, pretty.kind, pretty.text);
+		return null;
+	} catch (err) {
+		console.warn("[mural] resolve network error", err);
+		return null;
+	}
+}
+
+/* ───────────────────────────── State + Enabling Logic ─────────────────────────── */
 
 let lastVerifyOk = false;
-let lastUpdate = 0;
-let restoredOnce = false;
+let openHandlerBound = false;
 
-function updateSetupState() {
-	const now = Date.now();
-	if (now - lastUpdate < 300) return; // throttle noisy logs
-	lastUpdate = now;
-
-	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
+function asOpenState(setupBtn, openUrl) {
 	if (!setupBtn) return;
-
-	const name = getProjectName();
-	const shouldEnable = !!(lastVerifyOk && name);
-	setupBtn.disabled = !shouldEnable;
-	setupBtn.setAttribute("aria-disabled", String(!shouldEnable));
-	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, " | projectName:", name || "(empty)", " | enabled:", shouldEnable);
-
-	// When we first become enabled, attempt a restore if we haven't already.
-	if (shouldEnable && !restoredOnce) {
-		restoreOpenButton().catch(() => {});
-	}
-}
-
-/* React when project name appears/changes (dashboard populates it async) */
-function watchProjectName() {
-	const main = document.querySelector("main");
-	if (!main) return;
-	const obs = new MutationObserver(() => updateSetupState());
-	obs.observe(main, { attributes: true, attributeFilter: ["data-project-name"], childList: true, subtree: true });
-}
-
-/* ───────────────────────── Restore “Open” on refresh ───────────────────────── */
-
-async function restoreOpenButton() {
-	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
-	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
-	if (!setupBtn) return;
-
-	const projectId = getProjectId();
-	if (!projectId) return;
-
-	// 1) Fast path: localStorage
-	let muralId = getMuralIdForProject(projectId);
-	let openUrl = "";
-
-	// 2) If missing, try server (Airtable source-of-truth)
-	if (!muralId) {
-		const r = await resolveMapping(projectId);
-		if (r.muralId) {
-			muralId = r.muralId;
-			openUrl = r.openUrl || openUrl;
-			saveMuralIdForProject(projectId, muralId);
-		}
-	}
-
-	// Nothing to restore
-	if (!muralId) return;
-
-	// We might still not have a share URL. If so, we’ll fall back to an info alert.
-	if (!openUrl) {
-		// optional extra fetch to resolve (in case server gained it late)
-		const r = await resolveMapping(projectId).catch(() => ({}));
-		openUrl = r?.openUrl || "";
-	}
-
-	// Switch to OPEN state
 	setupBtn.textContent = 'Open "Reflexive Journal"';
 	setupBtn.disabled = false;
 	setupBtn.setAttribute("aria-disabled", "false");
-
-	// Avoid stacking listeners on re-runs
 	if (setupBtn.__muralCreateHandler) {
 		setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
 		delete setupBtn.__muralCreateHandler;
 	}
+	if (!setupBtn.__muralOpenHandler) {
+		setupBtn.__muralOpenHandler = function onOpenClick() {
+			if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
+		};
+		setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
+	}
+	openHandlerBound = true;
+}
+
+function asCreateState(setupBtn) {
+	if (!setupBtn) return;
+	setupBtn.textContent = 'Create "Reflexive Journal"';
 	if (setupBtn.__muralOpenHandler) {
 		setupBtn.removeEventListener("click", setupBtn.__muralOpenHandler);
 		delete setupBtn.__muralOpenHandler;
 	}
-
-	setupBtn.__muralOpenHandler = function onOpen() {
-		if (openUrl) {
-			window.open(openUrl, "_blank", "noopener,noreferrer");
-		} else {
-			alert(
-				'Your "Reflexive Journal" board is set up in Mural.\n\n' +
-				"Tip: Open Mural → Private room → the project-named folder → Reflexive Journal."
-			);
-		}
-	};
-	setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
-
-	if (statusEl) setPill(statusEl, "ok", "Reflexive Journal ready");
-	restoredOnce = true;
+	openHandlerBound = false;
 }
 
-/* ───────────────────────── Init & listeners ───────────────────────── */
+function updateSetupState() {
+	const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
+	if (!setupBtn) return;
+	const name = getProjectName();
+	const shouldEnable = !!(lastVerifyOk && name);
+	setupBtn.disabled = !shouldEnable;
+	setupBtn.setAttribute("aria-disabled", String(!shouldEnable));
+	console.log("[mural] updateSetupState → verifyOk:", lastVerifyOk, "| projectName:", name || "(empty)", "| enabled:", shouldEnable);
+}
+
+/* Observe when <main data-project-name="…"> appears/changes */
+function watchProjectName() {
+	const main = document.querySelector("main");
+	if (!main) return;
+	const obs = new MutationObserver((mutations) => {
+		for (const m of mutations) {
+			if (m.type === "attributes" && m.attributeName === "data-project-name") {
+				updateSetupState();
+				queueResolveCheck(); // project name now available → re-check
+				return;
+			}
+			if (m.type === "childList") {
+				updateSetupState();
+			}
+		}
+	});
+	obs.observe(main, { attributes: true, attributeFilter: ["data-project-name"], childList: true, subtree: true });
+}
+
+/* ───────────────────────────── URL extraction helper ─────────────────────────── */
+
+function extractMuralOpenUrl(res) {
+	const v = res?.mural?.value || res?.mural || {};
+	return v?.viewLink || v?._canvasLink || v?.viewerUrl || v?.url || "";
+}
+
+/* ───────────────────────── Debounced resolve on load ─────────────────────────── */
+
+let resolveTimer = null;
+
+function queueResolveCheck() {
+	if (resolveTimer) clearTimeout(resolveTimer);
+	resolveTimer = setTimeout(async () => {
+		const setupBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-setup"));
+		const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
+		if (!setupBtn) return;
+		const projectId = getProjectId();
+		if (!projectId) return;
+
+		// If we already have a local mapping, use that immediately for Open state
+		const localId = getMuralIdForProject(projectId);
+		if (localId && !openHandlerBound) {
+			asOpenState(setupBtn, "");
+			setPill(statusEl, "ok", "Reflexive Journal linked");
+		}
+
+		// Ask the API for the authoritative mapping
+		const resolved = await resolveExistingBoard();
+		if (resolved?.ok && resolved.muralId) {
+			asOpenState(setupBtn, resolved.boardUrl || "");
+			setPill(statusEl, "ok", "Reflexive Journal ready");
+		} else if (!localId) {
+			// Only show “no journal yet” if nothing local and API had no match
+			const pretty = friendlyStatusForResolve(404, "");
+			setPill(statusEl, pretty.kind, pretty.text);
+			asCreateState(setupBtn);
+		}
+	}, 150);
+}
+
+/* ───────────────────────────────────── Init ───────────────────────────────────── */
 
 function attachDirectListeners() {
 	const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
@@ -283,20 +347,23 @@ function attachDirectListeners() {
 
 	if (connectBtn && !connectBtn.__muralBound) {
 		connectBtn.__muralBound = true;
-		connectBtn.addEventListener("click", () => startOAuth(getUid()));
+		connectBtn.addEventListener("click", () => {
+			startOAuth(getUid());
+		});
 	}
 
 	if (setupBtn && !setupBtn.__muralBound) {
 		setupBtn.__muralBound = true;
 
+		// Keep a reference so we can remove this listener after creation.
 		setupBtn.__muralCreateHandler = async function onCreateClick() {
 			const name = getProjectName();
 			if (!name) {
 				setPill(statusEl, "warn", "Missing project name on page");
 				alert(
-					"Project name not found. Ensure the dashboard sets one of:\n" +
-					"• <main data-project-name=\"…\">\n" +
-					"• <h1 id=\"project-title\">…</h1>\n" +
+					"Project name not found on this page. Please ensure the dashboard includes either:\n" +
+					"• <main data-project-name=\"…\"> or\n" +
+					"• <h1 id=\"project-title\">…</h1> or\n" +
 					"• <meta name=\"project:name\" content=\"…\">"
 				);
 				return;
@@ -312,61 +379,50 @@ function attachDirectListeners() {
 				const res = await setup(getUid(), name);
 
 				if (res?.ok) {
-					// capture and persist id under all known response shapes
-					const newId = res?.mural?.id || res?.mural?.value?.id || res?.muralId || null;
-					const projectId = getProjectId();
-					if (newId && projectId) saveMuralIdForProject(projectId, newId);
-
 					setPill(statusEl, "ok", "Folder + Reflexive Journal created");
 
-					const openUrl = res?.mural?._canvasLink || res?.mural?.viewerUrl || res?.mural?.url || "";
+					const openUrl = extractMuralOpenUrl(res);
 
-					// flip to open
-					setupBtn.textContent = 'Open "Reflexive Journal"';
-					setupBtn.disabled = false;
-					setupBtn.setAttribute("aria-disabled", "false");
+					// Switch button to OPEN state
+					asOpenState(setupBtn, openUrl);
 
-					setupBtn.removeEventListener("click", setupBtn.__muralCreateHandler);
-					delete setupBtn.__muralCreateHandler;
-
-					setupBtn.__muralOpenHandler = function onOpenClick() {
-						if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-						else alert('Open Mural → Private room → project folder → "Reflexive Journal".');
-					};
-					setupBtn.addEventListener("click", setupBtn.__muralOpenHandler);
-
-					// one-time auto-open
+					// Auto-open once on creation
 					if (openUrl) window.open(openUrl, "_blank", "noopener,noreferrer");
-				} else if (res?.reason === "service_unavailable") {
-					setPill(statusEl, "err", "Mural appears unavailable. Try again later.");
-					setupBtn.textContent = prev || 'Create “Reflexive Journal”';
+					else {
+						alert(
+							`Your Reflexive Journal board has been created in Mural.\n\n` +
+							`Look in your Private room → the "${name}" folder → "Reflexive Journal".`
+						);
+					}
+
+					// Refresh resolve mapping so it sticks across reload
+					queueResolveCheck();
 				} else if (res?.reason === "not_authenticated") {
 					setPill(statusEl, "warn", "Please connect Mural first");
-					setupBtn.textContent = prev || 'Create “Reflexive Journal”';
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 				} else if (res?.reason === "not_in_home_office_workspace") {
-					setPill(statusEl, "err", "Not in Home Office workspace");
-					setupBtn.textContent = prev || 'Create “Reflexive Journal”';
+					setPill(statusEl, "err", "Your Mural account isn’t in Home Office");
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 				} else {
-					setPill(statusEl, "err", res?.error || "Setup failed");
+					const msg = res?.error || res?.message || "Setup failed";
+					setPill(statusEl, "err", msg);
+					setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 					console.warn("[mural] setup error payload:", res);
-					setupBtn.textContent = prev || 'Create “Reflexive Journal”';
 				}
 			} catch (err) {
 				console.error("[mural] setup exception:", err);
 				setPill(statusEl, "err", "Setup failed");
-				setupBtn.textContent = 'Create “Reflexive Journal”';
+				setupBtn.textContent = prev || 'Create "Reflexive Journal"';
 			} finally {
 				setupBtn.disabled = false;
 				setupBtn.setAttribute("aria-disabled", "false");
 
-				// refresh status & try a restore once verified
+				// Refresh status
 				verify(getUid()).then((res) => {
 					lastVerifyOk = !!res?.ok;
 					updateSetupState();
-					if (res.ok) {
-						setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-						restoreOpenButton().catch(() => {});
-					}
+					const f = friendlyStatusForVerify(res);
+					setPill(statusEl, f.kind, f.text);
 				}).catch(() => {});
 			}
 		};
@@ -378,63 +434,58 @@ function attachDirectListeners() {
 function init() {
 	const statusEl = /** @type {HTMLElement|null} */ ($("#mural-status"));
 
+	// Bind direct listeners to avoid duplicate delegated clicks
 	attachDirectListeners();
 
 	const uid = getUid();
+
+	// Status hint if just returned from OAuth
 	if (new URLSearchParams(location.search).get("mural") === "connected") {
 		setPill(statusEl, "ok", "Connected to Mural");
 	} else {
 		setPill(statusEl, "neutral", "Checking…");
 	}
 
+	// Verify, then compute setup enablement
 	verify(uid)
 		.then((res) => {
-			console.log("[mural] ✓ verify completed:", res);
 			lastVerifyOk = !!res?.ok;
 			updateSetupState();
 
-			if (res.ok) {
-				setPill(statusEl, "ok", "Connected to Mural (Home Office)");
-				const connectBtn = $("#mural-connect");
-				if (connectBtn) connectBtn.textContent = "Re-connect Mural";
-				restoreOpenButton().catch(() => {});
-			} else if (res.reason === "service_unavailable") {
-				setPill(statusEl, "err", "Mural appears unavailable. Your data is safe; try again later.");
-			} else if (res.reason === "not_authenticated") {
-				setPill(statusEl, "warn", "Not connected");
-			} else if (res.reason === "not_in_home_office_workspace") {
-				setPill(statusEl, "err", "Not in Home Office workspace");
-			} else if (res.reason === "network_error") {
-				setPill(statusEl, "err", "Network error — check connection.");
-			} else {
-				setPill(statusEl, "err", "Couldn’t verify Mural connection.");
-			}
+			const f = friendlyStatusForVerify(res);
+			setPill(statusEl, f.kind, f.text);
+
+			// If verified, immediately try to resolve an existing board
+			if (lastVerifyOk) queueResolveCheck();
+
+			const connectBtn = /** @type {HTMLButtonElement|null} */ ($("#mural-connect"));
+			if (connectBtn && res?.ok) connectBtn.textContent = "Re-connect Mural";
 		})
 		.catch((e) => {
-			console.error("[mural] ✗ verify failed:", e);
+			console.error("[mural] verify failed:", e);
 			lastVerifyOk = false;
 			updateSetupState();
-			setPill(statusEl, "err", "Couldn’t verify Mural. Try again later.");
+			setPill(statusEl, "err", "Error checking status");
 		});
 
-	// keep the enabled state + restore logic in sync with late-populated project name
+	// React when <main data-project-name> is populated later by renderProject()
 	watchProjectName();
 
-	// if buttons are injected later, bind again
+	// If your dashboard injects the buttons later, rebind direct listeners
 	if (!window.__muralObserver) {
 		window.__muralObserver = new MutationObserver(() => attachDirectListeners());
 		window.__muralObserver.observe(document.body, { childList: true, subtree: true });
 	}
 }
 
-/* run */
+/* Ensure init runs whether script loads early or late */
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", init);
 } else {
 	try { init(); } catch (e) { console.error("[mural] init error:", e); }
 }
 
-/* public surface for other modules */
+/* Public surface */
 window.MuralIntegration = {
 	init,
 	verify,
