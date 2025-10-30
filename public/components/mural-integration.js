@@ -117,14 +117,6 @@
 				let muralId = js?.mural?.id || null;
 				let boardUrl = js?.boardUrl || js?.mural?.viewLink || js?.mural?.viewerUrl || js?.mural?._canvasLink || null;
 
-				// Cache workspace for synthetic link
-				const wsId = window.__muralActiveWorkspaceId || null;
-
-				// FIX: correct viewer URL shape (no extra workspace segment)
-				if (!boardUrl && muralId && wsId) {
-					boardUrl = `https://app.mural.co/t/${wsId}/m/${muralId}`;
-				}
-
 				if (muralId) {
 					RESOLVE_CACHE.set(projectId, { muralId, boardUrl, ts: Date.now() });
 					setSetupAsOpen(projectId, boardUrl || null);
@@ -182,7 +174,7 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			// FIX: use ABSOLUTE return URL on Pages, so callback lands on researchops.pages.dev
+			// Use ABSOLUTE return URL on Pages, so callback lands back on researchops.pages.dev
 			const backAbs = absolutePagesUrl(`/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`);
 			location.href = `${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backAbs)}`;
 		};
