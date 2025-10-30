@@ -6,9 +6,12 @@
  * - MURAL_CLIENT_ID
  * - MURAL_CLIENT_SECRET
  * - MURAL_REDIRECT_URI
- * - (optional) MURAL_COMPANY_ID                 default: homeofficegovuk
- * - (optional) MURAL_API_BASE                   default: https://app.mural.co/api/public/v1
- * - (optional) MURAL_OAUTH_LEGACY=true          use /authorization/oauth2/* instead of /oauth2/*
+ *
+ * Optional:
+ * - MURAL_COMPANY_ID                 default: homeofficegovuk
+ * - MURAL_HOME_OFFICE_WORKSPACE_ID   if set, require this workspace id
+ * - MURAL_API_BASE                   default: https://app.mural.co/api/public/v1
+ * - MURAL_OAUTH_LEGACY=true          use /authorization/oauth2/* instead of /oauth2/*
  */
 
 export const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -24,12 +27,23 @@ export const SCOPES = [
 ];
 
 export const _COLORS = {
+	// 6-digit hex is supported by Mural’s API
 	blueberry: "#4456FF"
 };
 
-/** REST base (no oauth paths here). */
+/* === BASES === */
+
+/** Pure API root. No trailing slash, no oauth path segments. */
 export function apiBase(env) {
 	return env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+}
+
+/** OAuth base segment (modern vs legacy). */
+function oauthBase(env) {
+	const base = apiBase(env);
+	const modern = `${base}/oauth2`;
+	const legacy = `${base}/authorization/oauth2`;
+	return (String(env.MURAL_OAUTH_LEGACY || "").toLowerCase() === "true") ? legacy : modern;
 }
 
 /* ───────────────────────── internals ───────────────────────── */
@@ -64,12 +78,10 @@ export const withBearer = (token) => ({
 });
 
 function _oauthPaths(kind) {
-	// modern vs legacy API paths
 	if (kind === "authorize") {
 		return {
 			modern: "/oauth2/authorize",
-			// legacy authorize uses trailing slash before query (no additional /authorize)
-			legacy: "/authorization/oauth2/"
+			legacy: "/authorization/oauth2/authorize"
 		};
 	}
 	// token endpoints
@@ -82,10 +94,6 @@ function _oauthPaths(kind) {
 /* ───────────────────────── OAuth ───────────────────────── */
 
 export function buildAuthUrl(env, state) {
-	const base = apiBase(env);
-	const { modern, legacy } = _oauthPaths("authorize");
-	const useLegacy = String(env.MURAL_OAUTH_LEGACY || "").toLowerCase() === "true";
-
 	const params = new URLSearchParams({
 		response_type: "code",
 		client_id: env.MURAL_CLIENT_ID,
@@ -93,86 +101,65 @@ export function buildAuthUrl(env, state) {
 		scope: SCOPES.join(" "),
 		state
 	});
+	// modern:  .../oauth2/authorize
+	// legacy:  .../authorization/oauth2/authorize
+	return `${oauthBase(env)}/authorize?${params.toString()}`;
+}
 
-	// Modern:  https://.../oauth2/authorize?... 
-	// Legacy:  https://.../authorization/oauth2/?...
-	const path = useLegacy ? legacy : modern;
-	return `${base}${path}?${params}`;
+async function postForm(url, body) {
+	const res = await fetch(url, {
+		method: "POST",
+		headers: { "content-type": "application/x-www-form-urlencoded" },
+		body
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
+		err.status = res.status;
+		err.body = js;
+		throw err;
+	}
+	return js;
 }
 
 export async function exchangeAuthCode(env, code) {
-	const base = apiBase(env);
-	const { modern, legacy } = _oauthPaths("token");
-
-	const body = new URLSearchParams({
+	const form = new URLSearchParams({
 		grant_type: "authorization_code",
 		code,
 		redirect_uri: env.MURAL_REDIRECT_URI,
 		client_id: env.MURAL_CLIENT_ID,
 		client_secret: env.MURAL_CLIENT_SECRET
 	});
-
-	async function tryPath(path) {
-		const res = await fetch(`${base}${path}`, {
-			method: "POST",
-			headers: { "content-type": "application/x-www-form-urlencoded" },
-			body
-		});
-		const js = await res.json().catch(() => ({}));
-		if (!res.ok) {
-			const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
-			err.status = res.status;
-			err.body = js;
-			throw err;
-		}
-		return js; // { access_token, refresh_token?, token_type, expires_in }
-	}
+	const modern = `${apiBase(env)}/oauth2/token`;
+	const legacy = `${apiBase(env)}/authorization/oauth2/token`;
 
 	try {
-		// Prefer modern; on 404/PATH_NOT_FOUND, fall back to legacy
-		return await tryPath(modern);
+		return await postForm(modern, form);
 	} catch (e) {
 		const codeStr = String(e?.body?.code || "");
 		if (Number(e?.status) === 404 || /PATH_NOT_FOUND/i.test(codeStr)) {
-			return await tryPath(legacy);
+			return await postForm(legacy, form);
 		}
 		throw e;
 	}
 }
 
 export async function refreshAccessToken(env, refresh_token) {
-	const base = apiBase(env);
-	const { modern, legacy } = _oauthPaths("token");
-
-	const body = new URLSearchParams({
+	const form = new URLSearchParams({
 		grant_type: "refresh_token",
 		refresh_token,
 		client_id: env.MURAL_CLIENT_ID,
 		client_secret: env.MURAL_CLIENT_SECRET
 	});
-
-	async function tryPath(path) {
-		const res = await fetch(`${base}${path}`, {
-			method: "POST",
-			headers: { "content-type": "application/x-www-form-urlencoded" },
-			body
-		});
-		const js = await res.json().catch(() => ({}));
-		if (!res.ok) {
-			const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
-			err.status = res.status;
-			err.body = js;
-			throw err;
-		}
-		return js;
-	}
+	const modern = `${apiBase(env)}/oauth2/token`;
+	const legacy = `${apiBase(env)}/authorization/oauth2/token`;
 
 	try {
-		return await tryPath(modern);
+		return await postForm(modern, form);
 	} catch (e) {
 		const codeStr = String(e?.body?.code || "");
 		if (Number(e?.status) === 404 || /PATH_NOT_FOUND/i.test(codeStr)) {
-			return await tryPath(legacy);
+			return await postForm(legacy, form);
 		}
 		throw e;
 	}
@@ -197,7 +184,10 @@ export function getActiveWorkspaceIdFromMe(meRaw) {
 	return me?.lastActiveWorkspace || me?.activeWorkspaceId || null;
 }
 
-/** Return boolean; do not throw. Caller decides whether to block. */
+/**
+ * Return boolean; do not throw. Caller decides whether to block.
+ * Accept by companyId OR companyName. Optionally pin to a specific workspace id.
+ */
 export async function verifyHomeOfficeByCompany(env, token) {
 	const meRaw = await getMe(env, token).catch(() => null);
 	const me = _unwrapMe(meRaw);
@@ -206,10 +196,18 @@ export async function verifyHomeOfficeByCompany(env, token) {
 	const cname = (me?.companyName || "").toString().trim().toLowerCase();
 	const expected = (env.MURAL_COMPANY_ID || "homeofficegovuk").toLowerCase();
 
-	if (!cid && !cname) return false;
-	if (cid === expected) return true;
-	if (cname.includes("home office")) return true;
-	return false;
+	let ok = false;
+	if (cid && cid === expected) ok = true;
+	if (!ok && cname && cname.includes("home office")) ok = true;
+
+	// Optional: pin to specific workspace id
+	const mustWs = (env.MURAL_HOME_OFFICE_WORKSPACE_ID || "").trim();
+	if (ok && mustWs) {
+		const ws = getActiveWorkspaceIdFromMe(me);
+		if (!ws || String(ws) !== String(mustWs)) ok = false;
+	}
+
+	return ok;
 }
 
 /* ───────────────────────── Rooms / Folders / Murals ───────────────────────── */
