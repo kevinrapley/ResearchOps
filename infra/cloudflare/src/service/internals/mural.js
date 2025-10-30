@@ -143,10 +143,12 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 /** Create a board mapping row in Airtable. */
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
 	const url = _encodeTableUrl(env, "Mural Boards");
-	const body = {
+
+	// 1) Try as linked record (array of ids)
+	const asLinked = {
 		records: [{
 			fields: {
-				"Project": projectId,
+				"Project": Array.isArray(projectId) ? projectId : [String(projectId)],
 				"UID": uid,
 				"Purpose": purpose,
 				"Mural ID": muralId,
@@ -157,7 +159,36 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
 			}
 		}]
 	};
-	const res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(body) });
+
+	let res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(asLinked) });
+	if (res.ok) return await res.json().catch(() => ({}));
+	const errBody = await res.json().catch(() => ({}));
+
+	// 2) If schema rejects linked type, retry as single-line text
+	const shouldRetryAsText =
+		res.status === 422 ||
+		/(INVALID_VALUE_FOR_COLUMN|INVALID_VALUE|UNKNOWN_FIELD|INVALID_REQUEST_UNKNOWN)/i.test(JSON.stringify(errBody || {}));
+
+	if (!shouldRetryAsText) {
+		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: errBody });
+	}
+
+	const asText = {
+		records: [{
+			fields: {
+				"Project": String(projectId),
+				"UID": uid,
+				"Purpose": purpose,
+				"Mural ID": muralId,
+				"Board URL": boardUrl,
+				"Workspace ID": workspaceId,
+				"Primary?": !!primary,
+				"Active": !!active
+			}
+		}]
+	};
+
+	res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(asText) });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
 		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
@@ -474,9 +505,10 @@ export class MuralServicePart {
 				null;
 
 			// Persist mapping in Airtable if projectId is known
+			let registered = false;
 			if (projectId) {
 				await this.registerBoard({
-					projectId,
+					projectId: String(projectId),
 					uid,
 					purpose: PURPOSE_REFLEXIVE,
 					muralId: mural.id,
@@ -484,9 +516,32 @@ export class MuralServicePart {
 					workspaceId: ws.id,
 					primary: true
 				});
+				registered = true;
 			}
 
-			return this.root.json({ ok: true, workspace: ws, room, folder, mural: { ...mural, viewLink: openUrl } }, 200, cors);
+			// KV backup so resolve can recover even if Airtable write fails or schema differs
+			try {
+				const kvKey = `mural:${uid}:project:id::${String(projectId || "")}`;
+				if (projectId && openUrl) {
+					await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
+						url: openUrl,
+						projectName: projectName,
+						updatedAt: Date.now()
+					}));
+				}
+			} catch { /* non-fatal */ }
+
+			// Return a richer payload for debugging
+			return this.root.json({
+				ok: true,
+				workspace: ws,
+				room,
+				folder,
+				mural: { ...mural, viewLink: openUrl },
+				projectId: projectId || null,
+				registered, // ← did we hit Airtable?
+				boardUrl: openUrl || null
+			}, 200, cors);
 
 		} catch (err) {
 			const status = Number(err?.status) || 500;
