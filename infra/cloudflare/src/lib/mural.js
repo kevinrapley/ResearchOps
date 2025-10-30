@@ -27,7 +27,6 @@ export const SCOPES = [
 ];
 
 export const _COLORS = {
-	// 6-digit hex is supported by Mural’s API
 	blueberry: "#4456FF"
 };
 
@@ -278,10 +277,11 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
+	// IMPORTANT: Do NOT send backgroundColor. Keep payload minimal and compatible.
 	return fetchJSON(`${apiBase(env)}/murals`, {
 		method: "POST",
 		...withBearer(token),
-		body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+		body: JSON.stringify({ title, roomId, folderId })
 	});
 }
 
