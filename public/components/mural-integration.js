@@ -165,9 +165,8 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			// Return to the Pages dashboard after OAuth completes.
-			const back = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
-			// Hit the Worker auth endpoint at the chosen API origin.
+			// Absolute return to keep the final hop on Pages
+			const back = `${location.origin}/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 			location.href = `${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(back)}`;
 		};
 	}
