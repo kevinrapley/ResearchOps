@@ -117,13 +117,26 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	return Array.isArray(js.records) ? js.records : [];
 }
 
-/** Create a board mapping row in Airtable. */
-async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
-	const url = _encodeTableUrl(env, "Mural Boards");
-	const body = {
+/** Create a board mapping row in Airtable (robust to Project field type). */
+async function _airtableCreateBoard(env, {
+	projectId,
+	uid,
+	purpose,
+	muralId,
+	boardUrl = null,
+	workspaceId = null,
+	primary = false,
+	active = true
+}) {
+	const baseUrl = _encodeTableUrl(env, "Mural Boards");
+	const headers = _airtableHeaders(env);
+
+	// 1) Try as LINKED RECORD: Project = [{ id: rec... }]
+	const linkedBody = {
+		typecast: true,
 		records: [{
 			fields: {
-				"Project": projectId,
+				"Project": [{ id: String(projectId) }],
 				"UID": uid,
 				"Purpose": purpose,
 				"Mural ID": muralId,
@@ -134,12 +147,38 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
 			}
 		}]
 	};
-	const res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(body) });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok) {
-		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
+
+	let res = await fetch(baseUrl, { method: "POST", headers, body: JSON.stringify(linkedBody) });
+	let js = await res.json().catch(() => ({}));
+
+	// If it worked, return.
+	if (res.ok) return js;
+
+	// If Airtable rejected the linked form (likely because Project is text), retry as TEXT.
+	if (res.status === 422) {
+		const textBody = {
+			typecast: true,
+			records: [{
+				fields: {
+					"Project": String(projectId),
+					"UID": uid,
+					"Purpose": purpose,
+					"Mural ID": muralId,
+					"Board URL": boardUrl,
+					"Workspace ID": workspaceId,
+					"Primary?": !!primary,
+					"Active": !!active
+				}
+			}]
+		};
+
+		res = await fetch(baseUrl, { method: "POST", headers, body: JSON.stringify(textBody) });
+		js = await res.json().catch(() => ({}));
+		if (res.ok) return js;
 	}
-	return js;
+
+	// Still no luck — surface the Airtable error verbosely for your debug console.
+	throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
 }
 
 /* ───────────────────────── Class ───────────────────────── */
