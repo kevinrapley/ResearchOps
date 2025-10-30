@@ -181,6 +181,28 @@ async function _airtableCreateBoard(env, {
 	throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
 }
 
+const ALLOWED_RETURN_ORIGINS = [
+	"https://researchops.pages.dev",
+	"https://rops-api.digikev-kevin-rapley.workers.dev"
+];
+
+function isAllowedReturn(urlStr) {
+	try {
+		const u = new URL(urlStr);
+		return ALLOWED_RETURN_ORIGINS.includes(u.origin);
+	} catch {
+		return false;
+	}
+}
+
+function normaliseReturnParam(ret, fallbackPath = "/pages/projects/") {
+	// Accept absolute https URL if origin is whitelisted; otherwise treat as path.
+	if (ret && /^https:\/\//i.test(ret) && isAllowedReturn(ret)) return ret;
+	// Only allow root-relative paths; prevent open redirects.
+	if (ret && ret.startsWith("/")) return ret;
+	return fallbackPath;
+}
+
 /* ───────────────────────── Class ───────────────────────── */
 
 export class MuralServicePart {
@@ -293,9 +315,15 @@ export class MuralServicePart {
 
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
-		const ret = url.searchParams.get("return");
-		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
-		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
+		const retRaw = url.searchParams.get("return");
+		const safeReturn = normaliseReturnParam(retRaw);
+
+		const state = b64Encode(JSON.stringify({
+			uid,
+			ts: Date.now(),
+			return: safeReturn
+		}));
+
 		const redirect = buildAuthUrl(this.root.env, state);
 		return Response.redirect(redirect, 302);
 	}
@@ -322,9 +350,9 @@ export class MuralServicePart {
 		try {
 			stateObj = JSON.parse(b64Decode(stateB64 || ""));
 			uid = stateObj?.uid || "anon";
-		} catch { /* ignore */ }
+		} catch {}
 
-		// code → tokens
+		// Exchange code
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
@@ -335,17 +363,21 @@ export class MuralServicePart {
 				message: err?.message || "Unable to exchange OAuth code"
 			}, 500, this.root.corsHeaders(origin));
 		}
-
 		await this.saveTokens(uid, tokens);
 
-		// Return to the page we came from, append mural=connected
-		const safeReturn = (stateObj?.return && stateObj.return.startsWith("/")) ?
-			stateObj.return : "/pages/projects/";
-		const back = new URL(safeReturn, url);
+		// Work out where to send the user back to
+		const ret = normaliseReturnParam(stateObj?.return);
+
+		// If absolute whitelisted URL → redirect exactly there.
+		if (/^https:\/\//i.test(ret) && isAllowedReturn(ret)) {
+			return Response.redirect(ret.replace(/([?&])mural=[^&]*/g, "$1").replace(/[?&]$/, "") + (ret.includes("?") ? "&" : "?") + "mural=connected", 302);
+		}
+
+		// Otherwise treat as root-relative path on workers.dev (current host)
+		const back = new URL(ret, url);
 		const sp = new URLSearchParams(back.search);
 		sp.set("mural", "connected");
 		back.search = sp.toString();
-
 		return Response.redirect(back.toString(), 302);
 	}
 
