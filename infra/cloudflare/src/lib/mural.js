@@ -229,13 +229,23 @@ export async function createRoom(env, token, { name, workspaceId, type = "privat
 	});
 }
 
+// Small normaliser for room ids across API shapes.
+function roomIdOf(room) {
+	return room?.id || room?.roomId || room?.value?.id || null;
+}
+
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [] }));
-	let room = (rooms?.items || []).find(r => {
-		const rType = (r.type || r.visibility || "").toString().toLowerCase();
-		const rName = (r.name || "").toString().toLowerCase();
+	const list = Array.isArray(rooms?.items) ? rooms.items :
+		Array.isArray(rooms?.rooms) ? rooms.rooms :
+		[];
+
+	let room = list.find(r => {
+		const rType = String(r.type || r.visibility || "").toLowerCase();
+		const rName = String(r.name || "").toLowerCase();
 		return rType.includes("private") || (username && rName.includes(username.toLowerCase()));
 	});
+
 	if (!room) {
 		room = await createRoom(env, token, { name: `${username} — Private`, workspaceId, type: "private" });
 	}
@@ -243,11 +253,16 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
 }
 
 export async function listFolders(env, token, roomId) {
-	return fetchJSON(`${apiBase(env)}/rooms/${roomId}/folders`, withBearer(token));
+	const js = await fetchJSON(`${apiBase(env)}/rooms/${encodeURIComponent(roomId)}/folders`, withBearer(token));
+	// Some responses: { items: [...] }, others: { folders: [...] }
+	const items = Array.isArray(js?.items) ? js.items :
+		Array.isArray(js?.folders) ? js.folders :
+		[];
+	return { items };
 }
 
 export async function createFolder(env, token, roomId, name) {
-	return fetchJSON(`${apiBase(env)}/rooms/${roomId}/folders`, {
+	return fetchJSON(`${apiBase(env)}/rooms/${encodeURIComponent(roomId)}/folders`, {
 		method: "POST",
 		...withBearer(token),
 		body: JSON.stringify({ name })
@@ -256,7 +271,7 @@ export async function createFolder(env, token, roomId, name) {
 
 export async function ensureProjectFolder(env, token, roomId, projectName) {
 	const existing = await listFolders(env, token, roomId).catch(() => ({ items: [] }));
-	const found = (existing?.items || []).find(f => (f.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase());
+	const found = (existing?.items || []).find(f => String(f.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase());
 	if (found) return found;
 	return createFolder(env, token, roomId, projectName);
 }
@@ -272,6 +287,10 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 /** Fetch mural details (to pick up viewer links if not present on creation). */
 export async function getMural(env, token, muralId) {
 	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}`, withBearer(token));
+}
+
+export function roomIdOf(room) {
+	return room?.id || room?.roomId || room?.value?.id || null;
 }
 
 /* ───────────────────────── Widgets + Tags ───────────────────────── */
