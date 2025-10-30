@@ -72,6 +72,20 @@ function _esc(v) {
 	return String(v ?? "").replace(/"/g, '\\"');
 }
 
+/** Validate that a return URL is on an allowed origin (defence-in-depth). */
+function _isAllowedReturn(env, urlStr) {
+	try {
+		const u = new URL(urlStr);
+		const allowed = (env.ALLOWED_ORIGINS || "")
+			.split(",")
+			.map(s => s.trim())
+			.filter(Boolean);
+		return allowed.includes(`${u.protocol}//${u.host}`);
+	} catch {
+		return false;
+	}
+}
+
 /**
  * Build Airtable filter for UID / Purpose / Active only (PROJECT FILTER REMOVED).
  * We filter by projectId **client-side** after fetching to avoid schema-dependent formula errors.
@@ -96,10 +110,10 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	const filterByFormula = _buildBoardsFilter({ uid, purpose, active });
 	if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
 	url.searchParams.set("maxRecords", String(max));
-	url.searchParams.set("sort", JSON.stringify([
-		{ field: "Primary?", direction: "desc" },
-		{ field: "Created At", direction: "desc" }
-	]));
+	url.searchParams.append("sort[0][field]", "Primary?");
+	url.searchParams.append("sort[0][direction]", "desc");
+	url.searchParams.append("sort[1][field]", "Created At");
+	url.searchParams.append("sort[1][direction]", "desc");
 
 	const res = await fetch(url.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
@@ -263,8 +277,15 @@ export class MuralServicePart {
 
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
-		const ret = url.searchParams.get("return");
-		const safeReturn = (ret && ret.startsWith("/")) ? ret : "/pages/projects/";
+		const ret = url.searchParams.get("return") || "";
+		let safeReturn = "/pages/projects/";
+
+		if (ret && _isAllowedReturn(this.root.env, ret)) {
+			safeReturn = ret; // absolute + allowed
+		} else if (ret.startsWith("/")) {
+			safeReturn = ret; // relative path
+		}
+
 		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
 		const redirect = buildAuthUrl(this.root.env, state);
 		return Response.redirect(redirect, 302);
@@ -294,7 +315,7 @@ export class MuralServicePart {
 			uid = stateObj?.uid || "anon";
 		} catch { /* ignore */ }
 
-		// code → tokens
+		// Exchange code → tokens
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
@@ -308,15 +329,26 @@ export class MuralServicePart {
 
 		await this.saveTokens(uid, tokens);
 
-		// Return to the page we came from, append mural=connected
-		const safeReturn = (stateObj?.return && stateObj.return.startsWith("/")) ?
-			stateObj.return : "/pages/projects/";
-		const back = new URL(safeReturn, url);
-		const sp = new URLSearchParams(back.search);
-		sp.set("mural", "connected");
-		back.search = sp.toString();
+		// --- Build redirect target ---
+		const want = stateObj?.return || "/pages/projects/";
+		let backUrl;
 
-		return Response.redirect(back.toString(), 302);
+		if (want.startsWith("http")) {
+			// Absolute URL — only if allowed (from ALLOWED_ORIGINS)
+			backUrl = _isAllowedReturn(env, want) ?
+				new URL(want) :
+				new URL("/pages/projects/", url);
+		} else {
+			// Relative path — safe against Worker origin
+			backUrl = new URL(want, url);
+		}
+
+		// Append mural=connected param
+		const sp = new URLSearchParams(backUrl.search);
+		sp.set("mural", "connected");
+		backUrl.search = sp.toString();
+
+		return Response.redirect(backUrl.toString(), 302);
 	}
 
 	async muralVerify(origin, url) {
@@ -587,7 +619,7 @@ export class MuralServicePart {
 	/** TEMP debug */
 	async muralDebugEnv(origin) {
 		const env = this.root.env || {};
-	 return this.root.json({
+		return this.root.json({
 			ok: true,
 			has_CLIENT_ID: Boolean(env.MURAL_CLIENT_ID),
 			has_CLIENT_SECRET: Boolean(env.MURAL_CLIENT_SECRET),
