@@ -108,24 +108,34 @@
 					body: JSON.stringify(body)
 				});
 
-				// Prefer links returned by create; if missing, fall back to resolve → Airtable mapping.
+				// Prefer links returned by create; if missing, fall back to resolve → Airtable or KV mapping.
 				let muralId = js?.mural?.id || null;
-				let boardUrl = js?.mural?.viewLink || js?.mural?.viewerUrl || js?.mural?._canvasLink || null;
+				let boardUrl = js?.boardUrl || js?.mural?.viewLink || js?.mural?.viewerUrl || js?.mural?._canvasLink || null;
 
-				if (!boardUrl && muralId) {
-					// best-effort: resolve immediately to pick up any Airtable stored URL
-					try {
-						const r = await jsonFetch(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
-						if (r?.boardUrl) boardUrl = r.boardUrl;
-					} catch { /* ignore */ }
+				// Cache workspace for synthetic link
+				const wsId = window.__muralActiveWorkspaceId || null;
+				if (!boardUrl && muralId && wsId) {
+					boardUrl = `https://app.mural.co/t/${wsId}/m/${wsId}/${muralId}`;
 				}
 
 				if (muralId) {
 					RESOLVE_CACHE.set(projectId, { muralId, boardUrl, ts: Date.now() });
 					setSetupAsOpen(projectId, boardUrl || null);
 					pill(els.status, "good", boardUrl ? "Connected" : "Created (open from Mural)");
+					if (boardUrl) window.open(boardUrl, "_blank", "noopener");
 					console.log("[mural] created + registered board", { muralId, boardUrl });
 				} else {
+					// No mural id (should be rare) — still try resolve to pick up KV/AT mapping
+					try {
+						const r = await jsonFetch(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
+						if (r?.boardUrl) {
+							RESOLVE_CACHE.set(projectId, { muralId: r.muralId || null, boardUrl: r.boardUrl, ts: Date.now() });
+							setSetupAsOpen(projectId, r.boardUrl);
+							pill(els.status, "good", "Connected");
+							window.open(r.boardUrl, "_blank", "noopener");
+							return;
+						}
+					} catch { /* ignore */ }
 					pill(els.status, "warn", "Created, but missing board link");
 					els.btnSetup.disabled = false;
 				}
@@ -165,8 +175,9 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			// Absolute return to keep the final hop on Pages
-			const back = `${location.origin}/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+			// Return to the Pages dashboard after OAuth completes.
+			const back = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+			// Hit the Worker auth endpoint at the chosen API origin.
 			location.href = `${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(back)}`;
 		};
 	}
@@ -174,7 +185,10 @@
 	/* ─────────────── API wrappers ─────────────── */
 
 	async function verify() {
-		return jsonFetch(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
+		const js = await jsonFetch(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
+		// cache workspace id for client-side synthetic URL if needed
+		window.__muralActiveWorkspaceId = js?.activeWorkspaceId || window.__muralActiveWorkspaceId || null;
+		return js;
 	}
 
 	async function resolveBoard(projectId) {
@@ -183,7 +197,7 @@
 
 		const js = await jsonFetch(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
-		if (rec.muralId) RESOLVE_CACHE.set(projectId, rec);
+		if (rec.muralId || rec.boardUrl) RESOLVE_CACHE.set(projectId, rec);
 		return rec;
 	}
 
@@ -233,7 +247,7 @@
 		// Try resolution; handle known Airtable failure modes gracefully
 		try {
 			const res = await resolveBoard(projectId);
-			if (res?.muralId) {
+			if (res?.muralId || res?.boardUrl) {
 				console.log("[mural] resolved board", res);
 				setSetupAsOpen(projectId, res.boardUrl || null);
 				pill(els.status, "good", "Connected");
