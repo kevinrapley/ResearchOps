@@ -123,6 +123,7 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	const res = await fetch(baseUrl.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
+		console.error("Airtable fetch failed", res.status, baseUrl.toString(), js);
 		throw Object.assign(new Error("airtable_list_failed"), { status: res.status, body: js });
 	}
 	return Array.isArray(js.records) ? js.records : [];
