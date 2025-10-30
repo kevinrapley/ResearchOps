@@ -104,10 +104,10 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	const filterByFormula = _buildBoardsFilter({ projectId, uid, purpose, active });
 	if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
 	url.searchParams.set("maxRecords", String(max));
-	url.searchParams.set("sort", JSON.stringify([
-		{ field: "Primary?", direction: "desc" },
-		{ field: "Created At", direction: "desc" }
-	]));
+	url.searchParams.set("sort[0][field]", "Primary?");
+	url.searchParams.set("sort[0][direction]", "desc");
+	url.searchParams.set("sort[1][field]", "Created At");
+	url.searchParams.set("sort[1][direction]", "desc");
 
 	const res = await fetch(url.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
