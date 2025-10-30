@@ -102,11 +102,11 @@ export function buildAuthUrl(env, state) {
 		state
 	});
 
+	// Legacy auth screens live at /authorization/oauth2/ (no /authorize suffix)
 	if (String(env.MURAL_OAUTH_LEGACY || "").toLowerCase() === "true") {
-		// Legacy: NO /authorize segment
 		return `${apiBase(env)}/authorization/oauth2/?${params.toString()}`;
 	}
-	// Modern: with /authorize
+	// Modern auth uses /oauth2/authorize
 	return `${apiBase(env)}/oauth2/authorize?${params.toString()}`;
 }
 
@@ -220,8 +220,11 @@ export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
+/**
+ * Create a room.
+ * Mural expects `type`: "private" | "open"
+ */
 export async function createRoom(env, token, { name, workspaceId, type = "private" }) {
-	// type: "private" | "open"
 	return fetchJSON(`${apiBase(env)}/rooms`, {
 		method: "POST",
 		...withBearer(token),
@@ -229,16 +232,15 @@ export async function createRoom(env, token, { name, workspaceId, type = "privat
 	});
 }
 
-// Small normaliser for room ids across API shapes.
-function roomIdOf(room) {
+/** Normalise room ids across shapes and export once (avoid duplicate symbol). */
+export function roomIdOf(room) {
 	return room?.id || room?.roomId || room?.value?.id || null;
 }
 
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [] }));
 	const list = Array.isArray(rooms?.items) ? rooms.items :
-		Array.isArray(rooms?.rooms) ? rooms.rooms :
-		[];
+		Array.isArray(rooms?.rooms) ? rooms.rooms : [];
 
 	let room = list.find(r => {
 		const rType = String(r.type || r.visibility || "").toLowerCase();
@@ -256,8 +258,7 @@ export async function listFolders(env, token, roomId) {
 	const js = await fetchJSON(`${apiBase(env)}/rooms/${encodeURIComponent(roomId)}/folders`, withBearer(token));
 	// Some responses: { items: [...] }, others: { folders: [...] }
 	const items = Array.isArray(js?.items) ? js.items :
-		Array.isArray(js?.folders) ? js.folders :
-		[];
+		Array.isArray(js?.folders) ? js.folders : [];
 	return { items };
 }
 
@@ -287,10 +288,6 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 /** Fetch mural details (to pick up viewer links if not present on creation). */
 export async function getMural(env, token, muralId) {
 	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}`, withBearer(token));
-}
-
-export function roomIdOf(room) {
-	return room?.id || room?.roomId || room?.value?.id || null;
 }
 
 /* ───────────────────────── Widgets + Tags ───────────────────────── */
