@@ -6,8 +6,8 @@
  * - MURAL_CLIENT_ID
  * - MURAL_CLIENT_SECRET
  * - MURAL_REDIRECT_URI
- * - (optional) MURAL_HOME_OFFICE_WORKSPACE_ID
- * - (optional) MURAL_API_BASE   default: https://app.mural.co/api/public/v1
+ * - (optional) MURAL_COMPANY_ID            default: homeofficegovuk
+ * - (optional) MURAL_API_BASE              default: https://app.mural.co/api/public/v1
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -22,14 +22,26 @@ export const SCOPES = [
 	"murals:write"
 ];
 
-const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+export const _COLORS = {
+	blueberry: "#4456FF"
+};
+
+export const _int = {
+	fetchJSON,
+	withBearer,
+	apiBase
+};
+
+function apiBase(env) {
+	return env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+}
 
 async function fetchJSON(url, opts = {}) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
 	try {
 		const res = await fetch(url, { ...opts, signal: ctrl.signal });
-		const txt = await res.text();
+		const txt = await res.text().catch(() => "");
 		let js = {};
 		try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
 		if (!res.ok) {
@@ -44,9 +56,11 @@ async function fetchJSON(url, opts = {}) {
 	}
 }
 
-const withBearer = (token) => ({
-	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
-});
+function withBearer(token) {
+	return { headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` } };
+}
+
+/* ───────────────────────── OAuth / Identity ───────────────────────── */
 
 export function buildAuthUrl(env, state) {
 	const params = new URLSearchParams({
@@ -98,6 +112,10 @@ export async function getMe(env, token) {
 	return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
 
+export function getActiveWorkspaceIdFromMe(me) {
+	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
+}
+
 export async function getWorkspaces(env, token) {
 	return fetchJSON(`${apiBase(env)}/workspaces`, withBearer(token));
 }
@@ -109,9 +127,7 @@ export async function verifyHomeOfficeByCompany(env, token) {
 	return Boolean(company) && company === want;
 }
 
-export function getActiveWorkspaceIdFromMe(me) {
-	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
-}
+/* ───────────────────────── Rooms / Folders / Murals ───────────────────────── */
 
 export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
@@ -164,17 +180,119 @@ export async function createMural(env, token, { title, roomId, folderId }) {
 	});
 }
 
-/** NEW: fetch full mural details (often contains open/viewer links that creation omits). */
+/** Fetch full mural details (often includes open/view links that creation omits). */
 export async function getMural(env, token, muralId) {
 	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}`, withBearer(token));
 }
 
-/* ── widgets/tags helpers you already had (omitted here if unchanged) ── */
+/* ───────────────────────── Widgets / Tags helpers ───────────────────────── */
+/* These names are required by service/internals/mural.js imports.            */
+
 export async function getWidgets(env, token, muralId) {
 	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets`, withBearer(token));
 }
 
-// … plus your existing createSticky / updateSticky / tagging helpers …
+export async function createSticky(env, token, muralId, { text, x, y, width, height, color = _COLORS.blueberry } = {}) {
+	// API shape: POST /murals/:id/widgets  → { type, ...props }
+	const payload = {
+		type: "sticky-note",
+		text: text ?? "",
+		x: Number.isFinite(x) ? Math.round(x) : 0,
+		y: Number.isFinite(y) ? Math.round(y) : 0,
+		width: Number.isFinite(width) ? Math.round(width) : 240,
+		height: Number.isFinite(height) ? Math.round(height) : 120,
+		color
+	};
+	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets`, {
+		method: "POST",
+		...withBearer(token),
+		body: JSON.stringify(payload)
+	});
+}
 
-// small export bag used by service part
-export const _int = { fetchJSON, withBearer, apiBase };
+export async function updateSticky(env, token, muralId, widgetId, patch) {
+	// API shape: PATCH /murals/:id/widgets/:widgetId
+	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets/${encodeURIComponent(widgetId)}`, {
+		method: "PATCH",
+		...withBearer(token),
+		body: JSON.stringify(patch || {})
+	});
+}
+
+async function listTags(env, token, muralId) {
+	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/tags`, withBearer(token));
+}
+
+async function createTag(env, token, muralId, { name, color = _COLORS.blueberry }) {
+	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/tags`, {
+		method: "POST",
+		...withBearer(token),
+		body: JSON.stringify({ name, color })
+	});
+}
+
+export async function ensureTagsBlueberry(env, token, muralId, labels = []) {
+	const names = labels
+		.map(s => String(s || "").trim())
+		.filter(Boolean);
+	if (!names.length) return [];
+
+	const existing = await listTags(env, token, muralId).catch(() => ({ items: [] }));
+	const have = new Map((existing?.items || []).map(t => [String(t.name).toLowerCase(), t]));
+
+	const ids = [];
+	for (const nm of names) {
+		const key = nm.toLowerCase();
+		let tag = have.get(key);
+		if (!tag) {
+			tag = await createTag(env, token, muralId, { name: nm }).catch(() => null);
+		}
+		if (tag?.id) ids.push(tag.id);
+	}
+	return ids;
+}
+
+export async function applyTagsToSticky(env, token, muralId, widgetId, tagIds = []) {
+	if (!Array.isArray(tagIds) || !tagIds.length) return { ok: true };
+	// API shape: POST /murals/:id/widgets/:widgetId/tags  body: { tagIds: [...] }
+	return fetchJSON(`${apiBase(env)}/murals/${encodeURIComponent(muralId)}/widgets/${encodeURIComponent(widgetId)}/tags`, {
+		method: "POST",
+		...withBearer(token),
+		body: JSON.stringify({ tagIds })
+	});
+}
+
+/* ───────────────────────── Client-side-normalisation helpers ───────────── */
+
+export function normaliseWidgets(widgets) {
+	const list = Array.isArray(widgets) ? widgets : [];
+	return list.map(w => ({
+		id: w?.id,
+		type: w?.type || "",
+		text: (w?.text ?? w?.content ?? "").toString(),
+		x: Number(w?.x ?? 0),
+		y: Number(w?.y ?? 0),
+		width: Number(w?.width ?? 0),
+		height: Number(w?.height ?? 0),
+		color: w?.color || null,
+		category: inferCategoryFromText((w?.text ?? "").toString())
+	}));
+}
+
+function inferCategoryFromText(txt) {
+	// Cheap classifier by leading token (you already gate by category server-side)
+	const t = (txt || "").trim().toLowerCase();
+	if (!t) return "";
+	if (t.startsWith("[perceptions]")) return "perceptions";
+	if (t.startsWith("[procedures]")) return "procedures";
+	if (t.startsWith("[decisions]")) return "decisions";
+	if (t.startsWith("[introspections]")) return "introspections";
+	return "";
+}
+
+export function findLatestInCategory(widgets, category) {
+	const cat = String(category || "").toLowerCase();
+	const pool = (Array.isArray(widgets) ? widgets : []).filter(w => w.category === cat || cat === "");
+	// “Latest” by visual Y position then X as tiebreaker
+	return pool.sort((a, b) => (a.y - b.y) || (a.x - b.x)).slice(-1)[0] || null;
+}
