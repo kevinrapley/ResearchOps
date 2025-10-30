@@ -277,7 +277,6 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
-	// IMPORTANT: Do NOT send backgroundColor. Keep payload minimal and compatible.
 	return fetchJSON(`${apiBase(env)}/murals`, {
 		method: "POST",
 		...withBearer(token),
