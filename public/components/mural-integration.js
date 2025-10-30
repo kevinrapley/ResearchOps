@@ -274,7 +274,6 @@
 			const cur = main.dataset.projectName || "";
 			if (cur && cur !== last) {
 				last = cur;
-				// Re-run once the friendly name lands so we can confidently resolve and stabilise the buttons.
 				updateSetupState();
 			}
 		});
