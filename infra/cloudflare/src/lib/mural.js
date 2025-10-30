@@ -48,7 +48,16 @@ const withBearer = (token) => ({
 	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
 });
 
+// Resolve correct OAuth path variant for tenant
+function _oauthPath(kind = "authorize") {
+	const primary = kind === "authorize" ? "/oauth2/authorize" : "/oauth2/token";
+	const fallback = kind === "authorize" ? "/authorization/oauth2/authorize" : "/authorization/oauth2/token";
+	return { primary, fallback };
+}
+
 export function buildAuthUrl(env, state) {
+	const base = apiBase(env);
+	const { primary, fallback } = _oauthPath("authorize");
 	const params = new URLSearchParams({
 		response_type: "code",
 		client_id: env.MURAL_CLIENT_ID,
@@ -56,10 +65,15 @@ export function buildAuthUrl(env, state) {
 		scope: SCOPES.join(" "),
 		state
 	});
-	return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+	// prefer /oauth2/, fall back if env flag set
+	const path = env.MURAL_OAUTH_LEGACY ? fallback : primary;
+	return `${base}${path}?${params}`;
 }
 
 export async function exchangeAuthCode(env, code) {
+	const base = apiBase(env);
+	const { primary, fallback } = _oauthPath("token");
+
 	const body = new URLSearchParams({
 		grant_type: "authorization_code",
 		code,
@@ -67,14 +81,32 @@ export async function exchangeAuthCode(env, code) {
 		client_id: env.MURAL_CLIENT_ID,
 		client_secret: env.MURAL_CLIENT_SECRET
 	});
-	const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
-		method: "POST",
-		headers: { "content-type": "application/x-www-form-urlencoded" },
-		body
-	});
-	const js = await res.json();
-	if (!res.ok) throw new Error(js?.error_description || "Token exchange failed");
-	return js; // { access_token, refresh_token?, token_type, expires_in }
+
+	async function tryPath(path) {
+		const res = await fetch(`${base}${path}`, {
+			method: "POST",
+			headers: { "content-type": "application/x-www-form-urlencoded" },
+			body
+		});
+		const js = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			const msg = js?.error_description || js?.message || `HTTP ${res.status}`;
+			const err = new Error(msg);
+			err.status = res.status;
+			err.body = js;
+			throw err;
+		}
+		return js;
+	}
+
+	try {
+		return await tryPath(primary);
+	} catch (e) {
+		if (Number(e?.status) === 404 || /PATH_NOT_FOUND/i.test(String(e?.body?.code || ""))) {
+			return await tryPath(fallback);
+		}
+		throw e;
+	}
 }
 
 export async function refreshAccessToken(env, refresh_token) {
@@ -94,23 +126,41 @@ export async function refreshAccessToken(env, refresh_token) {
 	return js;
 }
 
-export async function getMe(env, token) {
-	return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
-}
-
 export async function getWorkspaces(env, token) {
 	return fetchJSON(`${apiBase(env)}/workspaces`, withBearer(token));
 }
 
-export async function verifyHomeOfficeByCompany(env, token) {
-	const me = await getMe(env, token).catch(() => null);
-	const company = (me?.value?.companyId || me?.companyId || "").toString().toLowerCase();
-	const want = (env.MURAL_COMPANY_ID || "homeofficegovuk").toLowerCase();
-	return Boolean(company) && company === want;
+// Normalise /users/me payload shape
+function _unwrapMe(me) {
+	return (me && typeof me === "object" && me.value && typeof me.value === "object") ?
+		me.value :
+		me;
 }
 
-export function getActiveWorkspaceIdFromMe(me) {
-	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
+export async function getMe(env, token) {
+	return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
+}
+
+export function getActiveWorkspaceIdFromMe(meRaw) {
+	const me = _unwrapMe(meRaw);
+	return me?.lastActiveWorkspace || me?.activeWorkspaceId || null;
+}
+
+export async function verifyHomeOfficeByCompany(env, token) {
+	const meRaw = await getMe(env, token).catch(() => null);
+	const me = _unwrapMe(meRaw);
+
+	const cid = (me?.companyId || "").toString().trim().toLowerCase();
+	const cname = (me?.companyName || "").toString().trim().toLowerCase();
+	const expected = (env.MURAL_COMPANY_ID || "homeofficegovuk").toLowerCase();
+
+	// Accept either an exact companyId match or a companyName containing "home office"
+	if (cid === expected) return true;
+	if (cname.includes("home office")) return true;
+
+	const err = new Error("not_in_home_office_workspace");
+	err.status = 403;
+	throw err;
 }
 
 export async function listRooms(env, token, workspaceId) {
