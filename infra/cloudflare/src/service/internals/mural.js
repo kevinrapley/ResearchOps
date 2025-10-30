@@ -441,14 +441,21 @@ export class MuralServicePart {
 			step = "ensure_room";
 			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
 
+			const roomId = room?.id || room?.roomId || room?.value?.id; // ← normalise here
+
+			if (!roomId) {
+				this.root.log?.warn?.("mural.ensure_room.no_id", { room });
+				throw Object.assign(new Error("ROOM_NOT_FOUND"), { status: 404 });
+			}
+
 			step = "ensure_folder";
-			const folder = await ensureProjectFolder(this.root.env, accessToken, room.id, String(projectName).trim());
+			const folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
 
 			step = "create_mural";
 			const mural = await createMural(this.root.env, accessToken, {
 				title: "Reflexive Journal",
-				roomId: room.id,
-				folderId: folder.id
+				roomId,
+				folderId: folder?.id || folder?.folderId
 			});
 
 			// Hydrate to get reliable open/view link (some create responses omit it)
