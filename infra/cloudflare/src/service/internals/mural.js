@@ -489,13 +489,16 @@ export class MuralServicePart {
 				folderId: folder?.id || folder?.folderId
 			});
 
-			// Hydrate to get reliable open/view link (some create responses omit it)
+			// Hydrate to get a reliable open/view link (some create responses omit it)
 			let hydrated = null;
 			try {
 				hydrated = await getMural(this.root.env, accessToken, mural.id);
-			} catch { /* non-fatal */ }
+			} catch (err) {
+				this.root.log?.warn?.("mural.hydrate_failed", { err: String(err?.message || err) });
+			}
 
-			const openUrl =
+			// Derive best-effort open URL
+			let openUrl =
 				hydrated?.viewLink ||
 				hydrated?.viewerUrl ||
 				hydrated?._canvasLink ||
@@ -503,6 +506,12 @@ export class MuralServicePart {
 				mural?.viewerUrl ||
 				mural?._canvasLink ||
 				null;
+
+			// If still missing, synthesize a viewer URL (last resort)
+			if (!openUrl && mural?.id && ws?.id) {
+				openUrl = `https://app.mural.co/t/${ws.id}/m/${ws.id}/${mural.id}`;
+				this.root.log?.info?.("mural.synthetic_view_link", { openUrl });
+			}
 
 			// Persist mapping in Airtable if projectId is known
 			let registered = false;
@@ -512,7 +521,7 @@ export class MuralServicePart {
 					uid,
 					purpose: PURPOSE_REFLEXIVE,
 					muralId: mural.id,
-					boardUrl: openUrl,
+					boardUrl: openUrl || null,
 					workspaceId: ws.id,
 					primary: true
 				});
