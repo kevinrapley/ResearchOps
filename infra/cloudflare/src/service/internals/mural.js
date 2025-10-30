@@ -83,13 +83,17 @@ function _encodeTableUrl(env, tableName) {
 async function _airtableListBoards(env, { max = 25 } = {}) {
 	const url = new URL(_encodeTableUrl(env, "Mural Boards"));
 	url.searchParams.set("maxRecords", String(max));
-	url.searchParams.set("sort", JSON.stringify([
-		{ field: "Primary?", direction: "desc" },
-		{ field: "Created At", direction: "desc" }
-	]));
+
+	url.searchParams.append("sort[0][field]", "Primary?");
+	url.searchParams.append("sort[0][direction]", "desc");
+	url.searchParams.append("sort[1][field]", "Created At");
+	url.searchParams.append("sort[1][direction]", "desc");
+
 	const res = await fetch(url.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
+
 	if (!res.ok) {
+		console.error("[mural] Airtable list failed", res.status, url.toString(), js);
 		throw Object.assign(new Error("airtable_list_failed"), { status: res.status, body: js });
 	}
 	return Array.isArray(js.records) ? js.records : [];
