@@ -57,6 +57,7 @@
  *   - GET  /api/mural/callback                     (OAuth redirect)
  *   - GET  /api/mural/verify                       (check connection + workspace)
  *   - POST /api/mural/setup                        (create folder + “Reflexive Journal”)
+ *   - GET  /api/mural/resolve                      (resolve existing Reflexive board mapping)
  *   - GET  /api/mural/debug-env                    (TEMP: show bound env vars)
  *
  * Any non-/api requests fall through to static ASSETS with SPA index.html fallback.
@@ -535,7 +536,11 @@ export async function handleRequest(request, env) {
 		if (url.pathname === "/api/mural/setup" && request.method === "POST") {
 			return service.mural.muralSetup(request, origin);
 		}
-		// Find existing “Reflexive Journal” (no creation)
+		// Resolve existing “Reflexive Journal” (no creation)
+		if (url.pathname === "/api/mural/resolve" && request.method === "GET") {
+			return service.mural.muralResolve(origin, url);
+		}
+		// Find existing “Reflexive Journal” (legacy find; keep if you still use it)
 		if (url.pathname === "/api/mural/find" && request.method === "GET") {
 			return service.mural.muralFind(origin, url);
 		}
