@@ -16,6 +16,21 @@
  */
 
 (() => {
+	/* ─────────────── env / routing ─────────────── */
+
+	// Prefer explicit global if you set it in <script> before this file.
+	// Otherwise: if we're on Pages, talk to the workers.dev API; if we're already on workers/dev, use same-origin.
+	const API_BASE =
+		window.ROPS_API_BASE
+		|| (location.origin.includes("pages.dev")
+			? "https://rops-api.digikev-kevin-rapley.workers.dev"
+			: location.origin);
+
+	function buildAbsoluteReturnUrl() {
+		// Return the current page (origin + path + query). This lets the Worker bounce us back to Pages.
+		return location.origin + location.pathname + location.search;
+	}
+
 	/* ─────────────── helpers ─────────────── */
 
 	const $ = (s, r = document) => r.querySelector(s);
@@ -93,7 +108,7 @@
 					projectId,
 					projectName
 				};
-				const js = await jsonFetch("/api/mural/setup", {
+				const js = await jsonFetch(`${API_BASE}/api/mural/setup`, {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(body)
@@ -146,15 +161,16 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			const back = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
-			location.href = `/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(back)}`;
+			const ret = buildAbsoluteReturnUrl(); // absolute Pages (or current) URL
+			const url = `${API_BASE}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(ret)}`;
+			location.href = url;
 		};
 	}
 
 	/* ─────────────── API wrappers ─────────────── */
 
 	async function verify() {
-		const u = `/api/mural/verify?uid=${encodeURIComponent(uid())}`;
+		const u = `${API_BASE}/api/mural/verify?uid=${encodeURIComponent(uid())}`;
 		return jsonFetch(u);
 	}
 
@@ -162,7 +178,7 @@
 		const cached = RESOLVE_CACHE.get(projectId);
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
-		const u = `/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`;
+		const u = `${API_BASE}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`;
 		const js = await jsonFetch(u).catch((err) => {
 			throw err;
 		});
@@ -287,7 +303,7 @@
 		if (!els.section) return;
 
 		// Early health check to reassure users (non-blocking)
-		jsonFetch("/api/health").then(h => {
+		jsonFetch(`${API_BASE}/api/health`).then(h => {
 			console.log("[mural] health check OK:", h);
 		}).catch(() => { /* ignore */ });
 
