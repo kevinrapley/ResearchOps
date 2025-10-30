@@ -17,7 +17,8 @@
  * Resolution order for a board used by journal-sync:
  *   1) Explicit body.muralId
  *   2) Airtable: first record for (projectId[, uid], purpose, Active=true) sorted by {Primary? desc}, {Created At desc}
- *   3) Deprecated env.MURAL_REFLEXIVE_MURAL_ID (warning)
+ *   3) KV fallback written at create time (boardUrl only)
+ *   4) Deprecated env.MURAL_REFLEXIVE_MURAL_ID (warning)
  */
 
 import {
@@ -110,6 +111,7 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	const filterByFormula = _buildBoardsFilter({ uid, purpose, active });
 	if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
 	url.searchParams.set("maxRecords", String(max));
+	// Use Airtable-style sort params for compatibility
 	url.searchParams.append("sort[0][field]", "Primary?");
 	url.searchParams.append("sort[0][direction]", "desc");
 	url.searchParams.append("sort[1][field]", "Created At");
@@ -143,12 +145,10 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 /** Create a board mapping row in Airtable. */
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
 	const url = _encodeTableUrl(env, "Mural Boards");
-
-	// 1) Try as linked record (array of ids)
-	const asLinked = {
+	const body = {
 		records: [{
 			fields: {
-				"Project": Array.isArray(projectId) ? projectId : [String(projectId)],
+				"Project": projectId,
 				"UID": uid,
 				"Purpose": purpose,
 				"Mural ID": muralId,
@@ -159,41 +159,21 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
 			}
 		}]
 	};
-
-	let res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(asLinked) });
-	if (res.ok) return await res.json().catch(() => ({}));
-	const errBody = await res.json().catch(() => ({}));
-
-	// 2) If schema rejects linked type, retry as single-line text
-	const shouldRetryAsText =
-		res.status === 422 ||
-		/(INVALID_VALUE_FOR_COLUMN|INVALID_VALUE|UNKNOWN_FIELD|INVALID_REQUEST_UNKNOWN)/i.test(JSON.stringify(errBody || {}));
-
-	if (!shouldRetryAsText) {
-		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: errBody });
-	}
-
-	const asText = {
-		records: [{
-			fields: {
-				"Project": String(projectId),
-				"UID": uid,
-				"Purpose": purpose,
-				"Mural ID": muralId,
-				"Board URL": boardUrl,
-				"Workspace ID": workspaceId,
-				"Primary?": !!primary,
-				"Active": !!active
-			}
-		}]
-	};
-
-	res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(asText) });
+	const res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(body) });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
 		throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
 	}
 	return js;
+}
+
+/* ───────────────────────── KV helpers ───────────────────────── */
+
+async function _kvProjectMapping(env, { uid, projectId }) {
+	const key = `mural:${uid || "anon"}:project:id::${String(projectId || "")}`;
+	const raw = await env.SESSION_KV.get(key);
+	if (!raw) return null;
+	try { return JSON.parse(raw); } catch { return null; }
 }
 
 /* ───────────────────────── Class ───────────────────────── */
@@ -226,6 +206,7 @@ export class MuralServicePart {
 	 * Priority:
 	 *  1) explicitMuralId (if provided)
 	 *  2) Airtable "Mural Boards" (cached)
+	 *  2b) KV fallback (boardUrl only)
 	 *  3) env.MURAL_REFLEXIVE_MURAL_ID (deprecated)
 	 */
 	async resolveBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, explicitMuralId }) {
@@ -255,12 +236,18 @@ export class MuralServicePart {
 					return rec;
 				}
 			}
+
+			// 2b) KV fallback (Airtable not yet visible)
+			const kv = await _kvProjectMapping(this.root.env, { uid, projectId });
+			if (kv?.url) {
+				return { muralId: null, boardUrl: kv.url, workspaceId: null };
+			}
 		}
 
 		// 3) Deprecated env fallback
 		const envId = this.root?.env?.MURAL_REFLEXIVE_MURAL_ID;
 		if (envId) {
-			console.warn("[mural] using deprecated global MURAL_REFLEXIVE_MURAL_ID — migrate to Airtable 'Mural Boards'.");
+			this.root.log?.warn?.("mural.deprecated_env_id", { note: "Migrate to Airtable 'Mural Boards'." });
 			return { muralId: String(envId) };
 		}
 
@@ -472,7 +459,7 @@ export class MuralServicePart {
 			step = "ensure_room";
 			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
 
-			const roomId = room?.id || room?.roomId || room?.value?.id; // ← normalise here
+			const roomId = room?.id || room?.roomId || room?.value?.id; // normalise here
 
 			if (!roomId) {
 				this.root.log?.warn?.("mural.ensure_room.no_id", { room });
@@ -489,13 +476,11 @@ export class MuralServicePart {
 				folderId: folder?.id || folder?.folderId
 			});
 
-			// Hydrate to get a reliable open/view link (some create responses omit it)
+			// Hydrate to get reliable open/view link (some create responses omit it)
 			let hydrated = null;
 			try {
 				hydrated = await getMural(this.root.env, accessToken, mural.id);
-			} catch (err) {
-				this.root.log?.warn?.("mural.hydrate_failed", { err: String(err?.message || err) });
-			}
+			} catch { /* non-fatal */ }
 
 			// Derive best-effort open URL
 			let openUrl =
@@ -507,7 +492,6 @@ export class MuralServicePart {
 				mural?._canvasLink ||
 				null;
 
-			// If still missing, synthesize a viewer URL (last resort)
 			if (!openUrl && mural?.id && ws?.id) {
 				openUrl = `https://app.mural.co/t/${ws.id}/m/${ws.id}/${mural.id}`;
 				this.root.log?.info?.("mural.synthetic_view_link", { openUrl });
@@ -521,14 +505,14 @@ export class MuralServicePart {
 					uid,
 					purpose: PURPOSE_REFLEXIVE,
 					muralId: mural.id,
-					boardUrl: openUrl || null,
+					boardUrl: openUrl,
 					workspaceId: ws.id,
 					primary: true
 				});
 				registered = true;
 			}
 
-			// KV backup so resolve can recover even if Airtable write fails or schema differs
+			// KV backup so resolve can recover even if Airtable write lags
 			try {
 				const kvKey = `mural:${uid}:project:id::${String(projectId || "")}`;
 				if (projectId && openUrl) {
@@ -540,7 +524,7 @@ export class MuralServicePart {
 				}
 			} catch { /* non-fatal */ }
 
-			// Return a richer payload for debugging
+			// Return a richer payload for the UI (includes boardUrl)
 			return this.root.json({
 				ok: true,
 				workspace: ws,
@@ -548,7 +532,7 @@ export class MuralServicePart {
 				folder,
 				mural: { ...mural, viewLink: openUrl },
 				projectId: projectId || null,
-				registered, // ← did we hit Airtable?
+				registered,
 				boardUrl: openUrl || null
 			}, 200, cors);
 
@@ -577,10 +561,14 @@ export class MuralServicePart {
 			}
 
 			const resolved = await this.resolveBoard({ projectId, uid: uid || undefined, purpose });
-			if (!resolved?.muralId) {
+			if (!resolved?.muralId && !resolved?.boardUrl) {
 				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
 			}
-			return this.root.json({ ok: true, muralId: resolved.muralId, boardUrl: resolved.boardUrl || null }, 200, cors);
+			return this.root.json({
+				ok: true,
+				muralId: resolved.muralId || null,
+				boardUrl: resolved.boardUrl || null
+			}, 200, cors);
 		} catch (e) {
 			const msg = String(e?.message || e || "");
 			return this.root.json({ ok: false, error: "resolve_failed", detail: msg }, 500, cors);
