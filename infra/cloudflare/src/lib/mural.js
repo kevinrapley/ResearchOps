@@ -101,9 +101,13 @@ export function buildAuthUrl(env, state) {
 		scope: SCOPES.join(" "),
 		state
 	});
-	// modern:  .../oauth2/authorize
-	// legacy:  .../authorization/oauth2/authorize
-	return `${oauthBase(env)}/authorize?${params.toString()}`;
+
+	if (String(env.MURAL_OAUTH_LEGACY || "").toLowerCase() === "true") {
+		// Legacy: NO /authorize segment
+		return `${apiBase(env)}/authorization/oauth2/?${params.toString()}`;
+	}
+	// Modern: with /authorize
+	return `${apiBase(env)}/oauth2/authorize?${params.toString()}`;
 }
 
 async function postForm(url, body) {
