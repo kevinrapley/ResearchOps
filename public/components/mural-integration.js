@@ -69,6 +69,11 @@
 		return ($("main")?.dataset?.projectName || "").trim();
 	}
 
+	// Build an absolute URL on the current Pages origin
+	function absolutePagesUrl(pathAndQuery) {
+		return new URL(pathAndQuery, location.origin).toString();
+	}
+
 	// Local cache: projectId → { muralId, boardUrl, ts }
 	const RESOLVE_CACHE = new Map();
 
@@ -114,8 +119,10 @@
 
 				// Cache workspace for synthetic link
 				const wsId = window.__muralActiveWorkspaceId || null;
+
+				// FIX: correct viewer URL shape (no extra workspace segment)
 				if (!boardUrl && muralId && wsId) {
-					boardUrl = `https://app.mural.co/t/${wsId}/m/${wsId}/${muralId}`;
+					boardUrl = `https://app.mural.co/t/${wsId}/m/${muralId}`;
 				}
 
 				if (muralId) {
@@ -175,10 +182,9 @@
 	function wireConnectButton(projectId) {
 		if (!els.btnConnect) return;
 		els.btnConnect.onclick = () => {
-			// Return to the Pages dashboard after OAuth completes.
-			const back = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
-			// Hit the Worker auth endpoint at the chosen API origin.
-			location.href = `${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(back)}`;
+			// FIX: use ABSOLUTE return URL on Pages, so callback lands on researchops.pages.dev
+			const backAbs = absolutePagesUrl(`/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`);
+			location.href = `${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backAbs)}`;
 		};
 	}
 
