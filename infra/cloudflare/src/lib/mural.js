@@ -27,20 +27,20 @@ export const _COLORS = {
 	blueberry: "#4456FF"
 };
 
+/** REST base (no oauth paths here). */
 export function apiBase(env) {
 	return env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
 }
 
 /* ───────────────────────── internals ───────────────────────── */
 
-function _withTimeout(promise, ms = API_TIMEOUT_MS, onAbort) {
+function _withTimeout(promiseFactory, ms = API_TIMEOUT_MS, onAbort) {
 	const ctrl = new AbortController();
 	const t = setTimeout(() => {
 		ctrl.abort();
 		if (typeof onAbort === "function") onAbort();
 	}, ms);
-	return promise(ctrl)
-		.finally(() => clearTimeout(t));
+	return promiseFactory(ctrl).finally(() => clearTimeout(t));
 }
 
 export async function fetchJSON(url, opts = {}) {
@@ -64,10 +64,19 @@ export const withBearer = (token) => ({
 });
 
 function _oauthPaths(kind) {
-	// modern vs legacy
-	const modern = kind === "authorize" ? "/oauth2/authorize" : "/oauth2/token";
-	const legacy = kind === "authorize" ? "/authorization/oauth2/authorize" : "/authorization/oauth2/token";
-	return { modern, legacy };
+	// modern vs legacy API paths
+	if (kind === "authorize") {
+		return {
+			modern: "/oauth2/authorize",
+			// legacy authorize uses trailing slash before query (no additional /authorize)
+			legacy: "/authorization/oauth2/"
+		};
+	}
+	// token endpoints
+	return {
+		modern: "/oauth2/token",
+		legacy: "/authorization/oauth2/token"
+	};
 }
 
 /* ───────────────────────── OAuth ───────────────────────── */
@@ -75,9 +84,7 @@ function _oauthPaths(kind) {
 export function buildAuthUrl(env, state) {
 	const base = apiBase(env);
 	const { modern, legacy } = _oauthPaths("authorize");
-
-	// Use modern path by default, allow env switch to legacy
-	const path = env.MURAL_OAUTH_LEGACY ? legacy : modern;
+	const useLegacy = String(env.MURAL_OAUTH_LEGACY || "").toLowerCase() === "true";
 
 	const params = new URLSearchParams({
 		response_type: "code",
@@ -86,6 +93,10 @@ export function buildAuthUrl(env, state) {
 		scope: SCOPES.join(" "),
 		state
 	});
+
+	// Modern:  https://.../oauth2/authorize?... 
+	// Legacy:  https://.../authorization/oauth2/?...
+	const path = useLegacy ? legacy : modern;
 	return `${base}${path}?${params}`;
 }
 
@@ -114,11 +125,11 @@ export async function exchangeAuthCode(env, code) {
 			err.body = js;
 			throw err;
 		}
-		return js; // { access_token, refresh_token, token_type, expires_in }
+		return js; // { access_token, refresh_token?, token_type, expires_in }
 	}
 
 	try {
-		// Prefer modern; if Mural returns "PATH_NOT_FOUND" or 404, fall back to legacy
+		// Prefer modern; on 404/PATH_NOT_FOUND, fall back to legacy
 		return await tryPath(modern);
 	} catch (e) {
 		const codeStr = String(e?.body?.code || "");
@@ -170,9 +181,7 @@ export async function refreshAccessToken(env, refresh_token) {
 /* ───────────────────────── Users / Workspaces ───────────────────────── */
 
 function _unwrapMe(me) {
-	return (me && typeof me === "object" && me.value && typeof me.value === "object")
-		? me.value
-		: me;
+	return (me && typeof me === "object" && me.value && typeof me.value === "object") ? me.value : me;
 }
 
 export async function getMe(env, token) {
@@ -188,9 +197,7 @@ export function getActiveWorkspaceIdFromMe(meRaw) {
 	return me?.lastActiveWorkspace || me?.activeWorkspaceId || null;
 }
 
-/**
- * Return boolean; do not throw. Caller decides whether to block.
- */
+/** Return boolean; do not throw. Caller decides whether to block. */
 export async function verifyHomeOfficeByCompany(env, token) {
 	const meRaw = await getMe(env, token).catch(() => null);
 	const me = _unwrapMe(meRaw);
