@@ -1,9 +1,9 @@
 /**
  * @file service/internals/mural.js
  * @module service/internals/mural
- * @summary Mural routes logic (OAuth + provisioning + journal sync) with Airtable-backed board mapping.
+ * @summary Mural routes logic (OAuth + provisioning + journal sync) with Airtable-backed board mapping + resolver endpoint.
  *
- * Airtable table expected: "Mural Boards"
+ * Airtable table expected: "Mural Boards" (override with env.AIRTABLE_TABLE_MURAL_BOARDS)
  *  - Project        (Link to "Projects" or Single line text)
  *  - UID            (Single line text)
  *  - Purpose        (Single select e.g., "reflexive_journal")
@@ -14,7 +14,7 @@
  *  - Active         (Checkbox)           [optional, default true]
  *  - Created At     (Created time)
  *
- * Resolution order for a board used by journal-sync:
+ * Resolution order for a board used by journal-sync/resolve:
  *   1) Explicit body.muralId
  *   2) Airtable: first record for (projectId, uid, purpose, Active=true) sorted by {Primary? desc}, {Created At desc}
  *   3) Deprecated env.MURAL_REFLEXIVE_MURAL_ID (warning)
@@ -59,8 +59,9 @@ const _memCache = new Map(); // key: `${projectId}·${uid}·${purpose}` → { mu
 /* ───────────────────────── Airtable helpers ───────────────────────── */
 
 function _airtableHeaders(env) {
+	const token = env.AIRTABLE_ACCESS_TOKEN || env.AIRTABLE_API_KEY || "";
 	return {
-		Authorization: `Bearer ${env.AIRTABLE_API_KEY}`,
+		Authorization: `Bearer ${token}`,
 		"Content-Type": "application/json"
 	};
 }
@@ -75,33 +76,51 @@ function _esc(v) {
 }
 
 /**
- * Build the Airtable filter for our resolver.
- * Only filters by provided facets; always enforces Active=true by default (unless explicitly overridden).
+ * Build a robust filterByFormula that works for:
+ *  - Linked record fields (arrays) {Project}/{Projects}  → use FIND(..., ARRAYJOIN(...))
+ *  - Single-line text {Project}/{Projects}               → direct equality OR
+ * Always enforces {Active}=1 unless overridden.
  */
 function _buildBoardsFilter({ projectId, uid, purpose, active = true }) {
 	const clauses = [];
-	if (projectId) clauses.push(`{Project} = "${_esc(projectId)}"`);
+
+	if (projectId) {
+		const pid = _esc(projectId);
+		const projectOr = [
+			`{Project} = "${pid}"`,
+			`{Projects} = "${pid}"`,
+			`FIND("${pid}", ARRAYJOIN({Project}))`,
+			`FIND("${pid}", ARRAYJOIN({Projects}))`
+		];
+		clauses.push(`OR(${projectOr.join(",")})`);
+	}
+
 	if (uid) clauses.push(`{UID} = "${_esc(uid)}"`);
 	if (purpose) clauses.push(`{Purpose} = "${_esc(purpose)}"`);
 	if (typeof active === "boolean") clauses.push(`{Active} = ${active ? "1" : "0"}`);
+
 	return clauses.length ? `AND(${clauses.join(",")})` : "";
 }
 
 /**
  * Query Airtable for Mural Boards records.
- * Sorted by Primary? desc, Created At desc.
+ * Sorted by Primary? desc, Created At desc (Airtable style: sort[0][field], …).
  */
 async function _airtableListBoards(env, { projectId, uid, purpose, active = true, max = 10 }) {
-	const url = new URL(_encodeTableUrl(env, "Mural Boards"));
-	const filterByFormula = _buildBoardsFilter({ projectId, uid, purpose, active });
-	if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
-	url.searchParams.set("maxRecords", String(max));
-	url.searchParams.set("sort", JSON.stringify([
-		{ field: "Primary?", direction: "desc" },
-		{ field: "Created At", direction: "desc" }
-	]));
+	const tableName = env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
+	const baseUrl = new URL(_encodeTableUrl(env, tableName));
 
-	const res = await fetch(url.toString(), { headers: _airtableHeaders(env) });
+	const filterByFormula = _buildBoardsFilter({ projectId, uid, purpose, active });
+	if (filterByFormula) baseUrl.searchParams.set("filterByFormula", filterByFormula);
+	baseUrl.searchParams.set("maxRecords", String(max));
+
+	// Proper Airtable sort syntax (JSON in query is invalid → causes 422)
+	baseUrl.searchParams.append("sort[0][field]", "Primary?");
+	baseUrl.searchParams.append("sort[0][direction]", "desc");
+	baseUrl.searchParams.append("sort[1][field]", "Created At");
+	baseUrl.searchParams.append("sort[1][direction]", "desc");
+
+	const res = await fetch(baseUrl.toString(), { headers: _airtableHeaders(env) });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
 		throw Object.assign(new Error("airtable_list_failed"), { status: res.status, body: js });
@@ -109,13 +128,14 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	return Array.isArray(js.records) ? js.records : [];
 }
 
-/** Create a board mapping row in Airtable. */
+/** Create a board mapping row in Airtable (links must be arrays). */
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
-	const url = _encodeTableUrl(env, "Mural Boards");
+	const tableName = env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
+	const url = _encodeTableUrl(env, tableName);
 	const body = {
 		records: [{
 			fields: {
-				"Project": projectId,
+				"Project": [projectId], // link-to-record expects array
 				"UID": uid,
 				"Purpose": purpose,
 				"Mural ID": muralId,
@@ -187,7 +207,7 @@ export class MuralServicePart {
 		}
 
 		// Guard: need at least projectId + uid for Airtable lookup
-		if (projectId && uid) {
+		if (projectId && uid && this.root?.env?.AIRTABLE_BASE_ID) {
 			const cacheKey = `${projectId}·${uid}·${purpose}`;
 			const cached = _memCache.get(cacheKey);
 			if (cached && (Date.now() - cached.ts < 60_000)) { // 60s soft TTL
@@ -227,6 +247,7 @@ export class MuralServicePart {
 	 */
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl = null, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
+		if (!this.root?.env?.AIRTABLE_BASE_ID) return { ok: true, note: "airtable_disabled" }; // allow soft-disable in dev
 		await _airtableCreateBoard(this.root.env, { projectId, uid, purpose, muralId, boardUrl, workspaceId, primary, active: true });
 		const cacheKey = `${projectId}·${uid}·${purpose}`;
 		_memCache.set(cacheKey, { muralId, boardUrl, workspaceId, ts: Date.now(), primary: !!primary });
@@ -260,9 +281,34 @@ export class MuralServicePart {
 		}
 	}
 
-	/* ─────────────────────────────────────────────────────────────────── */
-	/* Routes                                                              */
-	/* ─────────────────────────────────────────────────────────────────── */
+	/* ──────────────────────── Routes ──────────────────────── */
+
+	/** GET /api/mural/resolve?projectId=…&uid=…&purpose=… */
+	async muralResolve(origin, url) {
+		const cors = this.root.corsHeaders(origin);
+		try {
+			const projectId = url.searchParams.get("projectId") || "";
+			const uid = url.searchParams.get("uid") || "anon";
+			const purpose = url.searchParams.get("purpose") || PURPOSE_REFLEXIVE;
+
+			if (!projectId) {
+				return this.root.json({ ok: false, error: "Missing projectId" }, 400, cors);
+			}
+
+			const res = await this.resolveBoard({ projectId, uid, purpose });
+			if (!res?.muralId) {
+				return this.root.json({ ok: true, muralId: null }, 200, cors);
+			}
+
+			return this.root.json({ ok: true, muralId: res.muralId, openUrl: res.boardUrl || "" }, 200, cors);
+		} catch (err) {
+			this.root?.log?.error?.("mural.resolve.error", { err: String(err?.message || err) });
+			return this.root.json({ ok: false, error: "Failed to resolve Mural board", detail: String(err?.message || err) },
+				500,
+				cors
+			);
+		}
+	}
 
 	async muralAuth(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
@@ -430,7 +476,7 @@ export class MuralServicePart {
 					uid,
 					purpose: PURPOSE_REFLEXIVE,
 					muralId: mural.id,
-					boardUrl: mural?.viewLink || null,
+					boardUrl: mural?.viewLink || mural?.viewerUrl || mural?._canvasLink || null,
 					workspaceId: ws.id,
 					primary: true
 				});
@@ -579,7 +625,7 @@ export class MuralServicePart {
 			scopes: env.MURAL_SCOPES || "(default)",
 			company_id: env.MURAL_COMPANY_ID || "(unset)",
 			airtable_base: Boolean(env.AIRTABLE_BASE_ID),
-			airtable_key: Boolean(env.AIRTABLE_API_KEY)
+			airtable_key: Boolean(env.AIRTABLE_API_KEY || env.AIRTABLE_ACCESS_TOKEN)
 		}, 200, this.root.corsHeaders(origin));
 	}
 
