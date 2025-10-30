@@ -220,22 +220,24 @@ export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
+export async function createRoom(env, token, { name, workspaceId, type = "private" }) {
+	// type: "private" | "open"
 	return fetchJSON(`${apiBase(env)}/rooms`, {
 		method: "POST",
 		...withBearer(token),
-		body: JSON.stringify({ name, workspaceId, visibility })
+		body: JSON.stringify({ name, workspaceId, type })
 	});
 }
 
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [] }));
-	let room = (rooms?.items || []).find(r =>
-		/(private)/i.test(r.visibility || "") ||
-		(username && r.name?.toLowerCase().includes((username || "").toLowerCase()))
-	);
+	let room = (rooms?.items || []).find(r => {
+		const rType = (r.type || r.visibility || "").toString().toLowerCase();
+		const rName = (r.name || "").toString().toLowerCase();
+		return rType.includes("private") || (username && rName.includes(username.toLowerCase()));
+	});
 	if (!room) {
-		room = await createRoom(env, token, { name: `${username} — Private`, workspaceId, visibility: "private" });
+		room = await createRoom(env, token, { name: `${username} — Private`, workspaceId, type: "private" });
 	}
 	return room;
 }
