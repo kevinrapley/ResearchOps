@@ -202,11 +202,17 @@
 	}
 
 .entry-actions .govuk-button--secondary {
-	background: #f3f2f1;
+	background: #eef5fa;
 	color: #0b0c0c;
-	border-color: #b1b4b6;
+	border-color: #1d70b8;
 	}
 
+.entry-actions .govuk-button--secondary:hover {
+	background: #dbe9f4;
+	border-color: #003078;
+	color: #0b0c0c;
+	}
+	
 .entry-actions .govuk-button--edit {
 	background: #ffffff;
 	color: #1d70b8;
