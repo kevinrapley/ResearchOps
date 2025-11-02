@@ -449,13 +449,14 @@ textarea {
 
 /* Secondary: robust dark text on light background */
 .btn--secondary {
-	background: #ffffff;
+	background: #eef5fa;
 	color: #0b0c0c;
 	border-color: #b1b4b6;
 	}
 
 .btn--secondary:hover {
-	border-color: #1d70b8;
+	background: #dbe9f4;
+	border-color: #003078;
 	color: #0b0c0c;
 	}
 
