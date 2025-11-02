@@ -1,9 +1,9 @@
 /* ==========================================================================
    ResearchOps UI • Screen stylesheet
-   Version:    v1.0.0
+   Version:    v1.0.1
    Service:    Home Office Biometrics — ResearchOps
    Author:     Kevin Rapley
-   Date:       2025-09-29
+   Date:       2025-10-02
    Build:      GOV.UK typography + colours; mobile-first
    Repo:       /css/screen.css
    License:    All rights reserved
@@ -40,6 +40,8 @@
 
 body {
 	margin: 24px;
+	color: #0b0c0c;
+	background: #ffffff;
 	}
 
 .container {
@@ -58,6 +60,20 @@ body {
 	.grid {
 		grid-template-columns: 1fr 1fr;
 		}
+	}
+
+/* === Global focus (high-contrast, consistent) =========== */
+
+a:focus,
+button:focus,
+[role="button"]:focus,
+[tabindex]:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	box-shadow: 0 0 0 1px #0b0c0c;
 	}
 
 /* === =NAVIGATION ======================================== */
@@ -95,6 +111,12 @@ body {
 	border-bottom: 3px solid #1d70b8;
 	}
 
+/* Ensure tab items have a visible focus */
+.nav .govuk-link:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	}
+
 /* === =CARDS & PATTERNS ================================== */
 
 .card {
@@ -103,6 +125,7 @@ body {
 	padding: 24px;
 	margin-bottom: 16px;
 	background: #fff;
+	color: #0b0c0c;
 	}
 
 .project-org {
@@ -179,6 +202,8 @@ body {
 	padding: 2px 8px;
 	border-radius: 14px;
 	font-size: 12px;
+	color: #0b0c0c;
+	background: #ffffff;
 	}
 
 .project-details summary {
@@ -222,6 +247,17 @@ body {
 	border-radius: 4px;
 	border: 1px solid #b1b4b6;
 	text-decoration: none;
+	color: #0b0c0c;
+	background: #ffffff;
+	}
+
+.tabs a:hover {
+	border-color: #1d70b8;
+	}
+
+.tabs a:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
 	}
 
 .tabs a.active {
@@ -257,11 +293,17 @@ body {
 select,
 input {
 	width: 100%;
+	color: #0b0c0c;
 	}
 
 textarea {
 	width: 100%;
 	height: 140px;
+	color: #0b0c0c;
+	}
+
+::placeholder {
+	color: #6f777b;
 	}
 
 .item {
@@ -273,6 +315,8 @@ textarea {
 	border: 1px solid #b1b4b6;
 	padding: 12px;
 	border-radius: 4px;
+	background: #ffffff;
+	color: #0b0c0c;
 	}
 
 .note {
@@ -281,6 +325,8 @@ textarea {
 	border-radius: 4px;
 	margin-bottom: 8px;
 	cursor: grab;
+	color: #0b0c0c;
+	background: #ffffff;
 	}
 
 .cluster {
@@ -289,6 +335,8 @@ textarea {
 	padding: 8px;
 	border-radius: 6px;
 	margin-bottom: 12px;
+	background: #ffffff;
+	color: #0b0c0c;
 	}
 
 .result {
@@ -325,6 +373,7 @@ textarea {
 	padding: 12px;
 	border-radius: 4px;
 	margin-bottom: 12px;
+	color: #0b0c0c;
 	}
 
 /* === =DASHBOARD (Hero, Actions, KV) ===================== */
@@ -398,8 +447,9 @@ textarea {
 	outline-offset: 0;
 	}
 
+/* Secondary: robust dark text on light background */
 .btn--secondary {
-	background: #fff;
+	background: #ffffff;
 	color: #0b0c0c;
 	border-color: #b1b4b6;
 	}
@@ -409,8 +459,9 @@ textarea {
 	color: #0b0c0c;
 	}
 
+/* Outline: ensure sufficient contrast in all states */
 .btn--outline {
-	background: #fff;
+	background: #ffffff;
 	color: #1d70b8;
 	border-color: #1d70b8;
 	}
@@ -419,6 +470,16 @@ textarea {
 	background: #f3f2f1;
 	}
 
+/* Disabled buttons: avoid opacity (keeps text readable) */
+.btn[disabled],
+.btn[aria-disabled="true"] {
+	background: #b1b4b6;
+	color: #0b0c0c;
+	border-color: #b1b4b6;
+	cursor: default;
+	}
+
+/* Key-values */
 .kv {
 	padding: 16px 24px;
 	background: #fff;
@@ -463,6 +524,7 @@ textarea {
 	background: #fff;
 	text-decoration: none;
 	font-weight: 700;
+	color: #0b0c0c;
 	}
 
 .board__item:hover {
@@ -525,6 +587,7 @@ textarea {
 	padding: 8px 10px;
 	border-top: 1px solid #b1b4b6;
 	text-align: left;
+	color: #0b0c0c;
 	}
 
 .table th {
@@ -557,6 +620,7 @@ textarea {
 	max-width: 600px;
 	background: #fff;
 	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	color: #0b0c0c;
 	}
 
 /* Native dialog backdrop */
@@ -612,6 +676,7 @@ textarea {
 	border: 1px solid var(--border, #b1b4b6);
 	border-radius: 6px;
 	background: var(--panel, #ffffff);
+	color: #0b0c0c;
 	}
 
 .sugg-summary {
@@ -688,6 +753,8 @@ select.govuk-input {
 	line-height: 32px;
 	text-align: center;
 	cursor: pointer;
+	color: #0b0c0c;
+	text-decoration: none;
 	}
 
 .paginate a[aria-current="page"] {
@@ -696,8 +763,12 @@ select.govuk-input {
 	outline-offset: 2px;
 	}
 
-.paginate button[disabled] {
-	opacity: .45;
+/* Disabled: keep readable; do not reduce opacity */
+.paginate button[disabled],
+.paginate a[aria-disabled="true"] {
+	background: #f3f2f1;
+	color: #6f777b;
+	border-color: #b1b4b6;
 	cursor: default;
 	}
 
@@ -802,6 +873,7 @@ select.govuk-input {
 	background: var(--panel, #ffffff);
 	padding: 12px;
 	min-height: 40px;
+	color: #0b0c0c;
 	}
 
 .sugg-heading {
@@ -853,6 +925,7 @@ select.govuk-input {
 	white-space: pre-wrap;
 	margin: 8px 0 12px 0;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	color: #0b0c0c;
 	}
 
 /* Make the whole panel keyboard friendly */
@@ -891,6 +964,7 @@ select.govuk-input {
 	border-radius: 4px;
 	padding: 16px;
 	background: #fff;
+	color: #0b0c0c;
 	}
 
 /* Skeleton base */
