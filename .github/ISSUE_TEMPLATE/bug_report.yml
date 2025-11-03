@@ -1,0 +1,31 @@
+name: Bug report
+description: Report something broken or unexpected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Clear description; include screenshots and console errors if possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+  - type: input
+    id: where
+    attributes:
+      label: URL or area
+      placeholder: /pages/projects/journals
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps; include device and browser
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: [S1 - blocking, S2 - major, S3 - minor]
+      default: 1
