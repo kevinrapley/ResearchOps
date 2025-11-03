@@ -141,7 +141,7 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
 			let bodyText = '';
 			try {
 				bodyText = await res.clone().text();
-			} catch (/** ignore */) {
+			} catch (_e) {
 				/* intentional: some bodies can't be cloned/read */
 			}
 
