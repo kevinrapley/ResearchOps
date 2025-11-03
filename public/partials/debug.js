@@ -141,7 +141,7 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
 			let bodyText = '';
 			try {
 				bodyText = await res.clone().text();
-			} catch (_e) {
+			} catch {
 				/* intentional: some bodies can't be cloned/read */
 			}
 
@@ -170,7 +170,7 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
 			this.__debug = { method, url, start: 0 };
 			return open.apply(this, arguments);
 		};
-		XHR.prototype.send = function (body) {
+		XHR.prototype.send = function (_body) {
 			if (this.__debug) this.__debug.start = performance.now();
 			this.addEventListener('loadend', () => {
 				const d = this.__debug || {};
