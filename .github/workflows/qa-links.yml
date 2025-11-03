@@ -1,0 +1,29 @@
+name: QA — Broken links (Lychee)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Check links in repo
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: >
+            --accept 200,204,206,429
+            --exclude-mail
+            --max-concurrency 6
+            --retry-wait-time 2
+            --timeout 20
+            --no-progress
+            .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
