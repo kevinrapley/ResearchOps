@@ -1,33 +1,28 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import assert from 'node:assert/strict';
+// features/steps/common.steps.js
+import { Given, When, Then } from "@cucumber/cucumber";
+import { expect } from "@playwright/test";
 
-Given('the site base URL', function () {
-  // baseURL is read from world parameters; assert it exists
-  assert.ok(this.baseURL, 'BASE_URL was not provided');
+Given("the site base URL", function () {
+  if (!this.baseURL) throw new Error("baseURL not set");
 });
 
-When('I visit {string}', async function (path) {
-  const url = this.url(path);
-  const resp = await this.page.goto(url, { waitUntil: 'domcontentloaded' });
-  this.expectTruthy(resp, `No response for ${url}`);
-  this.lastResponse = resp;
+When("I visit {string}", async function (path) {
+  const url = new URL(path, this.baseURL).toString();
+  const resp = await this.page.goto(url, { waitUntil: "domcontentloaded" });
+  const status = resp ? resp.status() : null;
+  if (!(status >= 200 && status < 400)) {
+    throw new Error(`Unexpected HTTP status ${status} for ${url}`);
+  }
 });
 
-Then('the page should contain {string} within {int}s', async function (text, seconds) {
-  const timeout = seconds * 1000;
-  await this.page.waitForFunction(
-    (t) => document.body && document.body.innerText && document.body.innerText.includes(t),
-    text,
-    { timeout }
-  );
+Then('the page should contain {string} within 5s', async function (text) {
+  await expect(this.page.getByText(text)).toBeVisible({ timeout: 5000 });
 });
 
-Then('the page should have a <title> containing {string}', async function (substr) {
-  const title = await this.page.title();
-  assert.ok(title.includes(substr), `Expected title "${title}" to include "${substr}"`);
+Then('the page should have a <title> containing {string}', async function (titlePart) {
+  await expect(this.page).toHaveTitle(new RegExp(titlePart, "i"));
 });
 
 Then('I should see an element {string}', async function (selector) {
-  const el = this.page.locator(selector);
-  await el.first().waitFor({ state: 'visible', timeout: 5000 });
+  await expect(this.page.locator(selector)).toBeVisible();
 });
