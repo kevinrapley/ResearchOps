@@ -11,11 +11,11 @@ export default {
 				process.env.BASE_URL ||
 				process.env.PAGES_URL ||
 				process.env.PREVIEW_URL ||
-				'http://localhost:8788'
+				'http://localhost:8788',
 		},
 		parallel: 2,
 		strict: true,
 		failFast: false,
-		dryRun: false
-	}
+		dryRun: false,
+	},
 };
