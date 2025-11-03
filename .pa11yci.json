@@ -1,0 +1,17 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 60000,
+    "wait": 500,
+    "screenCapture": "coverage/a11y.png",
+    "headers": {
+      "Cache-Control": "no-cache"
+    }
+  },
+  "urls": [
+    "http://localhost:8080/index.html",
+    "http://localhost:8080/pages/projects/index.html",
+    "http://localhost:8080/pages/projects/journals/index.html",
+    "http://localhost:8080/pages/guides/index.html"
+  ]
+}
