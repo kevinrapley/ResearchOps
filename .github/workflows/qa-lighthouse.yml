@@ -1,0 +1,31 @@
+name: QA — Lighthouse
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "22 5 * * *" # daily
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.PAGES_URL || secrets.PAGES_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure SITE_URL present
+        run: |
+          if [ -z "${SITE_URL}" ]; then
+            echo "Set PAGES_URL repo variable or secret to your deployed site URL"; exit 1;
+          fi
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            ${{ env.SITE_URL }}/
+            ${{ env.SITE_URL }}/pages/start/index.html
+            ${{ env.SITE_URL }}/pages/projects/index.html
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
