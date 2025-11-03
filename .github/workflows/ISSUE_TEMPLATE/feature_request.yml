@@ -1,0 +1,20 @@
+name: Feature request
+description: Propose a change to improve outcomes
+labels: [enhancement]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What user need or service objective does this support?
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Rough approach
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Bullet points; testable statements
