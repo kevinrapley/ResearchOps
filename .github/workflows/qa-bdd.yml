@@ -1,3 +1,4 @@
+# .github/workflows/qa-bdd.yml
 name: QA — BDD (Cucumber + Playwright)
 
 on:
@@ -13,21 +14,12 @@ permissions:
 
 jobs:
   bdd:
-    runs-on: ubuntu-latest   # stays on 24.04
+    runs-on: ubuntu-latest
     env:
-      BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL }}
+      # Prefer repo variable PAGES_URL if you set one; otherwise hardcode
+      BASE_URL: ${{ vars.PAGES_URL || 'https://researchops.pages.dev/' }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Ensure BASE_URL
-        run: |
-          if [ -z "${BASE_URL}" ]; then
-            echo "No PAGES/PREVIEW URL set; falling back to http://localhost:8788"
-            echo "BASE_URL=http://localhost:8788" >> $GITHUB_ENV
-          else
-            echo "Using BASE_URL=${BASE_URL}"
-            echo "BASE_URL=${BASE_URL}" >> $GITHUB_ENV
-          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -35,56 +27,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install project deps
-        run: npm ci
+      - name: Install Playwright deps + browsers
+        run: npx playwright install --with-deps chromium
 
-      # ✅ Install Chromium + required OS packages on Ubuntu
-      - name: Install Playwright browsers + system deps
-        run: npx --yes playwright install --with-deps chromium
+      - name: Install test deps
+        run: npm i -D @cucumber/cucumber@^11 playwright@^1.56
 
       - name: Run BDD suite
-        env:
-          BASE_URL: ${{ env.BASE_URL }}
         run: npm run qa:cucumber
-
-      - name: Upload raw Cucumber report (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-report
-          path: reports/cucumber-report.html
-          if-no-files-found: ignore
-
-      - name: Upload Pages artifact (walkthrough site)
-        if: always()
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: reports-site
-
-  deploy:
-    needs: bdd
-    if: always()
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Add Job Summary
-        run: |
-          URL="${{ steps.deployment.outputs.page_url }}"
-          {
-            echo "## ✅ BDD Visual Walkthrough"
-            echo
-            echo "**Open the gallery:** ${URL}"
-            echo
-            echo "[Open Cucumber HTML report](${URL}cucumber-report.html)"
-            echo
-            echo "> The gallery shows each step with its screenshot, grouped by scenario."
-          } >> "$GITHUB_STEP_SUMMARY"
