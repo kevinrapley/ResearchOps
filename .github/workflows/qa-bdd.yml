@@ -6,6 +6,11 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pages: write         # <-- allow Pages publish
+  id-token: write      # <-- required by deploy-pages
+
 jobs:
   bdd:
     runs-on: ubuntu-latest
@@ -39,10 +44,43 @@ jobs:
         env:
           BASE_URL: ${{ env.BASE_URL }}
 
-      - name: Upload Cucumber HTML report
+      - name: Upload raw Cucumber report (artifact)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report
           path: reports/cucumber-report.html
           if-no-files-found: ignore
+
+      # --- Publish the walkthrough site to GitHub Pages ---
+      - name: Upload Pages artifact (walkthrough site)
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports-site
+
+  deploy:
+    needs: bdd
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add Job Summary
+        run: |
+          URL="${{ steps.deployment.outputs.page_url }}"
+          echo "## ✅ BDD Visual Walkthrough" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Open the gallery:** ${URL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario." >> $GITHUB_STEP_SUMMARY
