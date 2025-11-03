@@ -1,7 +1,9 @@
-// Flat config for ESLint v9+
-//
-// Scope: modern JS, Cloudflare Workers (service worker), browser UI code, and Node in build/scripts.
-// Keeps vendor/minified and static assets out via .eslintignore.
+// ESLint v9 flat config
+// Scopes: Cloudflare Workers, browser UI, and Node scripts.
+// Notes:
+// - Use top-level `ignores` instead of .eslintignore (ESLint v9).
+// - Declare globals for service worker and browser to avoid no-undef.
+// - Treat console and a few patterns as warnings rather than hard errors.
 
 import js from '@eslint/js';
 import globals from 'globals';
@@ -10,7 +12,7 @@ export default [
 	// Base recommended rules
 	js.configs.recommended,
 
-	// Global ignores (additional path-level ignores live in .eslintignore)
+	// Global ignores (v9 replaces .eslintignore)
 	{
 		ignores: [
 			'node_modules/**',
@@ -20,10 +22,17 @@ export default [
 			'**/*.min.js',
 			'**/*.min.css',
 			'**/*.min.html',
+			'public/lib/**',           // vendor bundles
+			'docs/**',
+			'config/**',
+			'README.md',
+			// If you want to exclude all static HTML/CSS from lint, uncomment:
+			// 'public/**/*.html',
+			// 'public/**/*.css',
 		],
 	},
 
-	// Node / build scripts (optional)
+	// Node / scripts
 	{
 		files: ['scripts/**/*.js', 'src/jobs/**/*.js'],
 		languageOptions: {
@@ -36,43 +45,45 @@ export default [
 		},
 	},
 
-	// Cloudflare Worker code
+	// Cloudflare Worker + Functions (service worker globals)
 	{
 		files: ['infra/cloudflare/src/**/*.js', 'functions/**/*.js'],
 		languageOptions: {
 			ecmaVersion: 2023,
 			sourceType: 'module',
 			globals: {
-				...globals.serviceworker, // FetchEvent, caches, etc.
-				// Worker bindings you reference at runtime (declare as read-only)
+				...globals.serviceworker, // fetch, caches, Request, etc.
 				ASSETS: 'readonly',
 				AI: 'readonly',
 				SESSION_KV: 'readonly',
 			},
 		},
 		rules: {
-			// Bindings are injected by the platform at runtime
-			'no-undef': 'off',
 			'no-console': 'warn',
+			'no-empty': ['warn', { allowEmptyCatch: true }],
+			'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
 		},
 	},
 
-	// Frontend UI modules
+	// Browser UI (public code)
 	{
 		files: ['public/**/*.js'],
-		ignores: [
-			'public/lib/**', // vendor bundles
-			'public/**/debug*.js', // optional: relax on debug shims
-		],
+		// Fine-grained per-scope ignore (keeps top-level ignores too)
+		ignores: ['public/**/debug*.js'], // relax on debug shims if you want
 		languageOptions: {
 			ecmaVersion: 2023,
 			sourceType: 'module',
 			globals: {
-				...globals.browser,
+				...globals.browser, // window, document, fetch, AbortController, etc.
 			},
 		},
 		rules: {
 			'no-alert': 'warn',
+			'no-console': 'warn',
+			'no-empty': ['warn', { allowEmptyCatch: true }],
+			'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+			'no-useless-escape': 'warn',
+			'no-case-declarations': 'warn',
 		},
 	},
 ];
