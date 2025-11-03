@@ -1,0 +1,36 @@
+# Dependencies / build artefacts
+node_modules/
+dist/
+coverage/
+.tmp/
+.logs/
+*.log
+
+# Lockfiles and caches
+package-lock.json
+npm-shrinkwrap.json
+
+# Generated / vendor libs (don’t reformat)
+public/lib/**
+public/css/**/*.min.css
+public/**/*.min.js
+public/**/*.min.css
+public/**/*.min.html
+
+# Upstream vendor CSS we don't want to touch
+public/css/coloris.min.css
+public/css/govuk/**
+public/components/guides/print.css
+
+# Binary or machine-maintained files
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Optional: skip infra & templates if you prefer to keep their whitespace
+# (uncomment if you want CI green first, then re-enable gradually)
+# .github/**
+# docs/**
