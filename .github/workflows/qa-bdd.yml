@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   bdd:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # stays on 24.04
     env:
       BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL }}
     steps:
@@ -35,12 +35,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install deps (lockfile-respecting)
+      - name: Install project deps
         run: npm ci
 
-      # Installs Chromium + OS deps; matches your package versions
-      - name: Setup Playwright
-        uses: microsoft/playwright-github-action@v1
+      # ✅ Install Chromium + required OS packages on Ubuntu
+      - name: Install Playwright browsers + system deps
+        run: npx --yes playwright install --with-deps chromium
 
       - name: Run BDD suite
         env:
@@ -86,5 +86,5 @@ jobs:
             echo
             echo "[Open Cucumber HTML report](${URL}cucumber-report.html)"
             echo
-            echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario."
+            echo "> The gallery shows each step with its screenshot, grouped by scenario."
           } >> "$GITHUB_STEP_SUMMARY"
