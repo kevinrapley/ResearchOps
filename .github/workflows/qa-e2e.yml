@@ -1,0 +1,51 @@
+name: QA — E2E (Playwright)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      # Prefer a published/preview URL when available.
+      # Set one of these in repo Variables/Secrets:
+      #   PAGES_URL: https://researchops.pages.dev
+      #   PREVIEW_URL: PR preview, if you use preview builds
+      BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure BASE_URL exists (fallback to localhost)
+        run: |
+          if [ -z "${BASE_URL}" ]; then
+            echo "No PAGES/PREVIEW URL set; falling back to http://localhost:8788"
+            echo "BASE_URL=http://localhost:8788" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=$BASE_URL" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Use npx to avoid lockfile churn
+      - name: Install Playwright browsers
+        run: npx --yes playwright@1.48.2 install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npx --yes @playwright/test@1.48.2
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
