@@ -1,3 +1,4 @@
+// features/support/world.js
 import { setWorldConstructor } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
 
@@ -8,11 +9,12 @@ export class World {
   /** @type {string} */ baseURL;
 
   constructor({ parameters }) {
-    // 1) CI or local: BASE_URL env wins
-    // 2) Fallback to cucumber --world-parameters { baseURL }
-    // 3) Finally, localhost
-    const fromEnv = process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL;
-    this.baseURL = fromEnv || parameters?.baseURL || 'http://localhost:8788';
+    this.baseURL =
+      process.env.BASE_URL ||
+      process.env.PAGES_URL ||
+      process.env.PREVIEW_URL ||
+      parameters?.baseURL ||
+      'http://localhost:8788';
   }
 
   url(pathname) {
