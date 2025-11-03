@@ -1,103 +1,101 @@
-import { Before, After, AfterAll, AfterStep } from "@cucumber/cucumber";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { Before, After, AfterAll, AfterStep } from '@cucumber/cucumber';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 function slugify(s) {
-  return String(s)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 100);
+	return String(s)
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.slice(0, 100);
 }
 
-const REPORTS_DIR = "reports";
-const SHOTS_DIR = path.join(REPORTS_DIR, "screenshots"); // raw screenshots (for HTML report)
-const SITE_DIR = "reports-site"; // static site we’ll publish via GitHub Pages
+const REPORTS_DIR = 'reports';
+const SHOTS_DIR = path.join(REPORTS_DIR, 'screenshots'); // raw screenshots (for HTML report)
+const SITE_DIR = 'reports-site'; // static site we’ll publish via GitHub Pages
 
 // In-memory run manifest that we'll turn into an index.html
 const runManifest = {
-  startedAt: new Date().toISOString(),
-  scenarios: [], // { feature, name, slug, steps: [{ idx, text, shotRel }] }
+	startedAt: new Date().toISOString(),
+	scenarios: [], // { feature, name, slug, steps: [{ idx, text, shotRel }] }
 };
 
 Before(async function ({ pickle, gherkinDocument }) {
-  // Derive feature & scenario names
-  const featureName = gherkinDocument.feature?.name || "Feature";
-  const scenarioName = pickle.name || "Scenario";
-  this.__featureName = featureName;
-  this.__scenarioName = scenarioName;
-  this.__scenarioSlug = `${slugify(featureName)}__${slugify(scenarioName)}`;
-  this.__stepIndex = 0;
-  this.__steps = []; // { idx, text, shotRel }
+	// Derive feature & scenario names
+	const featureName = gherkinDocument.feature?.name || 'Feature';
+	const scenarioName = pickle.name || 'Scenario';
+	this.__featureName = featureName;
+	this.__scenarioName = scenarioName;
+	this.__scenarioSlug = `${slugify(featureName)}__${slugify(scenarioName)}`;
+	this.__stepIndex = 0;
+	this.__steps = []; // { idx, text, shotRel }
 
-  // 🔑 Ensure a fresh Playwright page for this scenario
-  if (!this.page) {
-    await this.createPage(); // provided by your World
-  }
+	// 🔑 Ensure a fresh Playwright page for this scenario
+	if (!this.page) {
+		await this.createPage(); // provided by your World
+	}
 });
 
 AfterStep(async function ({ pickleStep /*, result */ }) {
-  // Only attempt screenshots if a page exists
-  if (!this.page) return;
+	// Only attempt screenshots if a page exists
+	if (!this.page) return;
 
-  const idx = ++this.__stepIndex;
-  const stepText = pickleStep?.text || `(step ${idx})`;
-  const fname = `${this.__scenarioSlug}__${String(idx).padStart(3, "0")}--${slugify(stepText)}.png`;
-  const rel = path.join("screenshots", fname);
-  const abs = path.join(SHOTS_DIR, fname);
+	const idx = ++this.__stepIndex;
+	const stepText = pickleStep?.text || `(step ${idx})`;
+	const fname = `${this.__scenarioSlug}__${String(idx).padStart(3, '0')}--${slugify(stepText)}.png`;
+	const rel = path.join('screenshots', fname);
+	const abs = path.join(SHOTS_DIR, fname);
 
-  try {
-    await fs.mkdir(SHOTS_DIR, { recursive: true });
-    await this.page.screenshot({ path: abs, fullPage: true });
-    this.__steps.push({ idx, text: stepText, shotRel: rel });
-  } catch {
-    // Ignore screenshot issues so they don't mask step failures
-  }
+	try {
+		await fs.mkdir(SHOTS_DIR, { recursive: true });
+		await this.page.screenshot({ path: abs, fullPage: true });
+		this.__steps.push({ idx, text: stepText, shotRel: rel });
+	} catch {
+		// Ignore screenshot issues so they don't mask step failures
+	}
 });
 
 After(async function () {
-  // Add scenario block to manifest
-  runManifest.scenarios.push({
-    feature: this.__featureName,
-    name: this.__scenarioName,
-    slug: this.__scenarioSlug,
-    steps: this.__steps.slice(),
-  });
+	// Add scenario block to manifest
+	runManifest.scenarios.push({
+		feature: this.__featureName,
+		name: this.__scenarioName,
+		slug: this.__scenarioSlug,
+		steps: this.__steps.slice(),
+	});
 
-  // 🧹 Dispose page/context after each scenario
-  await this.dispose(); // from your World
+	// 🧹 Dispose page/context after each scenario
+	await this.dispose(); // from your World
 });
 
 AfterAll(async function () {
-  // 🧹 Close any remaining browser resources
-  await this.destroy?.(); // from your World (optional chaining in case not present)
+	// 🧹 Close any remaining browser resources
+	await this.destroy?.(); // from your World (optional chaining in case not present)
 
-  // Build a tiny static site that references the screenshots + cucumber HTML
-  await fs.mkdir(SITE_DIR, { recursive: true });
+	// Build a tiny static site that references the screenshots + cucumber HTML
+	await fs.mkdir(SITE_DIR, { recursive: true });
 
-  // Copy cucumber HTML report into the site (if present)
-  const cucumberHtml = path.join(REPORTS_DIR, "cucumber-report.html");
-  try {
-    await fs.copyFile(cucumberHtml, path.join(SITE_DIR, "cucumber-report.html"));
-  } catch {
-    /* ignore if missing */
-  }
+	// Copy cucumber HTML report into the site (if present)
+	const cucumberHtml = path.join(REPORTS_DIR, 'cucumber-report.html');
+	try {
+		await fs.copyFile(cucumberHtml, path.join(SITE_DIR, 'cucumber-report.html'));
+	} catch {
+		/* ignore if missing */
+	}
 
-  // Copy screenshots directory
-  try {
-    await fs.mkdir(path.join(SITE_DIR, "screenshots"), { recursive: true });
-    const files = await fs.readdir(SHOTS_DIR);
-    await Promise.all(
-      files.map((f) =>
-        fs.copyFile(path.join(SHOTS_DIR, f), path.join(SITE_DIR, "screenshots", f))
-      )
-    );
-  } catch {
-    /* ignore if none */
-  }
+	// Copy screenshots directory
+	try {
+		await fs.mkdir(path.join(SITE_DIR, 'screenshots'), { recursive: true });
+		const files = await fs.readdir(SHOTS_DIR);
+		await Promise.all(
+			files.map((f) => fs.copyFile(path.join(SHOTS_DIR, f), path.join(SITE_DIR, 'screenshots', f)))
+		);
+	} catch {
+		/* ignore if none */
+	}
 
-  // Write a minimal index.html with a visual walkthrough
-  const html = `<!doctype html>
+	// Write a minimal index.html with a visual walkthrough
+	const html = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -126,25 +124,25 @@ AfterAll(async function () {
   <p class="badge">Run started: ${runManifest.startedAt}</p>
   ${runManifest.scenarios.length === 0 ? '<p class="empty">No scenarios captured.</p>' : ''}
   ${runManifest.scenarios
-    .map(
-      (sc) => `
+		.map(
+			(sc) => `
     <section class="scenario" id="${sc.slug}">
       <h2>${sc.feature} — ${sc.name}</h2>
       ${sc.steps
-        .map(
-          (st) => `
+				.map(
+					(st) => `
         <div class="step">
           <div class="meta">Step ${st.idx}: ${st.text}</div>
           <img loading="lazy" src="${st.shotRel}" alt="Step ${st.idx}: ${st.text}" />
         </div>
       `
-        )
-        .join("")}
+				)
+				.join('')}
     </section>
   `
-    )
-    .join("")}
+		)
+		.join('')}
 </body>
 </html>`;
-  await fs.writeFile(path.join(SITE_DIR, "index.html"), html, "utf8");
+	await fs.writeFile(path.join(SITE_DIR, 'index.html'), html, 'utf8');
 });

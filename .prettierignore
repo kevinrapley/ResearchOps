@@ -51,3 +51,13 @@ reports-site/
 # Cloudflare build output (if any)
 dist/
 .build/
+
+# QA / generated artifacts
+reports/
+reports-site/
+playwright-report/
+test-results/
+
+# Cloudflare builds (if any)
+dist/
+.build/

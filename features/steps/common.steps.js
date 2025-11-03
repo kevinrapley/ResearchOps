@@ -22,7 +22,7 @@ function selectorCandidates(name) {
 			'.site-header',
 			'nav[role="navigation"]',
 			'nav[aria-label]',
-			'nav'
+			'nav',
 		];
 	}
 
@@ -73,10 +73,7 @@ Then('I should see an element {string}', async function (name) {
 	await locator.first().waitFor({ state: 'attached', timeout: 10000 });
 
 	const count = await locator.count();
-	this.expectTruthy(
-		count > 0,
-		`Expected to find "${name}" using any of: ${candidates.join(', ')}`
-	);
+	this.expectTruthy(count > 0, `Expected to find "${name}" using any of: ${candidates.join(', ')}`);
 
 	// Optional: also check visibility of the first match (can be commented out if too strict)
 	// await expect(locator.first()).toBeVisible({ timeout: 2000 });
