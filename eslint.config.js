@@ -19,8 +19,8 @@ export default [
 			'.tmp/**',
 			'**/*.min.js',
 			'**/*.min.css',
-			'**/*.min.html'
-		]
+			'**/*.min.html',
+		],
 	},
 
 	// Node / build scripts (optional)
@@ -29,11 +29,11 @@ export default [
 		languageOptions: {
 			ecmaVersion: 2023,
 			sourceType: 'module',
-			globals: globals.node
+			globals: globals.node,
 		},
 		rules: {
-			'no-console': 'off'
-		}
+			'no-console': 'off',
+		},
 	},
 
 	// Cloudflare Worker code
@@ -47,13 +47,14 @@ export default [
 				// Worker bindings you reference at runtime (declare as read-only)
 				ASSETS: 'readonly',
 				AI: 'readonly',
-				SESSION_KV: 'readonly'
-			}
+				SESSION_KV: 'readonly',
+			},
 		},
 		rules: {
-			'no-undef': 'off', // bindings provided at runtime by Workers
-			'no-console': 'warn'
-		}
+			// Bindings are injected by the platform at runtime
+			'no-undef': 'off',
+			'no-console': 'warn',
+		},
 	},
 
 	// Frontend UI modules
@@ -61,17 +62,17 @@ export default [
 		files: ['public/**/*.js'],
 		ignores: [
 			'public/lib/**', // vendor bundles
-			'public/**/debug*.js' // optional: relax on debug shims
+			'public/**/debug*.js', // optional: relax on debug shims
 		],
 		languageOptions: {
 			ecmaVersion: 2023,
 			sourceType: 'module',
 			globals: {
-				...globals.browser
-			}
+				...globals.browser,
+			},
 		},
 		rules: {
-			'no-alert': 'warn'
-		}
-	}
+			'no-alert': 'warn',
+		},
+	},
 ];
