@@ -1,22 +1,24 @@
-// eslint.config.js (ESM, compatible with "type":"module")
+// eslint.config.js
 import globals from "globals";
 
 export default [
-  // Ignore build output or other generated folders if you have them
   {
-    ignores: ["dist/**", "build/**", "node_modules/**"]
+    ignores: [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+      ".lighthouseci/**"
+    ]
   },
-
-  // Base JS config for the repo
   {
     files: ["**/*.js"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: {
-        ...globals.browser, // window, document, etc.
-        ...globals.node     // process, __dirname, etc.
-      }
+      globals: { ...globals.browser, ...globals.node }
     },
     rules: {
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
