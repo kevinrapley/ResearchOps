@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>BDD Walkthrough</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:24px; line-height:1.45}
+    header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .badge{background:#eef;border:1px solid #99c;border-radius:6px;padding:6px 10px}
+    h2{margin-top:32px;border-bottom:1px solid #eee;padding-bottom:6px}
+    .step{border:1px solid #eee;border-radius:8px;margin:12px 0;overflow:hidden}
+    .step .meta{background:#fafafa;padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;color:#333}
+    .step img{display:block;width:100%;max-width:1200px;height:auto}
+    .links a{margin-right:12px}
+    .empty{color:#889}
+    .scenario{margin-bottom:36px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BDD Visual Walkthrough</h1>
+    <div class="links">
+      <a class="badge" href="./cucumber-report.html">Open Cucumber HTML report</a>
+    </div>
+  </header>
+  <p class="badge">Run started: 2025-11-03T21:13:33.270Z</p>
+  
+  
+    <section class="scenario" id="smoke__home-loads">
+      <h2>Smoke — Home loads</h2>
+      
+        <div class="step">
+          <div class="meta">Step 1: the site base URL</div>
+          <img loading="lazy" src="screenshots/smoke__home-loads__001--the-site-base-url.png" alt="Step 1: the site base URL" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 2: I visit "/"</div>
+          <img loading="lazy" src="screenshots/smoke__home-loads__002--i-visit.png" alt="Step 2: I visit "/"" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 3: the page should contain "Research" within 5s</div>
+          <img loading="lazy" src="screenshots/smoke__home-loads__003--the-page-should-contain-research-within-5s.png" alt="Step 3: the page should contain "Research" within 5s" />
+        </div>
+      
+    </section>
+  
+    <section class="scenario" id="smoke__projects-page-loads">
+      <h2>Smoke — Projects page loads</h2>
+      
+        <div class="step">
+          <div class="meta">Step 1: the site base URL</div>
+          <img loading="lazy" src="screenshots/smoke__projects-page-loads__001--the-site-base-url.png" alt="Step 1: the site base URL" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 2: I visit "/pages/projects/index.html"</div>
+          <img loading="lazy" src="screenshots/smoke__projects-page-loads__002--i-visit-pages-projects-index-html.png" alt="Step 2: I visit "/pages/projects/index.html"" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 3: the page should have a <title> containing "Projects"</div>
+          <img loading="lazy" src="screenshots/smoke__projects-page-loads__003--the-page-should-have-a-title-containing-projects.png" alt="Step 3: the page should have a <title> containing "Projects"" />
+        </div>
+      
+    </section>
+  
+    <section class="scenario" id="smoke__start-page-has-main-landmarks">
+      <h2>Smoke — Start page has main landmarks</h2>
+      
+        <div class="step">
+          <div class="meta">Step 1: the site base URL</div>
+          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__001--the-site-base-url.png" alt="Step 1: the site base URL" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 2: I visit "/pages/start/index.html"</div>
+          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__002--i-visit-pages-start-index-html.png" alt="Step 2: I visit "/pages/start/index.html"" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 3: I should see an element "main"</div>
+          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__003--i-should-see-an-element-main.png" alt="Step 3: I should see an element "main"" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 4: I should see an element "header"</div>
+          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__004--i-should-see-an-element-header.png" alt="Step 4: I should see an element "header"" />
+        </div>
+      
+        <div class="step">
+          <div class="meta">Step 5: I should see an element "footer"</div>
+          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__005--i-should-see-an-element-footer.png" alt="Step 5: I should see an element "footer"" />
+        </div>
+      
+    </section>
+  
+</body>
+</html>

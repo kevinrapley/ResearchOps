@@ -1,18 +1,12 @@
-import { setWorldConstructor } from "@cucumber/cucumber";
-import assert from "node:assert/strict";
+// features/support/world.js
+import { setWorldConstructor } from '@cucumber/cucumber';
+import assert from 'node:assert/strict';
 
 export class World {
-  /** @type {import('playwright').Browser} */ browser;
-  /** @type {import('playwright').BrowserContext} */ context;
-  /** @type {import('playwright').Page} */ page;
-  /** @type {string} */ baseURL;
+  browser; context; page; baseURL;
 
   constructor({ parameters }) {
-    // 🔧 Priority: environment variable → parameters → fallback to live site
-    this.baseURL =
-      process.env.BASE_URL ||
-      parameters?.baseURL ||
-      "https://researchops.pages.dev";
+    this.baseURL = parameters?.baseURL || process.env.BASE_URL || 'http://localhost:8788';
   }
 
   url(pathname) {
@@ -20,10 +14,12 @@ export class World {
   }
 
   async createPage() {
-    const { chromium } = await import("playwright");
+    if (this.page) return this.page;
+    const { chromium } = await import('playwright');
     if (!this.browser) this.browser = await chromium.launch();
     this.context = await this.browser.newContext({ ignoreHTTPSErrors: true });
     this.page = await this.context.newPage();
+    this.page.setDefaultTimeout(15000); // <-- helpful on CI
     return this.page;
   }
 
