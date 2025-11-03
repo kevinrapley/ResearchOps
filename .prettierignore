@@ -38,9 +38,16 @@ package.json
 eslint.config.js
 
 # Build / test artifacts
-playwright-report/
-test-results/
 .lighthouseci/
-dist/
 build/
 coverage/
+
+# Playwright & Cucumber artifacts
+playwright-report/
+test-results/
+reports/
+reports-site/
+
+# Cloudflare build output (if any)
+dist/
+.build/
