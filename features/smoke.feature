@@ -1,20 +1,17 @@
-Feature: Site smoke
+Feature: Smoke
 
-  Background:
-    Given the site base URL
-
-  @smoke
   Scenario: Home loads
+    Given the site base URL
     When I visit "/"
     Then the page should contain "Research" within 5s
 
-  @smoke
   Scenario: Projects page loads
+    Given the site base URL
     When I visit "/pages/projects/index.html"
     Then the page should have a <title> containing "Projects"
 
-  @a11y-lite
   Scenario: Start page has main landmarks
+    Given the site base URL
     When I visit "/pages/start/index.html"
     Then I should see an element "main"
     And I should see an element "header"
