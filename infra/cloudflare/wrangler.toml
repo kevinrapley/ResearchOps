@@ -1,53 +1,77 @@
-name                                  = "rops-api"
-main                                  = "src/worker.js"
-compatibility_date                    = "2025-09-26"
+name                = "rops-api"
+main                = "src/worker.js"
+compatibility_date  = "2025-09-26"
 
+# Static asset passthrough
 [assets]
-binding                               = "ASSETS"
-directory                             = "../../public"
+binding   = "ASSETS"
+directory = "../../public"
 
+# Workers AI binding (model is configured in [vars])
 [ai]
-binding                               = "AI"
+binding = "AI"
 
+# ----------------------------
+# Non-secret configuration
+# ----------------------------
 [vars]
-MODEL                                 = "@cf/meta/llama-3.1-8b-instruct"
-AIRTABLE_TABLE_AI_LOG                 = "AI_Usage"
+# Inference model (safe to expose)
+MODEL = "@cf/meta/llama-3.1-8b-instruct"
+
+# Feature flags / behaviour
+AUDIT = "true"
 
 # CORS
-ALLOWED_ORIGINS = "https://researchops.pages.dev, https://rops-api.digikev-kevin-rapley.workers.dev, http://localhost:8080"
+ALLOWED_ORIGINS = [
+  "https://researchops.pages.dev",
+  "https://rops-api.digikev-kevin-rapley.workers.dev",
+  "http://localhost:8080"
+]
 
-# Airtable
-AIRTABLE_BASE_ID                      = "appkpzVvkof4RFtkh"
-AIRTABLE_TABLE_PROJECTS               = "Projects"
-AIRTABLE_TABLE_DETAILS                = "Project Details"
-AIRTABLE_TABLE_MURAL_BOARDS           = "Mural Boards"
-AIRTABLE_TABLE_JOURNAL                = "Journal Entries"
-AIRTABLE_TABLE_STUDIES                = "Project Studies"
-AIRTABLE_TABLE_SESSIONS               = "Sessions"
-AIRTABLE_TABLE_SESSION_NOTES          = "Session Notes"
-AIRTABLE_TABLE_GUIDES                 = "Discussion Guides"
-AIRTABLE_TABLE_PARTIALS               = "Partials"
-AIRTABLE_TABLE_CODES                  = "Codes"
-AIRTABLE_TABLE_CODE_APPLICATIONS      = "Code Applications"
-AUDIT                                 = "true"
+# Airtable (table names only — keep IDs/keys as secrets)
+AIRTABLE_TABLE_AI_LOG            = "AI_Usage"
+AIRTABLE_TABLE_PROJECTS          = "Projects"
+AIRTABLE_TABLE_DETAILS           = "Project Details"
+AIRTABLE_TABLE_MURAL_BOARDS      = "Mural Boards"
+AIRTABLE_TABLE_JOURNAL           = "Journal Entries"
+AIRTABLE_TABLE_STUDIES           = "Project Studies"
+AIRTABLE_TABLE_SESSIONS          = "Sessions"
+AIRTABLE_TABLE_SESSION_NOTES     = "Session Notes"
+AIRTABLE_TABLE_GUIDES            = "Discussion Guides"
+AIRTABLE_TABLE_PARTIALS          = "Partials"
+AIRTABLE_TABLE_CODES             = "Codes"
+AIRTABLE_TABLE_CODE_APPLICATIONS = "Code Applications"
 
-# GitHub CSV repo details
-GH_OWNER                              = "kevinrapley"
-GH_REPO                               = "ResearchOps"
-GH_BRANCH                             = "main"
-GH_PATH_PROJECTS                      = "data/projects.csv"
-GH_PATH_DETAILS                       = "data/project-details.csv"
-GH_PATH_STUDIES                       = "data/studies.csv"
+# GitHub CSV transparency (safe: repo metadata, not tokens)
+GH_OWNER         = "kevinrapley"
+GH_REPO          = "ResearchOps"
+GH_BRANCH        = "main"
+GH_PATH_PROJECTS = "data/projects.csv"
+GH_PATH_DETAILS  = "data/project-details.csv"
+GH_PATH_STUDIES  = "data/studies.csv"
 
-# Mural
-MURAL_CLIENT_ID                       = "3648c18f-8dbe-4217-a147-3bce1609c5b1"
-MURAL_REDIRECT_URI                    = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
-MURAL_COMPANY_ID                      = "homeofficegovuk"
-MURAL_API_BASE                        = "https://app.mural.co/api/public/v1"
-MURAL_SCOPES                          = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"
-MURAL_OAUTH_LEGACY                    = "true"
+# Mural public config
+MURAL_COMPANY_ID   = "homeofficegovuk"
+MURAL_API_BASE     = "https://app.mural.co/api/public/v1"
+MURAL_SCOPES       = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"
+MURAL_OAUTH_LEGACY = "true"
+MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
 
+# KV namespaces
 [[kv_namespaces]]
-binding                               = "SESSION_KV"
-id                                    = "8e2d88969b9e4be694868931bdba92f2"
-preview_id                            = "8e2d88969b9e4be694868931bdba92f2"
+binding    = "SESSION_KV"
+id         = "8e2d88969b9e4be694868931bdba92f2"
+preview_id = "8e2d88969b9e4be694868931bdba92f2"
+
+# Optional: environment-specific overrides
+[env.dev]
+[env.dev.vars]
+AUDIT = "false"
+ALLOWED_ORIGINS = [
+  "http://localhost:8080",
+  "http://127.0.0.1:8787"
+]
+
+[env.prod]
+[env.prod.vars]
+AUDIT = "true"
