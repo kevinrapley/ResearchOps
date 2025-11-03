@@ -1,18 +1,22 @@
-name: Deploy Cloudflare Pages (UI)
+name: Deploy Cloudflare Worker (API)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, start-csv ]
     paths:
-      - 'public/**'
-      - '.github/workflows/deploy-pages.yml'
+      - 'infra/cloudflare/**'
+      - 'functions/**'
+      - 'config/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-worker.yml'
   workflow_dispatch: {}
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-pages-${{ github.ref }}
+  group: deploy-worker-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,30 +28,77 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with cache)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install (if build present)
-        run: npm ci
-        continue-on-error: true
-
-      - name: Build UI (optional)
+      - name: Ensure lockfile present
         run: |
-          if npm run | grep -q "build:ui"; then
-            npm run build:ui
-            echo "UI build step executed"
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            echo "Lockfile found."
           else
-            echo "No build:ui script found, deploying /public as static"
+            echo "::error::No lockfile found. Commit package-lock.json (run: npm i --package-lock-only)"
+            exit 1
           fi
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Install deps (npm ci)
+        run: npm ci
+
+      - name: Check required GitHub secrets exist
+        run: |
+          set -euo pipefail
+          test -n "${{ secrets.CF_API_TOKEN }}" || (echo "CF_API_TOKEN missing"; exit 1)
+          test -n "${{ secrets.CF_ACCOUNT_ID }}" || (echo "CF_ACCOUNT_ID missing"; exit 1)
+          test -n "${{ secrets.GH_PAT }}" || (echo "GH_PAT missing"; exit 1)
+          test -n "${{ secrets.AIRTABLE_API_KEY }}" || (echo "AIRTABLE_API_KEY missing"; exit 1)
+          test -n "${{ secrets.MURAL_CLIENT_SECRET }}" || (echo "MURAL_CLIENT_SECRET missing"; exit 1)
+          echo "✅ All required GitHub secrets are present"
+
+      - name: Install Wrangler
+        run: npm i -g wrangler@4.40.2
+
+      - name: Wrangler whoami
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: wrangler whoami || true
+
+      - name: Verify SESSION_KV exists in this account
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          wrangler kv namespace list --config infra/cloudflare/wrangler.toml | tee namespaces.txt
+          grep -E 'SESSION_KV|885d872547f3489f8edd9c3444a190f6' namespaces.txt >/dev/null
+          echo "✅ KV namespace visible"
+
+      - name: Put Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml
+          if [ -n "${{ secrets.AIRTABLE_BASE_ID || '' }}" ]; then
+            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}" | wrangler secret put AIRTABLE_BASE_ID --config infra/cloudflare/wrangler.toml
+          fi
+          echo "✅ Secrets pushed to Worker"
+
+      - name: List Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: wrangler secret list --config infra/cloudflare/wrangler.toml
+
+      - name: Publish Worker
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          projectName: ${{ secrets.CF_PAGES_PROJECT }}
-          directory: public
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '4.40.2'
+          command: deploy --config infra/cloudflare/wrangler.toml
