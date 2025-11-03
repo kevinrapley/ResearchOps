@@ -34,3 +34,4 @@ public/components/guides/print.css
 # (uncomment if you want CI green first, then re-enable gradually)
 # .github/**
 # docs/**
+package.json
