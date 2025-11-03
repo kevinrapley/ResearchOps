@@ -1,27 +1,51 @@
-name: Deploy Cloudflare Worker
+name: Deploy Cloudflare Worker (API)
 
 on:
   push:
     branches: [ main, start-csv ]
+    paths:
+      - 'infra/cloudflare/**'
+      - 'functions/**'
+      - 'config/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-worker.yml'
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-worker-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
       - name: Check required GitHub secrets exist
         run: |
+          set -euo pipefail
           test -n "${{ secrets.CF_API_TOKEN }}" || (echo "CF_API_TOKEN missing"; exit 1)
           test -n "${{ secrets.CF_ACCOUNT_ID }}" || (echo "CF_ACCOUNT_ID missing"; exit 1)
           test -n "${{ secrets.GH_PAT }}" || (echo "GH_PAT missing"; exit 1)
           test -n "${{ secrets.AIRTABLE_API_KEY }}" || (echo "AIRTABLE_API_KEY missing"; exit 1)
           test -n "${{ secrets.MURAL_CLIENT_SECRET }}" || (echo "MURAL_CLIENT_SECRET missing"; exit 1)
+          echo "✅ All required GitHub secrets are present"
 
       - name: Install Wrangler
         run: npm i -g wrangler@4.40.2
@@ -38,9 +62,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          # List namespaces and save output to a file
           wrangler kv namespace list --config infra/cloudflare/wrangler.toml | tee namespaces.txt
-          # Assert the KV you expect is visible
           grep -E 'SESSION_KV|885d872547f3489f8edd9c3444a190f6' namespaces.txt >/dev/null
           echo "✅ KV namespace visible"
 
@@ -49,9 +71,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml
+          set -euo pipefail
+          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml --quiet
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml --quiet
+          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml --quiet
+          echo "✅ Secrets pushed to Worker"
 
       - name: List Worker secrets
         env:
