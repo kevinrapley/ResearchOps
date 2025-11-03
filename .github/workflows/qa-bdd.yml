@@ -1,0 +1,48 @@
+name: QA — BDD (Cucumber + Playwright)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  bdd:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure BASE_URL
+        run: |
+          if [ -z "${BASE_URL}" ]; then
+            echo "No PAGES/PREVIEW URL set; falling back to http://localhost:8788"
+            echo "BASE_URL=http://localhost:8788" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=$BASE_URL" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Cucumber + Playwright (no lock churn)
+        run: |
+          npx --yes playwright@1.48.2 install --with-deps chromium
+          npm i -D @cucumber/cucumber@^10.3.0 playwright@^1.48.2
+
+      - name: Run BDD suite
+        run: npx cucumber-js -p default
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+      - name: Upload Cucumber HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: reports/cucumber-report.html
+          if-no-files-found: ignore
