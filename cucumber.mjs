@@ -9,10 +9,7 @@ function normalizeBase(url) {
 	return s.endsWith('/') ? s : `${s}/`;
 }
 
-const fromEnv =
-	process.env.BASE_URL ||
-	process.env.PAGES_URL ||
-	process.env.PREVIEW_URL;
+const fromEnv = process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL;
 
 const normalized = normalizeBase(fromEnv);
 const isCI = !!process.env.CI;
@@ -20,8 +17,7 @@ const isCI = !!process.env.CI;
 if (isCI && !normalized) {
 	// Don’t silently use localhost in CI — make the failure obvious.
 	throw new Error(
-		'BASE_URL not set (nor PAGES_URL / PREVIEW_URL). ' +
-			'Set BASE_URL in your workflow env.'
+		'BASE_URL not set (nor PAGES_URL / PREVIEW_URL). ' + 'Set BASE_URL in your workflow env.'
 	);
 }
 
