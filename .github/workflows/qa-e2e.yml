@@ -1,51 +1,69 @@
-name: QA — E2E (Playwright)
+name: QA • Playwright E2E
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
+    paths:
+      - "tests/e2e/**"
+      - "playwright.config.js"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
   pull_request:
     branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    env:
-      # Prefer a published/preview URL when available.
-      # Set one of these in repo Variables/Secrets:
-      #   PAGES_URL: https://researchops.pages.dev
-      #   PREVIEW_URL: PR preview, if you use preview builds
-      BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Ensure BASE_URL exists (fallback to localhost)
-        run: |
-          if [ -z "${BASE_URL}" ]; then
-            echo "No PAGES/PREVIEW URL set; falling back to http://localhost:8788"
-            echo "BASE_URL=http://localhost:8788" >> $GITHUB_ENV
-          else
-            echo "BASE_URL=$BASE_URL" >> $GITHUB_ENV
-          fi
-
-      - name: Setup Node
+      - name: Use Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          cache: npm
 
-      # Use npx to avoid lockfile churn
+      - name: Install deps
+        run: npm ci
+
+      # If your playwright.config.js has the `webServer` block (serving ./public), leave BASE_URL unset.
+      # If you want to hit a deployed Pages URL instead, uncomment BASE_URL below and remove the webServer block in config.
       - name: Install Playwright browsers
         run: npx --yes playwright@1.48.2 install --with-deps chromium
 
       - name: Run Playwright tests
-        run: npx --yes @playwright/test@1.48.2
         env:
-          BASE_URL: ${{ env.BASE_URL }}
+          # BASE_URL: https://<your-pages-site>.pages.dev  # <-- set this ONLY if you are NOT using the webServer in config
+          NODE_OPTIONS: --max-old-space-size=2048
+        run: npx --yes playwright@1.48.2 test
 
-      - name: Upload Playwright report
+      - name: Upload Playwright report (HTML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
+          if-no-files-found: ignore
+
+      - name: Upload Playwright traces/videos/screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          if-no-files-found: ignore
+
+      # Optional: show a quick link in the Job Summary
+      - name: Add report link to summary
+        if: always()
+        run: |
+          echo "## Playwright Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Download the HTML report artifact: **playwright-report**" >> $GITHUB_STEP_SUMMARY
+          echo "- Traces / screenshots / videos: **playwright-test-results**" >> $GITHUB_STEP_SUMMARY
