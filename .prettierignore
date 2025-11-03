@@ -35,3 +35,4 @@ public/components/guides/print.css
 # .github/**
 # docs/**
 package.json
+eslint.config.js
