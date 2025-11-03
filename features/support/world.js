@@ -1,3 +1,4 @@
+// features/support/world.js
 import { setWorldConstructor } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
 
@@ -8,12 +9,7 @@ export class World {
 	/** @type {string} */ baseURL;
 
 	constructor({ parameters }) {
-		this.baseURL =
-			process.env.BASE_URL ||
-			process.env.PAGES_URL ||
-			process.env.PREVIEW_URL ||
-			parameters?.baseURL ||
-			'http://localhost:8788';
+		this.baseURL = parameters?.baseURL || 'http://localhost:8788/';
 	}
 
 	url(pathname) {
