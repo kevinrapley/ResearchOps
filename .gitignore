@@ -32,3 +32,13 @@ scripts/**
 # === SDK and jobs (optional – re-enable when ready) ===
 src/sdk/**
 src/jobs/**
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# === Common outputs
+dist/
+build/
+coverage/
+.lighthouseci/
