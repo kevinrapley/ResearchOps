@@ -170,7 +170,7 @@ if (!window.__DEBUG_CONSOLE_WIRED__) {
 			this.__debug = { method, url, start: 0 };
 			return open.apply(this, arguments);
 		};
-		XHR.prototype.send = function (_body) {
+		XHR.prototype.send = function () {
 			if (this.__debug) this.__debug.start = performance.now();
 			this.addEventListener('loadend', () => {
 				const d = this.__debug || {};
