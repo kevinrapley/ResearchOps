@@ -1,7 +1,7 @@
 // Minimal Playwright config – Chromium only, retries on CI, flexible baseURL via env
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL || 'http://localhost:8788';
+const baseURL = process.env.BASE_URL || 'https://researchops.pages.dev';
 
 export default defineConfig({
 	testDir: 'tests/e2e',
