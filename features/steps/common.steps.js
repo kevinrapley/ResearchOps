@@ -26,7 +26,6 @@ Then('the page should contain {string} within 5s', async function (text) {
 	await expect(this.page.getByText(text, { exact: false }).first()).toBeVisible({ timeout: 5000 });
 });
 
-// More precise (recommended): assert a visible heading containing text
 Then('the page should have a heading containing {string}', async function (text) {
 	await expect(this.page.getByRole('heading', { name: new RegExp(text, 'i') })).toBeVisible({
 		timeout: 5000
