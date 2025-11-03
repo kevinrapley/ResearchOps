@@ -1,0 +1,53 @@
+name: Deploy Cloudflare Pages (UI)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'public/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install (if build present)
+        run: npm ci
+        continue-on-error: true
+
+      - name: Build UI (optional)
+        run: |
+          if npm run | grep -q "build:ui"; then
+            npm run build:ui
+            echo "UI build step executed"
+          else
+            echo "No build:ui script found, deploying /public as static"
+          fi
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          projectName: ${{ secrets.CF_PAGES_PROJECT }}
+          directory: public
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
