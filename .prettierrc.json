@@ -1,0 +1,19 @@
+{
+	"useTabs": true,
+	"tabWidth": 4,
+	"printWidth": 100,
+	"singleQuote": true,
+	"trailingComma": "es5",
+	"arrowParens": "always",
+	"endOfLine": "lf",
+	"overrides": [
+		{
+			"files": "*.css",
+			"options": { "singleQuote": false }
+		},
+		{
+			"files": ["*.yml", "*.yaml"],
+			"options": { "singleQuote": false }
+		}
+	]
+}
