@@ -3,29 +3,52 @@ name: QA — Lighthouse
 on:
   workflow_dispatch:
   schedule:
-    - cron: "22 5 * * *" # daily
+    - cron: "22 5 * * *" # daily at 05:22 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
-    env:
-      SITE_URL: ${{ vars.PAGES_URL || secrets.PAGES_URL }}
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Ensure SITE_URL present
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Resolve the site URL from variables or secrets and normalize it
+      - name: Resolve SITE_URL
+        id: site
+        shell: bash
         run: |
+          set -euo pipefail
+          SITE_URL="${{ vars.PAGES_URL }}"
+          if [ -z "${SITE_URL}" ]; then SITE_URL="${{ secrets.PAGES_URL }}"; fi
           if [ -z "${SITE_URL}" ]; then
-            echo "Set PAGES_URL repo variable or secret to your deployed site URL"; exit 1;
+            echo "::error::Set repo variable PAGES_URL or secret PAGES_URL to your deployed site URL"
+            exit 1
           fi
+          # Ensure trailing slash
+          case "$SITE_URL" in
+            */) : ;;
+            *) SITE_URL="${SITE_URL}/" ;;
+          esac
+          echo "SITE_URL=${SITE_URL}" >> "$GITHUB_ENV"
+          echo "Using SITE_URL=${SITE_URL}"
 
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@v11
         with:
           urls: |
-            ${{ env.SITE_URL }}/
-            ${{ env.SITE_URL }}/pages/start/index.html
-            ${{ env.SITE_URL }}/pages/projects/index.html
+            ${{ env.SITE_URL }}
+            ${{ env.SITE_URL }}pages/start/index.html
+            ${{ env.SITE_URL }}pages/projects/index.html
           configPath: ./lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
