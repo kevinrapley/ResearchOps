@@ -41,8 +41,8 @@ jobs:
       # Install browsers & test deps (fast path; avoids full npm ci churn)
       - name: Install Playwright + deps and Cucumber
         run: |
-          npx --yes playwright@1.48.2 install --with-deps chromium
-          npm i -D @cucumber/cucumber@^10.3.0 playwright@^1.48.2
+          npm ci
+          npx playwright install --with-deps chromium
 
       - name: Run BDD suite
         run: npx cucumber-js -p default
