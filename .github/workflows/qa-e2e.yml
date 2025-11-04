@@ -1,16 +1,9 @@
 name: QA • Playwright E2E
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - "tests/e2e/**"
-      - "playwright.config.js"
-      - "public/**"
-      - "package.json"
-      - "package-lock.json"
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   workflow_dispatch: {}
 
 permissions:
@@ -18,6 +11,7 @@ permissions:
 
 jobs:
   e2e:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -33,15 +27,11 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      # Install browsers that match @playwright/test in devDependencies (1.56.x)
       - name: Install Playwright browsers
         run: npx --yes playwright@1.56.1 install --with-deps chromium
 
       - name: Run Playwright tests
         env:
-          # If your playwright.config.js defines a webServer, leave BASE_URL unset.
-          # If you want to hit a deployed URL instead, set BASE_URL and remove webServer from config.
-          # BASE_URL: https://your-pages-site.pages.dev
           NODE_OPTIONS: --max-old-space-size=2048
         run: npx --yes playwright@1.56.1 test
 
@@ -64,8 +54,6 @@ jobs:
       - name: Add report link to summary
         if: always()
         run: |
-          {
-            echo "## Playwright Report"
-            echo "- Download the HTML report artifact: **playwright-report**"
-            echo "- Traces / screenshots / videos: **playwright-test-results**"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## Playwright Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Download the HTML report artifact: **playwright-report**" >> $GITHUB_STEP_SUMMARY
+          echo "- Traces / screenshots / videos: **playwright-test-results**" >> $GITHUB_STEP_SUMMARY
