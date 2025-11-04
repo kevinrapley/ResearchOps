@@ -28,7 +28,7 @@ Then('the page should contain {string} within 5s', async function (text) {
 
 Then('the page should have a heading containing {string}', async function (text) {
 	await expect(this.page.getByRole('heading', { name: new RegExp(text, 'i') })).toBeVisible({
-		timeout: 5000
+		timeout: 5000,
 	});
 });
 

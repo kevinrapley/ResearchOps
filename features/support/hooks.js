@@ -11,10 +11,7 @@ import { join } from 'node:path';
 
 /** Escape characters for safe HTML text output. */
 function escapeHtml(str = '') {
-	return String(str)
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;');
+	return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
 /** Escape characters for safe HTML attribute values. */
@@ -184,9 +181,7 @@ AfterAll(function () {
 				(st) => `
 		<div class="step">
 			<div class="meta">Step ${st.idx}: ${escapeHtml(st.text)}</div>
-			<img loading="lazy" src="${escapeAttr(st.shotRel)}" alt="Step ${
-					st.idx
-				}: ${escapeAttr(st.text)}" />
+			<img loading="lazy" src="${escapeAttr(st.shotRel)}" alt="Step ${st.idx}: ${escapeAttr(st.text)}" />
 		</div>`
 			)
 			.join('')}
