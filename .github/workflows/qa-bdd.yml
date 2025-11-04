@@ -1,7 +1,10 @@
 name: qa-bdd
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["QA • Playwright E2E"]
+    types: [completed]
+  workflow_dispatch: {}
   pull_request:
   push:
     branches: [ main ]
@@ -13,6 +16,13 @@ permissions:
 
 jobs:
   bdd:
+    if: >
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        github.event_name == 'pull_request' ||
+        github.event.workflow_run.conclusion == 'success'
+      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,22 +53,6 @@ jobs:
       - name: Run BDD suite
         run: npm run qa:cucumber
 
-      # Make sure there's always something to deploy to Pages
-      - name: Ensure walkthrough site exists
-        if: always()
-        shell: bash
-        run: |
-          mkdir -p reports-site
-          if [ ! -f reports-site/index.html ]; then
-            cat > reports-site/index.html <<'HTML'
-            <!doctype html>
-            <meta charset="utf-8">
-            <title>BDD Walkthrough</title>
-            <h1>BDD Walkthrough</h1>
-            <p>No screenshots found for this run.</p>
-            HTML
-          fi
-
       - name: Upload Cucumber HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,9 +78,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
@@ -95,12 +86,10 @@ jobs:
         shell: bash
         run: |
           URL="${{ steps.deploy.outputs.page_url }}"
-          {
-            echo "## ✅ BDD Visual Walkthrough"
-            echo
-            echo "**Open the gallery:** ${URL}"
-            echo
-            echo "[Open Cucumber HTML report](${URL}cucumber-report.html)"
-            echo
-            echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario."
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## ✅ BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Open the gallery:** ${URL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario." >> "$GITHUB_STEP_SUMMARY"
