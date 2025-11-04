@@ -10,6 +10,9 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/deploy-worker.yml'
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   workflow_dispatch: {}
 
 permissions:
@@ -21,20 +24,34 @@ concurrency:
 
 jobs:
   deploy:
+    if: >
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        github.event.workflow_run.conclusion == 'success'
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with cache)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install
+      - name: Ensure lockfile present
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            echo "Lockfile found."
+          else
+            echo "::error::No lockfile found. Commit package-lock.json (run: npm i --package-lock-only)"
+            exit 1
+          fi
+
+      - name: Install deps (npm ci)
         run: npm ci
 
       - name: Check required GitHub secrets exist
@@ -72,9 +89,12 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml --quiet
-          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml --quiet
-          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml --quiet
+          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml
+          if [ -n "${{ secrets.AIRTABLE_BASE_ID || '' }}" ]; then
+            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}" | wrangler secret put AIRTABLE_BASE_ID --config infra/cloudflare/wrangler.toml
+          fi
           echo "✅ Secrets pushed to Worker"
 
       - name: List Worker secrets
