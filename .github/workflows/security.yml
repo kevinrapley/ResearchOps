@@ -48,14 +48,24 @@ jobs:
           name: npm-audit-report
           path: npm-audit.json
           if-no-files-found: ignore
+          retention-days: 14
 
       # Optional: GitHub Security Dashboard integration (SARIF)
       - name: Convert audit report to SARIF
         if: always()
-        run: npx audit2sarif npm-audit.json > npm-audit.sarif || true
+        run: npx audit2sarif@3 npm-audit.json > npm-audit.sarif || true
 
       - name: Upload SARIF to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: npm-audit.sarif
+
+      # Optional: summary for the GitHub Actions job
+      - name: Add summary
+        if: always()
+        run: |
+          echo "## NPM Audit (high+)" >> $GITHUB_STEP_SUMMARY
+          echo "- Schedule: Mondays 06:00 UTC" >> $GITHUB_STEP_SUMMARY
+          echo "- Report artifact: **npm-audit-report**" >> $GITHUB_STEP_SUMMARY
+          echo "- SARIF uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
