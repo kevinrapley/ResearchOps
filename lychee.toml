@@ -1,0 +1,46 @@
+# lychee.toml
+# Make the output files easy to download from CI.
+output = "lychee.out"
+format = "detailed"      # human-readable summary
+verbose = true
+user_agent = "Mozilla/5.0 (compatible; Lychee CI)"
+
+# Performance + resilience
+max_concurrency = 6
+timeout = 20
+retry_wait_time = 2
+max_retries = 2
+
+# Consider these statuses “ok” in CI (common for rate-limited endpoints)
+accept = [200, 204, 206, 301, 302, 401, 403, 405, 429, 999]
+
+# Ignore dev-only or dynamic hosts
+exclude = [
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "example.com",
+  "researchops.local",
+  "*.invalid",
+]
+
+# Ignore these paths/patterns in the repo
+exclude_path = [
+  "node_modules/",
+  "dist/",
+  "build/",
+  "coverage/",
+  "reports/",
+  "reports-site/",
+  "playwright-report/",
+  "test-results/",
+  "screenshots/",
+  ".git/",
+  ".github/",
+]
+
+# Don’t flag emails
+exclude_mail = true
+
+# Optional: if your Markdown uses root-relative links that should resolve against a deployed site:
+# base = "https://researchops.pages.dev/"
