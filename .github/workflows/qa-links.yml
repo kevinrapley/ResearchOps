@@ -7,23 +7,47 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: lychee-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lychee:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
 
-      - name: Check links in repo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Optional: show what changed in PRs
+      - name: List changed files
+        if: github.event_name == 'pull_request'
+        run: git diff --name-only origin/${{ github.base_ref }}... | sed 's/^/- /'
+
+      - name: Run Lychee
+        id: lychee
         uses: lycheeverse/lychee-action@v1
         with:
           args: >
-            --accept 200,204,206,429
-            --exclude-mail
-            --max-concurrency 6
-            --retry-wait-time 2
-            --timeout 20
-            --no-progress
+            --config lychee.toml
+            --format detailed
+            --verbose
             .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Lychee report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lychee-report
+          path: |
+            lychee.out
+            lychee.csv
+            lychee.json
+          if-no-files-found: ignore
