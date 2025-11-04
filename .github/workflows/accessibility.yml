@@ -4,22 +4,55 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   a11y:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm ci
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
       - name: Start local server
         run: |
-          npx http-server public -p 8080 &
+          npx --yes http-server public -p 8080 --silent &
           echo $! > /tmp/http.pid
+
+      - name: Wait for server (http://localhost:8080)
+        uses: jakejarvis/wait-action@v0.1.1
+        with:
+          url: http://localhost:8080
+
       - name: Run pa11y-ci
-        run: npx pa11y-ci
+        run: npx --yes pa11y-ci --reporter json > pa11y-report.json
+
+      # Optional: pretty HTML report (tiny script using pa11y-ci reporter)
+      - name: Generate HTML report
+        run: |
+          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('pa11y-report.json','utf8'));const rows=Object.entries(r).map(([u,items])=>'<h2>'+u+'</h2>'+items.map(i=>'<details><summary>['+i.type+'] '+i.message+'</summary><pre>'+JSON.stringify(i,null,2)+'</pre></details>').join('')).join('');fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}</style><h1>pa11y-ci report</h1>'+rows);"
+
+      - name: Upload pa11y artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pa11y-ci-report
+          path: |
+            pa11y-report.json
+            pa11y-report.html
+          if-no-files-found: error
+
       - name: Stop server
         if: always()
-        run: kill $(cat /tmp/http.pid)
+        run: kill "$(cat /tmp/http.pid)" || true
