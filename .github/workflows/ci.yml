@@ -2,35 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 permissions:
   contents: read
-  pages: write          # needed for GitHub Pages
-  id-token: write       # needed by deploy-pages OIDC
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
       - name: Lint
         run: npm run lint --if-present
 
       - name: Format check
-        run: npm run format --if-present
+        run: npm run format --if-present -- -c
 
       - name: Typecheck
         run: npm run typecheck --if-present
@@ -39,42 +35,26 @@ jobs:
         run: npm test --if-present -- --ci --reporters=default --coverage
 
       - name: E2E (Playwright)
-        run: |
-          npx playwright install --with-deps chromium
-          npm run test:e2e
+        run: npm run test:e2e --if-present
 
       - name: BDD (Cucumber)
-        run: npm run qa:cucumber
         env:
-          # Set this if you want the suite to point at Pages/Preview in CI.
-          # Otherwise your cucumber.mjs will fall back to localhost for local runs.
-          BASE_URL: ${{ vars.PAGES_URL || vars.PREVIEW_URL || secrets.PAGES_URL || secrets.PREVIEW_URL }}
+          BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL || 'https://researchops.pages.dev/' }}
+        run: npm run qa:cucumber
 
-      # Package the walkthrough site (reports-site/) for Pages
-      - name: Upload Pages artifact (walkthrough site)
+      # Produce the walkthrough site but DO NOT deploy here
+      - name: Upload walkthrough artifact
         if: always()
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: walkthrough-site
           path: reports-site
+          if-no-files-found: ignore
 
-  deploy-walkthrough:
-    needs: build-test
-    if: success() && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
-
-      - name: Job summary
-        run: |
-          echo "## ✅ BDD Visual Walkthrough" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Gallery:** ${{ steps.deploy.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[Open Cucumber HTML report](${{ steps.deploy.outputs.page_url }}cucumber-report.html)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> The gallery shows each scenario with step-by-step screenshots." >> $GITHUB_STEP_SUMMARY
+      - name: Upload Cucumber HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: reports/cucumber-report.html
+          if-no-files-found: ignore
