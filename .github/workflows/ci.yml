@@ -12,8 +12,10 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -25,8 +27,9 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
+      # Pure check (no writes). If you keep Lint (which already runs prettier -c), this step is optional.
       - name: Format check
-        run: npm run format --if-present -- -c
+        run: npx prettier -c .
 
       - name: Typecheck
         run: npm run typecheck --if-present
@@ -34,15 +37,20 @@ jobs:
       - name: Unit tests
         run: npm test --if-present -- --ci --reporters=default --coverage
 
+      # ---- Playwright E2E ----
+      - name: Install Playwright browsers (Chromium)
+        run: npx playwright install --with-deps chromium
+
       - name: E2E (Playwright)
         run: npm run test:e2e --if-present
 
+      # ---- Cucumber BDD ----
       - name: BDD (Cucumber)
         env:
           BASE_URL: ${{ vars.PREVIEW_URL || vars.PAGES_URL || secrets.PREVIEW_URL || secrets.PAGES_URL || 'https://researchops.pages.dev/' }}
         run: npm run qa:cucumber
 
-      # Produce the walkthrough site but DO NOT deploy here
+      # Artifacts (no deploy here)
       - name: Upload walkthrough artifact
         if: always()
         uses: actions/upload-artifact@v4
