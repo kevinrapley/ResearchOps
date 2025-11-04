@@ -7,24 +7,74 @@ on:
 
 permissions:
   contents: read
+  pages: write          # needed for GitHub Pages
+  id-token: write       # needed by deploy-pages OIDC
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install
+
+      - name: Install dependencies
         run: npm ci
+
       - name: Lint
         run: npm run lint --if-present
+
+      - name: Format check
+        run: npm run format --if-present
+
       - name: Typecheck
         run: npm run typecheck --if-present
+
       - name: Unit tests
         run: npm test --if-present -- --ci --reporters=default --coverage
-      - name: Build (dry)
-        run: npm run build --if-present
+
+      - name: E2E (Playwright)
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+
+      - name: BDD (Cucumber)
+        run: npm run qa:cucumber
+        env:
+          # Set this if you want the suite to point at Pages/Preview in CI.
+          # Otherwise your cucumber.mjs will fall back to localhost for local runs.
+          BASE_URL: ${{ vars.PAGES_URL || vars.PREVIEW_URL || secrets.PAGES_URL || secrets.PREVIEW_URL }}
+
+      # Package the walkthrough site (reports-site/) for Pages
+      - name: Upload Pages artifact (walkthrough site)
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports-site
+
+  deploy-walkthrough:
+    needs: build-test
+    if: success() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Job summary
+        run: |
+          echo "## ✅ BDD Visual Walkthrough" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Gallery:** ${{ steps.deploy.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Open Cucumber HTML report](${{ steps.deploy.outputs.page_url }}cucumber-report.html)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> The gallery shows each scenario with step-by-step screenshots." >> $GITHUB_STEP_SUMMARY

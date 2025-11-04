@@ -7,6 +7,7 @@
     "lint": "prettier -c . && eslint .",
     "format": "prettier -w .",
     "validate": "bash ./scripts/validate.sh",
+    "test:e2e": "playwright test",
     "qa:browsers": "playwright install --with-deps chromium",
     "qa:cucumber": "cucumber-js -p default"
   },
