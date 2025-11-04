@@ -10,12 +10,20 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # Pull the walkthrough site produced by CI
       - name: Download walkthrough artifact from CI
         uses: dawidd6/action-download-artifact@v8
         with:
@@ -23,6 +31,36 @@ jobs:
           run_id: ${{ github.event.workflow_run.id }}
           name: walkthrough-site
           path: ./reports-site
+          if_no_artifact_found: fail
+
+      # Also pull the Cucumber HTML report and place it inside the site root
+      - name: Download cucumber HTML report
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          workflow: CI
+          run_id: ${{ github.event.workflow_run.id }}
+          name: cucumber-report
+          path: ./__cuke
+          if_no_artifact_found: warn
+
+      - name: Merge cucumber report into site
+        run: |
+          mkdir -p reports-site
+          if [ -f "__cuke/cucumber-report.html" ]; then
+            mv __cuke/cucumber-report.html reports-site/
+          fi
+
+      # Optional: ensure there's at least an index.html (nice safety net)
+      - name: Ensure site has an index
+        run: |
+          if [ ! -f "reports-site/index.html" ]; then
+            cat > reports-site/index.html <<'HTML'
+            <!doctype html><meta charset="utf-8">
+            <title>Walkthrough</title>
+            <h1>Walkthrough site not generated for this run.</h1>
+            <p>The CI job may not have produced screenshots yet.</p>
+            HTML
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
