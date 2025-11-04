@@ -1,0 +1,45 @@
+name: Publish Walkthrough (Pages)
+
+on:
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download walkthrough artifact from CI
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          workflow: CI
+          run_id: ${{ github.event.workflow_run.id }}
+          name: walkthrough-site
+          path: ./reports-site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./reports-site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add Job Summary
+        run: |
+          URL="${{ steps.deployment.outputs.page_url }}"
+          echo "## ✅ BDD Visual Walkthrough" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Open the gallery:** ${URL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario." >> $GITHUB_STEP_SUMMARY
