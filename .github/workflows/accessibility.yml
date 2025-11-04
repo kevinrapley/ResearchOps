@@ -27,18 +27,39 @@ jobs:
 
       - name: Start local server
         run: |
-          npx --yes http-server public -p 8080 --silent &
+          npx --yes http-server public -p 8080 --silent -c-1 &
           echo $! > /tmp/http.pid
 
       - name: Wait for server (http://localhost:8080)
-        uses: jakejarvis/wait-action@v0.1.1
+        uses: jakejarvis/wait-action@v0.2.0
         with:
           url: http://localhost:8080
+
+      # Provide URLs to pa11y-ci. If you already have a pa11yci.json in the repo,
+      # you can remove this step.
+      - name: Create pa11yci.json
+        run: |
+          cat > pa11yci.json <<'JSON'
+          {
+            "defaults": {
+              "standard": "WCAG2AA",
+              "timeout": 30000,
+              "includeNotices": false,
+              "includeWarnings": false,
+              "maxWait": 30000
+            },
+            "urls": [
+              "http://localhost:8080/",
+              "http://localhost:8080/pages/start/index.html",
+              "http://localhost:8080/pages/projects/index.html"
+            ]
+          }
+          JSON
 
       - name: Run pa11y-ci
         run: npx --yes pa11y-ci --reporter json > pa11y-report.json
 
-      # Optional: pretty HTML report (tiny script using pa11y-ci reporter)
+      # Optional: pretty HTML report
       - name: Generate HTML report
         run: |
           node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('pa11y-report.json','utf8'));const rows=Object.entries(r).map(([u,items])=>'<h2>'+u+'</h2>'+items.map(i=>'<details><summary>['+i.type+'] '+i.message+'</summary><pre>'+JSON.stringify(i,null,2)+'</pre></details>').join('')).join('');fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}</style><h1>pa11y-ci report</h1>'+rows);"
@@ -51,8 +72,17 @@ jobs:
           path: |
             pa11y-report.json
             pa11y-report.html
+            pa11yci.json
           if-no-files-found: error
+          retention-days: 14
 
       - name: Stop server
         if: always()
         run: kill "$(cat /tmp/http.pid)" || true
+
+      - name: Add summary
+        if: always()
+        run: |
+          echo "## Accessibility audit (pa11y-ci)" >> $GITHUB_STEP_SUMMARY
+          echo "- Artifacts: **pa11y-ci-report** (JSON + HTML)" >> $GITHUB_STEP_SUMMARY
+          echo "- Standard: WCAG 2.1 AA" >> $GITHUB_STEP_SUMMARY
