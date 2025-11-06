@@ -1,15 +1,7 @@
 name: Deploy Cloudflare Worker (API)
 
 on:
-  push:
-    branches: [ main, start-csv ]
-    paths:
-      - 'infra/cloudflare/**'
-      - 'functions/**'
-      - 'config/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/deploy-worker.yml'
+  # Run deploy ONLY after CI succeeds, or manually
   workflow_run:
     workflows: ["CI"]
     types: [completed]
@@ -19,19 +11,17 @@ permissions:
   contents: read
 
 concurrency:
+  # One deploy per branch at a time; newer cancels older (intended)
   group: deploy-worker-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   deploy:
-    if: >
-      ${{
-        github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'push' ||
-        github.event.workflow_run.conclusion == 'success'
-      }}
+    # Only proceed if CI concluded "success"
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -85,34 +75,27 @@ jobs:
           grep -E 'SESSION_KV|885d872547f3489f8edd9c3444a190f6' namespaces.txt >/dev/null
           echo "✅ KV namespace visible"
 
-      # ─────────────────────────────────────────────────────────────
-      # Seed deploy (create a latest version so secret edits are allowed)
-      # ─────────────────────────────────────────────────────────────
+      # Seed deploy (creates a "latest version" so secret edits are allowed)
       - name: Seed deploy (create latest version)
         run: wrangler deploy --env prod --config infra/cloudflare/wrangler.toml
 
-      # ─────────────────────────────────────────────────────────────
-      # Put Worker secrets (target the prod environment explicitly)
-      # ─────────────────────────────────────────────────────────────
+      # Put secrets explicitly on the prod environment
       - name: Put Worker secrets (prod)
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --env prod --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --env prod --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --env prod --config infra/cloudflare/wrangler.toml
-          # Optional pair (only if you use IDs rather than names)
+          printf '%s' "${{ secrets.GH_PAT }}"              | wrangler secret put GH_TOKEN             --env prod --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}"    | wrangler secret put AIRTABLE_API_KEY     --env prod --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET  --env prod --config infra/cloudflare/wrangler.toml
           if [[ -n "${{ secrets.AIRTABLE_BASE_ID }}" ]]; then
-            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}" | wrangler secret put AIRTABLE_BASE_ID --env prod --config infra/cloudflare/wrangler.toml
+            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}"  | wrangler secret put AIRTABLE_BASE_ID     --env prod --config infra/cloudflare/wrangler.toml
           fi
           echo "✅ Secrets pushed to Worker (env=prod)"
 
       - name: List Worker secrets (prod)
         run: wrangler secret list --env prod --config infra/cloudflare/wrangler.toml
 
-      # ─────────────────────────────────────────────────────────────
       # Final publish with secrets bound
-      # ─────────────────────────────────────────────────────────────
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
