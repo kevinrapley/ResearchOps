@@ -8,18 +8,40 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
+    name: Node ${{ matrix.node }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20]
 
-      - name: Install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Verify lockfile present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f package-lock.json && ! -f npm-shrinkwrap.json ]]; then
+            echo "::error::No npm lockfile found. Commit package-lock.json (run: npm i --package-lock-only)"
+            exit 1
+          fi
+
+      - name: Install (npm ci)
         run: npm ci
 
       - name: Lint
@@ -31,5 +53,18 @@ jobs:
       - name: Typecheck
         run: npm run typecheck --if-present
 
-      - name: Unit tests
+      - name: Build (no deploy)
+        run: npm run build --if-present
+
+      - name: Unit tests (CI mode)
         run: npm test --if-present -- --ci --reporters=default --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-node-${{ matrix.node }}
+          path: |
+            coverage/**
+            .nyc_output/**
+          if-no-files-found: ignore
