@@ -91,7 +91,9 @@ jobs:
       - name: Wrangler pages project list (sanity check)
         run: |
           npm i -g wrangler@4.40.2
-          wrangler pages project list --account-id ${{ env.CLOUDFLARE_ACCOUNT_ID }} --api-token ${{ env.CLOUDFLARE_API_TOKEN }}
+          # Auth/Account are taken from env: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
+          wrangler whoami || true
+          wrangler pages project list
 
       # ----------------------------------------------------------------------
       # 🚀 Deploy to Cloudflare Pages
