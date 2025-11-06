@@ -280,7 +280,8 @@
 		/* ─────────────── Data loading ─────────────── */
 
 		async function loadProjects() {
-			const res = await fetch("/api/projects", { cache: "no-store" });
+			// ✅ Force object envelope, matches current service shape and existing js?.ok check
+			const res = await fetch(`/api/projects?shape=object&ts=${Date.now()}`, { cache: "no-store" });
 			const js = await res.json().catch(() => ({}));
 			if (!res.ok || !js?.ok) throw new Error(`Projects fetch failed (${res.status})`);
 			return (js.projects || []).map(p => ({
