@@ -28,7 +28,6 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      CF_PAGES_PROJECT: ${{ secrets.CF_PAGES_PROJECT }} # e.g., "researchops"
 
     steps:
       - name: Checkout
@@ -40,13 +39,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
       - name: Build site (if applicable)
         run: npm run build --if-present
 
-      - name: Determine output directory
+      - name: Validate required secrets
+        run: |
+          test -n "${{ env.CLOUDFLARE_API_TOKEN }}" || { echo "::error::CF_API_TOKEN missing"; exit 1; }
+          test -n "${{ env.CLOUDFLARE_ACCOUNT_ID }}" || { echo "::error::CF_ACCOUNT_ID missing"; exit 1; }
+
+      - name: Detect output directory
         id: outdir
         shell: bash
         run: |
@@ -57,12 +61,13 @@ jobs:
           else
             echo "dir=public" >> "$GITHUB_OUTPUT"
           fi
+          echo "📦 Using output directory: $(cat $GITHUB_OUTPUT)"
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ env.CF_PAGES_PROJECT }}
+          projectName: researchops
           directory: ${{ steps.outdir.outputs.dir }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
