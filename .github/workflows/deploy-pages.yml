@@ -24,7 +24,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -63,12 +63,39 @@ jobs:
           fi
           echo "📦 Using output directory: $(cat $GITHUB_OUTPUT)"
 
-      - name: Debug CF env
+      # ----------------------------------------------------------------------
+      # 🔍 Debug and preflight Cloudflare credentials before deploy
+      # ----------------------------------------------------------------------
+      - name: Verify CF token scopes & account access
         run: |
-          echo "CF_ACCOUNT_ID=${{ env.CLOUDFLARE_ACCOUNT_ID }}"
-          echo "Token length: ${#CLOUDFLARE_API_TOKEN}"
+          set -e
+          echo "Account: ${{ env.CLOUDFLARE_ACCOUNT_ID }}"
           echo "Project: researchops"
+          echo "Token length: ${#CLOUDFLARE_API_TOKEN}"
 
+          echo ""
+          echo "→ Verify token"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify | jq .
+
+          echo ""
+          echo "→ List accounts visible to this token"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/accounts?per_page=50 | jq '.result[] | {id,name}'
+
+          echo ""
+          echo "→ Check the specific Pages project (researchops)"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${{ env.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/researchops" | jq .
+
+      - name: Wrangler pages project list (sanity check)
+        run: |
+          npm i -g wrangler@4.40.2
+          wrangler pages project list --account-id ${{ env.CLOUDFLARE_ACCOUNT_ID }} --api-token ${{ env.CLOUDFLARE_API_TOKEN }}
+
+      # ----------------------------------------------------------------------
+      # 🚀 Deploy to Cloudflare Pages
+      # ----------------------------------------------------------------------
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
