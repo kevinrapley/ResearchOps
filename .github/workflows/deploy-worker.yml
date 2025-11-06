@@ -32,6 +32,10 @@ jobs:
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,8 +47,10 @@ jobs:
           cache: 'npm'
 
       - name: Ensure lockfile present
+        shell: bash
         run: |
-          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+          set -euo pipefail
+          if [[ -f package-lock.json || -f npm-shrinkwrap.json ]]; then
             echo "Lockfile found."
           else
             echo "::error::No lockfile found. Commit package-lock.json (run: npm i --package-lock-only)"
@@ -55,58 +61,62 @@ jobs:
         run: npm ci
 
       - name: Check required GitHub secrets exist
+        shell: bash
         run: |
           set -euo pipefail
-          test -n "${{ secrets.CF_API_TOKEN }}" || (echo "CF_API_TOKEN missing"; exit 1)
-          test -n "${{ secrets.CF_ACCOUNT_ID }}" || (echo "CF_ACCOUNT_ID missing"; exit 1)
-          test -n "${{ secrets.GH_PAT }}" || (echo "GH_PAT missing"; exit 1)
-          test -n "${{ secrets.AIRTABLE_API_KEY }}" || (echo "AIRTABLE_API_KEY missing"; exit 1)
-          test -n "${{ secrets.MURAL_CLIENT_SECRET }}" || (echo "MURAL_CLIENT_SECRET missing"; exit 1)
+          [[ -n "${{ secrets.CF_API_TOKEN }}" ]] || { echo "CF_API_TOKEN missing"; exit 1; }
+          [[ -n "${{ secrets.CF_ACCOUNT_ID }}" ]] || { echo "CF_ACCOUNT_ID missing"; exit 1; }
+          [[ -n "${{ secrets.GH_PAT }}" ]] || { echo "GH_PAT missing"; exit 1; }
+          [[ -n "${{ secrets.AIRTABLE_API_KEY }}" ]] || { echo "AIRTABLE_API_KEY missing"; exit 1; }
+          [[ -n "${{ secrets.MURAL_CLIENT_SECRET }}" ]] || { echo "MURAL_CLIENT_SECRET missing"; exit 1; }
           echo "✅ All required GitHub secrets are present"
 
       - name: Install Wrangler
-        run: npm i -g wrangler@4.40.2
+        run: npm i -g wrangler@4.45.4
 
       - name: Wrangler whoami
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: wrangler whoami || true
 
       - name: Verify SESSION_KV exists in this account
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        shell: bash
         run: |
           set -euo pipefail
           wrangler kv namespace list --config infra/cloudflare/wrangler.toml | tee namespaces.txt
           grep -E 'SESSION_KV|885d872547f3489f8edd9c3444a190f6' namespaces.txt >/dev/null
           echo "✅ KV namespace visible"
 
-      - name: Put Worker secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      # ─────────────────────────────────────────────────────────────
+      # Seed deploy (create a latest version so secret edits are allowed)
+      # ─────────────────────────────────────────────────────────────
+      - name: Seed deploy (create latest version)
+        run: wrangler deploy --env prod --config infra/cloudflare/wrangler.toml
+
+      # ─────────────────────────────────────────────────────────────
+      # Put Worker secrets (target the prod environment explicitly)
+      # ─────────────────────────────────────────────────────────────
+      - name: Put Worker secrets (prod)
+        shell: bash
         run: |
           set -euo pipefail
-          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --config infra/cloudflare/wrangler.toml
-          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --config infra/cloudflare/wrangler.toml
-          if [ -n "${{ secrets.AIRTABLE_BASE_ID || '' }}" ]; then
-            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}" | wrangler secret put AIRTABLE_BASE_ID --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.GH_PAT }}" | wrangler secret put GH_TOKEN --env prod --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.AIRTABLE_API_KEY }}" | wrangler secret put AIRTABLE_API_KEY --env prod --config infra/cloudflare/wrangler.toml
+          printf '%s' "${{ secrets.MURAL_CLIENT_SECRET }}" | wrangler secret put MURAL_CLIENT_SECRET --env prod --config infra/cloudflare/wrangler.toml
+          # Optional pair (only if you use IDs rather than names)
+          if [[ -n "${{ secrets.AIRTABLE_BASE_ID }}" ]]; then
+            printf '%s' "${{ secrets.AIRTABLE_BASE_ID }}" | wrangler secret put AIRTABLE_BASE_ID --env prod --config infra/cloudflare/wrangler.toml
           fi
-          echo "✅ Secrets pushed to Worker"
+          echo "✅ Secrets pushed to Worker (env=prod)"
 
-      - name: List Worker secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-        run: wrangler secret list --config infra/cloudflare/wrangler.toml
+      - name: List Worker secrets (prod)
+        run: wrangler secret list --env prod --config infra/cloudflare/wrangler.toml
 
+      # ─────────────────────────────────────────────────────────────
+      # Final publish with secrets bound
+      # ─────────────────────────────────────────────────────────────
       - name: Publish Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          wranglerVersion: '4.40.2'
-          command: deploy --config infra/cloudflare/wrangler.toml
+          wranglerVersion: '4.45.4'
+          command: deploy --env prod --config infra/cloudflare/wrangler.toml
