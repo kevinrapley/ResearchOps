@@ -63,6 +63,12 @@ jobs:
           fi
           echo "📦 Using output directory: $(cat $GITHUB_OUTPUT)"
 
+      - name: Debug CF env
+        run: |
+          echo "CF_ACCOUNT_ID=${{ env.CLOUDFLARE_ACCOUNT_ID }}"
+          echo "Token length: ${#CLOUDFLARE_API_TOKEN}"
+          echo "Project: researchops"
+
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
