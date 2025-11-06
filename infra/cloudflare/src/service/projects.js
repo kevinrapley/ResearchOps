@@ -12,6 +12,14 @@ import { toMs, safeText } from "../core/utils.js";
 
 /* ───────────────────────── Helpers ───────────────────────── */
 
+/** Require env keys or throw (caught by caller). */
+function requireEnv(ctx, keys) {
+	const miss = keys.filter(k => !ctx?.env?.[k]);
+	if (miss.length) {
+		throw new Error(`Missing env: ${miss.join(", ")}`);
+	}
+}
+
 /**
  * Normalize an Airtable Project record into our API shape.
  * @param {{id:string,createdTime?:string,fields?:Record<string,any>}} r
@@ -31,17 +39,44 @@ function mapProject(r) {
 	};
 }
 
+/** Build common headers incl. CORS and a shape echo header. */
+function headers(ctx, origin, shape) {
+	return {
+		...ctx.corsHeaders(origin),
+		"content-type": "application/json; charset=utf-8",
+		"x-rops-shape": shape
+	};
+}
+
 /* ───────────────────────── List Projects ───────────────────────── */
 
 /**
  * List projects from Airtable and join latest details.
+ * Supports response shapes:
+ *   - ?shape=array   →  [ { ...project }, ... ]   (default for legacy UIs)
+ *   - ?shape=object  →  { ok:true, projects:[ ... ] }
  * @param {ServiceContext} ctx
  * @param {string} origin
  * @param {URL} url
  */
 export async function listProjectsFromAirtable(ctx, origin, url) {
+	try {
+		requireEnv(ctx, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_TABLE_DETAILS", "AIRTABLE_API_KEY"]);
+	} catch (e) {
+		// Always JSON back (avoid HTML 1101 surfaces)
+		return ctx.json(
+			{ ok: false, error: String(e?.message || e) },
+			500,
+			headers(ctx, origin, "error")
+		);
+	}
+
 	const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
 	const view = url.searchParams.get("view") || undefined;
+
+	// Response shape negotiation (default: array for dashboard compatibility)
+	const requestedShape = (url.searchParams.get("shape") || "array").toLowerCase();
+	const shape = (requestedShape === "object") ? "object" : "array";
 
 	const base = ctx.env.AIRTABLE_BASE_ID;
 	const tProjects = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
@@ -54,7 +89,7 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
 	const pRes = await fetch(atUrl, {
 		headers: {
 			"Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`,
-			"Content-Type": "application/json"
+			"Accept": "application/json"
 		},
 		signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
 	});
@@ -62,19 +97,20 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
 	const pText = await pRes.text();
 	if (!pRes.ok) {
 		ctx.log.error("airtable.projects.list.fail", { status: pRes.status, text: safeText(pText) });
-		return ctx.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, ctx.corsHeaders(origin));
+		const body = { ok: false, error: `Airtable ${pRes.status}`, detail: safeText(pText) };
+		return ctx.json(body, pRes.status, headers(ctx, origin, "error"));
 	}
 
 	/** @type {{records: Array<{id:string,createdTime?:string,fields:Record<string,any>}>}} */
 	let pData;
 	try { pData = JSON.parse(pText); } catch { pData = { records: [] }; }
 
-	let projects = (pData.records || []).map(mapProject);
+	let projects = (Array.isArray(pData.records) ? pData.records : []).map(mapProject);
 
 	// ---- 2) Project Details (pull lead researcher + email, latest)
 	const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
 	const dRes = await fetch(dUrl, {
-		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}` },
+		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`, "Accept": "application/json" },
 		signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
 	});
 
@@ -110,21 +146,33 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
 	}
 
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-	return ctx.json({ ok: true, projects }, 200, ctx.corsHeaders(origin));
+
+	// ---- Emit in negotiated shape
+	if (shape === "object") {
+		return ctx.json({ ok: true, projects }, 200, headers(ctx, origin, "object"));
+	}
+	// default: array (legacy dashboard expects this)
+	return ctx.json(projects, 200, headers(ctx, origin, "array"));
 }
 
 /* ───────────────────────── Get Project by ID ───────────────────────── */
 
 /**
  * Fetch a single project by Airtable record ID and join latest details.
- * Route shape: GET /api/projects/:id
+ * Route shape: GET /api/projects/:id  → returns a single project object
  * @param {ServiceContext} ctx
  * @param {string} origin
  * @param {string} projectId Airtable record ID (e.g., "recXXXXXXXXXXXXXX")
  */
 export async function getProjectById(ctx, origin, projectId) {
 	if (!projectId) {
-		return ctx.json({ error: "Missing project id" }, 400, ctx.corsHeaders(origin));
+		return ctx.json({ error: "Missing project id" }, 400, headers(ctx, origin, "error"));
+	}
+
+	try {
+		requireEnv(ctx, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_TABLE_DETAILS", "AIRTABLE_API_KEY"]);
+	} catch (e) {
+		return ctx.json({ ok: false, error: String(e?.message || e) }, 500, headers(ctx, origin, "error"));
 	}
 
 	const base = ctx.env.AIRTABLE_BASE_ID;
@@ -134,17 +182,17 @@ export async function getProjectById(ctx, origin, projectId) {
 	// Direct-record GET
 	const pUrl = `https://api.airtable.com/v0/${base}/${tProjects}/${encodeURIComponent(projectId)}`;
 	const pRes = await fetch(pUrl, {
-		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}` },
+		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`, "Accept": "application/json" },
 		signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
 	});
 	const pText = await pRes.text();
 
 	if (pRes.status === 404) {
-		return ctx.json({ error: "Project not found" }, 404, ctx.corsHeaders(origin));
+		return ctx.json({ error: "Project not found" }, 404, headers(ctx, origin, "error"));
 	}
 	if (!pRes.ok) {
 		ctx.log.error("airtable.project.read.fail", { status: pRes.status, text: safeText(pText) });
-		return ctx.json({ error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, ctx.corsHeaders(origin));
+		return ctx.json({ ok: false, error: `Airtable ${pRes.status}`, detail: safeText(pText) }, pRes.status, headers(ctx, origin, "error"));
 	}
 
 	/** @type {{id:string,createdTime?:string,fields?:Record<string,any>}} */
@@ -156,7 +204,7 @@ export async function getProjectById(ctx, origin, projectId) {
 	// Join latest details for this one project
 	const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&filterByFormula=${encodeURIComponent(`FIND("${projectId}", ARRAYJOIN(Project))`)}`;
 	const dRes = await fetch(dUrl, {
-		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}` },
+		headers: { "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`, "Accept": "application/json" },
 		signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
 	});
 
@@ -184,5 +232,5 @@ export async function getProjectById(ctx, origin, projectId) {
 		ctx.log.warn("airtable.project.details.join.fail", { status: dRes.status, detail: safeText(dt) });
 	}
 
-	return ctx.json(project, 200, ctx.corsHeaders(origin));
+	return ctx.json(project, 200, headers(ctx, origin, "object"));
 }
