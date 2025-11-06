@@ -12,10 +12,9 @@ directory = "../../public"
 binding = "AI"
 
 # ----------------------------
-# Non-secret configuration
+# Top-level vars (default env)
 # ----------------------------
 [vars]
-# Inference model (safe to expose)
 MODEL = "@cf/meta/llama-3.1-8b-instruct"
 
 # Feature flags / behaviour
@@ -62,16 +61,3 @@ MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mura
 binding    = "SESSION_KV"
 id         = "8e2d88969b9e4be694868931bdba92f2"
 preview_id = "8e2d88969b9e4be694868931bdba92f2"
-
-# Optional: environment-specific overrides
-[env.dev]
-[env.dev.vars]
-AUDIT = "false"
-ALLOWED_ORIGINS = [
-  "http://localhost:8080",
-  "http://127.0.0.1:8787"
-]
-
-[env.prod]
-[env.prod.vars]
-AUDIT = "true"
