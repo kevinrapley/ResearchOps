@@ -248,43 +248,44 @@
     /* ─────────────── Data loading ─────────────── */
 
     async function loadProjects() {
-		  const res = await fetch(`/api/projects?ts=${Date.now()}`, { cache: "no-store" });
-		
-		  // Must be JSON
-		  const ctype = (res.headers.get("content-type") || "").toLowerCase();
-		  if (!ctype.includes("application/json")) {
-		    const preview = await res.text().catch(() => "");
-		    throw new Error(`Projects non-JSON (${res.status}) ${preview.slice(0,120)}`);
-		  }
-		
-		  // Parse
-		  let data;
-		  try { data = await res.json(); }
-		  catch { throw new Error(`Projects JSON parse failed (${res.status})`); }
-		
-		  // Accept array OR envelope { ok:true, projects:[...] }
-		  const list = Array.isArray(data)
-		    ? data
-		    : (Array.isArray(data?.projects) ? data.projects : null);
-		
-		  if (!list) throw new Error(`Projects unexpected payload (${res.status})`);
-		
-		  return list.map(p => ({
-		    id: p.id || p.LocalId || p.localId || "",
-		    localId: p.LocalId || p.localId || "",
-		    name: p.name || p.Name || "",
-		    description: p.description || p.Description || "",
-		    org: p.Org || p.org || "Home Office Biometrics",
-		    phase: p["rops:servicePhase"] || p.Phase || "",
-		    status: p["rops:projectStatus"] || p.Status || "",
-		    objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
-		    user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
-		    stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
-		    createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
-		    lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
-		    lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
-		  }));
-		}
+      // Cache-buster to avoid edge/stale HTML surfaces
+      const res = await fetch(`/api/projects?ts=${Date.now()}`, { cache: "no-store" });
+
+      // Must be JSON; bail early if Cloudflare error HTML leaked through
+      const ctype = (res.headers.get("content-type") || "").toLowerCase();
+      if (!ctype.includes("application/json")) {
+        const preview = await res.text().catch(() => "");
+        throw new Error(`Projects non-JSON (${res.status}) ${preview.slice(0,120)}`);
+      }
+
+      // Parse
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error(`Projects JSON parse failed (${res.status})`); }
+
+      // Accept either array OR envelope { ok:true, projects:[…] }
+      const list = Array.isArray(data)
+        ? data
+        : (Array.isArray(data?.projects) ? data.projects : null);
+
+      if (!list) throw new Error(`Projects unexpected payload (${res.status})`);
+
+      return list.map(p => ({
+        id: p.id || p.LocalId || p.localId || "",
+        localId: p.LocalId || p.localId || "",
+        name: p.name || p.Name || "",
+        description: p.description || p.Description || "",
+        org: p.Org || p.org || "Home Office Biometrics",
+        phase: p["rops:servicePhase"] || p.Phase || "",
+        status: p["rops:projectStatus"] || p.Status || "",
+        objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+        user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+        stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+        createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
+        lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
+        lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
+      }));
+    }
 
     function pickProject(projects) {
       const id = new URLSearchParams(location.search).get("id") || "";
