@@ -14,6 +14,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: qa-bdd-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   bdd:
     if: >
@@ -24,6 +28,10 @@ jobs:
         github.event.workflow_run.conclusion == 'success'
       }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      has_site: ${{ steps.detect_site.outputs.present }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -49,8 +57,11 @@ jobs:
           if [ -z "$val" ]; then val="${{ secrets.PAGES_URL }}"; fi
           if [ -z "$val" ]; then val="https://researchops.pages.dev/"; fi
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
+          echo "Using BASE_URL: $val"
 
       - name: Run BDD suite
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
         run: npm run qa:cucumber
 
       - name: Upload Cucumber HTML report
@@ -61,15 +72,28 @@ jobs:
           path: reports/cucumber-report.html
           if-no-files-found: ignore
 
+      # Detect whether the walkthrough site exists before trying to upload
+      - name: Detect walkthrough site
+        id: detect_site
+        shell: bash
+        run: |
+          if [ -d "reports-site" ] && compgen -G "reports-site/*" >/dev/null; then
+            echo "present=true"  >> "$GITHUB_OUTPUT"
+            echo "Walkthrough site detected."
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No walkthrough site found; skipping GitHub Pages upload."
+          fi
+
       - name: Upload walkthrough site (for Pages)
-        if: always()
+        if: always() && steps.detect_site.outputs.present == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: reports-site
 
   deploy:
     needs: bdd
-    if: always()
+    if: always() && needs.bdd.outputs.has_site == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
