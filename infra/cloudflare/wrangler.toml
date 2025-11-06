@@ -65,7 +65,7 @@ preview_id = "8e2d88969b9e4be694868931bdba92f2"
 # CloudFlare Logging
 [observability]
 [observability.logs]
-enabled = false
+enabled = true
 head_sampling_rate = 1
 invocation_logs = true
 persist = true
