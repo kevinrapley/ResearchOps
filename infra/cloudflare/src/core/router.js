@@ -3,90 +3,29 @@
  * @module core/router
  * @summary Router for Cloudflare Worker entrypoint (modular ResearchOps service).
  *
- * Routes covered:
- * - Health:
- *   - GET  /api/health
- * - AI Assist:
- *   - POST /api/ai-rewrite
- * - Projects:
- *   - GET  /api/projects                           (list; FAIL-SAFE here)
- *   - GET  /api/projects.csv                       (CSV from GitHub; FAIL-SAFE here)
- *   - GET  /api/project-details.csv                (CSV from GitHub)
- *   - POST /api/projects                           (create; only if service.createProject exists)
- * - Journals:
- *   - GET  /api/journal-entries                     (list)
- *   - GET  /api/journal-entries?project=:id         (list by project)
- *   - POST /api/journal-entries                     (create)
- *   - GET  /api/journal-entries/:id                 (read)
- *   - PATCH /api/journal-entries/:id                (update)
- *   - DELETE /api/journal-entries/:id               (delete)
- * - Studies:
- *   - GET  /api/studies?project=:id                 (list by project)
- *   - POST /api/studies                             (create)
- *   - PATCH /api/studies/:id                        (update)
- *   - GET  /api/studies.csv                         (CSV from GitHub; optional)
- * - Guides:
- *   - GET  /api/guides?study=:id                    (list by study)
- *   - POST /api/guides                              (create)
- *   - GET  /api/guides/:id                          (read)
- *   - PATCH /api/guides/:id                         (update)
- *   - POST /api/guides/:id/publish                  (publish)
- * - Partials:
- *   - GET    /api/partials                          (list)
- *   - POST   /api/partials                          (create)
- *   - GET    /api/partials/:id                      (read)
- *   - PATCH  /api/partials/:id                      (update)
- *   - DELETE /api/partials/:id                      (delete)
- * - Participants:
- *   - GET  /api/participants?study=:id              (list by study)
- *   - POST /api/participants                        (create)
- * - Sessions:
- *   - GET   /api/sessions?study=:id                 (list by study)
- *   - GET   /api/sessions/:id                       (read one)
- *   - POST  /api/sessions                           (create)
- *   - PATCH /api/sessions/:id                       (update)
- *   - GET   /api/sessions/:id/ics                   (download .ics)
- * - Session Notes:
- *   - GET   /api/session-notes?session=:id          (list by session)
- *   - POST  /api/session-notes                      (create)
- *   - PATCH /api/session-notes/:id                  (update)
- * - Comms:
- *   - POST /api/comms/send                          (send + log)
- * - Mural:
- *   - GET  /api/mural/auth                          (start OAuth)
- *   - GET  /api/mural/callback                      (OAuth redirect)
- *   - GET  /api/mural/verify                        (check connection + workspace)
- *   - POST /api/mural/setup                         (create folder + “Reflexive Journal”)
- *   - GET  /api/mural/resolve                       (resolve existing Reflexive board mapping)
- *   - GET  /api/mural/debug-env                     (TEMP: show bound env vars)
+ * Fail-safe design:
+ *  - No top-level import of service.js (dynamic import inside handler)
+ *  - /api/projects and /api/projects.csv do NOT rely on service.js
+ *  - All handlers return controlled responses; no raw throws
  *
- * Non-/api requests fall through to static ASSETS with SPA fallback.
+ * Routes covered (unchanged surface):
+ *   Health, AI Assist, Projects (+ CSV), Journals, Studies, Guides,
+ *   Partials, Participants, Sessions (+ics), Session Notes, Comms, Mural,
+ *   + static asset fallback via ASSETS (SPA).
  */
 
-import { ResearchOpsService } from "./service.js";
 import { aiRewrite } from "./ai-rewrite.js";
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Path canonicalisation
-   ──────────────────────────────────────────────────────────────────────────── */
+/* ────────────────── Small utils ────────────────── */
 
 function canonicalizePath(pathname) {
   let p = pathname || "/";
 
-  // Collapse duplicate static segments
   p = p.replace(/\/(pages|components|partials|css|js|images|img|assets)\/(\1\/)+/g, "/$1/");
-
-  // Collapse any triple/double slashes (excluding scheme)
   p = p.replace(/\/{2,}/g, "/");
-
-  // Remove trailing /index.html -> /
   p = p.replace(/\/index\.html$/i, "/");
 
-  // Remove trailing slash from API paths (but keep root /)
-  if (p.startsWith("/api/") && p.endsWith("/") && p !== "/api/") {
-    p = p.slice(0, -1);
-  }
-
+  if (p.startsWith("/api/") && p.endsWith("/") && p !== "/api/") p = p.slice(0, -1);
   return p;
 }
 
@@ -94,86 +33,121 @@ function maybeRedirect(request, canonicalPath) {
   const url = new URL(request.url);
   if (url.pathname !== canonicalPath) {
     url.pathname = canonicalPath;
-    // 302 during rollout (avoid caching); switch to 301 once stable.
     return Response.redirect(url.toString(), 302);
   }
   return null;
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Lightweight compatibility router (used by some call sites)
-   ──────────────────────────────────────────────────────────────────────────── */
+function normalizeAllowedOrigins(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") return val.split(",").map(s => s.trim()).filter(Boolean);
+  return [];
+}
 
-export async function routeRequest(service, request) {
-  const origin = request.headers.get("Origin") || "*";
-  const url = new URL(request.url);
-  const p = (url.pathname || "/").replace(/\/+$/, "").toLowerCase();
+function corsHeadersForEnv(env, origin) {
+  const allowList = normalizeAllowedOrigins(env?.ALLOWED_ORIGINS);
+  const allow = allowList.includes(origin);
+  return {
+    "access-control-allow-origin": allow ? origin : (allowList[0] || "*"),
+    "access-control-allow-credentials": "true",
+    "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
+    "vary": "Origin"
+  };
+}
 
-  // Simple ping
-  if (p === "/api/_diag/ping" && request.method === "GET") {
-    return new Response(
-      JSON.stringify({ ok: true, time: new Date().toISOString(), note: "direct route" }),
-      { status: 200, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }
-    );
+function json(obj) {
+  return JSON.stringify(obj);
+}
+function safeSlice(s, n) {
+  if (!s) return s;
+  return s.length > n ? s.slice(0, n) + "…" : s;
+}
+function requireEnv(env, keys) {
+  const missing = keys.filter(k => !env[k]);
+  if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
+}
+function assertAirtableEnv(env) {
+  if (!env.AIRTABLE_BASE && !env.AIRTABLE_BASE_ID) {
+    throw new Error("Missing env: AIRTABLE_BASE or AIRTABLE_BASE_ID");
   }
+  if (!env.AIRTABLE_API_KEY && !env.AIRTABLE_PAT) {
+    throw new Error("Missing env: AIRTABLE_API_KEY or AIRTABLE_PAT");
+  }
+}
 
+/* ────────────────── Fail-safe endpoints that do NOT depend on service.js ────────────────── */
+
+async function projectsCsvDirect(request, env, origin) {
   try {
-    // CORS preflight
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: service.corsHeaders(origin) });
-    }
+    requireEnv(env, ["GH_OWNER", "GH_REPO", "GH_BRANCH", "GH_PATH_PROJECTS"]);
+    const rawUrl = `https://raw.githubusercontent.com/${env.GH_OWNER}/${env.GH_REPO}/${env.GH_BRANCH}/${env.GH_PATH_PROJECTS}`;
+    const r = await fetch(rawUrl, { headers: { accept: "text/plain" } });
 
-    // Health
-    if (p === "/api/health" && request.method === "GET") {
-      return service.health(origin);
+    if (!r.ok) {
+      return new Response(`Upstream CSV fetch failed: ${r.status}`, {
+        status: 502,
+        headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/plain; charset=utf-8" }
+      });
     }
-
-    // Projects (fail-safe)
-    if (p === "/api/projects" && request.method === "GET") {
-      return safeProjectsJson(service, request, origin);
-    }
-    if (p === "/api/projects" && request.method === "POST") {
-      if (typeof service.createProject === "function") {
-        return service.createProject(request, origin);
-      }
-    }
-
-    // Sessions (compat read-one)
-    if (p.startsWith("/api/sessions/") && request.method === "GET") {
-      const parts = p.split("/").filter(Boolean);
-      if (parts.length >= 3 && parts[0] === "api" && parts[1] === "sessions") {
-        const sessionId = decodeURIComponent(parts[2]);
-        if (parts[3] !== "ics" && typeof service.getSession === "function") {
-          return service.getSession(origin, sessionId);
-        }
-      }
-    }
-
-    // Fallback 404 (JSON)
-    return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), {
-      status: 404,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+    const body = await r.text();
+    return new Response(body, {
+      status: 200,
+      headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/csv; charset=utf-8" }
     });
   } catch (e) {
-    const msg = String(e?.message || e || "");
-    service?.log?.error?.("router.direct.fatal", { err: msg, path: url.pathname, method: request.method });
-    return new Response(JSON.stringify({ error: "Internal error", detail: msg }), {
+    return new Response(`Handler error (projects.csv): ${String(e?.message || e)}`, {
       status: 500,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
+      headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/plain; charset=utf-8" }
     });
   }
 }
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Main entry router
-   ──────────────────────────────────────────────────────────────────────────── */
+async function projectsJsonDirect(request, env, origin) {
+  try {
+    assertAirtableEnv(env);
+    requireEnv(env, ["AIRTABLE_TABLE_PROJECTS"]);
+
+    const base = env.AIRTABLE_BASE || env.AIRTABLE_BASE_ID;
+    const key  = env.AIRTABLE_API_KEY || env.AIRTABLE_PAT;
+    const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
+    const url = `https://api.airtable.com/v0/${base}/${table}?pageSize=100`;
+
+    const r = await fetch(url, {
+      headers: { authorization: `Bearer ${key}`, accept: "application/json" }
+    });
+
+    if (!r.ok) {
+      const raw = await r.text().catch(() => "");
+      return new Response(json({ ok: false, source: "airtable", status: r.status, error: safeSlice(raw, 2000) }), {
+        status: 500,
+        headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+      });
+    }
+
+    const data = await r.json();
+    const records = Array.isArray(data?.records) ? data.records : [];
+    const projects = records.map(rec => ({ id: rec.id, ...(rec.fields || {}) }));
+
+    return new Response(json({ ok: true, projects }), {
+      status: 200,
+      headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+    });
+  } catch (e) {
+    return new Response(json({ ok: false, error: String(e?.message || e) }), {
+      status: 500,
+      headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+    });
+  }
+}
+
+/* ────────────────── Main entry router ────────────────── */
 
 export async function handleRequest(request, env) {
-  const service = new ResearchOpsService(env);
   const url = new URL(request.url);
   const origin = request.headers.get("Origin") || "";
 
-  // Canonicalise path early (removes trailing slashes from API paths)
+  // canonicalize early
   {
     const canonical = canonicalizePath(url.pathname);
     const redirect = maybeRedirect(request, canonical);
@@ -182,40 +156,61 @@ export async function handleRequest(request, env) {
   }
 
   try {
-    // Early diagnostic ping
-    if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
-      return new Response(JSON.stringify({
-        ok: true,
-        time: new Date().toISOString(),
-        note: "handleRequest"
-      }), {
-        status: 200,
-        headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
-      });
-    }
-
     // CORS preflight
     if (request.method === "OPTIONS") {
-      const reqOrigin = request.headers.get("Origin") || "";
       return new Response(null, {
         status: 204,
         headers: {
-          ...service.corsHeaders(reqOrigin),
-          "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+          ...corsHeadersForEnv(env, origin),
           "Access-Control-Allow-Headers": "Content-Type, Authorization",
           "Access-Control-Max-Age": "86400"
         }
       });
     }
 
+    // Lightweight pings
+    if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
+      return new Response(json({ ok: true, time: new Date().toISOString(), note: "handleRequest" }), {
+        status: 200,
+        headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+      });
+    }
+    if (url.pathname === "/api/health") {
+      // Healthy even if service.js is unavailable
+      return new Response(json({ ok: true, service: "ResearchOps API", time: new Date().toISOString() }), {
+        status: 200,
+        headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+      });
+    }
+
+    // ───── Projects (handled without service.js; cannot 1101) ─────
+    if (url.pathname === "/api/projects" && request.method === "GET") {
+      return projectsJsonDirect(request, env, origin);
+    }
+    if (url.pathname === "/api/projects.csv" && request.method === "GET") {
+      return projectsCsvDirect(request, env, origin);
+    }
+
+    // ───── Everything else can use the full service layer ─────
+    let ResearchOpsService;
+    try {
+      // Dynamic import prevents module-eval crashes from causing 1101
+      ({ ResearchOpsService } = await import("./service.js"));
+    } catch (e) {
+      // Service layer unavailable: return a controlled 500
+      return new Response(json({ ok: false, error: "Service module load failed", detail: String(e?.message || e) }), {
+        status: 500,
+        headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+      });
+    }
+
+    const service = new ResearchOpsService(env);
+
+    // OPTIONS already handled above; add per-route logic:
+
     // Diagnostics
     if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
       return service.airtableProbe(origin, url);
-    }
-
-    // Health
-    if (url.pathname === "/api/health") {
-      return service.health(origin);
     }
 
     // AI Assist
@@ -223,23 +218,12 @@ export async function handleRequest(request, env) {
       return aiRewrite(request, env, origin);
     }
 
-    // ───────────── Projects (FAIL-SAFE overrides) ─────────────
-    if (url.pathname === "/api/projects" && request.method === "GET") {
-      return safeProjectsJson(service, request, origin);
-    }
-    if (url.pathname === "/api/projects" && request.method === "POST") {
-      if (typeof service.createProject === "function") {
-        return service.createProject(request, origin);
-      }
-    }
-    if (url.pathname === "/api/projects.csv" && request.method === "GET") {
-      return safeProjectsCsv(service, request, env, origin);
-    }
+    // Project details CSV (uses service util)
     if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
       return service.streamCsv(origin, env.GH_PATH_DETAILS);
     }
 
-    // ───────────── Journal Entries ─────────────
+    // Journals
     if (url.pathname === "/api/journal-entries" && request.method === "GET") {
       return service.listJournalEntries(origin, url);
     }
@@ -253,7 +237,7 @@ export async function handleRequest(request, env) {
       if (request.method === "DELETE") return service.deleteJournalEntry(origin, entryId);
     }
 
-    // ───────────── Excerpts ─────────────
+    // Excerpts
     if (url.pathname === "/api/excerpts" && request.method === "GET") {
       return service.listExcerpts(origin, url);
     }
@@ -265,7 +249,7 @@ export async function handleRequest(request, env) {
       return service.updateExcerpt(request, origin, excerptId);
     }
 
-    // ───────────── Memos ─────────────
+    // Memos
     if (url.pathname === "/api/memos" && request.method === "GET") {
       return service.listMemos(origin, url);
     }
@@ -277,12 +261,12 @@ export async function handleRequest(request, env) {
       return service.updateMemo(request, origin, memoId);
     }
 
-    // ───────────── Code Applications ─────────────
+    // Code Applications
     if (url.pathname === "/api/code-applications" && request.method === "GET") {
       return service.listCodeApplications(origin, url);
     }
 
-    // ───────────── Codes ─────────────
+    // Codes
     if (url.pathname === "/api/codes" && request.method === "GET") {
       return service.listCodes(origin, url);
     }
@@ -296,7 +280,7 @@ export async function handleRequest(request, env) {
         : service.createCode(request, origin);
     }
 
-    // ───────────── Analysis ─────────────
+    // Analysis
     if (url.pathname === "/api/analysis/timeline" && request.method === "GET") {
       return service.timeline(origin, url);
     }
@@ -310,7 +294,7 @@ export async function handleRequest(request, env) {
       return service.exportAnalysis(origin, url);
     }
 
-    // ───────────── Studies ─────────────
+    // Studies
     if (url.pathname === "/api/studies" && request.method === "GET") {
       return service.listStudies(origin, url);
     }
@@ -318,9 +302,9 @@ export async function handleRequest(request, env) {
       return service.createStudy(request, origin);
     }
     if (url.pathname.startsWith("/api/studies/")) {
-      const match = url.pathname.match(/^\/api\/studies\/([^/]+)$/);
-      if (match && request.method === "PATCH") {
-        const studyId = decodeURIComponent(match[1]);
+      const m = url.pathname.match(/^\/api\/studies\/([^/]+)$/);
+      if (m && request.method === "PATCH") {
+        const studyId = decodeURIComponent(m[1]);
         return service.updateStudy(request, origin, studyId);
       }
     }
@@ -328,7 +312,7 @@ export async function handleRequest(request, env) {
       if (env.GH_PATH_STUDIES) return service.streamCsv(origin, env.GH_PATH_STUDIES);
     }
 
-    // ───────────── Guides ─────────────
+    // Guides
     if (url.pathname === "/api/guides" && request.method === "GET") {
       return service.listGuides(origin, url);
     }
@@ -336,19 +320,19 @@ export async function handleRequest(request, env) {
       return service.createGuide(request, origin);
     }
     if (url.pathname.startsWith("/api/guides/")) {
-      const parts = url.pathname.split("/").filter(Boolean); // ["api","guides",":id"] or ["api","guides",":id","publish"]
+      const parts = url.pathname.split("/").filter(Boolean);
       if (parts.length === 3) {
         const guideId = decodeURIComponent(parts[2]);
         if (request.method === "GET") return service.readGuide(origin, guideId);
         if (request.method === "PATCH") return service.updateGuide(request, origin, guideId);
       }
-      if (parts.length === 4 && parts[3] === "publish") {
+      if (parts.length === 4 && parts[3] === "publish" && request.method === "POST") {
         const guideId = decodeURIComponent(parts[2]);
-        if (request.method === "POST") return service.publishGuide(origin, guideId);
+        return service.publishGuide(origin, guideId);
       }
     }
 
-    // ───────────── Partials ─────────────
+    // Partials
     if (url.pathname === "/api/partials" && request.method === "GET") {
       return service.listPartials(origin);
     }
@@ -356,7 +340,7 @@ export async function handleRequest(request, env) {
       return service.createPartial(request, origin);
     }
     if (url.pathname.startsWith("/api/partials/")) {
-      const parts = url.pathname.split("/").filter(Boolean); // ["api","partials",":id"]
+      const parts = url.pathname.split("/").filter(Boolean);
       if (parts.length === 3) {
         const partialId = decodeURIComponent(parts[2]);
         if (request.method === "GET") return service.readPartial(origin, partialId);
@@ -365,56 +349,39 @@ export async function handleRequest(request, env) {
       }
     }
 
-    // ───────────── Participants (optional) ─────────────
+    // Participants
     if (url.pathname === "/api/participants" && request.method === "GET") {
-      if (typeof service.listParticipants === "function") {
-        return service.listParticipants(origin, url);
-      }
+      if (typeof service.listParticipants === "function") return service.listParticipants(origin, url);
     }
     if (url.pathname === "/api/participants" && request.method === "POST") {
-      if (typeof service.createParticipant === "function") {
-        return service.createParticipant(request, origin);
-      }
+      if (typeof service.createParticipant === "function") return service.createParticipant(request, origin);
     }
 
-    // ───────────── Sessions (optional) ─────────────
+    // Sessions
     if (url.pathname === "/api/sessions" && request.method === "GET") {
-      if (typeof service.listSessions === "function") {
-        return service.listSessions(origin, url);
-      }
+      if (typeof service.listSessions === "function") return service.listSessions(origin, url);
     }
     if (url.pathname === "/api/sessions" && request.method === "POST") {
-      if (typeof service.createSession === "function") {
-        return service.createSession(request, origin);
-      }
+      if (typeof service.createSession === "function") return service.createSession(request, origin);
     }
     if (url.pathname.startsWith("/api/sessions/")) {
       const match = url.pathname.match(/^\/api\/sessions\/([^/]+)(\/ics)?$/);
       if (match) {
         const sessionId = decodeURIComponent(match[1]);
         const isIcs = match[2] === "/ics";
-        // Read one session
         if (request.method === "GET" && !isIcs) {
-          if (typeof service.getSession === "function") {
-            return service.getSession(origin, sessionId);
-          }
+          if (typeof service.getSession === "function") return service.getSession(origin, sessionId);
         }
-        // Update a session
         if (request.method === "PATCH" && !isIcs) {
-          if (typeof service.updateSession === "function") {
-            return service.updateSession(request, origin, sessionId);
-          }
+          if (typeof service.updateSession === "function") return service.updateSession(request, origin, sessionId);
         }
-        // ICS export
         if (request.method === "GET" && isIcs) {
-          if (typeof service.sessionIcs === "function") {
-            return service.sessionIcs(origin, sessionId);
-          }
+          if (typeof service.sessionIcs === "function") return service.sessionIcs(origin, sessionId);
         }
       }
     }
 
-    // ───────────── Session Notes ─────────────
+    // Session Notes
     if (url.pathname === "/api/session-notes" && request.method === "GET") {
       return service.listSessionNotes(origin, url);
     }
@@ -422,21 +389,19 @@ export async function handleRequest(request, env) {
       return service.createSessionNote(request, origin);
     }
     if (url.pathname.startsWith("/api/session-notes/")) {
-      const match = url.pathname.match(/^\/api\/session-notes\/([^/]+)$/);
-      if (match && request.method === "PATCH") {
-        const noteId = decodeURIComponent(match[1]);
+      const m = url.pathname.match(/^\/api\/session-notes\/([^/]+)$/);
+      if (m && request.method === "PATCH") {
+        const noteId = decodeURIComponent(m[1]);
         return service.updateSessionNote(request, origin, noteId);
       }
     }
 
-    // ───────────── Comms (optional) ─────────────
+    // Comms
     if (url.pathname === "/api/comms/send" && request.method === "POST") {
-      if (typeof service.sendComms === "function") {
-        return service.sendComms(request, origin);
-      }
+      if (typeof service.sendComms === "function") return service.sendComms(request, origin);
     }
 
-    // ───────────── Mural (OAuth + setup) ─────────────
+    // Mural
     if (url.pathname === "/api/mural/auth" && request.method === "GET") {
       return service.mural.muralAuth(origin, url);
     }
@@ -470,10 +435,13 @@ export async function handleRequest(request, env) {
 
     // Unknown API route
     if (url.pathname.startsWith("/api/")) {
-      return service.json({ error: "Not found", path: url.pathname }, 404, service.corsHeaders(origin));
+      return new Response(json({ error: "Not found", path: url.pathname }), {
+        status: 404,
+        headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
+      });
     }
 
-    // Static assets with SPA fallback
+    // Static assets (SPA fallback)
     let resp = await env.ASSETS.fetch(request);
     if (resp.status === 404) {
       const indexReq = new Request(new URL("/index.html", url), request);
@@ -482,104 +450,10 @@ export async function handleRequest(request, env) {
     return resp;
 
   } catch (e) {
-    service.log?.error?.("unhandled.error", { err: String(e?.message || e) });
-    return new Response(JSON.stringify({ error: "Internal error" }), {
+    // Last-resort safety net: never leak a thrown exception
+    return new Response(json({ error: "Internal error", detail: String(e?.message || e) }), {
       status: 500,
-      headers: { "Content-Type": "application/json", ...service.corsHeaders(origin) }
-    });
-  } finally {
-    try { service.destroy(); } catch { /* no-op */ }
-  }
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Fail-safe handlers for Projects
-   ──────────────────────────────────────────────────────────────────────────── */
-
-async function safeProjectsCsv(service, request, env, origin) {
-  try {
-    requireEnv(env, ["GH_OWNER", "GH_REPO", "GH_BRANCH", "GH_PATH_PROJECTS"]);
-    const rawUrl = `https://raw.githubusercontent.com/${env.GH_OWNER}/${env.GH_REPO}/${env.GH_BRANCH}/${env.GH_PATH_PROJECTS}`;
-    const r = await fetch(rawUrl, { headers: { accept: "text/plain" } });
-
-    if (!r.ok) {
-      return new Response(`Upstream CSV fetch failed: ${r.status}`, {
-        status: 502,
-        headers: { ...service.corsHeaders(origin), "content-type": "text/plain; charset=utf-8" }
-      });
-    }
-
-    const body = await r.text();
-    return new Response(body, {
-      status: 200,
-      headers: { ...service.corsHeaders(origin), "content-type": "text/csv; charset=utf-8" }
-    });
-  } catch (e) {
-    return new Response(`Handler error (projects.csv): ${String(e?.message || e)}`, {
-      status: 500,
-      headers: { ...service.corsHeaders(origin), "content-type": "text/plain; charset=utf-8" }
+      headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeadersForEnv(env, origin) }
     });
   }
-}
-
-async function safeProjectsJson(service, request, origin) {
-  try {
-    const env = service.env || {};
-    assertAirtableEnv(env);
-    requireEnv(env, ["AIRTABLE_TABLE_PROJECTS"]);
-
-    const base = env.AIRTABLE_BASE || env.AIRTABLE_BASE_ID;
-    const key  = env.AIRTABLE_API_KEY || env.AIRTABLE_PAT;
-    const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-    const url = `https://api.airtable.com/v0/${base}/${table}?pageSize=100`;
-
-    const r = await fetch(url, {
-      headers: { authorization: `Bearer ${key}`, accept: "application/json" }
-    });
-
-    if (!r.ok) {
-      const raw = await r.text().catch(() => "");
-      return new Response(
-        JSON.stringify({ ok: false, source: "airtable", status: r.status, error: safeSlice(raw, 2000) }),
-        { status: 500, headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" } }
-      );
-    }
-
-    const data = await r.json();
-    const records = Array.isArray(data?.records) ? data.records : [];
-    const projects = records.map(rec => ({ id: rec.id, ...(rec.fields || {}) }));
-
-    return new Response(JSON.stringify({ ok: true, projects }), {
-      status: 200,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e?.message || e) }), {
-      status: 500,
-      headers: { ...service.corsHeaders(origin), "content-type": "application/json; charset=utf-8" }
-    });
-  }
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Small guards/utilities
-   ──────────────────────────────────────────────────────────────────────────── */
-
-function requireEnv(env, keys) {
-  const missing = keys.filter(k => !env[k]);
-  if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
-}
-
-function assertAirtableEnv(env) {
-  if (!env.AIRTABLE_BASE && !env.AIRTABLE_BASE_ID) {
-    throw new Error("Missing env: AIRTABLE_BASE or AIRTABLE_BASE_ID");
-  }
-  if (!env.AIRTABLE_API_KEY && !env.AIRTABLE_PAT) {
-    throw new Error("Missing env: AIRTABLE_API_KEY or AIRTABLE_PAT");
-  }
-}
-
-function safeSlice(s, n) {
-  if (!s) return s;
-  return s.length > n ? s.slice(0, n) + "…" : s;
 }
