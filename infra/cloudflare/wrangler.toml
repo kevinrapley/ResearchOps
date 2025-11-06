@@ -61,3 +61,11 @@ MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mura
 binding    = "SESSION_KV"
 id         = "8e2d88969b9e4be694868931bdba92f2"
 preview_id = "8e2d88969b9e4be694868931bdba92f2"
+
+# CloudFlare Logging
+[observability]
+[observability.logs]
+enabled = false
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
