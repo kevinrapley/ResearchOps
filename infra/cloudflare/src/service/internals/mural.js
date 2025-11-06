@@ -352,20 +352,24 @@ export class MuralServicePart {
 	/* Routes                                                              */
 	/* ─────────────────────────────────────────────────────────────────── */
 
-	async muralAuth(origin, url) {
-		const uid = url.searchParams.get("uid") || "anon";
-		const ret = url.searchParams.get("return") || "";
-		let safeReturn = "/pages/projects/";
-
-		if (ret && _isAllowedReturn(this.root.env, ret)) {
-			safeReturn = ret; // absolute + allowed
-		} else if (ret.startsWith("/")) {
-			safeReturn = ret; // relative path
-		}
-
-		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn }));
-		const redirect = buildAuthUrl(this.root.env, state);
-		return Response.redirect(redirect, 302);
+	export async function muralAuth(origin, url, env) {
+	  // required params
+	  const uid = url.searchParams.get("uid") || "anon";
+	  const returnUrl = url.searchParams.get("return") || `${origin}/pages/projects/`;
+	  const state = btoa(JSON.stringify({ uid, returnUrl })).slice(0, 1024);
+	
+	  // build Mural OAuth URL (use your existing client_id, redirect_uri in env)
+	  const params = new URLSearchParams({
+	    response_type: "code",
+	    client_id: env.MURAL_CLIENT_ID,
+	    redirect_uri: env.MURAL_REDIRECT_URI,
+	    scope: env.MURAL_SCOPES || "identity:read",
+	    state
+	  });
+	
+	  const muralAuthUrl = `${env.MURAL_OAUTH_AUTHORIZE || "https://app.mural.co/api/public/v1/oauth2/authorize"}?${params}`;
+		
+	  return Response.redirect(muralAuthUrl, 302);
 	}
 
 	async muralCallback(origin, url) {
