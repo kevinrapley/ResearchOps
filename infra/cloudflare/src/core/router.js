@@ -2,17 +2,12 @@
  * @file src/core/router.js
  * @module core/router
  * @summary Router for Cloudflare Worker entrypoint (modular ResearchOps service).
+ * @version 2.1.0 - Fixed Mural stub logic
  *
  * Fail-safe design:
- *  - No top-level import of service.js (dynamic import inside handler)
- *  - /api/projects, /api/studies, /api/mural/verify, /api/mural/resolve do NOT rely on service.js
+ *  - Projects and Studies handled directly (no service.js dependency)
+ *  - Mural routes require service.js (stubs only if service fails)
  *  - All handlers return controlled responses; no raw throws
- *  - Direct routes handled BEFORE service.js import to prevent fallthrough
- *
- * Routes covered (unchanged surface):
- *   Health, AI Assist, Projects (+ CSV), Journals, Studies, Guides,
- *   Partials, Participants, Sessions (+ics), Session Notes, Comms, Mural,
- *   + static asset fallback via ASSETS (SPA).
  */
 
 import { aiRewrite } from "./ai-rewrite.js";
@@ -21,11 +16,9 @@ import { aiRewrite } from "./ai-rewrite.js";
 
 function canonicalizePath(pathname) {
   let p = pathname || "/";
-
   p = p.replace(/\/(pages|components|partials|css|js|images|img|assets)\/(\1\/)+/g, "/$1/");
   p = p.replace(/\/{2,}/g, "/");
   p = p.replace(/\/index\.html$/i, "/");
-
   if (p.startsWith("/api/") && p.endsWith("/") && p !== "/api/") p = p.slice(0, -1);
   return p;
 }
@@ -77,7 +70,7 @@ function assertAirtableEnv(env) {
   }
 }
 
-/* ────────────────── Fail-safe endpoints that do NOT depend on service.js ────────────────── */
+/* ────────────────── Direct endpoints (no service.js dependency) ────────────────── */
 
 async function projectsCsvDirect(request, env, origin) {
   console.log("[projectsCsvDirect] Called");
@@ -231,25 +224,6 @@ async function studiesJsonDirect(request, env, origin, url) {
   }
 }
 
-async function muralVerifyDirect(request, env, origin, url) {
-  console.log("[muralVerifyDirect] Called");
-  // Stub implementation - returns 503 if Mural service unavailable
-  // Real implementation would check tokens in KV
-  return new Response(json({ ok: false, reason: "service_unavailable", note: "Mural service loading" }), {
-    status: 503,
-    headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
-  });
-}
-
-async function muralResolveDirect(request, env, origin, url) {
-  console.log("[muralResolveDirect] Called");
-  // Stub implementation - returns 503 if Mural service unavailable
-  return new Response(json({ ok: false, error: "service_unavailable", note: "Mural service loading" }), {
-    status: 503,
-    headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
-  });
-}
-
 /* ────────────────── Main entry router ────────────────── */
 
 export async function handleRequest(request, env) {
@@ -307,7 +281,6 @@ export async function handleRequest(request, env) {
     }
 
     if (url.pathname === "/api/health") {
-      // Healthy even if service.js is unavailable
       return new Response(json({ ok: true, service: "ResearchOps API", time: new Date().toISOString() }), {
         status: 200,
         headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
@@ -315,57 +288,48 @@ export async function handleRequest(request, env) {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // CRITICAL: Direct routes BEFORE service.js import to prevent HTML fallthrough
+    // DIRECT ROUTES: Projects & Studies (no service.js dependency)
     // ═══════════════════════════════════════════════════════════════════════════════
     
     if (url.pathname === "/api/projects" && request.method === "GET") {
-      console.log("[router] ✓ Matched /api/projects");
+      console.log("[router] ✓ Matched /api/projects (direct)");
       const res = await projectsJsonDirect(request, env, origin);
       console.log("[router] projectsJsonDirect returned status:", res?.status);
       return res;
     }
     
     if (url.pathname === "/api/projects.csv" && request.method === "GET") {
-      console.log("[router] ✓ Matched /api/projects.csv");
+      console.log("[router] ✓ Matched /api/projects.csv (direct)");
       return projectsCsvDirect(request, env, origin);
     }
 
     if (url.pathname === "/api/studies" && request.method === "GET") {
-      console.log("[router] ✓ Matched /api/studies");
+      console.log("[router] ✓ Matched /api/studies (direct)");
       return studiesJsonDirect(request, env, origin, url);
     }
 
-    if (url.pathname === "/api/mural/verify" && request.method === "GET") {
-      console.log("[router] ✓ Matched /api/mural/verify");
-      const stub = await muralVerifyDirect(request, env, origin, url);
-      if (stub) return stub;
-    }
-
-    if (url.pathname === "/api/mural/resolve" && request.method === "GET") {
-      console.log("[router] ✓ Matched /api/mural/resolve");
-      const stub = await muralResolveDirect(request, env, origin, url);
-      if (stub) return stub;
-    }
-
     // ═══════════════════════════════════════════════════════════════════════════════
-    // NOW safe to attempt service.js import for routes that need the full service
+    // SERVICE-DEPENDENT ROUTES: Load service.js for everything else
     // ═══════════════════════════════════════════════════════════════════════════════
 
     let ResearchOpsService;
+    let serviceLoadFailed = false;
+    
     try {
       console.log("[router] Attempting dynamic import of service.js");
       ({ ResearchOpsService } = await import("./service.js"));
       console.log("[router] ✓ service.js imported successfully");
     } catch (e) {
       console.error("[router] ✗ Service module load failed:", e);
-      // Only return error for routes that NEED service.js
-      // (we already handled the critical ones above)
+      serviceLoadFailed = true;
+      
+      // For API routes that REQUIRE service, return 503
       if (url.pathname.startsWith("/api/")) {
         return new Response(json({ 
           ok: false, 
-          error: "Service module load failed", 
+          error: "Service temporarily unavailable", 
           detail: String(e?.message || e),
-          note: "Some API routes are still available via direct handlers"
+          note: "Projects and Studies APIs are still available via direct handlers"
         }), {
           status: 503,
           headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8" }
@@ -374,8 +338,8 @@ export async function handleRequest(request, env) {
       // For non-API routes (pages), continue to static asset handler below
     }
 
-    // Service-dependent routes (only if ResearchOpsService loaded)
-    if (ResearchOpsService) {
+    // Service-dependent routes (only if ResearchOpsService loaded successfully)
+    if (ResearchOpsService && !serviceLoadFailed) {
       const service = new ResearchOpsService(env);
 
       // Diagnostics
@@ -464,7 +428,7 @@ export async function handleRequest(request, env) {
         return service.exportAnalysis(origin, url);
       }
 
-      // Studies (POST/PATCH still need service)
+      // Studies (POST/PATCH need service)
       if (url.pathname === "/api/studies" && request.method === "POST") {
         return service.createStudy(request, origin);
       }
@@ -568,22 +532,28 @@ export async function handleRequest(request, env) {
         if (typeof service.sendComms === "function") return service.sendComms(request, origin);
       }
 
-      // Mural (full service routes - OAuth callback, setup, journal sync, etc.)
+      // ═══════════════════════════════════════════════════════════════════════════════
+      // MURAL ROUTES (require service.js for OAuth, KV access, and Airtable mapping)
+      // ═══════════════════════════════════════════════════════════════════════════════
+      
       if (url.pathname === "/api/mural/auth" && request.method === "GET") {
+        console.log("[router] ✓ Matched /api/mural/auth (service)");
         return service.mural.muralAuth(origin, url);
       }
       if (url.pathname === "/api/mural/callback" && request.method === "GET") {
+        console.log("[router] ✓ Matched /api/mural/callback (service)");
         return service.mural.muralCallback(origin, url);
       }
-      // Note: /api/mural/verify and /api/mural/resolve handled by direct stubs above
-      // The service versions will override them when service is available
       if (url.pathname === "/api/mural/verify" && request.method === "GET") {
+        console.log("[router] ✓ Matched /api/mural/verify (service)");
         return service.mural.muralVerify(origin, url);
       }
       if (url.pathname === "/api/mural/resolve" && request.method === "GET") {
+        console.log("[router] ✓ Matched /api/mural/resolve (service)");
         return service.mural.muralResolve(origin, url);
       }
       if (url.pathname === "/api/mural/setup" && request.method === "POST") {
+        console.log("[router] ✓ Matched /api/mural/setup (service)");
         return service.mural.muralSetup(request, origin);
       }
       if (url.pathname === "/api/mural/find" && request.method === "GET") {
@@ -622,7 +592,7 @@ export async function handleRequest(request, env) {
     return resp;
 
   } catch (e) {
-    // Last-resort safety net: never leak a thrown exception
+    // Last-resort safety net
     console.error("[router] Unhandled error:", e);
     return new Response(json({ error: "Internal error", detail: String(e?.message || e) }), {
       status: 500,
