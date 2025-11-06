@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en-GB"
-  data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev"
+<html lang="en-GB" 
+  data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev" 
   prefix="
     dcterms: http://purl.org/dc/terms/
     schema:  https://schema.org/">
-<html lang="en">
+<html lang="en" >
 
 <head>
   <meta charset="utf-8" />
@@ -232,6 +232,46 @@
     /**
      * @file project-dashboard.js
      * @module ProjectDashboard
+     * @summary Load a project, render metadata, list associated studies,
+     * and create new studies (method, optional title, description).
+     */
+
+    /* ───────── Config: single source of truth for API origin ───────── */
+    const API_ORIGIN =
+      document.documentElement?.dataset?.apiOrigin ||
+      window.API_ORIGIN ||
+      (location.hostname.endsWith("pages.dev")
+        ? "https://rops-api.digikev-kevin-rapley.workers.dev"
+        : location.origin);
+
+    /* ───────────────── Types ───────────────── */
+
+    /**
+     * @typedef {Object} UIProject
+     * @property {string} id
+     * @property {string} localId
+     * @property {string} name
+     * @property {string} description
+     * @property {string} org
+     * @property {string} phase
+     * @property {string} status
+     * @property {string[]} objectives
+     * @property {string[]} user_groups
+     * @property {{name?:string, role?:string, email?:string}[]} stakeholders
+     * @property {string} createdAt
+     * @property {string} lead_researcher
+     * @property {string} lead_researcher_email
+     */
+
+    /**
+     * @typedef {Object} UIStudy
+     * @property {string} id
+     * @property {string} studyId
+     * @property {string} method
+     * @property {string} status
+     * @property {string} description
+     * @property {string} createdAt
+     * @property {string} [title]
      */
 
     /* ──────────────── DOM utils ──────────────── */
@@ -248,22 +288,19 @@
     /* ─────────────── Data loading ─────────────── */
 
     async function loadProjects() {
-      // Cache-buster to avoid edge/stale HTML surfaces
-      const res = await fetch(`/api/projects?ts=${Date.now()}`, { cache: "no-store" });
+      const res = await fetch(`${API_ORIGIN}/api/projects?ts=${Date.now()}`, { cache: "no-store" });
 
-      // Must be JSON; bail early if Cloudflare error HTML leaked through
+      // Must be JSON
       const ctype = (res.headers.get("content-type") || "").toLowerCase();
       if (!ctype.includes("application/json")) {
         const preview = await res.text().catch(() => "");
         throw new Error(`Projects non-JSON (${res.status}) ${preview.slice(0,120)}`);
       }
 
-      // Parse
       let data;
       try { data = await res.json(); }
       catch { throw new Error(`Projects JSON parse failed (${res.status})`); }
 
-      // Accept either array OR envelope { ok:true, projects:[…] }
       const list = Array.isArray(data)
         ? data
         : (Array.isArray(data?.projects) ? data.projects : null);
@@ -294,12 +331,11 @@
     }
 
     async function loadStudies(projectId) {
-      const url = `/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`;
+      const url = `${API_ORIGIN}/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`;
       const res = await fetch(url, { cache: "no-store" });
       const js = await res.json().catch(() => ({}));
-      if (!res.ok) return [];
-      const list = Array.isArray(js?.studies) ? js.studies : (Array.isArray(js) ? js : []);
-      return list.map(r => ({
+      if (!res.ok || !js?.ok) return [];
+      return (js.studies || []).map(r => ({
         id: r.id || "",
         studyId: r.studyId || "",
         method: r.method || "",
@@ -308,6 +344,21 @@
         createdAt: r.createdAt || "",
         title: r.title || r.Title || ""
       }));
+    }
+
+    /* ───────────── Title normalisation ───────────── */
+
+    function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
+      if (description && description.trim()) return description.trim().slice(0, 80);
+      const d = createdAt ? new Date(createdAt) : new Date();
+      const yyyy = d.getUTCFullYear();
+      const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const dd = String(d.getUTCDate()).padStart(2, "0");
+      return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
+    }
+
+    function normalizeStudy(s = {}) {
+      return { ...s, title: s.title || s.Title || computeStudyTitle(s) };
     }
 
     /* ───────────────── Rendering ───────────────── */
@@ -353,10 +404,10 @@
 
       const escapeHtml = (s = "") =>
         s.replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#39;");
 
       const truncateToWords = (text, maxLength = 170) => {
         if (!text) return "";
@@ -486,7 +537,7 @@
         submitBtn?.setAttribute("disabled", "true");
 
         try {
-          const res = await fetch("/api/studies", {
+          const res = await fetch(`${API_ORIGIN}/api/studies`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -539,7 +590,7 @@
     })();
 
     // Update the journal link with the project ID
-    (function () {
+    (function() {
       const params = new URLSearchParams(window.location.search);
       const projectId = params.get('id');
       if (projectId) {
