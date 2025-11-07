@@ -31,9 +31,17 @@ jobs:
           echo $! > /tmp/http.pid
 
       - name: Wait for server (http://localhost:8080)
-        uses: jakejarvis/wait-action@v0.2.0
-        with:
-          url: http://localhost:8080
+        run: |
+          for attempt in {1..60}; do
+            if curl -fsS http://localhost:8080/ > /dev/null; then
+              echo "Server is ready."
+              exit 0
+            fi
+            echo "[$attempt/60] Waiting for server..."
+            sleep 1
+          done
+          echo "Server failed to start within expected time." >&2
+          exit 1
 
       # Provide URLs to pa11y-ci. If you already have a pa11yci.json in the repo,
       # you can remove this step.
