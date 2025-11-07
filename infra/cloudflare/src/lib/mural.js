@@ -186,17 +186,25 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
+  const base = apiBase(env);
+
+  // Minimal payload for the new endpoint — do NOT send backgroundColor
+  const payload = { title, roomId, ...(folderId ? { folderId } : {}) };
+
+  // New endpoint first: POST /murals
   try {
-    return await fetchJSON(`${apiBase(env)}/murals`, {
+    return await fetchJSON(`${base}/murals`, {
       method: "POST",
       ...withBearer(token),
-      body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+      body: JSON.stringify(payload)
     });
   } catch (e) {
+    // If the endpoint doesn't exist for this tenant, fall back to legacy
     if (Number(e?.status) !== 404) throw e;
   }
-  // legacy fallback
-  return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
+
+  // Legacy: POST /rooms/:roomId/murals
+  return fetchJSON(`${base}/rooms/${roomId}/murals`, {
     method: "POST",
     ...withBearer(token),
     body: JSON.stringify({ title, ...(folderId ? { folderId } : {}) })
