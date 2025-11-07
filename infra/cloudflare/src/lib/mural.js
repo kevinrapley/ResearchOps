@@ -177,7 +177,7 @@ export async function ensureUserRoom(env, accessToken, workspaceId, username) {
   const createBody = JSON.stringify({
     name,
     workspaceId,
-    visibility: "private"
+    type: "private"
   });
 
   /**
