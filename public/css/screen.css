@@ -100,23 +100,23 @@ textarea:focus {
 	}
 	
 .nav__list {
-        display: flex;
-        gap: 12px;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        }
+	display: flex;
+	gap: 12px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	}
 
 .nav__list li {
-        margin: 0;
-        }
+	margin: 0;
+	}
 
 .nav__list .govuk-link[aria-current="page"],
 .nav__list .govuk-link.active {
-        font-weight: 700;
-        text-decoration: none;
-        border-bottom: 3px solid #1d70b8;
-        }
+	font-weight: 700;
+	text-decoration: none;
+	border-bottom: 3px solid #1d70b8;
+	}
 
 /* Ensure tab items have a visible focus */
 .nav .govuk-link:focus {
@@ -168,6 +168,50 @@ textarea:focus {
         margin-bottom: 16px;
         }
 
+.rops-header {
+	margin-bottom: 32px;
+	}
+
+.rops-header__title {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 12px;
+	margin: 0 0 8px;
+	}
+
+.rops-header__title .govuk-heading-l {
+	margin: 0;
+	}
+
+.rops-header__title-text {
+	margin: 0;
+	}
+
+.rops-header__subtitle {
+	margin: 0 0 16px;
+	color: #505a5f;
+	}
+
+.page-intro {
+	margin: 0 0 32px;
+	}
+
+.page-intro .govuk-heading-xl {
+	margin-bottom: 8px;
+	}
+
+.page-intro .lede {
+	margin: 0;
+	}
+
+.page-title {
+	margin-top: 0;
+	}
+
+.card-section > .govuk-heading-l {
+	margin-bottom: 16px;
+	}
+
 /* === =CARDS & PATTERNS ================================== */
 
 .card {
@@ -186,6 +230,14 @@ textarea:focus {
 .card__question {
         margin: 8px 0 0;
         }
+
+.card__heading {
+	margin: 0;
+	}
+
+.card__question {
+	margin: 8px 0 0;
+	}
 
 .project-org {
 	margin: 0 0 4px;
@@ -907,13 +959,13 @@ select.govuk-input {
 
 /* === Suggestions / Bias split view (Step 1 & 2) ============================ */
 /* Structure produced by start-description-assist.js & start-objective-assist.js
-   .sugg-grid
-     .sugg-col
-       .sugg-heading
-       .sugg-list > .sugg-item
-         .sugg-row > .sugg-cat + .sugg-sev
-         .sugg-tip
-         .sugg-why
+.sugg-grid
+	.sugg-col
+	.sugg-heading
+	.sugg-list > .sugg-item
+		.sugg-row > .sugg-cat + .sugg-sev
+		.sugg-tip
+		.sugg-why
 */
 
 .sugg-grid {

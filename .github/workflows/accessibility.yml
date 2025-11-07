@@ -32,19 +32,7 @@ jobs:
       - name: Install pa11y-ci with updated dependencies
         run: |
           mkdir -p .pa11y-workdir
-          cat <<'PKG' > .pa11y-workdir/package.json
-          {
-            "name": "pa11y-workdir",
-            "private": true,
-            "type": "module",
-            "dependencies": {
-              "pa11y-ci": "^3.1.0"
-            },
-            "overrides": {
-              "glob": "^10.4.5",
-              "inflight": "npm:@npmcli/inflight@^2.0.0"
-            }
-          }
+          node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'module',dependencies:{'pa11y-ci':'^3.1.0'},overrides:{glob:'^10.4.5',inflight:'npm:@npmcli/inflight@^2.0.0'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
           npm install --prefix .pa11y-workdir --no-package-lock
 
       - name: Run pa11y-ci
