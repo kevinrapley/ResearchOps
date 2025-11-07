@@ -1,9 +1,3 @@
-Got it — the viewer link still isn’t surfacing quickly enough after create, so I’ve added explicit “link creation” fallbacks (try listing links, and if none exist, actively create a viewer/share link), before and during the wait loop. Below are two complete files you can drop in:
-
-⸻
-
-/lib/mural.js
-
 /**
  * @file lib/mural.js
  * @module mural
