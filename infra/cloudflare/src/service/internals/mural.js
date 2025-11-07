@@ -26,7 +26,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	ensureUserRoom,           // now: find existing only (no create)
+	ensureUserRoom,           // find existing only (no create)
 	ensureProjectFolder,
 	createMural,
 	getMural,
@@ -224,6 +224,25 @@ function _extractViewerUrl(payload) {
 
 	const first = candidates.find(_looksLikeMuralViewerUrl);
 	return first || null;
+}
+
+/**
+ * Poll Mural for a real viewer URL after creation.
+ * Tries every `intervalMs` until `maxWaitMs` elapses.
+ * Returns the concrete URL or null if still unavailable.
+ */
+async function _waitForViewerUrl(env, accessToken, muralId, { maxWaitMs = 12000, intervalMs = 600 } = {}) {
+	let remaining = maxWaitMs;
+	while (remaining > 0) {
+		try {
+			const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
+			const url = _extractViewerUrl(hydrated);
+			if (url) return url;
+		} catch { /* ignore transient */ }
+		await new Promise(r => setTimeout(r, intervalMs));
+		remaining -= intervalMs;
+	}
+	return null;
 }
 
 /* ───────────────────────── KV helpers ───────────────────────── */
@@ -741,74 +760,74 @@ export class MuralServicePart {
 				this.root.log?.warn?.("mural.ensure_folder.no_id", { folderPreview: typeof folder === "object" ? Object.keys(folder || {}) : folder });
 			}
 
-			      step = "create_mural";
-      const mural = await createMural(this.root.env, accessToken, {
-        title: "Reflexive Journal",
-        roomId,
-        folderId: folderId || undefined
-      });
+			// ───── Create mural, then wait for a REAL viewer URL (no synthetic links) ─────
+			step = "create_mural";
+			const mural = await createMural(this.root.env, accessToken, {
+				title: "Reflexive Journal",
+				roomId,
+				folderId: folderId || undefined
+			});
 
-      // Hydrate once for reliable viewer link
-      let hydrated = null;
-      try { hydrated = await getMural(this.root.env, accessToken, mural.id); } catch { /* non-fatal */ }
+			step = "await_viewer_url";
+			const openUrl = await _waitForViewerUrl(this.root.env, accessToken, mural.id, {
+				maxWaitMs: 12000,
+				intervalMs: 600
+			});
 
-      // NEW: always produce a viewer URL — fall back to a synthetic link that redirects
-      // Pattern: https://app.mural.co/t/{workspaceKeyOrId}/m/{muralId}
-      const wsKey = (ws.key || ws.id || "").toString().trim();
-      const synthUrl = (wsKey && mural?.id)
-        ? `https://app.mural.co/t/${encodeURIComponent(wsKey)}/m/${encodeURIComponent(mural.id)}`
-        : null;
+			if (!openUrl) {
+				// Fail clearly rather than storing a dud mapping.
+				return this.root.json({
+					ok: false,
+					error: "viewer_link_unavailable",
+					step,
+					message: "The board was created but its open link isn’t ready yet. Please try again in a moment from the dashboard."
+				}, 502, cors);
+			}
 
-      const openUrl =
-        _extractViewerUrl(hydrated) ||
-        _extractViewerUrl(mural) ||
-        synthUrl ||
-        null;
+			// Persist mapping (ok if boardUrl is null)
+			let registered = false;
+			if (projectId) {
+				try {
+					await this.registerBoard({
+						projectId: String(projectId),
+						uid,
+						purpose: PURPOSE_REFLEXIVE,
+						muralId: mural.id,
+						boardUrl: openUrl,  // real URL only
+						workspaceId: ws.id,
+						primary: true
+					});
+					registered = true;
+				} catch (e) {
+					this.root.log?.error?.("mural.airtable_register_failed", {
+						status: e?.status,
+						body: e?.body
+					});
+				}
+			}
 
-      // Persist mapping (ok if Airtable fails; KV backup below ensures resolve works)
-      let registered = false;
-      if (projectId) {
-        try {
-          await this.registerBoard({
-            projectId: String(projectId),
-            uid,
-            purpose: PURPOSE_REFLEXIVE,
-            muralId: mural.id,
-            boardUrl: openUrl,          // may be synthetic
-            workspaceId: ws.id,
-            primary: true
-          });
-          registered = true;
-        } catch (e) {
-          this.root.log?.error?.("mural.airtable_register_failed", {
-            status: e?.status,
-            body: e?.body
-          });
-        }
-      }
+			// KV backup only for valid viewer URLs
+			try {
+				if (projectId && openUrl && _looksLikeMuralViewerUrl(openUrl)) {
+					const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
+					await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
+						url: openUrl,
+						projectName: projectName,
+						updatedAt: Date.now()
+					}));
+				}
+			} catch { /* non-fatal */ }
 
-      // KV backup — write whenever we have a link (synthetic or real)
-      try {
-        if (projectId && openUrl && _looksLikeMuralViewerUrl(openUrl)) {
-          const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
-          await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
-            url: openUrl,
-            projectName: projectName,
-            updatedAt: Date.now()
-          }));
-        }
-      } catch { /* non-fatal */ }
-
-      return this.root.json({
-        ok: true,
-        workspace: ws,
-        room,
-        folder,
-        mural: { ...mural, viewLink: openUrl },
-        projectId: projectId || null,
-        registered,
-        boardUrl: openUrl || null
-      }, 200, cors);
+			return this.root.json({
+				ok: true,
+				workspace: ws,
+				room,
+				folder,
+				mural: { ...mural, viewLink: openUrl },
+				projectId: projectId || null,
+				registered,
+				boardUrl: openUrl
+			}, 200, cors);
 
 		} catch (err) {
 			const status = Number(err?.status) || 500;
