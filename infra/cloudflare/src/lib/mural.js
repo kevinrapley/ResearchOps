@@ -1,5 +1,5 @@
 /**
- * @file lib/mural.js
+ * @file src/lib/mural.js
  * @module mural
  * @summary Mural OAuth + API helpers (pure functions; no routing).
  *
@@ -1482,4 +1482,4 @@ export class MuralServicePart {
 			auth_url: authUrl
 		}, 200, this.root.corsHeaders(origin));
 	}
-}e
+}
