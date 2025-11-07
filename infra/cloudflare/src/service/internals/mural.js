@@ -230,18 +230,36 @@ function _extractViewerUrl(payload) {
  * Poll Mural for a real viewer URL after creation.
  * Tries every `intervalMs` until `maxWaitMs` elapses.
  * Returns the concrete URL or null if still unavailable.
+ *
+ * NOTE: We intentionally wait longer here (up to ~45s) to avoid returning
+ * synthetic or missing links. This keeps UX consistent with “create then open”.
  */
-async function _waitForViewerUrl(env, accessToken, muralId, { maxWaitMs = 12000, intervalMs = 600 } = {}) {
-	let remaining = maxWaitMs;
-	while (remaining > 0) {
+async function _waitForViewerUrl(env, accessToken, muralId, { maxWaitMs = 45000, intervalMs = 1000 } = {}) {
+	let waited = 0;
+
+	// Light exponential backoff (still caps at intervalMs)
+	let step = intervalMs;
+
+	while (waited < maxWaitMs) {
 		try {
+			// Try to hydrate the mural details
 			const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
 			const url = _extractViewerUrl(hydrated);
 			if (url) return url;
-		} catch { /* ignore transient */ }
-		await new Promise(r => setTimeout(r, intervalMs));
-		remaining -= intervalMs;
+
+			// Occasionally “touch” the board by listing widgets; this can help the link appear
+			await getWidgets(env, accessToken, muralId).catch(() => {});
+		} catch {
+			// ignore transient
+		}
+
+		await new Promise(r => setTimeout(r, step));
+		waited += step;
+
+		// backoff a little until we reach the steady interval
+		if (step < intervalMs) step = intervalMs;
 	}
+
 	return null;
 }
 
@@ -770,8 +788,8 @@ export class MuralServicePart {
 
 			step = "await_viewer_url";
 			const openUrl = await _waitForViewerUrl(this.root.env, accessToken, mural.id, {
-				maxWaitMs: 12000,
-				intervalMs: 600
+				maxWaitMs: 45000,
+				intervalMs: 1000
 			});
 
 			if (!openUrl) {
@@ -803,6 +821,7 @@ export class MuralServicePart {
 						status: e?.status,
 						body: e?.body
 					});
+					// registering failure should NOT prevent returning the URL we have
 				}
 			}
 
