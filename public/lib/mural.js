@@ -163,28 +163,55 @@ export async function verifyHomeOfficeWorkspace(env, token) {
 /* Rooms • Folders • Murals                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ * List rooms for a workspace.
+ */
 export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
 /**
- * Create room (new public API)
- * Body: { name, workspaceId, visibility }
+ * Create room via the **new** endpoint.
+ * Attempts 2 payload shapes:
+ *   A) { name, workspaceId, visibility: "private" }
+ *   B) { name, workspaceId, type: "private" }
+ * Returns the created room JSON or throws.
  */
-export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
-	return fetchJSON(`${apiBase(env)}/rooms`, {
-		method: "POST",
-		...withBearer(token),
-		body: JSON.stringify({ name, workspaceId, visibility })
-	});
+async function createRoomNew(env, token, { name, workspaceId }) {
+	// A) visibility shape
+	try {
+		return await fetchJSON(`${apiBase(env)}/rooms`, {
+			method: "POST",
+			...withBearer(token),
+			body: JSON.stringify({ name, workspaceId, visibility: "private" })
+		});
+	} catch (e) {
+		// If the server complains about "type", retry with type
+		const status = Number(e?.status || 0);
+		const msg = (e?.body && JSON.stringify(e.body)) || "";
+		const mentionsType = /"type"|Invalid\\?["']type["']|Type 'open', 'private'/.test(msg);
+		if (status && status !== 400 && status !== 422) throw e; // not a shape issue → bubble up
+
+		if (status === 400 || status === 422 || mentionsType) {
+			// B) type shape
+			return await fetchJSON(`${apiBase(env)}/rooms`, {
+				method: "POST",
+				...withBearer(token),
+				body: JSON.stringify({ name, workspaceId, type: "private" })
+			});
+		}
+		throw e;
+	}
 }
 
 /**
  * Heuristic: reuse a private room or one that includes the username; else create.
- * New API first (visibility), legacy fallback (type) if 404.
+ * Order of attempts:
+ *   1) New endpoint (visibility shape), then new endpoint (type shape)
+ *   2) Legacy endpoint POST /workspaces/:workspaceId/rooms with { name, type: "private" }
  */
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
-	// Try to reuse
+	// Try to reuse an existing room
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
 	const list = Array.isArray(rooms?.items) ? rooms.items :
 		Array.isArray(rooms?.value) ? rooms.value :
@@ -196,19 +223,21 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
 	);
 	if (room) return room;
 
-	// Create via new endpoint
+	// Try new endpoint (both shapes)
 	try {
-		return await createRoom(env, token, {
+		return await createRoomNew(env, token, {
 			name: `${username} — Private`,
-			workspaceId,
-			visibility: "private"
+			workspaceId
 		});
 	} catch (e) {
-		// If the NEW endpoint isn't available in tenant (404), try legacy shape
-		if (Number(e?.status) !== 404) throw e;
+		// If the new endpoint itself is missing (common in older tenants), fall through on 404
+		if (Number(e?.status) !== 404) {
+			// Non-404 failure after trying both shapes → rethrow
+			throw e;
+		}
 	}
 
-	// Legacy fallback: POST /workspaces/:workspaceId/rooms with { name, type: "private" }
+	// Legacy fallback
 	const legacyUrl = `${apiBase(env)}/workspaces/${workspaceId}/rooms`;
 	return fetchJSON(legacyUrl, {
 		method: "POST",
