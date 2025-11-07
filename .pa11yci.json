@@ -11,8 +11,8 @@
     "level": "error"
   },
   "urls": [
-    "https://researchops.pages.dev/",
-    "https://researchops.pages.dev/pages/start/",
-    "https://researchops.pages.dev/pages/projects/"
+    "http://localhost:8080/",
+    "http://localhost:8080/pages/start/index.html",
+    "http://localhost:8080/pages/projects/index.html"
   ]
 }

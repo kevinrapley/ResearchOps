@@ -489,12 +489,7 @@ export class MuralServicePart {
         activeWorkspaceId: getActiveWorkspaceIdFromMe(me)
       }, 200, cors);
     } catch (e) {
-      const status = Number(e?.status) || 500;
-      const detail = String(e?.message || e);
-      if (status === 401) {
-        return this.root.json({ ok: false, reason: "not_authenticated", detail }, 401, cors);
-      }
-      return this.root.json({ ok: false, error: "me_failed", detail }, status, cors);
+      return this.root.json({ ok: false, error: "me_failed", detail: String(e?.message || e) }, 502, cors);
     }
   }
 
