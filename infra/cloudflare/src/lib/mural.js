@@ -96,6 +96,36 @@ export async function getMe(env, accessToken) {
 }
 
 /**
+ * Retrieve metadata for a workspace by ID/key.
+ * Tolerates either numeric IDs or legacy short codes.
+ */
+export async function getWorkspace(env, accessToken, workspaceId) {
+  const id = String(workspaceId || "").trim();
+  if (!id) throw new Error("workspaceId required");
+
+  const url = `https://app.mural.co/api/public/v1/workspaces/${id}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const js = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw Object.assign(new Error(`Get workspace failed: ${res.status}`), { status: res.status, body: js });
+  }
+  return js;
+}
+
+/** List workspaces available to the current user (single page). */
+export async function listUserWorkspaces(env, accessToken, { cursor } = {}) {
+  const url = new URL("https://app.mural.co/api/public/v1/users/me/workspaces");
+  if (cursor) url.searchParams.set("cursor", cursor);
+
+  const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${accessToken}` } });
+  const js = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw Object.assign(new Error(`List user workspaces failed: ${res.status}`), { status: res.status, body: js });
+  }
+  return js || {};
+}
+
+/**
  * Extract active workspace ID from /users/me response.
  * Supports multiple shapes: activeWorkspace.id, activeWorkspaceId, lastActiveWorkspace.
  */
