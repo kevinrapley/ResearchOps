@@ -17,21 +17,27 @@
 </head>
 
 <body>
-	<x-include
-		src="/partials/header.html"
-		vars='{"active":"Home","subtitle":"Objective orientated applied user research done well."}'>
-	</x-include>
+        <x-include
+                src="/partials/header.html"
+                vars='{"active":"Home","subtitle":"Objective orientated applied user research done well."}'>
+        </x-include>
 
-	<main class="govuk-body" role="main">
-		<section aria-labelledby="getting-started">
-			<div class="grid">
-				<!-- CARD 1 -->
-				<article class="card">
-					<div class="thumb" aria-hidden="true"><span>Illustration</span></div>
-					<p class="eyebrow" id="getting-started">Getting started</p>
-					<h2 class="govuk-heading-l" style="margin-top:0">Start a new research project</h2>
+        <main class="govuk-body" role="main">
+                <header class="page-intro">
+                        <h1 class="govuk-heading-xl" id="home-title">ResearchOps Demo Suite</h1>
+                        <p class="lede">Explore how we run applied user research with strong operations, governance, and accessibility baked in.</p>
+                </header>
 
-					<h3 class="govuk-heading-s" style="margin-top:8px">How might we define the research project?</h3>
+                <section class="card-section" aria-labelledby="card-section-title">
+                        <h2 class="govuk-heading-l" id="card-section-title">Choose a journey to explore</h2>
+                        <div class="grid">
+                                <!-- CARD 1 -->
+                                <article class="card">
+                                        <div class="thumb" aria-hidden="true"><span>Illustration</span></div>
+                                        <p class="eyebrow">Getting started</p>
+                                        <h3 class="govuk-heading-l card__heading">Start a new research project</h3>
+
+                                        <h4 class="govuk-heading-s card__question">How might we define the research project?</h4>
 					<p class="lede">
 						A service to use when beginning a new research project. Your research project
 						will be defined within its service phase and project status before adding
@@ -49,11 +55,11 @@
 				<article class="card">
 					<div class="thumb" aria-hidden="true"><span>Illustration</span></div>
 					<p class="eyebrow">Team alignment</p>
-					<h2 class="govuk-heading-l" style="margin-top:0">Set clear research objectives</h2>
+                                        <h3 class="govuk-heading-l card__heading">Set clear research objectives</h3>
 
-					<h3 class="govuk-heading-s" style="margin-top:8px">
-						How might we overcome the impact of unclear objectives in user research?
-					</h3>
+                                        <h4 class="govuk-heading-s card__question">
+                                                How might we overcome the impact of unclear objectives in user research?
+                                        </h4>
 					<p class="lede">
 						A root cause of product or service failure is a misalignment of objectives between stakeholders and research, design and delivery teams.
 					</p>
@@ -69,11 +75,11 @@
 				<article class="card">
 					<div class="thumb" aria-hidden="true"><span>Illustration</span></div>
 					<p class="eyebrow">Recruitment</p>
-					<h2 class="govuk-heading-l" style="margin-top:0">Recruit participants for user research studies</h2>
+                                        <h3 class="govuk-heading-l card__heading">Recruit participants for user research studies</h3>
 
-					<h3 class="govuk-heading-s" style="margin-top:8px">
-						How might we ensure that participant recruitment reflects the diversity and needs of the service&rsquo;s real users?
-					</h3>
+                                        <h4 class="govuk-heading-s card__question">
+                                                How might we ensure that participant recruitment reflects the diversity and needs of the service&rsquo;s real users?
+                                        </h4>
 					<p class="lede">
 						When recruitment is poorly planned or too narrow, research can produce misleading findings. If the participant pool doesn&rsquo;t reflect actual user groups, design decisions risk being biased, exclusionary, or ineffective once the service goes live.
 					</p>
