@@ -3,7 +3,7 @@
  * @module service/internals/mural
  * @summary Mural routes logic (OAuth + provisioning + journal sync) with Airtable-backed board mapping.
  *
- * Airtable table expected: "Mural Boards"
+ * Airtable table expected: "Mural Boards" (override with env.AIRTABLE_TABLE_MURAL_BOARDS).
  *  - Project        (Link to "Projects" or Single line text)
  *  - UID            (Single line text)
  *  - Purpose        (Single select e.g., "reflexive_journal")
@@ -31,7 +31,9 @@ import {
   createMural,
   getMural,
   getMe,
+  getWorkspace,
   getActiveWorkspaceIdFromMe,
+  listUserWorkspaces,
   getWidgets,
   createSticky,
   updateSticky,
@@ -65,7 +67,10 @@ function _airtableHeaders(env) {
 }
 
 function _boardsTableName(env) {
-  return env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
+  const override = typeof env.AIRTABLE_TABLE_MURAL_BOARDS === "string"
+    ? env.AIRTABLE_TABLE_MURAL_BOARDS.trim()
+    : "";
+  return override || "Mural Boards";
 }
 
 function _encodeTableUrl(env, tableName) {
@@ -230,6 +235,143 @@ async function _kvProjectMapping(env, { uid, projectId }) {
   try { return JSON.parse(raw); } catch { return null; }
 }
 
+/* ───────────────────────── Workspace helpers ───────────────────────── */
+
+function _workspaceCandidateShapes(entry) {
+  if (!entry || typeof entry !== "object") return [];
+  const shapes = [entry];
+  if (entry.value && typeof entry.value === "object") shapes.push(entry.value);
+  if (entry.workspace && typeof entry.workspace === "object") {
+    shapes.push(entry.workspace);
+    if (entry.workspace.value && typeof entry.workspace.value === "object") {
+      shapes.push(entry.workspace.value);
+    }
+  }
+
+  const seen = new Set();
+  const candidates = [];
+
+  for (const shape of shapes) {
+    if (!shape || typeof shape !== "object" || seen.has(shape)) continue;
+    seen.add(shape);
+    const id = shape.id || shape.workspaceId || shape.workspaceID || null;
+    const key = shape.key || shape.shortId || shape.workspaceKey || shape.slug || null;
+    const name = shape.name || shape.title || shape.displayName || null;
+    const companyId = shape.companyId || shape.company?.id || null;
+    const shortId = shape.shortId || null;
+
+    if (id || key || shortId) {
+      candidates.push({ id, key, shortId, name, companyId });
+    }
+  }
+
+  return candidates;
+}
+
+async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } = {}) {
+  const hint = String(workspaceHint || "").trim();
+  if (!hint) return null;
+
+  const hintLower = hint.toLowerCase();
+
+  // First attempt: treat hint as actual workspace id.
+  try {
+    const direct = await getWorkspace(env, accessToken, hint);
+    const val = direct?.value || direct || {};
+    return {
+      id: val.id || val.workspaceId || hint,
+      key: val.key || val.shortId || hint,
+      name: val.name || val.title || val.displayName || null
+    };
+  } catch (err) {
+    if (Number(err?.status || 0) && Number(err.status) !== 404) throw err;
+  }
+
+  // Fallback: list workspaces available to user and match against hint.
+  const matches = [];
+  let cursor = null;
+  const maxPages = 4;
+
+  for (let page = 0; page < maxPages; page += 1) {
+    let payload;
+    try {
+      payload = await listUserWorkspaces(env, accessToken, { cursor });
+    } catch (err) {
+      if (Number(err?.status || 0) === 404) break;
+      throw err;
+    }
+
+    const list = Array.isArray(payload?.value)
+      ? payload.value
+      : Array.isArray(payload?.workspaces)
+        ? payload.workspaces
+        : [];
+
+    for (const entry of list) {
+      for (const cand of _workspaceCandidateShapes(entry)) {
+        matches.push(cand);
+      }
+    }
+
+    cursor = payload?.cursor
+      || payload?.nextCursor
+      || payload?.pagination?.nextCursor
+      || payload?.pagination?.next
+      || null;
+
+    if (!cursor) break;
+  }
+
+  const matched = matches.find(cand => {
+    const values = [cand.id, cand.key, cand.shortId]
+      .filter(Boolean)
+      .map(v => String(v).toLowerCase());
+    return values.includes(hintLower);
+  }) || matches.find(cand => {
+    if (!companyId) return false;
+    const cid = String(cand.companyId || "").toLowerCase();
+    return Boolean(cid && cid === String(companyId).toLowerCase() && (cand.name || "").toLowerCase() === hintLower);
+  });
+
+  if (matched) {
+    const idCandidate = matched.id || matched.key || matched.shortId || hint;
+    try {
+      const detail = await getWorkspace(env, accessToken, idCandidate);
+      const val = detail?.value || detail || {};
+      return {
+        id: val.id || val.workspaceId || idCandidate,
+        key: val.key || val.shortId || matched.key || matched.shortId || hint,
+        name: val.name || val.title || val.displayName || matched.name || null
+      };
+    } catch (err) {
+      if (Number(err?.status || 0) && Number(err.status) !== 404) throw err;
+      return {
+        id: idCandidate,
+        key: matched.key || matched.shortId || idCandidate,
+        name: matched.name || null
+      };
+    }
+  }
+
+  // Final attempt: composite "company:workspace" id (observed in some tenants).
+  if (companyId) {
+    const composite = `${String(companyId).trim()}:${hint}`;
+    try {
+      const detail = await getWorkspace(env, accessToken, composite);
+      const val = detail?.value || detail || {};
+      return {
+        id: val.id || val.workspaceId || composite,
+        key: val.key || val.shortId || hint,
+        name: val.name || val.title || val.displayName || null
+      };
+    } catch (err) {
+      if (Number(err?.status || 0) && Number(err.status) !== 404) throw err;
+    }
+  }
+
+  return { id: hint, key: hint };
+}
+
 /* ───────────────────────── Shape helpers ───────────────────────── */
 
 // Coerce an ID out of many possible Mural shapes
@@ -260,16 +402,27 @@ export class MuralServicePart {
     if (!inCompany) throw Object.assign(new Error("not_in_home_office_workspace"), { code: 403 });
 
     const me = await getMe(env, accessToken);
-    const wsId = getActiveWorkspaceIdFromMe(me);
-    if (!wsId) throw new Error("no_active_workspace");
-    return { id: wsId };
+    const wsHint = getActiveWorkspaceIdFromMe(me);
+    if (!wsHint) throw new Error("no_active_workspace");
+
+    const companyId = me?.value?.companyId || me?.companyId || null;
+    const resolved = await _resolveWorkspace(env, accessToken, { workspaceHint: wsHint, companyId });
+    if (!resolved?.id) {
+      return { id: wsHint, key: wsHint };
+    }
+
+    return {
+      id: resolved.id,
+      key: resolved.key || null,
+      name: resolved.name || null
+    };
   }
 
   /**
    * Resolve a Mural board by (projectId[, uid], purpose).
    * Priority:
    *  1) explicitMuralId (if provided)
-   *  2) Airtable "Mural Boards" (cached)
+   *  2) Airtable "Mural Boards" table (configurable via env.AIRTABLE_TABLE_MURAL_BOARDS) cached in-memory
    *  2b) KV fallback (Airtable not yet visible)
    *  3) env.MURAL_REFLEXIVE_MURAL_ID (deprecated)
    */
