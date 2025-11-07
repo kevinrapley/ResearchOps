@@ -25,44 +25,9 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Start local server
+      - name: Check production site availability
         run: |
-          npx --yes http-server public -p 8080 --silent -c-1 &
-          echo $! > /tmp/http.pid
-
-      - name: Wait for server (http://localhost:8080)
-        run: |
-          for attempt in {1..60}; do
-            if curl -fsS http://localhost:8080/ > /dev/null; then
-              echo "Server is ready."
-              exit 0
-            fi
-            echo "[$attempt/60] Waiting for server..."
-            sleep 1
-          done
-          echo "Server failed to start within expected time." >&2
-          exit 1
-
-      # Provide URLs to pa11y-ci. If you already have a pa11yci.json in the repo,
-      # you can remove this step.
-      - name: Create pa11yci.json
-        run: |
-          cat > pa11yci.json <<'JSON'
-          {
-            "defaults": {
-              "standard": "WCAG2AA",
-              "timeout": 30000,
-              "includeNotices": false,
-              "includeWarnings": false,
-              "maxWait": 30000
-            },
-            "urls": [
-              "http://localhost:8080/",
-              "http://localhost:8080/pages/start/index.html",
-              "http://localhost:8080/pages/projects/index.html"
-            ]
-          }
-          JSON
+          curl -fsS --retry 5 --retry-delay 5 https://researchops.pages.dev/ > /dev/null
 
       - name: Run pa11y-ci
         run: npx --yes pa11y-ci --reporter json > pa11y-report.json
@@ -80,13 +45,8 @@ jobs:
           path: |
             pa11y-report.json
             pa11y-report.html
-            pa11yci.json
           if-no-files-found: error
           retention-days: 14
-
-      - name: Stop server
-        if: always()
-        run: kill "$(cat /tmp/http.pid)" || true
 
       - name: Add summary
         if: always()
