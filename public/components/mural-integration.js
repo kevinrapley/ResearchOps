@@ -31,17 +31,48 @@
 	const byId = (id) => document.getElementById(id);
 	const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-	async function jsonFetch(url, init) {
-		const res = await fetch(url, init);
-		const txt = await res.text().catch(() => "");
+	function now() {
+		const d = new Date();
+		return d.toTimeString().split(" ")[0];
+	}
+
+	function logNetStart(method, url) {
+		console.log(`${now()}[net] ${method.toUpperCase()} ${url}`);
+	}
+
+	function logNetEnd(method, url, status, ms, bodyPreview) {
+		const preview = typeof bodyPreview === "string" ? bodyPreview : JSON.stringify(bodyPreview || {});
+		console.log(`${now()}[net] ← ${method.toUpperCase()} ${url} ${status} (${ms}ms) ${preview}`);
+	}
+
+	async function jsonFetch(url, init = {}) {
+		const method = (init.method || "GET").toUpperCase();
+		const started = performance.now();
+		logNetStart(method, url);
+		let res;
+		let txt = "";
+		try {
+			res = await fetch(url, init);
+			txt = await res.text().catch(() => "");
+		} catch (e) {
+			const dur = Math.max(1, Math.round(performance.now() - started));
+			console.warn(`${now()}[net] × ${method} ${url} network error after ${dur}ms`, e);
+			throw e;
+		}
+		const dur = Math.max(1, Math.round(performance.now() - started));
+
 		let body = {};
-		try { body = txt ? JSON.parse(txt) : {}; } catch { /* noop */ }
+		try { body = txt ? JSON.parse(txt) : {}; } catch { body = { raw: txt }; }
+
 		if (!res.ok) {
+			logNetEnd(method, url, res.status, dur, body);
 			const err = new Error((body && (body.error || body.message)) || `HTTP ${res.status}`);
 			err.status = res.status;
 			err.body = body;
 			throw err;
 		}
+
+		logNetEnd(method, url, res.status, dur, body);
 		return body;
 	}
 
@@ -96,25 +127,27 @@
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
 		els.btnSetup.textContent = 'Create “Reflexive Journal”';
-                els.btnSetup.onclick = async () => {
-                        try {
-                                els.btnSetup.disabled = true;
-                                pill(els.status, "neutral", "Creating board…");
+		els.btnSetup.onclick = async () => {
+			try {
+				els.btnSetup.disabled = true;
+				pill(els.status, "neutral", "Creating board…");
 
-                                const body = {
-                                        uid: uid(),
-                                        projectId,
-                                        projectName
-                                };
+				const body = {
+					uid: uid(),
+					projectId,
+					projectName
+				};
 
-                                const activeWorkspaceId = window.__muralActiveWorkspaceId;
-                                if (typeof activeWorkspaceId === "string" && activeWorkspaceId.trim()) {
-                                        body.workspaceId = activeWorkspaceId.trim();
-                                }
+				// Pass through the active workspace if known (harmless if ignored)
+				const activeWorkspaceId = window.__muralActiveWorkspaceId;
+				if (typeof activeWorkspaceId === "string" && activeWorkspaceId.trim()) {
+					body.workspaceId = activeWorkspaceId.trim();
+				}
 
-                                const js = await jsonFetch(`${API_ORIGIN}/api/mural/setup`, {
-                                        method: "POST",
+				const js = await jsonFetch(`${API_ORIGIN}/api/mural/setup`, {
+					method: "POST",
 					headers: { "content-type": "application/json" },
+					credentials: "include",
 					body: JSON.stringify(body)
 				});
 
@@ -127,9 +160,9 @@
 					setSetupAsOpen(projectId, boardUrl || null);
 					pill(els.status, "good", boardUrl ? "Connected" : "Created (open from Mural)");
 					if (boardUrl) window.open(boardUrl, "_blank", "noopener");
-					console.log("[mural] created + registered board", { muralId, boardUrl });
+					console.log(`${now()}[mural] ✓ setup completed:`, { muralId, boardUrl });
 				} else {
-					// No mural id (should be rare) — still try resolve to pick up KV/AT mapping
+					// No mural id (rare). Try resolve to pick up KV/Airtable mapping.
 					try {
 						const r = await jsonFetch(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
 						if (r?.boardUrl) {
@@ -144,9 +177,14 @@
 					els.btnSetup.disabled = false;
 				}
 			} catch (err) {
-				console.warn("[mural] setup failed", err);
+				console.warn(`${now()}[mural] setup failed`, err);
+				// Keep upstream detail in console. Show a clear, action-based message to users.
 				const code = Number(err?.status || 0);
-				if (code === 401) {
+				const upstream = err?.body?.upstream || err?.body;
+				if (code === 404 && upstream && upstream.code === "PATH_NOT_FOUND") {
+					// Path issue (e.g. wrong endpoint or missing room id); user sees a simple message.
+					pill(els.status, "bad", "We couldn’t create the board. Try again in a minute.");
+				} else if (code === 401) {
 					pill(els.status, "warn", "Please connect Mural first");
 				} else if (code === 403) {
 					pill(els.status, "bad", "Mural account not in Home Office workspace");
@@ -188,9 +226,11 @@
 	/* ─────────────── API wrappers ─────────────── */
 
 	async function verify() {
-		const js = await jsonFetch(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
+		const url = `${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`;
+		const js = await jsonFetch(url, { credentials: "include" });
 		// cache workspace id for client-side synthetic URL if needed
 		window.__muralActiveWorkspaceId = js?.activeWorkspaceId || window.__muralActiveWorkspaceId || null;
+		console.log(`${now()}[mural] ✓ verify completed:`, JSON.stringify(js));
 		return js;
 	}
 
@@ -198,7 +238,8 @@
 		const cached = RESOLVE_CACHE.get(projectId);
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
-		const js = await jsonFetch(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
+		const url = `${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`;
+		const js = await jsonFetch(url, { credentials: "include" });
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
 		if (rec.muralId || rec.boardUrl) RESOLVE_CACHE.set(projectId, rec);
 		return rec;
@@ -218,7 +259,6 @@
 		// Step 1: Verify OAuth + workspace
 		try {
 			const vr = await verify();
-			console.log("[mural] ✓ verify completed:", vr);
 			pill(els.status, "good", "Connected");
 		} catch (err) {
 			const code = Number(err?.status || 0);
@@ -238,7 +278,7 @@
 
 		// Step 2: Resolve existing board (requires a project name to avoid UI flicker)
 		if (!projectName) {
-			console.log("[mural] updateSetupState → projectName not ready; waiting…");
+			console.log(`${now()}[mural] updateSetupState → projectName not ready; waiting…`);
 			pill(els.status, "neutral", "Preparing project details…");
 			// Wait briefly for the page script to populate data-project-name
 			for (let i = 0; i < 10; i++) {
@@ -251,7 +291,7 @@
 		try {
 			const res = await resolveBoard(projectId);
 			if (res?.muralId || res?.boardUrl) {
-				console.log("[mural] resolved board", res);
+				console.log(`${now()}[mural] resolved board`, res);
 				setSetupAsOpen(projectId, res.boardUrl || null);
 				pill(els.status, "good", "Connected");
 			} else {
@@ -265,17 +305,17 @@
 				// Not found → allow create
 				setSetupAsCreate(projectId, getProjectName() || "Project");
 				pill(els.status, "neutral", "No board yet");
-				console.log("[mural] resolve returned 404 not_found");
+				console.log(`${now()}[mural] resolve returned 404 not_found`);
 			} else if (code === 500 && /airtable_list_failed/i.test(tag)) {
 				// Airtable hiccup → show friendly text, keep Connect green
 				setSetupAsCreate(projectId, getProjectName() || "Project");
 				pill(els.status, "warn", "Couldn’t check the board mapping just now (Airtable). You can still create it.");
-				console.warn("[mural] resolve failed due to Airtable listing issue");
+				console.warn(`${now()}[mural] resolve failed due to Airtable listing issue`);
 			} else {
 				// Generic trouble
 				setSetupAsCreate(projectId, getProjectName() || "Project");
 				pill(els.status, "warn", "We couldn’t check Mural just now. You can still create the board.");
-				console.warn("[mural] resolve failed", err);
+				console.warn(`${now()}[mural] resolve failed`, err);
 			}
 		}
 	}
@@ -318,10 +358,13 @@
 		// Defensive: if the section isn’t on the page, do nothing.
 		if (!els.section) return;
 
-		// Early health check to reassure users (non-blocking)
+		// Early health check (non-blocking)
 		jsonFetch(`${API_ORIGIN}/api/health`).then(h => {
-			console.log("[mural] health check OK:", h);
+			console.log(`${now()}[mural] health check OK:`, h);
 		}).catch(() => { /* ignore */ });
+
+		// Startup banner to mirror your logs
+		console.log(`${now()}🐛 Debug console initialized`);
 
 		observeProjectName();
 		updateSetupState();
