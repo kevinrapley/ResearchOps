@@ -1,33 +1,30 @@
 <!doctype html>
-<html lang="en-GB" 
-  data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev" 
-  prefix="
+<html lang="en-GB" data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev" prefix="
     dcterms: http://purl.org/dc/terms/
     schema:  https://schema.org/">
-<html lang="en" >
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Project Dashboard — ResearchOps</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Project Dashboard — ResearchOps</title>
 
-  <!-- Project name hint for integrations (kept in sync by renderProject) -->
-  <meta name="project:name" content="">
+	<!-- Project name hint for integrations (kept in sync by renderProject) -->
+	<meta name="project:name" content="">
 
-  <!-- Foundations -->
-  <link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-  <link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-  <link rel="stylesheet" href="/css/screen.css" media="screen" />
-  <script type="module" src="/components/layout.js"></script>
+	<!-- Foundations -->
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<script type="module" src="/components/layout.js"></script>
 </head>
 
 <body typeof="schema:WebPage" resource="#page" about="#page" vocab="https://schema.org/">
 
-  <!-- Page metadata -->
-  <meta property="schema:name" content="Project Dashboard — ResearchOps" />
-  <meta property="schema:creator" content="Home Office ResearchOps Platform" />
-  <meta property="schema:dateModified" content="2025-10-29" />
-  <meta property="dcterms:language" content="en-GB" />
+	<!-- Page metadata -->
+	<meta property="schema:name" content="Project Dashboard — ResearchOps" />
+	<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+	<meta property="schema:dateModified" content="2025-10-29" />
+	<meta property="dcterms:language" content="en-GB" />
 
 	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
@@ -36,581 +33,580 @@
 		}'>
 	</x-include>
 
-  <main class="govuk-body" role="main" data-project-name="" typeof="schema:ResearchProject" resource="#project">
+	<main class="govuk-body" role="main" data-project-name="" typeof="schema:ResearchProject" resource="#project">
 
-    <!-- BREADCRUMBS -->
-    <nav class="breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
-      <ol>
-        <li property="schema:itemListElement" typeof="schema:ListItem">
-          <a href="/pages/projects/" property="schema:item" typeof="schema:Thing">
-            <span property="schema:name">Projects</span>
-          </a>
-          <meta property="schema:position" content="1" />
-        </li>
-        <li property="schema:itemListElement" typeof="schema:ListItem">
-          <a id="breadcrumb-project" href="#" property="schema:item" typeof="schema:Thing">
-            <span property="schema:name">Project</span>
-          </a>
-          <meta property="schema:position" content="2" />
-        </li>
-        <li property="schema:itemListElement" typeof="schema:ListItem" aria-current="page">
-          <span property="schema:name">Dashboard</span>
-          <meta property="schema:position" content="3" />
-        </li>
-      </ol>
-    </nav>
+		<!-- BREADCRUMBS -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
+			<ol>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Projects</span>
+					</a>
+					<meta property="schema:position" content="1" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a id="breadcrumb-project" href="#" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Project</span>
+					</a>
+					<meta property="schema:position" content="2" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem" aria-current="page">
+					<span property="schema:name">Dashboard</span>
+					<meta property="schema:position" content="3" />
+				</li>
+			</ol>
+		</nav>
 
-    <!-- HERO -->
-    <div class="dashboard-hero">
-      <p id="eyebrow-org" class="project-org" property="schema:sourceOrganization" typeof="schema:Organization"></p>
+		<!-- HERO -->
+		<div class="dashboard-hero">
+			<p id="eyebrow-org" class="project-org" property="schema:sourceOrganization" typeof="schema:Organization"></p>
 
-      <h1 id="project-title" class="govuk-heading-l" property="schema:name"></h1>
+			<h1 id="project-title" class="govuk-heading-l" property="schema:name"></h1>
 
-      <p id="project-subtitle" class="lede" property="schema:description"></p>
-    </div>
+			<p id="project-subtitle" class="lede" property="schema:description"></p>
+		</div>
 
-    <!-- KEY INFORMATION -->
-    <section class="kv" typeof="schema:ResearchProject">
-      <ul class="kv__list">
-        <li><span class="kv__term">Service Stage</span>&nbsp;
-          <span class="kv__desc" id="kv-service-stage" property="schema:phase">–</span>
-        </li>
-        <li><span class="kv__term">Project Stage</span>&nbsp;
-          <span class="kv__desc" id="kv-project-stage" property="schema:projectStatus">–</span>
-        </li>
-        <li><span class="kv__term">Client Name</span>&nbsp;
-          <span class="kv__desc" id="kv-client-name" property="schema:client">–</span>
-        </li>
-        <li><span class="kv__term">Lead Researcher</span>&nbsp;
-          <span class="kv__desc" id="kv-lead-researcher" property="schema:author" typeof="schema:Person"></span>
-        </li>
-        <li><span class="kv__term">Lead Researcher Email</span>&nbsp;
-          <a class="kv__desc" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
-        </li>
-      </ul>
-    </section>
+		<!-- KEY INFORMATION -->
+		<section class="kv" typeof="schema:ResearchProject">
+			<ul class="kv__list">
+				<li><span class="kv__term">Service Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-service-stage" property="schema:phase">–</span>
+				</li>
+				<li><span class="kv__term">Project Stage</span>&nbsp;
+					<span class="kv__desc" id="kv-project-stage" property="schema:projectStatus">–</span>
+				</li>
+				<li><span class="kv__term">Client Name</span>&nbsp;
+					<span class="kv__desc" id="kv-client-name" property="schema:client">–</span>
+				</li>
+				<li><span class="kv__term">Lead Researcher</span>&nbsp;
+					<span class="kv__desc" id="kv-lead-researcher" property="schema:author" typeof="schema:Person"></span>
+				</li>
+				<li><span class="kv__term">Lead Researcher Email</span>&nbsp;
+					<a class="kv__desc" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
+				</li>
+			</ul>
+		</section>
 
-    <!-- NAV BOARD -->
-    <nav class="board" typeof="schema:SiteNavigationElement">
-      <a href="/pages/project/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
-      <a href="#stakeholders" class="board__item" property="schema:relatedLink">Stakeholder Management</a>
-      <a href="#planning" class="board__item" property="schema:relatedLink">Research Planning</a>
-      <a href="#outcomes" class="board__item" property="schema:relatedLink">Research Outcomes</a>
-    </nav>
+		<!-- NAV BOARD -->
+		<nav class="board" typeof="schema:SiteNavigationElement">
+			<a href="/pages/project/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
+			<a href="#stakeholders" class="board__item" property="schema:relatedLink">Stakeholder Management</a>
+			<a href="#planning" class="board__item" property="schema:relatedLink">Research Planning</a>
+			<a href="#outcomes" class="board__item" property="schema:relatedLink">Research Outcomes</a>
+		</nav>
 
-    <!-- MURAL INTEGRATIONS -->
-    <section id="mural-integration" class="card">
-      <h2 class="govuk-heading-m">Mural</h2>
+		<!-- MURAL INTEGRATIONS -->
+		<section id="mural-integration" class="card">
+			<h2 class="govuk-heading-m">Mural</h2>
 
-      <p id="mural-status" class="status" aria-live="polite" aria-atomic="true">
-        <span class="pill pill--neutral">Checking&hellip;</span>
-      </p>
+			<p id="mural-status" class="status" aria-live="polite" aria-atomic="true">
+				<span class="pill pill--neutral">Checking&hellip;</span>
+			</p>
 
-      <div class="actions">
-        <button id="mural-connect" class="btn" type="button">Connect Mural</button>
-        <button id="mural-setup" class="btn btn--secondary" type="button" disabled>Create “Reflexive Journal”</button>
-      </div>
+			<div class="actions">
+				<button id="mural-connect" class="btn" type="button">Connect Mural</button>
+				<button id="mural-setup" class="btn btn--secondary" type="button" disabled>Create “Reflexive Journal”</button>
+			</div>
 
-      <p class="hint">
-        We’ll verify your Mural account is in the Home Office workspace, create a folder named after this project in your private room, and add a board called <em>Reflexive Journal</em>.
-      </p>
-    </section>
+			<p class="hint">
+				We’ll verify your Mural account is in the Home Office workspace, create a folder named after this project in your private room, and add a board called <em>Reflexive Journal</em>.
+			</p>
+		</section>
 
-    <!-- STAKEHOLDERS -->
-    <section id="stakeholders" class="section">
-      <header class="section__header">
-        <h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
-        <button type="button" class="btn btn--outline">+ Add Stakeholder</button>
-      </header>
-      <div class="section__body section__grid">
-        <div>
-          <h3 class="govuk-heading-s">Stakeholders</h3>
-          <ul class="list-unstyled list-divided" id="stakeholders-list">
-            <li>No stakeholders yet.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="govuk-heading-s">Objectives</h3>
-          <ul class="list-unstyled list-divided" id="objectives-list">
-            <li>No objectives yet.</li>
-          </ul>
-          <button type="button" class="btn btn--outline">+ Add Objective</button>
-        </div>
-      </div>
-    </section>
+		<!-- STAKEHOLDERS -->
+		<section id="stakeholders" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
+				<button type="button" class="btn btn--outline">+ Add Stakeholder</button>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">Stakeholders</h3>
+					<ul class="list-unstyled list-divided" id="stakeholders-list">
+						<li>No stakeholders yet.</li>
+					</ul>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Objectives</h3>
+					<ul class="list-unstyled list-divided" id="objectives-list">
+						<li>No objectives yet.</li>
+					</ul>
+					<button type="button" class="btn btn--outline">+ Add Objective</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- RESEARCH PLANNING -->
-    <section id="planning" class="section">
-      <header class="section__header">
-        <h2 class="section__title govuk-heading-m">Research Planning</h2>
-      </header>
-      <div class="section__body section__grid">
-        <div>
-          <h3 class="govuk-heading-s">User Groups</h3>
-          <ul class="list-unstyled list-divided" id="user-groups-list">
-            <li>No user groups yet.</li>
-          </ul>
-          <button type="button" class="btn btn--outline">+ Add User Group</button>
-        </div>
-        <div>
-          <h3 class="govuk-heading-s">Participants</h3>
-          <ul class="list-unstyled list-divided" id="participants-list">
-            <li>No participants yet.</li>
-          </ul>
-          <button type="button" class="btn btn--outline">+ Add Participant</button>
-          <div class="dropzone" aria-label="Bulk upload participants">
-            <p>Bulk upload participants via CSV</p>
-            <input type="file" accept=".csv" aria-label="Upload participants CSV">
-          </div>
-        </div>
-      </div>
-    </section>
+		<!-- RESEARCH PLANNING -->
+		<section id="planning" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Planning</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">User Groups</h3>
+					<ul class="list-unstyled list-divided" id="user-groups-list">
+						<li>No user groups yet.</li>
+					</ul>
+					<button type="button" class="btn btn--outline">+ Add User Group</button>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Participants</h3>
+					<ul class="list-unstyled list-divided" id="participants-list">
+						<li>No participants yet.</li>
+					</ul>
+					<button type="button" class="btn btn--outline">+ Add Participant</button>
+					<div class="dropzone" aria-label="Bulk upload participants">
+						<p>Bulk upload participants via CSV</p>
+						<input type="file" accept=".csv" aria-label="Upload participants CSV">
+					</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- RESEARCH OUTCOMES -->
-    <section id="outcomes" class="section">
-      <header class="section__header">
-        <h2 class="section__title govuk-heading-m">Research Outcomes</h2>
-      </header>
-      <div class="section__body section__grid">
-        <div>
-          <h3 class="govuk-heading-s">Studies</h3>
-          <ul class="list-unstyled list-divided" id="studies-list">
-            <li>No studies yet.</li>
-          </ul>
-          <button id="btn-add-study" class="btn btn--outline" type="button">+ Add Study</button>
-        </div>
-        <div>
-          <h3 class="govuk-heading-s">Insights</h3>
-          <ul class="list-unstyled list-divided" id="insights-list">
-            <li>No insights yet.</li>
-          </ul>
-          <button type="button" class="btn btn--outline">+ Add Insight</button>
-        </div>
-      </div>
-    </section>
+		<!-- RESEARCH OUTCOMES -->
+		<section id="outcomes" class="section">
+			<header class="section__header">
+				<h2 class="section__title govuk-heading-m">Research Outcomes</h2>
+			</header>
+			<div class="section__body section__grid">
+				<div>
+					<h3 class="govuk-heading-s">Studies</h3>
+					<ul class="list-unstyled list-divided" id="studies-list">
+						<li>No studies yet.</li>
+					</ul>
+					<button id="btn-add-study" class="btn btn--outline" type="button">+ Add Study</button>
+				</div>
+				<div>
+					<h3 class="govuk-heading-s">Insights</h3>
+					<ul class="list-unstyled list-divided" id="insights-list">
+						<li>No insights yet.</li>
+					</ul>
+					<button type="button" class="btn btn--outline">+ Add Insight</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- ADD STUDY MODAL -->
-    <dialog id="study-dialog" aria-labelledby="study-title" aria-describedby="study-desc" aria-modal="true" role="dialog">
-      <form method="dialog" style="min-width: min(90vw, 560px);">
-        <header class="actions-bar" style="justify-content:space-between;">
-          <h3 id="study-title" class="govuk-heading-m" style="margin:0;">Add Study</h3>
-          <button type="button" class="btn btn--outline" id="study-close" aria-label="Close add study dialog">✕</button>
-        </header>
+		<!-- ADD STUDY MODAL -->
+		<dialog id="study-dialog" aria-labelledby="study-title" aria-describedby="study-desc" aria-modal="true" role="dialog">
+			<form method="dialog" style="min-width: min(90vw, 560px);">
+				<header class="actions-bar" style="justify-content:space-between;">
+					<h3 id="study-title" class="govuk-heading-m" style="margin:0;">Add Study</h3>
+					<button type="button" class="btn btn--outline" id="study-close" aria-label="Close add study dialog">✕</button>
+				</header>
 
-        <p id="study-desc" class="lede">Create a study and capture its method, title and description.</p>
+				<p id="study-desc" class="lede">Create a study and capture its method, title and description.</p>
 
-        <label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
-        <select id="study-method" class="govuk-input" required aria-required="true">
-          <option value="">Choose something</option>
-          <option>Card Sort</option>
-          <option>Contextual Inquiry</option>
-          <option>Customer Satisfaction Survey</option>
-          <option>Diary Study</option>
-          <option>Existing Research Analysis</option>
-          <option>Expert Review</option>
-          <option>Stakeholder Interview</option>
-          <option>Survey</option>
-          <option>Tree Test</option>
-          <option>Usability Test</option>
-          <option>User Interview</option>
-        </select>
+				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
+				<select id="study-method" class="govuk-input" required aria-required="true">
+					<option value="">Choose something</option>
+					<option>Card Sort</option>
+					<option>Contextual Inquiry</option>
+					<option>Customer Satisfaction Survey</option>
+					<option>Diary Study</option>
+					<option>Existing Research Analysis</option>
+					<option>Expert Review</option>
+					<option>Stakeholder Interview</option>
+					<option>Survey</option>
+					<option>Tree Test</option>
+					<option>Usability Test</option>
+					<option>User Interview</option>
+				</select>
 
-        <!-- New optional title -->
-        <label class="govuk-label" for="study-title-input" style="margin-top:8px;">Study Title <span class="govuk-hint">(optional)</span></label>
-        <input id="study-title-input" class="govuk-input" placeholder="E.g. HMCTS help desk interviews Jan 2025" />
+				<!-- New optional title -->
+				<label class="govuk-label" for="study-title-input" style="margin-top:8px;">Study Title <span class="govuk-hint">(optional)</span></label>
+				<input id="study-title-input" class="govuk-input" placeholder="E.g. HMCTS help desk interviews Jan 2025" />
 
-        <div class="note" style="margin:8px 0;">Provide a short, recognisable description for this study.</div>
+				<div class="note" style="margin:8px 0;">Provide a short, recognisable description for this study.</div>
 
-        <label class="govuk-label" for="study-notes">Study Description <span class="govuk-hint">(required)</span></label>
-        <textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
+				<label class="govuk-label" for="study-notes">Study Description <span class="govuk-hint">(required)</span></label>
+				<textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
 
-        <footer class="actions-bar" style="justify-content:flex-end;">
-          <button class="btn btn--secondary" value="cancel" id="study-cancel" type="button">Cancel</button>
-          <button class="btn" value="submit" id="study-submit" type="submit">Submit</button>
-        </footer>
-      </form>
-    </dialog>
-  </main>
+				<footer class="actions-bar" style="justify-content:flex-end;">
+					<button class="btn btn--secondary" value="cancel" id="study-cancel" type="button">Cancel</button>
+					<button class="btn" value="submit" id="study-submit" type="submit">Submit</button>
+				</footer>
+			</form>
+		</dialog>
+	</main>
 
-  <x-include src="/partials/footer.html"></x-include>
+	<x-include src="/partials/footer.html"></x-include>
 
-  <!-- JS -->
-  <script type="module">
-    /**
-     * @file project-dashboard.js
-     * @module ProjectDashboard
-     * @summary Load a project, render metadata, list associated studies,
-     * and create new studies (method, optional title, description).
-     */
+	<!-- JS -->
+	<script type="module">
+		/**
+		 * @file project-dashboard.js
+		 * @module ProjectDashboard
+		 * @summary Load a project, render metadata, list associated studies,
+		 * and create new studies (method, optional title, description).
+		 */
 
-    /* ───────── Config: single source of truth for API origin ───────── */
-    const API_ORIGIN =
-      document.documentElement?.dataset?.apiOrigin ||
-      window.API_ORIGIN ||
-      (location.hostname.endsWith("pages.dev")
-        ? "https://rops-api.digikev-kevin-rapley.workers.dev"
-        : location.origin);
+		/* ───────── Config: single source of truth for API origin ───────── */
+		const API_ORIGIN =
+			document.documentElement?.dataset?.apiOrigin ||
+			window.API_ORIGIN ||
+			(location.hostname.endsWith("pages.dev") ?
+				"https://rops-api.digikev-kevin-rapley.workers.dev" :
+				location.origin);
 
-    /* ───────────────── Types ───────────────── */
+		/* ───────────────── Types ───────────────── */
 
-    /**
-     * @typedef {Object} UIProject
-     * @property {string} id
-     * @property {string} localId
-     * @property {string} name
-     * @property {string} description
-     * @property {string} org
-     * @property {string} phase
-     * @property {string} status
-     * @property {string[]} objectives
-     * @property {string[]} user_groups
-     * @property {{name?:string, role?:string, email?:string}[]} stakeholders
-     * @property {string} createdAt
-     * @property {string} lead_researcher
-     * @property {string} lead_researcher_email
-     */
+		/**
+		 * @typedef {Object} UIProject
+		 * @property {string} id
+		 * @property {string} localId
+		 * @property {string} name
+		 * @property {string} description
+		 * @property {string} org
+		 * @property {string} phase
+		 * @property {string} status
+		 * @property {string[]} objectives
+		 * @property {string[]} user_groups
+		 * @property {{name?:string, role?:string, email?:string}[]} stakeholders
+		 * @property {string} createdAt
+		 * @property {string} lead_researcher
+		 * @property {string} lead_researcher_email
+		 */
 
-    /**
-     * @typedef {Object} UIStudy
-     * @property {string} id
-     * @property {string} studyId
-     * @property {string} method
-     * @property {string} status
-     * @property {string} description
-     * @property {string} createdAt
-     * @property {string} [title]
-     */
+		/**
+		 * @typedef {Object} UIStudy
+		 * @property {string} id
+		 * @property {string} studyId
+		 * @property {string} method
+		 * @property {string} status
+		 * @property {string} description
+		 * @property {string} createdAt
+		 * @property {string} [title]
+		 */
 
-    /* ──────────────── DOM utils ──────────────── */
+		/* ──────────────── DOM utils ──────────────── */
 
-    const $ = (s, r = document) => r.querySelector(s);
-    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-    const setText = (sel, val, fallback = "—") => {
-      const el = $(sel);
-      if (el) el.textContent = (val ?? "").toString().trim() || fallback;
-    };
-    const toMs = (d) => { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; };
-    const makeStudyId = () => "rec" + Math.floor(Date.now() / 1000).toString(36);
+		const $ = (s, r = document) => r.querySelector(s);
+		const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+		const setText = (sel, val, fallback = "—") => {
+			const el = $(sel);
+			if (el) el.textContent = (val ?? "").toString().trim() || fallback;
+		};
+		const toMs = (d) => { const n = Date.parse(d); return Number.isFinite(n) ? n : 0; };
+		const makeStudyId = () => "rec" + Math.floor(Date.now() / 1000).toString(36);
 
-    /* ─────────────── Data loading ─────────────── */
+		/* ─────────────── Data loading ─────────────── */
 
-    async function loadProjects() {
-      const res = await fetch(`${API_ORIGIN}/api/projects?ts=${Date.now()}`, { cache: "no-store" });
+		async function loadProjects() {
+			const res = await fetch(`${API_ORIGIN}/api/projects?ts=${Date.now()}`, { cache: "no-store" });
 
-      // Must be JSON
-      const ctype = (res.headers.get("content-type") || "").toLowerCase();
-      if (!ctype.includes("application/json")) {
-        const preview = await res.text().catch(() => "");
-        throw new Error(`Projects non-JSON (${res.status}) ${preview.slice(0,120)}`);
-      }
+			// Must be JSON
+			const ctype = (res.headers.get("content-type") || "").toLowerCase();
+			if (!ctype.includes("application/json")) {
+				const preview = await res.text().catch(() => "");
+				throw new Error(`Projects non-JSON (${res.status}) ${preview.slice(0,120)}`);
+			}
 
-      let data;
-      try { data = await res.json(); }
-      catch { throw new Error(`Projects JSON parse failed (${res.status})`); }
+			let data;
+			try { data = await res.json(); } catch { throw new Error(`Projects JSON parse failed (${res.status})`); }
 
-      const list = Array.isArray(data)
-        ? data
-        : (Array.isArray(data?.projects) ? data.projects : null);
+			const list = Array.isArray(data) ?
+				data :
+				(Array.isArray(data?.projects) ? data.projects : null);
 
-      if (!list) throw new Error(`Projects unexpected payload (${res.status})`);
+			if (!list) throw new Error(`Projects unexpected payload (${res.status})`);
 
-      return list.map(p => ({
-        id: p.id || p.LocalId || p.localId || "",
-        localId: p.LocalId || p.localId || "",
-        name: p.name || p.Name || "",
-        description: p.description || p.Description || "",
-        org: p.Org || p.org || "Home Office Biometrics",
-        phase: p["rops:servicePhase"] || p.Phase || "",
-        status: p["rops:projectStatus"] || p.Status || "",
-        objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
-        user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
-        stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
-        createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
-        lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
-        lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
-      }));
-    }
+			return list.map(p => ({
+				id: p.id || p.LocalId || p.localId || "",
+				localId: p.LocalId || p.localId || "",
+				name: p.name || p.Name || "",
+				description: p.description || p.Description || "",
+				org: p.Org || p.org || "Home Office Biometrics",
+				phase: p["rops:servicePhase"] || p.Phase || "",
+				status: p["rops:projectStatus"] || p.Status || "",
+				objectives: Array.isArray(p.objectives) ? p.objectives : String(p.Objectives ?? p.objectives ?? "").split(/\r?\n/).filter(Boolean),
+				user_groups: Array.isArray(p.user_groups) ? p.user_groups : String(p.UserGroups ?? p.user_groups ?? "").split(",").map(s => s.trim()).filter(Boolean),
+				stakeholders: Array.isArray(p.stakeholders) ? p.stakeholders : (() => { try { return JSON.parse(p.Stakeholders || "[]"); } catch { return []; } })(),
+				createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
+				lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
+				lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || ""
+			}));
+		}
 
-    function pickProject(projects) {
-      const id = new URLSearchParams(location.search).get("id") || "";
-      if (!id) return null;
-      return projects.find(p => p.id === id || p.localId === id) || null;
-    }
+		function pickProject(projects) {
+			const id = new URLSearchParams(location.search).get("id") || "";
+			if (!id) return null;
+			return projects.find(p => p.id === id || p.localId === id) || null;
+		}
 
-    async function loadStudies(projectId) {
-      const url = `${API_ORIGIN}/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok || !js?.ok) return [];
-      return (js.studies || []).map(r => ({
-        id: r.id || "",
-        studyId: r.studyId || "",
-        method: r.method || "",
-        status: r.status || "",
-        description: r.description || "",
-        createdAt: r.createdAt || "",
-        title: r.title || r.Title || ""
-      }));
-    }
+		async function loadStudies(projectId) {
+			const url = `${API_ORIGIN}/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`;
+			const res = await fetch(url, { cache: "no-store" });
+			const js = await res.json().catch(() => ({}));
+			if (!res.ok || !js?.ok) return [];
+			return (js.studies || []).map(r => ({
+				id: r.id || "",
+				studyId: r.studyId || "",
+				method: r.method || "",
+				status: r.status || "",
+				description: r.description || "",
+				createdAt: r.createdAt || "",
+				title: r.title || r.Title || ""
+			}));
+		}
 
-    /* ───────────── Title normalisation ───────────── */
+		/* ───────────── Title normalisation ───────────── */
 
-    function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
-      if (description && description.trim()) return description.trim().slice(0, 80);
-      const d = createdAt ? new Date(createdAt) : new Date();
-      const yyyy = d.getUTCFullYear();
-      const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-      const dd = String(d.getUTCDate()).padStart(2, "0");
-      return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
-    }
+		function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
+			if (description && description.trim()) return description.trim().slice(0, 80);
+			const d = createdAt ? new Date(createdAt) : new Date();
+			const yyyy = d.getUTCFullYear();
+			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+			const dd = String(d.getUTCDate()).padStart(2, "0");
+			return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
+		}
 
-    function normalizeStudy(s = {}) {
-      return { ...s, title: s.title || s.Title || computeStudyTitle(s) };
-    }
+		function normalizeStudy(s = {}) {
+			return { ...s, title: s.title || s.Title || computeStudyTitle(s) };
+		}
 
-    /* ───────────────── Rendering ───────────────── */
+		/* ───────────────── Rendering ───────────────── */
 
-    function renderProject(project) {
-      setText("#eyebrow-org", project.org);
-      setText("#project-title", project.name, "Untitled project");
-      setText("#project-subtitle", project.description);
-      setText("#kv-service-stage", project.phase);
-      setText("#kv-project-stage", project.status);
-      setText("#kv-client-name", project.org);
-      setText("#kv-lead-researcher", project.lead_researcher);
-      setText("#kv-lead-email", project.lead_researcher_email);
+		function renderProject(project) {
+			setText("#eyebrow-org", project.org);
+			setText("#project-title", project.name, "Untitled project");
+			setText("#project-subtitle", project.description);
+			setText("#kv-service-stage", project.phase);
+			setText("#kv-project-stage", project.status);
+			setText("#kv-client-name", project.org);
+			setText("#kv-lead-researcher", project.lead_researcher);
+			setText("#kv-lead-email", project.lead_researcher_email);
 
-      const main = document.querySelector("main");
-      if (main) {
-        main.dataset.projectName = project.name || "";
-        main.dataset.projectAirtableId = project.id || "";
-      }
+			const main = document.querySelector("main");
+			if (main) {
+				main.dataset.projectName = project.name || "";
+				main.dataset.projectAirtableId = project.id || "";
+			}
 
-      // Keep <meta name="project:name"> in sync for integrations that read it.
-      const metaProject = document.querySelector('meta[name="project:name"]');
-      if (metaProject) metaProject.setAttribute("content", project.name || "");
+			// Keep <meta name="project:name"> in sync for integrations that read it.
+			const metaProject = document.querySelector('meta[name="project:name"]');
+			if (metaProject) metaProject.setAttribute("content", project.name || "");
 
-      const bcProject = document.getElementById("breadcrumb-project");
-      if (bcProject) {
-        bcProject.textContent = project.name || "Project";
-        bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(project.id)}`;
-      }
+			const bcProject = document.getElementById("breadcrumb-project");
+			if (bcProject) {
+				bcProject.textContent = project.name || "Project";
+				bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(project.id)}`;
+			}
 
-      const edit = document.getElementById("btn-edit");
-      if (edit) edit.href = `./start/?id=${encodeURIComponent(project.id)}`;
-    }
+			const edit = document.getElementById("btn-edit");
+			if (edit) edit.href = `./start/?id=${encodeURIComponent(project.id)}`;
+		}
 
-    function renderStudies(project, studies) {
-      const list = document.getElementById("studies-list");
-      if (!list) return;
+		function renderStudies(project, studies) {
+			const list = document.getElementById("studies-list");
+			if (!list) return;
 
-      if (!studies.length) {
-        list.innerHTML = '<li class="lede">No studies yet.</li>';
-        return;
-      }
+			if (!studies.length) {
+				list.innerHTML = '<li class="lede">No studies yet.</li>';
+				return;
+			}
 
-      const escapeHtml = (s = "") =>
-        s.replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#39;");
+			const escapeHtml = (s = "") =>
+				s.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
 
-      const truncateToWords = (text, maxLength = 170) => {
-        if (!text) return "";
-        if (text.length <= maxLength) return text;
-        return text.slice(0, maxLength).replace(/\s+\S*$/, "");
-      };
+			const truncateToWords = (text, maxLength = 170) => {
+				if (!text) return "";
+				if (text.length <= maxLength) return text;
+				return text.slice(0, maxLength).replace(/\s+\S*$/, "");
+			};
 
-      list.innerHTML = studies.map(s => {
-        const title =
-          s.title?.trim() ||
-          s.Title?.trim() ||
-          s.method?.trim() ||
-          "Untitled Study";
+			list.innerHTML = studies.map(s => {
+				const title =
+					s.title?.trim() ||
+					s.Title?.trim() ||
+					s.method?.trim() ||
+					"Untitled Study";
 
-        const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
-        const status = (s.status || "").trim();
-        const meta = status ? ` — <em>${escapeHtml(status)}</em>` : "";
+				const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+				const status = (s.status || "").trim();
+				const meta = status ? ` — <em>${escapeHtml(status)}</em>` : "";
 
-        const full = s.description || "";
-        const isTruncated = full.length > 170;
-        const truncated = truncateToWords(full, 170);
+				const full = s.description || "";
+				const isTruncated = full.length > 170;
+				const truncated = truncateToWords(full, 170);
 
-        let descHtml = "";
-        if (truncated) {
-          if (isTruncated && truncated.length > 10) {
-            const head = escapeHtml(truncated.slice(0, -10));
-            const tail = escapeHtml(truncated.slice(-10));
-            descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
-          } else {
-            descHtml = escapeHtml(truncated);
-          }
-        }
+				let descHtml = "";
+				if (truncated) {
+					if (isTruncated && truncated.length > 10) {
+						const head = escapeHtml(truncated.slice(0, -10));
+						const tail = escapeHtml(truncated.slice(-10));
+						descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
+					} else {
+						descHtml = escapeHtml(truncated);
+					}
+				}
 
-        return `
+				return `
 <li class="item">
   <div>
     <a class="govuk-link" href="${href}">${escapeHtml(title)}</a>${meta}
   </div>
   ${descHtml ? `<div class="lede" style="margin-top:4px;">${descHtml}</div>` : ""}
 </li>`;
-      }).join("");
-    }
+			}).join("");
+		}
 
-    /* ───────── Add Study modal (accessible) ───────── */
+		/* ───────── Add Study modal (accessible) ───────── */
 
-    function initStudyModal(project) {
-      const dialog = /** @type {HTMLDialogElement|null} */ (document.getElementById("study-dialog"));
-      const openBtn = document.getElementById("btn-add-study");
-      const closeBtn = document.getElementById("study-close");
-      const cancelBtn = document.getElementById("study-cancel");
-      const submitBtn = document.getElementById("study-submit");
-      const form = dialog?.querySelector("form");
-      let lastFocus = null;
-      if (!dialog || !openBtn) return;
+		function initStudyModal(project) {
+			const dialog = /** @type {HTMLDialogElement|null} */ (document.getElementById("study-dialog"));
+			const openBtn = document.getElementById("btn-add-study");
+			const closeBtn = document.getElementById("study-close");
+			const cancelBtn = document.getElementById("study-cancel");
+			const submitBtn = document.getElementById("study-submit");
+			const form = dialog?.querySelector("form");
+			let lastFocus = null;
+			if (!dialog || !openBtn) return;
 
-      const $ = (sel, root = document) => root.querySelector(sel);
-      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+			const $ = (sel, root = document) => root.querySelector(sel);
+			const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-      const open = () => {
-        lastFocus = document.activeElement;
-        dialog.showModal();
-        dialog.setAttribute("aria-hidden", "false");
-        document.getElementById("study-method")?.focus();
-        document.documentElement.classList.add("modal-open");
-      };
-      const close = () => {
-        dialog.close();
-        dialog.setAttribute("aria-hidden", "true");
-        document.documentElement.classList.remove("modal-open");
-        if (lastFocus && typeof /** @type {any} */(lastFocus).focus === "function") {
-          /** @type {any} */
-          (lastFocus).focus();
-        }
-      };
+			const open = () => {
+				lastFocus = document.activeElement;
+				dialog.showModal();
+				dialog.setAttribute("aria-hidden", "false");
+				document.getElementById("study-method")?.focus();
+				document.documentElement.classList.add("modal-open");
+			};
+			const close = () => {
+				dialog.close();
+				dialog.setAttribute("aria-hidden", "true");
+				document.documentElement.classList.remove("modal-open");
+				if (lastFocus && typeof /** @type {any} */(lastFocus).focus === "function") {
+					/** @type {any} */
+					(lastFocus).focus();
+				}
+			};
 
-      dialog.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          e.preventDefault();
-          close();
-          return;
-        }
-        if (e.key !== "Tab") return;
+			dialog.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+					return;
+				}
+				if (e.key !== "Tab") return;
 
-        const focusables = $$('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])', dialog)
-          .filter(el => el.offsetParent !== null);
-        if (!focusables.length) return;
+				const focusables = $$('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])', dialog)
+					.filter(el => el.offsetParent !== null);
+				if (!focusables.length) return;
 
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
+				const first = focusables[0];
+				const last = focusables[focusables.length - 1];
 
-        // @ts-ignore
-        if (e.shiftKey && document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-        }
-        // @ts-ignore
-        else if (!e.shiftKey && document.activeElement === last) {
-          first.focus();
-          e.preventDefault();
-        }
-      });
+				// @ts-ignore
+				if (e.shiftKey && document.activeElement === first) {
+					last.focus();
+					e.preventDefault();
+				}
+				// @ts-ignore
+				else if (!e.shiftKey && document.activeElement === last) {
+					first.focus();
+					e.preventDefault();
+				}
+			});
 
-      dialog.addEventListener("click", (e) => {
-        const rect = dialog.getBoundingClientRect();
-        const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-        if (!inside) close();
-      });
+			dialog.addEventListener("click", (e) => {
+				const rect = dialog.getBoundingClientRect();
+				const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+				if (!inside) close();
+			});
 
-      openBtn.addEventListener("click", open);
-      closeBtn?.addEventListener("click", close);
-      cancelBtn?.addEventListener("click", close);
+			openBtn.addEventListener("click", open);
+			closeBtn?.addEventListener("click", close);
+			cancelBtn?.addEventListener("click", close);
 
-      (form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
-        e.preventDefault();
+			(form || submitBtn)?.addEventListener("submit" in (form || {}) ? "submit" : "click", async (e) => {
+				e.preventDefault();
 
-        const methodEl = /** @type {HTMLSelectElement|null} */ (document.getElementById("study-method"));
-        const notesEl = /** @type {HTMLTextAreaElement|null} */ (document.getElementById("study-notes"));
-        const titleEl = /** @type {HTMLInputElement|null} */ (document.getElementById("study-title-input"));
-        const method = methodEl?.value?.trim();
-        const notes = notesEl?.value?.trim();
-        const title = (titleEl?.value || "").trim();
-        if (!method || !notes) return;
+				const methodEl = /** @type {HTMLSelectElement|null} */ (document.getElementById("study-method"));
+				const notesEl = /** @type {HTMLTextAreaElement|null} */ (document.getElementById("study-notes"));
+				const titleEl = /** @type {HTMLInputElement|null} */ (document.getElementById("study-title-input"));
+				const method = methodEl?.value?.trim();
+				const notes = notesEl?.value?.trim();
+				const title = (titleEl?.value || "").trim();
+				if (!method || !notes) return;
 
-        const projectAirtableId = project.id || document.querySelector("main")?.dataset?.projectAirtableId || "";
-        if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
+				const projectAirtableId = project.id || document.querySelector("main")?.dataset?.projectAirtableId || "";
+				if (!projectAirtableId) { alert("Missing project id; cannot create study."); return; }
 
-        submitBtn?.setAttribute("disabled", "true");
+				submitBtn?.setAttribute("disabled", "true");
 
-        try {
-          const res = await fetch(`${API_ORIGIN}/api/studies`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              project_airtable_id: projectAirtableId,
-              method,
-              description: notes,
-              status: "Planned",
-              study_id: makeStudyId(),
-              title
-            })
-          });
-          const js = await res.json().catch(() => ({}));
-          if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
+				try {
+					const res = await fetch(`${API_ORIGIN}/api/studies`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							project_airtable_id: projectAirtableId,
+							method,
+							description: notes,
+							status: "Planned",
+							study_id: makeStudyId(),
+							title
+						})
+					});
+					const js = await res.json().catch(() => ({}));
+					if (!res.ok || !js?.ok) throw new Error(js?.error || `HTTP ${res.status}`);
 
-          const studies = await loadStudies(project.id);
-          renderStudies(project, studies);
+					const studies = await loadStudies(project.id);
+					renderStudies(project, studies);
 
-          if (methodEl) methodEl.value = "";
-          if (notesEl) notesEl.value = "";
-          if (titleEl) titleEl.value = "";
-          close();
-        } catch (err) {
-          console.error(err);
-          alert("Could not create study.");
-        } finally {
-          submitBtn?.removeAttribute("disabled");
-        }
-      });
-    }
+					if (methodEl) methodEl.value = "";
+					if (notesEl) notesEl.value = "";
+					if (titleEl) titleEl.value = "";
+					close();
+				} catch (err) {
+					console.error(err);
+					alert("Could not create study.");
+				} finally {
+					submitBtn?.removeAttribute("disabled");
+				}
+			});
+		}
 
-    /* ──────────────── Bootstrap ──────────────── */
+		/* ──────────────── Bootstrap ──────────────── */
 
-    (async function bootstrap() {
-      try {
-        const projects = await loadProjects();
-        projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-        const project = pickProject(projects);
-        if (!project) throw new Error("Project not found from id param");
+		(async function bootstrap() {
+			try {
+				const projects = await loadProjects();
+				projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+				const project = pickProject(projects);
+				if (!project) throw new Error("Project not found from id param");
 
-        renderProject(project);
+				renderProject(project);
 
-        const studies = await loadStudies(project.id);
-        renderStudies(project, studies);
+				const studies = await loadStudies(project.id);
+				renderStudies(project, studies);
 
-        initStudyModal(project);
-      } catch (err) {
-        console.error(err);
-        alert("Could not load project.");
-      }
-    })();
+				initStudyModal(project);
+			} catch (err) {
+				console.error(err);
+				alert("Could not load project.");
+			}
+		})();
 
-    // Update the journal link with the project ID
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      const projectId = params.get('id');
-      if (projectId) {
-        const journalLink = document.getElementById('journal-link');
-        if (journalLink) {
-          journalLink.href = `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`;
-        }
-      }
-    })();
-  </script>
+		// Update the journal link with the project ID (standardised path)
+		(function() {
+			const params = new URLSearchParams(window.location.search);
+			const projectId = params.get('id');
+			if (projectId) {
+				const journalLink = document.getElementById('journal-link');
+				if (journalLink) {
+					journalLink.href = `/pages/project/journals/?id=${encodeURIComponent(projectId)}`;
+				}
+			}
+		})();
+	</script>
 
-  <!-- Mural integration (OAuth + setup). Relies on project name/id set by renderProject(). -->
-  <script type="module" src="/components/mural-integration.js"></script>
+	<!-- Mural integration (OAuth + setup). Relies on project name/id set by renderProject(). -->
+	<script type="module" src="/components/mural-integration.js"></script>
 </body>
 
 </html>
