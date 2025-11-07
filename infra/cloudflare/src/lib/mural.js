@@ -450,7 +450,7 @@ export const _int = { fetchJSON, withBearer, apiBase };
 
 ⸻
 
-/service/internals/mural.js
+/service/internals / mural.js
 
 /**
  * @file service/internals/mural.js
@@ -480,7 +480,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	ensureUserRoom,           // find existing only (no create)
+	ensureUserRoom, // find existing only (no create)
 	ensureProjectFolder,
 	createMural,
 	getMural,
@@ -705,8 +705,7 @@ async function _waitForViewerUrl(env, accessToken, muralId, { maxWaitMs = 45000,
 		try {
 			const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
 			const link = links.find(l =>
-				LooksLikeViewer(l.url) ||
-				["viewer", "view", "open"].includes(String(l.rel || l.type || l.kind || "").toLowerCase())
+				LooksLikeViewer(l.url) || ["viewer", "view", "open"].includes(String(l.rel || l.type || l.kind || "").toLowerCase())
 			);
 			if (link?.url && _looksLikeMuralViewerUrl(link.url)) return link.url;
 		} catch { /* ignore */ }
@@ -812,8 +811,7 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 		const list = Array.isArray(payload?.value) ?
 			payload.value :
 			Array.isArray(payload?.workspaces) ?
-			payload.workspaces :
-			[];
+			payload.workspaces : [];
 
 		for (const entry of list) {
 			for (const cand of _workspaceCandidateShapes(entry)) {
@@ -1082,7 +1080,7 @@ export class MuralServicePart {
 			tokens = await exchangeAuthCode(env, code);
 		} catch {
 			const want = stateObj?.return || "/pages/projects/";
-		 return Response.redirect(`${want}#mural-token-exchange-failed`, 302);
+			return Response.redirect(`${want}#mural-token-exchange-failed`, 302);
 		}
 
 		await this.saveTokens(uid, tokens);
@@ -1103,7 +1101,7 @@ export class MuralServicePart {
 		backUrl.search = sp.toString();
 
 		return Response.redirect(backUrl.toString(), 302);
-  }
+	}
 
 	async muralVerify(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
@@ -1119,7 +1117,7 @@ export class MuralServicePart {
 		try {
 			const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
 			if (!inCompany) {
-			 return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
+				return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
 			}
 		} catch (err) {
 			const status = Number(err?.status || 0);
