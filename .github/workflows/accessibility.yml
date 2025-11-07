@@ -25,39 +25,18 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Start local server
+      - name: Check production site availability
         run: |
-          npx --yes http-server public -p 8080 --silent -c-1 &
-          echo $! > /tmp/http.pid
+          curl -fsS --retry 5 --retry-delay 5 https://researchops.pages.dev/ > /dev/null
 
-      - name: Wait for server (http://localhost:8080)
-        uses: jakejarvis/wait-action@v0.2.0
-        with:
-          url: http://localhost:8080
-
-      # Provide URLs to pa11y-ci. If you already have a pa11yci.json in the repo,
-      # you can remove this step.
-      - name: Create pa11yci.json
+      - name: Install pa11y-ci with updated dependencies
         run: |
-          cat > pa11yci.json <<'JSON'
-          {
-            "defaults": {
-              "standard": "WCAG2AA",
-              "timeout": 30000,
-              "includeNotices": false,
-              "includeWarnings": false,
-              "maxWait": 30000
-            },
-            "urls": [
-              "http://localhost:8080/",
-              "http://localhost:8080/pages/start/index.html",
-              "http://localhost:8080/pages/projects/index.html"
-            ]
-          }
-          JSON
+          mkdir -p .pa11y-workdir
+          node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'module',dependencies:{'pa11y-ci':'^3.1.0'},overrides:{glob:'^10.4.5',inflight:'npm:@npmcli/inflight@^2.0.0'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
+          npm install --prefix .pa11y-workdir --no-package-lock
 
       - name: Run pa11y-ci
-        run: npx --yes pa11y-ci --reporter json > pa11y-report.json
+        run: .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
 
       # Optional: pretty HTML report
       - name: Generate HTML report
@@ -72,13 +51,8 @@ jobs:
           path: |
             pa11y-report.json
             pa11y-report.html
-            pa11yci.json
           if-no-files-found: error
           retention-days: 14
-
-      - name: Stop server
-        if: always()
-        run: kill "$(cat /tmp/http.pid)" || true
 
       - name: Add summary
         if: always()
