@@ -99,9 +99,17 @@ textarea:focus {
 	color: #505a5f;
 	}
 	
-.nav a {
-	margin-right: 12px;
-	}
+.nav__list {
+        display: flex;
+        gap: 12px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        }
+
+.nav__list li {
+        margin: 0;
+        }
 
 .nav[data-active="Home"] .govuk-link[data-nav="Home"],
 .nav[data-active="Start Research Project"] .govuk-link[data-nav="Start Research Project"],
