@@ -741,63 +741,74 @@ export class MuralServicePart {
 				this.root.log?.warn?.("mural.ensure_folder.no_id", { folderPreview: typeof folder === "object" ? Object.keys(folder || {}) : folder });
 			}
 
-			step = "create_mural";
-			const mural = await createMural(this.root.env, accessToken, {
-				title: "Reflexive Journal",
-				roomId,
-				folderId: folderId || undefined
-			});
+			      step = "create_mural";
+      const mural = await createMural(this.root.env, accessToken, {
+        title: "Reflexive Journal",
+        roomId,
+        folderId: folderId || undefined
+      });
 
-			// Hydrate once for reliable viewer link
-			let hydrated = null;
-			try { hydrated = await getMural(this.root.env, accessToken, mural.id); } catch { /* non-fatal */ }
+      // Hydrate once for reliable viewer link
+      let hydrated = null;
+      try { hydrated = await getMural(this.root.env, accessToken, mural.id); } catch { /* non-fatal */ }
 
-			const openUrl = _extractViewerUrl(hydrated) || _extractViewerUrl(mural) || null;
+      // NEW: always produce a viewer URL — fall back to a synthetic link that redirects
+      // Pattern: https://app.mural.co/t/{workspaceKeyOrId}/m/{muralId}
+      const wsKey = (ws.key || ws.id || "").toString().trim();
+      const synthUrl = (wsKey && mural?.id)
+        ? `https://app.mural.co/t/${encodeURIComponent(wsKey)}/m/${encodeURIComponent(mural.id)}`
+        : null;
 
-			// Persist mapping (ok if boardUrl is null)
-			let registered = false;
-			if (projectId) {
-				try {
-					await this.registerBoard({
-						projectId: String(projectId),
-						uid,
-						purpose: PURPOSE_REFLEXIVE,
-						muralId: mural.id,
-						boardUrl: openUrl,
-						workspaceId: ws.id,
-						primary: true
-					});
-					registered = true;
-				} catch (e) {
-					this.root.log?.error?.("mural.airtable_register_failed", {
-						status: e?.status,
-						body: e?.body
-					});
-				}
-			}
+      const openUrl =
+        _extractViewerUrl(hydrated) ||
+        _extractViewerUrl(mural) ||
+        synthUrl ||
+        null;
 
-			// KV backup only for valid viewer URLs
-			try {
-				if (projectId && openUrl && _looksLikeMuralViewerUrl(openUrl)) {
-					const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
-					await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
-						url: openUrl,
-						projectName: projectName,
-						updatedAt: Date.now()
-					}));
-				}
-			} catch { /* non-fatal */ }
+      // Persist mapping (ok if Airtable fails; KV backup below ensures resolve works)
+      let registered = false;
+      if (projectId) {
+        try {
+          await this.registerBoard({
+            projectId: String(projectId),
+            uid,
+            purpose: PURPOSE_REFLEXIVE,
+            muralId: mural.id,
+            boardUrl: openUrl,          // may be synthetic
+            workspaceId: ws.id,
+            primary: true
+          });
+          registered = true;
+        } catch (e) {
+          this.root.log?.error?.("mural.airtable_register_failed", {
+            status: e?.status,
+            body: e?.body
+          });
+        }
+      }
 
-			return this.root.json({
-				ok: true,
-				workspace: ws,
-				room,
-				folder,
-				mural: { ...mural, viewLink: openUrl },
-				projectId: projectId || null,
-				registered,
-				boardUrl: openUrl || null
-			}, 200, cors);
+      // KV backup — write whenever we have a link (synthetic or real)
+      try {
+        if (projectId && openUrl && _looksLikeMuralViewerUrl(openUrl)) {
+          const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
+          await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
+            url: openUrl,
+            projectName: projectName,
+            updatedAt: Date.now()
+          }));
+        }
+      } catch { /* non-fatal */ }
+
+      return this.root.json({
+        ok: true,
+        workspace: ws,
+        room,
+        folder,
+        mural: { ...mural, viewLink: openUrl },
+        projectId: projectId || null,
+        registered,
+        boardUrl: openUrl || null
+      }, 200, cors);
 
 		} catch (err) {
 			const status = Number(err?.status) || 500;
