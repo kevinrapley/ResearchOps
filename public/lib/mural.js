@@ -32,7 +32,7 @@ export const DEFAULT_SCOPES = [
 /* Base URLs                                                          */
 /* ------------------------------------------------------------------ */
 
-const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+const apiBase = (env) => (env.MURAL_API_BASE || "https://app.mural.co/api/public/v1").replace(/\/+$/, "");
 
 /* ------------------------------------------------------------------ */
 /* JSON + Fetch helpers                                               */
@@ -59,7 +59,7 @@ async function fetchJSON(url, opts = {}) {
 }
 
 const withBearer = (token) => ({
-	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
+	headers: { ...JSON_HEADERS, Authorization: `Bearer ${token}` }
 });
 
 /* ------------------------------------------------------------------ */
@@ -79,7 +79,8 @@ export function buildAuthUrl(env, state) {
 		scope: scopes,
 		state
 	});
-	return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+	// Works with tenants that expect /authorization/oauth2 or /authorization/oauth2/authorize
+	return `${apiBase(env)}/authorization/oauth2?${params}`;
 }
 
 export async function exchangeAuthCode(env, code) {
@@ -127,7 +128,8 @@ export async function getMe(env, token) {
 
 /** Unified accessor to last active workspace id across slightly different shapes */
 export function getActiveWorkspaceIdFromMe(me) {
-	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
+	const v = me?.value || me || {};
+	return v.lastActiveWorkspace || v.activeWorkspaceId || v.activeWorkspace?.id || null;
 }
 
 /**
@@ -137,8 +139,8 @@ export function getActiveWorkspaceIdFromMe(me) {
 export async function verifyHomeOfficeByCompany(env, token) {
 	const me = await getMe(env, token);
 	const v = me?.value || me || {};
-	const cid = String(v.companyId || "").trim().toLowerCase();
-	const cname = String(v.companyName || "").trim().toLowerCase();
+	const cid = String(v.companyId || v.company?.id || "").trim().toLowerCase();
+	const cname = String(v.companyName || v.company?.name || "").trim().toLowerCase();
 
 	const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase();
 	if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
@@ -169,12 +171,28 @@ export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
+/**
+ * Creates a room.
+ * Newer tenants: POST /rooms with { name, workspaceId, visibility }
+ * Legacy fallback (if 404): POST /workspaces/:id/rooms with { name }
+ */
 export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
-	return fetchJSON(`${apiBase(env)}/rooms`, {
-		method: "POST",
-		...withBearer(token),
-		body: JSON.stringify({ name, workspaceId, visibility })
-	});
+	// Try modern endpoint first
+	try {
+		return await fetchJSON(`${apiBase(env)}/rooms`, {
+			method: "POST",
+			...withBearer(token),
+			body: JSON.stringify({ name, workspaceId, visibility })
+		});
+	} catch (e) {
+		if (Number(e?.status) !== 404) throw e;
+		// Legacy fallback
+		return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, {
+			method: "POST",
+			...withBearer(token),
+			body: JSON.stringify({ name })
+		});
+	}
 }
 
 /**
@@ -201,6 +219,20 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
 	return room;
 }
 
+/**
+ * Deterministic room policy: find by exact name, else create that name.
+ * Useful when you always want boards under a single named room, e.g. “ResearchOps”.
+ */
+export async function ensureDefaultRoom(env, token, workspaceId, roomName = "ResearchOps") {
+	const existing = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
+	const list = Array.isArray(existing?.items) ? existing.items :
+		Array.isArray(existing?.value) ? existing.value :
+		Array.isArray(existing) ? existing : [];
+	const found = list.find(r => String(r?.name || "").trim().toLowerCase() === String(roomName).trim().toLowerCase());
+	if (found) return found;
+	return createRoom(env, token, { name: roomName, workspaceId, visibility: "private" });
+}
+
 export async function listFolders(env, token, roomId) {
 	return fetchJSON(`${apiBase(env)}/rooms/${roomId}/folders`, withBearer(token));
 }
@@ -225,11 +257,17 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 	return createFolder(env, token, roomId, projectName);
 }
 
+/**
+ * Create a mural board UNDER a room (correct path).
+ * This fixes upstream `PATH_NOT_FOUND` seen when posting to /murals directly.
+ */
 export async function createMural(env, token, { title, roomId, folderId }) {
-	return fetchJSON(`${apiBase(env)}/murals`, {
+	if (!roomId) throw new Error("roomId is required for createMural()");
+	const body = { title, ...(folderId ? { folderId } : {}) };
+	return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
 		method: "POST",
 		...withBearer(token),
-		body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+		body: JSON.stringify(body)
 	});
 }
 
@@ -295,7 +333,7 @@ export async function ensureTagsBlueberry(env, token, muralId, labels) {
 
 		const idByName = new Map();
 		for (const t of existing) {
-			const name = String(t?.name || "").trim();
+			const name = String(t?.name || t?.title || "").trim();
 			if (name) idByName.set(name.toLowerCase(), t.id);
 		}
 
@@ -367,8 +405,10 @@ export function findLatestInCategory(stickies, category) {
 	for (let i = 1; i < pool.length; i++) {
 		const s = pool[i];
 		const edge = (s.y || 0) + (s.height || 0);
-		if (edge > bestEdge) { best = s;
-			bestEdge = edge; }
+		if (edge > bestEdge) {
+			best = s;
+			bestEdge = edge;
+		}
 	}
 	return best;
 }
