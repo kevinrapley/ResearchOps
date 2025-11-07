@@ -113,9 +113,45 @@ textarea:focus {
 
 /* Ensure tab items have a visible focus */
 .nav .govuk-link:focus {
-	outline: 3px solid #ffbf47;
-	outline-offset: 0;
-	}
+        outline: 3px solid #ffbf47;
+        outline-offset: 0;
+        }
+
+.rops-header {
+        margin-bottom: 32px;
+        }
+
+.rops-header__title {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 12px;
+        margin: 0 0 8px;
+        }
+
+.rops-header__title .govuk-heading-l {
+        margin: 0;
+        }
+
+.rops-header__subtitle {
+        margin: 0 0 16px;
+        color: #505a5f;
+        }
+
+.page-intro {
+        margin: 0 0 32px;
+        }
+
+.page-intro .govuk-heading-xl {
+        margin-bottom: 8px;
+        }
+
+.page-intro .lede {
+        margin: 0;
+        }
+
+.card-section > .govuk-heading-l {
+        margin-bottom: 16px;
+        }
 
 /* === =CARDS & PATTERNS ================================== */
 

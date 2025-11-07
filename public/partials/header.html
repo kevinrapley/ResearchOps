@@ -1,12 +1,19 @@
 <!-- public/partials/header.html -->
 <header class="rops-header" role="banner">
-	<h1 class="govuk-heading-l">{{title}}</h1>
-	{{#subtitle}}
-		<h2 class="govuk-heading-m">{{subtitle}}</h2>
-	{{/subtitle}}
-	<nav class="nav govuk-body" data-active="{{active}}">
-		<a class="govuk-link" href="/" data-nav="Home">Home</a>
-		<a class="govuk-link" href="/pages/start/" data-nav="Start Research Project">Start Research Project</a>
-		<a class="govuk-link" href="/pages/projects/" data-nav="Projects">Projects</a>
-	</nav>
+        <div class="rops-header__title" role="heading" aria-level="2">
+                {{#title}}
+                        <span class="govuk-heading-l">{{title}}</span>
+                {{/title}}
+                {{^title}}
+                        <span class="govuk-heading-l">ResearchOps Demo Suite</span>
+                {{/title}}
+        </div>
+        {{#subtitle}}
+                <p class="govuk-heading-m rops-header__subtitle">{{subtitle}}</p>
+        {{/subtitle}}
+        <nav class="nav govuk-body" data-active="{{active}}" aria-label="Primary navigation">
+                <a class="govuk-link" href="/" data-nav="Home">Home</a>
+                <a class="govuk-link" href="/pages/start/" data-nav="Start Research Project">Start Research Project</a>
+                <a class="govuk-link" href="/pages/projects/" data-nav="Projects">Projects</a>
+        </nav>
 </header>
