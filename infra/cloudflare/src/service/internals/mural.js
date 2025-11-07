@@ -26,7 +26,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	ensureUserRoom,           // find existing only (no create)
+	ensureUserRoom, // find existing only (no create)
 	ensureProjectFolder,
 	createMural,
 	getMural,
@@ -40,7 +40,9 @@ import {
 	ensureTagsBlueberry,
 	applyTagsToSticky,
 	normaliseWidgets,
-	findLatestInCategory
+	findLatestInCategory,
+	getMuralLinks,
+	createViewerLink
 } from "../../lib/mural.js";
 
 import { b64Encode, b64Decode } from "../../core/utils.js";
@@ -227,37 +229,51 @@ function _extractViewerUrl(payload) {
 }
 
 /**
- * Poll Mural for a real viewer URL after creation.
- * Tries every `intervalMs` until `maxWaitMs` elapses.
- * Returns the concrete URL or null if still unavailable.
- *
- * NOTE: We intentionally wait longer here (up to ~45s) to avoid returning
- * synthetic or missing links. This keeps UX consistent with “create then open”.
+ * Try progressively harder to obtain a concrete viewer URL:
+ *  1) hydrate GET /murals/:id
+ *  2) GET /murals/:id/links
+ *  3) POST /murals/:id/links or /share-links to create a viewer link
+ * …and loop for up to ~45s.
  */
 async function _waitForViewerUrl(env, accessToken, muralId, { maxWaitMs = 45000, intervalMs = 1000 } = {}) {
 	let waited = 0;
-
-	// Light exponential backoff (still caps at intervalMs)
-	let step = intervalMs;
+	let createdOnce = false;
 
 	while (waited < maxWaitMs) {
+		// 1) hydrate
 		try {
-			// Try to hydrate the mural details
 			const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
 			const url = _extractViewerUrl(hydrated);
 			if (url) return url;
+		} catch { /* ignore transient */ }
 
-			// Occasionally “touch” the board by listing widgets; this can help the link appear
-			await getWidgets(env, accessToken, muralId).catch(() => {});
-		} catch {
-			// ignore transient
+		// 2) list links
+		try {
+			const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
+			const link = links.find(l =>
+				LooksLikeViewer(l.url) || ["viewer", "view", "open"].includes(String(l.rel || l.type || l.kind || "").toLowerCase())
+			);
+			if (link?.url && _looksLikeMuralViewerUrl(link.url)) return link.url;
+		} catch { /* ignore */ }
+
+		// 3) actively create once
+		if (!createdOnce) {
+			try {
+				const createdUrl = await createViewerLink(env, accessToken, muralId);
+				if (createdUrl && _looksLikeMuralViewerUrl(createdUrl)) return createdUrl;
+				createdOnce = true;
+			} catch { /* ignore */ }
 		}
 
-		await new Promise(r => setTimeout(r, step));
-		waited += step;
+		await new Promise(r => setTimeout(r, intervalMs));
+		waited += intervalMs;
+	}
 
-		// backoff a little until we reach the steady interval
-		if (step < intervalMs) step = intervalMs;
+	function LooksLikeViewer(u) {
+		try {
+			const x = new URL(u);
+			return x.hostname === "app.mural.co" && /\/m\//.test(x.pathname);
+		} catch { return false; }
 	}
 
 	return null;
@@ -341,8 +357,7 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 		const list = Array.isArray(payload?.value) ?
 			payload.value :
 			Array.isArray(payload?.workspaces) ?
-			payload.workspaces :
-			[];
+			payload.workspaces : [];
 
 		for (const entry of list) {
 			for (const cand of _workspaceCandidateShapes(entry)) {
@@ -594,7 +609,6 @@ export class MuralServicePart {
 		const code = url.searchParams.get("code");
 		const stateB64 = url.searchParams.get("state");
 		if (!code) {
-			// Bounce back to a safe page instead of rendering HTML (prevents landing on worker root)
 			const fallback = "/pages/projects/";
 			return Response.redirect(fallback + "#mural-auth-missing-code", 302);
 		}
@@ -610,7 +624,7 @@ export class MuralServicePart {
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
-		} catch (err) {
+		} catch {
 			const want = stateObj?.return || "/pages/projects/";
 			return Response.redirect(`${want}#mural-token-exchange-failed`, 302);
 		}
@@ -633,7 +647,7 @@ export class MuralServicePart {
 		backUrl.search = sp.toString();
 
 		return Response.redirect(backUrl.toString(), 302);
-  }
+	}
 
 	async muralVerify(origin, url) {
 		const uid = url.searchParams.get("uid") || "anon";
@@ -778,7 +792,7 @@ export class MuralServicePart {
 				this.root.log?.warn?.("mural.ensure_folder.no_id", { folderPreview: typeof folder === "object" ? Object.keys(folder || {}) : folder });
 			}
 
-			// ───── Create mural, then wait for a REAL viewer URL (no synthetic links) ─────
+			// Create mural, then obtain a REAL viewer URL (no synthetic links)
 			step = "create_mural";
 			const mural = await createMural(this.root.env, accessToken, {
 				title: "Reflexive Journal",
@@ -793,7 +807,6 @@ export class MuralServicePart {
 			});
 
 			if (!openUrl) {
-				// Fail clearly rather than storing a dud mapping.
 				return this.root.json({
 					ok: false,
 					error: "viewer_link_unavailable",
@@ -802,7 +815,7 @@ export class MuralServicePart {
 				}, 502, cors);
 			}
 
-			// Persist mapping (ok if boardUrl is null)
+			// Persist mapping
 			let registered = false;
 			if (projectId) {
 				try {
@@ -811,7 +824,7 @@ export class MuralServicePart {
 						uid,
 						purpose: PURPOSE_REFLEXIVE,
 						muralId: mural.id,
-						boardUrl: openUrl,  // real URL only
+						boardUrl: openUrl,
 						workspaceId: ws.id,
 						primary: true
 					});
@@ -821,7 +834,6 @@ export class MuralServicePart {
 						status: e?.status,
 						body: e?.body
 					});
-					// registering failure should NOT prevent returning the URL we have
 				}
 			}
 
