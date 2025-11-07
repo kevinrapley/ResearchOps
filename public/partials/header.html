@@ -1,11 +1,11 @@
 <!-- public/partials/header.html -->
 <header class="rops-header" role="banner">
-        <div class="rops-header__title" role="heading" aria-level="2">
+        <div class="rops-header__title">
                 {{#title}}
-                        <span class="govuk-heading-l">{{title}}</span>
+                        <p class="govuk-heading-l rops-header__title-text">{{title}}</p>
                 {{/title}}
                 {{^title}}
-                        <span class="govuk-heading-l">ResearchOps Demo Suite</span>
+                        <p class="govuk-heading-l rops-header__title-text">ResearchOps Demo Suite</p>
                 {{/title}}
         </div>
         {{#subtitle}}

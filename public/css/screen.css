@@ -111,13 +111,12 @@ textarea:focus {
         margin: 0;
         }
 
-.nav[data-active="Home"] .govuk-link[data-nav="Home"],
-.nav[data-active="Start Research Project"] .govuk-link[data-nav="Start Research Project"],
-.nav[data-active="Projects"] .govuk-link[data-nav="Projects"] {
-	font-weight: 700;
-	text-decoration: none;
-	border-bottom: 3px solid #1d70b8;
-	}
+.nav__list .govuk-link[aria-current="page"],
+.nav__list .govuk-link.active {
+        font-weight: 700;
+        text-decoration: none;
+        border-bottom: 3px solid #1d70b8;
+        }
 
 /* Ensure tab items have a visible focus */
 .nav .govuk-link:focus {
@@ -140,6 +139,10 @@ textarea:focus {
         margin: 0;
         }
 
+.rops-header__title-text {
+        margin: 0;
+        }
+
 .rops-header__subtitle {
         margin: 0 0 16px;
         color: #505a5f;
@@ -157,6 +160,10 @@ textarea:focus {
         margin: 0;
         }
 
+.page-title {
+        margin-top: 0;
+        }
+
 .card-section > .govuk-heading-l {
         margin-bottom: 16px;
         }
@@ -164,13 +171,21 @@ textarea:focus {
 /* === =CARDS & PATTERNS ================================== */
 
 .card {
-	border: 1px solid #b1b4b6;
-	border-radius: 6px;
-	padding: 24px;
-	margin-bottom: 16px;
-	background: #fff;
-	color: #0b0c0c;
-	}
+        border: 1px solid #b1b4b6;
+        border-radius: 6px;
+        padding: 24px;
+        margin-bottom: 16px;
+        background: #fff;
+        color: #0b0c0c;
+        }
+
+.card__heading {
+        margin: 0;
+        }
+
+.card__question {
+        margin: 8px 0 0;
+        }
 
 .project-org {
 	margin: 0 0 4px;

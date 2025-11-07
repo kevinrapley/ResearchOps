@@ -184,14 +184,18 @@ class XInclude extends HTMLElement {
 		}
 	}
 
-	applyActiveNav() {
-		this.querySelectorAll("[data-active]").forEach(el => {
-			const target = (el.getAttribute("data-active") || "").trim();
-			if (!target) return;
-			el.querySelectorAll(".active").forEach(a => a.classList.remove("active"));
-			el.querySelectorAll(`[data-nav="${CSS.escape(target)}"]`).forEach(a => a.classList.add("active"));
-		});
-	}
+        applyActiveNav() {
+                this.querySelectorAll("[data-active]").forEach(el => {
+                        const target = (el.getAttribute("data-active") || "").trim();
+                        if (!target) return;
+                        el.querySelectorAll("[data-nav]").forEach(link => {
+                                const isMatch = (link.getAttribute("data-nav") || "").trim() === target;
+                                link.classList.toggle("active", isMatch);
+                                if (isMatch) link.setAttribute("aria-current", "page");
+                                else link.removeAttribute("aria-current");
+                        });
+                });
+        }
 
 	executeScripts() {
 		// Re-execute any <script> tags that were inserted via innerHTML.
