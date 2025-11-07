@@ -9,8 +9,8 @@
  * - MURAL_REDIRECT_URI
  *
  * Optional:
- * - MURAL_COMPANY_ID                // prefer company verification
- * - MURAL_HOME_OFFICE_WORKSPACE_ID  // fallback: verify by workspace id/name
+ * - MURAL_COMPANY_ID
+ * - MURAL_HOME_OFFICE_WORKSPACE_ID
  * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
  * - MURAL_SCOPES                    // space-separated; overrides defaults
  */
@@ -32,7 +32,7 @@ export const DEFAULT_SCOPES = [
 /* Base URLs                                                          */
 /* ------------------------------------------------------------------ */
 
-const apiBase = (env) => (env.MURAL_API_BASE || "https://app.mural.co/api/public/v1").replace(/\/+$/, "");
+const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
 
 /* ------------------------------------------------------------------ */
 /* JSON + Fetch helpers                                               */
@@ -43,8 +43,9 @@ async function fetchJSON(url, opts = {}) {
 	const t = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
 	try {
 		const res = await fetch(url, { ...opts, signal: ctrl.signal });
-		const txt = await res.text();
-		const js = (() => { try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } })();
+		const txt = await res.text().catch(() => "");
+		let js = {};
+		try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
 
 		if (!res.ok) {
 			const err = new Error(js?.message || js?.error_description || `HTTP ${res.status}`);
@@ -59,17 +60,13 @@ async function fetchJSON(url, opts = {}) {
 }
 
 const withBearer = (token) => ({
-	headers: { ...JSON_HEADERS, Authorization: `Bearer ${token}` }
+	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
 });
 
 /* ------------------------------------------------------------------ */
 /* OAuth2                                                             */
 /* ------------------------------------------------------------------ */
 
-/**
- * Build the user authorization URL.
- * Expects `state` to be a string (already encoded by caller).
- */
 export function buildAuthUrl(env, state) {
 	const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
 	const params = new URLSearchParams({
@@ -79,8 +76,8 @@ export function buildAuthUrl(env, state) {
 		scope: scopes,
 		state
 	});
-	// Works with tenants that expect /authorization/oauth2 or /authorization/oauth2/authorize
-	return `${apiBase(env)}/authorization/oauth2?${params}`;
+	// Note: public API uses /authorization/oauth2/authorize
+	return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
 }
 
 export async function exchangeAuthCode(env, code) {
@@ -96,8 +93,8 @@ export async function exchangeAuthCode(env, code) {
 		headers: { "content-type": "application/x-www-form-urlencoded" },
 		body
 	});
-	const js = await res.json();
-	if (!res.ok) throw new Error(js?.error_description || "Token exchange failed");
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) throw Object.assign(new Error(js?.error_description || "Token exchange failed"), { status: res.status, body: js });
 	return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
@@ -113,9 +110,9 @@ export async function refreshAccessToken(env, refreshToken) {
 		headers: { "content-type": "application/x-www-form-urlencoded" },
 		body
 	});
-	const js = await res.json();
-	if (!res.ok) throw new Error(js?.error_description || "Token refresh failed");
-	return js; // { access_token, refresh_token?, expires_in, token_type }
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) throw Object.assign(new Error(js?.error_description || "Token refresh failed"), { status: res.status, body: js });
+	return js;
 }
 
 /* ------------------------------------------------------------------ */
@@ -128,8 +125,7 @@ export async function getMe(env, token) {
 
 /** Unified accessor to last active workspace id across slightly different shapes */
 export function getActiveWorkspaceIdFromMe(me) {
-	const v = me?.value || me || {};
-	return v.lastActiveWorkspace || v.activeWorkspaceId || v.activeWorkspace?.id || null;
+	return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
 }
 
 /**
@@ -139,8 +135,8 @@ export function getActiveWorkspaceIdFromMe(me) {
 export async function verifyHomeOfficeByCompany(env, token) {
 	const me = await getMe(env, token);
 	const v = me?.value || me || {};
-	const cid = String(v.companyId || v.company?.id || "").trim().toLowerCase();
-	const cname = String(v.companyName || v.company?.name || "").trim().toLowerCase();
+	const cid = String(v.companyId || "").trim().toLowerCase();
+	const cname = String(v.companyName || "").trim().toLowerCase();
 
 	const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase();
 	if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
@@ -172,65 +168,53 @@ export async function listRooms(env, token, workspaceId) {
 }
 
 /**
- * Creates a room.
- * Newer tenants: POST /rooms with { name, workspaceId, visibility }
- * Legacy fallback (if 404): POST /workspaces/:id/rooms with { name }
+ * Create room (new public API)
+ * Body: { name, workspaceId, visibility }
  */
 export async function createRoom(env, token, { name, workspaceId, visibility = "private" }) {
-	// Try modern endpoint first
-	try {
-		return await fetchJSON(`${apiBase(env)}/rooms`, {
-			method: "POST",
-			...withBearer(token),
-			body: JSON.stringify({ name, workspaceId, visibility })
-		});
-	} catch (e) {
-		if (Number(e?.status) !== 404) throw e;
-		// Legacy fallback
-		return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, {
-			method: "POST",
-			...withBearer(token),
-			body: JSON.stringify({ name })
-		});
-	}
+	return fetchJSON(`${apiBase(env)}/rooms`, {
+		method: "POST",
+		...withBearer(token),
+		body: JSON.stringify({ name, workspaceId, visibility })
+	});
 }
 
 /**
  * Heuristic: reuse a private room or one that includes the username; else create.
+ * New API first (visibility), legacy fallback (type) if 404.
  */
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
+	// Try to reuse
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
 	const list = Array.isArray(rooms?.items) ? rooms.items :
 		Array.isArray(rooms?.value) ? rooms.value :
 		Array.isArray(rooms) ? rooms : [];
 
 	let room = list.find(r =>
-		/(private)/i.test(String(r.visibility || "")) ||
+		/(private)/i.test(String(r.visibility || r.type || "")) ||
 		(username && String(r.name || "").toLowerCase().includes(String(username).toLowerCase()))
 	);
+	if (room) return room;
 
-	if (!room) {
-		room = await createRoom(env, token, {
+	// Create via new endpoint
+	try {
+		return await createRoom(env, token, {
 			name: `${username} — Private`,
 			workspaceId,
 			visibility: "private"
 		});
+	} catch (e) {
+		// If the NEW endpoint isn't available in tenant (404), try legacy shape
+		if (Number(e?.status) !== 404) throw e;
 	}
-	return room;
-}
 
-/**
- * Deterministic room policy: find by exact name, else create that name.
- * Useful when you always want boards under a single named room, e.g. “ResearchOps”.
- */
-export async function ensureDefaultRoom(env, token, workspaceId, roomName = "ResearchOps") {
-	const existing = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
-	const list = Array.isArray(existing?.items) ? existing.items :
-		Array.isArray(existing?.value) ? existing.value :
-		Array.isArray(existing) ? existing : [];
-	const found = list.find(r => String(r?.name || "").trim().toLowerCase() === String(roomName).trim().toLowerCase());
-	if (found) return found;
-	return createRoom(env, token, { name: roomName, workspaceId, visibility: "private" });
+	// Legacy fallback: POST /workspaces/:workspaceId/rooms with { name, type: "private" }
+	const legacyUrl = `${apiBase(env)}/workspaces/${workspaceId}/rooms`;
+	return fetchJSON(legacyUrl, {
+		method: "POST",
+		...withBearer(token),
+		body: JSON.stringify({ name: `${username} — Private`, type: "private" })
+	});
 }
 
 export async function listFolders(env, token, roomId) {
@@ -258,27 +242,37 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 /**
- * Create a mural board UNDER a room (correct path).
- * This fixes upstream `PATH_NOT_FOUND` seen when posting to /murals directly.
+ * Create mural (new API allows POST /murals with { title, roomId, folderId })
+ * Some tenants still expect POST /rooms/:roomId/murals — we try new first, then legacy.
  */
 export async function createMural(env, token, { title, roomId, folderId }) {
-	if (!roomId) throw new Error("roomId is required for createMural()");
-	const body = { title, ...(folderId ? { folderId } : {}) };
+	// New endpoint
+	try {
+		return await fetchJSON(`${apiBase(env)}/murals`, {
+			method: "POST",
+			...withBearer(token),
+			body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+		});
+	} catch (e) {
+		if (Number(e?.status) !== 404) throw e;
+	}
+
+	// Legacy fallback
 	return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
 		method: "POST",
 		...withBearer(token),
-		body: JSON.stringify(body)
+		body: JSON.stringify({ title, ...(folderId ? { folderId } : {}) })
 	});
+}
+
+export async function getMural(env, token, muralId) {
+	return fetchJSON(`${apiBase(env)}/murals/${muralId}`, withBearer(token));
 }
 
 /* ------------------------------------------------------------------ */
 /* Widgets + Tags (robust wrappers; tolerate API variance)            */
 /* ------------------------------------------------------------------ */
 
-/**
- * List widgets on a mural. Returns { widgets: [...] }.
- * Falls back to { widgets: [] } on 404.
- */
 export async function getWidgets(env, token, muralId) {
 	try {
 		const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets`, withBearer(token));
@@ -292,7 +286,6 @@ export async function getWidgets(env, token, muralId) {
 	}
 }
 
-/** Create a sticky note widget. Returns { id, ... }. */
 export async function createSticky(env, token, muralId, { text, x, y, width, height }) {
 	const body = { text, x, y, width, height, shape: "rectangle" };
 	const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/sticky-note`, {
@@ -303,7 +296,6 @@ export async function createSticky(env, token, muralId, { text, x, y, width, hei
 	return { id: js?.id || js?.widgetId || js?.value?.id };
 }
 
-/** Patch a sticky note (text and/or geometry). */
 export async function updateSticky(env, token, muralId, stickyId, { text, x, y, width, height }) {
 	const patch = {};
 	if (typeof text === "string") patch.text = text;
@@ -320,10 +312,6 @@ export async function updateSticky(env, token, muralId, stickyId, { text, x, y, 
 	});
 }
 
-/**
- * Ensure labels (tags) exist (Blueberry-like). Returns tag IDs.
- * If tagging endpoints are unavailable, returns [].
- */
 export async function ensureTagsBlueberry(env, token, muralId, labels) {
 	try {
 		if (!Array.isArray(labels) || !labels.length) return [];
@@ -333,7 +321,7 @@ export async function ensureTagsBlueberry(env, token, muralId, labels) {
 
 		const idByName = new Map();
 		for (const t of existing) {
-			const name = String(t?.name || t?.title || "").trim();
+			const name = String(t?.name || "").trim();
 			if (name) idByName.set(name.toLowerCase(), t.id);
 		}
 
@@ -354,7 +342,6 @@ export async function ensureTagsBlueberry(env, token, muralId, labels) {
 	}
 }
 
-/** Apply tag IDs to a sticky. Silently tolerates failure (returns {ok:false}). */
 export async function applyTagsToSticky(env, token, muralId, stickyId, tagIds) {
 	try {
 		if (!Array.isArray(tagIds) || !tagIds.length) return { ok: true };
@@ -385,15 +372,10 @@ export function normaliseWidgets(raw) {
 			width: Number(w.width ?? 240),
 			height: Number(w.height ?? 120),
 			tags: Array.isArray(w.tags) ? w.tags.map(t => String(t?.name || t).toLowerCase()) :
-				Array.isArray(w.labels) ? w.labels.map(l => String(l?.name || l).toLowerCase()) :
-				[]
+				Array.isArray(w.labels) ? w.labels.map(l => String(l?.name || l).toLowerCase()) : []
 		}));
 }
 
-/**
- * Pick an anchor sticky within a category.
- * Preference: stickies tagged with the category; else the lowest (max y) sticky.
- */
 export function findLatestInCategory(stickies, category) {
 	const cat = String(category || "").toLowerCase();
 	const tagged = stickies.filter(s => (s.tags || []).includes(cat));
