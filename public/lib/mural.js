@@ -163,87 +163,51 @@ export async function verifyHomeOfficeWorkspace(env, token) {
 /* Rooms • Folders • Murals                                           */
 /* ------------------------------------------------------------------ */
 
-/**
- * List rooms for a workspace.
- */
+/** List rooms for a workspace. */
 export async function listRooms(env, token, workspaceId) {
 	return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
 /**
- * Create room via the **new** endpoint.
- * Attempts 2 payload shapes:
- *   A) { name, workspaceId, visibility: "private" }
- *   B) { name, workspaceId, type: "private" }
- * Returns the created room JSON or throws.
- */
-async function createRoomNew(env, token, { name, workspaceId }) {
-	// A) visibility shape
-	try {
-		return await fetchJSON(`${apiBase(env)}/rooms`, {
-			method: "POST",
-			...withBearer(token),
-			body: JSON.stringify({ name, workspaceId, visibility: "private" })
-		});
-	} catch (e) {
-		// If the server complains about "type", retry with type
-		const status = Number(e?.status || 0);
-		const msg = (e?.body && JSON.stringify(e.body)) || "";
-		const mentionsType = /"type"|Invalid\\?["']type["']|Type 'open', 'private'/.test(msg);
-		if (status && status !== 400 && status !== 422) throw e; // not a shape issue → bubble up
-
-		if (status === 400 || status === 422 || mentionsType) {
-			// B) type shape
-			return await fetchJSON(`${apiBase(env)}/rooms`, {
-				method: "POST",
-				...withBearer(token),
-				body: JSON.stringify({ name, workspaceId, type: "private" })
-			});
-		}
-		throw e;
-	}
-}
-
-/**
- * Heuristic: reuse a private room or one that includes the username; else create.
- * Order of attempts:
- *   1) New endpoint (visibility shape), then new endpoint (type shape)
- *   2) Legacy endpoint POST /workspaces/:workspaceId/rooms with { name, type: "private" }
+ * Find an existing room only.
+ * Does NOT create rooms (enterprise tenants often disallow it).
+ * Strategy:
+ *  - Prefer rooms marked private (visibility/type/roomType === 'private')
+ *  - Else rooms whose name includes the provided username
+ *  - Else a sensible first room
+ * Throws { status: 409, code: "no_existing_room" } when none are found.
  */
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
-	// Try to reuse an existing room
 	const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
 	const list = Array.isArray(rooms?.items) ? rooms.items :
 		Array.isArray(rooms?.value) ? rooms.value :
 		Array.isArray(rooms) ? rooms : [];
 
-	let room = list.find(r =>
-		/(private)/i.test(String(r.visibility || r.type || "")) ||
-		(username && String(r.name || "").toLowerCase().includes(String(username).toLowerCase()))
-	);
-	if (room) return room;
+	const norm = (v) => String(v || "").toLowerCase();
+	const isPrivate = (r) => ["private"].includes(norm(r.visibility || r.type || r.roomType));
+	const nameMatches = (r) => {
+		const n = norm(r.name || r.title || "");
+		return !username ? false : n.includes(norm(username)) || n.includes("private");
+	};
 
-	// Try new endpoint (both shapes)
-	try {
-		return await createRoomNew(env, token, {
-			name: `${username} — Private`,
-			workspaceId
-		});
-	} catch (e) {
-		// If the new endpoint itself is missing (common in older tenants), fall through on 404
-		if (Number(e?.status) !== 404) {
-			// Non-404 failure after trying both shapes → rethrow
-			throw e;
-		}
-	}
-
-	// Legacy fallback
-	const legacyUrl = `${apiBase(env)}/workspaces/${workspaceId}/rooms`;
-	return fetchJSON(legacyUrl, {
-		method: "POST",
-		...withBearer(token),
-		body: JSON.stringify({ name: `${username} — Private`, type: "private" })
+	// rank: private first, then name match, then created/first
+	const ranked = [...list].sort((a, b) => {
+		const ap = isPrivate(a) ? 1 : 0;
+		const bp = isPrivate(b) ? 1 : 0;
+		if (bp !== ap) return bp - ap;
+		const an = nameMatches(a) ? 1 : 0;
+		const bn = nameMatches(b) ? 1 : 0;
+		if (bn !== an) return bn - an;
+		return 0;
 	});
+
+	const found = ranked[0] || null;
+	if (found) return found;
+
+	const err = new Error("No existing room found in workspace");
+	err.status = 409;
+	err.code = "no_existing_room";
+	throw err;
 }
 
 export async function listFolders(env, token, roomId) {
@@ -271,8 +235,9 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 /**
- * Create mural (new API allows POST /murals with { title, roomId, folderId })
- * Some tenants still expect POST /rooms/:roomId/murals — we try new first, then legacy.
+ * Create mural — try new, then legacy.
+ * New API: POST /murals  { title, roomId, folderId }
+ * Legacy : POST /rooms/:roomId/murals  { title, [folderId] }
  */
 export async function createMural(env, token, { title, roomId, folderId }) {
 	// New endpoint
