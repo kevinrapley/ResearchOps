@@ -28,12 +28,25 @@ export async function onRequest({ request, env, params: _params }) {
 	const inReqUrl = new URL(request.url);
 	const upstreamBase = new URL(env.UPSTREAM_API);
 
-	// Everything after '/api' from the incoming request
-	const tailPath = inReqUrl.pathname.replace(/^\/api\/?/, ''); // e.g. 'studies'
-	const cleanBasePath = upstreamBase.pathname.replace(/\/+$/, ''); // no trailing slash
-	const upstreamPath = `${cleanBasePath}/api/${tailPath}`; // ensure single /api
+        // Everything after '/api' from the incoming request
+        const tailPath = inReqUrl.pathname.replace(/^\/api\/?/, ''); // e.g. 'studies'
+        const cleanBasePath = upstreamBase.pathname.replace(/\/+$/, ''); // no trailing slash
+        const tailSegment = tailPath ? `/${tailPath}` : '';
+        const normalizedBasePath = cleanBasePath.toLowerCase(); // safe to inspect without mutating case
+        let upstreamPath;
+        if (normalizedBasePath.endsWith('/api') || normalizedBasePath.includes('/api/')) {
+                upstreamPath = `${cleanBasePath}${tailSegment}`;
+        } else {
+                upstreamPath = `${cleanBasePath}/api${tailSegment}`;
+        }
+        if (!upstreamPath.startsWith('/')) {
+                upstreamPath = `/${upstreamPath.replace(/^\/+/, '')}`;
+        }
+        if (upstreamPath === '/' || upstreamPath === '') {
+                upstreamPath = '/api';
+        }
 
-	const outUrl = new URL(upstreamBase.origin + upstreamPath);
+        const outUrl = new URL(upstreamBase.origin + upstreamPath);
 	outUrl.search = inReqUrl.search; // preserve ?query
 
 	// Clone headers, but don’t forward Host; ensure we include browser Origin (for Worker CORS check)
