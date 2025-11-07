@@ -45,7 +45,6 @@ jobs:
               "inflight": "npm:@npmcli/inflight@^2.0.0"
             }
           }
-PKG
           npm install --prefix .pa11y-workdir --no-package-lock
 
       - name: Run pa11y-ci
