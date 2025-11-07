@@ -64,6 +64,10 @@ function _airtableHeaders(env) {
   };
 }
 
+function _boardsTableName(env) {
+  return env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
+}
+
 function _encodeTableUrl(env, tableName) {
   return `https://api.airtable.com/v0/${encodeURIComponent(env.AIRTABLE_BASE_ID)}/${encodeURIComponent(tableName)}`;
 }
@@ -110,7 +114,7 @@ function _buildBoardsFilter({ /* projectId intentionally omitted */ uid, purpose
  *  - single-line text (=== projectId)
  */
 async function _airtableListBoards(env, { projectId, uid, purpose, active = true, max = 25 }) {
-  const url = new URL(_encodeTableUrl(env, "Mural Boards"));
+  const url = new URL(_encodeTableUrl(env, _boardsTableName(env)));
   const filterByFormula = _buildBoardsFilter({ uid, purpose, active });
   if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
   url.searchParams.set("maxRecords", String(max));
@@ -141,7 +145,7 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 
 /** Create a board mapping row in Airtable. */
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
-  const url = _encodeTableUrl(env, "Mural Boards");
+  const url = _encodeTableUrl(env, _boardsTableName(env));
 
   const mkBodyLinked = () => ({
     records: [{
