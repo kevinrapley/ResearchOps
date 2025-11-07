@@ -170,18 +170,43 @@ export async function ensureUserRoom(env, accessToken, workspaceId, username) {
   const existing = rooms.find(r => (r.name || r.title || "").toLowerCase() === name.toLowerCase());
   if (existing) return existing;
 
-  const createRes = await fetch(listUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ name })
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json"
+  };
+  const createBody = JSON.stringify({
+    name,
+    workspaceId,
+    visibility: "private"
   });
+
+  /**
+   * Mural’s public API moved room creation from
+   *   POST /workspaces/:workspaceId/rooms → POST /rooms
+   * in early 2025. Try the new endpoint first, but fall back once for
+   * tenants that might still be on the legacy path.
+   */
+  const newCreateUrl = "https://app.mural.co/api/public/v1/rooms";
+  let createRes = await fetch(newCreateUrl, {
+    method: "POST",
+    headers,
+    body: createBody
+  });
+
+  if (!createRes.ok && Number(createRes.status) === 404) {
+    // Legacy fallback: POST /workspaces/:workspaceId/rooms with minimal body
+    createRes = await fetch(listUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ name })
+    });
+  }
+
   if (!createRes.ok) {
     const text = await createRes.text().catch(() => "");
     throw Object.assign(new Error(`Create room failed: ${createRes.status}`), { status: createRes.status, body: text });
   }
+
   const created = await createRes.json();
   return created?.value || created;
 }
