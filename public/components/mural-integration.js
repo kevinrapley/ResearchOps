@@ -96,19 +96,24 @@
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
 		els.btnSetup.textContent = 'Create “Reflexive Journal”';
-		els.btnSetup.onclick = async () => {
-			try {
-				els.btnSetup.disabled = true;
-				pill(els.status, "neutral", "Creating board…");
+                els.btnSetup.onclick = async () => {
+                        try {
+                                els.btnSetup.disabled = true;
+                                pill(els.status, "neutral", "Creating board…");
 
-				const body = {
-					uid: uid(),
-					projectId,
-					projectName
-				};
+                                const body = {
+                                        uid: uid(),
+                                        projectId,
+                                        projectName
+                                };
 
-				const js = await jsonFetch(`${API_ORIGIN}/api/mural/setup`, {
-					method: "POST",
+                                const activeWorkspaceId = window.__muralActiveWorkspaceId;
+                                if (typeof activeWorkspaceId === "string" && activeWorkspaceId.trim()) {
+                                        body.workspaceId = activeWorkspaceId.trim();
+                                }
+
+                                const js = await jsonFetch(`${API_ORIGIN}/api/mural/setup`, {
+                                        method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(body)
 				});
