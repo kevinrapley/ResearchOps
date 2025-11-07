@@ -2,7 +2,7 @@
  * @file src/core/router.js
  * @module core/router
  * @summary Router for Cloudflare Worker entrypoint (modular ResearchOps service).
- * @version 2.1.0 - Fixed Mural stub logic
+ * @version 2.1.1 - Normalize ALLOWED_ORIGINS before constructing ResearchOpsService (fix Mural verify crash)
  *
  * Fail-safe design:
  *  - Projects and Studies handled directly (no service.js dependency)
@@ -340,7 +340,13 @@ export async function handleRequest(request, env) {
 
     // Service-dependent routes (only if ResearchOpsService loaded successfully)
     if (ResearchOpsService && !serviceLoadFailed) {
-      const service = new ResearchOpsService(env);
+      // ── IMPORTANT: normalize ALLOWED_ORIGINS to a string for legacy service code
+      const envCompat = {
+        ...env,
+        ALLOWED_ORIGINS: normalizeAllowedOrigins(env.ALLOWED_ORIGINS).join(",")
+      };
+
+      const service = new ResearchOpsService(envCompat);
 
       // Diagnostics
       if (url.pathname === "/api/_diag/airtable" && request.method === "GET") {
@@ -349,12 +355,12 @@ export async function handleRequest(request, env) {
 
       // AI Assist
       if (url.pathname === "/api/ai-rewrite" && request.method === "POST") {
-        return aiRewrite(request, env, origin);
+        return aiRewrite(request, envCompat, origin);
       }
 
       // Project details CSV (uses service util)
       if (url.pathname === "/api/project-details.csv" && request.method === "GET") {
-        return service.streamCsv(origin, env.GH_PATH_DETAILS);
+        return service.streamCsv(origin, envCompat.GH_PATH_DETAILS);
       }
 
       // Journals
@@ -440,7 +446,7 @@ export async function handleRequest(request, env) {
         }
       }
       if (url.pathname === "/api/studies.csv" && request.method === "GET") {
-        if (env.GH_PATH_STUDIES) return service.streamCsv(origin, env.GH_PATH_STUDIES);
+        if (envCompat.GH_PATH_STUDIES) return service.streamCsv(origin, envCompat.GH_PATH_STUDIES);
       }
 
       // Guides
@@ -476,7 +482,7 @@ export async function handleRequest(request, env) {
           const partialId = decodeURIComponent(parts[2]);
           if (request.method === "GET") return service.readPartial(origin, partialId);
           if (request.method === "PATCH") return service.updatePartial(request, origin, partialId);
-          if (request.method === "DELETE") return service.deletePartial(origin, partialId);
+          if (request.method === "DELETE") return service.deletePartial(request, origin, partialId);
         }
       }
 
@@ -532,10 +538,7 @@ export async function handleRequest(request, env) {
         if (typeof service.sendComms === "function") return service.sendComms(request, origin);
       }
 
-      // ═══════════════════════════════════════════════════════════════════════════════
-      // MURAL ROUTES (require service.js for OAuth, KV access, and Airtable mapping)
-      // ═══════════════════════════════════════════════════════════════════════════════
-      
+      // MURAL ROUTES (require service.js)
       if (url.pathname === "/api/mural/auth" && request.method === "GET") {
         console.log("[router] ✓ Matched /api/mural/auth (service)");
         return service.mural.muralAuth(origin, url);
