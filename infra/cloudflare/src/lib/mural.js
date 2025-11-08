@@ -2,6 +2,18 @@
  * @file lib/mural.js
  * @module mural
  * @summary Mural OAuth + API helpers (pure functions; no routing).
+ *
+ * ENV required:
+ * - MURAL_CLIENT_ID
+ * - MURAL_CLIENT_SECRET
+ * - MURAL_REDIRECT_URI
+ *
+ * Optional:
+ * - MURAL_COMPANY_ID
+ * - MURAL_HOME_OFFICE_WORKSPACE_ID
+ * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
+ * - MURAL_SCOPES                    // space-separated; overrides defaults
+ * - MURAL_AUTH_PATH                 // override for authorize path (default /oauth/authorize)
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -17,17 +29,24 @@ export const DEFAULT_SCOPES = [
   "murals:write"
 ];
 
-const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+/* ------------------------------------------------------------------ */
+/* Base URLs                                                          */
+/* ------------------------------------------------------------------ */
 
-/* ───────── fetch helpers ───────── */
+export const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
 
-async function fetchJSON(url, opts = {}) {
+/* ------------------------------------------------------------------ */
+/* JSON + Fetch helpers                                               */
+/* ------------------------------------------------------------------ */
+
+export async function fetchJSON(url, opts = {}) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
   try {
     const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    const txt = await res.text();
-    const js = (() => { try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } })();
+    const txt = await res.text().catch(() => "");
+    let js = {};
+    try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
     if (!res.ok) {
       const err = new Error(js?.message || js?.error_description || `HTTP ${res.status}`);
       err.status = res.status;
@@ -40,12 +59,42 @@ async function fetchJSON(url, opts = {}) {
   }
 }
 
-const withBearer = (token) => ({
+export const withBearer = (token) => ({
   headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
 });
 
-/* ───────── OAuth2 ───────── */
+/* ------------------------------------------------------------------ */
+/* OAuth2 (resilient: supports old & new paths)                       */
+/* ------------------------------------------------------------------ */
 
+/**
+ * Authorization paths we’ve seen in the wild:
+ * - /oauth/authorize                     (newer)
+ * - /authorization/oauth2/authorize      (older)
+ */
+function authPaths(env) {
+  const override = (env.MURAL_AUTH_PATH || "").trim();
+  const list = [];
+  if (override) list.push(override.replace(/^\//, ""));
+  list.push("oauth/authorize", "authorization/oauth2/authorize");
+  // de-dupe
+  return [...new Set(list)];
+}
+
+/**
+ * Token paths we’ve seen:
+ * - /oauth/token
+ * - /authorization/oauth2/token
+ */
+function tokenPaths() {
+  return ["oauth/token", "authorization/oauth2/token"];
+}
+
+/**
+ * Build the user authorization URL.
+ * We can only return one URL, so prefer the modern path. If your tenant still
+ * expects the legacy path, set env.MURAL_AUTH_PATH accordingly.
+ */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
   const params = new URLSearchParams({
@@ -55,7 +104,8 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+  const path = authPaths(env)[0]; // primary (override or modern)
+  return `${apiBase(env)}/${path}?${params}`;
 }
 
 export async function exchangeAuthCode(env, code) {
@@ -66,14 +116,30 @@ export async function exchangeAuthCode(env, code) {
     client_id: env.MURAL_CLIENT_ID,
     client_secret: env.MURAL_CLIENT_SECRET
   });
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body
-  });
-  const js = await res.json();
-  if (!res.ok) throw new Error(js?.error_description || "Token exchange failed");
-  return js;
+
+  const paths = tokenPaths();
+  let lastErr;
+  for (const p of paths) {
+    try {
+      const res = await fetch(`${apiBase(env)}/${p}`, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body
+      });
+      const js = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
+        err.status = res.status;
+        err.body = js;
+        throw err;
+      }
+      return js;
+    } catch (e) {
+      lastErr = e;
+      if (Number(e?.status) && Number(e.status) !== 404) break;
+    }
+  }
+  throw (lastErr || new Error("Token exchange failed"));
 }
 
 export async function refreshAccessToken(env, refreshToken) {
@@ -83,40 +149,69 @@ export async function refreshAccessToken(env, refreshToken) {
     client_id: env.MURAL_CLIENT_ID,
     client_secret: env.MURAL_CLIENT_SECRET
   });
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body
-  });
-  const js = await res.json();
-  if (!res.ok) throw new Error(js?.error_description || "Token refresh failed");
-  return js;
+
+  const paths = tokenPaths();
+  let lastErr;
+  for (const p of paths) {
+    try {
+      const res = await fetch(`${apiBase(env)}/${p}`, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body
+      });
+      const js = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
+        err.status = res.status;
+        err.body = js;
+        throw err;
+      }
+      return js;
+    } catch (e) {
+      lastErr = e;
+      if (Number(e?.status) && Number(e.status) !== 404) break;
+    }
+  }
+  throw (lastErr || new Error("Token refresh failed"));
 }
 
-/* ───────── Profile + Workspace ───────── */
+/* ------------------------------------------------------------------ */
+/* Profile + Workspace verification                                   */
+/* ------------------------------------------------------------------ */
 
 export async function getMe(env, token) {
   return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
 
+/** Unified accessor to last active workspace id across slightly different shapes */
 export function getActiveWorkspaceIdFromMe(me) {
   return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
 }
 
+/**
+ * Verify membership using company (preferred when env.MURAL_COMPANY_ID is set).
+ * Fallback behaviour: accept if the company name matches /home\s*office/i.
+ */
 export async function verifyHomeOfficeByCompany(env, token) {
   const me = await getMe(env, token);
   const v = me?.value || me || {};
   const cid = String(v.companyId || "").trim().toLowerCase();
   const cname = String(v.companyName || "").trim().toLowerCase();
+
   const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase();
   if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
+
   return Boolean(cname && /home\s*office/.test(cname));
 }
 
+/**
+ * Legacy/fallback: verify membership by workspace presence (ID or name match).
+ */
 export async function verifyHomeOfficeWorkspace(env, token) {
   const data = await fetchJSON(`${apiBase(env)}/workspaces`, withBearer(token)).catch(() => ({}));
   const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.value) ? data.value : [];
   if (!list.length) return null;
+
   const targetId = env.MURAL_HOME_OFFICE_WORKSPACE_ID ? String(env.MURAL_HOME_OFFICE_WORKSPACE_ID) : "";
   let ws = null;
   if (targetId) ws = list.find(w => `${w.id}` === targetId);
@@ -124,12 +219,15 @@ export async function verifyHomeOfficeWorkspace(env, token) {
   return ws || null;
 }
 
-/* ───────── Rooms • Folders • Murals ───────── */
+/* ------------------------------------------------------------------ */
+/* Rooms • Folders • Murals                                           */
+/* ------------------------------------------------------------------ */
 
 export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
+// We DO NOT create rooms any more; this only reuses an existing one by heuristics.
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
   const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(rooms?.items) ? rooms.items :
@@ -140,7 +238,11 @@ export async function ensureUserRoom(env, token, workspaceId, username = "Privat
     /(private)/i.test(String(r.visibility || r.type || "")) ||
     (username && String(r.name || "").toLowerCase().includes(String(username).toLowerCase()))
   );
-  if (!room) throw Object.assign(new Error("no_existing_room"), { code: "no_existing_room" });
+  if (!room) {
+    const err = new Error("no_existing_room");
+    err.code = "no_existing_room";
+    throw err;
+  }
   return room;
 }
 
@@ -161,16 +263,28 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
   const list = Array.isArray(existing?.items) ? existing.items :
     Array.isArray(existing?.value) ? existing.value :
     Array.isArray(existing) ? existing : [];
-  const found = list.find(f => String(f?.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase());
+  const found = list.find(f =>
+    String(f?.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase()
+  );
   if (found) return found;
   return createFolder(env, token, roomId, projectName);
 }
 
 export async function createMural(env, token, { title, roomId, folderId }) {
-  return fetchJSON(`${apiBase(env)}/murals`, {
+  // Prefer new endpoint; fall back to legacy
+  try {
+    return await fetchJSON(`${apiBase(env)}/murals`, {
+      method: "POST",
+      ...withBearer(token),
+      body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+    });
+  } catch (e) {
+    if (Number(e?.status) !== 404) throw e;
+  }
+  return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
     method: "POST",
     ...withBearer(token),
-    body: JSON.stringify({ title, roomId, folderId })
+    body: JSON.stringify({ title, ...(folderId ? { folderId } : {}) })
   });
 }
 
@@ -178,69 +292,45 @@ export async function getMural(env, token, muralId) {
   return fetchJSON(`${apiBase(env)}/murals/${muralId}`, withBearer(token));
 }
 
-/* ───────── Links (viewer/share) ───────── */
+/* ------------------------------------------------------------------ */
+/* Links: probe & creation                                            */
+/* ------------------------------------------------------------------ */
 
-/** GET variations for links on a mural */
 export async function getMuralLinks(env, token, muralId) {
-  const out = [];
-  async function safe(path) {
-    try { return await fetchJSON(`${apiBase(env)}${path}`, withBearer(token)); } catch { return null; }
-  }
-  // Common variants
-  const tries = [
-    `/murals/${muralId}/links`,
-    `/murals/${muralId}/share-links`,
-    `/murals/${muralId}/shares`,
-  ];
-  for (const path of tries) {
-    const js = await safe(path);
+  try {
+    const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, withBearer(token));
     const arr = Array.isArray(js?.items) ? js.items :
       Array.isArray(js?.value) ? js.value :
       Array.isArray(js) ? js : [];
-    for (const x of arr) {
-      const url = x.url || x.href || x.viewerUrl || x.openUrl || x.viewLink || x.link || x.shareUrl || null;
-      if (url) out.push({
-        url,
-        rel: x.rel || x.relationship || x.relType || null,
-        type: x.type || x.kind || x.access || x.role || null
-      });
-    }
+    return arr.map(x => ({
+      type: x?.type || x?.rel || "",
+      url: x?.url || x?.href || ""
+    })).filter(x => x.url);
+  } catch (e) {
+    if (Number(e?.status) === 404) return [];
+    throw e;
   }
-  return out;
 }
 
-/** POST variations to actively create a viewer/open link */
 export async function createViewerLink(env, token, muralId) {
-  const attempts = [
-    // /links
-    { path: `/murals/${muralId}/links`, body: { type: "view" } },
-    { path: `/murals/${muralId}/links`, body: { type: "open" } },
-
-    // /share-links
-    { path: `/murals/${muralId}/share-links`, body: { access: "viewer" } },
-    { path: `/murals/${muralId}/share-links`, body: { role: "viewer" } },
-    { path: `/murals/${muralId}/share-links`, body: { access: "public", role: "viewer" } },
-    { path: `/murals/${muralId}/share-links`, body: { anyoneWithLink: true, role: "viewer" } },
-
-    // /shares
-    { path: `/murals/${muralId}/shares`, body: { role: "viewer" } },
-  ];
-
-  for (const a of attempts) {
-    try {
-      const js = await fetchJSON(`${apiBase(env)}${a.path}`, {
-        method: "POST",
-        ...withBearer(token),
-        body: JSON.stringify(a.body)
-      });
-      const url = js?.url || js?.href || js?.viewerUrl || js?.openUrl || js?.viewLink || js?.link || js?.shareUrl || null;
-      if (url) return url;
-    } catch { /* try next */ }
+  // Try to POST a viewer/open link; tolerate shapes
+  try {
+    const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, {
+      method: "POST",
+      ...withBearer(token),
+      body: JSON.stringify({ type: "viewer" })
+    });
+    const url = js?.url || js?.value?.url || js?.link?.url || null;
+    return url || null;
+  } catch (e) {
+    if (Number(e?.status) === 404) return null;
+    throw e;
   }
-  return null;
 }
 
-/* ───────── Widgets + Tags ───────── */
+/* ------------------------------------------------------------------ */
+/* Widgets + Tags                                                     */
+/* ------------------------------------------------------------------ */
 
 export async function getWidgets(env, token, muralId) {
   try {
@@ -325,7 +415,9 @@ export async function applyTagsToSticky(env, token, muralId, stickyId, tagIds) {
   }
 }
 
-/* ───────── Client helpers ───────── */
+/* ------------------------------------------------------------------ */
+/* Client-friendly helpers                                            */
+/* ------------------------------------------------------------------ */
 
 export function normaliseWidgets(raw) {
   const list = Array.isArray(raw) ? raw : [];
@@ -362,4 +454,8 @@ export function findLatestInCategory(stickies, category) {
   return best;
 }
 
-export const _int = { fetchJSON, withBearer, apiBase };
+/* ------------------------------------------------------------------ */
+/* Export internals (for tests/debug)                                  */
+/* ------------------------------------------------------------------ */
+
+export const _int = { fetchJSON, withBearer, apiBase, authPaths, tokenPaths };
