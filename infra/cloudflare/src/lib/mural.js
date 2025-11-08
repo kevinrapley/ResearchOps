@@ -79,8 +79,8 @@ function authPaths(env) {
   const override = (env.MURAL_AUTH_PATH || "").trim().replace(/^\//, "");
   const list = [];
   if (override) list.push(override);
-  // Legacy first, then new:
-  list.push("authorization/oauth2/authorize", "oauth/authorize");
+  // New first, then legacy:
+  list.push("oauth/authorize", "authorization/oauth2/authorize");
   return [...new Set(list)];
 }
 
