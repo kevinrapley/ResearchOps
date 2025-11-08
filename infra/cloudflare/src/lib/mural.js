@@ -1,27 +1,15 @@
 /**
  * @file lib/mural.js
- * @module mural
- * @summary Mural OAuth + API helpers (pure functions; no routing).
- *
- * ENV required:
- * - MURAL_CLIENT_ID
- * - MURAL_CLIENT_SECRET
- * - MURAL_REDIRECT_URI
- *
- * Optional:
- * - MURAL_COMPANY_ID
- * - MURAL_HOME_OFFICE_WORKSPACE_ID
- * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1 (REST only)
- * - MURAL_SCOPES                    // space-separated; overrides defaults
+ * @summary Mural OAuth + API helpers used by the Worker.
+ *          IMPORTANT: ensureUserRoom finds an existing room only (no creation).
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const API_TIMEOUT_MS = 15000;
 
-/** OAuth base is HARD-PINNED to avoid PATH_NOT_FOUND when env overrides are wrong */
+/** OAuth base is HARD-PINNED to avoid PATH_NOT_FOUND if env overrides are wrong */
 const AUTH_BASE = "https://app.mural.co/api/public/v1";
 
-/** Default scopes; can be overridden by env.MURAL_SCOPES (space-separated) */
 export const DEFAULT_SCOPES = [
   "identity:read",
   "workspaces:read",
@@ -31,15 +19,10 @@ export const DEFAULT_SCOPES = [
   "murals:write"
 ];
 
-/* ------------------------------------------------------------------ */
-/* Base URLs                                                          */
-/* ------------------------------------------------------------------ */
-
+/** REST base can be overridden for normal API calls */
 export const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
 
-/* ------------------------------------------------------------------ */
-/* JSON + Fetch helpers                                               */
-/* ------------------------------------------------------------------ */
+/* ───── fetch helpers ───── */
 
 export async function fetchJSON(url, opts = {}) {
   const ctrl = new AbortController();
@@ -49,7 +32,6 @@ export async function fetchJSON(url, opts = {}) {
     const txt = await res.text().catch(() => "");
     let js = {};
     try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
-
     if (!res.ok) {
       const err = new Error(js?.message || js?.error_description || `HTTP ${res.status}`);
       err.status = res.status;
@@ -62,15 +44,10 @@ export async function fetchJSON(url, opts = {}) {
   }
 }
 
-export const withBearer = (token) => ({
-  headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
-});
+export const withBearer = (token) => ({ headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` } });
 
-/* ------------------------------------------------------------------ */
-/* OAuth2 — pin to AUTH_BASE                                          */
-/* ------------------------------------------------------------------ */
+/* ───── OAuth2 (pinned to AUTH_BASE) ───── */
 
-/** GET {AUTH_BASE}/authorization/oauth2/authorize */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
   const params = new URLSearchParams({
@@ -80,10 +57,10 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
+  // Known-good public OAuth path
   return `${AUTH_BASE}/authorization/oauth2/authorize?${params}`;
 }
 
-/** POST {AUTH_BASE}/authorization/oauth2/token */
 export async function exchangeAuthCode(env, code) {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -92,7 +69,6 @@ export async function exchangeAuthCode(env, code) {
     client_id: env.MURAL_CLIENT_ID,
     client_secret: env.MURAL_CLIENT_SECRET
   });
-
   const res = await fetch(`${AUTH_BASE}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -105,7 +81,7 @@ export async function exchangeAuthCode(env, code) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, token_type, expires_in }
+  return js;
 }
 
 export async function refreshAccessToken(env, refreshToken) {
@@ -115,7 +91,6 @@ export async function refreshAccessToken(env, refreshToken) {
     client_id: env.MURAL_CLIENT_ID,
     client_secret: env.MURAL_CLIENT_SECRET
   });
-
   const res = await fetch(`${AUTH_BASE}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -128,78 +103,80 @@ export async function refreshAccessToken(env, refreshToken) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, expires_in, token_type }
+  return js;
 }
 
-/* ------------------------------------------------------------------ */
-/* Profile + Workspace verification                                   */
-/* ------------------------------------------------------------------ */
+/* ───── Identity / workspace ───── */
 
 export async function getMe(env, token) {
   return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
 
-/** Unified accessor to last active workspace id across slightly different shapes */
 export function getActiveWorkspaceIdFromMe(me) {
   return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
 }
 
-/**
- * Verify membership using company (preferred when env.MURAL_COMPANY_ID is set).
- * Fallback behaviour: accept if the company name matches /home\s*office/i.
- */
 export async function verifyHomeOfficeByCompany(env, token) {
   const me = await getMe(env, token);
   const v = me?.value || me || {};
   const cid = String(v.companyId || "").trim().toLowerCase();
   const cname = String(v.companyName || "").trim().toLowerCase();
-
   const targetCompanyId = String(env.MURAL_COMPANY_ID || "").trim().toLowerCase();
   if (targetCompanyId) return Boolean(cid) && cid === targetCompanyId;
-
   return Boolean(cname && /home\s*office/.test(cname));
 }
 
-/**
- * Legacy/fallback: verify membership by workspace presence (ID or name match).
- */
-export async function verifyHomeOfficeWorkspace(env, token) {
-  const data = await fetchJSON(`${apiBase(env)}/workspaces`, withBearer(token)).catch(() => ({}));
-  const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.value) ? data.value : [];
-  if (!list.length) return null;
+/* ───── Workspaces (detail + list for resolver) ───── */
 
-  const targetId = env.MURAL_HOME_OFFICE_WORKSPACE_ID ? String(env.MURAL_HOME_OFFICE_WORKSPACE_ID) : "";
-  let ws = null;
-  if (targetId) ws = list.find(w => `${w.id}` === targetId);
-  if (!ws) ws = list.find(w => /home\s*office/i.test(String(w?.name || "")));
-  return ws || null;
+export async function getWorkspace(env, token, workspaceId) {
+  return fetchJSON(`${apiBase(env)}/workspaces/${encodeURIComponent(workspaceId)}`, withBearer(token));
 }
 
-/* ------------------------------------------------------------------ */
-/* Rooms • Folders • Murals                                           */
-/* ------------------------------------------------------------------ */
+export async function listUserWorkspaces(env, token, { cursor } = {}) {
+  const url = new URL(`${apiBase(env)}/users/me/workspaces`);
+  if (cursor) url.searchParams.set("cursor", cursor);
+  return fetchJSON(url.toString(), withBearer(token));
+}
+
+/* ───── Rooms • Folders • Murals ───── */
 
 export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-// We DO NOT create rooms here; reuse an existing room by heuristics.
+/**
+ * Find an existing room only. Never creates a room.
+ * Ranking: private → name match (username/private) → first.
+ * Throws 409 {code:"no_existing_room"} if none.
+ */
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
-  const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
-  const list = Array.isArray(rooms?.items) ? rooms.items :
-    Array.isArray(rooms?.value) ? rooms.value :
-    Array.isArray(rooms) ? rooms : [];
+  const data = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
+  const list = Array.isArray(data?.items) ? data.items :
+               Array.isArray(data?.value) ? data.value :
+               Array.isArray(data) ? data : [];
 
-  const room = list.find(r =>
-    /(private)/i.test(String(r.visibility || r.type || "")) ||
-    (username && String(r.name || "").toLowerCase().includes(String(username).toLowerCase()))
-  );
-  if (!room) {
-    const err = new Error("no_existing_room");
-    err.code = "no_existing_room";
-    throw err;
-  }
-  return room;
+  const norm = (v) => String(v || "").toLowerCase();
+  const isPrivate = (r) => norm(r.visibility || r.type || r.roomType) === "private";
+  const nameMatches = (r) => {
+    const n = norm(r.name || r.title || "");
+    return username ? (n.includes(norm(username)) || n.includes("private")) : n.includes("private");
+  };
+
+  const ranked = [...list].sort((a, b) => {
+    const ap = isPrivate(a) ? 1 : 0, bp = isPrivate(b) ? 1 : 0;
+    if (bp !== ap) return bp - ap;
+    const an = nameMatches(a) ? 1 : 0, bn = nameMatches(b) ? 1 : 0;
+    if (bn !== an) return bn - an;
+    return 0;
+  });
+
+  const found = ranked[0] || null;
+  if (found) return found;
+
+  const err = new Error("No existing room found in workspace");
+  err.status = 409;
+  err.code = "no_existing_room";
+  throw err;
 }
 
 export async function listFolders(env, token, roomId) {
@@ -217,33 +194,30 @@ export async function createFolder(env, token, roomId, name) {
 export async function ensureProjectFolder(env, token, roomId, projectName) {
   const existing = await listFolders(env, token, roomId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(existing?.items) ? existing.items :
-    Array.isArray(existing?.value) ? existing.value :
-    Array.isArray(existing) ? existing : [];
-  const found = list.find(f =>
-    String(f?.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase()
-  );
+               Array.isArray(existing?.value) ? existing.value :
+               Array.isArray(existing) ? existing : [];
+  const found = list.find(f => String(f?.name || "").trim().toLowerCase() === String(projectName).trim().toLowerCase());
   if (found) return found;
   return createFolder(env, token, roomId, projectName);
 }
 
-/**
- * Create mural (prefer new endpoint; fall back to legacy).
- * IMPORTANT: do NOT include backgroundColor to avoid 400s on some tenants.
- */
 export async function createMural(env, token, { title, roomId, folderId }) {
-  // New endpoint
+  const base = apiBase(env);
+  const payload = { title, roomId, ...(folderId ? { folderId } : {}) };
+
+  // New endpoint first: POST /murals
   try {
-    return await fetchJSON(`${apiBase(env)}/murals`, {
+    return await fetchJSON(`${base}/murals`, {
       method: "POST",
       ...withBearer(token),
-      body: JSON.stringify({ title, roomId, ...(folderId ? { folderId } : {}) })
+      body: JSON.stringify(payload)
     });
   } catch (e) {
     if (Number(e?.status) !== 404) throw e;
   }
 
-  // Legacy fallback
-  return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
+  // Legacy: POST /rooms/:roomId/murals
+  return fetchJSON(`${base}/rooms/${roomId}/murals`, {
     method: "POST",
     ...withBearer(token),
     body: JSON.stringify({ title, ...(folderId ? { folderId } : {}) })
@@ -254,16 +228,14 @@ export async function getMural(env, token, muralId) {
   return fetchJSON(`${apiBase(env)}/murals/${muralId}`, withBearer(token));
 }
 
-/* ------------------------------------------------------------------ */
-/* Links: probe & creation                                            */
-/* ------------------------------------------------------------------ */
+/* ───── Links (optional helpers) ───── */
 
 export async function getMuralLinks(env, token, muralId) {
   try {
     const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, withBearer(token));
     const arr = Array.isArray(js?.items) ? js.items :
-      Array.isArray(js?.value) ? js.value :
-      Array.isArray(js) ? js : [];
+                Array.isArray(js?.value) ? js.value :
+                Array.isArray(js) ? js : [];
     return arr.map(x => ({
       type: x?.type || x?.rel || "",
       url: x?.url || x?.href || ""
@@ -289,16 +261,12 @@ export async function createViewerLink(env, token, muralId) {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Widgets + Tags (robust wrappers; tolerate API variance)            */
-/* ------------------------------------------------------------------ */
+/* ───── Widgets + Tags ───── */
 
 export async function getWidgets(env, token, muralId) {
   try {
     const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets`, withBearer(token));
-    const arr = Array.isArray(js?.items) ? js.items :
-      Array.isArray(js?.value) ? js.value :
-      Array.isArray(js) ? js : [];
+    const arr = Array.isArray(js?.items) ? js.items : Array.isArray(js?.value) ? js.value : Array.isArray(js) ? js : [];
     return { widgets: arr };
   } catch (e) {
     if (Number(e?.status) === 404) return { widgets: [] };
@@ -316,15 +284,15 @@ export async function createSticky(env, token, muralId, { text, x, y, width, hei
   return { id: js?.id || js?.widgetId || js?.value?.id };
 }
 
-export async function updateSticky(env, token, muralId, stickyId, { text, x, y, width, height }) {
+export async function updateSticky(env, token, muralId, stickyId, patchIn) {
   const patch = {};
+  const { text, x, y, width, height } = patchIn || {};
   if (typeof text === "string") patch.text = text;
   if (Number.isFinite(x)) patch.x = x;
   if (Number.isFinite(y)) patch.y = y;
   if (Number.isFinite(width)) patch.width = width;
   if (Number.isFinite(height)) patch.height = height;
   if (!Object.keys(patch).length) return { ok: true };
-
   return fetchJSON(`${apiBase(env)}/murals/${muralId}/widgets/${stickyId}`, {
     method: "PATCH",
     ...withBearer(token),
@@ -338,13 +306,11 @@ export async function ensureTagsBlueberry(env, token, muralId, labels) {
     const listed = await fetchJSON(`${apiBase(env)}/murals/${muralId}/tags`, withBearer(token)).catch(() => ({ items: [] }));
     const existing = Array.isArray(listed?.items) ? listed.items : Array.isArray(listed?.value) ? listed.value : [];
     const want = new Set(labels.map(s => String(s).trim()).filter(Boolean));
-
     const idByName = new Map();
     for (const t of existing) {
       const name = String(t?.name || "").trim();
       if (name) idByName.set(name.toLowerCase(), t.id);
     }
-
     const out = [];
     for (const name of want) {
       const key = name.toLowerCase();
@@ -376,9 +342,7 @@ export async function applyTagsToSticky(env, token, muralId, stickyId, tagIds) {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Client-friendly helpers                                            */
-/* ------------------------------------------------------------------ */
+/* ───── Client helpers ───── */
 
 export function normaliseWidgets(raw) {
   const list = Array.isArray(raw) ? raw : [];
@@ -391,8 +355,8 @@ export function normaliseWidgets(raw) {
       y: Number(w.y ?? 0),
       width: Number(w.width ?? 240),
       height: Number(w.height ?? 120),
-      tags: Array.isArray(w.tags) ? w.tags.map(t => String(t?.name || t).toLowerCase()) :
-        Array.isArray(w.labels) ? w.labels.map(l => String(l?.name || l).toLowerCase()) : []
+      tags: Array.isArray(w.tags) ? w.tags.map(t => String(t?.name || t).toLowerCase())
+           : Array.isArray(w.labels) ? w.labels.map(l => String(l?.name || l).toLowerCase()) : []
     }));
 }
 
@@ -401,22 +365,14 @@ export function findLatestInCategory(stickies, category) {
   const tagged = stickies.filter(s => (s.tags || []).includes(cat));
   const pool = tagged.length ? tagged : stickies;
   if (!pool.length) return null;
-
   let best = pool[0];
   let bestEdge = best.y + (best.height || 0);
   for (let i = 1; i < pool.length; i++) {
     const s = pool[i];
     const edge = (s.y || 0) + (s.height || 0);
-    if (edge > bestEdge) {
-      best = s;
-      bestEdge = edge;
-    }
+    if (edge > bestEdge) { best = s; bestEdge = edge; }
   }
   return best;
 }
-
-/* ------------------------------------------------------------------ */
-/* Export internals (for tests/debug)                                 */
-/* ------------------------------------------------------------------ */
 
 export const _int = { fetchJSON, withBearer, apiBase };
