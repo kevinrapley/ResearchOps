@@ -13,7 +13,7 @@
  * - MURAL_HOME_OFFICE_WORKSPACE_ID
  * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
  * - MURAL_SCOPES                    // space-separated; overrides defaults
- * - MURAL_AUTH_PATH                 // override for authorize path (default /oauth/authorize)
+ * - MURAL_AUTH_PATH                 // override for authorize path (e.g. "authorization/oauth2/authorize")
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -64,41 +64,41 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2 (resilient: supports old & new paths)                       */
+/* OAuth2 (resilient: supports legacy & new paths)                    */
 /* ------------------------------------------------------------------ */
 
 /**
- * Authorization paths we’ve seen in the wild:
- * - /oauth/authorize                     (newer)
- * - /authorization/oauth2/authorize      (older)
+ * Authorization paths we’ve seen:
+ * - /authorization/oauth2/authorize   (legacy – many tenants still expose this)
+ * - /oauth/authorize                  (newer)
+ *
+ * We allow an override (MURAL_AUTH_PATH) and otherwise prefer legacy-first,
+ * because that’s what your tenant has returned successfully in the past.
  */
 function authPaths(env) {
   const override = (env.MURAL_AUTH_PATH || "").trim().replace(/^\//, "");
   const list = [];
   if (override) list.push(override);
+  // Legacy first, then new:
   list.push("authorization/oauth2/authorize", "oauth/authorize");
   return [...new Set(list)];
 }
 
-function tokenPaths() {
-  // Prefer legacy token path first; fall back to the newer one.
-  return ["authorization/oauth2/token", "oauth/token"];
-
-}
-
 /**
  * Token paths we’ve seen:
- * - /oauth/token
- * - /authorization/oauth2/token
+ * - /authorization/oauth2/token       (legacy)
+ * - /oauth/token                      (newer)
+ *
+ * Try legacy first, then new.
  */
 function tokenPaths() {
-  return ["oauth/token", "authorization/oauth2/token"];
+  return ["authorization/oauth2/token", "oauth/token"];
 }
 
 /**
  * Build the user authorization URL.
- * We can only return one URL, so prefer the modern path. If your tenant still
- * expects the legacy path, set env.MURAL_AUTH_PATH accordingly.
+ * We can only return one URL, so pick the first candidate (override if set,
+ * else legacy-first).
  */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
@@ -109,7 +109,7 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  const path = authPaths(env)[0];  // now legacy-first (or your override)
+  const path = authPaths(env)[0];
   return `${apiBase(env)}/${path}?${params}`;
 }
 
@@ -140,7 +140,8 @@ export async function exchangeAuthCode(env, code) {
       return js;
     } catch (e) {
       lastErr = e;
-      if (Number(e?.status) && Number(e.status) !== 404) break; // only keep looping on 404
+      // Only keep trying other paths if the current one is missing
+      if (Number(e?.status) && Number(e.status) !== 404) break;
     }
   }
   throw (lastErr || new Error("Token exchange failed"));
@@ -230,7 +231,10 @@ export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-// We DO NOT create rooms any more; this only reuses an existing one by heuristics.
+/**
+ * We DO NOT create rooms here; we only try to reuse an existing one.
+ * Throw a sentinel error if none are found (service layer handles this).
+ */
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
   const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(rooms?.items) ? rooms.items :
@@ -273,13 +277,17 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
   return createFolder(env, token, roomId, projectName);
 }
 
+/**
+ * Create a board. Try new endpoint first, then legacy.
+ * New:     POST /murals            { title, roomId, folderId, backgroundColor? }
+ * Legacy:  POST /rooms/:roomId/murals   { title, folderId? }
+ */
 export async function createMural(env, token, { title, roomId, folderId }) {
-  // Prefer new endpoint; fall back to legacy
   try {
     return await fetchJSON(`${apiBase(env)}/murals`, {
       method: "POST",
       ...withBearer(token),
-      body: JSON.stringify({ title, roomId, folderId, backgroundColor: "#FFFFFF" })
+      body: JSON.stringify({ title, roomId, folderId })
     });
   } catch (e) {
     if (Number(e?.status) !== 404) throw e;
@@ -316,7 +324,6 @@ export async function getMuralLinks(env, token, muralId) {
 }
 
 export async function createViewerLink(env, token, muralId) {
-  // Try to POST a viewer/open link; tolerate shapes
   try {
     const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, {
       method: "POST",
@@ -458,7 +465,7 @@ export function findLatestInCategory(stickies, category) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Export internals (for tests/debug)                                  */
+/* Export internals (for tests/debug)                                 */
 /* ------------------------------------------------------------------ */
 
 export const _int = { fetchJSON, withBearer, apiBase, authPaths, tokenPaths };
