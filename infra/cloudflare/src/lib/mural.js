@@ -109,7 +109,7 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  const path = authPaths(env)[0]; // primary (override or modern)
+  const path = authPaths(env)[0];  // now legacy-first (or your override)
   return `${apiBase(env)}/${path}?${params}`;
 }
 
@@ -122,9 +122,8 @@ export async function exchangeAuthCode(env, code) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const paths = tokenPaths();
   let lastErr;
-  for (const p of paths) {
+  for (const p of tokenPaths()) {
     try {
       const res = await fetch(`${apiBase(env)}/${p}`, {
         method: "POST",
@@ -141,7 +140,7 @@ export async function exchangeAuthCode(env, code) {
       return js;
     } catch (e) {
       lastErr = e;
-      if (Number(e?.status) && Number(e.status) !== 404) break;
+      if (Number(e?.status) && Number(e.status) !== 404) break; // only keep looping on 404
     }
   }
   throw (lastErr || new Error("Token exchange failed"));
@@ -156,7 +155,7 @@ export async function refreshAccessToken(env, refreshToken) {
   });
 
   let lastErr;
-  for (const p of paths) {
+  for (const p of tokenPaths()) {
     try {
       const res = await fetch(`${apiBase(env)}/${p}`, {
         method: "POST",
