@@ -62,83 +62,53 @@ const withBearer = (token) => ({
 	headers: { ...JSON_HEADERS, authorization: `Bearer ${token}` }
 });
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * OAuth 2.0 Flow
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/* ───────── OAuth2 ───────── */
 
 export function buildAuthUrl(env, state) {
-	const clientId = env.MURAL_CLIENT_ID;
-	const redirectUri = env.MURAL_REDIRECT_URI;
-	const scopes = env.MURAL_SCOPES || "identity:read murals:read murals:write offline_access";
-
-	if (!clientId || !redirectUri) {
-		const missing = [];
-		if (!clientId) missing.push("MURAL_CLIENT_ID");
-		if (!redirectUri) missing.push("MURAL_REDIRECT_URI");
-		throw new Error(`Missing required Mural OAuth config: ${missing.join(", ")}`);
-	}
-
-	const url = new URL("https://app.mural.co/api/public/v1/authorization/oauth2");
-	url.searchParams.set("client_id", clientId);
-	url.searchParams.set("redirect_uri", redirectUri);
-	url.searchParams.set("response_type", "code");
-	url.searchParams.set("scope", scopes);
-	url.searchParams.set("state", state);
-	return url.toString();
+  const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: env.MURAL_CLIENT_ID,
+    redirect_uri: env.MURAL_REDIRECT_URI,
+    scope: scopes,
+    state
+  });
+  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
 }
 
 export async function exchangeAuthCode(env, code) {
-	const clientId = env.MURAL_CLIENT_ID;
-	const clientSecret = env.MURAL_CLIENT_SECRET;
-	const redirectUri = env.MURAL_REDIRECT_URI;
-
-	if (!clientId || !clientSecret || !redirectUri) {
-		throw new Error("Missing Mural OAuth credentials for token exchange");
-	}
-
-	const res = await fetch("https://app.mural.co/api/public/v1/authorization/oauth2/token", {
-		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "authorization_code",
-			code,
-			redirect_uri: redirectUri,
-			client_id: clientId,
-			client_secret: clientSecret
-		}).toString()
-	});
-
-	if (!res.ok) {
-		const text = await res.text().catch(() => "");
-		throw Object.assign(new Error(`Token exchange failed: ${res.status}`), { status: res.status, body: text });
-	}
-	return res.json();
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: env.MURAL_REDIRECT_URI,
+    client_id: env.MURAL_CLIENT_ID,
+    client_secret: env.MURAL_CLIENT_SECRET
+  });
+  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body
+  });
+  const js = await res.json();
+  if (!res.ok) throw new Error(js?.error_description || "Token exchange failed");
+  return js;
 }
 
 export async function refreshAccessToken(env, refreshToken) {
-	const clientId = env.MURAL_CLIENT_ID;
-	const clientSecret = env.MURAL_CLIENT_SECRET;
-
-	if (!clientId || !clientSecret) {
-		throw new Error("Missing Mural OAuth credentials for token refresh");
-	}
-
-	const res = await fetch("https://app.mural.co/api/public/v1/authorization/oauth2/token", {
-		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "refresh_token",
-			refresh_token: refreshToken,
-			client_id: clientId,
-			client_secret: clientSecret
-		}).toString()
-	});
-
-	if (!res.ok) {
-		const text = await res.text().catch(() => "");
-		throw Object.assign(new Error(`Token refresh failed: ${res.status}`), { status: res.status, body: text });
-	}
-	return res.json();
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: env.MURAL_CLIENT_ID,
+    client_secret: env.MURAL_CLIENT_SECRET
+  });
+  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body
+  });
+  const js = await res.json();
+  if (!res.ok) throw new Error(js?.error_description || "Token refresh failed");
+  return js;
 }
 
 /* ------------------------------------------------------------------ */
