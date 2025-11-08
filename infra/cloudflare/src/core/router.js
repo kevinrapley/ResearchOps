@@ -562,6 +562,9 @@ export async function handleRequest(request, env) {
 					return service.mural.muralFind(origin, url);
 				}
 			}
+			if (url.pathname === "/api/mural/await" && request.method === "GET") {
+			  return service.mural.muralAwait(origin, url);
+			}
 			if (request.method === "POST" && url.pathname === "/api/mural/journal-sync") {
 				return service.mural.muralJournalSync(request, origin);
 			}
