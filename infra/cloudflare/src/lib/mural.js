@@ -63,24 +63,25 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2 — REVERTED to working paths                                 */
+/* OAuth2                                                             */
 /* ------------------------------------------------------------------ */
 
 /**
  * Build the user authorization URL.
- * Working tenant path (no trailing /authorize):
- *   GET ${apiBase}/authorization/oauth2?response_type=code&...
+ * Working tenant path:
+ *   GET ${apiBase}/authorization/oauth2/authorize?response_type=code&...
  */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
-
-  const u = new URL(`${apiBase(env)}/authorization/oauth2`);
-  u.searchParams.set("response_type", "code");
-  u.searchParams.set("client_id", env.MURAL_CLIENT_ID);
-  u.searchParams.set("redirect_uri", env.MURAL_REDIRECT_URI);
-  u.searchParams.set("scope", scopes);
-  u.searchParams.set("state", state);
-  return u.toString();
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: env.MURAL_CLIENT_ID,
+    redirect_uri: env.MURAL_REDIRECT_URI,
+    scope: scopes,
+    state
+  });
+  // NOTE: the known-good path includes the trailing /authorize
+  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
 }
 
 /**
@@ -108,7 +109,7 @@ export async function exchangeAuthCode(env, code) {
     err.body = js;
     throw err;
   }
-  return js;
+  return js; // { access_token, refresh_token?, token_type, expires_in, ... }
 }
 
 /**
@@ -135,7 +136,7 @@ export async function refreshAccessToken(env, refreshToken) {
     err.body = js;
     throw err;
   }
-  return js;
+  return js; // { access_token, refresh_token?, token_type, expires_in, ... }
 }
 
 /* ------------------------------------------------------------------ */
