@@ -95,24 +95,32 @@ function tokenPaths() {
   return ["authorization/oauth2/token", "oauth/token"];
 }
 
+/* ------------------------------------------------------------------ */
+/* OAuth2 — revert to previously working legacy endpoints             */
+/* ------------------------------------------------------------------ */
+
 /**
- * Build the user authorization URL.
- * We can only return one URL, so pick the first candidate (override if set,
- * else legacy-first).
+ * Build the user authorization URL using the legacy public API path
+ * that worked in your earlier setup:
+ *   /authorization/oauth2  (NOTE: no /authorize suffix)
  */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
-  const params = new URLSearchParams({
-    response_type: "code",
-    client_id: env.MURAL_CLIENT_ID,
-    redirect_uri: env.MURAL_REDIRECT_URI,
-    scope: scopes,
-    state
-  });
-  const path = authPaths(env)[0];
-  return `${apiBase(env)}/${path}?${params}`;
+
+  const url = new URL(`${apiBase(env)}/authorization/oauth2`);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("client_id", env.MURAL_CLIENT_ID);
+  url.searchParams.set("redirect_uri", env.MURAL_REDIRECT_URI);
+  url.searchParams.set("scope", scopes);
+  url.searchParams.set("state", state);
+
+  return url.toString();
 }
 
+/**
+ * Exchange code → token via the legacy token endpoint:
+ *   /authorization/oauth2/token
+ */
 export async function exchangeAuthCode(env, code) {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -122,31 +130,26 @@ export async function exchangeAuthCode(env, code) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  let lastErr;
-  for (const p of tokenPaths()) {
-    try {
-      const res = await fetch(`${apiBase(env)}/${p}`, {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body
-      });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
-        err.status = res.status;
-        err.body = js;
-        throw err;
-      }
-      return js;
-    } catch (e) {
-      lastErr = e;
-      // Only keep trying other paths if the current one is missing
-      if (Number(e?.status) && Number(e.status) !== 404) break;
-    }
+  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body
+  });
+
+  const js = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.body = js;
+    throw err;
   }
-  throw (lastErr || new Error("Token exchange failed"));
+  return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
+/**
+ * Refresh token via the legacy token endpoint:
+ *   /authorization/oauth2/token
+ */
 export async function refreshAccessToken(env, refreshToken) {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -155,28 +158,20 @@ export async function refreshAccessToken(env, refreshToken) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  let lastErr;
-  for (const p of tokenPaths()) {
-    try {
-      const res = await fetch(`${apiBase(env)}/${p}`, {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body
-      });
-      const js = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
-        err.status = res.status;
-        err.body = js;
-        throw err;
-      }
-      return js;
-    } catch (e) {
-      lastErr = e;
-      if (Number(e?.status) && Number(e.status) !== 404) break;
-    }
+  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body
+  });
+
+  const js = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(js?.error_description || js?.message || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.body = js;
+    throw err;
   }
-  throw (lastErr || new Error("Token refresh failed"));
+  return js;
 }
 
 /* ------------------------------------------------------------------ */
