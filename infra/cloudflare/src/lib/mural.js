@@ -73,12 +73,17 @@ export const withBearer = (token) => ({
  * - /authorization/oauth2/authorize      (older)
  */
 function authPaths(env) {
-  const override = (env.MURAL_AUTH_PATH || "").trim();
+  const override = (env.MURAL_AUTH_PATH || "").trim().replace(/^\//, "");
   const list = [];
-  if (override) list.push(override.replace(/^\//, ""));
-  list.push("oauth/authorize", "authorization/oauth2/authorize");
-  // de-dupe
+  if (override) list.push(override);
+  list.push("authorization/oauth2/authorize", "oauth/authorize");
   return [...new Set(list)];
+}
+
+function tokenPaths() {
+  // Prefer legacy token path first; fall back to the newer one.
+  return ["authorization/oauth2/token", "oauth/token"];
+
 }
 
 /**
@@ -150,7 +155,6 @@ export async function refreshAccessToken(env, refreshToken) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const paths = tokenPaths();
   let lastErr;
   for (const p of paths) {
     try {
