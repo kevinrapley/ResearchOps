@@ -11,8 +11,9 @@
  * Optional:
  * - MURAL_COMPANY_ID
  * - MURAL_HOME_OFFICE_WORKSPACE_ID
- * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
- * - MURAL_SCOPES                    // space-separated; overrides defaults
+ * - MURAL_API_BASE                  // REST base (default: https://app.mural.co/api/public/v1)
+ * - MURAL_AUTH_BASE                 // OAuth base (default: https://app.mural.co/api/public/v1)
+ * - MURAL_SCOPES
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -29,10 +30,16 @@ export const DEFAULT_SCOPES = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Base URLs                                                          */
+/* Bases (separate AUTH vs REST)                                      */
 /* ------------------------------------------------------------------ */
 
-export const apiBase = (env) => env.MURAL_API_BASE || "https://app.mural.co/api/public/v1";
+function _stripSlash(s) { return String(s || "").replace(/\/+$/, ""); }
+
+export const apiBase = (env) =>
+  _stripSlash(env.MURAL_API_BASE || "https://app.mural.co/api/public/v1");
+
+export const authBase = (env) =>
+  _stripSlash(env.MURAL_AUTH_BASE || "https://app.mural.co/api/public/v1");
 
 /* ------------------------------------------------------------------ */
 /* JSON + Fetch helpers                                               */
@@ -64,13 +71,13 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2 — REVERTED to known-good paths                              */
+/* OAuth2 — fixed, tenant-safe paths                                  */
 /* ------------------------------------------------------------------ */
 
 /**
  * Build the user authorization URL.
- * Working tenant path:
- *   GET ${apiBase}/authorization/oauth2/authorize?response_type=code&...
+ * Known-good path:
+ *   GET {AUTH_BASE}/authorization/oauth2/authorize
  */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
@@ -81,13 +88,13 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  // Known-good path includes /authorize
-  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+  return `${authBase(env)}/authorization/oauth2/authorize?${params}`;
 }
 
 /**
- * Token exchange — working path:
- *   POST ${apiBase}/authorization/oauth2/token
+ * Token exchange/refresh
+ * Known-good path:
+ *   POST {AUTH_BASE}/authorization/oauth2/token
  */
 export async function exchangeAuthCode(env, code) {
   const body = new URLSearchParams({
@@ -98,7 +105,7 @@ export async function exchangeAuthCode(env, code) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+  const res = await fetch(`${authBase(env)}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -113,10 +120,6 @@ export async function exchangeAuthCode(env, code) {
   return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
-/**
- * Token refresh — working path:
- *   POST ${apiBase}/authorization/oauth2/token
- */
 export async function refreshAccessToken(env, refreshToken) {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -125,7 +128,7 @@ export async function refreshAccessToken(env, refreshToken) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+  const res = await fetch(`${authBase(env)}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -250,7 +253,6 @@ export async function createMural(env, token, { title, roomId, folderId }) {
   } catch (e) {
     if (Number(e?.status) !== 404) throw e;
   }
-
   // Legacy fallback
   return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
     method: "POST",
@@ -428,4 +430,4 @@ export function findLatestInCategory(stickies, category) {
 /* Export internals (for tests/debug)                                  */
 /* ------------------------------------------------------------------ */
 
-export const _int = { fetchJSON, withBearer, apiBase };
+export const _int = { fetchJSON, withBearer, apiBase, authBase };
