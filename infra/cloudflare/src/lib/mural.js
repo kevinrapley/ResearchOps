@@ -46,6 +46,7 @@ export async function fetchJSON(url, opts = {}) {
     const txt = await res.text().catch(() => "");
     let js = {};
     try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
+
     if (!res.ok) {
       const err = new Error(js?.message || js?.error_description || `HTTP ${res.status}`);
       err.status = res.status;
@@ -63,7 +64,7 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2                                                             */
+/* OAuth2 — REVERTED to known-good paths                              */
 /* ------------------------------------------------------------------ */
 
 /**
@@ -80,7 +81,7 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  // NOTE: the known-good path includes the trailing /authorize
+  // Known-good path includes /authorize
   return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
 }
 
@@ -109,7 +110,7 @@ export async function exchangeAuthCode(env, code) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, token_type, expires_in, ... }
+  return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
 /**
@@ -136,7 +137,7 @@ export async function refreshAccessToken(env, refreshToken) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, token_type, expires_in, ... }
+  return js; // { access_token, refresh_token?, token_type, expires_in }
 }
 
 /* ------------------------------------------------------------------ */
@@ -191,7 +192,7 @@ export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-// Reuse an existing room by heuristics (we do not create rooms any more)
+// Reuse an existing room (we do not create rooms here)
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
   const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(rooms?.items) ? rooms.items :
@@ -236,18 +237,21 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 
 /**
  * Create mural (try new endpoint first; fall back to legacy).
- * IMPORTANT: no backgroundColor field (some tenants reject it).
+ * IMPORTANT: do NOT send backgroundColor (some tenants 400 on this field).
  */
 export async function createMural(env, token, { title, roomId, folderId }) {
+  // New endpoint
   try {
     return await fetchJSON(`${apiBase(env)}/murals`, {
       method: "POST",
       ...withBearer(token),
-      body: JSON.stringify({ title, roomId, folderId })
+      body: JSON.stringify({ title, roomId, ...(folderId ? { folderId } : {}) })
     });
   } catch (e) {
     if (Number(e?.status) !== 404) throw e;
   }
+
+  // Legacy fallback
   return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
     method: "POST",
     ...withBearer(token),
