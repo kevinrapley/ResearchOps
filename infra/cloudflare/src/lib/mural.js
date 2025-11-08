@@ -11,12 +11,15 @@
  * Optional:
  * - MURAL_COMPANY_ID
  * - MURAL_HOME_OFFICE_WORKSPACE_ID
- * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
+ * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1 (REST only)
  * - MURAL_SCOPES                    // space-separated; overrides defaults
  */
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const API_TIMEOUT_MS = 15000;
+
+/** OAuth base is HARD-PINNED to avoid PATH_NOT_FOUND when env overrides are wrong */
+const AUTH_BASE = "https://app.mural.co/api/public/v1";
 
 /** Default scopes; can be overridden by env.MURAL_SCOPES (space-separated) */
 export const DEFAULT_SCOPES = [
@@ -64,13 +67,10 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2 — revert to stable, documented public paths                  */
+/* OAuth2 — pin to AUTH_BASE                                          */
 /* ------------------------------------------------------------------ */
 
-/**
- * Build the user authorization URL.
- * Known-good path: GET {API_BASE}/authorization/oauth2/authorize
- */
+/** GET {AUTH_BASE}/authorization/oauth2/authorize */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
   const params = new URLSearchParams({
@@ -80,13 +80,10 @@ export function buildAuthUrl(env, state) {
     scope: scopes,
     state
   });
-  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+  return `${AUTH_BASE}/authorization/oauth2/authorize?${params}`;
 }
 
-/**
- * Token exchange.
- * Known-good path: POST {API_BASE}/authorization/oauth2/token
- */
+/** POST {AUTH_BASE}/authorization/oauth2/token */
 export async function exchangeAuthCode(env, code) {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -96,7 +93,7 @@ export async function exchangeAuthCode(env, code) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+  const res = await fetch(`${AUTH_BASE}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -119,7 +116,7 @@ export async function refreshAccessToken(env, refreshToken) {
     client_secret: env.MURAL_CLIENT_SECRET
   });
 
-  const res = await fetch(`${apiBase(env)}/authorization/oauth2/token`, {
+  const res = await fetch(`${AUTH_BASE}/authorization/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body
@@ -230,9 +227,8 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 /**
- * Create mural (new API allows POST /murals with { title, roomId, folderId })
- * Some tenants still expect POST /rooms/:roomId/murals — we try new first, then legacy.
- * IMPORTANT: do NOT include backgroundColor to avoid 400s.
+ * Create mural (prefer new endpoint; fall back to legacy).
+ * IMPORTANT: do NOT include backgroundColor to avoid 400s on some tenants.
  */
 export async function createMural(env, token, { title, roomId, folderId }) {
   // New endpoint
@@ -279,7 +275,6 @@ export async function getMuralLinks(env, token, muralId) {
 }
 
 export async function createViewerLink(env, token, muralId) {
-  // Try to POST a viewer/open link; tolerate shapes
   try {
     const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, {
       method: "POST",
@@ -421,7 +416,7 @@ export function findLatestInCategory(stickies, category) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Export internals (for tests/debug)                                  */
+/* Export internals (for tests/debug)                                 */
 /* ------------------------------------------------------------------ */
 
 export const _int = { fetchJSON, withBearer, apiBase };
