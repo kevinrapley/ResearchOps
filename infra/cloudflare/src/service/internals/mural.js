@@ -35,7 +35,6 @@ import {
   applyTagsToSticky,
   normaliseWidgets,
   findLatestInCategory,
-  // new link helpers
   getMuralLinks,
   createViewerLink
 } from "../../lib/mural.js";
@@ -94,11 +93,8 @@ function _isAllowedReturn(env, urlStr) {
   }
 }
 
-/**
- * Build Airtable filter for UID / Purpose / Active only (PROJECT FILTER REMOVED).
- * We filter by projectId **client-side** after fetching to avoid schema-dependent formula errors.
- */
-function _buildBoardsFilter({ /* projectId intentionally omitted */ uid, purpose, active = true }) {
+/* Airtable listing: filter by uid+purpose+active, then client-side by projectId */
+function _buildBoardsFilter({ uid, purpose, active = true }) {
   const ands = [];
   if (uid) ands.push(`{UID} = "${_esc(uid)}"`);
   if (purpose) ands.push(`{Purpose} = "${_esc(purpose)}"`);
@@ -106,19 +102,11 @@ function _buildBoardsFilter({ /* projectId intentionally omitted */ uid, purpose
   return ands.length ? `AND(${ands.join(",")})` : "";
 }
 
-/**
- * Query Airtable for Mural Boards records (without projectId clause).
- * Sorted by Primary? desc, Created At desc.
- * Then filter rows in code for projectId matching either:
- *  - linked-record array of IDs (includes projectId)
- *  - single-line text (=== projectId)
- */
 async function _airtableListBoards(env, { projectId, uid, purpose, active = true, max = 25 }) {
   const url = new URL(_encodeTableUrl(env, _boardsTableName(env)));
   const filterByFormula = _buildBoardsFilter({ uid, purpose, active });
   if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
   url.searchParams.set("maxRecords", String(max));
-  // Airtable-style sort params
   url.searchParams.append("sort[0][field]", "Primary?");
   url.searchParams.append("sort[0][direction]", "desc");
   url.searchParams.append("sort[1][field]", "Created At");
@@ -133,7 +121,6 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
   const records = Array.isArray(js.records) ? js.records : [];
   if (!projectId) return records;
 
-  // Client-side filter by projectId that works for both schemas
   const pid = String(projectId);
   return records.filter(r => {
     const f = r?.fields || {};
@@ -143,7 +130,6 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
   });
 }
 
-/** Create a board mapping row in Airtable. */
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
   const url = _encodeTableUrl(env, _boardsTableName(env));
 
@@ -177,7 +163,6 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
     }]
   });
 
-  // Try linked-record, then fallback to text
   let res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(mkBodyLinked()) });
   let js = await res.json().catch(() => ({}));
   if (res.ok) return js;
@@ -201,7 +186,6 @@ function _looksLikeMuralViewerUrl(u) {
   } catch { return false; }
 }
 
-/** Normalise possible response shapes to a single viewer URL. */
 function _extractViewerUrl(payload) {
   if (!payload) return null;
   const candidates = [
@@ -216,40 +200,32 @@ function _extractViewerUrl(payload) {
     payload?.links?.viewer,
     payload?.links?.open
   ].filter(Boolean);
-
   const first = candidates.find(_looksLikeMuralViewerUrl);
   return first || null;
 }
 
-/* Helper to try multiple ways to obtain/create a viewer link quickly */
+/* Probe a viewer URL quickly */
 async function _probeViewerUrl(env, accessToken, muralId) {
-  // 1) hydrate
   try {
     const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
     const url = _extractViewerUrl(hydrated);
     if (url) return url;
   } catch {}
-
-  // 2) list links
   try {
     const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
     const best = links.find(l => _looksLikeMuralViewerUrl(l.url))
-      || links.find(l => /viewer|view|open|public/i.test(String(l.type || l.rel || "")) && l.url);
+      || links.find(l => /viewer|view|open|public/i.test(String(l.type || "")) && l.url);
     if (best?.url && _looksLikeMuralViewerUrl(best.url)) return best.url;
   } catch {}
-
-  // 3) actively create a link, then hydrate
   try {
     const created = await createViewerLink(env, accessToken, muralId);
     if (created && _looksLikeMuralViewerUrl(created)) return created;
   } catch {}
-
   try {
     const hydrated2 = await getMural(env, accessToken, muralId).catch(() => null);
     const url2 = _extractViewerUrl(hydrated2);
     if (url2) return url2;
   } catch {}
-
   return null;
 }
 
@@ -301,7 +277,6 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 
   const hintLower = hint.toLowerCase();
 
-  // First attempt: treat hint as actual workspace id.
   try {
     const direct = await getWorkspace(env, accessToken, hint);
     const val = direct?.value || direct || {};
@@ -314,7 +289,6 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
     if (Number(err?.status || 0) && Number(err.status) !== 404) throw err;
   }
 
-  // Fallback: list workspaces available to user and match against hint.
   const matches = [];
   let cursor = null;
   const maxPages = 4;
@@ -328,16 +302,11 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
       throw err;
     }
 
-    const list = Array.isArray(payload?.value) ?
-      payload.value :
-      Array.isArray(payload?.workspaces) ?
-      payload.workspaces :
-      [];
+    const list = Array.isArray(payload?.value) ? payload.value :
+      Array.isArray(payload?.workspaces) ? payload.workspaces : [];
 
     for (const entry of list) {
-      for (const cand of _workspaceCandidateShapes(entry)) {
-        matches.push(cand);
-      }
+      matches.push(..._workspaceCandidateShapes(entry));
     }
 
     cursor = payload?.cursor ||
@@ -380,7 +349,6 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
     }
   }
 
-  // Final attempt: composite "company:workspace" id (observed in some tenants).
   if (companyId) {
     const composite = `${String(companyId).trim()}:${hint}`;
     try {
@@ -421,21 +389,16 @@ export class MuralServicePart {
   async saveTokens(uid, tokens) { await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true }); }
   async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
 
-  /* ───────────────────────── internal helpers ───────────────────────── */
-
   async _ensureWorkspace(env, accessToken, explicitWorkspaceId) {
     const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
     if (!inCompany) throw Object.assign(new Error("not_in_home_office_workspace"), { code: 403 });
 
     if (explicitWorkspaceId) {
-      // Validate the explicit workspace id if passed from client
       try {
         const ws = await getWorkspace(env, accessToken, explicitWorkspaceId);
         const v = ws?.value || ws || {};
         return { id: v.id || explicitWorkspaceId, key: v.key || v.shortId || null, name: v.name || null };
-      } catch {
-        // Fall back to active
-      }
+      } catch { /* fall back */ }
     }
 
     const me = await getMe(env, accessToken);
@@ -444,15 +407,9 @@ export class MuralServicePart {
 
     const companyId = me?.value?.companyId || me?.companyId || null;
     const resolved = await _resolveWorkspace(env, accessToken, { workspaceHint: wsHint, companyId });
-    if (!resolved?.id) {
-      return { id: wsHint, key: wsHint };
-    }
+    if (!resolved?.id) return { id: wsHint, key: wsHint };
 
-    return {
-      id: resolved.id,
-      key: resolved.key || null,
-      name: resolved.name || null
-    };
+    return { id: resolved.id, key: resolved.key || null, name: resolved.name || null };
   }
 
   async resolveBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, explicitMuralId }) {
@@ -481,13 +438,11 @@ export class MuralServicePart {
         }
       }
 
-      // KV fallback (Airtable not yet visible)
       const kv = await _kvProjectMapping(this.root.env, { uid, projectId });
       if (kv?.url) {
         if (_looksLikeMuralViewerUrl(kv.url)) {
           return { muralId: null, boardUrl: kv.url, workspaceId: null };
         } else {
-          // Clean stale/bad KV so we stop returning /not-found
           try {
             const key = `mural:${uid || "anon"}:project:id::${String(projectId)}`;
             await this.root.env.SESSION_KV.delete(key);
@@ -583,7 +538,6 @@ export class MuralServicePart {
       uid = stateObj?.uid || "anon";
     } catch { /* ignore */ }
 
-    // Exchange code → tokens
     let tokens;
     try {
       tokens = await exchangeAuthCode(env, code);
@@ -596,7 +550,6 @@ export class MuralServicePart {
 
     const want = stateObj?.return || "/pages/projects/";
     let backUrl;
-
     if (want.startsWith("http")) {
       backUrl = _isAllowedReturn(env, want) ? new URL(want) : new URL("/pages/projects/", url);
     } else {
@@ -608,49 +561,6 @@ export class MuralServicePart {
     backUrl.search = sp.toString();
 
     return Response.redirect(backUrl.toString(), 302);
-  }
-
-  async muralVerify(origin, url) {
-    const uid = url.searchParams.get("uid") || "anon";
-    const tokens = await this.loadTokens(uid);
-    if (!tokens?.access_token) {
-      return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
-    }
-
-    const { env } = this.root;
-    let accessToken = tokens.access_token;
-
-    // Try company/workspace check; if 401, refresh once and retry
-    try {
-      const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
-      if (!inCompany) {
-        return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
-      }
-    } catch (err) {
-      const status = Number(err?.status || 0);
-      if (status === 401 && tokens.refresh_token) {
-        try {
-          const refreshed = await refreshAccessToken(env, tokens.refresh_token);
-          const merged = { ...tokens, ...refreshed };
-          await this.saveTokens(uid, merged);
-          accessToken = merged.access_token;
-
-          const inCompany = await verifyHomeOfficeByCompany(env, accessToken);
-          if (!inCompany) {
-            return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, this.root.corsHeaders(origin));
-          }
-        } catch {
-          return this.root.json({ ok: false, reason: "not_authenticated" }, 401, this.root.corsHeaders(origin));
-        }
-      } else {
-        return this.root.json({ ok: false, reason: "error", detail: String(err?.message || err) }, 500, this.root.corsHeaders(origin));
-      }
-    }
-
-    const me = await getMe(env, accessToken).catch(() => null);
-    const activeWorkspaceId = getActiveWorkspaceIdFromMe(me);
-
-    return this.root.json({ ok: true, me, activeWorkspaceId }, 200, this.root.corsHeaders(origin));
   }
 
   /** POST /api/mural/setup  body: { uid, projectId?, projectName, workspaceId? } */
@@ -723,9 +633,6 @@ export class MuralServicePart {
       step = "ensure_folder";
       let folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
       const folderId = _pickId(folder);
-      if (!folderId) {
-        this.root.log?.warn?.("mural.ensure_folder.no_id", { folderPreview: typeof folder === "object" ? Object.keys(folder || {}) : folder });
-      }
 
       step = "create_mural";
       const mural = await createMural(this.root.env, accessToken, {
@@ -734,45 +641,42 @@ export class MuralServicePart {
         folderId: folderId || undefined
       });
 
-      // Try briefly to obtain a real link within the same request (stay under CF limits)
+      // Best-effort quick probe (keep short!)
       step = "probe_viewer_url";
       let openUrl = null;
-      const softDeadline = Date.now() + 12000; // ~12s best-effort inside setup
+      const softDeadline = Date.now() + 9000;
       while (!openUrl && Date.now() < softDeadline) {
         openUrl = await _probeViewerUrl(this.root.env, accessToken, mural.id);
         if (openUrl) break;
-        await new Promise(r => setTimeout(r, 750));
+        await new Promise(r => setTimeout(r, 600));
       }
 
-      if (openUrl) {
-        // Persist mapping to Airtable + KV
-        if (projectId) {
-          try {
-            await this.registerBoard({
-              projectId: String(projectId),
-              uid,
-              purpose: PURPOSE_REFLEXIVE,
-              muralId: mural.id,
-              boardUrl: openUrl,
-              workspaceId: ws.id,
-              primary: true
-            });
-          } catch (e) {
-            this.root.log?.error?.("mural.airtable_register_failed", {
-              status: e?.status,
-              body: e?.body
-            });
-          }
-          try {
-            const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
-            await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
-              url: openUrl,
-              projectName: projectName,
-              updatedAt: Date.now()
-            }));
-          } catch {}
+      if (openUrl && projectId) {
+        try {
+          await this.registerBoard({
+            projectId: String(projectId),
+            uid,
+            purpose: PURPOSE_REFLEXIVE,
+            muralId: mural.id,
+            boardUrl: openUrl,
+            workspaceId: ws.id,
+            primary: true
+          });
+        } catch (e) {
+          this.root.log?.error?.("mural.airtable_register_failed", { status: e?.status, body: e?.body });
         }
+        try {
+          const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
+          await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
+            url: openUrl,
+            projectName: projectName,
+            updatedAt: Date.now()
+          }));
+        } catch {}
+      }
 
+      // If link is ready, return 200 with link; if not, return 202 with pending=true
+      if (openUrl) {
         return this.root.json({
           ok: true,
           workspace: ws,
@@ -785,7 +689,6 @@ export class MuralServicePart {
         }, 200, cors);
       }
 
-      // Couldn’t get a link fast enough → tell client to poll /api/mural/await
       return this.root.json({
         ok: true,
         pending: true,
@@ -808,10 +711,6 @@ export class MuralServicePart {
   /**
    * GET /api/mural/await?muralId=...&projectId=...&uid=...
    * Short, server-side attempt to obtain a real viewer URL and register mapping.
-   * Returns:
-   *  - 200 { ok:true, boardUrl, muralId } when ready (also writes Airtable & KV if projectId supplied)
-   *  - 202 { ok:true, pending:true } when still not ready
-   *  - 400/401/403/500 on errors
    */
   async muralAwait(origin, url) {
     const cors = this.root.corsHeaders(origin);
@@ -822,7 +721,6 @@ export class MuralServicePart {
       return this.root.json({ ok: false, error: "missing_muralId" }, 400, cors);
     }
 
-    // access token
     const tokenRes = await this._getValidAccessToken(uid);
     if (!tokenRes.ok) {
       const code = tokenRes.reason === "not_authenticated" ? 401 : 500;
@@ -830,7 +728,6 @@ export class MuralServicePart {
     }
     const accessToken = tokenRes.token;
 
-    // Attempt within a short budget (stay well under CF cap)
     const deadline = Date.now() + 8000;
     let openUrl = null;
     while (!openUrl && Date.now() < deadline) {
@@ -843,7 +740,6 @@ export class MuralServicePart {
       return this.root.json({ ok: true, pending: true }, 202, cors);
     }
 
-    // Success → persist mapping
     if (projectId) {
       try {
         await this.registerBoard({
@@ -871,11 +767,6 @@ export class MuralServicePart {
     return this.root.json({ ok: true, boardUrl: openUrl, muralId }, 200, cors);
   }
 
-  /**
-   * GET /api/mural/resolve?projectId=rec...&uid=anon&purpose=reflexive_journal
-   * Returns { ok:true, muralId, boardUrl? } or 404 {ok:false,error:"not_found"}.
-   * uid is optional (falls back to project-only resolution).
-   */
   async muralResolve(origin, url) {
     const cors = this.root.corsHeaders(origin);
     try {
@@ -902,9 +793,6 @@ export class MuralServicePart {
     }
   }
 
-  /**
-   * POST /api/mural/journal-sync
-   */
   async muralJournalSync(request, origin) {
     const cors = this.root.corsHeaders(origin);
     let step = "parse_input";
@@ -997,12 +885,10 @@ export class MuralServicePart {
       const status = Number(err?.status) || 500;
       const body = err?.body || null;
       const message = String(err?.message || "journal_sync_failed");
-
       return this.root.json({ ok: false, error: "journal_sync_failed", step, message, upstream: body }, status, cors);
     }
   }
 
-  /** TEMP debug */
   async muralDebugEnv(origin) {
     const env = this.root.env || {};
     return this.root.json({
