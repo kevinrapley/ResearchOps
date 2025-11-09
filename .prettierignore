@@ -47,6 +47,7 @@ playwright-report/
 test-results/
 reports/
 reports-site/
+AGENTS.md
 
 # Cloudflare build output (if any)
 dist/
