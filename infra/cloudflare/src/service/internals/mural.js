@@ -553,6 +553,7 @@ export class MuralServicePart {
       const cacheKey = `${projectId}·${uid || ""}·${purpose}`;
       const cached = _memCache.get(cacheKey);
       if (cached && (Date.now() - cached.ts < 60_000)) {
+        if (cached.deleted) return null;
         return { muralId: cached.muralId, boardUrl: cached.boardUrl, workspaceId: cached.workspaceId };
       }
 
@@ -567,7 +568,63 @@ export class MuralServicePart {
           primary: !!f["Primary?"]
         };
         if (rec.muralId) {
-          _memCache.set(cacheKey, { ...rec, ts: Date.now() });
+          const ensureInactive = async () => {
+            _memCache.set(cacheKey, { deleted: true, ts: Date.now() });
+            if (top.id) {
+              try {
+                const inactiveFields = { Active: false };
+                inactiveFields["Board URL"] = null;
+                inactiveFields["Primary?"] = false;
+                inactiveFields["Workspace ID"] = null;
+                await _airtableUpdateBoard(this.root.env, top.id, inactiveFields);
+              } catch (err) {
+                this.root.log?.warn?.("mural.airtable_deactivate_failed", { message: err?.message || null });
+              }
+            }
+            if (uid && projectId) {
+              try {
+                const key = `mural:${uid}:project:id::${String(projectId)}`;
+                await this.root.env.SESSION_KV.delete(key);
+              } catch {/* noop */}
+            }
+          };
+
+          let boardDeleted = false;
+          if (uid) {
+            try {
+              const tokenRes = await this._getValidAccessToken(uid);
+              if (tokenRes.ok) {
+                try {
+                  await getMural(this.root.env, tokenRes.token, rec.muralId);
+                } catch (err) {
+                  const status = Number(err?.status || err?.code || 0);
+                  if (status === 404 || status === 410) {
+                    boardDeleted = true;
+                  } else {
+                    this.root.log?.warn?.("mural.resolve_board_probe_failed", { status, message: err?.message || null });
+                  }
+                }
+              }
+            } catch (err) {
+              this.root.log?.warn?.("mural.resolve_board_token_failed", { message: err?.message || null });
+            }
+          }
+
+          if (!boardDeleted && rec.boardUrl) {
+            try {
+              const head = await fetch(rec.boardUrl, { method: "HEAD", redirect: "manual" });
+              if (head.status === 404 || head.status === 410) {
+                boardDeleted = true;
+              }
+            } catch { /* ignore network errors */ }
+          }
+
+          if (boardDeleted) {
+            await ensureInactive();
+            return null;
+          }
+
+          _memCache.set(cacheKey, { ...rec, ts: Date.now(), deleted: false });
           return rec;
         }
       }
@@ -653,7 +710,8 @@ export class MuralServicePart {
       boardUrl: normalizedBoardUrl,
       workspaceId: normalizedWorkspaceId,
       ts: Date.now(),
-      primary: !!primary
+      primary: !!primary,
+      deleted: false
     });
     return { ok: true };
   }
