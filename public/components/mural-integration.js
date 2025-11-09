@@ -48,6 +48,14 @@
     span.textContent = text;
   }
 
+  function setConnectedStatus(folderDenied = false) {
+    if (folderDenied) {
+      pill(els.status, "warn", "Board created but we couldn’t create a folder in your Mural room.");
+    } else {
+      pill(els.status, "good", "Connected");
+    }
+  }
+
   function uid() {
     return localStorage.getItem("mural.uid") ||
       localStorage.getItem("userId") ||
@@ -170,7 +178,7 @@
     try {
       const vr = await verify();
       console.log("[mural] ✓ verify completed:", vr);
-      pill(els.status, "good", "Connected");
+      setConnectedStatus(false);
     } catch (err) {
       const code = Number(err?.status || 0);
       if (code === 401) {
@@ -199,7 +207,7 @@
       if (res?.muralId || res?.boardUrl) {
         console.log("[mural] resolved board", res);
         setSetupAsOpen(projectId, res.boardUrl || null);
-        pill(els.status, "good", "Connected");
+        setConnectedStatus(false);
       } else {
         setSetupAsCreate(projectId, getProjectName() || "Project");
         pill(els.status, "neutral", "No board yet");
@@ -246,13 +254,15 @@
           body: JSON.stringify(body)
         });
 
+        const folderDenied = Boolean(js?.folderDenied);
+
         // Fast path: we already have the link
         let muralId = js?.mural?.id || js?.muralId || null;
         let boardUrl = js?.boardUrl || js?.mural?.viewLink || null;
         if (boardUrl) {
           RESOLVE_CACHE.set(projectId, { muralId, boardUrl, ts: Date.now() });
           setSetupAsOpen(projectId, boardUrl);
-          pill(els.status, "good", "Connected");
+          setConnectedStatus(folderDenied);
           window.open(boardUrl, "_blank", "noopener");
           console.log("[mural] created + registered board", { muralId, boardUrl });
           els.btnSetup.disabled = false;
@@ -268,7 +278,7 @@
         if (awaited.ok && awaited.boardUrl) {
           RESOLVE_CACHE.set(projectId, { muralId, boardUrl: awaited.boardUrl, ts: Date.now() });
           setSetupAsOpen(projectId, awaited.boardUrl);
-          pill(els.status, "good", "Connected");
+          setConnectedStatus(folderDenied);
           window.open(awaited.boardUrl, "_blank", "noopener");
           els.btnSetup.disabled = false;
           return;

@@ -721,7 +721,26 @@ export class MuralServicePart {
       }
 
       step = "ensure_folder";
-      let folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
+      let folderDenied = false;
+      let folder = null;
+      try {
+        folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
+      } catch (err) {
+        const status = Number(err?.status || 0);
+        const code = String(err?.body?.code || err?.code || "");
+        if (status === 403) {
+          folderDenied = true;
+          this.root.log?.warn?.("mural.ensure_folder.forbidden", {
+            status,
+            code,
+            message: err?.message || null,
+            roomId,
+            projectId: projectId || null
+          });
+        } else {
+          throw err;
+        }
+      }
       const folderId = _pickId(folder);
 
       step = "create_mural";
@@ -772,6 +791,7 @@ export class MuralServicePart {
           workspace: ws,
           room,
           folder,
+          folderDenied,
           mural: { ...mural, viewLink: openUrl },
           projectId: projectId || null,
           registered: Boolean(projectId),
@@ -787,6 +807,7 @@ export class MuralServicePart {
         workspace: ws,
         room,
         folder,
+        folderDenied,
         projectId: projectId || null
       }, 202, cors);
 
