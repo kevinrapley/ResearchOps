@@ -249,6 +249,7 @@ async function _airtableCreateBoard(env, {
     attempts.push({
       mode: "linked_record",
       body: {
+        typecast: true,
         records: [{
           fields: {
             ...baseFields,
@@ -263,6 +264,7 @@ async function _airtableCreateBoard(env, {
     attempts.push({
       mode: "project_ref",
       body: {
+        typecast: true,
         records: [{
           fields: {
             ...baseFields,
@@ -273,7 +275,7 @@ async function _airtableCreateBoard(env, {
     });
   }
 
-  const fallback = { mode: "bare", body: { records: [{ fields: baseFields }] } };
+  const fallback = { mode: "bare", body: { typecast: true, records: [{ fields: baseFields }] } };
   if (!attempts.length) {
     attempts.push(fallback);
   } else {
@@ -320,7 +322,7 @@ async function _airtableUpdateBoard(env, recordId, fields) {
   const res = await fetch(url, {
     method: "PATCH",
     headers: _airtableHeaders(env),
-    body: JSON.stringify({ fields })
+    body: JSON.stringify({ fields, typecast: true })
   });
   const js = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -842,6 +844,9 @@ export class MuralServicePart {
       };
       if (normalizedBoardUrl) updateFields["Board URL"] = normalizedBoardUrl;
       if (normalizedWorkspaceId) updateFields["Workspace ID"] = normalizedWorkspaceId;
+      if (projectRecordId) {
+        updateFields.Project = [{ id: projectRecordId }];
+      }
       await _airtableUpdateBoard(this.root.env, existing.id, updateFields);
     } else {
       const creation = await _airtableCreateBoard(this.root.env, {
