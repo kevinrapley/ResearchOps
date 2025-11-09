@@ -706,11 +706,16 @@ export class MuralServicePart {
 
       step = "get_me";
       const me = await getMe(this.root.env, accessToken).catch(() => null);
-      const username = me?.value?.firstName || me?.name || "Private";
+      const profile = _profileFromMe(me);
+      const username = profile?.firstName || profile?.name || "Private";
 
       step = "ensure_room";
       try {
-        room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
+        room = await ensureUserRoom(this.root.env, accessToken, ws.id, {
+          username,
+          userId: profile?.id,
+          userEmail: profile?.email
+        });
       } catch (e) {
         if (e?.code === "no_existing_room" || Number(e?.status) === 409) {
           return this.root.json({

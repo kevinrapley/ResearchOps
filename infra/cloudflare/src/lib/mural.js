@@ -208,23 +208,147 @@ export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-// Reuse an existing room by heuristics (we do not create rooms any more)
-export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
+/**
+ * Attempt to resolve the caller's personal room in a workspace.
+ * Prefers matches by user id/email, then by room name, finally a private room fallback.
+ * Accepts the previous string signature for compatibility.
+ * @param {Record<string, any>} env
+ * @param {string} token
+ * @param {string} workspaceId
+ * @param {{username?: string, userId?: string|number, userEmail?: string}|string} [opts]
+ */
+export async function ensureUserRoom(env, token, workspaceId, opts = {}) {
+  const config = typeof opts === "string" ? { username: opts } : (opts || {});
+  const username = config.username ?? "Private";
+  const userId = config.userId ? String(config.userId).trim() : "";
+  const userEmail = config.userEmail ? String(config.userEmail).trim() : "";
+
   const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(rooms?.items) ? rooms.items :
     Array.isArray(rooms?.value) ? rooms.value :
     Array.isArray(rooms) ? rooms : [];
 
-  const room = list.find(r =>
-    /(private)/i.test(String(r.visibility || r.type || "")) ||
-    (username && String(r.name || "").toLowerCase().includes(String(username).toLowerCase()))
-  );
-  if (!room) {
+  const norm = (v) => String(v || "").trim().toLowerCase();
+  const wantName = norm(username);
+  const wantEmail = norm(userEmail);
+
+  const addId = (set, value) => {
+    if (!value && value !== 0) return;
+    const clean = String(value).trim();
+    if (clean) set.add(clean);
+  };
+
+  const addEmail = (set, value) => {
+    const clean = norm(value);
+    if (clean) set.add(clean);
+  };
+
+  const pushPerson = (setIds, setEmails, person) => {
+    if (!person) return;
+    if (typeof person === "string" || typeof person === "number") {
+      addId(setIds, person);
+      return;
+    }
+    const val = person?.value || person;
+    addId(setIds, val?.id);
+    addId(setIds, val?.userId);
+    addId(setIds, val?.uid);
+    addId(setIds, val?.memberId);
+    addId(setIds, val?.personId);
+    addId(setIds, val?.identityId);
+    addEmail(setEmails, val?.email);
+    addEmail(setEmails, val?.primaryEmail);
+    addEmail(setEmails, val?.mail);
+    addEmail(setEmails, val?.address);
+    if (val?.user) pushPerson(setIds, setEmails, val.user);
+  };
+
+  const describeRoom = (room) => {
+    const ownerIds = new Set();
+    const ownerEmails = new Set();
+    const memberIds = new Set();
+    const memberEmails = new Set();
+
+    const ownerCandidates = [
+      room?.owner,
+      room?.ownerUser,
+      room?.roomOwner,
+      room?.createdBy,
+      room?.creator,
+      room?.host,
+      room?.facilitator,
+      room?.ownerInfo,
+      room?.createdByUser
+    ];
+    for (const person of ownerCandidates) pushPerson(ownerIds, ownerEmails, person);
+    addId(ownerIds, room?.ownerId);
+    addId(ownerIds, room?.ownerID);
+    addId(ownerIds, room?.createdById);
+    addId(ownerIds, room?.created_by);
+    addId(ownerIds, room?.creatorId);
+    addId(ownerIds, room?.createdByUserId);
+    addEmail(ownerEmails, room?.ownerEmail);
+    addEmail(ownerEmails, room?.owner?.email);
+    addEmail(ownerEmails, room?.createdBy?.email);
+    addEmail(ownerEmails, room?.creator?.email);
+
+    const memberCollections = [
+      room?.members,
+      room?.roomMembers,
+      room?.users,
+      room?.participants,
+      room?.collaborators,
+      room?.memberships,
+      room?.memberList,
+      room?.invitations
+    ];
+    for (const collection of memberCollections) {
+      if (!Array.isArray(collection)) continue;
+      for (const person of collection) {
+        pushPerson(memberIds, memberEmails, person);
+        if (person?.user) pushPerson(memberIds, memberEmails, person.user);
+      }
+    }
+    if (Array.isArray(room?.memberIds)) {
+      for (const id of room.memberIds) addId(memberIds, id);
+    }
+    if (Array.isArray(room?.memberEmails)) {
+      for (const email of room.memberEmails) addEmail(memberEmails, email);
+    }
+
+    const nameLc = norm(room?.name);
+    const visibilityLc = norm(room?.visibility || room?.type || room?.kind);
+    const isPrivate = /(private|personal)/i.test(room?.visibility || room?.type || room?.kind || "") || /\bprivate\b/.test(visibilityLc);
+
+    const matchesOwner = Boolean(userId && ownerIds.has(userId));
+    const matchesMember = Boolean(userId && memberIds.has(userId));
+    const matchesEmail = Boolean(wantEmail && (ownerEmails.has(wantEmail) || memberEmails.has(wantEmail)));
+    const matchesName = Boolean(wantName && nameLc.includes(wantName));
+
+    let score = 0;
+    if (matchesOwner) score += 70;
+    if (matchesMember) score += 50;
+    if (matchesEmail) score += 30;
+    if (matchesName) score += 25;
+    if (isPrivate) score += 10;
+
+    return { room, score, matchesOwner, matchesMember, matchesEmail, matchesName, isPrivate };
+  };
+
+  const annotated = list.map(describeRoom);
+  annotated.sort((a, b) => b.score - a.score);
+
+  const preferred = annotated.find(c => c.matchesOwner || c.matchesMember || c.matchesEmail || c.matchesName);
+  const fallbackPrivate = annotated.find(c => c.isPrivate);
+  const chosen = preferred || fallbackPrivate || annotated[0];
+
+  if (!chosen || !chosen.room) {
     const err = new Error("no_existing_room");
     err.code = "no_existing_room";
     throw err;
   }
-  return room;
+
+  return chosen.room;
 }
 
 export async function listFolders(env, token, roomId) {
