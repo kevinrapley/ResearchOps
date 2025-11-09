@@ -137,85 +137,25 @@ https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}
 | Link records | PATCH | field type `multipleRecordLinks` | Send `[{ "id" }]` arrays |
 | Upload attachments | PATCH | field type `multipleAttachments` | Send `[{ "url","filename" }]` |
 
-### Integration Notes
-- Centralized under `infra/cloudflare/src/lib/airtable.js` and `src/service/internals/airtable.js`.
-- All Worker calls must go through these helpers:
-  ```js
-  import * as airtable from "../internals/airtable.js";
-  await airtable.updateRecord(env, "Projects", recordId, {
-    "Mural Board": [{ id: muralId }]
-  });
-  ```
-- Field definitions documented in `docs/airtable/`.
-- Uses **V1 REST format** (string IDs or `{ id }` objects).
-- Merge existing links when appending.
-- Worker normalizes errors (400/422) into JSON responses.
-
-### CSV Sync
-- Implemented in Worker tasks (see `scripts/` or `infra/cloudflare/src/service/csv.js`).  
-- Pattern: parse CSV → validate → batch POST/PATCH (≤ 10 records per request).
-
-### Frontend Usage
-- Airtable-linked boards (Projects, Journals, Studies) are read via Worker API routes.  
-- When a new Mural board is created, the Worker writes its `viewerLink` and links it to the project record.
-
 ---
 
-## 🧠 Agent Instructions
+## 🧭 Custom Instruction Sets
 
-### Primary Role — Bug Fixing
-- Investigate Worker logs in `infra/cloudflare/src/`.  
-- Prioritize Airtable/Mural integration issues.  
-- Write clear commits (`fix(airtable): append linked records safely`).
-
-### Secondary Roles
-1. **Feature Creation** — new Worker routes or frontend flows.  
-2. **Refactoring** — simplify while keeping tests green.  
-3. **Code Review** — check performance, clarity, and security.
-
-### When Working with Airtable
-- Use `infra/cloudflare/src/lib/airtable.js` helpers only.  
-- Never call the REST API directly from frontend code.  
-- Validate record IDs and field names before writes.  
-- Respect rate limits (5 req/sec per base recommended).  
-- Prefer batched requests and merge-on-update patterns.
-
-### When Working with Mural
-- Use `infra/cloudflare/src/lib/mural.js`.  
-- Retry viewer-link fetch with backoff.  
-- Validate OAuth paths (`/authorization/oauth2/…`).  
-- Handle `viewer_link_unavailable` gracefully.
-
----
-
-## ✅ Pre-Merge Checklist
-- [ ] Lint + Prettier clean.  
-- [ ] TypeScript build passes.  
-- [ ] All tests (BDD, Playwright, Pa11y, Lighthouse, Lychee) pass.  
-- [ ] Worker builds/deploys locally via Wrangler.  
-- [ ] No secrets exposed or logged.  
-- [ ] PR includes changelog entry and Testing Done section.
-
----
-
-## 🧩 Example Commit Flow
-```bash
-git checkout -b fix/airtable-linked-records
-npm ci
-npm run lint && npm run typecheck && npm test
-git add .
-git commit -m "fix(airtable): ensure linked record merge behavior"
-git push origin fix/airtable-linked-records
+Each agent has a dedicated XML configuration file stored at:  
+```
+/docs/devops/custom-instructions/
 ```
 
----
-
-## 🪐 Agent Notes
-- Use concise diffs; avoid touching unrelated modules.  
-- Prefer deterministic retries (max 60 s) for async Mural/Airtable polling.  
-- If Airtable returns `422` or `INVALID_VALUE_FOR_COLUMN`, check field types in `docs/airtable/`.  
-- If Mural returns `PATH_NOT_FOUND`, verify base path is `https://app.mural.co/api/public/v1/authorization/oauth2/`.  
-- Agents may reference `docs/airtable/` and `docs/mural/` for detailed endpoint guides.
+| XML File | Role | Path |
+|-----------|------|------|
+| **developer.xml** | Defines coding, testing, and documentation conventions for developers. | [`/docs/devops/custom-instructions/developer.xml`](../docs/devops/custom-instructions/developer.xml) |
+| **devops.xml** | Governs CI/CD automation, infrastructure configuration, and deployment patterns. | [`/docs/devops/custom-instructions/devops.xml`](../docs/devops/custom-instructions/devops.xml) |
+| **ethics.xml** | Establishes ethical review standards for automation, AI/ML, and data governance. | [`/docs/devops/custom-instructions/ethics.xml`](../docs/devops/custom-instructions/ethics.xml) |
+| **governance.xml** | Provides service governance and approval workflows, including version control and audit logging. | [`/docs/devops/custom-instructions/governance.xml`](../docs/devops/custom-instructions/governance.xml) |
+| **metrics.xml** | Defines telemetry standards, service-level metrics, and data reporting pipelines. | [`/docs/devops/custom-instructions/metrics.xml`](../docs/devops/custom-instructions/metrics.xml) |
+| **qa.xml** | Specifies QA automation, testing standards, and validation frameworks. | [`/docs/devops/custom-instructions/qa.xml`](../docs/devops/custom-instructions/qa.xml) |
+| **researchops.xml** | Encapsulates ResearchOps workflows, participant data ethics, and study lifecycle processes. | [`/docs/devops/custom-instructions/researchops.xml`](../docs/devops/custom-instructions/researchops.xml) |
+| **security.xml** | Outlines continuous security scanning, dependency control, and vulnerability management. | [`/docs/devops/custom-instructions/security.xml`](../docs/devops/custom-instructions/security.xml) |
 
 ---
 
