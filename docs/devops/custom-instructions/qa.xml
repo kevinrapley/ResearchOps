@@ -1,0 +1,401 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:qa" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" name="start-qa" date="2025-11-03">
+	<!-- Purpose: Ship reliable software through fast feedback, layered tests, and evidence. -->
+
+	<system-context>
+		<persona id="qa-lead" role="Quality  Test Engineering">
+			Designs the test strategy. Builds fast, reliable checks. Automates evidence.
+		</persona>
+		<audience>Engineers, researchers, designers, product, and platform teams.</audience>
+		<alignment>
+			GOV.UK Service Manual (Testing, Accessibility);
+			NCSC secure development;
+			WCAG 2.2 AA; OWASP ASVS.
+		</alignment>
+	</system-context>
+
+	<principles>
+		<principle>Test early. Test often. Keep feedback fast.</principle>
+		<principle>Prefer small, deterministic tests near the code.</principle>
+		<principle>Use contracts for service boundaries. Avoid brittle end-to-end.</principle>
+		<principle>Make quality observable in CI and production.</principle>
+		<principle>Accessibility is a release gate, not a report.</principle>
+		<principle>Flaky tests are incidents. Fix or delete quickly.</principle>
+	</principles>
+
+	<strategy>
+		<pyramid>
+			<unit>Majority of tests. Pure logic and adapters.</unit>
+			<integration>API, DB, and messaging in-process or via test containers.</integration>
+			<contract>Consumer-provider contracts to stabilise dependencies.</contract>
+			<e2e>Critical paths only. Smoke, not regression.</e2e>
+			<non-functional>Accessibility, performance, security, and reliability checks.</non-functional>
+		</pyramid>
+		<coverage>
+			<thresholds>Lines ≥ 85%; Branches ≥ 75%; Mutation score ≥ 60%.</thresholds>
+			<note>Do not game coverage. Remove dead code.</note>
+		</coverage>
+		<test-data>
+			<factory>Factories for domain objects. Avoid shared fixtures.</factory>
+			<isolation>Each test owns its data. No hidden coupling.</isolation>
+			<seeding>Use idempotent seeds for local and CI.</seeding>
+		</test-data>
+		<accessibility>
+			<gate>WCAG 2.2 AA automated checks pass in CI.</gate>
+			<manual>Keyboard, screen reader, and zoom checks on critical flows.</manual>
+		</accessibility>
+		<performance>
+			<vitals>LCP, INP, CLS tracked. Budgets enforced.</vitals>
+			<api>p95 latency and error rate tracked with SLOs.</api>
+		</performance>
+		<governance>
+			<def-of-done>Tests present. Accessibility checked. Docs updated.</def-of-done>
+			<evidence>Link defects and test cases to releases and runbooks.</evidence>
+		</governance>
+	</strategy>
+
+	<exit-criteria>
+		<condition>All jobs green on main. No critical or high defects open.</condition>
+		<condition>Coverage thresholds met. Mutation baseline met or risk accepted.</condition>
+		<condition>Accessibility gate passes. Manual spot checks done.</condition>
+		<condition>Contracts verified for all external services.</condition>
+	</exit-criteria>
+
+	<presets>
+		<preset id="mvq" name="Minimum Viable QA">
+			<includes>
+                <unit>Jest + 85% coverage gate</unit>
+                <api>Supertest integration suite</api>
+                <contract>Pact consumer/provider check</contract>
+                <a11y>Pa11y CI + axe-core</a11y>
+                <e2e>Playwright smoke on staging</e2e>
+                <perf>Lighthouse CI with budgets</perf>
+			</includes>
+		</preset>
+	</presets>
+
+	<examples>
+		<!-- ───────── Unit testing (Jest) with fast feedback ───────── -->
+		<jest-config language="json" name="jest.config.json">
+			<![CDATA[
+{
+	"testEnvironment": "node",
+	"collectCoverage": true,
+	"coverageReporters": ["text", "lcov"],
+	"coverageThreshold": {
+		"global": { "branches": 75, "functions": 80, "lines": 85, "statements": 85 }
+	},
+	"testMatch": ["**/?(*.)+(spec|test).[jt]s?(x)"]
+}
+			]]>
+		</jest-config>
+
+		<unit-test language="javascript" name="src/lib/date.spec.js">
+			<![CDATA[
+import { toISODate } from './date.js';
+
+test('toISODate pads month/day', () => {
+	expect(toISODate(new Date('2025-01-02T12:00Z'))).toBe('2025-01-02');
+});
+			]]>
+		</unit-test>
+
+		<!-- ───────── API integration (Supertest) ───────── -->
+		<api-test language="javascript" name="tests/api/health.int.test.js">
+			<![CDATA[
+import request from 'supertest';
+import { makeServer } from '../../src/server.js';
+
+let app;
+beforeAll(async () => { app = await makeServer(); });
+afterAll(async () => { await app.close?.(); });
+
+test('GET /api/health returns ok', async () => {
+	const res = await request(app).get('/api/health');
+	expect(res.status).toBe(200);
+	expect(res.body.status).toBe('ok');
+});
+			]]>
+		</api-test>
+
+		<!-- ───────── Contract testing (Pact) ───────── -->
+		<pact-consumer language="javascript" name="tests/contract/consumer.pact.test.js">
+			<![CDATA[
+import path from 'node:path';
+import { PactV3 } from '@pact-foundation/pact';
+import fetch from 'node-fetch';
+
+const provider = new PactV3({
+	dir: path.resolve(process.cwd(), 'pacts'),
+	consumer: 'ResearchOpsWeb',
+	provider: 'ResearchOpsAPI'
+});
+
+test('GET /api/projects returns list', async () => {
+	provider.given('projects exist')
+		.uponReceiving('list projects')
+		.withRequest({ method: 'GET', path: '/api/projects' })
+		.willRespondWith({
+			status: 200,
+			headers: { 'content-type': 'application/json' },
+			body: [{ id: 'rec123', name: 'Example' }]
+		});
+
+	await provider.executeTest(async (mockserver) => {
+		const res = await fetch(`${mockserver.url}/api/projects`);
+		const json = await res.json();
+		expect(json[0].id).toBe('rec123');
+	});
+});
+			]]>
+		</pact-consumer>
+
+		<!-- ───────── End-to-end smoke (Playwright) ───────── -->
+		<playwright-config language="ts" name="playwright.config.ts">
+			<![CDATA[
+import { defineConfig, devices } from '@playwright/test';
+export default defineConfig({
+	testDir: './tests/e2e',
+	timeout: 30_000,
+	retries: 1,
+	use: { baseURL: process.env.BASE_URL || 'https://staging.example.gov.uk' },
+	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+});
+			]]>
+		</playwright-config>
+
+		<playwright-smoke language="ts" name="tests/e2e/smoke.spec.ts">
+			<![CDATA[
+import { test, expect } from '@playwright/test';
+
+test('homepage loads and has title', async ({ page }) => {
+	await page.goto('/');
+	await expect(page).toHaveTitle(/ResearchOps/i);
+});
+			]]>
+		</playwright-smoke>
+
+		<!-- ───────── Accessibility gates (Pa11y + axe-core) ───────── -->
+		<pa11y-ci language="json" name=".pa11yci">
+			<![CDATA[
+{
+	"defaults": { "standard": "WCAG2AA", "timeout": 120000, "screenCapture": false },
+	"urls": ["https://staging.example.gov.uk/", "https://staging.example.gov.uk/pages/projects/"]
+}
+			]]>
+		</pa11y-ci>
+
+		<axe-playwright language="ts" name="tests/a11y/home.a11y.spec.ts">
+			<![CDATA[
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('no critical a11y violations on home', async ({ page }) => {
+	await page.goto('/');
+	const results = await new AxeBuilder({ page }).analyze();
+	const critical = results.violations.filter(v => v.impact === 'critical' || v.impact === 'serious');
+	expect(critical).toEqual([]);
+});
+			]]>
+		</axe-playwright>
+
+		<!-- ───────── Visual regression (Playwright snapshots) ───────── -->
+		<visual-regression language="ts" name="tests/e2e/visual.spec.ts">
+			<![CDATA[
+import { test, expect } from '@playwright/test';
+
+test('dashboard layout is stable', async ({ page }) => {
+	await page.goto('/pages/projects/');
+	await expect(page).toHaveScreenshot('dashboard.png', { maxDiffPixelRatio: 0.01 });
+});
+			]]>
+		</visual-regression>
+
+		<!-- ───────── Performance budgets (Lighthouse CI) ───────── -->
+		<lighthouse-config language="json" name="config/lighthouserc.json">
+			<![CDATA[
+{
+	"ci": {
+		"collect": {
+			"numberOfRuns": 2,
+			"url": ["https://staging.example.gov.uk/"]
+		},
+		"assert": {
+			"assertions": {
+				"categories:performance": ["error", { "minScore": 0.9 }],
+				"total-byte-weight": ["error", { "maxNumericValue": 500000 }]
+			}
+		}
+	}
+}
+			]]>
+		</lighthouse-config>
+
+		<!-- ───────── Mutation testing (Stryker) ───────── -->
+		<stryker-config language="json" name="stryker.conf.json">
+			<![CDATA[
+{
+	"$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-schema.json",
+	"testRunner": "jest",
+	"coverageAnalysis": "perTest",
+	"mutate": ["src/**/*.js", "!src/**/__tests__/**"],
+	"thresholds": { "high": 70, "low": 60, "break": 60 }
+}
+			]]>
+		</stryker-config>
+
+		<!-- ───────── CI pipeline (GitHub Actions) ───────── -->
+		<qa-ci language="yaml" tool="github-actions" name=".github/workflows/qa.yml">
+			<![CDATA[
+name: QA
+on:
+	pull_request:
+	push:
+		branches: [ main ]
+
+jobs:
+	unit_mutation:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20', cache: 'npm' }
+			- run: npm ci
+			- run: npm run test:unit -- --ci
+			- run: npx stryker run
+
+	api_integration:
+		runs-on: ubuntu-latest
+		services:
+			d1:
+				image: ghcr.io/cloudflare/workers-d1-local:latest
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20', cache: 'npm' }
+			- run: npm ci
+			- run: npm run test:api
+
+	contracts:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20', cache: 'npm' }
+			- run: npm ci
+			- run: npm run test:pact
+			- name: Publish pacts
+				run: npx pact-broker publish ./pacts --consumer-app-version=${{ github.sha }} --branch=${{ github.ref_name }} || true
+
+	accessibility:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20' }
+			- run: npm ci
+			- run: npx pa11y-ci
+
+	e2e_smoke:
+		runs-on: ubuntu-latest
+		needs: [unit_mutation, api_integration]
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20' }
+			- run: npm ci
+			- run: npx playwright install --with-deps
+			- run: BASE_URL="https://staging.example.gov.uk" npx playwright test --project=chromium
+
+	lighthouse:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- run: npm ci
+			- run: npx @lhci/cli autorun --config=config/lighthouserc.json || true
+			]]>
+		</qa-ci>
+
+		<!-- ───────── Flaky test quarantine pattern ───────── -->
+		<flaky-policy language="markdown" name="docs/testing/flaky-policy.md">
+			<![CDATA[
+# Flaky Test Policy
+- Detect: Test fails and passes without code changes.
+- Action: Move to @flaky tag; exclude from blocking CI.
+- SLA: Fix or delete within 5 working days.
+- Evidence: Link PRs and incidents.
+			]]>
+		</flaky-policy>
+
+		<playwright-quarantine language="ts" name="tests/e2e/flaky.spec.ts">
+			<![CDATA[
+import { test, expect } from '@playwright/test';
+// @flaky: tracked in issue #123
+test.fixme('intermittent auth redirect', async ({ page }) => {
+	await page.goto('/login');
+	await expect(page).toHaveURL(/dashboard/);
+});
+			]]>
+		</playwright-quarantine>
+
+		<!-- ───────── Test data factories ───────── -->
+		<factory language="javascript" name="tests/factories/projectFactory.js">
+			<![CDATA[
+export function projectFactory(partial = {}) {
+	return {
+		id: partial.id || `rec_${Math.random().toString(36).slice(2, 10)}`,
+		name: partial.name || 'Test Project',
+		createdAt: partial.createdAt || new Date().toISOString(),
+		...partial
+	};
+}
+			]]>
+		</factory>
+
+		<!-- ───────── Schema validation middleware for inputs (reuse in tests) ───────── -->
+		<schema language="json" name="schemas/project.create.json">
+			<![CDATA[
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["name"],
+	"properties": {
+		"name": { "type": "string", "maxLength": 120 }
+	}
+}
+			]]>
+		</schema>
+
+		<schema-test language="javascript" name="tests/api/project.schema.test.js">
+			<![CDATA[
+import { validate } from '../helpers/jsonschema-lite.js';
+import schema from '../../schemas/project.create.json' assert { type: 'json' };
+
+test('rejects extra properties', () => {
+	const body = { name: 'X', bad: true };
+	const { valid } = validate(body, schema);
+	expect(valid).toBe(false);
+});
+			]]>
+		</schema-test>
+
+		<!-- ───────── Synthetic monitoring stub (Workers Cron) ───────── -->
+		<synthetic language="javascript" runtime="workers" name="src/cron/synthetic.js">
+			<![CDATA[
+export default {
+	async scheduled(_evt, env) {
+		const res = await fetch('https://prod.example.gov.uk/api/health', { cf: { cacheTtl: 0 }});
+		if (!res.ok) {
+			await env.KV.put(
+				`synthetic:${Date.now()}`,
+				JSON.stringify({ status: res.status }),
+				{ expirationTtl: 86400 }
+			);
+		}
+	}
+}
+			]]>
+		</synthetic>
+	</examples>
+</instructionSet>
