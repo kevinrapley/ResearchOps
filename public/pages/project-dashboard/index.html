@@ -89,7 +89,7 @@
 
 		<!-- NAV BOARD -->
 		<nav class="board" typeof="schema:SiteNavigationElement">
-			<a href="/pages/project/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
+			<a href="/pages/projects/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
 			<a href="#stakeholders" class="board__item" property="schema:relatedLink">Stakeholder Management</a>
 			<a href="#planning" class="board__item" property="schema:relatedLink">Research Planning</a>
 			<a href="#outcomes" class="board__item" property="schema:relatedLink">Research Outcomes</a>
@@ -599,7 +599,7 @@
 			if (projectId) {
 				const journalLink = document.getElementById('journal-link');
 				if (journalLink) {
-					journalLink.href = `/pages/project/journals/?id=${encodeURIComponent(projectId)}`;
+					journalLink.href = `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`;
 				}
 			}
 		})();
