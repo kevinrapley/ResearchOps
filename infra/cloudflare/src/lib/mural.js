@@ -146,6 +146,24 @@ export async function getMe(env, token) {
   return fetchJSON(`${apiBase(env)}/users/me`, withBearer(token));
 }
 
+/** Fetch a workspace by ID or key. */
+export async function getWorkspace(env, token, workspaceId) {
+  const clean = String(workspaceId || "").trim();
+  if (!clean) {
+    const err = new Error("workspace_id_required");
+    err.status = 400;
+    throw err;
+  }
+  return fetchJSON(`${apiBase(env)}/workspaces/${clean}`, withBearer(token));
+}
+
+/** List workspaces accessible to the current user (cursor-friendly). */
+export async function listUserWorkspaces(env, token, { cursor = null } = {}) {
+  const url = new URL(`${apiBase(env)}/users/me/workspaces`);
+  if (cursor) url.searchParams.set("cursor", cursor);
+  return fetchJSON(url.toString(), withBearer(token));
+}
+
 /** Unified accessor to last active workspace id across slightly different shapes */
 export function getActiveWorkspaceIdFromMe(me) {
   return me?.value?.lastActiveWorkspace || me?.lastActiveWorkspace || null;
