@@ -290,8 +290,16 @@
       } catch (err) {
         console.warn("[mural] setup failed", err);
         const code = Number(err?.status || 0);
+        const detail = err?.body?.message || err?.body?.upstream?.message || "";
+        const step = err?.body?.step || "";
         if (code === 401) {
           pill(els.status, "warn", "Please connect Mural first");
+        } else if (code === 403 && step === "create_mural" && /not allowed/i.test(detail)) {
+          pill(
+            els.status,
+            "bad",
+            "We can’t create boards in this Mural room with your permissions. Ask a workspace admin to grant access."
+          );
         } else if (code === 403) {
           pill(els.status, "bad", "Mural account not in Home Office workspace");
         } else if (err?.message === "mural_id_unavailable") {
