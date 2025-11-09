@@ -62,9 +62,16 @@
       "anon";
   }
 
-  function getProjectId() {
+  function getProjectParamId() {
     const u = new URL(location.href);
     return u.searchParams.get("id") || "";
+  }
+
+  function getProjectId() {
+    const main = document.querySelector("main");
+    const airtableId = main?.dataset?.projectAirtableId || "";
+    if (airtableId && airtableId.trim()) return airtableId.trim();
+    return getProjectParamId();
   }
 
   function getProjectName() {
@@ -98,12 +105,13 @@
     els.btnSetup.disabled = false;
     els.btnSetup.textContent = 'Open “Reflexive Journal”';
     els.btnSetup.onclick = () => {
-      const cached = RESOLVE_CACHE.get(projectId);
+      const effectiveId = getProjectId() || projectId;
+      const cached = RESOLVE_CACHE.get(effectiveId);
       const href = boardUrl || cached?.boardUrl;
       if (href) {
         window.open(href, "_blank", "noopener");
       } else {
-        resolveBoard(projectId).then((res) => {
+        resolveBoard(effectiveId).then((res) => {
           if (res?.boardUrl) window.open(res.boardUrl, "_blank", "noopener");
         }).catch(() => { /* noop */ });
       }
@@ -167,12 +175,18 @@
 
   async function updateSetupState() {
     const projectId = getProjectId();
+    const projectParamId = getProjectParamId();
     const projectName = getProjectName();
-    if (!els.section || !projectId) return;
+    if (!els.section) return;
 
     // Ensure buttons are wired
-    wireConnectButton(projectId);
+    wireConnectButton(projectParamId || projectId);
     disableAll();
+
+    if (!projectId) {
+      pill(els.status, "neutral", "Preparing project details…");
+      return;
+    }
 
     // Step 1: Verify OAuth + workspace
     try {
@@ -237,9 +251,16 @@
         els.btnSetup.disabled = true;
         pill(els.status, "neutral", "Creating board…");
 
+        const resolvedProjectId = getProjectId() || projectId;
+        if (!resolvedProjectId) {
+          pill(els.status, "warn", "Project not ready yet");
+          els.btnSetup.disabled = false;
+          return;
+        }
+
         const body = {
           uid: uid(),
-          projectId,
+          projectId: resolvedProjectId,
           projectName
         };
 
@@ -260,8 +281,8 @@
         let muralId = js?.mural?.id || js?.muralId || null;
         let boardUrl = js?.boardUrl || js?.mural?.viewLink || null;
         if (boardUrl) {
-          RESOLVE_CACHE.set(projectId, { muralId, boardUrl, ts: Date.now() });
-          setSetupAsOpen(projectId, boardUrl);
+          RESOLVE_CACHE.set(resolvedProjectId, { muralId, boardUrl, ts: Date.now() });
+          setSetupAsOpen(resolvedProjectId, boardUrl);
           setConnectedStatus(folderDenied);
           window.open(boardUrl, "_blank", "noopener");
           console.log("[mural] created + registered board", { muralId, boardUrl });
@@ -274,10 +295,10 @@
         if (!muralId) throw new Error("mural_id_unavailable");
 
         pill(els.status, "neutral", "Preparing the board link…");
-        const awaited = await awaitViewerUrl({ muralId, projectId, maxMs: 180000, intervalMs: 2500 });
+        const awaited = await awaitViewerUrl({ muralId, projectId: resolvedProjectId, maxMs: 180000, intervalMs: 2500 });
         if (awaited.ok && awaited.boardUrl) {
-          RESOLVE_CACHE.set(projectId, { muralId, boardUrl: awaited.boardUrl, ts: Date.now() });
-          setSetupAsOpen(projectId, awaited.boardUrl);
+          RESOLVE_CACHE.set(resolvedProjectId, { muralId, boardUrl: awaited.boardUrl, ts: Date.now() });
+          setSetupAsOpen(resolvedProjectId, awaited.boardUrl);
           setConnectedStatus(folderDenied);
           window.open(awaited.boardUrl, "_blank", "noopener");
           els.btnSetup.disabled = false;

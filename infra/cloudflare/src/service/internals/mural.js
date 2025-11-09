@@ -133,17 +133,28 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true }) {
   const url = _encodeTableUrl(env, _boardsTableName(env));
 
+  const safeUid = String(uid ?? "");
+  const safePurpose = String(purpose ?? "");
+  const safeMuralId = String(muralId ?? "");
+  const safeProjectId = String(projectId ?? "");
+  const sanitizedBoardUrl = typeof boardUrl === "string" && boardUrl.trim() ? boardUrl.trim() : "";
+  const sanitizedWorkspaceId = typeof workspaceId === "string" && workspaceId.trim() ? workspaceId.trim() : "";
+
+  const baseFields = {
+    UID: safeUid,
+    Purpose: safePurpose,
+    "Mural ID": safeMuralId,
+    "Board URL": sanitizedBoardUrl,
+    "Primary?": !!primary,
+    Active: !!active
+  };
+  if (sanitizedWorkspaceId) baseFields["Workspace ID"] = sanitizedWorkspaceId;
+
   const mkBodyLinked = () => ({
     records: [{
       fields: {
-        "Project": [{ id: String(projectId) }],
-        "UID": uid,
-        "Purpose": purpose,
-        "Mural ID": muralId,
-        "Board URL": boardUrl,
-        "Workspace ID": workspaceId,
-        "Primary?": !!primary,
-        "Active": !!active
+        ...baseFields,
+        Project: [{ id: safeProjectId }]
       }
     }]
   });
@@ -151,14 +162,8 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
   const mkBodyText = () => ({
     records: [{
       fields: {
-        "Project": String(projectId),
-        "UID": uid,
-        "Purpose": purpose,
-        "Mural ID": muralId,
-        "Board URL": boardUrl,
-        "Workspace ID": workspaceId,
-        "Primary?": !!primary,
-        "Active": !!active
+        ...baseFields,
+        Project: safeProjectId
       }
     }]
   });
@@ -175,6 +180,20 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
   }
 
   throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
+}
+
+async function _airtableUpdateBoard(env, recordId, fields) {
+  const url = `${_encodeTableUrl(env, _boardsTableName(env))}/${recordId}`;
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: _airtableHeaders(env),
+    body: JSON.stringify({ fields })
+  });
+  const js = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw Object.assign(new Error("airtable_update_failed"), { status: res.status, body: js });
+  }
+  return js;
 }
 
 /* ───────────────────────── URL helpers ───────────────────────── */
@@ -559,11 +578,67 @@ export class MuralServicePart {
     return null;
   }
 
-  async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl = null, workspaceId = null, primary = true }) {
+  async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
     if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
-    await _airtableCreateBoard(this.root.env, { projectId, uid, purpose, muralId, boardUrl, workspaceId, primary, active: true });
-    const cacheKey = `${projectId}·${uid}·${purpose}`;
-    _memCache.set(cacheKey, { muralId, boardUrl, workspaceId, ts: Date.now(), primary: !!primary });
+
+    const safeProjectId = String(projectId);
+    const safeUid = String(uid);
+    const safePurpose = String(purpose || PURPOSE_REFLEXIVE);
+    const safeMuralId = String(muralId);
+    const normalizedBoardUrl = typeof boardUrl === "string" && boardUrl.trim() ? boardUrl.trim() : null;
+    const normalizedWorkspaceId = typeof workspaceId === "string" && workspaceId.trim() ? workspaceId.trim() : null;
+
+    let existing = null;
+    try {
+      const rows = await _airtableListBoards(this.root.env, {
+        projectId: safeProjectId,
+        uid: safeUid,
+        purpose: safePurpose,
+        active: true,
+        max: 25
+      });
+      if (Array.isArray(rows) && rows.length) {
+        existing = rows.find(r => {
+          const val = r?.fields?.["Mural ID"];
+          return val && String(val).trim() === safeMuralId;
+        }) || null;
+      }
+    } catch (err) {
+      this.root.log?.warn?.("mural.airtable_lookup_failed", { message: err?.message || null });
+    }
+
+    if (existing) {
+      const updateFields = {
+        UID: safeUid,
+        Purpose: safePurpose,
+        "Mural ID": safeMuralId,
+        "Primary?": !!primary,
+        Active: true
+      };
+      if (normalizedBoardUrl) updateFields["Board URL"] = normalizedBoardUrl;
+      if (normalizedWorkspaceId) updateFields["Workspace ID"] = normalizedWorkspaceId;
+      await _airtableUpdateBoard(this.root.env, existing.id, updateFields);
+    } else {
+      await _airtableCreateBoard(this.root.env, {
+        projectId: safeProjectId,
+        uid: safeUid,
+        purpose: safePurpose,
+        muralId: safeMuralId,
+        boardUrl: normalizedBoardUrl,
+        workspaceId: normalizedWorkspaceId,
+        primary,
+        active: true
+      });
+    }
+
+    const cacheKey = `${safeProjectId}·${safeUid}·${safePurpose}`;
+    _memCache.set(cacheKey, {
+      muralId: safeMuralId,
+      boardUrl: normalizedBoardUrl,
+      workspaceId: normalizedWorkspaceId,
+      ts: Date.now(),
+      primary: !!primary
+    });
     return { ok: true };
   }
 
@@ -873,22 +948,26 @@ export class MuralServicePart {
         await new Promise(r => setTimeout(r, 600));
       }
 
-      if (openUrl && projectId) {
+      const projectIdStr = projectId ? String(projectId) : null;
+      if (projectIdStr) {
         try {
           await this.registerBoard({
-            projectId: String(projectId),
+            projectId: projectIdStr,
             uid,
             purpose: PURPOSE_REFLEXIVE,
             muralId,
-            boardUrl: openUrl,
-            workspaceId: ws.id,
+            boardUrl: openUrl ?? undefined,
+            workspaceId: ws?.id || null,
             primary: true
           });
         } catch (e) {
           this.root.log?.error?.("mural.airtable_register_failed", { status: e?.status, body: e?.body });
         }
+      }
+
+      if (openUrl && projectIdStr) {
         try {
-          const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
+          const kvKey = `mural:${uid}:project:id::${projectIdStr}`;
           await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
             url: openUrl,
             projectName: projectName,
