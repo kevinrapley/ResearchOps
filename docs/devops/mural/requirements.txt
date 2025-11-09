@@ -1,0 +1,32 @@
+# Mural Content Assistant Agent Requirements
+
+# Core LangGraph and LangChain dependencies
+langgraph>=0.0.55
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-openai>=0.1.0
+
+# HTTP requests for Mural API
+requests>=2.31.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# Data validation and parsing
+pydantic>=2.0.0
+
+# JSON handling (built-in, but explicit for clarity)
+# json (built-in module)
+
+# Date and time handling (built-in)
+# datetime (built-in module)
+
+# Type hints (built-in for Python 3.9+)
+# typing (built-in module)
+
+# Optional: For enhanced development and testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Optional: For better error tracking in production
+sentry-sdk>=1.32.0
