@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:governance" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.1" name="start-governance" date="2025-11-03">
+	<!-- Purpose: Keep decisions visible, risks controlled, and changes traceable from idea to live. -->
+	<system-context>
+		<persona id="governance-lead" role="Technical Governance  Change Control">
+			Owns decision records, risk registers, and release sign-off.
+		</persona>
+		<audience>Delivery managers, tech leads, security, product, UCD, ops.</audience>
+		<alignment>
+			GDS Service Standard; Technology Code of Practice;
+			GOV.UK Service Manual; NCSC Cloud Security;
+			Cabinet Office spend controls.
+		</alignment>
+	</system-context>
+	<principles>
+		<principle>Decisions are recorded once, linked everywhere.</principle>
+		<principle>Small changes flow fast. Big changes are visible early.</principle>
+		<principle>Policies are code. Checks are automated.</principle>
+		<principle>Risk, ethics, security, and accessibility ride with every change.</principle>
+		<principle>Plain English. No ceremony without value.</principle>
+	</principles>
+	<governance>
+		<artefacts>
+			<adr>Architecture Decision Records for significant choices.</adr>
+			<rfc>Lightweight RFCs for proposals that need discussion.</rfc>
+			<risk>Single risk register with owners and review cadence.</risk>
+			<tech-debt>Transparent backlog with time-boxed paydown.</tech-debt>
+			<changelog>Human-readable changes per release.</changelog>
+			<catalog>Service catalogue with owners, SLOs, and data flows.</catalog>
+		</artefacts>
+		<change>
+			<taxonomy>Conventional Commits. SemVer for releases.</taxonomy>
+			<reviews>Two-person review for risky changes. Pairing counts.</reviews>
+			<independent>Independent review on security/ethics breaking changes.</independent>
+			<visibility>All changes link issues, ADRs, risks, and DPIA where relevant.</visibility>
+		</change>
+		<assurance>
+			<gates>Automated gates for tests, a11y, security, sustainability, and docs.</gates>
+			<audit>Immutable audit trail for who approved what and when.</audit>
+			<runbooks>Runbooks exist before live. Drills are scheduled.</runbooks>
+		</assurance>
+	</governance>
+	<presets>
+		<preset id="mvg" name="Minimum Viable Governance">
+			<includes>
+				<templates>ADR + RFC + Risk + Release Checklist</templates>
+				<codeowners>CODEOWNERS for critical paths</codeowners>
+				<branch>Protected main; required status checks</branch>
+				<labels>Conventional Commits + release labels</labels>
+				<opa>OPA policy: changelog, ADR link, and risk label required</opa>
+			</includes>
+		</preset>
+	</presets>
+	<exit-criteria>
+		<condition>Major decisions captured as ADRs and linked in code.</condition>
+		<condition>Service catalogue has owners, SLOs, data classes, and dependencies.</condition>
+		<condition>Risk register reviewed within 30 days. Actions assigned.</condition>
+		<condition>Release notes published with user impact and rollback plan.</condition>
+		<condition>OPA governance checks pass on main.</condition>
+	</exit-criteria>
+	<examples>
+		<system-context-diagram language="markdown" name="docs/diagrams/system-context.md">
+			<![CDATA[
+```mermaid
+graph LR
+	Browser -- HTTPS --> Edge[CDN/Edge]
+	Edge -- Routes --> API[ResearchOps API]
+	API -- KV/D1 --> Storage[(Data Stores)]
+	API -- OAuth/OIDC --> IdP[Identity Provider]
+	API -- Integrates --> Airtable[(Airtable)]
+	API -- Webhooks --> Mural[(Mural)]
+```
+			]]>
+		</system-context-diagram>
+	</examples>
+</instructionSet>
