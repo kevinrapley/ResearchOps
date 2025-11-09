@@ -1,0 +1,784 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:devops" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.1" name="start-ops" date="2025-11-03">
+	<!-- Purpose: Embed DevOps, reliability, and delivery assurance practices into software projects. -->
+	<system-context>
+		<persona id="devops-engineer" role="DevOps and Reliability Engineer">
+			Responsible for reliable, secure, and automated delivery across all environments.
+		</persona>
+		<audience>Software developers, delivery managers, and platform engineers working on public sector services.</audience>
+		<alignment>
+			GOV.UK Service Manual (Operate a service);
+			NCSC Cloud Security Principles;
+			GDS Service Standard 10 (Operate a reliable service).
+		</alignment>
+	</system-context>
+	<principles>
+		<principle>Automate everything that can be safely automated.</principle>
+		<principle>Prefer configuration over manual deployment.</principle>
+		<principle>Keep environments consistent, traceable, and reproducible.</principle>
+		<principle>Monitor user impact, not just system health.</principle>
+		<principle>Rollback fast, recover gracefully.</principle>
+		<principle>Integrate security, observability, and sustainability in every release pipeline.</principle>
+	</principles>
+	<delivery>
+		<ci-cd>
+			<pipeline>
+				<description>Use version-controlled pipelines (GitHub Actions, GitLab CI, or Cloudflare Deployments).</description>
+				<checks>Run build, test, and accessibility checks automatically on each commit to main.</checks>
+				<artifacts>Store built assets in immutable releases; avoid rebuilding in deployment steps.</artifacts>
+				<environments>Define dev, staging, and production environments explicitly; use environment variables for secrets and URLs.</environments>
+			</pipeline>
+		</ci-cd>
+		<deployment>
+			<method>Blue/green or canary where feasible to reduce downtime.</method>
+			<rollback>Automated rollback trigger if SLOs or error budgets are breached.</rollback>
+			<approval>Require peer review for deployment changes; record approvals in version control.</approval>
+		</deployment>
+	</delivery>
+	<observability>
+		<logs>
+			<description>Use structured JSON logs with timestamps, request IDs, and severity levels.</description>
+			<aggregation>Centralise logs (e.g., via Grafana Loki or Cloudflare Logpush).</aggregation>
+		</logs>
+		<metrics>
+			<description>Track latency, error rates, uptime, and throughput (RED/USE metrics).</description>
+			<slo>Set explicit SLOs and error budgets per service endpoint.</slo>
+			<alerts>Send alerts only when action is possible; avoid noise.</alerts>
+		</metrics>
+		<tracing>
+			<description>Instrument API calls and worker functions with trace IDs to diagnose latency or failures.</description>
+		</tracing>
+		<dashboards>
+			<description>Provide live dashboards for health, deployments, and SLO performance.</description>
+			<access>Share read-only dashboards with delivery teams and product owners.</access>
+		</dashboards>
+	</observability>
+	<infrastructure>
+		<provisioning>
+			<description>Manage infrastructure as code (Terraform, Pulumi, or Cloudflare Infrastructure).</description>
+			<idempotent>Ensure re-runs produce identical outcomes.</idempotent>
+		</provisioning>
+		<secrets>
+			<description>Use managed secrets storage (e.g., GitHub Secrets, Cloudflare Secrets, AWS Parameter Store).</description>
+			<rotation>Rotate secrets regularly; avoid hardcoded credentials in repos.</rotation>
+		</secrets>
+		<networking>
+			<description>Enforce TLS by default. Restrict inbound access. Apply least-privilege routing rules.</description>
+		</networking>
+	</infrastructure>
+	<governance>
+		<change-management>
+			<description>Record change intents, approvals, and rollback steps in CHANGELOG.md and release notes.</description>
+			<tracking>Use semantic versioning; tag every release.</tracking>
+		</change-management>
+		<service-maturity>
+			<description>Track operational maturity using GDS Alpha → Beta → Live checkpoints.</description>
+			<criteria>
+				<alpha>Basic deployment automation established.</alpha>
+				<beta>Monitoring and rollback mechanisms active.</beta>
+				<live>Fully automated, observable, and compliant with sustainability targets.</live>
+			</criteria>
+		</service-maturity>
+	</governance>
+	<resilience>
+		<backup>Back up data stores automatically with tested restoration procedures.</backup>
+		<failover>Define fallback environments or read-only modes for service continuity.</failover>
+		<testing>Run regular chaos or resilience tests to verify assumptions.</testing>
+	</resilience>
+	<documentation>
+		<readme>Include deployment and rollback instructions in README.md.</readme>
+		<runbook>Create incident response runbooks linked to SLOs.</runbook>
+		<audit>Maintain an operational log of incidents, fixes, and postmortems.</audit>
+	</documentation>
+	<integration>
+		<dependencies>Pin versions for all major dependencies; use automated vulnerability scanning.</dependencies>
+		<compatibility>Validate integrations with external APIs before release; use mocks in test pipelines.</compatibility>
+	</integration>
+	<exit-criteria>
+		<condition>CI/CD pipeline passes with no critical alerts.</condition>
+		<condition>All SLOs within target for at least one week.</condition>
+		<condition>Rollback verified and documented.</condition>
+		<condition>All secrets managed externally, not in source code.</condition>
+	</exit-criteria>
+	<examples>
+		<ci-cd-workflow language="yaml" tool="github-actions" name=".github/workflows/ci.yml">
+			<![CDATA[
+name: CI
+
+on:
+	push:
+		branches: [ main ]
+	pull_request:
+
+jobs:
+	build_test:
+		runs-on: ubuntu-latest
+		permissions:
+			contents: read
+			actions: read
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with:
+					node-version: '20'
+					cache: 'npm'
+			- run: npm ci
+			- name: Lint
+				run: npm run lint
+			- name: Unit tests
+				run: npm test -- --ci --reporters=default --reporters=jest-junit
+			- name: Accessibility (pa11y)
+				run: npm run a11y:ci
+			- name: Build
+				run: npm run build
+			- name: Upload artifact
+				uses: actions/upload-artifact@v4
+				with:
+					name: web-dist
+					path: dist/
+
+	deploy_staging:
+		needs: build_test
+		if: github.ref == 'refs/heads/main'
+		runs-on: ubuntu-latest
+		environment:
+			name: staging
+			url: ${{ steps.deploy.outputs.url }}
+		steps:
+			- uses: actions/download-artifact@v4
+				with:
+					name: web-dist
+					path: dist/
+			- name: Deploy (Cloudflare Pages)
+				id: deploy
+				uses: cloudflare/pages-action@v1
+				with:
+					apiToken: ${{ secrets.CF_API_TOKEN }}
+					accountId: ${{ secrets.CF_ACCOUNT_ID }}
+					projectName: researchops
+					directory: dist
+					branch: staging
+
+	canary_prod:
+		needs: deploy_staging
+		runs-on: ubuntu-latest
+		environment:
+			name: production
+		steps:
+			- name: Canary 10% traffic
+				run: |
+					npx wrangler routes canary set --percent 10
+			- name: Run smoke tests
+				run: npm run smoke -- --base=https://prod.example.gov.uk
+			- name: Promote to 100% if healthy
+				if: success()
+				run: npx wrangler routes canary set --percent 100
+			- name: Automatic rollback if failed
+				if: failure()
+				run: gh workflow run rollback.yml -f target=previous
+			]]>
+		</ci-cd-workflow>
+		<rollback-workflow language="yaml" tool="github-actions" name=".github/workflows/rollback.yml">
+			<![CDATA[
+name: Rollback
+on:
+	workflow_dispatch:
+		inputs:
+			target:
+				description: "Tag or environment to roll back to"
+				required: true
+jobs:
+	do_rollback:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+				with:
+					fetch-depth: 0
+			- name: Select release
+				run: |
+					TARGET="${{ github.event.inputs.target }}"
+					echo "Rolling back to: $TARGET"
+			- name: Re-point traffic to previous release
+				run: npx wrangler routes canary set --percent 0 &amp;&amp; npx wrangler deploy --env=prod --rollback $TARGET
+			- name: Post deploy health check
+				run: curl -fsS https://prod.example.gov.uk/api/health
+			]]>
+		</rollback-workflow>
+		<infrastructure-as-code language="hcl" tool="terraform" name="infra/main.tf">
+			<![CDATA[
+terraform {
+	required_version = "&gt;= 1.6.0"
+	required_providers {
+		cloudflare = { source = "cloudflare/cloudflare", version = "~&gt; 4.0" }
+	}
+}
+
+provider "cloudflare" {
+	api_token = var.cf_api_token
+}
+
+resource "cloudflare_workers_kv_namespace" "kv" {
+	title = "researchops_kv"
+}
+
+resource "cloudflare_d1_database" "db" {
+	account_id = var.cf_account_id
+	name       = "researchops_d1"
+}
+
+resource "cloudflare_worker_script" "api" {
+	name    = "rops-api"
+	content = file("../infra/cloudflare/src/worker.js")
+	kv_namespace_binding {
+		namespace_id = cloudflare_workers_kv_namespace.kv.id
+		name         = "KV"
+	}
+	d1_database_binding {
+		name       = "DB"
+		database_id = cloudflare_d1_database.db.id
+	}
+}
+
+resource "cloudflare_worker_route" "api_route" {
+	zone_id = var.cf_zone_id
+	pattern = "api.example.gov.uk/*"
+	script_name = cloudflare_worker_script.api.name
+}
+			]]>
+		</infrastructure-as-code>
+		<runtime-config language="toml" tool="wrangler" name="infra/cloudflare/wrangler.toml">
+			<![CDATA[
+name = "rops-api"
+main = "src/worker.js"
+compatibility_date = "2025-10-01"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "xxxxxxxxxxxxxxxxxxxx"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "researchops_d1"
+database_id = "yyyyyyyyyyyyyyyy"
+
+[env.staging]
+route = { pattern = "staging-api.example.gov.uk/*", zone_name = "example.gov.uk" }
+
+[env.prod]
+route = { pattern = "api.example.gov.uk/*", zone_name = "example.gov.uk" }
+			]]>
+		</runtime-config>
+		<structured-logging language="javascript" runtime="workers" name="src/lib/log.js">
+			<![CDATA[
+export function log(level, msg, ctx = {}) {
+	const base = {
+		ts: new Date().toISOString(),
+		level,
+		msg,
+		requestId: ctx.requestId || crypto.randomUUID(),
+		env: ctx.env || 'unknown'
+	};
+	console.log(JSON.stringify({ ...base, ...ctx.extra }));
+}
+
+export const logger = {
+	info: (msg, ctx) =&gt; log('info', msg, ctx),
+	warn: (msg, ctx) =&gt; log('warn', msg, ctx),
+	error: (msg, ctx) =&gt; log('error', msg, ctx)
+};
+			]]>
+		</structured-logging>
+		<health-endpoint language="javascript" runtime="workers" name="src/routes/health.js">
+			<![CDATA[
+import { logger } from '../lib/log.js';
+
+export async function health(req, env) {
+	const start = Date.now();
+	try {
+		// Basic dependency checks (KV &amp; D1 ping)
+		await env.KV.get('health:ping');
+		const { results } = await env.DB.prepare('select 1 as ok').all();
+
+		const body = {
+			status: 'ok',
+			uptime_s: Math.floor(process.uptime ? process.uptime() : (Date.now() - start) / 1000),
+			checks: {
+				kv: true,
+				d1: results?.[0]?.ok === 1
+			}
+		};
+		return new Response(JSON.stringify(body), {
+			status: 200,
+			headers: { 'content-type': 'application/json' }
+		});
+	} catch (err) {
+		logger.error('health_check_failed', { extra: { error: String(err) } });
+		return new Response(JSON.stringify({ status: 'degraded' }), {
+			status: 503,
+			headers: { 'content-type': 'application/json' }
+		});
+	}
+}
+			]]>
+		</health-endpoint>
+		<router-entry language="javascript" runtime="workers" name="src/worker.js">
+			<![CDATA[
+import { health } from './routes/health.js';
+import { logger } from './lib/log.js';
+
+export default {
+	async fetch(request, env, ctx) {
+		const url = new URL(request.url);
+		const requestId = crypto.randomUUID();
+
+		if (url.pathname === '/api/health') {
+			return health(request, env);
+		}
+
+		try {
+			// Example: traced handler
+			const start = Date.now();
+			const res = await handleApi(request, env);
+			logger.info('request_ok', {
+				extra: { path: url.pathname, ms: Date.now() - start, requestId, status: res.status },
+				env: env.ENV || 'unknown',
+				requestId
+			});
+			return res;
+		} catch (err) {
+			logger.error('request_error', { extra: { path: url.pathname, error: String(err), requestId } });
+			return new Response('Internal error', { status: 500 });
+		}
+	}
+};
+
+async function handleApi(request, env) {
+	return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json' } });
+}
+			]]>
+		</router-entry>
+		<tracing language="javascript" runtime="node-or-workers" name="src/observability/otel-setup.js">
+			<![CDATA[
+// Minimal OpenTelemetry web fetch instrumentation (conceptual in Workers)
+export function withTrace(name, fn) {
+	return async (...args) =&gt; {
+		const start = Date.now();
+		try {
+			const result = await fn(...args);
+			console.log(JSON.stringify({ level: 'info', msg: 'trace', name, ms: Date.now() - start }));
+			return result;
+		} catch (e) {
+			console.log(JSON.stringify({ level: 'error', msg: 'trace_error', name, error: String(e) }));
+			throw e;
+		}
+	};
+}
+			]]>
+		</tracing>
+		<canary-feature-flag language="javascript" runtime="workers" name="src/lib/canary.js">
+			<![CDATA[
+export function routeCanary(request, percent = 10) {
+	const hash = Math.abs([...new TextEncoder().encode(request.headers.get('cf-connecting-ip') || '')]
+		.reduce((a, b) =&gt; (a * 31 + b) | 0, 0));
+	return (hash % 100) &lt; percent;
+}
+			]]>
+		</canary-feature-flag>
+		<prometheus-alerts language="yaml" tool="prometheus" name="monitoring/alerts.yml">
+			<![CDATA[
+groups:
+- name: service-slo
+	rules:
+	- alert: APIErrorRateHigh
+		expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) &gt; 0.02
+		for: 10m
+		labels:
+			severity: page
+		annotations:
+			summary: "5xx error rate above 2% for 10m"
+			runbook: "docs/runbooks/api.md#high-5xx-rate"
+			]]>
+		</prometheus-alerts>
+		<runbook-template language="markdown" name="docs/runbooks/api.md">
+			<![CDATA[
+# API Runbook
+
+## Service Overview
+- Purpose: Handle project + journal endpoints.
+- Owner: Team ResearchOps
+- Contact: #ops-researchops
+
+## SLOs
+- Availability 99.9%
+- p95 latency &lt; 300ms
+
+## Dashboards
+- Grafana: /d/researchops/api
+
+## Common Alarms
+- High 5xx rate
+- Latency breach
+- Error budget burn rate
+
+## Triage Steps
+1) Check /api/health.
+2) Inspect last deploy and error logs.
+3) Roll back via GitHub Action "Rollback".
+
+## Rollback
+- Trigger workflow: Rollback → target=previous.
+- Verify health.
+- Update incident ticket.
+
+## Post-incident
+- Create postmortem within 48 hours.
+			]]>
+		</runbook-template>
+		<postmortem-template language="markdown" name="docs/postmortems/template.md">
+			<![CDATA[
+# Postmortem: &lt;incident title&gt;
+
+- Date/time (UTC):
+- Severity:
+- Detect time → Resolve time:
+- Impact summary:
+- Customer/user impact:
+
+## Timeline
+- T0 Detected
+- T+? Mitigation
+- T+? Resolved
+
+## Root Cause
+- Technical:
+- Organisational/process:
+
+## What Went Well
+## What Went Poorly
+## Action Items
+- [ ] Owner, due date
+
+## Evidence
+- Links to logs, dashboards, PRs.
+			]]>
+		</postmortem-template>
+		<security-headers language="javascript" runtime="workers" name="src/middleware/securityHeaders.js">
+			<![CDATA[
+export function withSecurityHeaders(handler) {
+	return async (request, env, ctx) =&gt; {
+		const res = await handler(request, env, ctx);
+		const h = new Headers(res.headers);
+
+		h.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+		h.set('X-Content-Type-Options', 'nosniff');
+		h.set('X-Frame-Options', 'DENY');
+		h.set('Referrer-Policy', 'no-referrer');
+		h.set('Permissions-Policy', "camera=(), microphone=(), geolocation=()");
+		h.set('Cross-Origin-Opener-Policy', 'same-origin');
+		h.set('Cross-Origin-Resource-Policy', 'same-site');
+
+		// Example minimal CSP; tighten per app and add nonce support if injecting scripts.
+		h.set('Content-Security-Policy',
+			"default-src 'none'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+
+		return new Response(res.body, { status: res.status, headers: h });
+	};
+}
+			]]>
+		</security-headers>
+		<csp-nonce language="javascript" runtime="workers" name="src/middleware/cspNonce.js">
+			<![CDATA[
+export function withCspNonce(handler) {
+	return async (request, env, ctx) =&gt; {
+		const nonce = crypto.randomUUID().replace(/-/g,'');
+		const res = await handler(request, env, ctx, { nonce });
+		const h = new Headers(res.headers);
+		const csp = [
+			"default-src 'none'",
+			"img-src 'self' data:",
+			"style-src 'self'",
+			`script-src 'self' 'nonce-${nonce}'`,
+			"connect-src 'self'",
+			"base-uri 'none'",
+			"frame-ancestors 'none'",
+			"form-action 'self'"
+		].join('; ');
+		h.set('Content-Security-Policy', csp);
+		return new Response(res.body, { status: res.status, headers: h });
+	};
+}
+			]]>
+		</csp-nonce>
+		<jwt-zero-trust language="javascript" runtime="workers" name="src/middleware/verifyAccessJwt.js">
+			<![CDATA[
+/**
+ * Validates Cloudflare Access (or other IdP) JWT from 'CF-Access-Jwt-Assertion'.
+ * Caches JWKS for performance. Rejects if invalid or expired.
+ */
+const JWKS_URL = 'https://&lt;your-team&gt;.cloudflareaccess.com/cdn-cgi/access/certs';
+let jwksCache;
+
+async function getJwks() {
+	if (!jwksCache) {
+		const res = await fetch(JWKS_URL, { cf: { cacheTtl: 300 }});
+		jwksCache = await res.json();
+	}
+	return jwksCache;
+}
+
+function b64urlToUint8Array(b64url) {
+	const pad = '='.repeat((4 - b64url.length % 4) % 4);
+	const b64 = (b64url + pad).replace(/-/g, '+').replace(/_/g, '/');
+	return Uint8Array.from(atob(b64), c =&gt; c.charCodeAt(0));
+}
+
+async function verifyJwt(jwt) {
+	const [h, p, s] = jwt.split('.');
+	const header = JSON.parse(new TextDecoder().decode(b64urlToUint8Array(h)));
+	const payload = JSON.parse(new TextDecoder().decode(b64urlToUint8Array(p)));
+	const sig = b64urlToUint8Array(s);
+
+	const jwks = await getJwks();
+	const key = jwks.keys.find(k =&gt; k.kid === header.kid);
+	if (!key) throw new Error('Unknown KID');
+
+	const publicKey = await crypto.subtle.importKey(
+		'jwk', key, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']
+	);
+	const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5',
+		publicKey, sig, new TextEncoder().encode(`${h}.${p}`));
+	if (!ok) throw new Error('Bad signature');
+
+	if (payload.exp &amp;&amp; Date.now()/1000 &gt; payload.exp) throw new Error('Expired');
+	return payload;
+}
+
+export function withZeroTrust(handler) {
+	return async (request, env, ctx) =&gt; {
+		const assertion = request.headers.get('CF-Access-Jwt-Assertion');
+		if (!assertion) return new Response('Unauthorized', { status: 401 });
+		try {
+			const claims = await verifyJwt(assertion);
+			request.user = { sub: claims.sub, email: claims.email, groups: claims.groups || [] };
+			return handler(request, env, ctx);
+		} catch (e) {
+			return new Response('Forbidden', { status: 403 });
+		}
+	};
+}
+			]]>
+		</jwt-zero-trust>
+		<secrets-policy language="toml" tool="wrangler" name="infra/cloudflare/wrangler.secrets.policy">
+			<![CDATA[
+# Document intended secrets and owners; rotate quarterly.
+# Example keys: CF_API_TOKEN, CF_ACCOUNT_ID, OAUTH_CLIENT_SECRET, DB_URL
+# Ownership: Platform team; dual-control for updates; audit in CHANGELOG.
+			]]>
+		</secrets-policy>
+		<dependabot language="yaml" tool="dependabot" name=".github/dependabot.yml">
+			<![CDATA[
+version: 2
+updates:
+	- package-ecosystem: "npm"
+		directory: "/"
+		schedule: { interval: "weekly" }
+		open-pull-requests-limit: 10
+		commit-message:
+			prefix: "deps"
+	- package-ecosystem: "github-actions"
+		directory: "/"
+		schedule: { interval: "weekly" }
+			]]>
+		</dependabot>
+		<gitleaks language="yaml" tool="gitleaks" name=".gitleaks.toml">
+			<![CDATA[
+title = "gitleaks config"
+[allowlist]
+	description = "Allow local test keys"
+	regexes = ["test_key_[0-9a-zA-Z]{16}"]
+
+# Use default rules; run in CI.
+			]]>
+		</gitleaks>
+		<precommit-hooks language="bash" name=".git/hooks/pre-commit">
+			<![CDATA[
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Running pre-commit checks…"
+npx eslint . --ext .js,.mjs || exit 1
+npx gitleaks detect --no-banner --staged || { echo "Secrets detected"; exit 1; }
+			]]>
+		</precommit-hooks>
+		<sast-ci language="yaml" tool="github-actions" name=".github/workflows/security.yml">
+			<![CDATA[
+name: Security
+on:
+	push:
+		branches: [ main ]
+	pull_request:
+
+jobs:
+	sast_deps_dast:
+		runs-on: ubuntu-latest
+		permissions:
+			contents: read
+			security-events: write
+			id-token: write # for provenance signing if used
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20', cache: 'npm' }
+			- run: npm ci
+
+			# SAST (CodeQL JS/TS example)
+			- uses: github/codeql-action/init@v3
+				with: { languages: 'javascript' }
+			- uses: github/codeql-action/analyze@v3
+
+			# Dependency scanning (npm audit or OSS index)
+			- name: Audit dependencies
+				run: npm audit --audit-level=high || true
+
+			# Secret scanning (Gitleaks)
+			- name: Gitleaks
+				uses: gitleaks/gitleaks-action@v2
+				with: { args: "--config=.gitleaks.toml --redact" }
+
+			# SBOM
+			- name: Generate SBOM (Syft)
+				uses: anchore/sbom-action@v0
+				with:
+					path: .
+					format: spdx-json
+					output-file: sbom.spdx.json
+
+			# DAST (ZAP Baseline)
+			- name: OWASP ZAP Baseline
+				uses: zaproxy/action-baseline@v0.12.0
+				with:
+					target: "https://staging.example.gov.uk"
+					rules_file_name: ".zap/rules.tsv"
+			- name: Upload SBOM
+				uses: actions/upload-artifact@v4
+				with: { name: sbom, path: sbom.spdx.json }
+			]]>
+		</sast-ci>
+		<provenance-signing language="yaml" tool="github-actions" name=".github/workflows/provenance.yml">
+			<![CDATA[
+name: Provenance
+on:
+	release:
+		types: [published]
+
+jobs:
+	attest:
+		runs-on: ubuntu-latest
+		permissions:
+			id-token: write
+			contents: write
+		steps:
+			- uses: actions/checkout@v4
+			- name: Build artifact
+				run: npm ci &amp;&amp; npm run build &amp;&amp; tar -czf artifact.tgz dist
+			- name: Generate SLSA provenance (Sigstore Attest)
+				uses: slsa-framework/slsa-github-generator@v2.0.0
+				with:
+					build-artifact-path: artifact.tgz
+					provenance-name: artifact.intoto.jsonl
+			- uses: actions/upload-artifact@v4
+				with:
+					name: provenance
+					path: artifact.intoto.jsonl
+			]]>
+		</provenance-signing>
+		<terraform-policy language="rego" tool="opa" name="policy/iac-security.rego">
+			<![CDATA[
+package iac.security
+
+deny[msg] {
+	input.resource.type == "cloudflare_worker_route"
+	not startswith(input.resource.pattern, "https://")
+	msg := sprintf("Route must be HTTPS: %v", [input.resource.pattern])
+}
+
+deny[msg] {
+	input.resource.type == "cloudflare_worker_script"
+	not input.resource.vars.CSP_ENABLED
+	msg := "CSP must be enabled on worker responses"
+}
+			]]>
+		</terraform-policy>
+		<csp-report-endpoint language="javascript" runtime="workers" name="src/routes/csp-report.js">
+			<![CDATA[
+export async function cspReport(request, env) {
+	try {
+		const body = await request.json();
+		// Store minimal fields; avoid PII. Use short retention.
+		await env.KV.put(`csp:${Date.now()}`, JSON.stringify({
+			'violated-directive': body['csp-report']?.['violated-directive'],
+			'blocked-uri': body['csp-report']?.['blocked-uri'],
+			'effective-directive': body['csp-report']?.['effective-directive']
+		}), { expirationTtl: 86400 });
+		return new Response('', { status: 204 });
+	} catch {
+		return new Response('', { status: 204 });
+	}
+}
+			]]>
+		</csp-report-endpoint>
+		<router-wiring language="javascript" runtime="workers" name="src/worker.js:security-wiring">
+			<![CDATA[
+import { withSecurityHeaders } from './middleware/securityHeaders.js';
+import { withCspNonce } from './middleware/cspNonce.js';
+import { withZeroTrust } from './middleware/verifyAccessJwt.js';
+import { cspReport } from './routes/csp-report.js';
+
+async function handle(request, env, ctx, opts = {}) {
+	const url = new URL(request.url);
+	if (url.pathname === '/api/security/csp-report') return cspReport(request, env);
+	if (url.pathname.startsWith('/api/private/')) {
+		// Example protected area
+		return new Response(JSON.stringify({ ok: true, user: request.user }), { headers: { 'content-type': 'application/json' }});
+	}
+	// Default
+	return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json' }});
+}
+
+const base = withSecurityHeaders(withCspNonce(withZeroTrust(handle)));
+export default { fetch: (req, env, ctx) =&gt; base(req, env, ctx) };
+			
+		</router-wiring>
+		<data-minimisation language="javascript" runtime="workers" name="src/lib/privacy.js">
+			<![CDATA[
+// Redact known sensitive fields before logging; whitelist approach preferred.
+const ALLOWED = new Set(['path','status','ms','requestId','env']);
+export function redact(obj) {
+	const out = {};
+	for (const k of Object.keys(obj)) if (ALLOWED.has(k)) out[k] = obj[k];
+	return out;
+}
+			]]>
+		</data-minimisation>
+		<cors-tight language="javascript" runtime="workers" name="src/middleware/cors.js">
+			<![CDATA[
+const ORIGINS = ['https://example.gov.uk','https://staging.example.gov.uk'];
+export function withCORS(handler) {
+	return async (req, env, ctx) =&gt; {
+		const res = await handler(req, env, ctx);
+		const h = new Headers(res.headers);
+		const origin = req.headers.get('origin') || '';
+		if (ORIGINS.includes(origin)) {
+			h.set('Vary', 'Origin');
+			h.set('Access-Control-Allow-Origin', origin);
+			h.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+			h.set('Access-Control-Allow-Headers', 'content-type, authorization, cf-access-jwt-assertion');
+			h.set('Access-Control-Max-Age', '600');
+		}
+		return new Response(res.body, { status: res.status, headers: h });
+	};
+}
+			
+			]]>
+		</cors-tight>
+	</examples>
+</instructionSet>
