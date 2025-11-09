@@ -198,20 +198,79 @@ function _looksLikeMuralViewerUrl(u) {
 
 function _extractViewerUrl(payload) {
   if (!payload) return null;
-  const candidates = [
-    payload.viewerUrl,
-    payload.viewLink,
-    payload._canvasLink,
-    payload.openUrl,
-    payload?.value?.viewerUrl,
-    payload?.value?.viewLink,
-    payload?.data?.viewerUrl,
-    payload?.data?.viewLink,
-    payload?.links?.viewer,
-    payload?.links?.open
-  ].filter(Boolean);
-  const first = candidates.find(_looksLikeMuralViewerUrl);
-  return first || null;
+
+  /**
+   * Walk through nested structures (objects/arrays) and attempt to locate a URL.
+   * We favour known keys first (url, href, viewerUrl, etc.) but fall back to a
+   * breadth-first crawl over remaining values. This defends against subtle API
+   * shape changes where the viewer URL moves deeper under `links` or `value`.
+   */
+  const queue = [payload];
+  const seen = new Set();
+
+  const enqueue = (value) => {
+    if (!value) return;
+    queue.push(value);
+  };
+
+  while (queue.length) {
+    const next = queue.shift();
+    if (!next) continue;
+
+    if (typeof next === "string") {
+      if (_looksLikeMuralViewerUrl(next)) return next;
+      continue;
+    }
+
+    if (typeof next !== "object") continue;
+    if (seen.has(next)) continue;
+    seen.add(next);
+
+    if (Array.isArray(next)) {
+      for (const entry of next) enqueue(entry);
+      continue;
+    }
+
+    const candidates = [
+      next.viewerUrl,
+      next.viewerURL,
+      next.viewLink,
+      next.viewURL,
+      next.openUrl,
+      next.openURL,
+      next._canvasLink,
+      next.url,
+      next.href,
+      next.link,
+      next.value,
+      next.viewer,
+      next.open,
+      next.publicUrl,
+      next.shareUrl,
+      next.shareURL,
+      next.links,
+      next.links?.viewer,
+      next.links?.open,
+      next.links?.share,
+      next.links?.public
+    ];
+
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && _looksLikeMuralViewerUrl(candidate)) {
+        return candidate;
+      }
+    }
+
+    for (const candidate of candidates) {
+      if (candidate && typeof candidate === "object") enqueue(candidate);
+    }
+
+    for (const value of Object.values(next)) {
+      if (!candidates.includes(value)) enqueue(value);
+    }
+  }
+
+  return null;
 }
 
 /* Probe a viewer URL quickly */
