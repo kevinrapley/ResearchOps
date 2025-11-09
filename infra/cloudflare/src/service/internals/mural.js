@@ -696,6 +696,7 @@ export class MuralServicePart {
 
       step = "ensure_room";
       let room;
+      let roomId = null;
       try {
         room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
       } catch (e) {
@@ -709,7 +710,7 @@ export class MuralServicePart {
         }
         throw e;
       }
-      const roomId = _pickId(room);
+      roomId = _pickId(room);
       if (!roomId) {
         this.root.log?.error?.("mural.ensure_room.no_id", { roomPreview: typeof room === "object" ? Object.keys(room || {}) : room });
         return this.root.json({
@@ -723,6 +724,7 @@ export class MuralServicePart {
       step = "ensure_folder";
       let folderDenied = false;
       let folder = null;
+      let folderId = null;
       try {
         folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
       } catch (err) {
@@ -741,7 +743,7 @@ export class MuralServicePart {
           throw err;
         }
       }
-      const folderId = _pickId(folder);
+      folderId = _pickId(folder);
 
       step = "create_mural";
       const mural = await createMural(this.root.env, accessToken, {
@@ -815,7 +817,32 @@ export class MuralServicePart {
       const status = Number(err?.status) || 500;
       const body = err?.body || null;
       const message = String(err?.message || "setup_failed");
-      return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body }, status, cors);
+      const context = {};
+      if (step === "create_mural" || step === "ensure_folder" || step === "ensure_room") {
+        context.workspaceId = ws?.id || null;
+        context.workspaceKey = ws?.key || null;
+        context.workspaceName = ws?.name || null;
+        context.roomId = roomId || null;
+        context.roomName = room?.name || null;
+        context.roomVisibility = room?.visibility || room?.type || null;
+        context.folderId = folderId || null;
+        context.folderDenied = folderDenied;
+        context.projectId = projectId ? String(projectId) : null;
+      }
+      if (this.root.log?.error) {
+        this.root.log.error("mural.setup_failed", {
+          step,
+          status,
+          message,
+          upstreamCode: body?.code || body?.error || null,
+          context
+        });
+      }
+      const payload = { ok: false, error: "setup_failed", step, message, upstream: body };
+      if (Object.values(context).some(v => v !== null && v !== undefined)) {
+        payload.context = context;
+      }
+      return this.root.json(payload, status, cors);
     }
   }
 
