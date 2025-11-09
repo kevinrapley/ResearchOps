@@ -657,9 +657,24 @@ export class MuralServicePart {
   async muralSetup(request, origin) {
     const cors = this.root.corsHeaders(origin);
     let step = "parse_input";
+    let uid = "anon";
+    let projectId = null;
+    let projectName;
+    let wsOverride;
+    let ws = null;
+    let room = null;
+    let roomId = null;
+    let folder = null;
+    let folderId = null;
+    let folderDenied = false;
+    let mural = null;
 
     try {
-      const { uid = "anon", projectId = null, projectName, workspaceId: wsOverride } = await request.json().catch(() => ({}));
+      const body = await request.json().catch(() => ({}));
+      uid = body?.uid ?? "anon";
+      projectId = body?.projectId ?? null;
+      projectName = body?.projectName;
+      wsOverride = body?.workspaceId;
       if (!projectName || !String(projectName).trim()) {
         return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
       }
@@ -672,7 +687,6 @@ export class MuralServicePart {
 
       step = "verify_workspace";
       let accessToken = tokens.access_token;
-      let ws;
       try {
         ws = await this._ensureWorkspace(this.root.env, accessToken, wsOverride);
       } catch (err) {
@@ -695,8 +709,6 @@ export class MuralServicePart {
       const username = me?.value?.firstName || me?.name || "Private";
 
       step = "ensure_room";
-      let room;
-      let roomId = null;
       try {
         room = await ensureUserRoom(this.root.env, accessToken, ws.id, username);
       } catch (e) {
@@ -722,9 +734,6 @@ export class MuralServicePart {
       }
 
       step = "ensure_folder";
-      let folderDenied = false;
-      let folder = null;
-      let folderId = null;
       try {
         folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
       } catch (err) {
@@ -746,7 +755,7 @@ export class MuralServicePart {
       folderId = _pickId(folder);
 
       step = "create_mural";
-      const mural = await createMural(this.root.env, accessToken, {
+      mural = await createMural(this.root.env, accessToken, {
         title: "Reflexive Journal",
         roomId,
         folderId: folderId || undefined
