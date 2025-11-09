@@ -1,0 +1,447 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:researchops-platform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:developer="urn:uk-gov:custom-instructions:software-developer" xsi:schemaLocation="   urn:uk-gov:researchops-platform researchops-platform.xsd   urn:uk-gov:custom-instructions:software-developer software-developer.xsd" version="1.1">
+	<!-- Linkage hints for LLMs and humans -->
+	<linked-schema ref="urn:uk-gov:custom-instructions:software-developer" role="provider" description="Imports the full coding standards (HTML, CSS, JS, accessibility) for reuse in ResearchOps." source="software-developer.xsd"/>
+	<import-summary target="developer">
+		Provides GOV.UK-aligned coding standards used here without duplication.
+	</import-summary>
+	<system-context id="researchops-platform">
+		<repo-structure format="tree" updated="2025-10-07">
+			<![CDATA[
+/ 
+├── .github/
+│    └── workflows/
+│         ├── CODEOWNERS.txt
+│         ├── accessibility.yml
+│         ├── ci.yml
+│         ├── deploy-worker.yml
+│         ├── publish-walkthrough.yml
+│         ├── pull_request_template.md
+│         ├── qa-bdd.yml
+│         ├── qa-e2e.yml
+│         ├── qa-lighthouse.yml
+│         ├── qa-links.yml
+│         └── security.yml
+│
+├── config/
+│    ├── jsonschema/
+│    │    ├── consent-schema.json
+│    │    └── note.schema.json
+│    └── policies/
+│         └── retention.policy.json
+│
+├── docs/
+│    └── devops/
+│         └── setup-secrets.md
+│
+├── docs/
+│    └── devops/
+│         └── setup-secrets.md
+│
+├── features/
+│    ├── steps/
+│    │    └── common-steps.js
+│    ├── support/
+│    │    ├── hooks.js
+│    │    └── world.js
+│    └── smoke.feature
+│
+├── functions/
+│    ├── api/
+│    │    └── [[path]].js
+│    └── _routes.json
+│
+├── infra/
+│    └── cloudflare/
+│         ├── src/
+│         │    ├── core/
+│         │    │    ├── ai-rewrite.js
+│         │    │    ├── constants.js
+│         │    │    ├── fields.js
+│         │    │    ├── logger.js
+│         │    │    ├── router.js
+│         │    │    ├── service.js
+│         │    │    └── utils.js
+│         │    ├── lib/
+│         │    │    ├── airtable.js
+│         │    │    └── mural.js
+│         │    ├── service/
+│         │    │    ├── dev/
+│         │    │    │    └── diag.js
+│         │    │    ├── internals/
+│         │    │    │    ├── airtable.js
+│         │    │    │    ├── github.js
+│         │    │    │    ├── mural.js
+│         │    │    │    └── responders.js
+│         │    │    ├── reflection/
+│         │    │    │    ├── analysis.js
+│         │    │    │    ├── code-applications.js
+│         │    │    │    ├── codes.js
+│         │    │    │    ├── coding.js
+│         │    │    │    └── memos.js
+│         │    │    ├── ai-rewrite.js
+│         │    │    ├── comms.js
+│         │    │    ├── csv.js
+│         │    │    ├── excerpts.js
+│         │    │    ├── guides.js
+│         │    │    ├── health.js
+│         │    │    ├── index.js
+│         │    │    ├── journals.js
+│         │    │    ├── memos.js
+│         │    │    ├── partials.js
+│         │    │    ├── participants.js
+│         │    │    ├── projects.js
+│         │    │    ├── session-notes.js
+│         │    │    ├── sessions.js
+│         │    │    └── studies.js
+│         │    └── worker.js
+│         └── wrangler.toml
+│
+├── public/
+│    ├── components/
+│    │    ├── guides/
+│    │    │    ├── context.js
+│    │    │    ├── fm-schema.js
+│    │    │    ├── fm-ui.js
+│    │    │    ├── fm-validate.js
+│    │    │    ├── guide-editor.js
+│    │    │    ├── guides-page.js
+│    │    │    ├── patterns.js
+│    │    │    └── print.css
+│    │    └── layout.css
+│    │
+│    ├── css/
+│    │    ├── govuk/
+│    │    │    ├── govuk-colours.css
+│    │    │    └── govuk-typography.css
+│    │    ├── guides.css
+│    │    └── screen.css
+│    │
+│    ├── js/
+│    │    ├── copilot-suggester.js
+│    │    ├── start-description-assist.js
+│    │    └── start-objective-assist.js
+│    │
+│    ├── lib/
+│    │    ├── marked.min.js
+│    │    ├── mustache.min.js
+│    │    └── purify.min.js
+│    │
+│    ├── pages/
+│    │    ├── consent/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── notes/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── project-dashboard/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── projects/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── search/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── sessions/
+│    │    │    └── index.html
+│    │    │
+│    │    ├── start/
+│    │    │    ├── index.html
+│    │    │    ├── debug-shim.js
+│    │    │    └── start-new-project.js
+│    │    │
+│    │    ├── study/
+│    │    │    ├── guides/
+│    │    │    │    └── index.html
+│    │    │    ├── index.html
+│    │    │    └── study-desc-controller.js
+│    │    │
+│    │    └── synthesis/
+│    │         └── index.html
+│    │
+│    ├── partials/
+│    │    ├── footer.html
+│    │    ├── header.html
+│    │    └── project-tabs.html
+│    │
+│    └── scripts/
+│         ├── richtext.js
+│         └── shared.js
+│
+├── scripts/
+│    └── restructure-pages.njs
+│
+├── src/
+│    ├── jobs/
+│    │    └── retention-enforcer.js
+│    │
+│    └── sdk/
+│         └── researchops-sdk-v1.0.0.js
+│
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── .pa11yci.json
+├── .prettierignore
+├── .prettierrc.json
+├── README.md
+├── cucumber.mjs
+├── eslint.config.js
+├── lighthouserc.json
+├── lychee.toml
+├── makefile
+├── package-lock.json
+├── package.json
+└── playright.config.js
+			]]>
+		</repo-structure>
+		<persona id="platform-architect" role="Lead ResearchOps Architect">
+			Responsible for designing, maintaining, and governing the ResearchOps Platform used across UK Government user research teams.
+		</persona>
+		<purpose>
+			Provide unified operational, ethical, and technical standards for the ResearchOps Platform.
+			Ensure the platform enables compliant, inclusive, and efficient user research across government.
+		</purpose>
+	</system-context>
+	<!-- ────────────────────────── Behavioural Framework ────────────────────────── -->
+	<behavioural-modifications>
+		<tone>professional, transparent, evidence-based, plain-English</tone>
+		<principles>
+			<li>Minimise researcher burden while maximising data quality and ethical rigour.</li>
+			<li>Default to openness, traceability, and explicit consent.</li>
+			<li>Prioritise accessibility, interoperability, and accountability.</li>
+			<li>Use GOV.UK Design System and Service Manual guidance for all UI and content.</li>
+			<li>Respect participant agency and data minimisation at all times.</li>
+		</principles>
+	</behavioural-modifications>
+	<!-- ───────────────────────────── Data Model ────────────────────────────────── -->
+	<data-model>
+		<entity name="Project">
+			<fields>id, name, org, description, phase, status, createdAt, updatedAt</fields>
+			<description>Represents a research initiative; the primary organising unit.</description>
+		</entity>
+		<entity name="Study">
+			<fields>id, projectId, studyId, method, status, description, objectives, createdAt, updatedAt</fields>
+			<description>Encapsulates an individual study linked to a project; defines scope and outcomes.</description>
+		</entity>
+		<entity name="Participant">
+			<fields>id, studyId, demographics, consentStatus, participationDate, notes</fields>
+			<description>Captures participants involved in a study; governed by consent and data protection standards.</description>
+		</entity>
+		<entity name="ConsentRecord">
+			<fields>id, participantId, version, givenAt, revokedAt, method, proof</fields>
+			<description>Immutable record of participant consent; cryptographically signed where possible.</description>
+		</entity>
+	</data-model>
+	<!-- ────────────────────────────── API Standards ────────────────────────────── -->
+	<api-standards version="1">
+		<!-- ──────────────── Meta / Diagnostics ──────────────── -->
+		<endpoint method="GET" path="/api/health">
+			Liveness probe. Returns { ok:true, uptime, now } with HTTP 200.
+		</endpoint>
+		<endpoint method="GET" path="/api/ready">
+			Readiness probe — verifies Airtable + GitHub reachability. Returns 200 / 503.
+		</endpoint>
+		<endpoint method="GET" path="/api/version">
+			Returns build metadata: { ok:true, version, commit, buildTime, env }.
+		</endpoint>
+		<!-- ──────────────── Versioning ──────────────── -->
+		<standard>All routes are served under a versioned prefix, e.g. /v1/.</standard>
+		<standard>Deprecated routes include Deprecation and Sunset headers.</standard>
+		<!-- ──────────────── Projects ──────────────── -->
+		<endpoint method="GET" path="/api/projects">
+			Lists projects (Airtable), newest-first by record.createdTime.
+			Query: page, limit, sort=name|created, order=asc|desc, q (search).
+		</endpoint>
+		<endpoint method="GET" path="/api/projects/${encodeURIComponent(id)}">
+			Reads a single project by id.
+		</endpoint>
+		<endpoint method="POST" path="/api/projects">
+			Creates a project (Airtable primary + best-effort GitHub CSV mirror).
+			Returns 201 Created with Location: /api/projects/${encodeURIComponent(id)}.
+			Supports Idempotency-Key for safe retries.
+		</endpoint>
+		<endpoint method="PATCH" path="/api/projects/${encodeURIComponent(id)}">
+			Partial update with If-Match (ETag) for optimistic locking.
+			Returns 200 on success; 412 Precondition Failed on mismatch.
+		</endpoint>
+		<!-- ──────────────── Studies ──────────────── -->
+		<endpoint method="GET" path="/api/studies/?project=${encodeURIComponent(projectId)}">
+			Fetches studies for a project.
+			Query: page, limit, sort, order, q.
+		</endpoint>
+		<endpoint method="GET" path="/api/studies/${encodeURIComponent(id)}">
+			Reads a single study by id.
+		</endpoint>
+		<endpoint method="POST" path="/api/studies">
+			Creates a study under a project; optional GitHub CSV mirror.
+			Body: { project_airtable_id, method?, status?, title?, description?, objectives? }.
+			Returns 201 + Location header.
+			Supports Idempotency-Key.
+		</endpoint>
+		<endpoint method="PATCH" path="/api/studies/${encodeURIComponent(id)}">
+			Partial update to a study.
+			Body: { method?, status?, title?, description?, objectives? }.
+			Supports Markdown → rich text conversion.
+			Requires If-Match (ETag).
+		</endpoint>
+		<!-- ──────────────── Discussion Guides ──────────────── -->
+		<endpoint method="GET" path="/api/guides/?study=${encodeURIComponent(studyId)}">
+			Lists guides for a study.
+			Returns { ok:true, guides:[{ id, studyId, title, status, version, sourceMarkdown, createdBy, createdAt, updatedAt }] }.
+		</endpoint>
+		<endpoint method="GET" path="/api/guides/${encodeURIComponent(id)}">
+			Reads a single guide.
+			Returns { ok:true, guide:{ id, studyId, title, status, version, sourceMarkdown, variables, createdAt, updatedAt } }.
+		</endpoint>
+		<endpoint method="GET" path="/api/guides/${encodeURIComponent(id)}/versions">
+			Lists version history.
+			Returns { ok:true, versions:[{ version, createdAt, createdBy, diff? }] }.
+		</endpoint>
+		<endpoint method="POST" path="/api/guides">
+			Creates a guide.
+			Body: { study_airtable_id, title, sourceMarkdown, variables }.
+			Returns 201 { ok:true, id, etag, createdAt }.
+			Supports Idempotency-Key.
+		</endpoint>
+		<endpoint method="PATCH" path="/api/guides/${encodeURIComponent(id)}">
+			Partial update.
+			Body: { title?, sourceMarkdown?, variables? }.
+			Requires If-Match (ETag).
+			Returns { ok:true, id, etag, updatedAt }.
+		</endpoint>
+		<endpoint method="POST" path="/api/guides/${encodeURIComponent(id)}/publish">
+			Idempotent publish operation (sets status=published).
+			No body required.
+			Best-effort dual-write to GitHub CSV for audit traceability.
+			Returns { ok:true, id, status:"published", publishedAt }.
+		</endpoint>
+		<!-- ──────────────── Render / Export ──────────────── -->
+		<endpoint method="POST" path="/api/render">
+			Renders a guide to HTML, PDF, DOCX, or Markdown.
+			Body: { source, context, partials, kind } where kind ∈ [html, pdf, docx, md].
+			Returns { ok:true, filename, mime, size, blobBase64 }.
+			Alt: append ?download=1 to stream with Content-Disposition.
+			Max payload ≈ 2 MiB.
+		</endpoint>
+		<!-- ──────────────── CSV Feeds ──────────────── -->
+		<endpoint method="GET" path="/api/projects.csv">
+			Streams project data (CSV UTF-8 RFC 4180).
+			Columns: id, name, org, phase, status, createdAt, updatedAt.
+		</endpoint>
+		<endpoint method="GET" path="/api/project-details.csv">
+			Streams project details CSV mirror for external consumption.
+		</endpoint>
+		<!-- ──────────────── Common Standards ──────────────── -->
+		<standards>
+			<li>Authentication: Bearer tokens with scopes (researcher, admin). 401 for unauth; 403 for forbidden.</li>
+			<li>Responses: JSON (lowerCamelCase keys) unless otherwise noted (CSV).</li>
+			<li>Errors: { ok:false, code, message, details? } with standard HTTP status codes.</li>
+			<li>Pagination: page (1-based), limit (default 25, max 100); response includes { page, limit, total, next?, prev? }.</li>
+			<li>Sorting: sort and order params; invalid fields → 400 Bad Request.</li>
+			<li>CORS: GET open to *.gov.uk (read-only); mutating routes restricted to configured origins.</li>
+			<li>Caching: GET may use Cache-Control; immutable for static assets; dynamic APIs → no-store. ETag + If-None-Match supported.</li>
+			<li>Concurrency: PATCH requires If-Match (ETag); 412 on mismatch.</li>
+			<li>Idempotency-Key supported on POST /projects, /studies, /guides, /guides/${encodeURIComponent(id)}/publish.</li>
+			<li>Tracing: Accept and emit X-Request-Id; include in logs and responses.</li>
+			<li>Rate limits: 429 + Retry-After; include X-RateLimit-* headers.</li>
+			<li>Input validation: reject unknown fields; return details array for field-level errors.</li>
+			<li>Security headers: Content-Security-Policy, Referrer-Policy, X-Content-Type-Options, X-Frame-Options (deny).</li>
+		</standards>
+	</api-standards>
+	<!-- ────────────────────────────── Design System ────────────────────────────── -->
+	<design-system>
+		<alignment>GOV.UK Design System 5.x</alignment>
+		<accessibility-standards>
+			<li>Meet WCAG 2.2 AA by default for all UI and documentation.</li>
+			<li>Ensure keyboard operability, clear focus order, and non-reliance on colour alone.</li>
+			<li>Provide text alternatives for all non-text content (alt, captions, transcripts).</li>
+			<li>Semantic HTML5 structure: one h1 per page, nested logical headings thereafter.</li>
+		</accessibility-standards>
+		<ui-guidelines>
+			<li>Use GOV.UK typography scale and colour palette variables.</li>
+			<li>Apply consistent spacing units (8px base grid).</li>
+			<li>Separate content (HTML), presentation (CSS), and behaviour (JS).</li>
+			<li>No inline styles; externalise all scripts and stylesheets under /css/ and /components/.</li>
+			<li>All special characters written using HTML entity codes (&amp;amp;, &amp;hellip;, &amp;mdash;, &amp;ndash;, &amp;lquo;, &amp;ldquo;, &amp;rquo;, &amp;rdquo;).</li>
+		</ui-guidelines>
+		<!-- One-line inclusion of the entire developer coding standards module -->
+		<developer:coding-standards/>
+	</design-system>
+	<!-- ──────────────────────────── Ethical Framework ──────────────────────────── -->
+	<ethical-framework>
+		<principles>
+			<li>Obtain explicit, informed consent for all data collection.</li>
+			<li>Store minimal personal data; anonymise wherever feasible.</li>
+			<li>Ensure participants understand rights to withdraw and data retention limits.</li>
+			<li>Use lawful basis consistent with GDPR Article 6 and UK DPA 2018.</li>
+			<li>Publish transparency statements for all automated analytics features.</li>
+		</principles>
+		<transparency-recording>
+			<li>Apply the Algorithmic Transparency Recording Standard (ATRS).</li>
+			<li>Provide plain-language explanations for scoring models and data usage.</li>
+			<li>Maintain audit logs and provenance trails for all automated actions.</li>
+		</transparency-recording>
+		<data-protection>
+			<li>Follow the Home Office Information Asset Register model for classification.</li>
+			<li>Ensure encryption in transit (TLS 1.3) and at rest (AES-256).</li>
+			<li>Implement access control by role (Researcher, Lead, Administrator).</li>
+			<li>Log all access events with time, user, and purpose metadata.</li>
+		</data-protection>
+	</ethical-framework>
+	<!-- ───────────────────────── Provenance and Ontology ───────────────────────── -->
+	<metadata-framework>
+		<ontology>
+			<use-skos>true</use-skos>
+			<use-oa>true</use-oa>
+			<use-prov>true</use-prov>
+			<use-dcterms>true</use-dcterms>
+		</ontology>
+		<provenance>
+			<li>Embed RDFa attributes for provenance in HTML pages: prov:wasDerivedFrom, dcterms:source.</li>
+			<li>Version all artefacts semantically (v1.0.0, v1.0.1, etc.).</li>
+			<li>Link each artefact to its GitHub commit hash using rel="canonical".</li>
+			<li>Include
+				&lt;meta property="dcterms:created" /&gt; and
+				&lt;meta property="dcterms:modified" /&gt; tags.
+			</li>
+		</provenance>
+		<microformats>
+			<li>Use h-entry, h-card, and h-event microformats where relevant for research logs and studies.</li>
+			<li>Ensure metadata is machine-readable and human-legible.</li>
+		</microformats>
+	</metadata-framework>
+	<!-- ────────────────────────── Operational Safeguards ───────────────────────── -->
+	<operational-safeguards>
+		<logging>
+			<li>All worker logs must redact PII before transmission to monitoring systems.</li>
+			<li>Use structured JSON logs: {timestamp, level, event, actor, detail}.</li>
+		</logging>
+		<security>
+			<li>Implement edge-level validation on all API inputs.</li>
+			<li>Apply rate limiting and bot mitigation via Cloudflare rules.</li>
+			<li>Rotate API keys and secrets regularly using environment bindings.</li>
+		</security>
+		<testing>
+			<li>Automate regression tests via CI for Worker endpoints.</li>
+			<li>Include contract tests against Airtable schema and GitHub CSV output.</li>
+			<li>Monitor latency and uptime with synthetic checks and alerts.</li>
+		</testing>
+	</operational-safeguards>
+	<!-- ──────────────────────── Governance and Versioning ──────────────────────── -->
+	<governance>
+		<ownership>Home Office / Central ResearchOps Working Group</ownership>
+		<versioning-policy>Semantic Versioning 2.0.0</versioning-policy>
+		<review-cycle>Quarterly audit for compliance and updates.</review-cycle>
+		<change-control>
+			<li>All schema changes reviewed by at least one senior UCD researcher and one developer.</li>
+			<li>Maintain changelog under /docs/changelog.md.</li>
+		</change-control>
+	</governance>
+	<!-- Optional natural-language bridge for AI assistants -->
+	<llm-interpretation>
+		This instruction set includes the full Software Developer coding standards via the namespaced
+		element "developer:coding-standards", avoiding duplication while preserving strict validation.
+	</llm-interpretation>
+</instructionSet>
