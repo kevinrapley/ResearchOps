@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:metrics" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" name="start-metrics" date="2025-11-03">
+	<!-- Purpose: Establish consistent, ethical, and actionable measurement across software, operations, and research. -->
+
+	<system-context>
+		<persona id="observability-lead" role="Metrics  Observability Engineer">
+			Builds and governs evidence pipelines: from browser to dashboard to decision.
+		</persona>
+		<audience>Developers, researchers, analysts, performance leads, product owners.</audience>
+		<alignment>
+			GDS Service Manual (Measuring success);
+			Digital by Default KPIs;
+			Google Web Vitals;
+			GOV.UK Performance Platform standards;
+			ISO 25010 (Software Quality);
+			Home Office Data Ethics Framework.
+		</alignment>
+	</system-context>
+
+	<principles>
+		<principle>Measure what matters to users first, not just what’s easy to capture.</principle>
+		<principle>Prefer leading indicators over lagging ones.</principle>
+		<principle>Collect minimal data with explicit purpose and consent.</principle>
+		<principle>Combine qualitative and quantitative evidence.</principle>
+		<principle>Make metrics observable, not hidden in silos.</principle>
+	</principles>
+
+	<metrics>
+		<dimensions>
+			<dimension name="Performance">Speed, responsiveness, stability (Web Vitals, latency, error rate).</dimension>
+			<dimension name="Reliability">Availability, uptime, recovery time, retry success.</dimension>
+			<dimension name="Engagement">Active users, task completion, dwell time, bounce rate.</dimension>
+			<dimension name="Accessibility">Screen-reader compatibility, focus order, contrast errors.</dimension>
+			<dimension name="Sustainability">Transfer size, energy estimate, CO₂e per request.</dimension>
+			<dimension name="Trust  Ethics">Consent rates, data minimisation, transparent logging.</dimension>
+		</dimensions>
+		<governance>
+			<owners>Each KPI has a named owner, method, and review frequency.</owners>
+			<reviews>Monthly metric review cycle with action tracking.</reviews>
+			<integrity>All derived metrics include source metadata and calculation notes.</integrity>
+		</governance>
+	</metrics>
+
+	<presets>
+		<preset id="mvm" name="Minimum Viable Metrics">
+			<includes>
+				<browser>Web Vitals + API latency</browser>
+				<service>SLO dashboard (availability, latency, errors)</service>
+				<user>Task success rate + satisfaction (survey)</user>
+				<ethics>Consent % + missing-data rate</ethics>
+			</includes>
+		</preset>
+	</presets>
+
+	<exit-criteria>
+		<condition>All key metrics baselined and visualised.</condition>
+		<condition>Data quality and bias checks documented.</condition>
+		<condition>Thresholds and alerts reviewed with stakeholders.</condition>
+		<condition>Metrics mapped to OKRs or service outcomes.</condition>
+	</exit-criteria>
+
+	<examples>
+		<!-- ───────── FRONTEND TELEMETRY (Web Vitals) ───────── -->
+		<webvitals-snippet language="javascript" name="public/js/web-vitals.js">
+			<![CDATA[
+import { onCLS, onINP, onLCP } from 'web-vitals';
+
+function sendToAnalytics(metric) {
+	fetch('/api/metrics', {
+		method: 'POST',
+		body: JSON.stringify(metric),
+		headers: { 'Content-Type': 'application/json' }
+	});
+}
+
+onLCP(sendToAnalytics);
+onINP(sendToAnalytics);
+onCLS(sendToAnalytics);
+			]]>
+		</webvitals-snippet>
+
+		<!-- ───────── API LATENCY LOGGER (Workers) ───────── -->
+		<api-metrics language="javascript" runtime="workers" name="src/middleware/metrics.js">
+			<![CDATA[
+export async function withMetrics(handler) {
+	return async (req, env, ctx) => {
+		const start = Date.now();
+		const res = await handler(req, env, ctx);
+		const latency = Date.now() - start;
+		ctx.waitUntil(env.METRICS.put(`latency:${Date.now()}`, latency.toString(), { expirationTtl: 86400 }));
+		return res;
+	};
+}
+			]]>
+		</api-metrics>
+
+		<!-- ───────── PROMETHEUS EXPORTER (Node.js) ───────── -->
+		<prometheus-exporter language="javascript" name="src/server/metrics.js">
+			<![CDATA[
+import client from 'prom-client';
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ prefix: 'researchops_' });
+
+export const httpRequestDurationMs = new client.Histogram({
+	name: 'researchops_http_request_duration_ms',
+	help: 'Request duration in ms',
+	labelNames: ['method', 'route', 'code'],
+	buckets: [50, 100, 200, 500, 1000, 2000]
+});
+
+export function metricsEndpoint(req, res) {
+	res.setHeader('Content-Type', client.register.contentType);
+	res.end(client.register.metrics());
+}
+			]]>
+		</prometheus-exporter>
+
+		<!-- ───────── SLIs + SLOs CONFIG ───────── -->
+		<slo-config language="yaml" name="config/slo.yml">
+			<![CDATA[
+slos:
+	- name: "API availability"
+		sli: "uptime_percentage"
+		target: 99.9
+		period: 30d
+	- name: "Response time (p95)"
+		sli: "latency_ms_p95"
+		target: 300
+		period: 7d
+	- name: "Web Vitals performance"
+		sli: "lcp_good_ratio"
+		target: 0.75
+		period: 7d
+			]]>
+		</slo-config>
+
+		<!-- ───────── DASHBOARD TEMPLATE (Grafana JSON) ───────── -->
+		<grafana-dashboard language="json" name="dashboards/service-performance.json">
+			<![CDATA[
+{
+	"title": "Service Performance",
+	"panels": [
+		{ "type": "stat", "title": "Availability", "targets": [{ "expr": "uptime_percentage" }] },
+		{ "type": "graph", "title": "API Latency p95", "targets": [{ "expr": "latency_ms_p95" }] },
+		{ "type": "gauge", "title": "LCP Good Ratio", "targets": [{ "expr": "lcp_good_ratio" }] }
+	],
+	"refresh": "5m",
+	"time": { "from": "now-7d", "to": "now" }
+}
+			]]>
+		</grafana-dashboard>
+
+		<!-- ───────── ERROR RATE ALERT (PrometheusRule) ───────── -->
+		<prometheus-rule language="yaml" name="monitoring/alerts/error-rate.yml">
+			<![CDATA[
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+	name: error-rate
+spec:
+	groups:
+		- name: api.rules
+			rules:
+				- alert: HighErrorRate
+					expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+					for: 10m
+					labels:
+						severity: warning
+					annotations:
+						summary: "High API error rate detected"
+						description: "5xx error rate exceeded 5% for 10 minutes"
+			]]>
+		</prometheus-rule>
+
+		<!-- ───────── ETHICAL METRICS (Transparency Pack JSON) ───────── -->
+		<ethics-metrics language="json" name="metrics/ethics.transparency.json">
+			<![CDATA[
+{
+	"consent_rate": { "description": "Percentage of users giving explicit consent", "target": 0.9 },
+	"data_minimisation": { "description": "Proportion of optional fields removed or anonymised", "target": 1.0 },
+	"explainability_docs": { "description": "Existence of plain-language data use explanations", "target": true }
+}
+			]]>
+		</ethics-metrics>
+
+		<!-- ───────── RESEARCH DASHBOARD SEED ───────── -->
+		<research-dashboard language="json" name="dashboards/research-metrics.json">
+			<![CDATA[
+{
+	"title": "ResearchOps Evidence Health",
+	"panels": [
+		{ "type": "stat", "title": "Studies completed", "targets": [{ "expr": "count(studies)" }] },
+		{ "type": "graph", "title": "Participants over time", "targets": [{ "expr": "sum by (week)(participants)" }] },
+		{ "type": "table", "title": "Consent rate", "targets": [{ "expr": "avg(consent_rate)" }] }
+	],
+	"refresh": "1h"
+}
+			]]>
+		</research-dashboard>
+
+		<!-- ───────── LIGHTHOUSE CI (PERFORMANCE BUDGET) ───────── -->
+		<lighthouse-ci language="json" name="config/lighthouserc.json">
+			<![CDATA[
+{
+	"ci": {
+		"collect": { "url": ["https://staging.example.gov.uk/"], "numberOfRuns": 3 },
+		"assert": {
+			"assertions": {
+				"categories:performance": ["error", { "minScore": 0.9 }],
+				"uses-responsive-images": "error",
+				"total-byte-weight": ["error", { "maxNumericValue": 500000 }]
+			}
+		}
+	}
+}
+			]]>
+		</lighthouse-ci>
+
+		<!-- ───────── CI PIPELINE ───────── -->
+		<metrics-ci language="yaml" tool="github-actions" name=".github/workflows/metrics.yml">
+			<![CDATA[
+name: Metrics
+on:
+	push:
+		branches: [ main ]
+	schedule:
+		- cron: "0 * * * *"
+jobs:
+	collect:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- run: npm ci
+			- name: Collect Web Vitals snapshot
+				run: node scripts/collect-metrics.js
+			- name: Upload to dashboard
+				run: curl -X POST https://api.example.gov.uk/metrics -d @metrics.json
+			]]>
+		</metrics-ci>
+	</examples>
+</instructionSet>
