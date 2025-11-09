@@ -1,0 +1,202 @@
+# Read widgets
+Reads the widgets of a mural and returns an array of objects in JSON format.
+
+## Limitations
+  * Does not include drawings
+
+## Required authorization scopes
+  * `murals:read`
+
+## Endpoint GET
+`https://app.mural.co/api/public/<API-version>/murals/<mural-id>/widgets`
+Where:
+  * `<mural-id>` is your mural identifier
+  * `<API-version>` is the MURAL API version to use (the only supported version is "v1")
+
+## Query parameters
+  1. `type` : A comma-separated list of widget types to return
+     * Data type  : String
+     * Effect  : Filters the returned widgets by type
+     * Required  : Optional
+     * Default behavior  : When no `type` is specified, all types of widgets are returned
+     * Supported values  : 
+       * `areas`
+       * `arrows`
+       * `comments`
+       * `files`
+       * `sticky notes`
+       * `texts`
+       * `icons`
+       * `images`
+       * `shapes`
+  2. `parentId` : The identifier of a widget in the mural
+     * Data type  : String
+     * Effect  : Returns only the widgets that are children of the specified parent widget
+     * Required  : Optional
+     * Default behavior  : When no `parentId` is specified, all widgets are returned regardless of parent-child relationships
+  3. `limit` : Maximum number of results to be returned
+     * Data type  : Integer
+     * Effect  : Limits the number of widgets returned to the specified number
+     * Required  : Optional
+     * Default behavior  : When no `limit` is specified, the default limit is 100 widgets returned
+  4. `next` : Token to get the next page of items
+     * Data type  : String
+     * Effect  : Fetches the next page of widgets (See: [Pagination](https://developers.mural.co/public/docs/pagination))
+     * Required  : Optional
+     * Default behavior  : When `next` is not specified, only the first page of widgets is returned
+     * Usage note  : To get all widgets, call the `/widgets` enpoint with successive `next` parameters until no `next` token is included in the result
+
+## Response
+
+### Success (HTTP 200)
+When the call is successful, the returned data contains the following fields: 
+  * `value` \- An array of objects in JSON structure
+  * `next` \- A token to retrieve the next page, if there is more than one page of results
+
+#### Example data
+    
+    
+    {
+      "value": [
+        {
+          "id": "0-1619509853818",
+          "height": 150,
+          "width": 140,
+          "x": 20,
+          "y": 148,
+          "invisible": false,
+          "contentEditedOn": 1608060691000,
+          "contentEditedBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "createdOn": 1608060691000,
+          "createdBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "updatedOn": 1608060691000,
+          "updatedBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "rotation": 283.3,
+          "stackingOrder": 1,
+          "hidden": true,
+          "hideEditor": true,
+          "hideOwner": true,
+          "instruction": "<p>This is a <strong>test</strong> of the <u>instructions</u></p>",
+          "locked": true,
+          "lockedByFacilitator": true,
+          "parentId": "0-1619509853818",
+          "presentationIndex": 1,
+          "type": "area",
+          "style": {
+            "backgroundColor": "#FAFAFAFF",
+            "borderColor": "#FAFAFAFF",
+            "borderStyle": "solid",
+            "borderWidth": 7,
+            "titleFontSize": 9
+          },
+          "layout": "free",
+          "showTitle": false,
+          "title": "My area"
+        },
+        ...
+      ],
+      "next": "eyJmaWx0ZXJCeSI6ImFjdGl2ZSIsImV4cGlyYXRpb24iOjE1MTcxMTAxNDYyMTZ9"
+    }
+
+### Failure
+When the call fails, the returned data contains the following fields: 
+  * `code` \- A short string indicating the problem
+  * `message` \- A string with details of the problem
+  * `details` \- A JSON object with a more specific `code` and `message`
+
+#### Example data
+    
+    
+    {
+      "code": "ERROR",
+      "message": "Unknown server error",
+      "details": [
+        {
+          "code": "SUB_ERROR",
+          "message": "Unknown server error"
+        }
+      ]
+    }
+
+## Samples
+
+### Sample 1: Print all widgets in a mural
+
+#### CURL
+    
+    
+    curl -H "accept: application/json" 
+         -H "authorization: bearer <your-auth-token>" 
+         "https://app.mural.co/api/public/v1/murals/<your-mural-id>/widgets"
+
+#### Node.js
+    
+    
+    const axios = require( "axios" );
+    
+    const auth_token = "<your-auth-token>";
+    const mural_id   = "<your-mural-id>";
+    
+    var headers = { "Accept" : "application/json", "Authorization" : "Bearer " + auth_token };
+    
+    var url = "https://app.mural.co/api/public/v1/murals/" + g_mural_id + "/widgets";
+    	
+    axios.get( url, { "headers" : headers } ).then( function( response )
+    {
+        var widgets_arr = response["data"]["value"];
+        
+        console.log( JSON.stringify( widgets_arr, null, 3 ) );
+    
+    } ).catch( function( error )
+    {
+        console.log( error.message );
+        
+    } );
+
+### Sample 2: Print only the first 5 widgets of type sticky notes or text
+
+#### CURL
+    
+    
+    curl -H "accept: application/json" 
+         -H "authorization: bearer <your-auth-token>" 
+         "https://app.mural.co/api/public/v1/murals/<your-mural-id>/widgets?type=\"sticky notes,texts\"&limit=5"
+
+#### Node.js
+    
+    
+    const axios = require( "axios" );
+    
+    const auth_token = "<your-auth-token>";
+    const mural_id   = "<your-mural-id>";
+    
+    var headers = { "Accept" : "application/json", "Authorization" : "Bearer " + auth_token };
+    
+    var url = "https://app.mural.co/api/public/v1/murals/" + g_mural_id + "/widgets" +
+              "?type=\"sticky notes,texts\"" +
+              "&limit=5";
+    	
+    axios.get( url, { "headers" : headers } ).then( function( response )
+    {
+        var widgets_arr = response["data"]["value"];
+        
+        console.log( JSON.stringify( widgets_arr, null, 3 ) );
+    
+    } ).catch( function( error )
+    {
+        console.log( error.message );
+        
+    } );
+    

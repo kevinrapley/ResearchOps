@@ -1,0 +1,308 @@
+# Create sticky note
+Creates one or more "sticky note" widgets, adds them to a mural, and then returns an array of corresponding objects in JSON format.
+
+## Limitations
+  * A maximum of 1000 sticky notes can be created with one API call
+
+## Required authorization scopes
+  * `murals:write`
+
+## Endpoint GET
+`https://app.mural.co/api/public/<API-version>/murals/<mural-id>/widgets/sticky-note`
+Where:
+  * `<mural-id>` is your mural identifier
+  * `<API-version>` is the MURAL API version to use (the only supported version is "v1")
+
+## Body parameters
+  1. `height` : Widget height, in pixels
+     * Data type  : Integer
+     * Effect  : Sets the height of the sticky note
+     * Required  : Optional
+     * Default behavior  : When no `height` is specified, the created widget will be 138 pixels high
+  2. `hidden` : Whether the created widget is hidden from non-facilitators in the [mural outline](https://support.mural.co/s/article/about-mural-outlines)
+     * Data type  : Boolean
+     * Effect  : When set to true, the created widget is hidden in the outline from mural participants who are not facilitators of the mural
+     * Required  : Optional
+     * Default behavior  : When `hidden` is not specified, and if the widget is included in the mural outline, the widget is visible in the outline to all mural participants
+  3. `htmlText` : Text on the widget, in HTML format
+     * Data type  : String
+     * Effect  : Causes HTML formatting to be applied to the appearance of the text on the created widget
+     * Required  : Optional
+     * Usage notes  : 
+       * If both the `htmlText` and `text` parameters are specified, `htmlText` takes priority
+       * The HTML styling specified in `htmlText` takes priority over style attributes specified in the `style` body parameter
+       * Supported HTML tags: 
+         * `<b>` \- bold text
+         * `<i>` \- italic text
+         * `<u>` \- underline text
+         * `<s>` \- strike text
+         * `<ul>` \- unordered list of items
+         * `<ol>` \- ordered list of items
+         * `<li>` \- list item
+  4. `hyperlink` : The URL for a link button in the widget
+     * Data type  : String
+     * Effect  : If a URL is specified with the `hyperlink` parameter, a link button will be included in the created widget
+     * Required  : Optional
+     * Default behavior  : When `hyperlink` is not specified, no link button will appear in the created widget
+     * Usage note  : Use the `hyperlinkTitle` parameter to specify a title for the link button
+  5. `hyperlinkTitle` : The title for a link button in the widget
+     * Data type  : String
+     * Effect  : The `hyperlinkTitle` parameter specifies a title for the link button, if a URL is specified with the `hyperlink` parameter
+     * Required  : Optional
+     * Default behavior  : If `hyperlink` is specified, but `hyperlinkTitle` is not specified, the URL will be the title of the link button
+     * Usage note  : Use the `hyperlink` parameter to specify a URL for the link button
+  6. `instruction` : Instructions related to the widget in the mural outline
+     * Data type  : String
+     * Effect  : Specified instructions appear in the mural outline
+     * Required  : Optional
+     * Usage note  : Only mural facilitators can add a widget to the mural outline
+  7. `parentId` : The identifier of an existing widget to be the parent of the created widget
+     * Data type  : String
+     * Effect  : Causes the created widget to be a child of the widget specified with `parentId`
+     * Required  : Optional
+     * Default behavior  : When no `parentId` is specified, the created widget has no parent
+  8. `presentationIndex` : Location of the created widget in the mural outline
+     * Data type  : Integer
+     * Effect  : Specifies where in the mural outline information about the created widget will appear
+     * Required  : Optional
+     * Default behavior  : When `presentationIndex` is not specified, the default is -1, which means the widget is not in the outline
+     * Usage note  : Only mural facilitators can add a widget to the mural outline
+  9. `rotation` : Angle of rotation of the created widget
+     * Data type  : Decimal number ≥ 0
+     * Effect  : The created widget will be rotated by the specified amount when placed on the mural board
+     * Required  : Optional
+     * Default behavior  : By default, the widget is placed with no rotation
+  10. `shape` : Shape of the widget
+     * Data type  : String
+     * Effect  : Sets the shape of the created widget
+     * Required  : Mandatory
+     * Default behavior  : The default shape is a rectangle
+     * Supported values  : 
+       * `rectangle`
+       * `circle`
+  11. `style` : JSON object specifying the appearance of the widget
+     * Data type  : JSON structure of key-value pairs
+     * Effect  : Sets the appearance of the created widget using style fields similar to CSS attributes
+     * Required  : Optional
+     * Default behavior  : A default sticky note is yellow, with black text and no border.
+     * Supported fields  : 
+       * `backgroundColor` \- (String) The background color of the widget in hex with alpha format. Default: #FCFE7DFF
+       * `bold` \- (Boolean) If true, text is bold. Default: false
+       * `italic` \- (Boolean) If true, text is italic. Default: false
+       * `underline` \- (Boolean) If true, text is underlined. Default: false
+       * `strike` \- (Boolean) If true, text is stuck out. Default: false
+       * `font` \- (String) Font-family of text. Supported values: adelle, blambot-casual, blambot-pro, lint-mccree, marker-felt, museo-slab, proxima-nova, shark-water. Default: proxima-nova
+       * `fontSize` \- (Integer) Size of text. Supported values: ≥ 0\. Default: 23
+       * `textAlign` \- (String) Horizontal alignment of text. Supported values: left, center, right. Default: center
+       * `border` \- (Boolean) If true, the widget has a black border. Default: false
+  12. `stackingOrder` : z-index stacking order of the widget
+     * Data type  : Integer
+     * Effect  : A higher z-index causes the widget to appear in front of (or occluding) widgets with a lower z-index.
+     * Required  : Optional
+     * Default behavior  : If no `stackingOrder` is specified, the created widget has a default stacking order of 1
+  13. `tags` : Array of strings
+     * Data type  : String
+     * Effect  : You can add one or more tags to widgets to make analysis and processing easier
+     * Required  : Optional
+  14. `text` : Text on the widget
+     * Data type  : String
+     * Effect  : Plain text on the created widget
+     * Required  : Optional
+  15. `title` : Title of the created widget in the mural outline
+     * Data type  : String
+     * Effect  : If the widget is included in the mural outline, what is specified with `title` is displayed as the title in the mural outline
+     * Required  : Optional
+  16. `width` : Widget width, in pixels
+     * Data type  : Integer
+     * Effect  : Sets the width of the sticky note
+     * Required  : Optional
+     * Default behavior  : When no `width` is specified, the created widget will be 138 pixels wide
+  17. `x` : Horizontal position of the created widget
+     * Data type  : Decimal number
+     * Effect  : When the created widget is placed on the mural board, the upper-left corner of the widget is placed at the specified `x` position, in pixels, from the left of the parent widget (or the left of the mural board, if the widget has no parent)
+     * Required  : Mandatory
+  18. `y` : Vertical position of the created widget
+     * Data type  : Decimal number
+     * Effect  : When the created widget is placed on the mural board, the upper-left corner of the widget is placed at the specified `y` position, in pixels, from the top of the parent widget (or the top of the mural board, if the widget has no parent)
+     * Required  : Mandatory
+
+## Response
+
+### Success (HTTP 200)
+When the call is successful, the returned data contains the following fields: 
+  * `value` \- An array of objects in JSON structure
+
+#### Example data
+    
+    
+    {
+      "value": [
+        {
+          "id": "0-1619509853818",
+          "height": 150,
+          "width": 140,
+          "x": 20,
+          "y": 148,
+          "invisible": false,
+          "contentEditedOn": 1608060691000,
+          "contentEditedBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "createdOn": 1608060691000,
+          "createdBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "updatedOn": 1608060691000,
+          "updatedBy": {
+            "id": "u1651c4ac9145e4b8497d5982",
+            "firstName": "John",
+            "lastName": "Smith"
+          },
+          "rotation": 283.3,
+          "stackingOrder": 1,
+          "hidden": true,
+          "hideEditor": true,
+          "hideOwner": true,
+          "instruction": "<p>This is a <strong>test</strong> of the <u>instructions</u></p>",
+          "locked": true,
+          "lockedByFacilitator": true,
+          "parentId": "0-1619509853818",
+          "presentationIndex": 1,
+          "type": "area",
+          "style": {
+            "backgroundColor": "#FAFAFAFF",
+            "borderColor": "#FAFAFAFF",
+            "borderStyle": "solid",
+            "borderWidth": 7,
+            "titleFontSize": 9
+          },
+          "layout": "free",
+          "showTitle": false,
+          "title": "My area"
+        },
+        ...
+      ]
+    }
+
+### Failure
+When the call fails, the returned data contains the following fields: 
+  * `code` \- A short string indicating the problem
+  * `message` \- A string with details of the problem
+  * `details` \- A JSON object with a more specific `code` and `message`
+
+#### Example data
+    
+    
+    {
+      "code": "ERROR",
+      "message": "Unknown server error",
+      "details": [
+        {
+          "code": "SUB_ERROR",
+          "message": "Unknown server error"
+        }
+      ]
+    }
+
+## Samples
+
+### Sample 1: Create a simple sticky note in a mural
+
+#### CURL
+    
+    
+    curl -H "accept: application/json" 
+         -H "content-type: application/json" 
+         -H "authorization: bearer <your-auth-token>" 
+         "https://app.mural.co/api/public/v1/murals/<your-mural-id>/widgets/sticky-note" 
+         --data "{ \"x\"     : 120, 
+                   \"y\"     : 80, 
+                   \"shape\" : \"rectangle\", 
+                   \"text\"  : \"Here is a sticky note\" }"
+
+#### Node.js
+    
+    
+    const axios = require( "axios" );
+    
+    const auth_token = "<your-auth-token>";
+    const mural_id   = "<your-mural-id>";
+    
+    var headers = { "Accept" : "application/json",
+                    "Content-type" : "application/json",
+                    "Authorization" : "Bearer " + auth_token };
+    
+    var url = "https://app.mural.co/api/public/v1/murals/" + g_mural_id + "/widgets/sticky-note";
+    
+    var data = { "x"     : x, 
+                 "y"     : y, 
+                 "shape" : "rectangle",
+                 "text"  : "Here is a sticky note" };
+    	
+    axios.post( url, data, { "headers" : headers } ).then( function( response )
+    {
+        var widget_id = response["data"]["value"]["id"];
+    		
+        console.log( "Success\nwidget id: " + widget_id );
+    
+    } ).catch( function( error )
+    {
+        console.log( error.message );
+        
+    } );
+
+### Sample 2: Create a stylish sticky note in a mural
+
+#### CURL
+    
+    
+    curl -H "accept: application/json" 
+         -H "content-type: application/json" 
+         -H "authorization: bearer <your-auth-token>" 
+         "https://app.mural.co/api/public/v1/murals/<your-mural-id>/widgets/sticky-note" 
+         --data "{ \"x\" : 200, 
+                   \"y\" : 110, 
+                   \"shape\" : \"rectangle\", 
+                   \"htmlText\" : \"<b>Here</b> is a <u>sticky note</u>\",
+                   \"style\"    : { \"backgroundColor\" : \"#CCCCFF\",
+                                    \"font\" : \"blambot-pro\",
+                                    \"fontSize\" : 50 } }"
+
+#### Node.js
+    
+    
+    const axios = require( "axios" );
+    
+    const auth_token = "<your-auth-token>";
+    const mural_id   = "<your-mural-id>";
+    
+    var headers = { "Accept" : "application/json",
+                    "Content-type" : "application/json",
+                    "Authorization" : "Bearer " + auth_token };
+    
+    var url = "https://app.mural.co/api/public/v1/murals/" + g_mural_id + "/widgets/sticky-note";
+    
+    var data = { "x"        : x, 
+                 "y"        : y, 
+                 "shape"    : "rectangle",
+                 "htmlText" : "<b>Here</b> is a <u>sticky note</u>",
+                 "style"    : { "backgroundColor" : "#CCCCFF",
+                                "font" : "blambot-pro",
+                                "fontSize" : 50 } };
+    	
+    axios.post( url, data, { "headers" : headers } ).then( function( response )
+    {
+        var widget_id = response["data"]["value"]["id"];
+    		
+        console.log( "Success\nwidget id: " + widget_id );
+    
+    } ).catch( function( error )
+    {
+        console.log( error.message );
+        
+    } );
+    
