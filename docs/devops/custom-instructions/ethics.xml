@@ -1,0 +1,407 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:ethics" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" name="start-ethics" date="2025-11-03">
+	<!-- Purpose: Design, build, and operate data-driven systems that are fair, transparent, and accountable. -->
+
+	<system-context>
+		<persona id="ethical-ai-lead" role="Ethical AI  Algorithmic Transparency">
+			Ensures proportionality, fairness, explainability, and oversight from idea to live.
+		</persona>
+		<audience>Researchers, engineers, designers, product, governance, and assurance partners.</audience>
+		<alignment>
+			GOV.UK Service Manual (Data, Security, Measuring success);
+			UK GDPR  DPA principles (lawfulness, purpose limitation, minimisation);
+			CDEI practical guidance on responsible AI;
+			ISO/IEC 42001 (AI management systems);
+			PROV-O, schema.org, and Open Annotation for provenance and explanations.
+		</alignment>
+	</system-context>
+
+	<principles>
+		<principle>Necessity and proportionality: collect the least, do the least.</principle>
+		<principle>Fair by design: consider impacts on different user groups early.</principle>
+		<principle>Explainable outcomes: plain-English reasons, not just scores.</principle>
+		<principle>Contestability: users can question and appeal decisions.</principle>
+		<principle>Human oversight: meaningful review for material risk.</principle>
+		<principle>Evidence over claims: publish methods, tests, and limits.</principle>
+		<principle>Continuous monitoring: detect drift, bias, and harm.</principle>
+	</principles>
+
+	<scope>
+		<includes>Statistical models, ML systems, rules engines, heuristic scoring, and hybrids.</includes>
+		<note>Apply controls whether decisions are automated, human-in-the-loop, or decision support.</note>
+	</scope>
+
+	<governance>
+		<intent>
+			<purpose>Document the decision, beneficiaries, risks, and alternatives.</purpose>
+			<lawful-basis>Record lawful basis. Avoid special category data unless strictly justified.</lawful-basis>
+			<dpia>Complete DPIA/TRA for personal data or high-risk use cases.</dpia>
+		</intent>
+		<provenance>
+			<records>Use PROV-O to link datasets, code versions, parameters, evaluations, and releases.</records>
+			<model-card>Publish Model Card and Data Statement with limitations and caveats.</model-card>
+		</provenance>
+		<roles>
+			<owner>Named accountable owner for ethics and operation.</owner>
+			<review>Independent review before Live and after material changes.</review>
+		</roles>
+	</governance>
+
+	<data>
+		<minimisation>Collect only features with clear causal or predictive value.</minimisation>
+		<sensitivity>Exclude proxies for protected characteristics where possible.</sensitivity>
+		<quality>Profile data; measure missingness, imbalance, and drift.</quality>
+		<retention>Set TTLs. Enable purge. Version datasets for reproducibility.</retention>
+	</data>
+
+	<modeling>
+		<design>
+			<choice>Prefer simple, explainable models where performance permits.</choice>
+			<guardrails>Define reject bands, uncertainty thresholds, and safe defaults.</guardrails>
+			<features>Log feature importances with stability checks across resamples.</features>
+		</design>
+		<evaluation>
+			<metrics>Track accuracy + calibration + fairness (DP/EO gaps) + cost of error.</metrics>
+			<slice>Evaluate across cohorts and context slices (time, geography, channel).</slice>
+			<uncertainty>Expose confidence or prediction intervals.</uncertainty>
+		</evaluation>
+	</modeling>
+
+	<deployment>
+		<explainability>Offer immediate, plain-English reasons for each decision.</explainability>
+		<contestability>Provide appeal route, response SLA, and human review path.</contestability>
+		<monitoring>Live drift, bias, and error monitoring with alerts and runbooks.</monitoring>
+	</deployment>
+
+	<oversight>
+		<change-control>Ethics sign-off for material changes to data, features, or thresholds.</change-control>
+		<audit>Immutable audit trail for training data, code, and configuration used at decision time.</audit>
+		<post-incident>Blameless review within 48 hours; actions tracked to closure.</post-incident>
+	</oversight>
+
+	<presets>
+		<preset id="mve" name="Minimum Viable Ethics">
+			<includes>
+				<docs>Model Card + Data Statement required</docs>
+				<fairness>DP gap ≤ 0.10; EO gap ≤ 0.10 (configurable)</fairness>
+				<calibration>ECE ≤ 0.05 on holdout</calibration>
+				<explanations>Top-3 feature reasons + plain-English template</explanations>
+				<contest>Appeal endpoint + human review</contest>
+				<monitor>Daily drift + monthly bias review</monitor>
+			</includes>
+		</preset>
+	</presets>
+
+	<exit-criteria>
+		<condition>Purpose, lawful basis, and DPIA completed with residual risk accepted.</condition>
+		<condition>Model Card and Data Statement published.</condition>
+		<condition>Fairness, calibration, and performance within thresholds on holdout and slices.</condition>
+		<condition>Explanations and appeal route verified with users.</condition>
+		<condition>Monitoring, runbooks, and rollback in place.</condition>
+	</exit-criteria>
+
+	<examples>
+		<!-- ───────────────────── DOCUMENTATION TEMPLATES ───────────────────── -->
+		<model-card-template language="markdown" name="docs/model-card.md">
+			<![CDATA[
+# Model Card — <Model name>
+## Intended Use
+- Purpose:
+- Users:
+- Decision type: automated / human-in-the-loop / decision support
+
+## Data
+- Sources:
+- Time span:
+- Known limitations:
+
+## Performance (Holdout)
+- AUROC: …
+- p95 latency: …
+- Calibration (ECE): …
+
+## Fairness (Slices)
+- Demographic parity gap: …
+- Equal opportunity gap: …
+
+## Risk & Mitigations
+- Failure modes:
+- Guardrails:
+
+## Monitoring
+- Drift checks:
+- Alert thresholds:
+
+## Explainability
+- Method (e.g., permutation importance)
+- How to contest a decision
+			]]>
+		</model-card-template>
+
+		<data-statement-template language="markdown" name="docs/data-statement.md">
+			<![CDATA[
+# Data Statement — <Dataset name>
+
+## Collection
+- Who collected, when, where:
+- Lawful basis:
+
+## Composition
+- Population represented:
+- Known skews or gaps:
+
+## Processing
+- Cleaning, encoding, feature creation:
+
+## Ethics
+- Consent and minimisation:
+- Sensitive attributes handling:
+
+## Retention
+- TTL and purge process:
+			]]>
+		</data-statement-template>
+
+		<!-- ───────────────────── CONFIGURATION & THRESHOLDS ───────────────────── -->
+		<thresholds-config language="json" name="config/ethics.thresholds.json">
+			<![CDATA[
+{
+	"fairness": { "dp_gap_max": 0.10, "eo_gap_max": 0.10 },
+	"calibration": { "ece_max": 0.05, "bins": 10 },
+	"uncertainty": { "reject_if_confidence_below": 0.6 },
+	"appeals": { "sla_hours": 72 }
+}
+			]]>
+		</thresholds-config>
+
+		<!-- ───────────────────── FAIRNESS & CALIBRATION (JS) ───────────────────── -->
+		<metrics-library language="javascript" name="src/ethics/metrics.js">
+			<![CDATA[
+export function demographicParityGap(labels, preds, groups) {
+	// labels: 0/1 array, preds: 0/1 array, groups: string or boolean array
+	const by = {};
+	for (let i = 0; i < labels.length; i++) {
+		const g = groups[i] ?? 'all';
+		if (!by[g]) by[g] = { pos: 0, n: 0 };
+		by[g].pos += preds[i] ? 1 : 0;
+		by[g].n += 1;
+	}
+	const rates = Object.values(by).map(x => (x.n ? x.pos / x.n : 0));
+	return Math.max(...rates) - Math.min(...rates);
+}
+
+export function equalOpportunityGap(labels, preds, groups) {
+	// TPR gap across groups
+	const by = {};
+	for (let i = 0; i < labels.length; i++) {
+		const g = groups[i] ?? 'all';
+		if (!by[g]) by[g] = { tp: 0, p: 0 };
+		if (labels[i] === 1) {
+			by[g].p += 1;
+			if (preds[i] === 1) by[g].tp += 1;
+		}
+	}
+	const tprs = Object.values(by).map(x => (x.p ? x.tp / x.p : 0));
+	return Math.max(...tprs) - Math.min(...tprs);
+}
+
+export function expectedCalibrationError(probs, labels, bins = 10) {
+	const b = Array.from({ length: bins }, () => ({ n: 0, c: 0, a: 0 }));
+	for (let i = 0; i < labels.length; i++) {
+		const p = Math.min(0.999, Math.max(0.001, probs[i]));
+		const k = Math.min(bins - 1, Math.floor(p * bins));
+		b[k].n += 1;
+		b[k].c += p;
+		b[k].a += labels[i];
+	}
+	let ece = 0;
+	const n = labels.length;
+	for (const x of b) {
+		if (x.n) ece += (x.n / n) * Math.abs(x.a / x.n - x.c / x.n);
+	}
+	return ece;
+}
+			]]>
+		</metrics-library>
+
+		<!-- ───────────────────── PLAIN-ENGLISH EXPLANATIONS ───────────────────── -->
+		<explainers language="javascript" name="src/ethics/explain.js">
+			<![CDATA[
+export function explainScore(sample, weights, topK = 3) {
+	// sample: { feature: value }, weights: { feature: weight }
+	const terms = Object.entries(weights).map(([f, w]) => ({ f, c: (sample[f] ?? 0) * w }));
+	terms.sort((a, b) => Math.abs(b.c) - Math.abs(a.c));
+	const top = terms.slice(0, topK);
+	const reasons = top.map(t => ({
+		feature: t.f,
+		contribution: t.c,
+		text: `Because ${t.f.replace(/_/g, ' ')} was ${sample[t.f]}, it ${t.c >= 0 ? 'increased' : 'decreased'} the score.`
+	}));
+	return { reasons, note: 'This is an approximate explanation based on feature weights.' };
+}
+			]]>
+		</explainers>
+
+		<!-- ───────────────────── APPEALS & OVERSIGHT ROUTES ───────────────────── -->
+		<appeals-endpoints language="javascript" name="src/ethics/appeals.js">
+			<![CDATA[
+export async function appeal(request, env) {
+	const body = await request.json().catch(() => ({}));
+	// Store minimal, non-sensitive info; rotate via TTL.
+	const id = crypto.randomUUID();
+	await env.KV.put(`appeal:${id}`, JSON.stringify({
+		id,
+		decisionId: body.decisionId,
+		userEmail: body.userEmail,
+		reason: body.reason?.slice(0, 500),
+		ts: new Date().toISOString()
+	}), { expirationTtl: 60 * 60 * 24 * 90 }); // 90 days
+	return new Response(JSON.stringify({ ok: true, id }), { headers: { 'content-type': 'application/json' } });
+}
+
+export async function explanation(request, env) {
+	const url = new URL(request.url);
+	const decisionId = url.searchParams.get('id');
+	// Fetch stored decision context (features, weights, score).
+	const rec = await env.KV.get(`decision:${decisionId}`, { type: 'json' });
+	if (!rec) return new Response('Not found', { status: 404 });
+	// Return plain-English summary
+	return new Response(JSON.stringify({
+		decisionId,
+		score: rec.score,
+		reasons: rec.reasons, // precomputed or generated via explainScore
+		how_to_contest: '/api/appeals'
+	}), { headers: { 'content-type': 'application/json' } });
+}
+			]]>
+		</appeals-endpoints>
+
+		<!-- ───────────────────── PROVENANCE (JSON-LD PROV-O) ───────────────────── -->
+		<decision-provenance language="json" name="examples/decision.prov.jsonld">
+			<![CDATA[
+{
+	"@context": {
+		"prov": "http://www.w3.org/ns/prov#",
+		"schema": "http://schema.org/",
+		"score": "schema:value",
+		"usedModel": "prov:used",
+		"wasGeneratedBy": "prov:wasGeneratedBy"
+	},
+	"@type": "prov:Entity",
+	"id": "decision:12345",
+	"score": 0.71,
+	"usedModel": { "@type": "prov:Entity", "id": "model:v1.3.2" },
+	"wasGeneratedBy": {
+		"@type": "prov:Activity",
+		"id": "inference:abc",
+		"prov:startedAtTime": "2025-11-03T12:01:00Z",
+		"prov:endedAtTime": "2025-11-03T12:01:00Z",
+		"prov:used": [
+			{ "@type": "prov:Entity", "id": "dataset:train_v12" },
+			{ "@type": "prov:Entity", "id": "features:standard_v4" }
+		]
+	}
+}
+			]]>
+		</decision-provenance>
+
+		<!-- ───────────────────── BIAS AUDIT IN CI ───────────────────── -->
+		<bias-audit-ci language="yaml" tool="github-actions" name=".github/workflows/ethics.yml">
+			<![CDATA[
+name: Ethics Checks
+on: [push, pull_request]
+jobs:
+	fairness_calibration:
+		runs-on: ubuntu-latest
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with:
+					node-version: '20'
+			- run: npm ci
+			- name: Run fairness & calibration
+				run: node scripts/ethics-check.js --thresholds config/ethics.thresholds.json
+			]]>
+		</bias-audit-ci>
+
+		<ethics-check-script language="javascript" name="scripts/ethics-check.js">
+			<![CDATA[
+import fs from 'node:fs';
+import { demographicParityGap, equalOpportunityGap, expectedCalibrationError } from '../src/ethics/metrics.js';
+
+const cfg = JSON.parse(
+	fs.readFileSync(
+		process.argv.includes('--thresholds')
+			? process.argv[process.argv.indexOf('--thresholds') + 1]
+			: 'config/ethics.thresholds.json',
+		'utf8'
+	)
+);
+
+// Example: Load evaluation set (probs.csv → prob,label,group)
+const rows = fs
+	.readFileSync('eval/probs.csv', 'utf8')
+	.trim()
+	.split('\n')
+	.slice(1)
+	.map(l => l.split(','));
+
+const probs = rows.map(r => Number(r[0]));
+const labels = rows.map(r => Number(r[1]));
+const groups = rows.map(r => r[2]);
+
+// Simple thresholding at 0.5 for example
+const preds = probs.map(p => (p >= 0.5 ? 1 : 0));
+
+const dp = demographicParityGap(labels, preds, groups);
+const eo = equalOpportunityGap(labels, preds, groups);
+const ece = expectedCalibrationError(probs, labels, cfg.calibration.bins);
+
+console.log(JSON.stringify({ dp, eo, ece, thresholds: cfg }, null, 2));
+
+let ok = true;
+if (dp > cfg.fairness.dp_gap_max) { console.error(`DP gap ${dp} exceeds ${cfg.fairness.dp_gap_max}`); ok = false; }
+if (eo > cfg.fairness.eo_gap_max) { console.error(`EO gap ${eo} exceeds ${cfg.fairness.eo_gap_max}`); ok = false; }
+if (ece > cfg.calibration.ece_max) { console.error(`ECE ${ece} exceeds ${cfg.calibration.ece_max}`); ok = false; }
+
+process.exit(ok ? 0 : 1);
+			]]>
+		</ethics-check-script>
+
+		<!-- ───────────────────── DIFFERENTIAL PRIVACY (BASIC NOISE) ───────────────────── -->
+		<privacy-noise language="javascript" name="src/ethics/privacyNoise.js">
+			<![CDATA[
+export function laplaceNoise(value, epsilon = 1.0, sensitivity = 1.0) {
+	// For analytics aggregates only; not for small-n groups.
+	const u = Math.random() - 0.5;
+	const b = sensitivity / epsilon;
+	const noise = -b * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
+	return value + noise;
+}
+			]]>
+		</privacy-noise>
+
+		<!-- ───────────────────── ROUTER WIRING (Workers-style) ───────────────────── -->
+		<router-wiring language="javascript" name="src/worker.ethics.js">
+			<![CDATA[
+import { appeal, explanation } from './ethics/appeals.js';
+import { explainScore } from './ethics/explain.js';
+
+export default {
+	async fetch(request, env) {
+		const url = new URL(request.url);
+		if (url.pathname === '/api/explanations') return explanation(request, env);
+		if (url.pathname === '/api/appeals' && request.method === 'POST') return appeal(request, env);
+		if (url.pathname === '/api/demo-explain') {
+			const sample = { age: 28, tenure_months: 3, prior_incidents: 0 };
+			const weights = { age: -0.1, tenure_months: -0.05, prior_incidents: 0.8 };
+			const result = explainScore(sample, weights, 3);
+			return new Response(JSON.stringify(result), { headers: { 'content-type': 'application/json' } });
+		}
+		return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json' } });
+	}
+}
+			]]>
+		</router-wiring>
+	</examples>
+</instructionSet>
