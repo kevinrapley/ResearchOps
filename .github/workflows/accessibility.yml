@@ -34,6 +34,19 @@ jobs:
           mkdir -p .pa11y-workdir
           node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'module',dependencies:{'pa11y-ci':'^3.1.0'},overrides:{glob:'^10.4.5',inflight:'npm:@npmcli/inflight@^2.0.0'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
           npm install --prefix .pa11y-workdir --no-package-lock
+          node <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const target = path.join('.pa11y-workdir', 'node_modules', 'globby', 'index.js');
+          if (fs.existsSync(target)) {
+            const src = fs.readFileSync(target, 'utf8');
+            const needle = 'var globP = pify(glob, Promise).bind(glob);';
+            if (src.includes(needle)) {
+              const replacement = "const pifyCandidate = typeof pify === 'function' ? pify : (pify && typeof pify.default === 'function' ? pify.default : null);\nconst {promisify} = require('util');\nvar globP = pifyCandidate ? pifyCandidate(glob, Promise) : null;\nif (typeof globP !== 'function') {\n  globP = promisify(glob);\n}\nif (typeof globP !== 'function') {\n  throw new Error('pa11y-ci: unable to create promisified glob');\n}\nif (typeof globP.bind === 'function') {\n  globP = globP.bind(glob);\n} else {\n  const fn = globP;\n  globP = function () {\n    return fn.apply(glob, arguments);\n  };\n}";
+              fs.writeFileSync(target, src.replace(needle, replacement));
+            }
+          }
+          EOF
 
       - name: Run pa11y-ci
         run: .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
