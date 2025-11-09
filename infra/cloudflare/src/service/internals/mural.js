@@ -652,6 +652,7 @@ export class MuralServicePart {
       const top = rows[0];
       if (top?.fields) {
         const f = top.fields;
+        const recordUid = typeof f["UID"] === "string" ? f["UID"].trim() : "";
         const rec = {
           muralId: String(f["Mural ID"] || ""),
           boardUrl: f["Board URL"] || null,
@@ -659,6 +660,7 @@ export class MuralServicePart {
           primary: !!f["Primary?"]
         };
         if (rec.muralId) {
+          const projectKey = projectId ? String(projectId) : "";
           const ensureInactive = async () => {
             _memCache.set(cacheKey, { deleted: true, ts: Date.now() });
             if (top.id) {
@@ -672,18 +674,25 @@ export class MuralServicePart {
                 this.root.log?.warn?.("mural.airtable_deactivate_failed", { message: err?.message || null });
               }
             }
-            if (uid && projectId) {
-              try {
-                const key = `mural:${uid}:project:id::${String(projectId)}`;
-                await this.root.env.SESSION_KV.delete(key);
-              } catch {/* noop */}
+
+            if (projectKey) {
+              const clearUids = new Set();
+              if (uid) clearUids.add(String(uid));
+              if (recordUid) clearUids.add(recordUid);
+              for (const clearUid of clearUids) {
+                try {
+                  const key = `mural:${clearUid}:project:id::${projectKey}`;
+                  await this.root.env.SESSION_KV.delete(key);
+                } catch {/* noop */}
+              }
             }
           };
 
           let boardDeleted = false;
-          if (uid) {
+          const verifyUid = uid || recordUid;
+          if (verifyUid) {
             try {
-              const tokenRes = await this._getValidAccessToken(uid);
+              const tokenRes = await this._getValidAccessToken(verifyUid);
               if (tokenRes.ok) {
                 try {
                   await getMural(this.root.env, tokenRes.token, rec.muralId);
