@@ -371,10 +371,16 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 
 function _pickId(obj) {
   return obj?.id ||
+    obj?.muralId ||
+    obj?.muralID ||
     obj?.roomId ||
     obj?.folderId ||
     obj?.value?.id ||
+    obj?.value?.muralId ||
+    obj?.value?.muralID ||
     obj?.data?.id ||
+    obj?.data?.muralId ||
+    obj?.data?.muralID ||
     null;
 }
 
@@ -668,6 +674,7 @@ export class MuralServicePart {
     let folderId = null;
     let folderDenied = false;
     let mural = null;
+    let muralId = null;
 
     try {
       const body = await request.json().catch(() => ({}));
@@ -766,12 +773,33 @@ export class MuralServicePart {
         folderId: folderId || undefined
       });
 
+      muralId = _pickId(mural);
+      if (!muralId && mural?.muralId) muralId = mural.muralId;
+      if (!muralId && mural?.value?.muralId) muralId = mural.value.muralId;
+      muralId = muralId ? String(muralId) : null;
+
+      if (!muralId) {
+        this.root.log?.error?.("mural.create_mural.missing_id", {
+          step,
+          projectId,
+          roomId,
+          folderId,
+          responseKeys: mural && typeof mural === "object" ? Object.keys(mural).slice(0, 10) : null
+        });
+        return this.root.json({
+          ok: false,
+          error: "mural_id_unavailable",
+          step,
+          message: "Mural API did not return an id for the created board"
+        }, 502, cors);
+      }
+
       // Best-effort quick probe (keep short!)
       step = "probe_viewer_url";
       let openUrl = null;
       const softDeadline = Date.now() + 9000;
       while (!openUrl && Date.now() < softDeadline) {
-        openUrl = await _probeViewerUrl(this.root.env, accessToken, mural.id);
+        openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId);
         if (openUrl) break;
         await new Promise(r => setTimeout(r, 600));
       }
@@ -782,7 +810,7 @@ export class MuralServicePart {
             projectId: String(projectId),
             uid,
             purpose: PURPOSE_REFLEXIVE,
-            muralId: mural.id,
+            muralId,
             boardUrl: openUrl,
             workspaceId: ws.id,
             primary: true
@@ -808,7 +836,7 @@ export class MuralServicePart {
           room,
           folder,
           folderDenied,
-          mural: { ...mural, viewLink: openUrl },
+          mural: { ...mural, id: muralId, muralId, viewLink: openUrl },
           projectId: projectId || null,
           registered: Boolean(projectId),
           boardUrl: openUrl
@@ -819,7 +847,7 @@ export class MuralServicePart {
         ok: true,
         pending: true,
         step,
-        muralId: mural.id,
+        muralId,
         workspace: ws,
         room,
         folder,
@@ -842,6 +870,7 @@ export class MuralServicePart {
         context.folderId = folderId || null;
         context.folderDenied = folderDenied;
         context.projectId = projectId ? String(projectId) : null;
+        context.muralId = muralId;
       }
       if (this.root.log?.error) {
         this.root.log.error("mural.setup_failed", {
