@@ -378,6 +378,30 @@ function _pickId(obj) {
     null;
 }
 
+function _workspaceSummary(raw, fallbackId = null) {
+  const val = raw?.value || raw || {};
+  const id = val.id || fallbackId || null;
+  if (!id) return null;
+  return {
+    id,
+    key: val.key || val.shortId || null,
+    name: val.name || null
+  };
+}
+
+function _profileFromMe(me) {
+  const val = me?.value || me || {};
+  return {
+    id: val.id || null,
+    name: val.displayName || val.name || null,
+    firstName: val.firstName || null,
+    lastName: val.lastName || null,
+    email: val.email || val.primaryEmail || null,
+    companyId: val.companyId || null,
+    companyName: val.companyName || null
+  };
+}
+
 /* ───────────────────────── Class ───────────────────────── */
 
 export class MuralServicePart {
@@ -561,6 +585,72 @@ export class MuralServicePart {
     backUrl.search = sp.toString();
 
     return Response.redirect(backUrl.toString(), 302);
+  }
+
+  async muralVerify(origin, url) {
+    const cors = this.root.corsHeaders(origin);
+    const uid = url.searchParams.get("uid") || "anon";
+    const workspaceOverride = (url.searchParams.get("workspaceId") || "").trim();
+
+    try {
+      const tokenRes = await this._getValidAccessToken(uid);
+      if (!tokenRes.ok) {
+        const code = tokenRes.reason === "not_authenticated" ? 401 : 500;
+        return this.root.json({ ok: false, error: tokenRes.reason }, code, cors);
+      }
+      const accessToken = tokenRes.token;
+
+      let inWorkspace = false;
+      try {
+        inWorkspace = await verifyHomeOfficeByCompany(this.root.env, accessToken);
+      } catch (err) {
+        const status = Number(err?.status || 0);
+        if (status === 401) {
+          return this.root.json({ ok: false, error: "not_authenticated" }, 401, cors);
+        }
+        throw err;
+      }
+
+      if (!inWorkspace) {
+        return this.root.json({ ok: false, error: "not_in_home_office_workspace" }, 403, cors);
+      }
+
+      const me = await getMe(this.root.env, accessToken).catch(() => null);
+      const profile = _profileFromMe(me);
+
+      let activeWorkspaceId = workspaceOverride || getActiveWorkspaceIdFromMe(me) || null;
+      if (!activeWorkspaceId && this.root.env.MURAL_HOME_OFFICE_WORKSPACE_ID) {
+        const hinted = String(this.root.env.MURAL_HOME_OFFICE_WORKSPACE_ID || "").trim();
+        activeWorkspaceId = hinted || activeWorkspaceId;
+      }
+
+      let workspace = null;
+      if (activeWorkspaceId) {
+        try {
+          const ws = await getWorkspace(this.root.env, accessToken, activeWorkspaceId);
+          workspace = _workspaceSummary(ws, activeWorkspaceId);
+          activeWorkspaceId = workspace?.id || activeWorkspaceId;
+        } catch (err) {
+          if (workspaceOverride && Number(err?.status || 0) === 404) {
+            return this.root.json({ ok: false, error: "workspace_not_found" }, 404, cors);
+          }
+          workspace = _workspaceSummary(null, activeWorkspaceId);
+        }
+      }
+
+      return this.root.json({
+        ok: true,
+        uid,
+        activeWorkspaceId: activeWorkspaceId || null,
+        workspace,
+        profile
+      }, 200, cors);
+
+    } catch (err) {
+      const status = Number(err?.status || 0) || 500;
+      const detail = String(err?.message || err || "verify_failed");
+      return this.root.json({ ok: false, error: "verify_failed", detail }, status, cors);
+    }
   }
 
   /** POST /api/mural/setup  body: { uid, projectId?, projectName, workspaceId? } */
