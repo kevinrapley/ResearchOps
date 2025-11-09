@@ -631,14 +631,23 @@ export class MuralServicePart {
 
       const kv = await _kvProjectMapping(this.root.env, { uid, projectId });
       if (kv?.url) {
-        if (_looksLikeMuralViewerUrl(kv.url)) {
-          return { muralId: null, boardUrl: kv.url, workspaceId: null };
-        } else {
-          try {
-            const key = `mural:${uid || "anon"}:project:id::${String(projectId)}`;
-            await this.root.env.SESSION_KV.delete(key);
-          } catch { /* ignore */ }
+        const kvKey = `mural:${uid || "anon"}:project:id::${String(projectId)}`;
+        const kvMuralId = kv?.muralId ? String(kv.muralId).trim() : "";
+
+        if (!kvMuralId) {
+          try { await this.root.env.SESSION_KV.delete(kvKey); } catch { /* ignore */ }
+          return null;
         }
+
+        if (_looksLikeMuralViewerUrl(kv.url)) {
+          return {
+            muralId: kvMuralId,
+            boardUrl: kv.url,
+            workspaceId: kv?.workspaceId ? String(kv.workspaceId).trim() || null : null
+          };
+        }
+
+        try { await this.root.env.SESSION_KV.delete(kvKey); } catch { /* ignore */ }
       }
     }
 
@@ -1044,6 +1053,8 @@ export class MuralServicePart {
           const kvKey = `mural:${uid}:project:id::${projectIdStr}`;
           await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
             url: openUrl,
+            muralId,
+            workspaceId: ws?.id || null,
             projectName: projectName,
             updatedAt: Date.now()
           }));
@@ -1161,6 +1172,8 @@ export class MuralServicePart {
         const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
         await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
           url: openUrl,
+          muralId,
+          workspaceId: null,
           projectName: "",
           updatedAt: Date.now()
         }));
