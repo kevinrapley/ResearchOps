@@ -46,7 +46,6 @@ export async function fetchJSON(url, opts = {}) {
     const txt = await res.text().catch(() => "");
     let js = {};
     try { js = txt ? JSON.parse(txt) : {}; } catch { js = {}; }
-
     if (!res.ok) {
       const err = new Error(js?.message || js?.error_description || `HTTP ${res.status}`);
       err.status = res.status;
@@ -64,28 +63,29 @@ export const withBearer = (token) => ({
 });
 
 /* ------------------------------------------------------------------ */
-/* OAuth2 — revert to stable, documented public paths                  */
+/* OAuth2 — REVERTED to working paths                                 */
 /* ------------------------------------------------------------------ */
 
 /**
  * Build the user authorization URL.
- * Known-good path: GET {API_BASE}/authorization/oauth2/authorize
+ * Working tenant path (no trailing /authorize):
+ *   GET ${apiBase}/authorization/oauth2?response_type=code&...
  */
 export function buildAuthUrl(env, state) {
   const scopes = (env.MURAL_SCOPES || DEFAULT_SCOPES.join(" ")).trim();
-  const params = new URLSearchParams({
-    response_type: "code",
-    client_id: env.MURAL_CLIENT_ID,
-    redirect_uri: env.MURAL_REDIRECT_URI,
-    scope: scopes,
-    state
-  });
-  return `${apiBase(env)}/authorization/oauth2/authorize?${params}`;
+
+  const u = new URL(`${apiBase(env)}/authorization/oauth2`);
+  u.searchParams.set("response_type", "code");
+  u.searchParams.set("client_id", env.MURAL_CLIENT_ID);
+  u.searchParams.set("redirect_uri", env.MURAL_REDIRECT_URI);
+  u.searchParams.set("scope", scopes);
+  u.searchParams.set("state", state);
+  return u.toString();
 }
 
 /**
- * Token exchange.
- * Known-good path: POST {API_BASE}/authorization/oauth2/token
+ * Token exchange — working path:
+ *   POST ${apiBase}/authorization/oauth2/token
  */
 export async function exchangeAuthCode(env, code) {
   const body = new URLSearchParams({
@@ -108,9 +108,13 @@ export async function exchangeAuthCode(env, code) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, token_type, expires_in }
+  return js;
 }
 
+/**
+ * Token refresh — working path:
+ *   POST ${apiBase}/authorization/oauth2/token
+ */
 export async function refreshAccessToken(env, refreshToken) {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -131,7 +135,7 @@ export async function refreshAccessToken(env, refreshToken) {
     err.body = js;
     throw err;
   }
-  return js; // { access_token, refresh_token?, expires_in, token_type }
+  return js;
 }
 
 /* ------------------------------------------------------------------ */
@@ -186,7 +190,7 @@ export async function listRooms(env, token, workspaceId) {
   return fetchJSON(`${apiBase(env)}/workspaces/${workspaceId}/rooms`, withBearer(token));
 }
 
-// We DO NOT create rooms here; reuse an existing room by heuristics.
+// Reuse an existing room by heuristics (we do not create rooms any more)
 export async function ensureUserRoom(env, token, workspaceId, username = "Private") {
   const rooms = await listRooms(env, token, workspaceId).catch(() => ({ items: [], value: [] }));
   const list = Array.isArray(rooms?.items) ? rooms.items :
@@ -230,23 +234,19 @@ export async function ensureProjectFolder(env, token, roomId, projectName) {
 }
 
 /**
- * Create mural (new API allows POST /murals with { title, roomId, folderId })
- * Some tenants still expect POST /rooms/:roomId/murals — we try new first, then legacy.
- * IMPORTANT: do NOT include backgroundColor to avoid 400s.
+ * Create mural (try new endpoint first; fall back to legacy).
+ * IMPORTANT: no backgroundColor field (some tenants reject it).
  */
 export async function createMural(env, token, { title, roomId, folderId }) {
-  // New endpoint
   try {
     return await fetchJSON(`${apiBase(env)}/murals`, {
       method: "POST",
       ...withBearer(token),
-      body: JSON.stringify({ title, roomId, ...(folderId ? { folderId } : {}) })
+      body: JSON.stringify({ title, roomId, folderId })
     });
   } catch (e) {
     if (Number(e?.status) !== 404) throw e;
   }
-
-  // Legacy fallback
   return fetchJSON(`${apiBase(env)}/rooms/${roomId}/murals`, {
     method: "POST",
     ...withBearer(token),
@@ -279,7 +279,6 @@ export async function getMuralLinks(env, token, muralId) {
 }
 
 export async function createViewerLink(env, token, muralId) {
-  // Try to POST a viewer/open link; tolerate shapes
   try {
     const js = await fetchJSON(`${apiBase(env)}/murals/${muralId}/links`, {
       method: "POST",
@@ -295,7 +294,7 @@ export async function createViewerLink(env, token, muralId) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Widgets + Tags (robust wrappers; tolerate API variance)            */
+/* Widgets + Tags                                                     */
 /* ------------------------------------------------------------------ */
 
 export async function getWidgets(env, token, muralId) {
