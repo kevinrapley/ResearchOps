@@ -53,9 +53,25 @@ const _memCache = new Map(); // key: `${projectId}·${uid||""}·${purpose}` → 
 
 /* ───────────────────────── Airtable helpers ───────────────────────── */
 
+function _resolveAirtableToken(env) {
+  const token = env.AIRTABLE_API_KEY || env.AIRTABLE_PAT;
+  if (!token) {
+    throw new Error("airtable_token_missing");
+  }
+  return token;
+}
+
+function _resolveAirtableBase(env) {
+  const base = env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE;
+  if (!base) {
+    throw new Error("airtable_base_missing");
+  }
+  return base;
+}
+
 function _airtableHeaders(env) {
   return {
-    Authorization: `Bearer ${env.AIRTABLE_API_KEY}`,
+    Authorization: `Bearer ${_resolveAirtableToken(env)}`,
     "Content-Type": "application/json"
   };
 }
@@ -68,7 +84,7 @@ function _boardsTableName(env) {
 }
 
 function _encodeTableUrl(env, tableName) {
-  return `https://api.airtable.com/v0/${encodeURIComponent(env.AIRTABLE_BASE_ID)}/${encodeURIComponent(tableName)}`;
+  return `https://api.airtable.com/v0/${encodeURIComponent(_resolveAirtableBase(env))}/${encodeURIComponent(tableName)}`;
 }
 
 /** Escape double quotes for filterByFormula string literals */
