@@ -1,0 +1,469 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<instructionSet xmlns="urn:uk-gov:custom-instructions:security" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" name="start-sec" date="2025-11-03">
+	<!-- Purpose: Build secure, privacy-preserving software with auditable controls. -->
+
+	<system-context>
+		<persona id="security-architect" role="Security  Privacy by Design">
+			Leads threat modelling, data protection, and assurance.
+		</persona>
+		<audience>Engineers, product, researchers, platform and governance.</audience>
+		<alignment>
+			GOV.UK Service Manual (Security  Data Protection);
+			UK GDPR  DPA 2018;
+			NCSC Cloud Security Principles;
+			OWASP ASVS/Top 10;
+			ISO/IEC 27001  42001 (AI).
+		</alignment>
+	</system-context>
+
+	<principles>
+		<principle>Least privilege by default.</principle>
+		<principle>Minimise data; minimise retention.</principle>
+		<principle>Defence in depth; verify explicitly (zero trust).</principle>
+		<principle>All changes are reviewed, tested, and logged.</principle>
+		<principle>Security controls are code, versioned, and repeatable.</principle>
+		<principle>Plain English. Explain decisions and risks.</principle>
+	</principles>
+
+	<controls>
+		<authentication>
+            <pattern>Prefer enterprise IdP (OIDC/OAuth2) or Cloudflare Access for staff apps.</pattern>
+            <mfa>MFA enforced for privileged roles.</mfa>
+            <secrets>No secrets in repos. Use managed secret stores.</secrets>
+		</authentication>
+
+		<authorisation>
+			<model>Role- and attribute-based; deny by default.</model>
+			<policy>Access decisions logged; include subject, action, resource, decision.</policy>
+		</authorisation>
+
+		<session>
+			<cookie>HttpOnly; Secure; SameSite=Lax or Strict. Short expiry.</cookie>
+			<jwt>Short-lived access tokens; rotate refresh; validate audience/issuer.</jwt>
+		</session>
+
+		<data-protection>
+			<classification>Classify data (Public, Official, Sensitive). Tag flows.</classification>
+			<retention>Define TTLs. Automate deletion. Evidence purge on request.</retention>
+			<encryption>TLS 1.2+ in transit. Strong encryption at rest with managed keys.</encryption>
+			<masking>Mask in logs and UIs; show only what is needed.</masking>
+		</data-protection>
+
+		<input-validation>
+			<pattern>Allow-list where possible; otherwise strict schemas (JSON Schema).</pattern>
+			<output-encoding>HTML escape; set content-type correctly.</output-encoding>
+		</input-validation>
+
+		<application-security>
+			<headers>Enable HSTS, CSP, X-Frame-Options, X-Content-Type-Options, COOP/CORP.</headers>
+			<csrf>Use same-site cookies, double-submit or token for state-changing requests.</csrf>
+			<rate-limiting>Apply per-IP and per-identity limits; burst+steady.</rate-limiting>
+			<dependencies>Automated updates; SBOM; signed provenance.</dependencies>
+		</application-security>
+
+		<privacy>
+			<lawful-basis>Record lawful basis per purpose. Avoid special category data.</lawful-basis>
+			<consent>Collect explicit consent where required; store evidence.</consent>
+			<transparency>Publish plain-English notices and DPIAs.</transparency>
+			<rights>Enable access/erasure/export with verification and audit.</rights>
+		</privacy>
+
+		<observability>
+			<logging>Structured logs; no credentials; rotate and restrict access.</logging>
+			<audit>Immutable audit trail for privileged actions.</audit>
+			<alerting>Actionable alerts only. Runbooks linked.</alerting>
+		</observability>
+
+		<threat-modelling>
+			<method>Run STRIDE or equivalent per feature. Track mitigations.</method>
+			<review>Revisit after material change or incident.</review>
+		</threat-modelling>
+	</controls>
+
+	<governance>
+		<assurance>
+			<testing>SAST, DAST, dependency, secrets, and container/IaC scans in CI.</testing>
+			<pen-test>Independent test before Live and after major changes.</pen-test>
+			<change>Security sign-off for high-risk releases.</change>
+		</assurance>
+
+		<incident-response>
+			<runbooks>Incident playbooks with comms templates.</runbooks>
+			<raci>Named roles. 24/7 contact path if required.</raci>
+			<postmortem>Blameless review within 48 hours. Actions tracked.</postmortem>
+		</incident-response>
+
+		<documentation>
+			<adr>Security ADRs for key decisions (crypto, auth, data flows).</adr>
+			<registers>Risk, asset, and data processing registers kept current.</registers>
+		</documentation>
+	</governance>
+
+	<exit-criteria>
+		<condition>Threat model complete with mapped controls.</condition>
+		<condition>Security tests pass; critical issues closed or risk-accepted.</condition>
+		<condition>Privacy notices and retention policies live.</condition>
+		<condition>Incident runbook tested. On-call rota defined.</condition>
+	</exit-criteria>
+
+	<presets>
+		<preset id="mvh" name="Minimum Viable Hardening">
+			<includes>
+				<header>CSP + HSTS + Referrer-Policy</header>
+				<auth>OIDC with short-lived tokens</auth>
+				<rate>Token-bucket limiter (10 rps / 100 burst)</rate>
+				<logging>Structured logs with redaction</logging>
+				<deps>Dependabot + SBOM + Gitleaks</deps>
+				<dast>ZAP baseline on staging</dast>
+			</includes>
+		</preset>
+	</presets>
+
+	<examples>
+		<!-- ───────── Headers & CSP (tight defaults + nonce path) ───────── -->
+		<security-headers language="javascript" runtime="workers" name="src/middleware/security.js">
+			<![CDATA[
+export function withSecurity(handler) {
+	return async (req, env, ctx) => {
+		const res = await handler(req, env, ctx);
+		const h = new Headers(res.headers);
+
+		h.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+		h.set('X-Content-Type-Options', 'nosniff');
+		h.set('X-Frame-Options', 'DENY');
+		h.set('Referrer-Policy', 'no-referrer');
+		h.set('Permissions-Policy', "camera=(), microphone=(), geolocation=()");
+		h.set('Cross-Origin-Opener-Policy', 'same-origin');
+		h.set('Cross-Origin-Resource-Policy', 'same-site');
+
+		// Minimal CSP. Prefer nonce route below when templating HTML.
+		h.set('Content-Security-Policy',
+			"default-src 'none'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+		return new Response(res.body, { status: res.status, headers: h });
+	};
+}
+			]]>
+		</security-headers>
+
+		<csp-nonce language="javascript" runtime="workers" name="src/middleware/csp-nonce.js">
+			<![CDATA[
+export function withCspNonce(handler) {
+	return async (req, env, ctx) => {
+		const nonce = crypto.randomUUID().replace(/-/g,'');
+		const res = await handler(req, env, ctx, { nonce });
+		const h = new Headers(res.headers);
+		const csp = [
+			"default-src 'none'",
+			"img-src 'self' data:",
+			"style-src 'self'",
+			`script-src 'self' 'nonce-${nonce}'`,
+			"connect-src 'self'",
+			"frame-ancestors 'none'",
+			"base-uri 'none'",
+			"form-action 'self'"
+		].join('; ');
+		h.set('Content-Security-Policy', csp);
+		return new Response(res.body, { status: res.status, headers: h });
+	};
+}
+			]]>
+		</csp-nonce>
+
+		<!-- ───────── OAuth2/OIDC Access Token verification (JWKs) ───────── -->
+		<oidc-verify language="javascript" runtime="workers" name="src/middleware/oidcVerify.js">
+			<![CDATA[
+const ISSUER = 'https://your-idp.example.com';
+const JWKS = `${ISSUER}/.well-known/jwks.json`;
+let jwksCache;
+
+function b64u(b){const p='='.repeat((4-b.length%4)%4);return (b+p).replace(/-/g,'+').replace(/_/g,'/');}
+function u8(b){return Uint8Array.from(atob(b),c=>c.charCodeAt(0));}
+
+async function getJwks(){
+	if(!jwksCache){ jwksCache = await (await fetch(JWKS, { cf: { cacheTtl: 300 }})).json(); }
+	return jwksCache;
+}
+
+async function verify(jwt, expectedAud){
+	const [h,p,s]=jwt.split('.');
+	const hdr=JSON.parse(new TextDecoder().decode(u8(b64u(h))));
+	const pay=JSON.parse(new TextDecoder().decode(u8(b64u(p))));
+	const sig=u8(b64u(s));
+	const jwks=await getJwks();
+	const k=jwks.keys.find(k=>k.kid===hdr.kid);
+	if(!k) throw new Error('Unknown key id');
+	const key=await crypto.subtle.importKey('jwk',k,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
+	const ok=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,sig,new TextEncoder().encode(`${h}.${p}`));
+	if(!ok) throw new Error('Bad signature');
+	if(pay.iss!==ISSUER) throw new Error('Bad issuer');
+	if(expectedAud && pay.aud!==expectedAud) throw new Error('Bad audience');
+	if(pay.exp && Date.now()/1000 > pay.exp) throw new Error('Expired');
+	return pay;
+}
+
+export function withOIDC(handler, { audience } = {}) {
+	return async (req, env, ctx) => {
+		const auth = req.headers.get('authorization') || '';
+		const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+		if(!token) return new Response('Unauthorized', { status: 401 });
+		try {
+			req.user = await verify(token, audience);
+			return handler(req, env, ctx);
+		} catch(e) {
+			return new Response('Forbidden', { status: 403 });
+		}
+	};
+}
+			]]>
+		</oidc-verify>
+
+		<!-- ───────── ABAC/RBAC decision with OPA-style policy (in-proc) ───────── -->
+		<authz-policy language="javascript" runtime="workers" name="src/authz/policy.js">
+			<![CDATA[
+export function isAllowed({ user, action, resource }) {
+	// Example: admins full access; analysts read-only; others deny.
+	if (user?.roles?.includes('admin')) return true;
+	if (user?.roles?.includes('analyst') && action === 'read') return true;
+	return false;
+}
+			]]>
+		</authz-policy>
+
+		<authz-middleware language="javascript" runtime="workers" name="src/middleware/authorize.js">
+			<![CDATA[
+import { isAllowed } from '../authz/policy.js';
+
+export function authorize(handler, action, resourceFn) {
+	return async (req, env, ctx) => {
+		const resource = typeof resourceFn === 'function' ? resourceFn(req) : resourceFn;
+		const ok = isAllowed({ user: req.user, action, resource });
+		if (!ok) return new Response('Forbidden', { status: 403 });
+		return handler(req, env, ctx);
+	};
+}
+			]]>
+		</authz-middleware>
+
+		<!-- ───────── Token-bucket rate limiter (KV) ───────── -->
+		<rate-limiter language="javascript" runtime="workers" name="src/middleware/rateLimit.js">
+			<![CDATA[
+const WINDOW = 10000; // 10s
+const BURST = 100;    // burst
+const RATE  = 10;     // steady (tokens per second)
+
+export function withRateLimit(handler) {
+	return async (req, env, ctx) => {
+		const ip = req.headers.get('cf-connecting-ip') || 'anon';
+		const key = `rl:${ip}`;
+		const now = Date.now();
+		const rec = JSON.parse((await env.KV.get(key)) || '{"t":0,"tok":100}');
+		const elapsed = Math.max(0, now - rec.t);
+		const replenished = Math.min(BURST, rec.tok + Math.floor((elapsed/1000)*RATE));
+		if (replenished <= 0) return new Response('Too Many Requests', { status: 429 });
+		await env.KV.put(key, JSON.stringify({ t: now, tok: replenished - 1 }), { expirationTtl: 60 });
+		return handler(req, env, ctx);
+	};
+}
+			]]>
+		</rate-limiter>
+
+		<!-- ───────── JSON Schema validation for inputs (allow-list) ───────── -->
+		<schema-validate language="javascript" runtime="workers" name="src/middleware/schema.js">
+			<![CDATA[
+import { validate } from '../vendor/jsonschema-lite.js'; // simple embedded validator
+
+export function withSchema(schema, handler) {
+	return async (req, env, ctx) => {
+		const body = await req.json().catch(() => ({}));
+		const { valid, errors } = validate(body, schema);
+		if (!valid) return new Response(JSON.stringify({ error: 'invalid', details: errors }), { status: 400 });
+		req.body = body;
+		return handler(req, env, ctx);
+	};
+}
+			]]>
+		</schema-validate>
+
+		<example-schema language="json" name="schemas/project.create.json">
+			<![CDATA[
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["name"],
+	"properties": {
+		"name": { "type": "string", "maxLength": 120 },
+		"ownerEmail": { "type": "string", "format": "email" },
+		"tags": { "type": "array", "items": { "type": "string", "maxLength": 24 }, "maxItems": 10 }
+	}
+}
+			]]>
+		</example-schema>
+
+		<!-- ───────── Structured logging with redaction (allow-list) ───────── -->
+		<logging language="javascript" runtime="workers" name="src/lib/log.js">
+			<![CDATA[
+const ALLOW = new Set(['path','status','ms','requestId','env','actor','action','resource']);
+export function log(level, msg, ctx = {}) {
+	const base = { ts: new Date().toISOString(), level, msg };
+	const safe = Object.fromEntries(Object.entries(ctx).filter(([k]) => ALLOW.has(k)));
+	console.log(JSON.stringify({ ...base, ...safe }));
+}
+			]]>
+		</logging>
+
+		<!-- ───────── Data retention (KV TTL) and purge helper ───────── -->
+		<retention language="javascript" runtime="workers" name="src/lib/retention.js">
+			<![CDATA[
+export function ttl(days) { return days * 24 * 60 * 60; } // seconds
+export async function putWithTTL(env, key, value, days) {
+	return env.KV.put(key, JSON.stringify(value), { expirationTtl: ttl(days) });
+}
+			]]>
+		</retention>
+
+		<!-- ───────── Subject Access Request (SAR) endpoint stub ───────── -->
+		<sar-endpoint language="javascript" runtime="workers" name="src/routes/sar.js">
+			<![CDATA[
+import { log } from '../lib/log.js';
+
+export async function sar(request, env) {
+	// Verify identity via IdP-asserted email. Avoid collecting extra PII here.
+	const email = request.user?.email;
+	if (!email) return new Response('Unauthorized', { status: 401 });
+
+	// Retrieve only subject-owned records. Return in portable JSON.
+	const data = []; // populate from D1/KV by subject key
+	log('info', 'sar_export', { actor: email, action: 'export', resource: 'subject-data' });
+
+	return new Response(JSON.stringify({ email, records: data }), { headers: { 'content-type': 'application/json' } });
+}
+			]]>
+		</sar-endpoint>
+
+		<!-- ───────── GitHub Actions: SAST/DAST/Secrets/SBOM/Provenance ───────── -->
+		<security-ci language="yaml" tool="github-actions" name=".github/workflows/security.yml">
+			<![CDATA[
+name: Security
+on: [push, pull_request]
+jobs:
+	checks:
+		runs-on: ubuntu-latest
+		permissions:
+			contents: read
+			security-events: write
+			id-token: write
+		steps:
+			- uses: actions/checkout@v4
+			- uses: actions/setup-node@v4
+				with: { node-version: '20', cache: 'npm' }
+			- run: npm ci
+
+			- name: CodeQL init
+				uses: github/codeql-action/init@v3
+				with: { languages: javascript }
+			- name: CodeQL analyze
+				uses: github/codeql-action/analyze@v3
+
+			- name: Gitleaks
+				uses: gitleaks/gitleaks-action@v2
+				with: { args: "--redact" }
+
+			- name: Generate SBOM
+				uses: anchore/sbom-action@v0
+				with: { path: ".", format: "spdx-json", output-file: "sbom.spdx.json" }
+
+			- name: OWASP ZAP Baseline (staging)
+				uses: zaproxy/action-baseline@v0.12.0
+				with:
+					target: "https://staging.example.gov.uk"
+					rules_file_name: ".zap/rules.tsv"
+
+			- name: Upload artifacts
+				uses: actions/upload-artifact@v4
+				with: { name: security-artifacts, path: sbom.spdx.json }
+			]]>
+		</security-ci>
+
+		<!-- ───────── Cloudflare WAF example (Terraform) ───────── -->
+		<waf-terraform language="hcl" tool="terraform" name="infra/waf.tf">
+			<![CDATA[
+resource "cloudflare_ruleset" "waf" {
+	account_id = var.cf_account_id
+	name       = "researchops-waf"
+	kind       = "root"
+	phase      = "http_request_firewall_custom"
+
+	rules {
+		action = "block"
+		expression = "(http.request.uri.path contains \"/admin\" and ip.src ne 203.0.113.0/24)"
+		description = "Block admin except office IP"
+		enabled = true
+	}
+}
+			]]>
+		</waf-terraform>
+
+		<!-- ───────── Wiring example: combine security layers in router ───────── -->
+		<router-wiring language="javascript" runtime="workers" name="src/worker.js:security">
+			<![CDATA[
+import { withSecurity } from './middleware/security.js';
+import { withCspNonce } from './middleware/csp-nonce.js';
+import { withOIDC } from './middleware/oidcVerify.js';
+import { authorize } from './middleware/authorize.js';
+import { withRateLimit } from './middleware/rateLimit.js';
+import { sar } from './routes/sar.js';
+
+async function router(req, env, ctx) {
+	const url = new URL(req.url);
+	if (url.pathname === '/api/sar') {
+		const handler = authorize(sar, 'export', () => 'subject-data');
+		return handler(req, env, ctx);
+	}
+	return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json' } });
+}
+
+const secured = withRateLimit(withSecurity(withCspNonce(withOIDC(router, { audience: 'researchops-api' }))));
+export default { fetch: (req, env, ctx) => secured(req, env, ctx) };
+			]]>
+		</router-wiring>
+
+		<!-- ───────── DPIA + Threat Model templates (Markdown) ───────── -->
+		<dpia-template language="markdown" name="docs/dpia.md">
+			<![CDATA[
+# DPIA – <Service/Feature>
+## Summary
+- Purpose & lawful basis:
+- Data categories (avoid special category wherever possible):
+- Retention & deletion:
+- Processors & locations:
+## Risks & Mitigations
+| Risk | Likelihood | Impact | Mitigation | Residual |
+|------|------------|--------|------------|----------|
+## Consultations
+- DPO / Security Architect / SMEs
+## Decision
+- Go / No-Go with conditions
+			]]>
+		</dpia-template>
+
+		<threat-model-template language="markdown" name="docs/threat-model.md">
+			<![CDATA[
+# Threat Model – <Feature>
+## Context
+- Assets, actors, trust boundaries, data flows
+## STRIDE
+- Spoofing:
+- Tampering:
+- Repudiation:
+- Information Disclosure:
+- Denial of Service:
+- Elevation of Privilege:
+## Controls Mapping
+- Control → Evidence (tests, config, code)
+## Review
+- Date, participants, changes since last review
+			]]>
+		</threat-model-template>
+	</examples>
+</instructionSet>
