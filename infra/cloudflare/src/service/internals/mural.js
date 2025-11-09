@@ -182,8 +182,18 @@ async function _airtableCreateBoard(env, { projectId, uid, purpose, muralId, boa
 function _looksLikeMuralViewerUrl(u) {
   try {
     const x = new URL(u);
-    return x.hostname === "app.mural.co" && /^\/t\/[^/]+\/m\/[^/]+/i.test(x.pathname);
-  } catch { return false; }
+    if (x.hostname !== "app.mural.co") return false;
+
+    const path = x.pathname || "";
+    if (/^\/t\/[^/]+\/m\/[^/]+/i.test(path)) return true;
+    if (/^\/invitation\/mural\/[a-z0-9.-]+/i.test(path)) return true;
+    if (/^\/viewer\//i.test(path)) return true;
+    if (/^\/share\/[^/]+\/mural\/[a-z0-9.-]+/i.test(path)) return true;
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function _extractViewerUrl(payload) {
