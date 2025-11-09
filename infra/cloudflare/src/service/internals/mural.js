@@ -236,10 +236,18 @@ async function _airtableCreateBoard(env, {
   };
   if (sanitizedWorkspaceId) baseFields["Workspace ID"] = sanitizedWorkspaceId;
 
+  /**
+   * @typedef {Object} AirtableAttempt
+   * @property {"linked_record"|"project_ref"|"bare"} mode
+   * @property {{ records: Array<{ fields: Object }> }} body
+   */
+
+  /** @type {AirtableAttempt[]} */
   const attempts = [];
 
   if (linkRecordId) {
     attempts.push({
+      mode: "linked_record",
       body: {
         records: [{
           fields: {
@@ -253,6 +261,7 @@ async function _airtableCreateBoard(env, {
 
   if (safeProjectRef) {
     attempts.push({
+      mode: "project_ref",
       body: {
         records: [{
           fields: {
@@ -264,17 +273,33 @@ async function _airtableCreateBoard(env, {
     });
   }
 
+  const fallback = { mode: "bare", body: { records: [{ fields: baseFields }] } };
   if (!attempts.length) {
-    attempts.push({ body: { records: [{ fields: baseFields }] } });
+    attempts.push(fallback);
+  } else {
+    const seenBodies = new Set(attempts.map(att => JSON.stringify(att.body)));
+    const fallbackKey = JSON.stringify(fallback.body);
+    if (!seenBodies.has(fallbackKey)) {
+      attempts.push(fallback);
+    }
   }
 
   let lastRes = null;
   let lastJs = null;
+  const attempted = [];
 
   for (const attempt of attempts) {
     const res = await fetch(url, { method: "POST", headers: _airtableHeaders(env), body: JSON.stringify(attempt.body) });
     const js = await res.json().catch(() => ({}));
-    if (res.ok) return js;
+    attempted.push({ mode: attempt.mode, status: res.status, ok: res.ok });
+    if (res.ok) {
+      return {
+        ...js,
+        ok: true,
+        attemptMode: attempt.mode,
+        attempts: attempted
+      };
+    }
 
     lastRes = res;
     lastJs = js;
@@ -285,8 +310,9 @@ async function _airtableCreateBoard(env, {
       throw Object.assign(new Error("airtable_create_failed"), { status: res.status, body: js });
     }
   }
-
-  throw Object.assign(new Error("airtable_create_failed"), { status: lastRes?.status || 422, body: lastJs });
+  const error = Object.assign(new Error("airtable_create_failed"), { status: lastRes?.status || 422, body: lastJs });
+  if (attempted.length) error.attempts = attempted;
+  throw error;
 }
 
 async function _airtableUpdateBoard(env, recordId, fields) {
@@ -818,7 +844,7 @@ export class MuralServicePart {
       if (normalizedWorkspaceId) updateFields["Workspace ID"] = normalizedWorkspaceId;
       await _airtableUpdateBoard(this.root.env, existing.id, updateFields);
     } else {
-      await _airtableCreateBoard(this.root.env, {
+      const creation = await _airtableCreateBoard(this.root.env, {
         projectRecordId,
         projectRef: safeProjectId,
         uid: safeUid,
@@ -829,6 +855,27 @@ export class MuralServicePart {
         primary,
         active: true
       });
+
+      const logger = this.root?.log;
+      if (logger?.info) {
+        const recordId = creation?.records?.[0]?.id || null;
+        logger.info("mural.airtable_board_created", {
+          projectId: safeProjectId,
+          projectRecordId: projectRecordId || null,
+          uid: safeUid,
+          purpose: safePurpose,
+          muralId: safeMuralId,
+          boardUrl: normalizedBoardUrl,
+          workspaceId: normalizedWorkspaceId,
+          primary: !!primary,
+          attemptMode: creation?.attemptMode || null,
+          attempts: creation?.attempts || null,
+          airtableRecordId: recordId
+        });
+        if (typeof logger.flush === "function") {
+          logger.flush();
+        }
+      }
     }
 
     const cacheKey = `${safeProjectId}·${safeUid}·${safePurpose}`;
