@@ -232,3 +232,50 @@ export async function tryWrite(env, tableName, method, fields, timeoutMs = DEFAU
 	const url = makeTableUrl(env, tableName);
 	return airtableTryWrite(url, env.AIRTABLE_API_KEY, method, fields, timeoutMs);
 }
+
+/**
+ * Find a Project record by *Name* (case-insensitive exact match).
+ * Looks in common name fields: {Name}, {Project Name}, {Title}.
+ *
+ * @async
+ * @param {import("../index.js").Env} env
+ * @param {string} projectName
+ * @returns {Promise<{id:string, name:string} | null>}
+ * @throws {Error} when Airtable errors (non-2xx)
+ */
+export async function findProjectRecordIdByName(env, projectName) {
+	const name = String(projectName || "").trim();
+	if (!name) return null;
+
+	const baseUrl = makeTableUrl(env, (env.AIRTABLE_TABLE_PROJECTS || "Projects").trim());
+	const headers = { Authorization: `Bearer ${env.AIRTABLE_API_KEY}` };
+
+	// Escape double quotes for filterByFormula
+	const esc = (s) => String(s).replace(/"/g, '\\"');
+	const q = esc(name);
+
+	// Case-insensitive exact match across common fields
+	const or = [
+		`LOWER({Name}) = LOWER("${q}")`,
+		`LOWER({Project Name}) = LOWER("${q}")`,
+		`LOWER({Title}) = LOWER("${q}")`
+	].join(",");
+
+	const url = new URL(baseUrl);
+	url.searchParams.set("maxRecords", "1");
+	url.searchParams.set("filterByFormula", `OR(${or})`);
+	url.searchParams.append("fields[]", "Name");
+
+	const res = await fetch(url.toString(), { headers });
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		const err = new Error(`Airtable ${res.status}: project lookup failed`);
+		err.status = res.status;
+		err.body = js;
+		throw err;
+	}
+
+	const rec = Array.isArray(js.records) ? js.records[0] : null;
+	if (!rec) return null;
+	return { id: rec.id, name: rec.fields?.Name || name };
+}
