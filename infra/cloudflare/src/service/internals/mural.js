@@ -1080,9 +1080,26 @@ export class MuralServicePart {
 			}, 200, cors);
 
 		} catch (err) {
-			const status = Number(err?.status || 0) || 500;
+			const status = Number(err?.status) || 500;
 			const detail = String(err?.message || err || "verify_failed");
 			return this.root.json({ ok: false, error: "verify_failed", detail }, status, cors);
+		}
+	}
+
+	/** GET /api/projects/lookup-by-name?name=...  → { ok:true, id, name } | 404 */
+	async projectLookupByName(origin, url) {
+		const cors = this.root.corsHeaders(origin);
+		const name = (url.searchParams.get("name") || "").trim();
+		if (!name) return this.root.json({ ok: false, error: "missing_name" }, 400, cors);
+
+		try {
+			const { findProjectRecordIdByName } = await import("../internals/airtable.js");
+			const hit = await findProjectRecordIdByName(this.root.env, name);
+			if (!hit) return this.root.json({ ok: false, error: "not_found" }, 404, cors);
+			return this.root.json({ ok: true, id: hit.id, name: hit.name }, 200, cors);
+		} catch (err) {
+			const status = Number(err?.status) || 500;
+			return this.root.json({ ok: false, error: "lookup_failed", detail: String(err?.message || err) }, status, cors);
 		}
 	}
 
