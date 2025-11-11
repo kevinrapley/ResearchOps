@@ -43,8 +43,6 @@ import {
 	makeTableUrl,
 	authHeaders,
 	listAll,
-	createRecords,
-	patchRecords,
 	findProjectRecordIdByName
 } from "./airtable.js";
 
@@ -68,9 +66,7 @@ function _wantDebugFromUrl(urlLike) {
 		return (u.searchParams.get("debug") || "").toLowerCase() === "true";
 	} catch { return false; }
 }
-
 function _withDebugCtx(root, dbg) { return Object.assign({}, root, { __dbg: !!dbg }); }
-
 function _log(root, level, event, data) {
 	const dbg = !!root?.__dbg;
 	const isLow = (level === "debug" || level === "info");
@@ -79,10 +75,8 @@ function _log(root, level, event, data) {
 		if (root?.log?.[level]) {
 			root.log[level](event, data);
 			if (typeof root.log.flush === "function" && level !== "debug") root.log.flush();
-		} else if (level === "error") {
-			console.error(`[${event}]`, data);
-		} else if (level === "warn") {
-			console.warn(`[${event}]`, data);
+		} else if (level === "error") { console.error(`[${event}]`, data);
+		} else if (level === "warn") { console.warn(`[${event}]`, data);
 		} else { console.log(`[${event}]`, data); }
 	} catch {}
 }
@@ -93,14 +87,11 @@ function _boardsTableName(env) {
 	const override = typeof env.AIRTABLE_TABLE_MURAL_BOARDS === "string" ? env.AIRTABLE_TABLE_MURAL_BOARDS.trim() : "";
 	return override || "Mural Boards";
 }
-
 function _projectsTableName(env) {
 	const override = typeof env.AIRTABLE_TABLE_PROJECTS === "string" ? env.AIRTABLE_TABLE_PROJECTS.trim() : "";
 	return override || "Projects";
 }
-
 function _esc(v) { return String(v ?? "").replace(/"/g, '\\"'); }
-
 function _looksLikeAirtableId(v) { return typeof v === "string" && /^rec[a-z0-9]{14}$/i.test(v.trim()); }
 
 async function _lookupProjectRecordId(env, { projectId, projectName }, logCtx = null) {
@@ -177,7 +168,8 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	const pidRaw = String(projectId).trim();
 	let pidRec = _looksLikeAirtableId(pidRaw) ? pidRaw : null;
 	if (!pidRec) {
-		try { pidRec = await _lookupProjectRecordId(env, { projectId: pidRaw, projectName: null }, logCtx); } catch {}
+		try { pidRec = await _lookupProjectRecordId(env, { projectId: pidRaw, projectName: null }, logCtx); }
+		catch {}
 	}
 
 	return (records || []).filter(r => {
@@ -195,20 +187,28 @@ async function _airtableListBoards(env, { projectId, uid, purpose, active = true
 	});
 }
 
+/**
+ * We bypass the generic helpers here to guarantee `typecast: true` is sent,
+ * and to log Airtable’s raw response on failure. We also try both payload
+ * shapes for linked records: [{id:"rec..."}] then ["rec..."].
+ */
 async function _airtableCreateBoard(env, fieldsBundle, logCtx = null) {
 	const {
 		projectRecordId = null,
-			projectRef = "",
-			uid,
-			purpose,
-			muralId,
-			boardUrl = null,
-			workspaceId = null,
-			primary = false,
-			active = true
+		projectRef = "",
+		uid,
+		purpose,
+		muralId,
+		boardUrl = null,
+		workspaceId = null,
+		primary = false,
+		active = true
 	} = fieldsBundle;
 
 	const tbl = _boardsTableName(env);
+	const url = makeTableUrl(env, tbl);
+	const headers = authHeaders(env);
+
 	const baseFields = {
 		UID: String(uid ?? ""),
 		Purpose: String(purpose ?? ""),
@@ -219,40 +219,88 @@ async function _airtableCreateBoard(env, fieldsBundle, logCtx = null) {
 	if (typeof boardUrl === "string" && boardUrl.trim()) baseFields["Board URL"] = boardUrl.trim();
 	if (typeof workspaceId === "string" && workspaceId.trim()) baseFields["Workspace ID"] = workspaceId.trim();
 
-	/** Attempt 1: Linked record object shape */
+	/** attempt order */
+	const attempts = [];
+
 	if (projectRecordId) {
-		const fields = { ...baseFields, Project: [{ id: String(projectRecordId) }] };
-		try {
-			_log(logCtx, "info", "airtable.boards.create.attempt", { mode: "linked_record", fieldsPreview: Object.keys(fields) });
-			return await createRecords(env, tbl, [{ fields }]);
-		} catch (e) {
-			_log(logCtx, "warn", "airtable.boards.create.fail", { mode: "linked_record", status: e?.status || null, message: e?.message || String(e) });
-		}
+		attempts.push({
+			mode: "linked_record_objects",
+			body: { typecast: true, records: [{ fields: { ...baseFields, Project: [{ id: String(projectRecordId) }] } }] }
+		});
+		attempts.push({
+			mode: "linked_record_strings",
+			body: { typecast: true, records: [{ fields: { ...baseFields, Project: [String(projectRecordId)] } }] }
+		});
 	}
 
-	/** Attempt 2: Raw ref into text field (if Project is not a link) */
 	if (projectRef) {
-		const fields = { ...baseFields, Project: String(projectRef) };
+		attempts.push({
+			mode: "project_ref_text",
+			body: { typecast: true, records: [{ fields: { ...baseFields, Project: String(projectRef) } }] }
+		});
+	}
+
+	// Always include a bare attempt
+	attempts.push({
+		mode: "bare",
+		body: { typecast: true, records: [{ fields: baseFields }] }
+	});
+
+	let lastStatus = 0;
+	let lastTxt = "";
+
+	for (const a of attempts) {
 		try {
-			_log(logCtx, "info", "airtable.boards.create.attempt", { mode: "project_ref", fieldsPreview: Object.keys(fields) });
-			return await createRecords(env, tbl, [{ fields }]);
+			_log(logCtx, "info", "airtable.boards.create.request", {
+				mode: a.mode,
+				table: tbl,
+				payloadPreview: JSON.stringify(a.body).slice(0, 400)
+			});
+			const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(a.body) });
+			const txt = await res.text().catch(() => "");
+			_log(logCtx, res.ok ? "info" : "warn", "airtable.boards.create.response", {
+				mode: a.mode,
+				status: res.status,
+				ok: res.ok,
+				bodyPreview: txt.slice(0, 800)
+			});
+			if (res.ok) { try { return JSON.parse(txt); } catch { return { records: [] }; } }
+			lastStatus = res.status;
+			lastTxt = txt;
 		} catch (e) {
-			_log(logCtx, "warn", "airtable.boards.create.fail", { mode: "project_ref", status: e?.status || null, message: e?.message || String(e) });
+			lastStatus = Number(e?.status || 0) || 0;
+			lastTxt = String(e?.message || e);
+			_log(logCtx, "warn", "airtable.boards.create.threw", { mode: a.mode, message: lastTxt });
 		}
 	}
 
-	/** Attempt 3: Bare */
-	{
-		const fields = { ...baseFields };
-		_log(logCtx, "info", "airtable.boards.create.attempt", { mode: "bare", fieldsPreview: Object.keys(fields) });
-		return await createRecords(env, tbl, [{ fields }]); // allow throw to bubble
-	}
+	const err = new Error(`airtable_create_failed (${tbl})`);
+	err.status = lastStatus || 422;
+	err.body = { raw: (lastTxt || "").slice(0, 800) };
+	throw err;
 }
 
 async function _airtableUpdateBoard(env, recordId, fields, logCtx = null) {
 	const tbl = _boardsTableName(env);
-	_log(logCtx, "info", "airtable.boards.update.request", { recordId, fields });
-	return await patchRecords(env, tbl, [{ id: recordId, fields }]);
+	const url = makeTableUrl(env, tbl);
+	const headers = authHeaders(env);
+
+	const payload = { typecast: true, records: [{ id: recordId, fields }] };
+	_log(logCtx, "info", "airtable.boards.update.request", {
+		table: tbl, recordId, fieldsPreview: JSON.stringify(fields).slice(0, 400)
+	});
+	const res = await fetch(url, { method: "PATCH", headers, body: JSON.stringify(payload) });
+	const txt = await res.text().catch(() => "");
+	_log(logCtx, res.ok ? "info" : "warn", "airtable.boards.update.response", {
+		status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 800)
+	});
+	if (!res.ok) {
+		const err = new Error("airtable_update_failed");
+		err.status = res.status;
+		try { err.body = JSON.parse(txt); } catch { err.body = { raw: txt.slice(0, 800) }; }
+		throw err;
+	}
+	try { return JSON.parse(txt); } catch { return {}; }
 }
 
 /* ───────────────────────── URL helpers ───────────────────────── */
@@ -292,12 +340,9 @@ function _extractViewerUrl(payload) {
 			next.links, next.links?.viewer, next.links?.open, next.links?.share, next.links?.public
 		];
 
-		for (const c of candidates)
-			if (typeof c === "string" && _looksLikeMuralViewerUrl(c)) return c;
-		for (const c of candidates)
-			if (c && typeof c === "object") enqueue(c);
-		for (const v of Object.values(next))
-			if (!candidates.includes(v)) enqueue(v);
+		for (const c of candidates) if (typeof c === "string" && _looksLikeMuralViewerUrl(c)) return c;
+		for (const c of candidates) if (c && typeof c === "object") enqueue(c);
+		for (const v of Object.values(next)) if (!candidates.includes(v)) enqueue(v);
 	}
 	return null;
 }
@@ -379,7 +424,8 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 	const maxPages = 4;
 	for (let page = 0; page < maxPages; page += 1) {
 		let payload;
-		try { payload = await listUserWorkspaces(env, accessToken, { cursor }); } catch (err) { if (Number(err?.status || 0) === 404) break; throw err; }
+		try { payload = await listUserWorkspaces(env, accessToken, { cursor }); }
+		catch (err) { if (Number(err?.status || 0) === 404) break; throw err; }
 		const list = Array.isArray(payload?.value) ? payload.value : Array.isArray(payload?.workspaces) ? payload.workspaces : [];
 		for (const entry of list) matches.push(..._workspaceCandidateShapes(entry));
 		cursor = payload?.cursor || payload?.nextCursor || payload?.pagination?.nextCursor || payload?.pagination?.next || null;
@@ -424,7 +470,6 @@ function _workspaceSummary(raw, fallbackId = null) {
 	if (!id) return null;
 	return { id, key: val.key || val.shortId || null, name: val.name || null };
 }
-
 function _profileFromMe(me) {
 	const val = me?.value || me || {};
 	return {
@@ -441,7 +486,7 @@ function _profileFromMe(me) {
 /* ───────────────────────── Force-link helper ───────────────────────── */
 /**
  * Given a Mural ID and a project name/id, PATCH the Mural Boards row so
- * Project = [{ id: <Projects.recId> }].
+ * Project = [{ id: <Projects.recId> }]. Tries both payload shapes and logs full detail.
  */
 async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }, logCtx) {
 	if (!muralId) return { ok: false, reason: "missing_muralId" };
@@ -479,19 +524,27 @@ async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }
 	}
 
 	// PATCH "Project" linked record — try object shape then string shape
+	const patchUrl = makeTableUrl(env, tbl);
+	const headers = authHeaders(env);
+
 	const attempts = [
-		{ mode: "objects", fields: { Project: [{ id: projectRecId }] } },
-		{ mode: "strings", fields: { Project: [projectRecId] } }
+		{ mode: "objects", payload: { typecast: true, records: [{ id: boardRecId, fields: { Project: [{ id: projectRecId }] } }] } },
+		{ mode: "strings", payload: { typecast: true, records: [{ id: boardRecId, fields: { Project: [projectRecId] } }] } }
 	];
 
 	for (const a of attempts) {
 		try {
-			_log(logCtx, "info", "airtable.boards.force_link.attempt", { mode: a.mode, boardRecId, projectRecId });
-			await patchRecords(env, tbl, [{ id: boardRecId, fields: a.fields }]);
-			_log(logCtx, "info", "airtable.boards.force_link.ok", { mode: a.mode, boardRecId, projectRecId });
-			return { ok: true, mode: a.mode };
+			_log(logCtx, "info", "airtable.boards.force_link.request", {
+				mode: a.mode, boardRecId, projectRecId, payloadPreview: JSON.stringify(a.payload).slice(0, 400)
+			});
+			const res = await fetch(patchUrl, { method: "PATCH", headers, body: JSON.stringify(a.payload) });
+			const txt = await res.text().catch(() => "");
+			_log(logCtx, res.ok ? "info" : "warn", "airtable.boards.force_link.response", {
+				mode: a.mode, status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 800)
+			});
+			if (res.ok) return { ok: true, mode: a.mode, status: res.status };
 		} catch (e) {
-			_log(logCtx, "warn", "airtable.boards.force_link.fail", { mode: a.mode, status: e?.status || null, message: e?.message || String(e) });
+			_log(logCtx, "warn", "airtable.boards.force_link.threw", { mode: a.mode, message: String(e?.message || e) });
 		}
 	}
 
@@ -659,7 +712,8 @@ export class MuralServicePart {
 				try {
 					const tokenRes = await this._getValidAccessToken(uid || "anon");
 					if (tokenRes.ok) {
-						try { await getMural(this.root.env, tokenRes.token, kvMuralId); } catch (err) {
+						try { await getMural(this.root.env, tokenRes.token, kvMuralId); }
+						catch (err) {
 							const status = Number(err?.status || err?.code || 0);
 							if (status === 404 || status === 410) deleted = true;
 							else _log(logCtx, "warn", "mural.kv.resolve.probe_failed", { status, message: err?.message || null });
@@ -760,7 +814,7 @@ export class MuralServicePart {
 			if (projectRecordId) updateFields.Project = [{ id: projectRecordId }];
 
 			await _airtableUpdateBoard(this.root.env, existing.id, updateFields, logCtx);
-			_log(logCtx, "info", "mural.register.updated", { airtableRecordId: existing.id });
+			_log(logCtx, "info", "mural.register.updated", { airtableRecordId: existing.id, linkedProjectId: projectRecordId || null });
 		} else {
 			const creation = await _airtableCreateBoard(this.root.env, {
 				projectRecordId,
@@ -775,7 +829,20 @@ export class MuralServicePart {
 			}, logCtx);
 
 			const recordId = creation?.records?.[0]?.id || null;
-			_log(logCtx, "info", "mural.register.created", { airtableRecordId: recordId });
+			_log(logCtx, "info", "mural.register.created", {
+				airtableRecordId: recordId,
+				linkedProjectId: projectRecordId || null
+			});
+
+			// Safety net: if Project wasn't linked by create, force-link now
+			if (recordId && projectRecordId) {
+				try {
+					await _airtableUpdateBoard(this.root.env, recordId, { Project: [{ id: projectRecordId }] }, logCtx);
+					_log(logCtx, "info", "mural.register.created.force_link_ok", { recordId, projectRecordId });
+				} catch (e) {
+					_log(logCtx, "warn", "mural.register.created.force_link_fail", { recordId, projectRecordId, message: String(e?.message || e) });
+				}
+			}
 		}
 
 		const cacheKey = `${safeProjectId}·${safeUid}·${safePurpose}`;
@@ -1071,7 +1138,8 @@ export class MuralServicePart {
 					resolvedProjectRecordId = String(projectId).trim();
 				} else {
 					resolvedProjectRecordId = await _lookupProjectRecordId(
-						this.root.env, { projectId: projectId ? String(projectId) : null, projectName: projectName || null },
+						this.root.env,
+						{ projectId: projectId ? String(projectId) : null, projectName: projectName || null },
 						this.root
 					);
 				}
