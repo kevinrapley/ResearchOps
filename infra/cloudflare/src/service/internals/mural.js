@@ -1085,10 +1085,6 @@ export class MuralServicePart {
 
 	/** POST /api/mural/setup  body: { uid, projectId?, projectName, workspaceId? } */
 	async muralSetup(request, origin) {
-		const url = new URL(request.url);
-		const dbg = _wantDebugFromUrl(url);
-		const logCtx = _withDebugCtx(this.root, dbg);
-
 		const cors = this.root.corsHeaders(origin);
 		let step = "parse_input";
 		let uid = "anon";
@@ -1110,7 +1106,7 @@ export class MuralServicePart {
 			projectId = body?.projectId ?? null;
 			projectName = body?.projectName;
 			wsOverride = body?.workspaceId;
-			_log(logCtx, "info", "mural.setup.begin", { uid, projectId, projectName, wsOverride });
+			_log(this.root, "info", "mural.setup.begin", { uid, projectId, projectName, wsOverride });
 
 			if (!projectName || !String(projectName).trim()) {
 				return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
@@ -1143,13 +1139,15 @@ export class MuralServicePart {
 
 			step = "get_me";
 			const me = await getMe(this.root.env, accessToken).catch(() => null);
-			const profile = _profileFromMe(me);
-			const username = profile?.firstName || profile?.name || "Private";
+			const profile = {
+				id: me?.value?.id || me?.id || null,
+				email: me?.value?.email || me?.email || null
+			};
 
 			step = "ensure_room";
 			try {
 				room = await ensureUserRoom(this.root.env, accessToken, ws.id, {
-					username,
+					username: me?.value?.firstName || me?.value?.displayName || "Private",
 					userId: profile?.id,
 					userEmail: profile?.email
 				});
@@ -1164,9 +1162,9 @@ export class MuralServicePart {
 				}
 				throw e;
 			}
-			roomId = _pickId(room);
+			roomId = room?.id || room?.value?.id || room?.data?.id || null;
 			if (!roomId) {
-				_log(logCtx, "error", "mural.ensure_room.no_id", { roomPreview: typeof room === "object" ? Object.keys(room || {}) : room });
+				_log(this.root, "error", "mural.ensure_room.no_id", { roomPreview: typeof room === "object" ? Object.keys(room || {}) : room });
 				return this.root.json({
 					ok: false,
 					error: "room_id_unavailable",
@@ -1183,12 +1181,12 @@ export class MuralServicePart {
 				const code = String(err?.body?.code || err?.code || "");
 				if (status === 403) {
 					folderDenied = true;
-					_log(logCtx, "warn", "mural.ensure_folder.forbidden", { status, code, roomId, projectId: projectId || null });
+					_log(this.root, "warn", "mural.ensure_folder.forbidden", { status, code, roomId, projectId: projectId || null });
 				} else {
 					throw err;
 				}
 			}
-			folderId = _pickId(folder);
+			folderId = folder?.id || folder?.value?.id || folder?.data?.id || null;
 
 			step = "create_mural";
 			mural = await createMural(this.root.env, accessToken, {
@@ -1197,11 +1195,11 @@ export class MuralServicePart {
 				folderId: folderId || undefined
 			});
 
-			muralId = _pickId(mural) || mural?.muralId || mural?.value?.muralId || null;
+			muralId = mural?.id || mural?.muralId || mural?.value?.muralId || mural?.value?.id || null;
 			muralId = muralId ? String(muralId) : null;
 
 			if (!muralId) {
-				_log(logCtx, "error", "mural.create_mural.missing_id", { step, projectId, roomId, folderId });
+				_log(this.root, "error", "mural.create_mural.missing_id", { step, projectId, roomId, folderId });
 				return this.root.json({
 					ok: false,
 					error: "mural_id_unavailable",
@@ -1210,39 +1208,61 @@ export class MuralServicePart {
 				}, 502, cors);
 			}
 
-			// Best-effort quick probe (keep short!)
+			// Best-effort quick probe for a viewer URL
 			step = "probe_viewer_url";
 			let openUrl = null;
 			const softDeadline = Date.now() + 9000;
 			while (!openUrl && Date.now() < softDeadline) {
-				openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId, logCtx);
+				openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId, this.root);
 				if (openUrl) break;
 				await new Promise(r => setTimeout(r, 600));
 			}
 
-			const projectIdStr = projectId ? String(projectId) : null;
-			if (projectIdStr) {
+			// ── NEW: resolve Airtable Project record id server-side ───────────────
+			step = "resolve_project_record";
+			let resolvedProjectRecordId = null;
+			try {
+				if (projectId && _looksLikeAirtableId(String(projectId))) {
+					resolvedProjectRecordId = String(projectId).trim();
+				} else {
+					resolvedProjectRecordId = await _lookupProjectRecordId(
+						this.root.env, { projectId: projectId ? String(projectId) : null, projectName: projectName || null },
+						this.root
+					);
+				}
+			} catch (e) {
+				_log(this.root, "warn", "mural.project.resolve.failed", { message: e?.message || String(e), projectId, projectName });
+			}
+
+			const projectIdForRegister =
+				resolvedProjectRecordId || (_looksLikeAirtableId(String(projectId || "")) ? String(projectId) : null);
+
+			// Register the board in Airtable when we have a resolved record id
+			step = "register_board";
+			if (projectIdForRegister) {
 				try {
 					await this.registerBoard({
-						projectId: projectIdStr,
+						projectId: projectIdForRegister, // <-- Airtable record id
 						uid,
 						purpose: PURPOSE_REFLEXIVE,
 						muralId,
 						boardUrl: openUrl ?? undefined,
 						workspaceId: ws?.id || null,
 						primary: true,
-						projectName: projectName
-					}, logCtx);
+						projectName
+					});
 				} catch (e) {
-					_log(logCtx, "error", "mural.airtable_register_failed", { status: e?.status, body: e?.body });
+					_log(this.root, "error", "mural.airtable_register_failed", { status: e?.status, body: e?.body });
 				}
 			} else {
-				_log(logCtx, "warn", "mural.register.skipped_no_projectId", { uid, muralId, projectName });
+				_log(this.root, "warn", "mural.register.skipped_no_resolved_projectId", { uid, muralId, projectId, projectName });
 			}
 
-			if (openUrl && projectIdStr) {
+			// Cache viewer link for the project (if we have both pieces)
+			if (openUrl && (projectIdForRegister || projectId)) {
 				try {
-					const kvKey = `mural:${uid}:project:id::${projectIdStr}`;
+					const projectKey = String(projectIdForRegister || projectId);
+					const kvKey = `mural:${uid}:project:id::${projectKey}`;
 					await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
 						url: openUrl,
 						muralId,
@@ -1250,9 +1270,10 @@ export class MuralServicePart {
 						projectName: projectName,
 						updatedAt: Date.now()
 					}));
-				} catch { /* ignore */ }
+				} catch {}
 			}
 
+			// Respond
 			if (openUrl) {
 				return this.root.json({
 					ok: true,
@@ -1261,8 +1282,8 @@ export class MuralServicePart {
 					folder,
 					folderDenied,
 					mural: { ...mural, id: muralId, muralId, viewLink: openUrl },
-					projectId: projectId || null,
-					registered: Boolean(projectId),
+					projectId: projectIdForRegister || projectId || null,
+					registered: Boolean(projectIdForRegister),
 					boardUrl: openUrl
 				}, 200, cors);
 			}
@@ -1276,7 +1297,7 @@ export class MuralServicePart {
 				room,
 				folder,
 				folderDenied,
-				projectId: projectId || null
+				projectId: projectIdForRegister || projectId || null
 			}, 202, cors);
 
 		} catch (err) {
@@ -1287,7 +1308,7 @@ export class MuralServicePart {
 			if (step === "create_mural" || step === "ensure_folder" || step === "ensure_room") {
 				context.step = step;
 			}
-			_log(logCtx, "error", "mural.setup_failed", { status, message, upstream: body, context });
+			_log(this.root, "error", "mural.setup_failed", { status, message, upstream: body, context });
 			const payload = { ok: false, error: "setup_failed", step, message, upstream: body };
 			if (Object.keys(context).length) payload.context = context;
 			return this.root.json(payload, status, cors);
