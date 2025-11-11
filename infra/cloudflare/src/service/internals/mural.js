@@ -1072,8 +1072,10 @@ export class MuralServicePart {
 
 		let uid = "anon";
 		let stateObj = {};
-		try { stateObj = JSON.parse(b64Decode(stateB64 || ""));
-			uid = stateObj?.uid || "anon"; } catch {}
+		try {
+			stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			uid = stateObj?.uid || "anon";
+		} catch {}
 
 		let tokens;
 		try { tokens = await exchangeAuthCode(env, code); } catch { return Response.redirect(`${stateObj?.return || "/pages/projects/"}#mural-token-exchange-failed`, 302); }
@@ -1655,7 +1657,4 @@ function _isAllowedReturn(env, urlStr) {
 		const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
 		return list.includes(`${u.protocol}//${u.host}`);
 	} catch { return false; }
-}
-rn false;
-}
 }
