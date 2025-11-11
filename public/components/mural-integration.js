@@ -114,6 +114,14 @@
 	// Local cache: projectId → { muralId, boardUrl, ts }
 	const RESOLVE_CACHE = new Map();
 
+	// Maps alternative project keys (UUID/slug) → canonical Airtable rec id
+	const PROJECT_ID_ALIASES = new Map();
+
+	function canonicalProjectId(id) {
+		const v = String(id || "");
+		return PROJECT_ID_ALIASES.get(v) || v;
+	}
+
 	/* ─────────────── UI elements ─────────────── */
 
 	const els = {
@@ -172,12 +180,22 @@
 	}
 
 	async function resolveBoard(projectId) {
-		const cached = RESOLVE_CACHE.get(projectId);
+		const pid = canonicalProjectId(projectId);
+		const cached = RESOLVE_CACHE.get(pid);
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
-		const js = await jsonFetch(addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`), {}, { timeoutMs: 8000 });
+		const js = await jsonFetch(
+			addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`), {}, { timeoutMs: 8000 }
+		);
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
-		if (rec.muralId || rec.boardUrl) RESOLVE_CACHE.set(projectId, rec);
+		if (rec.muralId || rec.boardUrl) {
+			RESOLVE_CACHE.set(pid, rec);
+			// If the page also has a different id (e.g. URL UUID), alias it to this rec id
+			const paramId = getProjectParamId();
+			const airtableId = document.querySelector("main")?.dataset?.projectAirtableId || "";
+			const ids = [projectId, pid, paramId, airtableId].filter(Boolean);
+			ids.forEach(id => { if (id !== pid) PROJECT_ID_ALIASES.set(id, pid); });
+		}
 		return rec;
 	}
 
@@ -429,7 +447,8 @@
 			}
 		},
 		getMuralIdForProject(projectId) {
-			const rec = RESOLVE_CACHE.get(projectId);
+			const pid = canonicalProjectId(projectId);
+			const rec = RESOLVE_CACHE.get(pid);
 			return rec?.muralId || null;
 		}
 	});
