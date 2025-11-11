@@ -61,7 +61,6 @@ function _wantDebugFromUrl(urlLike) {
 }
 
 function _withDebugCtx(root, dbg) {
-	// do not mutate root; hand helpers a shallow wrapper carrying the debug flag
 	return Object.assign({}, root, { __dbg: !!dbg });
 }
 
@@ -195,7 +194,9 @@ function _isAllowedReturn(env, urlStr) {
 			.map(s => s.trim())
 			.filter(Boolean);
 		return list.includes(`${u.protocol}//${u.host}`);
-	} catch { return false; }
+	} catch {
+		return false;
+	}
 }
 
 /* Airtable listing: filter by uid+purpose+active, then client-side by projectId */
@@ -421,10 +422,8 @@ function _extractViewerUrl(payload) {
 	const queue = [payload];
 	const seen = new Set();
 
-	const enqueue = (value) => {
-		if (!value) return;
-		queue.push(value);
-	};
+	const enqueue = (value) => { if (!value) return;
+		queue.push(value); };
 
 	while (queue.length) {
 		const next = queue.shift();
@@ -470,22 +469,30 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 		const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
 		const url = _extractViewerUrl(hydrated);
 		if (url) return url;
-	} catch (e) { _log(rootLike, "debug", "mural.probe.getMural.error", { message: e?.message || String(e) }); }
+	} catch (e) {
+		_log(rootLike, "debug", "mural.probe.getMural.error", { message: e?.message || String(e) });
+	}
 	try {
 		const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
 		const best = links.find(l => _looksLikeMuralViewerUrl(l.url)) ||
 			links.find(l => /viewer|view|open|public/i.test(String(l.type || "")) && l.url);
 		if (best?.url && _looksLikeMuralViewerUrl(best.url)) return best.url;
-	} catch (e) { _log(rootLike, "debug", "mural.probe.getLinks.error", { message: e?.message || String(e) }); }
+	} catch (e) {
+		_log(rootLike, "debug", "mural.probe.getLinks.error", { message: e?.message || String(e) });
+	}
 	try {
 		const created = await createViewerLink(env, accessToken, muralId);
 		if (created && _looksLikeMuralViewerUrl(created)) return created;
-	} catch (e) { _log(rootLike, "debug", "mural.probe.createViewerLink.error", { message: e?.message || String(e) }); }
+	} catch (e) {
+		_log(rootLike, "debug", "mural.probe.createViewerLink.error", { message: e?.message || String(e) });
+	}
 	try {
 		const hydrated2 = await getMural(env, accessToken, muralId).catch(() => null);
 		const url2 = _extractViewerUrl(hydrated2);
 		if (url2) return url2;
-	} catch (e) { _log(rootLike, "debug", "mural.probe.getMural.retry.error", { message: e?.message || String(e) }); }
+	} catch (e) {
+		_log(rootLike, "debug", "mural.probe.getMural.retry.error", { message: e?.message || String(e) });
+	}
 	return null;
 }
 
@@ -600,21 +607,6 @@ async function _resolveWorkspace(env, accessToken, { workspaceHint, companyId } 
 
 /* ───────────────────────── Shape helpers ───────────────────────── */
 
-function _pickId(obj) {
-	return obj?.id ||
-		obj?.muralId ||
-		obj?.muralID ||
-		obj?.roomId ||
-		obj?.folderId ||
-		obj?.value?.id ||
-		obj?.value?.muralId ||
-		obj?.value?.muralID ||
-		obj?.data?.id ||
-		obj?.data?.muralId ||
-		obj?.data?.muralID ||
-		null;
-}
-
 function _workspaceSummary(raw, fallbackId = null) {
 	const val = raw?.value || raw || {};
 	const id = val.id || fallbackId || null;
@@ -633,6 +625,70 @@ function _profileFromMe(me) {
 		companyId: val.companyId || null,
 		companyName: val.companyName || null
 	};
+}
+
+/* ───────────────────────── Force-link helper (module scope) ───────────────────────── */
+/**
+ * Given a Mural ID and a project name/id, PATCH the Mural Boards row so
+ * Project = [{ id: <Projects.recId> }].
+ */
+async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }, logCtx) {
+	if (!muralId) return { ok: false, reason: "missing_muralId" };
+
+	// Resolve Projects rec id
+	let projectRecId = null;
+	const maybeId = typeof projectId === "string" ? projectId.trim() : "";
+	if (_looksLikeAirtableId(maybeId)) {
+		projectRecId = maybeId;
+	} else if (projectName && String(projectName).trim()) {
+		try {
+			projectRecId = await _lookupProjectRecordId(env, { projectId: null, projectName: String(projectName).trim() }, logCtx);
+		} catch (e) {
+			_log(logCtx, "warn", "airtable.projects.lookup.fail", { message: e?.message || String(e), projectName });
+		}
+	}
+
+	if (!projectRecId) {
+		_log(logCtx, "warn", "airtable.boards.force_link.skip_no_projectRec", { muralId, projectName, projectId });
+		return { ok: false, reason: "no_project_rec" };
+	}
+
+	// Find the Mural Boards row by Mural ID
+	const listUrl = new URL(_encodeTableUrl(env, _boardsTableName(env)));
+	const formula = `{Mural ID}="${_esc(String(muralId))}"`;
+	listUrl.searchParams.set("filterByFormula", formula);
+	listUrl.searchParams.set("maxRecords", "1");
+
+	const listRes = await fetch(listUrl.toString(), { headers: _airtableHeaders(env) });
+	const listTxt = await listRes.text().catch(() => "");
+	let listJs = {};
+	try { listJs = listTxt ? JSON.parse(listTxt) : {}; } catch {}
+	if (!listRes.ok) {
+		_log(logCtx, "warn", "airtable.boards.force_link.query_failed", { status: listRes.status, bodyPreview: listTxt.slice(0, 600) });
+		return { ok: false, reason: "query_failed", status: listRes.status };
+	}
+
+	const hit = Array.isArray(listJs?.records) ? listJs.records[0] : null;
+	const recordId = hit?.id || null;
+	if (!recordId) {
+		_log(logCtx, "warn", "airtable.boards.force_link.no_board_row", { muralId });
+		return { ok: false, reason: "no_board_row" };
+	}
+
+	// PATCH linked record
+	const patchUrl = `${_encodeTableUrl(env, _boardsTableName(env))}/${recordId}`;
+	const payload = { fields: { Project: [{ id: projectRecId }] }, typecast: true };
+	const patchRes = await fetch(patchUrl, { method: "PATCH", headers: _airtableHeaders(env), body: JSON.stringify(payload) });
+	const patchTxt = await patchRes.text().catch(() => "");
+	_log(logCtx, patchRes.ok ? "info" : "warn", "airtable.boards.force_link.response", {
+		status: patchRes.status,
+		ok: patchRes.ok,
+		recordId,
+		projectRecId,
+		bodyPreview: patchTxt.slice(0, 600)
+	});
+
+	return { ok: patchRes.ok, status: patchRes.status };
 }
 
 /* ───────────────────────── Class ───────────────────────── */
@@ -787,7 +843,7 @@ export class MuralServicePart {
 				const kvMuralId = kv?.muralId ? String(kv.muralId).trim() : "";
 				const kvUrl = String(kv.url || "").trim();
 
-				// Basic validation: malformed entries are purged
+				// Basic validation
 				if (!kvMuralId || !_looksLikeMuralViewerUrl(kvUrl)) {
 					try { await this.root.env.SESSION_KV.delete(kvKey); } catch {}
 					_log(logCtx, "info", "mural.kv.resolve.invalid_shape", {
@@ -797,7 +853,7 @@ export class MuralServicePart {
 					return null;
 				}
 
-				// Validate the referenced Mural board still exists
+				// Validate still exists
 				let deleted = false;
 				try {
 					const tokenRes = await this._getValidAccessToken(uid || "anon");
@@ -814,12 +870,11 @@ export class MuralServicePart {
 					_log(logCtx, "warn", "mural.kv.resolve.token_failed", { message: err?.message || null });
 				}
 
-				// Fallback: HEAD check on viewer URL
 				if (!deleted) {
 					try {
 						const head = await fetch(kvUrl, { method: "HEAD", redirect: "manual" });
 						if (head.status === 404 || head.status === 410) deleted = true;
-					} catch { /* ignore network errors */ }
+					} catch { /* ignore */ }
 				}
 
 				if (deleted) {
@@ -828,7 +883,6 @@ export class MuralServicePart {
 					return null;
 				}
 
-				// Cache and return validated KV mapping
 				const rec = {
 					muralId: kvMuralId,
 					boardUrl: kvUrl,
@@ -1218,9 +1272,7 @@ export class MuralServicePart {
 				await new Promise(r => setTimeout(r, 600));
 			}
 
-			// ──────────────────────────────────────────────────────────────────
-			// STRICT: resolve Projects linked-record ID and ensure it’s written
-			// ──────────────────────────────────────────────────────────────────
+			// Resolve the exact Projects record id
 			step = "resolve_project_record";
 			let resolvedProjectRecordId = null;
 			try {
@@ -1236,7 +1288,7 @@ export class MuralServicePart {
 				_log(this.root, "warn", "mural.project.resolve.failed", { message: e?.message || String(e), projectId, projectName });
 			}
 
-			// First, use the normal register flow (create/update), passing the Airtable rec id when we have it.
+			// Register (create/update Airtable row)
 			step = "register_board";
 			try {
 				await this.registerBoard({
@@ -1253,48 +1305,12 @@ export class MuralServicePart {
 				_log(this.root, "error", "mural.airtable_register_failed", { status: e?.status, body: e?.body });
 			}
 
-			// ENFORCE the linked record is set (Airtable requires array of {id})
-			// Even if registerBoard fell back, we patch the record here to guarantee the link.
-			if (resolvedProjectRecordId) {
-				try {
-					// Find the just-created row by Mural ID (+ uid/purpose) and PATCH Project to [{id: ...}]
-					const listUrl = new URL(_encodeTableUrl(this.root.env, _boardsTableName(this.root.env)));
-					const formula = `AND({Mural ID}="${_esc(muralId)}", {UID}="${_esc(uid)}", {Purpose}="${_esc(PURPOSE_REFLEXIVE)}")`;
-					listUrl.searchParams.set("filterByFormula", formula);
-					listUrl.searchParams.set("maxRecords", "1");
-
-					const listRes = await fetch(listUrl.toString(), { headers: _airtableHeaders(this.root.env) });
-					const listJs = await listRes.json().catch(() => ({}));
-					const rec = Array.isArray(listJs?.records) ? listJs.records[0] : null;
-
-					if (rec?.id) {
-						const patchUrl = `${_encodeTableUrl(this.root.env, _boardsTableName(this.root.env))}/${rec.id}`;
-						const payload = {
-							fields: {
-								Project: [{ id: resolvedProjectRecordId }]
-							},
-							typecast: true
-						};
-						const patchRes = await fetch(patchUrl, {
-							method: "PATCH",
-							headers: _airtableHeaders(this.root.env),
-							body: JSON.stringify(payload)
-						});
-						const okTxt = await patchRes.text().catch(() => "");
-						_log(this.root, patchRes.ok ? "info" : "warn", "airtable.boards.force_link.response", {
-							status: patchRes.status,
-							ok: patchRes.ok,
-							bodyPreview: okTxt.slice(0, 600)
-						});
-					} else {
-						_log(this.root, "warn", "airtable.boards.force_link.record_not_found", { muralId, uid, purpose: PURPOSE_REFLEXIVE });
-					}
-				} catch (e) {
-					_log(this.root, "warn", "airtable.boards.force_link.failed", { message: e?.message || String(e) });
-				}
-			} else {
-				_log(this.root, "warn", "airtable.boards.force_link.skipped_no_project_rec", { muralId, projectId, projectName });
-			}
+			// Enforce the linked record in "Project" using Projects.recId
+			await _forceLinkProjectToBoard(this.root.env, {
+				muralId,
+				projectName,
+				projectId: resolvedProjectRecordId || projectId || null
+			}, this.root);
 
 			// Cache viewer link for the project (best effort)
 			if (openUrl && (resolvedProjectRecordId || projectId)) {
