@@ -1218,7 +1218,9 @@ export class MuralServicePart {
 				await new Promise(r => setTimeout(r, 600));
 			}
 
-			// ── NEW: resolve Airtable Project record id server-side ───────────────
+			// ──────────────────────────────────────────────────────────────────
+			// STRICT: resolve Projects linked-record ID and ensure it’s written
+			// ──────────────────────────────────────────────────────────────────
 			step = "resolve_project_record";
 			let resolvedProjectRecordId = null;
 			try {
@@ -1234,40 +1236,76 @@ export class MuralServicePart {
 				_log(this.root, "warn", "mural.project.resolve.failed", { message: e?.message || String(e), projectId, projectName });
 			}
 
-			const projectIdForRegister =
-				resolvedProjectRecordId || (_looksLikeAirtableId(String(projectId || "")) ? String(projectId) : null);
-
-			// Register the board in Airtable when we have a resolved record id
+			// First, use the normal register flow (create/update), passing the Airtable rec id when we have it.
 			step = "register_board";
-			if (projectIdForRegister) {
-				try {
-					await this.registerBoard({
-						projectId: projectIdForRegister, // <-- Airtable record id
-						uid,
-						purpose: PURPOSE_REFLEXIVE,
-						muralId,
-						boardUrl: openUrl ?? undefined,
-						workspaceId: ws?.id || null,
-						primary: true,
-						projectName
-					});
-				} catch (e) {
-					_log(this.root, "error", "mural.airtable_register_failed", { status: e?.status, body: e?.body });
-				}
-			} else {
-				_log(this.root, "warn", "mural.register.skipped_no_resolved_projectId", { uid, muralId, projectId, projectName });
+			try {
+				await this.registerBoard({
+					projectId: resolvedProjectRecordId || String(projectId || ""),
+					uid,
+					purpose: PURPOSE_REFLEXIVE,
+					muralId,
+					boardUrl: openUrl ?? undefined,
+					workspaceId: ws?.id || null,
+					primary: true,
+					projectName
+				});
+			} catch (e) {
+				_log(this.root, "error", "mural.airtable_register_failed", { status: e?.status, body: e?.body });
 			}
 
-			// Cache viewer link for the project (if we have both pieces)
-			if (openUrl && (projectIdForRegister || projectId)) {
+			// ENFORCE the linked record is set (Airtable requires array of {id})
+			// Even if registerBoard fell back, we patch the record here to guarantee the link.
+			if (resolvedProjectRecordId) {
 				try {
-					const projectKey = String(projectIdForRegister || projectId);
+					// Find the just-created row by Mural ID (+ uid/purpose) and PATCH Project to [{id: ...}]
+					const listUrl = new URL(_encodeTableUrl(this.root.env, _boardsTableName(this.root.env)));
+					const formula = `AND({Mural ID}="${_esc(muralId)}", {UID}="${_esc(uid)}", {Purpose}="${_esc(PURPOSE_REFLEXIVE)}")`;
+					listUrl.searchParams.set("filterByFormula", formula);
+					listUrl.searchParams.set("maxRecords", "1");
+
+					const listRes = await fetch(listUrl.toString(), { headers: _airtableHeaders(this.root.env) });
+					const listJs = await listRes.json().catch(() => ({}));
+					const rec = Array.isArray(listJs?.records) ? listJs.records[0] : null;
+
+					if (rec?.id) {
+						const patchUrl = `${_encodeTableUrl(this.root.env, _boardsTableName(this.root.env))}/${rec.id}`;
+						const payload = {
+							fields: {
+								Project: [{ id: resolvedProjectRecordId }]
+							},
+							typecast: true
+						};
+						const patchRes = await fetch(patchUrl, {
+							method: "PATCH",
+							headers: _airtableHeaders(this.root.env),
+							body: JSON.stringify(payload)
+						});
+						const okTxt = await patchRes.text().catch(() => "");
+						_log(this.root, patchRes.ok ? "info" : "warn", "airtable.boards.force_link.response", {
+							status: patchRes.status,
+							ok: patchRes.ok,
+							bodyPreview: okTxt.slice(0, 600)
+						});
+					} else {
+						_log(this.root, "warn", "airtable.boards.force_link.record_not_found", { muralId, uid, purpose: PURPOSE_REFLEXIVE });
+					}
+				} catch (e) {
+					_log(this.root, "warn", "airtable.boards.force_link.failed", { message: e?.message || String(e) });
+				}
+			} else {
+				_log(this.root, "warn", "airtable.boards.force_link.skipped_no_project_rec", { muralId, projectId, projectName });
+			}
+
+			// Cache viewer link for the project (best effort)
+			if (openUrl && (resolvedProjectRecordId || projectId)) {
+				try {
+					const projectKey = String(resolvedProjectRecordId || projectId);
 					const kvKey = `mural:${uid}:project:id::${projectKey}`;
 					await this.root.env.SESSION_KV.put(kvKey, JSON.stringify({
 						url: openUrl,
 						muralId,
 						workspaceId: ws?.id || null,
-						projectName: projectName,
+						projectName,
 						updatedAt: Date.now()
 					}));
 				} catch {}
@@ -1282,8 +1320,8 @@ export class MuralServicePart {
 					folder,
 					folderDenied,
 					mural: { ...mural, id: muralId, muralId, viewLink: openUrl },
-					projectId: projectIdForRegister || projectId || null,
-					registered: Boolean(projectIdForRegister),
+					projectId: resolvedProjectRecordId || projectId || null,
+					registered: true,
 					boardUrl: openUrl
 				}, 200, cors);
 			}
@@ -1297,7 +1335,7 @@ export class MuralServicePart {
 				room,
 				folder,
 				folderDenied,
-				projectId: projectIdForRegister || projectId || null
+				projectId: resolvedProjectRecordId || projectId || null
 			}, 202, cors);
 
 		} catch (err) {
