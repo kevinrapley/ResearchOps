@@ -189,14 +189,9 @@ function _isAllowedReturn(env, urlStr) {
 		const raw = env.ALLOWED_ORIGINS;
 		const list = Array.isArray(raw) ?
 			raw :
-			String(raw || "")
-			.split(",")
-			.map(s => s.trim())
-			.filter(Boolean);
+			String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
 		return list.includes(`${u.protocol}//${u.host}`);
-	} catch {
-		return false;
-	}
+	} catch { return false; }
 }
 
 /* Airtable listing: filter by uid+purpose+active, then client-side by projectId */
@@ -422,8 +417,10 @@ function _extractViewerUrl(payload) {
 	const queue = [payload];
 	const seen = new Set();
 
-	const enqueue = (value) => { if (!value) return;
-		queue.push(value); };
+	const enqueue = (value) => {
+		if (!value) return;
+		queue.push(value);
+	};
 
 	while (queue.length) {
 		const next = queue.shift();
@@ -629,13 +626,13 @@ function _profileFromMe(me) {
 
 /* ───────────────────────── Force-link helper (module scope) ───────────────────────── */
 /**
- * Given a Mural ID and a project name/id, PATCH the Mural Boards row so
- * Project = [{ id: <Projects.recId> }].
+ * Force-link the "Project" field on "Mural Boards" to a Projects record.
+ * Tries both [{ id: "rec..." }] and ["rec..."] payload shapes, with typecast.
  */
 async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }, logCtx) {
 	if (!muralId) return { ok: false, reason: "missing_muralId" };
 
-	// Resolve Projects rec id
+	// 1) Resolve the Projects record id
 	let projectRecId = null;
 	const maybeId = typeof projectId === "string" ? projectId.trim() : "";
 	if (_looksLikeAirtableId(maybeId)) {
@@ -653,7 +650,7 @@ async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }
 		return { ok: false, reason: "no_project_rec" };
 	}
 
-	// Find the Mural Boards row by Mural ID
+	// 2) Find the "Mural Boards" row by Mural ID
 	const listUrl = new URL(_encodeTableUrl(env, _boardsTableName(env)));
 	const formula = `{Mural ID}="${_esc(String(muralId))}"`;
 	listUrl.searchParams.set("filterByFormula", formula);
@@ -669,26 +666,43 @@ async function _forceLinkProjectToBoard(env, { muralId, projectName, projectId }
 	}
 
 	const hit = Array.isArray(listJs?.records) ? listJs.records[0] : null;
-	const recordId = hit?.id || null;
-	if (!recordId) {
+	const boardRecId = hit?.id || null;
+	if (!boardRecId) {
 		_log(logCtx, "warn", "airtable.boards.force_link.no_board_row", { muralId });
 		return { ok: false, reason: "no_board_row" };
 	}
 
-	// PATCH linked record
-	const patchUrl = `${_encodeTableUrl(env, _boardsTableName(env))}/${recordId}`;
-	const payload = { fields: { Project: [{ id: projectRecId }] }, typecast: true };
-	const patchRes = await fetch(patchUrl, { method: "PATCH", headers: _airtableHeaders(env), body: JSON.stringify(payload) });
-	const patchTxt = await patchRes.text().catch(() => "");
-	_log(logCtx, patchRes.ok ? "info" : "warn", "airtable.boards.force_link.response", {
-		status: patchRes.status,
-		ok: patchRes.ok,
-		recordId,
-		projectRecId,
-		bodyPreview: patchTxt.slice(0, 600)
-	});
+	// 3) PATCH "Project" linked record — try both payload shapes
+	const patchUrl = `${_encodeTableUrl(env, _boardsTableName(env))}/${boardRecId}`;
+	const attempts = [
+		{ mode: "objects", body: { fields: { Project: [{ id: projectRecId }] }, typecast: true } },
+		{ mode: "strings", body: { fields: { Project: [projectRecId] }, typecast: true } }
+	];
 
-	return { ok: patchRes.ok, status: patchRes.status };
+	let lastStatus = 0;
+	let lastTxt = "";
+
+	for (const attempt of attempts) {
+		const res = await fetch(patchUrl, {
+			method: "PATCH",
+			headers: _airtableHeaders(env),
+			body: JSON.stringify(attempt.body)
+		});
+		const txt = await res.text().catch(() => "");
+		_log(logCtx, res.ok ? "info" : "warn", "airtable.boards.force_link.response", {
+			status: res.status,
+			ok: res.ok,
+			mode: attempt.mode,
+			boardRecId,
+			projectRecId,
+			bodyPreview: txt.slice(0, 600)
+		});
+		if (res.ok) return { ok: true, status: res.status, mode: attempt.mode };
+		lastStatus = res.status;
+		lastTxt = txt;
+	}
+
+	return { ok: false, status: lastStatus, reason: "patch_failed", bodyPreview: String(lastTxt).slice(0, 600) };
 }
 
 /* ───────────────────────── Class ───────────────────────── */
