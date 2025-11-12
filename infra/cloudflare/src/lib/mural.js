@@ -4,19 +4,10 @@
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
  * @version 2.3.0
  *
- * Changes in 2.2.0:
- *  - Create murals via POST /rooms/{roomId}/murals (fixes 404 PATH_NOT_FOUND)
- *  - Create rooms via new endpoint POST /rooms (fallback to legacy)
- *  - Added ensureDefaultRoom() for consistent board creation under a known room
- *  - Safer error reporting and improved compatibility with early-2025 API updates
- *
- * Changes in 2.3.0:
- *  - Added duplicateMural() for template-based board creation (e.g. Reflexive Journal template)
+ * 2.3.0:
+ *  - Added duplicateMural() to copy from a template board
+ *  - Added updateAreaTitle() to rename the “Reflexive Journal: <Project-Name>” area
  */
-
-/* ═══════════════════════════════════════════════════════════════════════════════
- * OAuth 2.0 Flow
- * ═══════════════════════════════════════════════════════════════════════════════ */
 
 export function buildAuthUrl(env, state) {
 	const clientId = env.MURAL_CLIENT_ID;
@@ -93,9 +84,7 @@ export async function refreshAccessToken(env, refreshToken) {
 	return res.json();
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * Verification & Identity
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/* ───────────────── Identity & workspace ───────────────── */
 
 export async function getMe(env, accessToken) {
 	const url = "https://app.mural.co/api/public/v1/users/me";
@@ -148,15 +137,8 @@ export async function verifyHomeOfficeByCompany(env, accessToken) {
 	return Boolean(companyId && companyId === expected);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * Room & Folder Management
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/* ───────────────── Rooms & folders ───────────────── */
 
-/**
- * Ensure a room exists for a user or default policy.
- * New API (2025): POST /rooms
- * Legacy fallback: POST /workspaces/:id/rooms
- */
 export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName) {
 	const desired = roomName || env.DEFAULT_ROOM_NAME || "ResearchOps";
 	const listUrl = `https://app.mural.co/api/public/v1/workspaces/${workspaceId}/rooms`;
@@ -174,14 +156,12 @@ export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName)
 		"Content-Type": "application/json"
 	};
 
-	// Try new endpoint first
 	let createRes = await fetch("https://app.mural.co/api/public/v1/rooms", {
 		method: "POST",
 		headers,
 		body
 	});
 	if (!createRes.ok && createRes.status === 404) {
-		// Legacy fallback
 		createRes = await fetch(listUrl, { method: "POST", headers, body: JSON.stringify({ name: desired }) });
 	}
 	if (!createRes.ok) {
@@ -214,9 +194,7 @@ export async function ensureProjectFolder(env, accessToken, roomId, folderName) 
 	return (await createRes.json())?.value;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * Mural Creation and Retrieval
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/* ───────────────── Mural creation / duplication ───────────────── */
 
 export async function createMural(env, accessToken, { title, roomId, folderId }) {
 	if (!roomId) throw new Error("roomId is required for createMural()");
@@ -238,22 +216,31 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 	return data?.value || data;
 }
 
+export async function getMural(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}`;
+	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+	if (!res.ok) throw Object.assign(new Error(`GET /murals/${muralId} failed: ${res.status}`), { status: res.status });
+	return res.json();
+}
+
 /**
- * Duplicate an existing mural into a target room/folder.
- * Intended for template-based boards such as the Reflexive Journal.
- *
- * @param {any} env
- * @param {string} accessToken
- * @param {string} sourceMuralId - Template mural id to duplicate
- * @param {{ title:string, roomId:string, folderId?:string }} opts
- * @returns {Promise<any>} New mural object with id
+ * Duplicate a mural from a template into a room/folder.
+ * We assume a template mural id configured in env.MURAL_TEMPLATE_REFLEXIVE,
+ * falling back to the hash from the provided template URL.
  */
-export async function duplicateMural(env, accessToken, sourceMuralId, { title, roomId, folderId }) {
-	if (!sourceMuralId) throw new Error("sourceMuralId is required for duplicateMural()");
+export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
+	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
+	if (!templateId) throw new Error("No template mural id configured for duplication");
 	if (!roomId) throw new Error("roomId is required for duplicateMural()");
 
-	const url = `https://app.mural.co/api/public/v1/murals/${sourceMuralId}/duplicate`;
-	const body = { title, roomId, ...(folderId ? { folderId } : {}) };
+	// Tentative endpoint based on current public API shape.
+	// If your org uses a slightly different path, this is the one to tweak.
+	const url = `https://app.mural.co/api/public/v1/murals/${templateId}/duplicate`;
+	const body = {
+		title: title || "Reflexive Journal",
+		roomId,
+		...(folderId ? { folderId } : {})
+	};
 
 	const res = await fetch(url, {
 		method: "POST",
@@ -263,23 +250,17 @@ export async function duplicateMural(env, accessToken, sourceMuralId, { title, r
 
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
-		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), { status: res.status, body: text });
+		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
+			status: res.status,
+			body: text
+		});
 	}
 
-	const data = await res.json();
-	return data?.value || data;
+	const js = await res.json().catch(() => ({}));
+	return js?.value || js;
 }
 
-export async function getMural(env, accessToken, muralId) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}`;
-	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) throw Object.assign(new Error(`GET /murals/${muralId} failed: ${res.status}`), { status: res.status });
-	return res.json();
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════════
- * Widgets & Sticky Notes
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/* ───────────────── Widgets & areas ───────────────── */
 
 export async function getWidgets(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
@@ -346,9 +327,27 @@ export function findLatestInCategory(list, category) {
 	return filtered.sort((a, b) => ((b.y || 0) - (a.y || 0)) || ((b.x || 0) - (a.x || 0)))[0];
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * Tags
- * ═══════════════════════════════════════════════════════════════════════════════ */
+/**
+ * After duplication, find the area that has a title like
+ * "Reflexive Journal: ..." and rename it to include the actual project name.
+ */
+export async function updateAreaTitle(env, accessToken, muralId, projectName) {
+	if (!projectName) return;
+	const widgets = await getWidgets(env, accessToken, muralId);
+	const list = normaliseWidgets(widgets?.widgets);
+
+	const target = list.find(w => {
+		const t = String(w.text || "").trim();
+		return t.toLowerCase().startsWith("reflexive journal:");
+	});
+
+	if (!target) return;
+
+	const newTitle = `Reflexive Journal: ${projectName}`;
+	await updateSticky(env, accessToken, muralId, target.id, { text: newTitle });
+}
+
+/* ───────────────── Tags ───────────────── */
 
 export async function ensureTagsBlueberry(env, accessToken, muralId, tagLabels) {
 	if (!Array.isArray(tagLabels) || !tagLabels.length) return [];
