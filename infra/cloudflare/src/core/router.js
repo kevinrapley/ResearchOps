@@ -2,7 +2,12 @@
  * @file src/core/router.js
  * @module core/router
  * @summary Router for Cloudflare Worker entrypoint (modular ResearchOps service).
- * @version 2.2.0
+ * @version 2.2.1
+ *
+ * Changes since 2.2.0:
+ *  - Guarded static assets fallback when ASSETS binding is missing to avoid
+ *    "Cannot read properties of undefined (reading 'fetch')" crashes.
+ *  - Small helper `hasFetchBinding` to check for .fetch presence on bindings.
  *
  * Changes since 2.1.1:
  *  - Guard optional Mural endpoints to avoid crashes if not implemented
@@ -72,6 +77,14 @@ function assertAirtableEnv(env) {
 	if (!env.AIRTABLE_API_KEY && !env.AIRTABLE_PAT) {
 		throw new Error("Missing env: AIRTABLE_API_KEY or AIRTABLE_PAT");
 	}
+}
+
+/**
+ * Safely detect whether a binding exposes a fetch function.
+ * Avoids calling `.fetch` on undefined bindings (e.g., ASSETS not bound).
+ */
+function hasFetchBinding(obj) {
+	return !!(obj && typeof obj.fetch === "function");
 }
 
 /* ────────────────── Direct endpoints (no service.js dependency) ────────────────── */
@@ -563,7 +576,7 @@ export async function handleRequest(request, env) {
 				}
 			}
 			if (url.pathname === "/api/mural/await" && request.method === "GET") {
-			  return service.mural.muralAwait(origin, url);
+				return service.mural.muralAwait(origin, url);
 			}
 			if (request.method === "POST" && url.pathname === "/api/mural/journal-sync") {
 				return service.mural.muralJournalSync(request, origin);
@@ -596,6 +609,13 @@ export async function handleRequest(request, env) {
 
 		// Static assets (SPA fallback) - only reached if not an API route
 		console.log("[router] Serving static asset:", url.pathname);
+		if (!hasFetchBinding(env.ASSETS)) {
+			console.warn("[router] ASSETS binding is missing; returning minimal 404 fallback");
+			return new Response("Not found (assets binding missing)", {
+				status: 404,
+				headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" }
+			});
+		}
 		let resp = await env.ASSETS.fetch(request);
 		if (resp.status === 404) {
 			const indexReq = new Request(new URL("/index.html", url), request);
