@@ -15,23 +15,12 @@ import { DEFAULTS } from "../../core/constants.js";
  * Core URL + headers
  * ────────────────────────────────────────────────────────────────────────────── */
 
-/**
- * Build the base Airtable REST URL for a given table.
- * @param {import("../index.js").Env} env
- * @param {string} tableName
- * @returns {string}
- */
 export function makeTableUrl(env, tableName) {
 	const base = env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE;
 	const t = encodeURIComponent(String(tableName));
 	return `https://api.airtable.com/v0/${base}/${t}`;
 }
 
-/**
- * Build the Authorization + common headers for Airtable calls.
- * @param {import("../index.js").Env} env
- * @returns {Record<string,string>}
- */
 export function authHeaders(env) {
 	return {
 		Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT}`,
@@ -44,12 +33,10 @@ export function authHeaders(env) {
  * Generic helpers
  * ────────────────────────────────────────────────────────────────────────────── */
 
-/** Escape double quotes for filterByFormula string literals. */
 export function escFormula(v) {
 	return String(v ?? "").replace(/"/g, '\\"');
 }
 
-/** Heuristic: does a string look like an Airtable record id? */
 export function looksLikeAirtableId(v) {
 	return typeof v === "string" && /^rec[a-z0-9]{14}$/i.test(v.trim());
 }
@@ -68,10 +55,6 @@ export function projectsTableName(env) {
  * Basic table utilities
  * ────────────────────────────────────────────────────────────────────────────── */
 
-/**
- * List *all* records from a table, automatically paging via `offset`.
- * Does not restrict fields; caller can filter after fetching.
- */
 export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const pageSize = Math.min(Math.max(parseInt(String(opts.pageSize ?? 100), 10), 1), 100);
 	const base = makeTableUrl(env, tableName);
@@ -94,11 +77,8 @@ export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TI
 		const resp = await fetchWithTimeout(url, { headers }, timeoutMs);
 		const txt = await resp.text();
 
-		if (!resp.ok) {
-			throw new Error(`Airtable ${resp.status}: ${safeText(txt)}`);
-		}
+		if (!resp.ok) throw new Error(`Airtable ${resp.status}: ${safeText(txt)}`);
 
-		/** @type {{records?:Array<any>, offset?:string}} */
 		let js;
 		try { js = JSON.parse(txt); } catch { js = { records: [] }; }
 		all.push(...(js.records || []));
@@ -109,14 +89,10 @@ export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TI
 	return { records: all, pages };
 }
 
-/**
- * Read a single record by ID with a fallback list-query if the record endpoint 404s.
- */
 export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
 	const headers = authHeaders(env);
 
-	// Direct endpoint
 	{
 		const res = await fetchWithTimeout(url, { headers }, timeoutMs);
 		const txt = await res.text();
@@ -126,7 +102,6 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 		if (res.status !== 404) throw new Error(`Airtable ${res.status}: ${safeText(txt)}`);
 	}
 
-	// Fallback via list + filterByFormula
 	{
 		const base = makeTableUrl(env, tableName);
 		const params = new URLSearchParams({
@@ -139,7 +114,6 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 
 		if (!res2.ok) throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
 
-		/** @type {{records?: Array<any>}} */
 		let js2;
 		try { js2 = JSON.parse(txt2); } catch { js2 = { records: [] }; }
 		const rec = (js2.records || [])[0];
@@ -148,7 +122,6 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 	}
 }
 
-/** Create records (bulk POST). */
 export async function createRecords(env, tableName, records, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = makeTableUrl(env, tableName);
 	const res = await fetchWithTimeout(url, {
@@ -162,7 +135,6 @@ export async function createRecords(env, tableName, records, timeoutMs = DEFAULT
 	try { return JSON.parse(txt); } catch { return { records: [] }; }
 }
 
-/** Patch records (bulk PATCH). */
 export async function patchRecords(env, tableName, records, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = makeTableUrl(env, tableName);
 	const res = await fetchWithTimeout(url, {
@@ -176,7 +148,6 @@ export async function patchRecords(env, tableName, records, timeoutMs = DEFAULTS
 	try { return JSON.parse(txt); } catch { return { records: [] }; }
 }
 
-/** Delete a single record by ID. */
 export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
 	const res = await fetchWithTimeout(url, {
@@ -189,10 +160,6 @@ export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIME
 	try { return JSON.parse(txt); } catch { return {}; }
 }
 
-/**
- * Resilient create/update helper that returns retry hints on common 422s
- * (e.g., UNKNOWN_FIELD_NAME). Thin wrapper around the shared util.
- */
 export async function tryWrite(env, tableName, method, fields, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = makeTableUrl(env, tableName);
 	return airtableTryWrite(url, env.AIRTABLE_API_KEY || env.AIRTABLE_PAT, method, fields, timeoutMs);
@@ -202,10 +169,6 @@ export async function tryWrite(env, tableName, method, fields, timeoutMs = DEFAU
  * Project lookups
  * ────────────────────────────────────────────────────────────────────────────── */
 
-/**
- * Find a Project record by *Name* (case-insensitive exact match).
- * Looks in common name fields: {Name}, {Project Name}, {Title}.
- */
 export async function findProjectRecordIdByName(env, projectName) {
 	const name = String(projectName || "").trim();
 	if (!name) return null;
@@ -239,10 +202,6 @@ export async function findProjectRecordIdByName(env, projectName) {
 	return { id: rec.id, name: rec.fields?.Name || name };
 }
 
-/**
- * Resolve a Project record id using a variety of common ID/name fields.
- * Accepts either a projectId string (slug/local id) or a projectName.
- */
 export async function resolveProjectRecordId(env, { projectId, projectName }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const safeId = typeof projectId === "string" ? projectId.trim() : "";
 	const safeName = typeof projectName === "string" ? projectName.trim() : "";
@@ -290,13 +249,9 @@ export async function resolveProjectRecordId(env, { projectId, projectName }, lo
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
- * Mural Boards helpers
+ * Mural Boards helpers (Project ID text-field first)
  * ────────────────────────────────────────────────────────────────────────────── */
 
-/**
- * List Mural Boards, filtered by uid/purpose/active, then (optionally) narrowed
- * by projectId (which may be an Airtable rec id or a project slug/id).
- */
 export async function listBoards(env, { projectId, uid, purpose, active = true, max = 25 }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = new URL(makeTableUrl(env, boardsTableName(env)));
 	const ands = [];
@@ -333,39 +288,42 @@ export async function listBoards(env, { projectId, uid, purpose, active = true, 
 	if (!projectId) return records;
 
 	const pidRaw = String(projectId).trim();
-	let pidRec = looksLikeAirtableId(pidRaw) ? pidRaw : null;
-
-	if (!pidRec) {
-		try {
-			pidRec = await resolveProjectRecordId(env, { projectId: pidRaw, projectName: null }, log, timeoutMs);
-		} catch { /* non-fatal */ }
-	}
+	const pidRec = looksLikeAirtableId(pidRaw) ? pidRaw : null;
 
 	return records.filter(r => {
 		const f = r?.fields || {};
-		const proj = f["Project"];
-		if (Array.isArray(proj)) {
+
+		// NEW: Prefer text field "Project ID"
+		if (String(f["Project ID"] || "").trim() === pidRaw) return true;
+
+		// Back-compat: linked arrays under Project / Projects
+		const candidates = [];
+		if (Array.isArray(f.Project)) candidates.push(f.Project);
+		if (Array.isArray(f.Projects)) candidates.push(f.Projects);
+
+		for (const arr of candidates) {
+			if (!Array.isArray(arr)) continue;
 			if (pidRec) {
-				if (proj.some(v => typeof v === "string" && String(v).trim() === pidRec)) return true;
-				if (proj.some(v => v && typeof v === "object" && String(v.id || "").trim() === pidRec)) return true;
+				if (arr.some(v => typeof v === "string" && String(v).trim() === pidRec)) return true;
+				if (arr.some(v => v && typeof v === "object" && String(v.id || "").trim() === pidRec)) return true;
 			}
-			if (proj.some(v => typeof v === "string" && String(v).trim() === pidRaw)) return true;
-			return false;
+			if (arr.some(v => typeof v === "string" && String(v).trim() === pidRaw)) return true;
 		}
-		return String(proj || "").trim() === pidRaw;
+
+		// Fallback: plain text value in {Project} or {Projects}
+		const textVal = String(f.Project || f.Projects || "").trim();
+		return textVal && textVal === pidRaw;
 	});
 }
 
 /**
- * Create a Mural Boards row. Attempts:
- *  1) { Project: [{ id: recId }] }
- *  2) { Project: "<text ref>" }
- *  3) No Project field
+ * Create a Mural Boards row using the text field "Project ID".
+ * We still accept an optional linked record id for future compatibility, but
+ * the authoritative value is "Project ID" (single line text).
  */
 export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const {
-		projectRecordId = null,
-			projectRef = "",
+		projectIdText = "", // ← recXXXX from <main data-project-id="…">
 			uid,
 			purpose,
 			muralId,
@@ -377,6 +335,7 @@ export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEF
 
 	const url = makeTableUrl(env, boardsTableName(env));
 	const baseFields = {
+		"Project ID": String(projectIdText || ""), // ← critical
 		UID: String(uid ?? ""),
 		Purpose: String(purpose ?? ""),
 		"Mural ID": String(muralId ?? ""),
@@ -388,74 +347,35 @@ export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEF
 		baseFields["Workspace ID"] = workspaceId.trim();
 	}
 
-	/** attempt 1: linked record; 2: project ref text; 3: bare */
-	const attempts = [];
-	if (typeof projectRecordId === "string" && projectRecordId.trim()) {
-		attempts.push({
-			mode: "linked_record",
-			body: { typecast: true, records: [{ fields: { ...baseFields, Project: [{ id: projectRecordId.trim() }] } }] }
-		});
-	}
-	if (typeof projectRef === "string" && projectRef.trim()) {
-		attempts.push({
-			mode: "project_ref",
-			body: { typecast: true, records: [{ fields: { ...baseFields, Project: projectRef.trim() } }] }
-		});
-	}
-	attempts.push({ mode: "bare", body: { typecast: true, records: [{ fields: baseFields }] } });
+	const body = { typecast: true, records: [{ fields: baseFields }] };
 
-	let lastRes = null,
-		lastTxt = "";
-	const attempted = [];
+	log?.info?.("airtable.boards.create.request", { url, mode: "project_id_text" });
+	log?.debug?.("airtable.boards.create.payload", body);
 
-	for (const attempt of attempts) {
-		log?.info?.("airtable.boards.create.request", { url, mode: attempt.mode });
-		log?.debug?.("airtable.boards.create.payload", attempt.body);
+	const res = await fetchWithTimeout(url, {
+		method: "POST",
+		headers: authHeaders(env),
+		body: JSON.stringify(body)
+	}, timeoutMs);
 
-		const res = await fetchWithTimeout(url, {
-			method: "POST",
-			headers: authHeaders(env),
-			body: JSON.stringify(attempt.body)
-		}, timeoutMs);
+	const txt = await res.text().catch(() => "");
+	log?.[res.ok ? "info" : "warn"]?.("airtable.boards.create.response", {
+		status: res.status,
+		ok: res.ok,
+		mode: "project_id_text",
+		bodyPreview: txt.slice(0, 800)
+	});
 
-		const txt = await res.text().catch(() => "");
-		attempted.push({ mode: attempt.mode, status: res.status, ok: res.ok });
-		log?.[res.ok ? "info" : "warn"]?.("airtable.boards.create.response", {
-			status: res.status,
-			ok: res.ok,
-			mode: attempt.mode,
-			bodyPreview: txt.slice(0, 800)
-		});
-
-		if (res.ok) {
-			try {
-				const js = txt ? JSON.parse(txt) : {};
-				return { ...js, ok: true, attemptMode: attempt.mode, attempts: attempted };
-			} catch {
-				return { ok: true, attemptMode: attempt.mode, attempts: attempted, records: [] };
-			}
-		}
-
-		lastRes = res;
-		lastTxt = txt;
-		const recoverable = res.status === 422 || res.status === 403 ||
-			/UNKNOWN_FIELD_NAME|INVALID_VALUE|FIELD_VALUE_INVALID|CANNOT_ACCEPT_VALUE|LINKED_RECORDS|INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(String(txt || ""));
-		if (!recoverable) {
-			const err = new Error("airtable_create_failed");
-			err.status = res.status;
-			try { err.body = JSON.parse(txt); } catch { err.body = { raw: txt.slice(0, 800) }; }
-			throw err;
-		}
+	if (!res.ok) {
+		const err = new Error("airtable_create_failed");
+		err.status = res.status;
+		try { err.body = JSON.parse(txt); } catch { err.body = { raw: txt.slice(0, 800) }; }
+		throw err;
 	}
 
-	const error = new Error("airtable_create_failed");
-	error.status = lastRes?.status || 422;
-	try { error.body = JSON.parse(lastTxt); } catch { error.body = { raw: String(lastTxt).slice(0, 800) }; }
-	error.attempts = attempted;
-	throw error;
+	try { return JSON.parse(txt); } catch { return { records: [] }; }
 }
 
-/** Patch a Mural Boards row by record id. */
 export async function updateBoard(env, recordId, fields, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = `${makeTableUrl(env, boardsTableName(env))}/${recordId}`;
 	log?.info?.("airtable.boards.update.request", { url, recordId });
@@ -483,10 +403,6 @@ export async function updateBoard(env, recordId, fields, log = null, timeoutMs =
 	try { return JSON.parse(txt); } catch { return {}; }
 }
 
-/**
- * Find a single Mural Boards row by Mural ID (optionally also by uid/purpose).
- * Returns the first matching record or null.
- */
 export async function findBoardByMuralId(env, { muralId, uid = null, purpose = null }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = new URL(makeTableUrl(env, boardsTableName(env)));
 	const parts = [`{Mural ID}="${escFormula(String(muralId))}"`];
@@ -511,34 +427,4 @@ export async function findBoardByMuralId(env, { muralId, uid = null, purpose = n
 	let js = {};
 	try { js = txt ? JSON.parse(txt) : {}; } catch {}
 	return Array.isArray(js?.records) && js.records.length ? js.records[0] : null;
-}
-
-/**
- * Quick probe of the "Project" field shape in the Mural Boards table.
- * Returns one of: "linked_objects" | "linked_strings" | "text" | "array_unknown" | "unknown"
- */
-export async function detectProjectFieldShape(env, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
-	const url = new URL(makeTableUrl(env, boardsTableName(env)));
-	url.searchParams.set("maxRecords", "1");
-	url.searchParams.append("fields[]", "Project");
-
-	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
-	const txt = await res.text().catch(() => "");
-	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.detect_project_shape.response", {
-		status: res.status,
-		ok: res.ok,
-		bodyPreview: txt.slice(0, 400)
-	});
-
-	if (!res.ok) return "unknown";
-	try {
-		const js = JSON.parse(txt);
-		const p = js?.records?.[0]?.fields?.Project;
-		if (Array.isArray(p) && p.length && typeof p[0] === "object" && p[0]?.id) return "linked_objects";
-		if (Array.isArray(p) && p.length && typeof p[0] === "string" && /^rec/i.test(p[0])) return "linked_strings";
-		if (typeof p === "string") return "text";
-		return Array.isArray(p) ? "array_unknown" : "unknown";
-	} catch {
-		return "unknown";
-	}
 }
