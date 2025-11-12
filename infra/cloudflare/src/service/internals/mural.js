@@ -7,6 +7,10 @@
  * into the single-line text field "Project ID". Airtable’s Field Agent will link
  * this to the Projects table internally. We still read legacy linked fields for
  * backward compatibility.
+ *
+ * Additional change: when setting up the Reflexive Journal, we duplicate a
+ * template mural (rather than starting from a blank board) and retitle the
+ * "Reflexive Journal: <Project-Name>" area to the current project name.
  */
 
 import {
@@ -30,7 +34,8 @@ import {
 	normaliseWidgets,
 	findLatestInCategory,
 	getMuralLinks,
-	createViewerLink
+	createViewerLink,
+	duplicateMural
 } from "../../lib/mural.js";
 
 import {
@@ -116,6 +121,7 @@ function _extractViewerUrl(payload) {
 	}
 	return null;
 }
+
 async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 	try {
 		const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
@@ -200,9 +206,17 @@ async function _getValidAccessToken(self, uid) {
 
 export class MuralServicePart {
 	constructor(root) { this.root = root; }
+
 	kvKey(uid) { return `mural:${uid}:tokens`; }
-	async saveTokens(uid, tokens) { await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true }); }
-	async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
+
+	async saveTokens(uid, tokens) {
+		await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true });
+	}
+
+	async loadTokens(uid) {
+		const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid));
+		return raw ? JSON.parse(raw) : null;
+	}
 
 	/* ── Core lookups ── */
 
@@ -330,11 +344,17 @@ export class MuralServicePart {
 
 		let uid = "anon";
 		let stateObj = {};
-		try { stateObj = JSON.parse(b64Decode(stateB64 || ""));
-			uid = stateObj?.uid || "anon"; } catch {}
+		try {
+			stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			uid = stateObj?.uid || "anon";
+		} catch {}
 
 		let tokens;
-		try { tokens = await exchangeAuthCode(this.root.env, code); } catch { return Response.redirect(`${stateObj?.return || "/pages/projects/"}#mural-token-exchange-failed`, 302); }
+		try {
+			tokens = await exchangeAuthCode(this.root.env, code);
+		} catch {
+			return Response.redirect(`${stateObj?.return || "/pages/projects/"}#mural-token-exchange-failed`, 302);
+		}
 
 		await this.saveTokens(uid, tokens);
 
@@ -350,14 +370,22 @@ export class MuralServicePart {
 		const uid = url.searchParams.get("uid") || "anon";
 		try {
 			const tokenRes = await _getValidAccessToken(this, uid);
-			if (!tokenRes.ok) return this.root.json({ ok: false, error: tokenRes.reason }, tokenRes.reason === "not_authenticated" ? 401 : 500, cors);
+			if (!tokenRes.ok) {
+				return this.root.json({ ok: false, error: tokenRes.reason },
+					tokenRes.reason === "not_authenticated" ? 401 : 500,
+					cors
+				);
+			}
 			const accessToken = tokenRes.token;
 
 			const me = await getMe(this.root.env, accessToken).catch(() => null);
 			const activeWorkspaceId = getActiveWorkspaceIdFromMe(me) || null;
 			return this.root.json({ ok: true, me, activeWorkspaceId }, 200, cors);
 		} catch (err) {
-			return this.root.json({ ok: false, error: "verify_failed", detail: String(err?.message || err) }, 500, cors);
+			return this.root.json({ ok: false, error: "verify_failed", detail: String(err?.message || err) },
+				500,
+				cors
+			);
 		}
 	}
 
@@ -382,12 +410,16 @@ export class MuralServicePart {
 
 			step = "load_tokens";
 			const tokens = await this.loadTokens(uid);
-			if (!tokens?.access_token) return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
+			if (!tokens?.access_token) {
+				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
+			}
 
 			step = "verify_workspace";
 			let accessToken = tokens.access_token;
 			let ws;
-			try { ws = await _ensureWorkspace(this.root, accessToken, wsOverride); } catch (err) {
+			try {
+				ws = await _ensureWorkspace(this.root, accessToken, wsOverride);
+			} catch (err) {
 				const code = Number(err?.status || err?.code || 0);
 				if (code === 401 && tokens.refresh_token) {
 					const refreshed = await refreshAccessToken(this.root.env, tokens.refresh_token);
@@ -397,7 +429,9 @@ export class MuralServicePart {
 					ws = await _ensureWorkspace(this.root, accessToken, wsOverride);
 				} else if (String(err?.message) === "not_in_home_office_workspace") {
 					return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
-				} else throw err;
+				} else {
+					throw err;
+				}
 			}
 
 			step = "get_me";
@@ -405,29 +439,109 @@ export class MuralServicePart {
 			const username = me?.value?.firstName || me?.name || "Private";
 
 			step = "ensure_room";
-			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, { username, userId: me?.value?.id, userEmail: me?.value?.email });
+			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, {
+				username,
+				userId: me?.value?.id,
+				userEmail: me?.value?.email
+			});
 			const roomId = room?.id || room?.value?.id;
-			if (!roomId) return this.root.json({ ok: false, error: "room_id_unavailable", step }, 502, cors);
+			if (!roomId) {
+				return this.root.json({ ok: false, error: "room_id_unavailable", step }, 502, cors);
+			}
 
 			step = "ensure_folder";
 			let folder = null;
-			try { folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim()); } catch {}
+			try {
+				folder = await ensureProjectFolder(
+					this.root.env,
+					accessToken,
+					roomId,
+					String(projectName).trim()
+				);
+			} catch {}
 
-			step = "create_mural";
-			const mural = await createMural(this.root.env, accessToken, {
-				title: "Reflexive Journal",
-				roomId,
-				folderId: folder?.id || folder?.value?.id
-			});
+			// Prefer duplicating from a template mural rather than creating a blank board.
+			step = "create_or_duplicate_mural";
+			const templateId =
+				this.root.env.MURAL_REFLEXIVE_TEMPLATE_ID ||
+				"1761511827081"; // from https://app.mural.co/t/pppt6786/m/pppt6786/1761511827081/...
+
+			let mural;
+			if (templateId) {
+				try {
+					mural = await duplicateMural(this.root.env, accessToken, templateId, {
+						title: "Reflexive Journal",
+						roomId,
+						folderId: folder?.id || folder?.value?.id
+					});
+				} catch (err) {
+					// Fallback to a blank mural if duplication fails.
+					mural = await createMural(this.root.env, accessToken, {
+						title: "Reflexive Journal",
+						roomId,
+						folderId: folder?.id || folder?.value?.id
+					});
+				}
+			} else {
+				mural = await createMural(this.root.env, accessToken, {
+					title: "Reflexive Journal",
+					roomId,
+					folderId: folder?.id || folder?.value?.id
+				});
+			}
+
 			const muralId = mural?.id || mural?.value?.id;
-			if (!muralId) return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
+			if (!muralId) {
+				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
+			}
+
+			// After duplication, update the "Reflexive Journal: <Project-Name>" area title.
+			step = "rename_area_title";
+			try {
+				const widgetsJs = await getWidgets(this.root.env, accessToken, muralId);
+				const widgetsRaw = widgetsJs?.widgets || widgetsJs?.value || [];
+				const widgets = Array.isArray(widgetsRaw) ? widgetsRaw : [];
+
+				const targetArea = widgets.find(w => {
+					const type = String(w.type || "").toLowerCase();
+					const text = String(w.text || w.title || "").trim().toLowerCase();
+					return type.includes("area") && text.startsWith("reflexive journal:");
+				});
+
+				if (targetArea && targetArea.id) {
+					const newTitle = `Reflexive Journal: ${projectName}`;
+					const patch = {};
+
+					if (typeof targetArea.text === "string") {
+						patch.text = newTitle;
+					} else {
+						patch.title = newTitle;
+					}
+
+					try {
+						await updateSticky(this.root.env, accessToken, muralId, targetArea.id, patch);
+					} catch (err) {
+						// If title-based patch fails, fall back to text.
+						if (!patch.text) {
+							await updateSticky(this.root.env, accessToken, muralId, targetArea.id, {
+								text: newTitle
+							});
+						}
+					}
+				}
+			} catch {
+				// Non-fatal: if we can't retitle the area, the board still works.
+			}
 
 			step = "probe_viewer_url";
 			let openUrl = null;
 			const deadline = Date.now() + 9000;
 			while (!openUrl && Date.now() < deadline) {
 				openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId, this.root);
-				if (!openUrl) await new Promise(r => setTimeout(r, 600));
+				if (!openUrl) {
+					// @ts-ignore
+					await new Promise(r => setTimeout(r, 600));
+				}
 			}
 
 			step = "register_board";
@@ -469,7 +583,10 @@ export class MuralServicePart {
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
-			return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body }, status, cors);
+			return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body },
+				status,
+				cors
+			);
 		}
 	}
 
@@ -479,13 +596,23 @@ export class MuralServicePart {
 			const projectId = url.searchParams.get("projectId") || "";
 			const uid = url.searchParams.get("uid") || "";
 			const purpose = url.searchParams.get("purpose") || PURPOSE_REFLEXIVE;
-			if (!projectId) return this.root.json({ ok: false, error: "missing_projectId" }, 400, cors);
+			if (!projectId) {
+				return this.root.json({ ok: false, error: "missing_projectId" }, 400, cors);
+			}
 
 			const resolved = await this.resolveBoard({ projectId, uid: uid || undefined, purpose });
-			if (!resolved?.muralId && !resolved?.boardUrl) return this.root.json({ ok: false, error: "not_found" }, 404, cors);
-			return this.root.json({ ok: true, muralId: resolved.muralId || null, boardUrl: resolved.boardUrl || null }, 200, cors);
+			if (!resolved?.muralId && !resolved?.boardUrl) {
+				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
+			}
+			return this.root.json({ ok: true, muralId: resolved.muralId || null, boardUrl: resolved.boardUrl || null },
+				200,
+				cors
+			);
 		} catch (e) {
-			return this.root.json({ ok: false, error: "resolve_failed", detail: String(e?.message || e) }, 500, cors);
+			return this.root.json({ ok: false, error: "resolve_failed", detail: String(e?.message || e) },
+				500,
+				cors
+			);
 		}
 	}
 
@@ -501,19 +628,42 @@ export class MuralServicePart {
 			const description = String(body?.description || "").trim();
 			const labels = Array.isArray(body?.tags) ? body.tags.filter(Boolean) : [];
 
-			if (!category || !description) return this.root.json({ ok: false, error: "missing_category_or_description" }, 400, cors);
+			if (!category || !description) {
+				return this.root.json({ ok: false, error: "missing_category_or_description" },
+					400,
+					cors
+				);
+			}
 			if (!["perceptions", "procedures", "decisions", "introspections"].includes(category)) {
-				return this.root.json({ ok: false, error: "unsupported_category" }, 400, cors);
+				return this.root.json({ ok: false, error: "unsupported_category" },
+					400,
+					cors
+				);
 			}
 
 			step = "resolve_board";
-			const resolved = await this.resolveBoard({ projectId: body.projectId, uid: uid || undefined, purpose, explicitMuralId: body.muralId });
+			const resolved = await this.resolveBoard({
+				projectId: body.projectId,
+				uid: uid || undefined,
+				purpose,
+				explicitMuralId: body.muralId
+			});
 			const muralId = resolved?.muralId || null;
-			if (!muralId) return this.root.json({ ok: false, error: "no_mural_id" }, 404, cors);
+			if (!muralId) {
+				return this.root.json({ ok: false, error: "no_mural_id" },
+					404,
+					cors
+				);
+			}
 
 			step = "access_token";
 			const tokenRes = await _getValidAccessToken(this, uid);
-			if (!tokenRes.ok) return this.root.json({ ok: false, error: tokenRes.reason }, tokenRes.reason === "not_authenticated" ? 401 : 500, cors);
+			if (!tokenRes.ok) {
+				return this.root.json({ ok: false, error: tokenRes.reason },
+					tokenRes.reason === "not_authenticated" ? 401 : 500,
+					cors
+				);
+			}
 			const accessToken = tokenRes.token;
 
 			step = "load_widgets";
@@ -554,7 +704,9 @@ export class MuralServicePart {
 			step = "tagging";
 			if (labels.length && stickyId) {
 				const tagIds = await ensureTagsBlueberry(this.root.env, accessToken, muralId, labels);
-				if (tagIds.length) await applyTagsToSticky(this.root.env, accessToken, muralId, stickyId, tagIds);
+				if (tagIds.length) {
+					await applyTagsToSticky(this.root.env, accessToken, muralId, stickyId, tagIds);
+				}
 			}
 
 			return this.root.json({ ok: true, stickyId, action, muralId }, 200, cors);
@@ -563,7 +715,10 @@ export class MuralServicePart {
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "journal_sync_failed");
-			return this.root.json({ ok: false, error: "journal_sync_failed", step, message, upstream: body }, status, cors);
+			return this.root.json({ ok: false, error: "journal_sync_failed", step, message, upstream: body },
+				status,
+				cors
+			);
 		}
 	}
 }
