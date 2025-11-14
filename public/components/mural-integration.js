@@ -1,6 +1,6 @@
 /**
  * @file /public/components/mural-integration.js
- * @summary Project Dashboard ↔ Mural wiring (verify, resolve, setup, open) with async “await link” polling.
+ * @summary Project Dashboard ↔ Mural wiring (verify, resolve, setup, open) with async "await link" polling.
  *
  * UI hooks expected on the page:
  *  - Section:   <section id="mural-integration">
@@ -12,8 +12,6 @@
  */
 
 (() => {
-	/* ─────────────── config / helpers ─────────────── */
-
 	const API_ORIGIN =
 		document.documentElement?.dataset?.apiOrigin ||
 		window.API_ORIGIN ||
@@ -55,7 +53,6 @@
 	}
 
 	function pill(el, variant, text) {
-		// Variants: neutral | good | warn | bad
 		if (!el) return;
 		const span = el.querySelector(".pill") || el;
 		span.classList.remove("pill--neutral", "pill--good", "pill--warn", "pill--bad");
@@ -65,7 +62,7 @@
 
 	function setConnectedStatus(folderDenied = false) {
 		if (folderDenied) {
-			pill(els.status, "warn", "Board created but we couldn’t create a folder in your Mural room.");
+			pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room.");
 		} else {
 			pill(els.status, "good", "Connected");
 		}
@@ -93,12 +90,10 @@
 		return ($("main")?.dataset?.projectName || "").trim();
 	}
 
-	// Build an absolute URL on the current Pages origin
 	function absolutePagesUrl(pathAndQuery) {
 		return new URL(pathAndQuery, location.origin).toString();
 	}
 
-	// Resolve a Projects table record ID by name (server does the lookup)
 	async function resolveProjectIdByName(name) {
 		const url = addDebug(`/api/projects/lookup-by-name?name=${encodeURIComponent(name)}`);
 		const r = await fetch(url, { cache: "no-store" });
@@ -107,19 +102,13 @@
 		return js?.ok ? js.id : null;
 	}
 
-	// Local cache: canonical projectId → { muralId, boardUrl, ts }
 	const RESOLVE_CACHE = new Map();
-
-	// If the page starts with a UUID param and later provides an Airtable record id,
-	// we canonicalise to one stable id so we don’t duplicate network calls / cache entries.
 	const PROJECT_ID_ALIASES = new Map();
 
 	function canonicalProjectId(id) {
 		const v = String(id || "");
 		return PROJECT_ID_ALIASES.get(v) || v;
 	}
-
-	/* ─────────────── UI elements ─────────────── */
 
 	const els = {
 		section: byId("mural-integration"),
@@ -129,14 +118,14 @@
 	};
 
 	function disableAll() {
-		if (els.btnConnect) els.btnConnect.disabled = false; // allow connect at all times
+		if (els.btnConnect) els.btnConnect.disabled = false;
 		if (els.btnSetup) els.btnSetup.disabled = true;
 	}
 
 	function setSetupAsOpen(projectId, boardUrl) {
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
-		els.btnSetup.textContent = 'Open “Reflexive Journal”';
+		els.btnSetup.textContent = 'Open "Reflexive Journal"';
 		els.btnSetup.onclick = () => {
 			const effectiveId = canonicalProjectId(getProjectId() || projectId);
 			const cached = RESOLVE_CACHE.get(effectiveId);
@@ -166,8 +155,6 @@
 		debugLog("connect button wired");
 	}
 
-	/* ─────────────── API wrappers ─────────────── */
-
 	async function verify() {
 		const url = addDebug(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
 		debugLog("fetch →", url, { signal: {} });
@@ -180,7 +167,6 @@
 	async function resolveBoard(projectId) {
 		const pid = canonicalProjectId(projectId);
 
-		// Cached?
 		const cached = RESOLVE_CACHE.get(pid);
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
@@ -192,7 +178,6 @@
 		if (rec.muralId || rec.boardUrl) {
 			RESOLVE_CACHE.set(pid, rec);
 
-			// Learn aliases so any UUID/param switches reuse this cached record
 			const paramId = getProjectParamId();
 			const airtableId = document.querySelector("main")?.dataset?.projectAirtableId || "";
 			[projectId, pid, paramId, airtableId].filter(Boolean).forEach(id => {
@@ -219,15 +204,11 @@
 					return { ok: true, boardUrl: body.boardUrl };
 				}
 				if (r.status !== 202) throw new Error(body?.error || `HTTP ${r.status}`);
-			} catch {
-				// brief backoff on error
-			}
+			} catch {}
 			await sleep(intervalMs);
 		}
 		return { ok: false };
 	}
-
-	/* ─────────────── main state machine ─────────────── */
 
 	async function updateSetupState() {
 		const projectIdRaw = getProjectId();
@@ -235,7 +216,6 @@
 		const projectName = getProjectName();
 		if (!els.section) return;
 
-		// Ensure buttons are wired
 		wireConnectButton(projectParamId || projectIdRaw);
 		disableAll();
 
@@ -244,7 +224,6 @@
 			return;
 		}
 
-		// Step 1: Verify OAuth + workspace
 		try {
 			const vr = await verify();
 			console.log("[mural] ✓ verify completed:", vr);
@@ -256,14 +235,13 @@
 			} else if (code === 403) {
 				pill(els.status, "bad", "Mural account not in Home Office workspace");
 			} else {
-				pill(els.status, "warn", "Mural is having trouble right now. You can still write journal entries; we’ll sync later.");
+				pill(els.status, "warn", "Mural is having trouble right now. You can still write journal entries; we'll sync later.");
 			}
 			if (els.btnConnect) els.btnConnect.disabled = false;
 			if (els.btnSetup) els.btnSetup.disabled = true;
 			return;
 		}
 
-		// Step 2: Resolve existing board
 		if (!projectName) {
 			pill(els.status, "neutral", "Preparing project details…");
 			for (let i = 0; i < 10; i++) {
@@ -290,10 +268,10 @@
 				pill(els.status, "neutral", "No board yet");
 			} else if (code === 500 && /airtable_list_failed/i.test(tag)) {
 				setSetupAsCreate(projectIdRaw, getProjectName() || "Project");
-				pill(els.status, "warn", "Couldn’t check the board mapping just now (Airtable). You can still create it.");
+				pill(els.status, "warn", "Couldn't check the board mapping just now (Airtable). You can still create it.");
 			} else {
 				setSetupAsCreate(projectIdRaw, getProjectName() || "Project");
-				pill(els.status, "warn", "We couldn’t check Mural just now. You can still create the board.");
+				pill(els.status, "warn", "We couldn't check Mural just now. You can still create the board.");
 			}
 		}
 	}
@@ -301,7 +279,7 @@
 	function setSetupAsCreate(projectId, projectName) {
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
-		els.btnSetup.textContent = 'Create “Reflexive Journal”';
+		els.btnSetup.textContent = 'Create "Reflexive Journal"';
 		els.btnSetup.onclick = async () => {
 			try {
 				els.btnSetup.disabled = true;
@@ -314,7 +292,6 @@
 					return;
 				}
 
-				// If we don't have a recXXXXXXXXXXXX id yet but we do have a name, try to resolve it first.
 				const looksLikeRec = /^rec[a-z0-9]{14}$/i.test(resolvedProjectId);
 				if (!looksLikeRec && projectName && projectName.trim()) {
 					const recId = await resolveProjectIdByName(projectName.trim()).catch(() => null);
@@ -329,7 +306,6 @@
 					projectName
 				};
 
-				// pass the Airtable record id only if we have one
 				if (/^rec[a-z0-9]{14}$/i.test(resolvedProjectId)) {
 					body.projectId = resolvedProjectId;
 				}
@@ -346,21 +322,28 @@
 				});
 
 				const folderDenied = Boolean(js?.folderDenied);
+				const templateCopied = js?.templateCopied !== false;
 
-				// Fast path: we already have the link
 				let muralId = js?.mural?.id || js?.muralId || null;
 				let boardUrl = js?.boardUrl || js?.mural?.viewLink || null;
 				if (boardUrl) {
 					RESOLVE_CACHE.set(resolvedProjectId, { muralId, boardUrl, ts: Date.now() });
 					setSetupAsOpen(resolvedProjectId, boardUrl);
-					setConnectedStatus(folderDenied);
+
+					if (!templateCopied) {
+						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
+					} else if (folderDenied) {
+						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
+					} else {
+						setConnectedStatus(false);
+					}
+
 					window.open(boardUrl, "_blank", "noopener");
-					debugLog("created + registered board", { muralId, boardUrl });
+					debugLog("created + registered board", { muralId, boardUrl, templateCopied });
 					els.btnSetup.disabled = false;
 					return;
 				}
 
-				// Slow path: link pending — poll /api/mural/await
 				muralId = muralId || js?.muralId || null;
 				if (!muralId) throw new Error("mural_id_unavailable");
 
@@ -369,7 +352,15 @@
 				if (awaited.ok && awaited.boardUrl) {
 					RESOLVE_CACHE.set(resolvedProjectId, { muralId, boardUrl: awaited.boardUrl, ts: Date.now() });
 					setSetupAsOpen(resolvedProjectId, awaited.boardUrl);
-					setConnectedStatus(folderDenied);
+
+					if (!templateCopied) {
+						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
+					} else if (folderDenied) {
+						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
+					} else {
+						setConnectedStatus(false);
+					}
+
 					window.open(awaited.boardUrl, "_blank", "noopener");
 					els.btnSetup.disabled = false;
 					return;
@@ -381,19 +372,23 @@
 				console.warn("[mural] setup failed", err);
 				const code = Number(err?.status || 0);
 				const detail = err?.body?.message || err?.body?.upstream?.message || "";
+				const errorCode = err?.body?.code || "";
 				const step = err?.body?.step || "";
-				if (code === 401) {
+
+				if (errorCode === "TEMPLATE_COPY_FAILED") {
+					pill(els.status, "bad", "Cannot copy template. Check if you have access to the template mural.");
+				} else if (code === 401) {
 					pill(els.status, "warn", "Please connect Mural first");
 				} else if (code === 403 && step === "create_mural" && /not allowed/i.test(detail)) {
 					pill(
 						els.status,
 						"bad",
-						"We can’t create boards in this Mural room with your permissions. Ask a workspace admin to grant access."
+						"We can't create boards in this Mural room with your permissions. Ask a workspace admin to grant access."
 					);
 				} else if (code === 403) {
 					pill(els.status, "bad", "Mural account not in Home Office workspace");
 				} else if (err?.message === "mural_id_unavailable") {
-					pill(els.status, "bad", "Created, but couldn’t obtain a board id");
+					pill(els.status, "bad", "Created, but couldn't obtain a board id");
 				} else {
 					pill(els.status, "bad", "Could not create the board");
 				}
@@ -402,8 +397,6 @@
 		};
 		debugLog("setup button → CREATE wired");
 	}
-
-	/* ─────────────── observe project meta to avoid “Open→Create” flicker ─────────────── */
 
 	function observeProjectMeta() {
 		const main = $("main");
@@ -422,8 +415,6 @@
 		mo.observe(main, { attributes: true, attributeFilter: ["data-project-name", "data-project-airtable-id"] });
 	}
 
-	/* ─────────────── public API for other modules ─────────────── */
-
 	window.MuralIntegration = Object.assign(window.MuralIntegration || {}, {
 		async resolve(projectId) {
 			try {
@@ -438,8 +429,6 @@
 			return rec?.muralId || null;
 		}
 	});
-
-	/* ─────────────── boot ─────────────── */
 
 	document.addEventListener("DOMContentLoaded", () => {
 		if (!els.section) return;
