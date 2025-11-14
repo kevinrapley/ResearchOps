@@ -34,15 +34,16 @@
 	}
 
 	function debugLog(...args) {
-		try { console.debug("[mural-ui]", ...args); } catch {}
+		console.log("[mural-ui]", ...args);
 	}
 
 	async function jsonFetch(url, init) {
+		debugLog("→ fetch", url);
 		const res = await fetch(url, init);
 		const txt = await res.text().catch(() => "");
 		let body = {};
 		try { body = txt ? JSON.parse(txt) : {}; } catch { /* noop */ }
-		debugLog("fetch ←", url, { status: res.status, ok: res.ok, bodyPreview: txt ? txt.slice(0, 300) : "" });
+		debugLog("← fetch", url, { status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 300) });
 		if (!res.ok) {
 			const err = new Error((body && (body.error || body.message)) || `HTTP ${res.status}`);
 			err.status = res.status;
@@ -157,7 +158,6 @@
 
 	async function verify() {
 		const url = addDebug(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
-		debugLog("fetch →", url, { signal: {} });
 		const js = await jsonFetch(url);
 		window.__muralActiveWorkspaceId = js?.activeWorkspaceId || window.__muralActiveWorkspaceId || null;
 		debugLog("verify ok", js);
@@ -171,7 +171,6 @@
 		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
 
 		const url = addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`);
-		debugLog("fetch →", url, { signal: {} });
 		const js = await jsonFetch(url);
 
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
@@ -198,7 +197,7 @@
 				const bodyText = await r.text().catch(() => "");
 				let body = {};
 				try { body = bodyText ? JSON.parse(bodyText) : {}; } catch {}
-				debugLog("await ←", url, { status: r.status, ok: r.ok, bodyPreview: bodyText.slice(0, 300) });
+				debugLog("await ←", { status: r.status, ok: r.ok });
 
 				if (r.status === 200 && body?.ok && body?.boardUrl) {
 					return { ok: true, boardUrl: body.boardUrl };
@@ -226,7 +225,7 @@
 
 		try {
 			const vr = await verify();
-			console.log("[mural] ✓ verify completed:", vr);
+			debugLog("verify completed", vr);
 			setConnectedStatus(false);
 		} catch (err) {
 			const code = Number(err?.status || 0);
@@ -315,10 +314,19 @@
 					body.workspaceId = activeWorkspaceId.trim();
 				}
 
+				debugLog("Setup request", body);
+
 				const js = await jsonFetch(addDebug(`${API_ORIGIN}/api/mural/setup`), {
 					method: "POST",
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify(body)
+				});
+
+				debugLog("Setup response", {
+					templateCopied: js?.templateCopied,
+					folderDenied: js?.folderDenied,
+					muralId: js?.mural?.id || js?.muralId,
+					boardUrl: js?.boardUrl || js?.mural?.viewLink
 				});
 
 				const folderDenied = Boolean(js?.folderDenied);
@@ -326,11 +334,13 @@
 
 				let muralId = js?.mural?.id || js?.muralId || null;
 				let boardUrl = js?.boardUrl || js?.mural?.viewLink || null;
+
 				if (boardUrl) {
 					RESOLVE_CACHE.set(resolvedProjectId, { muralId, boardUrl, ts: Date.now() });
 					setSetupAsOpen(resolvedProjectId, boardUrl);
 
 					if (!templateCopied) {
+						console.warn("[mural] Template was NOT copied - check server logs");
 						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
 					} else if (folderDenied) {
 						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
@@ -339,7 +349,7 @@
 					}
 
 					window.open(boardUrl, "_blank", "noopener");
-					debugLog("created + registered board", { muralId, boardUrl, templateCopied });
+					debugLog("Board created + registered", { muralId, boardUrl, templateCopied });
 					els.btnSetup.disabled = false;
 					return;
 				}
@@ -354,6 +364,7 @@
 					setSetupAsOpen(resolvedProjectId, awaited.boardUrl);
 
 					if (!templateCopied) {
+						console.warn("[mural] Template was NOT copied - check server logs");
 						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
 					} else if (folderDenied) {
 						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
@@ -369,24 +380,22 @@
 				pill(els.status, "warn", "Board created; link will appear shortly. Try the button again in a moment.");
 				els.btnSetup.disabled = false;
 			} catch (err) {
-				console.warn("[mural] setup failed", err);
+				console.error("[mural] Setup failed", err);
 				const code = Number(err?.status || 0);
 				const detail = err?.body?.message || err?.body?.upstream?.message || "";
 				const errorCode = err?.body?.code || "";
 				const step = err?.body?.step || "";
 
+				debugLog("Setup error", { code, errorCode, step, detail });
+
 				if (errorCode === "TEMPLATE_COPY_FAILED") {
 					pill(els.status, "bad", "Cannot copy template. Check if you have access to the template mural.");
 				} else if (code === 401) {
 					pill(els.status, "warn", "Please connect Mural first");
-				} else if (code === 403 && step === "create_mural" && /not allowed/i.test(detail)) {
-					pill(
-						els.status,
-						"bad",
-						"We can't create boards in this Mural room with your permissions. Ask a workspace admin to grant access."
-					);
+				} else if (code === 403 && step === "duplicate_or_create_mural") {
+					pill(els.status, "bad", "Cannot duplicate template. Check permissions or template access.");
 				} else if (code === 403) {
-					pill(els.status, "bad", "Mural account not in Home Office workspace");
+					pill(els.status, "bad", "Permission denied. Check Mural workspace access.");
 				} else if (err?.message === "mural_id_unavailable") {
 					pill(els.status, "bad", "Created, but couldn't obtain a board id");
 				} else {
