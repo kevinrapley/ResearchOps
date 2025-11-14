@@ -6,7 +6,7 @@
  *
  * 2.3.0:
  *  - Added duplicateMural() to copy from a template board
- *  - Added updateAreaTitle() to rename the “Reflexive Journal: <Project-Name>” area
+ *  - Added updateAreaTitle() to rename the "Reflexive Journal: <Project-Name>" area
  */
 
 export function buildAuthUrl(env, state) {
@@ -233,8 +233,6 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	if (!templateId) throw new Error("No template mural id configured for duplication");
 	if (!roomId) throw new Error("roomId is required for duplicateMural()");
 
-	// Tentative endpoint based on current public API shape.
-	// If your org uses a slightly different path, this is the one to tweak.
 	const url = `https://app.mural.co/api/public/v1/murals/${templateId}/duplicate`;
 	const body = {
 		title: title || "Reflexive Journal",
@@ -252,7 +250,9 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		const text = await res.text().catch(() => "");
 		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
 			status: res.status,
-			body: text
+			body: text,
+			templateId,
+			endpoint: url
 		});
 	}
 
@@ -395,4 +395,26 @@ export async function applyTagsToSticky(env, accessToken, muralId, widgetId, tag
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
 		body: JSON.stringify({ tags: tagIds })
 	}).catch(() => {});
+}
+
+/* ───────────────── Links ───────────────── */
+
+export async function getMuralLinks(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/links`;
+	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+	if (!res.ok) return [];
+	const js = await res.json().catch(() => ({}));
+	return js?.value || js?.links || [];
+}
+
+export async function createViewerLink(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/links`;
+	const res = await fetch(url, {
+		method: "POST",
+		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+		body: JSON.stringify({ type: "viewer" })
+	});
+	if (!res.ok) return null;
+	const js = await res.json().catch(() => ({}));
+	return js?.url || js?.value?.url || null;
 }
