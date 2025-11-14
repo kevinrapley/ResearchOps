@@ -4,8 +4,6 @@
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
  * @version 2.3.1
  *
- * 2.3.1:
- *  - Updated createMural() to use POST /api/public/v1/murals with roomId in the body
  * 2.3.0:
  *  - Added duplicateMural() to copy from a template board
  *  - Added updateAreaTitle() to rename the "Reflexive Journal: <Project-Name>" area
@@ -252,6 +250,7 @@ export async function ensureProjectFolder(env, accessToken, roomId, folderName) 
 
 export async function createMural(env, accessToken, { title, roomId, folderId }) {
 	if (!roomId) throw new Error("roomId is required for createMural()");
+	// Updated to use the public /murals endpoint with room placement via body.roomId
 	const url = "https://app.mural.co/api/public/v1/murals";
 	const body = { title, roomId, ...(folderId ? { folderId } : {}) };
 
@@ -275,13 +274,24 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 	return result;
 }
 
+/**
+ * GET /murals/{muralId}
+ */
 export async function getMural(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}`;
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) throw Object.assign(new Error(`GET /murals/${muralId} failed: ${res.status}`), { status: res.status });
+	if (!res.ok) {
+		const text = await res.text().catch(() => "");
+		throw Object.assign(new Error(`Get mural failed: ${res.status}`), { status: res.status, body: text });
+	}
 	return res.json();
 }
 
+/**
+ * Duplicate a mural from a template into a room/folder.
+ * We assume a template mural id configured in env.MURAL_TEMPLATE_REFLEXIVE,
+ * falling back to the hash from the provided template URL.
+ */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
 	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
 	if (!templateId) {
