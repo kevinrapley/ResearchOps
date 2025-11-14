@@ -1,18 +1,12 @@
 /**
- * @file src/lib/mural.js
- * @module mural
- * @summary Mural OAuth + API helpers (pure functions; no routing).
+ * @file service/internals/mural.js
+ * @module service/internals/mural
+ * @summary Mural routes logic (OAuth + provisioning + journal sync) backed by Airtable.
  *
- * ENV required:
- * - MURAL_CLIENT_ID
- * - MURAL_CLIENT_SECRET
- * - MURAL_REDIRECT_URI
- *
- * Optional:
- * - MURAL_COMPANY_ID                // prefer company verification
- * - MURAL_HOME_OFFICE_WORKSPACE_ID  // fallback: verify by workspace id/name
- * - MURAL_API_BASE                  // default: https://app.mural.co/api/public/v1
- * - MURAL_SCOPES                    // space-separated; overrides defaults
+ * Key change: when creating a "Mural Boards" row we now POST the Project Record ID
+ * into the single-line text field "Project ID". Airtable's Field Agent will link
+ * this to the Projects table internally. We still read legacy linked fields for
+ * backward compatibility.
  */
 
 import {
@@ -20,7 +14,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	ensureDefaultRoom,
+	findUserPrivateRoom,
 	ensureProjectFolder,
 	createMural,
 	duplicateMural,
@@ -389,16 +383,21 @@ export class MuralServicePart {
 			const projectName = body?.projectName;
 			const wsOverride = body?.workspaceId;
 
+			console.log("[mural.setup] Starting", { uid, projectId, projectName, hasWorkspaceOverride: !!wsOverride });
+
 			if (!projectName || !String(projectName).trim()) {
+				console.error("[mural.setup] Missing projectName");
 				return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
 			}
 			if (!projectId) {
+				console.error("[mural.setup] Missing projectId");
 				return this.root.json({ ok: false, error: "projectId required" }, 400, cors);
 			}
 
 			step = "load_tokens";
 			const tokens = await this.loadTokens(uid);
 			if (!tokens?.access_token) {
+				console.error("[mural.setup] No access token for uid", { uid });
 				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
 			}
 
@@ -407,15 +406,19 @@ export class MuralServicePart {
 			let ws;
 			try {
 				ws = await _ensureWorkspace(this.root, accessToken, wsOverride);
+				console.log("[mural.setup] Workspace verified", { workspaceId: ws.id, workspaceName: ws.name });
 			} catch (err) {
 				const code = Number(err?.status || err?.code || 0);
 				if (code === 401 && tokens.refresh_token) {
+					console.log("[mural.setup] Token expired, refreshing");
 					const refreshed = await refreshAccessToken(this.root.env, tokens.refresh_token);
 					const merged = { ...tokens, ...refreshed };
 					await this.saveTokens(uid, merged);
 					accessToken = merged.access_token;
 					ws = await _ensureWorkspace(this.root, accessToken, wsOverride);
+					console.log("[mural.setup] Workspace verified after refresh", { workspaceId: ws.id });
 				} else if (String(err?.message) === "not_in_home_office_workspace") {
+					console.error("[mural.setup] Not in Home Office workspace");
 					return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
 				} else {
 					throw err;
@@ -425,55 +428,72 @@ export class MuralServicePart {
 			step = "get_me";
 			const me = await getMe(this.root.env, accessToken).catch(() => null);
 			const username = me?.value?.firstName || me?.name || "Private";
+			console.log("[mural.setup] User identity", { username, userId: me?.value?.id });
 
-			step = "ensure_room";
-			const room = await ensureDefaultRoom(
-				this.root.env,
-				accessToken,
-				ws.id,
-				this.root.env.DEFAULT_ROOM_NAME || "ResearchOps"
-			);
+			step = "find_private_room";
+			const room = await findUserPrivateRoom(this.root.env, accessToken, ws.id);
 			const roomId = room?.id || room?.value?.id;
 			if (!roomId) {
-				return this.root.json({ ok: false, error: "room_id_unavailable", step }, 502, cors);
+				console.error("[mural.setup] No private room ID obtained", { room });
+				return this.root.json({ ok: false, error: "private_room_not_found", step }, 502, cors);
 			}
+			console.log("[mural.setup] Private room found", { roomId, roomName: room?.name });
 
 			step = "ensure_folder";
 			let folder = null;
 			try {
 				folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
-			} catch {}
+				console.log("[mural.setup] Folder ensured", { folderId: folder?.id, folderName: folder?.name });
+			} catch (e) {
+				console.warn("[mural.setup] Folder creation failed (non-critical)", { error: e?.message, status: e?.status });
+			}
 
 			step = "duplicate_or_create_mural";
 			let mural = null;
 			let muralId = null;
 			let templateCopied = true;
 
+			const templateId = this.root.env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
+			const muralTitle = `Reflexive Journal: ${projectName}`;
+			console.log("[mural.setup] Starting mural creation", {
+				templateId,
+				roomId,
+				folderId: folder?.id,
+				muralTitle,
+				willAttemptDuplication: true
+			});
+
 			try {
 				mural = await duplicateMural(this.root.env, accessToken, {
-					title: "Reflexive Journal",
+					title: muralTitle,
 					roomId,
 					folderId: folder?.id || folder?.value?.id
 				});
 				muralId = mural?.id || mural?.value?.id;
+				console.log("[mural.setup] Template duplication SUCCEEDED", { muralId });
 			} catch (e) {
 				templateCopied = false;
 
-				this.root.log?.error?.("mural.duplicate_failed", {
+				console.error("[mural.setup] Template duplication FAILED", {
+					error: e?.message,
 					status: e?.status,
 					body: e?.body,
-					message: e?.message,
-					templateId: e?.templateId
+					templateId: e?.templateId,
+					endpoint: e?.endpoint,
+					willFallbackToBlank: e?.status === 404
 				});
 
 				if (e?.status === 404) {
+					console.log("[mural.setup] Fallback: Creating blank mural (404 - endpoint not found)");
 					mural = await createMural(this.root.env, accessToken, {
-						title: "Reflexive Journal",
+						title: muralTitle,
 						roomId,
 						folderId: folder?.id || folder?.value?.id
 					});
 					muralId = mural?.id || mural?.value?.id;
+					console.log("[mural.setup] Blank mural created", { muralId });
 				} else {
+					console.error("[mural.setup] NOT creating blank mural - non-404 error", { status: e?.status });
 					throw Object.assign(
 						new Error(`Template duplication failed: ${e?.message || 'Unknown error'}`), {
 							code: "TEMPLATE_COPY_FAILED",
@@ -485,28 +505,22 @@ export class MuralServicePart {
 			}
 
 			if (!muralId) {
+				console.error("[mural.setup] No mural ID after creation attempts");
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
-			}
-
-			step = "update_area_title";
-			try {
-				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
-			} catch (e) {
-				this.root.log?.warn?.("mural.update_area_title_failed", {
-					message: e?.message,
-					status: e?.status
-				});
 			}
 
 			step = "probe_viewer_url";
 			let openUrl = null;
 			const deadline = Date.now() + 9000;
+			let attempts = 0;
 			while (!openUrl && Date.now() < deadline) {
+				attempts++;
 				openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId, this.root);
 				if (!openUrl) {
 					await new Promise(r => setTimeout(r, 600));
 				}
 			}
+			console.log("[mural.setup] Viewer URL probe", { openUrl, attempts, found: !!openUrl });
 
 			step = "register_board";
 			await this.registerBoard({
@@ -518,6 +532,7 @@ export class MuralServicePart {
 				workspaceId: ws?.id || null,
 				primary: true
 			});
+			console.log("[mural.setup] Board registered in Airtable");
 
 			if (openUrl) {
 				const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
@@ -529,8 +544,18 @@ export class MuralServicePart {
 						projectName,
 						updatedAt: Date.now()
 					}));
-				} catch {}
+					console.log("[mural.setup] KV cache updated");
+				} catch (e) {
+					console.warn("[mural.setup] KV cache update failed (non-critical)", { error: e?.message });
+				}
 			}
+
+			console.log("[mural.setup] COMPLETE", {
+				muralId,
+				boardUrl: openUrl,
+				templateCopied,
+				folderCreated: !!folder?.id
+			});
 
 			return this.root.json({
 				ok: true,
@@ -549,6 +574,15 @@ export class MuralServicePart {
 			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
 			const code = err?.code || null;
+
+			console.error("[mural.setup] FAILED", {
+				step,
+				status,
+				code,
+				message,
+				body: body?.slice?.(0, 500) || body
+			});
+
 			return this.root.json({ ok: false, error: "setup_failed", step, message, code, upstream: body },
 				status,
 				cors
