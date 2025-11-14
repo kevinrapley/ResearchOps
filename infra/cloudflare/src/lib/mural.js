@@ -201,6 +201,8 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 	const url = `https://app.mural.co/api/public/v1/rooms/${roomId}/murals`;
 	const body = { title, ...(folderId ? { folderId } : {}) };
 
+	console.log("[mural.createMural] Creating blank mural", { title, roomId, folderId });
+
 	const res = await fetch(url, {
 		method: "POST",
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -209,11 +211,14 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
+		console.error("[mural.createMural] Failed", { status: res.status, body: text });
 		throw Object.assign(new Error(`Create mural failed: ${res.status}`), { status: res.status, body: text });
 	}
 
 	const data = await res.json();
-	return data?.value || data;
+	const result = data?.value || data;
+	console.log("[mural.createMural] Success", { muralId: result?.id });
+	return result;
 }
 
 export async function getMural(env, accessToken, muralId) {
@@ -230,8 +235,14 @@ export async function getMural(env, accessToken, muralId) {
  */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
 	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
-	if (!templateId) throw new Error("No template mural id configured for duplication");
-	if (!roomId) throw new Error("roomId is required for duplicateMural()");
+	if (!templateId) {
+		console.error("[mural.duplicateMural] No template ID configured");
+		throw new Error("No template mural id configured for duplication");
+	}
+	if (!roomId) {
+		console.error("[mural.duplicateMural] No roomId provided");
+		throw new Error("roomId is required for duplicateMural()");
+	}
 
 	const url = `https://app.mural.co/api/public/v1/murals/${templateId}/duplicate`;
 	const body = {
@@ -240,14 +251,38 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		...(folderId ? { folderId } : {})
 	};
 
+	console.log("[mural.duplicateMural] Attempting template duplication", {
+		templateId,
+		roomId,
+		folderId,
+		title: body.title,
+		endpoint: url
+	});
+
 	const res = await fetch(url, {
 		method: "POST",
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
 		body: JSON.stringify(body)
 	});
 
+	console.log("[mural.duplicateMural] Response received", {
+		status: res.status,
+		statusText: res.statusText,
+		ok: res.ok,
+		headers: Object.fromEntries(res.headers.entries())
+	});
+
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
+		console.error("[mural.duplicateMural] FAILED", {
+			status: res.status,
+			statusText: res.statusText,
+			templateId,
+			endpoint: url,
+			responseBody: text.slice(0, 1000),
+			requestBody: body
+		});
+
 		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
 			status: res.status,
 			body: text,
@@ -257,7 +292,13 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	}
 
 	const js = await res.json().catch(() => ({}));
-	return js?.value || js;
+	const result = js?.value || js;
+	console.log("[mural.duplicateMural] SUCCESS", {
+		muralId: result?.id,
+		hasValue: !!js?.value,
+		responseKeys: Object.keys(js)
+	});
+	return result;
 }
 
 /* ───────────────── Widgets & areas ───────────────── */
