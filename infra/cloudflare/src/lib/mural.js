@@ -139,37 +139,39 @@ export async function verifyHomeOfficeByCompany(env, accessToken) {
 
 /* ───────────────── Rooms & folders ───────────────── */
 
-export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName) {
-	const desired = roomName || env.DEFAULT_ROOM_NAME || "ResearchOps";
+export async function findUserPrivateRoom(env, accessToken, workspaceId) {
 	const listUrl = `https://app.mural.co/api/public/v1/workspaces/${workspaceId}/rooms`;
+
+	console.log("[mural.findUserPrivateRoom] Looking for user's private room", { workspaceId });
 
 	const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
 	if (!listRes.ok) throw Object.assign(new Error(`List rooms failed: ${listRes.status}`), { status: listRes.status });
+
 	const js = await listRes.json();
 	const rooms = js?.value || js?.rooms || [];
-	const existing = rooms.find(r => (r.name || r.title || "").toLowerCase() === desired.toLowerCase());
-	if (existing) return existing;
 
-	const body = JSON.stringify({ name: desired, workspaceId });
-	const headers = {
-		Authorization: `Bearer ${accessToken}`,
-		"Content-Type": "application/json"
-	};
-
-	let createRes = await fetch("https://app.mural.co/api/public/v1/rooms", {
-		method: "POST",
-		headers,
-		body
+	console.log("[mural.findUserPrivateRoom] Found rooms", {
+		count: rooms.length,
+		rooms: rooms.map(r => ({ id: r.id, name: r.name, type: r.type }))
 	});
-	if (!createRes.ok && createRes.status === 404) {
-		createRes = await fetch(listUrl, { method: "POST", headers, body: JSON.stringify({ name: desired }) });
+
+	const privateRoom = rooms.find(r =>
+		(r.type === "private" || r.type === "PRIVATE") ||
+		(r.name || "").toLowerCase().includes("private")
+	);
+
+	if (!privateRoom) {
+		console.error("[mural.findUserPrivateRoom] No private room found");
+		throw new Error("User's private room not found");
 	}
-	if (!createRes.ok) {
-		const text = await createRes.text().catch(() => "");
-		throw Object.assign(new Error(`Create room failed: ${createRes.status}`), { status: createRes.status, body: text });
-	}
-	const created = await createRes.json();
-	return created?.value || created;
+
+	console.log("[mural.findUserPrivateRoom] Found private room", {
+		roomId: privateRoom.id,
+		roomName: privateRoom.name,
+		roomType: privateRoom.type
+	});
+
+	return privateRoom;
 }
 
 export async function ensureProjectFolder(env, accessToken, roomId, folderName) {
@@ -245,8 +247,9 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	}
 
 	const url = `https://app.mural.co/api/public/v1/murals/${templateId}/duplicate`;
+	const muralTitle = title || "Reflexive Journal";
 	const body = {
-		title: title || "Reflexive Journal",
+		title: muralTitle,
 		roomId,
 		...(folderId ? { folderId } : {})
 	};
@@ -255,7 +258,7 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		templateId,
 		roomId,
 		folderId,
-		title: body.title,
+		title: muralTitle,
 		endpoint: url
 	});
 
@@ -295,6 +298,7 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	const result = js?.value || js;
 	console.log("[mural.duplicateMural] SUCCESS", {
 		muralId: result?.id,
+		muralTitle: result?.title,
 		hasValue: !!js?.value,
 		responseKeys: Object.keys(js)
 	});
