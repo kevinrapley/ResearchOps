@@ -5,9 +5,9 @@
  * @version 2.4.0
  *
  * 2.4.0:
- *  - Fix createMural() to use POST /murals with roomId in the body (Mural Public API shape).
- *  - Add findUserPrivateRoom() helper that prefers the logged-in user's private room,
- *    falling back to a named room (e.g. "ResearchOps Boards") via ensureDefaultRoom().
+ *  - Remove any fallback to shared "ResearchOps Boards" style rooms.
+ *  - Introduce ensureUserRoom(): always use a room OWNED by the authenticated user.
+ *  - Fix createMural() to use POST /murals with roomId in the body (per Mural public API).
  *
  * 2.3.0:
  *  - Added duplicateMural() to copy from a template board
@@ -33,7 +33,8 @@ export function buildAuthUrl(env, state) {
 	url.searchParams.set("redirect_uri", redirectUri);
 	url.searchParams.set("response_type", "code");
 	url.searchParams.set("scope", scopes);
-	url.searchParams.set("state", state);
+	if (state) url.searchParams.set("state", state);
+
 	return url.toString();
 }
 
@@ -91,16 +92,22 @@ export async function refreshAccessToken(env, refreshToken) {
 	return res.json();
 }
 
-/* ───────────────── Identity & workspace ───────────────── */
+/* ───────────────── Identity & workspaces ───────────────── */
 
 export async function getMe(env, accessToken) {
 	const url = "https://app.mural.co/api/public/v1/users/me";
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) throw Object.assign(new Error(`GET /users/me failed: ${res.status}`), { status: res.status });
-	return res.json();
+	const js = await res.json().catch(() => null);
+	if (!res.ok) {
+		throw Object.assign(new Error(`GET /users/me failed: ${res.status}`), { status: res.status, body: js });
+	}
+	return js;
 }
 
-export async function getWorkspace(env, accessToken, id) {
+export async function getWorkspace(env, accessToken, workspaceId) {
+	const id = workspaceId || env.MURAL_WORKSPACE_ID;
+	if (!id) throw new Error("workspaceId required");
+
 	const url = `https://app.mural.co/api/public/v1/workspaces/${id}`;
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
 	const js = await res.json().catch(() => null);
@@ -131,143 +138,200 @@ export function getActiveWorkspaceIdFromMe(me) {
 	);
 }
 
+/**
+ * Light-touch check that we are in the expected Home Office workspace.
+ */
 export async function verifyHomeOfficeByCompany(env, accessToken) {
-	const expected = String(env.MURAL_COMPANY_ID || "homeofficegovuk").trim().toLowerCase();
-	if (!expected) return true;
+	const wsId = env.MURAL_WORKSPACE_ID;
+	if (!wsId) {
+		return { ok: true, reason: "no_workspace_id_configured" };
+	}
 
-	const me = await getMe(env, accessToken);
-	const v = me?.value || me || {};
-	const companyId = String(v.companyId || v.company?.id || "").trim().toLowerCase();
-	return Boolean(companyId && companyId === expected);
+	const workspace = await getWorkspace(env, accessToken, wsId);
+	const companyId = workspace?.companyId || workspace?.value?.companyId;
+	const companyName = workspace?.companyName || workspace?.value?.companyName;
+
+	const isHomeOffice = typeof companyId === "string" && companyId.toLowerCase().includes("homeoffice");
+	return {
+		ok: isHomeOffice,
+		workspaceId: wsId,
+		companyId,
+		companyName
+	};
 }
 
 /* ───────────────── Rooms & folders ───────────────── */
 
 /**
- * Ensure a named room exists in a workspace (used as a generic fallback).
- */
-export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName) {
-	const desired = roomName || env.DEFAULT_ROOM_NAME || "ResearchOps";
-	const listUrl = `https://app.mural.co/api/public/v1/workspaces/${workspaceId}/rooms`;
-
-	const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!listRes.ok) throw Object.assign(new Error(`List rooms failed: ${listRes.status}`), { status: listRes.status });
-	const js = await listRes.json();
-	const rooms = js?.value || js?.rooms || [];
-	const existing = rooms.find(r => (r.name || r.title || "").toLowerCase() === desired.toLowerCase());
-	if (existing) return existing;
-
-	const body = JSON.stringify({ name: desired, workspaceId });
-	const headers = {
-		Authorization: `Bearer ${accessToken}`,
-		"Content-Type": "application/json"
-	};
-
-	let createRes = await fetch("https://app.mural.co/api/public/v1/rooms", {
-		method: "POST",
-		headers,
-		body
-	});
-	if (!createRes.ok && createRes.status === 404) {
-		// Older API shape (deprecated but kept as a fallback)
-		createRes = await fetch(listUrl, { method: "POST", headers, body: JSON.stringify({ name: desired }) });
-	}
-	if (!createRes.ok) {
-		const text = await createRes.text().catch(() => "");
-		throw Object.assign(new Error(`Create room failed: ${createRes.status}`), { status: createRes.status, body: text });
-	}
-	const created = await createRes.json();
-	return created?.value || created;
-}
-
-/**
- * Prefer the logged-in user's private room in a workspace.
- * If not found, fall back to a named room (e.g. "ResearchOps Boards").
+ * Ensure we are using a room that is OWNED by the authenticated user.
  *
- * This keeps the mental model:
- *  - Template lives in Kevin's private room.
- *  - Copies for others live in *their* private room.
- *  - As a safety net, we still have a shared "ResearchOps Boards" room.
+ * This matches the Mural API requirement for POST /murals:
+ * "Create a mural in a room owned by the authenticated user".  [oai_citation:1‡developers.mural.co](https://developers.mural.co/public/reference/createmural?utm_source=chatgpt.com)
+ *
+ * Flow:
+ *  - Get current user (users/me)
+ *  - List rooms for the workspace
+ *  - Prefer a room whose owner/createdBy matches this user
+ *  - If none found, create a new room in this workspace for them
  */
-export async function findUserPrivateRoom(env, accessToken, workspaceId, roomName) {
-	const targetName = roomName || env.MURAL_ROOM_NAME || "ResearchOps Boards";
-	const listUrl = `https://app.mural.co/api/public/v1/workspaces/${workspaceId}/rooms`;
+export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
+	const wsId = workspaceId || env.MURAL_WORKSPACE_ID;
+	if (!wsId) throw new Error("workspaceId is required for ensureUserRoom()");
 
-	const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+	const me = await getMe(env, accessToken);
+	const mv = me?.value || me || {};
+	const userId = String(mv.id || mv.userId || "").toLowerCase();
+	const userLabel = `${mv.firstName || ""} ${mv.lastName || ""}`.trim() || mv.email || "User";
+
+	const roomsUrl = `https://app.mural.co/api/public/v1/workspaces/${wsId}/rooms`;
+	const listRes = await fetch(roomsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+	const listJs = await listRes.json().catch(() => ({}));
 	if (!listRes.ok) {
-		throw Object.assign(new Error(`List rooms failed: ${listRes.status}`), { status: listRes.status });
+		throw Object.assign(new Error(`List rooms failed: ${listRes.status}`), { status: listRes.status, body: listJs });
 	}
 
-	const js = await listRes.json().catch(() => ({}));
-	const rooms = js?.value || js?.rooms || [];
-
-	let userId = null;
-	try {
-		const me = await getMe(env, accessToken);
-		const v = me?.value || me || {};
-		userId = v.id || v.userId || null;
-	} catch {
-		// If this fails we still try heuristics below.
-	}
-
-	// 1) Prefer an explicit "private" / "personal" style room owned by the user.
-	const privateRoom = rooms.find(r => {
-		const type = String(r.type || r.roomType || "").toLowerCase();
-		const visibility = String(r.visibility || "").toLowerCase();
-		const ownerId =
-			String(r.ownerId || r.owner?.id || r.createdBy?.id || "").toLowerCase();
-		const matchesUser = userId && ownerId === String(userId).toLowerCase();
-
-		return (
-			visibility === "private" ||
-			type === "private" ||
-			type === "personal" ||
-			(matchesUser && !["open", "public"].includes(visibility))
-		);
+	const rooms = listJs?.value || listJs?.rooms || [];
+	console.log("[mural.ensureUserRoom] Rooms in workspace", {
+		workspaceId: wsId,
+		count: rooms.length
 	});
 
-	if (privateRoom) return privateRoom;
+	// 1) Prefer a room clearly owned by this user.
+	const ownedRoom = rooms.find(r => {
+		const ownerId = String(
+			r.ownerId ||
+			r.owner?.id ||
+			r.createdBy?.id ||
+			r.createdByUserId ||
+			""
+		).toLowerCase();
 
-	// 2) Fallback: named room (e.g. "ResearchOps Boards").
-	const named = rooms.find(r => (r.name || r.title || "").toLowerCase() === targetName.toLowerCase());
-	if (named) return named;
+		return userId && ownerId && ownerId === userId;
+	});
 
-	// 3) Last resort: create / ensure a named shared room.
-	return ensureDefaultRoom(env, accessToken, workspaceId, targetName);
+	if (ownedRoom) {
+		console.log("[mural.ensureUserRoom] Using existing owned room", {
+			roomId: ownedRoom.id,
+			name: ownedRoom.name || ownedRoom.title
+		});
+		return ownedRoom;
+	}
+
+	// 2) Optional: soft hint by name, if caller provided roomName.
+	if (roomName) {
+		const byName = rooms.find(r => (r.name || r.title || "").toLowerCase() === roomName.toLowerCase());
+		if (byName) {
+			console.log("[mural.ensureUserRoom] Using room by name (no explicit owner match)", {
+				roomId: byName.id,
+				name: byName.name || byName.title
+			});
+			return byName;
+		}
+	}
+
+	// 3) No suitable room: create one that will be owned by this user.
+	const desiredName =
+		roomName ||
+		env.MURAL_DEFAULT_PERSONAL_ROOM_NAME ||
+		`${userLabel} – ResearchOps`;
+
+	console.log("[mural.ensureUserRoom] Creating personal room for user", {
+		workspaceId: wsId,
+		name: desiredName
+	});
+
+	const createRes = await fetch("https://app.mural.co/api/public/v1/rooms", {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			name: desiredName,
+			workspaceId: wsId
+		})
+	});
+
+	const createJs = await createRes.json().catch(() => ({}));
+	if (!createRes.ok) {
+		throw Object.assign(new Error(`Create room failed: ${createRes.status}`), {
+			status: createRes.status,
+			body: createJs
+		});
+	}
+
+	const created = createJs?.value || createJs;
+	console.log("[mural.ensureUserRoom] Created personal room", {
+		roomId: created.id,
+		name: created.name || created.title
+	});
+	return created;
 }
 
 /**
- * Ensure a folder for a project exists in a given room.
+ * Ensure a folder for a given project exists inside a room.
+ * We simply name the folder after the project.
  */
 export async function ensureProjectFolder(env, accessToken, roomId, folderName) {
+	if (!roomId) throw new Error("roomId is required for ensureProjectFolder()");
+	if (!folderName) throw new Error("folderName (usually project name) is required for ensureProjectFolder()");
+
 	const listUrl = `https://app.mural.co/api/public/v1/rooms/${roomId}/folders`;
 	const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!listRes.ok) throw Object.assign(new Error(`List folders failed: ${listRes.status}`), { status: listRes.status });
+	const listJs = await listRes.json().catch(() => ({}));
+	if (!listRes.ok) {
+		throw Object.assign(new Error(`List folders failed: ${listRes.status}`), {
+			status: listRes.status,
+			body: listJs
+		});
+	}
 
-	const js = await listRes.json();
-	const folders = js?.value || js?.folders || [];
+	const folders = listJs?.value || listJs?.folders || [];
 	const existing = folders.find(f => (f.name || f.title || "").toLowerCase() === folderName.toLowerCase());
-	if (existing) return existing;
+	if (existing) {
+		console.log("[mural.ensureProjectFolder] Found existing folder", {
+			roomId,
+			folderId: existing.id,
+			name: existing.name || existing.title
+		});
+		return existing;
+	}
+
+	console.log("[mural.ensureProjectFolder] Creating folder in room", {
+		roomId,
+		name: folderName
+	});
 
 	const createRes = await fetch(listUrl, {
 		method: "POST",
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
 		body: JSON.stringify({ name: folderName })
 	});
+	const createJs = await createRes.json().catch(() => ({}));
 	if (!createRes.ok) {
-		const text = await createRes.text().catch(() => "");
-		throw Object.assign(new Error(`Create folder failed: ${createRes.status}`), { status: createRes.status, body: text });
+		throw Object.assign(new Error(`Create folder failed: ${createRes.status}`), {
+			status: createRes.status,
+			body: createJs
+		});
 	}
-	return (await createRes.json())?.value;
+
+	const created = createJs?.value || createJs;
+	console.log("[mural.ensureProjectFolder] Created folder", {
+		roomId,
+		folderId: created.id,
+		name: created.name || created.title
+	});
+	return created;
 }
 
 /* ───────────────── Mural creation / duplication ───────────────── */
 
 /**
- * Create a *blank* mural in a room / folder.
+ * Create a *blank* mural in a room/folder.
  *
- * Important: per Mural Public API, the endpoint is POST /murals
- * with roomId and optional folderId in the JSON body.
+ * Official endpoint:
+ *   POST https://app.mural.co/api/public/v1/murals
+ * with body: { title, roomId, folderId? }  [oai_citation:2‡developers.mural.co](https://developers.mural.co/public/reference/createmural?utm_source=chatgpt.com)
  */
 export async function createMural(env, accessToken, { title, roomId, folderId }) {
 	if (!roomId) throw new Error("roomId is required for createMural()");
@@ -279,7 +343,7 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 		...(folderId ? { folderId } : {})
 	};
 
-	console.log("[mural.createMural] Creating blank mural", { title, roomId, folderId, endpoint: url });
+	console.log("[mural.createMural] Creating blank mural", { title, roomId, folderId });
 
 	const res = await fetch(url, {
 		method: "POST",
@@ -287,17 +351,19 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 		body: JSON.stringify(body)
 	});
 
+	const data = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		const text = await res.text().catch(() => "");
 		console.error("[mural.createMural] Failed", {
 			status: res.status,
 			statusText: res.statusText,
-			body: text.slice(0, 1000)
+			body: data
 		});
-		throw Object.assign(new Error(`Create mural failed: ${res.status}`), { status: res.status, body: text });
+		throw Object.assign(new Error(`Create mural failed: ${res.status}`), {
+			status: res.status,
+			body: data
+		});
 	}
 
-	const data = await res.json().catch(() => ({}));
 	const result = data?.value || data;
 	console.log("[mural.createMural] Success", { muralId: result?.id });
 	return result;
@@ -306,25 +372,28 @@ export async function createMural(env, accessToken, { title, roomId, folderId })
 export async function getMural(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}`;
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) throw Object.assign(new Error(`GET /murals/${muralId} failed: ${res.status}`), { status: res.status });
-	return res.json();
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`GET /murals/${muralId} failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return js;
 }
 
 /**
  * Duplicate a mural from a template into a room/folder.
- * We assume a template mural id configured in env.MURAL_TEMPLATE_REFLEXIVE,
- * falling back to the hash from the provided template URL.
+ *
+ * Template id defaults to env.MURAL_TEMPLATE_REFLEXIVE.
+ * In your case this maps to:
+ *   https://app.mural.co/t/pppt6786/m/pppt6786/1761511827081/76da04f30edfebd1ac5b595ad2953629b41c1c7d
+ * where the final slug is the mural id.
  */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
 	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
-	if (!templateId) {
-		console.error("[mural.duplicateMural] No template ID configured");
-		throw new Error("No template mural id configured for duplication");
-	}
-	if (!roomId) {
-		console.error("[mural.duplicateMural] No roomId provided");
-		throw new Error("roomId is required for duplicateMural()");
-	}
+	if (!templateId) throw new Error("No template mural id configured for duplication");
+	if (!roomId) throw new Error("roomId is required for duplicateMural()");
 
 	const url = `https://app.mural.co/api/public/v1/murals/${templateId}/duplicate`;
 	const body = {
@@ -337,8 +406,7 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		templateId,
 		roomId,
 		folderId,
-		title: body.title,
-		endpoint: url
+		title: body.title
 	});
 
 	const res = await fetch(url, {
@@ -347,38 +415,25 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		body: JSON.stringify(body)
 	});
 
-	console.log("[mural.duplicateMural] Response received", {
+	const js = await res.json().catch(() => ({}));
+
+	console.log("[mural.duplicateMural] Response", {
 		status: res.status,
 		statusText: res.statusText,
 		ok: res.ok,
-		headers: Object.fromEntries(res.headers.entries())
+		bodyKeys: Object.keys(js || {})
 	});
 
 	if (!res.ok) {
-		const text = await res.text().catch(() => "");
-		console.error("[mural.duplicateMural] FAILED", {
-			status: res.status,
-			statusText: res.statusText,
-			templateId,
-			endpoint: url,
-			responseBody: text.slice(0, 1000),
-			requestBody: body
-		});
-
 		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
 			status: res.status,
-			body: text,
-			templateId,
-			endpoint: url
+			body: js
 		});
 	}
 
-	const js = await res.json().catch(() => ({}));
 	const result = js?.value || js;
 	console.log("[mural.duplicateMural] SUCCESS", {
-		muralId: result?.id,
-		hasValue: !!js?.value,
-		responseKeys: Object.keys(js)
+		muralId: result?.id
 	});
 	return result;
 }
@@ -388,22 +443,38 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 export async function getWidgets(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), { status: res.status });
-	return res.json();
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return js?.value || js?.widgets || [];
 }
 
 export async function createSticky(env, accessToken, muralId, { text, x, y, width = 240, height = 120 }) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note`;
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
+	const body = {
+		type: "sticky-note",
+		text,
+		geometry: { x, y, width, height }
+	};
+
 	const res = await fetch(url, {
 		method: "POST",
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-		body: JSON.stringify({ text, x, y, width, height })
+		body: JSON.stringify(body)
 	});
+
+	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		const bodyText = await res.text().catch(() => "");
-		throw Object.assign(new Error(`Create sticky failed: ${res.status}`), { status: res.status, body: bodyText });
+		throw Object.assign(new Error(`Create sticky failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
 	}
-	return (await res.json())?.value;
+	return js;
 }
 
 export async function updateSticky(env, accessToken, muralId, widgetId, patch) {
@@ -413,105 +484,131 @@ export async function updateSticky(env, accessToken, muralId, widgetId, patch) {
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
 		body: JSON.stringify(patch)
 	});
+	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		const text = await res.text().catch(() => "");
-		throw Object.assign(new Error(`Update sticky failed: ${res.status}`), { status: res.status, body: text });
+		throw Object.assign(new Error(`Update sticky failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
 	}
-	return res.json();
-}
-
-export function normaliseWidgets(widgets) {
-	if (!Array.isArray(widgets)) return [];
-	return widgets.map(w => ({
-		id: w.id,
-		type: w.type,
-		text: w.text || "",
-		tags: Array.isArray(w.tags) ? w.tags : [],
-		x: w.x,
-		y: w.y,
-		width: w.width,
-		height: w.height,
-		createdAt: w.createdAt || w.updatedAt || null
-	}));
-}
-
-export function findLatestInCategory(list, category) {
-	const key = String(category || "").toLowerCase();
-	const stickies = (list || []).filter(w => (w.type || "").toLowerCase().includes("sticky"));
-	const filtered = stickies.filter(w => {
-		const tags = (w.tags || []).map(t => String(t).toLowerCase());
-		const text = String(w.text || "").toLowerCase();
-		return tags.includes(key) || text.startsWith(`[${key}]`);
-	});
-	if (!filtered.length) return null;
-	if (filtered.some(w => w.createdAt)) {
-		return filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
-	}
-	return filtered.sort((a, b) => ((b.y || 0) - (a.y || 0)) || ((b.x || 0) - (a.x || 0)))[0];
+	return js;
 }
 
 /**
- * After duplication, find the area that has a title like
- * "Reflexive Journal: ..." and rename it to include the actual project name.
+ * Normalise a widgets array into a simple structure.
+ */
+export function normaliseWidgets(widgets) {
+	const all = Array.isArray(widgets) ? widgets : [];
+	const byId = new Map();
+	const byType = new Map();
+
+	for (const w of all) {
+		if (!w || !w.id) continue;
+		byId.set(w.id, w);
+		const type = w.type || "unknown";
+		if (!byType.has(type)) byType.set(type, []);
+		byType.get(type).push(w);
+	}
+
+	return { all, byId, byType };
+}
+
+/**
+ * Find the most recent widget in a category-like group using a predicate.
+ */
+export function findLatestInCategory(widgets, predicate) {
+	const all = Array.isArray(widgets) ? widgets : [];
+	let latest = null;
+	for (const w of all) {
+		if (!predicate(w)) continue;
+		if (!latest || (w.createdOn || 0) > (latest.createdOn || 0)) {
+			latest = w;
+		}
+	}
+	return latest;
+}
+
+/**
+ * Update the title of the first "area" widget to match "Reflexive Journal: <Project-Name>".
+ * This helps make the board self-identifying once duplicated.
  */
 export async function updateAreaTitle(env, accessToken, muralId, projectName) {
-	if (!projectName) return;
+	if (!projectName) return null;
+
 	const widgets = await getWidgets(env, accessToken, muralId);
-	const list = normaliseWidgets(widgets?.widgets);
+	const areas = widgets.filter(w => w.type === "area");
+	const first = areas[0];
+	if (!first) {
+		console.warn("[mural.updateAreaTitle] No area widgets found");
+		return null;
+	}
 
-	const target = list.find(w => {
-		const t = String(w.text || "").trim();
-		return t.toLowerCase().startsWith("reflexive journal:");
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${first.id}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+		body: JSON.stringify({ title: `Reflexive Journal: ${projectName}` })
 	});
-
-	if (!target) return;
-
-	const newTitle = `Reflexive Journal: ${projectName}`;
-	await updateSticky(env, accessToken, muralId, target.id, { text: newTitle });
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Update area title failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return js;
 }
 
 /* ───────────────── Tags ───────────────── */
 
 export async function ensureTagsBlueberry(env, accessToken, muralId, tagLabels) {
 	if (!Array.isArray(tagLabels) || !tagLabels.length) return [];
-	const listUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/tags`;
-	const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!listRes.ok) {
-		console.warn("[ensureTagsBlueberry] Failed to list tags:", listRes.status);
-		return [];
-	}
-	const listData = await listRes.json();
-	const existing = listData?.value || [];
-	const tagMap = new Map(existing.map(t => [(t.title || t.label || "").toLowerCase(), t.id]));
 
-	const out = [];
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/tags`;
+	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Get tags failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+
+	const existing = js?.value || js?.tags || [];
+	const created = [];
+	const byLabel = new Map(existing.map(t => [(t.text || t.title || "").toLowerCase(), t]));
+
 	for (const label of tagLabels) {
-		const lower = label.toLowerCase();
-		if (tagMap.has(lower)) {
-			out.push(tagMap.get(lower));
+		const key = label.toLowerCase();
+		const found = byLabel.get(key);
+		if (found) {
+			created.push(found);
 			continue;
 		}
-		const createRes = await fetch(listUrl, {
+
+		const createRes = await fetch(url, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-			body: JSON.stringify({ title: label })
+			body: JSON.stringify({ text: label })
 		});
-		if (createRes.ok) {
-			const created = await createRes.json();
-			const id = created?.value?.id || created?.id;
-			if (id) {
-				out.push(id);
-				tagMap.set(lower, id);
-			}
-		} else {
-			console.warn("[ensureTagsBlueberry] Failed to create tag:", label, createRes.status);
+		const createJs = await createRes.json().catch(() => ({}));
+		if (!createRes.ok) {
+			throw Object.assign(new Error(`Create tag failed: ${createRes.status}`), {
+				status: createRes.status,
+				body: createJs
+			});
 		}
+		const tag = createJs?.value || createJs;
+		created.push(tag);
+		byLabel.set(key, tag);
 	}
-	return out;
+
+	return created;
 }
 
 export async function applyTagsToSticky(env, accessToken, muralId, widgetId, tagIds) {
 	if (!Array.isArray(tagIds) || !tagIds.length) return;
+
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${widgetId}`;
 	await fetch(url, {
 		method: "PATCH",
@@ -525,8 +622,8 @@ export async function applyTagsToSticky(env, accessToken, muralId, widgetId, tag
 export async function getMuralLinks(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/links`;
 	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	if (!res.ok) return [];
 	const js = await res.json().catch(() => ({}));
+	if (!res.ok) return [];
 	return js?.value || js?.links || [];
 }
 
@@ -537,7 +634,7 @@ export async function createViewerLink(env, accessToken, muralId) {
 		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
 		body: JSON.stringify({ type: "viewer" })
 	});
-	if (!res.ok) return null;
 	const js = await res.json().catch(() => ({}));
+	if (!res.ok) return null;
 	return js?.url || js?.value?.url || null;
 }
