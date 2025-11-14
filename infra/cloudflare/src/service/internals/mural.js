@@ -7,6 +7,10 @@
  * into the single-line text field "Project ID". Airtable’s Field Agent will link
  * this to the Projects table internally. We still read legacy linked fields for
  * backward compatibility.
+ *
+ * Additional change: when setting up the Reflexive Journal, we duplicate a
+ * template mural (rather than starting from a blank board) and retitle the
+ * "Reflexive Journal: <Project-Name>" area to the current project name.
  */
 
 import {
@@ -17,7 +21,6 @@ import {
 	ensureUserRoom,
 	ensureProjectFolder,
 	createMural,
-	duplicateMural,
 	getMural,
 	getMe,
 	getWorkspace,
@@ -32,7 +35,7 @@ import {
 	findLatestInCategory,
 	getMuralLinks,
 	createViewerLink,
-	updateAreaTitle
+	duplicateMural
 } from "../../lib/mural.js";
 
 import {
@@ -203,9 +206,17 @@ async function _getValidAccessToken(self, uid) {
 
 export class MuralServicePart {
 	constructor(root) { this.root = root; }
+
 	kvKey(uid) { return `mural:${uid}:tokens`; }
-	async saveTokens(uid, tokens) { await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true }); }
-	async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
+
+	async saveTokens(uid, tokens) {
+		await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true });
+	}
+
+	async loadTokens(uid) {
+		const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid));
+		return raw ? JSON.parse(raw) : null;
+	}
 
 	/* ── Core lookups ── */
 
@@ -261,10 +272,11 @@ export class MuralServicePart {
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
 
-		const safeProjectIdText = String(projectId).trim(); // Airtable record id
+		const safeProjectIdText = String(projectId).trim(); // ← already an Airtable rec id
 		const normalizedBoardUrl = typeof boardUrl === "string" && boardUrl.trim() ? boardUrl.trim() : null;
 		const normalizedWorkspaceId = typeof workspaceId === "string" && workspaceId.trim() ? workspaceId.trim() : null;
 
+		// Is there an existing row for this projectId + uid + purpose + muralId?
 		let existing = null;
 		try {
 			const rows = await atListBoards(this.root.env, { projectId: safeProjectIdText, uid, purpose, active: true, max: 25 }, this.root);
@@ -274,11 +286,11 @@ export class MuralServicePart {
 		if (existing) {
 			const updateFields = {
 				"Project ID": safeProjectIdText,
-				"UID": String(uid),
-				"Purpose": String(purpose),
+				UID: String(uid),
+				Purpose: String(purpose),
 				"Mural ID": String(muralId),
 				"Primary?": !!primary,
-				"Active": true
+				Active: true
 			};
 			if (normalizedBoardUrl) updateFields["Board URL"] = normalizedBoardUrl;
 			if (normalizedWorkspaceId) updateFields["Workspace ID"] = normalizedWorkspaceId;
@@ -359,8 +371,7 @@ export class MuralServicePart {
 		try {
 			const tokenRes = await _getValidAccessToken(this, uid);
 			if (!tokenRes.ok) {
-				return this.root.json(
-					{ ok: false, error: tokenRes.reason },
+				return this.root.json({ ok: false, error: tokenRes.reason },
 					tokenRes.reason === "not_authenticated" ? 401 : 500,
 					cors
 				);
@@ -371,8 +382,7 @@ export class MuralServicePart {
 			const activeWorkspaceId = getActiveWorkspaceIdFromMe(me) || null;
 			return this.root.json({ ok: true, me, activeWorkspaceId }, 200, cors);
 		} catch (err) {
-			return this.root.json(
-				{ ok: false, error: "verify_failed", detail: String(err?.message || err) },
+			return this.root.json({ ok: false, error: "verify_failed", detail: String(err?.message || err) },
 				500,
 				cors
 			);
@@ -387,7 +397,7 @@ export class MuralServicePart {
 		try {
 			const body = await request.json().catch(() => ({}));
 			const uid = body?.uid ?? "anon";
-			const projectId = body?.projectId ?? null;
+			const projectId = body?.projectId ?? null; // ← must be Airtable rec id from <main data-project-id>
 			const projectName = body?.projectName;
 			const wsOverride = body?.workspaceId;
 
@@ -429,12 +439,11 @@ export class MuralServicePart {
 			const username = me?.value?.firstName || me?.name || "Private";
 
 			step = "ensure_room";
-			const room = await ensureUserRoom(
-				this.root.env,
-				accessToken,
-				ws.id,
-				{ username, userId: me?.value?.id, userEmail: me?.value?.email }
-			);
+			const room = await ensureUserRoom(this.root.env, accessToken, ws.id, {
+				username,
+				userId: me?.value?.id,
+				userEmail: me?.value?.email
+			});
 			const roomId = room?.id || room?.value?.id;
 			if (!roomId) {
 				return this.root.json({ ok: false, error: "room_id_unavailable", step }, 502, cors);
@@ -443,49 +452,85 @@ export class MuralServicePart {
 			step = "ensure_folder";
 			let folder = null;
 			try {
-				folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
+				folder = await ensureProjectFolder(
+					this.root.env,
+					accessToken,
+					roomId,
+					String(projectName).trim()
+				);
 			} catch {}
 
-			// ── Duplicate from template, fallback to blank mural ──
-			step = "duplicate_or_create_mural";
-			let mural = null;
-			let muralId = null;
+			// Prefer duplicating from a template mural rather than creating a blank board.
+			step = "create_or_duplicate_mural";
+			const templateId =
+				this.root.env.MURAL_REFLEXIVE_TEMPLATE_ID ||
+				"1761511827081"; // from https://app.mural.co/t/pppt6786/m/pppt6786/1761511827081/...
 
-			try {
-				mural = await duplicateMural(this.root.env, accessToken, {
-					title: "Reflexive Journal",
-					roomId,
-					folderId: folder?.id || folder?.value?.id
-				});
-				muralId = mural?.id || mural?.value?.id;
-			} catch (e) {
-				this.root.log?.warn?.("mural.duplicate_failed", {
-					status: e?.status,
-					body: e?.body,
-					message: e?.message
-				});
-
+			let mural;
+			if (templateId) {
+				try {
+					mural = await duplicateMural(this.root.env, accessToken, templateId, {
+						title: "Reflexive Journal",
+						roomId,
+						folderId: folder?.id || folder?.value?.id
+					});
+				} catch (err) {
+					// Fallback to a blank mural if duplication fails.
+					mural = await createMural(this.root.env, accessToken, {
+						title: "Reflexive Journal",
+						roomId,
+						folderId: folder?.id || folder?.value?.id
+					});
+				}
+			} else {
 				mural = await createMural(this.root.env, accessToken, {
 					title: "Reflexive Journal",
 					roomId,
 					folderId: folder?.id || folder?.value?.id
 				});
-				muralId = mural?.id || mural?.value?.id;
 			}
 
+			const muralId = mural?.id || mural?.value?.id;
 			if (!muralId) {
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
-			// ── Update the area title inside the duplicated board ──
-			step = "update_area_title";
+			// After duplication, update the "Reflexive Journal: <Project-Name>" area title.
+			step = "rename_area_title";
 			try {
-				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
-			} catch (e) {
-				this.root.log?.warn?.("mural.update_area_title_failed", {
-					message: e?.message,
-					status: e?.status
+				const widgetsJs = await getWidgets(this.root.env, accessToken, muralId);
+				const widgetsRaw = widgetsJs?.widgets || widgetsJs?.value || [];
+				const widgets = Array.isArray(widgetsRaw) ? widgetsRaw : [];
+
+				const targetArea = widgets.find(w => {
+					const type = String(w.type || "").toLowerCase();
+					const text = String(w.text || w.title || "").trim().toLowerCase();
+					return type.includes("area") && text.startsWith("reflexive journal:");
 				});
+
+				if (targetArea && targetArea.id) {
+					const newTitle = `Reflexive Journal: ${projectName}`;
+					const patch = {};
+
+					if (typeof targetArea.text === "string") {
+						patch.text = newTitle;
+					} else {
+						patch.title = newTitle;
+					}
+
+					try {
+						await updateSticky(this.root.env, accessToken, muralId, targetArea.id, patch);
+					} catch (err) {
+						// If title-based patch fails, fall back to text.
+						if (!patch.text) {
+							await updateSticky(this.root.env, accessToken, muralId, targetArea.id, {
+								text: newTitle
+							});
+						}
+					}
+				}
+			} catch {
+				// Non-fatal: if we can't retitle the area, the board still works.
 			}
 
 			step = "probe_viewer_url";
@@ -494,14 +539,14 @@ export class MuralServicePart {
 			while (!openUrl && Date.now() < deadline) {
 				openUrl = await _probeViewerUrl(this.root.env, accessToken, muralId, this.root);
 				if (!openUrl) {
-					// simple delay loop
+					// @ts-ignore
 					await new Promise(r => setTimeout(r, 600));
 				}
 			}
 
 			step = "register_board";
 			await this.registerBoard({
-				projectId,
+				projectId, // ← write to "Project ID" text field
 				uid,
 				purpose: PURPOSE_REFLEXIVE,
 				muralId,
@@ -538,8 +583,7 @@ export class MuralServicePart {
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
-			return this.root.json(
-				{ ok: false, error: "setup_failed", step, message, upstream: body },
+			return this.root.json({ ok: false, error: "setup_failed", step, message, upstream: body },
 				status,
 				cors
 			);
@@ -560,14 +604,12 @@ export class MuralServicePart {
 			if (!resolved?.muralId && !resolved?.boardUrl) {
 				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
 			}
-			return this.root.json(
-				{ ok: true, muralId: resolved.muralId || null, boardUrl: resolved.boardUrl || null },
+			return this.root.json({ ok: true, muralId: resolved.muralId || null, boardUrl: resolved.boardUrl || null },
 				200,
 				cors
 			);
 		} catch (e) {
-			return this.root.json(
-				{ ok: false, error: "resolve_failed", detail: String(e?.message || e) },
+			return this.root.json({ ok: false, error: "resolve_failed", detail: String(e?.message || e) },
 				500,
 				cors
 			);
@@ -587,10 +629,16 @@ export class MuralServicePart {
 			const labels = Array.isArray(body?.tags) ? body.tags.filter(Boolean) : [];
 
 			if (!category || !description) {
-				return this.root.json({ ok: false, error: "missing_category_or_description" }, 400, cors);
+				return this.root.json({ ok: false, error: "missing_category_or_description" },
+					400,
+					cors
+				);
 			}
 			if (!["perceptions", "procedures", "decisions", "introspections"].includes(category)) {
-				return this.root.json({ ok: false, error: "unsupported_category" }, 400, cors);
+				return this.root.json({ ok: false, error: "unsupported_category" },
+					400,
+					cors
+				);
 			}
 
 			step = "resolve_board";
@@ -602,14 +650,16 @@ export class MuralServicePart {
 			});
 			const muralId = resolved?.muralId || null;
 			if (!muralId) {
-				return this.root.json({ ok: false, error: "no_mural_id" }, 404, cors);
+				return this.root.json({ ok: false, error: "no_mural_id" },
+					404,
+					cors
+				);
 			}
 
 			step = "access_token";
 			const tokenRes = await _getValidAccessToken(this, uid);
 			if (!tokenRes.ok) {
-				return this.root.json(
-					{ ok: false, error: tokenRes.reason },
+				return this.root.json({ ok: false, error: tokenRes.reason },
 					tokenRes.reason === "not_authenticated" ? 401 : 500,
 					cors
 				);
@@ -665,8 +715,7 @@ export class MuralServicePart {
 			const status = Number(err?.status) || 500;
 			const body = err?.body || null;
 			const message = String(err?.message || "journal_sync_failed");
-			return this.root.json(
-				{ ok: false, error: "journal_sync_failed", step, message, upstream: body },
+			return this.root.json({ ok: false, error: "journal_sync_failed", step, message, upstream: body },
 				status,
 				cors
 			);
