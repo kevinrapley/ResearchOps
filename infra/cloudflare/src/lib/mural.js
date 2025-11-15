@@ -2,17 +2,12 @@
  * @file lib/mural.js
  * @module lib/mural
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
- * @version 2.4.0
+ * @version 2.4.1
  *
- * 2.4.0:
- *  - ensureDefaultRoom() now delegates to ensureUserRoom() which only returns rooms
- *    owned by the authenticated user (or creates one).
- *  - Added getRoomOwnerInfo() and extra logging in duplicateMural() and createMural()
- *    to surface room owner name/id vs the current user.
- *
- * 2.3.0:
- *  - Added duplicateMural() to copy from a template board
- *  - Added updateAreaTitle() to rename the "Reflexive Journal: <Project-Name>" area
+ * 2.4.1:
+ *  - Log current Mural user and room owner in duplicateMural() and createMural().
+ *  - keep ensureUserRoom()/ensureDefaultRoom() so creation happens in a room
+ *    owned by the authenticated user.
  */
 
 /* ───────────────── OAuth helpers ───────────────── */
@@ -219,9 +214,6 @@ async function getRoomOwnerInfo(env, accessToken, roomId) {
 
 /**
  * Ensure we return a room that is OWNED by the authenticated user.
- *
- * This matches the Mural public API requirement that murals can only be
- * created in rooms owned by the current user.
  */
 export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 	const wsId = String(workspaceId || env.MURAL_WORKSPACE_ID || "").trim();
@@ -254,14 +246,13 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 	// 1) Prefer an owned room that matches the requested name (if provided).
 	if (roomName) {
 		const ownedNamed = rooms.find(r => {
-			const ownerId =
-				String(
-					r.ownerId ||
-					r.owner?.id ||
-					r.createdBy?.id ||
-					r.createdByUserId ||
-					""
-				).toLowerCase();
+			const ownerId = String(
+				r.ownerId ||
+				r.owner?.id ||
+				r.createdBy?.id ||
+				r.createdByUserId ||
+				""
+			).toLowerCase();
 			const name = (r.name || r.title || "").toLowerCase();
 			return ownerId === userId && name === roomName.toLowerCase();
 		});
@@ -276,14 +267,13 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 
 	// 2) Otherwise, any room clearly owned by this user.
 	const ownedAny = rooms.find(r => {
-		const ownerId =
-			String(
-				r.ownerId ||
-				r.owner?.id ||
-				r.createdBy?.id ||
-				r.createdByUserId ||
-				""
-			).toLowerCase();
+		const ownerId = String(
+			r.ownerId ||
+			r.owner?.id ||
+			r.createdBy?.id ||
+			r.createdByUserId ||
+			""
+		).toLowerCase();
 		return ownerId && ownerId === userId;
 	});
 
@@ -336,8 +326,7 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 
 /**
  * Backwards-compatible wrapper: older code calls ensureDefaultRoom().
- * It now simply delegates to ensureUserRoom(), so it will only ever
- * return rooms owned by the authenticated user.
+ * It delegates to ensureUserRoom(), so you only ever get user-owned rooms.
  */
 export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName) {
 	return ensureUserRoom(env, accessToken, workspaceId, roomName);
@@ -403,9 +392,6 @@ export async function ensureProjectFolder(env, accessToken, roomId, folderName) 
 
 /* ───────────────── Mural creation / duplication ───────────────── */
 
-/**
- * Create a blank mural in a room/folder that the user owns.
- */
 export async function createMural(env, accessToken, { title, roomId, folderId }) {
 	if (!roomId) throw new Error("roomId is required for createMural()");
 
