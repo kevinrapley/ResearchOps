@@ -14,7 +14,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	findUserPrivateRoom,
+	ensureUserRoom,
 	ensureProjectFolder,
 	createMural,
 	duplicateMural,
@@ -140,6 +140,39 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 		if (url2) return url2;
 	} catch {}
 	return null;
+}
+
+/**
+ * Resolve a room that is OWNED by the current Mural user and log ownership info.
+ */
+async function resolveUserOwnedRoomForSetup(env, accessToken, workspaceId) {
+	// Who is the current Mural user?
+	const me = await getMe(env, accessToken);
+	const mv = me?.value || me || {};
+	const currentUserId = String(mv.id || mv.userId || "").toLowerCase();
+	const currentUserName =
+		`${mv.firstName || ""} ${mv.lastName || ""}`.trim() ||
+		mv.email ||
+		mv.id ||
+		"Unknown user";
+
+	// Use lib helper – this only returns rooms owned by the current user (or creates one)
+	const room = await ensureUserRoom(env, accessToken, workspaceId);
+
+	// Ownership details (here: owner == current user by design)
+	const roomOwnerId = currentUserId;
+	const roomOwnerName = currentUserName;
+
+	console.log("[mural.setup] Using user-owned room", {
+		roomId: room.id,
+		roomName: room.name || room.title,
+		roomOwnerId,
+		roomOwnerName,
+		currentUserId,
+		currentUserName
+	});
+
+	return room;
 }
 
 /* ───────────────────────── KV helpers ───────────────────────── */
@@ -430,14 +463,18 @@ export class MuralServicePart {
 			const username = me?.value?.firstName || me?.name || "Private";
 			console.log("[mural.setup] User identity", { username, userId: me?.value?.id });
 
-			step = "find_private_room";
-			const room = await findUserPrivateRoom(this.root.env, accessToken, ws.id);
+			// NEW: resolve a room that is owned by the current user (no more "Chris's room")
+			step = "resolve_user_room";
+			const room = await resolveUserOwnedRoomForSetup(this.root.env, accessToken, ws.id);
 			const roomId = room?.id || room?.value?.id;
 			if (!roomId) {
-				console.error("[mural.setup] No private room ID obtained", { room });
-				return this.root.json({ ok: false, error: "private_room_not_found", step }, 502, cors);
+				console.error("[mural.setup] No user-owned room ID obtained", { room });
+				return this.root.json({ ok: false, error: "user_room_not_found", step }, 502, cors);
 			}
-			console.log("[mural.setup] Private room found", { roomId, roomName: room?.name });
+			console.log("[mural.setup] Target room resolved", {
+				roomId,
+				roomName: room?.name || room?.title
+			});
 
 			step = "ensure_folder";
 			let folder = null;
@@ -495,7 +532,7 @@ export class MuralServicePart {
 				} else {
 					console.error("[mural.setup] NOT creating blank mural - non-404 error", { status: e?.status });
 					throw Object.assign(
-						new Error(`Template duplication failed: ${e?.message || 'Unknown error'}`), {
+						new Error(`Template duplication failed: ${e?.message || "Unknown error"}`), {
 							code: "TEMPLATE_COPY_FAILED",
 							status: e?.status,
 							originalError: e
