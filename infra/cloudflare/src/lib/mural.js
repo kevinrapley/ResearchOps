@@ -727,32 +727,72 @@ export function findLatestInCategory(list, category) {
  * This uses the dedicated "Update a title on a mural" endpoint and
  * does not fall back to generic widget updates.
  */
+
 export async function updateAreaTitle(env, accessToken, muralId, projectName) {
 	if (!projectName) return;
 
-	const widgets = await getWidgets(env, accessToken, muralId);
-	const list = normaliseWidgets(widgets);
+	const listUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets?type=area`;
 
-	const target = list.find(w => {
-		const t = String(w.text || "").trim().toLowerCase();
-		if (!t.startsWith("reflexive journal:")) return false;
-		return true;
+	// 1. Get all area widgets
+	const res = await fetch(listUrl, {
+		headers: { Authorization: `Bearer ${accessToken}` }
+	});
+	const js = await res.json().catch(() => ({}));
+
+	if (!res.ok) {
+		console.warn("[mural.updateAreaTitle] Failed to load areas", {
+			status: res.status,
+			body: js
+		});
+		return;
+	}
+
+	const areas = js?.value || js?.widgets || [];
+	if (!Array.isArray(areas) || !areas.length) {
+		console.log("[mural.updateAreaTitle] No areas found");
+		return;
+	}
+
+	// 2. Locate the correct area — the placeholder area title
+	const target = areas.find(a => {
+		const t = String(a.title || a.text || "").trim().toLowerCase();
+		return t.startsWith("reflexive journal:");
 	});
 
 	if (!target) {
-		console.log("[mural.updateAreaTitle] No matching title widget found", { muralId });
+		console.log("[mural.updateAreaTitle] No matching title area found");
 		return;
 	}
 
 	const newTitle = `Reflexive Journal: ${projectName}`;
-	console.log("[mural.updateAreaTitle] Updating title widget", {
-		muralId,
-		widgetId: target.id,
-		from: target.text,
-		to: newTitle
+
+	// 3. PATCH the AREA endpoint
+	const patchUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/area/${target.id}`;
+
+	const patchRes = await fetch(patchUrl, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({ title: newTitle })
 	});
 
-	await updateTitleWidget(env, accessToken, muralId, target.id, newTitle);
+	const patchJson = await patchRes.json().catch(() => ({}));
+
+	if (!patchRes.ok) {
+		console.error("[mural.updateAreaTitle] Area title update failed", {
+			status: patchRes.status,
+			body: patchJson
+		});
+		return;
+	}
+
+	console.log("[mural.updateAreaTitle] Area title updated", {
+		muralId,
+		widgetId: target.id,
+		newTitle
+	});
 }
 
 /* ───────────────── Tags ───────────────── */
