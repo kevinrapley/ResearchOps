@@ -75,4 +75,4 @@ persist = true
 [[d1_databases]]
 binding = "DB"
 database_name = "researchops-d1"
-database_id = "<your-d1-id>"
+database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"
