@@ -2,7 +2,12 @@
  * @file lib/mural.js
  * @module lib/mural
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
- * @version 2.4.2
+ * @version 2.5.0
+ *
+ * 2.5.0:
+ *  - Wire updateAreaTitle() to use the official "Update a title on a mural" endpoint:
+ *    PATCH /murals/{muralId}/widgets/title/{widgetId}.
+ *  - Keep the 2.4.2 duplicateMural() behaviour (normalised template id + 404 fallback).
  *
  * 2.4.2:
  *  - Fix duplicateMural() template handling by normalising env/URL/hash to a proper muralId
@@ -247,7 +252,6 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		userLabel
 	});
 
-	// 1) Prefer an owned room that matches the requested name (if provided).
 	if (roomName) {
 		const ownedNamed = rooms.find(r => {
 			const ownerId = String(
@@ -269,7 +273,6 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		}
 	}
 
-	// 2) Otherwise, any room clearly owned by this user.
 	const ownedAny = rooms.find(r => {
 		const ownerId = String(
 			r.ownerId ||
@@ -289,7 +292,6 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		return ownedAny;
 	}
 
-	// 3) No owned rooms found: create a personal room for this user.
 	const desiredName =
 		roomName ||
 		env.MURAL_DEFAULT_PERSONAL_ROOM_NAME ||
@@ -328,18 +330,10 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 	return created;
 }
 
-/**
- * Backwards-compatible wrapper: older code calls ensureDefaultRoom().
- * It delegates to ensureUserRoom(), so you only ever get user-owned rooms.
- */
 export async function ensureDefaultRoom(env, accessToken, workspaceId, roomName) {
 	return ensureUserRoom(env, accessToken, workspaceId, roomName);
 }
 
-/**
- * Ensure a folder for the project exists inside the given room.
- * Folder name is usually the project name.
- */
 export async function ensureProjectFolder(env, accessToken, roomId, folderName) {
 	if (!roomId) throw new Error("roomId is required for ensureProjectFolder()");
 	if (!folderName) throw new Error("folderName is required for ensureProjectFolder()");
@@ -487,34 +481,26 @@ export async function getMural(env, accessToken, muralId) {
  *  - Raw hash / anything else: falls back to known template muralId.
  */
 function normaliseTemplateMuralId(raw) {
-	const FALLBACK = "pppt6786.1761511827081"; // Kevin's private-room template board id
+	const FALLBACK = "pppt6786.1761511827081";
 
 	if (!raw) return FALLBACK;
 	const s = String(raw).trim();
 	if (!s) return FALLBACK;
 
-	// Already looks like a muralId (workspaceKey.numericId)
 	if (/^[a-z0-9]+?\.[0-9]+$/i.test(s)) return s;
 
-	// If it's a URL, try to extract workspaceKey + numericId from the path
 	if (/^https?:\/\//i.test(s)) {
 		try {
 			const u = new URL(s);
 			const parts = u.pathname.split("/").filter(Boolean);
-			// Expected pattern:
-			//   /t/{workspaceKey}/m/{workspaceKey}/1761511827081/76da...
-			// → ["t","pppt6786","m","pppt6786","1761511827081","76da..."]
 			const workspaceKey = parts[1] || null;
 			const numericId = parts[4] || null;
 			if (workspaceKey && numericId) {
 				return `${workspaceKey}.${numericId}`;
 			}
-		} catch {
-			// fall through to fallback
-		}
+		} catch {}
 	}
 
-	// Anything else (e.g. just the hash) isn't directly usable → fallback
 	return FALLBACK;
 }
 
@@ -682,6 +668,27 @@ export async function updateSticky(env, accessToken, muralId, widgetId, patch) {
 	return js;
 }
 
+/**
+ * Update a title widget using the dedicated endpoint:
+ * PATCH /murals/{muralId}/widgets/title/{widgetId}
+ */
+export async function updateTitleWidget(env, accessToken, muralId, widgetId, title) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/title/${widgetId}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+		body: JSON.stringify({ title })
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Update title widget failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return js;
+}
+
 export function normaliseWidgets(widgets) {
 	if (!Array.isArray(widgets)) return [];
 	return widgets.map(w => ({
@@ -713,22 +720,39 @@ export function findLatestInCategory(list, category) {
 }
 
 /**
- * After duplication, find the area that has a title like
- * "Reflexive Journal: ..." and rename it to include the actual project name.
+ * After duplication, find the TITLE widget that has text like
+ * "Reflexive Journal: <Project-Name>" and rename it to include
+ * the actual project name.
+ *
+ * This uses the dedicated "Update a title on a mural" endpoint and
+ * does not fall back to generic widget updates.
  */
 export async function updateAreaTitle(env, accessToken, muralId, projectName) {
 	if (!projectName) return;
+
 	const widgets = await getWidgets(env, accessToken, muralId);
 	const list = normaliseWidgets(widgets);
+
 	const target = list.find(w => {
-		const t = String(w.text || "").trim();
-		return t.toLowerCase().startsWith("reflexive journal:");
+		const t = String(w.text || "").trim().toLowerCase();
+		if (!t.startsWith("reflexive journal:")) return false;
+		return true;
 	});
 
-	if (!target) return;
+	if (!target) {
+		console.log("[mural.updateAreaTitle] No matching title widget found", { muralId });
+		return;
+	}
 
 	const newTitle = `Reflexive Journal: ${projectName}`;
-	await updateSticky(env, accessToken, muralId, target.id, { text: newTitle });
+	console.log("[mural.updateAreaTitle] Updating title widget", {
+		muralId,
+		widgetId: target.id,
+		from: target.text,
+		to: newTitle
+	});
+
+	await updateTitleWidget(env, accessToken, muralId, target.id, newTitle);
 }
 
 /* ───────────────── Tags ───────────────── */
