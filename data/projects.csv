@@ -1,1 +1,60 @@
-LocalId,Org,Name,Description,Phase,Status,Objectives,UserGroups,Stakeholders,CreatedAt
+﻿Record ID,Name,Org,Phase,Status,Description,Stakeholders,Objectives,UserGroups,CreatedAt,LocalId,Project Details,Project Studies,Participants,Journal Entries,Memos,Codes,Code Applications,Mural Boards,Project ID (from Mural Boards)
+recMtdmBbaFiIF2Tm,New Project,Home Office Biometrics,Discovery,Planning research,Project description of the new project,"[{""name"":""Kevin Rapley"",""role"":""User Researcher"",""email"":""kevin.rapley@homeoffice.gov.uk""}]","Objective 1
+Objective 2
+Objective 3","Citizen, Police Officer, Biometrics Analyst",2025-09-27 2:00pm,bf6f4386-e70d-4a2a-8b37-7fb9cca8e032,4,"rec00000001,rec00000002",,,,,,,
+recpZe8mLEiASXfRd,My Project,Home Office Biometrics,Discovery,Goal setting & problem defining,This is my new project description. It is very nice.,"[{""name"":""Laurence Piercy"",""role"":""Lead User Researcher"",""email"":""laurence.piercy@homeoffice.gov.uk""},{""name"":""Chris Wood"",""role"":""Product Manager"",""email"":""chris.wood@homeoffice.gov.uk""}]","Objective 1
+Objective 2
+Objective 3
+Objective 4
+Objective 5","Fingerprint Expert, Crime Scene Investigator, Bureau Specialist, Police Officer",,ec793d21-d5ca-4ae6-9e85-0c922bc616df,5,,,,,,,,
+recgdpwEI5hF07bUZ,Test Project 1,Home Office Biometrics,Discovery,Goal setting & problem defining,Test Project Description,"[{""name"":""Kevin Rapley"",""role"":""Senior User Researcher"",""email"":""Kevin.rapley@homeoffice.gov.uk""}]","Objective 1
+Objective 2","Citizen, Police Officer",,d04ab32e-6756-408e-a649-6859dd0079f2,10,"rect3biqr,rect3o7dt",,"recfgALHVY3qlWZgy,rec3hl7l4FyPp0SXF,recHSe9mWHhzASucP,recaERs6iiB2Qs18f,reccJ1KvV64O6vZq1,recB84wxsuwpWP3nH,recxZS62frIlSWytd,rec5XpqLRyE6XCTX4,recjaiwsNtYmAub8x,recvRl2jFeiBrPS7C,recH66fCB6SvDYIje,recKzhXWyaTzMKDp3",reczMRNBiR2R8d3sX,"Code 1,Code 2,Code 3,Code 4,Code 5",,recpejsAsvhgvf2qE,recgdpwEI5hF07bUZ
+recIFoFmpDIGBP726,Testing with AI,Home Office Biometrics,Pre-Discovery,Goal setting & problem defining,"Problem:
+Users are unclear about instructions and error messages during the address step, leading to abandonment.
+
+Scope:
+In scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.
+
+Users:
+First-time visa applicants on mobile, including people using screen readers and with low bandwidth.
+
+Research questions:
+• Which parts of the address step cause confusion?
+• What wording and ordering improve completion?
+• What accessibility issues appear on mobile devices?
+
+Outcomes:
+Identify the top 3 blockers and reduce abandonment by 15% within the next quarter.
+
+Method:
+Discovery interviews and remote task-based usability on a clickable prototype, followed by a synthesis workshop.
+
+Timeline:
+Fieldwork in November; synthesis in early December.","[{""name"":""Kevin Rapley"",""role"":""Senior User Researcher"",""email"":""kevin.rapley@homeoffice.gov.uk""}]","Objective 1
+Objective 2
+Objective 3
+Objective 4
+Objective 5","person, user, policeman, analyst",,0cbd5f67-43c5-45fa-a5b4-bc7586718a8e,11,,,,,,,,
+recUUeazIqBMfsZL4,Project Name,Home Office Biometrics,Pre-Discovery,Goal setting & problem defining,"Problem:
+Bilingual users face challenges when moving through the form, particularly if Welsh-speaking participants are not available in sufficient numbers. 
+
+Scope:
+In scope: exploring how bilingual users move through the form. Out of scope: payment provider changes. 
+
+Users:
+First-time visa applicants on mobile, including bilingual users, with a focus on Welsh-speaking participants. 
+
+Outcomes:
+Identify the top 3 blockers and reduce abandonment by 15% within the next quarter. 
+
+Risks:
+Recruitment risk: depends on external supplier; mitigation strategy: contingency planning. 
+
+Method:
+Discovery research involving 12 users, subject to successful recruitment. 
+
+Constraints:
+Prototype currently only works on Chrome; temporary constraint limiting testing.","[{""name"":""kevin Rapley"",""role"":""Senior User Researcher"",""email"":""kevin.rapley@homeoffice.gov.uk""}]","1) Conduct a usability study to identify the top 5 usability issues in the “apply online” form.
+2) Verify that 80% of participants can complete payment without errors.
+3) Measure the reduction in task completion time by 25% compared to the last release.
+4) Ensure at least 3 policy stakeholders attend the playback session.","Citizen, Policeman, Analyst",,,12,,,,,,,,

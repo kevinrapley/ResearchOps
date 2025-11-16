@@ -1,0 +1,45 @@
+﻿Title,Study,Status,Version,Source Markdown,Variables (JSON),Created By,Created At,Updated At
+v1 guide,rect3o7dt,Published,2,"---
+version: 1
+---
+# {{study.title}} — Discussion guide
+
+_Study:_ **{{study.title}}**
+_Project:_ **{{project.name}}**
+
+{{> intro_opening_v1}}
+{{> consent_standard_v2}}
+
+## Tasks
+{{#tasks}}
+{{> task_observation_shell_v1}}
+{{/tasks}}
+
+## Probes
+{{> probe_error_recovery_v1}}
+{{> probe_trust_signals_v1}}
+
+{{> wrapup_debrief_v1}}
+
+{{> note_observer_grid_v1}}","{""version"":1}",Kevin Rapley,6/10/2025 8:27am,6/10/2025 4:26pm
+New guide,rect3o7dt,Draft,1,"# {{study.title}} — Discussion guide – version: {{version}}
+
+_Study:_ **{{study.title}}**
+_Project:_ **{{project.name}}**
+
+{{> intro_opening}}
+{{> consent_standard_v2}}
+}}
+
+## Tasks
+{{#tasks}}
+{{> task_observation_shell}}
+{{/tasks}}
+
+## Probes
+{{> probe_error_recovery}}
+{{> probe_trust_signals}}
+
+{{> wrapup_debrief}}
+
+{{> note_observer_grid}}","{""version"":""1""}",,6/10/2025 4:17pm,10/10/2025 4:20pm

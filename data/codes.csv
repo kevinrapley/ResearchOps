@@ -1,0 +1,6 @@
+﻿Name,Description,Colour,BorderColour,TextColour,Parent,Created By,Created At,Project lookup,Project,Linked Memos,Linked Journal Entries,From field: Parent,Journal Excerpts,Session Notes
+Code 1,Top-level theme code,#505a5f,#505a5f,,,,,recgdpwEI5hF07bUZ,recgdpwEI5hF07bUZ,,,Code 2,,
+Code 2,New code with parent Code 1,#1d70b8ff,#1d70b8ff,#ffffffff,Code 1,,,recgdpwEI5hF07bUZ,recgdpwEI5hF07bUZ,,,Code 3,,
+Code 3,A code that has parent Code 2,#1d70b8ff,#1d70b8ff,#ffffffff,Code 2,,,recgdpwEI5hF07bUZ,recgdpwEI5hF07bUZ,,,,,
+Code 4,Top-level self-contained theme with no descendent codes,#1d70b8ff,#1d70b8ff,#ffffffff,,,,recgdpwEI5hF07bUZ,recgdpwEI5hF07bUZ,,,,,
+Code 5,Top-level self-contained theme with no descendent codes,#511db8ff,#511db8ff,#ffffffff,,,,recgdpwEI5hF07bUZ,recgdpwEI5hF07bUZ,,,,,

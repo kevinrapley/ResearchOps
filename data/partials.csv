@@ -1,0 +1,1423 @@
+﻿Name,Title,Category,Version,Source,Description,Status,Created By,Created Time,Updated At
+intro_opening,Intro Opening,Other,1,"{{! /components/guides/patterns/intro_opening.md }}
+## Opening the session
+
+Thank you for joining today — I really appreciate your time.  
+Before we start, I’ll explain what this session involves.
+
+- We’re exploring **{{topic}}** to understand how people like you experience or think about it.
+- There are no right or wrong answers — I’m interested in your honest views.
+- Everything you share will be kept **confidential** and used only for research.
+- You can stop or take a break at any point — just let me know.
+
+Does that sound okay?
+
+*(Pause for confirmation before moving on.)*
+
+---
+
+### Warm-up
+
+To begin, could you tell me a little about yourself and how you usually interact with {{topicContext}}?
+
+*(Aim for a relaxed, conversational tone — this section helps participants settle in.)*",,Published,Kevin Rapley,7/10/2025 00:06,
+consent_standard,Consent Standard,Consent,2,"{{! /components/guides/patterns/consent_standard.md }}
+## Taking part in this research
+
+### What we're doing
+
+We're researching {{study.method}} to improve {{project.name}}. This research helps us understand user needs and make better decisions about the service.
+
+### What will happen in this session
+
+{{#meta.session_duration}}This session will take about {{meta.session_duration}} minutes.{{/meta.session_duration}} We will:
+
+- Ask you some questions about your experience
+- {{#meta.has_tasks}}Ask you to try some tasks using a prototype or the service{{/meta.has_tasks}}
+- {{#meta.has_tasks}}Ask you to think aloud as you work{{/meta.has_tasks}}
+
+You can take breaks at any time. If you feel uncomfortable, you can skip questions or stop the session.
+
+### Recording and data use
+
+{{#meta.recording_audio}}We would like to record audio during this session.{{/meta.recording_audio}}
+{{#meta.recording_video}}We would like to record video during this session.{{/meta.recording_video}}
+{{#meta.recording_screen}}We may capture screenshots or screen recordings.{{/meta.recording_screen}}
+
+The recordings help us:
+- Review what we learned
+- Share findings with the team
+- Improve the service
+
+{{#meta.recording_audio}}You can ask us to stop recording at any time.{{/meta.recording_audio}}
+
+We will:
+- Store your data securely in approved systems
+- Limit access to the research team{{#meta.team_name}} ({{meta.team_name}}){{/meta.team_name}}
+- Delete recordings {{#meta.retention_period}}after {{meta.retention_period}}{{/meta.retention_period}}{{^meta.retention_period}}within 2 years{{/meta.retention_period}}
+- Not share your name or contact details in reports or presentations
+- Use pseudonyms (like ""Participant 1"") in any outputs
+
+### Your choice to take part
+
+Taking part in this research is voluntary. You can:
+- Decide not to take part
+- Stop at any time without giving a reason
+- Skip any questions you don't want to answer
+- Ask us to delete your data up to {{#meta.withdrawal_deadline}}{{meta.withdrawal_deadline}}{{/meta.withdrawal_deadline}}{{^meta.withdrawal_deadline}}2 weeks after the session{{/meta.withdrawal_deadline}}
+
+This will not affect any government services you use.
+
+### Data protection
+
+We handle your personal data in line with UK GDPR and the Data Protection Act 2018.
+
+The legal basis for processing your data is **public task** — improving government services.
+
+{{#meta.dpia_completed}}A Data Protection Impact Assessment has been completed for this research.{{/meta.dpia_completed}}
+
+Your rights:
+- Ask what data we hold about you
+- Ask us to correct inaccurate data
+- Ask us to delete your data (within the withdrawal deadline)
+- Object to how we use your data
+
+### Contact and complaints
+
+**Researcher:** {{#meta.researcher_name}}{{meta.researcher_name}}{{/meta.researcher_name}}{{^meta.researcher_name}}[Researcher name]{{/meta.researcher_name}}  
+**Email:** {{#meta.contact_email}}{{meta.contact_email}}{{/meta.contact_email}}{{^meta.contact_email}}[Contact email]{{/meta.contact_email}}
+
+{{#meta.organisation}}**Organisation:** {{meta.organisation}}{{/meta.organisation}}
+
+If you have questions or concerns about how your data is used, contact:
+{{#meta.dpo_email}}**Data Protection Officer:** {{meta.dpo_email}}{{/meta.dpo_email}}
+{{^meta.dpo_email}}**Data Protection Officer:** [Insert DPO contact]{{/meta.dpo_email}}
+
+### Consent
+
+By continuing, you confirm that:
+
+- [ ] You have read and understood this information
+- [ ] You understand taking part is voluntary
+- [ ] You understand you can withdraw at any time
+- [ ] {{#meta.recording_audio}}You agree to audio recording{{/meta.recording_audio}}
+- [ ] {{#meta.recording_video}}You agree to video recording{{/meta.recording_video}}
+- [ ] {{#meta.recording_screen}}You agree to screen recording{{/meta.recording_screen}}
+- [ ] You agree to take part in this research
+
+**Participant name:** ______________________________
+
+**Date:** ______________________________
+
+**Researcher signature:** ______________________________",,Published,Kevin Rapley,7/10/2025 13:11,
+task_observation_shell,Task Observation Shell,Tasks,1,"{{! /components/guides/patterns/task_observation_shell.md }}
+# Task {{meta.task_number}}: {{meta.task_title}}
+
+### Task instruction
+
+> {{meta.task_instruction}}
+
+{{#meta.task_context}}
+**Context:** {{meta.task_context}}
+{{/meta.task_context}}
+
+{{#meta.task_success_criteria}}
+**Success criteria:** {{meta.task_success_criteria}}
+{{/meta.task_success_criteria}}
+
+---
+
+### Observation
+
+**Participant:** {{meta.participant_id}}  
+**Date:** {{meta.session_date}}  
+**Start time:** ________  
+**End time:** ________  
+**Duration:** ________ minutes
+
+#### Outcome
+
+- [ ] Completed successfully
+- [ ] Completed with difficulty
+- [ ] Completed with help
+- [ ] Abandoned
+- [ ] Skipped
+
+{{#meta.confidence_rating}}
+**Confidence rating (participant self-report 1-5):** ☐ 1  ☐ 2  ☐ 3  ☐ 4  ☐ 5
+{{/meta.confidence_rating}}
+
+{{#meta.difficulty_rating}}
+**Difficulty rating (observer 1-5):** ☐ 1  ☐ 2  ☐ 3  ☐ 4  ☐ 5
+{{/meta.difficulty_rating}}
+
+---
+
+### Path taken
+
+*Note the steps/screens the participant went through:*
+
+1. 
+2. 
+3. 
+4. 
+5. 
+
+{{#meta.expected_path}}
+**Expected path:** {{meta.expected_path}}
+{{/meta.expected_path}}
+
+**Deviated from expected path?** ☐ Yes  ☐ No
+
+{{#meta.deviation_notes}}
+**If yes, where/why:** 
+
+{{/meta.deviation_notes}}
+
+---
+
+### Observations
+
+#### What worked well
+
+- 
+- 
+- 
+
+#### Pain points / blockers
+
+- 
+- 
+- 
+
+#### Errors / mistakes
+
+| Error | Screen/step | Recovered? | Notes |
+|-------|-------------|------------|-------|
+|       |             | ☐ Yes ☐ No |       |
+|       |             | ☐ Yes ☐ No |       |
+|       |             | ☐ Yes ☐ No |       |
+
+#### Participant quotes
+
+> ""...""
+
+> ""...""
+
+> ""...""
+
+---
+
+### Accessibility observations
+
+{{#meta.assistive_tech}}
+**Assistive technology used:** {{meta.assistive_tech}}
+{{/meta.assistive_tech}}
+
+- [ ] Screen reader announced content correctly
+- [ ] Keyboard navigation worked as expected
+- [ ] Focus indicators were visible
+- [ ] Zoom/magnification worked (if applicable)
+- [ ] Colour/contrast was sufficient
+
+**Issues observed:**
+
+- 
+- 
+
+---
+
+### Context & behaviour
+
+**Participant's approach:**
+☐ Methodical  ☐ Exploratory  ☐ Cautious  ☐ Confident  ☐ Frustrated
+
+**Emotional state:**
+☐ Calm  ☐ Engaged  ☐ Confused  ☐ Frustrated  ☐ Stressed  ☐ Neutral
+
+**Distractions / interruptions:** 
+
+**Device / browser:**
+{{#meta.device}}{{meta.device}}{{/meta.device}}{{^meta.device}}_____________{{/meta.device}} / {{#meta.browser}}{{meta.browser}}{{/meta.browser}}{{^meta.browser}}_____________{{/meta.browser}}
+
+{{#meta.connection_quality}}**Connection quality:** {{meta.connection_quality}}{{/meta.connection_quality}}
+
+---
+
+### Think-aloud notes
+
+*Capture participant's verbalisations during the task:*
+
+
+
+
+
+
+
+---
+
+### Follow-up questions
+
+{{#meta.followup_q1}}
+**Q: {{meta.followup_q1}}**
+
+A: 
+{{/meta.followup_q1}}
+
+{{#meta.followup_q2}}
+**Q: {{meta.followup_q2}}**
+
+A: 
+{{/meta.followup_q2}}
+
+{{#meta.followup_q3}}
+**Q: {{meta.followup_q3}}**
+
+A: 
+{{/meta.followup_q3}}
+
+**Additional questions asked:**
+
+**Q:** 
+
+**A:** 
+
+---
+
+### Insights & hypotheses
+
+**Key insight:**
+
+
+
+**Why this matters:**
+
+
+
+**Hypothesis to test:**
+
+
+
+---
+
+### Researcher reflection
+
+**Confidence in observation (1-5):** ☐ 1  ☐ 2  ☐ 3  ☐ 4  ☐ 5
+
+**Biases / assumptions to check:**
+
+
+
+**Similar patterns from other participants?** ☐ Yes  ☐ No  ☐ TBC
+
+---
+
+**Observer:** {{meta.observer_name}}  
+**Note-taker:** {{meta.notetaker_name}}",,Published,Kevin Rapley,7/10/2025 13:18,
+probe_error_recovery,Probe Error Recovery,Other,1,"{{! /components/guides/patterns/probe_error_recovery.md }}
+## Error recovery: {{meta.error_context}}
+
+**Participant:** {{meta.participant_id}}  
+**Task/screen:** {{meta.task_reference}}  
+**Error type:** {{#meta.error_type}}{{meta.error_type}}{{/meta.error_type}}{{^meta.error_type}}☐ Technical  ☐ Content  ☐ Navigation  ☐ Validation  ☐ Process{{/meta.error_type}}  
+**Timestamp:** __________
+
+---
+
+### Initial response
+
+**What happened:**
+
+
+
+**Participant's immediate reaction:**
+☐ Paused  ☐ Re-read  ☐ Scrolled  ☐ Went back  ☐ Clicked elsewhere  ☐ Asked for help  ☐ Expressed frustration
+
+**Verbatim quote (if any):**
+
+> ""...""
+
+---
+
+### Understanding the error
+
+**Probe: ""What do you think happened here?""**
+
+
+
+**Probe: ""What were you expecting to see/happen?""**
+
+
+
+**Probe: ""Have you seen an error message or indication of what went wrong?""**
+☐ Yes  ☐ No  ☐ Unsure
+
+{{#meta.error_message_present}}
+**If yes: ""Can you explain what it means in your own words?""**
+
+
+{{/meta.error_message_present}}
+
+---
+
+### Recovery strategy
+
+**Probe: ""What would you try next?""**
+
+
+
+**Probe: ""How confident are you that this will work?""**
+☐ Very confident  ☐ Somewhat confident  ☐ Not confident  ☐ No idea
+
+**Probe: ""If that didn't work, what else might you try?""**
+
+1. 
+2. 
+3. 
+
+**Would they give up?** ☐ Yes  ☐ No  ☐ Maybe
+
+{{#meta.abandonment_probe}}
+**If yes: ""At what point would you stop trying?""**
+
+
+{{/meta.abandonment_probe}}
+
+---
+
+### Problem-solving approach
+
+**Probe: ""Walk me through what you're looking for to help you fix this.""**
+
+
+
+**Probe: ""Is there information you need that's not here?""**
+☐ Yes  ☐ No
+
+**If yes, what:**
+
+
+
+**Actions they'd take:**
+☐ Re-enter information  
+☐ Go back to previous step  
+☐ Search for help  
+☐ Contact support  
+☐ Try a different route  
+☐ Leave and come back later  
+☐ Ask someone for help  
+☐ Other: __________
+
+---
+
+### Mental model
+
+**Probe: ""Why do you think this error happened?""**
+
+
+
+**Probe: ""Whose fault do you think this is?""**
+☐ Mine (user error)  
+☐ The system's (technical issue)  
+☐ Unclear instructions  
+☐ Missing information  
+☐ Don't know
+
+**Attribution note:**
+
+
+
+---
+
+### Emotional impact
+
+**Probe: ""How does this make you feel?""**
+☐ Fine, no problem  
+☐ Slightly annoyed  
+☐ Frustrated  
+☐ Angry  
+☐ Anxious/worried  
+☐ Embarrassed  
+☐ Confused  
+☐ Other: __________
+
+**Verbatim emotional response:**
+
+> ""...""
+
+**Impact on confidence:**
+☐ No change  ☐ Slightly less confident  ☐ Much less confident  ☐ Ready to give up
+
+**Probe: ""Would this put you off using this service again?""**
+☐ Yes  ☐ No  ☐ Maybe
+
+**Why:**
+
+
+
+---
+
+### Context & support
+
+**Probe: ""In real life, what would you do at this point?""**
+
+
+
+**Support they'd seek:**
+☐ Nothing, figure it out alone  
+☐ Search online  
+☐ Call helpline  
+☐ Ask friend/family  
+☐ Visit in person  
+☐ Email support  
+☐ Other: __________
+
+{{#meta.channel_preference}}
+**Preferred support channel:** {{meta.channel_preference}}
+{{/meta.channel_preference}}
+
+**Probe: ""How urgent would it be to fix this?""**
+☐ Critical—need it now  
+☐ Important—need it soon  
+☐ Can wait  
+☐ Not urgent
+
+---
+
+### Recovery success (if allowed to continue)
+
+**Did they recover?** ☐ Yes  ☐ No  ☐ Partially  ☐ With help
+
+**How long did recovery take?** ________ minutes
+
+**What helped them recover:**
+
+
+
+**What would have helped:**
+
+
+
+---
+
+### Error message / design issues
+
+{{#meta.error_message_present}}
+**Error message shown:**",,Published,Kevin Rapley,7/10/2025 13:24,
+probe_trust_signals,Probe Trust Signals,Other,1,"{{! /components/guides/patterns/probe_trust_signals.md }}
+## Trust signals: {{meta.trust_context}}
+
+**Participant:** {{meta.participant_id}}  
+**Screen/stage:** {{meta.screen_reference}}  
+**Timestamp:** __________
+
+---
+
+### Initial trust impression
+
+**Probe: ""Looking at this page, how legitimate does this feel to you?""**
+☐ Completely legitimate  
+☐ Probably legitimate  
+☐ Unsure  
+☐ Seems suspicious  
+☐ Definitely not legitimate
+
+**Why:**
+
+
+
+**First impression (within 3 seconds):**
+☐ Trusted immediately  
+☐ Felt okay  
+☐ Felt uncertain  
+☐ Felt suspicious
+
+**Probe: ""What gives you that impression?""**
+
+
+
+---
+
+### Trust indicators (positive)
+
+**Probe: ""What makes you think this is official/genuine?""**
+
+
+
+**Visual elements noticed:**
+☐ Government logo/crest  
+☐ GOV.UK branding  
+☐ Professional design  
+☐ Secure padlock (HTTPS)  
+☐ .gov.uk domain  
+☐ Official color scheme  
+☐ Consistent branding  
+☐ Clear headers/footers  
+☐ Contact information  
+☐ Other: __________
+
+**Content elements noticed:**
+☐ Professional language  
+☐ Clear purpose statement  
+☐ Privacy information  
+☐ Terms and conditions  
+☐ Regulatory statements  
+☐ Data protection notice  
+☐ Accessibility statement  
+☐ Copyright notice  
+☐ Other: __________
+
+**Probe: ""Which of these matters most to you?""**
+
+
+
+---
+
+### Trust concerns (negative)
+
+**Probe: ""Is there anything that makes you hesitate or feel uncertain?""**
+☐ Yes  ☐ No
+
+**If yes:**
+
+
+
+**Red flags noticed:**
+☐ Unfamiliar design  
+☐ Spelling/grammar errors  
+☐ Broken links/images  
+☐ Inconsistent branding  
+☐ Suspicious domain name  
+☐ No contact information  
+☐ Too many ads/pop-ups  
+☐ Asks for unnecessary information  
+☐ Vague language  
+☐ Pressure tactics (""act now!"")  
+☐ Other: __________
+
+**Probe: ""What would make you leave this page immediately?""**
+
+
+
+---
+
+### Security perception
+
+**Probe: ""How safe do you feel entering personal information here?""**
+☐ Very safe  
+☐ Fairly safe  
+☐ Unsure  
+☐ Not very safe  
+☐ Not safe at all
+
+**Why:**
+
+
+
+**Probe: ""What would you look for before entering sensitive information?""**
+
+
+
+**Security indicators checked:**
+☐ Padlock icon  
+☐ HTTPS in URL  
+☐ .gov.uk domain  
+☐ Privacy policy  
+☐ Data protection statement  
+☐ Security statement  
+☐ Clear purpose for data collection  
+☐ Nothing specifically  
+☐ Other: __________
+
+**Probe: ""Do you trust this site to keep your information secure?""**
+☐ Yes  ☐ No  ☐ Unsure
+
+**Why:**
+
+
+
+---
+
+### Information sharing comfort
+
+**Probe: ""What information would you be comfortable sharing here?""**
+
+- [ ] Name
+- [ ] Email
+- [ ] Phone number
+- [ ] Address
+- [ ] Date of birth
+- [ ] National Insurance number
+- [ ] Bank details
+- [ ] Passport details
+- [ ] Biometric data
+- [ ] Medical information
+- [ ] Criminal record
+
+**Probe: ""What would be too much to ask for?""**
+
+
+
+**Probe: ""At what point would you stop and verify this is legitimate?""**
+
+
+
+---
+
+### Brand recognition
+
+**Probe: ""Have you seen this branding/design before?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**If yes, where:**
+
+
+
+**Probe: ""Does this match what you'd expect from [government department]?""**
+☐ Yes, exactly  
+☐ Yes, roughly  
+☐ Not quite  
+☐ No, doesn't match  
+☐ Don't know what to expect
+
+**Inconsistencies noticed:**
+
+
+
+**Probe: ""If this didn't have the government logo, would you still trust it?""**
+☐ Yes  ☐ No  ☐ Maybe
+
+**Why:**
+
+
+
+---
+
+### Legitimacy verification
+
+**Probe: ""How would you check if this is the real/official site?""**
+
+
+
+**Verification methods they'd use:**
+☐ Check URL carefully  
+☐ Search for official site via Google  
+☐ Look for government logo  
+☐ Check contact details  
+☐ Call helpline to verify  
+☐ Compare with previous experience  
+☐ Ask someone they trust  
+☐ Check social media  
+☐ Look for reviews  
+☐ Nothing, would trust it  
+☐ Other: __________
+
+**Probe: ""Have you ever been caught out by a fake website?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+{{#meta.phishing_experience}}
+**If yes, tell me about that:**
+
+
+{{/meta.phishing_experience}}
+
+---
+
+### Language & tone
+
+**Probe: ""Does the language here feel right for a government service?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Language assessment:**
+☐ Too formal/bureaucratic  
+☐ About right  
+☐ Too casual/informal  
+☐ Too technical/complex  
+☐ Unclear/confusing
+
+**Probe: ""How would you describe the tone?""**
+☐ Professional  
+☐ Friendly  
+☐ Cold/impersonal  
+☐ Helpful  
+☐ Bossy/demanding  
+☐ Reassuring  
+☐ Other: __________
+
+**Probe: ""Does it sound like how you'd expect government to communicate?""**
+
+
+
+---
+
+### Comparative trust
+
+**Probe: ""How does this compare to other government services you've used online?""**
+☐ More trustworthy  
+☐ About the same  
+☐ Less trustworthy  
+☐ Haven't used others
+
+**Why:**
+
+
+
+**Probe: ""How does this compare to commercial sites (like banks, shopping)?""**
+☐ More trustworthy  
+☐ About the same  
+☐ Less trustworthy
+
+**What's different:**
+
+
+
+**Best example of a trustworthy site:**
+
+
+
+**Why that one:**
+
+
+
+---
+
+### Transparency perception
+
+**Probe: ""Do you feel this service is being clear and honest about what it's doing?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Why:**
+
+
+
+**Probe: ""Is it clear who's behind this service?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Probe: ""Is it clear what will happen to your information?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Probe: ""Do you understand why they're asking for this information?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Hidden concerns:**
+
+
+
+---
+
+### Authority & legitimacy
+
+**Probe: ""Does this feel like an official government service, or something else?""**
+☐ Definitely official government  
+☐ Probably government  
+☐ Not sure  
+☐ Might be third party  
+☐ Definitely not government
+
+**What signals that:**
+
+
+
+**Probe: ""Do you feel this service has the authority to ask for this information?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Why:**
+
+
+
+**Probe: ""Would you feel differently if this came through the post instead?""**
+☐ More trustworthy  
+☐ Less trustworthy  
+☐ Same  
+☐ Not sure
+
+**Why:**
+
+
+
+---
+
+### Support & recourse
+
+**Probe: ""If something went wrong, do you feel you could get help?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**What gives that impression:**
+
+
+
+**Contact options noticed:**
+☐ Phone number  
+☐ Email address  
+☐ Live chat  
+☐ Contact form  
+☐ Physical address  
+☐ Social media  
+☐ FAQ/help section  
+☐ Nothing obvious
+
+**Probe: ""How easy would it be to get help if you needed it?""**
+☐ Very easy  
+☐ Fairly easy  
+☐ Difficult  
+☐ Very difficult  
+☐ Impossible
+
+**Probe: ""Do you know who to complain to if there's a problem?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+---
+
+### Behavioral impact
+
+**Probe: ""Would you complete this process based on what you've seen?""**
+☐ Yes, confidently  
+☐ Yes, but with some hesitation  
+☐ Only if I had to  
+☐ No, I'd verify first  
+☐ No, I'd find another way
+
+**Why:**
+
+
+
+**Probe: ""Would you recommend this service to a friend or family member?""**
+☐ Yes  ☐ No  ☐ Not sure
+
+**Why:**
+
+
+
+**Actions they'd take before continuing:**
+☐ None, would proceed  
+☐ Check URL carefully  
+☐ Search for official site  
+☐ Call to verify  
+☐ Ask someone else  
+☐ Wait and come back later  
+☐ Find alternative method  
+☐ Give up
+
+---
+
+### Demographic context
+
+{{#meta.age_relevant}}
+**Probe: ""Do you think younger/older people would trust this more or less than you?""**
+
+
+{{/meta.age_relevant}}
+
+{{#meta.digital_confidence}}
+**Probe: ""If someone was less confident with technology, how might they feel about this?""**
+
+
+{{/meta.digital_confidence}}
+
+**Probe: ""Are there groups of people who might find this less trustworthy?""**
+
+
+
+---
+
+### What would help
+
+**Probe: ""What would make you feel more confident using this service?""**
+
+1. 
+2. 
+3. 
+
+**Probe: ""What's the one thing that would make the biggest difference?""**
+
+
+
+**Probe: ""Is there anything here that's unnecessary or makes you less trusting?""**
+
+
+
+---
+
+### Observer assessment
+
+**Overall trust level observed:**
+☐ High trust  
+☐ Moderate trust  
+☐ Low trust  
+☐ Distrust
+
+**Key trust builder:**
+
+
+
+**Key trust detractor:**
+
+
+
+**Discrepancy between stated and observed trust:**
+☐ None  
+☐ Says trusts but behavior shows hesitation  
+☐ Says doesn't trust but proceeds anyway  
+☐ Other: __________
+
+**Notes:**
+
+
+
+---
+
+### Insight summary
+
+**Trust hypothesis:**
+
+
+
+**User need identified:**
+
+
+
+**Risk if not addressed:**
+
+
+
+**Recommended action:**
+
+**Priority:** ☐ Critical  ☐ High  ☐ Medium  ☐ Low
+
+---
+
+**Observer:** {{meta.observer_name}}  
+**Session type:** {{#meta.session_type}}{{meta.session_type}}{{/meta.session_type}}{{^meta.session_type}}☐ Remote  ☐ In-person  ☐ Lab{{/meta.session_type}}",,Published,Kevin Rapley,7/10/2025 13:29,
+wrapup_debrief,Wrap-up Debrief,Debrief,1,"{{! /components/guides/patterns/wrapup_debrief.md }}
+# Session wrap-up
+
+**Participant:** {{meta.participant_id}}  
+**Session end time:** __________  
+**Total duration:** ________ minutes
+
+---
+
+### Thank you
+
+Thank you so much for your time today. Your feedback is really valuable and will help us improve {{project.name}}.
+
+**Probe: ""Before we finish, how are you feeling? Was that okay?""**
+
+
+
+**Wellbeing check:**
+☐ Fine, no concerns  
+☐ Tired but okay  
+☐ Slightly stressed  
+☐ Needs support
+
+---
+
+### Overall reflection
+
+**Probe: ""Now you've seen the whole thing, what are your overall thoughts?""**
+
+
+
+**Probe: ""If you had to describe this service to a friend in one sentence, what would you say?""**
+
+> ""...""
+
+**Probe: ""What was the best part of your experience today?""**
+
+
+
+**Probe: ""What was the most frustrating or confusing part?""**
+
+
+
+---
+
+### Comparative perspective
+
+**Probe: ""How does this compare to your expectations before we started?""**
+☐ Better than expected  
+☐ About what I expected  
+☐ Worse than expected  
+☐ Completely different
+
+**Why:**
+
+
+
+**Probe: ""Compared to similar services you've used, how would you rate this?""**
+☐ Much better  
+☐ Slightly better  
+☐ About the same  
+☐ Slightly worse  
+☐ Much worse
+
+**What makes the difference:**
+
+
+
+---
+
+### Priority identification
+
+**Probe: ""If we could only fix one thing, what should it be?""**
+
+
+
+**Why that one:**
+
+
+
+**Probe: ""What would make the biggest difference to your experience?""**
+
+
+
+---
+
+### Missing expectations
+
+**Probe: ""Was there anything you expected to see or do that wasn't there?""**
+☐ Yes  ☐ No
+
+**If yes:**
+
+
+
+**Probe: ""Is there anything we didn't ask about that you think is important?""**
+
+
+
+---
+
+### Likelihood of use
+
+**Probe: ""In real life, would you use this service?""**
+☐ Definitely  
+☐ Probably  
+☐ Maybe  
+☐ Probably not  
+☐ Definitely not
+
+**Why:**
+
+
+
+**Probe: ""What would it take for you to use this?""**
+
+
+
+**Probe: ""Would you recommend this to someone else?""**
+☐ Yes  ☐ No  ☐ Maybe
+
+**Who and why:**
+
+
+
+---
+
+### Learning about the research
+
+**Explain: ""This was a prototype/test version. Some things might not have worked perfectly, and that's exactly what we needed to find out.""**
+
+**Probe: ""Did anything surprise you about taking part in research?""**
+
+
+
+**Probe: ""Was there anything you found difficult or uncomfortable about the session?""**
+
+
+
+**What could we do better as researchers:**
+
+
+
+---
+
+### Future participation
+
+**Probe: ""Would you be interested in taking part in future research on this service?""**
+☐ Yes  ☐ No  ☐ Maybe
+
+**If yes: ""Can we keep your contact details to invite you to future sessions?""**
+☐ Yes  ☐ No
+
+**Preferred contact method:**
+☐ Email  ☐ Phone  ☐ Text  ☐ Post
+
+**Contact details:**
+
+
+
+---
+
+### What happens next
+
+**Explain:**
+
+""Here's what happens next with your feedback:
+
+1. We'll review the recording/notes within the next few weeks
+2. We'll combine your feedback with what we learn from other participants
+3. We'll use this to improve the service
+4. Your recording will be deleted within 2 years
+
+Your feedback might appear in:
+- Internal reports (with pseudonym)
+- Team presentations (anonymised)
+- Design documentation (anonymised)
+
+You won't be personally identified in any of these.""
+
+**Probe: ""Do you have any questions about what happens next?""**
+
+
+
+---
+
+### Withdrawal rights reminder
+
+**Explain: ""Just a reminder—you can withdraw from the research up until 2 weeks from today.""**
+
+**To withdraw, contact:** {{meta.contact_email}}
+
+**Quote your participant ID:** {{meta.participant_id}}
+
+**Probe: ""Is that clear?""**
+☐ Yes  ☐ No
+
+---
+
+### Incentive
+
+**Explain: ""As a thank you, you'll receive a voucher/payment.""**
+
+**Method:** ☐ Voucher  ☐ Bank transfer  ☐ Cash  ☐ Charity donation
+
+**Delivery:** Within 5 working days
+
+**Probe: ""Do you have any questions about the payment?""**
+
+
+
+---
+
+### Contact information
+
+**Explain: ""If you have any questions after today, you can contact us.""**
+
+**Research team:** {{meta.contact_email}}
+
+---
+
+### Additional comments
+
+**Probe: ""Is there anything else you'd like to tell us? Anything we didn't cover?""**
+
+
+
+
+
+
+
+---
+
+### Post-session observer notes
+
+**Participant demeanor at end:**
+☐ Positive/engaged  
+☐ Neutral  
+☐ Tired  
+☐ Frustrated  
+☐ Relieved it's over
+
+**Any concerns about participant wellbeing:** ☐ Yes  ☐ No
+
+**Session issues that may have affected data quality:**
+
+
+
+**Key themes from this participant:**
+
+1. 
+2. 
+3. 
+
+---
+
+### Administrative checklist
+
+- [ ] Recording stopped and saved
+- [ ] Consent form signed/recorded
+- [ ] Participant ID assigned/confirmed
+- [ ] Incentive processed/arranged
+- [ ] Contact details stored (if consented)
+- [ ] Data stored securely
+- [ ] Debrief completed
+- [ ] Notes uploaded to research repository
+
+---
+
+**Session completed by:** {{meta.observer_name}}  
+**Date:** {{meta.session_date}}",,Published,Kevin Rapley,7/10/2025 13:31,
+note_observer_grid,Observer note-taking,Notes,1,"{{! /components/guides/patterns/note_observer_grid.md }}
+## Observer notes: {{study.method}}
+
+**Participant:** {{meta.participant_id}}  
+**Observer:** {{meta.observer_name}}  
+**Date:** {{meta.session_date}}  
+**Start time:** __________
+
+---
+
+### Quick reference codes
+
+**Type:**
+- B = Behaviour
+- Q = Quote
+- E = Error
+- P = Pain point
+- W = Works well
+- ? = Question/confusion
+- ! = Critical issue
+- A = Accessibility
+- T = Trust signal
+- N = Note/context
+
+**Severity (for issues):**
+- 1 = Blocker
+- 2 = Major
+- 3 = Minor
+- 4 = Observation only
+
+---
+
+### Observation grid
+
+| Time | Type | Observation | Screen/Task | Severity | Follow-up |
+|------|------|-------------|-------------|----------|-----------|
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+| | | | | | ☐ |
+
+---
+
+### Key quotes (verbatim)
+
+1. > ""...""
+
+2. > ""...""
+
+3. > ""...""
+
+4. > ""...""
+
+5. > ""...""
+
+---
+
+### Critical moments
+
+**Timestamp:** ________ **What happened:**
+
+
+
+**Timestamp:** ________ **What happened:**
+
+
+
+**Timestamp:** ________ **What happened:**
+
+
+
+---
+
+### Behavioral patterns
+
+**Approach to tasks:**
+
+
+
+**Emotional state changes:**
+
+
+
+**Physical behavior (gestures, expressions):**
+
+
+
+**Assistance tech interactions:**
+
+
+
+---
+
+### End-of-session summary
+
+**Overall impression:**
+☐ Very positive  
+☐ Mostly positive  
+☐ Mixed  
+☐ Mostly negative  
+☐ Very negative
+
+**Completion rate:** _____ / _____ tasks
+
+**Most significant finding:**
+
+
+
+**Top 3 issues:**
+
+1. 
+2. 
+3. 
+
+**Top 3 successes:**
+
+1. 
+2. 
+3. 
+
+**Themes/patterns observed:**
+
+
+
+**Unique to this participant:**
+
+
+
+**Similar to others:**
+
+
+
+---
+
+**Session end time:** __________  
+**Observer signature:** __________",,Published,Kevin Rapley,7/10/2025 13:39,
