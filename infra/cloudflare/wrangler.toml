@@ -70,3 +70,9 @@ enabled = true
 head_sampling_rate = 1
 invocation_logs = true
 persist = true
+
+# Cloudflare D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "researchops-d1"
+database_id = "<your-d1-id>"
