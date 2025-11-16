@@ -14,7 +14,7 @@ import {
 	exchangeAuthCode,
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	ensureUserRoom,
+	findUserPrivateRoom,
 	ensureProjectFolder,
 	createMural,
 	duplicateMural,
@@ -142,8 +142,6 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 	return null;
 }
 
-/* ───────────────────────── KV helpers ───────────────────────── */
-
 async function _kvProjectMapping(env, { uid, projectId }) {
 	const key = `mural:${uid || "anon"}:project:id::${String(projectId || "")}`;
 	const raw = await env.SESSION_KV.get(key);
@@ -251,9 +249,6 @@ export class MuralServicePart {
 		return null;
 	}
 
-	/**
-	 * Create/update the Mural Boards mapping row using the "Project ID" text field.
-	 */
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
 
@@ -341,7 +336,7 @@ export class MuralServicePart {
 		await this.saveTokens(uid, tokens);
 
 		const want = stateObj?.return || "/pages/projects/";
-		const back = want.startswith("http") ? want : new URL(want, url).toString();
+		const back = want.startsWith("http") ? want : new URL(want, url).toString();
 		const u = new URL(back);
 		u.searchParams.set("mural", "connected");
 		return Response.redirect(u.toString(), 302);
@@ -383,12 +378,7 @@ export class MuralServicePart {
 			const projectName = body?.projectName;
 			const wsOverride = body?.workspaceId;
 
-			console.log("[mural.setup] Starting", {
-				uid,
-				projectId,
-				projectName,
-				hasWorkspaceOverride: !!wsOverride
-			});
+			console.log("[mural.setup] Starting", { uid, projectId, projectName, hasWorkspaceOverride: !!wsOverride });
 
 			if (!projectName || !String(projectName).trim()) {
 				console.error("[mural.setup] Missing projectName");
@@ -435,17 +425,14 @@ export class MuralServicePart {
 			const username = me?.value?.firstName || me?.name || "Private";
 			console.log("[mural.setup] User identity", { username, userId: me?.value?.id });
 
-			step = "resolve_room";
-			const room = await ensureUserRoom(this.root.env, accessToken, ws.id);
+			step = "find_private_room";
+			const room = await findUserPrivateRoom(this.root.env, accessToken, ws.id);
 			const roomId = room?.id || room?.value?.id;
 			if (!roomId) {
-				console.error("[mural.setup] No room ID obtained", { room });
-				return this.root.json({ ok: false, error: "room_not_found", step }, 502, cors);
+				console.error("[mural.setup] No private room ID obtained", { room });
+				return this.root.json({ ok: false, error: "private_room_not_found", step }, 502, cors);
 			}
-			console.log("[mural.setup] Target room resolved", {
-				roomId,
-				roomName: room?.name || room?.title
-			});
+			console.log("[mural.setup] Private room found", { roomId, roomName: room?.name });
 
 			step = "ensure_folder";
 			let folder = null;
@@ -461,10 +448,10 @@ export class MuralServicePart {
 			let muralId = null;
 			let templateCopied = true;
 
-			const rawTemplateConfig = this.root.env.MURAL_TEMPLATE_REFLEXIVE || null;
+			const templateId = this.root.env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
 			const muralTitle = `Reflexive Journal: ${projectName}`;
 			console.log("[mural.setup] Starting mural creation", {
-				rawTemplateConfig,
+				templateId,
 				roomId,
 				folderId: folder?.id,
 				muralTitle,
@@ -486,22 +473,13 @@ export class MuralServicePart {
 					error: e?.message,
 					status: e?.status,
 					body: e?.body,
-					rawTemplateConfig,
+					templateId: e?.templateId,
 					endpoint: e?.endpoint,
-					willFallbackToBlank: e?.status === 404 ||
-						e?.code === "MURAL_TEMPLATE_NOT_CONFIGURED" ||
-						String(e?.message || "").includes("MURAL_TEMPLATE_REFLEXIVE is not configured")
+					willFallbackToBlank: e?.status === 404
 				});
 
-				if (
-					e?.status === 404 ||
-					e?.code === "MURAL_TEMPLATE_NOT_CONFIGURED" ||
-					String(e?.message || "").includes("MURAL_TEMPLATE_REFLEXIVE is not configured")
-				) {
-					console.log("[mural.setup] Fallback: Creating blank mural", {
-						reason: e?.code || e?.message || "template_not_available",
-						status: e?.status ?? null
-					});
+				if (e?.status === 404) {
+					console.log("[mural.setup] Fallback: Creating blank mural (404 - endpoint not found)");
 					mural = await createMural(this.root.env, accessToken, {
 						title: muralTitle,
 						roomId,
@@ -510,10 +488,7 @@ export class MuralServicePart {
 					muralId = mural?.id || mural?.value?.id;
 					console.log("[mural.setup] Blank mural created", { muralId });
 				} else {
-					console.error("[mural.setup] NOT creating blank mural - non-recoverable template error", {
-						status: e?.status,
-						code: e?.code
-					});
+					console.error("[mural.setup] NOT creating blank mural - non-404 error", { status: e?.status });
 					throw Object.assign(
 						new Error(`Template duplication failed: ${e?.message || "Unknown error"}`), {
 							code: "TEMPLATE_COPY_FAILED",
@@ -529,22 +504,15 @@ export class MuralServicePart {
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
-			// ───── Update area title via areas endpoint only ─────
+			// NEW STEP: rename the in-mural header from "Reflexive Journal: <Project-Name>"
+			// to "Reflexive Journal: {projectName}" using the helper in lib/mural.js.
 			step = "update_area_title";
 			try {
-				console.log("[mural.setup] Updating area title for reflexive journal", {
-					muralId,
-					projectName
-				});
 				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
-				console.log("[mural.setup] Area title update completed", {
-					muralId,
-					projectName
-				});
+				console.log("[mural.setup] Area title updated", { muralId, projectName });
 			} catch (e) {
 				console.warn("[mural.setup] Area title update failed (non-critical)", {
 					muralId,
-					projectName,
 					error: e?.message,
 					status: e?.status
 				});
