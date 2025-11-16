@@ -2,13 +2,12 @@
  * @file lib/mural.js
  * @module lib/mural
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
- * @version 2.4.2
+ * @version 2.5.1
  *
- * 2.4.2:
- *  - updateAreaTitle() now uses the areas endpoint only:
- *    - GET  /murals/{muralId}/areas
- *    - PATCH /murals/{muralId}/areas/{areaId} { title }
- *    to rename “Reflexive Journal: <Project-Name>” to the project-specific title.
+ * 2.5.1:
+ *  - Resolve template mural id from MURAL_TEMPLATE_REFLEXIVE without using the trailing hash.
+ *    If a URL is provided, use the second-to-last path segment as the mural id.
+ *  - Keep updateAreaTitle() using the /areas endpoint only (no widget fallback).
  *
  * 2.4.1:
  *  - Log current Mural user and room owner in duplicateMural() and createMural().
@@ -396,6 +395,56 @@ export async function ensureProjectFolder(env, accessToken, roomId, folderName) 
 	return created;
 }
 
+/* ───────────────── Template mural id helper ───────────────── */
+
+/**
+ * Resolve the template mural id from configuration.
+ *
+ * Expected configs:
+ *  - MURAL_TEMPLATE_REFLEXIVE = "<mural-id>"
+ *    e.g. "1761511827081" or "pppt6786.1761511827081"
+ *
+ *  - MURAL_TEMPLATE_REFLEXIVE = full board URL
+ *    e.g. "https://app.mural.co/t/.../m/.../<mural-id>/<key>"
+ *
+ * For URLs we take the SECOND-TO-LAST path segment as the mural id,
+ * not the trailing hash/key.
+ */
+function resolveTemplateMuralId(env) {
+	const raw = String(env.MURAL_TEMPLATE_REFLEXIVE || "").trim();
+
+	if (!raw) {
+		throw new Error("MURAL_TEMPLATE_REFLEXIVE is not configured (template mural id or URL required)");
+	}
+
+	if (/^https?:\/\//i.test(raw)) {
+		try {
+			const u = new URL(raw);
+			const parts = u.pathname.split("/").filter(Boolean);
+			if (parts.length < 2) {
+				throw new Error("Not enough path segments to derive mural id");
+			}
+			// For /t/<tenant>/m/<ws>/<mural-id>/<key> → take second-to-last segment
+			const muralId = parts[parts.length - 2];
+			console.log("[mural.resolveTemplateMuralId] Derived mural id from URL", {
+				raw,
+				muralId
+			});
+			return muralId;
+		} catch (err) {
+			console.error("[mural.resolveTemplateMuralId] Failed to parse MURAL_TEMPLATE_REFLEXIVE URL", {
+				raw,
+				error: String(err?.message || err)
+			});
+			throw new Error("Could not derive mural id from MURAL_TEMPLATE_REFLEXIVE URL");
+		}
+	}
+
+	// Non-URL: assume it's directly the mural id (no hash inference).
+	console.log("[mural.resolveTemplateMuralId] Using configured mural id", { muralId: raw });
+	return raw;
+}
+
 /* ───────────────── Mural creation / duplication ───────────────── */
 
 export async function createMural(env, accessToken, { title, roomId, folderId }) {
@@ -483,20 +532,17 @@ export async function getMural(env, accessToken, muralId) {
 /**
  * Duplicate a mural from a template into a room/folder.
  *
- * Template id defaults to env.MURAL_TEMPLATE_REFLEXIVE, which in your case
- * corresponds to the private-board URL ending with:
- *   /76da04f30edfebd1ac5b595ad2953629b41c1c7d
+ * Template id is derived from env.MURAL_TEMPLATE_REFLEXIVE:
+ *  - either a direct mural id, or
+ *  - a full board URL (second-to-last path segment is used as the id).
  */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
-	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
-	if (!templateId) {
-		console.error("[mural.duplicateMural] No template ID configured");
-		throw new Error("No template mural id configured for duplication");
-	}
 	if (!roomId) {
 		console.error("[mural.duplicateMural] No roomId provided");
 		throw new Error("roomId is required for duplicateMural()");
 	}
+
+	const templateId = resolveTemplateMuralId(env);
 
 	let currentUser = null;
 	let ownerInfo = null;
@@ -531,6 +577,7 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	};
 
 	console.log("[mural.duplicateMural] Attempting template duplication", {
+		rawTemplateConfig: env.MURAL_TEMPLATE_REFLEXIVE || null,
 		templateId,
 		title: body.title,
 		roomId,
@@ -580,7 +627,7 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 	return result;
 }
 
-/* ───────────────── Widgets & areas ───────────────── */
+/* ───────────────── Widgets ───────────────── */
 
 export async function getWidgets(env, accessToken, muralId) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
@@ -666,95 +713,107 @@ export function findLatestInCategory(list, category) {
 	return filtered.sort((a, b) => ((b.y || 0) - (a.y || 0)) || ((b.x || 0) - (a.x || 0)))[0];
 }
 
-/**
- * Rename the duplicated area whose title is "Reflexive Journal: <Project-Name>"
- * to "Reflexive Journal: ${projectName}" using the Mural areas API.
- *
- * - Uses muralId of the newly created board.
- * - Resolves areaId based on the literal placeholder title.
- * - PATCHes /murals/{muralId}/areas/{areaId} with { title }.
- * - No widget-based fallback.
- */
-export async function updateAreaTitle(env, accessToken, muralId, projectName) {
-	if (!projectName || !muralId) return;
+/* ───────────────── Areas: title update via /areas ───────────────── */
 
-	const placeholderTitle = "Reflexive Journal: <Project-Name>";
-	const desiredTitle = `Reflexive Journal: ${projectName}`;
-
-	const listUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/areas`;
-
-	try {
-		const listRes = await fetch(listUrl, {
-			headers: { Authorization: `Bearer ${accessToken}` }
-		});
-		const listJs = await listRes.json().catch(() => ({}));
-
-		if (!listRes.ok) {
-			console.warn("[mural.updateAreaTitle] List areas failed", {
-				muralId,
-				status: listRes.status,
-				bodyKeys: Object.keys(listJs || {})
-			});
-			return;
-		}
-
-		const areas = listJs?.value || listJs?.areas || [];
-		const target = areas.find(a => {
-			const t = String(a.title || a.name || "").trim();
-			if (!t) return false;
-			// Match literal placeholder, but allow slight template variations.
-			if (t === placeholderTitle) return true;
-			const lower = t.toLowerCase();
-			return lower.startsWith("reflexive journal:") && t.includes("<Project-Name>");
-		});
-
-		if (!target?.id) {
-			console.log("[mural.updateAreaTitle] No matching area found for placeholder title", {
-				muralId,
-				areaCount: areas.length
-			});
-			return;
-		}
-
-		const patchUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/areas/${target.id}`;
-		console.log("[mural.updateAreaTitle] Patching area title", {
-			muralId,
-			areaId: target.id,
-			oldTitle: target.title || target.name,
-			newTitle: desiredTitle
-		});
-
-		const patchRes = await fetch(patchUrl, {
-			method: "PATCH",
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({ title: desiredTitle })
-		});
-		const patchJs = await patchRes.json().catch(() => ({}));
-
-		if (!patchRes.ok) {
-			console.warn("[mural.updateAreaTitle] Area PATCH failed", {
-				muralId,
-				areaId: target.id,
-				status: patchRes.status,
-				body: patchJs
-			});
-			return;
-		}
-
-		console.log("[mural.updateAreaTitle] Area title updated successfully", {
-			muralId,
-			areaId: target.id,
-			title: desiredTitle
-		});
-	} catch (err) {
-		console.warn("[mural.updateAreaTitle] Error while updating area title", {
-			muralId,
-			error: String(err?.message || err)
+export async function getAreasForMural(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/areas`;
+	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`GET /murals/${muralId}/areas failed: ${res.status}`), {
+			status: res.status,
+			body: js
 		});
 	}
+	return js?.value || js?.areas || [];
+}
+
+export async function patchArea(env, accessToken, muralId, areaId, patch) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/areas/${areaId}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(patch)
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`PATCH /murals/${muralId}/areas/${areaId} failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return js?.value || js;
+}
+
+/**
+ * After duplication, find the area that has a title like
+ * "Reflexive Journal: <Project-Name>" and rename it to include the actual project name.
+ *
+ * This *only* uses the /areas endpoint (no widget fallback).
+ */
+export async function updateAreaTitle(env, accessToken, muralId, projectName) {
+	if (!projectName) return;
+
+	const trimmedName = String(projectName).trim();
+	if (!trimmedName) return;
+
+	console.log("[mural.updateAreaTitle] Resolving areas for mural", {
+		muralId,
+		projectName: trimmedName
+	});
+
+	const areas = await getAreasForMural(env, accessToken, muralId);
+	const debugAreas = areas.map(a => ({
+		id: a.id,
+		title: a.title || a.name || "",
+		type: a.type || null
+	}));
+	console.log("[mural.updateAreaTitle] Areas fetched", {
+		muralId,
+		count: areas.length,
+		areas: debugAreas
+	});
+
+	const needlePrefix = "reflexive journal:";
+	const needlePlaceholder = "<project-name>";
+
+	let target = null;
+
+	for (const a of areas) {
+		const title = String(a.title || a.name || "").trim();
+		const lower = title.toLowerCase();
+		if (lower.startsWith(needlePrefix) || lower.includes(needlePlaceholder)) {
+			target = a;
+			break;
+		}
+	}
+
+	if (!target) {
+		console.warn("[mural.updateAreaTitle] No matching area title found", {
+			muralId,
+			projectName: trimmedName
+		});
+		return;
+	}
+
+	const newTitle = `Reflexive Journal: ${trimmedName}`;
+	console.log("[mural.updateAreaTitle] Patching area title", {
+		muralId,
+		areaId: target.id,
+		oldTitle: target.title || target.name || "",
+		newTitle
+	});
+
+	const patched = await patchArea(env, accessToken, muralId, target.id, { title: newTitle });
+
+	console.log("[mural.updateAreaTitle] Area title updated", {
+		muralId,
+		areaId: target.id,
+		finalTitle: patched.title || patched.name || newTitle
+	});
 }
 
 /* ───────────────── Tags ───────────────── */
