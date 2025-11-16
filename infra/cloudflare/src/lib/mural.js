@@ -2,7 +2,11 @@
  * @file lib/mural.js
  * @module lib/mural
  * @summary Mural API client library with OAuth2, workspace, room, and mural management.
- * @version 2.4.1
+ * @version 2.4.2
+ *
+ * 2.4.2:
+ *  - Fix duplicateMural() template handling by normalising env/URL/hash to a proper muralId
+ *    in the form workspaceKey.numericId (e.g. "pppt6786.1761511827081").
  *
  * 2.4.1:
  *  - Log current Mural user and room owner in duplicateMural() and createMural().
@@ -475,16 +479,62 @@ export async function getMural(env, accessToken, muralId) {
 }
 
 /**
+ * Normalise a configured template reference into a Mural muralId.
+ *
+ * Supports:
+ *  - Full muralId: "pppt6786.1761511827081"
+ *  - Full URL:     "https://app.mural.co/t/pppt6786/m/pppt6786/1761511827081/76da..."
+ *  - Raw hash / anything else: falls back to known template muralId.
+ */
+function normaliseTemplateMuralId(raw) {
+	const FALLBACK = "pppt6786.1761511827081"; // Kevin's private-room template board id
+
+	if (!raw) return FALLBACK;
+	const s = String(raw).trim();
+	if (!s) return FALLBACK;
+
+	// Already looks like a muralId (workspaceKey.numericId)
+	if (/^[a-z0-9]+?\.[0-9]+$/i.test(s)) return s;
+
+	// If it's a URL, try to extract workspaceKey + numericId from the path
+	if (/^https?:\/\//i.test(s)) {
+		try {
+			const u = new URL(s);
+			const parts = u.pathname.split("/").filter(Boolean);
+			// Expected pattern:
+			//   /t/{workspaceKey}/m/{workspaceKey}/1761511827081/76da...
+			// → ["t","pppt6786","m","pppt6786","1761511827081","76da..."]
+			const workspaceKey = parts[1] || null;
+			const numericId = parts[4] || null;
+			if (workspaceKey && numericId) {
+				return `${workspaceKey}.${numericId}`;
+			}
+		} catch {
+			// fall through to fallback
+		}
+	}
+
+	// Anything else (e.g. just the hash) isn't directly usable → fallback
+	return FALLBACK;
+}
+
+/**
  * Duplicate a mural from a template into a room/folder.
  *
- * Template id defaults to env.MURAL_TEMPLATE_REFLEXIVE, which in your case
- * corresponds to the private-board URL ending with:
- *   /76da04f30edfebd1ac5b595ad2953629b41c1c7d
+ * Template id comes from:
+ *   - env.MURAL_TEMPLATE_REFLEXIVE or env.MURAL_TEMPLATE_REFLEXIVE_URL (URL or id),
+ *   - falling back to the known template muralId in Kevin's private room.
  */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
-	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
+	const templateRaw =
+		env.MURAL_TEMPLATE_REFLEXIVE ||
+		env.MURAL_TEMPLATE_REFLEXIVE_URL ||
+		null;
+
+	const templateId = normaliseTemplateMuralId(templateRaw);
+
 	if (!templateId) {
-		console.error("[mural.duplicateMural] No template ID configured");
+		console.error("[mural.duplicateMural] No template ID resolved");
 		throw new Error("No template mural id configured for duplication");
 	}
 	if (!roomId) {
@@ -530,7 +580,8 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		roomId,
 		folderId: folderId || null,
 		currentUser,
-		roomOwner: ownerInfo
+		roomOwner: ownerInfo,
+		endpoint: url
 	});
 
 	const res = await fetch(url, {
@@ -561,7 +612,8 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		});
 		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
 			status: res.status,
-			body: js
+			body: js,
+			templateId
 		});
 	}
 
