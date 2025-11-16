@@ -125,35 +125,35 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		var qsProject = url.searchParams.get('project') || '';
 		var qsId = url.searchParams.get('id') || '';
 
-		var main = document.querySelector('main');
-		var dataRecord = main?.dataset.projectAirtableId || main?.dataset.projectAirtableID || '';
-		var dataExternal = main?.dataset.projectExternalId || main?.dataset.projectExternalID || '';
-
 		var projectRecordId = '';
 		var projectExternalId = '';
 
-		if (dataRecord && looksLikeRecordId(dataRecord)) {
-			projectRecordId = dataRecord;
+		// Treat ?id=rec… as the Airtable record id
+		if (qsId && looksLikeRecordId(qsId)) {
+			projectRecordId = qsId;
 		}
 
-		if (dataExternal) {
-			projectExternalId = dataExternal;
+		// Treat ?project=<uuid> as the external id
+		if (qsProject) {
+			projectExternalId = qsProject;
 		}
 
-		if (!projectRecordId && looksLikeRecordId(qsProject)) projectRecordId = qsProject;
-		if (!projectRecordId && looksLikeRecordId(qsId)) projectRecordId = qsId;
-
-		if (!projectExternalId && qsProject && !looksLikeRecordId(qsProject)) projectExternalId = qsProject;
-		if (!projectExternalId && qsId && !looksLikeRecordId(qsId)) projectExternalId = qsId;
+		// If there's no explicit ?project= but ?id is NOT a rec…, treat that as external id
+		if (!projectExternalId && qsId && !looksLikeRecordId(qsId)) {
+			projectExternalId = qsId;
+		}
 
 		state.projectRecordId = projectRecordId || '';
 		state.projectExternalId = projectExternalId || '';
-		state.projectId = projectExternalId || projectRecordId || qsProject || qsId || '';
+
+		// For GET /api/journal-entries?project=… we prefer the external id
+		state.projectId = state.projectExternalId || state.projectRecordId || '';
 
 		console.debug('[journal] project context', {
 			projectId: state.projectId,
 			projectRecordId: state.projectRecordId,
-			projectExternalId: state.projectExternalId
+			projectExternalId: state.projectExternalId,
+			raw: { qsProject, qsId }
 		});
 	}
 
@@ -322,6 +322,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 			const tags = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
 
+			// Only treat a rec… as the Airtable-linked ID; never send UUIDs here
 			const projectRecordId = state.projectRecordId && looksLikeRecordId(state.projectRecordId)
 				? state.projectRecordId
 				: '';
