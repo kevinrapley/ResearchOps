@@ -142,30 +142,6 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 	return null;
 }
 
-async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
-	try {
-		const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
-		const url = _extractViewerUrl(hydrated);
-		if (url) return url;
-	} catch {}
-	try {
-		const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
-		const best = links.find(l => _looksLikeMuralViewerUrl(l.url)) ||
-			links.find(l => /viewer|view|open|public/i.test(String(l.type || "")) && l.url);
-		if (best?.url && _looksLikeMuralViewerUrl(best.url)) return best.url;
-	} catch {}
-	try {
-		const created = await createViewerLink(env, accessToken, muralId);
-		if (created && _looksLikeMuralViewerUrl(created)) return created;
-	} catch {}
-	try {
-		const hydrated2 = await getMural(env, accessToken, muralId).catch(() => null);
-		const url2 = _extractViewerUrl(hydrated2);
-		if (url2) return url2;
-	} catch {}
-	return null;
-}
-
 /* ───────────────────────── KV helpers ───────────────────────── */
 
 async function _kvProjectMapping(env, { uid, projectId }) {
