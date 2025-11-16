@@ -724,38 +724,78 @@ export function findLatestInCategory(list, category) {
  * "Reflexive Journal: <Project-Name>" and rename it to include
  * the actual project name.
  *
- * This uses the dedicated "Update a title on a mural" endpoint and
- * does not fall back to generic widget updates.
+ * Primary path:
+ *   GET  /murals/{muralId}/widgets?type=areas
+ *   PATCH /murals/{muralId}/widgets/area/{widgetId}
  */
 
 export async function updateAreaTitle(env, accessToken, muralId, projectName) {
 	if (!projectName) return;
 
-	const listUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets?type=area`;
+	const baseUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
+	let areas = [];
 
-	// 1. Get all area widgets
-	const res = await fetch(listUrl, {
-		headers: { Authorization: `Bearer ${accessToken}` }
-	});
-	const js = await res.json().catch(() => ({}));
+	// ── 1) Try filtered request: ?type=areas (plural, per API error message) ──
+	try {
+		const url = new URL(baseUrl);
+		url.searchParams.set("type", "areas");
 
-	if (!res.ok) {
-		console.warn("[mural.updateAreaTitle] Failed to load areas", {
-			status: res.status,
-			body: js
+		const res = await fetch(url.toString(), {
+			headers: { Authorization: `Bearer ${accessToken}` }
 		});
-		return;
+		const js = await res.json().catch(() => ({}));
+
+		if (!res.ok) {
+			console.warn("[mural.updateAreaTitle] Failed to load areas (filtered)", {
+				status: res.status,
+				body: js
+			});
+		} else {
+			areas = js?.value || js?.widgets || [];
+		}
+	} catch (err) {
+		console.warn("[mural.updateAreaTitle] Error loading areas (filtered)", {
+			error: String(err?.message || err)
+		});
 	}
 
-	const areas = js?.value || js?.widgets || [];
+	// ── 2) Fallback: unfiltered /widgets + filter in JS, in case type=areas ever breaks ──
 	if (!Array.isArray(areas) || !areas.length) {
-		console.log("[mural.updateAreaTitle] No areas found");
+		try {
+			const res = await fetch(baseUrl, {
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+			const js = await res.json().catch(() => ({}));
+
+			if (!res.ok) {
+				console.warn("[mural.updateAreaTitle] Failed to load widgets (fallback)", {
+					status: res.status,
+					body: js
+				});
+				return;
+			}
+
+			const widgets = js?.value || js?.widgets || [];
+			areas = (widgets || []).filter(w => {
+				const t = String(w.type || "").toLowerCase();
+				return t === "areas" || t === "area";
+			});
+		} catch (err) {
+			console.warn("[mural.updateAreaTitle] Error during fallback widget load", {
+				error: String(err?.message || err)
+			});
+			return;
+		}
+	}
+
+	if (!Array.isArray(areas) || !areas.length) {
+		console.log("[mural.updateAreaTitle] No area widgets found");
 		return;
 	}
 
-	// 2. Locate the correct area — the placeholder area title
+	// ── 3) Find the target area whose title looks like "Reflexive Journal: ..." ──
 	const target = areas.find(a => {
-		const t = String(a.title || a.text || "").trim().toLowerCase();
+		const t = String(a.title || a.text || a.name || "").trim().toLowerCase();
 		return t.startsWith("reflexive journal:");
 	});
 
@@ -766,7 +806,7 @@ export async function updateAreaTitle(env, accessToken, muralId, projectName) {
 
 	const newTitle = `Reflexive Journal: ${projectName}`;
 
-	// 3. PATCH the AREA endpoint
+	// ── 4) PATCH the area-specific endpoint ──
 	const patchUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/area/${target.id}`;
 
 	const patchRes = await fetch(patchUrl, {
@@ -777,7 +817,6 @@ export async function updateAreaTitle(env, accessToken, muralId, projectName) {
 		},
 		body: JSON.stringify({ title: newTitle })
 	});
-
 	const patchJson = await patchRes.json().catch(() => ({}));
 
 	if (!patchRes.ok) {
