@@ -9,9 +9,10 @@
  * NOTE: Heavy analysis logic lives in /js/caqdas-interface.js
  */
 
+/* eslint-env browser */
+
 import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-interface.js';
 
-/* eslint-env browser */
 (function() {
 	// ---------- tiny helpers ----------
 	function $(s, r) { if (!r) r = document; return r.querySelector(s); }
@@ -102,16 +103,15 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		);
 	}
 
-	function looksLikeAirtableRecordId(id) {
-		return typeof id === 'string' && /^rec[0-9A-Za-z]{14}$/.test(id.trim());
+	function looksLikeRecordId(v) {
+		return /^rec[a-zA-Z0-9]{14}$/.test(String(v || '').trim());
 	}
 
 	// ---------- state ----------
-	// projectId      → canonical Airtable record id when available (used for POST + Mural)
-	// projectExternalId → optional external/UUID id used historically (querystring / data-project-id)
 	var state = {
-		projectId: '',
-		projectExternalId: '',
+		projectId: '',            // ID used for GET /api/journal-entries?project=…
+		projectRecordId: '',      // Airtable rec… id
+		projectExternalId: '',    // UUID-style external id
 		entries: [],
 		entryFilter: 'all',
 		codes: [],
@@ -119,21 +119,50 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		memoFilter: 'all'
 	};
 
-	function getProjectRecordId() {
-		return state.projectId || '';
-	}
+	// ---------- PROJECT CONTEXT ----------
+	function initProjectState() {
+		var url = new URL(location.href);
+		var qsProject = url.searchParams.get('project') || '';
+		var qsId = url.searchParams.get('id') || '';
 
-	function getProjectIdForList() {
-		// Prefer Airtable record id; fall back to external/legacy id to avoid breaking older data.
-		return getProjectRecordId() || state.projectExternalId || '';
+		var main = document.querySelector('main');
+		var dataRecord = main?.dataset.projectAirtableId || main?.dataset.projectAirtableID || '';
+		var dataExternal = main?.dataset.projectExternalId || main?.dataset.projectExternalID || '';
+
+		var projectRecordId = '';
+		var projectExternalId = '';
+
+		if (dataRecord && looksLikeRecordId(dataRecord)) {
+			projectRecordId = dataRecord;
+		}
+
+		if (dataExternal) {
+			projectExternalId = dataExternal;
+		}
+
+		if (!projectRecordId && looksLikeRecordId(qsProject)) projectRecordId = qsProject;
+		if (!projectRecordId && looksLikeRecordId(qsId)) projectRecordId = qsId;
+
+		if (!projectExternalId && qsProject && !looksLikeRecordId(qsProject)) projectExternalId = qsProject;
+		if (!projectExternalId && qsId && !looksLikeRecordId(qsId)) projectExternalId = qsId;
+
+		state.projectRecordId = projectRecordId || '';
+		state.projectExternalId = projectExternalId || '';
+		state.projectId = projectExternalId || projectRecordId || qsProject || qsId || '';
+
+		console.debug('[journal] project context', {
+			projectId: state.projectId,
+			projectRecordId: state.projectRecordId,
+			projectExternalId: state.projectExternalId
+		});
 	}
 
 	// === Mural sync: Reflexive Journal behaviour ===============================
 	async function _syncToMural(newEntry) {
 		try {
-			const projectId = getProjectRecordId() || state.projectExternalId;
+			const projectId = state.projectExternalId || state.projectId;
 			if (!projectId) {
-				console.warn('[journal] No projectId in state — skipping Mural sync');
+				console.warn('[journal] No project external id — skipping Mural sync');
 				return;
 			}
 
@@ -171,10 +200,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	// ---------- JOURNAL ----------
 	function loadEntries() {
-		const projectParam = getProjectIdForList();
-		if (!projectParam) return Promise.resolve();
-
-		return fetchJSON('/api/journal-entries?project=' + encodeURIComponent(projectParam))
+		if (!state.projectId) return Promise.resolve();
+		return fetchJSON('/api/journal-entries?project=' + encodeURIComponent(state.projectId))
 			.then(data => {
 				const arr = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
 				state.entries = arr.map(e => {
@@ -207,15 +234,23 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		if (!wrap) return;
 
 		const filter = currentEntryFilter();
-		const list = state.entries.filter(en => filter === 'all' || String(en.category || '').toLowerCase() === filter);
+		const list = state.entries.filter(en =>
+			filter === 'all' || String(en.category || '').toLowerCase() === filter
+		);
 
-		if (!list.length) { wrap.innerHTML = ''; if (empty) empty.hidden = false; return; }
+		if (!list.length) {
+			wrap.innerHTML = '';
+			if (empty) empty.hidden = false;
+			return;
+		}
 		if (empty) empty.hidden = true;
 
 		wrap.innerHTML = list.map(en => {
 			const snippet = truncateWords(en.content || '', 200);
 			const wasShortened = snippet.length < String(en.content || '').trim().length;
-			const tagsHTML = (en.tags || []).map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`).join('');
+			const tagsHTML = (en.tags || [])
+				.map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`)
+				.join('');
 			return `
 				<article class="entry-card" data-id="${esc(en.id)}" data-category="${esc(en.category)}">
 					<header class="entry-header">
@@ -230,7 +265,9 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 							<button class="btn-quiet danger" data-act="delete" data-id="${esc(en.id)}">Delete</button>
 						</div>
 					</header>
-					<div class="entry-content">${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}</div>
+					<div class="entry-content">
+						${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}
+					</div>
 					<div class="entry-tags">${tagsHTML}</div>
 				</article>`;
 		}).join('');
@@ -278,26 +315,27 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			const category = String(fd.get('category') || '');
 			const content = String(fd.get('content') || '');
 			const tagsStr = String(fd.get('tags') || '');
-			if (!category || !content) { flash('Category and content are required.'); return; }
-
-			const tags = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
-			const projectRecordId = getProjectRecordId();
-			const canonicalProject = projectRecordId || state.projectExternalId;
-
-			if (!canonicalProject) {
-				console.warn('[journal] No project identifier available for POST /api/journal-entries');
-				flash('Cannot save entry: missing project identifier.');
+			if (!category || !content) {
+				flash('Category and content are required.');
 				return;
 			}
 
+			const tags = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
+
+			const projectRecordId = state.projectRecordId && looksLikeRecordId(state.projectRecordId)
+				? state.projectRecordId
+				: '';
+
 			const body = {
-				project: projectRecordId || canonicalProject,
-				project_airtable_id: projectRecordId || canonicalProject,
+				project: projectRecordId || null,
+				project_airtable_id: projectRecordId || null,
 				project_external_id: state.projectExternalId || null,
 				category,
 				content,
 				tags
 			};
+
+			console.debug('[journal] POST /api/journal-entries payload', body);
 
 			try {
 				const createdRes = await fetchJSON('/api/journal-entries', {
@@ -305,14 +343,15 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify(body)
 				});
-				void createdRes; // not used yet
 
 				await _syncToMural({
 					category,
 					description: content,
 					tags,
-					projectId: projectRecordId || state.projectExternalId
+					projectId: state.projectExternalId || state.projectId
 				});
+
+				console.debug('[journal] created entry', createdRes);
 
 				form.reset();
 				toggle(false);
@@ -350,7 +389,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		});
 	}
 
-	/* ---- Codes, Memos, Analysis stubs (unchanged structure) ---- */
+	/* ---- Codes, Memos, Analysis: keep your existing implementations here ---- */
 	function loadCodes() {}
 
 	function loadMemos() {}
@@ -384,28 +423,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	// ---------- boot ----------
 	document.addEventListener('DOMContentLoaded', function() {
-		const url = new URL(location.href);
-		const main = document.querySelector('main');
-
-		const qsProject = url.searchParams.get('project') || '';
-		const qsId = url.searchParams.get('id') || '';
-
-		const dataProjectRec = main?.dataset?.projectAirtableId || main?.dataset?.projectAirtableID || '';
-		const dataProjectExternal = main?.dataset?.projectId || '';
-
-		// Canonical Airtable record id preference:
-		//  1) data-project-airtable-id
-		//  2) querystring that already looks like recXXXXXXXXXXXXXXX
-		const recordFromQuery = looksLikeAirtableRecordId(qsProject) ? qsProject : (looksLikeAirtableRecordId(qsId) ? qsId : '');
-		const projectRecordId = (dataProjectRec && dataProjectRec.trim()) || recordFromQuery || '';
-
-		// External/UUID-style id (legacy behaviour):
-		const externalFromQuery = qsProject || qsId || '';
-		const projectExternalId = dataProjectExternal || externalFromQuery;
-
-		state.projectId = projectRecordId || projectExternalId || '';
-		state.projectExternalId = projectExternalId || '';
-
+		initProjectState();
 		setupEntryAddForm();
 		setupEntryFilters();
 		setupCodeAdd();
@@ -413,7 +431,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		setupMemoFilters();
 		setupAnalysisButtons();
 
-		const active = (location.hash || '').replace(/^#/, '') || 'journal-entries';
+		var active = (location.hash || '').replace(/^#/, '') || 'journal-entries';
 		onTabShown(active);
 		document.addEventListener('tab:shown', e => onTabShown(e?.detail?.id || ''));
 	});
