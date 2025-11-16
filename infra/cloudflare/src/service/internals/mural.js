@@ -383,7 +383,12 @@ export class MuralServicePart {
 			const projectName = body?.projectName;
 			const wsOverride = body?.workspaceId;
 
-			console.log("[mural.setup] Starting", { uid, projectId, projectName, hasWorkspaceOverride: !!wsOverride });
+			console.log("[mural.setup] Starting", {
+				uid,
+				projectId,
+				projectName,
+				hasWorkspaceOverride: !!wsOverride
+			});
 
 			if (!projectName || !String(projectName).trim()) {
 				console.error("[mural.setup] Missing projectName");
@@ -456,10 +461,10 @@ export class MuralServicePart {
 			let muralId = null;
 			let templateCopied = true;
 
-			const templateId = this.root.env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
+			const rawTemplateConfig = this.root.env.MURAL_TEMPLATE_REFLEXIVE || null;
 			const muralTitle = `Reflexive Journal: ${projectName}`;
 			console.log("[mural.setup] Starting mural creation", {
-				templateId,
+				rawTemplateConfig,
 				roomId,
 				folderId: folder?.id,
 				muralTitle,
@@ -481,7 +486,7 @@ export class MuralServicePart {
 					error: e?.message,
 					status: e?.status,
 					body: e?.body,
-					templateId: e?.templateId,
+					rawTemplateConfig,
 					endpoint: e?.endpoint,
 					willFallbackToBlank: e?.status === 404
 				});
@@ -512,7 +517,7 @@ export class MuralServicePart {
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
-			// ───── NEW: update area title via areas endpoint ─────
+			// ───── Update area title via areas endpoint only ─────
 			step = "update_area_title";
 			try {
 				console.log("[mural.setup] Updating area title for reflexive journal", {
