@@ -341,7 +341,7 @@ export class MuralServicePart {
 		await this.saveTokens(uid, tokens);
 
 		const want = stateObj?.return || "/pages/projects/";
-		const back = want.startsWith("http") ? want : new URL(want, url).toString();
+		const back = want.startswith("http") ? want : new URL(want, url).toString();
 		const u = new URL(back);
 		u.searchParams.set("mural", "connected");
 		return Response.redirect(u.toString(), 302);
@@ -488,11 +488,20 @@ export class MuralServicePart {
 					body: e?.body,
 					rawTemplateConfig,
 					endpoint: e?.endpoint,
-					willFallbackToBlank: e?.status === 404
+					willFallbackToBlank: e?.status === 404 ||
+						e?.code === "MURAL_TEMPLATE_NOT_CONFIGURED" ||
+						String(e?.message || "").includes("MURAL_TEMPLATE_REFLEXIVE is not configured")
 				});
 
-				if (e?.status === 404) {
-					console.log("[mural.setup] Fallback: Creating blank mural (404 - endpoint not found)");
+				if (
+					e?.status === 404 ||
+					e?.code === "MURAL_TEMPLATE_NOT_CONFIGURED" ||
+					String(e?.message || "").includes("MURAL_TEMPLATE_REFLEXIVE is not configured")
+				) {
+					console.log("[mural.setup] Fallback: Creating blank mural", {
+						reason: e?.code || e?.message || "template_not_available",
+						status: e?.status ?? null
+					});
 					mural = await createMural(this.root.env, accessToken, {
 						title: muralTitle,
 						roomId,
@@ -501,7 +510,10 @@ export class MuralServicePart {
 					muralId = mural?.id || mural?.value?.id;
 					console.log("[mural.setup] Blank mural created", { muralId });
 				} else {
-					console.error("[mural.setup] NOT creating blank mural - non-404 error", { status: e?.status });
+					console.error("[mural.setup] NOT creating blank mural - non-recoverable template error", {
+						status: e?.status,
+						code: e?.code
+					});
 					throw Object.assign(
 						new Error(`Template duplication failed: ${e?.message || "Unknown error"}`), {
 							code: "TEMPLATE_COPY_FAILED",
