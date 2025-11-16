@@ -146,7 +146,6 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
  * Resolve a room that is OWNED by the current Mural user and log ownership info.
  */
 async function resolveUserOwnedRoomForSetup(env, accessToken, workspaceId) {
-	// Who is the current Mural user?
 	const me = await getMe(env, accessToken);
 	const mv = me?.value || me || {};
 	const currentUserId = String(mv.id || mv.userId || "").toLowerCase();
@@ -156,10 +155,8 @@ async function resolveUserOwnedRoomForSetup(env, accessToken, workspaceId) {
 		mv.id ||
 		"Unknown user";
 
-	// Use lib helper – this only returns rooms owned by the current user (or creates one)
 	const room = await ensureUserRoom(env, accessToken, workspaceId);
 
-	// Ownership details (here: owner == current user by design)
 	const roomOwnerId = currentUserId;
 	const roomOwnerName = currentUserName;
 
@@ -284,9 +281,6 @@ export class MuralServicePart {
 		return null;
 	}
 
-	/**
-	 * Create/update the Mural Boards mapping row using the "Project ID" text field.
-	 */
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
 
@@ -404,7 +398,6 @@ export class MuralServicePart {
 		}
 	}
 
-	/** POST /api/mural/setup  body: { uid, projectId, projectName, workspaceId? } */
 	async muralSetup(request, origin) {
 		const cors = this.root.corsHeaders(origin);
 		let step = "parse_input";
@@ -463,7 +456,6 @@ export class MuralServicePart {
 			const username = me?.value?.firstName || me?.name || "Private";
 			console.log("[mural.setup] User identity", { username, userId: me?.value?.id });
 
-			// NEW: resolve a room that is owned by the current user (no more "Chris's room")
 			step = "resolve_user_room";
 			const room = await resolveUserOwnedRoomForSetup(this.root.env, accessToken, ws.id);
 			const roomId = room?.id || room?.value?.id;
@@ -544,6 +536,27 @@ export class MuralServicePart {
 			if (!muralId) {
 				console.error("[mural.setup] No mural ID after creation attempts");
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
+			}
+
+			// ───── NEW: update the title widget on the duplicated mural ─────
+			step = "update_area_title";
+			try {
+				console.log("[mural.setup] Updating reflexive journal title widget", {
+					muralId,
+					projectName
+				});
+				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
+				console.log("[mural.setup] Title widget update completed", {
+					muralId,
+					projectName
+				});
+			} catch (e) {
+				console.warn("[mural.setup] Title widget update failed (non-critical)", {
+					muralId,
+					projectName,
+					error: e?.message,
+					status: e?.status
+				});
 			}
 
 			step = "probe_viewer_url";
