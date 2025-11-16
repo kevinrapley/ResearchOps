@@ -5,7 +5,8 @@
  * @version 2.4.2
  *
  * 2.4.2:
- *  - Add logging to updateAreaTitle() so we can see when it runs and whether it finds a target.
+ *  - Fix duplicateMural() template handling by normalising env/URL/hash to a proper muralId
+ *    in the form workspaceKey.numericId (e.g. "pppt6786.1761511827081").
  *
  * 2.4.1:
  *  - Log current Mural user and room owner in duplicateMural() and createMural().
@@ -246,6 +247,7 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		userLabel
 	});
 
+	// 1) Prefer an owned room that matches the requested name (if provided).
 	if (roomName) {
 		const ownedNamed = rooms.find(r => {
 			const ownerId = String(
@@ -267,6 +269,7 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		}
 	}
 
+	// 2) Otherwise, any room clearly owned by this user.
 	const ownedAny = rooms.find(r => {
 		const ownerId = String(
 			r.ownerId ||
@@ -286,6 +289,7 @@ export async function ensureUserRoom(env, accessToken, workspaceId, roomName) {
 		return ownedAny;
 	}
 
+	// 3) No owned rooms found: create a personal room for this user.
 	const desiredName =
 		roomName ||
 		env.MURAL_DEFAULT_PERSONAL_ROOM_NAME ||
@@ -475,16 +479,62 @@ export async function getMural(env, accessToken, muralId) {
 }
 
 /**
+ * Normalise a configured template reference into a Mural muralId.
+ *
+ * Supports:
+ *  - Full muralId: "pppt6786.1761511827081"
+ *  - Full URL:     "https://app.mural.co/t/pppt6786/m/pppt6786/1761511827081/76da..."
+ *  - Raw hash / anything else: falls back to known template muralId.
+ */
+function normaliseTemplateMuralId(raw) {
+	const FALLBACK = "pppt6786.1761511827081"; // Kevin's private-room template board id
+
+	if (!raw) return FALLBACK;
+	const s = String(raw).trim();
+	if (!s) return FALLBACK;
+
+	// Already looks like a muralId (workspaceKey.numericId)
+	if (/^[a-z0-9]+?\.[0-9]+$/i.test(s)) return s;
+
+	// If it's a URL, try to extract workspaceKey + numericId from the path
+	if (/^https?:\/\//i.test(s)) {
+		try {
+			const u = new URL(s);
+			const parts = u.pathname.split("/").filter(Boolean);
+			// Expected pattern:
+			//   /t/{workspaceKey}/m/{workspaceKey}/1761511827081/76da...
+			// → ["t","pppt6786","m","pppt6786","1761511827081","76da..."]
+			const workspaceKey = parts[1] || null;
+			const numericId = parts[4] || null;
+			if (workspaceKey && numericId) {
+				return `${workspaceKey}.${numericId}`;
+			}
+		} catch {
+			// fall through to fallback
+		}
+	}
+
+	// Anything else (e.g. just the hash) isn't directly usable → fallback
+	return FALLBACK;
+}
+
+/**
  * Duplicate a mural from a template into a room/folder.
  *
- * Template id defaults to env.MURAL_TEMPLATE_REFLEXIVE, which in your case
- * corresponds to the private-board URL ending with:
- *   /76da04f30edfebd1ac5b595ad2953629b41c1c7d
+ * Template id comes from:
+ *   - env.MURAL_TEMPLATE_REFLEXIVE or env.MURAL_TEMPLATE_REFLEXIVE_URL (URL or id),
+ *   - falling back to the known template muralId in Kevin's private room.
  */
 export async function duplicateMural(env, accessToken, { roomId, folderId, title }) {
-	const templateId = env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
+	const templateRaw =
+		env.MURAL_TEMPLATE_REFLEXIVE ||
+		env.MURAL_TEMPLATE_REFLEXIVE_URL ||
+		null;
+
+	const templateId = normaliseTemplateMuralId(templateRaw);
+
 	if (!templateId) {
-		console.error("[mural.duplicateMural] No template ID configured");
+		console.error("[mural.duplicateMural] No template ID resolved");
 		throw new Error("No template mural id configured for duplication");
 	}
 	if (!roomId) {
@@ -530,7 +580,8 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		roomId,
 		folderId: folderId || null,
 		currentUser,
-		roomOwner: ownerInfo
+		roomOwner: ownerInfo,
+		endpoint: url
 	});
 
 	const res = await fetch(url, {
@@ -561,7 +612,8 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 		});
 		throw Object.assign(new Error(`Duplicate mural failed: ${res.status}`), {
 			status: res.status,
-			body: js
+			body: js,
+			templateId
 		});
 	}
 
@@ -661,46 +713,21 @@ export function findLatestInCategory(list, category) {
 }
 
 /**
- * After duplication, find the widget whose text starts with
- * "Reflexive Journal:" (the template header) and replace the
- * placeholder <Project-Name> with the actual project name.
+ * After duplication, find the area that has a title like
+ * "Reflexive Journal: ..." and rename it to include the actual project name.
  */
 export async function updateAreaTitle(env, accessToken, muralId, projectName) {
-	if (!projectName) {
-		console.log("[mural.updateAreaTitle] Skipping: no projectName provided", { muralId });
-		return;
-	}
-
-	console.log("[mural.updateAreaTitle] Loading widgets to update title", {
-		muralId,
-		projectName
-	});
-
+	if (!projectName) return;
 	const widgets = await getWidgets(env, accessToken, muralId);
 	const list = normaliseWidgets(widgets);
-
 	const target = list.find(w => {
-		const t = String(w.text || "").trim().toLowerCase();
-		return t.startsWith("reflexive journal:");
+		const t = String(w.text || "").trim();
+		return t.toLowerCase().startsWith("reflexive journal:");
 	});
 
-	if (!target) {
-		console.log("[mural.updateAreaTitle] No matching widget found", {
-			muralId,
-			projectName,
-			widgetCount: list.length
-		});
-		return;
-	}
+	if (!target) return;
 
 	const newTitle = `Reflexive Journal: ${projectName}`;
-	console.log("[mural.updateAreaTitle] Updating widget title", {
-		muralId,
-		widgetId: target.id,
-		oldText: target.text,
-		newText: newTitle
-	});
-
 	await updateSticky(env, accessToken, muralId, target.id, { text: newTitle });
 }
 
