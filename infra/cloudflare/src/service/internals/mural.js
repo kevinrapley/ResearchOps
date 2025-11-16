@@ -142,6 +142,32 @@ async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
 	return null;
 }
 
+async function _probeViewerUrl(env, accessToken, muralId, rootLike = null) {
+	try {
+		const hydrated = await getMural(env, accessToken, muralId).catch(() => null);
+		const url = _extractViewerUrl(hydrated);
+		if (url) return url;
+	} catch {}
+	try {
+		const links = await getMuralLinks(env, accessToken, muralId).catch(() => []);
+		const best = links.find(l => _looksLikeMuralViewerUrl(l.url)) ||
+			links.find(l => /viewer|view|open|public/i.test(String(l.type || "")) && l.url);
+		if (best?.url && _looksLikeMuralViewerUrl(best.url)) return best.url;
+	} catch {}
+	try {
+		const created = await createViewerLink(env, accessToken, muralId);
+		if (created && _looksLikeMuralViewerUrl(created)) return created;
+	} catch {}
+	try {
+		const hydrated2 = await getMural(env, accessToken, muralId).catch(() => null);
+		const url2 = _extractViewerUrl(hydrated2);
+		if (url2) return url2;
+	} catch {}
+	return null;
+}
+
+/* ───────────────────────── KV helpers ───────────────────────── */
+
 async function _kvProjectMapping(env, { uid, projectId }) {
 	const key = `mural:${uid || "anon"}:project:id::${String(projectId || "")}`;
 	const raw = await env.SESSION_KV.get(key);
@@ -249,6 +275,9 @@ export class MuralServicePart {
 		return null;
 	}
 
+	/**
+	 * Create/update the Mural Boards mapping row using the "Project ID" text field.
+	 */
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
 		if (!projectId || !uid || !muralId) return { ok: false, error: "missing_fields" };
 
@@ -448,10 +477,8 @@ export class MuralServicePart {
 			let muralId = null;
 			let templateCopied = true;
 
-			const templateId = this.root.env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
 			const muralTitle = `Reflexive Journal: ${projectName}`;
 			console.log("[mural.setup] Starting mural creation", {
-				templateId,
 				roomId,
 				folderId: folder?.id,
 				muralTitle,
@@ -473,7 +500,6 @@ export class MuralServicePart {
 					error: e?.message,
 					status: e?.status,
 					body: e?.body,
-					templateId: e?.templateId,
 					endpoint: e?.endpoint,
 					willFallbackToBlank: e?.status === 404
 				});
@@ -504,11 +530,10 @@ export class MuralServicePart {
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
-			// NEW STEP: rename the in-mural header from "Reflexive Journal: <Project-Name>"
-			// to "Reflexive Journal: {projectName}" using the helper in lib/mural.js.
+			// New step: rename the area title to include the real project name
 			step = "update_area_title";
 			try {
-				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
+				await updateAreaTitle(this.root.env, accessToken, muralId, String(projectName).trim());
 				console.log("[mural.setup] Area title updated", { muralId, projectName });
 			} catch (e) {
 				console.warn("[mural.setup] Area title update failed (non-critical)", {
