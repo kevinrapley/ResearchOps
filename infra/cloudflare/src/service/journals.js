@@ -6,6 +6,12 @@
 
 import { fetchWithTimeout, safeText, toMs, mdToAirtableRich } from "../core/utils.js";
 import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from "./internals/airtable.js";
+import {
+	d1ListJournalEntriesByLocalProject,
+	d1InsertJournalEntry,
+	d1UpdateJournalEntry,
+	d1DeleteJournalEntry
+} from "./internals/researchops-d1.js";
 
 /* ───────────────────────────── helpers / constants ───────────────────────────── */
 
@@ -17,60 +23,132 @@ function resolveJournalTable(env) {
 	return env.AIRTABLE_TABLE_JOURNAL || "Journals";
 }
 
+function hasAirtable(env) {
+	return !!(env?.AIRTABLE_BASE_ID && (env?.AIRTABLE_API_KEY || env?.AIRTABLE_ACCESS_TOKEN));
+}
+
+function hasD1(env) {
+	return !!env?.RESEARCHOPS_D1;
+}
+
+/**
+ * Normalise `tags` to an array of trimmed strings.
+ * @param {string[] | string | undefined | null} value
+ * @returns {string[]}
+ */
+function normaliseTagsArray(value) {
+	if (Array.isArray(value)) {
+		return value.map(String).map(s => s.trim()).filter(Boolean);
+	}
+	if (!value) return [];
+	return String(value)
+		.split(",")
+		.map(s => s.trim())
+		.filter(Boolean);
+}
+
 /* ───────────────────────────────────── routes ─────────────────────────────────── */
 
 /**
  * List journal entries for a project.
+ * Preferred query param is the local project id (UUID) used in the UI:
+ *   /api/journal-entries?project={localProjectId}
+ *
+ * Behaviour:
+ *  - Airtable present and OK → read from Airtable.
+ *  - Airtable missing or errors → fallback to D1 using local_project_id.
+ *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {URL} url
  * @returns {Promise<Response>}
  */
 export async function listJournalEntries(svc, origin, url) {
+	const projectId = url.searchParams.get("project") || "";
+	if (!projectId) {
+		return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
+	}
+
+	const tableRef = resolveJournalTable(svc.env);
+	const useAirtable = hasAirtable(svc.env);
+	const useD1 = hasD1(svc.env);
+
+	// If no Airtable credentials but D1 exists, serve from D1 only
+	if (!useAirtable && useD1) {
+		try {
+			const entries = await d1ListJournalEntriesByLocalProject(svc.env, projectId);
+			return svc.json({ ok: true, source: "d1-only", entries }, 200, svc.corsHeaders(origin));
+		} catch (e) {
+			const msg = String(e?.message || e || "");
+			svc?.log?.error?.("journals.list.d1.fail", { err: msg, projectId });
+			return svc.json({ ok: false, error: "Failed to load journal entries", detail: msg },
+				500,
+				svc.corsHeaders(origin)
+			);
+		}
+	}
+
 	try {
-		const projectId = url.searchParams.get("project") || "";
-		if (!projectId) {
+		if (!useAirtable) {
+			// No Airtable and no D1 -> empty, but don’t crash the UI
 			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
 		}
 
-		// If Airtable creds absent, don’t crash the UI
-		if (!svc?.env?.AIRTABLE_BASE_ID || !(svc?.env?.AIRTABLE_API_KEY || svc?.env?.AIRTABLE_ACCESS_TOKEN)) {
-			return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
-		}
-
-		const tableRef = resolveJournalTable(svc.env);
-
-		// Fetch all (page-size bounded) and filter in the Worker to avoid brittle formulas
+		// Airtable path
 		const res = await listAll(svc.env, tableRef, { pageSize: 100 }, svc?.cfg?.TIMEOUT_MS);
 
 		// Tolerate helper returning either {records} or an array
 		const records = Array.isArray(res?.records) ? res.records :
-			Array.isArray(res) ? res :
-			[];
+			Array.isArray(res) ? res : [];
 
 		const entries = [];
 		for (const r of records) {
 			const f = r?.fields || {};
 			const projects = Array.isArray(f.Project) ? f.Project :
-				Array.isArray(f.Projects) ? f.Projects :
-				[];
+				Array.isArray(f.Projects) ? f.Projects : [];
 			if (!projects.includes(projectId)) continue;
+
+			const tags = Array.isArray(f.Tags) ?
+				f.Tags :
+				String(f.Tags || "").split(",").map(s => s.trim()).filter(Boolean);
 
 			entries.push({
 				id: r.id,
 				category: f.Category || "—",
 				content: f.Content || f.Body || f.Notes || "",
-				tags: Array.isArray(f.Tags) ?
-					f.Tags :
-					String(f.Tags || "").split(",").map(s => s.trim()).filter(Boolean),
+				tags,
 				createdAt: r.createdTime || f.Created || ""
 			});
 		}
 
-		return svc.json({ ok: true, entries }, 200, svc.corsHeaders(origin));
+		return svc.json({ ok: true, source: "airtable", entries }, 200, svc.corsHeaders(origin));
 	} catch (e) {
 		const msg = String(e?.message || e || "");
-		svc?.log?.error?.("journals.list.fail", { err: msg });
+		svc?.log?.error?.("journals.list.fail", { err: msg, projectId, tableRef });
+
+		// Airtable failed; try D1 fallback if available
+		if (useD1) {
+			try {
+				const entries = await d1ListJournalEntriesByLocalProject(svc.env, projectId);
+				return svc.json({
+					ok: true,
+					source: "d1-fallback",
+					entries,
+					warning: "Airtable read failed; served from D1 cache"
+				}, 200, svc.corsHeaders(origin));
+			} catch (d1Err) {
+				const d1Msg = String(d1Err?.message || d1Err || "");
+				svc?.log?.error?.("journals.list.d1.fallback_fail", { err: d1Msg, projectId });
+				const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
+				return svc.json({
+					ok: false,
+					error: "Failed to load journal entries",
+					detail: msg,
+					d1_detail: d1Msg
+				}, status, svc.corsHeaders(origin));
+			}
+		}
+
 		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
 		return svc.json({ ok: false, error: "Failed to load journal entries", detail: msg },
 			status,
@@ -125,6 +203,8 @@ export async function createLinkedMemo(svc, request, origin, entryId) {
 
 /**
  * Get a single journal entry by ID.
+ * (Still Airtable-only for now; D1 could be added as a future fallback.)
+ *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {string} entryId
@@ -179,10 +259,12 @@ export async function getJournalEntry(svc, origin, entryId) {
 
 /**
  * Create a journal entry.
- * - Accepts `project` or `project_airtable_id`
- * - Validates category
- * - Tries common link/content field names to match your base
- * - Uses existing Airtable internals: createRecords()
+ * - Accepts `project` or `project_airtable_id` for Airtable link.
+ * - Optionally accepts `project_local_id` (UUID) to help D1 mirror writes.
+ * - Validates category.
+ * - Tries common link/content field names to match your base.
+ * - Uses existing Airtable internals: createRecords().
+ * - On success, mirrors into D1 (if RESEARCHOPS_D1 is bound).
  *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {Request} request
@@ -199,7 +281,16 @@ export async function createJournalEntry(svc, request, origin) {
 		}
 
 		// Parse JSON
-		/** @type {{project?:string, project_airtable_id?:string, category?:string, content?:string, tags?:string[]|string, author?:string, initial_memo?:string}} */
+		/** @type {{
+			project?:string,
+			project_airtable_id?:string,
+			project_local_id?:string,
+			category?:string,
+			content?:string,
+			tags?:string[]|string,
+			author?:string,
+			initial_memo?:string
+		}} */
 		let p;
 		try {
 			p = JSON.parse(new TextDecoder().decode(buf));
@@ -208,7 +299,9 @@ export async function createJournalEntry(svc, request, origin) {
 		}
 
 		// Inputs
-		const projectId = (p.project || p.project_airtable_id || "").trim();
+		const projectInput = (p.project || p.project_airtable_id || "").trim();
+		const projectLocalId = (p.project_local_id || (!projectInput.startsWith("rec") ? projectInput : "") || "").trim();
+		const projectId = projectInput; // used for Airtable link
 		const category = (p.category || "").trim();
 		const content = (p.content || "").trim();
 
@@ -228,10 +321,8 @@ export async function createJournalEntry(svc, request, origin) {
 
 		const tableRef = resolveJournalTable(svc.env);
 
-		// Normalise tags (store as comma-delimited text)
-		const tagsArr = Array.isArray(p.tags) ?
-			p.tags.map(String).map(s => s.trim()).filter(Boolean) :
-			String(p.tags || "").split(",").map(s => s.trim()).filter(Boolean);
+		// Normalise tags
+		const tagsArr = normaliseTagsArray(p.tags);
 		const tagsStr = tagsArr.join(", ");
 
 		// Try common schema variants
@@ -241,9 +332,9 @@ export async function createJournalEntry(svc, request, origin) {
 		for (const linkName of LINK_FIELDS) {
 			for (const contentField of CONTENT_FIELDS) {
 				const fields = {
-					[linkName]: [projectId], // link-to-record (recXXXX… in Projects table)
+					[linkName]: [projectId], // Airtable link-to-record (recXXXX… in Projects table)
 					Category: category,
-					[contentField]: content, // plain text (keep server simple)
+					[contentField]: content,
 					Tags: tagsStr,
 					Author: p.author || ""
 				};
@@ -267,6 +358,29 @@ export async function createJournalEntry(svc, request, origin) {
 
 					if (svc.env.AUDIT === "true") {
 						svc?.log?.info?.("journal.entry.created", { entryId, linkName, contentField, tableRef });
+					}
+
+					// ── NEW: Dual-write into D1 when available ──
+					if (hasD1(svc.env)) {
+						try {
+							await d1InsertJournalEntry(svc.env, {
+								recordId: entryId,
+								projectRecordId: projectId,
+								category,
+								content,
+								tags: tagsArr,
+								// Use explicit project_local_id if present; otherwise best-effort: if the caller
+								// is still sending the UUID as `project`, we capture it.
+								localProjectId: projectLocalId || null
+							});
+						} catch (d1Err) {
+							svc?.log?.warn?.("journal.d1.insert.fail", {
+								err: safeText(d1Err),
+								entryId,
+								projectId,
+								projectLocalId
+							});
+						}
 					}
 
 					// Optional initial memo (best-effort)
@@ -343,6 +457,8 @@ export async function diagAirtableCreate(svc, request, origin) {
 
 /**
  * Update a journal entry (partial).
+ * Mirrors updates into D1 when RESEARCHOPS_D1 is bound.
+ *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {Request} request
  * @param {string} origin
@@ -368,6 +484,7 @@ export async function updateJournalEntry(svc, request, origin, entryId) {
 	}
 
 	const fields = {};
+	const d1Patch = {};
 
 	if (typeof p.category === "string") {
 		if (!VALID_CATEGORIES.includes(p.category)) {
@@ -376,17 +493,21 @@ export async function updateJournalEntry(svc, request, origin, entryId) {
 			}, 400, svc.corsHeaders(origin));
 		}
 		fields.Category = p.category;
+		d1Patch.category = p.category;
 	}
 
 	if (typeof p.content === "string") {
 		// Keep parity with create: Content is plain text there; however updating
 		// with rich text is a safe enhancement if your field is rich text.
 		fields.Content = mdToAirtableRich(p.content);
+		d1Patch.content = p.content;
 	}
 
 	if (p.tags !== undefined) {
-		const tagsStr = Array.isArray(p.tags) ? p.tags.map(String).join(", ") : String(p.tags || "");
+		const tagsArr = normaliseTagsArray(p.tags);
+		const tagsStr = tagsArr.join(", ");
 		fields.Tags = tagsStr.trim();
+		d1Patch.tags = tagsArr;
 	}
 
 	if (Object.keys(fields).length === 0) {
@@ -399,6 +520,18 @@ export async function updateJournalEntry(svc, request, origin, entryId) {
 
 		if (svc.env.AUDIT === "true") {
 			svc?.log?.info?.("journal.entry.updated", { entryId, fields });
+		}
+
+		// Mirror into D1
+		if (hasD1(svc.env) && Object.keys(d1Patch).length) {
+			try {
+				await d1UpdateJournalEntry(svc.env, entryId, d1Patch);
+			} catch (d1Err) {
+				svc?.log?.warn?.("journal.d1.update.fail", {
+					err: safeText(d1Err),
+					entryId
+				});
+			}
 		}
 
 		return svc.json({ ok: true }, 200, svc.corsHeaders(origin));
@@ -414,6 +547,8 @@ export async function updateJournalEntry(svc, request, origin, entryId) {
 
 /**
  * Delete a journal entry.
+ * Mirrors delete into D1 when RESEARCHOPS_D1 is bound.
+ *
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {string} origin
  * @param {string} entryId
@@ -430,6 +565,18 @@ export async function deleteJournalEntry(svc, origin, entryId) {
 
 		if (svc.env.AUDIT === "true") {
 			svc?.log?.info?.("journal.entry.deleted", { entryId });
+		}
+
+		// Mirror delete into D1
+		if (hasD1(svc.env)) {
+			try {
+				await d1DeleteJournalEntry(svc.env, entryId);
+			} catch (d1Err) {
+				svc?.log?.warn?.("journal.d1.delete.fail", {
+					err: safeText(d1Err),
+					entryId
+				});
+			}
 		}
 
 		return svc.json({ ok: true }, 200, svc.corsHeaders(origin));
