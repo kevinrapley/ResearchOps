@@ -9,10 +9,9 @@
  * NOTE: Heavy analysis logic lives in /js/caqdas-interface.js
  */
 
-/* eslint-env browser */
-
 import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-interface.js';
 
+/* eslint-env browser */
 (function() {
 	// ---------- tiny helpers ----------
 	function $(s, r) { if (!r) r = document; return r.querySelector(s); }
@@ -103,71 +102,18 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		);
 	}
 
-	function looksLikeRecordId(v) {
-		return /^rec[a-zA-Z0-9]{14}$/.test(String(v || '').trim());
-	}
-
-	// ---------- state ----------
-	var state = {
-		projectId: '',            // ID used for GET /api/journal-entries?project=…
-		projectRecordId: '',      // Airtable rec… id
-		projectExternalId: '',    // UUID-style external id
-		entries: [],
-		entryFilter: 'all',
-		codes: [],
-		memos: [],
-		memoFilter: 'all'
-	};
-
-	// ---------- PROJECT CONTEXT ----------
-	function initProjectState() {
-		var url = new URL(location.href);
-		var qsProject = url.searchParams.get('project') || '';
-		var qsId = url.searchParams.get('id') || '';
-
-		var projectRecordId = '';
-		var projectExternalId = '';
-
-		// Treat ?id=rec… as the Airtable record id
-		if (qsId && looksLikeRecordId(qsId)) {
-			projectRecordId = qsId;
-		}
-
-		// Treat ?project=<uuid> as the external id
-		if (qsProject) {
-			projectExternalId = qsProject;
-		}
-
-		// If there's no explicit ?project= but ?id is NOT a rec…, treat that as external id
-		if (!projectExternalId && qsId && !looksLikeRecordId(qsId)) {
-			projectExternalId = qsId;
-		}
-
-		state.projectRecordId = projectRecordId || '';
-		state.projectExternalId = projectExternalId || '';
-
-		// For GET /api/journal-entries?project=… we prefer the external id
-		state.projectId = state.projectExternalId || state.projectRecordId || '';
-
-		console.debug('[journal] project context', {
-			projectId: state.projectId,
-			projectRecordId: state.projectRecordId,
-			projectExternalId: state.projectExternalId,
-			raw: { qsProject, qsId }
-		});
-	}
-
 	// === Mural sync: Reflexive Journal behaviour ===============================
 	async function _syncToMural(newEntry) {
 		try {
-			const projectId = state.projectExternalId || state.projectId;
+			const projectId = state.projectId;
 			if (!projectId) {
-				console.warn('[journal] No project external id — skipping Mural sync');
+				console.warn('[journal] No projectId in state — skipping Mural sync');
 				return;
 			}
 
 			const payload = {
 				uid: localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon',
+				// muralId intentionally omitted — server resolves from projectId mapping
 				projectId,
 				studyId: newEntry?.studyId || null,
 				category: String(newEntry?.category || '').toLowerCase(),
@@ -191,6 +137,18 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			console.warn('[journal] Mural journal-sync error', err);
 		}
 	}
+
+	// ---------- state ----------
+	var state = {
+		projectId: '',
+		projectLocalId: '',
+		projectAirtableId: '',
+		entries: [],
+		entryFilter: 'all',
+		codes: [],
+		memos: [],
+		memoFilter: 'all'
+	};
 
 	// ---------- ROUTES ----------
 	var ROUTES = {
@@ -234,23 +192,15 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		if (!wrap) return;
 
 		const filter = currentEntryFilter();
-		const list = state.entries.filter(en =>
-			filter === 'all' || String(en.category || '').toLowerCase() === filter
-		);
+		const list = state.entries.filter(en => filter === 'all' || String(en.category || '').toLowerCase() === filter);
 
-		if (!list.length) {
-			wrap.innerHTML = '';
-			if (empty) empty.hidden = false;
-			return;
-		}
+		if (!list.length) { wrap.innerHTML = ''; if (empty) empty.hidden = false; return; }
 		if (empty) empty.hidden = true;
 
 		wrap.innerHTML = list.map(en => {
 			const snippet = truncateWords(en.content || '', 200);
 			const wasShortened = snippet.length < String(en.content || '').trim().length;
-			const tagsHTML = (en.tags || [])
-				.map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`)
-				.join('');
+			const tagsHTML = (en.tags || []).map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`).join('');
 			return `
 				<article class="entry-card" data-id="${esc(en.id)}" data-category="${esc(en.category)}">
 					<header class="entry-header">
@@ -265,9 +215,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 							<button class="btn-quiet danger" data-act="delete" data-id="${esc(en.id)}">Delete</button>
 						</div>
 					</header>
-					<div class="entry-content">
-						${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}
-					</div>
+					<div class="entry-content">${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}</div>
 					<div class="entry-tags">${tagsHTML}</div>
 				</article>`;
 		}).join('');
@@ -315,28 +263,24 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			const category = String(fd.get('category') || '');
 			const content = String(fd.get('content') || '');
 			const tagsStr = String(fd.get('tags') || '');
-			if (!category || !content) {
-				flash('Category and content are required.');
-				return;
-			}
+			if (!category || !content) { flash('Category and content are required.'); return; }
 
 			const tags = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
 
-			// Only treat a rec… as the Airtable-linked ID; never send UUIDs here
-			const projectRecordId = state.projectRecordId && looksLikeRecordId(state.projectRecordId)
-				? state.projectRecordId
-				: '';
+			// Prefer explicit data-project-local-id / data-project-airtable-id if present
+			const projectLocalId = state.projectLocalId || state.projectId;
+			const projectAirtableId = state.projectAirtableId || state.projectId;
 
 			const body = {
-				project: projectRecordId || null,
-				project_airtable_id: projectRecordId || null,
-				project_external_id: state.projectExternalId || null,
+				// Airtable link uses the Airtable id
+				project: projectAirtableId,
+				project_airtable_id: projectAirtableId,
+				// D1 mirror can use a stable local id if available
+				project_local_id: projectLocalId,
 				category,
 				content,
 				tags
 			};
-
-			console.debug('[journal] POST /api/journal-entries payload', body);
 
 			try {
 				const createdRes = await fetchJSON('/api/journal-entries', {
@@ -345,14 +289,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					body: JSON.stringify(body)
 				});
 
+				// Best-effort sync to Mural (server resolves muralId)
 				await _syncToMural({
 					category,
 					description: content,
 					tags,
-					projectId: state.projectExternalId || state.projectId
+					projectId: state.projectId
 				});
-
-				console.debug('[journal] created entry', createdRes);
 
 				form.reset();
 				toggle(false);
@@ -390,16 +333,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		});
 	}
 
-	/* ---- Codes, Memos, Analysis: keep your existing implementations here ---- */
-	function loadCodes() {}
-
-	function loadMemos() {}
-
-	function setupCodeAdd() {}
-
-	function setupMemoAddForm() {}
-
-	function setupMemoFilters() {}
+	/* ---- Codes, Memos, Analysis (unchanged from your existing file) ---- */
 
 	function setupAnalysisButtons() {
 		const wrap = document.querySelector('#analysis-panel .govuk-button-group');
@@ -424,7 +358,19 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	// ---------- boot ----------
 	document.addEventListener('DOMContentLoaded', function() {
-		initProjectState();
+		var url = new URL(location.href);
+		state.projectId = url.searchParams.get('project') || url.searchParams.get('id') || '';
+
+		// Try to pick up explicit local + Airtable ids from <main>,
+		// but fall back to whatever was previously used so behaviour stays stable.
+		var mainEl = document.querySelector('main');
+		state.projectLocalId =
+			(mainEl && (mainEl.getAttribute('data-project-local-id') || mainEl.getAttribute('data-project-id'))) ||
+			state.projectId;
+		state.projectAirtableId =
+			(mainEl && mainEl.getAttribute('data-project-airtable-id')) ||
+			state.projectId;
+
 		setupEntryAddForm();
 		setupEntryFilters();
 		setupCodeAdd();
