@@ -4,17 +4,16 @@
  * @summary D1 access helpers for the ResearchOps platform (read + write).
  *
  * Design:
- * - D1 is a replica / cache of Airtable data.
- * - For new writes we always attempt Airtable first (when configured),
- *   but we *always* write to D1 when the binding exists.
- * - When Airtable is unavailable or rate-limited, D1 still accepts new rows
- *   using local placeholder IDs. Airtable can be backfilled later.
+ * - D1 is a local replica / cache of Airtable data.
+ * - For new writes we always attempt Airtable first, but we *always* write to D1.
+ * - When Airtable is unavailable, D1 still accepts new rows using local placeholder IDs.
  */
-
-/** @typedef {import("../index.js").ResearchOpsService} ResearchOpsService */
 
 /* ─────────────────────── low-level helpers ─────────────────────── */
 
+/**
+ * @param {any} env
+ */
 function _getDb(env) {
 	const db = env?.RESEARCHOPS_D1;
 	if (!db) throw new Error("D1 binding RESEARCHOPS_D1 is not configured on this environment");
@@ -52,6 +51,7 @@ export async function d1Get(env, sql, params = []) {
  * @param {any} env
  * @param {string} sql
  * @param {any[]} [params]
+ * @returns {Promise<any[]>}
  */
 export async function d1All(env, sql, params = []) {
 	const db = _getDb(env);
@@ -72,15 +72,7 @@ export async function d1All(env, sql, params = []) {
  *
  * @param {any} env
  * @param {string} localId
- * @returns {Promise<null | {
- *   local_id: string,
- *   record_id: string,
- *   name?: string,
- *   org?: string,
- *   phase?: string,
- *   status?: string,
- *   description?: string
- * }>}
+ * @returns {Promise<null | { local_id: string, record_id: string }>}
  */
 export async function d1GetProjectByLocalId(env, localId) {
 	if (!localId) return null;
@@ -109,7 +101,6 @@ function _pendingId() {
 	if (typeof crypto !== "undefined" && crypto.randomUUID) {
 		return "pending-" + crypto.randomUUID();
 	}
-	// Fallback: timestamp + random
 	return "pending-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
 }
 
@@ -181,164 +172,129 @@ export async function d1InsertJournalEntry(env, row) {
 	};
 }
 
-/* ─────────────────────── mural boards helpers ─────────────────────── */
-
 /**
- * Resolve a Mural board for a project via D1.
+ * List journal entries for a project local_id, most recent first.
+ * This is used when Airtable is unavailable and we serve from D1 only.
  *
- * Expected D1 schema for mural_boards (from CSV):
- *  - record_id    TEXT PRIMARY KEY
- *  - uid          TEXT
- *  - project      TEXT       // Airtable project record id (rec...)
- *  - project_id   TEXT       // (often same as project)
- *  - purpose      TEXT       // e.g. "reflexive_journal"
- *  - mural_id     TEXT       // pppt6786.17633…
- *  - board_url    TEXT
- *  - workspace_id TEXT
- *  - primary      TEXT       // e.g. "checked"
- *  - active       TEXT       // e.g. "checked"
- *  - created_at   TEXT
- *  - key          TEXT
- *
- * @param {any} env
- * @param {{ projectRecordId:string, purpose?:string }} args
- * @returns {Promise<null | {
- *   record_id:string,
- *   mural_id:string,
- *   board_url:string,
- *   workspace_id:string
- * }>}
- */
-export async function d1GetMuralBoardForProject(env, { projectRecordId, purpose = "reflexive_journal" }) {
-	if (!projectRecordId) return null;
-
-	const rows = await d1All(env, `
-		SELECT
-			record_id,
-			project,
-			project_id,
-			purpose,
-			mural_id,
-			board_url,
-			workspace_id,
-			primary,
-			active
-		FROM mural_boards
-		WHERE project = ?
-		  AND purpose = ?
-		  AND (active IS NULL OR active = '' OR LOWER(active) = 'checked')
-		ORDER BY
-			CASE WHEN LOWER(primary) = 'checked' THEN 0 ELSE 1 END,
-			datetime(created_at) DESC
-		LIMIT 1
-	`, [String(projectRecordId), String(purpose)]);
-
-	const row = rows[0];
-	if (!row) return null;
-
-	return {
-		record_id: row.record_id,
-		mural_id: row.mural_id,
-		board_url: row.board_url,
-		workspace_id: row.workspace_id
-	};
-}
-
-/**
- * List journal entries by local_project_id, newest first.
  * @param {any} env
  * @param {string} localProjectId
+ * @returns {Promise<Array<{
+ *   id: string|null,
+ *   project: string|null,
+ *   category: string,
+ *   content: string,
+ *   tags: string[],
+ *   createdAt: string|null
+ * }>>}
  */
 export async function d1ListJournalEntriesByLocalProject(env, localProjectId) {
 	if (!localProjectId) return [];
-	return d1All(env, `
+	const rows = await d1All(env, `
 		SELECT record_id,
 		       project,
 		       category,
 		       content,
 		       tags,
-		       createdat,
-		       local_project_id
+		       createdat
 		  FROM journal_entries
-		 WHERE local_project_id = ?1
+		 WHERE local_project_id = ?
 		 ORDER BY datetime(createdat) DESC;
 	`, [localProjectId]);
+
+	return rows.map(row => {
+		let tags = [];
+		if (typeof row.tags === "string" && row.tags.trim()) {
+			try {
+				const parsed = JSON.parse(row.tags);
+				tags = Array.isArray(parsed) ? parsed : [];
+			} catch {
+				tags = [];
+			}
+		}
+		return {
+			id: row.record_id || null,
+			project: row.project || null,
+			category: row.category || "",
+			content: row.content || "",
+			tags,
+			createdAt: row.createdat || null
+		};
+	});
 }
 
-/**
- * Get a journal entry by its record_id (primary key).
- * @param {any} env
- * @param {string} recordId
- */
-export async function d1GetJournalEntryById(env, recordId) {
-	if (!recordId) return null;
-	return d1Get(env, `
-		SELECT record_id,
-		       project,
-		       category,
-		       content,
-		       tags,
-		       createdat,
-		       local_project_id
-		  FROM journal_entries
-		 WHERE record_id = ?1
-		 LIMIT 1;
-	`, [recordId]);
-}
+/* ─────────────────────── mural boards helpers ─────────────────────── */
 
 /**
- * Update a journal entry in D1.
- * Supports patching category, content, tags, createdat.
+ * Resolve a Mural board for a project from D1.
+ *
+ * Table: mural_boards  (from your CSV import)
+ *  - mural_id     TEXT PRIMARY KEY
+ *  - project      TEXT       // usually Airtable project id (rec...), but may hold local UUID
+ *  - purpose      TEXT       // e.g. "reflexive_journal"
+ *  - board_url    TEXT
+ *  - workspace_id TEXT
+ *
+ * We accept both:
+ *  - projectRecordId  (Airtable Projects record id, recXXXX…)
+ *  - localProjectId   (UUID used in URLs, d04ab3…)
+ *
+ * and match if mural_boards.project equals either.
+ *
  * @param {any} env
- * @param {string} recordId
- * @param {{ category?: string, content?: string, tags?: string[] | string, createdAt?: string }} patch
+ * @param {{ projectRecordId?: string|null, localProjectId?: string|null, purpose?: string }} opts
+ * @returns {Promise<null | {
+ *   mural_id: string,
+ *   board_url: string|null,
+ *   workspace_id: string|null,
+ *   project: string|null,
+ *   purpose: string|null
+ * }>}
  */
-export async function d1UpdateJournalEntry(env, recordId, patch) {
-	if (!recordId) return;
+export async function d1GetMuralBoardForProject(env, opts = {}) {
+	const projectRecordId = String(opts.projectRecordId || "").trim();
+	const localProjectId = String(opts.localProjectId || "").trim();
+	const wantPurpose = String(opts.purpose || "").toLowerCase();
 
-	const sets = [];
-	const params = [];
+	if (!projectRecordId && !localProjectId) return null;
 
-	if (patch.category !== undefined) {
-		sets.push("category = ?");
-		params.push(patch.category);
-	}
-	if (patch.content !== undefined) {
-		sets.push("content = ?");
-		params.push(patch.content);
-	}
-	if (patch.tags !== undefined) {
-		const tagsText = Array.isArray(patch.tags) ?
-			JSON.stringify(patch.tags) :
-			(typeof patch.tags === "string" ? patch.tags : "[]");
-		sets.push("tags = ?");
-		params.push(tagsText);
-	}
-	if (patch.createdAt !== undefined) {
-		sets.push("createdat = ?");
-		params.push(patch.createdAt);
-	}
+	// Small table, so a full scan + JS filter is acceptable and more tolerant
+	// of how the CSV was imported.
+	const rows = await d1All(env, `
+		SELECT
+			mural_id,
+			project,
+			purpose,
+			board_url,
+			workspace_id
+		FROM mural_boards;
+	`);
 
-	if (!sets.length) return;
+	const candidates = rows.filter(row => {
+		const projVal = String(row.project || "").trim();
+		if (!projVal) return false;
 
-	params.push(recordId);
+		// Match either Airtable project id or local UUID
+		const projectMatch =
+			(projectRecordId && projVal === projectRecordId) ||
+			(localProjectId && projVal === localProjectId);
 
-	await d1Run(env, `
-		UPDATE journal_entries
-		   SET ${sets.join(", ")}
-		 WHERE record_id = ?;
-	`, params);
-}
+		if (!projectMatch) return false;
 
-/**
- * Delete a journal entry from D1.
- * @param {any} env
- * @param {string} recordId
- */
-export async function d1DeleteJournalEntry(env, recordId) {
-	if (!recordId) return;
-	await d1Run(env, `
-		DELETE FROM journal_entries
-		 WHERE record_id = ?1;
-	`, [recordId]);
+		if (!wantPurpose) return true;
+		const rowPurpose = String(row.purpose || "").toLowerCase();
+		return rowPurpose === wantPurpose;
+	});
+
+	if (!candidates.length) return null;
+
+	// First match is fine – if you later add updated_at we can order by it.
+	const row = candidates[0];
+
+	return {
+		mural_id: row.mural_id,
+		board_url: row.board_url || null,
+		workspace_id: row.workspace_id || null,
+		project: row.project || null,
+		purpose: row.purpose || null
+	};
 }
