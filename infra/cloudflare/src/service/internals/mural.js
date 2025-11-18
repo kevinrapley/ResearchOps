@@ -42,6 +42,11 @@ import {
 	resolveProjectRecordId as atResolveProjectRecordId
 } from "./airtable.js";
 
+import {
+	d1GetProjectByLocalId,
+	d1GetMuralBoardForProject
+} from "./researchops-d1.js";
+
 import { b64Encode, b64Decode } from "../../core/utils.js";
 
 /** @typedef {import("../index.js").ResearchOpsService} ResearchOpsService */
@@ -241,22 +246,33 @@ export class MuralServicePart {
 	 *
 	 * Strategy:
 	 *  1) Use Airtable "Mural Boards" table (primary).
-	 *  2) If Airtable is unavailable (429/5xx/env missing), fallback to D1:
+	 *  2) If Airtable is unavailable (429/5xx/env missing) or returns no row, fallback to D1:
 	 *     - projects.local_id → projects.record_id (Airtable project id)
 	 *     - mural_boards.project = Airtable project id.
 	 *
-	 * @param {ResearchOpsService} root
-	 * @param {{ uid:string, projectId:string, purpose?:string }} args
+	 * Returns a flat shape suitable for callers:
+	 *   { muralId, boardUrl, workspaceId, source, projectRecordId, airtableError? }
+	 *
+	 * @param {{ uid?:string, projectId:string, purpose?:string, explicitMuralId?:string }} args
 	 */
-	async function resolveBoard(root, { uid, projectId, purpose = "reflexive_journal" }) {
-		const env = root.env;
-		const log = root.log || console;
-		const tableName = env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
-
-		// projectId here is the LOCAL project UUID from the browser (?id=…),
-		// not the Airtable recXXXX id.
+	async resolveBoard({ uid, projectId, purpose = PURPOSE_REFLEXIVE, explicitMuralId } = {}) {
+		const env = this.root.env;
+		const log = this.root.log || console;
+		const userId = uid || "anon";
 		const localProjectId = String(projectId || "").trim();
 
+		// 0) If caller gives us an explicit muralId, honour it directly.
+		if (explicitMuralId) {
+			return {
+				source: "explicit",
+				projectRecordId: null,
+				muralId: String(explicitMuralId),
+				boardUrl: null,
+				workspaceId: null
+			};
+		}
+
+		// 1) Resolve local project id -> Airtable project record id via D1.
 		let projectRecordId = null;
 		try {
 			const proj = await d1GetProjectByLocalId(env, localProjectId);
@@ -272,7 +288,6 @@ export class MuralServicePart {
 			});
 		}
 
-		// Helper to decide if we should try Airtable
 		function airtableConfigured() {
 			return !!(env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE) &&
 				!!(env.AIRTABLE_API_KEY || env.AIRTABLE_PAT);
@@ -281,15 +296,20 @@ export class MuralServicePart {
 		let airtableError = null;
 		let boardFromAirtable = null;
 
-		// 1) Airtable path (primary) – only if configured AND we know Airtable project id
+		// 2) Airtable path (primary) – only if configured AND we know Airtable project id
 		if (airtableConfigured() && projectRecordId) {
 			try {
-				const res = await atListBoards(env, tableName, {}, root?.cfg?.TIMEOUT_MS);
-				const records = Array.isArray(res?.records) ? res.records : Array.isArray(res) ? res : [];
+				const rows = await atListBoards(env, {
+					projectId: projectRecordId,
+					uid: userId,
+					purpose,
+					active: true,
+					max: 50
+				}, this.root);
 
-				const cand = records.find(r => {
+				const cand = Array.isArray(rows) ? rows.find(r => {
 					const f = r?.fields || {};
-					const proj = f.Project || f.Projects;
+					const proj = f.Project || f.Projects || f["Project ID"] || f["Project Id"];
 					const projectIds = Array.isArray(proj) ? proj : (proj ? [proj] : []);
 					const purposeField = (f.Purpose || f.purpose || "").toLowerCase();
 					const active = String(f.Active || f.active || "").toLowerCase();
@@ -297,8 +317,9 @@ export class MuralServicePart {
 
 					return projectIds.includes(projectRecordId) &&
 						(!purpose || purposeField === purpose.toLowerCase()) &&
-						(!active || active === "checked");
-				});
+						(!active || active === "checked") &&
+						(!primary || primary === "checked");
+				}) : null;
 
 				if (cand) {
 					const f = cand.fields || {};
@@ -318,16 +339,17 @@ export class MuralServicePart {
 			}
 		}
 
-		// If Airtable gave us a board, stop here – Airtable stays primary
 		if (boardFromAirtable?.mural_id) {
 			return {
 				source: "airtable",
 				projectRecordId,
-				board: boardFromAirtable
+				muralId: boardFromAirtable.mural_id,
+				boardUrl: boardFromAirtable.board_url || null,
+				workspaceId: boardFromAirtable.workspace_id || null
 			};
 		}
 
-		// 2) D1 fallback – either Airtable failed, or no board row was found
+		// 3) D1 fallback – either Airtable failed, or no board row was found
 		let boardFromD1 = null;
 		if (projectRecordId) {
 			try {
@@ -346,22 +368,27 @@ export class MuralServicePart {
 			return {
 				source: "d1",
 				projectRecordId,
-				board: boardFromD1
+				muralId: boardFromD1.mural_id,
+				boardUrl: boardFromD1.board_url || null,
+				workspaceId: boardFromD1.workspace_id || null,
+				airtableError
 			};
 		}
 
-		// If we get here, neither Airtable nor D1 had a board
+		// 4) Nothing found
 		log.warn?.("[mural.resolveBoard] No board found in Airtable or D1", {
 			localProjectId,
 			projectRecordId,
-			airtibleError: airtableError
+			airtableError
 		});
 
 		return {
 			source: airtableError ? "airtable+d1-none" : "airtable-none",
 			projectRecordId,
-			board: null,
-			airtibleError: airtableError
+			muralId: null,
+			boardUrl: null,
+			workspaceId: null,
+			airtableError
 		};
 	}
 
@@ -374,8 +401,16 @@ export class MuralServicePart {
 
 		let existing = null;
 		try {
-			const rows = await atListBoards(this.root.env, { projectId: safeProjectIdText, uid, purpose, active: true, max: 25 }, this.root);
-			existing = rows.find(r => String(r?.fields?.["Mural ID"] || "").trim() === String(muralId).trim()) || null;
+			const rows = await atListBoards(this.root.env, {
+				projectId: safeProjectIdText,
+				uid,
+				purpose,
+				active: true,
+				max: 25
+			}, this.root);
+			existing = Array.isArray(rows) ?
+				rows.find(r => String(r?.fields?.["Mural ID"] || "").trim() === String(muralId).trim()) || null :
+				null;
 		} catch {}
 
 		if (existing) {
@@ -622,7 +657,7 @@ export class MuralServicePart {
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
-			// ───── NEW: update the title widget on the duplicated mural ─────
+			// ───── Title widget update ─────
 			step = "update_area_title";
 			try {
 				console.log("[mural.setup] Updating reflexive journal title widget", {
@@ -738,10 +773,12 @@ export class MuralServicePart {
 			if (!resolved?.muralId && !resolved?.boardUrl) {
 				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
 			}
-			return this.root.json({ ok: true, muralId: resolved.muralId || null, boardUrl: resolved.boardUrl || null },
-				200,
-				cors
-			);
+			return this.root.json({
+				ok: true,
+				muralId: resolved.muralId || null,
+				boardUrl: resolved.boardUrl || null,
+				source: resolved.source || null
+			}, 200, cors);
 		} catch (e) {
 			return this.root.json({ ok: false, error: "resolve_failed", detail: String(e?.message || e) },
 				500,
@@ -776,7 +813,7 @@ export class MuralServicePart {
 				purpose,
 				explicitMuralId: body.muralId
 			});
-			const muralId = resolved?.muralId || null;
+			const muralId = resolved?.muralId || body.muralId || null;
 			if (!muralId) {
 				return this.root.json({ ok: false, error: "no_mural_id" }, 404, cors);
 			}
@@ -834,7 +871,7 @@ export class MuralServicePart {
 				}
 			}
 
-			return this.root.json({ ok: true, stickyId, action, muralId }, 200, cors);
+			return this.root.json({ ok: true, stickyId, action, muralId, source: resolved?.source || null }, 200, cors);
 
 		} catch (err) {
 			const status = Number(err?.status) || 500;
