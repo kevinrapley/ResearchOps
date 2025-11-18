@@ -2,7 +2,11 @@
  * @file src/core/router.js
  * @module core/router
  * @summary Router for Cloudflare Worker entrypoint (modular ResearchOps service).
- * @version 2.2.1
+ * @version 2.2.2
+ *
+ * Changes since 2.2.1:
+ *  - Guarded muralJournalSync route so it does not throw when service.mural.muralJournalSync
+ *    is missing; returns 501 with a clear JSON error instead.
  *
  * Changes since 2.2.0:
  *  - Guarded static assets fallback when ASSETS binding is missing to avoid
@@ -385,7 +389,7 @@ export async function handleRequest(request, env) {
 				const entryId = decodeURIComponent(url.pathname.slice("/api/journal-entries/".length));
 				if (request.method === "GET") return service.getJournalEntry(origin, entryId);
 				if (request.method === "PATCH") return service.updateJournalEntry(request, origin, entryId);
-				if (request.method === "DELETE") return service.deleteJournalEntry(request, origin, entryId);
+				if (request.method === "DELETE") return service.deleteJournalEntry(origin, entryId);
 			}
 
 			// Excerpts
@@ -576,11 +580,30 @@ export async function handleRequest(request, env) {
 				}
 			}
 			if (url.pathname === "/api/mural/await" && request.method === "GET") {
-				return service.mural.muralAwait(origin, url);
+				if (service?.mural && typeof service.mural.muralAwait === "function") {
+					return service.mural.muralAwait(origin, url);
+				}
 			}
+
+			// *** KEY CHANGE: safe call for muralJournalSync ***
 			if (request.method === "POST" && url.pathname === "/api/mural/journal-sync") {
-				return service.mural.muralJournalSync(request, origin);
+				if (service?.mural && typeof service.mural.muralJournalSync === "function") {
+					return service.mural.muralJournalSync(request, origin);
+				}
+				console.warn("[router] muralJournalSync handler missing on service.mural");
+				return new Response(json({
+					ok: false,
+					error: "mural_journal_sync_not_configured"
+				}), {
+					status: 501,
+					headers: {
+						...corsHeadersForEnv(env, origin),
+						"content-type": "application/json; charset=utf-8",
+						"x-content-type-options": "nosniff"
+					}
+				});
 			}
+
 			if (url.pathname === "/api/mural/workspaces" && request.method === "GET") {
 				if (service?.mural && typeof service.mural.muralListWorkspaces === "function") {
 					return service.mural.muralListWorkspaces(origin, url);
