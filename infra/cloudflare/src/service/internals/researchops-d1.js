@@ -181,6 +181,69 @@ export async function d1InsertJournalEntry(env, row) {
 	};
 }
 
+/* ─────────────────────── mural boards helpers ─────────────────────── */
+
+/**
+ * Resolve a Mural board for a project via D1.
+ *
+ * Expected D1 schema for mural_boards (from CSV):
+ *  - record_id    TEXT PRIMARY KEY
+ *  - uid          TEXT
+ *  - project      TEXT       // Airtable project record id (rec...)
+ *  - project_id   TEXT       // (often same as project)
+ *  - purpose      TEXT       // e.g. "reflexive_journal"
+ *  - mural_id     TEXT       // pppt6786.17633…
+ *  - board_url    TEXT
+ *  - workspace_id TEXT
+ *  - primary      TEXT       // e.g. "checked"
+ *  - active       TEXT       // e.g. "checked"
+ *  - created_at   TEXT
+ *  - key          TEXT
+ *
+ * @param {any} env
+ * @param {{ projectRecordId:string, purpose?:string }} args
+ * @returns {Promise<null | {
+ *   record_id:string,
+ *   mural_id:string,
+ *   board_url:string,
+ *   workspace_id:string
+ * }>}
+ */
+export async function d1GetMuralBoardForProject(env, { projectRecordId, purpose = "reflexive_journal" }) {
+	if (!projectRecordId) return null;
+
+	const rows = await d1All(env, `
+		SELECT
+			record_id,
+			project,
+			project_id,
+			purpose,
+			mural_id,
+			board_url,
+			workspace_id,
+			primary,
+			active
+		FROM mural_boards
+		WHERE project = ?
+		  AND purpose = ?
+		  AND (active IS NULL OR active = '' OR LOWER(active) = 'checked')
+		ORDER BY
+			CASE WHEN LOWER(primary) = 'checked' THEN 0 ELSE 1 END,
+			datetime(created_at) DESC
+		LIMIT 1
+	`, [String(projectRecordId), String(purpose)]);
+
+	const row = rows[0];
+	if (!row) return null;
+
+	return {
+		record_id: row.record_id,
+		mural_id: row.mural_id,
+		board_url: row.board_url,
+		workspace_id: row.workspace_id
+	};
+}
+
 /**
  * List journal entries by local_project_id, newest first.
  * @param {any} env
