@@ -236,46 +236,96 @@ export class MuralServicePart {
 	async saveTokens(uid, tokens) { await this.root.env.SESSION_KV.put(this.kvKey(uid), JSON.stringify(tokens), { encryption: true }); }
 	async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
 
+	/**
+	 * Resolve the Mural board for a given project/uid/purpose.
+	 * Prefers Airtable mapping when available, but falls back to KV cache and
+	 * an env override so that journal sync keeps working when Airtable is down
+	 * or billing-limited.
+	 */
 	async resolveBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, explicitMuralId }) {
-		if (explicitMuralId) return { muralId: String(explicitMuralId) };
+		// 1) If the client passes a muralId explicitly, trust it and skip Airtable.
+		if (explicitMuralId) {
+			return { muralId: String(explicitMuralId) };
+		}
 
-		if (projectId) {
-			const cacheKey = `${projectId}·${uid || ""}·${purpose}`;
-			const cached = _memCache.get(cacheKey);
-			if (cached && (Date.now() - cached.ts < 60_000)) {
-				if (cached.deleted) return null;
-				return { muralId: cached.muralId, boardUrl: cached.boardUrl, workspaceId: cached.workspaceId };
-			}
+		// 2) Nothing to resolve – fall back to env override if present.
+		if (!projectId) {
+			const envId = this.root?.env?.MURAL_REFLEXIVE_MURAL_ID;
+			if (envId) return { muralId: String(envId) };
+			return null;
+		}
 
-			const rows = await atListBoards(this.root.env, { projectId, uid, purpose, active: true, max: 25 }, this.root);
+		const safeProjectId = String(projectId);
+		const cacheKey = `${safeProjectId}·${uid || ""}·${purpose}`;
+
+		// 3) In-memory cache (fast path).
+		const cached = _memCache.get(cacheKey);
+		if (cached && (Date.now() - cached.ts < 60_000)) {
+			if (cached.deleted) return null;
+			return {
+				muralId: cached.muralId,
+				boardUrl: cached.boardUrl,
+				workspaceId: cached.workspaceId
+			};
+		}
+
+		let rec = null;
+
+		// 4) Airtable mapping (best-effort – tolerate billing errors).
+		try {
+			const rows = await atListBoards(
+				this.root.env, { projectId: safeProjectId, uid, purpose, active: true, max: 25 },
+				this.root
+			);
+
 			const top = rows[0];
 			if (top?.fields) {
 				const f = top.fields;
-				const rec = {
+				rec = {
 					muralId: String(f["Mural ID"] || ""),
 					boardUrl: f["Board URL"] || null,
 					workspaceId: f["Workspace ID"] || null,
 					primary: !!f["Primary?"]
 				};
-				if (rec.muralId) {
-					_memCache.set(cacheKey, { ...rec, ts: Date.now(), deleted: false });
-					return rec;
-				}
 			}
+		} catch (err) {
+			// Don’t break callers – just log and fall through to KV / env overrides.
+			_log(this.root, "warn", "mural.resolve.airtable_list_failed", {
+				projectId: safeProjectId,
+				uid,
+				purpose,
+				status: err?.status,
+				message: String(err?.message || err)
+			});
+		}
 
-			const kv = await _kvProjectMapping(this.root.env, { uid, projectId });
+		// 5) KV cache fallback – this is populated on setup/registerBoard.
+		if (!rec || !rec.muralId) {
+			const kv = await _kvProjectMapping(this.root.env, { uid, projectId: safeProjectId });
 			if (kv?.url && kv?.muralId && _looksLikeMuralViewerUrl(kv.url)) {
-				const rec = {
+				rec = {
 					muralId: String(kv.muralId),
 					boardUrl: kv.url,
 					workspaceId: kv?.workspaceId ? String(kv.workspaceId) : null,
 					primary: true
 				};
-				_memCache.set(cacheKey, { ...rec, ts: Date.now(), deleted: false });
-				return rec;
 			}
 		}
 
+		// 6) If we have a mapping at this point, cache + return it.
+		if (rec && rec.muralId) {
+			_memCache.set(cacheKey, {
+				muralId: rec.muralId,
+				boardUrl: rec.boardUrl || null,
+				workspaceId: rec.workspaceId || null,
+				primary: !!rec.primary,
+				ts: Date.now(),
+				deleted: false
+			});
+			return rec;
+		}
+
+		// 7) Final fallback: env override.
 		const envId = this.root?.env?.MURAL_REFLEXIVE_MURAL_ID;
 		if (envId) return { muralId: String(envId) };
 		return null;
