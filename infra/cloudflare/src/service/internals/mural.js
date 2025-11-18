@@ -237,98 +237,132 @@ export class MuralServicePart {
 	async loadTokens(uid) { const raw = await this.root.env.SESSION_KV.get(this.kvKey(uid)); return raw ? JSON.parse(raw) : null; }
 
 	/**
-	 * Resolve the Mural board for a given project/uid/purpose.
-	 * Prefers Airtable mapping when available, but falls back to KV cache and
-	 * an env override so that journal sync keeps working when Airtable is down
-	 * or billing-limited.
+	 * Resolve the Mural board for a project.
+	 *
+	 * Strategy:
+	 *  1) Use Airtable "Mural Boards" table (primary).
+	 *  2) If Airtable is unavailable (429/5xx/env missing), fallback to D1:
+	 *     - projects.local_id → projects.record_id (Airtable project id)
+	 *     - mural_boards.project = Airtable project id.
+	 *
+	 * @param {ResearchOpsService} root
+	 * @param {{ uid:string, projectId:string, purpose?:string }} args
 	 */
-	async resolveBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, explicitMuralId }) {
-		// 1) If the client passes a muralId explicitly, trust it and skip Airtable.
-		if (explicitMuralId) {
-			return { muralId: String(explicitMuralId) };
+	async function resolveBoard(root, { uid, projectId, purpose = "reflexive_journal" }) {
+		const env = root.env;
+		const log = root.log || console;
+		const tableName = env.AIRTABLE_TABLE_MURAL_BOARDS || "Mural Boards";
+
+		// projectId here is the LOCAL project UUID from the browser (?id=…),
+		// not the Airtable recXXXX id.
+		const localProjectId = String(projectId || "").trim();
+
+		let projectRecordId = null;
+		try {
+			const proj = await d1GetProjectByLocalId(env, localProjectId);
+			if (proj?.record_id) {
+				projectRecordId = proj.record_id;
+			} else {
+				log.warn?.("[mural.resolveBoard] No D1 project mapping for local id", { localProjectId });
+			}
+		} catch (err) {
+			log.warn?.("[mural.resolveBoard] d1GetProjectByLocalId failed", {
+				localProjectId,
+				err: String(err?.message || err)
+			});
 		}
 
-		// 2) Nothing to resolve – fall back to env override if present.
-		if (!projectId) {
-			const envId = this.root?.env?.MURAL_REFLEXIVE_MURAL_ID;
-			if (envId) return { muralId: String(envId) };
-			return null;
+		// Helper to decide if we should try Airtable
+		function airtableConfigured() {
+			return !!(env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE) &&
+				!!(env.AIRTABLE_API_KEY || env.AIRTABLE_PAT);
 		}
 
-		const safeProjectId = String(projectId);
-		const cacheKey = `${safeProjectId}·${uid || ""}·${purpose}`;
+		let airtableError = null;
+		let boardFromAirtable = null;
 
-		// 3) In-memory cache (fast path).
-		const cached = _memCache.get(cacheKey);
-		if (cached && (Date.now() - cached.ts < 60_000)) {
-			if (cached.deleted) return null;
+		// 1) Airtable path (primary) – only if configured AND we know Airtable project id
+		if (airtableConfigured() && projectRecordId) {
+			try {
+				const res = await atListBoards(env, tableName, {}, root?.cfg?.TIMEOUT_MS);
+				const records = Array.isArray(res?.records) ? res.records : Array.isArray(res) ? res : [];
+
+				const cand = records.find(r => {
+					const f = r?.fields || {};
+					const proj = f.Project || f.Projects;
+					const projectIds = Array.isArray(proj) ? proj : (proj ? [proj] : []);
+					const purposeField = (f.Purpose || f.purpose || "").toLowerCase();
+					const active = String(f.Active || f.active || "").toLowerCase();
+					const primary = String(f["Primary?"] || f.primary || "").toLowerCase();
+
+					return projectIds.includes(projectRecordId) &&
+						(!purpose || purposeField === purpose.toLowerCase()) &&
+						(!active || active === "checked");
+				});
+
+				if (cand) {
+					const f = cand.fields || {};
+					boardFromAirtable = {
+						record_id: cand.id,
+						mural_id: f["Mural ID"] || f.mural_id || "",
+						board_url: f["Board URL"] || f.board_url || "",
+						workspace_id: f["Workspace ID"] || f.workspace_id || ""
+					};
+				}
+			} catch (err) {
+				const msg = String(err?.message || err || "");
+				airtableError = msg;
+				log.warn?.("[mural.resolveBoard] Airtable path failed, will fallback to D1", {
+					err: msg
+				});
+			}
+		}
+
+		// If Airtable gave us a board, stop here – Airtable stays primary
+		if (boardFromAirtable?.mural_id) {
 			return {
-				muralId: cached.muralId,
-				boardUrl: cached.boardUrl,
-				workspaceId: cached.workspaceId
+				source: "airtable",
+				projectRecordId,
+				board: boardFromAirtable
 			};
 		}
 
-		let rec = null;
-
-		// 4) Airtable mapping (best-effort – tolerate billing errors).
-		try {
-			const rows = await atListBoards(
-				this.root.env, { projectId: safeProjectId, uid, purpose, active: true, max: 25 },
-				this.root
-			);
-
-			const top = rows[0];
-			if (top?.fields) {
-				const f = top.fields;
-				rec = {
-					muralId: String(f["Mural ID"] || ""),
-					boardUrl: f["Board URL"] || null,
-					workspaceId: f["Workspace ID"] || null,
-					primary: !!f["Primary?"]
-				};
-			}
-		} catch (err) {
-			// Don’t break callers – just log and fall through to KV / env overrides.
-			_log(this.root, "warn", "mural.resolve.airtable_list_failed", {
-				projectId: safeProjectId,
-				uid,
-				purpose,
-				status: err?.status,
-				message: String(err?.message || err)
-			});
-		}
-
-		// 5) KV cache fallback – this is populated on setup/registerBoard.
-		if (!rec || !rec.muralId) {
-			const kv = await _kvProjectMapping(this.root.env, { uid, projectId: safeProjectId });
-			if (kv?.url && kv?.muralId && _looksLikeMuralViewerUrl(kv.url)) {
-				rec = {
-					muralId: String(kv.muralId),
-					boardUrl: kv.url,
-					workspaceId: kv?.workspaceId ? String(kv.workspaceId) : null,
-					primary: true
-				};
+		// 2) D1 fallback – either Airtable failed, or no board row was found
+		let boardFromD1 = null;
+		if (projectRecordId) {
+			try {
+				boardFromD1 = await d1GetMuralBoardForProject(env, {
+					projectRecordId,
+					purpose
+				});
+			} catch (err) {
+				log.warn?.("[mural.resolveBoard] D1 fallback failed", {
+					err: String(err?.message || err)
+				});
 			}
 		}
 
-		// 6) If we have a mapping at this point, cache + return it.
-		if (rec && rec.muralId) {
-			_memCache.set(cacheKey, {
-				muralId: rec.muralId,
-				boardUrl: rec.boardUrl || null,
-				workspaceId: rec.workspaceId || null,
-				primary: !!rec.primary,
-				ts: Date.now(),
-				deleted: false
-			});
-			return rec;
+		if (boardFromD1?.mural_id) {
+			return {
+				source: "d1",
+				projectRecordId,
+				board: boardFromD1
+			};
 		}
 
-		// 7) Final fallback: env override.
-		const envId = this.root?.env?.MURAL_REFLEXIVE_MURAL_ID;
-		if (envId) return { muralId: String(envId) };
-		return null;
+		// If we get here, neither Airtable nor D1 had a board
+		log.warn?.("[mural.resolveBoard] No board found in Airtable or D1", {
+			localProjectId,
+			projectRecordId,
+			airtibleError: airtableError
+		});
+
+		return {
+			source: airtableError ? "airtable+d1-none" : "airtable-none",
+			projectRecordId,
+			board: null,
+			airtibleError: airtableError
+		};
 	}
 
 	async registerBoard({ projectId, uid, purpose = PURPOSE_REFLEXIVE, muralId, boardUrl, workspaceId = null, primary = true }) {
