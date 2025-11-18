@@ -4,11 +4,14 @@
  * @summary D1 access helpers for the ResearchOps platform (read + write).
  *
  * Design:
- * - D1 is a local replica / cache of Airtable data.
- * - For new writes we always attempt Airtable first, but we *also* write to D1.
- * - When Airtable is unavailable, D1 still supports reads, and can receive writes
- *   in a future enhancement (pending-* IDs).
+ * - D1 is a replica / cache of Airtable data.
+ * - For new writes we always attempt Airtable first (when configured),
+ *   but we *always* write to D1 when the binding exists.
+ * - When Airtable is unavailable or rate-limited, D1 still accepts new rows
+ *   using local placeholder IDs. Airtable can be backfilled later.
  */
+
+/** @typedef {import("../index.js").ResearchOpsService} ResearchOpsService */
 
 /* ─────────────────────── low-level helpers ─────────────────────── */
 
@@ -69,7 +72,15 @@ export async function d1All(env, sql, params = []) {
  *
  * @param {any} env
  * @param {string} localId
- * @returns {Promise<null | { local_id: string, record_id: string }>}
+ * @returns {Promise<null | {
+ *   local_id: string,
+ *   record_id: string,
+ *   name?: string,
+ *   org?: string,
+ *   phase?: string,
+ *   status?: string,
+ *   description?: string
+ * }>}
  */
 export async function d1GetProjectByLocalId(env, localId) {
 	if (!localId) return null;
@@ -91,70 +102,22 @@ export async function d1GetProjectByLocalId(env, localId) {
 /* ─────────────────────── journal entries helpers ─────────────────────── */
 
 /**
- * List journal entries for a project local_id (UUID used in URLs),
- * most recent first.
- *
- * journal_entries schema:
- *  - record_id        TEXT PRIMARY KEY       // Airtable ID when known
- *  - project          TEXT                   // Airtable project record id (rec...)
- *  - category         TEXT
- *  - content          TEXT
- *  - tags             TEXT                   // JSON string
- *  - createdat        TEXT                   // ISO datetime
- *  - local_project_id TEXT                   // UUID used in URLs
- *
- * @param {any} env
- * @param {string} localProjectId
- * @returns {Promise<Array<{
- *   id: string | null,
- *   project: string | null,
- *   category: string,
- *   content: string,
- *   tags: string[],
- *   createdAt: string | null
- * }>>}
+ * Generate a placeholder ID for journal_entries.record_id when Airtable
+ * could not create a record yet. This keeps the PRIMARY KEY non-null.
  */
-export async function d1ListJournalEntriesByLocalProject(env, localProjectId) {
-	if (!localProjectId) return [];
-	const rows = await d1All(env, `
-		SELECT
-			record_id,
-			project,
-			category,
-			content,
-			tags,
-			createdat
-		FROM journal_entries
-		WHERE local_project_id = ?
-		ORDER BY datetime(createdat) DESC
-	`, [String(localProjectId)]);
-
-	return rows.map(row => {
-		let tags = [];
-		if (typeof row.tags === "string" && row.tags.trim()) {
-			try {
-				const parsed = JSON.parse(row.tags);
-				if (Array.isArray(parsed)) tags = parsed.map(String);
-			} catch {
-				tags = [];
-			}
-		}
-		return {
-			id: row.record_id || null,
-			project: row.project || null,
-			category: row.category || "",
-			content: row.content || "",
-			tags,
-			createdAt: row.createdat || null
-		};
-	});
+function _pendingId() {
+	if (typeof crypto !== "undefined" && crypto.randomUUID) {
+		return "pending-" + crypto.randomUUID();
+	}
+	// Fallback: timestamp + random
+	return "pending-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
 }
 
 /**
  * Insert a journal entry row into D1.
  *
  * journal_entries schema (from your migration):
- *  - record_id        TEXT PRIMARY KEY       // Airtable ID when known
+ *  - record_id        TEXT PRIMARY KEY       // Airtable ID when known, otherwise pending-...
  *  - project          TEXT                   // Airtable project record id (rec...)
  *  - category         TEXT
  *  - content          TEXT
@@ -170,18 +133,17 @@ export async function d1ListJournalEntriesByLocalProject(env, localProjectId) {
  *   content: string,
  *   tags?: string[] | string | null,
  *   createdAt?: string | null,
- *   localProjectId?: string | null
+ *   localProjectId: string
  * }} row
  */
 export async function d1InsertJournalEntry(env, row) {
-	const recordId = row.recordId || null;
+	const recordId = row.recordId || _pendingId();
 	const projectRecordId = row.projectRecordId || null;
 	const createdAt = row.createdAt || new Date().toISOString();
-	const localProjectId = row.localProjectId || null;
 
 	let tagsJson;
 	if (Array.isArray(row.tags)) {
-		tagsJson = JSON.stringify(row.tags.map(String));
+		tagsJson = JSON.stringify(row.tags);
 	} else if (typeof row.tags === "string") {
 		tagsJson = row.tags;
 	} else {
@@ -205,7 +167,7 @@ export async function d1InsertJournalEntry(env, row) {
 		row.content,
 		tagsJson,
 		createdAt,
-		localProjectId
+		row.localProjectId
 	]);
 
 	return {
@@ -215,16 +177,58 @@ export async function d1InsertJournalEntry(env, row) {
 		content: row.content,
 		tags: tagsJson,
 		createdat: createdAt,
-		local_project_id: localProjectId
+		local_project_id: row.localProjectId
 	};
 }
 
 /**
- * Update a journal entry row in D1 by record_id (Airtable id).
- *
+ * List journal entries by local_project_id, newest first.
+ * @param {any} env
+ * @param {string} localProjectId
+ */
+export async function d1ListJournalEntriesByLocalProject(env, localProjectId) {
+	if (!localProjectId) return [];
+	return d1All(env, `
+		SELECT record_id,
+		       project,
+		       category,
+		       content,
+		       tags,
+		       createdat,
+		       local_project_id
+		  FROM journal_entries
+		 WHERE local_project_id = ?1
+		 ORDER BY datetime(createdat) DESC;
+	`, [localProjectId]);
+}
+
+/**
+ * Get a journal entry by its record_id (primary key).
  * @param {any} env
  * @param {string} recordId
- * @param {{ category?: string, content?: string, tags?: string[] | string }} patch
+ */
+export async function d1GetJournalEntryById(env, recordId) {
+	if (!recordId) return null;
+	return d1Get(env, `
+		SELECT record_id,
+		       project,
+		       category,
+		       content,
+		       tags,
+		       createdat,
+		       local_project_id
+		  FROM journal_entries
+		 WHERE record_id = ?1
+		 LIMIT 1;
+	`, [recordId]);
+}
+
+/**
+ * Update a journal entry in D1.
+ * Supports patching category, content, tags, createdat.
+ * @param {any} env
+ * @param {string} recordId
+ * @param {{ category?: string, content?: string, tags?: string[] | string, createdAt?: string }} patch
  */
 export async function d1UpdateJournalEntry(env, recordId, patch) {
 	if (!recordId) return;
@@ -232,45 +236,39 @@ export async function d1UpdateJournalEntry(env, recordId, patch) {
 	const sets = [];
 	const params = [];
 
-	if (Object.prototype.hasOwnProperty.call(patch, "category")) {
+	if (patch.category !== undefined) {
 		sets.push("category = ?");
-		params.push(patch.category || "");
+		params.push(patch.category);
 	}
-
-	if (Object.prototype.hasOwnProperty.call(patch, "content")) {
+	if (patch.content !== undefined) {
 		sets.push("content = ?");
-		params.push(patch.content || "");
+		params.push(patch.content);
 	}
-
-	if (Object.prototype.hasOwnProperty.call(patch, "tags")) {
-		let tagsText;
-		if (Array.isArray(patch.tags)) {
-			tagsText = JSON.stringify(patch.tags.map(String));
-		} else if (typeof patch.tags === "string") {
-			tagsText = patch.tags;
-		} else {
-			tagsText = "[]";
-		}
+	if (patch.tags !== undefined) {
+		const tagsText = Array.isArray(patch.tags) ?
+			JSON.stringify(patch.tags) :
+			(typeof patch.tags === "string" ? patch.tags : "[]");
 		sets.push("tags = ?");
 		params.push(tagsText);
+	}
+	if (patch.createdAt !== undefined) {
+		sets.push("createdat = ?");
+		params.push(patch.createdAt);
 	}
 
 	if (!sets.length) return;
 
 	params.push(recordId);
 
-	const sql = `
+	await d1Run(env, `
 		UPDATE journal_entries
-		SET ${sets.join(", ")}
-		WHERE record_id = ?
-	`;
-
-	await d1Run(env, sql, params);
+		   SET ${sets.join(", ")}
+		 WHERE record_id = ?;
+	`, params);
 }
 
 /**
- * Delete a journal entry row in D1 by record_id (Airtable id).
- *
+ * Delete a journal entry from D1.
  * @param {any} env
  * @param {string} recordId
  */
@@ -278,6 +276,6 @@ export async function d1DeleteJournalEntry(env, recordId) {
 	if (!recordId) return;
 	await d1Run(env, `
 		DELETE FROM journal_entries
-		WHERE record_id = ?
+		 WHERE record_id = ?1;
 	`, [recordId]);
 }
