@@ -585,6 +585,7 @@ export async function handleRequest(request, env) {
 					if (service?.mural && typeof service.mural.muralJournalSync === "function") {
 						return service.mural.muralJournalSync(request, origin);
 					}
+
 					console.warn("[router] muralJournalSync handler missing on service.mural");
 					return new Response(JSON.stringify({
 						ok: false,
