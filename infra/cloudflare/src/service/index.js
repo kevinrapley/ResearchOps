@@ -48,7 +48,6 @@ import * as Diag from "./dev/diag.js";
  * @property {string} AIRTABLE_TABLE_SESSIONS
  * @property {string} AIRTABLE_TABLE_SESSION_NOTES
  * @property {string} AIRTABLE_TABLE_COMMSLOG
- * @property {string} [AIRTABLE_TABLE_MURAL_BOARDS]
  * @property {string} AIRTABLE_API_KEY
  * @property {string} GH_OWNER
  * @property {string} GH_REPO
