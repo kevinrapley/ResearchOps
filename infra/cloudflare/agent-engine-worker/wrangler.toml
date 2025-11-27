@@ -1,0 +1,49 @@
+name = "researchops-agent-engine"
+main = "src/agent-worker.ts"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Set this to true while you’re experimenting
+workers_dev = true
+
+# Optional: if you want a custom route instead of just *.workers.dev
+# routes = [
+#   { pattern = "rops-agent.example.com", custom_domain = true }
+# ]
+
+########################
+# Browser Rendering
+########################
+
+[browser]
+# This binding name must match what you use in the Worker (env.BROWSER)
+binding = "BROWSER"
+
+########################
+# KV Namespaces
+########################
+
+[[kv_namespaces]]
+binding = "FLOWS_KV"
+id = "YOUR_PROD_FLOWS_KV_ID"
+# Optional but recommended if you use a separate preview namespace
+# preview_id = "YOUR_PREVIEW_FLOWS_KV_ID"
+
+########################
+# Environment overrides (optional)
+########################
+
+# You can use environments if you want different KV / settings for staging vs prod.
+# For example:
+#
+# [env.staging]
+# name = "researchops-agent-engine-staging"
+#
+# [[env.staging.kv_namespaces]]
+# binding = "FLOWS_KV"
+# id = "YOUR_STAGING_FLOWS_KV_ID"
+#
+# # You can also point staging at a different hostname:
+# # routes = [
+# #   { pattern = "rops-agent-staging.example.com", custom_domain = true }
+# # ]
