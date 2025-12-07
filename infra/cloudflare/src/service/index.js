@@ -34,6 +34,9 @@ import { MuralServicePart } from "./internals/mural.js";
 /* Diagnostics */
 import * as Diag from "./dev/diag.js";
 
+/* Impact Tracking */
+import * as ImpactService from "./impact.js";
+
 /**
  * @typedef {Object} Env
  * @property {string} ALLOWED_ORIGINS
@@ -101,6 +104,10 @@ export class ResearchOpsService {
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
 		this.mural = new MuralServicePart(this);
+
+		/* Impact Tracking */
+		this.listImpact = ImpactService.listImpact(this);
+		this.createImpact = ImpactService.createImpact(this);
 	}
 
 	reset() { this.log.reset(); }
