@@ -68,67 +68,128 @@
 			<form id="impact-form" class="govuk-form-group">
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-insightId">Insight ID</label>
-					<input class="govuk-input" id="impact-insightId" name="insightId">
+					<div class="govuk-hint" id="impact-insightId-hint">
+						Auto-generated identifier for this impact record (read-only).
+					</div>
+					<input class="govuk-input govuk-!-width-two-thirds" id="impact-insightId" name="insightId" type="text" readonly aria-describedby="impact-insightId-hint" />
 				</div>
+
 				<div class="govuk-form-group">
-					<label class="govuk-label" for="impact-decisionLink">Decision link (Jira / PRD / URL)</label>
-					<input class="govuk-input" id="impact-decisionLink" name="decisionLink">
+					<label class="govuk-label" for="impact-decisionLink">Decision link (Jira / PRD / URL)</label>
+					<div class="govuk-hint" id="impact-decisionLink-hint">
+						Link to the decision this insight informed (e.g. Jira ticket, PRD, architecture doc).
+					</div>
+					<input class="govuk-input govuk-!-width-two-thirds" id="impact-decisionLink" name="decisionLink" type="url" inputmode="url" aria-describedby="impact-decisionLink-hint" />
 				</div>
+
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-metricName">Metric name</label>
-					<input class="govuk-input" id="impact-metricName" name="metricName" required>
+					<div class="govuk-hint" id="impact-metricName-hint">
+						The metric you&#39;re tracking (for example: task completion rate, NPS, error rate).
+					</div>
+					<input class="govuk-input govuk-!-width-two-thirds" id="impact-metricName" name="metricName" type="text" required aria-describedby="impact-metricName-hint" />
 				</div>
+
 				<div class="govuk-form-group">
-					<label class="govuk-label" for="impact-baseline">Baseline</label>
-					<input class="govuk-input" id="impact-baseline" name="baseline" type="number" step="0.01">
+					<label class="govuk-label" for="impact-date">Date recorded</label>
+					<div class="govuk-hint" id="impact-date-hint">
+						When this impact was recorded (optional).
+					</div>
+					<input class="govuk-input govuk-input--width-10" id="impact-date" name="recordedAt" type="date" aria-describedby="impact-date-hint" />
 				</div>
+
 				<div class="govuk-form-group">
-					<label class="govuk-label" for="impact-target">Target</label>
-					<input class="govuk-input" id="impact-target" name="target" type="number" step="0.01">
+					<label class="govuk-label" for="impact-baseline">Baseline (optional)</label>
+					<div class="govuk-hint" id="impact-baseline-hint">
+						Value before the change (numeric, for quantifiable outcomes).
+					</div>
+					<input class="govuk-input govuk-input--width-10" id="impact-baseline" name="baseline" type="number" step="0.01" min="0" inputmode="decimal" aria-describedby="impact-baseline-hint" />
 				</div>
+
 				<div class="govuk-form-group">
-					<label class="govuk-label" for="impact-actual">Actual</label>
-					<input class="govuk-input" id="impact-actual" name="actual" type="number" step="0.01">
+					<label class="govuk-label" for="impact-target">Target (optional)</label>
+					<div class="govuk-hint" id="impact-target-hint">
+						Expected value after the change (numeric).
+					</div>
+					<input class="govuk-input govuk-input--width-10" id="impact-target" name="target" type="number" step="0.01" min="0" inputmode="decimal" aria-describedby="impact-target-hint" />
 				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-actual">Actual (optional)</label>
+					<div class="govuk-hint" id="impact-actual-hint">
+						Observed value after the change (numeric, once data is available).
+					</div>
+					<input class="govuk-input govuk-input--width-10" id="impact-actual" name="actual" type="number" step="0.01" min="0" inputmode="decimal" aria-describedby="impact-actual-hint" />
+				</div>
+
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-type">Impact type</label>
-					<select class="govuk-select" id="impact-type" name="impactType">
+					<div class="govuk-hint" id="impact-type-hint">
+						What kind of impact this is primarily describing.
+					</div>
+					<select class="govuk-select govuk-!-width-two-thirds" id="impact-type" name="impactType" aria-describedby="impact-type-hint">
 						<option value="product">Product</option>
 						<option value="strategy">Strategy</option>
 						<option value="process">Process</option>
 						<option value="org">Organisation</option>
 					</select>
 				</div>
+
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-scale">Impact scale</label>
-					<select class="govuk-select" id="impact-scale" name="impactScale">
+					<div class="govuk-hint" id="impact-scale-hint">
+						The scale or reach of this impact.
+					</div>
+					<select class="govuk-select govuk-!-width-two-thirds" id="impact-scale" name="impactScale" aria-describedby="impact-scale-hint">
 						<option value="feature">Feature</option>
 						<option value="team">Team</option>
 						<option value="cross-team">Cross-team</option>
 						<option value="org">Organisation-wide</option>
 					</select>
 				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-status">Status</label>
+					<div class="govuk-hint" id="impact-status-hint">
+						Where this change is in its lifecycle.
+					</div>
+					<select class="govuk-select govuk-!-width-two-thirds" id="impact-status" name="status" aria-describedby="impact-status-hint">
+						<option value="planned">Planned</option>
+						<option value="in-progress">In progress</option>
+						<option value="implemented">Implemented</option>
+						<option value="evaluated">Evaluated</option>
+					</select>
+				</div>
+
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-notes">Notes</label>
-					<textarea class="govuk-textarea" id="impact-notes" name="notes" rows="3"></textarea>
+					<div class="govuk-hint" id="impact-notes-hint">
+						Any additional context, caveats or links to evidence.
+					</div>
+					<textarea class="govuk-textarea govuk-!-width-two-thirds" id="impact-notes" name="notes" rows="3" aria-describedby="impact-notes-hint"></textarea>
 				</div>
+
 				<button class="govuk-button" type="submit">Save impact record</button>
 			</form>
 
 			<!-- Impact records table -->
 			<table id="impact-table" class="govuk-table">
+				<caption class="govuk-table__caption govuk-table__caption--m">
+					Recorded impacts for this project
+				</caption>
 				<thead class="govuk-table__head">
 					<tr class="govuk-table__row">
 						<th scope="col" class="govuk-table__header">Insight</th>
 						<th scope="col" class="govuk-table__header">Decision</th>
 						<th scope="col" class="govuk-table__header">Metric</th>
 						<th scope="col" class="govuk-table__header">Baseline</th>
+						<th scope="col" class="govuk-table__header">Target</th>
 						<th scope="col" class="govuk-table__header">Actual</th>
 						<th scope="col" class="govuk-table__header">Type</th>
 					</tr>
 				</thead>
 				<tbody class="govuk-table__body">
-					<!-- rows will be populated by impact‑tracker.js -->
+					<!-- rows will be populated by impact-tracker.js -->
 				</tbody>
 			</table>
 		</section>
@@ -152,6 +213,16 @@
 				const backLink = document.getElementById("back-link");
 				if (backLink) {
 					backLink.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}#outcomes`;
+				}
+			}
+
+			// Auto-generate Insight ID if empty
+			const insightInput = document.getElementById("impact-insightId");
+			if (insightInput && !insightInput.value) {
+				if (window.crypto && typeof window.crypto.randomUUID === "function") {
+					insightInput.value = window.crypto.randomUUID();
+				} else {
+					insightInput.value = "insight-" + Math.random().toString(36).slice(2, 10);
 				}
 			}
 		})();
