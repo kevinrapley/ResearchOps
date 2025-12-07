@@ -445,6 +445,18 @@ export async function handleRequest(request, env) {
 				return service.exportAnalysis(origin, url);
 			}
 
+			// Impact
+			if (url.pathname === "/api/impact" && request.method === "GET") {
+				if (typeof service.listImpact === "function") {
+					return service.listImpact(origin, url);
+				}
+			}
+			if (url.pathname === "/api/impact" && request.method === "POST") {
+				if (typeof service.createImpact === "function") {
+					return service.createImpact(request, origin);
+				}
+			}
+
 			// Studies (POST/PATCH need service)
 			if (url.pathname === "/api/studies" && request.method === "POST") {
 				return service.createStudy(request, origin);
@@ -526,7 +538,7 @@ export async function handleRequest(request, env) {
 					if (request.method === "GET" && isIcs) {
 						if (typeof service.sessionIcs === "function") return service.sessionIcs(origin, sessionId);
 					}
-				 }
+				}
 			}
 
 			// Session Notes
