@@ -92,7 +92,7 @@
 			<a href="/pages/projects/journals/?id=" id="journal-link" class="board__item" property="schema:relatedLink">Reflexive Journal</a>
 			<a href="#stakeholders" class="board__item" property="schema:relatedLink">Stakeholder Management</a>
 			<a href="#planning" class="board__item" property="schema:relatedLink">Research Planning</a>
-			<a href="#outcomes" class="board__item" property="schema:relatedLink">Research Outcomes</a>
+			<a href="/pages/projects/outcomes/?id=" id="outcomes-link" class="board__item" property="schema:relatedLink">Research Outcomes</a>
 		</nav>
 
 		<!-- MURAL INTEGRATIONS -->
@@ -588,6 +588,10 @@
 				const journalLink = document.getElementById('journal-link');
 				if (journalLink) {
 					journalLink.href = `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`;
+				}
+				const impactLink = document.getElementById('outcomes-link');
+				if (impactLink) {
+					impactLink.href = `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`;
 				}
 			}
 		})();
