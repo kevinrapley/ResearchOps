@@ -368,6 +368,18 @@
 		</ui-guidelines>
 		<!-- One-line inclusion of the entire developer coding standards module -->
 		<developer:coding-standards/>
+		<page-templates>
+			<template id="rdfa-skos-page"
+              src="/docs/devops/custom-instructions/new-page-design-pattern.md"
+              language="html"
+              title="Standard ResearchOps Page (RDFa/SKOS)">
+				<description>
+					Use this template when creating new project pages. It demonstrates the
+					correct HTML5 structure with RDFa Lite, SKOS/Dublin Core metadata, GOV.UK
+					styles, hero pattern, breadcrumbs, and script hooks for dynamic project IDs.
+				</description>
+			</template>
+		</page-templates>
 	</design-system>
 	<!-- ──────────────────────────── Ethical Framework ──────────────────────────── -->
 	<ethical-framework>
