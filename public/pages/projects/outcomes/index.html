@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="en-GB" data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev">
+<html lang="en-GB" data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev" prefix="
+    dcterms: http://purl.org/dc/terms/
+    schema:  https://schema.org/">
 
 <head>
 	<meta charset="utf-8" />
@@ -11,34 +13,61 @@
 	<script type="module" src="/components/layout.js"></script>
 </head>
 
-<body class="govuk-body">
+<body typeof="schema:WebPage" resource="#page" about="#page" vocab="https://schema.org/">
+
+	<!-- Page metadata -->
+	<meta property="schema:name" content="Outcomes – Impact &amp; ROI — ResearchOps" />
+	<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+	<meta property="schema:dateModified" content="2025-12-07" />
+	<meta property="dcterms:language" content="en-GB" />
+
 	<!-- Global header -->
 	<x-include src="/partials/header.html" vars='{
         "active":"Projects",
         "subtitle":"Impact &amp; ROI"
     }'></x-include>
-	<div class="govuk-width-container">
-		<!-- Breadcrumb -->
-		<nav class="breadcrumbs" aria-label="Breadcrumb">
+
+	<main class="govuk-body" role="main" data-project-name="" data-project-id="" typeof="schema:ResearchProject" resource="#project">
+
+		<!-- BREADCRUMBS -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
 			<ol>
-				<li><a href="/pages/projects/">Projects</a></li>
-				<li><a id="breadcrumb-project" href="#">Project</a></li>
-				<li><span>Impact &amp; ROI</span></li>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Projects</span>
+					</a>
+					<meta property="schema:position" content="1" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem">
+					<a id="breadcrumb-project" href="#" property="schema:item" typeof="schema:Thing">
+						<span property="schema:name">Project</span>
+					</a>
+					<meta property="schema:position" content="2" />
+				</li>
+				<li property="schema:itemListElement" typeof="schema:ListItem" aria-current="page">
+					<span property="schema:name">Impact &amp; ROI</span>
+					<meta property="schema:position" content="3" />
+				</li>
 			</ol>
 		</nav>
 
 		<!-- Back link to dashboard outcomes -->
 		<a id="back-link" class="govuk-back-link" href="#">Back to project dashboard</a>
 
-		<main id="main-content" class="govuk-main-wrapper" role="main">
-			<h1 class="govuk-heading-l">Impact &amp; ROI</h1>
-			<p class="lede">Track how your research insights influence decisions and outcomes.</p>
+		<!-- HERO -->
+		<div class="dashboard-hero">
+			<p id="eyebrow-org" class="project-org" property="schema:sourceOrganization" typeof="schema:Organization"></p>
 
-			<section id="impact-tracker" data-project-id="" data-study-id="">
-				<!-- Impact tracker component will populate here -->
-			</section>
-		</main>
-	</div>
+			<h1 id="project-title" class="govuk-heading-l" property="schema:name">Impact &amp; ROI</h1>
+
+			<p id="project-subtitle" class="lede" property="schema:description">Track how your research insights influence decisions and outcomes.</p>
+		</div>
+
+		<section id="impact-tracker" data-project-id="" data-study-id="">
+			<!-- Impact tracker component will populate here -->
+		</section>
+	</main>
+	
 	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module" src="/components/impact-tracker.js"></script>
