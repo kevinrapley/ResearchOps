@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB" data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Outcomes – Impact &amp; ROI — ResearchOps</title>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<script type="module" src="/components/layout.js"></script>
+</head>
+
+<body class="govuk-body">
+	<!-- Global header -->
+	<x-include src="/partials/header.html" vars='{
+        "active":"Projects",
+        "subtitle":"Impact &amp; ROI"
+    }'></x-include>
+	<div class="govuk-width-container">
+		<!-- Breadcrumb -->
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="#">Project</a></li>
+				<li><span>Impact &amp; ROI</span></li>
+			</ol>
+		</nav>
+
+		<!-- Back link to dashboard outcomes -->
+		<a id="back-link" class="govuk-back-link" href="#">Back to project dashboard</a>
+
+		<main id="main-content" class="govuk-main-wrapper" role="main">
+			<h1 class="govuk-heading-l">Impact &amp; ROI</h1>
+			<p class="lede">Track how your research insights influence decisions and outcomes.</p>
+
+			<section id="impact-tracker" data-project-id="" data-study-id="">
+				<!-- Impact tracker component will populate here -->
+			</section>
+		</main>
+	</div>
+	<x-include src="/partials/footer.html"></x-include>
+
+	<script type="module" src="/components/impact-tracker.js"></script>
+	<script type="module">
+		(function() {
+			const params = new URLSearchParams(window.location.search);
+			const projectId = params.get("id");
+			if (projectId) {
+				const impactSection = document.getElementById("impact-tracker");
+				if (impactSection) impactSection.setAttribute("data-project-id", projectId);
+				// update breadcrumb project link to project dashboard
+				const bcProject = document.getElementById("breadcrumb-project");
+				if (bcProject) bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+				// update back link to research outcomes section
+				const backLink = document.getElementById("back-link");
+				if (backLink) {
+					backLink.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}#outcomes`;
+				}
+			}
+		})();
+	</script>
+</body>
+
+</html>
