@@ -64,10 +64,77 @@
 		</div>
 
 		<section id="impact-tracker" data-project-id="" data-study-id="">
-			<!-- Impact tracker component will populate here -->
+			<!-- Impact tracker form -->
+			<form id="impact-form" class="govuk-form-group">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-insightId">Insight ID</label>
+					<input class="govuk-input" id="impact-insightId" name="insightId">
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-decisionLink">Decision link (Jira / PRD / URL)</label>
+					<input class="govuk-input" id="impact-decisionLink" name="decisionLink">
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-metricName">Metric name</label>
+					<input class="govuk-input" id="impact-metricName" name="metricName" required>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-baseline">Baseline</label>
+					<input class="govuk-input" id="impact-baseline" name="baseline" type="number" step="0.01">
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-target">Target</label>
+					<input class="govuk-input" id="impact-target" name="target" type="number" step="0.01">
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-actual">Actual</label>
+					<input class="govuk-input" id="impact-actual" name="actual" type="number" step="0.01">
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-type">Impact type</label>
+					<select class="govuk-select" id="impact-type" name="impactType">
+						<option value="product">Product</option>
+						<option value="strategy">Strategy</option>
+						<option value="process">Process</option>
+						<option value="org">Organisation</option>
+					</select>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-scale">Impact scale</label>
+					<select class="govuk-select" id="impact-scale" name="impactScale">
+						<option value="feature">Feature</option>
+						<option value="team">Team</option>
+						<option value="cross-team">Cross-team</option>
+						<option value="org">Organisation-wide</option>
+					</select>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="impact-notes">Notes</label>
+					<textarea class="govuk-textarea" id="impact-notes" name="notes" rows="3"></textarea>
+				</div>
+				<button class="govuk-button" type="submit">Save impact record</button>
+			</form>
+
+			<!-- Impact records table -->
+			<table id="impact-table" class="govuk-table">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Insight</th>
+						<th scope="col" class="govuk-table__header">Decision</th>
+						<th scope="col" class="govuk-table__header">Metric</th>
+						<th scope="col" class="govuk-table__header">Baseline</th>
+						<th scope="col" class="govuk-table__header">Actual</th>
+						<th scope="col" class="govuk-table__header">Type</th>
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body">
+					<!-- rows will be populated by impact‑tracker.js -->
+				</tbody>
+			</table>
 		</section>
+
 	</main>
-	
+
 	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module" src="/components/impact-tracker.js"></script>
