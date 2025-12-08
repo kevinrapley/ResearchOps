@@ -99,20 +99,13 @@ textarea:focus {
 	color: #505a5f;
 	}
 	
-.nav__list {
-	display: flex;
-	gap: 12px;
-	list-style: none;
-	margin: 0;
-	padding: 0;
+.nav a {
+	margin-right: 12px;
 	}
 
-.nav__list li {
-	margin: 0;
-	}
-
-.nav__list .govuk-link[aria-current="page"],
-.nav__list .govuk-link.active {
+.nav[data-active="Home"] .govuk-link[data-nav="Home"],
+.nav[data-active="Start Research Project"] .govuk-link[data-nav="Start Research Project"],
+.nav[data-active="Projects"] .govuk-link[data-nav="Projects"] {
 	font-weight: 700;
 	text-decoration: none;
 	border-bottom: 3px solid #1d70b8;
@@ -120,123 +113,19 @@ textarea:focus {
 
 /* Ensure tab items have a visible focus */
 .nav .govuk-link:focus {
-        outline: 3px solid #ffbf47;
-        outline-offset: 0;
-        }
-
-.rops-header {
-        margin-bottom: 32px;
-        }
-
-.rops-header__title {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 12px;
-        margin: 0 0 8px;
-        }
-
-.rops-header__title .govuk-heading-l {
-        margin: 0;
-        }
-
-.rops-header__title-text {
-        margin: 0;
-        }
-
-.rops-header__subtitle {
-        margin: 0 0 16px;
-        color: #505a5f;
-        }
-
-.page-intro {
-        margin: 0 0 32px;
-        }
-
-.page-intro .govuk-heading-xl {
-        margin-bottom: 8px;
-        }
-
-.page-intro .lede {
-        margin: 0;
-        }
-
-.page-title {
-        margin-top: 0;
-        }
-
-.card-section > .govuk-heading-l {
-        margin-bottom: 16px;
-        }
-
-.rops-header {
-	margin-bottom: 32px;
-	}
-
-.rops-header__title {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 12px;
-	margin: 0 0 8px;
-	}
-
-.rops-header__title .govuk-heading-l {
-	margin: 0;
-	}
-
-.rops-header__title-text {
-	margin: 0;
-	}
-
-.rops-header__subtitle {
-	margin: 0 0 16px;
-	color: #505a5f;
-	}
-
-.page-intro {
-	margin: 0 0 32px;
-	}
-
-.page-intro .govuk-heading-xl {
-	margin-bottom: 8px;
-	}
-
-.page-intro .lede {
-	margin: 0;
-	}
-
-.page-title {
-	margin-top: 0;
-	}
-
-.card-section > .govuk-heading-l {
-	margin-bottom: 16px;
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
 	}
 
 /* === =CARDS & PATTERNS ================================== */
 
 .card {
-        border: 1px solid #b1b4b6;
-        border-radius: 6px;
-        padding: 24px;
-        margin-bottom: 16px;
-        background: #fff;
-        color: #0b0c0c;
-        }
-
-.card__heading {
-        margin: 0;
-        }
-
-.card__question {
-        margin: 8px 0 0;
-        }
-
-.card__heading {
-	margin: 0;
-	}
-
-.card__question {
-	margin: 8px 0 0;
+	border: 1px solid #b1b4b6;
+	border-radius: 6px;
+	padding: 24px;
+	margin-bottom: 16px;
+	background: #fff;
+	color: #0b0c0c;
 	}
 
 .project-org {
@@ -706,6 +595,66 @@ textarea {
 	font-weight: 700;
 	}
 
+/* GOV.UK-style table for Impact & ROI and other pages using govuk-table */
+
+.govuk-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 0;
+	margin-bottom: 24px;
+	}
+
+.govuk-table__caption {
+	caption-side: top;
+	margin-bottom: 8px;
+	font-weight: 700;
+	}
+
+.govuk-table__caption--m {
+	font-size: 1.1rem;
+	}
+
+.govuk-table__head .govuk-table__header,
+.govuk-table__body .govuk-table__cell {
+	border: 1px solid #b1b4b6;
+	padding: 8px 10px;
+	text-align: left;
+	vertical-align: top;
+	color: #0b0c0c;
+	}
+
+.govuk-table__body .govuk-table__row:nth-child(even) .govuk-table__cell {
+	background-color: #f3f2f1;
+	}
+
+.govuk-table__cell a {
+	word-break: break-word;
+	}
+
+/* Impact tracker layout */
+
+#impact-tracker {
+	margin-top: 16px;
+	}
+
+#impact-form {
+	margin-bottom: 32px;
+	padding: 16px;
+	background: #ffffff;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	}
+
+#impact-table {
+	background: #ffffff;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	border-collapse: separate;
+	border-spacing: 0;
+	}
+
+/* === Dropzone ========================================== */
+
 .dropzone {
 	display: grid;
 	place-items: center;
@@ -768,6 +717,20 @@ textarea {
 	font-size: 12px;
 	white-space: pre;
 	}
+
+/* GOV.UK width helpers used in Impact & ROI and elsewhere */
+
+.govuk-input--width-10 {
+	width: auto;
+	max-width: 15em;
+	}
+
+.govuk-input--width-20 {
+	width: auto;
+	max-width: 30em;
+	}
+
+/* Native textarea / input tweaks already used */
 
 @media (max-width: 768px) {
 	.modal {
@@ -938,6 +901,16 @@ select.govuk-input {
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .muted { color: #505a5f; }
 
+/* GovUK spacing utilities used by Impact & ROI and other pages */
+
+.govuk-!-margin-bottom-3 {
+	margin-bottom: 16px !important;
+	}
+
+.govuk-!-margin-top-6 {
+	margin-top: 48px !important;
+	}
+
 /* Live regions (no visual change; kept for clarity) */
 [aria-live="polite"] { }
 
@@ -959,13 +932,13 @@ select.govuk-input {
 
 /* === Suggestions / Bias split view (Step 1 & 2) ============================ */
 /* Structure produced by start-description-assist.js & start-objective-assist.js
-.sugg-grid
-	.sugg-col
-	.sugg-heading
-	.sugg-list > .sugg-item
-		.sugg-row > .sugg-cat + .sugg-sev
-		.sugg-tip
-		.sugg-why
+   .sugg-grid
+     .sugg-col
+       .sugg-heading
+       .sugg-list > .sugg-item
+         .sugg-row > .sugg-cat + .sugg-sev
+         .sugg-tip
+         .sugg-why
 */
 
 .sugg-grid {
