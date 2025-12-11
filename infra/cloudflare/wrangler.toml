@@ -2,32 +2,31 @@ name                = "rops-api"
 main                = "src/worker.js"
 compatibility_date  = "2025-09-26"
 
-# Static asset passthrough
+# -------------------------------------
+# Static asset hosting for Sourcebook
+# -------------------------------------
 [assets]
 binding   = "ASSETS"
-directory = "../../public"
+directory = "docs/sourcebook"
+# (Cloudflare will now serve everything under docs/sourcebook/
+#   at /, unless your Worker overrides routing.)
 
-# Workers AI binding (model is configured in [vars])
+# Workers AI
 [ai]
 binding = "AI"
 
-# ----------------------------
-# Top-level vars (default env)
-# ----------------------------
+# Vars
 [vars]
 MODEL = "@cf/meta/llama-3.1-8b-instruct"
-
-# Feature flags / behaviour
 AUDIT = "true"
 
-# CORS
 ALLOWED_ORIGINS = [
   "https://researchops.pages.dev",
   "https://rops-api.digikev-kevin-rapley.workers.dev",
   "http://localhost:8080"
 ]
 
-# Airtable (table names only — keep IDs/keys as secrets)
+# Airtable tables
 AIRTABLE_TABLE_AI_LOG            = "AI_Usage"
 AIRTABLE_TABLE_PROJECTS          = "Projects"
 AIRTABLE_TABLE_DETAILS           = "Project Details"
@@ -41,7 +40,7 @@ AIRTABLE_TABLE_PARTIALS          = "Partials"
 AIRTABLE_TABLE_CODES             = "Codes"
 AIRTABLE_TABLE_CODE_APPLICATIONS = "Code Applications"
 
-# GitHub CSV transparency (safe: repo metadata, not tokens)
+# GitHub CSV (safe)
 GH_OWNER         = "kevinrapley"
 GH_REPO          = "ResearchOps"
 GH_BRANCH        = "main"
@@ -49,7 +48,7 @@ GH_PATH_PROJECTS = "data/projects.csv"
 GH_PATH_DETAILS  = "data/project-details.csv"
 GH_PATH_STUDIES  = "data/studies.csv"
 
-# Mural public config
+# Mural config
 MURAL_CLIENT_ID    = "3648c18f-8dbe-4217-a147-3bce1609c5b1"
 MURAL_COMPANY_ID   = "homeofficegovuk"
 MURAL_API_BASE     = "https://app.mural.co/api/public/v1"
@@ -57,13 +56,13 @@ MURAL_SCOPES       = "identity:read workspaces:read rooms:read rooms:write mural
 MURAL_OAUTH_LEGACY = "true"
 MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
 
-# KV namespaces
+# KV
 [[kv_namespaces]]
 binding    = "SESSION_KV"
 id         = "8e2d88969b9e4be694868931bdba92f2"
 preview_id = "8e2d88969b9e4be694868931bdba92f2"
 
-# CloudFlare Logging
+# Logging
 [observability]
 [observability.logs]
 enabled = true
@@ -71,7 +70,7 @@ head_sampling_rate = 1
 invocation_logs = true
 persist = true
 
-# Cloudflare D1 Database
+# D1
 [[d1_databases]]
 binding = "RESEARCHOPS_D1"
 database_name = "researchops-d1"
