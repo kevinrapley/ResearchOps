@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en-GB" xmlns:dc="http://purl.org/dc/terms/" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Systems &amp; Tools (INFRA-PROV) | Research Operations Sourcebook</title>
+	<link rel="stylesheet" href="styles.css">
+
+	<!-- Dublin Core Metadata -->
+	<meta property="dc:title" content="Systems &amp; Tools">
+	<meta property="dc:description" content="Infrastructure, procurement, evaluation, integration and lifecycle management of research systems and tools.">
+	<meta property="dc:isPartOf" content="Research Operations Sourcebook">
+	<meta property="dc:type" content="Text">
+	<meta property="dc:format" content="text/html">
+	<meta property="dc:language" content="en-GB">
+	<meta property="dc:creator" content="ResearchOps Governance Team">
+	<meta property="dc:modified" content="2025-12-11">
+	<meta property="dc:rights" content="Status: draft">
+	<meta name="description" content="INFRA-PROV pillar — standards for research tools, infrastructure, procurement, integration, automation and lifecycle management.">
+</head>
+
+<body vocab="http://www.w3.org/2004/02/skos/core#">
+	<a href="#main-content" class="skip-link">Skip to main content</a>
+
+	<header role="banner">
+		<div class="govuk-width-container">
+			<h1>Research Operations Sourcebook</h1>
+			<p class="subtitle">Systems &amp; Tools (INFRA-PROV)</p>
+		</div>
+	</header>
+
+	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+		<div class="govuk-width-container">
+			<ul class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="index.html">Home</a></li>
+				<li class="govuk-breadcrumbs__list-item" aria-current="page">Systems &amp; Tools</li>
+			</ul>
+		</div>
+	</nav>
+
+	<main id="main-content" role="main">
+		<div class="govuk-width-container">
+
+			<article typeof="skos:Concept" resource="#infra-prov">
+				<h2 property="skos:prefLabel">Systems &amp; Tools</h2>
+				<p><strong>Code: <span property="skos:notation">INFRA-PROV</span></strong></p>
+
+				<p property="skos:definition">
+					The systems, tools and infrastructure that underpin research practice. This includes provisioning access,
+					procuring software and hardware, ensuring secure storage, standardising templates, integrating tools into
+					organisational systems, enabling automation and managing the tool lifecycle.
+				</p>
+
+				<!-- CONTENTS LIST -->
+				<nav aria-label="Contents">
+					<h3>Contents</h3>
+					<ul>
+						<li><a href="#infra-prov-1-0-0">1.0.0 Systems &amp; Tools Infrastructure</a></li>
+						<li><a href="#infra-prov-2-0-0">2.0.0 Procurement, Evaluation &amp; Licensing</a></li>
+						<li><a href="#infra-prov-3-0-0">3.0.0 Templates &amp; Standardised Artefacts</a></li>
+						<li><a href="#infra-prov-4-0-0">4.0.0 Access, Security &amp; Permissions</a></li>
+						<li><a href="#infra-prov-5-0-0">5.0.0 Tool Integration &amp; Automation</a></li>
+						<li><a href="#infra-prov-6-0-0">6.0.0 Maintenance &amp; Lifecycle Management</a></li>
+						<li><a href="#infra-prov-7-0-0">7.0.0 Non-Conformance, Incident Reporting &amp; Risk</a></li>
+						<li><a href="#infra-prov-glossary">Glossary &amp; Definitions</a></li>
+						<li><a href="#infra-prov-templates">Templates &amp; Artefacts</a></li>
+						<li><a href="#infra-prov-change-history">Change History</a></li>
+					</ul>
+				</nav>
+
+				<!-- ================================================= -->
+				<!-- 1.0.0 SYSTEMS & TOOLS INFRASTRUCTURE              -->
+				<!-- ================================================= -->
+				<section id="infra-prov-1-0-0" typeof="skos:Concept" resource="#infra-prov-1-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 1.0.0 Systems &amp; Tools Infrastructure</h3>
+
+					<p property="skos:definition">
+						The foundational systems and access required before research begins, including environment setup,
+						tool provisioning, and baseline capability support.
+					</p>
+
+					<!-- 1.1.0 Ensure Tool Access -->
+					<section id="infra-prov-1-1-0" typeof="skos:Concept" resource="#infra-prov-1-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 1.1.0 Tool Access &amp; Readiness</h4>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-1-1-1">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 1.1.1</p>
+									<h5 class="rule-title">Ensure Tool Access Before Starting</h5>
+								</div>
+							</div>
+							<div class="rule-content" property="skos:definition">
+								<p>Ensure access to tools for recruitment, scheduling, consent, transcription, analysis and secure storage.</p>
+								<ul>
+									<li>tool onboarding documentation</li>
+									<li>clear ownership for each tool</li>
+									<li>monitored service-status and support routes</li>
+									<li>toolkit baselines for each research maturity level</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-1-1-2">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 1.1.2</p>
+									<h5 class="rule-title">Environment Provisioning (Physical &amp; Digital)</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Provision required physical and digital environments.</p>
+								<ul>
+									<li>research labs, observation rooms and usability spaces</li>
+									<li>secure laptops, microphones and recording equipment</li>
+									<li>remote testing tools with encryption</li>
+									<li>assistive technologies for accessibility needs</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 2.0.0 PROCUREMENT, EVALUATION & LICENSING         -->
+				<!-- ================================================= -->
+				<section id="infra-prov-2-0-0" typeof="skos:Concept" resource="#infra-prov-2-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 2.0.0 Procurement, Evaluation &amp; Licensing</h3>
+
+					<p property="skos:definition">Ensuring research tools meet organisational, financial and legal requirements.</p>
+
+					<section id="infra-prov-2-1-0" typeof="skos:Concept" resource="#infra-prov-2-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 2.1.0 Procurement Rules &amp; Evaluation</h4>
+
+						<div class="rule-container rule" typeof="skos:Concept" resource="#infra-prov-2-1-1">
+							<div class="rule-header">
+								<span class="rule-badge rule">R</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 2.1.1</p>
+									<h5 class="rule-title">Procurement &amp; Licensing Requirement</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Any tool handling research data must meet procurement, licensing, information security and legal standards.</p>
+							</div>
+						</div>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-2-1-2">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 2.1.2</p>
+									<h5 class="rule-title">Tool Evaluation Guidance</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Evaluate tools using criteria:</p>
+								<ul>
+									<li>data protection compliance</li>
+									<li>service accessibility</li>
+									<li>cost effectiveness</li>
+									<li>exportability &amp; interoperability</li>
+									<li>vendor security posture</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 3.0.0 TEMPLATE & STANDARD ARTEFACTS                -->
+				<!-- ================================================= -->
+				<section id="infra-prov-3-0-0" typeof="skos:Concept" resource="#infra-prov-3-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 3.0.0 Templates &amp; Standardised Artefacts</h3>
+
+					<section id="infra-prov-3-1-0" typeof="skos:Concept" resource="#infra-prov-3-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 3.1.0 Template Library</h4>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-3-1-1">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 3.1.1</p>
+									<h5 class="rule-title">Standard Template Library</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Maintain a version-controlled template library including:</p>
+								<ul>
+									<li>research plans</li>
+									<li>risk logs &amp; non-conformance reports</li>
+									<li>consent forms</li>
+									<li>fieldnote sheets</li>
+									<li>analysis frameworks</li>
+									<li>playback decks</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 4.0.0 ACCESS, SECURITY & PERMISSIONS               -->
+				<!-- ================================================= -->
+				<section id="infra-prov-4-0-0" typeof="skos:Concept" resource="#infra-prov-4-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 4.0.0 Access, Security &amp; Permissions</h3>
+
+					<section id="infra-prov-4-1-0" typeof="skos:Concept" resource="#infra-prov-4-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 4.1.0 Security Requirements</h4>
+
+						<div class="rule-container rule" typeof="skos:Concept" resource="#infra-prov-4-1-1">
+							<div class="rule-header">
+								<span class="rule-badge rule">R</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 4.1.1</p>
+									<h5 class="rule-title">Access Control &amp; Security Requirement</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Tools must enforce:</p>
+								<ul>
+									<li>RBAC (role-based access control)</li>
+									<li>logging &amp; audit trails</li>
+									<li>end-to-end encryption</li>
+									<li>secure credential management</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 5.0.0 TOOL INTEGRATION & AUTOMATION                -->
+				<!-- ================================================= -->
+				<section id="infra-prov-5-0-0" typeof="skos:Concept" resource="#infra-prov-5-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 5.0.0 Tool Integration &amp; Automation</h3>
+
+					<section id="infra-prov-5-1-0" typeof="skos:Concept" resource="#infra-prov-5-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 5.1.0 Integration &amp; Workflow Design</h4>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-5-1-1">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 5.1.1</p>
+									<h5 class="rule-title">Integrating Research Systems</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Integrations should reduce duplication, errors and manual effort.</p>
+								<ul>
+									<li>recruitment → scheduling</li>
+									<li>consent → secure storage</li>
+									<li>repository → analytics tools</li>
+									<li>participant CRM → incentives systems</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-5-1-2">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 5.1.2</p>
+									<h5 class="rule-title">Automation Opportunities</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Support automation patterns including:</p>
+								<ul>
+									<li>automated consent records</li>
+									<li>triggered incentive payments</li>
+									<li>automatic transcription routing</li>
+									<li>retention-expiry alerts</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 6.0.0 LIFECYCLE MANAGEMENT                         -->
+				<!-- ================================================= -->
+				<section id="infra-prov-6-0-0" typeof="skos:Concept" resource="#infra-prov-6-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 6.0.0 Maintenance, Support &amp; Lifecycle Management</h3>
+
+					<section id="infra-prov-6-1-0" typeof="skos:Concept" resource="#infra-prov-6-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 6.1.0 Lifecycle Planning</h4>
+
+						<div class="rule-container guidance" typeof="skos:Concept" resource="#infra-prov-6-1-1">
+							<div class="rule-header">
+								<span class="rule-badge guidance">G</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 6.1.1</p>
+									<h5 class="rule-title">Lifecycle Management Guidance</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>Each tool must have a documented lifecycle, including:</p>
+								<ul>
+									<li>ownership</li>
+									<li>acquisition → review → deprecation phases</li>
+									<li>scheduled maintenance</li>
+									<li>exit / deletion plans</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- 7.0.0 NON-CONFORMANCE & INCIDENTS                  -->
+				<!-- ================================================= -->
+				<section id="infra-prov-7-0-0" typeof="skos:Concept" resource="#infra-prov-7-0-0">
+					<h3 property="skos:prefLabel">INFRA-PROV 7.0.0 Non-Conformance, Incident Reporting &amp; Risk</h3>
+
+					<section id="infra-prov-7-1-0" typeof="skos:Concept" resource="#infra-prov-7-1-0">
+						<h4 property="skos:prefLabel">INFRA-PROV 7.1.0 Incident Management</h4>
+
+						<div class="rule-container rule" typeof="skos:Concept" resource="#infra-prov-7-1-1">
+							<div class="rule-header">
+								<span class="rule-badge rule">R</span>
+								<div>
+									<p class="rule-identifier">INFRA-PROV 7.1.1</p>
+									<h5 class="rule-title">Incident Logging Requirement</h5>
+								</div>
+							</div>
+							<div class="rule-content">
+								<p>All non-conformances must be logged with:</p>
+								<ul>
+									<li>date and time</li>
+									<li>description</li>
+									<li>severity &amp; impact</li>
+									<li>mitigation &amp; lessons learned</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- GLOSSARY                                          -->
+				<!-- ================================================= -->
+				<section id="infra-prov-glossary">
+					<h3>Glossary &amp; Definitions</h3>
+					<dl>
+						<dt>Tool Lifecycle</dt>
+						<dd>The stages a research tool moves through, from procurement to decommissioning.</dd>
+
+						<dt>RBAC</dt>
+						<dd>Role-based access control ensuring only authorised staff can view or modify data.</dd>
+
+						<dt>Integration Workflow</dt>
+						<dd>A defined pattern that connects two or more research tools or systems.</dd>
+
+						<dt>Non-Conformance</dt>
+						<dd>Any deviation from expected standards, behaviours or thresholds.</dd>
+					</dl>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- TEMPLATES                                         -->
+				<!-- ================================================= -->
+				<section id="infra-prov-templates">
+					<h3>Templates &amp; Artefacts</h3>
+					<ul>
+						<li><a href="templates/tool-evaluation-matrix.md">Tool Evaluation Matrix</a></li>
+						<li><a href="templates/incident-register-template.csv">Incident Register Template</a></li>
+						<li><a href="templates/integration-workflow-template.md">Integration Workflow Template</a></li>
+						<li><a href="templates/lifecycle-management-template.md">Tool Lifecycle Management Template</a></li>
+					</ul>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- CHANGE HISTORY                                    -->
+				<!-- ================================================= -->
+				<section id="infra-prov-change-history">
+					<h3>Change History</h3>
+					<table>
+						<thead>
+							<tr>
+								<th>Version</th>
+								<th>Date</th>
+								<th>Summary of Changes</th>
+								<th>Author / Owner</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>0.2-draft</td>
+								<td>2025-12-11</td>
+								<td>Restructured using A1 model; added integration, automation, lifecycle and risk sections.</td>
+								<td>ResearchOps Governance Team</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
+				<!-- ================================================= -->
+				<!-- RELATED PILLARS                                   -->
+				<!-- ================================================= -->
+				<nav class="section-nav" aria-labelledby="infra-prov-related-pillars">
+					<h3 id="infra-prov-related-pillars">Related Pillars</h3>
+					<ul>
+						<li><a href="data-sto-acc.html">DATA-STO-ACC – Knowledge Management</a></li>
+						<li><a href="rec-admn.html">REC-ADMN – Recruitment &amp; Administration</a></li>
+						<li><a href="govern.html">GOVERN – Legal &amp; Ethical Governance</a></li>
+						<li><a href="peop-comm.html">PEOP-COMM – People &amp; Communities of Practice</a></li>
+					</ul>
+				</nav>
+
+			</article>
+		</div>
+	</main>
+
+	<footer role="contentinfo">
+		<div class="govuk-width-container">
+			<div class="metadata">
+				<p>Last updated: <time datetime="2025-12-11">11 December 2025</time></p>
+				<p><a href="index.html">Return to Research Operations Sourcebook Index</a></p>
+			</div>
+		</div>
+	</footer>
+</body>
+
+</html>
