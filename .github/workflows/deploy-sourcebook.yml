@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "./docs/sourcebook/**"
+      - "docs/sourcebook/**"
       - ".github/workflows/deploy-sourcebook.yml"
   workflow_dispatch: {}
 
