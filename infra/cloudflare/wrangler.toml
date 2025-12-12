@@ -23,7 +23,8 @@ AUDIT = "true"
 ALLOWED_ORIGINS = [
   "https://researchops.pages.dev",
   "https://rops-api.digikev-kevin-rapley.workers.dev",
-  "http://localhost:8080"
+  "http://localhost:8080",
+	"https://reops-sourcebook.pages.dev"
 ]
 
 # Airtable tables
