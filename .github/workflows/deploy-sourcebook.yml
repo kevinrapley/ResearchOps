@@ -26,4 +26,4 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: reops-sourcebook
           branch: main
-          directory: docs/sourcebook
+          directory: ./docs/sourcebook
