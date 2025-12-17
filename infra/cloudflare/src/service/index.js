@@ -36,6 +36,7 @@ import * as Diag from "./dev/diag.js";
 
 /* Impact Tracking */
 import * as ImpactService from "./impact.js";
+import { recordProvenanceEvent } from "./provenance.js";
 
 /**
  * @typedef {Object} Env
@@ -108,6 +109,9 @@ export class ResearchOpsService {
 		/* Impact Tracking */
 		this.listImpact = ImpactService.listImpact(this);
 		this.createImpact = ImpactService.createImpact(this);
+
+		/* Provenance Tracking */
+		this.recordProvenance = (event) => recordProvenanceEvent(this, event);
 	}
 
 	reset() { this.log.reset(); }
