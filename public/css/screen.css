@@ -98,9 +98,47 @@ textarea:focus {
 	margin: 0 4px 0 2px;
 	color: #505a5f;
 	}
-	
+
+/* Main navigation */
+.nav {
+	margin: 0;
+	padding: 0;
+	}
+
+.nav ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	}
+
+.nav li {
+	margin: 0;
+	padding: 0;
+	}
+
 .nav a {
-	margin-right: 12px;
+	display: inline-block;
+	padding: 8px 0;
+	text-decoration: none;
+	color: #1d70b8;
+	font-weight: 400;
+	}
+
+.nav a:hover {
+	text-decoration: underline;
+	text-decoration-thickness: 3px;
+	text-underline-offset: 0.1em;
+	}
+
+.nav a:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 0;
+	box-shadow: 0 0 0 1px #0b0c0c;
+	background-color: #ffbf47;
+	color: #0b0c0c;
 	}
 
 .nav[data-active="Home"] .govuk-link[data-nav="Home"],
@@ -109,12 +147,7 @@ textarea:focus {
 	font-weight: 700;
 	text-decoration: none;
 	border-bottom: 3px solid #1d70b8;
-	}
-
-/* Ensure tab items have a visible focus */
-.nav .govuk-link:focus {
-	outline: 3px solid #ffbf47;
-	outline-offset: 0;
+	padding-bottom: 5px;
 	}
 
 /* === =CARDS & PATTERNS ================================== */
