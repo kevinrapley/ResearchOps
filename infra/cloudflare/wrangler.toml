@@ -56,7 +56,7 @@ MURAL_API_BASE     = "https://app.mural.co/api/public/v1"
 MURAL_SCOPES       = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"
 MURAL_OAUTH_LEGACY = "true"
 MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
-PAGES_ORIGIN.      = "https://researchops.pages.dev"
+PAGES_ORIGIN       = "https://researchops.pages.dev"
 
 # KV
 [[kv_namespaces]]
