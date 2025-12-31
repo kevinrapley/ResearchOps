@@ -20,12 +20,7 @@ binding = "AI"
 MODEL = "@cf/meta/llama-3.1-8b-instruct"
 AUDIT = "true"
 
-ALLOWED_ORIGINS = [
-  "https://researchops.pages.dev",
-  "https://rops-api.digikev-kevin-rapley.workers.dev",
-  "http://localhost:8080",
-	"https://reops-sourcebook.pages.dev"
-]
+ALLOWED_ORIGINS = "https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev"
 
 # Airtable tables
 AIRTABLE_TABLE_AI_LOG            = "AI_Usage"
