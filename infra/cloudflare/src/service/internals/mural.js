@@ -5,7 +5,7 @@
  *          with D1 as a read-through fallback for board lookups when Airtable is unavailable.
  *
  * Key ideas:
- *  - Airtable remains the source of truth for “Mural Boards” metadata.
+ *  - Airtable remains the source of truth for "Mural Boards" metadata.
  *  - D1 is used as a non-breaking fallback when Airtable is rate-limited/unavailable.
  *  - Journal → Mural sync must still work when Airtable 429s, as long as a board
  *    mapping exists in D1 for the project.
@@ -395,7 +395,7 @@ export class MuralServicePart {
 	 *     - If projectId looks like recXXXX, treat as Airtable project id.
 	 *     - Else treat as local project UUID and try D1 → Airtable mapping.
 	 *     - If still unknown and Airtable is available, use atResolveProjectRecordId.
-	 *  4) Query Airtable “Mural Boards” (primary source of truth).
+	 *  4) Query Airtable "Mural Boards" (primary source of truth).
 	 *  5) If Airtable fails (429/5xx/env missing) or finds nothing, query D1 mural_boards.
 	 *  6) If still nothing, fall back to KV cache, then env.MURAL_REFLEXIVE_MURAL_ID.
 	 *
@@ -528,7 +528,7 @@ export class MuralServicePart {
 			}
 		}
 
-		// 4b) If Airtable gave us a board, that’s the winner.
+		// 4b) If Airtable gave us a board, that's the winner.
 		if (boardFromAirtable?.muralId) {
 			const result = {
 				muralId: boardFromAirtable.muralId,
@@ -684,31 +684,101 @@ export class MuralServicePart {
 	}
 
 	async muralCallback(origin, url) {
+		const { env } = this.root;
+
 		const code = url.searchParams.get("code");
 		const stateB64 = url.searchParams.get("state");
-		if (!code) return Response.redirect("/pages/projects/#mural-auth-missing-code", 302);
+
+		if (!code) {
+			console.error("[mural.callback] Missing authorization code");
+			return Response.redirect("/pages/projects/#mural-auth-missing-code", 302);
+		}
 
 		let uid = "anon";
-		let stateObj = {};
-		try {
-			stateObj = JSON.parse(b64Decode(stateB64 || ""));
-			uid = stateObj?.uid || "anon";
-		} catch {}
+		let returnUrl = null;
 
+		try {
+			const stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			uid = stateObj?.uid || "anon";
+			returnUrl = stateObj?.return || null;
+			console.log("[mural.callback] Decoded state:", { uid, returnUrl });
+		} catch (err) {
+			console.error("[mural.callback] Failed to parse state:", err);
+		}
+
+		// Exchange code → tokens
 		let tokens;
 		try {
-			tokens = await exchangeAuthCode(this.root.env, code);
-		} catch {
-			return Response.redirect(`${stateObj?.return || "/pages/projects/"}#mural-token-exchange-failed`, 302);
+			tokens = await exchangeAuthCode(env, code);
+			console.log("[mural.callback] Token exchange successful");
+		} catch (err) {
+			console.error("[mural.callback] Token exchange failed:", err);
+			const fallback = returnUrl || "/pages/projects/";
+			return Response.redirect(`${fallback}#mural-token-exchange-failed`, 302);
 		}
 
 		await this.saveTokens(uid, tokens);
+		console.log("[mural.callback] Tokens saved for uid:", uid);
 
-		const want = stateObj?.return || "/pages/projects/";
-		const back = want.startsWith("http") ? want : new URL(want, url).toString();
-		const u = new URL(back);
-		u.searchParams.set("mural", "connected");
-		return Response.redirect(u.toString(), 302);
+		// ═══════════════════════════════════════════════════════════════════
+		// CRITICAL FIX: Always redirect to Pages origin, not API origin
+		// ═══════════════════════════════════════════════════════════════════
+
+		const PAGES_ORIGIN = env.PAGES_ORIGIN || "https://researchops.pages.dev";
+		let redirectTo;
+
+		console.log("[mural.callback] Processing redirect", {
+			returnUrl,
+			pagesOrigin: PAGES_ORIGIN,
+			apiOrigin: url.origin
+		});
+
+		if (returnUrl && returnUrl.startsWith("http")) {
+			// Absolute URL provided - validate it's allowed
+			try {
+				const u = new URL(returnUrl);
+				const targetOrigin = `${u.protocol}//${u.host}`;
+
+				// Check against allowed origins
+				const allowedOrigins = String(env.ALLOWED_ORIGINS || "")
+					.split(",")
+					.map(s => s.trim())
+					.filter(Boolean);
+
+				if (allowedOrigins.includes(targetOrigin)) {
+					// Use the provided URL as-is (it's already absolute and validated)
+					redirectTo = new URL(returnUrl);
+					console.log("[mural.callback] Using validated absolute return URL:", returnUrl);
+				} else {
+					console.warn("[mural.callback] Return URL origin not in ALLOWED_ORIGINS:", targetOrigin);
+					// Fall back to Pages origin + default path
+					redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
+				}
+			} catch (err) {
+				console.error("[mural.callback] Invalid return URL:", returnUrl, err);
+				redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
+			}
+		} else if (returnUrl && returnUrl.startsWith("/")) {
+			// Relative path - ALWAYS construct against Pages origin, NOT API origin
+			redirectTo = new URL(returnUrl, PAGES_ORIGIN);
+			console.log("[mural.callback] Using relative path against Pages origin:", {
+				returnUrl,
+				pagesOrigin: PAGES_ORIGIN,
+				finalUrl: redirectTo.toString()
+			});
+		} else {
+			// No valid return URL - use default on Pages origin
+			console.warn("[mural.callback] No valid return URL, using default");
+			redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
+		}
+
+		// Add success parameter
+		redirectTo.searchParams.set("mural", "connected");
+
+		const finalRedirectUrl = redirectTo.toString();
+		console.log("[mural.callback] Final redirect URL:", finalRedirectUrl);
+
+		return Response.redirect(finalRedirectUrl, 302);
 	}
 
 	async muralVerify(origin, url) {
