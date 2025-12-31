@@ -686,99 +686,95 @@ export class MuralServicePart {
 	async muralCallback(origin, url) {
 		const { env } = this.root;
 
+		// Debug logging (remove after fix is verified)
+		console.log('[muralCallback] Environment check:', {
+			hasPAGES_ORIGIN: Boolean(env.PAGES_ORIGIN),
+			PAGES_ORIGIN: env.PAGES_ORIGIN,
+			hasALLOWED_ORIGINS: Boolean(env.ALLOWED_ORIGINS),
+			ALLOWED_ORIGINS: env.ALLOWED_ORIGINS
+		});
+
+		if (!env.MURAL_CLIENT_SECRET) {
+			return this.root.json({
+				ok: false,
+				error: "missing_secret",
+				message: "MURAL_CLIENT_SECRET is not configured in Cloudflare secrets."
+			}, 500, this.root.corsHeaders(origin));
+		}
+
 		const code = url.searchParams.get("code");
 		const stateB64 = url.searchParams.get("state");
-
 		if (!code) {
-			console.error("[mural.callback] Missing authorization code");
-			return Response.redirect("/pages/projects/#mural-auth-missing-code", 302);
+			return this.root.json({ ok: false, error: "missing_code" }, 400, this.root.corsHeaders(origin));
 		}
 
 		let uid = "anon";
-		let returnUrl = null;
-
+		let stateObj = {};
 		try {
-			const stateObj = JSON.parse(b64Decode(stateB64 || ""));
+			stateObj = JSON.parse(b64Decode(stateB64 || ""));
 			uid = stateObj?.uid || "anon";
-			returnUrl = stateObj?.return || null;
-			console.log("[mural.callback] Decoded state:", { uid, returnUrl });
-		} catch (err) {
-			console.error("[mural.callback] Failed to parse state:", err);
-		}
+		} catch { /* ignore */ }
+
+		// Debug: log decoded state
+		console.log('[muralCallback] Decoded state:', {
+			uid,
+			return: stateObj?.return,
+			ts: stateObj?.ts
+		});
 
 		// Exchange code → tokens
 		let tokens;
 		try {
 			tokens = await exchangeAuthCode(env, code);
-			console.log("[mural.callback] Token exchange successful");
 		} catch (err) {
-			console.error("[mural.callback] Token exchange failed:", err);
-			const fallback = returnUrl || "/pages/projects/";
-			return Response.redirect(`${fallback}#mural-token-exchange-failed`, 302);
+			return this.root.json({
+				ok: false,
+				error: "token_exchange_failed",
+				message: err?.message || "Unable to exchange OAuth code"
+			}, 500, this.root.corsHeaders(origin));
 		}
 
 		await this.saveTokens(uid, tokens);
-		console.log("[mural.callback] Tokens saved for uid:", uid);
 
-		// ═══════════════════════════════════════════════════════════════════
-		// CRITICAL FIX: Always redirect to Pages origin, not API origin
-		// ═══════════════════════════════════════════════════════════════════
+		// Build redirect target
+		const want = stateObj?.return || "/pages/projects/";
+		let backUrl;
 
-		const PAGES_ORIGIN = env.PAGES_ORIGIN || "https://researchops.pages.dev";
-		let redirectTo;
+		// Use PAGES_ORIGIN as the base for ALL redirects (with hardcoded fallback)
+		const pagesOrigin = env.PAGES_ORIGIN || "https://researchops.pages.dev";
 
-		console.log("[mural.callback] Processing redirect", {
-			returnUrl,
-			pagesOrigin: PAGES_ORIGIN,
-			apiOrigin: url.origin
+		console.log('[muralCallback] Building redirect:', {
+			want,
+			pagesOrigin,
+			startsWithHttp: want.startsWith("http")
 		});
 
-		if (returnUrl && returnUrl.startsWith("http")) {
-			// Absolute URL provided - validate it's allowed
-			try {
-				const u = new URL(returnUrl);
-				const targetOrigin = `${u.protocol}//${u.host}`;
-
-				// Check against allowed origins
-				const allowedOrigins = String(env.ALLOWED_ORIGINS || "")
-					.split(",")
-					.map(s => s.trim())
-					.filter(Boolean);
-
-				if (allowedOrigins.includes(targetOrigin)) {
-					// Use the provided URL as-is (it's already absolute and validated)
-					redirectTo = new URL(returnUrl);
-					console.log("[mural.callback] Using validated absolute return URL:", returnUrl);
-				} else {
-					console.warn("[mural.callback] Return URL origin not in ALLOWED_ORIGINS:", targetOrigin);
-					// Fall back to Pages origin + default path
-					redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
-				}
-			} catch (err) {
-				console.error("[mural.callback] Invalid return URL:", returnUrl, err);
-				redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
-			}
-		} else if (returnUrl && returnUrl.startsWith("/")) {
-			// Relative path - ALWAYS construct against Pages origin, NOT API origin
-			redirectTo = new URL(returnUrl, PAGES_ORIGIN);
-			console.log("[mural.callback] Using relative path against Pages origin:", {
-				returnUrl,
-				pagesOrigin: PAGES_ORIGIN,
-				finalUrl: redirectTo.toString()
+		if (want.startsWith("http")) {
+			// Absolute URL: validate and use if allowed, otherwise fallback to PAGES_ORIGIN + default path
+			const isAllowed = _isAllowedReturn(env, want);
+			console.log('[muralCallback] Absolute URL validation:', {
+				want,
+				isAllowed,
+				allowedOrigins: env.ALLOWED_ORIGINS
 			});
+
+			backUrl = isAllowed ?
+				new URL(want) :
+				new URL("/pages/projects/", pagesOrigin); // FIX: use pagesOrigin, not url
 		} else {
-			// No valid return URL - use default on Pages origin
-			console.warn("[mural.callback] No valid return URL, using default");
-			redirectTo = new URL("/pages/projects/", PAGES_ORIGIN);
+			// Relative URL: use PAGES_ORIGIN as base
+			backUrl = new URL(want, pagesOrigin); // FIX: use pagesOrigin, not url
 		}
 
-		// Add success parameter
-		redirectTo.searchParams.set("mural", "connected");
+		// Append mural=connected param
+		const sp = new URLSearchParams(backUrl.search);
+		sp.set("mural", "connected");
+		backUrl.search = sp.toString();
 
-		const finalRedirectUrl = redirectTo.toString();
-		console.log("[mural.callback] Final redirect URL:", finalRedirectUrl);
+		const finalUrl = backUrl.toString();
+		console.log('[muralCallback] Final redirect URL:', finalUrl);
 
-		return Response.redirect(finalRedirectUrl, 302);
+		return Response.redirect(finalUrl, 302);
 	}
 
 	async muralVerify(origin, url) {
