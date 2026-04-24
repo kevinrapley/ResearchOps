@@ -1,14 +1,16 @@
 /**
  * @file worker.js
  * @summary Cloudflare Worker entrypoint with hard Response guard + uniform CORS.
- * @version 2.1.0
+ * @version 2.2.0
  *
  * - Preserves Response coercion to avoid 1101 errors.
  * - Adds ALLOWED_ORIGINS-based CORS to all responses (success + errors).
  * - Handles OPTIONS preflight centrally.
+ * - Routes GET /api/projects through the composed Projects service contract.
  */
 
 import { handleRequest } from "./core/router.js";
+import { ResearchOpsService } from "./service/index.js";
 
 /** Coerce any value to a Response object. */
 function coerceResponse(res) {
@@ -75,10 +77,35 @@ function withCORS(env, request, response) {
   }
 }
 
+function normaliseApiPath(pathname) {
+  let path = pathname || "/";
+  path = path.replace(/\/{2,}/g, "/");
+  if (path.startsWith("/api/") && path.endsWith("/") && path !== "/api/") {
+    path = path.slice(0, -1);
+  }
+  return path;
+}
+
+function envCompat(env) {
+  const allowed = Array.isArray(env.ALLOWED_ORIGINS) ? env.ALLOWED_ORIGINS.join(",") : String(env.ALLOWED_ORIGINS || "");
+  return {
+    ...env,
+    ALLOWED_ORIGINS: allowed
+  };
+}
+
+async function handleCanonicalProjectsRoute(request, env) {
+  const url = new URL(request.url);
+  const origin = request.headers.get("Origin") || "";
+  const service = new ResearchOpsService(envCompat(env));
+  return service.listProjectsFromAirtable(origin, url);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const { method, url } = request;
     const pathname = new URL(url).pathname;
+    const apiPath = normaliseApiPath(pathname);
 
     // Centralised preflight
     if (method === "OPTIONS") {
@@ -87,6 +114,16 @@ export default {
 
     try {
       console.log("[worker] Handling:", method, pathname);
+
+      if (method === "GET" && apiPath === "/api/projects") {
+        console.log("[worker] Routing /api/projects through ResearchOpsService");
+        const result = await handleCanonicalProjectsRoute(request, env);
+        const coerced = coerceResponse(result);
+        const finalRes = withCORS(env, request, coerced);
+        console.log("[worker] Response status:", finalRes.status);
+        return finalRes;
+      }
+
       const result = await handleRequest(request, env, ctx);
       const coerced = coerceResponse(result);
       const finalRes = withCORS(env, request, coerced);
