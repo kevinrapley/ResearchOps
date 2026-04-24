@@ -49,6 +49,16 @@ function widgetText(widget) {
 	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || "");
 }
 
+function widgetMetadataText(widget) {
+	return [
+		widget?.title,
+		widget?.name,
+		widget?.instruction,
+		widget?.hyperlinkTitle,
+		widget?.presentationTitle
+	].map(safeText).filter(Boolean).join(" ").toLowerCase();
+}
+
 function numeric(value, fallback = 0) {
 	const n = Number(value);
 	return Number.isFinite(n) ? n : fallback;
@@ -59,6 +69,13 @@ function firstMuralValue(body) {
 	if (body?.value) return body.value;
 	if (Array.isArray(body)) return body[0] || null;
 	return body || null;
+}
+
+function muralErrorSummary(error) {
+	const body = error?.body || error?.secondError || error?.firstError || null;
+	if (!body) return String(error?.message || error);
+	if (typeof body === "string") return body;
+	return safeText(body.message || body.code || body.error || JSON.stringify(body));
 }
 
 function normalizeWidget(widget) {
@@ -94,7 +111,8 @@ function entrySyncTag(entryId) {
 
 function widgetHasEntryTag(widget, entryId) {
 	const tag = entrySyncTag(entryId).toLowerCase();
-	return !!tag && tagKeys(widget).includes(tag);
+	if (!tag) return false;
+	return tagKeys(widget).includes(tag) || widgetMetadataText(widget).includes(tag);
 }
 
 function widgetMatchesCategory(widget, categoryKey) {
@@ -158,7 +176,7 @@ function dedupeTags(tags) {
 	return out;
 }
 
-function createStickyPayload({ text, tags, placement }) {
+function createStickyPayload({ text, tags, placement, syncTag }) {
 	return {
 		x: placement.x,
 		y: placement.y,
@@ -166,6 +184,7 @@ function createStickyPayload({ text, tags, placement }) {
 		height: placement.height,
 		shape: "rectangle",
 		text,
+		title: syncTag,
 		tags,
 		style: {
 			backgroundColor: "#FFFFFFFF",
@@ -175,8 +194,17 @@ function createStickyPayload({ text, tags, placement }) {
 	};
 }
 
-async function createStickyNote(env, accessToken, muralId, payload) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note`;
+function minimalStickyPayload(payload) {
+	return {
+		x: payload.x,
+		y: payload.y,
+		shape: "rectangle",
+		text: payload.text,
+		title: payload.title
+	};
+}
+
+async function postStickyPayload(accessToken, url, body) {
 	const res = await fetch(url, {
 		method: "POST",
 		headers: {
@@ -184,16 +212,41 @@ async function createStickyNote(env, accessToken, muralId, payload) {
 			"Content-Type": "application/json",
 			Accept: "application/json"
 		},
-		body: JSON.stringify(payload)
+		body: JSON.stringify(body)
 	});
-	const body = await res.json().catch(() => ({}));
+	const responseBody = await res.json().catch(() => ({}));
 	if (!res.ok) {
 		throw Object.assign(new Error(`Create Mural sticky note failed: ${res.status}`), {
 			status: res.status,
-			body
+			body: responseBody
 		});
 	}
-	return firstMuralValue(body);
+	return firstMuralValue(responseBody);
+}
+
+async function createStickyNote(env, accessToken, muralId, payload) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note`;
+	const attempts = [
+		{ name: "full", body: payload },
+		{ name: "minimal", body: minimalStickyPayload(payload) },
+		{ name: "minimal-array", body: [minimalStickyPayload(payload)] }
+	];
+	const errors = [];
+
+	for (const attempt of attempts) {
+		try {
+			const created = await postStickyPayload(accessToken, url, attempt.body);
+			return created || { ...minimalStickyPayload(payload), tags: payload.tags };
+		} catch (err) {
+			errors.push({ attempt: attempt.name, status: err?.status, summary: muralErrorSummary(err) });
+		}
+	}
+
+	const last = errors[errors.length - 1] || {};
+	throw Object.assign(new Error(`Create Mural sticky note failed after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
+		status: last.status || 400,
+		errors
+	});
 }
 
 async function patchStickyNote(env, accessToken, muralId, widgetId, patch) {
@@ -218,20 +271,32 @@ async function patchStickyNote(env, accessToken, muralId, widgetId, patch) {
 }
 
 async function updateStickyTextAndTags(env, accessToken, muralId, widgetId, patch) {
-	try {
-		return await patchStickyNote(env, accessToken, muralId, widgetId, patch);
-	} catch (firstError) {
+	const minimalPatch = {
+		text: patch.text,
+		title: patch.title
+	};
+	const attempts = [
+		() => patchStickyNote(env, accessToken, muralId, widgetId, patch),
+		() => patchStickyNote(env, accessToken, muralId, widgetId, minimalPatch),
+		() => updateSticky(env, accessToken, muralId, widgetId, patch),
+		() => updateSticky(env, accessToken, muralId, widgetId, minimalPatch)
+	];
+	const errors = [];
+
+	for (const attempt of attempts) {
 		try {
-			const updated = await updateSticky(env, accessToken, muralId, widgetId, patch);
+			const updated = await attempt();
 			return firstMuralValue(updated) || { id: widgetId, ...patch };
-		} catch (secondError) {
-			throw Object.assign(new Error(`Could not update placeholder sticky: ${String(secondError?.message || firstError?.message || secondError)}`), {
-				status: secondError?.status || firstError?.status,
-				firstError: firstError?.body || firstError?.message,
-				secondError: secondError?.body || secondError?.message
-			});
+		} catch (err) {
+			errors.push({ status: err?.status, summary: muralErrorSummary(err) });
 		}
 	}
+
+	const last = errors[errors.length - 1] || {};
+	throw Object.assign(new Error(`Could not update placeholder sticky after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
+		status: last.status || 400,
+		errors
+	});
 }
 
 function updateWidgetInPlace(widgets, widgetId, patch) {
@@ -401,8 +466,8 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 	const text = payload.description;
 
 	if (anchor.id && isTemplatePlaceholder(anchor)) {
-		const widget = await updateStickyTextAndTags(svc.env, accessToken, board.muralId, anchor.id, { text, tags });
-		updateWidgetInPlace(widgets, anchor.id, { text, tags });
+		const widget = await updateStickyTextAndTags(svc.env, accessToken, board.muralId, anchor.id, { text, title: syncTag, tags });
+		updateWidgetInPlace(widgets, anchor.id, { text, title: syncTag, tags });
 		return {
 			ok: true,
 			action: "updated-template-sticky",
@@ -417,12 +482,13 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		svc.env,
 		accessToken,
 		board.muralId,
-		createStickyPayload({ text, tags, placement })
+		createStickyPayload({ text, tags, placement, syncTag })
 	);
 	const widget = pushCreatedWidget(widgets, created, {
 		id: created?.id,
 		type: "sticky-note",
 		text,
+		title: syncTag,
 		tags,
 		...placement
 	});
@@ -556,7 +622,8 @@ async function handleHydrate(svc, origin, body) {
 				entryId: payload.entryId,
 				category: payload.categoryKey,
 				detail: String(err?.message || err),
-				status: err?.status || undefined
+				status: err?.status || undefined,
+				errors: err?.errors || undefined
 			});
 		}
 	}
@@ -626,7 +693,8 @@ async function handleEntrySync(svc, origin, body) {
 			ok: false,
 			error: "mural_journal_sync_failed",
 			detail: String(err?.message || err),
-			status: status || undefined
+			status: status || undefined,
+			errors: err?.errors || undefined
 		}, status >= 400 && status < 600 ? status : 500, svc.corsHeaders(origin));
 	}
 }

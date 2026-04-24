@@ -27,7 +27,11 @@ includes(serviceSource, "createdOrUpdated", "service");
 includes(serviceSource, "function patchStickyNote", "service");
 includes(serviceSource, "function updateStickyTextAndTags", "service");
 includes(serviceSource, "function hydrateReason", "service");
-includes(serviceSource, "skipped,", "service");
+includes(serviceSource, "function minimalStickyPayload", "service");
+includes(serviceSource, "minimal-array", "service");
+includes(serviceSource, "widgetMetadataText", "service");
+includes(serviceSource, "title: syncTag", "service");
+includes(serviceSource, "errors: err?.errors", "service");
 includes(serviceSource, "reason: hydrateReason", "service");
 
 includes(indexSource, "MuralJournalSync", "service index");
