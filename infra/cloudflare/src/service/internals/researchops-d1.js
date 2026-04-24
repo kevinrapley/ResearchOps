@@ -222,6 +222,81 @@ export async function d1ListJournalEntriesByLocalProject(env, localProjectId) {
 	});
 }
 
+/**
+ * Fetch one journal entry by record_id.
+ *
+ * @param {any} env
+ * @param {string} recordId
+ */
+export async function d1GetJournalEntryById(env, recordId) {
+	if (!recordId) return null;
+	return d1Get(env, `
+		SELECT
+			record_id,
+			project,
+			category,
+			content,
+			tags,
+			createdat,
+			local_project_id
+		FROM journal_entries
+		WHERE record_id = ?
+		LIMIT 1
+	`, [String(recordId)]);
+}
+
+/**
+ * Patch a journal entry by record_id.
+ *
+ * @param {any} env
+ * @param {string} recordId
+ * @param {{ category?: string, content?: string, tags?: string[] | string | null }} patch
+ */
+export async function d1UpdateJournalEntry(env, recordId, patch = {}) {
+	if (!recordId) return null;
+
+	const sets = [];
+	const params = [];
+
+	if (typeof patch.category === "string") {
+		sets.push("category = ?");
+		params.push(patch.category);
+	}
+
+	if (typeof patch.content === "string") {
+		sets.push("content = ?");
+		params.push(patch.content);
+	}
+
+	if (patch.tags !== undefined) {
+		sets.push("tags = ?");
+		params.push(Array.isArray(patch.tags) ? JSON.stringify(patch.tags) : String(patch.tags || ""));
+	}
+
+	if (!sets.length) return null;
+
+	params.push(String(recordId));
+	return d1Run(env, `
+		UPDATE journal_entries
+		SET ${sets.join(", ")}
+		WHERE record_id = ?
+	`, params);
+}
+
+/**
+ * Delete a journal entry by record_id.
+ *
+ * @param {any} env
+ * @param {string} recordId
+ */
+export async function d1DeleteJournalEntry(env, recordId) {
+	if (!recordId) return null;
+	return d1Run(env, `
+		DELETE FROM journal_entries
+		WHERE record_id = ?
+	`, [String(recordId)]);
+}
+
 /* ─────────────────────── mural boards helpers ─────────────────────── */
 
 /**
