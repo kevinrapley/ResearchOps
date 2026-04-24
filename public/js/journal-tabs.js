@@ -13,6 +13,18 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 /* eslint-env browser */
 (function() {
+	const API_ORIGIN =
+		document.documentElement?.dataset?.apiOrigin ||
+		window.API_ORIGIN ||
+		(location.hostname.endsWith('pages.dev') ?
+			'https://rops-api.digikev-kevin-rapley.workers.dev' :
+			location.origin);
+
+	function apiUrl(path) {
+		const p = String(path || '');
+		return `${API_ORIGIN}${p.startsWith('/') ? p : '/' + p}`;
+	}
+
 	// ---------- tiny helpers ----------
 	function $(s, r) { if (!r) r = document; return r.querySelector(s); }
 
@@ -121,7 +133,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				tags: Array.isArray(newEntry?.tags) ? newEntry.tags : []
 			};
 
-			const res = await fetch('/api/mural/journal-sync', {
+			const res = await fetch(apiUrl('/api/mural/journal-sync'), {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify(payload)
@@ -159,7 +171,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	// ---------- JOURNAL ----------
 	function loadEntries() {
 		if (!state.projectId) return Promise.resolve();
-		return fetchJSON('/api/journal-entries?project=' + encodeURIComponent(state.projectId))
+		return fetchJSON(apiUrl('/api/journal-entries?project=' + encodeURIComponent(state.projectId)))
 			.then(data => {
 				const arr = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
 				state.entries = arr.map(e => {
@@ -226,7 +238,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	function onDeleteEntry(e) {
 		const id = e.currentTarget?.getAttribute('data-id');
 		if (!id || !confirm('Delete this entry?')) return;
-		fetchJSON('/api/journal-entries/' + encodeURIComponent(id), { method: 'DELETE' })
+		fetchJSON(apiUrl('/api/journal-entries/' + encodeURIComponent(id)), { method: 'DELETE' })
 			.then(() => {
 				flash('Entry deleted.');
 				loadEntries();
@@ -283,7 +295,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			};
 
 			try {
-				const createdRes = await fetchJSON('/api/journal-entries', {
+				await fetchJSON(apiUrl('/api/journal-entries'), {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify(body)
