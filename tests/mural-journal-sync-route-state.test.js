@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync.js", "utf8");
+const layoutSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync-layout.js", "utf8");
 const safeTagsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync-safe-tags.js", "utf8");
 const indexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const journalTabsSource = fs.readFileSync("public/js/journal-tabs.js", "utf8");
@@ -44,7 +45,20 @@ includes(serviceSource, "tags: patch.tags", "service");
 includes(serviceSource, "errors: err?.errors", "service");
 includes(serviceSource, "reason: hydrateReason", "service");
 
-includes(safeTagsSource, "import * as BaseMuralJournalSync from \"./mural-journal-sync.js\";", "safe tags");
+includes(layoutSource, "export async function muralJournalSync", "layout service");
+includes(layoutSource, "function categoryHeaderWidget", "layout service");
+includes(layoutSource, "function columnTemplateWidget", "layout service");
+includes(layoutSource, "function columnLayout", "layout service");
+includes(layoutSource, "function widgetMatchesColumnLayout", "layout service");
+includes(layoutSource, "for (const category of CATEGORY_KEYS)", "layout service");
+includes(layoutSource, "placementBelow", "layout service");
+includes(layoutSource, "updated-template-widget", "layout service");
+includes(layoutSource, "created-template-sticky", "layout service");
+includes(layoutSource, "widgets/sticky-note", "layout service");
+includes(layoutSource, "tagsForEntry", "layout service");
+includes(layoutSource, "userFacingTags", "layout service");
+
+includes(safeTagsSource, "import * as BaseMuralJournalSync from \"./mural-journal-sync-layout.js\";", "safe tags");
 includes(safeTagsSource, "import { createRecords } from \"./internals/airtable.js\";", "safe tags");
 includes(safeTagsSource, "import { d1All, d1Run } from \"./internals/researchops-d1.js\";", "safe tags");
 includes(safeTagsSource, "const SYSTEM_TAG_RE = /^journal-entry:/i;", "safe tags");
@@ -96,6 +110,7 @@ excludes(serviceSource, "https://app.mural.co/api/public/v1/murals/${muralId}/wi
 excludes(serviceSource, "created-template-widget", "service");
 excludes(serviceSource, "updated-template-sticky", "service");
 excludes(serviceSource, "created-sticky", "service");
+excludes(layoutSource, "created-template-widget", "layout service");
 excludes(safeTagsSource, "tags: [...", "safe tags");
 excludes(compactSource, "Sync ${pending}", "compact script");
 excludes(compactSource, "Sync pending entries", "compact script");
