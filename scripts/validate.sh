@@ -38,6 +38,7 @@ require_file "tests/journal-tabs-api-origin-route-state.test.js"
 require_file "tests/journal-tabs-filter-state-route-state.test.js"
 require_file "tests/journal-tabs-resilience-route-state.test.js"
 require_file "tests/journal-secondary-actions-route-state.test.js"
+require_file "tests/mural-journal-sync-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -157,5 +158,8 @@ node tests/journal-tabs-resilience-route-state.test.js
 
 info "checking Journal secondary actions route-state contract"
 node tests/journal-secondary-actions-route-state.test.js
+
+info "checking Mural journal sync route-state contract"
+node tests/mural-journal-sync-route-state.test.js
 
 info "validation passed"
