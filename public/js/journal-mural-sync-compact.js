@@ -106,14 +106,24 @@
 		try {
 			const result = await postJson('hydrate');
 			const after = result.after || {};
-			const pending = Number(after.pending || 0);
-			const synced = Number(after.synced || 0);
-			const total = Number(after.total || 0);
+			const pending = Number(after.pending || result.pending || 0);
+			const synced = Number(after.synced || result.synced || 0);
+			const total = Number(after.total || result.total || 0);
 			const changed = Number(result.createdOrUpdated || 0);
+			const failed = Number(result.failed || 0);
+			const skipped = Number(result.skipped || 0);
+
+			if (pending && !changed) {
+				const reason = result.reason || (failed ? `${failed} ${failed === 1 ? 'entry could' : 'entries could'} not be added.` : `${skipped} ${skipped === 1 ? 'entry was' : 'entries were'} skipped.`);
+				setStatus('Not added', `${reason} ${statusMessage(pending, synced, total)}`, pending, false);
+				return;
+			}
+
 			const added = `${changed} ${changed === 1 ? 'entry was' : 'entries were'} added to Mural.`;
 			setStatus(pending ? 'Action needed' : 'Up to date', `${added} ${statusMessage(pending, synced, total)}`, pending, false);
 		} catch {
-			setStatus('Not added', 'could not add entries to Mural. Entries remain saved in ResearchOps.', 0, false);
+			const pending = Number(lastStatus?.pending || 0);
+			setStatus('Not added', 'could not add entries to Mural. Entries remain saved in ResearchOps.', pending, false);
 		}
 	}
 
