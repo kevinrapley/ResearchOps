@@ -39,6 +39,7 @@ eslint.config.js
 
 # Route-contract regression tests use explicit assertion layout.
 tests/projects-route-contract.test.js
+tests/mural-ui-route-state.test.js
 
 # Build / test artifacts
 .lighthouseci/
