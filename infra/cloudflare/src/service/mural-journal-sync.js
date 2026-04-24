@@ -12,14 +12,23 @@ import {
 } from "../lib/mural.js";
 
 const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections"];
-const DEFAULT_WIDTH = 520;
-const DEFAULT_HEIGHT = 260;
+const DEFAULT_WIDTH = 260;
+const DEFAULT_HEIGHT = 160;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 const TEMPLATE_PLACEHOLDER_RE = /This is a .*sticky note that will contain|Further .*entries will appear|single .*from the Research Operations app|Research Operations app/i;
 
 function safeText(value) {
 	return String(value || "").trim();
+}
+
+function categoryLabel(categoryKey) {
+	return {
+		perceptions: "perceptions",
+		procedures: "procedures",
+		decisions: "decisions",
+		introspections: "introspections"
+	}[categoryKey] || categoryKey;
 }
 
 function normalizeCategoryKey(value) {
@@ -62,6 +71,10 @@ function widgetMetadataText(widget) {
 function numeric(value, fallback = 0) {
 	const n = Number(value);
 	return Number.isFinite(n) ? n : fallback;
+}
+
+function rounded(value, fallback = 0) {
+	return Math.round(numeric(value, fallback));
 }
 
 function firstMuralValue(body) {
@@ -123,29 +136,74 @@ function widgetMatchesCategory(widget, categoryKey) {
 	const tags = tagKeys(widget);
 	const text = widgetText(widget).toLowerCase();
 	const meta = widgetMetadataText(widget);
-	return tags.includes(categoryKey) || meta.includes(categoryKey) || text.startsWith(`[${categoryKey}]`) || text.includes(`${categoryKey} sticky note`);
+	return tags.includes(categoryKey) || meta.includes(categoryKey) || text === categoryKey || text.includes(`${categoryKey} sticky note`);
 }
 
-function widgetIsSyncedEntry(widget, entryId, categoryKey) {
-	return widgetHasEntryTag(widget, entryId) && widgetMatchesCategory(widget, categoryKey);
+function isColumnHeader(widget, categoryKey) {
+	const text = widgetText(widget).toLowerCase();
+	const meta = widgetMetadataText(widget);
+	const label = categoryLabel(categoryKey);
+	return text === label || meta === label || (text.includes(label) && numeric(widget.width) > numeric(widget.height) * 1.6);
 }
 
-function categoryWidgets(widgets, categoryKey) {
+function categoryHeaderWidget(widgets, categoryKey) {
+	const label = categoryLabel(categoryKey);
 	return widgets
-		.filter(widget => widgetMatchesCategory(widget, categoryKey))
+		.filter(widget => {
+			const text = widgetText(widget).toLowerCase();
+			const meta = widgetMetadataText(widget);
+			return (text === label || meta === label) && numeric(widget.width) > numeric(widget.height);
+		})
+		.sort((a, b) => numeric(a.y) - numeric(b.y))[0] || null;
+}
+
+function horizontalCentre(widget) {
+	return numeric(widget.x) + numeric(widget.width) / 2;
+}
+
+function isUnderHeader(widget, header) {
+	if (!header) return true;
+	const headerCentre = horizontalCentre(header);
+	const widgetCentre = horizontalCentre(widget);
+	const horizontalTolerance = Math.max(numeric(header.width, DEFAULT_WIDTH) * 0.75, 80);
+	return numeric(widget.y) > numeric(header.y) + Math.max(8, numeric(header.height) * 0.5) && Math.abs(widgetCentre - headerCentre) <= horizontalTolerance;
+}
+
+function candidateTemplateWidgets(widgets, categoryKey) {
+	const header = categoryHeaderWidget(widgets, categoryKey);
+	const taggedCandidates = widgets.filter(widget => {
+		if (widgetHasAnyEntryTag(widget)) return false;
+		if (isColumnHeader(widget, categoryKey)) return false;
+		if (!widgetMatchesCategory(widget, categoryKey)) return false;
+		if (!isTemplatePlaceholder(widget)) return false;
+		return isUnderHeader(widget, header);
+	});
+
+	if (taggedCandidates.length) {
+		return taggedCandidates.sort((a, b) => {
+			const ay = Math.abs(numeric(a.y) - numeric(header?.y, a.y));
+			const by = Math.abs(numeric(b.y) - numeric(header?.y, b.y));
+			return ay - by || numeric(a.x) - numeric(b.x);
+		});
+	}
+
+	return widgets
+		.filter(widget => {
+			if (isColumnHeader(widget, categoryKey)) return false;
+			if (!widgetMatchesCategory(widget, categoryKey)) return false;
+			return isUnderHeader(widget, header);
+		})
 		.sort((a, b) => numeric(a.y) - numeric(b.y));
 }
 
-function categorySeedWidget(widgets, categoryKey) {
-	const matches = categoryWidgets(widgets, categoryKey);
-	const placeholders = matches.filter(widget => !widgetHasAnyEntryTag(widget) && isTemplatePlaceholder(widget));
-	if (placeholders.length) return placeholders[0];
-	return matches[0] || null;
+function categoryTemplateWidget(widgets, categoryKey) {
+	return candidateTemplateWidgets(widgets, categoryKey)[0] || virtualAnchorFromHeader(widgets, categoryKey);
 }
 
-function latestSyncedCategoryWidget(widgets, categoryKey) {
-	const synced = categoryWidgets(widgets, categoryKey).filter(widget => widgetHasAnyEntryTag(widget));
-	return synced.length ? synced.sort((a, b) => numeric(b.y) - numeric(a.y))[0] : null;
+function latestCanonicalCategoryWidget(widgets, categoryKey, template) {
+	return widgets
+		.filter(widget => widgetHasAnyEntryTag(widget) && widgetMatchesCategory(widget, categoryKey) && widgetMatchesTemplateGeometry(widget, template))
+		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
 
 function columnHeaderWidgets(widgets, categoryKey) {
@@ -173,13 +231,21 @@ function virtualAnchorFromHeader(widgets, categoryKey) {
 	};
 }
 
-function placementBelow(anchor, latest) {
-	const from = latest || anchor;
+function widgetMatchesTemplateGeometry(widget, template) {
+	if (!template) return true;
+	const widthDiff = Math.abs(numeric(widget.width, DEFAULT_WIDTH) - numeric(template.width, DEFAULT_WIDTH));
+	const heightDiff = Math.abs(numeric(widget.height, DEFAULT_HEIGHT) - numeric(template.height, DEFAULT_HEIGHT));
+	const xDiff = Math.abs(numeric(widget.x, 0) - numeric(template.x, 0));
+	return widthDiff <= 4 && heightDiff <= 4 && xDiff <= 4;
+}
+
+function placementBelow(template, latest) {
+	const from = latest || template;
 	return {
-		x: numeric(anchor?.x, 0),
-		y: numeric(from?.y, numeric(anchor?.y, 0)) + numeric(from?.height, DEFAULT_HEIGHT) + GRID_GAP,
-		width: numeric(anchor?.width, DEFAULT_WIDTH),
-		height: numeric(anchor?.height, DEFAULT_HEIGHT)
+		x: rounded(template?.x, 0),
+		y: rounded(numeric(from?.y, numeric(template?.y, 0)) + numeric(from?.height, DEFAULT_HEIGHT) + GRID_GAP),
+		width: rounded(template?.width, DEFAULT_WIDTH),
+		height: rounded(template?.height, DEFAULT_HEIGHT)
 	};
 }
 
@@ -195,11 +261,17 @@ function dedupeTags(tags) {
 	return out;
 }
 
+function tagsForEntry(template, payload, syncTag) {
+	const templateTags = normalizeTags(template?.tags);
+	const fallbackTags = templateTags.length ? templateTags : [payload.categoryKey, payload.projectName];
+	return dedupeTags([...fallbackTags, syncTag, ...payload.tags]);
+}
+
 function stickyStyleFromTemplate(template) {
 	const source = template?.style || {};
 	const style = {
 		backgroundColor: safeText(source.backgroundColor || template?.backgroundColor || "#FFFFFFFF") || "#FFFFFFFF",
-		fontSize: numeric(source.fontSize ?? template?.fontSize, 23),
+		fontSize: rounded(source.fontSize ?? template?.fontSize, 23),
 		textAlign: safeText(source.textAlign || template?.textAlign || "left") || "left"
 	};
 
@@ -228,7 +300,7 @@ function stickyPayloadFromTemplate(template, { text, tags, placement, syncTitle 
 
 	if (template?.rotation !== undefined) payload.rotation = numeric(template.rotation, 0);
 	if (template?.parentId) payload.parentId = template.parentId;
-	if (template?.stackingOrder !== undefined) payload.stackingOrder = numeric(template.stackingOrder, 1);
+	if (template?.stackingOrder !== undefined) payload.stackingOrder = rounded(template.stackingOrder, 1);
 
 	return payload;
 }
@@ -242,6 +314,7 @@ function minimalStickyPayload(payload) {
 		shape: payload.shape || "rectangle",
 		text: payload.text,
 		title: payload.title,
+		tags: payload.tags,
 		style: {
 			backgroundColor: payload.style?.backgroundColor || "#FFFFFFFF",
 			fontSize: payload.style?.fontSize || 23,
@@ -331,6 +404,7 @@ async function updateTemplateWidget(env, accessToken, muralId, widgetId, patch) 
 	const minimalPatch = {
 		text: patch.text,
 		title: patch.title,
+		tags: patch.tags,
 		style: {
 			backgroundColor: patch.style?.backgroundColor || "#FFFFFFFF",
 			fontSize: patch.style?.fontSize || 23,
@@ -480,6 +554,14 @@ function sortedEntries(entries) {
 	});
 }
 
+function canonicalExistingWidget(widgets, payload, template) {
+	return widgets.find(widget => {
+		return widgetHasEntryTag(widget, payload.entryId) &&
+			widgetMatchesCategory(widget, payload.categoryKey) &&
+			widgetMatchesTemplateGeometry(widget, template);
+	});
+}
+
 async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 	if (!payload.entryId || !payload.categoryKey || !payload.description) {
 		return {
@@ -501,7 +583,18 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		};
 	}
 
-	const existing = widgets.find(widget => widgetIsSyncedEntry(widget, payload.entryId, payload.categoryKey));
+	const template = categoryTemplateWidget(widgets, payload.categoryKey);
+	if (!template) {
+		return {
+			ok: false,
+			action: "category-column-not-found",
+			entryId: payload.entryId,
+			category: payload.categoryKey,
+			detail: `No ${payload.categoryKey} template widget or heading was found on the Mural board.`
+		};
+	}
+
+	const existing = canonicalExistingWidget(widgets, payload, template);
 	if (existing) {
 		return {
 			ok: true,
@@ -512,43 +605,32 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		};
 	}
 
-	const seed = categorySeedWidget(widgets, payload.categoryKey) || virtualAnchorFromHeader(widgets, payload.categoryKey);
-	if (!seed) {
-		return {
-			ok: false,
-			action: "category-column-not-found",
-			entryId: payload.entryId,
-			category: payload.categoryKey,
-			detail: `No ${payload.categoryKey} template widget or heading was found on the Mural board.`
-		};
-	}
-
 	const syncTag = entrySyncTag(payload.entryId);
 	const syncTitle = entrySyncTitle(payload.categoryKey, payload.entryId);
-	const tags = dedupeTags([payload.categoryKey, payload.projectName, syncTag, ...payload.tags]);
+	const tags = tagsForEntry(template, payload, syncTag);
 	const text = payload.description;
 
-	if (seed.id && !widgetHasAnyEntryTag(seed) && isTemplatePlaceholder(seed)) {
-		const patch = patchPayloadFromTemplate(seed, { text, syncTitle, tags });
-		const widget = await updateTemplateWidget(svc.env, accessToken, board.muralId, seed.id, patch);
-		updateWidgetInPlace(widgets, seed.id, patch);
+	if (template.id && !widgetHasAnyEntryTag(template) && isTemplatePlaceholder(template)) {
+		const patch = patchPayloadFromTemplate(template, { text, syncTitle, tags });
+		const widget = await updateTemplateWidget(svc.env, accessToken, board.muralId, template.id, patch);
+		updateWidgetInPlace(widgets, template.id, patch);
 		return {
 			ok: true,
 			action: "updated-template-widget",
 			entryId: payload.entryId,
 			category: payload.categoryKey,
-			widgetId: widget?.id || widget?.value?.id || seed.id
+			widgetId: widget?.id || widget?.value?.id || template.id
 		};
 	}
 
-	const latest = latestSyncedCategoryWidget(widgets, payload.categoryKey);
-	const placement = placementBelow(seed, latest);
+	const latest = latestCanonicalCategoryWidget(widgets, payload.categoryKey, template);
+	const placement = placementBelow(template, latest);
 	const templatePayload = { text, tags, placement, syncTitle };
 	const created = await createStickyFromTemplate(
 		svc.env,
 		accessToken,
 		board.muralId,
-		seed,
+		template,
 		templatePayload
 	);
 	const widget = pushCreatedWidget(widgets, created, {
@@ -557,8 +639,8 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		text,
 		title: syncTitle,
 		tags,
-		style: stickyStyleFromTemplate(seed),
-		shape: seed?.shape || "rectangle",
+		style: stickyStyleFromTemplate(template),
+		shape: template?.shape || "rectangle",
 		...placement
 	});
 
@@ -574,10 +656,16 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 function statusFromEntriesAndWidgets(entries, widgets) {
 	const validEntries = entries.filter(entry => safeText(entry.id));
 	const syncedEntryIds = new Set();
+	const templates = Object.fromEntries(CATEGORY_KEYS.map(category => [category, categoryTemplateWidget(widgets, category)]));
 
 	for (const entry of validEntries) {
 		const category = normalizeCategoryKey(entry.category);
-		if (widgets.some(widget => widgetIsSyncedEntry(widget, entry.id, category))) {
+		const template = templates[category];
+		if (widgets.some(widget => {
+			return widgetHasEntryTag(widget, entry.id) &&
+				widgetMatchesCategory(widget, category) &&
+				widgetMatchesTemplateGeometry(widget, template);
+		})) {
 			syncedEntryIds.add(String(entry.id));
 		}
 	}
