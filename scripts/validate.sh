@@ -55,7 +55,9 @@ NODE
 
 info "checking JSON files"
 while IFS= read -r -d '' file; do
-	node -e "JSON.parse(require('node:fs').readFileSync(process.argv[1], 'utf8'))" "$file"
+	if ! node -e "JSON.parse(require('node:fs').readFileSync(process.argv[1], 'utf8'))" "$file"; then
+		fail "invalid JSON: $file"
+	fi
 done < <(find . \
 	-path './node_modules' -prune -o \
 	-path './.git' -prune -o \
@@ -65,7 +67,9 @@ done < <(find . \
 
 info "checking JavaScript syntax"
 while IFS= read -r -d '' file; do
-	node --check "$file" >/dev/null
+	if ! node --check "$file" >/dev/null; then
+		fail "invalid JavaScript syntax: $file"
+	fi
 done < <(find . \
 	-path './node_modules' -prune -o \
 	-path './.git' -prune -o \
