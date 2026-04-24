@@ -73,6 +73,11 @@ function muralIdFromUrl(url) {
 	return match ? decodeURIComponent(match[1]) : "";
 }
 
+function widgetIdFromUrl(url) {
+	const match = String(url || "").match(/\/widgets\/(?:sticky-note\/)?([^/?#]+)/);
+	return match ? decodeURIComponent(match[1]) : "";
+}
+
 function isMuralWidgetWrite(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
 	return (method === "POST" || method === "PATCH") && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\/|$)/.test(String(url || ""));
@@ -81,6 +86,10 @@ function isMuralWidgetWrite(url, init) {
 function isMuralWidgetsRead(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
 	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\?|$)/.test(String(url || ""));
+}
+
+function isPatchRequest(init) {
+	return String(init?.method || "GET").toUpperCase() === "PATCH";
 }
 
 async function bodyAsJson(body) {
@@ -296,6 +305,13 @@ async function responseMentionsMissingTag(response) {
 	return text.includes("specified tag does not exist") || text.includes("tag does not exist");
 }
 
+async function responseMentionsWrongWidgetType(response) {
+	if (!response || response.ok || response.status !== 400) return false;
+	const body = await response.clone().json().catch(() => ({}));
+	const text = JSON.stringify(body).toLowerCase();
+	return text.includes("operation cannot be performed on this widget type");
+}
+
 function removeUnsupportedFields(body) {
 	if (Array.isArray(body)) return body.map(item => removeUnsupportedFields(item));
 	if (body && typeof body === "object") {
@@ -335,6 +351,84 @@ function tagsFromBody(body) {
 	return normalizeTags(body?.tags);
 }
 
+function widgetsFromBody(body) {
+	if (Array.isArray(body?.value)) return body.value;
+	if (Array.isArray(body?.widgets)) return body.widgets;
+	if (Array.isArray(body)) return body;
+	return [];
+}
+
+function widgetById(widgetCache, muralId, widgetId) {
+	const widgets = widgetCache.get(muralId) || [];
+	return widgets.find(widget => safeText(widget?.id) === safeText(widgetId)) || null;
+}
+
+function numberValue(value, fallback) {
+	const n = Number(value);
+	return Number.isFinite(n) ? n : fallback;
+}
+
+function replacementTextFromBody(body) {
+	if (!body || typeof body !== "object") return "";
+	return safeText(body.htmlText || body.text || body.content || "");
+}
+
+function replacementStyleFromWidget(widget) {
+	const style = widget?.style || {};
+	const backgroundColor = safeText(style.backgroundColor || widget?.backgroundColor || "#FFFFFFFF") || "#FFFFFFFF";
+	return {
+		backgroundColor,
+		fontSize: numberValue(style.fontSize ?? widget?.fontSize, 23),
+		textAlign: safeText(style.textAlign || widget?.textAlign || "left") || "left"
+	};
+}
+
+function replacementStickyBody(sourceWidget, requestedBody, tags) {
+	const geometry = sourceWidget?.geometry || sourceWidget?.bounds || {};
+	const text = replacementTextFromBody(requestedBody);
+	const body = {
+		x: numberValue(sourceWidget?.x ?? geometry.x, 0),
+		y: numberValue(sourceWidget?.y ?? geometry.y, 0),
+		width: numberValue(sourceWidget?.width ?? geometry.width, 260),
+		height: numberValue(sourceWidget?.height ?? geometry.height, 160),
+		shape: "rectangle",
+		text,
+		style: replacementStyleFromWidget(sourceWidget),
+		stackingOrder: numberValue(sourceWidget?.stackingOrder, 1) + 1
+	};
+	if (tags.length) body.tags = tags;
+	return body;
+}
+
+async function createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, requestedBody, tags) {
+	const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(replacementStickyBody(sourceWidget, requestedBody, tags))
+	});
+	return res;
+}
+
+async function fallbackToReplacementSticky({ originalFetch, input, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
+	if (!isPatchRequest(init)) return firstResponse;
+	if (!(await responseMentionsWrongWidgetType(firstResponse))) return firstResponse;
+
+	const accessToken = accessTokenFromHeaders(init.headers);
+	const widgetId = widgetIdFromUrl(url);
+	const sourceWidget = widgetById(widgetCache, muralId, widgetId);
+	const replacementText = replacementTextFromBody(body);
+	if (!accessToken || !muralId || !sourceWidget || !replacementText) return firstResponse;
+
+	const withTagResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, confirmedTags);
+	if (!(await responseMentionsMissingTag(withTagResponse))) return withTagResponse;
+
+	return createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, []);
+}
+
 function annotateWidgetsWithMappings(body, mappings) {
 	const byWidgetId = new Map();
 	for (const mapping of mappings) {
@@ -364,6 +458,8 @@ function jsonResponseFrom(original, body) {
 }
 
 function installSafeMuralFetch(svc, originalFetch) {
+	const widgetCache = new Map();
+
 	return async function safeMuralFetch(input, init = {}) {
 		const url = typeof input === "string" ? input : input?.url;
 		const muralId = muralIdFromUrl(url);
@@ -373,6 +469,7 @@ function installSafeMuralFetch(svc, originalFetch) {
 			if (!response.ok || !muralId) return response;
 			const body = await response.clone().json().catch(() => null);
 			if (!body) return response;
+			widgetCache.set(muralId, widgetsFromBody(body));
 			const mappings = await listD1MappingsForMural(svc.env, muralId).catch(() => []);
 			return jsonResponseFrom(response, annotateWidgetsWithMappings(body, mappings));
 		}
@@ -388,6 +485,19 @@ function installSafeMuralFetch(svc, originalFetch) {
 		const accessToken = accessTokenFromHeaders(init.headers);
 		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags).catch(() => []);
 		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body)) });
+
+		const replacementResponse = await fallbackToReplacementSticky({
+			originalFetch,
+			input,
+			init,
+			url,
+			body,
+			muralId,
+			confirmedTags,
+			firstResponse,
+			widgetCache
+		});
+		if (replacementResponse !== firstResponse) return replacementResponse;
 
 		if (!(await responseMentionsMissingTag(firstResponse))) return firstResponse;
 		return originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
