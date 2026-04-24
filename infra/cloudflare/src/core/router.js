@@ -120,56 +120,6 @@ async function projectsCsvDirect(request, env, origin) {
 	}
 }
 
-async function projectsJsonDirect(request, env, origin) {
-	console.log("[projectsJsonDirect] Called");
-	try {
-		assertAirtableEnv(env);
-		requireEnv(env, ["AIRTABLE_TABLE_PROJECTS"]);
-
-		const base = env.AIRTABLE_BASE || env.AIRTABLE_BASE_ID;
-		const key = env.AIRTABLE_API_KEY || env.AIRTABLE_PAT;
-		const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-		const url = `https://api.airtable.com/v0/${base}/${table}?pageSize=100`;
-
-		console.log("[projectsJsonDirect] Fetching Airtable:", { url, hasBase: !!base, hasKey: !!key, table });
-
-		const r = await fetch(url, {
-			headers: { authorization: `Bearer ${key}`, accept: "application/json" }
-		});
-
-		console.log("[projectsJsonDirect] Airtable response:", {
-			ok: r.ok,
-			status: r.status,
-			contentType: r.headers.get("content-type")
-		});
-
-		if (!r.ok) {
-			const raw = await r.text().catch(() => "");
-			console.error("[projectsJsonDirect] Airtable error:", { status: r.status, body: safeSlice(raw, 500) });
-			return new Response(json({ ok: false, source: "airtable", status: r.status, error: safeSlice(raw, 2000) }), {
-				status: 500,
-				headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
-			});
-		}
-
-		const data = await r.json();
-		const records = Array.isArray(data?.records) ? data.records : [];
-		const projects = records.map(rec => ({ id: rec.id, ...(rec.fields || {}) }));
-
-		console.log("[projectsJsonDirect] Returning projects:", projects.length);
-		return new Response(json({ ok: true, projects }), {
-			status: 200,
-			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
-		});
-	} catch (e) {
-		console.error("[projectsJsonDirect] Exception:", e);
-		return new Response(json({ ok: false, error: String(e?.message || e) }), {
-			status: 500,
-			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
-		});
-	}
-}
-
 async function studiesJsonDirect(request, env, origin, url) {
 	console.log("[studiesJsonDirect] Called");
 	try {
@@ -299,15 +249,8 @@ export async function handleRequest(request, env) {
 		}
 
 		// ═══════════════════════════════════════════════════════════════════════════════
-		// DIRECT ROUTES: Projects & Studies (no service.js dependency)
+		// DIRECT ROUTES: Project CSV & Studies (no service.js dependency)
 		// ═══════════════════════════════════════════════════════════════════════════════
-
-		if (url.pathname === "/api/projects" && request.method === "GET") {
-			console.log("[router] ✓ Matched /api/projects (direct)");
-			const res = await projectsJsonDirect(request, env, origin);
-			console.log("[router] projectsJsonDirect returned status:", res?.status);
-			return res;
-		}
 
 		if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 			console.log("[router] ✓ Matched /api/projects.csv (direct)");
@@ -340,7 +283,7 @@ export async function handleRequest(request, env) {
 					ok: false,
 					error: "Service temporarily unavailable",
 					detail: String(e?.message || e),
-					note: "Projects and Studies APIs are still available via direct handlers"
+					note: "Project CSV and Studies APIs are still available via direct handlers"
 				}), {
 					status: 503,
 					headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
