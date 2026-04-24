@@ -102,7 +102,9 @@ function createMockFetch(calls) {
     }
 
     if (url.includes("raw.githubusercontent.com")) {
-      return csvResponse("LocalId,Name,CreatedAt\nrecCsv,Csv project,2025-01-01T00:00:00.000Z\n");
+      return csvResponse(
+        "LocalId,Name,CreatedAt\nrecCsv,Csv project,2025-01-01T00:00:00.000Z\n"
+      );
     }
 
     throw new Error(`Unexpected fetch URL: ${url}`);
@@ -115,13 +117,20 @@ async function assertProjectsRouteUsesComposedService() {
   globalThis.fetch = createMockFetch(calls);
 
   try {
-    const response = await worker.fetch(new Request("https://worker.test/api/projects"), env, {});
+    const response = await worker.fetch(
+      new Request("https://worker.test/api/projects"),
+      env,
+      {}
+    );
     assert.equal(response.status, 200);
 
     const payload = await response.json();
     assert.equal(payload.ok, true);
     assert.equal(Array.isArray(payload.projects), true);
-    assert.deepEqual(payload.projects.map((project) => project.id), ["recNewest", "recAlpha", "recBeta"]);
+    assert.deepEqual(
+      payload.projects.map((project) => project.id),
+      ["recNewest", "recAlpha", "recBeta"]
+    );
 
     const newest = payload.projects[0];
     assert.equal(newest.name, "Newest project");
@@ -136,8 +145,14 @@ async function assertProjectsRouteUsesComposedService() {
     assert.equal(alpha.lead_researcher_email, "lead.alpha@example.test");
     assert.equal(alpha.notes, "Joined detail notes");
 
-    assert.equal(calls.some((url) => url.includes("/Projects?")), true);
-    assert.equal(calls.some((url) => url.includes("/Project%20Details?")), true);
+    assert.equal(
+      calls.some((url) => url.includes("/Projects?")),
+      true
+    );
+    assert.equal(
+      calls.some((url) => url.includes("/Project%20Details?")),
+      true
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -149,13 +164,20 @@ async function assertProjectsCsvRouteStillWorks() {
   globalThis.fetch = createMockFetch(calls);
 
   try {
-    const response = await worker.fetch(new Request("https://worker.test/api/projects.csv"), env, {});
+    const response = await worker.fetch(
+      new Request("https://worker.test/api/projects.csv"),
+      env,
+      {}
+    );
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type") || "", /text\/csv/);
 
     const body = await response.text();
     assert.match(body, /LocalId,Name,CreatedAt/);
-    assert.equal(calls.some((url) => url.includes("raw.githubusercontent.com")), true);
+    assert.equal(
+      calls.some((url) => url.includes("raw.githubusercontent.com")),
+      true
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
