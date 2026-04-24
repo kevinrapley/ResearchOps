@@ -7,7 +7,7 @@
 import { safeText, mdToAirtableRich } from "../core/utils.js";
 import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from "./internals/airtable.js";
 import {
-	d1ListJournalEntriesByLocalProject,
+	d1All,
 	d1GetJournalEntryById,
 	d1UpdateJournalEntry,
 	d1DeleteJournalEntry
@@ -46,6 +46,51 @@ function normTagsArray(value) {
 		.filter(Boolean);
 }
 
+function d1EntryFromRow(row) {
+	let tags = [];
+	if (typeof row.tags === "string" && row.tags.trim()) {
+		try {
+			const parsed = JSON.parse(row.tags);
+			if (Array.isArray(parsed)) {
+				tags = parsed.map(String);
+			} else {
+				tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
+			}
+		} catch {
+			tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
+		}
+	}
+
+	return {
+		id: row.record_id || null,
+		project: row.project || null,
+		category: row.category || "",
+		content: row.content || "",
+		tags,
+		createdAt: row.createdat || null
+	};
+}
+
+async function d1ListJournalEntriesForProject(env, projectParam) {
+	const project = String(projectParam || "").trim();
+	if (!project) return [];
+
+	const rows = await d1All(env, `
+		SELECT record_id,
+		       project,
+		       category,
+		       content,
+		       tags,
+		       createdat
+		  FROM journal_entries
+		 WHERE local_project_id = ?
+		    OR project = ?
+		 ORDER BY datetime(createdat) DESC;
+	`, [project, project]);
+
+	return rows.map(d1EntryFromRow);
+}
+
 /* ───────────────────────────────────── routes ─────────────────────────────────── */
 
 /**
@@ -53,7 +98,8 @@ function normTagsArray(value) {
  *
  * Behaviour:
  * - If D1 is bound:
- *   - Treats ?project= as local_project_id and reads from D1 (primary).
+ *   - Treats ?project= as either a local_project_id or an Airtable project record id.
+ *   - Reads from D1 where local_project_id or project matches the supplied value.
  * - If D1 is NOT bound:
  *   - Falls back to Airtable behaviour:
  *     treats ?project= as Airtable project record id and filters via link field.
@@ -76,32 +122,7 @@ export async function listJournalEntries(svc, origin, url) {
 	// ───── D1-primary path ─────
 	if (useD1) {
 		try {
-			const rows = await d1ListJournalEntriesByLocalProject(env, projectParam);
-			const entries = rows.map(row => {
-				let tags = [];
-				if (typeof row.tags === "string" && row.tags.trim()) {
-					try {
-						const parsed = JSON.parse(row.tags);
-						if (Array.isArray(parsed)) {
-							tags = parsed.map(String);
-						} else {
-							tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
-						}
-					} catch {
-						tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
-					}
-				}
-
-				return {
-					id: row.record_id || null,
-					project: row.project || null,
-					category: row.category || "",
-					content: row.content || "",
-					tags,
-					createdAt: row.createdat || null
-				};
-			});
-
+			const entries = await d1ListJournalEntriesForProject(env, projectParam);
 			return svc.json({ ok: true, source: "d1", entries }, 200, svc.corsHeaders(origin));
 		} catch (e) {
 			const msg = safeText(e?.message || e);
