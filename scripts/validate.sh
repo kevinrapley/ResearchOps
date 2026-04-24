@@ -53,6 +53,29 @@ if (scripts.validate !== 'bash ./scripts/validate.sh') {
 }
 NODE
 
+info "checking Wrangler assets directory"
+node --input-type=module <<'NODE'
+import fs from 'node:fs';
+import path from 'node:path';
+
+const wranglerPath = 'infra/cloudflare/wrangler.toml';
+const wrangler = fs.readFileSync(wranglerPath, 'utf8');
+const match = wrangler.match(/\[assets\][\s\S]*?^directory\s*=\s*"([^"]+)"/m);
+
+if (!match) {
+	console.error('wrangler.toml must define [assets].directory');
+	process.exit(1);
+}
+
+const configDir = path.dirname(wranglerPath);
+const assetsDirectory = path.resolve(configDir, match[1]);
+
+if (!fs.existsSync(assetsDirectory) || !fs.statSync(assetsDirectory).isDirectory()) {
+	console.error(`wrangler.toml assets.directory does not exist: ${match[1]} -> ${assetsDirectory}`);
+	process.exit(1);
+}
+NODE
+
 info "checking JSON files"
 while IFS= read -r -d '' file; do
 	if ! node -e "JSON.parse(require('node:fs').readFileSync(process.argv[1], 'utf8'))" "$file"; then
