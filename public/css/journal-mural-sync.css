@@ -6,8 +6,8 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 16px;
-	margin-bottom: 16px;
-	padding-right: 380px;
+	margin-bottom: 16px;	
+	padding-right: 420px;
 	}
 
 .journal-entries-header__primary {
@@ -26,11 +26,11 @@
 	top: 0;
 	right: 0;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: flex-end;
 	gap: 8px;
 	flex-wrap: wrap;
-	max-width: 360px;
+	max-width: 400px;
 	font-size: 16px;
 	line-height: 1.4;
 	text-align: right;
@@ -47,11 +47,17 @@
 
 .mural-sync-status__action {
 	margin-bottom: 0;
-	padding: 6px 10px;
+	padding: 4px 8px;
 	font-size: 16px;
 	line-height: 1.25;
+	box-shadow: none;
 	}
 
+.mural-sync-status__action:not([hidden]) {
+	display: inline-block;
+	}
+
+#mural-sync-panel,
 #mural-sync-panel[hidden] {
 	display: none !important;
 	}
