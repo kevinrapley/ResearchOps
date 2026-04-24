@@ -31,6 +31,7 @@ require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
 require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
+require_file "tests/projects-route-contract.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -129,5 +130,8 @@ if (typeof service.ResearchOpsService !== 'function') {
 	process.exit(1);
 }
 NODE
+
+info "checking Projects API route contract"
+node tests/projects-route-contract.test.js
 
 info "validation passed"

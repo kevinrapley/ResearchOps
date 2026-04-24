@@ -37,6 +37,9 @@ public/components/guides/print.css
 package.json
 eslint.config.js
 
+# Route-contract regression tests use explicit assertion layout.
+tests/projects-route-contract.test.js
+
 # Build / test artifacts
 .lighthouseci/
 build/
