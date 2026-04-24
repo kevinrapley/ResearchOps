@@ -6,8 +6,17 @@
 
 /* eslint-env browser */
 
-// ---------- tiny helpers ----------
-function $(s, r) { if (!r) r = document; return r.querySelector(s); }
+const API_ORIGIN =
+	document.documentElement?.dataset?.apiOrigin ||
+	window.API_ORIGIN ||
+	(location.hostname.endsWith('pages.dev') ?
+		'https://rops-api.digikev-kevin-rapley.workers.dev' :
+		location.origin);
+
+function apiUrl(path) {
+	const p = String(path || '');
+	return `${API_ORIGIN}${p.startsWith('/') ? p : '/' + p}`;
+}
 
 function esc(s) { var d = document.createElement("div");
 	d.textContent = String(s || ""); return d.innerHTML; }
@@ -92,12 +101,11 @@ function nodeLabel(nodes, id) {
 	return String(id);
 }
 
-// ---------- public API ----------
 function runTimeline(projectId) {
 	var wrap = document.getElementById("analysis-timeline");
 	if (wrap) wrap.innerHTML = "<p>Loading timeline…</p>";
 
-	var url = "/api/analysis/timeline?project=" + encodeURIComponent(projectId || "");
+	var url = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
 	return fetchJSON(url).then(function(res) {
 		var items = Array.isArray(res && res.timeline) ? res.timeline : [];
 		updateJsonPanel({ timeline: items }, "timeline-" + String(projectId || "unknown") + ".json");
@@ -126,6 +134,9 @@ function runTimeline(projectId) {
 			}).join('') +
 			'</ul>';
 		wrap.innerHTML = html;
+	}).catch(function(err) {
+		console.error('runTimeline', err);
+		if (wrap) wrap.innerHTML = '<p class="hint">Timeline failed to load.</p>';
 	});
 }
 
@@ -133,7 +144,7 @@ function runCooccurrence(projectId) {
 	var wrap = document.getElementById("analysis-cooccurrence");
 	if (wrap) wrap.innerHTML = "<p>Loading co-occurrence…</p>";
 
-	var url = "/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || "");
+	var url = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
 	return fetchJSON(url).then(function(res) {
 		var nodes = Array.isArray(res && res.nodes) ? res.nodes : [];
 		var links = Array.isArray(res && res.links) ? res.links : [];
@@ -159,6 +170,9 @@ function runCooccurrence(projectId) {
 			'  </tbody>' +
 			'</table>';
 		wrap.innerHTML = html;
+	}).catch(function(err) {
+		console.error('runCooccurrence', err);
+		if (wrap) wrap.innerHTML = '<p class="hint">Co-occurrence failed to load.</p>';
 	});
 }
 
@@ -167,7 +181,6 @@ function runRetrieval(projectId) {
 	var results = document.getElementById("retrieval-results");
 	if (!form || !results) return;
 
-	// replace handler to avoid duplicates
 	var clone = form.cloneNode(true);
 	form.parentNode.replaceChild(clone, form);
 	form = document.getElementById("retrieval-form");
@@ -179,7 +192,7 @@ function runRetrieval(projectId) {
 		if (!term) { results.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
 		results.innerHTML = "<p>Searching…</p>";
 
-		var url = "/api/analysis/retrieval?project=" + encodeURIComponent(projectId || "") + "&q=" + encodeURIComponent(term);
+		var url = apiUrl("/api/analysis/retrieval?project=" + encodeURIComponent(projectId || "") + "&q=" + encodeURIComponent(term));
 		fetchJSON(url).then(function(res) {
 			var out = Array.isArray(res && res.results) ? res.results : [];
 			updateJsonPanel({ query: term, results: out }, "retrieval-" + String(projectId || "unknown") + ".json");
@@ -203,8 +216,8 @@ function runRetrieval(projectId) {
 }
 
 function runExport(projectId) {
-	var tUrl = "/api/analysis/timeline?project=" + encodeURIComponent(projectId || "");
-	var cUrl = "/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || "");
+	var tUrl = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
+	var cUrl = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
 	return Promise.all([fetchJSON(tUrl), fetchJSON(cUrl)]).then(function(arr) {
 		var timeline = arr[0] && arr[0].timeline ? arr[0].timeline : [];
 		var nodes = arr[1] && arr[1].nodes ? arr[1].nodes : [];
