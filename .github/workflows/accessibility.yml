@@ -9,6 +9,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PA11Y_BASE_URL: http://127.0.0.1:8080
 
 jobs:
   a11y:
@@ -28,9 +29,21 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Check production site availability
+      - name: Start local static site
         run: |
-          curl -fsS --retry 5 --retry-delay 5 https://researchops.pages.dev/ > /dev/null
+          python3 -m http.server 8080 --directory public > static-site.log 2>&1 &
+          echo $! > static-site.pid
+
+          for i in {1..30}; do
+            if curl -fsS "$PA11Y_BASE_URL/" > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "Local static site did not become available."
+          cat static-site.log || true
+          exit 1
 
       - name: Install pa11y-ci
         run: |
@@ -38,10 +51,23 @@ jobs:
           node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'commonjs',dependencies:{'pa11y-ci':'3.1.0'},overrides:{glob:'7.2.3'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
           npm install --prefix .pa11y-workdir --no-package-lock
 
+      - name: Create local pa11y config
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const source = JSON.parse(fs.readFileSync('.pa11yci.json', 'utf8'));
+          const baseUrl = process.env.PA11Y_BASE_URL || 'http://127.0.0.1:8080';
+          const urls = (source.urls || []).map((url) => {
+            const parsed = new URL(url);
+            return `${baseUrl}${parsed.pathname}${parsed.search}${parsed.hash}`;
+          });
+          fs.writeFileSync('pa11y-local.json', JSON.stringify({ ...source, urls }, null, 2));
+          NODE
+
       - name: Run pa11y-ci
         run: |
           set +e
-          .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
+          .pa11y-workdir/node_modules/.bin/pa11y-ci --config pa11y-local.json --reporter json > pa11y-report.json
           status=$?
           echo "$status" > pa11y-exit-code.txt
           exit 0
@@ -158,6 +184,7 @@ jobs:
           summary.push(`- Exit code: **${exitCode}**`);
           summary.push(`- Pages checked: **${pages.length}**`);
           summary.push(`- Issues reported: **${issueCount}**`);
+          summary.push(`- Base URL: **${process.env.PA11Y_BASE_URL || 'not set'}**`);
           summary.push('- Standard: WCAG 2.1 AA');
           summary.push('- Artifacts: **pa11y-ci-report** (JSON + HTML)');
 
@@ -190,8 +217,17 @@ jobs:
             pa11y-report.json
             pa11y-report.html
             pa11y-exit-code.txt
+            pa11y-local.json
+            static-site.log
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Stop local static site
+        if: always()
+        run: |
+          if [ -f static-site.pid ]; then
+            kill "$(cat static-site.pid)" || true
+          fi
 
       - name: Fail on pa11y findings
         if: always()
