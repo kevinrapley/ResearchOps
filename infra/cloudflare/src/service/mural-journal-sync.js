@@ -94,11 +94,6 @@ function normalizeWidget(widget) {
 	};
 }
 
-function isSticky(widget) {
-	const type = safeText(widget?.type).toLowerCase();
-	return type.includes("sticky");
-}
-
 function isTemplatePlaceholder(widget) {
 	const text = widgetText(widget);
 	return !text || TEMPLATE_PLACEHOLDER_RE.test(text);
@@ -107,6 +102,11 @@ function isTemplatePlaceholder(widget) {
 function entrySyncTag(entryId) {
 	const id = safeText(entryId);
 	return id ? `journal-entry:${id}` : "";
+}
+
+function entrySyncTitle(categoryKey, entryId) {
+	const tag = entrySyncTag(entryId);
+	return tag ? `${categoryKey} ${tag}` : categoryKey;
 }
 
 function widgetHasEntryTag(widget, entryId) {
@@ -118,22 +118,28 @@ function widgetHasEntryTag(widget, entryId) {
 function widgetMatchesCategory(widget, categoryKey) {
 	const tags = tagKeys(widget);
 	const text = widgetText(widget).toLowerCase();
-	return tags.includes(categoryKey) || text.startsWith(`[${categoryKey}]`) || text.includes(`${categoryKey} sticky note`);
+	const meta = widgetMetadataText(widget);
+	return tags.includes(categoryKey) || meta.includes(categoryKey) || text.startsWith(`[${categoryKey}]`) || text.includes(`${categoryKey} sticky note`);
+}
+
+function widgetIsSyncedEntry(widget, entryId, categoryKey) {
+	return widgetHasEntryTag(widget, entryId) && widgetMatchesCategory(widget, categoryKey);
 }
 
 function columnHeaderWidgets(widgets, categoryKey) {
 	return widgets.filter(widget => {
 		const text = widgetText(widget).toLowerCase();
 		const tags = tagKeys(widget);
-		return tags.includes(categoryKey) || text === categoryKey || text.includes(categoryKey);
+		const meta = widgetMetadataText(widget);
+		return tags.includes(categoryKey) || meta.includes(categoryKey) || text === categoryKey || text.includes(categoryKey);
 	});
 }
 
 function pickCategoryAnchor(widgets, categoryKey) {
-	const stickies = widgets.filter(widget => isSticky(widget) && widgetMatchesCategory(widget, categoryKey));
-	const placeholders = stickies.filter(isTemplatePlaceholder);
+	const categoryWidgets = widgets.filter(widget => widgetMatchesCategory(widget, categoryKey));
+	const placeholders = categoryWidgets.filter(isTemplatePlaceholder);
 	if (placeholders.length) return placeholders.sort((a, b) => numeric(a.y) - numeric(b.y))[0];
-	if (stickies.length) return stickies.sort((a, b) => numeric(b.y) - numeric(a.y))[0];
+	if (categoryWidgets.length) return categoryWidgets.sort((a, b) => numeric(b.y) - numeric(a.y))[0];
 
 	const headers = columnHeaderWidgets(widgets, categoryKey);
 	if (headers.length) {
@@ -154,7 +160,7 @@ function pickCategoryAnchor(widgets, categoryKey) {
 }
 
 function placementForAnchor(widgets, anchor, categoryKey) {
-	const sameCategory = widgets.filter(widget => isSticky(widget) && widgetMatchesCategory(widget, categoryKey));
+	const sameCategory = widgets.filter(widget => widgetMatchesCategory(widget, categoryKey));
 	const latest = sameCategory.length ? sameCategory.sort((a, b) => numeric(b.y) - numeric(a.y))[0] : anchor;
 	return {
 		x: numeric(anchor?.x, 0),
@@ -176,35 +182,79 @@ function dedupeTags(tags) {
 	return out;
 }
 
-function createStickyPayload({ text, tags, placement, syncTag }) {
-	return {
+function copyDefined(source, target, keys) {
+	for (const key of keys) {
+		if (source?.[key] !== undefined && source?.[key] !== null && source?.[key] !== "") target[key] = source[key];
+	}
+	return target;
+}
+
+function widgetPayloadFromTemplate(template, { text, tags, placement, syncTitle }) {
+	const type = safeText(template?.type || "sticky-note") || "sticky-note";
+	const body = {
+		type,
+		text,
+		title: syncTitle,
+		tags,
+		geometry: {
+			x: placement.x,
+			y: placement.y,
+			width: placement.width,
+			height: placement.height
+		},
 		x: placement.x,
 		y: placement.y,
 		width: placement.width,
-		height: placement.height,
-		shape: "rectangle",
-		text,
-		title: syncTag,
-		tags,
-		style: {
-			backgroundColor: "#FFFFFFFF",
-			fontSize: 23,
-			textAlign: "left"
-		}
+		height: placement.height
 	};
+
+	copyDefined(template, body, [
+		"shape",
+		"style",
+		"backgroundColor",
+		"borderColor",
+		"color",
+		"fontSize",
+		"fontFamily",
+		"textAlign",
+		"verticalAlign",
+		"rotation",
+		"isLocked"
+	]);
+
+	return body;
 }
 
-function minimalStickyPayload(payload) {
+function minimalWidgetPayload(payload) {
 	return {
-		x: payload.x,
-		y: payload.y,
-		shape: "rectangle",
+		type: payload.type || "sticky-note",
 		text: payload.text,
-		title: payload.title
+		title: payload.title,
+		geometry: payload.geometry
 	};
 }
 
-async function postStickyPayload(accessToken, url, body) {
+function patchPayloadFromTemplate(template, { text, tags, syncTitle }) {
+	const patch = {
+		text,
+		title: syncTitle,
+		tags
+	};
+	copyDefined(template, patch, [
+		"shape",
+		"style",
+		"backgroundColor",
+		"borderColor",
+		"color",
+		"fontSize",
+		"fontFamily",
+		"textAlign",
+		"verticalAlign"
+	]);
+	return patch;
+}
+
+async function postWidgetPayload(accessToken, url, body) {
 	const res = await fetch(url, {
 		method: "POST",
 		headers: {
@@ -216,7 +266,7 @@ async function postStickyPayload(accessToken, url, body) {
 	});
 	const responseBody = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		throw Object.assign(new Error(`Create Mural sticky note failed: ${res.status}`), {
+		throw Object.assign(new Error(`Create Mural template widget failed: ${res.status}`), {
 			status: res.status,
 			body: responseBody
 		});
@@ -224,26 +274,28 @@ async function postStickyPayload(accessToken, url, body) {
 	return firstMuralValue(responseBody);
 }
 
-async function createStickyNote(env, accessToken, muralId, payload) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note`;
+async function createWidgetFromTemplate(env, accessToken, muralId, template, payload) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
+	const full = widgetPayloadFromTemplate(template, payload);
+	const minimal = minimalWidgetPayload(full);
 	const attempts = [
-		{ name: "full", body: payload },
-		{ name: "minimal", body: minimalStickyPayload(payload) },
-		{ name: "minimal-array", body: [minimalStickyPayload(payload)] }
+		{ name: "template-full", body: full },
+		{ name: "template-minimal", body: minimal },
+		{ name: "template-minimal-array", body: [minimal] }
 	];
 	const errors = [];
 
 	for (const attempt of attempts) {
 		try {
-			const created = await postStickyPayload(accessToken, url, attempt.body);
-			return created || { ...minimalStickyPayload(payload), tags: payload.tags };
+			const created = await postWidgetPayload(accessToken, url, attempt.body);
+			return created || { ...full };
 		} catch (err) {
 			errors.push({ attempt: attempt.name, status: err?.status, summary: muralErrorSummary(err) });
 		}
 	}
 
 	const last = errors[errors.length - 1] || {};
-	throw Object.assign(new Error(`Create Mural sticky note failed after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
+	throw Object.assign(new Error(`Create Mural template widget failed after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
 		status: last.status || 400,
 		errors
 	});
@@ -270,16 +322,16 @@ async function patchStickyNote(env, accessToken, muralId, widgetId, patch) {
 	return firstMuralValue(body) || { id: widgetId, ...patch };
 }
 
-async function updateStickyTextAndTags(env, accessToken, muralId, widgetId, patch) {
+async function updateTemplateWidget(env, accessToken, muralId, widgetId, patch) {
 	const minimalPatch = {
 		text: patch.text,
 		title: patch.title
 	};
 	const attempts = [
-		() => patchStickyNote(env, accessToken, muralId, widgetId, patch),
-		() => patchStickyNote(env, accessToken, muralId, widgetId, minimalPatch),
 		() => updateSticky(env, accessToken, muralId, widgetId, patch),
-		() => updateSticky(env, accessToken, muralId, widgetId, minimalPatch)
+		() => updateSticky(env, accessToken, muralId, widgetId, minimalPatch),
+		() => patchStickyNote(env, accessToken, muralId, widgetId, patch),
+		() => patchStickyNote(env, accessToken, muralId, widgetId, minimalPatch)
 	];
 	const errors = [];
 
@@ -293,7 +345,7 @@ async function updateStickyTextAndTags(env, accessToken, muralId, widgetId, patc
 	}
 
 	const last = errors[errors.length - 1] || {};
-	throw Object.assign(new Error(`Could not update placeholder sticky after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
+	throw Object.assign(new Error(`Could not update template widget after ${errors.length} attempts: ${last.summary || "unknown error"}`), {
 		status: last.status || 400,
 		errors
 	});
@@ -439,7 +491,7 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		};
 	}
 
-	const existing = widgets.find(widget => isSticky(widget) && widgetHasEntryTag(widget, payload.entryId));
+	const existing = widgets.find(widget => widgetIsSyncedEntry(widget, payload.entryId, payload.categoryKey));
 	if (existing) {
 		return {
 			ok: true,
@@ -457,20 +509,22 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 			action: "category-column-not-found",
 			entryId: payload.entryId,
 			category: payload.categoryKey,
-			detail: `No ${payload.categoryKey} sticky or heading was found on the Mural board.`
+			detail: `No ${payload.categoryKey} template widget or heading was found on the Mural board.`
 		};
 	}
 
 	const syncTag = entrySyncTag(payload.entryId);
+	const syncTitle = entrySyncTitle(payload.categoryKey, payload.entryId);
 	const tags = dedupeTags([payload.categoryKey, payload.projectName, syncTag, ...payload.tags]);
 	const text = payload.description;
 
 	if (anchor.id && isTemplatePlaceholder(anchor)) {
-		const widget = await updateStickyTextAndTags(svc.env, accessToken, board.muralId, anchor.id, { text, title: syncTag, tags });
-		updateWidgetInPlace(widgets, anchor.id, { text, title: syncTag, tags });
+		const patch = patchPayloadFromTemplate(anchor, { text, title: syncTitle, syncTitle, tags });
+		const widget = await updateTemplateWidget(svc.env, accessToken, board.muralId, anchor.id, patch);
+		updateWidgetInPlace(widgets, anchor.id, patch);
 		return {
 			ok: true,
-			action: "updated-template-sticky",
+			action: "updated-template-widget",
 			entryId: payload.entryId,
 			category: payload.categoryKey,
 			widgetId: widget?.id || widget?.value?.id || anchor.id
@@ -478,24 +532,28 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 	}
 
 	const placement = placementForAnchor(widgets, anchor, payload.categoryKey);
-	const created = await createStickyNote(
+	const templatePayload = { text, tags, placement, syncTitle };
+	const created = await createWidgetFromTemplate(
 		svc.env,
 		accessToken,
 		board.muralId,
-		createStickyPayload({ text, tags, placement, syncTag })
+		anchor,
+		templatePayload
 	);
 	const widget = pushCreatedWidget(widgets, created, {
 		id: created?.id,
-		type: "sticky-note",
+		type: anchor?.type || "template-widget",
 		text,
-		title: syncTag,
+		title: syncTitle,
 		tags,
+		style: anchor?.style,
+		shape: anchor?.shape,
 		...placement
 	});
 
 	return {
 		ok: true,
-		action: "created-sticky",
+		action: "created-template-widget",
 		entryId: payload.entryId,
 		category: payload.categoryKey,
 		widgetId: widget.id || created?.id || null
@@ -507,7 +565,8 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 	const syncedEntryIds = new Set();
 
 	for (const entry of validEntries) {
-		if (widgets.some(widget => isSticky(widget) && widgetHasEntryTag(widget, entry.id))) {
+		const category = normalizeCategoryKey(entry.category);
+		if (widgets.some(widget => widgetIsSyncedEntry(widget, entry.id, category))) {
 			syncedEntryIds.add(String(entry.id));
 		}
 	}
@@ -629,7 +688,7 @@ async function handleHydrate(svc, origin, body) {
 	}
 
 	const after = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
-	const createdOrUpdated = outcomes.filter(o => ["updated-template-sticky", "created-sticky"].includes(o.action)).length;
+	const createdOrUpdated = outcomes.filter(o => ["updated-template-widget", "created-template-widget"].includes(o.action)).length;
 	const alreadySynced = outcomes.filter(o => o.action === "already-synced").length;
 	const skipped = outcomes.filter(o => String(o.action || "").startsWith("skipped-")).length;
 	const failed = outcomes.filter(o => !o.ok).length;
