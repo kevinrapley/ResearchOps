@@ -29,32 +29,20 @@ jobs:
         run: |
           curl -fsS --retry 5 --retry-delay 5 https://researchops.pages.dev/ > /dev/null
 
-      - name: Install pa11y-ci with updated dependencies
+      - name: Install pa11y-ci
         run: |
           mkdir -p .pa11y-workdir
-          node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'module',dependencies:{'pa11y-ci':'^3.1.0'},overrides:{glob:'^10.4.5',inflight:'npm:@npmcli/inflight@^2.0.0'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
+          node -e "const fs=require('fs');const pkg={name:'pa11y-workdir',private:true,type:'commonjs',dependencies:{'pa11y-ci':'3.1.0'},overrides:{glob:'7.2.3'}};fs.writeFileSync('.pa11y-workdir/package.json',JSON.stringify(pkg,null,2));"
           npm install --prefix .pa11y-workdir --no-package-lock
-          node <<'EOF'
-          const fs = require('fs');
-          const path = require('path');
-          const target = path.join('.pa11y-workdir', 'node_modules', 'globby', 'index.js');
-          if (fs.existsSync(target)) {
-            const src = fs.readFileSync(target, 'utf8');
-            const needle = 'var globP = pify(glob, Promise).bind(glob);';
-            if (src.includes(needle)) {
-              const replacement = "const pifyCandidate = typeof pify === 'function' ? pify : (pify && typeof pify.default === 'function' ? pify.default : null);\nconst {promisify} = require('util');\nvar globP = pifyCandidate ? pifyCandidate(glob, Promise) : null;\nif (typeof globP !== 'function') {\n  globP = promisify(glob);\n}\nif (typeof globP !== 'function') {\n  throw new Error('pa11y-ci: unable to create promisified glob');\n}\nif (typeof globP.bind === 'function') {\n  globP = globP.bind(glob);\n} else {\n  const fn = globP;\n  globP = function () {\n    return fn.apply(glob, arguments);\n  };\n}";
-              fs.writeFileSync(target, src.replace(needle, replacement));
-            }
-          }
-          EOF
 
       - name: Run pa11y-ci
         run: .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
 
       # Optional: pretty HTML report
       - name: Generate HTML report
+        if: always()
         run: |
-          node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync('pa11y-report.json','utf8'));const rows=Object.entries(r).map(([u,items])=>'<h2>'+u+'</h2>'+items.map(i=>'<details><summary>['+i.type+'] '+i.message+'</summary><pre>'+JSON.stringify(i,null,2)+'</pre></details>').join('')).join('');fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}</style><h1>pa11y-ci report</h1>'+rows);"
+          node -e "const fs=require('fs');if(!fs.existsSync('pa11y-report.json')){fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><h1>pa11y-ci did not produce a JSON report</h1>');process.exit(0);}const r=JSON.parse(fs.readFileSync('pa11y-report.json','utf8'));const rows=Object.entries(r).map(([u,items])=>'<h2>'+u+'</h2>'+items.map(i=>'<details><summary>['+i.type+'] '+i.message+'</summary><pre>'+JSON.stringify(i,null,2)+'</pre></details>').join('')).join('');fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}</style><h1>pa11y-ci report</h1>'+rows);"
 
       - name: Upload pa11y artifacts
         if: always()
@@ -64,7 +52,7 @@ jobs:
           path: |
             pa11y-report.json
             pa11y-report.html
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Add summary
