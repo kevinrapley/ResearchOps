@@ -32,6 +32,7 @@ require_file "infra/cloudflare/src/core/router.js"
 require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
 require_file "tests/projects-route-contract.test.js"
+require_file "tests/mural-ui-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -133,5 +134,8 @@ NODE
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
+
+info "checking Mural UI route-state contract"
+node tests/mural-ui-route-state.test.js
 
 info "validation passed"
