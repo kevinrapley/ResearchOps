@@ -23,7 +23,7 @@ export function makeTableUrl(env, tableName) {
 
 export function authHeaders(env) {
 	return {
-		Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT}`,
+		Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT || env.AIRTABLE_ACCESS_TOKEN}`,
 		"Content-Type": "application/json",
 		Accept: "application/json"
 	};
