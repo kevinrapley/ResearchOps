@@ -179,7 +179,6 @@ jobs:
           }
 
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary.join('\n') + '\n');
-          process.exit(exitCode);
           NODE
 
       - name: Upload pa11y artifacts
@@ -193,3 +192,15 @@ jobs:
             pa11y-exit-code.txt
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Fail on pa11y findings
+        if: always()
+        run: |
+          status="1"
+          if [ -f pa11y-exit-code.txt ]; then
+            status="$(cat pa11y-exit-code.txt)"
+          fi
+          if [ "$status" != "0" ]; then
+            echo "pa11y-ci completed with exit code $status. See the GitHub summary and pa11y-ci-report artifact for details."
+            exit "$status"
+          fi
