@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync.js", "utf8");
+const safeTagsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync-safe-tags.js", "utf8");
 const indexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const journalTabsSource = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const compactSource = fs.readFileSync("public/js/journal-mural-sync-compact.js", "utf8");
@@ -43,6 +44,24 @@ includes(serviceSource, "tags: patch.tags", "service");
 includes(serviceSource, "errors: err?.errors", "service");
 includes(serviceSource, "reason: hydrateReason", "service");
 
+includes(safeTagsSource, "import * as BaseMuralJournalSync from \"./mural-journal-sync.js\";", "safe tags");
+includes(safeTagsSource, "import { createRecords } from \"./internals/airtable.js\";", "safe tags");
+includes(safeTagsSource, "import { d1All, d1Run } from \"./internals/researchops-d1.js\";", "safe tags");
+includes(safeTagsSource, "const SYSTEM_TAG_RE = /^journal-entry:/i;", "safe tags");
+includes(safeTagsSource, "function userFacingTags", "safe tags");
+includes(safeTagsSource, "function createMuralTag", "safe tags");
+includes(safeTagsSource, "function ensureKnownTags", "safe tags");
+includes(safeTagsSource, "function ensureD1MappingTable", "safe tags");
+includes(safeTagsSource, "CREATE TABLE IF NOT EXISTS mural_journal_entry_widgets", "safe tags");
+includes(safeTagsSource, "function upsertD1Mapping", "safe tags");
+includes(safeTagsSource, "function appendAirtableMapping", "safe tags");
+includes(safeTagsSource, "AIRTABLE_TABLE_MURAL_JOURNAL_SYNC", "safe tags");
+includes(safeTagsSource, "function persistMappings", "safe tags");
+includes(safeTagsSource, "function annotateWidgetsWithMappings", "safe tags");
+includes(safeTagsSource, "delete next.title;", "safe tags");
+includes(safeTagsSource, "mappings", "safe tags");
+
+includes(indexSource, "./mural-journal-sync-safe-tags.js", "service index");
 includes(indexSource, "MuralJournalSync", "service index");
 includes(indexSource, "this.mural.muralJournalSync =", "service index");
 
@@ -77,5 +96,6 @@ excludes(serviceSource, "https://app.mural.co/api/public/v1/murals/${muralId}/wi
 excludes(serviceSource, "created-template-widget", "service");
 excludes(serviceSource, "updated-template-sticky", "service");
 excludes(serviceSource, "created-sticky", "service");
+excludes(safeTagsSource, "tags: [...", "safe tags");
 excludes(compactSource, "Sync ${pending}", "compact script");
 excludes(compactSource, "Sync pending entries", "compact script");
