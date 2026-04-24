@@ -7,9 +7,8 @@ compatibility_date  = "2025-09-26"
 # -------------------------------------
 [assets]
 binding   = "ASSETS"
-directory = "docs/sourcebook"
-# (Cloudflare will now serve everything under docs/sourcebook/
-#   at /, unless your Worker overrides routing.)
+directory = "../../docs/devops/sourcebook"
+# Wrangler resolves this path relative to infra/cloudflare/wrangler.toml.
 
 # Workers AI
 [ai]
@@ -48,7 +47,7 @@ GH_PATH_STUDIES  = "data/studies.csv"
 MURAL_CLIENT_ID    = "3648c18f-8dbe-4217-a147-3bce1609c5b1"
 MURAL_COMPANY_ID   = "homeofficegovuk"
 MURAL_API_BASE     = "https://app.mural.co/api/public/v1"
-MURAL_SCOPES       = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"
+MURAL_SCOPES       = "identity:read workspaces:read rooms:write rooms:read murals:read murals:write"
 MURAL_OAUTH_LEGACY = "true"
 MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"
 PAGES_ORIGIN       = "https://researchops.pages.dev"
