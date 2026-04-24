@@ -54,6 +54,13 @@ function numeric(value, fallback = 0) {
 	return Number.isFinite(n) ? n : fallback;
 }
 
+function firstMuralValue(body) {
+	if (Array.isArray(body?.value)) return body.value[0] || null;
+	if (body?.value) return body.value;
+	if (Array.isArray(body)) return body[0] || null;
+	return body || null;
+}
+
 function normalizeWidget(widget) {
 	const geometry = widget?.geometry || widget?.bounds || {};
 	return {
@@ -186,7 +193,45 @@ async function createStickyNote(env, accessToken, muralId, payload) {
 			body
 		});
 	}
-	return body?.value || body;
+	return firstMuralValue(body);
+}
+
+async function patchStickyNote(env, accessToken, muralId, widgetId, patch) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note/${widgetId}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(patch)
+	});
+	const body = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Update Mural sticky note failed: ${res.status}`), {
+			status: res.status,
+			body
+		});
+	}
+	return firstMuralValue(body) || { id: widgetId, ...patch };
+}
+
+async function updateStickyTextAndTags(env, accessToken, muralId, widgetId, patch) {
+	try {
+		return await patchStickyNote(env, accessToken, muralId, widgetId, patch);
+	} catch (firstError) {
+		try {
+			const updated = await updateSticky(env, accessToken, muralId, widgetId, patch);
+			return firstMuralValue(updated) || { id: widgetId, ...patch };
+		} catch (secondError) {
+			throw Object.assign(new Error(`Could not update placeholder sticky: ${String(secondError?.message || firstError?.message || secondError)}`), {
+				status: secondError?.status || firstError?.status,
+				firstError: firstError?.body || firstError?.message,
+				secondError: secondError?.body || secondError?.message
+			});
+		}
+	}
 }
 
 function updateWidgetInPlace(widgets, widgetId, patch) {
@@ -195,7 +240,7 @@ function updateWidgetInPlace(widgets, widgetId, patch) {
 }
 
 function pushCreatedWidget(widgets, created, fallback) {
-	const widget = normalizeWidget({ ...fallback, ...(created?.value || created || {}) });
+	const widget = normalizeWidget({ ...fallback, ...(created || {}) });
 	widgets.push(widget);
 	return widget;
 }
@@ -314,7 +359,8 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 			ok: false,
 			action: "skipped-invalid-entry",
 			entryId: payload.entryId || null,
-			category: payload.categoryKey || null
+			category: payload.categoryKey || null,
+			detail: "Entry is missing an id, category, or description."
 		};
 	}
 
@@ -323,7 +369,8 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 			ok: false,
 			action: "skipped-unsupported-category",
 			entryId: payload.entryId,
-			category: payload.categoryKey
+			category: payload.categoryKey,
+			detail: "Entry category does not map to a Reflexive Journal Mural column."
 		};
 	}
 
@@ -344,7 +391,8 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 			ok: false,
 			action: "category-column-not-found",
 			entryId: payload.entryId,
-			category: payload.categoryKey
+			category: payload.categoryKey,
+			detail: `No ${payload.categoryKey} sticky or heading was found on the Mural board.`
 		};
 	}
 
@@ -353,7 +401,7 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 	const text = payload.description;
 
 	if (anchor.id && isTemplatePlaceholder(anchor)) {
-		const widget = await updateSticky(svc.env, accessToken, board.muralId, anchor.id, { text, tags });
+		const widget = await updateStickyTextAndTags(svc.env, accessToken, board.muralId, anchor.id, { text, tags });
 		updateWidgetInPlace(widgets, anchor.id, { text, tags });
 		return {
 			ok: true,
@@ -372,7 +420,7 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		createStickyPayload({ text, tags, placement })
 	);
 	const widget = pushCreatedWidget(widgets, created, {
-		id: created?.id || created?.value?.id,
+		id: created?.id,
 		type: "sticky-note",
 		text,
 		tags,
@@ -384,7 +432,7 @@ async function syncOneEntry({ svc, accessToken, board, widgets, payload }) {
 		action: "created-sticky",
 		entryId: payload.entryId,
 		category: payload.categoryKey,
-		widgetId: widget.id || created?.id || created?.value?.id || null
+		widgetId: widget.id || created?.id || null
 	};
 }
 
@@ -473,6 +521,15 @@ async function handleStatus(svc, origin, body) {
 	}, 200, svc.corsHeaders(origin));
 }
 
+function hydrateReason({ outcomes, failed, skipped, pending }) {
+	if (!pending) return "All entries are on Mural.";
+	const firstFailure = outcomes.find(o => !o.ok && o.detail);
+	if (firstFailure) return firstFailure.detail;
+	if (failed) return `${failed} ${failed === 1 ? "entry could" : "entries could"} not be added to Mural.`;
+	if (skipped) return `${skipped} ${skipped === 1 ? "entry was" : "entries were"} skipped because required data was missing.`;
+	return "No entries were added to Mural.";
+}
+
 async function handleHydrate(svc, origin, body) {
 	const ctx = await buildContext(svc, origin, body);
 	if (!ctx.ok) return svc.json(ctx.body, ctx.status, svc.corsHeaders(origin));
@@ -483,37 +540,33 @@ async function handleHydrate(svc, origin, body) {
 
 	for (const entry of sortedEntries(ctx.entries)) {
 		const payload = entryPayloadFromEntry(entry, base);
-		if (!payload.entryId || !payload.description || !payload.categoryKey) continue;
-		if (ctx.widgets.some(widget => isSticky(widget) && widgetHasEntryTag(widget, payload.entryId))) {
-			outcomes.push({
-				ok: true,
-				action: "already-synced",
-				entryId: payload.entryId,
-				category: payload.categoryKey
-			});
-			continue;
-		}
-
 		try {
-			outcomes.push(await syncOneEntry({
+			const outcome = await syncOneEntry({
 				svc,
 				accessToken: ctx.accessToken,
 				board: ctx.board,
 				widgets: ctx.widgets,
 				payload
-			}));
+			});
+			outcomes.push(outcome);
 		} catch (err) {
 			outcomes.push({
 				ok: false,
 				action: "sync-failed",
 				entryId: payload.entryId,
 				category: payload.categoryKey,
-				detail: String(err?.message || err)
+				detail: String(err?.message || err),
+				status: err?.status || undefined
 			});
 		}
 	}
 
 	const after = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
+	const createdOrUpdated = outcomes.filter(o => ["updated-template-sticky", "created-sticky"].includes(o.action)).length;
+	const alreadySynced = outcomes.filter(o => o.action === "already-synced").length;
+	const skipped = outcomes.filter(o => String(o.action || "").startsWith("skipped-")).length;
+	const failed = outcomes.filter(o => !o.ok).length;
+
 	return svc.json({
 		ok: true,
 		mode: "hydrate",
@@ -521,9 +574,14 @@ async function handleHydrate(svc, origin, body) {
 		boardSource: ctx.board.source,
 		before,
 		after,
-		createdOrUpdated: outcomes.filter(o => ["updated-template-sticky", "created-sticky"].includes(o.action)).length,
-		alreadySynced: outcomes.filter(o => o.action === "already-synced").length,
-		failed: outcomes.filter(o => !o.ok).length,
+		total: after.total,
+		synced: after.synced,
+		pending: after.pending,
+		createdOrUpdated,
+		alreadySynced,
+		skipped,
+		failed,
+		reason: hydrateReason({ outcomes, failed, skipped, pending: after.pending }),
 		outcomes
 	}, 200, svc.corsHeaders(origin));
 }
