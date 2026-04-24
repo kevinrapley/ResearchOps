@@ -21,9 +21,13 @@ export function makeTableUrl(env, tableName) {
 	return `https://api.airtable.com/v0/${base}/${t}`;
 }
 
+function airtableToken(env) {
+	return env.AIRTABLE_API_KEY || env.AIRTABLE_PAT || env.AIRTABLE_ACCESS_TOKEN;
+}
+
 export function authHeaders(env) {
 	return {
-		Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT || env.AIRTABLE_ACCESS_TOKEN}`,
+		Authorization: `Bearer ${airtableToken(env)}`,
 		"Content-Type": "application/json",
 		Accept: "application/json"
 	};
@@ -152,7 +156,7 @@ export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIME
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
 	const res = await fetchWithTimeout(url, {
 		method: "DELETE",
-		headers: { Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT}` }
+		headers: { Authorization: `Bearer ${airtableToken(env)}` }
 	}, timeoutMs);
 
 	const txt = await res.text();
@@ -162,7 +166,7 @@ export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIME
 
 export async function tryWrite(env, tableName, method, fields, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const url = makeTableUrl(env, tableName);
-	return airtableTryWrite(url, env.AIRTABLE_API_KEY || env.AIRTABLE_PAT, method, fields, timeoutMs);
+	return airtableTryWrite(url, airtableToken(env), method, fields, timeoutMs);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
@@ -174,7 +178,7 @@ export async function findProjectRecordIdByName(env, projectName) {
 	if (!name) return null;
 
 	const baseUrl = makeTableUrl(env, projectsTableName(env));
-	const headers = { Authorization: `Bearer ${env.AIRTABLE_API_KEY || env.AIRTABLE_PAT}` };
+	const headers = { Authorization: `Bearer ${airtableToken(env)}` };
 
 	const q = escFormula(name);
 	const or = [
