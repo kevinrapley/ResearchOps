@@ -4,11 +4,12 @@
  * @summary Creates missing Mural tags and persists journal-entry/widget mappings in D1 and Airtable.
  */
 
-import * as BaseMuralJournalSync from "./mural-journal-sync.js";
+import * as BaseMuralJournalSync from "./mural-journal-sync-layout.js";
 import { createRecords } from "./internals/airtable.js";
 import { d1All, d1Run } from "./internals/researchops-d1.js";
 
 const SYSTEM_TAG_RE = /^journal-entry:/i;
+const MURAL_ROOT = "https://app.mural.co/api/public/v1";
 
 function safeText(value) {
 	return String(value || "").trim();
@@ -16,9 +17,7 @@ function safeText(value) {
 
 function normalizeTags(value) {
 	if (Array.isArray(value)) {
-		return value
-			.map(tag => safeText(typeof tag === "string" ? tag : (tag?.text || tag?.name || tag?.title || tag?.label || "")))
-			.filter(Boolean);
+		return value.map(tag => safeText(typeof tag === "string" ? tag : (tag?.text || tag?.name || tag?.title || tag?.label || ""))).filter(Boolean);
 	}
 	if (!value) return [];
 	return String(value).split(",").map(tag => tag.trim()).filter(Boolean);
@@ -29,9 +28,10 @@ function dedupeTags(tags) {
 	const out = [];
 	for (const tag of tags.map(safeText).filter(Boolean)) {
 		const key = tag.toLowerCase();
-		if (seen.has(key)) continue;
-		seen.add(key);
-		out.push(tag);
+		if (!seen.has(key)) {
+			seen.add(key);
+			out.push(tag);
+		}
 	}
 	return out;
 }
@@ -42,10 +42,15 @@ function truncateMuralTag(tag) {
 }
 
 function userFacingTags(tags) {
-	return dedupeTags(normalizeTags(tags)
-		.filter(tag => !SYSTEM_TAG_RE.test(tag))
-		.map(truncateMuralTag)
-		.filter(Boolean));
+	return dedupeTags(normalizeTags(tags).filter(tag => !SYSTEM_TAG_RE.test(tag)).map(truncateMuralTag).filter(Boolean));
+}
+
+function hasAirtable(env) {
+	return !!((env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) && (env?.AIRTABLE_API_KEY || env?.AIRTABLE_PAT || env?.AIRTABLE_ACCESS_TOKEN));
+}
+
+function hasD1(env) {
+	return !!env?.RESEARCHOPS_D1;
 }
 
 function headerValue(headers, key) {
@@ -59,8 +64,7 @@ function headerValue(headers, key) {
 }
 
 function accessTokenFromHeaders(headers) {
-	const auth = headerValue(headers, "Authorization");
-	const match = auth.match(/^Bearer\s+(.+)$/i);
+	const match = headerValue(headers, "Authorization").match(/^Bearer\s+(.+)$/i);
 	return match ? match[1] : "";
 }
 
@@ -71,26 +75,21 @@ function muralIdFromUrl(url) {
 
 function isMuralWidgetWrite(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
-	if (method !== "POST" && method !== "PATCH") return false;
-	return /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\/|$)/.test(String(url || ""));
+	return (method === "POST" || method === "PATCH") && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\/|$)/.test(String(url || ""));
 }
 
 function isMuralWidgetsRead(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
-	if (method !== "GET") return false;
-	return /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\?|$)/.test(String(url || ""));
+	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\?|$)/.test(String(url || ""));
 }
 
 async function bodyAsJson(body) {
-	if (!body) return null;
-	if (typeof body === "string") {
-		try {
-			return JSON.parse(body);
-		} catch {
-			return null;
-		}
+	if (!body || typeof body !== "string") return null;
+	try {
+		return JSON.parse(body);
+	} catch {
+		return null;
 	}
-	return null;
 }
 
 async function requestBody(request) {
@@ -102,20 +101,7 @@ async function requestBody(request) {
 }
 
 function airtableTableName(env) {
-	return env?.AIRTABLE_TABLE_MURAL_JOURNAL_SYNC ||
-		env?.AIRTABLE_TABLE_MURAL_JOURNAL_MAPPINGS ||
-		"Mural Journal Sync";
-}
-
-function hasAirtable(env) {
-	return !!(
-		(env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) &&
-		(env?.AIRTABLE_API_KEY || env?.AIRTABLE_PAT || env?.AIRTABLE_ACCESS_TOKEN)
-	);
-}
-
-function hasD1(env) {
-	return !!env?.RESEARCHOPS_D1;
+	return env?.AIRTABLE_TABLE_MURAL_JOURNAL_SYNC || env?.AIRTABLE_TABLE_MURAL_JOURNAL_MAPPINGS || "Mural Journal Sync";
 }
 
 async function ensureD1MappingTable(env) {
@@ -140,16 +126,7 @@ async function listD1MappingsForMural(env, muralId) {
 	if (!hasD1(env) || !muralId) return [];
 	await ensureD1MappingTable(env);
 	return d1All(env, `
-		SELECT
-			journal_entry_id,
-			mural_id,
-			widget_id,
-			project_id,
-			category,
-			sync_status,
-			action,
-			synced_at,
-			updated_at
+		SELECT journal_entry_id, mural_id, widget_id, project_id, category, sync_status, action, synced_at, updated_at
 		FROM mural_journal_entry_widgets
 		WHERE mural_id = ?;
 	`, [muralId]);
@@ -159,15 +136,7 @@ async function upsertD1Mapping(env, mapping) {
 	await ensureD1MappingTable(env);
 	await d1Run(env, `
 		INSERT INTO mural_journal_entry_widgets (
-			journal_entry_id,
-			mural_id,
-			widget_id,
-			project_id,
-			category,
-			sync_status,
-			action,
-			synced_at,
-			updated_at
+			journal_entry_id, mural_id, widget_id, project_id, category, sync_status, action, synced_at, updated_at
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(journal_entry_id, mural_id)
 		DO UPDATE SET
@@ -209,9 +178,7 @@ async function appendAirtableMapping(svc, mapping) {
 }
 
 function successfulOutcomes(data) {
-	if (Array.isArray(data?.outcomes)) {
-		return data.outcomes.filter(outcome => outcome?.ok && outcome?.entryId && outcome?.widgetId);
-	}
+	if (Array.isArray(data?.outcomes)) return data.outcomes.filter(outcome => outcome?.ok && outcome?.entryId && outcome?.widgetId);
 	if (data?.ok && data?.entryId && data?.widgetId) return [data];
 	return [];
 }
@@ -261,7 +228,7 @@ async function persistMappings(svc, body, data) {
 }
 
 async function listMuralTags(accessToken, muralId) {
-	const res = await fetch(`https://app.mural.co/api/public/v1/murals/${muralId}/tags`, {
+	const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			Accept: "application/json"
@@ -275,19 +242,10 @@ async function listMuralTags(accessToken, muralId) {
 async function createMuralTag(accessToken, muralId, tag) {
 	const text = truncateMuralTag(tag);
 	if (!text) return "";
+	const bodies = [{ text }, { text, backgroundColor: "#F6D6FF", borderColor: "#B15FD1", color: "#0B0C0C" }];
 
-	const attempts = [
-		{ text },
-		{
-			text,
-			backgroundColor: "#F6D6FF",
-			borderColor: "#B15FD1",
-			color: "#0B0C0C"
-		}
-	];
-
-	for (const body of attempts) {
-		const res = await fetch(`https://app.mural.co/api/public/v1/murals/${muralId}/tags`, {
+	for (const body of bodies) {
+		const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
@@ -302,7 +260,6 @@ async function createMuralTag(accessToken, muralId, tag) {
 			return truncateMuralTag(created?.text || text);
 		}
 	}
-
 	return "";
 }
 
@@ -310,9 +267,8 @@ async function ensureKnownTags(accessToken, muralId, tags) {
 	const desired = userFacingTags(tags);
 	if (!desired.length || !accessToken || !muralId) return [];
 
-	const existing = await listMuralTags(accessToken, muralId);
 	const known = new Map();
-	for (const tag of existing) {
+	for (const tag of await listMuralTags(accessToken, muralId)) {
 		const text = truncateMuralTag(tag?.text || tag?.name || tag?.title || tag);
 		if (text) known.set(text.toLowerCase(), text);
 	}
@@ -324,21 +280,18 @@ async function ensureKnownTags(accessToken, muralId, tags) {
 			safe.push(known.get(key));
 			continue;
 		}
-
 		const created = await createMuralTag(accessToken, muralId, tag).catch(() => "");
 		if (created) {
 			known.set(created.toLowerCase(), created);
 			safe.push(created);
 		}
 	}
-
 	return dedupeTags(safe);
 }
 
 async function responseMentionsMissingTag(response) {
 	if (!response || response.ok || response.status !== 400) return false;
-	const clone = response.clone();
-	const body = await clone.json().catch(() => ({}));
+	const body = await response.clone().json().catch(() => ({}));
 	const text = JSON.stringify(body).toLowerCase();
 	return text.includes("specified tag does not exist") || text.includes("tag does not exist");
 }
@@ -395,11 +348,7 @@ function annotateWidgetsWithMappings(body, mappings) {
 		const marker = byWidgetId.get(safeText(widget?.id));
 		if (!marker) return widget;
 		const tags = dedupeTags([...(normalizeTags(widget.tags)), marker.category, `journal-entry:${marker.entryId}`]);
-		return {
-			...widget,
-			title: `journal-entry:${marker.entryId}`,
-			tags
-		};
+		return { ...widget, title: `journal-entry:${marker.entryId}`, tags };
 	}
 
 	if (Array.isArray(body?.value)) return { ...body, value: body.value.map(annotate) };
@@ -411,11 +360,7 @@ function annotateWidgetsWithMappings(body, mappings) {
 function jsonResponseFrom(original, body) {
 	const headers = new Headers(original.headers);
 	headers.set("content-type", "application/json; charset=utf-8");
-	return new Response(JSON.stringify(body), {
-		status: original.status,
-		statusText: original.statusText,
-		headers
-	});
+	return new Response(JSON.stringify(body), { status: original.status, statusText: original.statusText, headers });
 }
 
 function installSafeMuralFetch(svc, originalFetch) {
@@ -437,35 +382,21 @@ function installSafeMuralFetch(svc, originalFetch) {
 		const body = await bodyAsJson(init.body);
 		const desiredTags = tagsFromBody(body);
 		if (!body || !desiredTags.length) {
-			return originalFetch(input, {
-				...init,
-				body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body
-			});
+			return originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
 		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags).catch(() => []);
-		const bodyWithConfirmedTags = confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body);
-
-		const firstResponse = await originalFetch(input, {
-			...init,
-			body: JSON.stringify(bodyWithConfirmedTags)
-		});
+		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body)) });
 
 		if (!(await responseMentionsMissingTag(firstResponse))) return firstResponse;
-
-		return originalFetch(input, {
-			...init,
-			body: JSON.stringify(withoutTags(body))
-		});
+		return originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
 	};
 }
 
 async function responseWithMappings(response, svc, body) {
 	const data = await response.clone().json().catch(() => null);
-	if (!data || !data.ok) return response;
-	if (data.mode !== "hydrate" && data.mode !== "entry") return response;
-
+	if (!data || !data.ok || (data.mode !== "hydrate" && data.mode !== "entry")) return response;
 	const mappings = await persistMappings(svc, body, data);
 	return jsonResponseFrom(response, { ...data, mappings });
 }
