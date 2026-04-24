@@ -85,6 +85,22 @@ function mapProject(r) {
   };
 }
 
+function compareProjects(a = {}, b = {}) {
+  const dateOrder = toMs(b.createdAt) - toMs(a.createdAt);
+  if (dateOrder !== 0) return dateOrder;
+
+  const an = String(a.name || "").toLocaleLowerCase();
+  const bn = String(b.name || "").toLocaleLowerCase();
+  if (an && !bn) return -1;
+  if (!an && bn) return 1;
+  if (an < bn) return -1;
+  if (an > bn) return 1;
+
+  const ai = String(a.id || a.LocalId || "");
+  const bi = String(b.id || b.LocalId || "");
+  return ai.localeCompare(bi);
+}
+
 function jsonHeaders(ctx, origin, extra = {}) {
   return {
     ...ctx.corsHeaders(origin),
@@ -181,7 +197,7 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
       ctx.log.warn("airtable.details.join.fail", { status: dRes.status, contentType: dCt, preview: safeText(dTxt).slice(0, 160) });
     }
 
-    projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+    projects.sort(compareProjects);
     return { projects, source: "airtable" };
   };
 
@@ -197,7 +213,7 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
       const rows = await fetchProjectsCsvFromGitHub(ctx.env);
       let projects = rows.map(coerceCsvRowToProject);
       if (projects.length > limit) projects = projects.slice(0, limit);
-      projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+      projects.sort(compareProjects);
       payload = { projects, source: "csv" };
     } catch (csvErr) {
       return ctx.json(
