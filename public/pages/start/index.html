@@ -70,22 +70,26 @@
 
 					<label class="govuk-body" for="p_phase">Service phase</label>
 					<select id="p_phase" name="phase" class="govuk-input">
-						<option value="pre-discovery">Pre-Discovery</option>
-						<option value="discovery">Discovery</option>
-						<option value="alpha">Alpha</option>
-						<option value="beta">Beta</option>
-						<option value="live">Live</option>
-						<option value="retired">Retired</option>
+						<optgroup label="Service phases">
+							<option value="pre-discovery" selected>Pre-Discovery</option>
+							<option value="discovery">Discovery</option>
+							<option value="alpha">Alpha</option>
+							<option value="beta">Beta</option>
+							<option value="live">Live</option>
+							<option value="retired">Retired</option>
+						</optgroup>
 					</select>
 
 					<label class="govuk-body" for="p_status">Project status</label>
 					<select id="p_status" name="status" class="govuk-input">
-						<option value="goal-setting">Goal setting &amp; problem defining</option>
-						<option value="planning">Planning research</option>
-						<option value="conducting">Conducting research</option>
-						<option value="synthesis">Synthesis &amp; analysis</option>
-						<option value="shared">Shared &amp; socialised research</option>
-						<option value="monitoring">Monitoring metrics</option>
+						<optgroup label="Project statuses">
+							<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
+							<option value="planning">Planning research</option>
+							<option value="conducting">Conducting research</option>
+							<option value="synthesis">Synthesis &amp; analysis</option>
+							<option value="shared">Shared &amp; socialised research</option>
+							<option value="monitoring">Monitoring metrics</option>
+						</optgroup>
 					</select>
 
 					<div class="cta">
