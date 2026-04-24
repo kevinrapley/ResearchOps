@@ -336,22 +336,15 @@ function replaceWidget(widgets, widgetId, nextWidget) {
 	else widgets.push(nextWidget);
 }
 
-async function patchSticky(accessToken, muralId, widgetId, template, text, tags) {
-	const full = {
-		text,
-		tags,
-		style: stickyStyle(template),
-		backgroundColor: stickyBackground(template)
-	};
-	const minimal = {
-		text,
-		backgroundColor: stickyBackground(template)
-	};
+async function patchSticky(accessToken, muralId, widgetId, template, text) {
+	const textOnly = { text };
+	const contentOnly = { content: text };
+	const htmlOnly = { htmlText: text };
 	const attempts = [
-		() => updateSticky(null, accessToken, muralId, widgetId, full),
-		() => updateSticky(null, accessToken, muralId, widgetId, minimal),
-		() => patchStickyNote(accessToken, muralId, widgetId, full),
-		() => patchStickyNote(accessToken, muralId, widgetId, minimal)
+		() => patchStickyNote(accessToken, muralId, widgetId, textOnly),
+		() => updateSticky(null, accessToken, muralId, widgetId, textOnly),
+		() => patchStickyNote(accessToken, muralId, widgetId, contentOnly),
+		() => patchStickyNote(accessToken, muralId, widgetId, htmlOnly)
 	];
 	const errors = [];
 
