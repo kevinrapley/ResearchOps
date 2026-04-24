@@ -71,16 +71,19 @@ function tagKeys(widget) {
 }
 
 function widgetText(widget) {
-	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || "");
+	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || widget?.label || "");
 }
 
 function widgetMetadataText(widget) {
 	return [
 		widget?.title,
 		widget?.name,
+		widget?.label,
 		widget?.instruction,
 		widget?.hyperlinkTitle,
-		widget?.presentationTitle
+		widget?.presentationTitle,
+		widget?.plainText,
+		widget?.htmlText
 	].map(safeText).filter(Boolean).join(" ").toLowerCase();
 }
 
@@ -146,7 +149,10 @@ function isStickyLike(widget) {
 function isHeaderWidget(widget, categoryKey) {
 	const label = categoryLabel(categoryKey);
 	const text = widgetText(widget).toLowerCase();
-	return text === label && numeric(widget.width) > numeric(widget.height);
+	const meta = widgetMetadataText(widget);
+	const tags = tagKeys(widget);
+	const categoryMatch = text === label || meta === label || tags.includes(categoryKey);
+	return categoryMatch && numeric(widget.width) > numeric(widget.height);
 }
 
 function categoryHeaderWidget(widgets, categoryKey) {
@@ -170,26 +176,56 @@ function isInHeaderColumn(widget, header) {
 	return y > numeric(header.y) + numeric(header.height) && centre >= left && centre <= right;
 }
 
+function isCategoryTaggedTemplate(widget, categoryKey) {
+	const tags = tagKeys(widget);
+	const meta = widgetMetadataText(widget);
+	const text = widgetText(widget).toLowerCase();
+	return tags.includes(categoryKey) || meta.includes(categoryKey) || text.includes(`${categoryKey} sticky note`);
+}
+
+function columnTemplateWidgetFromTags(widgets, categoryKey) {
+	return widgets
+		.filter(isStickyLike)
+		.filter(widget => isCategoryTaggedTemplate(widget, categoryKey))
+		.filter(widget => !widgetHasAnyEntryTag(widget))
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x))[0] || null;
+}
+
 function columnTemplateWidget(widgets, categoryKey) {
 	const header = categoryHeaderWidget(widgets, categoryKey);
-	if (!header) return null;
+	if (!header) return columnTemplateWidgetFromTags(widgets, categoryKey);
 
 	return widgets
 		.filter(widget => widget.id !== header.id)
 		.filter(isStickyLike)
 		.filter(widget => isInHeaderColumn(widget, header))
-		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)))[0] || null;
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)))[0] ||
+		columnTemplateWidgetFromTags(widgets, categoryKey);
+}
+
+function inferHeaderFromTemplate(widgets, categoryKey, template) {
+	if (!template) return null;
+	const above = widgets
+		.filter(widget => numeric(widget.y) < numeric(template.y))
+		.filter(widget => numeric(widget.width) > numeric(widget.height))
+		.sort((a, b) => {
+			const adx = Math.abs(centreX(a) - centreX(template));
+			const bdx = Math.abs(centreX(b) - centreX(template));
+			return adx - bdx || numeric(b.y) - numeric(a.y);
+		})[0];
+	if (!above) return null;
+	return { ...above, text: widgetText(above) || categoryLabel(categoryKey) };
 }
 
 function columnLayout(widgets, categoryKey) {
-	const header = categoryHeaderWidget(widgets, categoryKey);
 	const template = columnTemplateWidget(widgets, categoryKey);
+	const header = categoryHeaderWidget(widgets, categoryKey) || inferHeaderFromTemplate(widgets, categoryKey, template);
 	if (!header && !template) return null;
 
 	const source = template || header;
-	const width = rounded(header?.width ?? source?.width, DEFAULT_WIDTH);
+	const width = rounded(template?.width ?? header?.width ?? source?.width, DEFAULT_WIDTH);
 	const height = rounded(template?.height, DEFAULT_HEIGHT);
-	const x = rounded(header?.x ?? source?.x, 0);
+	const x = rounded(template?.x ?? header?.x ?? source?.x, 0);
 	const y = rounded(template?.y ?? (numeric(header?.y, 0) + numeric(header?.height, 0) + GRID_GAP), 0);
 
 	return {
@@ -300,22 +336,15 @@ function replaceWidget(widgets, widgetId, nextWidget) {
 	else widgets.push(nextWidget);
 }
 
-async function patchSticky(accessToken, muralId, widgetId, template, text, tags) {
-	const full = {
-		text,
-		tags,
-		style: stickyStyle(template),
-		backgroundColor: stickyBackground(template)
-	};
-	const minimal = {
-		text,
-		backgroundColor: stickyBackground(template)
-	};
+async function patchSticky(accessToken, muralId, widgetId, template, text) {
+	const textOnly = { text };
+	const contentOnly = { content: text };
+	const htmlOnly = { htmlText: text };
 	const attempts = [
-		() => updateSticky(null, accessToken, muralId, widgetId, full),
-		() => updateSticky(null, accessToken, muralId, widgetId, minimal),
-		() => patchStickyNote(accessToken, muralId, widgetId, full),
-		() => patchStickyNote(accessToken, muralId, widgetId, minimal)
+		() => patchStickyNote(accessToken, muralId, widgetId, textOnly),
+		() => updateSticky(null, accessToken, muralId, widgetId, textOnly),
+		() => patchStickyNote(accessToken, muralId, widgetId, contentOnly),
+		() => patchStickyNote(accessToken, muralId, widgetId, htmlOnly)
 	];
 	const errors = [];
 
@@ -573,7 +602,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 
 	const layout = columnLayout(widgets, entry.categoryKey);
 	if (!layout) {
-		return { ok: false, action: "category-column-not-found", entryId: entry.entryId, category: entry.categoryKey, detail: `No ${entry.categoryKey} column heading was found on the Mural board.` };
+		return { ok: false, action: "category-column-not-found", entryId: entry.entryId, category: entry.categoryKey, detail: `No ${entry.categoryKey} column template or heading was found on the Mural board.` };
 	}
 
 	const existing = canonicalExistingWidget(widgets, entry, layout);
