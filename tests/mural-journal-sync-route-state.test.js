@@ -21,7 +21,7 @@ includes(serviceSource, "mode === \"status\"", "service");
 includes(serviceSource, "mode === \"hydrate\"", "service");
 includes(serviceSource, "journal-entry:", "service");
 includes(serviceSource, "widgetHasEntryTag", "service");
-includes(serviceSource, "widgetIsSyncedEntry", "service");
+includes(serviceSource, "canonicalExistingWidget", "service");
 includes(serviceSource, "categoryTemplateWidget", "service");
 includes(serviceSource, "candidateTemplateWidgets", "service");
 includes(serviceSource, "latestCanonicalCategoryWidget", "service");
