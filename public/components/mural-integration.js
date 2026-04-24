@@ -61,7 +61,20 @@
 		span.textContent = text;
 	}
 
+	function showConnectButton() {
+		if (!els.btnConnect) return;
+		els.btnConnect.hidden = false;
+		els.btnConnect.disabled = false;
+	}
+
+	function hideConnectButton() {
+		if (!els.btnConnect) return;
+		els.btnConnect.hidden = true;
+		els.btnConnect.disabled = true;
+	}
+
 	function setConnectedStatus(folderDenied = false) {
+		hideConnectButton();
 		if (folderDenied) {
 			pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room.");
 		} else {
@@ -91,8 +104,8 @@
 		return ($("main")?.dataset?.projectName || "").trim();
 	}
 
-	function absolutePagesUrl(pathAndQuery) {
-		return new URL(pathAndQuery, location.origin).toString();
+	function projectDashboardPath(projectId) {
+		return `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 	}
 
 	async function resolveProjectIdByName(name) {
@@ -119,7 +132,7 @@
 	};
 
 	function disableAll() {
-		if (els.btnConnect) els.btnConnect.disabled = false;
+		showConnectButton();
 		if (els.btnSetup) els.btnSetup.disabled = true;
 	}
 
@@ -148,9 +161,9 @@
 		els.btnConnect.disabled = false;
 		els.btnConnect.onclick = () => {
 			const effectiveId = canonicalProjectId(projectId);
-			const backAbs = absolutePagesUrl(`/pages/project-dashboard/?id=${encodeURIComponent(effectiveId)}`);
-			const href = addDebug(`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backAbs)}`);
-			debugLog("connect click", { href });
+			const backPath = projectDashboardPath(effectiveId);
+			const href = addDebug(`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`);
+			debugLog("connect click", { href, backPath });
 			location.href = href;
 		};
 		debugLog("connect button wired");
@@ -236,7 +249,7 @@
 			} else {
 				pill(els.status, "warn", "Mural is having trouble right now. You can still write journal entries; we'll sync later.");
 			}
-			if (els.btnConnect) els.btnConnect.disabled = false;
+			showConnectButton();
 			if (els.btnSetup) els.btnSetup.disabled = true;
 			return;
 		}
