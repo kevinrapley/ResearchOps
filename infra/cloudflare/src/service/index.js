@@ -106,6 +106,7 @@ export class ResearchOpsService {
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
 		this.mural = new MuralServicePart(this);
+		this.mural.muralJournalSync = (req, origin) => MuralJournalSync.muralJournalSync(this, req, origin);
 
 		/* Impact Tracking */
 		this.listImpact = ImpactService.listImpact(this);
@@ -202,7 +203,7 @@ export class ResearchOpsService {
 	/* ─────────────── Session Notes ─────────────── */
 	listSessionNotes = (origin, url) => SessionNotes.listSessionNotes(this, origin, url);
 	createSessionNote = (req, origin) => SessionNotes.createSessionNote(this, req, origin);
-	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, req, origin, noteId);
+	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, origin, noteId);
 
 	/* ─────────────── Comms ─────────────── */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
