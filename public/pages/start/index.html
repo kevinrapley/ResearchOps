@@ -48,12 +48,12 @@
 
 				<form id="projectForm" novalidate>
 					<label class="govuk-body" for="p_name">Project name</label>
-					<input id="p_name" class="govuk-input" required aria-required="true" aria-invalid="false" />
+					<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" />
 					<p id="p_name_error" class="error-message" style="display:none"></p>
 
 					<label class="govuk-body" for="p_desc">Description</label>
 					<p id="p_desc_help" class="hint">Write what you plan to research. Do not include personal data.</p>
-					<textarea id="p_desc" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
+					<textarea id="p_desc" name="description" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
 					<p id="p_desc_error" class="error-message" style="display:none"></p>
 
 					<!-- Description assistance controls -->
@@ -69,7 +69,7 @@
 					<div id="ai-rewrite-output" class="mt-2" aria-live="polite"></div>
 
 					<label class="govuk-body" for="p_phase">Service phase</label>
-					<select id="p_phase" class="govuk-input">
+					<select id="p_phase" name="phase" class="govuk-input">
 						<option value="pre-discovery">Pre-Discovery</option>
 						<option value="discovery">Discovery</option>
 						<option value="alpha">Alpha</option>
@@ -79,7 +79,7 @@
 					</select>
 
 					<label class="govuk-body" for="p_status">Project status</label>
-					<select id="p_status" class="govuk-input">
+					<select id="p_status" name="status" class="govuk-input">
 						<option value="goal-setting">Goal setting &amp; problem defining</option>
 						<option value="planning">Planning research</option>
 						<option value="conducting">Conducting research</option>
@@ -89,7 +89,7 @@
 					</select>
 
 					<div class="cta">
-						<button class="govuk-button" id="next2" type="button">Continue</button>
+						<button class="govuk-button" id="next2" type="submit">Continue</button>
 					</div>
 				</form>
 			</section>
