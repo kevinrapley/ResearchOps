@@ -67,6 +67,9 @@ const step1 = document.querySelector("#step1");
 const step2 = document.querySelector("#step2");
 const step3 = document.querySelector("#step3");
 
+// Forms
+const projectForm = /** @type {HTMLFormElement|null} */ (document.querySelector("#projectForm"));
+
 // Error summary (Step 1)
 const errorSummary = /** @type {HTMLElement|null} */ (document.querySelector("#error-summary"));
 
@@ -89,7 +92,6 @@ const leadEmail = /** @type {HTMLInputElement|null} */ (document.querySelector("
 const notes = /** @type {HTMLTextAreaElement|null} */ (document.querySelector("#p_notes"));
 
 // Nav buttons
-const btnNext2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next2"));
 const btnPrev1 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev1"));
 const btnNext3 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#next3"));
 const btnPrev2 = /** @type {HTMLButtonElement|null} */ (document.querySelector("#prev2"));
@@ -353,6 +355,11 @@ function onNextFromStep1() {
 	goToStep(2);
 }
 
+function onProjectFormSubmit(event) {
+	event.preventDefault();
+	onNextFromStep1();
+}
+
 function onBackToStep1() {
 	hideError(errorSummary);
 	goToStep(1);
@@ -375,8 +382,8 @@ function wire() {
 	// Initial state
 	goToStep(1);
 
-	// Buttons
-	btnNext2?.addEventListener("click", onNextFromStep1);
+	// Forms and buttons
+	projectForm?.addEventListener("submit", onProjectFormSubmit);
 	btnPrev1?.addEventListener("click", onBackToStep1);
 	btnNext3?.addEventListener("click", onNextFromStep2);
 	btnPrev2?.addEventListener("click", onBackToStep2);
