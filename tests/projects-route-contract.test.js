@@ -11,7 +11,7 @@ const env = {
   GH_REPO: "ResearchOps",
   GH_BRANCH: "main",
   GH_PATH_PROJECTS: "data/projects.csv",
-  ALLOWED_ORIGINS: "https://researchops.pages.dev"
+  ALLOWED_ORIGINS: "https://researchops.pages.dev",
 };
 
 function jsonResponse(body, init = {}) {
@@ -19,8 +19,8 @@ function jsonResponse(body, init = {}) {
     status: init.status || 200,
     headers: {
       "content-type": "application/json; charset=utf-8",
-      ...(init.headers || {})
-    }
+      ...(init.headers || {}),
+    },
   });
 }
 
@@ -28,8 +28,8 @@ function csvResponse(body) {
   return new Response(body, {
     status: 200,
     headers: {
-      "content-type": "text/csv; charset=utf-8"
-    }
+      "content-type": "text/csv; charset=utf-8",
+    },
   });
 }
 
@@ -51,8 +51,8 @@ function createMockFetch(calls) {
               Status: "Planning research",
               Objectives: "Beta objective",
               UserGroups: "Analyst",
-              Stakeholders: "[]"
-            }
+              Stakeholders: "[]",
+            },
           },
           {
             id: "recAlpha",
@@ -64,8 +64,8 @@ function createMockFetch(calls) {
               Status: "Planning research",
               Objectives: "Alpha objective",
               UserGroups: "Researcher",
-              Stakeholders: "[]"
-            }
+              Stakeholders: "[]",
+            },
           },
           {
             id: "recNewest",
@@ -77,10 +77,10 @@ function createMockFetch(calls) {
               Status: "Conducting research",
               Objectives: "Newest objective",
               UserGroups: "Citizen",
-              Stakeholders: "[]"
-            }
-          }
-        ]
+              Stakeholders: "[]",
+            },
+          },
+        ],
       });
     }
 
@@ -94,16 +94,16 @@ function createMockFetch(calls) {
               Project: ["recAlpha"],
               "Lead Researcher": "Lead Alpha",
               "Lead Researcher Email": "lead.alpha@example.test",
-              Notes: "Joined detail notes"
-            }
-          }
-        ]
+              Notes: "Joined detail notes",
+            },
+          },
+        ],
       });
     }
 
     if (url.includes("raw.githubusercontent.com")) {
       return csvResponse(
-        "LocalId,Name,CreatedAt\nrecCsv,Csv project,2025-01-01T00:00:00.000Z\n"
+        "LocalId,Name,CreatedAt\nrecCsv,Csv project,2025-01-01T00:00:00.000Z\n",
       );
     }
 
@@ -120,7 +120,7 @@ async function assertProjectsRouteUsesComposedService() {
     const response = await worker.fetch(
       new Request("https://worker.test/api/projects"),
       env,
-      {}
+      {},
     );
     assert.equal(response.status, 200);
 
@@ -129,7 +129,7 @@ async function assertProjectsRouteUsesComposedService() {
     assert.equal(Array.isArray(payload.projects), true);
     assert.deepEqual(
       payload.projects.map((project) => project.id),
-      ["recNewest", "recAlpha", "recBeta"]
+      ["recNewest", "recAlpha", "recBeta"],
     );
 
     const newest = payload.projects[0];
@@ -147,11 +147,11 @@ async function assertProjectsRouteUsesComposedService() {
 
     assert.equal(
       calls.some((url) => url.includes("/Projects?")),
-      true
+      true,
     );
     assert.equal(
       calls.some((url) => url.includes("/Project%20Details?")),
-      true
+      true,
     );
   } finally {
     globalThis.fetch = originalFetch;
@@ -167,7 +167,7 @@ async function assertProjectsCsvRouteStillWorks() {
     const response = await worker.fetch(
       new Request("https://worker.test/api/projects.csv"),
       env,
-      {}
+      {},
     );
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type") || "", /text\/csv/);
@@ -176,7 +176,7 @@ async function assertProjectsCsvRouteStillWorks() {
     assert.match(body, /LocalId,Name,CreatedAt/);
     assert.equal(
       calls.some((url) => url.includes("raw.githubusercontent.com")),
-      true
+      true,
     );
   } finally {
     globalThis.fetch = originalFetch;
