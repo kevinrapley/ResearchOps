@@ -24,6 +24,7 @@ import * as Memos from "./memos.js";
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
 import * as Analysis from "./reflection/analysis.js";
+import * as MuralJournalSync from "./mural-journal-sync.js";
 
 /* Session Notes */
 import * as SessionNotes from "./session-notes.js";
@@ -105,6 +106,7 @@ export class ResearchOpsService {
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
 		this.mural = new MuralServicePart(this);
+		this.mural.muralJournalSync = (req, origin) => MuralJournalSync.muralJournalSync(this, req, origin);
 
 		/* Impact Tracking */
 		this.listImpact = ImpactService.listImpact(this);
@@ -138,6 +140,7 @@ export class ResearchOpsService {
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
+	muralJournalSync = (req, origin) => MuralJournalSync.muralJournalSync(this, req, origin);
 
 	/* ─────────────── Excerpts ─────────────── */
 	listExcerpts = (origin, url) => Excerpts.listExcerpts(this, origin, url);
@@ -183,7 +186,7 @@ export class ResearchOpsService {
 	listPartials = (origin) => Partials.listPartials(this, origin);
 	createPartial = (req, origin) => Partials.createPartial(this, req, origin);
 	readPartial = (origin, id) => Partials.readPartial(this, origin, id);
-	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, origin, id);
+	updatePartial = (req, origin, id) => Partials.updatePartial(this, origin, id);
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
@@ -200,7 +203,7 @@ export class ResearchOpsService {
 	/* ─────────────── Session Notes ─────────────── */
 	listSessionNotes = (origin, url) => SessionNotes.listSessionNotes(this, origin, url);
 	createSessionNote = (req, origin) => SessionNotes.createSessionNote(this, req, origin);
-	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, req, origin, noteId);
+	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, origin, noteId);
 
 	/* ─────────────── Comms ─────────────── */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);

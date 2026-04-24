@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="/css/tabs.css" media="screen" />
 	<link rel="stylesheet" href="/css/coloris.min.css" media="screen" />
 	<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen" />
+	<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen" />
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
@@ -64,12 +65,26 @@
 
 			<!-- Panel: Journal entries -->
 			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="journal-entries">
-				<h3 class="govuk-heading-m">Journal entries</h3>
-
 				<div id="journal-entries-panel">
-					<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">
-						Add journal entry
-					</button>
+					<div class="journal-entries-header">
+						<div class="journal-entries-header__primary">
+							<h3 class="govuk-heading-m">Journal entries</h3>
+
+							<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">
+								Add journal entry
+							</button>
+						</div>
+
+						<div class="mural-sync-status" id="mural-sync-status" aria-labelledby="mural-sync-title">
+							<span class="mural-sync-status__label" id="mural-sync-title">Reflexive Journal Mural</span>
+							<span class="mural-sync-status__message" id="mural-sync-message" role="status" aria-live="polite">Checking sync status</span>
+							<button type="button" class="govuk-button govuk-button--secondary mural-sync-status__action" id="mural-sync-pending-btn" hidden disabled>
+								Add pending entries to Mural
+							</button>
+						</div>
+					</div>
+
+					<section id="mural-sync-panel" hidden aria-hidden="true"></section>
 
 					<!-- Entry form (initially hidden) -->
 					<div class="govuk-form-group" id="entry-form" hidden>
@@ -116,7 +131,7 @@
 					</div>
 
 					<!-- Journal entries list -->
-					<div id="entries-container" class="govuk-!-margin-top-6">
+					<div id="entries-container">
 						<!-- cards render here -->
 						<div class="empty-state" id="empty-journal" hidden>
 							<p class="govuk-body">No entries match the current filter.</p>
@@ -258,6 +273,7 @@
 	<script src="/components/tabs.js"></script>
 	<script src="/lib/coloris.min.js"></script>
 	<script type="module" src="/js/journal-tabs.js"></script>
+	<script type="module" src="/js/journal-mural-sync-compact.js"></script>
 	<script type="module" src="/components/journal-excerpts.js" defer></script>
 </body>
 

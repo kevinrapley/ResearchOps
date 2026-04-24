@@ -5,6 +5,7 @@
  * - Renders Codes (list, add form)
  * - Renders Memos (list, filters, add form)
  * - Bridges Analysis buttons to CAQ-DAS module
+ * - Shows page-level Reflexive Journal Mural sync status and hydration controls
  */
 
 import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-interface.js';
@@ -88,6 +89,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				if (!res.ok) {
 					const err = new Error('HTTP ' + res.status + (txt ? ' — ' + txt : ''));
 					err.response = body;
+					err.status = res.status;
 					throw err;
 				}
 				return body;
@@ -99,33 +101,157 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return state.projectAirtableId || state.projectId;
 	}
 
+	function projectNameForSync() {
+		return document.querySelector('main')?.dataset?.projectName ||
+			document.querySelector('h1')?.textContent?.trim() ||
+			state.projectId;
+	}
+
+	function muralUid() {
+		return localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon';
+	}
+
+	function muralSyncPayload(mode, extra = {}) {
+		return {
+			mode,
+			uid: muralUid(),
+			projectId: state.projectId,
+			projectName: projectNameForSync(),
+			...extra
+		};
+	}
+
+	function ensureMuralSyncPanel() {
+		let panel = document.getElementById('mural-sync-panel');
+		if (panel) return panel;
+
+		const host = document.getElementById('journal-entries-panel');
+		const entries = document.getElementById('entries-container');
+		if (!host || !entries) return null;
+
+		panel = document.createElement('section');
+		panel.id = 'mural-sync-panel';
+		panel.className = 'summary-card govuk-!-margin-bottom-4';
+		panel.setAttribute('aria-labelledby', 'mural-sync-title');
+		panel.innerHTML = '' +
+			'<div class="summary-card__title-row">' +
+			'  <h3 class="summary-card__title" id="mural-sync-title">Mural sync</h3>' +
+			'  <p class="tag" id="mural-sync-state">Checking</p>' +
+			'</div>' +
+			'<p class="govuk-body" id="mural-sync-message" role="status" aria-live="polite">Checking Reflexive Journal Mural sync status.</p>' +
+			'<div class="govuk-button-group">' +
+			'  <button type="button" class="govuk-button govuk-button--secondary" id="mural-sync-pending-btn">Sync pending entries</button>' +
+			'  <button type="button" class="govuk-button govuk-button--secondary" id="mural-sync-refresh-btn">Check sync status</button>' +
+			'</div>';
+
+		host.insertBefore(panel, entries);
+		document.getElementById('mural-sync-pending-btn')?.addEventListener('click', syncPendingEntriesToMural);
+		document.getElementById('mural-sync-refresh-btn')?.addEventListener('click', loadMuralSyncStatus);
+		return panel;
+	}
+
+	function setMuralSyncPanel(stateText, message, pending = 0, busy = false) {
+		const panel = ensureMuralSyncPanel();
+		if (!panel) return;
+
+		const stateEl = document.getElementById('mural-sync-state');
+		const messageEl = document.getElementById('mural-sync-message');
+		const syncBtn = document.getElementById('mural-sync-pending-btn');
+		const refreshBtn = document.getElementById('mural-sync-refresh-btn');
+
+		if (stateEl) stateEl.textContent = stateText;
+		if (messageEl) messageEl.textContent = message;
+		if (syncBtn) {
+			syncBtn.disabled = busy || !pending;
+			syncBtn.textContent = pending ? `Sync ${pending} pending ${pending === 1 ? 'entry' : 'entries'}` : 'Sync pending entries';
+		}
+		if (refreshBtn) refreshBtn.disabled = busy;
+	}
+
+	async function loadMuralSyncStatus() {
+		if (!state.projectId) return;
+		setMuralSyncPanel('Checking', 'Checking Reflexive Journal Mural sync status.', 0, true);
+
+		try {
+			const status = await fetchJSON(apiUrl('/api/mural/journal-sync'), {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(muralSyncPayload('status'))
+			});
+
+			state.muralSync = status;
+			const pending = Number(status.pending || 0);
+			const synced = Number(status.synced || 0);
+			const total = Number(status.total || 0);
+			const message = pending ?
+				`${synced} of ${total} journal entries are synced to the Reflexive Journal Mural. ${pending} ${pending === 1 ? 'entry is' : 'entries are'} pending.` :
+				`${synced} of ${total} journal entries are synced to the Reflexive Journal Mural.`;
+			setMuralSyncPanel(pending ? 'Pending' : 'Synced', message, pending, false);
+		} catch (err) {
+			const error = err?.response?.error || '';
+			if (error === 'not_authenticated') {
+				setMuralSyncPanel('Not connected', 'Connect Mural from the project dashboard before syncing journal entries.', 0, false);
+				return;
+			}
+			if (error === 'mural_board_not_found') {
+				setMuralSyncPanel('No board', 'No Reflexive Journal Mural board was found for this project.', 0, false);
+				return;
+			}
+			console.warn('[journal] Mural sync status failed', err);
+			setMuralSyncPanel('Unavailable', 'Could not check Mural sync status. Journal entries remain saved in ResearchOps.', 0, false);
+		}
+	}
+
+	async function syncPendingEntriesToMural() {
+		if (!state.projectId) return;
+		setMuralSyncPanel('Syncing', 'Syncing pending journal entries to the Reflexive Journal Mural.', 0, true);
+
+		try {
+			const result = await fetchJSON(apiUrl('/api/mural/journal-sync'), {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(muralSyncPayload('hydrate'))
+			});
+
+			const after = result.after || {};
+			const pending = Number(after.pending || 0);
+			const synced = Number(after.synced || 0);
+			const total = Number(after.total || 0);
+			const changed = Number(result.createdOrUpdated || 0);
+			setMuralSyncPanel(
+				pending ? 'Pending' : 'Synced',
+				`${changed} ${changed === 1 ? 'entry was' : 'entries were'} synced. ${synced} of ${total} journal entries are now on the Reflexive Journal Mural.`,
+				pending,
+				false
+			);
+		} catch (err) {
+			console.warn('[journal] Mural hydration failed', err);
+			setMuralSyncPanel('Failed', 'Could not sync pending entries to Mural. Journal entries remain saved in ResearchOps.', 0, false);
+		}
+	}
+
 	// === Mural sync: Reflexive Journal behaviour ===============================
 	async function _syncToMural(newEntry) {
 		try {
-			const projectId = state.projectId;
-			if (!projectId) return;
+			if (!state.projectId) return null;
 
-			const payload = {
-				uid: localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon',
-				projectId,
-				studyId: newEntry?.studyId || null,
-				category: String(newEntry?.category || '').toLowerCase(),
-				description: String(newEntry?.description || newEntry?.content || ''),
-				tags: Array.isArray(newEntry?.tags) ? newEntry.tags : []
-			};
-
-			const res = await fetch(apiUrl('/api/mural/journal-sync'), {
+			const result = await fetchJSON(apiUrl('/api/mural/journal-sync'), {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(payload)
+				body: JSON.stringify(muralSyncPayload('entry', {
+					entryId: newEntry?.entryId || newEntry?.id || '',
+					category: newEntry?.category || '',
+					description: newEntry?.description || newEntry?.content || '',
+					tags: Array.isArray(newEntry?.tags) ? newEntry.tags : []
+				}))
 			});
 
-			if (!res.ok) {
-				const body = await res.text().catch(() => '');
-				console.warn('[journal] Mural journal-sync failed', res.status, body);
-			}
+			await loadMuralSyncStatus();
+			return result;
 		} catch (err) {
 			console.warn('[journal] Mural journal-sync error', err);
+			setMuralSyncPanel('Pending', 'Entry saved in ResearchOps, but it has not yet synced to Mural. Use Sync pending entries.', 1, false);
+			return null;
 		}
 	}
 
@@ -137,6 +263,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		entries: [],
 		entriesLoadSeq: 0,
 		entryFilter: 'all',
+		muralSync: null,
 		codes: [],
 		codeFormOpen: false,
 		memos: [],
@@ -176,6 +303,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 					};
 				});
 				renderEntries();
+				loadMuralSyncStatus();
 			})
 			.catch(err => {
 				if (loadSeq !== state.entriesLoadSeq) return;
@@ -191,6 +319,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	function renderEntries() {
 		const wrap = document.getElementById('entries-container');
 		if (!wrap) return;
+		ensureMuralSyncPanel();
 
 		const filter = currentEntryFilter();
 		const list = state.entries.filter(en => filter === 'all' || String(en.categoryKey || normalizeCategoryKey(en.category)).toLowerCase() === filter);
@@ -279,13 +408,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			};
 
 			try {
-				await fetchJSON(apiUrl('/api/journal-entries'), {
+				const created = await fetchJSON(apiUrl('/api/journal-entries'), {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify(body)
 				});
 
-				await _syncToMural({ category, description: content, tags, projectId: state.projectId });
+				await _syncToMural({ entryId: created.id, category, description: content, tags, projectId: state.projectId });
 				form.reset();
 				toggle(false);
 				flash('Entry saved.');
@@ -585,6 +714,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		setupMemoAddForm();
 		setupMemoFilters();
 		setupAnalysisButtons();
+		ensureMuralSyncPanel();
 
 		var active = (location.hash || '').replace(/^#/, '') || 'journal-entries';
 		onTabShown(active);

@@ -28,9 +28,10 @@ includes("function apiUrl(path)");
 includes("fetchJSON(apiUrl('/api/journal-entries?project='");
 includes("fetchJSON(apiUrl('/api/journal-entries/'");
 includes("fetchJSON(apiUrl('/api/journal-entries')");
-includes("fetch(apiUrl('/api/mural/journal-sync')");
+includes("apiUrl('/api/mural/journal-sync')");
 
 excludes("fetchJSON('/api/journal-entries?project=");
 excludes("fetchJSON('/api/journal-entries/'");
 excludes("fetchJSON('/api/journal-entries',");
 excludes("fetch('/api/mural/journal-sync'");
+excludes("fetchJSON('/api/mural/journal-sync'");

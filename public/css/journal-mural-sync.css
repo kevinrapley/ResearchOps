@@ -1,0 +1,79 @@
+/* Compact Reflexive Journal Mural sync status */
+
+.journal-entries-header {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+	padding-right: 380px;
+	}
+
+.journal-entries-header__primary {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	flex-wrap: wrap;
+	}
+
+.journal-entries-header__primary .govuk-heading-m {
+	margin-bottom: 0;
+	}
+
+.mural-sync-status {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-wrap: wrap;
+	max-width: 360px;
+	font-size: 16px;
+	line-height: 1.4;
+	text-align: right;
+	}
+
+.mural-sync-status__label {
+	font-weight: 700;
+	white-space: nowrap;
+	}
+
+.mural-sync-status__message {
+	color: #505a5f;
+	}
+
+.mural-sync-status__action {
+	margin-bottom: 0;
+	padding: 6px 10px;
+	font-size: 16px;
+	line-height: 1.25;
+	}
+
+#mural-sync-panel[hidden] {
+	display: none !important;
+	}
+
+#journals-tabs .journal-filters {
+	margin-top: 8px;
+	margin-bottom: 16px;
+	}
+
+@media (max-width: 900px) {
+	.journal-entries-header {
+		padding-right: 0;
+		flex-direction: column;
+		align-items: stretch;
+		}
+
+	.mural-sync-status {
+		position: static;
+		justify-content: flex-start;
+		max-width: none;
+		text-align: left;
+		}
+	}
+
+/* transparency begins in the cascade */
