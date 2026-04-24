@@ -7,6 +7,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   a11y:
     runs-on: ubuntu-latest
@@ -36,13 +39,148 @@ jobs:
           npm install --prefix .pa11y-workdir --no-package-lock
 
       - name: Run pa11y-ci
-        run: .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
+        run: |
+          set +e
+          .pa11y-workdir/node_modules/.bin/pa11y-ci --config .pa11yci.json --reporter json > pa11y-report.json
+          status=$?
+          echo "$status" > pa11y-exit-code.txt
+          exit 0
 
-      # Optional: pretty HTML report
-      - name: Generate HTML report
+      - name: Generate pa11y reports
         if: always()
         run: |
-          node -e "const fs=require('fs');if(!fs.existsSync('pa11y-report.json')){fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><h1>pa11y-ci did not produce a JSON report</h1>');process.exit(0);}const r=JSON.parse(fs.readFileSync('pa11y-report.json','utf8'));const rows=Object.entries(r).map(([u,items])=>'<h2>'+u+'</h2>'+items.map(i=>'<details><summary>['+i.type+'] '+i.message+'</summary><pre>'+JSON.stringify(i,null,2)+'</pre></details>').join('')).join('');fs.writeFileSync('pa11y-report.html','<!doctype html><meta charset=utf-8><title>pa11y-ci report</title><style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}</style><h1>pa11y-ci report</h1>'+rows);"
+          node <<'NODE'
+          const fs = require('fs');
+
+          const htmlEscape = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+          const readExitCode = () => {
+            if (!fs.existsSync('pa11y-exit-code.txt')) return 1;
+            const raw = fs.readFileSync('pa11y-exit-code.txt', 'utf8').trim();
+            const parsed = Number.parseInt(raw, 10);
+            return Number.isFinite(parsed) ? parsed : 1;
+          };
+
+          const issueListFrom = (value) => {
+            if (Array.isArray(value)) return value;
+            if (Array.isArray(value?.issues)) return value.issues;
+            if (Array.isArray(value?.errors)) return value.errors;
+            if (Array.isArray(value?.results)) return value.results;
+            return [];
+          };
+
+          const urlFrom = (key, value) => value?.pageUrl || value?.url || value?.documentUrl || key;
+
+          const pagesFromReport = (report) => {
+            if (Array.isArray(report)) {
+              return report.map((value, index) => ({
+                url: urlFrom(`page-${index + 1}`, value),
+                issues: issueListFrom(value),
+                raw: value
+              }));
+            }
+
+            if (report?.results && typeof report.results === 'object' && !Array.isArray(report.results)) {
+              return Object.entries(report.results).map(([key, value]) => ({
+                url: urlFrom(key, value),
+                issues: issueListFrom(value),
+                raw: value
+              }));
+            }
+
+            if (report && typeof report === 'object') {
+              const ignored = new Set(['total', 'passes', 'errors', 'results']);
+              return Object.entries(report)
+                .filter(([key]) => !ignored.has(key))
+                .map(([key, value]) => ({
+                  url: urlFrom(key, value),
+                  issues: issueListFrom(value),
+                  raw: value
+                }));
+            }
+
+            return [];
+          };
+
+          const exitCode = readExitCode();
+          let report = null;
+          let parseError = null;
+
+          if (fs.existsSync('pa11y-report.json')) {
+            try {
+              const text = fs.readFileSync('pa11y-report.json', 'utf8').trim();
+              report = text ? JSON.parse(text) : null;
+            } catch (error) {
+              parseError = error;
+            }
+          }
+
+          const pages = report ? pagesFromReport(report) : [];
+          const issueCount = pages.reduce((total, page) => total + page.issues.length, 0);
+
+          const body = [];
+          body.push('<!doctype html><meta charset="utf-8"><title>pa11y-ci report</title>');
+          body.push('<style>body{font-family:system-ui;margin:24px;line-height:1.4}summary{cursor:pointer}h2{margin-top:24px;border-bottom:1px solid #eee;padding-bottom:4px}pre{white-space:pre-wrap;background:#f6f6f6;padding:12px;overflow:auto}.meta{color:#555}</style>');
+          body.push('<h1>pa11y-ci report</h1>');
+          body.push(`<p class="meta">Exit code: ${htmlEscape(exitCode)}. Pages: ${htmlEscape(pages.length)}. Issues: ${htmlEscape(issueCount)}.</p>`);
+
+          if (parseError) {
+            body.push('<h2>Report parse error</h2>');
+            body.push(`<pre>${htmlEscape(parseError.stack || parseError.message)}</pre>`);
+          }
+
+          if (!report) {
+            body.push('<h2>No JSON report was produced</h2>');
+          }
+
+          for (const page of pages) {
+            body.push(`<h2>${htmlEscape(page.url)}</h2>`);
+            if (!page.issues.length) {
+              body.push('<p>No issues reported for this page.</p>');
+              continue;
+            }
+
+            for (const issue of page.issues) {
+              const type = issue.type || issue.code || 'issue';
+              const message = issue.message || issue.description || 'No message supplied';
+              body.push(`<details><summary>[${htmlEscape(type)}] ${htmlEscape(message)}</summary><pre>${htmlEscape(JSON.stringify(issue, null, 2))}</pre></details>`);
+            }
+          }
+
+          fs.writeFileSync('pa11y-report.html', body.join('\n'));
+
+          const summary = [];
+          summary.push('## Accessibility audit (pa11y-ci)');
+          summary.push(`- Exit code: **${exitCode}**`);
+          summary.push(`- Pages checked: **${pages.length}**`);
+          summary.push(`- Issues reported: **${issueCount}**`);
+          summary.push('- Standard: WCAG 2.1 AA');
+          summary.push('- Artifacts: **pa11y-ci-report** (JSON + HTML)');
+
+          if (parseError) {
+            summary.push('');
+            summary.push('### Report parse error');
+            summary.push('```');
+            summary.push(parseError.stack || parseError.message);
+            summary.push('```');
+          }
+
+          const topIssues = pages.flatMap(page => page.issues.slice(0, 10).map(issue => ({ page: page.url, issue })));
+          if (topIssues.length) {
+            summary.push('');
+            summary.push('### First reported issues');
+            for (const { page, issue } of topIssues.slice(0, 10)) {
+              summary.push(`- **${page}** — ${issue.type || issue.code || 'issue'}: ${issue.message || issue.description || 'No message supplied'}`);
+            }
+          }
+
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary.join('\n') + '\n');
+          process.exit(exitCode);
+          NODE
 
       - name: Upload pa11y artifacts
         if: always()
@@ -52,12 +190,6 @@ jobs:
           path: |
             pa11y-report.json
             pa11y-report.html
+            pa11y-exit-code.txt
           if-no-files-found: warn
           retention-days: 14
-
-      - name: Add summary
-        if: always()
-        run: |
-          echo "## Accessibility audit (pa11y-ci)" >> $GITHUB_STEP_SUMMARY
-          echo "- Artifacts: **pa11y-ci-report** (JSON + HTML)" >> $GITHUB_STEP_SUMMARY
-          echo "- Standard: WCAG 2.1 AA" >> $GITHUB_STEP_SUMMARY
