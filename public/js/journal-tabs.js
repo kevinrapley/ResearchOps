@@ -181,6 +181,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		projectLocalId: '',
 		projectAirtableId: '',
 		entries: [],
+		entriesLoadSeq: 0,
 		entryFilter: 'all',
 		codes: [],
 		memos: [],
@@ -196,8 +197,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	// ---------- JOURNAL ----------
 	function loadEntries() {
 		if (!state.projectId) return Promise.resolve();
+		const loadSeq = state.entriesLoadSeq + 1;
+		state.entriesLoadSeq = loadSeq;
+
 		return fetchJSON(apiUrl('/api/journal-entries?project=' + encodeURIComponent(state.projectId)))
 			.then(data => {
+				if (loadSeq !== state.entriesLoadSeq) return;
+
 				const arr = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
 				state.entries = arr.map(e => {
 					const rawCategory = e.category || '—';
@@ -216,10 +222,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				renderEntries();
 			})
 			.catch(err => {
+				if (loadSeq !== state.entriesLoadSeq) return;
+
 				console.error('loadEntries', err);
-				state.entries = [];
-				renderEntries();
-				flash('Could not load journal entries.');
+				if (!state.entries.length) {
+					renderEntries();
+				}
+				flash('Could not refresh journal entries.');
 			});
 	}
 
@@ -389,8 +398,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	// ---------- TAB lifecycle ----------
 	function onTabShown(id) {
 		if (id === 'journal-entries') loadEntries();
-		if (id === 'codes') loadCodes();
-		if (id === 'memos') loadMemos();
+		if (id === 'codes' && typeof loadCodes === 'function') loadCodes();
+		if (id === 'memos' && typeof loadMemos === 'function') loadMemos();
 	}
 
 	// ---------- boot ----------
@@ -410,9 +419,9 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 		setupEntryAddForm();
 		setupEntryFilters();
-		setupCodeAdd();
-		setupMemoAddForm();
-		setupMemoFilters();
+		if (typeof setupCodeAdd === 'function') setupCodeAdd();
+		if (typeof setupMemoAddForm === 'function') setupMemoAddForm();
+		if (typeof setupMemoFilters === 'function') setupMemoFilters();
 		setupAnalysisButtons();
 
 		var active = (location.hash || '').replace(/^#/, '') || 'journal-entries';

@@ -36,6 +36,7 @@ require_file "tests/mural-ui-route-state.test.js"
 require_file "tests/journals-project-route-contract.test.js"
 require_file "tests/journal-tabs-api-origin-route-state.test.js"
 require_file "tests/journal-tabs-filter-state-route-state.test.js"
+require_file "tests/journal-tabs-resilience-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -149,5 +150,8 @@ node tests/journal-tabs-api-origin-route-state.test.js
 
 info "checking Journal tabs filter-state route-state contract"
 node tests/journal-tabs-filter-state-route-state.test.js
+
+info "checking Journal tabs resilience route-state contract"
+node tests/journal-tabs-resilience-route-state.test.js
 
 info "validation passed"
