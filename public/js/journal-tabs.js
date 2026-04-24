@@ -47,6 +47,31 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return text.slice(0, limit) + '…';
 	}
 
+	function normalizeCategoryKey(value) {
+		const raw = String(value || '').trim().toLowerCase();
+		if (!raw || raw === '—') return 'uncategorised';
+		if (raw === 'perceptions' || raw.includes('perception')) return 'perceptions';
+		if (raw === 'procedures' || raw.includes('procedure') || raw.includes('day-to-day')) return 'procedures';
+		if (raw === 'decisions' || raw.includes('decision') || raw.includes('methodological')) return 'decisions';
+		if (raw === 'introspections' || raw.includes('introspection') || raw.includes('personal')) return 'introspections';
+		return raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'uncategorised';
+	}
+
+	function categoryLabel(value) {
+		const raw = String(value || '').trim();
+		if (!raw) return '—';
+		const key = normalizeCategoryKey(raw);
+		if (key === 'perceptions') return 'Perceptions';
+		if (key === 'procedures') return 'Procedures';
+		if (key === 'decisions') return 'Decisions';
+		if (key === 'introspections') return 'Introspections';
+		return raw;
+	}
+
+	function emptyEntriesHtml() {
+		return '<div class="empty-state" id="empty-journal"><p class="govuk-body">No entries match the current filter.</p></div>';
+	}
+
 	function toHex8(input) {
 		if (!input) return '#1d70b8ff';
 		var v = String(input).trim().toLowerCase();
@@ -175,12 +200,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			.then(data => {
 				const arr = Array.isArray(data?.entries) ? data.entries : Array.isArray(data) ? data : [];
 				state.entries = arr.map(e => {
+					const rawCategory = e.category || '—';
 					let tags = Array.isArray(e.tags) ?
 						e.tags :
 						String(e.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 					return {
 						id: e.id,
-						category: e.category || '—',
+						category: categoryLabel(rawCategory),
+						categoryKey: normalizeCategoryKey(rawCategory),
 						content: e.content ?? e.body ?? '',
 						tags,
 						createdAt: e.createdAt || e.created_at || ''
@@ -200,31 +227,29 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	function renderEntries() {
 		const wrap = document.getElementById('entries-container');
-		const empty = document.getElementById('empty-journal');
 		if (!wrap) return;
 
 		const filter = currentEntryFilter();
-		const list = state.entries.filter(en => filter === 'all' || String(en.category || '').toLowerCase() === filter);
+		const list = state.entries.filter(en => filter === 'all' || String(en.categoryKey || normalizeCategoryKey(en.category)).toLowerCase() === filter);
 
-		if (!list.length) { wrap.innerHTML = ''; if (empty) empty.hidden = false; return; }
-		if (empty) empty.hidden = true;
+		if (!list.length) { wrap.innerHTML = emptyEntriesHtml(); return; }
 
 		wrap.innerHTML = list.map(en => {
 			const snippet = truncateWords(en.content || '', 200);
 			const wasShortened = snippet.length < String(en.content || '').trim().length;
 			const tagsHTML = (en.tags || []).map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`).join('');
 			return `
-				<article class="entry-card" data-id="${esc(en.id)}" data-category="${esc(en.category)}">
+				<article class="entry-card" data-id="${esc(en.id)}" data-category="${esc(en.categoryKey || normalizeCategoryKey(en.category))}">
 					<header class="entry-header">
 						<div class="entry-meta">
 							<a class="entry-link" href="${ROUTES.viewEntry(en.id)}">
-								<span class="entry-category-badge" data-category="${esc(en.category)}">${esc(en.category)}</span>
+								<span class="entry-category-badge" data-category="${esc(en.categoryKey || normalizeCategoryKey(en.category))}">${esc(en.category)}</span>
 								<span class="entry-timestamp">${when(en.createdAt)}</span>
 							</a>
 						</div>
 						<div class="entry-actions" role="group">
 							<a class="btn-quiet" href="${ROUTES.editEntry(en.id)}">Edit</a>
-							<button class="btn-quiet danger" data-act="delete" data-id="${esc(en.id)}">Delete</button>
+							<button type="button" class="btn-quiet danger" data-act="delete" data-id="${esc(en.id)}">Delete</button>
 						</div>
 					</header>
 					<div class="entry-content">${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}</div>
