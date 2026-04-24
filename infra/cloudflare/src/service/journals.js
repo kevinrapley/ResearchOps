@@ -23,7 +23,10 @@ function resolveJournalTable(env) {
 }
 
 function hasAirtable(env) {
-	return !!(env?.AIRTABLE_BASE_ID && (env?.AIRTABLE_API_KEY || env?.AIRTABLE_ACCESS_TOKEN));
+	return !!(
+		(env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) &&
+		(env?.AIRTABLE_API_KEY || env?.AIRTABLE_PAT || env?.AIRTABLE_ACCESS_TOKEN)
+	);
 }
 
 function hasD1(env) {
@@ -91,6 +94,48 @@ async function d1ListJournalEntriesForProject(env, projectParam) {
 	return rows.map(d1EntryFromRow);
 }
 
+async function airtableListJournalEntriesForProject(svc, projectParam) {
+	const env = svc.env;
+	const airtableProjectId = String(projectParam || "").trim();
+
+	if (!airtableProjectId) return [];
+
+	const tableRef = resolveJournalTable(env);
+	const res = await listAll(env, tableRef, { pageSize: 100 }, svc?.cfg?.TIMEOUT_MS);
+
+	const records = Array.isArray(res?.records) ? res.records :
+		Array.isArray(res) ? res : [];
+
+	const entries = [];
+
+	for (const r of records) {
+		const f = r?.fields || {};
+		const linkedProjects = Array.isArray(f.Project) ? f.Project :
+			Array.isArray(f.Projects) ? f.Projects : [];
+
+		if (!linkedProjects.includes(airtableProjectId)) continue;
+
+		entries.push({
+			id: r.id,
+			project: airtableProjectId,
+			category: f.Category || "—",
+			content: f.Content || f.Body || f.Notes || "",
+			tags: Array.isArray(f.Tags) ?
+				f.Tags :
+				String(f.Tags || "").split(",").map(s => s.trim()).filter(Boolean),
+			createdAt: r.createdTime || f.Created || ""
+		});
+	}
+
+	entries.sort((a, b) => {
+		const aTime = Date.parse(a.createdAt || "");
+		const bTime = Date.parse(b.createdAt || "");
+		return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+	});
+
+	return entries;
+}
+
 /* ───────────────────────────────────── routes ─────────────────────────────────── */
 
 /**
@@ -117,28 +162,66 @@ export async function listJournalEntries(svc, origin, url) {
 
 	const env = svc.env;
 	const useD1 = hasD1(env);
-	const useAirtable = !useD1 && hasAirtable(env);
+	const useAirtable = hasAirtable(env);
 
 	// ───── D1-primary path ─────
 	if (useD1) {
-		try {
-			const entries = await d1ListJournalEntriesForProject(env, projectParam);
+	try {
+		const entries = await d1ListJournalEntriesForProject(env, projectParam);
+
+		if (entries.length || !useAirtable) {
 			return svc.json({ ok: true, source: "d1", entries }, 200, svc.corsHeaders(origin));
-		} catch (e) {
-			const msg = safeText(e?.message || e);
-			svc?.log?.error?.("journals.list.d1.fail", { err: msg });
-			return svc.json(
-				{ ok: false, error: "Failed to load journal entries", detail: msg },
-				500,
-				svc.corsHeaders(origin)
-			);
 		}
+
+		const airtableEntries = await airtableListJournalEntriesForProject(svc, projectParam);
+		return svc.json({
+			ok: true,
+			source: airtableEntries.length ? "airtable-fallback" : "d1-empty",
+			entries: airtableEntries
+		}, 200, svc.corsHeaders(origin));
+	} catch (e) {
+		const msg = safeText(e?.message || e);
+		svc?.log?.error?.("journals.list.d1.fail", { err: msg });
+
+		if (useAirtable) {
+			try {
+				const airtableEntries = await airtableListJournalEntriesForProject(svc, projectParam);
+				return svc.json({
+					ok: true,
+					source: "airtable-fallback-after-d1-error",
+					entries: airtableEntries
+				}, 200, svc.corsHeaders(origin));
+			} catch (airErr) {
+				const airMsg = safeText(airErr?.message || airErr);
+				svc?.log?.error?.("journals.list.airtable_fallback.fail", { err: airMsg });
+			}
+		}
+
+		return svc.json(
+			{ ok: false, error: "Failed to load journal entries", detail: msg },
+			500,
+			svc.corsHeaders(origin)
+		);
 	}
 
 	// ───── Airtable fallback path (no D1) ─────
 	if (!useAirtable) {
-		// Neither Airtable nor D1 configured: soft-empty rather than crash
 		return svc.json({ ok: true, entries: [] }, 200, svc.corsHeaders(origin));
+	}
+	
+	try {
+		const entries = await airtableListJournalEntriesForProject(svc, projectParam);
+		return svc.json({ ok: true, source: "airtable", entries }, 200, svc.corsHeaders(origin));
+	} catch (e) {
+		const msg = safeText(e?.message || e || "");
+		svc?.log?.error?.("journals.list.fail", { err: msg });
+		const status = /Airtable\s+40[13]/i.test(msg) ? 502 : 500;
+	
+		return svc.json(
+			{ ok: false, error: "Failed to load journal entries", detail: msg },
+			status,
+			svc.corsHeaders(origin)
+		);
 	}
 
 	try {
