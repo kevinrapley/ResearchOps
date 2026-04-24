@@ -6,7 +6,7 @@
     "notes": "P12M"
   },
   "actions": {
-    "on_expiry": "delete",  // or "archive"
+    "on_expiry": "delete",
     "grace_period_days": 7
   }
 }
