@@ -11,20 +11,19 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
+	<script type="module" src="/js/study-page.js" defer></script>
 	<script type="module" src="study-desc-controller.js" defer></script>
 </head>
 
 <body>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	
+
 	<x-include src="/partials/header.html" vars='{
     "active":"Projects",
     "subtitle":"Study"
   }'></x-include>
 
-	<!-- Use container to match global layout spacing -->
 	<main id="main" class="container govuk-body" role="main">
-		<!-- Breadcrumb -->
 		<nav class="breadcrumbs" aria-label="Breadcrumb">
 			<ol>
 				<li><a href="/pages/projects/">Projects</a></li>
@@ -33,17 +32,20 @@
 			</ol>
 		</nav>
 
+		<div id="study-error" class="panel" role="alert" tabindex="-1" hidden aria-hidden="true">
+			<h2 class="govuk-heading-s">There is a problem loading this study</h2>
+			<p id="study-error-message" class="govuk-body">Could not load the study.</p>
+		</div>
+
 		<div class="actions-bar">
 			<a id="back-to-project" href="/pages/projects/" class="btn btn--secondary">← Back to Project</a>
 			<a id="edit-study" href="#" class="btn">✎ Edit Study</a>
 		</div>
 
-		<!-- Hero -->
 		<div class="dashboard-hero">
 			<p id="study-eyebrow" class="project-org">Study</p>
 			<h1 id="study-title" class="govuk-heading-l">Study</h1>
 
-			<!-- Description lives under the title -->
 			<div id="desc-view-wrap">
 				<div id="description" class="govuk-body">—</div>
 				<div class="actions-bar" style="margin-top:8px;">
@@ -51,7 +53,6 @@
 				</div>
 			</div>
 
-			<!-- Inline editor (hidden by default) -->
 			<form id="desc-editor" class="panel" hidden>
 				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
 				<textarea id="desc-input" class="govuk-textarea" rows="8" spellcheck="true" autocomplete="off"></textarea>
@@ -78,12 +79,11 @@
 
 				<div class="actions-bar" style="gap:8px;">
 					<button id="btn-save-desc" class="btn" type="submit">Save</button>
-					<button id="btn-cancel-desc" class="btn btn--secondary" type="button">Cancel</button>
+					<button id="desc-cancel" class="btn btn--secondary" type="button">Cancel</button>
 				</div>
 			</form>
 		</div>
 
-		<!-- Key info -->
 		<section class="kv">
 			<ul class="kv__list">
 				<li><span class="kv__term">Method</span>&nbsp;<span class="kv__desc" id="kv-method">–</span></li>
@@ -92,175 +92,41 @@
 			</ul>
 		</section>
 
-		<!-- Materials hubs -->
-		<nav class="board" aria-label="Study setup">
-			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Produce consent forms</a>
-			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Manage consent</a>
-			<a id="participants" href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Schedule participants</a>
-			<a id="link-guides" href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Discussion Guides</a>
-			<a href="#" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Note takers &amp; observers</a>
-			<a href="/pages/study/session/" class="board__item link--disabled" aria-disabled="true" tabindex="-1">Begin a session</a>
-		</nav>
-
-		<section class="section">
+		<section class="section" aria-labelledby="study-readiness-title">
 			<header class="section__header">
-				<h2 class="section__title govuk-heading-m">Overview</h2>
+				<h2 id="study-readiness-title" class="section__title govuk-heading-m">Study readiness</h2>
 			</header>
 			<div class="section__body">
 				<div class="panel">
-					<p class="govuk-body">Set up your study materials and workflows here.</p>
+					<p class="govuk-body">Check whether the essential study setup is ready before running a session.</p>
+					<ul class="study-readiness-list">
+						<li data-readiness-item="description"><strong>Description</strong> <span class="readiness-item__status">Checking</span><br /><span class="readiness-item__body">Checking study description.</span></li>
+						<li data-readiness-item="status"><strong>Status</strong> <span class="readiness-item__status">Checking</span><br /><span class="readiness-item__body">Checking study status.</span></li>
+						<li data-readiness-item="participants"><strong>Participants</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Schedule participants or confirm participant arrangements.</span></li>
+						<li data-readiness-item="guide"><strong>Discussion guide</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Create or review the discussion guide.</span></li>
+						<li data-readiness-item="consent"><strong>Consent</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Confirm consent materials and participant consent.</span></li>
+						<li data-readiness-item="session"><strong>Session workspace</strong> <span class="readiness-item__status">Available</span><br /><span class="readiness-item__body">Open the session workspace when setup is ready.</span></li>
+					</ul>
+					<p><a id="link-session" href="#" class="btn">Begin session</a></p>
 				</div>
 			</div>
+		</section>
+
+		<section class="section" aria-labelledby="study-setup-title">
+			<header class="section__header">
+				<h2 id="study-setup-title" class="section__title govuk-heading-m">Study setup tasks</h2>
+			</header>
+			<nav class="board" aria-label="Study setup tasks">
+				<a id="link-consent-forms" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Create consent forms</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
+				<a id="link-consent-manage" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Manage participant consent</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
+				<a id="link-participants" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Schedule participants</strong><br /><span class="study-action__reason">Requires study context.</span></a>
+				<a id="link-guides" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Create or manage discussion guides</strong><br /><span class="study-action__reason">Requires study context.</span></a>
+				<a id="link-observers" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Add note takers and observers</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
+			</nav>
 		</section>
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-
-	<script type="module">
-		/**
-		 * @file study/index.html (bootstrap)
-		 * @module StudyPage
-		 * @summary Fetches study data via Worker API and renders the page.
-		 * @description
-		 * - Title logic: prefer `study.title`; otherwise compute “Method — YYYY-MM-DD”.
-		 * - Description is shown under the H1, never used as the title.
-		 * - “Discussion Guides” tile routes to `/pages/study/guides/?pid=…&sid=…`.
-		 */
-
-		/* ── tiny helpers ───────────────────────────────────────────── */
-
-		/** @param {string} sel @param {ParentNode} [root=document] */
-		const $ = (sel, root = document) => root.querySelector(sel);
-
-		/**
-		 * Compute Airtable-like fallback title.
-		 * @param {{ method?: string, createdAt?: string }} s
-		 */
-		function fallbackTitle(s = {}) {
-			const method = (s.method || "Study").trim();
-			const d = s.createdAt ? new Date(s.createdAt) : new Date();
-			const yyyy = d.getUTCFullYear();
-			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-			const dd = String(d.getUTCDate()).padStart(2, "0");
-			return `${method} — ${yyyy}-${mm}-${dd}`;
-		}
-
-		/**
-		 * Title to display in the H1.
-		 * @param {{ title?: string, Title?: string, method?: string, createdAt?: string }} s
-		 * @returns {string}
-		 */
-		function pickH1Title(s = {}) {
-			return (s.title || s.Title || "").trim() || fallbackTitle(s);
-		}
-
-		/**
-		 * Fetch all studies for a project.
-		 * @param {string} projectAirtableId
-		 * @returns {Promise<Array<any>>}
-		 */
-		async function loadStudies(projectAirtableId) {
-			const url = `/api/studies?project=${encodeURIComponent(projectAirtableId)}`;
-			const res = await fetch(url, { cache: "no-store" });
-			const js = await res.json().catch(() => ({}));
-			if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
-				throw new Error(js?.error || `Studies fetch failed (${res.status})`);
-			}
-			return js.studies;
-		}
-
-		/**
-		 * Fetch the single project from /api/projects (no /:id route exists).
-		 * @param {string} pid
-		 * @returns {Promise<{id:string,name:string}|null>}
-		 */
-		async function loadProject(pid) {
-			try {
-				const res = await fetch(`/api/projects`, { cache: "no-store" });
-				const js = await res.json().catch(() => ({}));
-				const list = Array.isArray(js?.projects) ? js.projects : [];
-				return list.find(p => p.id === pid) || null;
-			} catch { return null; }
-		}
-
-		/* ── bootstrap ─────────────────────────────────────────────── */
-
-		(async function init() {
-			try {
-				const usp = new URLSearchParams(location.search);
-				const pid = usp.get("pid") || "";
-				const sid = usp.get("sid") || "";
-				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
-
-				// Back to project route
-				$("#back-to-project")?.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
-
-				// Fetch data
-				const [project, studies] = await Promise.all([
-					loadProject(pid),
-					loadStudies(pid)
-				]);
-
-				const study = studies.find(s => s.id === sid) || {};
-
-				// Breadcrumbs
-				const projName = (project && project.name) ? project.name : "Project";
-				const bcProj = $("#breadcrumb-project");
-				if (bcProj) {
-					bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-					bcProj.textContent = projName;
-				}
-				// (No #breadcrumb-study element in this page’s HTML, so we don’t touch it.)
-
-				// Header title
-				$("#study-title").textContent = pickH1Title(study);
-
-				// Key-value facts
-				$("#kv-method").textContent = (study.method || "—");
-				$("#kv-status").textContent = (study.status || "—");
-				$("#kv-studyid").textContent = String(study.studyId || "—").toUpperCase();
-
-				// Description (plain text for now)
-				const desc = (study.description || "").trim();
-				$("#description").textContent = desc || "—";
-
-				// Optional “edit” deep link
-				$("#edit-study")?.setAttribute(
-					"href",
-					`/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}#edit`
-				);
-
-				/** @param {HTMLAnchorElement|null} el @param {string} href */
-				function enableTile(el, href) {
-					if (!el) return;
-					el.setAttribute('href', href);
-					el.removeAttribute('aria-disabled');
-					el.removeAttribute('tabindex');
-					el.classList.remove('link--disabled');
-				}
-
-				// Enable “Discussion Guides” route
-				const guides = $('#link-guides');
-				enableTile(
-					guides,
-					`/pages/study/guides/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`
-				);
-
-				// Enable “Schedule Participants” route
-				const participants = $('#participants');
-				enableTile(
-					participants,
-					`/pages/study/participants/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`
-				);
-
-				// Expose id for inline editor wiring (if needed elsewhere)
-				document.body.setAttribute("data-study-id", sid);
-			} catch (err) {
-				console.error("[study] init error:", err);
-				alert("Could not load study.");
-			}
-		})();
-	</script>
 </body>
 
 </html>
