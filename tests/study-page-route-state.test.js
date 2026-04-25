@@ -28,6 +28,8 @@ excludes(pageSource, "<script type=\"module\">", "study page");
 includes(descControllerSource, "cancelBtnSel: '#desc-cancel'", "description controller");
 
 includes(controllerSource, "const API_ORIGIN", "study page controller");
+includes(controllerSource, "window.API_ORIGIN", "study page controller");
+includes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "study page controller");
 includes(controllerSource, "function apiUrl", "study page controller");
 includes(controllerSource, "apiUrl(\"/api/projects\")", "study page controller");
 includes(controllerSource, "apiUrl(\"/api/studies\")", "study page controller");
@@ -40,4 +42,5 @@ includes(controllerSource, "pid", "study page controller");
 includes(controllerSource, "sid", "study page controller");
 includes(controllerSource, "study:desc:save", "study page controller");
 includes(controllerSource, "/api/studies/${encodeURIComponent(studyId)}", "study page controller");
+excludes(controllerSource, "https://rops-api.kevinrapley.workers.dev", "study page controller");
 excludes(controllerSource, "alert(", "study page controller");
