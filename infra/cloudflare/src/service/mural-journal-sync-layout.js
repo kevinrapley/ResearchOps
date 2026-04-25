@@ -17,6 +17,19 @@ const DEFAULT_HEIGHT = 160;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 const ENTRY_MARKER_RE = /journal-entry:[a-z0-9_-]+/i;
+const DEFAULT_STICKY_BACKGROUND = "#FFFFFFFF";
+const DEFAULT_MURAL_FONT = "proxima-nova";
+const SUPPORTED_MURAL_FONTS = new Set([
+	"adelle",
+	"blambot-casual",
+	"blambot-pro",
+	"lint-mccree",
+	"marker-felt",
+	"museo-slab",
+	"proxima-nova",
+	"shark-water"
+]);
+const SUPPORTED_TEXT_ALIGN = new Set(["left", "center", "right"]);
 
 function safeText(value) {
 	return String(value || "").trim();
@@ -94,6 +107,10 @@ function numeric(value, fallback = 0) {
 
 function rounded(value, fallback = 0) {
 	return Math.round(numeric(value, fallback));
+}
+
+function positiveInteger(value, fallback) {
+	return Math.max(1, rounded(value, fallback));
 }
 
 function normalizeWidget(widget) {
@@ -223,10 +240,10 @@ function columnLayout(widgets, categoryKey) {
 	if (!header && !template) return null;
 
 	const source = template || header;
-	const width = rounded(template?.width ?? header?.width ?? source?.width, DEFAULT_WIDTH);
-	const height = rounded(template?.height, DEFAULT_HEIGHT);
-	const x = rounded(template?.x ?? header?.x ?? source?.x, 0);
-	const y = rounded(template?.y ?? (numeric(header?.y, 0) + numeric(header?.height, 0) + GRID_GAP), 0);
+	const width = positiveInteger(template?.width ?? header?.width ?? source?.width, DEFAULT_WIDTH);
+	const height = positiveInteger(template?.height, DEFAULT_HEIGHT);
+	const x = numeric(template?.x ?? header?.x ?? source?.x, 0);
+	const y = numeric(template?.y ?? (numeric(header?.y, 0) + numeric(header?.height, 0) + GRID_GAP), 0);
 
 	return {
 		categoryKey,
@@ -281,37 +298,48 @@ function latestCanonicalWidget(widgets, categoryKey, layout) {
 function placementBelow(layout, latest) {
 	const from = latest || layout.template;
 	return {
-		x: layout.x,
-		y: rounded(numeric(from.y, layout.y) + numeric(from.height, layout.height) + GRID_GAP),
-		width: layout.width,
-		height: layout.height
+		x: numeric(layout.x, 0),
+		y: numeric(from.y, layout.y) + numeric(from.height, layout.height) + GRID_GAP,
+		width: positiveInteger(layout.width, DEFAULT_WIDTH),
+		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
 	};
 }
 
 function placementOverTemplate(layout) {
 	return {
-		x: layout.x,
-		y: rounded(layout.template?.y, layout.y),
-		width: layout.width,
-		height: layout.height
+		x: numeric(layout.x, 0),
+		y: numeric(layout.template?.y, layout.y),
+		width: positiveInteger(layout.width, DEFAULT_WIDTH),
+		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
 	};
 }
 
+function muralHexAlpha(value, fallback = DEFAULT_STICKY_BACKGROUND) {
+	const text = safeText(value);
+	if (/^#[0-9a-f]{8}$/i.test(text)) return text.toUpperCase();
+	if (/^#[0-9a-f]{6}$/i.test(text)) return `${text.toUpperCase()}FF`;
+	return fallback;
+}
+
 function stickyBackground(template) {
-	return safeText(template?.style?.backgroundColor || template?.backgroundColor || "#FFFFFFFF") || "#FFFFFFFF";
+	return muralHexAlpha(template?.style?.backgroundColor || template?.backgroundColor, DEFAULT_STICKY_BACKGROUND);
 }
 
 function stickyStyle(template) {
 	const source = template?.style || {};
+	const font = safeText(source.font || template?.font || DEFAULT_MURAL_FONT).toLowerCase();
+	const textAlign = safeText(source.textAlign || template?.textAlign || "left").toLowerCase();
+	const fontSize = positiveInteger(source.fontSize ?? template?.fontSize, 23);
 	const style = {
 		backgroundColor: stickyBackground(template),
-		fontSize: rounded(source.fontSize ?? template?.fontSize, 23),
-		textAlign: safeText(source.textAlign || template?.textAlign || "left") || "left"
+		font: SUPPORTED_MURAL_FONTS.has(font) ? font : DEFAULT_MURAL_FONT,
+		fontSize,
+		textAlign: SUPPORTED_TEXT_ALIGN.has(textAlign) ? textAlign : "left"
 	};
 	if (source.bold !== undefined) style.bold = !!source.bold;
 	if (source.italic !== undefined) style.italic = !!source.italic;
 	if (source.underline !== undefined) style.underline = !!source.underline;
-	if (source.font) style.font = source.font;
+	if (source.strike !== undefined) style.strike = !!source.strike;
 	if (source.border !== undefined) style.border = !!source.border;
 	return style;
 }
@@ -339,18 +367,38 @@ function localEntryWidget(widget, entry, layout, tags, placement = {}) {
 	});
 }
 
-function createPayload(template, placement, text, tags) {
-	return {
-		x: placement.x,
-		y: placement.y,
-		width: placement.width,
-		height: placement.height,
+function createStyledStickyPayload(template, placement, text, tags) {
+	const body = {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		width: positiveInteger(placement.width, DEFAULT_WIDTH),
+		height: positiveInteger(placement.height, DEFAULT_HEIGHT),
 		shape: "rectangle",
 		text,
-		tags,
 		style: stickyStyle(template),
-		backgroundColor: stickyBackground(template),
-		stackingOrder: numeric(template?.stackingOrder, 1) + 1
+		stackingOrder: positiveInteger(template?.stackingOrder, 1) + 1
+	};
+	if (tags.length) body.tags = tags;
+	return body;
+}
+
+function createSizedStickyPayload(placement, text) {
+	return {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		width: positiveInteger(placement.width, DEFAULT_WIDTH),
+		height: positiveInteger(placement.height, DEFAULT_HEIGHT),
+		shape: "rectangle",
+		text
+	};
+}
+
+function createDocumentedStickyPayload(placement, text) {
+	return {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		shape: "rectangle",
+		text
 	};
 }
 
@@ -373,17 +421,11 @@ async function postSticky(accessToken, muralId, body) {
 }
 
 async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags) {
-	const full = createPayload(template, placement, text, tags);
-	const minimal = {
-		x: placement.x,
-		y: placement.y,
-		width: placement.width,
-		height: placement.height,
-		shape: "rectangle",
-		text,
-		backgroundColor: stickyBackground(template)
-	};
-	const attempts = [full, minimal, [minimal]];
+	const attempts = [
+		createStyledStickyPayload(template, placement, text, tags),
+		createSizedStickyPayload(placement, text),
+		createDocumentedStickyPayload(placement, text)
+	];
 	const errors = [];
 
 	for (const body of attempts) {
@@ -394,7 +436,7 @@ async function createStickyFromTemplate(accessToken, muralId, template, placemen
 		}
 	}
 
-	throw new Error(`Create Mural template sticky failed after ${errors.length} attempts: ${errors.at(-1) || "unknown error"}`);
+	throw new Error(`Create Mural template sticky failed after ${errors.length} documented payload attempts: ${errors.at(-1) || "unknown error"}`);
 }
 
 async function validAccessToken(svc, uid) {
