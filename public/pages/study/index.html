@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/study-page.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
 	<script type="module" src="/js/study-page.js" defer></script>
@@ -46,9 +47,9 @@
 			<p id="study-eyebrow" class="project-org">Study</p>
 			<h1 id="study-title" class="govuk-heading-l">Study</h1>
 
-			<div id="desc-view-wrap">
+			<div id="desc-view-wrap" class="study-description">
 				<div id="description" class="govuk-body">—</div>
-				<div class="actions-bar" style="margin-top:8px;">
+				<div class="study-description__actions">
 					<button id="btn-edit-desc" type="button" class="btn btn--outline">✎ Edit description</button>
 				</div>
 			</div>
@@ -92,37 +93,79 @@
 			</ul>
 		</section>
 
-		<section class="section" aria-labelledby="study-readiness-title">
-			<header class="section__header">
+		<section class="section study-section" aria-labelledby="study-readiness-title">
+			<header class="section__header study-section__header">
 				<h2 id="study-readiness-title" class="section__title govuk-heading-m">Study readiness</h2>
 			</header>
 			<div class="section__body">
-				<div class="panel">
-					<p class="govuk-body">Check whether the essential study setup is ready before running a session.</p>
+				<div class="study-readiness-panel">
+					<p class="govuk-body">Check the essentials before you run a session.</p>
 					<ul class="study-readiness-list">
-						<li data-readiness-item="description"><strong>Description</strong> <span class="readiness-item__status">Checking</span><br /><span class="readiness-item__body">Checking study description.</span></li>
-						<li data-readiness-item="status"><strong>Status</strong> <span class="readiness-item__status">Checking</span><br /><span class="readiness-item__body">Checking study status.</span></li>
-						<li data-readiness-item="participants"><strong>Participants</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Schedule participants or confirm participant arrangements.</span></li>
-						<li data-readiness-item="guide"><strong>Discussion guide</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Create or review the discussion guide.</span></li>
-						<li data-readiness-item="consent"><strong>Consent</strong> <span class="readiness-item__status">Action needed</span><br /><span class="readiness-item__body">Confirm consent materials and participant consent.</span></li>
-						<li data-readiness-item="session"><strong>Session workspace</strong> <span class="readiness-item__status">Available</span><br /><span class="readiness-item__body">Open the session workspace when setup is ready.</span></li>
+						<li class="readiness-item" data-readiness-item="description">
+							<div class="readiness-item__header"><strong>Description</strong> <span class="readiness-item__status">Checking</span></div>
+							<p class="readiness-item__body">Checking study description.</p>
+						</li>
+						<li class="readiness-item" data-readiness-item="status">
+							<div class="readiness-item__header"><strong>Status</strong> <span class="readiness-item__status">Checking</span></div>
+							<p class="readiness-item__body">Checking study status.</p>
+						</li>
+						<li class="readiness-item" data-readiness-item="participants">
+							<div class="readiness-item__header"><strong>Participants</strong> <span class="readiness-item__status">Action needed</span></div>
+							<p class="readiness-item__body">Add or review participants for this study.</p>
+						</li>
+						<li class="readiness-item" data-readiness-item="guide">
+							<div class="readiness-item__header"><strong>Discussion guide</strong> <span class="readiness-item__status">Action needed</span></div>
+							<p class="readiness-item__body">Create or review the discussion guide.</p>
+						</li>
+						<li class="readiness-item" data-readiness-item="consent">
+							<div class="readiness-item__header"><strong>Consent</strong> <span class="readiness-item__status">Action needed</span></div>
+							<p class="readiness-item__body">Confirm consent materials and participant consent.</p>
+						</li>
+						<li class="readiness-item" data-readiness-item="session">
+							<div class="readiness-item__header"><strong>Session workspace</strong> <span class="readiness-item__status">Available</span></div>
+							<p class="readiness-item__body">Open the session workspace when setup is ready.</p>
+						</li>
 					</ul>
-					<p><a id="link-session" href="#" class="btn">Begin session</a></p>
+					<div class="study-readiness-panel__actions">
+						<a id="link-session" href="#" class="btn">Begin session</a>
+					</div>
 				</div>
 			</div>
 		</section>
 
-		<section class="section" aria-labelledby="study-setup-title">
-			<header class="section__header">
+		<section class="section study-section" aria-labelledby="study-setup-title">
+			<header class="section__header study-section__header">
 				<h2 id="study-setup-title" class="section__title govuk-heading-m">Study setup tasks</h2>
 			</header>
-			<nav class="board" aria-label="Study setup tasks">
-				<a id="link-consent-forms" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Create consent forms</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
-				<a id="link-consent-manage" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Manage participant consent</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
-				<a id="link-participants" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Schedule participants</strong><br /><span class="study-action__reason">Requires study context.</span></a>
-				<a id="link-guides" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Create or manage discussion guides</strong><br /><span class="study-action__reason">Requires study context.</span></a>
-				<a id="link-observers" href="#" class="board__item study-action link--disabled" aria-disabled="true" tabindex="-1"><strong>Add note takers and observers</strong><br /><span class="study-action__reason">Not connected yet.</span></a>
-			</nav>
+			<div class="section__body">
+				<ul class="study-task-list">
+					<li class="study-task-card study-task-card--unavailable">
+						<h3 class="study-task-card__title">Create consent forms</h3>
+						<p class="study-task-card__status">Not available yet</p>
+						<p class="study-task-card__body">Consent form generation has not been connected yet.</p>
+					</li>
+					<li class="study-task-card study-task-card--unavailable">
+						<h3 class="study-task-card__title">Manage participant consent</h3>
+						<p class="study-task-card__status">Not available yet</p>
+						<p class="study-task-card__body">Participant consent management has not been connected yet.</p>
+					</li>
+					<li class="study-task-card">
+						<h3 class="study-task-card__title"><a id="link-participants" href="#">Schedule participants</a></h3>
+						<p class="study-task-card__status">Action needed</p>
+						<p class="study-task-card__body">Add or review participants for this study.</p>
+					</li>
+					<li class="study-task-card">
+						<h3 class="study-task-card__title"><a id="link-guides" href="#">Create or manage discussion guides</a></h3>
+						<p class="study-task-card__status">Action needed</p>
+						<p class="study-task-card__body">Create or review the guide before running a session.</p>
+					</li>
+					<li class="study-task-card study-task-card--unavailable">
+						<h3 class="study-task-card__title">Add note takers and observers</h3>
+						<p class="study-task-card__status">Not available yet</p>
+						<p class="study-task-card__body">Observer and note taker setup has not been connected yet.</p>
+					</li>
+				</ul>
+			</div>
 		</section>
 	</main>
 
