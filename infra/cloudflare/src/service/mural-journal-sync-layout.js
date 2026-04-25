@@ -7,11 +7,11 @@
 import {
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	getWidgets,
-	updateSticky
+	getWidgets
 } from "../lib/mural.js";
 
 const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections"];
+const CREATED_ACTIONS = ["updated-template-widget", "created-template-sticky"];
 const DEFAULT_WIDTH = 260;
 const DEFAULT_HEIGHT = 160;
 const GRID_GAP = 32;
@@ -67,7 +67,7 @@ function userFacingTags(tags) {
 }
 
 function tagKeys(widget) {
-	return normalizeTags(widget?.tags).map(t => t.toLowerCase());
+	return normalizeTags(widget?.tags).map(tag => tag.toLowerCase());
 }
 
 function widgetText(widget) {
@@ -288,6 +288,15 @@ function placementBelow(layout, latest) {
 	};
 }
 
+function placementOverTemplate(layout) {
+	return {
+		x: layout.x,
+		y: rounded(layout.template?.y, layout.y),
+		width: layout.width,
+		height: layout.height
+	};
+}
+
 function stickyBackground(template) {
 	return safeText(template?.style?.backgroundColor || template?.backgroundColor || "#FFFFFFFF") || "#FFFFFFFF";
 }
@@ -330,64 +339,18 @@ function localEntryWidget(widget, entry, layout, tags, placement = {}) {
 	});
 }
 
-function replaceWidget(widgets, widgetId, nextWidget) {
-	const index = widgets.findIndex(widget => widget.id === widgetId);
-	if (index >= 0) widgets[index] = nextWidget;
-	else widgets.push(nextWidget);
-}
-
-async function patchSticky(accessToken, muralId, widgetId, template, text) {
-	const textOnly = { text };
-	const contentOnly = { content: text };
-	const htmlOnly = { htmlText: text };
-	const attempts = [
-		() => patchStickyNote(accessToken, muralId, widgetId, textOnly),
-		() => updateSticky(null, accessToken, muralId, widgetId, textOnly),
-		() => patchStickyNote(accessToken, muralId, widgetId, contentOnly),
-		() => patchStickyNote(accessToken, muralId, widgetId, htmlOnly)
-	];
-	const errors = [];
-
-	for (const attempt of attempts) {
-		try {
-			return await attempt();
-		} catch (err) {
-			errors.push(muralErrorSummary(err));
-		}
-	}
-
-	throw new Error(`Update Mural template sticky failed after ${errors.length} attempts: ${errors.at(-1) || "unknown error"}`);
-}
-
-async function patchStickyNote(accessToken, muralId, widgetId, body) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note/${widgetId}`;
-	const res = await fetch(url, {
-		method: "PATCH",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-			Accept: "application/json"
-		},
-		body: JSON.stringify(body)
-	});
-	const data = await res.json().catch(() => ({}));
-	if (!res.ok) {
-		throw Object.assign(new Error(`Update Mural sticky note failed: ${res.status}`), { status: res.status, body: data });
-	}
-	return firstMuralValue(data) || { id: widgetId, ...body };
-}
-
 function createPayload(template, placement, text, tags) {
 	return {
 		x: placement.x,
 		y: placement.y,
 		width: placement.width,
 		height: placement.height,
-		shape: safeText(template?.shape || "rectangle") || "rectangle",
+		shape: "rectangle",
 		text,
 		tags,
 		style: stickyStyle(template),
-		backgroundColor: stickyBackground(template)
+		backgroundColor: stickyBackground(template),
+		stackingOrder: numeric(template?.stackingOrder, 1) + 1
 	};
 }
 
@@ -416,6 +379,7 @@ async function createStickyFromTemplate(accessToken, muralId, template, placemen
 		y: placement.y,
 		width: placement.width,
 		height: placement.height,
+		shape: "rectangle",
 		text,
 		backgroundColor: stickyBackground(template)
 	};
@@ -611,26 +575,20 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 	}
 
 	const tags = tagsForEntry(layout, entry);
-	const seed = layout.template;
-
-	if (seed.id && !widgetHasAnyEntryTag(seed)) {
-		const updated = await patchSticky(accessToken, board.muralId, seed.id, seed, entry.description, tags);
-		const local = localEntryWidget({ ...seed, ...firstMuralValue(updated) }, entry, layout, tags, {
-			x: layout.x,
-			y: numeric(seed.y, layout.y),
-			width: layout.width,
-			height: layout.height
-		});
-		replaceWidget(widgets, seed.id, local);
-		return { ok: true, action: "updated-template-widget", entryId: entry.entryId, category: entry.categoryKey, widgetId: local.id || seed.id, tags };
-	}
-
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
-	const placement = placementBelow(layout, latest);
-	const created = await createStickyFromTemplate(accessToken, board.muralId, seed, placement, entry.description, tags);
-	const local = localEntryWidget({ ...seed, ...firstMuralValue(created) }, entry, layout, tags, placement);
+	const placement = latest ? placementBelow(layout, latest) : placementOverTemplate(layout);
+	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags);
+	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
-	return { ok: true, action: "created-template-sticky", entryId: entry.entryId, category: entry.categoryKey, widgetId: local.id || created?.id || null, tags };
+
+	return {
+		ok: true,
+		action: "created-template-sticky",
+		entryId: entry.entryId,
+		category: entry.categoryKey,
+		widgetId: local.id || created?.id || null,
+		tags
+	};
 }
 
 async function handleStatus(svc, origin, body) {
@@ -671,7 +629,7 @@ async function handleHydrate(svc, origin, body) {
 	}
 
 	const after = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
-	const createdOrUpdated = outcomes.filter(o => ["updated-template-widget", "created-template-sticky"].includes(o.action)).length;
+	const createdOrUpdated = outcomes.filter(o => CREATED_ACTIONS.includes(o.action)).length;
 	const alreadySynced = outcomes.filter(o => o.action === "already-synced").length;
 	const skipped = outcomes.filter(o => String(o.action || "").startsWith("skipped-")).length;
 	const failed = outcomes.filter(o => !o.ok).length;
