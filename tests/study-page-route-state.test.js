@@ -4,6 +4,7 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
 const controllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
 const descControllerSource = fs.readFileSync("public/pages/study/study-desc-controller.js", "utf8");
+const studyCssSource = fs.readFileSync("public/css/study-page.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -14,14 +15,22 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "/js/study-page.js", "study page");
+includes(pageSource, "/css/study-page.css", "study page");
 includes(pageSource, "id=\"study-error\"", "study page");
 includes(pageSource, "role=\"alert\"", "study page");
 includes(pageSource, "Study readiness", "study page");
 includes(pageSource, "Study setup tasks", "study page");
+includes(pageSource, "class=\"study-readiness-list\"", "study page");
+includes(pageSource, "class=\"readiness-item\"", "study page");
+includes(pageSource, "class=\"study-task-list\"", "study page");
+includes(pageSource, "class=\"study-task-card", "study page");
 includes(pageSource, "id=\"link-session\"", "study page");
 includes(pageSource, "id=\"link-guides\"", "study page");
 includes(pageSource, "id=\"link-participants\"", "study page");
 includes(pageSource, "id=\"desc-cancel\"", "study page");
+excludes(pageSource, "class=\"board\"", "study page");
+excludes(pageSource, "board__item study-action", "study page");
+excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "alert(\"Could not load study.\")", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 
@@ -42,5 +51,12 @@ includes(controllerSource, "pid", "study page controller");
 includes(controllerSource, "sid", "study page controller");
 includes(controllerSource, "study:desc:save", "study page controller");
 includes(controllerSource, "/api/studies/${encodeURIComponent(studyId)}", "study page controller");
+excludes(controllerSource, "disableLink", "study page controller");
 excludes(controllerSource, "https://rops-api.kevinrapley.workers.dev", "study page controller");
 excludes(controllerSource, "alert(", "study page controller");
+
+includes(studyCssSource, ".study-task-list", "study css");
+includes(studyCssSource, ".study-task-card", "study css");
+includes(studyCssSource, ".study-readiness-list", "study css");
+includes(studyCssSource, ".readiness-item__status", "study css");
+includes(studyCssSource, "/* transparency begins in the cascade */", "study css");
