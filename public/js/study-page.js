@@ -102,17 +102,6 @@ function enableLink(selector, href) {
 	el.removeAttribute("tabindex");
 }
 
-function disableLink(selector, reason) {
-	const el = $(selector);
-	if (!el) return;
-	el.href = "#";
-	el.classList.add("link--disabled");
-	el.setAttribute("aria-disabled", "true");
-	el.setAttribute("tabindex", "-1");
-	const reasonEl = el.querySelector(".study-action__reason");
-	if (reasonEl) reasonEl.textContent = reason;
-}
-
 function setReadinessItem(key, state, text) {
 	const item = document.querySelector(`[data-readiness-item="${key}"]`);
 	if (!item) return;
@@ -128,9 +117,9 @@ function renderReadiness(study) {
 
 	setReadinessItem("description", hasDescription ? "Ready" : "Needs attention", hasDescription ? "The study has a description." : "Add a short description before running sessions.");
 	setReadinessItem("status", status ? "Set" : "Needs attention", `Study status is ${status}.`);
-	setReadinessItem("participants", "Action needed", "Schedule participants or confirm existing participant arrangements.");
+	setReadinessItem("participants", "Action needed", "Add or review participants for this study.");
 	setReadinessItem("guide", "Action needed", "Create or review the discussion guide before running a session.");
-	setReadinessItem("consent", "Action needed", "Consent materials and participant consent need to be confirmed.");
+	setReadinessItem("consent", "Action needed", "Confirm consent materials and participant consent.");
 	setReadinessItem("session", "Available", "Open the session workspace when the study setup is ready.");
 }
 
@@ -141,10 +130,6 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#link-guides", route("/pages/study/guides/", params));
 	enableLink("#link-participants", route("/pages/study/participants/", params));
 	enableLink("#link-session", route("/pages/study/session/", params));
-
-	disableLink("#link-consent-forms", "Consent form generation has not been connected yet.");
-	disableLink("#link-consent-manage", "Participant consent management has not been connected yet.");
-	disableLink("#link-observers", "Observer and note taker setup has not been connected yet.");
 
 	const editStudy = $("#edit-study");
 	if (editStudy) editStudy.href = `${route("/pages/study/", params)}#edit`;
