@@ -4,12 +4,19 @@
  * @summary Loads a study page and renders a readiness-led control page.
  */
 
-const API_ORIGIN = window.RESEARCHOPS_API_ORIGIN || "https://rops-api.kevinrapley.workers.dev";
+const API_ORIGIN =
+	document.documentElement?.dataset?.apiOrigin ||
+	window.API_ORIGIN ||
+	window.RESEARCHOPS_API_ORIGIN ||
+	(location.hostname.endsWith("pages.dev") ?
+		"https://rops-api.digikev-kevin-rapley.workers.dev" :
+		location.origin);
 
 const $ = (selector, root = document) => root.querySelector(selector);
 
 function apiUrl(path) {
-	return new URL(path, API_ORIGIN).toString();
+	const p = String(path || "");
+	return `${API_ORIGIN}${p.startsWith("/") ? p : "/" + p}`;
 }
 
 function route(path, params) {
@@ -57,7 +64,8 @@ function hideError() {
 
 async function jsonFetch(url) {
 	const response = await fetch(url, { cache: "no-store" });
-	const body = await response.json().catch(() => ({}));
+	const text = await response.text();
+	const body = text ? JSON.parse(text) : {};
 	if (!response.ok) {
 		throw new Error(body?.error || `Request failed (${response.status})`);
 	}
@@ -65,15 +73,20 @@ async function jsonFetch(url) {
 }
 
 async function loadProject(projectId) {
-	const body = await jsonFetch(apiUrl("/api/projects"));
-	const projects = Array.isArray(body?.projects) ? body.projects : [];
-	return projects.find(project => project.id === projectId) || null;
+	try {
+		const body = await jsonFetch(apiUrl("/api/projects"));
+		const projects = Array.isArray(body?.projects) ? body.projects : [];
+		return projects.find(project => project.id === projectId) || null;
+	} catch (error) {
+		console.warn("[study-page] project lookup failed", error);
+		return null;
+	}
 }
 
 async function loadStudies(projectId) {
 	const url = new URL(apiUrl("/api/studies"));
 	url.searchParams.set("project", projectId);
-	const body = await jsonFetch(url);
+	const body = await jsonFetch(url.toString());
 	if (body?.ok !== true || !Array.isArray(body.studies)) {
 		throw new Error(body?.error || "Could not load studies");
 	}
