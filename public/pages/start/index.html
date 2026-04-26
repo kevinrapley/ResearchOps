@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/start.css" media="screen" />
 
 	<!-- Components/layout first -->
 	<script type="module" src="/components/layout.js" defer></script>
@@ -33,40 +34,40 @@
 	</x-include>
 
 	<main class="govuk-body" role="main">
-		<div class="card">
+		<div class="card start-card">
 			<h1 class="govuk-heading-l page-title">Start a new research project</h1>
 			<p class="lede">
 				Define the project within a service phase and current status, then capture stakeholders and initial objectives.
 			</p>
 
 			<!-- Step 1 -->
-			<section id="step1">
+			<section id="step1" class="start-step">
 				<h2 class="govuk-heading-m">Step 1 of 3</h2>
 				<p class="lede">Define the project’s service phase and status</p>
 
-				<div id="error-summary" class="panel" style="display:none" role="alert" aria-live="polite"></div>
+				<div id="error-summary" class="panel start-panel" style="display:none" role="alert" aria-live="polite"></div>
 
-				<form id="projectForm" novalidate>
+				<form id="projectForm" class="start-form" novalidate>
 					<label class="govuk-body" for="p_name">Project name</label>
 					<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" />
-					<p id="p_name_error" class="error-message" style="display:none"></p>
+					<p id="p_name_error" class="error-message start-error" style="display:none"></p>
 
 					<label class="govuk-body" for="p_desc">Description</label>
 					<p id="p_desc_help" class="hint">Write what you plan to research. Do not include personal data.</p>
 					<textarea id="p_desc" name="description" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
-					<p id="p_desc_error" class="error-message" style="display:none"></p>
+					<p id="p_desc_error" class="error-message start-error" style="display:none"></p>
 
 					<!-- Description assistance controls -->
-					<div id="ai-tools" class="toolbar mt-2 hidden" aria-label="Description assistance">
+					<div id="ai-tools" class="toolbar mt-2 hidden start-assist" aria-label="Description assistance">
 						<button class="btn btn--outline" id="btn-ai-rewrite" type="button">Try AI rewrite</button>
 						<small id="ai-rewrite-status" class="mono muted" aria-live="polite"></small>
 					</div>
 
 					<!-- Rule-based suggestions (client only) -->
-					<div id="description-suggestions" class="mt-2" aria-live="polite"></div>
+					<div id="description-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
 
 					<!-- AI output (summary + suggestions + optional rewrite) -->
-					<div id="ai-rewrite-output" class="mt-2" aria-live="polite"></div>
+					<div id="ai-rewrite-output" class="mt-2 start-assist-output" aria-live="polite"></div>
 
 					<label class="govuk-body" for="p_phase">Service phase</label>
 					<select id="p_phase" name="phase" class="govuk-input">
@@ -99,11 +100,11 @@
 			</section>
 
 			<!-- Step 2 -->
-			<section id="step2" style="display:none">
+			<section id="step2" class="start-step" style="display:none">
 				<h2 class="govuk-heading-m">Step 2 of 3</h2>
 				<p class="lede">Define the project’s stakeholders, objectives, and user groups</p>
 
-				<form id="targetForm">
+				<form id="targetForm" class="start-form">
 
 					<label class="govuk-body">Stakeholders (name | role | email, one per line)
 						<textarea id="p_stakeholders" class="govuk-input"></textarea>
@@ -113,7 +114,7 @@
 						<label for="p_objectives">Initial objectives</label>
 						<p class="hint">List your research objectives. Keep them action-oriented. Avoid personal data.</p>
 						<textarea id="p_objectives" name="p_objectives" rows="5"></textarea>
-						<div id="ai-objectives-tools" class="toolbar mt-2 hidden" aria-label="Objectives assistance">
+						<div id="ai-objectives-tools" class="toolbar mt-2 hidden start-assist" aria-label="Objectives assistance">
 							<button class="btn btn--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
 							<button class="btn btn--outline" id="btn-obj-ai-rewrite" type="button">Try AI rewrite</button>
 							<small id="ai-obj-status" class="mono muted" aria-live="polite"></small>
@@ -121,10 +122,10 @@
 					</div>
 
 					<!-- Rule-based/AI suggestions (Objectives) -->
-					<div id="objectives-suggestions" class="mt-2" aria-live="polite"></div>
+					<div id="objectives-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
 
 					<!-- AI rewrite preview (Objectives) -->
-					<div id="ai-objectives-output" class="mt-2" aria-live="polite"></div>
+					<div id="ai-objectives-output" class="mt-2 start-assist-output" aria-live="polite"></div>
 
 					<label class="govuk-body">User groups (comma-separated)
 						<input id="p_usergroups" class="govuk-input" />
@@ -138,11 +139,11 @@
 			</section>
 
 			<!-- Step 3 -->
-			<section id="step3" style="display:none">
+			<section id="step3" class="start-step" style="display:none">
 				<h2 class="govuk-heading-m">Step 3 of 3</h2>
 				<p class="lede">Supplementary information about the project</p>
 
-				<form id="researchForm">
+				<form id="researchForm" class="start-form">
 					<label class="govuk-body">Lead Researcher
 						<input id="lead_name" class="govuk-input" value="" />
 					</label>

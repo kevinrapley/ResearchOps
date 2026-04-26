@@ -1,0 +1,76 @@
+/* ==========================================================================
+   ResearchOps UI • Start route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/start/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/start.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Start page shell */
+
+.start-card {
+	margin-bottom: 24px;
+	}
+
+.start-step {
+	margin-top: 24px;
+	}
+
+.start-step:first-of-type {
+	margin-top: 0;
+	}
+
+.start-step .lede {
+	max-width: 760px;
+	}
+
+.start-form {
+	display: grid;
+	gap: 12px;
+	}
+
+.start-form label {
+	margin: 0;
+	}
+
+.start-form textarea {
+	min-height: 140px;
+	resize: vertical;
+	}
+
+.start-form select,
+.start-form textarea {
+	border: 2px solid #0b0c0c;
+	padding: 8px;
+	font: inherit;
+	}
+
+.start-form .hint {
+	margin: 0;
+	}
+
+.start-form .cta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+	}
+
+.start-panel {
+	margin: 12px 0;
+	}
+
+.start-assist {
+	margin-top: 8px;
+	}
+
+.start-assist-output {
+	margin-top: 8px;
+	}
+
+.start-error {
+	margin: 12px 0;
+	}
+
+/* transparency begins in the cascade */

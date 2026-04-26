@@ -317,11 +317,24 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Start route CSS split, phase 1
+
+The Start route now loads a dedicated route stylesheet:
+`public/css/start.css`
+
+Why this helps:
+
+- Start-specific card, step, form, assistance, error, and action spacing styles now have a route-level home.
+- Behaviour-sensitive hidden step state remains inline so the existing multi-step controller contract is not changed.
+- A new Start route-state test enforces the stylesheet load, script loading, hidden-step state, and route CSS selector contract.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, Search, Notes, Consent, Sessions, and Synthesize now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, Notes, Consent, Sessions, Synthesize, and Start now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
