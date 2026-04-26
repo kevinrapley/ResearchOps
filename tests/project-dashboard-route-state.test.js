@@ -14,7 +14,8 @@ function excludes(source, text, label) {
 }
 
 function ruleBody(source, selector, label) {
-  const pattern = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([\\s\\S]*?)\\}`);
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`);
   const match = source.match(pattern);
   assert.ok(match, `Expected ${label} to include rule: ${selector}`);
   return match[1];
@@ -48,6 +49,7 @@ includes(dashboardCssSource, ".dashboard-hero", "project dashboard stylesheet");
 includes(dashboardCssSource, ".kv__list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".board", "project dashboard stylesheet");
 includes(dashboardCssSource, ".board__item", "project dashboard stylesheet");
+includes(dashboardCssSource, ".section", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__body", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__grid", "project dashboard stylesheet");
@@ -57,6 +59,16 @@ includes(dashboardCssSource, ".dropzone", "project dashboard stylesheet");
 includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
 includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");
 
+const sectionRule = ruleBody(dashboardCssSource, ".section", "project dashboard stylesheet");
+includes(sectionRule, "border: 0;", "project dashboard .section rule");
+includes(sectionRule, "border-radius: 0;", "project dashboard .section rule");
+includes(sectionRule, "background: transparent;", "project dashboard .section rule");
+
+const sectionHeaderRule = ruleBody(dashboardCssSource, ".section__header", "project dashboard stylesheet");
+includes(sectionHeaderRule, "padding: 0;", "project dashboard .section__header rule");
+includes(sectionHeaderRule, "border-bottom: 0;", "project dashboard .section__header rule");
+
 const sectionBodyRule = ruleBody(dashboardCssSource, ".section__body", "project dashboard stylesheet");
 includes(sectionBodyRule, "background: transparent;", "project dashboard .section__body rule");
+includes(sectionBodyRule, "padding: 0;", "project dashboard .section__body rule");
 excludes(sectionBodyRule, "border:", "project dashboard .section__body rule");
