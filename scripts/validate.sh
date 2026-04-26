@@ -38,6 +38,7 @@ require_file "infra/cloudflare/src/service/index.js"
 require_file "tests/projects-route-contract.test.js"
 require_file "tests/projects-page-route-state.test.js"
 require_file "tests/project-dashboard-route-state.test.js"
+require_file "tests/outcomes-page-route-state.test.js"
 require_file "tests/mural-ui-route-state.test.js"
 require_file "tests/journals-project-route-contract.test.js"
 require_file "tests/journals-route-state.test.js"
@@ -173,6 +174,9 @@ node tests/projects-page-route-state.test.js
 
 info "checking Project Dashboard route-state contract"
 node tests/project-dashboard-route-state.test.js
+
+info "checking Outcomes page route-state contract"
+node tests/outcomes-page-route-state.test.js
 
 info "checking Mural UI route-state contract"
 node tests/mural-ui-route-state.test.js
