@@ -223,17 +223,33 @@ Why this helps:
 
 This first CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Study and Guides route CSS validation
+
+The Study route already loads a dedicated route stylesheet:
+`public/css/study-page.css`
+
+The Discussion Guides route already loads a dedicated route stylesheet:
+`public/css/guides.css`
+
+The route-state tests now make this CSS split status explicit for the Guides route as well as its controller and drawer contracts.
+
+Why this helps:
+
+- Study and Guides are now treated as route-scoped CSS assets in the validation model.
+- The Guides stylesheet contract covers editor, preview, drawer, and variable-manager selectors.
+- Future CSS pruning can distinguish routes that already have explicit stylesheet coverage from routes still relying only on `screen.css`.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-The first CSS split has started with Projects, but `screen.css` remains the base layer.
+The first CSS split has started with Projects, and Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
 Recommended next step:
 
-- Continue page-level CSS bundles for Project Dashboard, Study, and Guides.
+- Continue page-level CSS bundles for Project Dashboard.
 - Only remove duplicate selectors from `screen.css` after each route has coverage and browser validation.
 - Keep CSS migration PRs route-scoped.
 
@@ -255,7 +271,7 @@ The highest-value remaining work is now CSS splitting and route-specific CSS cov
 Recommended next slices:
 
 1. Use `npm run audit:performance:write` to generate the latest inventory.
-2. Continue page-level CSS splitting with the next covered high-traffic routes: Project Dashboard, Study, and Guides.
+2. Continue page-level CSS splitting with Project Dashboard.
 3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
 4. Continue checking legacy pages for smaller inline module cleanups, but the named inline-module follow-up list from this audit is now complete.
 
