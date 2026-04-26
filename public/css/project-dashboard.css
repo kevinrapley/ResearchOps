@@ -102,8 +102,7 @@
 	}
 
 .section__body {
-	border: 1px solid #b1b4b6;
-	background: #ffffff;
+	background: transparent;
 	padding: 16px;
 	}
 
