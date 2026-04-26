@@ -18,6 +18,29 @@ export const GUIDE_FIELD_NAMES = {
 	variables: ["Variables (JSON)", "Variables", "Vars"]
 };
 
+/** Candidate names for the Consent Forms↔Study link field */
+export const CONSENT_FORM_LINK_FIELD_CANDIDATES = [
+	"Study", "Project Study", "Study Link", "Study Record", "Studies", "Project Studies"
+];
+
+/** Candidate names for common fields in the Consent Forms table */
+export const CONSENT_FORM_FIELD_NAMES = {
+	title: ["Title", "Name"],
+	formType: ["Form Type", "Type", "Consent Form Type"],
+	status: ["Status"],
+	version: ["Version", "Revision", "v"],
+	source: ["Source Markdown", "Markdown", "Source"],
+	variables: ["Variables (JSON)", "Variables", "Vars"],
+	consentItems: ["Consent Items (JSON)", "Consent Items", "Statements (JSON)"],
+	summary: ["Plain English Summary", "Summary", "Plain English"],
+	accessibilityNotes: ["Accessibility Notes", "Access Notes", "Reasonable Adjustments"],
+	reviewNotes: ["Review Notes", "Ethics Review Notes", "Notes"],
+	owner: ["Owner", "Created By", "Maintainer"],
+	publishedAt: ["Published At", "Published"],
+	createdAt: ["Created At", "CreatedAt"],
+	updatedAt: ["Updated At", "UpdatedAt"]
+};
+
 /** Participants & Sessions Airtable field names */
 export const PARTICIPANT_FIELDS = {
 	display_name: ["Display Name", "Name", "Participant"],
