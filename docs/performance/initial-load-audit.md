@@ -100,6 +100,29 @@ Why this helps:
 - It makes the intended non-blocking behaviour explicit.
 - It aligns shared entry points with the Projects page pattern.
 
+## Follow-up changes completed after the initial audit
+
+### Performance inventory tooling
+
+`npm run audit:performance` and `npm run audit:performance:write` now provide a repeatable inventory for large files, inline scripts, rough gzip estimates, and possible unused CSS selector tokens.
+
+Why this helps:
+
+- Future route extraction and CSS splitting work can be based on measured file and script weight.
+- CSS review starts from an evidence queue rather than manual guessing.
+
+### Discussion Guides context extraction
+
+The Discussion Guides route no longer carries its page-context bootstrap inline in `public/pages/study/guides/index.html`.
+
+That code now lives in `public/js/study-guides-context.js` and is loaded with `rel="modulepreload"`.
+
+Why this helps:
+
+- The Guides HTML document is smaller and easier to review.
+- The page-context bootstrap becomes independently cacheable.
+- A route-state test now prevents the page from regressing to inline module scripts.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
@@ -132,38 +155,31 @@ The codebase still contains other pages with large inline module scripts.
 The highest-priority follow-up candidates are:
 
 1. `public/pages/project-dashboard/index.html`
-2. `public/pages/study/index.html`
-3. `public/pages/study/guides/index.html`
-4. `public/pages/study/session/index.html`
-5. `public/pages/projects/journals/index.html`
+2. `public/pages/study/session/index.html`
+3. `public/pages/projects/journals/index.html`
 
-Those should be extracted into route-specific modules in separate PRs. The dashboard page is large enough that a careful extraction should be treated as its own behavioural refactor, with route-state tests attached.
+The Study route and Discussion Guides route now use external route modules.
+
+The dashboard page is large enough that a careful extraction should be treated as its own behavioural refactor, with route-state tests attached.
 
 ## Validation checklist
 
-Before merging this branch:
+Before merging performance branches:
 
 - Run `npm run validate`.
 - Run `npm run lint`.
-- Open `/pages/projects/` and confirm the list loads from Airtable.
-- Temporarily fail `/api/projects` and confirm the CSV fallback still renders.
-- Open the browser network panel and verify repeat navigation uses cached `/components/layout.js`, `/partials/header.html`, `/partials/footer.html`, `/css/*`, and `/js/projects-page.js` where appropriate.
+- Open the changed route and confirm its visible state still loads correctly.
+- Open the browser network panel and verify external route modules are loaded and cached where appropriate.
 
 ## PR recommendation
 
-This branch is now suitable for a normal pull request focused on first-pass initial-load improvements.
+Performance PRs should stay route-scoped where possible.
 
-The PR should not claim to complete full CSS splitting or complete inline-script extraction across the entire application.
+The PR should not claim to complete full CSS splitting or complete inline-script extraction across the entire application unless every affected route has validation coverage.
 
-Suggested PR title:
+Suggested PR summary pattern:
 
-`Improve initial page load performance`
-
-Suggested PR summary:
-
-- Extract Projects page JavaScript into a cacheable module.
-- Add module preload for the Projects route.
-- Add Cloudflare Pages cache headers for static assets and partials.
-- Improve include caching and avoid unnecessary script re-execution.
-- Defer shared layout module loading on common entry points.
-- Document remaining CSS and inline-script follow-up work.
+- Extract one route script into a cacheable module.
+- Add module preload for the changed route.
+- Add or update route-state tests.
+- Document remaining route and CSS follow-up work.
