@@ -132,6 +132,11 @@ class XInclude extends HTMLElement {
 		this.setAttribute("vars", JSON.stringify(defaults));
 	}
 
+	fetchCacheMode(src) {
+		const isDebugPartial = src.includes("/partials/debug");
+		return isDebugPartial ? "no-store" : "force-cache";
+	}
+
 	// ── rendering ───────────────────────────────────────────────────────
 	async _render() {
 		// Debug gate
@@ -155,13 +160,13 @@ class XInclude extends HTMLElement {
 		this._abort = new AbortController();
 
 		try {
-			const res = await fetch(src, { cache: "no-store", credentials: "same-origin", signal: this._abort.signal });
+			const res = await fetch(src, { cache: this.fetchCacheMode(src), credentials: "same-origin", signal: this._abort.signal });
 			const text = await res.text();
 			if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
 
 			const html = this.renderTemplate(text, data);
 			this.innerHTML = html;
-			this.executeScripts();
+			if (html.includes("<script")) this.executeScripts();
 
 			this.applyActiveNav();
 			await Promise.resolve(); // allow upgrades

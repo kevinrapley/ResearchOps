@@ -26,6 +26,8 @@ require_dir() {
 info "checking repository contract"
 require_file "package.json"
 require_file "eslint.config.js"
+require_file "public/_headers"
+require_file "docs/performance/initial-load-audit.md"
 require_file "infra/cloudflare/wrangler.toml"
 require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
