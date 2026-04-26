@@ -1,0 +1,52 @@
+/* ==========================================================================
+   ResearchOps UI • Sessions route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/sessions/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/sessions.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Sessions panels */
+
+.sessions-panel {
+	margin-bottom: 24px;
+	}
+
+.sessions-panel .govuk-heading-m {
+	margin-top: 0;
+	}
+
+.sessions-form {
+	display: grid;
+	gap: 12px;
+	}
+
+.sessions-field {
+	display: grid;
+	gap: 4px;
+	margin: 0;
+	}
+
+.sessions-status {
+	margin: 0;
+	}
+
+/* Rendered sessions */
+
+.sessions-list {
+	display: grid;
+	gap: 12px;
+	}
+
+.sessions-list .item {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 12px;
+	}
+
+.sessions-list .item:first-child {
+	border-top: 0;
+	padding-top: 0;
+	}
+
+/* transparency begins in the cascade */
