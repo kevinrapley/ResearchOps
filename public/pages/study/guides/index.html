@@ -11,12 +11,15 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	
+
 	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
 
+	<link rel="modulepreload" href="/js/study-guides-context.js" />
+
 	<!-- Components/layout first -->
-	<script type="module" src="/components/layout.js"></script>
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/study-guides-context.js" defer></script>
 	<script type="module" src="/components/guides/guides-page.js" defer></script>
 </head>
 
@@ -178,74 +181,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
-
-	<script type="module">
-		/**
-		 * @file /pages/study/guides/index.html
-		 * @module GuidesPage
-		 * @summary Fetches project + study data, ensuring a valid title is always shown.
-		 * @description
-		 * - Title uses `study.title || study.Title || Method — YYYY-MM-DD`.
-		 * - Binds study name into breadcrumb and header subtitle.
-		 * - Routes “Back to Study” to `/pages/study/?pid=…&sid=…`.
-		 * - Exposes context for /components/guides/guides-page.js.
-		 */
-
-		const $ = (s, r = document) => r.querySelector(s);
-
-		function fallbackTitle(s = {}) {
-			const method = (s.method || "Study").trim();
-			const d = s.createdAt ? new Date(s.createdAt) : new Date();
-			const yyyy = d.getUTCFullYear();
-			const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-			const dd = String(d.getUTCDate()).padStart(2, "0");
-			return `${method} — ${yyyy}-${mm}-${dd}`;
-		}
-
-		function pickTitle(s = {}) {
-			return (s.title || s.Title || "").trim() || fallbackTitle(s);
-		}
-
-		async function loadStudies(projectId) {
-			const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-			const res = await fetch(url, { cache: "no-store" });
-			const js = await res.json().catch(() => ({}));
-			if (!res.ok || js?.ok !== true || !Array.isArray(js.studies)) {
-				throw new Error(js?.error || `Studies fetch failed (${res.status})`);
-			}
-			return js.studies;
-		}
-
-		/* ── Bootstrap ───────────────────────────────────────────────────── */
-		(async function init() {
-			try {
-				const usp = new URLSearchParams(location.search);
-				const pid = usp.get("pid") || "";
-				const sid = usp.get("sid") || "";
-				if (!pid || !sid) throw new Error("Missing pid or sid in URL");
-
-				const [projRes, studies] = await Promise.all([
-					fetch(`/api/projects/${encodeURIComponent(pid)}`, { cache: "no-store" }),
-					loadStudies(pid)
-				]);
-				const project = projRes.ok ? await projRes.json() : {};
-				const study = studies.find(s => s.id === sid) || {};
-
-				$("#breadcrumb-project").href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-				$("#breadcrumb-project").textContent = project?.name || "Project";
-				$("#breadcrumb-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-				$("#breadcrumb-study").textContent = pickTitle(study);
-
-				$("#study-title").textContent = pickTitle(study);
-				$("#back-to-study").href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-
-				window.__guideCtx = { project, study };
-			} catch (err) {
-				console.error("[guides] init error:", err);
-				alert("Could not load study or project context.");
-			}
-		})();
-	</script>
 </body>
 
 </html>
