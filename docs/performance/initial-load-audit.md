@@ -278,11 +278,24 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Consent route CSS split, phase 1
+
+The legacy Consent route now loads a dedicated route stylesheet:
+`public/css/consent.css`
+
+Why this helps:
+
+- Consent-specific panel spacing, form layout, field layout, status, and existing record list styles now have a route-level home.
+- The legacy Consent page can be migrated away from generic global `.card` and record-list styling incrementally.
+- The existing consent route-state test now enforces both the consent-forms stylesheet and the legacy Consent stylesheet contracts.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, Search, and Notes now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, Notes, and Consent now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 

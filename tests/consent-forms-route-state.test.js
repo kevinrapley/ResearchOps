@@ -8,6 +8,7 @@ const consentControllerSource = fs.readFileSync("public/js/consent-forms-page.js
 const legacyConsentPageSource = fs.readFileSync("public/pages/consent/index.html", "utf8");
 const legacyConsentControllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
 const consentCssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");
+const legacyConsentCssSource = fs.readFileSync("public/css/consent.css", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-forms.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
@@ -55,6 +56,12 @@ includes(legacyConsentPageSource, "rel=\"modulepreload\" href=\"/js/consent-page
 includes(legacyConsentPageSource, "src=\"/js/consent-page.js\"", "legacy consent page");
 includes(legacyConsentPageSource, "src=\"/components/layout.js\" defer", "legacy consent page");
 includes(legacyConsentPageSource, "href=\"/css/screen.css\"", "legacy consent page");
+includes(legacyConsentPageSource, "href=\"/css/consent.css\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"card consent-panel\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"consent-form\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"govuk-body consent-field\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"govuk-hint consent-status\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"govuk-body consent-records\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"session\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"basis\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"ret\"", "legacy consent page");
@@ -79,6 +86,13 @@ includes(consentCssSource, ".consent-layout", "consent forms css");
 includes(consentCssSource, ".consent-form-list__button", "consent forms css");
 includes(consentCssSource, ".consent-preview", "consent forms css");
 includes(consentCssSource, "/* transparency begins in the cascade */", "consent forms css");
+
+includes(legacyConsentCssSource, ".consent-panel", "legacy consent css");
+includes(legacyConsentCssSource, ".consent-form", "legacy consent css");
+includes(legacyConsentCssSource, ".consent-field", "legacy consent css");
+includes(legacyConsentCssSource, ".consent-status", "legacy consent css");
+includes(legacyConsentCssSource, ".consent-records", "legacy consent css");
+includes(legacyConsentCssSource, "/* transparency begins in the cascade */", "legacy consent css");
 
 includes(workerSource, "handleConsentForms", "worker");
 includes(workerSource, "/api/consent-forms", "worker");
