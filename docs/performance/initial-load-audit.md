@@ -252,11 +252,24 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Search route CSS split, phase 1
+
+The Search route now loads a dedicated route stylesheet:
+`public/css/search.css`
+
+Why this helps:
+
+- Search-specific control layout, type filter, result list, result type badge, and raw JSON disclosure styles now have a route-level home.
+- The Search page can be migrated away from generic global `.card`, `.result`, and `.type` styling incrementally.
+- The Search route-state test now enforces the stylesheet load and selector contract.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects and Project Dashboard now have dedicated route stylesheets, and Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, and Search now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
