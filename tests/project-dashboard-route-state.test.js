@@ -13,6 +13,13 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function ruleBody(source, selector, label) {
+  const pattern = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([\\s\\S]*?)\\}`);
+  const match = source.match(pattern);
+  assert.ok(match, `Expected ${label} to include rule: ${selector}`);
+  return match[1];
+}
+
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
 includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
@@ -49,3 +56,7 @@ includes(dashboardCssSource, ".pill--neutral", "project dashboard stylesheet");
 includes(dashboardCssSource, ".dropzone", "project dashboard stylesheet");
 includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
 includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");
+
+const sectionBodyRule = ruleBody(dashboardCssSource, ".section__body", "project dashboard stylesheet");
+includes(sectionBodyRule, "background: transparent;", "project dashboard .section__body rule");
+excludes(sectionBodyRule, "border:", "project dashboard .section__body rule");
