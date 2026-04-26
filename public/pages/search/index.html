@@ -6,10 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Search — ResearchOps</title>
 
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="modulepreload" href="/js/search-page.js" />
+	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
@@ -44,28 +45,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module">
-		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
-		import { getCtx } from "./scripts/shared.js";
-		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
-
-		function renderItem(x) {
-			const pre = JSON.stringify(x, null, 2);
-			const title = x.name || x.description || x.hasBody || x.id;
-			return `<div class="result">
-    <div class="type">${x.entityType}</div>
-    <div class="govuk-body"><strong>${title}</strong></div>
-    <details><summary class="govuk-link">Raw</summary><pre>${pre}</pre></details>
-  </div>`;
-		}
-
-		document.getElementById('go').onclick = async () => {
-			const q = document.getElementById('q').value.trim();
-			const type = document.getElementById('type').value || undefined;
-			const res = await sdk.search({ q, type });
-			document.getElementById('results').innerHTML = res.map(renderItem).join("") || '<div class="govuk-hint">No results.</div>';
-		};
-	</script>
+	<script type="module" src="/js/search-page.js"></script>
 </body>
 
 </html>
