@@ -146,6 +146,18 @@ Why this helps:
 - The routes align with the loading pattern used by Projects, Project Dashboard, and Guides.
 - Validation now covers Session and Journals module loading contracts.
 
+### Search route extraction
+
+The Search route no longer carries its page controller inline in `public/pages/search/index.html`.
+
+That code now lives in `public/js/search-page.js` and is loaded with `rel="modulepreload"`.
+
+Why this helps:
+
+- The Search HTML document is smaller.
+- The page no longer relies on legacy page-relative imports for the SDK and shared helpers.
+- A route-state test prevents the page from regressing to inline module scripts or legacy relative imports.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
@@ -180,7 +192,7 @@ Recommended next slices:
 1. Use `npm run audit:performance:write` to generate the latest inventory.
 2. Start page-level CSS splitting with the highest-traffic covered routes: Projects, Project Dashboard, Study, and Guides.
 3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
-4. Continue extracting smaller legacy inline module pages, such as Search, Notes, Consent, Sessions, and Synthesize, in separate route-scoped PRs.
+4. Continue extracting smaller legacy inline module pages, such as Notes, Consent, Sessions, and Synthesize, in separate route-scoped PRs.
 
 ## Validation checklist
 
