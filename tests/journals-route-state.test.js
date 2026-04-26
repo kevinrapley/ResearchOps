@@ -27,6 +27,10 @@ includes(pageSource, "id=\"analysis\"", "journals page");
 includes(pageSource, "id=\"coding-panel\"", "journals page");
 excludes(pageSource, "<script type=\"module\">", "journals page");
 
-includes(tabsSource, "journal", "journal tabs module");
+includes(tabsSource, "tab:shown", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
-includes(excerptsSource, "customElements", "journal excerpts module");
+includes(excerptsSource, "function renderEntries", "journal excerpts module");
+includes(excerptsSource, "function loadEntries", "journal excerpts module");
+includes(excerptsSource, "/api/journal-entries", "journal excerpts module");
+includes(excerptsSource, "journal:entry:delete", "journal excerpts module");
+includes(excerptsSource, "document.addEventListener(\"DOMContentLoaded\", setup)", "journal excerpts module");
