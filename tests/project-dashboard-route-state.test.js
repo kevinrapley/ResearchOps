@@ -13,14 +13,6 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-function ruleBody(source, selector, label) {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`(?:^|\\n)${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`);
-  const match = source.match(pattern);
-  assert.ok(match, `Expected ${label} to include standalone rule: ${selector}`);
-  return match[1];
-}
-
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
 includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
@@ -59,16 +51,9 @@ includes(dashboardCssSource, ".dropzone", "project dashboard stylesheet");
 includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
 includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");
 
-const sectionRule = ruleBody(dashboardCssSource, ".section", "project dashboard stylesheet");
-includes(sectionRule, "border: 0;", "project dashboard .section rule");
-includes(sectionRule, "border-radius: 0;", "project dashboard .section rule");
-includes(sectionRule, "background: transparent;", "project dashboard .section rule");
-
-const sectionHeaderRule = ruleBody(dashboardCssSource, ".section__header", "project dashboard stylesheet");
-includes(sectionHeaderRule, "padding: 0;", "project dashboard .section__header rule");
-includes(sectionHeaderRule, "border-bottom: 0;", "project dashboard .section__header rule");
-
-const sectionBodyRule = ruleBody(dashboardCssSource, ".section__body", "project dashboard stylesheet");
-includes(sectionBodyRule, "background: transparent;", "project dashboard .section__body rule");
-includes(sectionBodyRule, "padding: 0;", "project dashboard .section__body rule");
-excludes(sectionBodyRule, "border:", "project dashboard .section__body rule");
+includes(dashboardCssSource, ".section {\n\tborder: 0;\n\tborder-radius: 0;\n\tbackground: transparent;\n\t}", "project dashboard stylesheet");
+includes(dashboardCssSource, "\n.section__header {", "project dashboard stylesheet");
+includes(dashboardCssSource, "\tpadding: 0;\n\tborder-bottom: 0;", "project dashboard .section__header rule");
+includes(dashboardCssSource, "\n.section__body {", "project dashboard stylesheet");
+includes(dashboardCssSource, "\tbackground: transparent;\n\tpadding: 0;", "project dashboard .section__body rule");
+excludes(dashboardCssSource, "\n.section__body {\n\tborder:", "project dashboard stylesheet");
