@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/consent.css" media="screen" />
 	<link rel="modulepreload" href="/js/consent-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
@@ -18,30 +19,32 @@
 	<x-include src="/partials/header.html" vars='{"active":"Consent","subtitle":"Consent"}'>
 	</x-include>
 
-	<div class="card">
+	<div class="card consent-panel">
 		<h2 class="govuk-heading-m">Link consent to a session</h2>
-		<label class="govuk-body">Session
-			<select id="session"></select>
-		</label>
-		<label class="govuk-body">Lawful basis
-			<select id="basis">
-				<option value="dpv:PublicInterest">Public task / Public interest</option>
-				<option value="dpv:Consent">Consent</option>
-			</select>
-		</label>
-		<label class="govuk-body">Retention (ISO 8601, e.g., P12M)
-			<input id="ret" class="govuk-input" value="P12M" />
-		</label>
-		<label class="govuk-body">Notes (optional)
-			<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
-		</label>
-		<button id="link" class="govuk-button">Link consent</button>
-		<div id="status" class="govuk-hint"></div>
+		<div class="consent-form">
+			<label class="govuk-body consent-field">Session
+				<select id="session"></select>
+			</label>
+			<label class="govuk-body consent-field">Lawful basis
+				<select id="basis">
+					<option value="dpv:PublicInterest">Public task / Public interest</option>
+					<option value="dpv:Consent">Consent</option>
+				</select>
+			</label>
+			<label class="govuk-body consent-field">Retention (ISO 8601, e.g., P12M)
+				<input id="ret" class="govuk-input" value="P12M" />
+			</label>
+			<label class="govuk-body consent-field">Notes (optional)
+				<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
+			</label>
+			<button id="link" class="govuk-button">Link consent</button>
+			<div id="status" class="govuk-hint consent-status"></div>
+		</div>
 	</div>
 
-	<div class="card">
+	<div class="card consent-panel">
 		<h2 class="govuk-heading-m">Existing consent records</h2>
-		<div id="consents" class="govuk-body"></div>
+		<div id="consents" class="govuk-body consent-records"></div>
 	</div>
 
 	<x-include src="/partials/footer.html"></x-include>
