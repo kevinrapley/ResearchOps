@@ -28,6 +28,8 @@ require_file "package.json"
 require_file "eslint.config.js"
 require_file "public/_headers"
 require_file "docs/performance/initial-load-audit.md"
+require_file "docs/performance/performance-inventory-tooling.md"
+require_file "scripts/performance-audit.sh"
 require_file "infra/cloudflare/wrangler.toml"
 require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
@@ -51,7 +53,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -61,6 +63,11 @@ if (missing.length) {
 
 if (scripts.validate !== 'bash ./scripts/validate.sh') {
 	console.error(`unexpected validate script: ${scripts.validate}`);
+	process.exit(1);
+}
+
+if (scripts['audit:performance'] !== 'bash ./scripts/performance-audit.sh') {
+	console.error(`unexpected audit:performance script: ${scripts['audit:performance']}`);
 	process.exit(1);
 }
 NODE
@@ -111,6 +118,12 @@ done < <(find . \
 	-path './playwright-report' -prune -o \
 	-path './test-results' -prune -o \
 	-name '*.js' -print0)
+
+info "checking shell script syntax"
+bash -n ./scripts/performance-audit.sh
+
+info "checking performance audit command"
+bash ./scripts/performance-audit.sh --json >/dev/null
 
 info "checking Worker module import"
 node --input-type=module <<'NODE'

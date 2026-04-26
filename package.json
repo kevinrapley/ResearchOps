@@ -7,6 +7,8 @@
     "lint": "prettier -c . && eslint .",
     "format": "prettier -w .",
     "validate": "bash ./scripts/validate.sh",
+    "audit:performance": "bash ./scripts/performance-audit.sh",
+    "audit:performance:write": "bash ./scripts/performance-audit.sh --write docs/performance/performance-inventory.md",
     "test:e2e": "playwright test",
     "qa:browsers": "playwright install --with-deps chromium",
     "qa:cucumber": "cucumber-js -p default"
