@@ -6,10 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Consent — ResearchOps</title>
 
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="modulepreload" href="/js/consent-page.js" />
+	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
@@ -45,49 +46,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module">
-		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
-		import { getCtx, formatDate } from "./scripts/shared.js";
-		const sdk = ResearchOpsSDK.createSDK({ ...getCtx() });
-
-		async function populateSessions() {
-			const list = await sdk.search({ type: "ResearchSession" });
-			const sel = document.getElementById('session');
-			sel.innerHTML = "";
-			list.forEach(s => {
-				const opt = document.createElement('option');
-				opt.value = s.id;
-				opt.textContent = `${s.name || "(Untitled)"} — ${formatDate(s["schema:startDate"]||s.created)}`;
-				sel.appendChild(opt);
-			});
-		}
-
-		async function loadConsents() {
-			const list = await sdk.search({ type: "Consent" });
-			const div = document.getElementById('consents');
-			div.innerHTML = list.map(c => `
-    <div style="border-top:1px solid #b1b4b6; padding:8px 0">
-      <strong>${c.id}</strong>
-      <div class="govuk-hint">Session: ${c.hasTarget}</div>
-      <div class="govuk-hint">Basis: ${c.LawfulBasis} • Retention: ${c.RetentionSchedule}</div>
-      <div class="govuk-hint">${c.description||""}</div>
-    </div>`).join("");
-		}
-
-		document.getElementById('link').onclick = async () => {
-			const sessionId = document.getElementById('session').value;
-			if (!sessionId) return alert("Create a session first.");
-			const basis = document.getElementById('basis').value;
-			const ret = document.getElementById('ret').value || "P12M";
-			const notes = document.getElementById('notes').value;
-			const c = await sdk.linkConsent(sessionId, { lawfulBasis: basis, retentionISO8601: ret, notes });
-			document.getElementById('status').textContent = `Linked consent ${c.id}`;
-			await loadConsents();
-		};
-
-		await populateSessions();
-		await loadConsents();
-	</script>
+	<script type="module" src="/js/consent-page.js"></script>
 </body>
 
 </html>
