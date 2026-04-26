@@ -17,7 +17,7 @@ function excludes(source, text, label) {
 includes(pageSource, "href=\"/css/screen.css\"", "outcomes page");
 includes(pageSource, "href=\"/css/outcomes.css\"", "outcomes page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/outcomes-page.js\"", "outcomes page");
-includes(pageSource, "src=\"/components/layout.js\"", "outcomes page");
+includes(pageSource, "src=\"/components/layout.js\" defer", "outcomes page");
 includes(pageSource, "src=\"/components/impact-tracker.js\"", "outcomes page");
 includes(pageSource, "src=\"/js/outcomes-page.js\"", "outcomes page");
 includes(pageSource, "class=\"dashboard-hero outcomes-hero\"", "outcomes page");
