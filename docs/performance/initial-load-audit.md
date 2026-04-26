@@ -171,6 +171,19 @@ Why this helps:
 - Rendered note and tag content is escaped before being inserted into the DOM.
 - A route-state test prevents the page from regressing to inline module scripts or legacy relative imports.
 
+### Consent route extraction
+
+The legacy Consent route no longer carries its page controller inline in `public/pages/consent/index.html`.
+
+That code now lives in `public/js/consent-page.js` and is loaded with `rel="modulepreload"`.
+
+Why this helps:
+
+- The Consent HTML document is smaller.
+- The page no longer relies on legacy page-relative imports for the SDK and shared helpers.
+- Rendered consent values are escaped before being inserted into the DOM.
+- The existing consent route-state test now covers the legacy Consent page module contract.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
@@ -205,7 +218,7 @@ Recommended next slices:
 1. Use `npm run audit:performance:write` to generate the latest inventory.
 2. Start page-level CSS splitting with the highest-traffic covered routes: Projects, Project Dashboard, Study, and Guides.
 3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
-4. Continue extracting smaller legacy inline module pages, such as Consent, Sessions, and Synthesize, in separate route-scoped PRs.
+4. Continue extracting smaller legacy inline module pages, such as Sessions and Synthesize, in separate route-scoped PRs.
 
 ## Validation checklist
 
