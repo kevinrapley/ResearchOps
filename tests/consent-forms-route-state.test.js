@@ -5,6 +5,8 @@ const studyPageSource = fs.readFileSync("public/pages/study/index.html", "utf8")
 const studyControllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
 const consentPageSource = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
 const consentControllerSource = fs.readFileSync("public/js/consent-forms-page.js", "utf8");
+const legacyConsentPageSource = fs.readFileSync("public/pages/consent/index.html", "utf8");
+const legacyConsentControllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
 const consentCssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-forms.js", "utf8");
@@ -48,6 +50,30 @@ includes(consentControllerSource, "apiUrl(\"/api/consent-forms\")", "consent for
 includes(consentControllerSource, "/api/consent-forms/${encodeURIComponent(id)}/publish", "consent forms controller");
 includes(consentControllerSource, "Enter valid JSON", "consent forms controller");
 excludes(consentControllerSource, "alert(", "consent forms controller");
+
+includes(legacyConsentPageSource, "rel=\"modulepreload\" href=\"/js/consent-page.js\"", "legacy consent page");
+includes(legacyConsentPageSource, "src=\"/js/consent-page.js\"", "legacy consent page");
+includes(legacyConsentPageSource, "src=\"/components/layout.js\" defer", "legacy consent page");
+includes(legacyConsentPageSource, "href=\"/css/screen.css\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"session\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"basis\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"ret\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"notes\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"link\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"status\"", "legacy consent page");
+includes(legacyConsentPageSource, "id=\"consents\"", "legacy consent page");
+excludes(legacyConsentPageSource, "<script type=\"module\">", "legacy consent page");
+excludes(legacyConsentPageSource, "../src/sdk/researchops_sdk_v1.0.0.js", "legacy consent page");
+excludes(legacyConsentPageSource, "./scripts/shared.js", "legacy consent page");
+
+includes(legacyConsentControllerSource, "function readStoredEntities", "legacy consent controller");
+includes(legacyConsentControllerSource, "function searchEntities", "legacy consent controller");
+includes(legacyConsentControllerSource, "function linkConsent", "legacy consent controller");
+includes(legacyConsentControllerSource, "async function populateSessions", "legacy consent controller");
+includes(legacyConsentControllerSource, "async function loadConsents", "legacy consent controller");
+includes(legacyConsentControllerSource, "async function saveConsent", "legacy consent controller");
+includes(legacyConsentControllerSource, "localStorage", "legacy consent controller");
+includes(legacyConsentControllerSource, "window.__ropsConsent", "legacy consent controller");
 
 includes(consentCssSource, ".consent-layout", "consent forms css");
 includes(consentCssSource, ".consent-form-list__button", "consent forms css");
