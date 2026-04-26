@@ -1,0 +1,56 @@
+/* ==========================================================================
+   ResearchOps UI • Outcomes route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/projects/outcomes/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/outcomes.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Outcomes hero */
+
+.outcomes-hero {
+	margin-bottom: 24px;
+	}
+
+.outcomes-hero .lede {
+	max-width: 760px;
+	}
+
+/* Impact tracker */
+
+.outcomes-tracker {
+	margin-top: 24px;
+	}
+
+.outcomes-form {
+	max-width: 920px;
+	}
+
+.outcomes-form .govuk-form-group {
+	margin-bottom: 24px;
+	}
+
+.outcomes-form .govuk-input,
+.outcomes-form .govuk-select,
+.outcomes-form .govuk-textarea {
+	max-width: 100%;
+	}
+
+.outcomes-actions {
+	margin-top: 8px;
+	}
+
+.outcomes-table {
+	margin-top: 32px;
+	}
+
+.outcomes-table-wrap {
+	overflow-x: auto;
+	}
+
+.outcomes-table .govuk-table {
+	min-width: 760px;
+	}
+
+/* transparency begins in the cascade */
