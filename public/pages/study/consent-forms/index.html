@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Consent forms — ResearchOps</title>
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/consent-forms.css" media="screen" />
+
+	<script type="module" src="/components/layout.js"></script>
+	<script type="module" src="/js/consent-forms-page.js" defer></script>
+</head>
+
+<body>
+	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+
+	<x-include src="/partials/header.html" vars='{
+    "active":"Projects",
+    "subtitle":"Consent forms"
+  }'></x-include>
+
+	<main id="main" class="container govuk-body" role="main">
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<ol>
+				<li><a href="/pages/projects/">Projects</a></li>
+				<li><a id="breadcrumb-project" href="#">Project</a></li>
+				<li><a id="breadcrumb-study" href="#">Study</a></li>
+				<li aria-current="page">Consent forms</li>
+			</ol>
+		</nav>
+
+		<div id="consent-error" class="panel" role="alert" tabindex="-1" hidden aria-hidden="true">
+			<h2 class="govuk-heading-s">There is a problem loading consent forms</h2>
+			<p id="consent-error-message" class="govuk-body">Could not load consent forms.</p>
+		</div>
+
+		<div class="actions-bar">
+			<a id="back-to-study" href="/pages/study/" class="btn btn--secondary">← Back to Study</a>
+			<button id="new-consent-form" type="button" class="btn">New consent form</button>
+		</div>
+
+		<header class="dashboard-hero">
+			<p class="project-org">Study materials</p>
+			<h1 class="govuk-heading-l">Consent forms</h1>
+			<p class="govuk-body">Create participant-facing consent materials using Markdown and Mustache variables. Participant consent responses are managed separately.</p>
+		</header>
+
+		<section class="consent-layout" aria-label="Consent form editor">
+			<aside class="consent-list-panel" aria-labelledby="consent-list-title">
+				<h2 id="consent-list-title" class="govuk-heading-m">Forms for this study</h2>
+				<p id="consent-list-status" class="govuk-body-s" aria-live="polite">Loading consent forms.</p>
+				<ul id="consent-form-list" class="consent-form-list"></ul>
+			</aside>
+
+			<section class="consent-editor-panel" aria-labelledby="consent-editor-title">
+				<h2 id="consent-editor-title" class="govuk-heading-m">Editor</h2>
+
+				<form id="consent-form-editor">
+					<input id="consent-form-id" type="hidden" />
+
+					<div class="consent-editor-grid">
+						<label class="govuk-label" for="consent-title">Title</label>
+						<input id="consent-title" class="govuk-input" type="text" autocomplete="off" />
+
+						<label class="govuk-label" for="consent-form-type">Form type</label>
+						<select id="consent-form-type" class="govuk-select">
+							<option>Participant information sheet</option>
+							<option selected>Consent form</option>
+							<option>Privacy notice</option>
+							<option>Debrief sheet</option>
+							<option>Screening consent</option>
+							<option>Other</option>
+						</select>
+
+						<label class="govuk-label" for="consent-status">Status</label>
+						<select id="consent-status" class="govuk-select">
+							<option selected>Draft</option>
+							<option>In review</option>
+							<option>Published</option>
+							<option>Archived</option>
+						</select>
+					</div>
+
+					<div class="consent-editor-split">
+						<div>
+							<label class="govuk-label" for="consent-source">Source Markdown</label>
+							<textarea id="consent-source" class="govuk-textarea consent-source" rows="22" spellcheck="true"></textarea>
+						</div>
+
+						<div class="consent-preview-wrap">
+							<h3 class="govuk-heading-s">Preview</h3>
+							<div id="consent-preview" class="consent-preview" aria-live="polite"></div>
+						</div>
+					</div>
+
+					<details class="consent-details" open>
+						<summary>Variables and consent statements</summary>
+						<div class="consent-editor-split consent-editor-split--metadata">
+							<div>
+								<label class="govuk-label" for="consent-variables">Variables JSON</label>
+								<textarea id="consent-variables" class="govuk-textarea" rows="12" spellcheck="false"></textarea>
+								<p id="consent-variables-error" class="govuk-error-message" hidden></p>
+							</div>
+							<div>
+								<label class="govuk-label" for="consent-items">Consent Items JSON</label>
+								<textarea id="consent-items" class="govuk-textarea" rows="12" spellcheck="false"></textarea>
+								<p id="consent-items-error" class="govuk-error-message" hidden></p>
+							</div>
+						</div>
+					</details>
+
+					<div class="consent-editor-grid">
+						<label class="govuk-label" for="consent-summary">Plain English summary</label>
+						<textarea id="consent-summary" class="govuk-textarea" rows="4"></textarea>
+
+						<label class="govuk-label" for="consent-accessibility-notes">Accessibility notes</label>
+						<textarea id="consent-accessibility-notes" class="govuk-textarea" rows="4"></textarea>
+
+						<label class="govuk-label" for="consent-review-notes">Review notes</label>
+						<textarea id="consent-review-notes" class="govuk-textarea" rows="4"></textarea>
+					</div>
+
+					<div class="actions-bar">
+						<button id="save-consent-form" type="submit" class="btn">Save draft</button>
+						<button id="publish-consent-form" type="button" class="btn btn--secondary">Publish</button>
+						<span id="consent-save-status" class="govuk-body-s" aria-live="polite"></span>
+					</div>
+				</form>
+			</section>
+		</section>
+	</main>
+
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+</body>
+
+</html>
