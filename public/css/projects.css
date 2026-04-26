@@ -1,0 +1,102 @@
+/* ========================================================================== 
+   ResearchOps UI • Projects route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/projects/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/projects.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Projects page card content */
+
+.project-org {
+	margin: 0 0 4px;
+	color: #00703c;
+	font-weight: 700;
+	font-size: 0.95rem;
+	letter-spacing: .02em;
+	text-transform: none;
+	}
+
+.project-title {
+	margin: 0;
+	}
+
+.project-title .govuk-link {
+	color: #0b0c0c;
+	text-decoration: none;
+	font-weight: 700;
+	}
+
+.project-title .govuk-link:hover,
+.project-title .govuk-link:focus {
+	color: #0b0c0c;
+	text-decoration: underline;
+	}
+
+.project-title .govuk-link:visited {
+	color: #0b0c0c;
+	}
+
+.project-meta {
+	margin: 4px 0 8px;
+	}
+
+.project-meta strong {
+	font-weight: 700;
+	}
+
+.project-summary {
+	margin-bottom: 8px;
+	}
+
+.user-groups {
+	margin: 8px 0 8px;
+	}
+
+.project-groups-title {
+	margin: 12px 0 6px;
+	font-size: 1rem;
+	font-weight: 700;
+	}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0 0 8px;
+	padding: 0;
+	list-style: none;
+	}
+
+.tag {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	padding: 2px 8px;
+	border-radius: 14px;
+	font-size: 12px;
+	color: #0b0c0c;
+	background: #ffffff;
+	}
+
+.project-extra {
+	margin-top: 8px;
+	}
+
+.project-details summary {
+	cursor: pointer;
+	}
+
+.details-columns {
+	display: grid;
+	gap: 16px;
+	margin-top: 12px;
+	}
+
+@media (min-width: 700px) {
+	.details-columns {
+		grid-template-columns: 1fr 1fr;
+		}
+	}
+
+/* transparency begins in the cascade */
