@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB" data-api-origin="https://rops-api.digikev-kevin-rapley.workers.dev" prefix="
+<html lang="en-GB" prefix="
     dcterms: http://purl.org/dc/terms/
     schema:  https://schema.org/">
 
@@ -10,6 +10,8 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/outcomes.css" media="screen" />
+	<link rel="modulepreload" href="/js/outcomes-page.js" />
 	<script type="module" src="/components/layout.js"></script>
 </head>
 
@@ -55,7 +57,7 @@
 		<a id="back-link" class="govuk-back-link" href="#">Back to project dashboard</a>
 
 		<!-- HERO -->
-		<div class="dashboard-hero">
+		<div class="dashboard-hero outcomes-hero">
 			<p id="eyebrow-org" class="project-org" property="schema:sourceOrganization" typeof="schema:Organization"></p>
 
 			<h1 id="project-title" class="govuk-heading-l" property="schema:name">Impact &amp; ROI</h1>
@@ -63,9 +65,9 @@
 			<p id="project-subtitle" class="lede" property="schema:description">Track how your research insights influence decisions and outcomes.</p>
 		</div>
 
-		<section id="impact-tracker" data-project-id="" data-study-id="">
+		<section id="impact-tracker" class="outcomes-tracker" data-project-id="" data-study-id="">
 			<!-- Impact tracker form -->
-			<form id="impact-form" class="govuk-form-group">
+			<form id="impact-form" class="govuk-form-group outcomes-form">
 				<div class="govuk-form-group">
 					<label class="govuk-label" for="impact-insightId">Insight ID</label>
 					<div class="govuk-hint" id="impact-insightId-hint">
@@ -162,29 +164,31 @@
 					<textarea class="govuk-textarea govuk-!-width-two-thirds" id="impact-notes" name="notes" rows="3" aria-describedby="impact-notes-hint"></textarea>
 				</div>
 
-				<button class="govuk-button" type="submit">Save impact record</button>
+				<button class="govuk-button outcomes-actions" type="submit">Save impact record</button>
 			</form>
 
 			<!-- Impact records table -->
-			<table id="impact-table" class="govuk-table govuk-!-margin-top-6">
-				<caption class="govuk-table__caption govuk-table__caption--m">
-					Recorded impacts for this project
-				</caption>
-				<thead class="govuk-table__head">
-					<tr class="govuk-table__row">
-						<th scope="col" class="govuk-table__header">Insight</th>
-						<th scope="col" class="govuk-table__header">Decision</th>
-						<th scope="col" class="govuk-table__header">Metric</th>
-						<th scope="col" class="govuk-table__header">Baseline</th>
-						<th scope="col" class="govuk-table__header">Target</th>
-						<th scope="col" class="govuk-table__header">Actual</th>
-						<th scope="col" class="govuk-table__header">Type</th>
-					</tr>
-				</thead>
-				<tbody class="govuk-table__body">
-					<!-- rows will be populated by impact-tracker.js -->
-				</tbody>
-			</table>
+			<div class="outcomes-table-wrap">
+				<table id="impact-table" class="govuk-table govuk-!-margin-top-6 outcomes-table">
+					<caption class="govuk-table__caption govuk-table__caption--m">
+						Recorded impacts for this project
+					</caption>
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row">
+							<th scope="col" class="govuk-table__header">Insight</th>
+							<th scope="col" class="govuk-table__header">Decision</th>
+							<th scope="col" class="govuk-table__header">Metric</th>
+							<th scope="col" class="govuk-table__header">Baseline</th>
+							<th scope="col" class="govuk-table__header">Target</th>
+							<th scope="col" class="govuk-table__header">Actual</th>
+							<th scope="col" class="govuk-table__header">Type</th>
+						</tr>
+					</thead>
+					<tbody class="govuk-table__body">
+						<!-- rows will be populated by impact-tracker.js -->
+					</tbody>
+				</table>
+			</div>
 		</section>
 
 	</main>
@@ -192,34 +196,7 @@
 	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module" src="/components/impact-tracker.js"></script>
-	<script type="module">
-		(function() {
-			const params = new URLSearchParams(window.location.search);
-			const projectId = params.get("id");
-			if (projectId) {
-				const impactSection = document.getElementById("impact-tracker");
-				if (impactSection) impactSection.setAttribute("data-project-id", projectId);
-				// update breadcrumb project link to project dashboard
-				const bcProject = document.getElementById("breadcrumb-project");
-				if (bcProject) bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
-				// update back link to research outcomes section
-				const backLink = document.getElementById("back-link");
-				if (backLink) {
-					backLink.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}#outcomes`;
-				}
-			}
-
-			// Auto-generate Insight ID if empty
-			const insightInput = document.getElementById("impact-insightId");
-			if (insightInput && !insightInput.value) {
-				if (window.crypto && typeof window.crypto.randomUUID === "function") {
-					insightInput.value = window.crypto.randomUUID();
-				} else {
-					insightInput.value = "insight-" + Math.random().toString(36).slice(2, 10);
-				}
-			}
-		})();
-	</script>
+	<script type="module" src="/js/outcomes-page.js"></script>
 </body>
 
 </html>
