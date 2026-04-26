@@ -6,10 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Sessions — ResearchOps</title>
 
-	<link rel="stylesheet" href="./css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="./css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="./css/screen.css" media="screen" />
-	<script type="module" src="./components/layout.js"></script>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="modulepreload" href="/js/sessions-page.js" />
+	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
@@ -39,37 +40,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module">
-		import { ResearchOpsSDK } from "../src/sdk/researchops_sdk_v1.0.0.js";
-		import { getCtx, formatDate } from "./scripts/shared.js";
-
-		const ctx = getCtx();
-		const sdk = ResearchOpsSDK.createSDK({ ...ctx });
-
-		async function load() {
-			const all = await sdk.search({ type: "ResearchSession" });
-			const list = document.getElementById('sessions');
-			list.innerHTML = "";
-			all.sort((a, b) => (a.created > b.created ? -1 : 1)).forEach(s => {
-				const el = document.createElement('div');
-				el.className = "item govuk-body";
-				el.innerHTML = `<strong>${s.name || "(Untitled)"}</strong>
-      <div class="govuk-hint">${formatDate(s["schema:startDate"] || s.created)} — ${s.id}</div>
-      <div class="govuk-hint">Participants: ${(s.participants||[]).join(", ") || "—"}</div>`;
-				list.appendChild(el);
-			});
-		}
-		document.getElementById('create').onclick = async () => {
-			const title = document.getElementById('title').value || "Untitled session";
-			const when = document.getElementById('when').value || new Date().toISOString();
-			const participants = (document.getElementById('participants').value || "")
-				.split(",").map(x => x.trim()).filter(Boolean);
-			const s = await sdk.createSession({ title, when, participants });
-			document.getElementById('status').textContent = `Created ${s.id}`;
-			await load();
-		};
-		load();
-	</script>
+	<script type="module" src="/js/sessions-page.js"></script>
 </body>
 
 </html>
