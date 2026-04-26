@@ -4,6 +4,7 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
+const guidesCssSource = fs.readFileSync("public/css/guides.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -13,9 +14,12 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+includes(pageSource, "href=\"/css/screen.css\"", "study guides page");
+includes(pageSource, "href=\"/css/guides.css\"", "study guides page");
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
+includes(pageSource, "src=\"/components/layout.js\" defer", "study guides page");
 includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
@@ -34,3 +38,13 @@ includes(contextSource, "export { fallbackTitle, pickTitle };", "study guides co
 
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
+
+includes(guidesCssSource, ".guides-header", "Guides stylesheet");
+includes(guidesCssSource, ".editor__toolbar", "Guides stylesheet");
+includes(guidesCssSource, ".editor__split", "Guides stylesheet");
+includes(guidesCssSource, ".code-editor", "Guides stylesheet");
+includes(guidesCssSource, ".code-editor__textarea", "Guides stylesheet");
+includes(guidesCssSource, ".preview", "Guides stylesheet");
+includes(guidesCssSource, ".drawer", "Guides stylesheet");
+includes(guidesCssSource, ".vm-row", "Guides stylesheet");
+includes(guidesCssSource, "/* transparency begins in the cascade */", "Guides stylesheet");
