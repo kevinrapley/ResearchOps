@@ -35,12 +35,27 @@ function buildCorsHeaders(env, request) {
   };
 }
 
+function assetCacheControl(pathname) {
+  if (pathname.startsWith("/api/")) return "no-store";
+  if (pathname.endsWith(".html") || pathname === "/" || pathname.endsWith("/")) return "no-store";
+  if (/\.(?:css|js|mjs|json|svg|ico|webp|png|jpg|jpeg|gif|woff2?)$/i.test(pathname)) {
+    return "public, max-age=3600, stale-while-revalidate=86400";
+  }
+  if (pathname.startsWith("/partials/") || pathname.startsWith("/components/")) {
+    return "public, max-age=3600, stale-while-revalidate=86400";
+  }
+  return "no-store";
+}
+
 function withCORS(env, request, response) {
   try {
+    const url = new URL(request.url);
     const headers = new Headers(response.headers);
     for (const [key, value] of Object.entries(buildCorsHeaders(env, request))) {
       if (!headers.has(key)) headers.set(key, value);
     }
+    if (!headers.has("Cache-Control")) headers.set("Cache-Control", assetCacheControl(url.pathname));
+    if (!headers.has("X-Content-Type-Options")) headers.set("X-Content-Type-Options", "nosniff");
     return new Response(response.body, { status: response.status, headers });
   } catch {
     return response;
