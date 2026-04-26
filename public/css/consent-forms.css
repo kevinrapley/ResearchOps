@@ -1,0 +1,140 @@
+/* ==========================================================================
+   ResearchOps UI • Consent forms
+   Service:    Home Office Biometrics — ResearchOps
+   ========================================================================== */
+
+.consent-layout {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+	}
+
+.consent-list-panel,
+.consent-editor-panel {
+	padding: 16px;
+	border: 1px solid #b1b4b6;
+	background: #ffffff;
+	}
+
+.consent-form-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.consent-form-list li {
+	margin: 0 0 8px 0;
+	}
+
+.consent-form-list__button {
+	display: block;
+	width: 100%;
+	padding: 12px;
+	border: 1px solid #b1b4b6;
+	background: #ffffff;
+	color: #0b0c0c;
+	text-align: left;
+	cursor: pointer;
+	}
+
+.consent-form-list__button:hover,
+.consent-form-list__button:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	}
+
+.consent-form-list__button[aria-current="true"] {
+	border-color: #1d70b8;
+	box-shadow: inset 4px 0 0 #1d70b8;
+	}
+
+.consent-form-list__button span {
+	display: block;
+	margin-top: 4px;
+	color: #505a5f;
+	}
+
+.consent-form-list__empty {
+	padding: 12px;
+	border: 1px solid #b1b4b6;
+	background: #f8f8f8;
+	}
+
+.consent-editor-grid {
+	display: grid;
+	gap: 8px;
+	grid-template-columns: 1fr;
+	margin-bottom: 16px;
+	}
+
+.consent-editor-split {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 1fr;
+	margin-bottom: 16px;
+	}
+
+.consent-editor-split--metadata {
+	margin-top: 16px;
+	}
+
+.consent-source {
+	font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	}
+
+.consent-preview-wrap {
+	min-height: 320px;
+	}
+
+.consent-preview {
+	min-height: 320px;
+	max-height: 720px;
+	overflow: auto;
+	padding: 16px;
+	border: 1px solid #b1b4b6;
+	background: #f8f8f8;
+	}
+
+.consent-preview h2,
+.consent-preview h3,
+.consent-preview h4,
+.consent-preview p,
+.consent-preview ul {
+	max-width: 42em;
+	}
+
+.consent-details {
+	margin: 0 0 16px 0;
+	padding: 12px;
+	border: 1px solid #b1b4b6;
+	background: #ffffff;
+	}
+
+.consent-details summary {
+	cursor: pointer;
+	font-weight: 700;
+	}
+
+.govuk-error-message {
+	margin: 4px 0 0 0;
+	color: #d4351c;
+	font-weight: 700;
+	}
+
+@media (min-width: 980px) {
+	.consent-layout {
+		grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+		align-items: start;
+		}
+
+	.consent-list-panel {
+		position: sticky;
+		top: 16px;
+		}
+
+	.consent-editor-split {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+	}
+
+/* transparency begins in the cascade */
