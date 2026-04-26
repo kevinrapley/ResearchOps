@@ -345,11 +345,24 @@ Why this helps:
 
 This validation pass deliberately leaves the existing inline page glue unchanged. That should be handled as a separate behavioural/module extraction slice.
 
+### Outcomes route CSS split, phase 1
+
+The Outcomes route now loads a dedicated route stylesheet:
+`public/css/outcomes.css`
+
+Why this helps:
+
+- Outcomes-specific hero, impact form, action, and impact table styles now have a route-level home.
+- The Outcomes page bootstrap now lives in `public/js/outcomes-page.js` instead of an inline module.
+- The Outcomes route-state test now enforces the stylesheet, external bootstrap module, impact tracker, and selector contracts.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, Search, Notes, Consent, Sessions, Synthesize, and Start now have dedicated route stylesheets. Study, Guides, and Participants already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, Notes, Consent, Sessions, Synthesize, Start, and Outcomes now have dedicated route stylesheets. Study, Guides, and Participants already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
