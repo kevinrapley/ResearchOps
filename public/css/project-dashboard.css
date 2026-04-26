@@ -89,12 +89,20 @@
 	margin-bottom: 24px;
 	}
 
+.section {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	}
+
 .section__header {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 12px;
 	margin-bottom: 12px;
+	padding: 0;
+	border-bottom: 0;
 	}
 
 .section__title {
@@ -103,7 +111,7 @@
 
 .section__body {
 	background: transparent;
-	padding: 16px;
+	padding: 0;
 	}
 
 .section__grid {

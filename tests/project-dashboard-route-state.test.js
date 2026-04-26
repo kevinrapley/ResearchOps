@@ -13,13 +13,6 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-function ruleBody(source, selector, label) {
-  const pattern = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([\\s\\S]*?)\\}`);
-  const match = source.match(pattern);
-  assert.ok(match, `Expected ${label} to include rule: ${selector}`);
-  return match[1];
-}
-
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
 includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
@@ -48,6 +41,7 @@ includes(dashboardCssSource, ".dashboard-hero", "project dashboard stylesheet");
 includes(dashboardCssSource, ".kv__list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".board", "project dashboard stylesheet");
 includes(dashboardCssSource, ".board__item", "project dashboard stylesheet");
+includes(dashboardCssSource, ".section", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__body", "project dashboard stylesheet");
 includes(dashboardCssSource, ".section__grid", "project dashboard stylesheet");
@@ -57,6 +51,9 @@ includes(dashboardCssSource, ".dropzone", "project dashboard stylesheet");
 includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
 includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");
 
-const sectionBodyRule = ruleBody(dashboardCssSource, ".section__body", "project dashboard stylesheet");
-includes(sectionBodyRule, "background: transparent;", "project dashboard .section__body rule");
-excludes(sectionBodyRule, "border:", "project dashboard .section__body rule");
+includes(dashboardCssSource, ".section {\n\tborder: 0;\n\tborder-radius: 0;\n\tbackground: transparent;\n\t}", "project dashboard stylesheet");
+includes(dashboardCssSource, "\n.section__header {", "project dashboard stylesheet");
+includes(dashboardCssSource, "\tpadding: 0;\n\tborder-bottom: 0;", "project dashboard .section__header rule");
+includes(dashboardCssSource, "\n.section__body {", "project dashboard stylesheet");
+includes(dashboardCssSource, "\tbackground: transparent;\n\tpadding: 0;", "project dashboard .section__body rule");
+excludes(dashboardCssSource, "\n.section__body {\n\tborder:", "project dashboard stylesheet");
