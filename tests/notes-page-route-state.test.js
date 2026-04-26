@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/notes/index.html", "utf8");
 const controllerSource = fs.readFileSync("public/js/notes-page.js", "utf8");
+const stylesheetSource = fs.readFileSync("public/css/notes.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -16,6 +17,12 @@ includes(pageSource, "rel=\"modulepreload\" href=\"/js/notes-page.js\"", "notes 
 includes(pageSource, "src=\"/js/notes-page.js\"", "notes page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "notes page");
 includes(pageSource, "href=\"/css/screen.css\"", "notes page");
+includes(pageSource, "href=\"/css/notes.css\"", "notes page");
+includes(pageSource, "class=\"card notes-panel\"", "notes page");
+includes(pageSource, "class=\"notes-session-select\"", "notes page");
+includes(pageSource, "class=\"notes-editor\"", "notes page");
+includes(pageSource, "class=\"govuk-hint notes-status\"", "notes page");
+includes(pageSource, "class=\"notes-list\"", "notes page");
 includes(pageSource, "id=\"session\"", "notes page");
 includes(pageSource, "id=\"text\"", "notes page");
 includes(pageSource, "id=\"tags\"", "notes page");
@@ -34,3 +41,12 @@ includes(controllerSource, "async function loadNotes", "notes page controller");
 includes(controllerSource, "function saveNote", "notes page controller");
 includes(controllerSource, "localStorage", "notes page controller");
 includes(controllerSource, "window.__ropsNotes", "notes page controller");
+
+includes(stylesheetSource, ".notes-panel", "notes stylesheet");
+includes(stylesheetSource, ".notes-session-select", "notes stylesheet");
+includes(stylesheetSource, ".notes-editor", "notes stylesheet");
+includes(stylesheetSource, ".notes-status", "notes stylesheet");
+includes(stylesheetSource, ".notes-list", "notes stylesheet");
+includes(stylesheetSource, ".notes-list .item", "notes stylesheet");
+includes(stylesheetSource, ".notes-list .tag", "notes stylesheet");
+includes(stylesheetSource, "/* transparency begins in the cascade */", "notes stylesheet");

@@ -265,11 +265,24 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Notes route CSS split, phase 1
+
+The Notes route now loads a dedicated route stylesheet:
+`public/css/notes.css`
+
+Why this helps:
+
+- Notes-specific panel spacing, session selector, editor, save status, rendered note, and tag styles now have a route-level home.
+- The Notes page can be migrated away from generic global `.card`, `.item`, and `.tag` styling incrementally.
+- The Notes route-state test now enforces the stylesheet load and selector contract.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, and Search now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, and Notes now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
