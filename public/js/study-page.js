@@ -119,7 +119,7 @@ function renderReadiness(study) {
 	setReadinessItem("status", status ? "Set" : "Needs attention", `Study status is ${status}.`);
 	setReadinessItem("participants", "Action needed", "Add or review participants for this study.");
 	setReadinessItem("guide", "Action needed", "Create or review the discussion guide before running a session.");
-	setReadinessItem("consent", "Action needed", "Confirm consent materials and participant consent.");
+	setReadinessItem("consent", "Action needed", "Create or review consent forms, then confirm participant consent.");
 	setReadinessItem("session", "Available", "Open the session workspace when the study setup is ready.");
 }
 
@@ -127,6 +127,7 @@ function renderRoutes(projectId, studyId) {
 	const params = { pid: projectId, sid: studyId };
 	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
+	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", params));
 	enableLink("#link-guides", route("/pages/study/guides/", params));
 	enableLink("#link-participants", route("/pages/study/participants/", params));
 	enableLink("#link-session", route("/pages/study/session/", params));
