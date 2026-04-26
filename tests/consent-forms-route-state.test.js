@@ -68,7 +68,6 @@ includes(serviceSource, "export async function publishConsentForm", "consent for
 includes(serviceSource, "AIRTABLE_TABLE_CONSENT_FORMS", "consent forms service");
 includes(serviceSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "consent forms service");
 includes(serviceSource, "CONSENT_FORM_FIELD_NAMES", "consent forms service");
-includes(serviceSource, "Consent Items (JSON)", "consent forms service");
 
 includes(serviceIndexSource, "./consent-forms.js", "service index");
 includes(serviceIndexSource, "listConsentForms", "service index");
@@ -76,3 +75,4 @@ includes(serviceIndexSource, "publishConsentForm", "service index");
 
 includes(fieldsSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "fields");
 includes(fieldsSource, "CONSENT_FORM_FIELD_NAMES", "fields");
+includes(fieldsSource, "Consent Items (JSON)", "fields");
