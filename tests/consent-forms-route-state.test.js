@@ -36,7 +36,7 @@ includes(consentPageSource, "id=\"consent-source\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-preview\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-variables\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-items\"", "consent forms page");
-includes(consentPageSource, "participant consent responses are managed separately", "consent forms page");
+includes(consentPageSource, "Participant consent responses are managed separately", "consent forms page");
 
 includes(consentControllerSource, "const API_ORIGIN", "consent forms controller");
 includes(consentControllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "consent forms controller");
