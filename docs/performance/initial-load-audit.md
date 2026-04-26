@@ -291,11 +291,24 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Sessions route CSS split, phase 1
+
+The legacy Sessions route now loads a dedicated route stylesheet:
+`public/css/sessions.css`
+
+Why this helps:
+
+- Sessions-specific panel spacing, form layout, field layout, status, and rendered session list styles now have a route-level home.
+- The legacy Sessions page can be migrated away from generic global `.card`, `.list`, and `.item` styling incrementally.
+- The existing session route-state test now enforces both the Study Session module contract and the legacy Sessions stylesheet contract.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, Search, Notes, and Consent now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, Notes, Consent, and Sessions now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
