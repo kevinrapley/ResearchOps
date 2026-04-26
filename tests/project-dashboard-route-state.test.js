@@ -15,9 +15,9 @@ function excludes(source, text, label) {
 
 function ruleBody(source, selector, label) {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`);
+  const pattern = new RegExp(`(?:^|\\n)${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`);
   const match = source.match(pattern);
-  assert.ok(match, `Expected ${label} to include rule: ${selector}`);
+  assert.ok(match, `Expected ${label} to include standalone rule: ${selector}`);
   return match[1];
 }
 
