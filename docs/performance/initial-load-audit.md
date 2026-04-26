@@ -123,6 +123,29 @@ Why this helps:
 - The page-context bootstrap becomes independently cacheable.
 - A route-state test now prevents the page from regressing to inline module scripts.
 
+### Project Dashboard route extraction
+
+Project Dashboard inline module has been extracted to:
+`public/js/project-dashboard.js`
+
+Why this helps:
+
+- The dashboard HTML document is smaller.
+- The dashboard route behaviour is independently cacheable.
+- A route-state test prevents the page from regressing to inline module scripts.
+
+### Study Session and Journals module preload coverage
+
+The Study Session and Journals routes already use external route modules.
+
+They now include `rel="modulepreload"` hints for their route controllers, and route-state tests enforce that these modules remain external and discoverable.
+
+Why this helps:
+
+- The browser can discover key route modules earlier.
+- The routes align with the loading pattern used by Projects, Project Dashboard, and Guides.
+- Validation now covers Session and Journals module loading contracts.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
@@ -150,17 +173,14 @@ Recommended next step:
 
 ## Known remaining work
 
-The codebase still contains other pages with large inline module scripts.
+The highest-value remaining work is now CSS splitting and route-specific CSS coverage.
 
-The highest-priority follow-up candidates are:
+Recommended next slices:
 
-1. `public/pages/study/session/index.html`
-2. `public/pages/projects/journals/index.html`
-
-The Study route and Discussion Guides route now use external route modules.
-
-Project Dashboard inline module has been extracted to:
-`public/js/project-dashboard.js`
+1. Use `npm run audit:performance:write` to generate the latest inventory.
+2. Start page-level CSS splitting with the highest-traffic covered routes: Projects, Project Dashboard, Study, and Guides.
+3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
+4. Continue extracting smaller legacy inline module pages, such as Search, Notes, Consent, Sessions, and Synthesize, in separate route-scoped PRs.
 
 ## Validation checklist
 
