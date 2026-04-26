@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/synthesize.css" media="screen" />
 	<link rel="modulepreload" href="/js/synthesize-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
@@ -18,26 +19,26 @@
 	<x-include src="/partials/header.html" vars='{"active":"Synthesis","subtitle":"Synthesis"}'>
 	</x-include>
 
-	<div class="grid">
-		<div class="panel">
+	<div class="grid synthesize-grid">
+		<div class="panel synthesize-panel">
 			<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
-			<input id="filter" class="govuk-input" placeholder="Filter by tag (optional)" />
-			<div id="evidence"></div>
+			<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
+			<div id="evidence" class="evidence-list"></div>
 		</div>
-		<div class="panel">
+		<div class="panel synthesize-panel">
 			<h2 class="govuk-heading-m">Clusters</h2>
-			<div id="clusters"></div>
-			<div style="margin-top:8px;">
+			<div id="clusters" class="cluster-list"></div>
+			<div class="cluster-create">
 				<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
 				<button id="addCluster" class="govuk-button">Add cluster</button>
 			</div>
-			<div style="margin-top:16px;">
+			<div class="theme-publish">
 				<h3 class="govuk-heading-s">Publish theme from cluster</h3>
 				<select id="clusterSelect"></select>
 				<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
-				<textarea id="themeDesc" class="govuk-input" style="height:100px" placeholder="Theme description"></textarea>
+				<textarea id="themeDesc" class="govuk-input" placeholder="Theme description"></textarea>
 				<button id="publish" class="govuk-button">Publish theme</button>
-				<div id="status" class="govuk-hint"></div>
+				<div id="status" class="govuk-hint synthesize-status"></div>
 			</div>
 		</div>
 	</div>
