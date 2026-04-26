@@ -239,17 +239,30 @@ Why this helps:
 - The Guides stylesheet contract covers editor, preview, drawer, and variable-manager selectors.
 - Future CSS pruning can distinguish routes that already have explicit stylesheet coverage from routes still relying only on `screen.css`.
 
+### Project Dashboard route CSS split, phase 1
+
+The Project Dashboard route now loads a dedicated route stylesheet:
+`public/css/project-dashboard.css`
+
+Why this helps:
+
+- Dashboard-specific hero, key-value, board, section, Mural card, dropzone, and dialog styles now have a route-level home.
+- The Project Dashboard page can be migrated away from global selectors incrementally.
+- The existing dashboard route-state test now enforces the stylesheet load and selector contract.
+
+This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-The first CSS split has started with Projects, and Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects and Project Dashboard now have dedicated route stylesheets, and Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
 Recommended next step:
 
-- Continue page-level CSS bundles for Project Dashboard.
+- Use the performance inventory to identify the next route-only stylesheet candidates.
 - Only remove duplicate selectors from `screen.css` after each route has coverage and browser validation.
 - Keep CSS migration PRs route-scoped.
 
@@ -266,14 +279,14 @@ Recommended next step:
 
 ## Known remaining work
 
-The highest-value remaining work is now CSS splitting and route-specific CSS coverage.
+The highest-value remaining work is now incremental CSS pruning and route-specific CSS coverage for lower-traffic legacy pages.
 
 Recommended next slices:
 
 1. Use `npm run audit:performance:write` to generate the latest inventory.
-2. Continue page-level CSS splitting with Project Dashboard.
-3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
-4. Continue checking legacy pages for smaller inline module cleanups, but the named inline-module follow-up list from this audit is now complete.
+2. Compare `screen.css` selectors against routes that now have explicit stylesheet coverage.
+3. Remove duplicate selectors from `screen.css` only after browser validation confirms no route regressions.
+4. Continue adding route-specific stylesheets for lower-traffic legacy pages where the inventory shows meaningful shared CSS reliance.
 
 ## Validation checklist
 
