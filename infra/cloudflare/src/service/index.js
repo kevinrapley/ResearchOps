@@ -11,6 +11,7 @@ import { json as jsonHelper } from "./internals/responders.js";
 import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
 import * as Guides from "./guides.js";
+import * as ConsentForms from "./consent-forms.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
@@ -48,6 +49,7 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} AIRTABLE_TABLE_DETAILS
  * @property {string} AIRTABLE_TABLE_STUDIES
  * @property {string} AIRTABLE_TABLE_GUIDES
+ * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
  * @property {string} AIRTABLE_TABLE_PARTIALS
  * @property {string} AIRTABLE_TABLE_PARTICIPANTS
  * @property {string} AIRTABLE_TABLE_SESSIONS
@@ -181,6 +183,13 @@ export class ResearchOpsService {
 	updateGuide = (req, origin, guideId) => Guides.updateGuide(this, req, origin, guideId);
 	publishGuide = (origin, guideId) => Guides.publishGuide(this, origin, guideId);
 	readGuide = (origin, guideId) => Guides.readGuide(this, origin, guideId);
+
+	/* ─────────────── Consent Forms ─────────────── */
+	listConsentForms = (origin, url) => ConsentForms.listConsentForms(this, origin, url);
+	createConsentForm = (req, origin) => ConsentForms.createConsentForm(this, req, origin);
+	readConsentForm = (origin, formId) => ConsentForms.readConsentForm(this, origin, formId);
+	updateConsentForm = (req, origin, formId) => ConsentForms.updateConsentForm(this, req, origin, formId);
+	publishConsentForm = (origin, formId) => ConsentForms.publishConsentForm(this, origin, formId);
 
 	/* ─────────────── Partials ─────────────── */
 	listPartials = (origin) => Partials.listPartials(this, origin);
