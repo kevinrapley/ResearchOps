@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -12,6 +13,8 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
+includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
 includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
@@ -33,3 +36,16 @@ includes(controllerSource, "function initStudyModal", "project dashboard control
 includes(controllerSource, "data-project-id", "project dashboard controller");
 includes(controllerSource, "/api/projects", "project dashboard controller");
 includes(controllerSource, "/api/studies", "project dashboard controller");
+
+includes(dashboardCssSource, ".dashboard-hero", "project dashboard stylesheet");
+includes(dashboardCssSource, ".kv__list", "project dashboard stylesheet");
+includes(dashboardCssSource, ".board", "project dashboard stylesheet");
+includes(dashboardCssSource, ".board__item", "project dashboard stylesheet");
+includes(dashboardCssSource, ".section__header", "project dashboard stylesheet");
+includes(dashboardCssSource, ".section__body", "project dashboard stylesheet");
+includes(dashboardCssSource, ".section__grid", "project dashboard stylesheet");
+includes(dashboardCssSource, ".list-divided", "project dashboard stylesheet");
+includes(dashboardCssSource, ".pill--neutral", "project dashboard stylesheet");
+includes(dashboardCssSource, ".dropzone", "project dashboard stylesheet");
+includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
+includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");

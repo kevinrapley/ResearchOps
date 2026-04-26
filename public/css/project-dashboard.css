@@ -1,0 +1,195 @@
+/* ==========================================================================
+   ResearchOps UI • Project Dashboard route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/project-dashboard/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/project-dashboard.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Dashboard hero and metadata */
+
+.dashboard-hero {
+	margin-bottom: 24px;
+	}
+
+.dashboard-hero .lede {
+	max-width: 760px;
+	}
+
+.kv {
+	margin: 0 0 24px;
+	}
+
+.kv__list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.kv__term {
+	font-weight: 700;
+	}
+
+.kv__desc {
+	color: #0b0c0c;
+	}
+
+/* Dashboard navigation */
+
+.board {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+	margin: 0 0 24px;
+	}
+
+.board__item {
+	display: block;
+	padding: 16px;
+	border: 1px solid #b1b4b6;
+	background: #ffffff;
+	color: #1d70b8;
+	font-weight: 700;
+	text-decoration: none;
+	}
+
+.board__item:hover,
+.board__item:focus {
+	background: #f3f2f1;
+	color: #003078;
+	text-decoration: underline;
+	}
+
+.board__item:focus-visible {
+	outline: 3px solid #0b0c0c;
+	outline-offset: 0;
+	box-shadow: 0 0 0 3px #ffdd00;
+	}
+
+@media (min-width: 720px) {
+	.board {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+@media (min-width: 1020px) {
+	.board {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+/* Dashboard cards and sections */
+
+.card,
+.section {
+	margin-bottom: 24px;
+	}
+
+.section__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 12px;
+	}
+
+.section__title {
+	margin: 0;
+	}
+
+.section__body {
+	border: 1px solid #b1b4b6;
+	background: #ffffff;
+	padding: 16px;
+	}
+
+.section__grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 24px;
+	}
+
+@media (min-width: 760px) {
+	.section__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+.list-unstyled {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.list-divided > li {
+	padding: 8px 0;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+.list-divided > li:last-child {
+	border-bottom: 0;
+	}
+
+/* Mural integration card */
+
+.status {
+	margin: 0 0 12px;
+	}
+
+.pill {
+	display: inline-block;
+	padding: 3px 8px;
+	border: 1px solid #b1b4b6;
+	font-weight: 700;
+	}
+
+.pill--neutral {
+	background: #f3f2f1;
+	color: #0b0c0c;
+	}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+	}
+
+.hint {
+	margin: 0;
+	color: #505a5f;
+	}
+
+/* Participant import */
+
+.dropzone {
+	margin-top: 12px;
+	padding: 16px;
+	border: 2px dashed #b1b4b6;
+	background: #f8f8f8;
+	}
+
+.dropzone p {
+	margin-top: 0;
+	}
+
+/* Study dialog */
+
+#study-dialog {
+	border: 1px solid #0b0c0c;
+	padding: 0;
+	}
+
+#study-dialog form {
+	padding: 16px;
+	}
+
+#study-dialog::backdrop {
+	background: rgba(0,0,0,.35);
+	}
+
+/* transparency begins in the cascade */
