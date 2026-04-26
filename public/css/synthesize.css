@@ -1,0 +1,109 @@
+/* ==========================================================================
+   ResearchOps UI • Synthesize route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/synthesize/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/synthesize.css
+   License:    All rights reserved
+   ========================================================================== */
+
+/* Synthesis layout */
+
+.synthesize-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 24px;
+	}
+
+@media (min-width: 900px) {
+	.synthesize-grid {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+	}
+
+.synthesize-panel {
+	margin-bottom: 24px;
+	}
+
+.synthesize-panel .govuk-heading-m {
+	margin-top: 0;
+	}
+
+/* Evidence */
+
+.synthesize-filter {
+	margin-bottom: 16px;
+	}
+
+.evidence-list {
+	display: grid;
+	gap: 12px;
+	}
+
+.evidence-list .note {
+	border: 1px solid #b1b4b6;
+	padding: 12px;
+	background: #ffffff;
+	}
+
+.evidence-list .tag {
+	display: inline-block;
+	margin: 4px 4px 0 0;
+	padding: 2px 8px;
+	border: 1px solid #b1b4b6;
+	border-radius: 14px;
+	background: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+	color: #0b0c0c;
+	}
+
+/* Clusters and themes */
+
+.cluster-list {
+	display: grid;
+	gap: 12px;
+	}
+
+.cluster-list .cluster {
+	border: 1px solid #b1b4b6;
+	padding: 12px;
+	background: #ffffff;
+	}
+
+.cluster-list .bin {
+	min-height: 48px;
+	margin-top: 8px;
+	border: 2px dashed #b1b4b6;
+	background: #f8f8f8;
+	}
+
+.cluster-create {
+	display: grid;
+	gap: 8px;
+	margin-top: 8px;
+	}
+
+.theme-publish {
+	display: grid;
+	gap: 8px;
+	margin-top: 16px;
+	}
+
+.theme-publish select,
+.theme-publish textarea {
+	border: 2px solid #0b0c0c;
+	padding: 8px;
+	font: inherit;
+	}
+
+.theme-publish textarea {
+	min-height: 100px;
+	resize: vertical;
+	}
+
+.synthesize-status {
+	margin: 0;
+	}
+
+/* transparency begins in the cascade */
