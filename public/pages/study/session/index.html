@@ -18,7 +18,9 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/session.css" media="screen" />
 
-	<script type="module" src="/components/layout.js"></script>
+	<link rel="modulepreload" href="/components/session-controller.js" />
+
+	<script type="module" src="/components/layout.js" defer></script>
 	<script type="module" src="/components/session-controller.js" defer></script>
 </head>
 

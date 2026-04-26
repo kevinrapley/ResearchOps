@@ -39,6 +39,7 @@ require_file "tests/projects-route-contract.test.js"
 require_file "tests/project-dashboard-route-state.test.js"
 require_file "tests/mural-ui-route-state.test.js"
 require_file "tests/journals-project-route-contract.test.js"
+require_file "tests/journals-route-state.test.js"
 require_file "tests/journal-tabs-api-origin-route-state.test.js"
 require_file "tests/journal-tabs-filter-state-route-state.test.js"
 require_file "tests/journal-tabs-resilience-route-state.test.js"
@@ -46,6 +47,7 @@ require_file "tests/journal-secondary-actions-route-state.test.js"
 require_file "tests/mural-journal-sync-route-state.test.js"
 require_file "tests/study-page-route-state.test.js"
 require_file "tests/study-guides-route-state.test.js"
+require_file "tests/study-session-route-state.test.js"
 require_file "tests/consent-forms-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
@@ -169,6 +171,9 @@ node tests/mural-ui-route-state.test.js
 info "checking Journals project route contract"
 node tests/journals-project-route-contract.test.js
 
+info "checking Journals route-state contract"
+node tests/journals-route-state.test.js
+
 info "checking Journal tabs API origin route-state contract"
 node tests/journal-tabs-api-origin-route-state.test.js
 
@@ -189,6 +194,9 @@ node tests/study-page-route-state.test.js
 
 info "checking Study guides route-state contract"
 node tests/study-guides-route-state.test.js
+
+info "checking Study session route-state contract"
+node tests/study-session-route-state.test.js
 
 info "checking Consent Forms route-state contract"
 node tests/consent-forms-route-state.test.js
