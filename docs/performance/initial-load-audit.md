@@ -184,6 +184,19 @@ Why this helps:
 - Rendered consent values are escaped before being inserted into the DOM.
 - The existing consent route-state test now covers the legacy Consent page module contract.
 
+### Sessions route extraction
+
+The legacy Sessions route no longer carries its page controller inline in `public/pages/sessions/index.html`.
+
+That code now lives in `public/js/sessions-page.js` and is loaded with `rel="modulepreload"`.
+
+Why this helps:
+
+- The Sessions HTML document is smaller.
+- The page no longer relies on legacy page-relative imports for the SDK and shared helpers.
+- Rendered session values are escaped before being inserted into the DOM.
+- The existing session route-state test now covers the legacy Sessions page module contract.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
@@ -218,7 +231,7 @@ Recommended next slices:
 1. Use `npm run audit:performance:write` to generate the latest inventory.
 2. Start page-level CSS splitting with the highest-traffic covered routes: Projects, Project Dashboard, Study, and Guides.
 3. Keep `screen.css` as the base layer until each route has browser and route-state coverage.
-4. Continue extracting smaller legacy inline module pages, such as Sessions and Synthesize, in separate route-scoped PRs.
+4. Continue extracting smaller legacy inline module pages, such as Synthesize, in a separate route-scoped PR.
 
 ## Validation checklist
 
