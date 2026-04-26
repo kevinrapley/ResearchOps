@@ -154,13 +154,13 @@ The codebase still contains other pages with large inline module scripts.
 
 The highest-priority follow-up candidates are:
 
-1. `public/pages/project-dashboard/index.html`
-2. `public/pages/study/session/index.html`
-3. `public/pages/projects/journals/index.html`
+1. `public/pages/study/session/index.html`
+2. `public/pages/projects/journals/index.html`
 
 The Study route and Discussion Guides route now use external route modules.
 
-The dashboard page is large enough that a careful extraction should be treated as its own behavioural refactor, with route-state tests attached.
+Project Dashboard inline module has been extracted to:
+`public/js/project-dashboard.js`
 
 ## Validation checklist
 
