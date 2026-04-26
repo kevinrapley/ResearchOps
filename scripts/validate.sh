@@ -48,6 +48,7 @@ require_file "tests/mural-journal-sync-route-state.test.js"
 require_file "tests/study-page-route-state.test.js"
 require_file "tests/study-guides-route-state.test.js"
 require_file "tests/study-session-route-state.test.js"
+require_file "tests/search-page-route-state.test.js"
 require_file "tests/consent-forms-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
@@ -197,6 +198,9 @@ node tests/study-guides-route-state.test.js
 
 info "checking Study session route-state contract"
 node tests/study-session-route-state.test.js
+
+info "checking Search page route-state contract"
+node tests/search-page-route-state.test.js
 
 info "checking Consent Forms route-state contract"
 node tests/consent-forms-route-state.test.js
