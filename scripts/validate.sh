@@ -53,6 +53,7 @@ require_file "tests/search-page-route-state.test.js"
 require_file "tests/notes-page-route-state.test.js"
 require_file "tests/synthesize-page-route-state.test.js"
 require_file "tests/start-page-route-state.test.js"
+require_file "tests/participants-page-route-state.test.js"
 require_file "tests/consent-forms-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
@@ -217,6 +218,9 @@ node tests/synthesize-page-route-state.test.js
 
 info "checking Start page route-state contract"
 node tests/start-page-route-state.test.js
+
+info "checking Participants page route-state contract"
+node tests/participants-page-route-state.test.js
 
 info "checking Consent Forms route-state contract"
 node tests/consent-forms-route-state.test.js
