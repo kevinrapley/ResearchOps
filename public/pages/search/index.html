@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/search.css" media="screen" />
 	<link rel="modulepreload" href="/js/search-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
@@ -21,26 +22,28 @@
 		}'>
 	</x-include>
 
-	<div class="card">
+	<div class="card search-panel">
 		<h2 class="govuk-heading-m">Query</h2>
-		<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
-		<label class="govuk-body">Type
-			<select id="type">
-				<option value="">Any</option>
-				<option>ResearchSession</option>
-				<option>Consent</option>
-				<option>Note</option>
-				<option>Tag</option>
-				<option>Cluster</option>
-				<option>Theme</option>
-			</select>
-		</label>
-		<button id="go" class="govuk-button">Search</button>
+		<div class="search-controls">
+			<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
+			<label class="govuk-body search-type-label">Type
+				<select id="type">
+					<option value="">Any</option>
+					<option>ResearchSession</option>
+					<option>Consent</option>
+					<option>Note</option>
+					<option>Tag</option>
+					<option>Cluster</option>
+					<option>Theme</option>
+				</select>
+			</label>
+			<button id="go" class="govuk-button">Search</button>
+		</div>
 	</div>
 
-	<div class="card">
+	<div class="card search-panel">
 		<h2 class="govuk-heading-m">Results</h2>
-		<div id="results"></div>
+		<div id="results" class="search-results"></div>
 	</div>
 
 	<x-include src="/partials/footer.html"></x-include>
