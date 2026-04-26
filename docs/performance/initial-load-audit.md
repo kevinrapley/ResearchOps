@@ -330,11 +330,26 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+### Participants route CSS validation
+
+The Participants route already loads a dedicated route stylesheet:
+`public/css/participants.css`
+
+The route-state tests now make this CSS split status explicit for the Participants route, its page modules, and its Safari-safe rendered events.
+
+Why this helps:
+
+- Participants is now treated as a route-scoped CSS asset in the validation model.
+- The stylesheet contract covers layout, cards, tables, empty states, forms, badges, pills, and messages.
+- Future CSS pruning can distinguish this route from pages still relying only on `screen.css`.
+
+This validation pass deliberately leaves the existing inline page glue unchanged. That should be handled as a separate behavioural/module extraction slice.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
 
-Projects, Project Dashboard, Search, Notes, Consent, Sessions, Synthesize, and Start now have dedicated route stylesheets. Study and Guides already have route-specific stylesheets. `screen.css` remains the base layer.
+Projects, Project Dashboard, Search, Notes, Consent, Sessions, Synthesize, and Start now have dedicated route stylesheets. Study, Guides, and Participants already have route-specific stylesheets. `screen.css` remains the base layer.
 
 Removing selectors from `screen.css` safely requires browser validation on every route that may still rely on the shared rules.
 
