@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/synthesize.css" media="screen" />
 	<link rel="modulepreload" href="/js/synthesize-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -22,22 +24,41 @@
 	<div class="grid synthesize-grid">
 		<div class="panel synthesize-panel">
 			<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
-			<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="filter">Filter by tag</label>
+				<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
+			</div>
 			<div id="evidence" class="evidence-list"></div>
 		</div>
 		<div class="panel synthesize-panel">
 			<h2 class="govuk-heading-m">Clusters</h2>
 			<div id="clusters" class="cluster-list"></div>
 			<div class="cluster-create">
-				<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
-				<button id="addCluster" class="govuk-button">Add cluster</button>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="newCluster">New cluster name</label>
+					<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
+				</div>
+				<div class="govuk-button-group">
+					<button id="addCluster" class="govuk-button">Add cluster</button>
+				</div>
 			</div>
 			<div class="theme-publish">
 				<h3 class="govuk-heading-s">Publish theme from cluster</h3>
-				<select id="clusterSelect"></select>
-				<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
-				<textarea id="themeDesc" class="govuk-input" placeholder="Theme description"></textarea>
-				<button id="publish" class="govuk-button">Publish theme</button>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="clusterSelect">Cluster</label>
+					<select id="clusterSelect" class="govuk-select"></select>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="themeLabel">Theme label</label>
+					<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="themeDesc">Theme description</label>
+					<textarea id="themeDesc" class="govuk-textarea" placeholder="Theme description"></textarea>
+				</div>
+				<div class="govuk-button-group">
+					<button id="publish" class="govuk-button">Publish theme</button>
+				</div>
 				<div id="status" class="govuk-hint synthesize-status"></div>
 			</div>
 		</div>
