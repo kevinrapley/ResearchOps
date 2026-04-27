@@ -31,9 +31,11 @@ includes(studyControllerSource, "route(\"/pages/study/consent-forms/\", params)"
 
 includes(consentPageSource, "/js/consent-forms-page.js", "consent forms page");
 includes(consentPageSource, "/css/govuk/govuk-buttons.css", "consent forms page");
+includes(consentPageSource, "/css/govuk/govuk-forms.css", "consent forms page");
 includes(consentPageSource, "/css/consent-forms.css", "consent forms page");
 includes(consentPageSource, "class=\"govuk-button\"", "consent forms page");
 includes(consentPageSource, "class=\"govuk-button govuk-button--secondary\"", "consent forms page");
+includes(consentPageSource, "class=\"govuk-form-group\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-error\"", "consent forms page");
 includes(consentPageSource, "role=\"alert\"", "consent forms page");
 includes(consentPageSource, "id=\"new-consent-form\"", "consent forms page");
@@ -43,6 +45,8 @@ includes(consentPageSource, "id=\"consent-source\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-preview\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-variables\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-items\"", "consent forms page");
+includes(consentPageSource, "aria-describedby=\"consent-variables-error\"", "consent forms page");
+includes(consentPageSource, "aria-describedby=\"consent-items-error\"", "consent forms page");
 includes(consentPageSource, "Participant consent responses are managed separately", "consent forms page");
 excludes(consentPageSource, "class=\"btn", "consent forms page");
 
@@ -65,12 +69,15 @@ includes(legacyConsentPageSource, "rel=\"modulepreload\" href=\"/js/consent-page
 includes(legacyConsentPageSource, "src=\"/js/consent-page.js\"", "legacy consent page");
 includes(legacyConsentPageSource, "src=\"/components/layout.js\" defer", "legacy consent page");
 includes(legacyConsentPageSource, "href=\"/css/screen.css\"", "legacy consent page");
+includes(legacyConsentPageSource, "href=\"/css/govuk/govuk-buttons.css\"", "legacy consent page");
+includes(legacyConsentPageSource, "href=\"/css/govuk/govuk-forms.css\"", "legacy consent page");
 includes(legacyConsentPageSource, "href=\"/css/consent.css\"", "legacy consent page");
 includes(legacyConsentPageSource, "class=\"card consent-panel\"", "legacy consent page");
 includes(legacyConsentPageSource, "class=\"consent-form\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"govuk-body consent-field\"", "legacy consent page");
+includes(legacyConsentPageSource, "class=\"govuk-form-group consent-field\"", "legacy consent page");
 includes(legacyConsentPageSource, "class=\"govuk-hint consent-status\"", "legacy consent page");
 includes(legacyConsentPageSource, "class=\"govuk-body consent-records\"", "legacy consent page");
+includes(legacyConsentPageSource, "aria-describedby=\"ret-hint\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"session\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"basis\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"ret\"", "legacy consent page");
@@ -78,6 +85,7 @@ includes(legacyConsentPageSource, "id=\"notes\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"link\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"status\"", "legacy consent page");
 includes(legacyConsentPageSource, "id=\"consents\"", "legacy consent page");
+excludes(legacyConsentPageSource, "class=\"govuk-body consent-field\"", "legacy consent page");
 excludes(legacyConsentPageSource, "<script type=\"module\">", "legacy consent page");
 excludes(legacyConsentPageSource, "../src/sdk/researchops_sdk_v1.0.0.js", "legacy consent page");
 excludes(legacyConsentPageSource, "./scripts/shared.js", "legacy consent page");
