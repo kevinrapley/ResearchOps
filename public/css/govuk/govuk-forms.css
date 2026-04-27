@@ -1,4 +1,4 @@
-/* ========================================================================== 
+/* ==========================================================================
    GOV.UK form foundation
    Service:    Home Office Biometrics — ResearchOps
    Scope:      Global GOV.UK form component contract
@@ -147,87 +147,35 @@
 
 .govuk-checkboxes__item,
 .govuk-radios__item {
-	position: relative;
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
 	min-height: 40px;
 	margin-bottom: 10px;
-	padding-left: 40px;
 	clear: left;
 	}
 
 .govuk-checkboxes__input,
 .govuk-radios__input {
-	position: absolute;
-	z-index: 1;
-	top: 0;
-	left: 0;
-	width: 40px;
-	height: 40px;
-	margin: 0;
-	opacity: 0;
+	width: 24px;
+	height: 24px;
+	margin: 3px 0 0;
+	accent-color: #0b0c0c;
 	cursor: pointer;
+	}
+
+.govuk-checkboxes__input:focus,
+.govuk-radios__input:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 2px;
 	}
 
 .govuk-checkboxes__label,
 .govuk-radios__label {
-	position: relative;
 	display: inline-block;
 	margin-bottom: 0;
-	padding: 8px 15px 5px;
+	padding-top: 3px;
 	cursor: pointer;
-	}
-
-.govuk-checkboxes__label::before,
-.govuk-radios__label::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: -40px;
-	box-sizing: border-box;
-	width: 40px;
-	height: 40px;
-	border: 2px solid #0b0c0c;
-	background: #ffffff;
-	}
-
-.govuk-radios__label::before {
-	border-radius: 50%;
-	}
-
-.govuk-radios__label::after {
-	content: "";
-	position: absolute;
-	top: 11px;
-	left: -29px;
-	display: none;
-	width: 18px;
-	height: 18px;
-	border-radius: 50%;
-	background: #0b0c0c;
-	}
-
-.govuk-checkboxes__label::after {
-	content: "";
-	position: absolute;
-	top: 11px;
-	left: -31px;
-	display: none;
-	width: 18px;
-	height: 10px;
-	border: solid #0b0c0c;
-	border-width: 0 0 4px 4px;
-	transform: rotate(-45deg);
-	}
-
-.govuk-radios__input:checked + .govuk-radios__label::after,
-.govuk-checkboxes__input:checked + .govuk-checkboxes__label::after {
-	display: block;
-	}
-
-.govuk-radios__input:focus + .govuk-radios__label::before,
-.govuk-checkboxes__input:focus + .govuk-checkboxes__label::before {
-	outline: 3px solid #ffdd00;
-	outline-offset: 0;
-	box-shadow: 0 0 0 4px #0b0c0c;
 	}
 
 .govuk-button-group {
