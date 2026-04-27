@@ -358,6 +358,23 @@ Why this helps:
 
 This CSS split deliberately keeps `public/css/screen.css` as the base layer. It does not delete duplicated selectors from the global stylesheet yet.
 
+## GOV.UK design-system migration note
+
+Design-system work must preserve the CSS ownership doctrine established during the performance pass.
+
+Route-level stylesheets must not replace global CSS contracts.
+
+Global components such as shared sections, cards, board navigation, key-value metadata, buttons, form controls, typography, and GOV.UK foundations must remain global until they are intentionally migrated through a documented global design-system change.
+
+Where a route has a page-level stylesheet, that stylesheet should contain only page-specific or deliberately divergent styles.
+
+The GOV.UK compliance baseline is tracked separately in:
+
+- `docs/design-system/govuk-compliance-audit.md`
+- `docs/design-system/researchops-component-inventory.md`
+
+Any future design-system PR should state whether it preserves, extends, or intentionally changes the global CSS contract.
+
 ## CSS audit finding
 
 `public/css/screen.css` is still a large global stylesheet.
