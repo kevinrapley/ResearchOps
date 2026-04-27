@@ -21,48 +21,50 @@
 	<x-include src="/partials/header.html" vars='{"active":"Synthesis","subtitle":"Synthesis"}'>
 	</x-include>
 
-	<div class="grid synthesize-grid">
-		<div class="panel synthesize-panel">
-			<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="filter">Filter by tag</label>
-				<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
+	<main id="main-content" class="govuk-body" role="main" tabindex="-1">
+		<div class="grid synthesize-grid">
+			<div class="panel synthesize-panel">
+				<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="filter">Filter by tag</label>
+					<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
+				</div>
+				<div id="evidence" class="evidence-list"></div>
 			</div>
-			<div id="evidence" class="evidence-list"></div>
+			<div class="panel synthesize-panel">
+				<h2 class="govuk-heading-m">Clusters</h2>
+				<div id="clusters" class="cluster-list"></div>
+				<div class="cluster-create">
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="newCluster">New cluster name</label>
+						<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
+					</div>
+					<div class="govuk-button-group">
+						<button id="addCluster" class="govuk-button">Add cluster</button>
+					</div>
+				</div>
+				<div class="theme-publish">
+					<h3 class="govuk-heading-s">Publish theme from cluster</h3>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="clusterSelect">Cluster</label>
+						<select id="clusterSelect" class="govuk-select"></select>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="themeLabel">Theme label</label>
+						<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="themeDesc">Theme description</label>
+						<textarea id="themeDesc" class="govuk-textarea" placeholder="Theme description"></textarea>
+					</div>
+					<div class="govuk-button-group">
+						<button id="publish" class="govuk-button">Publish theme</button>
+					</div>
+					<div id="status" class="govuk-hint synthesize-status"></div>
+				</div>
+			</div>
 		</div>
-		<div class="panel synthesize-panel">
-			<h2 class="govuk-heading-m">Clusters</h2>
-			<div id="clusters" class="cluster-list"></div>
-			<div class="cluster-create">
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="newCluster">New cluster name</label>
-					<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
-				</div>
-				<div class="govuk-button-group">
-					<button id="addCluster" class="govuk-button">Add cluster</button>
-				</div>
-			</div>
-			<div class="theme-publish">
-				<h3 class="govuk-heading-s">Publish theme from cluster</h3>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="clusterSelect">Cluster</label>
-					<select id="clusterSelect" class="govuk-select"></select>
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="themeLabel">Theme label</label>
-					<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="themeDesc">Theme description</label>
-					<textarea id="themeDesc" class="govuk-textarea" placeholder="Theme description"></textarea>
-				</div>
-				<div class="govuk-button-group">
-					<button id="publish" class="govuk-button">Publish theme</button>
-				</div>
-				<div id="status" class="govuk-hint synthesize-status"></div>
-			</div>
-		</div>
-	</div>
+	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
 
