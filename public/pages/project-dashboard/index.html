@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/project-dashboard.css" media="screen" />
 	<link rel="modulepreload" href="/js/project-dashboard.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -71,24 +72,29 @@
 		</div>
 
 		<!-- KEY INFORMATION -->
-		<section class="kv" typeof="schema:ResearchProject">
-			<ul class="kv__list">
-				<li><span class="kv__term">Service Stage</span>&nbsp;
-					<span class="kv__desc" id="kv-service-stage" property="schema:phase">–</span>
-				</li>
-				<li><span class="kv__term">Project Stage</span>&nbsp;
-					<span class="kv__desc" id="kv-project-stage" property="schema:projectStatus">–</span>
-				</li>
-				<li><span class="kv__term">Client Name</span>&nbsp;
-					<span class="kv__desc" id="kv-client-name" property="schema:client">–</span>
-				</li>
-				<li><span class="kv__term">Lead Researcher</span>&nbsp;
-					<span class="kv__desc" id="kv-lead-researcher" property="schema:author" typeof="schema:Person"></span>
-				</li>
-				<li><span class="kv__term">Lead Researcher Email</span>&nbsp;
-					<a class="kv__desc" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
-				</li>
-			</ul>
+		<section class="kv" typeof="schema:ResearchProject" aria-label="Project key information">
+			<dl class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Service Stage</dt>
+					<dd class="govuk-summary-list__value" id="kv-service-stage" property="schema:phase">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Project Stage</dt>
+					<dd class="govuk-summary-list__value" id="kv-project-stage" property="schema:projectStatus">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Client Name</dt>
+					<dd class="govuk-summary-list__value" id="kv-client-name" property="schema:client">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Lead Researcher</dt>
+					<dd class="govuk-summary-list__value" id="kv-lead-researcher" property="schema:author" typeof="schema:Person"></dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Lead Researcher Email</dt>
+					<dd class="govuk-summary-list__value"><a id="kv-lead-email" property="schema:email" href="mailto:">–</a></dd>
+				</div>
+			</dl>
 		</section>
 
 		<!-- NAV BOARD -->
