@@ -1,21 +1,89 @@
 <!-- public/partials/header.html -->
-<header class="rops-header" role="banner">
-	<div class="rops-header__title">
-		{{#title}}
-			<p class="govuk-heading-l rops-header__title-text">{{title}}</p>
-		{{/title}}
-		{{^title}}
-			<p class="govuk-heading-l rops-header__title-text">ResearchOps Demo Suite</p>
-		{{/title}}
+<a class="govuk-skip-link" href="#main-content">Skip to main content</a>
+
+<header class="govuk-header" role="banner">
+	<div class="govuk-header__container">
+		<div class="govuk-header__service-name">
+			<a class="govuk-header__link" href="/">
+				{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
+			</a>
+		</div>
+		{{#subtitle}}
+			<p class="govuk-header__service-description">{{subtitle}}</p>
+		{{/subtitle}}
 	</div>
-	{{#subtitle}}
-		<p class="govuk-heading-m rops-header__subtitle">{{subtitle}}</p>
-	{{/subtitle}}
-	<nav class="nav govuk-body" data-active="{{active}}" aria-label="Primary navigation">
-		<ul class="nav__list">
-			<li><a class="govuk-link" href="/" data-nav="Home">Home</a></li>
-			<li><a class="govuk-link" href="/pages/start/" data-nav="Start Research Project">Start Research Project</a></li>
-			<li><a class="govuk-link" href="/pages/projects/" data-nav="Projects">Projects</a></li>
-		</ul>
-	</nav>
 </header>
+
+<nav class="govuk-service-navigation" data-active="{{active}}" aria-label="Service navigation">
+	<div class="govuk-service-navigation__container">
+		<ul class="govuk-service-navigation__list">
+			<li class="govuk-service-navigation__item">
+				<a class="govuk-service-navigation__link" href="/" data-nav="Home">Home</a>
+			</li>
+			<li class="govuk-service-navigation__item">
+				<a class="govuk-service-navigation__link" href="/pages/start/" data-nav="Start Research Project">Start research project</a>
+			</li>
+			<li class="govuk-service-navigation__item">
+				<a class="govuk-service-navigation__link" href="/pages/projects/" data-nav="Projects">Projects</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<div class="govuk-phase-banner" role="note" aria-label="Service phase">
+	<p class="govuk-phase-banner__content">
+		<strong class="govuk-tag">Prototype</strong>
+		<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
+	</p>
+</div>
+
+<script>
+	(function () {
+		function ensurePageChromeStylesheet() {
+			var href = "/css/govuk/govuk-page-chrome.css";
+			var selector = "link[href='" + href + "']";
+			if (document.querySelector(selector)) return;
+
+			var link = document.createElement("link");
+			link.rel = "stylesheet";
+			link.href = href;
+			link.media = "screen";
+			document.head.appendChild(link);
+		}
+
+		function ensureMainContentTarget() {
+			var existing = document.getElementById("main-content");
+			if (existing) return;
+
+			var main = document.querySelector("main");
+			if (!main) return;
+
+			main.classList.add("govuk-main-wrapper");
+
+			if (!main.id) {
+				main.id = "main-content";
+				if (!main.hasAttribute("tabindex")) {
+					main.setAttribute("tabindex", "-1");
+				}
+				return;
+			}
+
+			var target = document.createElement("div");
+			target.id = "main-content";
+			target.className = "govuk-main-wrapper__target";
+			target.setAttribute("tabindex", "-1");
+			main.parentNode.insertBefore(target, main);
+		}
+
+		function init() {
+			ensurePageChromeStylesheet();
+			ensureMainContentTarget();
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", init, { once: true });
+		} else {
+			init();
+		}
+	})();
+</script>
