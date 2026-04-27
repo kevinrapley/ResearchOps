@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/sessions.css" media="screen" />
 	<link rel="modulepreload" href="/js/sessions-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -22,16 +24,23 @@
 	<div class="card sessions-panel">
 		<h2 class="govuk-heading-m">Create a session</h2>
 		<div class="sessions-form">
-			<label class="govuk-body sessions-field">Title
+			<div class="govuk-form-group sessions-field">
+				<label class="govuk-label" for="title">Title</label>
 				<input id="title" class="govuk-input" placeholder="e.g., Interview 01 — Immigration officer" />
-			</label>
-			<label class="govuk-body sessions-field">When (ISO)
-				<input id="when" class="govuk-input" placeholder="2025-09-19T10:00:00Z" />
-			</label>
-			<label class="govuk-body sessions-field">Participants (pseudonyms, comma-separated)
-				<input id="participants" class="govuk-input" placeholder="P001, P002" />
-			</label>
-			<button id="create" class="govuk-button">Create session</button>
+			</div>
+			<div class="govuk-form-group sessions-field">
+				<label class="govuk-label" for="when">When</label>
+				<div id="when-hint" class="govuk-hint">Use an ISO timestamp, for example 2025-09-19T10:00:00Z.</div>
+				<input id="when" class="govuk-input" placeholder="2025-09-19T10:00:00Z" aria-describedby="when-hint" />
+			</div>
+			<div class="govuk-form-group sessions-field">
+				<label class="govuk-label" for="participants">Participants</label>
+				<div id="participants-hint" class="govuk-hint">Enter pseudonyms as a comma-separated list.</div>
+				<input id="participants" class="govuk-input" placeholder="P001, P002" aria-describedby="participants-hint" />
+			</div>
+			<div class="govuk-button-group">
+				<button id="create" class="govuk-button">Create session</button>
+			</div>
 			<div id="status" class="govuk-hint sessions-status"></div>
 		</div>
 	</div>
