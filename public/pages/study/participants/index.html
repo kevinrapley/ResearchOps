@@ -11,10 +11,10 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/participants.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
-	<!-- NEW: wire the participants page module -->
 	<script type="module" src="/components/participants/participants-page.js" defer></script>
 	<script type="module" src="/pages/study/participants/scheduler.js" defer></script>
 </head>
@@ -22,14 +22,12 @@
 <body>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
 
-	<!-- Rest of your page continues here -->
 	<x-include src="/partials/header.html" vars='{
     "active":"Projects",
     "subtitle":"Study — Participants"
   }'></x-include>
 
 	<main id="main" class="container govuk-body" role="main">
-		<!-- Breadcrumb -->
 		<nav class="breadcrumbs" aria-label="Breadcrumb">
 			<ol>
 				<li><a href="/pages/projects/">Projects</a></li>
@@ -43,36 +41,31 @@
 			<strong id="studyBadge" class="badge">Study:</strong>
 		</div>
 
-		<!-- Participants row -->
 		<div class="govuk-grid-row govuk-!-margin-bottom-7">
-			<!-- Left: table or empty state -->
 			<div class="govuk-grid-column-one-half">
 				<section aria-labelledby="participants-h">
 					<h2 id="participants-h" class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h2>
 					<p class="govuk-hint">Invite and manage participants for this study.</p>
 
-					<!-- Empty state (hidden when there are participants) -->
 					<div id="participantsEmpty" class="empty card" hidden>
 						<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No participants yet</h3>
 						<p>Add your first participant to begin scheduling sessions.</p>
 						<a href="#addParticipantForm" class="govuk-button">Add a participant</a>
 					</div>
 
-					<!-- NEW: Semantic table target for the module -->
 					<div class="table-wrap" id="participantsTableWrap" hidden>
-						<table class="table" role="table" aria-label="Participants">
-							<thead>
-								<tr>
-									<th scope="col">Name</th>
-									<th scope="col">Email</th>
-									<th scope="col">Phone</th>
-									<th scope="col">Channel</th>
-									<th scope="col">Status</th>
+						<table id="participantsTable" class="govuk-table" aria-label="Participants">
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header">Name</th>
+									<th scope="col" class="govuk-table__header">Contact</th>
+									<th scope="col" class="govuk-table__header">Status</th>
+									<th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
 								</tr>
 							</thead>
-							<tbody id="participants-tbody">
-								<tr>
-									<td colspan="5" class="muted">Loading…</td>
+							<tbody id="participants-tbody" class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<td colspan="4" class="govuk-table__cell muted">Loading…</td>
 								</tr>
 							</tbody>
 						</table>
@@ -80,7 +73,6 @@
 				</section>
 			</div>
 
-			<!-- Right: Add participant -->
 			<div class="govuk-grid-column-one-half">
 				<section class="card" aria-labelledby="addp-h">
 					<h2 id="addp-h" class="govuk-heading-l govuk-!-margin-bottom-3">Add participant</h2>
@@ -128,40 +120,38 @@
 			</div>
 		</div>
 
-		<!-- Sessions row -->
 		<div class="govuk-grid-row">
-			<!-- Left: table or empty state -->
 			<div class="govuk-grid-column-one-half">
 				<section aria-labelledby="sessions-h">
 					<h2 id="sessions-h" class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
 					<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
 
-					<!-- Empty state (hidden when sessions exist) -->
 					<div id="sessionsEmpty" class="empty card" hidden>
 						<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No sessions yet</h3>
 						<p>Schedule a session once you’ve added at least one participant.</p>
 						<a href="#scheduleForm" class="govuk-button" id="scheduleCta">Schedule a session</a>
 					</div>
 
-					<!-- Table (hidden when none) -->
-					<div class="table card" id="sessionsTable" role="table" aria-label="Sessions" hidden>
-						<div class="rowh table__header" role="row">
-							<div role="columnheader">When</div>
-							<div role="columnheader">Participant</div>
-							<div role="columnheader">Status</div>
-							<div role="columnheader">Actions</div>
-						</div>
-						<!-- rows injected by scheduler.js -->
+					<div class="table-wrap" id="sessionsTableWrap" hidden>
+						<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header">When</th>
+									<th scope="col" class="govuk-table__header">Participant</th>
+									<th scope="col" class="govuk-table__header">Status</th>
+									<th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
+								</tr>
+							</thead>
+							<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
+						</table>
 					</div>
 				</section>
 			</div>
 
-			<!-- Right: Schedule session -->
 			<div class="govuk-grid-column-one-half">
 				<section class="card" aria-labelledby="schedules-h">
 					<h2 id="schedules-h" class="govuk-heading-l govuk-!-margin-bottom-3">Schedule a session</h2>
 
-					<!-- Info banner if no participants; form will be disabled -->
 					<div id="noParticipantsBanner" class="note" role="status" hidden>
 						Add at least one participant to enable scheduling.
 					</div>
@@ -237,14 +227,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<!-- NEW: Page glue for breadcrumbs + empty/table toggle -->
 	<script type="module">
-		/**
-		 * @file participants-page.glue.js (Safari-safe)
-		 * - Sets breadcrumb + badge text
-		 * - Listens for participants-rendered / participants_rendered
-		 * - Toggles empty state vs table without throwing
-		 */
 		const $ = (s, r = document) => r.querySelector(s);
 
 		function fallbackTitle(s = {}) {
@@ -278,7 +261,6 @@
 				Promise.all([getProject(pid), getStudies(pid)]).then(([project, studies]) => {
 					const study = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
 
-					// Breadcrumbs (guarded)
 					const bcProj = $("#breadcrumb-project");
 					if (bcProj) {
 						bcProj.setAttribute("href", `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`);
@@ -290,12 +272,11 @@
 						bcStudy.textContent = pickTitle(study);
 					}
 
-					// Badge
 					const badge = $("#studyBadge");
 					if (badge) badge.textContent = `Study: ${pickTitle(study)}`;
 
-					// Toggle helpers
 					const $empty = $("#participantsEmpty");
+					const $tableWrap = $("#participantsTableWrap");
 					const $table = $("#participantsTable");
 					const noP = $("#noParticipantsBanner");
 					const sel = $("#s_participant");
@@ -304,13 +285,12 @@
 					function applyCount(n) {
 						const has = n > 0;
 						if ($empty) $empty.hidden = has;
-						if ($table) $table.hidden = !has;
+						if ($tableWrap) $tableWrap.hidden = !has;
 						if (noP) noP.hidden = has;
 						if (sel) sel.disabled = !has;
 						if (btn) btn.disabled = !has;
 					}
 
-					// Listen to Safari-safe event names
 					const onRendered = (e) => {
 						const n = e?.detail?.count ?? 0;
 						console.info("[participants] rendered count =", n);
@@ -319,18 +299,14 @@
 					window.addEventListener("participants-rendered", onRendered);
 					window.addEventListener("participants_rendered", onRendered);
 
-					// If the renderer fired before we attached listeners, check table now
-					// (participants-page.js shows/hides #participantsTable; we mirror that)
-					const lateHasRows = $table && !$table.hidden;
-					if (lateHasRows) applyCount(($table.querySelectorAll(".row").length || 1));
+					const lateHasRows = $table && $table.querySelectorAll("tbody tr[data-participant-row]").length > 0;
+					if (lateHasRows) applyCount($table.querySelectorAll("tbody tr[data-participant-row]").length);
 
 				}).catch(err => {
 					console.error("[participants] glue async error:", err);
 				});
 
 			} catch (err) {
-				// Previous “string did not match the expected pattern” showed up here in Safari.
-				// We guard everything above and never use colon-based event names in glue.
 				console.error("[participants] glue init error:", err);
 			}
 		})();
