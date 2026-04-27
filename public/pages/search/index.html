@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/search.css" media="screen" />
 	<link rel="modulepreload" href="/js/search-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -25,9 +27,13 @@
 	<div class="card search-panel">
 		<h2 class="govuk-heading-m">Query</h2>
 		<div class="search-controls">
-			<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
-			<label class="govuk-body search-type-label">Type
-				<select id="type">
+			<div class="govuk-form-group">
+				<label class="govuk-label" for="q">Search text</label>
+				<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
+			</div>
+			<div class="govuk-form-group">
+				<label class="govuk-label search-type-label" for="type">Type</label>
+				<select id="type" class="govuk-select">
 					<option value="">Any</option>
 					<option>ResearchSession</option>
 					<option>Consent</option>
@@ -36,8 +42,10 @@
 					<option>Cluster</option>
 					<option>Theme</option>
 				</select>
-			</label>
-			<button id="go" class="govuk-button">Search</button>
+			</div>
+			<div class="govuk-button-group">
+				<button id="go" class="govuk-button">Search</button>
+			</div>
 		</div>
 	</div>
 

@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/session.css" media="screen" />
 
 	<link rel="modulepreload" href="/components/session-controller.js" />
@@ -46,7 +47,7 @@
 
 		<section class="picker">
 			<h2 class="govuk-heading-m">Select participant</h2>
-			<div class="picker__row">
+			<div class="picker__row govuk-form-group">
 				<label for="participant-select" class="govuk-label">Participant</label>
 				<select id="participant-select" class="govuk-select" aria-describedby="participant-help">
 					<option value="" selected>— Choose a participant —</option>
@@ -91,19 +92,23 @@
 
 			<div class="note-toolbar">
 				<div class="note-toolbar__left">
-					<label for="framework" class="govuk-label">Note framework</label>
-					<select id="framework" class="govuk-select">
-						<option value="none" selected>None</option>
-						<option value="aeiou">AEIOU</option>
-						<option value="poems">POEMS</option>
-					</select>
+					<div class="govuk-form-group">
+						<label for="framework" class="govuk-label">Note framework</label>
+						<select id="framework" class="govuk-select">
+							<option value="none" selected>None</option>
+							<option value="aeiou">AEIOU</option>
+							<option value="poems">POEMS</option>
+						</select>
+					</div>
 
-					<label for="note-kind" class="govuk-label">Category</label>
-					<select id="note-kind" class="govuk-select">
-						<option value="idea">Ideas/Notes</option>
-						<option value="quote">Quote</option>
-						<option value="observation">Observation</option>
-					</select>
+					<div class="govuk-form-group">
+						<label for="note-kind" class="govuk-label">Category</label>
+						<select id="note-kind" class="govuk-select">
+							<option value="idea">Ideas/Notes</option>
+							<option value="quote">Quote</option>
+							<option value="observation">Observation</option>
+						</select>
+					</div>
 				</div>
 
 				<div class="note-toolbar__right" aria-label="Formatting">

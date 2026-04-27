@@ -205,7 +205,9 @@ jobs:
             }
           }
 
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary.join('\n') + '\n');
+          const summaryText = summary.join('\n') + '\n';
+          console.log(summaryText);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summaryText);
           NODE
 
       - name: Upload pa11y artifacts

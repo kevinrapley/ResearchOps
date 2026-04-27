@@ -16,6 +16,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/project-dashboard.css" media="screen" />
 	<link rel="modulepreload" href="/js/project-dashboard.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -199,32 +200,37 @@
 
 				<p id="study-desc" class="lede">Create a study and capture its method, title and description.</p>
 
-				<label class="govuk-label" for="study-method">Research Method <span class="govuk-hint">(required)</span></label>
-				<select id="study-method" class="govuk-input" required aria-required="true">
-					<option value="">Choose something</option>
-					<option>Card Sort</option>
-					<option>Contextual Inquiry</option>
-					<option>Customer Satisfaction Survey</option>
-					<option>Diary Study</option>
-					<option>Existing Research Analysis</option>
-					<option>Expert Review</option>
-					<option>Stakeholder Interview</option>
-					<option>Survey</option>
-					<option>Tree Test</option>
-					<option>Usability Test</option>
-					<option>User Interview</option>
-				</select>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="study-method">Research method</label>
+					<select id="study-method" class="govuk-select" required aria-required="true">
+						<option value="">Choose something</option>
+						<option>Card Sort</option>
+						<option>Contextual Inquiry</option>
+						<option>Customer Satisfaction Survey</option>
+						<option>Diary Study</option>
+						<option>Existing Research Analysis</option>
+						<option>Expert Review</option>
+						<option>Stakeholder Interview</option>
+						<option>Survey</option>
+						<option>Tree Test</option>
+						<option>Usability Test</option>
+						<option>User Interview</option>
+					</select>
+				</div>
 
-				<!-- New optional title -->
-				<label class="govuk-label" for="study-title-input" style="margin-top:8px;">Study Title <span class="govuk-hint">(optional)</span></label>
-				<input id="study-title-input" class="govuk-input" placeholder="E.g. HMCTS help desk interviews Jan 2025" />
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="study-title-input">Study title</label>
+					<div id="study-title-hint" class="govuk-hint">Optional. Use a short, recognisable title.</div>
+					<input id="study-title-input" class="govuk-input" placeholder="E.g. HMCTS help desk interviews Jan 2025" aria-describedby="study-title-hint" />
+				</div>
 
-				<div class="note" style="margin:8px 0;">Provide a short, recognisable description for this study.</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="study-notes">Study description</label>
+					<div id="study-notes-hint" class="govuk-hint">Provide a short, recognisable description for this study.</div>
+					<textarea id="study-notes" class="govuk-textarea" rows="5" required aria-required="true" aria-describedby="study-notes-hint" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
+				</div>
 
-				<label class="govuk-label" for="study-notes">Study Description <span class="govuk-hint">(required)</span></label>
-				<textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
-
-				<footer class="actions-bar" style="justify-content:flex-end;">
+				<footer class="govuk-button-group actions-bar" style="justify-content:flex-end;">
 					<button class="govuk-button govuk-button--secondary" value="cancel" id="study-cancel" type="button">Cancel</button>
 					<button class="govuk-button" value="submit" id="study-submit" type="submit">Submit</button>
 				</footer>

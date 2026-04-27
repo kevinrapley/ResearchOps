@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/start.css" media="screen" />
 
 	<!-- Components/layout first -->
@@ -46,17 +47,21 @@
 				<h2 class="govuk-heading-m">Step 1 of 3</h2>
 				<p class="lede">Define the project’s service phase and status</p>
 
-				<div id="error-summary" class="panel start-panel" style="display:none" role="alert" aria-live="polite"></div>
+				<div id="error-summary" class="govuk-error-summary start-panel" style="display:none" role="alert" aria-live="polite" tabindex="-1"></div>
 
 				<form id="projectForm" class="start-form" novalidate>
-					<label class="govuk-body" for="p_name">Project name</label>
-					<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" />
-					<p id="p_name_error" class="error-message start-error" style="display:none"></p>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_name">Project name</label>
+						<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" />
+						<p id="p_name_error" class="govuk-error-message start-error" style="display:none"></p>
+					</div>
 
-					<label class="govuk-body" for="p_desc">Description</label>
-					<p id="p_desc_help" class="hint">Write what you plan to research. Do not include personal data.</p>
-					<textarea id="p_desc" name="description" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
-					<p id="p_desc_error" class="error-message start-error" style="display:none"></p>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_desc">Description</label>
+						<p id="p_desc_help" class="govuk-hint">Write what you plan to research. Do not include personal data.</p>
+						<textarea id="p_desc" name="description" class="govuk-textarea" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
+						<p id="p_desc_error" class="govuk-error-message start-error" style="display:none"></p>
+					</div>
 
 					<!-- Description assistance controls -->
 					<div id="ai-tools" class="toolbar mt-2 hidden start-assist" aria-label="Description assistance">
@@ -70,31 +75,35 @@
 					<!-- AI output (summary + suggestions + optional rewrite) -->
 					<div id="ai-rewrite-output" class="mt-2 start-assist-output" aria-live="polite"></div>
 
-					<label class="govuk-body" for="p_phase">Service phase</label>
-					<select id="p_phase" name="phase" class="govuk-input">
-						<optgroup label="Service phases">
-							<option value="pre-discovery" selected>Pre-Discovery</option>
-							<option value="discovery">Discovery</option>
-							<option value="alpha">Alpha</option>
-							<option value="beta">Beta</option>
-							<option value="live">Live</option>
-							<option value="retired">Retired</option>
-						</optgroup>
-					</select>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_phase">Service phase</label>
+						<select id="p_phase" name="phase" class="govuk-select">
+							<optgroup label="Service phases">
+								<option value="pre-discovery" selected>Pre-Discovery</option>
+								<option value="discovery">Discovery</option>
+								<option value="alpha">Alpha</option>
+								<option value="beta">Beta</option>
+								<option value="live">Live</option>
+								<option value="retired">Retired</option>
+							</optgroup>
+						</select>
+					</div>
 
-					<label class="govuk-body" for="p_status">Project status</label>
-					<select id="p_status" name="status" class="govuk-input">
-						<optgroup label="Project statuses">
-							<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
-							<option value="planning">Planning research</option>
-							<option value="conducting">Conducting research</option>
-							<option value="synthesis">Synthesis &amp; analysis</option>
-							<option value="shared">Shared &amp; socialised research</option>
-							<option value="monitoring">Monitoring metrics</option>
-						</optgroup>
-					</select>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_status">Project status</label>
+						<select id="p_status" name="status" class="govuk-select">
+							<optgroup label="Project statuses">
+								<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
+								<option value="planning">Planning research</option>
+								<option value="conducting">Conducting research</option>
+								<option value="synthesis">Synthesis &amp; analysis</option>
+								<option value="shared">Shared &amp; socialised research</option>
+								<option value="monitoring">Monitoring metrics</option>
+							</optgroup>
+						</select>
+					</div>
 
-					<div class="cta">
+					<div class="govuk-button-group cta">
 						<button class="govuk-button" id="next2" type="submit">Continue</button>
 					</div>
 				</form>
@@ -106,15 +115,16 @@
 				<p class="lede">Define the project’s stakeholders, objectives, and user groups</p>
 
 				<form id="targetForm" class="start-form">
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_stakeholders">Stakeholders</label>
+						<p id="p_stakeholders_help" class="govuk-hint">Enter one stakeholder per line using the format: name | role | email.</p>
+						<textarea id="p_stakeholders" class="govuk-textarea" aria-describedby="p_stakeholders_help"></textarea>
+					</div>
 
-					<label class="govuk-body">Stakeholders (name | role | email, one per line)
-						<textarea id="p_stakeholders" class="govuk-input"></textarea>
-					</label>
-
-					<div class="form-group">
-						<label for="p_objectives">Initial objectives</label>
-						<p class="hint">List your research objectives. Keep them action-oriented. Avoid personal data.</p>
-						<textarea id="p_objectives" name="p_objectives" rows="5"></textarea>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_objectives">Initial objectives</label>
+						<p id="p_objectives_help" class="govuk-hint">List your research objectives. Keep them action-oriented. Avoid personal data.</p>
+						<textarea id="p_objectives" name="p_objectives" class="govuk-textarea" rows="5" aria-describedby="p_objectives_help"></textarea>
 						<div id="ai-objectives-tools" class="toolbar mt-2 hidden start-assist" aria-label="Objectives assistance">
 							<button class="govuk-button govuk-button--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
 							<button class="govuk-button govuk-button--secondary" id="btn-obj-ai-rewrite" type="button">Try AI rewrite</button>
@@ -128,11 +138,13 @@
 					<!-- AI rewrite preview (Objectives) -->
 					<div id="ai-objectives-output" class="mt-2 start-assist-output" aria-live="polite"></div>
 
-					<label class="govuk-body">User groups (comma-separated)
-						<input id="p_usergroups" class="govuk-input" />
-					</label>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_usergroups">User groups</label>
+						<p id="p_usergroups_help" class="govuk-hint">Enter user groups as a comma-separated list.</p>
+						<input id="p_usergroups" class="govuk-input" aria-describedby="p_usergroups_help" />
+					</div>
 
-					<div class="cta">
+					<div class="govuk-button-group cta">
 						<button class="govuk-button" id="prev1" type="button">Back</button>
 						<button class="govuk-button" id="next3" type="button">Continue</button>
 					</div>
@@ -145,19 +157,22 @@
 				<p class="lede">Supplementary information about the project</p>
 
 				<form id="researchForm" class="start-form">
-					<label class="govuk-body">Lead Researcher
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="lead_name">Lead researcher</label>
 						<input id="lead_name" class="govuk-input" value="" />
-					</label>
+					</div>
 
-					<label class="govuk-body">Researcher&rsquo;s Email
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="lead_email">Researcher&rsquo;s email</label>
 						<input id="lead_email" type="email" class="govuk-input" value="" />
-					</label>
+					</div>
 
-					<label class="govuk-body">Notes
-						<textarea id="p_notes" class="govuk-input"></textarea>
-					</label>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="p_notes">Notes</label>
+						<textarea id="p_notes" class="govuk-textarea"></textarea>
+					</div>
 
-					<div class="cta">
+					<div class="govuk-button-group cta">
 						<button class="govuk-button" id="prev2" type="button">Back</button>
 						<button class="govuk-button" id="finish" type="button">Create project</button>
 					</div>

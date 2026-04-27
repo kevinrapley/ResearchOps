@@ -17,12 +17,15 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "study session page");
+includes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "study session page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/components/session-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/session-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "study session page");
 includes(pageSource, "class=\"govuk-button\"", "study session page");
 includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "study session page");
 includes(pageSource, "class=\"govuk-button govuk-button--warning\"", "study session page");
+includes(pageSource, "class=\"picker__row govuk-form-group\"", "study session page");
+includes(pageSource, "class=\"govuk-form-group\"", "study session page");
 includes(pageSource, "id=\"participant-select\"", "study session page");
 includes(pageSource, "id=\"btn-start\"", "study session page");
 includes(pageSource, "id=\"btn-pause\"", "study session page");
@@ -45,18 +48,22 @@ includes(legacySessionsPageSource, "rel=\"modulepreload\" href=\"/js/sessions-pa
 includes(legacySessionsPageSource, "src=\"/js/sessions-page.js\"", "legacy sessions page");
 includes(legacySessionsPageSource, "src=\"/components/layout.js\" defer", "legacy sessions page");
 includes(legacySessionsPageSource, "href=\"/css/screen.css\"", "legacy sessions page");
+includes(legacySessionsPageSource, "href=\"/css/govuk/govuk-buttons.css\"", "legacy sessions page");
+includes(legacySessionsPageSource, "href=\"/css/govuk/govuk-forms.css\"", "legacy sessions page");
 includes(legacySessionsPageSource, "href=\"/css/sessions.css\"", "legacy sessions page");
 includes(legacySessionsPageSource, "class=\"card sessions-panel\"", "legacy sessions page");
 includes(legacySessionsPageSource, "class=\"sessions-form\"", "legacy sessions page");
-includes(legacySessionsPageSource, "class=\"govuk-body sessions-field\"", "legacy sessions page");
+includes(legacySessionsPageSource, "class=\"govuk-form-group sessions-field\"", "legacy sessions page");
 includes(legacySessionsPageSource, "class=\"govuk-hint sessions-status\"", "legacy sessions page");
 includes(legacySessionsPageSource, "class=\"list sessions-list\"", "legacy sessions page");
+includes(legacySessionsPageSource, "aria-describedby=\"when-hint\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"title\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"when\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"participants\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"create\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"status\"", "legacy sessions page");
 includes(legacySessionsPageSource, "id=\"sessions\"", "legacy sessions page");
+excludes(legacySessionsPageSource, "class=\"govuk-body sessions-field\"", "legacy sessions page");
 excludes(legacySessionsPageSource, "<script type=\"module\">", "legacy sessions page");
 excludes(legacySessionsPageSource, "../src/sdk/researchops_sdk_v1.0.0.js", "legacy sessions page");
 excludes(legacySessionsPageSource, "./scripts/shared.js", "legacy sessions page");
