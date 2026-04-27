@@ -45,7 +45,7 @@ function makeRow(p) {
     <div role="cell">${escapeHtml(contact)}</div>
     <div role="cell">${escapeHtml(status)}</div>
     <div role="cell">
-      <button class="btn btn--secondary" data-action="schedule" data-id="${p.id}">Schedule</button>
+      <button class="govuk-button govuk-button--secondary" data-action="schedule" data-id="${p.id}">Schedule</button>
     </div>
   `;
 	return row;
