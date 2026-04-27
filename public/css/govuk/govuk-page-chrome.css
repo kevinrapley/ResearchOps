@@ -1,21 +1,31 @@
 /* GOV.UK page chrome foundation */
 
 .govuk-skip-link {
-	position: absolute;
-	z-index: 9999;
-	top: 0;
-	left: 0;
 	display: block;
-	padding: 8px 15px;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
 	background: #ffdd00;
 	color: #0b0c0c;
 	font-weight: 700;
 	text-decoration: none;
-	transform: translateY(-120%);
 	}
 
 .govuk-skip-link:focus {
-	transform: translateY(0);
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 8px 15px;
+	overflow: visible;
+	clip: auto;
+	clip-path: none;
+	white-space: inherit;
 	outline: 3px solid #0b0c0c;
 	outline-offset: 0;
 	box-shadow: none;
