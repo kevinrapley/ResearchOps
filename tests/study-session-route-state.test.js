@@ -6,6 +6,7 @@ const controllerSource = fs.readFileSync("public/components/session-controller.j
 const legacySessionsPageSource = fs.readFileSync("public/pages/sessions/index.html", "utf8");
 const legacySessionsControllerSource = fs.readFileSync("public/js/sessions-page.js", "utf8");
 const legacySessionsCssSource = fs.readFileSync("public/css/sessions.css", "utf8");
+const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -15,16 +16,25 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "study session page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/components/session-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/session-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "study session page");
+includes(pageSource, "class=\"govuk-button\"", "study session page");
+includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "study session page");
+includes(pageSource, "class=\"govuk-button govuk-button--warning\"", "study session page");
 includes(pageSource, "id=\"participant-select\"", "study session page");
 includes(pageSource, "id=\"btn-start\"", "study session page");
 includes(pageSource, "id=\"btn-pause\"", "study session page");
 includes(pageSource, "id=\"btn-stop\"", "study session page");
 includes(pageSource, "id=\"note-editor\"", "study session page");
 includes(pageSource, "id=\"notes-list\"", "study session page");
+excludes(pageSource, "class=\"btn", "study session page");
 excludes(pageSource, "<script type=\"module\">", "study session page");
+
+includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
 
 includes(controllerSource, "participant-select", "session controller");
 includes(controllerSource, "timer-display", "session controller");
