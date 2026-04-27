@@ -37,7 +37,7 @@ require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
 require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
-require_file "tests/govuk-design-system-baseline.test.js"
+require_file "tests/govuk-design-system-baseline-route-state.test.js"
 require_file "tests/projects-route-contract.test.js"
 require_file "tests/projects-page-route-state.test.js"
 require_file "tests/project-dashboard-route-state.test.js"
@@ -170,7 +170,7 @@ if (typeof service.ResearchOpsService !== 'function') {
 NODE
 
 info "checking GOV.UK design system baseline"
-node tests/govuk-design-system-baseline.test.js
+node tests/govuk-design-system-baseline-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
