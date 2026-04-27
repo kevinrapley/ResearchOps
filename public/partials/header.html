@@ -39,6 +39,18 @@
 
 <script>
 	(function () {
+		function ensurePageChromeStylesheet() {
+			var href = "/css/govuk/govuk-page-chrome.css";
+			var selector = "link[href='" + href + "']";
+			if (document.querySelector(selector)) return;
+
+			var link = document.createElement("link");
+			link.rel = "stylesheet";
+			link.href = href;
+			link.media = "screen";
+			document.head.appendChild(link);
+		}
+
 		function ensureMainContentTarget() {
 			var existing = document.getElementById("main-content");
 			if (existing) return;
@@ -46,17 +58,33 @@
 			var main = document.querySelector("main");
 			if (!main) return;
 
-			main.setAttribute("id", "main-content");
 			main.classList.add("govuk-main-wrapper");
-			if (!main.hasAttribute("tabindex")) {
-				main.setAttribute("tabindex", "-1");
+
+			if (!main.id) {
+				main.id = "main-content";
+				if (!main.hasAttribute("tabindex")) {
+					main.setAttribute("tabindex", "-1");
+				}
+				return;
 			}
+
+			var target = document.createElement("div");
+			target.id = "main-content";
+			target.className = "govuk-main-wrapper__target";
+			target.setAttribute("tabindex", "-1");
+			target.setAttribute("aria-hidden", "true");
+			main.parentNode.insertBefore(target, main);
+		}
+
+		function init() {
+			ensurePageChromeStylesheet();
+			ensureMainContentTarget();
 		}
 
 		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", ensureMainContentTarget, { once: true });
+			document.addEventListener("DOMContentLoaded", init, { once: true });
 		} else {
-			ensureMainContentTarget();
+			init();
 		}
 	})();
 </script>
