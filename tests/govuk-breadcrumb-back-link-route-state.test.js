@@ -67,6 +67,11 @@ includes(pageChromeCss, ".govuk-breadcrumbs__list-item", "page chrome stylesheet
 includes(pageChromeCss, ".govuk-breadcrumbs__link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link::before", "page chrome stylesheet");
+includes(pageChromeCss, "#back-to-project.govuk-back-link", "page chrome stylesheet");
+includes(pageChromeCss, "width: fit-content;", "page chrome stylesheet");
+includes(pageChromeCss, "margin: 0 24px 24px auto;", "page chrome stylesheet");
+includes(pageChromeCss, "#back-to-project.govuk-back-link::before", "page chrome stylesheet");
+includes(pageChromeCss, "content: none;", "page chrome stylesheet");
 excludes(pageChromeCss, ".breadcrumbs", "page chrome stylesheet");
 
 includes(projectContextSource, "function hydrateProjectRouteContext", "project context hydrator");
@@ -118,6 +123,7 @@ includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", 
 includes(outcomesPage, "src=\"/js/project-context.js\"", "Outcomes route");
 includes(outcomesPage, "id=\"breadcrumb-project\"", "Outcomes route");
 includes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
+includes(outcomesPage, "class=\"govuk-button govuk-button--secondary\"", "Outcomes route");
 includes(outcomesPage, ">Back to Project</a>", "Outcomes route");
 
 const journalsPage = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
