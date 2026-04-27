@@ -56,8 +56,10 @@
 		tableBody.innerHTML = "";
 		if (!items.length) {
 			const row = document.createElement("tr");
+			row.className = "govuk-table__row";
 			const cell = document.createElement("td");
-			cell.colSpan = 6;
+			cell.className = "govuk-table__cell";
+			cell.colSpan = 7;
 			cell.textContent = "No impact records yet.";
 			row.appendChild(cell);
 			tableBody.appendChild(row);
@@ -65,13 +67,15 @@
 		}
 		for (const item of items) {
 			const row = document.createElement("tr");
+			row.className = "govuk-table__row";
 			row.innerHTML = [
-				`<td>${escapeHtml(item["Insight ID"] || item.insightId || "")}</td>`,
-				`<td>${escapeHtml(item["Decision Link"] || item.decisionLink || "")}</td>`,
-				`<td>${escapeHtml(item["Metric Name"] || item.metricName || "")}</td>`,
-				`<td>${formatNumber(item["Baseline"] || item.baseline)}</td>`,
-				`<td>${formatNumber(item["Actual"] || item.actual)}</td>`,
-				`<td>${escapeHtml(item["Impact Type"] || item.impactType || "")}</td>`
+				`<td class="govuk-table__cell">${escapeHtml(item["Insight ID"] || item.insightId || "")}</td>`,
+				`<td class="govuk-table__cell">${escapeHtml(item["Decision Link"] || item.decisionLink || "")}</td>`,
+				`<td class="govuk-table__cell">${escapeHtml(item["Metric Name"] || item.metricName || "")}</td>`,
+				`<td class="govuk-table__cell govuk-table__cell--numeric">${formatNumber(item["Baseline"] || item.baseline)}</td>`,
+				`<td class="govuk-table__cell govuk-table__cell--numeric">${formatNumber(item["Target"] || item.target)}</td>`,
+				`<td class="govuk-table__cell govuk-table__cell--numeric">${formatNumber(item["Actual"] || item.actual)}</td>`,
+				`<td class="govuk-table__cell">${escapeHtml(item["Impact Type"] || item.impactType || "")}</td>`
 			].join("");
 			tableBody.appendChild(row);
 		}
