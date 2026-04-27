@@ -4,6 +4,7 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
+const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -14,6 +15,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
+includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
 includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js\"", "project dashboard page");
@@ -26,6 +28,9 @@ includes(pageSource, "class=\"section\"", "project dashboard page");
 includes(pageSource, "class=\"section__header\"", "project dashboard page");
 includes(pageSource, "class=\"section__title govuk-heading-m\"", "project dashboard page");
 includes(pageSource, "class=\"section__body section__grid\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-button\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "project dashboard page");
+excludes(pageSource, "class=\"btn", "project dashboard page");
 excludes(pageSource, "class=\"dashboard-section\"", "project dashboard page");
 excludes(pageSource, "class=\"dashboard-section__header\"", "project dashboard page");
 excludes(pageSource, "class=\"dashboard-section__title govuk-heading-m\"", "project dashboard page");
@@ -44,6 +49,13 @@ includes(controllerSource, "function initStudyModal", "project dashboard control
 includes(controllerSource, "data-project-id", "project dashboard controller");
 includes(controllerSource, "/api/projects", "project dashboard controller");
 includes(controllerSource, "/api/studies", "project dashboard controller");
+
+includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".btn", "GOV.UK button stylesheet legacy alias");
+includes(buttonCssSource, ".btn--secondary", "GOV.UK button stylesheet legacy alias");
+includes(buttonCssSource, ".btn--outline", "GOV.UK button stylesheet legacy alias");
 
 includes(dashboardCssSource, ".pill--neutral", "project dashboard stylesheet");
 includes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
