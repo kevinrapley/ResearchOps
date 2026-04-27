@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 
 	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
@@ -111,8 +112,10 @@
 							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
 						</ul>
 					</div>
-					<label for="guide-title" class="label-inline">Guide title</label>
-					<input id="guide-title" type="text" value="New guide" placeholder="Guide title" />
+					<div class="govuk-form-group editor__title-field">
+						<label for="guide-title" class="govuk-label label-inline">Guide title</label>
+						<input id="guide-title" class="govuk-input" type="text" value="New guide" placeholder="Guide title" />
+					</div>
 				</div>
 			</div>
 
@@ -143,7 +146,10 @@
 			<!-- Drawers (must remain after editor__split) -->
 			<aside id="drawer-patterns" class="drawer" aria-labelledby="drawer-patterns-title" hidden>
 				<h3 id="drawer-patterns-title" class="govuk-heading-s">Pattern library</h3>
-				<input id="pattern-search" class="input" placeholder="Search patterns" />
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="pattern-search">Search patterns</label>
+					<input id="pattern-search" class="govuk-input input" placeholder="Search patterns" />
+				</div>
 				<ul id="pattern-list" class="list-plain"></ul>
 				<button id="drawer-patterns-close" class="link-like">Close</button>
 			</aside>
@@ -167,7 +173,7 @@
 				<form id="variables-form" class="form-grid">
 					<div id="variable-manager-container"></div>
 
-					<div class="actions-row">
+					<div class="govuk-button-group actions-row">
 						<button id="btn-save-vars" class="govuk-button" type="button">💾 Save variables</button>
 						<button id="btn-reset-vars" class="govuk-button govuk-button--secondary" type="button">↺ Discard changes</button>
 						<button id="drawer-variables-close" class="link-like" type="button">Close</button>
