@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/start/index.html", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/start.css", "utf8");
+const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -13,6 +14,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "start page");
+includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "start page");
 includes(pageSource, "href=\"/css/start.css\"", "start page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "start page");
 includes(pageSource, "src=\"/js/start-description-assist.js\" defer", "start page");
@@ -23,13 +25,20 @@ includes(pageSource, "class=\"start-step\"", "start page");
 includes(pageSource, "class=\"start-form\"", "start page");
 includes(pageSource, "class=\"toolbar mt-2 hidden start-assist\"", "start page");
 includes(pageSource, "class=\"mt-2 start-assist-output\"", "start page");
+includes(pageSource, "class=\"govuk-button\"", "start page");
+includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "start page");
 includes(pageSource, "id=\"projectForm\"", "start page");
 includes(pageSource, "id=\"targetForm\"", "start page");
 includes(pageSource, "id=\"researchForm\"", "start page");
 includes(pageSource, "id=\"step1\"", "start page");
 includes(pageSource, "id=\"step2\" class=\"start-step\" style=\"display:none\"", "start page");
 includes(pageSource, "id=\"step3\" class=\"start-step\" style=\"display:none\"", "start page");
+excludes(pageSource, "class=\"btn", "start page");
 excludes(pageSource, "<script type=\"module\">", "start page");
+
+includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
 
 includes(stylesheetSource, ".start-card", "start stylesheet");
 includes(stylesheetSource, ".start-step", "start stylesheet");
