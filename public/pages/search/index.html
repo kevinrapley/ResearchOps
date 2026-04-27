@@ -24,35 +24,37 @@
 		}'>
 	</x-include>
 
-	<div class="card search-panel">
-		<h2 class="govuk-heading-m">Query</h2>
-		<div class="search-controls">
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="q">Search text</label>
-				<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
-			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label search-type-label" for="type">Type</label>
-				<select id="type" class="govuk-select">
-					<option value="">Any</option>
-					<option>ResearchSession</option>
-					<option>Consent</option>
-					<option>Note</option>
-					<option>Tag</option>
-					<option>Cluster</option>
-					<option>Theme</option>
-				</select>
-			</div>
-			<div class="govuk-button-group">
-				<button id="go" class="govuk-button">Search</button>
+	<main id="main-content" class="govuk-body" role="main" tabindex="-1">
+		<div class="card search-panel">
+			<h2 class="govuk-heading-m">Query</h2>
+			<div class="search-controls">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="q">Search text</label>
+					<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label search-type-label" for="type">Type</label>
+					<select id="type" class="govuk-select">
+						<option value="">Any</option>
+						<option>ResearchSession</option>
+						<option>Consent</option>
+						<option>Note</option>
+						<option>Tag</option>
+						<option>Cluster</option>
+						<option>Theme</option>
+					</select>
+				</div>
+				<div class="govuk-button-group">
+					<button id="go" class="govuk-button">Search</button>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="card search-panel">
-		<h2 class="govuk-heading-m">Results</h2>
-		<div id="results" class="search-results"></div>
-	</div>
+		<div class="card search-panel">
+			<h2 class="govuk-heading-m">Results</h2>
+			<div id="results" class="search-results"></div>
+		</div>
+	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
 
