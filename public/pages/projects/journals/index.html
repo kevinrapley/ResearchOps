@@ -15,6 +15,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/tabs.css" media="screen" />
 	<link rel="stylesheet" href="/css/coloris.min.css" media="screen" />
 	<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen" />
@@ -92,7 +93,7 @@
 					<section id="mural-sync-panel" hidden aria-hidden="true"></section>
 
 					<!-- Entry form (initially hidden) -->
-					<div class="govuk-form-group" id="entry-form" hidden>
+					<div id="entry-form" hidden>
 						<form id="add-entry-form" novalidate>
 							<div class="govuk-form-group">
 								<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
@@ -191,10 +192,12 @@
 						<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
 
 						<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
-							<form id="retrieval-form" class="govuk-form-group" novalidate>
-								<label class="govuk-label" for="retrieval-q">Search term</label>
-								<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" />
-								<div class="govuk-hint">Searches code names and journal text.</div>
+							<form id="retrieval-form" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="retrieval-q">Search term</label>
+									<div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div>
+									<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" aria-describedby="retrieval-q-hint" />
+								</div>
 								<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
 							</form>
 							<div id="retrieval-results" class="govuk-!-margin-top-3"></div>
@@ -230,43 +233,43 @@
 			<blockquote id="selected-text-display"></blockquote>
 		</div>
 
-		<div class="code-search">
-			<label for="code-search-input" class="visually-hidden">Search codes</label>
-			<input type="search" id="code-search-input" placeholder="Search codes&hellip;">
+		<div class="code-search govuk-form-group">
+			<label for="code-search-input" class="govuk-label">Search codes</label>
+			<input class="govuk-input" type="search" id="code-search-input" placeholder="Search codes&hellip;">
 		</div>
 
 		<div class="codebook-tree" id="coding-codebook" role="tree">
 			<!-- Code list for selection -->
 		</div>
 
-		<div class="coding-confidence">
-			<fieldset>
-				<legend>Confidence level</legend>
+		<div class="coding-confidence govuk-form-group">
+			<fieldset class="govuk-fieldset">
+				<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Confidence level</legend>
 
-				<label>
-					<input type="radio" name="confidence" value="low" />
-					Low
-				</label>
+				<div class="govuk-radios__item">
+					<input class="govuk-radios__input" id="confidence-low" type="radio" name="confidence" value="low" />
+					<label class="govuk-label govuk-radios__label" for="confidence-low">Low</label>
+				</div>
 
-				<label>
-					<input type="radio" name="confidence" value="medium" checked />
-					Medium
-				</label>
+				<div class="govuk-radios__item">
+					<input class="govuk-radios__input" id="confidence-medium" type="radio" name="confidence" value="medium" checked />
+					<label class="govuk-label govuk-radios__label" for="confidence-medium">Medium</label>
+				</div>
 
-				<label>
-					<input type="radio" name="confidence" value="high" />
-					High
-				</label>
+				<div class="govuk-radios__item">
+					<input class="govuk-radios__input" id="confidence-high" type="radio" name="confidence" value="high" />
+					<label class="govuk-label govuk-radios__label" for="confidence-high">High</label>
+				</div>
 			</fieldset>
 		</div>
 
-		<div class="coding-memo">
-			<label for="coding-memo-input">Coding memo (optional)</label>
-
-			<textarea id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?"></textarea>
+		<div class="coding-memo govuk-form-group">
+			<label class="govuk-label" for="coding-memo-input">Coding memo</label>
+			<div class="govuk-hint" id="coding-memo-hint">Optional. Explain why this code applies or note any reflections.</div>
+			<textarea class="govuk-textarea" id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?" aria-describedby="coding-memo-hint"></textarea>
 		</div>
 
-		<div class="panel-actions">
+		<div class="panel-actions govuk-button-group">
 			<button type="button" class="govuk-button" id="apply-code-btn">Apply Code</button>
 
 			<button type="button" class="govuk-button govuk-button--secondary" id="cancel-coding-btn">Cancel</button>
