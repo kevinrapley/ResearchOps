@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/consent.css" media="screen" />
 	<link rel="modulepreload" href="/js/consent-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -22,22 +24,29 @@
 	<div class="card consent-panel">
 		<h2 class="govuk-heading-m">Link consent to a session</h2>
 		<div class="consent-form">
-			<label class="govuk-body consent-field">Session
-				<select id="session"></select>
-			</label>
-			<label class="govuk-body consent-field">Lawful basis
-				<select id="basis">
+			<div class="govuk-form-group consent-field">
+				<label class="govuk-label" for="session">Session</label>
+				<select id="session" class="govuk-select"></select>
+			</div>
+			<div class="govuk-form-group consent-field">
+				<label class="govuk-label" for="basis">Lawful basis</label>
+				<select id="basis" class="govuk-select">
 					<option value="dpv:PublicInterest">Public task / Public interest</option>
 					<option value="dpv:Consent">Consent</option>
 				</select>
-			</label>
-			<label class="govuk-body consent-field">Retention (ISO 8601, e.g., P12M)
-				<input id="ret" class="govuk-input" value="P12M" />
-			</label>
-			<label class="govuk-body consent-field">Notes (optional)
+			</div>
+			<div class="govuk-form-group consent-field">
+				<label class="govuk-label" for="ret">Retention</label>
+				<div id="ret-hint" class="govuk-hint">Use ISO 8601 duration format, for example P12M.</div>
+				<input id="ret" class="govuk-input" value="P12M" aria-describedby="ret-hint" />
+			</div>
+			<div class="govuk-form-group consent-field">
+				<label class="govuk-label" for="notes">Notes</label>
 				<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
-			</label>
-			<button id="link" class="govuk-button">Link consent</button>
+			</div>
+			<div class="govuk-button-group">
+				<button id="link" class="govuk-button">Link consent</button>
+			</div>
 			<div id="status" class="govuk-hint consent-status"></div>
 		</div>
 	</div>
