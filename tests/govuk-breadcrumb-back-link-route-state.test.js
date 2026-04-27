@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageChromeCss = fs.readFileSync("public/css/govuk/govuk-page-chrome.css", "utf8");
+const projectContextSource = fs.readFileSync("public/js/project-context.js", "utf8");
 const migrationDoc = fs.readFileSync(
   "docs/design-system/govuk-breadcrumb-back-link-migration.md",
   "utf8"
@@ -17,13 +18,13 @@ const breadcrumbPages = [
   {
     label: "Outcomes route",
     path: "public/pages/projects/outcomes/index.html",
-    requiredIds: ["breadcrumb-project"],
+    requiredIds: ["breadcrumb-project", "back-to-project"],
     currentText: "Impact &amp; ROI"
   },
   {
     label: "Journals route",
     path: "public/pages/projects/journals/index.html",
-    requiredIds: ["project-link"],
+    requiredIds: ["project-link", "back-to-project"],
     currentText: "Journal and analysis"
   },
   {
@@ -68,6 +69,14 @@ includes(pageChromeCss, ".govuk-back-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link::before", "page chrome stylesheet");
 excludes(pageChromeCss, ".breadcrumbs", "page chrome stylesheet");
 
+includes(projectContextSource, "function hydrateProjectRouteContext", "project context hydrator");
+includes(projectContextSource, "document.getElementById(\"breadcrumb-project\")", "project context hydrator");
+includes(projectContextSource, "document.getElementById(\"project-link\")", "project context hydrator");
+includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
+includes(projectContextSource, "anchor.textContent = project.name || \"Project\"", "project context hydrator");
+includes(projectContextSource, "anchor.href = dashboardHref(project.id || project.localId)", "project context hydrator");
+includes(projectContextSource, "anchor.textContent = \"Back to Project\"", "project context hydrator");
+
 includes(migrationDoc, "# GOV.UK breadcrumb and back-link migration", "breadcrumb migration doc");
 includes(migrationDoc, "Breadcrumbs show hierarchy", "breadcrumb migration doc");
 includes(migrationDoc, "Back links return to a parent or previous step", "breadcrumb migration doc");
@@ -98,6 +107,21 @@ for (const page of breadcrumbPages) {
 const studyPage = fs.readFileSync("public/pages/study/index.html", "utf8");
 includes(studyPage, "id=\"back-to-project\"", "Study route");
 includes(studyPage, ">Back to Project</a>", "Study route");
+
+const outcomesPage = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
+includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Outcomes route");
+includes(outcomesPage, "src=\"/js/project-context.js\"", "Outcomes route");
+includes(outcomesPage, "id=\"breadcrumb-project\"", "Outcomes route");
+includes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
+includes(outcomesPage, ">Back to Project</a>", "Outcomes route");
+
+const journalsPage = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
+includes(journalsPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Journals route");
+includes(journalsPage, "src=\"/js/project-context.js\"", "Journals route");
+includes(journalsPage, "id=\"project-link\"", "Journals route");
+includes(journalsPage, "id=\"back-to-project\"", "Journals route");
+includes(journalsPage, ">Back to Project</a>", "Journals route");
+excludes(journalsPage, "Project dashboard", "Journals route");
 
 const guidesPage = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
 includes(guidesPage, "id=\"back-to-study\"", "Guides route");

@@ -21,6 +21,7 @@
 	<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen" />
 	<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen" />
 
+	<link rel="modulepreload" href="/js/project-context.js" />
 	<link rel="modulepreload" href="/js/journal-tabs.js" />
 	<link rel="modulepreload" href="/js/journal-mural-sync-compact.js" />
 	<link rel="modulepreload" href="/components/journal-excerpts.js" />
@@ -39,10 +40,12 @@
 	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 		<ol class="govuk-breadcrumbs__list">
 			<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
-			<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="#" id="project-link">Project dashboard</a></li>
+			<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="#" id="project-link">Project</a></li>
 			<li class="govuk-breadcrumbs__list-item" aria-current="page">Journal and analysis</li>
 		</ol>
 	</nav>
+
+	<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to Project</a>
 
 	<header role="banner" class="journal-header">
 		<div>
@@ -280,6 +283,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
+	<script type="module" src="/js/project-context.js"></script>
 	<script src="/components/tabs.js"></script>
 	<script src="/lib/coloris.min.js"></script>
 	<script type="module" src="/js/journal-tabs.js"></script>
