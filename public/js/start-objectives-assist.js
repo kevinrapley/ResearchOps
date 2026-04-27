@@ -123,7 +123,7 @@ function renderAiPanelTwoCol(data, idPrefix = 'ai') {
       <hr />
       <div><strong>Concise rewrite (optional):</strong></div>
       <pre class="rewrite-block" aria-label="AI rewrite">${esc(data?.rewrite || '')}</pre>
-      <button type="button" id="apply-ai-obj-rewrite" class="btn">Replace Objectives with rewrite</button>
+      <button type="button" id="apply-ai-obj-rewrite" class="govuk-button govuk-button--secondary">Replace Objectives with rewrite</button>
     </div>
   `;
 }
