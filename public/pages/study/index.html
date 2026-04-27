@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/study-page.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
@@ -56,8 +57,11 @@
 			</div>
 
 			<form id="desc-editor" class="panel" hidden>
-				<label class="govuk-label" for="desc-input">Description (Markdown)</label>
-				<textarea id="desc-input" class="govuk-textarea" rows="8" spellcheck="true" autocomplete="off"></textarea>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="desc-input">Description</label>
+					<div id="desc-input-hint" class="govuk-hint">You can use Markdown.</div>
+					<textarea id="desc-input" class="govuk-textarea" rows="8" spellcheck="true" autocomplete="off" aria-describedby="desc-input-hint"></textarea>
+				</div>
 
 				<details class="note" style="margin-top:8px;">
 					<summary>Markdown cheat sheet (allowed)</summary>
@@ -79,7 +83,7 @@
 					</div>
 				</details>
 
-				<div class="actions-bar" style="gap:8px;">
+				<div class="govuk-button-group actions-bar" style="gap:8px;">
 					<button id="btn-save-desc" class="govuk-button" type="submit">Save</button>
 					<button id="desc-cancel" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
 				</div>
