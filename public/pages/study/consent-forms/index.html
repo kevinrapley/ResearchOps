@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/consent-forms.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
@@ -64,30 +65,36 @@
 					<input id="consent-form-id" type="hidden" />
 
 					<div class="consent-editor-grid">
-						<label class="govuk-label" for="consent-title">Title</label>
-						<input id="consent-title" class="govuk-input" type="text" autocomplete="off" />
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-title">Title</label>
+							<input id="consent-title" class="govuk-input" type="text" autocomplete="off" />
+						</div>
 
-						<label class="govuk-label" for="consent-form-type">Form type</label>
-						<select id="consent-form-type" class="govuk-select">
-							<option>Participant information sheet</option>
-							<option selected>Consent form</option>
-							<option>Privacy notice</option>
-							<option>Debrief sheet</option>
-							<option>Screening consent</option>
-							<option>Other</option>
-						</select>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-form-type">Form type</label>
+							<select id="consent-form-type" class="govuk-select">
+								<option>Participant information sheet</option>
+								<option selected>Consent form</option>
+								<option>Privacy notice</option>
+								<option>Debrief sheet</option>
+								<option>Screening consent</option>
+								<option>Other</option>
+							</select>
+						</div>
 
-						<label class="govuk-label" for="consent-status">Status</label>
-						<select id="consent-status" class="govuk-select">
-							<option selected>Draft</option>
-							<option>In review</option>
-							<option>Published</option>
-							<option>Archived</option>
-						</select>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-status">Status</label>
+							<select id="consent-status" class="govuk-select">
+								<option selected>Draft</option>
+								<option>In review</option>
+								<option>Published</option>
+								<option>Archived</option>
+							</select>
+						</div>
 					</div>
 
 					<div class="consent-editor-split">
-						<div>
+						<div class="govuk-form-group">
 							<label class="govuk-label" for="consent-source">Source Markdown</label>
 							<textarea id="consent-source" class="govuk-textarea consent-source" rows="22" spellcheck="true"></textarea>
 						</div>
@@ -101,31 +108,37 @@
 					<details class="consent-details" open>
 						<summary>Variables and consent statements</summary>
 						<div class="consent-editor-split consent-editor-split--metadata">
-							<div>
+							<div class="govuk-form-group">
 								<label class="govuk-label" for="consent-variables">Variables JSON</label>
-								<textarea id="consent-variables" class="govuk-textarea" rows="12" spellcheck="false"></textarea>
+								<textarea id="consent-variables" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-variables-error"></textarea>
 								<p id="consent-variables-error" class="govuk-error-message" hidden></p>
 							</div>
-							<div>
+							<div class="govuk-form-group">
 								<label class="govuk-label" for="consent-items">Consent Items JSON</label>
-								<textarea id="consent-items" class="govuk-textarea" rows="12" spellcheck="false"></textarea>
+								<textarea id="consent-items" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-items-error"></textarea>
 								<p id="consent-items-error" class="govuk-error-message" hidden></p>
 							</div>
 						</div>
 					</details>
 
 					<div class="consent-editor-grid">
-						<label class="govuk-label" for="consent-summary">Plain English summary</label>
-						<textarea id="consent-summary" class="govuk-textarea" rows="4"></textarea>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-summary">Plain English summary</label>
+							<textarea id="consent-summary" class="govuk-textarea" rows="4"></textarea>
+						</div>
 
-						<label class="govuk-label" for="consent-accessibility-notes">Accessibility notes</label>
-						<textarea id="consent-accessibility-notes" class="govuk-textarea" rows="4"></textarea>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-accessibility-notes">Accessibility notes</label>
+							<textarea id="consent-accessibility-notes" class="govuk-textarea" rows="4"></textarea>
+						</div>
 
-						<label class="govuk-label" for="consent-review-notes">Review notes</label>
-						<textarea id="consent-review-notes" class="govuk-textarea" rows="4"></textarea>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="consent-review-notes">Review notes</label>
+							<textarea id="consent-review-notes" class="govuk-textarea" rows="4"></textarea>
+						</div>
 					</div>
 
-					<div class="actions-bar">
+					<div class="govuk-button-group actions-bar">
 						<button id="save-consent-form" type="submit" class="govuk-button">Save draft</button>
 						<button id="publish-consent-form" type="button" class="govuk-button govuk-button--secondary">Publish</button>
 						<span id="consent-save-status" class="govuk-body-s" aria-live="polite"></span>
