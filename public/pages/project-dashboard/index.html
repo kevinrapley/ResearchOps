@@ -15,6 +15,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/project-dashboard.css" media="screen" />
 	<link rel="modulepreload" href="/js/project-dashboard.js" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -106,8 +107,8 @@
 			</p>
 
 			<div class="actions">
-				<button id="mural-connect" class="btn" type="button">Connect Mural</button>
-				<button id="mural-setup" class="btn btn--secondary" type="button" disabled>Create “Reflexive Journal”</button>
+				<button id="mural-connect" class="govuk-button" type="button">Connect Mural</button>
+				<button id="mural-setup" class="govuk-button govuk-button--secondary" type="button" disabled>Create “Reflexive Journal”</button>
 			</div>
 
 			<p class="hint">
@@ -119,7 +120,7 @@
 		<section id="stakeholders" class="section">
 			<header class="section__header">
 				<h2 class="section__title govuk-heading-m">Stakeholder Management</h2>
-				<button type="button" class="btn btn--outline">+ Add Stakeholder</button>
+				<button type="button" class="govuk-button govuk-button--secondary">+ Add Stakeholder</button>
 			</header>
 			<div class="section__body section__grid">
 				<div>
@@ -133,7 +134,7 @@
 					<ul class="list-unstyled list-divided" id="objectives-list">
 						<li>No objectives yet.</li>
 					</ul>
-					<button type="button" class="btn btn--outline">+ Add Objective</button>
+					<button type="button" class="govuk-button govuk-button--secondary">+ Add Objective</button>
 				</div>
 			</div>
 		</section>
@@ -149,14 +150,14 @@
 					<ul class="list-unstyled list-divided" id="user-groups-list">
 						<li>No user groups yet.</li>
 					</ul>
-					<button type="button" class="btn btn--outline">+ Add User Group</button>
+					<button type="button" class="govuk-button govuk-button--secondary">+ Add User Group</button>
 				</div>
 				<div>
 					<h3 class="govuk-heading-s">Participants</h3>
 					<ul class="list-unstyled list-divided" id="participants-list">
 						<li>No participants yet.</li>
 					</ul>
-					<button type="button" class="btn btn--outline">+ Add Participant</button>
+					<button type="button" class="govuk-button govuk-button--secondary">+ Add Participant</button>
 					<div class="dropzone" aria-label="Bulk upload participants">
 						<p>Bulk upload participants via CSV</p>
 						<input type="file" accept=".csv" aria-label="Upload participants CSV">
@@ -176,14 +177,14 @@
 					<ul class="list-unstyled list-divided" id="studies-list">
 						<li>No studies yet.</li>
 					</ul>
-					<button id="btn-add-study" class="btn btn--outline" type="button">+ Add Study</button>
+					<button id="btn-add-study" class="govuk-button govuk-button--secondary" type="button">+ Add Study</button>
 				</div>
 				<div>
 					<h3 class="govuk-heading-s">Insights</h3>
 					<ul class="list-unstyled list-divided" id="insights-list">
 						<li>No insights yet.</li>
 					</ul>
-					<button type="button" class="btn btn--outline">+ Add Insight</button>
+					<button type="button" class="govuk-button govuk-button--secondary">+ Add Insight</button>
 				</div>
 			</div>
 		</section>
@@ -193,7 +194,7 @@
 			<form method="dialog" style="min-width: min(90vw, 560px);">
 				<header class="actions-bar" style="justify-content:space-between;">
 					<h3 id="study-title" class="govuk-heading-m" style="margin:0;">Add Study</h3>
-					<button type="button" class="btn btn--outline" id="study-close" aria-label="Close add study dialog">✕</button>
+					<button type="button" class="govuk-button govuk-button--secondary" id="study-close" aria-label="Close add study dialog">✕</button>
 				</header>
 
 				<p id="study-desc" class="lede">Create a study and capture its method, title and description.</p>
@@ -224,8 +225,8 @@
 				<textarea id="study-notes" class="govuk-input" rows="5" required aria-required="true" placeholder="E.g. User interviews with help desk staff, 23/1 – 25/1/25"></textarea>
 
 				<footer class="actions-bar" style="justify-content:flex-end;">
-					<button class="btn btn--secondary" value="cancel" id="study-cancel" type="button">Cancel</button>
-					<button class="btn" value="submit" id="study-submit" type="submit">Submit</button>
+					<button class="govuk-button govuk-button--secondary" value="cancel" id="study-cancel" type="button">Cancel</button>
+					<button class="govuk-button" value="submit" id="study-submit" type="submit">Submit</button>
 				</footer>
 			</form>
 		</dialog>
