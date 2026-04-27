@@ -70,12 +70,17 @@ includes(pageChromeCss, ".govuk-back-link::before", "page chrome stylesheet");
 excludes(pageChromeCss, ".breadcrumbs", "page chrome stylesheet");
 
 includes(projectContextSource, "function hydrateProjectRouteContext", "project context hydrator");
+includes(projectContextSource, "function ensureProjectActionBar", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"breadcrumb-project\")", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"project-link\")", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
 includes(projectContextSource, "anchor.textContent = project.name || \"Project\"", "project context hydrator");
 includes(projectContextSource, "anchor.href = dashboardHref(project.id || project.localId)", "project context hydrator");
 includes(projectContextSource, "anchor.textContent = \"Back to Project\"", "project context hydrator");
+includes(projectContextSource, "anchor.classList.remove(\"govuk-back-link\")", "project context hydrator");
+includes(projectContextSource, "anchor.classList.add(\"govuk-button\", \"govuk-button--secondary\")", "project context hydrator");
+includes(projectContextSource, "actionsBar.className = \"actions-bar\"", "project context hydrator");
+includes(projectContextSource, "ensureProjectActionBar(parentLink)", "project context hydrator");
 
 includes(migrationDoc, "# GOV.UK breadcrumb and back-link migration", "breadcrumb migration doc");
 includes(migrationDoc, "Breadcrumbs show hierarchy", "breadcrumb migration doc");
