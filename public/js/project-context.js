@@ -73,6 +73,9 @@ function setProjectParentLink(anchor, project) {
 }
 
 async function hydrateProjectRouteContext() {
+	const parentLink = document.getElementById("back-to-project");
+	ensureProjectActionBar(parentLink);
+
 	const params = new URLSearchParams(window.location.search);
 	const projectId = params.get("id");
 	if (!projectId) return;
@@ -83,7 +86,7 @@ async function hydrateProjectRouteContext() {
 
 	setProjectAnchor(document.getElementById("breadcrumb-project"), project);
 	setProjectAnchor(document.getElementById("project-link"), project);
-	setProjectParentLink(document.getElementById("back-to-project"), project);
+	setProjectParentLink(parentLink, project);
 
 	const main = document.querySelector("main");
 	if (main) {
