@@ -16,6 +16,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/session.css" media="screen" />
 
 	<link rel="modulepreload" href="/components/session-controller.js" />
@@ -76,9 +77,9 @@
 			<h2 id="controls-title" class="govuk-heading-m">Session controls</h2>
 
 			<div class="controls-row">
-				<button id="btn-start" class="btn">&#x25B6; Start</button>
-				<button id="btn-pause" class="btn btn--secondary" disabled>&#x23f8; Pause</button>
-				<button id="btn-stop" class="btn btn--warn" disabled>&#x23F9; Stop</button>
+				<button id="btn-start" class="govuk-button">&#x25B6; Start</button>
+				<button id="btn-pause" class="govuk-button govuk-button--secondary" disabled>&#x23f8; Pause</button>
+				<button id="btn-stop" class="govuk-button govuk-button--warning" disabled>&#x23F9; Stop</button>
 				<div class="timer" role="timer" aria-live="polite" aria-atomic="true">
 					<span id="timer-display">00:00:00</span>
 				</div>
@@ -106,13 +107,13 @@
 				</div>
 
 				<div class="note-toolbar__right" aria-label="Formatting">
-					<button class="btn btn--tiny" data-cmd="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
-					<button class="btn btn--tiny" data-cmd="italic" title="Italic (Ctrl+I)"><em>I</em></button>
-					<button class="btn btn--tiny" data-cmd="underline" title="Underline (Ctrl+U)"><span style="text-decoration:underline">U</span></button>
-					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="blockquote" title="Blockquote">“”</button>
-					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
-					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="h3" title="Sub‑heading">H3</button>
-					<button class="btn btn--tiny" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="underline" title="Underline (Ctrl+U)"><span style="text-decoration:underline">U</span></button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="blockquote" title="Blockquote">“”</button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="h3" title="Sub‑heading">H3</button>
+					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
 				</div>
 			</div>
 
@@ -121,7 +122,7 @@
 			</div>
 
 			<div class="note-actions">
-				<button id="btn-save-note" class="btn" disabled>💾 Save</button>
+				<button id="btn-save-note" class="govuk-button" disabled>💾 Save</button>
 				<span id="note-timestamps" class="timestamps" aria-live="polite"></span>
 			</div>
 

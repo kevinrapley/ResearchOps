@@ -96,7 +96,7 @@ export class VariableManager {
 					<div class="vm-col vm-col--key"><strong>Key</strong></div>
 					<div class="vm-col vm-col--val"><strong>Value (JSON or text)</strong></div>
 					<div class="vm-col vm-col--act">
-						<button type="button" class="btn btn--secondary" data-vm-add>+ Add</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-vm-add>+ Add</button>
 					</div>
 				</div>
 
@@ -131,8 +131,8 @@ export class VariableManager {
 					<div class="vm-confirm__box" role="alertdialog" aria-live="assertive">
 						<p>Delete <code>${escapeHtml(key)}</code>?</p>
 						<div class="vm-confirm__actions">
-							<button type="button" class="btn btn--danger" data-vm-confirm="yes">Delete</button>
-							<button type="button" class="btn btn--secondary" data-vm-confirm="no">Cancel</button>
+							<button type="button" class="govuk-button govuk-button--warning" data-vm-confirm="yes">Delete</button>
+							<button type="button" class="govuk-button govuk-button--secondary" data-vm-confirm="no">Cancel</button>
 						</div>
 					</div>
 				</div>

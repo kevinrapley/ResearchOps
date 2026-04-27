@@ -162,7 +162,7 @@ function renderParticipants(list) {
 			<div role="cell">${contactCell(p)}</div>
 			<div role="cell">${p.status || "—"}</div>
 			<div role="cell">
-				<button class="btn btn--small" data-part="${p.id}" data-act="schedule">Schedule</button>
+				<button class="govuk-button govuk-button--secondary" data-part="${p.id}" data-act="schedule">Schedule</button>
 			</div>
 		`;
 		tbl.appendChild(row);
@@ -202,7 +202,7 @@ function renderSessions(list, participantsById) {
 			<div role="cell">${pname}</div>
 			<div role="cell">${s.status || "scheduled"}</div>
 			<div role="cell">
-				<a class="btn btn--small" href="/api/sessions/${encodeURIComponent(s.id)}/ics">Download .ics</a>
+				<a class="govuk-button govuk-button--secondary" href="/api/sessions/${encodeURIComponent(s.id)}/ics">Download .ics</a>
 			</div>
 		`;
 		tbl.appendChild(row);

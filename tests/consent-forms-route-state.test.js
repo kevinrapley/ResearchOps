@@ -9,6 +9,7 @@ const legacyConsentPageSource = fs.readFileSync("public/pages/consent/index.html
 const legacyConsentControllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
 const consentCssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");
 const legacyConsentCssSource = fs.readFileSync("public/css/consent.css", "utf8");
+const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-forms.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
@@ -29,7 +30,10 @@ includes(studyControllerSource, "#link-consent-forms", "study page controller");
 includes(studyControllerSource, "route(\"/pages/study/consent-forms/\", params)", "study page controller");
 
 includes(consentPageSource, "/js/consent-forms-page.js", "consent forms page");
+includes(consentPageSource, "/css/govuk/govuk-buttons.css", "consent forms page");
 includes(consentPageSource, "/css/consent-forms.css", "consent forms page");
+includes(consentPageSource, "class=\"govuk-button\"", "consent forms page");
+includes(consentPageSource, "class=\"govuk-button govuk-button--secondary\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-error\"", "consent forms page");
 includes(consentPageSource, "role=\"alert\"", "consent forms page");
 includes(consentPageSource, "id=\"new-consent-form\"", "consent forms page");
@@ -40,6 +44,11 @@ includes(consentPageSource, "id=\"consent-preview\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-variables\"", "consent forms page");
 includes(consentPageSource, "id=\"consent-items\"", "consent forms page");
 includes(consentPageSource, "Participant consent responses are managed separately", "consent forms page");
+excludes(consentPageSource, "class=\"btn", "consent forms page");
+
+includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
+includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
 
 includes(consentControllerSource, "const API_ORIGIN", "consent forms controller");
 includes(consentControllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "consent forms controller");
