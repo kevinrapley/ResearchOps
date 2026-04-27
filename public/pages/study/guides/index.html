@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 
 	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
@@ -52,9 +53,9 @@
 			<!-- List toolbar row (baseline-aligned with the h2) -->
 			<div class="guides-header" role="toolbar" aria-label="Discussion guide actions">
 				<div class="toolbar">
-					<button id="btn-new" class="btn">＋ New guide</button>
-					<button id="btn-import" class="btn btn--secondary">⤒ Import .md</button>
-					<a id="back-to-study" class="btn btn--secondary" href="#">← Back to Study</a>
+					<button id="btn-new" class="govuk-button">＋ New guide</button>
+					<button id="btn-import" class="govuk-button govuk-button--secondary">⤒ Import .md</button>
+					<a id="back-to-study" class="govuk-button govuk-button--secondary" href="#">← Back to Study</a>
 				</div>
 			</div>
 		</header>
@@ -93,16 +94,16 @@
 			<!-- Editor toolbar row (left: Tag/Pattern/Variables; right: Save/Publish/Export/Title) -->
 			<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
 				<div class="toolbar-group toolbar-group--left">
-					<button id="btn-insert-tag" class="btn btn--secondary">Tag</button>
-					<button id="btn-insert-pattern" class="btn btn--secondary">Pattern</button>
-					<button id="btn-variables" class="btn btn--secondary">Variables</button>
+					<button id="btn-insert-tag" class="govuk-button govuk-button--secondary">Tag</button>
+					<button id="btn-insert-pattern" class="govuk-button govuk-button--secondary">Pattern</button>
+					<button id="btn-variables" class="govuk-button govuk-button--secondary">Variables</button>
 				</div>
 
 				<div class="toolbar-group toolbar-group--right">
-					<button id="btn-save" class="btn">💾 Save</button>
-					<button id="btn-publish" class="btn btn--primary">⬆ Publish</button>
+					<button id="btn-save" class="govuk-button">💾 Save</button>
+					<button id="btn-publish" class="govuk-button">⬆ Publish</button>
 					<div class="menu">
-						<button id="btn-export" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
+						<button id="btn-export" class="govuk-button govuk-button--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
 						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
 							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
 							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
@@ -167,8 +168,8 @@
 					<div id="variable-manager-container"></div>
 
 					<div class="actions-row">
-						<button id="btn-save-vars" class="btn" type="button">💾 Save variables</button>
-						<button id="btn-reset-vars" class="btn btn--secondary" type="button">↺ Discard changes</button>
+						<button id="btn-save-vars" class="govuk-button" type="button">💾 Save variables</button>
+						<button id="btn-reset-vars" class="govuk-button govuk-button--secondary" type="button">↺ Discard changes</button>
 						<button id="drawer-variables-close" class="link-like" type="button">Close</button>
 					</div>
 
