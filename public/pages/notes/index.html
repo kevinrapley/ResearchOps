@@ -23,36 +23,38 @@
 		vars='{"active":"Notes","subtitle":"Notes"}'>	
 	</x-include>
 
-	<div class="card notes-panel">
-		<h2 class="govuk-heading-m">Select a session</h2>
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="session">Session</label>
-			<select id="session" class="govuk-select notes-session-select"></select>
-		</div>
-	</div>
-
-	<div class="card notes-panel">
-		<h2 class="govuk-heading-m">Add a note</h2>
-		<div class="notes-editor">
+	<main id="main-content" class="govuk-body" role="main" tabindex="-1">
+		<div class="card notes-panel">
+			<h2 class="govuk-heading-m">Select a session</h2>
 			<div class="govuk-form-group">
-				<label class="govuk-label" for="text">Note</label>
-				<textarea id="text" class="govuk-textarea" placeholder="Avoid PII; describe behaviour, quotes, observations"></textarea>
+				<label class="govuk-label" for="session">Session</label>
+				<select id="session" class="govuk-select notes-session-select"></select>
 			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="tags">Tags</label>
-				<input id="tags" class="govuk-input" placeholder="Tags (comma-separated, e.g., Usability, Navigation)" />
-			</div>
-			<div class="govuk-button-group">
-				<button id="save" class="govuk-button">Save note</button>
-			</div>
-			<div id="status" class="govuk-hint notes-status"></div>
 		</div>
-	</div>
 
-	<div class="card notes-panel">
-		<h2 class="govuk-heading-m">Notes in this session</h2>
-		<div id="notes" class="notes-list"></div>
-	</div>
+		<div class="card notes-panel">
+			<h2 class="govuk-heading-m">Add a note</h2>
+			<div class="notes-editor">
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="text">Note</label>
+					<textarea id="text" class="govuk-textarea" placeholder="Avoid PII; describe behaviour, quotes, observations"></textarea>
+				</div>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="tags">Tags</label>
+					<input id="tags" class="govuk-input" placeholder="Tags (comma-separated, e.g., Usability, Navigation)" />
+				</div>
+				<div class="govuk-button-group">
+					<button id="save" class="govuk-button">Save note</button>
+				</div>
+				<div id="status" class="govuk-hint notes-status"></div>
+			</div>
+		</div>
+
+		<div class="card notes-panel">
+			<h2 class="govuk-heading-m">Notes in this session</h2>
+			<div id="notes" class="notes-list"></div>
+		</div>
+	</main>
 	
 	<x-include src="/partials/footer.html"></x-include>
 
