@@ -50,14 +50,32 @@ function setProjectAnchor(anchor, project) {
 	anchor.href = dashboardHref(project.id || project.localId);
 }
 
+function ensureProjectActionBar(anchor) {
+	if (!anchor) return;
+
+	anchor.classList.remove("govuk-back-link");
+	anchor.classList.add("govuk-button", "govuk-button--secondary");
+
+	if (anchor.parentElement?.classList.contains("actions-bar")) return;
+
+	const actionsBar = document.createElement("div");
+	actionsBar.className = "actions-bar";
+	anchor.parentNode.insertBefore(actionsBar, anchor);
+	actionsBar.appendChild(anchor);
+}
+
 function setProjectParentLink(anchor, project) {
 	if (!anchor || !project) return;
 
 	anchor.textContent = "Back to Project";
 	anchor.href = dashboardHref(project.id || project.localId);
+	ensureProjectActionBar(anchor);
 }
 
 async function hydrateProjectRouteContext() {
+	const parentLink = document.getElementById("back-to-project");
+	ensureProjectActionBar(parentLink);
+
 	const params = new URLSearchParams(window.location.search);
 	const projectId = params.get("id");
 	if (!projectId) return;
@@ -68,7 +86,7 @@ async function hydrateProjectRouteContext() {
 
 	setProjectAnchor(document.getElementById("breadcrumb-project"), project);
 	setProjectAnchor(document.getElementById("project-link"), project);
-	setProjectParentLink(document.getElementById("back-to-project"), project);
+	setProjectParentLink(parentLink, project);
 
 	const main = document.querySelector("main");
 	if (main) {
