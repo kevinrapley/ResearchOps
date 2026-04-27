@@ -48,8 +48,8 @@ includes(buttonCss, ".govuk-button--warning", "GOV.UK button stylesheet");
 
 includes(formMigration, "# GOV.UK form migration", "GOV.UK form migration");
 includes(formMigration, "Target classification: GOV.UK global.", "GOV.UK form migration");
-includes(formMigration, "Route stylesheets must not create button systems for individual pages.", "GOV.UK form migration");
 includes(formMigration, "Do not create route-level replacements for GOV.UK base form styling.", "GOV.UK form migration");
+includes(formMigration, "Do not move base label, hint, input, textarea, select, error, radio, checkbox, or error-summary styling into route stylesheets.", "GOV.UK form migration");
 
 includes(formCss, ".govuk-form-group", "GOV.UK form stylesheet");
 includes(formCss, ".govuk-form-group--error", "GOV.UK form stylesheet");
