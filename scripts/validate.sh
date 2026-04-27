@@ -29,11 +29,13 @@ require_file "eslint.config.js"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
+require_file "public/css/govuk/govuk-tables.css"
 require_file "docs/performance/initial-load-audit.md"
 require_file "docs/performance/performance-inventory-tooling.md"
 require_file "docs/design-system/govuk-compliance-audit.md"
 require_file "docs/design-system/govuk-button-migration.md"
 require_file "docs/design-system/govuk-form-migration.md"
+require_file "docs/design-system/govuk-table-summary-list-migration.md"
 require_file "docs/design-system/researchops-component-inventory.md"
 require_file "scripts/performance-audit.sh"
 require_file "infra/cloudflare/wrangler.toml"
@@ -43,6 +45,7 @@ require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
 require_file "tests/govuk-design-system-baseline-route-state.test.js"
 require_file "tests/govuk-forms-application-route-state.test.js"
+require_file "tests/govuk-tables-summary-lists-application-route-state.test.js"
 require_file "tests/projects-route-contract.test.js"
 require_file "tests/projects-page-route-state.test.js"
 require_file "tests/project-dashboard-route-state.test.js"
@@ -179,6 +182,9 @@ node tests/govuk-design-system-baseline-route-state.test.js
 
 info "checking application GOV.UK forms route-state contract"
 node tests/govuk-forms-application-route-state.test.js
+
+info "checking application GOV.UK tables and summary lists route-state contract"
+node tests/govuk-tables-summary-lists-application-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js

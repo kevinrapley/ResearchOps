@@ -13,6 +13,7 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 
 	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
@@ -64,20 +65,20 @@
 		<!-- Guides table -->
 		<section id="guides-list-section" aria-labelledby="guides-list-title">
 			<div class="table-wrap">
-				<table class="table" role="table">
-					<thead>
-						<tr>
-							<th scope="col">Title</th>
-							<th scope="col">Status</th>
-							<th scope="col">Version</th>
-							<th scope="col">Updated</th>
-							<th scope="col">Owner</th>
-							<th scope="col"><span class="sr-only">Actions</span></th>
+				<table class="govuk-table">
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row">
+							<th scope="col" class="govuk-table__header">Title</th>
+							<th scope="col" class="govuk-table__header">Status</th>
+							<th scope="col" class="govuk-table__header">Version</th>
+							<th scope="col" class="govuk-table__header">Updated</th>
+							<th scope="col" class="govuk-table__header">Owner</th>
+							<th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
 						</tr>
 					</thead>
-					<tbody id="guides-tbody">
-						<tr>
-							<td colspan="6" class="muted">Loading…</td>
+					<tbody id="guides-tbody" class="govuk-table__body">
+						<tr class="govuk-table__row">
+							<td colspan="6" class="govuk-table__cell muted">Loading…</td>
 						</tr>
 					</tbody>
 				</table>

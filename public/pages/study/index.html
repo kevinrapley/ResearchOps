@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/study-page.css" media="screen" />
 
 	<script type="module" src="/components/layout.js"></script>
@@ -90,12 +91,21 @@
 			</form>
 		</div>
 
-		<section class="kv">
-			<ul class="kv__list">
-				<li><span class="kv__term">Method</span>&nbsp;<span class="kv__desc" id="kv-method">–</span></li>
-				<li><span class="kv__term">Status</span>&nbsp;<span class="kv__desc" id="kv-status">–</span></li>
-				<li><span class="kv__term">Study ID</span>&nbsp;<span class="kv__desc" id="kv-studyid">–</span></li>
-			</ul>
+		<section class="kv" aria-label="Study key information">
+			<dl class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Method</dt>
+					<dd class="govuk-summary-list__value" id="kv-method">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Status</dt>
+					<dd class="govuk-summary-list__value" id="kv-status">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Study ID</dt>
+					<dd class="govuk-summary-list__value" id="kv-studyid">–</dd>
+				</div>
+			</dl>
 		</section>
 
 		<section class="section study-section" aria-labelledby="study-readiness-title">

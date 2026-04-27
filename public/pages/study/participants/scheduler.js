@@ -68,6 +68,17 @@ const $ = (sel, root = document) => /** @type {any} */ (root.querySelector(sel))
 /* ────────────────────────────────────────────────────────────────────────── */
 
 /**
+ * Escape HTML text content.
+ * @param {unknown} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+	const d = document.createElement("div");
+	d.textContent = String(value ?? "");
+	return d.innerHTML;
+}
+
+/**
  * Human-readable “when” text for a session (local time).
  * @param {string} isoStart - ISO start timestamp.
  * @param {number} mins - Duration in minutes.
@@ -89,8 +100,8 @@ function fmtWhen(isoStart, mins) {
  */
 function contactCell(p) {
 	const bits = [];
-	if (p.email) bits.push(`<a href="mailto:${encodeURIComponent(p.email)}">${p.email}</a>`);
-	if (p.phone) bits.push(`<a href="tel:${p.phone}">${p.phone}</a>`);
+	if (p.email) bits.push(`<a href="mailto:${encodeURIComponent(p.email)}">${escapeHtml(p.email)}</a>`);
+	if (p.phone) bits.push(`<a href="tel:${encodeURIComponent(p.phone)}">${escapeHtml(p.phone)}</a>`);
 	return bits.join("<br/>") || "—";
 }
 
@@ -136,36 +147,39 @@ async function loadSessions(studyId) {
  * @returns {void}
  */
 function renderParticipants(list) {
-	const tbl = /** @type {HTMLDivElement} */ ($("#participantsTable"));
-	const empty = /** @type {HTMLDivElement} */ ($("#participantsEmpty"));
+	const table = /** @type {HTMLTableElement|null} */ ($("#participantsTable"));
+	const wrap = /** @type {HTMLElement|null} */ ($("#participantsTableWrap"));
+	const body = /** @type {HTMLTableSectionElement|null} */ ($("#participants-tbody"));
+	const empty = /** @type {HTMLDivElement|null} */ ($("#participantsEmpty"));
 
-	if (!tbl || !empty) return;
+	if (!table || !body || !empty) return;
+
+	body.innerHTML = "";
 
 	if (!list.length) {
-		tbl.hidden = true;
+		table.hidden = true;
+		if (wrap) wrap.hidden = true;
 		empty.hidden = false;
 		return;
 	}
 
 	empty.hidden = true;
-	tbl.hidden = false;
-
-	// clear prior rows
-	tbl.querySelectorAll(".row").forEach(n => n.remove());
+	table.hidden = false;
+	if (wrap) wrap.hidden = false;
 
 	for (const p of list) {
-		const row = document.createElement("div");
-		row.className = "row";
-		row.setAttribute("role", "row");
+		const row = document.createElement("tr");
+		row.className = "govuk-table__row";
+		row.dataset.participantRow = "true";
 		row.innerHTML = `
-			<div role="cell">${p.display_name || "—"}</div>
-			<div role="cell">${contactCell(p)}</div>
-			<div role="cell">${p.status || "—"}</div>
-			<div role="cell">
-				<button class="govuk-button govuk-button--secondary" data-part="${p.id}" data-act="schedule">Schedule</button>
-			</div>
+			<td class="govuk-table__cell">${escapeHtml(p.display_name || "—")}</td>
+			<td class="govuk-table__cell">${contactCell(p)}</td>
+			<td class="govuk-table__cell">${escapeHtml(p.status || "—")}</td>
+			<td class="govuk-table__cell">
+				<button class="govuk-button govuk-button--secondary" data-part="${escapeHtml(p.id)}" data-act="schedule">Schedule</button>
+			</td>
 		`;
-		tbl.appendChild(row);
+		body.appendChild(row);
 	}
 }
 
@@ -176,36 +190,40 @@ function renderParticipants(list) {
  * @returns {void}
  */
 function renderSessions(list, participantsById) {
-	const tbl = /** @type {HTMLDivElement} */ ($("#sessionsTable"));
-	const empty = /** @type {HTMLDivElement} */ ($("#sessionsEmpty"));
+	const table = /** @type {HTMLTableElement|null} */ ($("#sessionsTable"));
+	const wrap = /** @type {HTMLElement|null} */ ($("#sessionsTableWrap"));
+	const body = /** @type {HTMLTableSectionElement|null} */ ($("#sessions-tbody"));
+	const empty = /** @type {HTMLDivElement|null} */ ($("#sessionsEmpty"));
 
-	if (!tbl || !empty) return;
+	if (!table || !body || !empty) return;
+
+	body.innerHTML = "";
 
 	if (!list.length) {
-		tbl.hidden = true;
+		table.hidden = true;
+		if (wrap) wrap.hidden = true;
 		empty.hidden = false;
 		return;
 	}
 
 	empty.hidden = true;
-	tbl.hidden = false;
-	tbl.querySelectorAll(".row").forEach(n => n.remove());
+	table.hidden = false;
+	if (wrap) wrap.hidden = false;
 
 	for (const s of list) {
-		const row = document.createElement("div");
-		row.className = "row";
-		row.setAttribute("role", "row");
+		const row = document.createElement("tr");
+		row.className = "govuk-table__row";
 		const pname = participantsById.get(s.participant_id)?.display_name || "—";
 
 		row.innerHTML = `
-			<div role="cell">${fmtWhen(s.starts_at, s.duration_min)}</div>
-			<div role="cell">${pname}</div>
-			<div role="cell">${s.status || "scheduled"}</div>
-			<div role="cell">
+			<td class="govuk-table__cell">${escapeHtml(fmtWhen(s.starts_at, s.duration_min))}</td>
+			<td class="govuk-table__cell">${escapeHtml(pname)}</td>
+			<td class="govuk-table__cell">${escapeHtml(s.status || "scheduled")}</td>
+			<td class="govuk-table__cell">
 				<a class="govuk-button govuk-button--secondary" href="/api/sessions/${encodeURIComponent(s.id)}/ics">Download .ics</a>
-			</div>
+			</td>
 		`;
-		tbl.appendChild(row);
+		body.appendChild(row);
 	}
 }
 
@@ -240,12 +258,11 @@ function setScheduleEnabled(enabled, participants) {
 		return;
 	}
 
-	// enabled
 	banner.hidden = true;
 	btn.disabled = false;
 	form.querySelectorAll("input, textarea, select, button").forEach(el => el.removeAttribute("disabled"));
 	select.innerHTML = `<option value="" disabled selected>Select a participant</option>` +
-		participants.map(p => `<option value="${p.id}">${p.display_name || p.email || p.phone || p.id}</option>`).join("");
+		participants.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.display_name || p.email || p.phone || p.id)}</option>`).join("");
 	cta?.removeAttribute("aria-disabled");
 	cta?.classList.remove("link--disabled");
 }
@@ -364,17 +381,17 @@ async function handleCreateSession(e, studyId) {
  * @throws {Error} When response not ok or invalid
  */
 async function fetchParticipants(sid) {
-  const url = `/api/participants?study=${encodeURIComponent(sid)}`;
-  console.info("[participants] GET", url);
-  const res = await fetch(url, { cache: "no-store" });
+	const url = `/api/participants?study=${encodeURIComponent(sid)}`;
+	console.info("[participants] GET", url);
+	const res = await fetch(url, { cache: "no-store" });
 
-  let js = null;
-  try { js = await res.json(); } catch {}
-  if (!res.ok || js?.ok !== true) {
-    const detail = js?.detail || js?.error || `HTTP ${res.status}`;
-    throw new Error(`Participants fetch failed: ${detail}`);
-  }
-  return Array.isArray(js.participants) ? js.participants : [];
+	let js = null;
+	try { js = await res.json(); } catch {}
+	if (!res.ok || js?.ok !== true) {
+		const detail = js?.detail || js?.error || `HTTP ${res.status}`;
+		throw new Error(`Participants fetch failed: ${detail}`);
+	}
+	return Array.isArray(js.participants) ? js.participants : [];
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -424,13 +441,11 @@ async function refreshSessions(studyId) {
 		const sid = usp.get("sid") || "";
 		if (!pid || !sid) throw new Error("Missing pid or sid in URL");
 
-		// Load participants
 		const participants = await fetchParticipants(sid);
 
 		console.log(`[participants] loaded ${participants.length}`);
 		renderParticipantsTable(participants);
 
-		// Breadcrumb hydration (reuse projects list to get project name)
 		try {
 			const res = await fetch(`/api/projects`, { cache: "no-store" });
 			const js = await res.json().catch(() => /** @type {any} */ ({}));
@@ -450,20 +465,16 @@ async function refreshSessions(studyId) {
 			/* non-fatal */
 		}
 
-		// Badge text for quick context
 		const badge = /** @type {HTMLElement} */ ($("#studyBadge"));
 		if (badge) badge.textContent = `Study: ${sid}`;
 
-		// Hook up forms
 		const addForm = /** @type {HTMLFormElement} */ ($("#addParticipantForm"));
 		const schedForm = /** @type {HTMLFormElement} */ ($("#scheduleForm"));
 		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, sid, () => refreshAll(sid)));
 		if (schedForm) schedForm.addEventListener("submit", (e) => handleCreateSession(e, sid));
 
-		// Initial load
 		await refreshAll(sid);
 
-		// In-table “Schedule” action → prefills the form and scrolls to it
 		const pTable = /** @type {HTMLElement} */ ($("#participantsTable"));
 		if (pTable) {
 			pTable.addEventListener("click", (e) => {

@@ -27,30 +27,6 @@ async function fetchParticipants(studyId) {
 	return js.participants;
 }
 
-/** Create one row element for the participants table. */
-function makeRow(p) {
-	const row = document.createElement("div");
-	row.className = "row";
-	row.setAttribute("role", "row");
-
-	const name = `${p.display_name || p.name || "—"}`;
-	const contactBits = []
-	if (p.email) contactBits.push(p.email);
-	if (p.phone) contactBits.push(p.phone);
-	const contact = contactBits.join(" · ") || "—";
-	const status = p.status || "new";
-
-	row.innerHTML = `
-    <div role="cell">${escapeHtml(name)}</div>
-    <div role="cell">${escapeHtml(contact)}</div>
-    <div role="cell">${escapeHtml(status)}</div>
-    <div role="cell">
-      <button class="govuk-button govuk-button--secondary" data-action="schedule" data-id="${p.id}">Schedule</button>
-    </div>
-  `;
-	return row;
-}
-
 /** Escape HTML text content. */
 function escapeHtml(s) {
 	const d = document.createElement("div");
@@ -58,43 +34,68 @@ function escapeHtml(s) {
 	return d.innerHTML;
 }
 
+/** Create one row element for the participants table. */
+function makeRow(p) {
+	const row = document.createElement("tr");
+	row.className = "govuk-table__row";
+	row.dataset.participantRow = "true";
+
+	const name = `${p.display_name || p.name || "—"}`;
+	const contactBits = [];
+	if (p.email) contactBits.push(p.email);
+	if (p.phone) contactBits.push(p.phone);
+	const contact = contactBits.join(" · ") || "—";
+	const status = p.status || "new";
+
+	row.innerHTML = `
+		<td class="govuk-table__cell">${escapeHtml(name)}</td>
+		<td class="govuk-table__cell">${escapeHtml(contact)}</td>
+		<td class="govuk-table__cell">${escapeHtml(status)}</td>
+		<td class="govuk-table__cell">
+			<button class="govuk-button govuk-button--secondary" data-action="schedule" data-id="${escapeHtml(p.id)}">Schedule</button>
+		</td>
+	`;
+	return row;
+}
+
 /**
- * Render the whole participants table (replaces body rows).
+ * Render the whole participants table body.
  * Exposed on window for other modules to reuse.
  * @param {Array<Object>} participants
  */
 export function renderParticipantsTable(participants) {
-	const $table = $("#participantsTable");
-	if (!$table) return;
+	const table = $("#participantsTable");
+	const wrap = $("#participantsTableWrap");
+	const tbody = $("#participants-tbody");
+	if (!table || !tbody) return;
 
-	// Remove any previous data rows (keep the header .table__header)
-	const prev = Array.from($table.querySelectorAll(".row")).filter(el => !el.classList.contains("table__header"));
-	prev.forEach(el => el.remove());
+	tbody.innerHTML = "";
 
-	// Append new rows
-	const frag = document.createDocumentFragment();
-	participants.forEach(p => frag.appendChild(makeRow(p)));
-	$table.appendChild(frag);
+	if (!participants.length) {
+		const row = document.createElement("tr");
+		row.className = "govuk-table__row";
+		row.innerHTML = `<td colspan="4" class="govuk-table__cell muted">No participants yet.</td>`;
+		tbody.appendChild(row);
+	} else {
+		const frag = document.createDocumentFragment();
+		participants.forEach(p => frag.appendChild(makeRow(p)));
+		tbody.appendChild(frag);
+	}
 
-	// Toggle visibility vs empty panel
 	const has = participants.length > 0;
-	const $empty = $("#participantsEmpty");
-	if ($empty) $empty.hidden = has;
-	$table.hidden = !has;
+	const empty = $("#participantsEmpty");
+	if (empty) empty.hidden = has;
+	if (wrap) wrap.hidden = !has;
+	table.hidden = !has;
 
-	// Emit Safari-safe rendered events
 	const detail = { detail: { count: participants.length } };
 	window.dispatchEvent(new CustomEvent("participants-rendered", detail));
 	window.dispatchEvent(new CustomEvent("participants_rendered", detail));
-	// Legacy (may throw on some Safari versions if used elsewhere, but here it’s fine to keep
-	// for back-compat; remove if you want to be strict)
 	try { window.dispatchEvent(new CustomEvent("participants:rendered", detail)); } catch {}
 
 	return participants.length;
 }
 
-// Also attach on window for non-module callers
-// (e.g., scheduler or inline scripts)
 window.renderParticipantsTable = renderParticipantsTable;
 
 /** Boot: load & render once on page load. */
@@ -106,7 +107,6 @@ window.renderParticipantsTable = renderParticipantsTable;
 		renderParticipantsTable(participants);
 	} catch (err) {
 		console.error("[participants] init error:", err);
-		// Still emit an event so glue can toggle UI to "empty"
 		try {
 			window.dispatchEvent(new CustomEvent("participants-rendered", { detail: { count: 0 } }));
 			window.dispatchEvent(new CustomEvent("participants_rendered", { detail: { count: 0 } }));
