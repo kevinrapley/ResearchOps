@@ -1,0 +1,53 @@
+gaps:
+  - id: branch-protection-release-gate-required
+    title: Require Release Gate before merge
+    status: open
+    severity: high
+    owner: repository-maintainers
+    context: ResearchOps now has a dedicated Release Gate workflow, but branch protection must be configured in GitHub settings to require it before merge.
+    mitigation: Enable branch protection for main and require the exact Release Gate status check after GitHub exposes the check name.
+    evidence:
+      - .github/workflows/release-gate.yml
+      - PR #119
+
+  - id: security-audit-release-blocking
+    title: Decide when high-severity dependency findings become blocking
+    status: open
+    severity: medium
+    owner: repository-maintainers
+    context: The Release Gate records npm audit findings as advisory to avoid suddenly blocking delivery while known findings are triaged.
+    mitigation: Triage current npm audit findings, document accepted risks, then make high/critical findings blocking for release mode.
+    evidence:
+      - .github/workflows/release-gate.yml
+      - .github/workflows/security.yml
+
+  - id: deployment-tool-pinning
+    title: Pin Wrangler deployment tooling
+    status: open
+    severity: medium
+    owner: repository-maintainers
+    context: The deploy workflow uses wrangler through npx with latest resolution, which is convenient but less deterministic than a pinned toolchain.
+    mitigation: Pin Wrangler to a known version and document upgrade cadence.
+    evidence:
+      - .github/workflows/deploy-worker.yml
+      - infra/cloudflare/wrangler.toml
+
+  - id: release-provenance-artifacts
+    title: Add signed or attested release artifacts
+    status: open
+    severity: medium
+    owner: repository-maintainers
+    context: The repository now has release-gate artifacts but does not yet publish signed or attested release artifacts for each tagged ResearchOps release.
+    mitigation: Add a release provenance workflow after the Release Gate is stable and branch protection is enabled.
+    evidence:
+      - .github/workflows/release-gate.yml
+
+  - id: live-github-settings-verification
+    title: Verify repository settings from GitHub's server state
+    status: open
+    severity: medium
+    owner: repository-maintainers
+    context: github-settings.yaml records intended repository policy, but live GitHub settings still need to be checked through the GitHub UI or API.
+    mitigation: Compare intended policy with live branch protection, required checks, CODEOWNERS enforcement, Actions permissions and security settings.
+    evidence:
+      - github-settings.yaml
