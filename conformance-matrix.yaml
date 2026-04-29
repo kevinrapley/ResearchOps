@@ -1,0 +1,61 @@
+records:
+  - id: github-governance-files
+    control: GitHub governance files use recognised repository paths.
+    evidence:
+      - .github/CODEOWNERS
+      - .github/pull_request_template.md
+      - PR #117
+    status: implemented
+    risk: low
+    owner: repository-maintainers
+
+  - id: package-ci-contract
+    control: Package scripts separate write-mode formatting from CI check-mode validation.
+    evidence:
+      - package.json
+      - .github/workflows/ci.yml
+      - PR #118
+    status: implemented
+    risk: low
+    owner: repository-maintainers
+
+  - id: release-gate-workflow
+    control: Repository release assurance is joined into a dedicated Release Gate workflow.
+    evidence:
+      - .github/workflows/release-gate.yml
+      - PR #119
+    status: implemented
+    risk: medium
+    owner: repository-maintainers
+
+  - id: accessibility-baseline
+    control: Accessibility remediation must be evidence-led and must not change clean baseline behaviour speculatively.
+    evidence:
+      - Accessibility audit on main
+      - PR #120 closed unmerged
+      - RECENT_LEARNINGS.md
+    status: implemented
+    risk: medium
+    owner: repository-maintainers
+
+  - id: cloudflare-worker-deployment
+    control: Cloudflare Worker deployment validates before deploy and uses repository secrets for account/token material.
+    evidence:
+      - .github/workflows/deploy-worker.yml
+      - infra/cloudflare/wrangler.toml
+    status: implemented
+    risk: medium
+    owner: repository-maintainers
+
+  - id: release-evidence-model
+    control: Repository has release evidence files for traceability and future branch-protection decisions.
+    evidence:
+      - RECENT_LEARNINGS.md
+      - conformance-matrix.yaml
+      - gap-register.yaml
+      - github-settings.yaml
+      - release-evidence.yaml
+      - configuration-evidence.yaml
+    status: proposed
+    risk: low
+    owner: repository-maintainers
