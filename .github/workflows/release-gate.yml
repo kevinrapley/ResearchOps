@@ -1,0 +1,210 @@
+name: Release Gate
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: release-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-gate:
+    name: Release gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Run ResearchOps release gate
+        shell: bash
+        run: |
+          set +e
+          mkdir -p artifacts/release-gate/commands
+          commands_file="artifacts/release-gate/commands.ndjson"
+          : > "$commands_file"
+
+          run_check() {
+            local id="$1"
+            local title="$2"
+            local command="$3"
+            local blocking="$4"
+            local out="artifacts/release-gate/commands/${id}.stdout.txt"
+            local err="artifacts/release-gate/commands/${id}.stderr.txt"
+            local started_at ended_at status exit_code
+
+            echo "::group::${title}"
+            started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            bash -lc "$command" > "$out" 2> "$err"
+            exit_code="$?"
+            ended_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+            cat "$out"
+            cat "$err" >&2
+
+            if [ "$exit_code" = "0" ]; then
+              status="passed"
+            else
+              status="failed"
+            fi
+
+            COMMAND_ID="$id" \
+            COMMAND_TITLE="$title" \
+            COMMAND_TEXT="$command" \
+            COMMAND_BLOCKING="$blocking" \
+            COMMAND_STATUS="$status" \
+            COMMAND_EXIT_CODE="$exit_code" \
+            COMMAND_STARTED_AT="$started_at" \
+            COMMAND_ENDED_AT="$ended_at" \
+            COMMAND_STDOUT_PATH="$out" \
+            COMMAND_STDERR_PATH="$err" \
+            python3 - <<'PY' >> "$commands_file"
+          import json
+          import os
+          from pathlib import Path
+
+          def tail(path, limit=4000):
+              value = Path(path).read_text(encoding="utf-8", errors="replace") if Path(path).exists() else ""
+              return value[-limit:]
+
+          stdout_path = os.environ["COMMAND_STDOUT_PATH"]
+          stderr_path = os.environ["COMMAND_STDERR_PATH"]
+
+          record = {
+              "id": os.environ["COMMAND_ID"],
+              "title": os.environ["COMMAND_TITLE"],
+              "command": os.environ["COMMAND_TEXT"],
+              "blocking": os.environ["COMMAND_BLOCKING"].lower() == "true",
+              "status": os.environ["COMMAND_STATUS"],
+              "exit_code": int(os.environ["COMMAND_EXIT_CODE"]),
+              "started_at": os.environ["COMMAND_STARTED_AT"],
+              "ended_at": os.environ["COMMAND_ENDED_AT"],
+              "stdout_path": stdout_path,
+              "stderr_path": stderr_path,
+              "stdout_tail": tail(stdout_path),
+              "stderr_tail": tail(stderr_path),
+          }
+
+          print(json.dumps(record, ensure_ascii=False))
+          PY
+
+            echo "::endgroup::"
+          }
+
+          gate_started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          run_check "npm-ci" "Install dependencies" "npm ci" "true"
+          run_check "validate" "Validate repository contract" "npm run validate" "true"
+          run_check "lint" "Lint" "npm run lint" "true"
+          run_check "format-check" "Format check" "npm run format:check" "true"
+          run_check "unit-tests" "Unit tests" "npm test" "true"
+          run_check "performance-audit" "Performance audit" "npm run audit:performance --if-present" "true"
+          run_check "security-audit-high" "Security audit advisory" "npm audit --audit-level=high --json" "false"
+
+          gate_ended_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          GATE_STARTED_AT="$gate_started_at" \
+          GATE_ENDED_AT="$gate_ended_at" \
+          GITHUB_REPOSITORY_NAME="${GITHUB_REPOSITORY}" \
+          GITHUB_SHA_VALUE="${GITHUB_SHA}" \
+          GITHUB_REF_NAME_VALUE="${GITHUB_REF_NAME}" \
+          GITHUB_RUN_ID_VALUE="${GITHUB_RUN_ID}" \
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          commands_path = Path("artifacts/release-gate/commands.ndjson")
+          commands = [json.loads(line) for line in commands_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+          blocking_failures = [command for command in commands if command["blocking"] and command["status"] != "passed"]
+          advisory_failures = [command for command in commands if not command["blocking"] and command["status"] != "passed"]
+          status = "passed" if not blocking_failures else "failed"
+
+          report = {
+              "gate": "ResearchOps release gate",
+              "status": status,
+              "started_at": os.environ["GATE_STARTED_AT"],
+              "ended_at": os.environ["GATE_ENDED_AT"],
+              "repository": os.environ["GITHUB_REPOSITORY_NAME"],
+              "ref": os.environ["GITHUB_REF_NAME_VALUE"],
+              "commit": os.environ["GITHUB_SHA_VALUE"],
+              "run_id": os.environ["GITHUB_RUN_ID_VALUE"],
+              "blocking_failures": [command["id"] for command in blocking_failures],
+              "advisory_failures": [command["id"] for command in advisory_failures],
+              "commands": commands,
+          }
+
+          Path("artifacts/release-gate/release-gate-report.json").write_text(
+              json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+
+          summary = [
+              "# ResearchOps release gate",
+              "",
+              f"Status: **{status}**",
+              f"Repository: `{report['repository']}`",
+              f"Ref: `{report['ref']}`",
+              f"Commit: `{report['commit']}`",
+              "",
+              "## Checks",
+              "",
+              "| Check | Blocking | Status | Exit code |",
+              "|---|---:|---|---:|",
+          ]
+
+          for command in commands:
+              summary.append(
+                  f"| {command['title']} | {str(command['blocking']).lower()} | {command['status']} | {command['exit_code']} |"
+              )
+
+          if advisory_failures:
+              summary.extend(["", "## Advisory failures", ""])
+              for command in advisory_failures:
+                  summary.append(f"- `{command['id']}` is advisory and did not block this release gate.")
+
+          if blocking_failures:
+              summary.extend(["", "## Blocking failures", ""])
+              for command in blocking_failures:
+                  summary.append(f"- `{command['id']}` failed and blocked this release gate.")
+
+          summary_text = "\n".join(summary) + "\n"
+          Path("artifacts/release-gate/release-gate-summary.md").write_text(summary_text, encoding="utf-8")
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(summary_text, encoding="utf-8")
+          PY
+
+          gate_status="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          print(json.loads(Path('artifacts/release-gate/release-gate-report.json').read_text(encoding='utf-8'))['status'])
+          PY
+          )"
+
+          if [ "$gate_status" != "passed" ]; then
+            exit 1
+          fi
+
+      - name: Upload release-gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: researchops-release-gate
+          path: artifacts/release-gate/
+          if-no-files-found: error
+          retention-days: 30
