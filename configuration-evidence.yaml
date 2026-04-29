@@ -1,0 +1,83 @@
+configuration:
+  repository: kevinrapley/ResearchOps
+  evidence_version: 1
+  prepared_at: 2026-04-29
+  runtime:
+    platform: Cloudflare Workers
+    worker_name: rops-api
+    worker_entrypoint: src/worker.js
+    compatibility_date: 2025-09-26
+    evidence:
+      - infra/cloudflare/wrangler.toml
+  static_assets:
+    binding: ASSETS
+    directory: ../../docs/devops/sourcebook
+    evidence:
+      - infra/cloudflare/wrangler.toml
+  ai:
+    provider: Cloudflare Workers AI
+    binding: AI
+    model: '@cf/meta/llama-3.1-8b-instruct'
+    evidence:
+      - infra/cloudflare/wrangler.toml
+  data_stores:
+    airtable_tables:
+      - Projects
+      - Project Details
+      - Mural Boards
+      - Journal Entries
+      - Project Studies
+      - Sessions
+      - Session Notes
+      - Discussion Guides
+      - Partials
+      - Codes
+      - Code Applications
+      - AI_Usage
+    d1:
+      binding: RESEARCHOPS_D1
+      database_name: researchops-d1
+    kv:
+      binding: SESSION_KV
+    evidence:
+      - infra/cloudflare/wrangler.toml
+  integrations:
+    github_csv:
+      owner: kevinrapley
+      repository: ResearchOps
+      branch: main
+      paths:
+        projects: data/projects.csv
+        details: data/project-details.csv
+        studies: data/studies.csv
+    mural:
+      api_base: https://app.mural.co/api/public/v1
+      company_id: homeofficegovuk
+      redirect_uri: https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback
+      scopes:
+        - identity:read
+        - workspaces:read
+        - rooms:read
+        - rooms:write
+        - murals:read
+        - murals:write
+    evidence:
+      - infra/cloudflare/wrangler.toml
+  secrets:
+    required:
+      - CF_API_TOKEN
+      - CF_ACCOUNT_ID
+      - Airtable token or equivalent runtime secret
+      - Mural OAuth secret or equivalent runtime secret
+    note: Do not commit secret values. Verify presence and scope through GitHub and Cloudflare settings.
+  allowed_origins:
+    - https://researchops.pages.dev
+    - https://rops-api.digikev-kevin-rapley.workers.dev
+    - http://localhost:8080
+    - https://reops-sourcebook.pages.dev
+  observability:
+    logs_enabled: true
+    invocation_logs: true
+    persist: true
+    evidence:
+      - infra/cloudflare/wrangler.toml
