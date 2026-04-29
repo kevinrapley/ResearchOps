@@ -1,0 +1,43 @@
+branch_protection:
+  repository: kevinrapley/ResearchOps
+  branch: main
+  evidence_version: 1
+  status: pending-live-verification
+  prepared_at: 2026-04-29
+  intended_state_source:
+    - github-settings.yaml
+    - docs/release-assurance/branch-protection-verification.md
+  required_reviews:
+    expected: 1
+    observed: null
+  require_code_owner_reviews:
+    expected: true
+    observed: null
+  required_status_checks:
+    expected:
+      - CI
+      - Validate ResearchOps
+      - Release Gate
+      - Accessibility audit (pa11y-ci)
+    observed: []
+  require_conversation_resolution:
+    expected: true
+    observed: null
+  require_linear_history:
+    expected: true
+    observed: null
+  allow_force_pushes:
+    expected: false
+    observed: null
+  allow_deletions:
+    expected: false
+    observed: null
+  verification:
+    method: pending
+    verified_by: null
+    verified_at: null
+    evidence_references: []
+  notes:
+    - This file records intended and observed branch-protection evidence.
+    - Replace null observed values only after checking live GitHub repository settings.
+    - Do not treat pending-live-verification as an implemented control.
