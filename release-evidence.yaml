@@ -5,8 +5,8 @@ release:
   prepared_at: 2026-04-29
   current_baseline:
     branch: main
-    latest_known_commit: 52bcb6065c3508aa5306c93bd32aa25e0fce8505
-    source: GitHub repository state after PR #121 merge
+    latest_known_commit: 9ebee3c38d5dd16492c651a9be47bb35fd66125f
+    source: GitHub repository state after PR #122 merge
     note: Confirm or regenerate this commit reference at release time before treating it as authoritative release evidence.
   controls:
     ci:
@@ -49,6 +49,13 @@ release:
         - .github/pull_request_template.md
         - PR #117
       note: CODEOWNERS should use GitHub users or teams that are resolvable in the repository owner context.
+    branch_protection:
+      status: pending-live-verification
+      evidence:
+        - github-settings.yaml
+        - branch-protection-evidence.yaml
+        - docs/release-assurance/branch-protection-verification.md
+      note: Branch protection must be verified from live GitHub settings before this control can be marked implemented.
   required_manual_checks_before_release:
     - Confirm Release Gate has passed on the release commit.
     - Confirm Accessibility audit is clean on main.
