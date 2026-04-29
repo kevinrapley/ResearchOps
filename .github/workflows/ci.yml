@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20]
+        node: [20, 22]
 
     steps:
       - name: Checkout
@@ -45,10 +45,10 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint --if-present
+        run: npm run lint
 
       - name: Format check
-        run: npm run format --if-present -- -c
+        run: npm run format:check
 
       - name: Typecheck
         run: npm run typecheck --if-present
@@ -56,8 +56,8 @@ jobs:
       - name: Build (no deploy)
         run: npm run build --if-present
 
-      - name: Unit tests (CI mode)
-        run: npm test --if-present -- --ci --reporters=default --coverage
+      - name: Unit tests
+        run: npm test
 
       - name: Upload coverage
         if: always()
