@@ -1,7 +1,7 @@
 gaps:
   - id: branch-protection-release-gate-required
     title: Require Release Gate before merge
-    status: open
+    status: in-progress
     severity: high
     owner: repository-maintainers
     context: ResearchOps now has a dedicated Release Gate workflow, but branch protection must be configured in GitHub settings to require it before merge.
@@ -9,6 +9,8 @@ gaps:
     evidence:
       - .github/workflows/release-gate.yml
       - PR #119
+      - docs/release-assurance/branch-protection-verification.md
+      - branch-protection-evidence.yaml
 
   - id: security-audit-release-blocking
     title: Decide when high-severity dependency findings become blocking
@@ -51,3 +53,4 @@ gaps:
     mitigation: Compare intended policy with live branch protection, required checks, CODEOWNERS enforcement, Actions permissions and security settings.
     evidence:
       - github-settings.yaml
+      - branch-protection-evidence.yaml
