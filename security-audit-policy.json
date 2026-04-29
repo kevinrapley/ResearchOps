@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "policy_name": "ResearchOps npm audit release policy",
+  "runtime_dependency_severities_blocking": ["high", "critical"],
+  "unknown_dependency_type_severities_blocking": ["high", "critical"],
+  "development_dependency_severities_blocking": ["critical"],
+  "advisory_development_dependency_severities": ["low", "moderate", "high"],
+  "decision": "High or critical vulnerabilities in runtime dependencies block release. High or critical vulnerabilities with unknown dependency scope also block release. Critical vulnerabilities in development dependencies block release. Low, moderate and high development-only vulnerabilities are recorded as advisory until the affected toolchain is upgraded or replaced.",
+  "rationale": "ResearchOps currently has no production runtime npm dependency surface in package.json. The observed npm audit findings are in development and QA tooling used by validation, linting, Cucumber and supporting packages. These findings must remain visible, but they should not block a release unless they affect runtime dependencies, have unknown dependency scope, or reach critical severity in development tooling.",
+  "review_cadence": "Review on every dependency update and before promoting a tagged release.",
+  "triage_evidence": "security-audit-triage.yaml"
+}
