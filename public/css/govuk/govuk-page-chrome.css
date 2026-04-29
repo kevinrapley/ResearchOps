@@ -1,7 +1,20 @@
 /* GOV.UK page chrome foundation */
 
-.govuk-skip-link {
+.govuk-skip-link,
+.govuk-skip-link:link,
+.govuk-skip-link:visited {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9999;
 	display: block;
+	background: #ffdd00;
+	color: #0b0c0c;
+	font-weight: 700;
+	text-decoration: none;
+	}
+
+.govuk-skip-link:not(:focus):not(:active) {
 	width: 1px;
 	height: 1px;
 	margin: -1px;
@@ -11,13 +24,10 @@
 	clip: rect(0 0 0 0);
 	clip-path: inset(50%);
 	white-space: nowrap;
-	background: #ffdd00;
-	color: #0b0c0c;
-	font-weight: 700;
-	text-decoration: none;
 	}
 
-.govuk-skip-link:focus {
+.govuk-skip-link:focus,
+.govuk-skip-link:active {
 	width: auto;
 	height: auto;
 	margin: 0;
@@ -29,6 +39,12 @@
 	outline: 3px solid #0b0c0c;
 	outline-offset: 0;
 	box-shadow: none;
+	}
+
+.govuk-visually-hidden,
+.visuallyhidden {
+	background: #ffffff;
+	color: #0b0c0c;
 	}
 
 .govuk-main-wrapper {
