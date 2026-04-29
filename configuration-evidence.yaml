@@ -17,7 +17,7 @@ configuration:
   ai:
     provider: Cloudflare Workers AI
     binding: AI
-    model: '@cf/meta/llama-3.1-8b-instruct'
+    model: "@cf/meta/llama-3.1-8b-instruct"
     evidence:
       - infra/cloudflare/wrangler.toml
   data_stores:
