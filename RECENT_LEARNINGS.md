@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-29 — Release evidence can become stale after merge
+
+Context: `release-evidence.yaml` can record a baseline commit that is correct when written but stale after subsequent PRs merge.
+
+Learning: Commit-specific evidence is useful for provenance, but it must be confirmed against the actual release commit before release decisions are made.
+
+Action: When preparing a release, confirm or regenerate any baseline SHA, release-gate run reference, accessibility baseline statement and deployment evidence before treating the file as authoritative.
+
 ## 2026-04-29 — Do not remediate accessibility without a failing baseline
 
 Context: PR #120 attempted to remediate Pa11y absolute-position contrast warnings from a speculative CSS change.

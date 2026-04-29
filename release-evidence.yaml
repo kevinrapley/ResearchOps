@@ -5,8 +5,9 @@ release:
   prepared_at: 2026-04-29
   current_baseline:
     branch: main
-    latest_known_commit: 30312b2fbdbdb3c30079f18c8a89a2eccf486c94
-    source: GitHub repository state at PR #119 merge
+    latest_known_commit: 52bcb6065c3508aa5306c93bd32aa25e0fce8505
+    source: GitHub repository state after PR #121 merge
+    note: Confirm or regenerate this commit reference at release time before treating it as authoritative release evidence.
   controls:
     ci:
       status: implemented
@@ -47,9 +48,11 @@ release:
         - .github/CODEOWNERS
         - .github/pull_request_template.md
         - PR #117
+      note: CODEOWNERS should use GitHub users or teams that are resolvable in the repository owner context.
   required_manual_checks_before_release:
     - Confirm Release Gate has passed on the release commit.
     - Confirm Accessibility audit is clean on main.
     - Confirm no unreviewed high-risk dependency issue is being promoted.
     - Confirm Cloudflare deployment secrets are present and scoped appropriately.
     - Confirm branch protection requires pull request review and required checks.
+    - Confirm release evidence commit references match the release commit.
