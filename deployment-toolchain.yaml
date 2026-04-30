@@ -4,7 +4,7 @@ deployment_toolchain:
   prepared_at: 2026-04-30
   cloudflare_worker:
     tool: wrangler
-    version: 4.38.0
+    version: 4.34.0
     invocation: npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/wrangler.toml
     workflow: .github/workflows/deploy-worker.yml
     config: infra/cloudflare/wrangler.toml
