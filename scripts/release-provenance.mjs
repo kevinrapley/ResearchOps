@@ -18,13 +18,13 @@ const defaultFiles = [
 	"RECENT_LEARNINGS.md",
 	".github/workflows/release-gate.yml",
 	".github/workflows/deploy-worker.yml",
-	"infra/cloudflare/wrangler.toml"
+	"infra/cloudflare/wrangler.toml",
 ];
 
 function parseArgs(argv) {
 	const options = {
 		outputDir: "artifacts/release-provenance",
-		files: defaultFiles
+		files: defaultFiles,
 	};
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -78,7 +78,7 @@ function buildSubject(filePath) {
 			path: filePath,
 			present: false,
 			sha256: null,
-			size_bytes: null
+			size_bytes: null,
 		};
 	}
 
@@ -86,14 +86,16 @@ function buildSubject(filePath) {
 		path: filePath,
 		present: true,
 		sha256: sha256(buffer),
-		size_bytes: buffer.length
+		size_bytes: buffer.length,
 	};
 }
 
 function buildManifest(files) {
-	const uniqueFiles = [...new Set(files)].sort((first, second) => first.localeCompare(second));
+	const uniqueFiles = [...new Set(files)].sort((first, second) =>
+		first.localeCompare(second),
+	);
 	const subjects = uniqueFiles.map(buildSubject);
-	const presentSubjects = subjects.filter(subject => subject.present);
+	const presentSubjects = subjects.filter((subject) => subject.present);
 
 	return {
 		schema_version: 1,
@@ -104,8 +106,10 @@ function buildManifest(files) {
 		run_id: gitValue("GITHUB_RUN_ID"),
 		run_attempt: gitValue("GITHUB_RUN_ATTEMPT"),
 		subject_count: presentSubjects.length,
-		missing_subjects: subjects.filter(subject => !subject.present).map(subject => subject.path),
-		subjects
+		missing_subjects: subjects
+			.filter((subject) => !subject.present)
+			.map((subject) => subject.path),
+		subjects,
 	};
 }
 
@@ -114,39 +118,42 @@ function buildSlsa(manifest) {
 		_predicateType: "https://slsa.dev/provenance/v1",
 		predicateType: "https://slsa.dev/provenance/v1",
 		subject: manifest.subjects
-			.filter(subject => subject.present)
-			.map(subject => ({
+			.filter((subject) => subject.present)
+			.map((subject) => ({
 				name: subject.path,
 				digest: {
-					sha256: subject.sha256
-				}
+					sha256: subject.sha256,
+				},
 			})),
 		predicate: {
 			buildDefinition: {
-				buildType: "https://github.com/kevinrapley/ResearchOps/actions/workflows/release-provenance.yml",
+				buildType:
+					"https://github.com/kevinrapley/ResearchOps/actions/workflows/release-provenance.yml",
 				externalParameters: {
 					repository: manifest.repository,
 					ref: manifest.ref,
-					commit: manifest.commit
+					commit: manifest.commit,
 				},
-				internalParameters: {}
+				internalParameters: {},
 			},
 			runDetails: {
 				builder: {
-					id: "https://github.com/actions/runner"
+					id: "https://github.com/actions/runner",
 				},
 				metadata: {
 					invocationId: manifest.run_id,
 					startedOn: manifest.generated_at,
-					finishedOn: manifest.generated_at
-				}
-			}
-		}
+					finishedOn: manifest.generated_at,
+				},
+			},
+		},
 	};
 }
 
 function buildDsse(provenance, manifest) {
-	const payload = Buffer.from(JSON.stringify(provenance, null, 2)).toString("base64");
+	const payload = Buffer.from(JSON.stringify(provenance, null, 2)).toString(
+		"base64",
+	);
 	const digest = sha256(Buffer.from(payload));
 
 	return {
@@ -155,11 +162,12 @@ function buildDsse(provenance, manifest) {
 		signatures: [
 			{
 				keyid: "researchops-offline-provenance-placeholder",
-				sig: digest
-			}
+				sig: digest,
+			},
 		],
-		verification_note: "This DSSE-shaped envelope records release provenance evidence. It is not a cryptographic signature. Use GitHub artifact attestations or Sigstore for trusted release verification.",
-		subject_manifest_sha256: sha256(Buffer.from(JSON.stringify(manifest)))
+		verification_note:
+			"This DSSE-shaped envelope records release provenance evidence. It is not a cryptographic signature. Use GitHub artifact attestations or Sigstore for trusted release verification.",
+		subject_manifest_sha256: sha256(Buffer.from(JSON.stringify(manifest))),
 	};
 }
 
@@ -179,9 +187,13 @@ writeJson(path.join(outputDir, "release-provenance-manifest.json"), manifest);
 writeJson(path.join(outputDir, "slsa-provenance.json"), provenance);
 writeJson(path.join(outputDir, "dsse-envelope.json"), dsse);
 
-process.stdout.write(`Wrote release provenance artifacts to ${options.outputDir}\n`);
+process.stdout.write(
+	`Wrote release provenance artifacts to ${options.outputDir}\n`,
+);
 process.stdout.write(`Subjects: ${manifest.subject_count}\n`);
 
 if (manifest.missing_subjects.length > 0) {
-	process.stdout.write(`Missing optional subjects: ${manifest.missing_subjects.join(", ")}\n`);
+	process.stdout.write(
+		`Missing optional subjects: ${manifest.missing_subjects.join(", ")}\n`,
+	);
 }
