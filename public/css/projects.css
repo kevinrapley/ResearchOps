@@ -23,19 +23,21 @@
 	}
 
 .project-title .govuk-link {
-	color: #0b0c0c;
-	text-decoration: none;
+	color: #1d70b8;
 	font-weight: 700;
+	text-decoration: underline;
+	text-decoration-thickness: max(1px, .0625rem);
+	text-underline-offset: 0.1em;
 	}
 
 .project-title .govuk-link:hover,
 .project-title .govuk-link:focus {
-	color: #0b0c0c;
-	text-decoration: underline;
+	color: #003078;
+	text-decoration-thickness: max(3px, .1875rem);
 	}
 
 .project-title .govuk-link:visited {
-	color: #0b0c0c;
+	color: #4c2c92;
 	}
 
 .project-meta {
@@ -48,6 +50,17 @@
 
 .project-summary {
 	margin-bottom: 8px;
+	}
+
+.project-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 12px 0 8px;
+	}
+
+.project-dashboard-action {
+	margin-bottom: 0;
 	}
 
 .user-groups {
