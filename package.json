@@ -13,8 +13,10 @@
     "audit:security": "bash ./scripts/security-audit-policy.sh",
     "test": "node --test",
     "test:e2e": "playwright test",
-    "qa:browsers": "playwright install --with-deps chromium",
-    "qa:cucumber": "cucumber-js -p default"
+    "qa:browsers": "playwright install chromium",
+    "qa:cucumber": "cucumber-js -p ci",
+    "qa:cucumber:ci": "cucumber-js -p ci",
+    "qa:cucumber:walkthrough": "cucumber-js -p walkthrough"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
