@@ -1,34 +1,108 @@
 name: qa-bdd
 
 on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to test"
+        required: false
+        type: string
+  pull_request:
+  push:
+    branches: [main]
   workflow_run:
     workflows: ["QA • Playwright E2E"]
     types: [completed]
-  workflow_dispatch: {}
-  pull_request:
-  push:
-    branches: [ main ]
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: qa-bdd-${{ github.ref }}
-  cancel-in-progress: false
+  group: qa-bdd-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref || github.event.workflow_run.id }}
+  cancel-in-progress: true
+
+env:
+  CI: true
 
 jobs:
-  bdd:
-    if: >
+  bdd-smoke:
+    if: >-
       ${{
         github.event_name == 'workflow_dispatch' ||
         github.event_name == 'push' ||
         github.event_name == 'pull_request' ||
         github.event.workflow_run.conclusion == 'success'
       }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Resolve BASE_URL
+        shell: bash
+        run: |
+          val="${{ inputs.base_url }}"
+          if [ -z "$val" ]; then val="${{ vars.PREVIEW_URL }}"; fi
+          if [ -z "$val" ]; then val="${{ vars.PAGES_URL }}"; fi
+          if [ -z "$val" ]; then val="https://researchops.pages.dev/"; fi
+
+          echo "BASE_URL=$val" >> "$GITHUB_ENV"
+          echo "Using BASE_URL: $val"
+
+      - name: Preflight BASE_URL
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+
+      - name: Run BDD smoke suite
+        run: npm run qa:cucumber:ci
+
+      - name: Upload Cucumber report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: |
+            reports/cucumber-report.html
+            reports/cucumber-report.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  walkthrough:
+    needs: bdd-smoke
+    if: >-
+      ${{
+        needs.bdd-smoke.result == 'success' &&
+        (
+          github.event_name == 'workflow_dispatch' ||
+          github.ref == 'refs/heads/main'
+        )
+      }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
     outputs:
       has_site: ${{ steps.detect_site.outputs.present }}
 
@@ -38,82 +112,109 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers (Chromium)
-        run: npx --yes playwright@1.56.1 install --with-deps chromium
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
 
       - name: Resolve BASE_URL
-        id: base
         shell: bash
         run: |
-          val="${{ vars.PREVIEW_URL }}"
+          val="${{ inputs.base_url }}"
+          if [ -z "$val" ]; then val="${{ vars.PREVIEW_URL }}"; fi
           if [ -z "$val" ]; then val="${{ vars.PAGES_URL }}"; fi
-          if [ -z "$val" ]; then val="${{ secrets.PREVIEW_URL }}"; fi
-          if [ -z "$val" ]; then val="${{ secrets.PAGES_URL }}"; fi
           if [ -z "$val" ]; then val="https://researchops.pages.dev/"; fi
+
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Run BDD suite
-        env:
-          BASE_URL: ${{ env.BASE_URL }}
-        run: npm run qa:cucumber
-
-      - name: Upload Cucumber HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-report
-          path: reports/cucumber-report.html
-          if-no-files-found: ignore
-
-      # Detect whether the walkthrough site exists before trying to upload
-      - name: Detect walkthrough site
-        id: detect_site
+      - name: Preflight BASE_URL
         shell: bash
         run: |
-          if [ -d "reports-site" ] && compgen -G "reports-site/*" >/dev/null; then
-            echo "present=true"  >> "$GITHUB_OUTPUT"
+          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+
+      - name: Run BDD visual walkthrough
+        run: npm run qa:cucumber:walkthrough
+
+      - name: Merge Cucumber report into walkthrough site
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports-site
+          if [ -f "reports/cucumber-report.html" ]; then
+            cp reports/cucumber-report.html reports-site/cucumber-report.html
+          fi
+          if [ -f "reports/cucumber-report.json" ]; then
+            cp reports/cucumber-report.json reports-site/cucumber-report.json
+          fi
+
+      - name: Detect walkthrough site
+        id: detect_site
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "reports-site/index.html" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
             echo "Walkthrough site detected."
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "No walkthrough site found; skipping GitHub Pages upload."
+            echo "No walkthrough site found."
           fi
 
-      - name: Upload walkthrough site (for Pages)
+      - name: Upload walkthrough artifact
+        if: always() && steps.detect_site.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: walkthrough-site
+          path: reports-site
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Pages artifact
         if: always() && steps.detect_site.outputs.present == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: reports-site
 
   deploy:
-    needs: bdd
-    if: always() && needs.bdd.outputs.has_site == 'true'
-    runs-on: ubuntu-latest
+    needs: walkthrough
+    if: >-
+      ${{
+        always() &&
+        needs.walkthrough.result == 'success' &&
+        needs.walkthrough.outputs.has_site == 'true'
+      }}
+    runs-on: ubuntu-24.04
+
     permissions:
       pages: write
       id-token: write
+
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy walkthrough to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
 
-      - name: Add Job Summary
+      - name: Add job summary
         shell: bash
         run: |
           URL="${{ steps.deploy.outputs.page_url }}"
-          echo "## ✅ BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
+          echo "## BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Open the gallery:** ${URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario." >> "$GITHUB_STEP_SUMMARY"
