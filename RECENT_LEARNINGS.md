@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-30 — Prettier follows the repository EditorConfig
+
+Context: A new route-state regression test repeatedly failed `prettier -c .` because it was written with space indentation. The repository has `.editorconfig` with `indent_style = tab`.
+
+Learning: Do not assume default Prettier spacing. In this repo, Prettier reads `.editorconfig`, so JavaScript files should be written with tab indentation unless a nearer formatter config says otherwise.
+
+Action: Before creating or rewriting formatted files, check `.editorconfig` and any Prettier config. For JavaScript tests, use tab indentation and keep assertions short enough that Prettier does not need unexpected wrapping.
+
 ## 2026-04-30 — Release provenance needs trusted attestation
 
 Context: Local provenance files are useful release evidence, but they are not equivalent to a trusted signed attestation.
