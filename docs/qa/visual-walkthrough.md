@@ -101,6 +101,89 @@ Supported action types are:
 
 Prefer stable selectors such as `data-testid`, semantic landmarks, labelled controls and GOV.UK component classes. Avoid brittle selectors based on position or incidental CSS.
 
+## Capturing wizard flows
+
+Wizard flows should be captured as a sequence of named states on the same page entry.
+
+A state should recreate all preceding steps needed to reach that point. This makes each screenshot independent and prevents state leakage between screenshots.
+
+Example:
+
+```js
+const stepOneActions = [
+	{
+		type: 'fill',
+		selector: '#p_name',
+		value: 'Assisted Digital Support Discovery',
+	},
+	{
+		type: 'fill',
+		selector: '#p_desc',
+		value: 'Research how users find and use assisted digital support.',
+	},
+];
+
+const stepTwoActions = [
+	...stepOneActions,
+	{
+		type: 'click',
+		selector: '#next2',
+	},
+	{
+		type: 'waitForSelector',
+		selector: '#step2',
+		state: 'visible',
+	},
+];
+```
+
+## Mocking AI and network-dependent states
+
+Use `mockRoutes` for deterministic visual states that depend on an API response. This avoids making the visual walkthrough dependent on live AI responses, model latency, quota or content variation.
+
+Example:
+
+```js
+{
+	id: 'objectives-ai-rewrite-shown',
+	title: 'Objectives AI rewrite shown',
+	description: 'Shows the AI rewrite panel after the objectives threshold is met.',
+	mockRoutes: [
+		{
+			url: '**/api/ai-rewrite**',
+			method: 'POST',
+			body: {
+				summary: 'The objectives are clear and researchable.',
+				suggestions: [
+					{
+						category: 'Focus',
+						severity: 'medium',
+						tip: 'Make each objective test one decision or assumption.',
+						why: 'This helps the team trace findings back to specific service decisions.',
+					},
+				],
+				rewrite: '1. Understand where users need support.\n2. Identify operational signals.',
+				flags: {
+					possible_personal_data: false,
+				},
+			},
+		},
+	],
+	actions: [
+		{
+			type: 'click',
+			selector: '#btn-obj-ai-rewrite',
+		},
+		{
+			type: 'waitForText',
+			text: 'Concise rewrite (optional):',
+		},
+	],
+}
+```
+
+Prefer mocked AI responses for walkthrough evidence. Live AI calls should be reserved for integration tests where the purpose is to test the service boundary.
+
 ## Local command
 
 Run:
