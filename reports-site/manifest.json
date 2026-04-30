@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-04-30T16:50:26.091Z",
+  "startedAt": "2026-04-30T16:57:44.514Z",
   "baseURL": "https://researchops.pages.dev/",
   "pageCount": 16,
   "stateCount": 16,
@@ -20,7 +20,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/",
-          "durationMs": 1027,
+          "durationMs": 1569,
           "screenshot": "screenshots/core__home__default.png"
         }
       ]
@@ -38,7 +38,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 991,
+          "durationMs": 2073,
           "screenshot": "screenshots/core__start__default.png"
         }
       ]
@@ -56,7 +56,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/index.html",
-          "durationMs": 1522,
+          "durationMs": 4497,
           "screenshot": "screenshots/projects__projects__default.png"
         }
       ]
@@ -74,7 +74,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-          "durationMs": 1462,
+          "durationMs": 2227,
           "screenshot": "screenshots/projects__project-dashboard__default.png"
         }
       ]
@@ -92,7 +92,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-          "durationMs": 1126,
+          "durationMs": 2084,
           "screenshot": "screenshots/projects__outcomes__default.png"
         }
       ]
@@ -110,7 +110,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-          "durationMs": 1028,
+          "durationMs": 2479,
           "screenshot": "screenshots/projects__journals__default.png"
         }
       ]
@@ -128,7 +128,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/index.html",
-          "durationMs": 1030,
+          "durationMs": 1453,
           "screenshot": "screenshots/study__study__default.png"
         }
       ]
@@ -146,7 +146,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-          "durationMs": 1045,
+          "durationMs": 1722,
           "screenshot": "screenshots/study__study-guides__default.png"
         }
       ]
@@ -164,7 +164,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-          "durationMs": 1052,
+          "durationMs": 1922,
           "screenshot": "screenshots/study__study-participants__default.png"
         }
       ]
@@ -182,7 +182,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/session/index.html",
-          "durationMs": 957,
+          "durationMs": 1584,
           "screenshot": "screenshots/study__study-session__default.png"
         }
       ]
@@ -200,7 +200,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-          "durationMs": 1042,
+          "durationMs": 3007,
           "screenshot": "screenshots/study__study-consent-forms__default.png"
         }
       ]
@@ -218,7 +218,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/search/index.html",
-          "durationMs": 949,
+          "durationMs": 1563,
           "screenshot": "screenshots/utilities__search__default.png"
         }
       ]
@@ -236,7 +236,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/notes/index.html",
-          "durationMs": 972,
+          "durationMs": 2026,
           "screenshot": "screenshots/utilities__notes__default.png"
         }
       ]
@@ -254,7 +254,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/consent/index.html",
-          "durationMs": 1020,
+          "durationMs": 1957,
           "screenshot": "screenshots/utilities__consent__default.png"
         }
       ]
@@ -272,7 +272,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/sessions/index.html",
-          "durationMs": 966,
+          "durationMs": 1561,
           "screenshot": "screenshots/utilities__sessions__default.png"
         }
       ]
@@ -290,7 +290,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-          "durationMs": 988,
+          "durationMs": 1493,
           "screenshot": "screenshots/analysis__synthesize__default.png"
         }
       ]
