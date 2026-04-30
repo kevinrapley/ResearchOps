@@ -1,101 +1,456 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
-  <meta charset="utf-8" />
-  <title>BDD Walkthrough</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:24px; line-height:1.45}
-    header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-    .badge{background:#eef;border:1px solid #99c;border-radius:6px;padding:6px 10px}
-    h2{margin-top:32px;border-bottom:1px solid #eee;padding-bottom:6px}
-    .step{border:1px solid #eee;border-radius:8px;margin:12px 0;overflow:hidden}
-    .step .meta{background:#fafafa;padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;color:#333}
-    .step img{display:block;width:100%;max-width:1200px;height:auto}
-    .links a{margin-right:12px}
-    .empty{color:#889}
-    .scenario{margin-bottom:36px}
-  </style>
+	<meta charset="utf-8" />
+	<title>ResearchOps application visual walkthrough</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+		body {
+			font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			margin: 24px;
+			line-height: 1.45;
+			color: #111;
+			background: #fff;
+		}
+
+		header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 16px;
+			flex-wrap: wrap;
+			border-bottom: 1px solid #d8d8d8;
+			margin-bottom: 24px;
+			padding-bottom: 16px;
+		}
+
+		h1 {
+			margin: 0 0 8px;
+		}
+
+		h2 {
+			margin-top: 32px;
+			border-bottom: 1px solid #e5e5e5;
+			padding-bottom: 8px;
+		}
+
+		h3 {
+			margin: 0 0 4px;
+		}
+
+		.badge {
+			background: #eef;
+			border: 1px solid #99c;
+			border-radius: 6px;
+			display: inline-block;
+			padding: 6px 10px;
+		}
+
+		.meta {
+			color: #444;
+			margin: 0;
+		}
+
+		.group {
+			margin-bottom: 40px;
+		}
+
+		.page-card {
+			border: 1px solid #d8d8d8;
+			border-radius: 8px;
+			margin: 18px 0;
+			overflow: hidden;
+		}
+
+		.page-card__header {
+			background: #f7f7f7;
+			border-bottom: 1px solid #d8d8d8;
+			padding: 14px 16px;
+		}
+
+		.states {
+			display: grid;
+			gap: 18px;
+			grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+			padding: 16px;
+		}
+
+		.state {
+			border: 1px solid #e5e5e5;
+			border-radius: 6px;
+			overflow: hidden;
+			background: #fff;
+		}
+
+		.state__header {
+			padding: 10px 12px;
+			border-bottom: 1px solid #e5e5e5;
+		}
+
+		.state__header p {
+			margin: 4px 0 0;
+		}
+
+		.state img {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+
+		.failed {
+			border-color: #d4351c;
+		}
+
+		.failed .state__header {
+			background: #fff4f2;
+		}
+
+		.summary {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+		}
+	</style>
 </head>
 <body>
-  <header>
-    <h1>BDD Visual Walkthrough</h1>
-    <div class="links">
-      <a class="badge" href="./cucumber-report.html">Open Cucumber HTML report</a>
-    </div>
-  </header>
-  <p class="badge">Run started: 2025-11-03T21:13:33.270Z</p>
-  
-  
-    <section class="scenario" id="smoke__home-loads">
-      <h2>Smoke — Home loads</h2>
-      
-        <div class="step">
-          <div class="meta">Step 1: the site base URL</div>
-          <img loading="lazy" src="screenshots/smoke__home-loads__001--the-site-base-url.png" alt="Step 1: the site base URL" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 2: I visit "/"</div>
-          <img loading="lazy" src="screenshots/smoke__home-loads__002--i-visit.png" alt="Step 2: I visit "/"" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 3: the page should contain "Research" within 5s</div>
-          <img loading="lazy" src="screenshots/smoke__home-loads__003--the-page-should-contain-research-within-5s.png" alt="Step 3: the page should contain "Research" within 5s" />
-        </div>
-      
-    </section>
-  
-    <section class="scenario" id="smoke__projects-page-loads">
-      <h2>Smoke — Projects page loads</h2>
-      
-        <div class="step">
-          <div class="meta">Step 1: the site base URL</div>
-          <img loading="lazy" src="screenshots/smoke__projects-page-loads__001--the-site-base-url.png" alt="Step 1: the site base URL" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 2: I visit "/pages/projects/index.html"</div>
-          <img loading="lazy" src="screenshots/smoke__projects-page-loads__002--i-visit-pages-projects-index-html.png" alt="Step 2: I visit "/pages/projects/index.html"" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 3: the page should have a <title> containing "Projects"</div>
-          <img loading="lazy" src="screenshots/smoke__projects-page-loads__003--the-page-should-have-a-title-containing-projects.png" alt="Step 3: the page should have a <title> containing "Projects"" />
-        </div>
-      
-    </section>
-  
-    <section class="scenario" id="smoke__start-page-has-main-landmarks">
-      <h2>Smoke — Start page has main landmarks</h2>
-      
-        <div class="step">
-          <div class="meta">Step 1: the site base URL</div>
-          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__001--the-site-base-url.png" alt="Step 1: the site base URL" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 2: I visit "/pages/start/index.html"</div>
-          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__002--i-visit-pages-start-index-html.png" alt="Step 2: I visit "/pages/start/index.html"" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 3: I should see an element "main"</div>
-          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__003--i-should-see-an-element-main.png" alt="Step 3: I should see an element "main"" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 4: I should see an element "header"</div>
-          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__004--i-should-see-an-element-header.png" alt="Step 4: I should see an element "header"" />
-        </div>
-      
-        <div class="step">
-          <div class="meta">Step 5: I should see an element "footer"</div>
-          <img loading="lazy" src="screenshots/smoke__start-page-has-main-landmarks__005--i-should-see-an-element-footer.png" alt="Step 5: I should see an element "footer"" />
-        </div>
-      
-    </section>
+	<header>
+		<div>
+			<h1>ResearchOps application visual walkthrough</h1>
+			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
+			<p class="meta">Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-04-30T16:48:53.134Z</p>
+		</div>
+		<div class="summary">
+			<span class="badge">16 pages</span>
+			<span class="badge">16 states</span>
+			<span class="badge">0 failures</span>
+		</div>
+	</header>
+	
+	<section class="group" id="core">
+		<h2>Core</h2>
+		
+		<article class="page-card" id="home">
+			<div class="page-card__header">
+				<h3>Home</h3>
+				<p class="meta">/</p>
+				<p class="meta">ResearchOps landing page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/core__home__default.png"><img loading="lazy" src="screenshots/core__home__default.png" alt="Home: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="start">
+			<div class="page-card__header">
+				<h3>Start research project</h3>
+				<p class="meta">/pages/start/index.html</p>
+				<p class="meta">Start page for creating or beginning research project work.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/core__start__default.png"><img loading="lazy" src="screenshots/core__start__default.png" alt="Start research project: Default state" /></a>
+				</section>
+			</div>
+		</article>
+	</section>
+	<section class="group" id="projects">
+		<h2>Projects</h2>
+		
+		<article class="page-card" id="projects">
+			<div class="page-card__header">
+				<h3>Projects</h3>
+				<p class="meta">/pages/projects/index.html</p>
+				<p class="meta">Project list page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/projects__projects__default.png"><img loading="lazy" src="screenshots/projects__projects__default.png" alt="Projects: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="project-dashboard">
+			<div class="page-card__header">
+				<h3>Project dashboard</h3>
+				<p class="meta">/pages/project-dashboard/index.html</p>
+				<p class="meta">Project dashboard page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/project-dashboard/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/projects__project-dashboard__default.png"><img loading="lazy" src="screenshots/projects__project-dashboard__default.png" alt="Project dashboard: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="outcomes">
+			<div class="page-card__header">
+				<h3>Project outcomes</h3>
+				<p class="meta">/pages/projects/outcomes/index.html</p>
+				<p class="meta">Outcomes page for project-level findings and outputs.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/outcomes/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/projects__outcomes__default.png"><img loading="lazy" src="screenshots/projects__outcomes__default.png" alt="Project outcomes: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="journals">
+			<div class="page-card__header">
+				<h3>Project journals</h3>
+				<p class="meta">/pages/projects/journals/index.html</p>
+				<p class="meta">Reflexive journal page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/journals/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/projects__journals__default.png"><img loading="lazy" src="screenshots/projects__journals__default.png" alt="Project journals: Default state" /></a>
+				</section>
+			</div>
+		</article>
+	</section>
+	<section class="group" id="study">
+		<h2>Study</h2>
+		
+		<article class="page-card" id="study">
+			<div class="page-card__header">
+				<h3>Study overview</h3>
+				<p class="meta">/pages/study/index.html</p>
+				<p class="meta">Study overview and readiness controls.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/study__study__default.png"><img loading="lazy" src="screenshots/study__study__default.png" alt="Study overview: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="study-guides">
+			<div class="page-card__header">
+				<h3>Discussion guides</h3>
+				<p class="meta">/pages/study/guides/index.html</p>
+				<p class="meta">Discussion guide list and editor page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/guides/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/study__study-guides__default.png"><img loading="lazy" src="screenshots/study__study-guides__default.png" alt="Discussion guides: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="study-participants">
+			<div class="page-card__header">
+				<h3>Participants</h3>
+				<p class="meta">/pages/study/participants/index.html</p>
+				<p class="meta">Participants page for a study.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participants/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/study__study-participants__default.png"><img loading="lazy" src="screenshots/study__study-participants__default.png" alt="Participants: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="study-session">
+			<div class="page-card__header">
+				<h3>Study session</h3>
+				<p class="meta">/pages/study/session/index.html</p>
+				<p class="meta">Session running and note capture page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/session/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/study__study-session__default.png"><img loading="lazy" src="screenshots/study__study-session__default.png" alt="Study session: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="study-consent-forms">
+			<div class="page-card__header">
+				<h3>Study consent forms</h3>
+				<p class="meta">/pages/study/consent-forms/index.html</p>
+				<p class="meta">Study-specific consent form configuration page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/consent-forms/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/study__study-consent-forms__default.png"><img loading="lazy" src="screenshots/study__study-consent-forms__default.png" alt="Study consent forms: Default state" /></a>
+				</section>
+			</div>
+		</article>
+	</section>
+	<section class="group" id="utilities">
+		<h2>Utilities</h2>
+		
+		<article class="page-card" id="search">
+			<div class="page-card__header">
+				<h3>Search</h3>
+				<p class="meta">/pages/search/index.html</p>
+				<p class="meta">Search page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/search/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/utilities__search__default.png"><img loading="lazy" src="screenshots/utilities__search__default.png" alt="Search: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="notes">
+			<div class="page-card__header">
+				<h3>Notes</h3>
+				<p class="meta">/pages/notes/index.html</p>
+				<p class="meta">Notes page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/notes/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/utilities__notes__default.png"><img loading="lazy" src="screenshots/utilities__notes__default.png" alt="Notes: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="consent">
+			<div class="page-card__header">
+				<h3>Consent</h3>
+				<p class="meta">/pages/consent/index.html</p>
+				<p class="meta">Consent page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/consent/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/utilities__consent__default.png"><img loading="lazy" src="screenshots/utilities__consent__default.png" alt="Consent: Default state" /></a>
+				</section>
+			</div>
+		</article>
+		<article class="page-card" id="sessions">
+			<div class="page-card__header">
+				<h3>Sessions</h3>
+				<p class="meta">/pages/sessions/index.html</p>
+				<p class="meta">Sessions list page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/sessions/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/utilities__sessions__default.png"><img loading="lazy" src="screenshots/utilities__sessions__default.png" alt="Sessions: Default state" /></a>
+				</section>
+			</div>
+		</article>
+	</section>
+	<section class="group" id="analysis">
+		<h2>Analysis</h2>
+		
+		<article class="page-card" id="synthesize">
+			<div class="page-card__header">
+				<h3>Synthesize</h3>
+				<p class="meta">/pages/synthesize/index.html</p>
+				<p class="meta">Synthesis page.</p>
+			</div>
+			<div class="states">
+				
+				<section class="state ">
+					<div class="state__header">
+						<h4>Default state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/index.html</p>
+						<p>Initial loaded page state.</p>
+						
+					</div>
+					<a href="screenshots/analysis__synthesize__default.png"><img loading="lazy" src="screenshots/analysis__synthesize__default.png" alt="Synthesize: Default state" /></a>
+				</section>
+			</div>
+		</article>
+	</section>
 </body>
-
 </html>

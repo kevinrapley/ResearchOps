@@ -1,0 +1,300 @@
+{
+  "title": "ResearchOps application visual walkthrough",
+  "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
+  "startedAt": "2026-04-30T16:48:53.134Z",
+  "baseURL": "https://researchops.pages.dev/",
+  "pageCount": 16,
+  "stateCount": 16,
+  "failureCount": 0,
+  "pages": [
+    {
+      "id": "home",
+      "title": "Home",
+      "group": "Core",
+      "path": "/",
+      "description": "ResearchOps landing page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/",
+          "durationMs": 1008,
+          "screenshot": "screenshots/core__home__default.png"
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "title": "Start research project",
+      "group": "Core",
+      "path": "/pages/start/index.html",
+      "description": "Start page for creating or beginning research project work.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
+          "durationMs": 1024,
+          "screenshot": "screenshots/core__start__default.png"
+        }
+      ]
+    },
+    {
+      "id": "projects",
+      "title": "Projects",
+      "group": "Projects",
+      "path": "/pages/projects/index.html",
+      "description": "Project list page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/projects/index.html",
+          "durationMs": 3490,
+          "screenshot": "screenshots/projects__projects__default.png"
+        }
+      ]
+    },
+    {
+      "id": "project-dashboard",
+      "title": "Project dashboard",
+      "group": "Projects",
+      "path": "/pages/project-dashboard/index.html",
+      "description": "Project dashboard page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
+          "durationMs": 1617,
+          "screenshot": "screenshots/projects__project-dashboard__default.png"
+        }
+      ]
+    },
+    {
+      "id": "outcomes",
+      "title": "Project outcomes",
+      "group": "Projects",
+      "path": "/pages/projects/outcomes/index.html",
+      "description": "Outcomes page for project-level findings and outputs.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
+          "durationMs": 1278,
+          "screenshot": "screenshots/projects__outcomes__default.png"
+        }
+      ]
+    },
+    {
+      "id": "journals",
+      "title": "Project journals",
+      "group": "Projects",
+      "path": "/pages/projects/journals/index.html",
+      "description": "Reflexive journal page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
+          "durationMs": 1459,
+          "screenshot": "screenshots/projects__journals__default.png"
+        }
+      ]
+    },
+    {
+      "id": "study",
+      "title": "Study overview",
+      "group": "Study",
+      "path": "/pages/study/index.html",
+      "description": "Study overview and readiness controls.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/study/index.html",
+          "durationMs": 1264,
+          "screenshot": "screenshots/study__study__default.png"
+        }
+      ]
+    },
+    {
+      "id": "study-guides",
+      "title": "Discussion guides",
+      "group": "Study",
+      "path": "/pages/study/guides/index.html",
+      "description": "Discussion guide list and editor page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/study/guides/index.html",
+          "durationMs": 1591,
+          "screenshot": "screenshots/study__study-guides__default.png"
+        }
+      ]
+    },
+    {
+      "id": "study-participants",
+      "title": "Participants",
+      "group": "Study",
+      "path": "/pages/study/participants/index.html",
+      "description": "Participants page for a study.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/study/participants/index.html",
+          "durationMs": 1324,
+          "screenshot": "screenshots/study__study-participants__default.png"
+        }
+      ]
+    },
+    {
+      "id": "study-session",
+      "title": "Study session",
+      "group": "Study",
+      "path": "/pages/study/session/index.html",
+      "description": "Session running and note capture page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/study/session/index.html",
+          "durationMs": 1301,
+          "screenshot": "screenshots/study__study-session__default.png"
+        }
+      ]
+    },
+    {
+      "id": "study-consent-forms",
+      "title": "Study consent forms",
+      "group": "Study",
+      "path": "/pages/study/consent-forms/index.html",
+      "description": "Study-specific consent form configuration page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
+          "durationMs": 1227,
+          "screenshot": "screenshots/study__study-consent-forms__default.png"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "title": "Search",
+      "group": "Utilities",
+      "path": "/pages/search/index.html",
+      "description": "Search page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/search/index.html",
+          "durationMs": 1131,
+          "screenshot": "screenshots/utilities__search__default.png"
+        }
+      ]
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "group": "Utilities",
+      "path": "/pages/notes/index.html",
+      "description": "Notes page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/notes/index.html",
+          "durationMs": 1190,
+          "screenshot": "screenshots/utilities__notes__default.png"
+        }
+      ]
+    },
+    {
+      "id": "consent",
+      "title": "Consent",
+      "group": "Utilities",
+      "path": "/pages/consent/index.html",
+      "description": "Consent page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/consent/index.html",
+          "durationMs": 1123,
+          "screenshot": "screenshots/utilities__consent__default.png"
+        }
+      ]
+    },
+    {
+      "id": "sessions",
+      "title": "Sessions",
+      "group": "Utilities",
+      "path": "/pages/sessions/index.html",
+      "description": "Sessions list page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/sessions/index.html",
+          "durationMs": 1105,
+          "screenshot": "screenshots/utilities__sessions__default.png"
+        }
+      ]
+    },
+    {
+      "id": "synthesize",
+      "title": "Synthesize",
+      "group": "Analysis",
+      "path": "/pages/synthesize/index.html",
+      "description": "Synthesis page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Default state",
+          "description": "Initial loaded page state.",
+          "status": "captured",
+          "url": "https://researchops.pages.dev/pages/synthesize/index.html",
+          "durationMs": 1189,
+          "screenshot": "screenshots/analysis__synthesize__default.png"
+        }
+      ]
+    }
+  ],
+  "failures": []
+}
