@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: security-audit-${{ github.ref }}
@@ -50,18 +49,6 @@ jobs:
             artifacts/release-gate/security-audit-policy-stdout.json
           if-no-files-found: warn
           retention-days: 14
-
-      - name: Convert audit report to SARIF
-        if: always() && hashFiles('artifacts/release-gate/security-audit-raw.json') != ''
-        continue-on-error: true
-        run: npx audit2sarif@3 artifacts/release-gate/security-audit-raw.json > npm-audit.sarif
-
-      - name: Upload SARIF to GitHub Security tab
-        if: always() && hashFiles('npm-audit.sarif') != ''
-        continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: npm-audit.sarif
 
       - name: Add summary
         if: always()
