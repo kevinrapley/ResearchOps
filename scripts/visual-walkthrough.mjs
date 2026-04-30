@@ -145,6 +145,31 @@ async function settlePage(page) {
 	await page.waitForTimeout(200);
 }
 
+/** Register deterministic network fixtures declared in the registry state. */
+async function registerMockRoutes(page, stateConfig) {
+	for (const mockRoute of stateConfig.mockRoutes || []) {
+		await page.route(mockRoute.url, async (route) => {
+			const request = route.request();
+			const requestMethod = request.method().toUpperCase();
+			const expectedMethod = String(mockRoute.method || requestMethod).toUpperCase();
+
+			if (requestMethod !== expectedMethod) {
+				await route.fallback();
+				return;
+			}
+
+			const body = typeof mockRoute.body === 'string' ? mockRoute.body : JSON.stringify(mockRoute.body ?? {});
+
+			await route.fulfill({
+				status: mockRoute.status ?? 200,
+				contentType: mockRoute.contentType || 'application/json',
+				headers: mockRoute.headers || {},
+				body,
+			});
+		});
+	}
+}
+
 /** Run an interaction action declared in the registry. */
 async function runAction(page, action) {
 	const timeout = action.timeout ?? 5000;
@@ -216,6 +241,8 @@ async function captureState(browser, pageConfig, stateConfig) {
 	const started = Date.now();
 
 	try {
+		await registerMockRoutes(page, stateConfig);
+
 		const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
 		if (!response) {
