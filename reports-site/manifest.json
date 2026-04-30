@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-04-30T20:17:42.244Z",
+  "startedAt": "2026-04-30T20:19:39.474Z",
   "baseURL": "https://researchops.pages.dev/",
   "pageCount": 16,
   "stateCount": 22,
@@ -20,7 +20,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/",
-          "durationMs": 1125,
+          "durationMs": 987,
           "screenshot": "screenshots/core__home__default.png"
         }
       ]
@@ -38,7 +38,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 1111,
+          "durationMs": 1004,
           "screenshot": "screenshots/core__start__default.png"
         },
         {
@@ -47,7 +47,7 @@
           "description": "Project name, description, phase and status entered using believable discovery-stage dummy data.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 1988,
+          "durationMs": 1820,
           "screenshot": "screenshots/core__start__step-1-filled.png"
         },
         {
@@ -56,7 +56,7 @@
           "description": "Second wizard step after a valid project definition has been entered on step 1.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 2415,
+          "durationMs": 2266,
           "screenshot": "screenshots/core__start__step-2-default.png"
         },
         {
@@ -65,7 +65,7 @@
           "description": "Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3025,
+          "durationMs": 2916,
           "screenshot": "screenshots/core__start__step-2-filled-no-ai.png"
         },
         {
@@ -74,7 +74,7 @@
           "description": "Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3710,
+          "durationMs": 3601,
           "screenshot": "screenshots/core__start__step-2-ai-rewrite-shown.png"
         },
         {
@@ -83,7 +83,7 @@
           "description": "Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3420,
+          "durationMs": 3251,
           "screenshot": "screenshots/core__start__step-3-default.png"
         },
         {
@@ -92,7 +92,7 @@
           "description": "Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 4136,
+          "durationMs": 3903,
           "screenshot": "screenshots/core__start__step-3-filled.png"
         }
       ]
@@ -110,7 +110,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/index.html",
-          "durationMs": 3764,
+          "durationMs": 1927,
           "screenshot": "screenshots/projects__projects__default.png"
         }
       ]
@@ -128,7 +128,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-          "durationMs": 1632,
+          "durationMs": 1501,
           "screenshot": "screenshots/projects__project-dashboard__default.png"
         }
       ]
@@ -146,7 +146,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-          "durationMs": 1196,
+          "durationMs": 1045,
           "screenshot": "screenshots/projects__outcomes__default.png"
         }
       ]
@@ -164,7 +164,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-          "durationMs": 1147,
+          "durationMs": 1077,
           "screenshot": "screenshots/projects__journals__default.png"
         }
       ]
@@ -182,7 +182,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/index.html",
-          "durationMs": 1171,
+          "durationMs": 1017,
           "screenshot": "screenshots/study__study__default.png"
         }
       ]
@@ -200,7 +200,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-          "durationMs": 1178,
+          "durationMs": 998,
           "screenshot": "screenshots/study__study-guides__default.png"
         }
       ]
@@ -218,7 +218,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-          "durationMs": 1197,
+          "durationMs": 1027,
           "screenshot": "screenshots/study__study-participants__default.png"
         }
       ]
@@ -236,7 +236,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/session/index.html",
-          "durationMs": 1161,
+          "durationMs": 958,
           "screenshot": "screenshots/study__study-session__default.png"
         }
       ]
@@ -254,7 +254,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-          "durationMs": 1178,
+          "durationMs": 990,
           "screenshot": "screenshots/study__study-consent-forms__default.png"
         }
       ]
@@ -272,7 +272,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/search/index.html",
-          "durationMs": 1110,
+          "durationMs": 932,
           "screenshot": "screenshots/utilities__search__default.png"
         }
       ]
@@ -290,7 +290,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/notes/index.html",
-          "durationMs": 1109,
+          "durationMs": 949,
           "screenshot": "screenshots/utilities__notes__default.png"
         }
       ]
@@ -308,7 +308,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/consent/index.html",
-          "durationMs": 1054,
+          "durationMs": 907,
           "screenshot": "screenshots/utilities__consent__default.png"
         }
       ]
@@ -326,7 +326,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/sessions/index.html",
-          "durationMs": 1090,
+          "durationMs": 931,
           "screenshot": "screenshots/utilities__sessions__default.png"
         }
       ]
@@ -344,7 +344,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-          "durationMs": 1091,
+          "durationMs": 980,
           "screenshot": "screenshots/analysis__synthesize__default.png"
         }
       ]
