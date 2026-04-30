@@ -7,11 +7,14 @@ on:
 
 permissions:
   contents: read
-  security-events: write # enables SARIF uploads for GitHub Security tab (optional)
+  security-events: write
 
 concurrency:
   group: security-audit-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   npm-audit:
@@ -33,39 +36,46 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Run audit in non-failing mode to avoid blocking builds,
-      # but still capture actionable output.
-      - name: Run npm audit (high severity and above)
-        run: |
-          npm audit --audit-level=high --json > npm-audit.json || true
-          npm audit --audit-level=high || true
+      - name: Run policy-classified npm audit
+        run: npm run audit:security
 
-      # Optional: upload audit results for triage or retention
-      - name: Upload audit report
+      - name: Upload policy audit reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: npm-audit-report
-          path: npm-audit.json
-          if-no-files-found: ignore
+          name: npm-audit-policy-report
+          path: |
+            artifacts/release-gate/security-audit-raw.json
+            artifacts/release-gate/security-audit-policy-report.json
+            artifacts/release-gate/security-audit-policy-stdout.json
+          if-no-files-found: warn
           retention-days: 14
 
-      # Optional: GitHub Security Dashboard integration (SARIF)
       - name: Convert audit report to SARIF
-        if: always()
-        run: npx audit2sarif@3 npm-audit.json > npm-audit.sarif || true
+        if: always() && hashFiles('artifacts/release-gate/security-audit-raw.json') != ''
+        continue-on-error: true
+        run: npx audit2sarif@3 artifacts/release-gate/security-audit-raw.json > npm-audit.sarif
 
       - name: Upload SARIF to GitHub Security tab
-        if: always()
+        if: always() && hashFiles('npm-audit.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: npm-audit.sarif
 
-      # Optional: summary for the GitHub Actions job
       - name: Add summary
         if: always()
+        shell: bash
         run: |
-          echo "## NPM Audit (high+)" >> $GITHUB_STEP_SUMMARY
-          echo "- Schedule: Mondays 06:00 UTC" >> $GITHUB_STEP_SUMMARY
-          echo "- Report artifact: **npm-audit-report**" >> $GITHUB_STEP_SUMMARY
-          echo "- SARIF uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
+          echo "## Security & dependencies" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Schedule: Mondays 06:00 UTC" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Audit decision: governed by \`security-audit-policy.json\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Report artifact: \`npm-audit-policy-report\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "artifacts/release-gate/security-audit-policy-stdout.json" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Policy result" >> "$GITHUB_STEP_SUMMARY"
+            echo "\`\`\`json" >> "$GITHUB_STEP_SUMMARY"
+            cat artifacts/release-gate/security-audit-policy-stdout.json >> "$GITHUB_STEP_SUMMARY"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          fi
