@@ -1,0 +1,65 @@
+name: Release Provenance
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release-provenance:
+    name: Release provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate repository contract
+        run: npm run validate
+
+      - name: Lint and format check
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Generate release provenance artifacts
+        run: node scripts/release-provenance.mjs --output-dir artifacts/release-provenance
+
+      - name: Package release provenance artifacts
+        run: tar -czf artifacts/researchops-release-provenance.tgz -C artifacts/release-provenance .
+
+      - name: Generate GitHub artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: artifacts/researchops-release-provenance.tgz
+
+      - name: Upload release provenance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: researchops-release-provenance
+          path: |
+            artifacts/release-provenance/
+            artifacts/researchops-release-provenance.tgz
+          if-no-files-found: error
+          retention-days: 90

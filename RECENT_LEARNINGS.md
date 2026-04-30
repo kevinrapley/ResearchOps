@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-30 — Release provenance needs trusted attestation
+
+Context: Local provenance files are useful release evidence, but they are not equivalent to a trusted signed attestation.
+
+Learning: Release provenance should separate supporting metadata from trusted attestation. A DSSE-shaped local file is evidence metadata unless it is signed and verified through a trusted mechanism.
+
+Action: Use the Release Provenance workflow for tagged releases, upload the generated provenance bundle, and verify the GitHub artifact attestation before treating the provenance as trusted.
+
 ## 2026-04-30 — Deployment tools must be pinned
 
 Context: The Worker deployment workflow used `wrangler@latest`, which allowed the deployment toolchain to change without a repository change.

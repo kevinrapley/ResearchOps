@@ -54,13 +54,15 @@ gaps:
 
   - id: release-provenance-artifacts
     title: Add signed or attested release artifacts
-    status: open
+    status: implemented
     severity: medium
     owner: repository-maintainers
-    context: The repository now has release-gate artifacts but does not yet publish signed or attested release artifacts for each tagged ResearchOps release.
-    mitigation: Add a release provenance workflow after the Release Gate is stable and branch protection is enabled.
+    context: The repository now has release provenance generation and a GitHub artifact attestation workflow for tagged releases.
+    mitigation: Run the Release Provenance workflow on tagged releases and verify the generated attestation before treating release provenance as trusted.
     evidence:
-      - .github/workflows/release-gate.yml
+      - .github/workflows/release-provenance.yml
+      - scripts/release-provenance.mjs
+      - release-provenance-policy.yaml
 
   - id: live-github-settings-verification
     title: Verify repository settings from GitHub's server state

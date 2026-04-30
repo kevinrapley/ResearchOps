@@ -5,8 +5,8 @@ release:
   prepared_at: 2026-04-30
   current_baseline:
     branch: main
-    latest_known_commit: c9aea09679b491f4b314faab1a5a330175a438db
-    source: GitHub repository state after PR #124 merge
+    latest_known_commit: 0a700556857e5604dba145bac977f77c14811056
+    source: GitHub repository state after PR #125 merge
     note: Confirm or regenerate this commit reference at release time before treating it as authoritative release evidence.
   controls:
     ci:
@@ -27,6 +27,16 @@ release:
         - PR #119
       artifacts:
         - researchops-release-gate
+    release_provenance:
+      status: implemented
+      evidence:
+        - .github/workflows/release-provenance.yml
+        - scripts/release-provenance.mjs
+        - release-provenance-policy.yaml
+        - docs/release-assurance/release-provenance.md
+      artifacts:
+        - researchops-release-provenance
+      note: Trusted release provenance depends on a completed GitHub artifact attestation for the tagged release artifact. Local DSSE-shaped evidence is supporting metadata, not a cryptographic signature.
     accessibility:
       status: implemented
       evidence:
@@ -70,5 +80,6 @@ release:
     - Confirm no unreviewed runtime or unknown-scope high or critical dependency issue is being promoted.
     - Confirm Cloudflare deployment secrets are present and scoped appropriately.
     - Confirm Wrangler version evidence matches deployment-toolchain.yaml and the deployment workflow.
+    - Confirm release provenance artifacts and GitHub artifact attestation exist for the tagged release.
     - Confirm branch protection requires pull request review and required checks.
     - Confirm release evidence commit references match the release commit.
