@@ -5,7 +5,7 @@
  * @summary Cucumber hooks for browser cleanup, screenshot capture and walkthrough generation.
  */
 
-import { Before, After, AfterAll, AfterStep, Status } from '@cucumber/cucumber';
+import { Before, After, AfterAll, AfterStep } from '@cucumber/cucumber';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -76,7 +76,7 @@ AfterStep(async function ({ pickleStep, result }) {
 
 	const stepText = pickleStep.text;
 	const idx = pad(this.stepIndex);
-	const status = result?.status ?? Status.UNKNOWN;
+	const status = result?.status ?? 'unknown';
 
 	const shotFile = `${this.scenario.slug}__${idx}--${slugify(stepText)}.png`;
 	const shotPath = join(SCREENSHOTS_DIR, shotFile);
