@@ -14,9 +14,9 @@
     "test": "node --test",
     "test:e2e": "playwright test",
     "qa:browsers": "playwright install chromium",
-    "qa:cucumber": "cucumber-js -p ci",
-    "qa:cucumber:ci": "cucumber-js -p ci",
-    "qa:cucumber:walkthrough": "cucumber-js -p walkthrough"
+    "qa:cucumber": "cucumber-js -p default",
+    "qa:cucumber:ci": "cucumber-js -p default",
+    "qa:cucumber:walkthrough": "BDD_CAPTURE_SCREENSHOTS=true cucumber-js -p default"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
