@@ -7,6 +7,11 @@ on:
         description: "Base URL to test"
         required: false
         type: string
+      publish_pages:
+        description: "Publish the BDD walkthrough to GitHub Pages"
+        required: false
+        default: false
+        type: boolean
   pull_request:
   push:
     branches: [main]
@@ -181,7 +186,13 @@ jobs:
           retention-days: 14
 
       - name: Upload Pages artifact
-        if: always() && steps.detect_site.outputs.present == 'true'
+        if: >-
+          ${{
+            always() &&
+            steps.detect_site.outputs.present == 'true' &&
+            github.event_name == 'workflow_dispatch' &&
+            inputs.publish_pages == true
+          }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: reports-site
@@ -192,7 +203,9 @@ jobs:
       ${{
         always() &&
         needs.walkthrough.result == 'success' &&
-        needs.walkthrough.outputs.has_site == 'true'
+        needs.walkthrough.outputs.has_site == 'true' &&
+        github.event_name == 'workflow_dispatch' &&
+        inputs.publish_pages == true
       }}
     runs-on: ubuntu-24.04
 
