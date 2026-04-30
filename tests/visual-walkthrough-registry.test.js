@@ -26,7 +26,9 @@ function listHtmlFiles(dir) {
 }
 
 function routeFromPublicFile(filePath) {
-	const relativePath = path.relative(visualWalkthroughConfig.publicRoot, filePath).replaceAll(path.sep, '/');
+	const relativePath = path
+		.relative(visualWalkthroughConfig.publicRoot, filePath)
+		.replaceAll(path.sep, '/');
 
 	if (relativePath === 'index.html') return '/';
 
@@ -48,9 +50,25 @@ for (const route of discoveredRoutes) {
 }
 
 for (const page of visualWalkthroughConfig.pages) {
-	assert.equal(page.path.startsWith('/'), true, `Expected registered path to start with /: ${page.path}`);
-	assert.equal(Boolean(page.title), true, `Expected registered page to have a title: ${page.id}`);
-	assert.equal(Boolean(page.group), true, `Expected registered page to have a group: ${page.id}`);
+	assert.equal(
+		page.path.startsWith('/'),
+		true,
+		`Expected registered path to start with /: ${page.path}`
+	);
+	assert.equal(
+		Boolean(page.title),
+		true,
+		`Expected registered page to have a title: ${page.id}`
+	);
+	assert.equal(
+		Boolean(page.group),
+		true,
+		`Expected registered page to have a group: ${page.id}`
+	);
 }
 
-assert.equal(new Set(registeredIds).size, registeredIds.length, 'Expected registered page ids to be unique');
+assert.equal(
+	new Set(registeredIds).size,
+	registeredIds.length,
+	'Expected registered page ids to be unique'
+);
