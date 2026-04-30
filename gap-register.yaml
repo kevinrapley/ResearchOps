@@ -41,14 +41,16 @@ gaps:
 
   - id: deployment-tool-pinning
     title: Pin Wrangler deployment tooling
-    status: open
+    status: implemented
     severity: medium
     owner: repository-maintainers
-    context: The deploy workflow uses wrangler through npx with latest resolution, which is convenient but less deterministic than a pinned toolchain.
-    mitigation: Pin Wrangler to a known version and document upgrade cadence.
+    context: The deploy workflow now uses a pinned Wrangler version through `WRANGLER_VERSION` instead of `wrangler@latest`.
+    mitigation: Keep `.github/workflows/deploy-worker.yml` aligned with `deployment-toolchain.yaml`, and review the pinned Wrangler version before tagged releases or Cloudflare compatibility changes.
     evidence:
       - .github/workflows/deploy-worker.yml
       - infra/cloudflare/wrangler.toml
+      - deployment-toolchain.yaml
+      - docs/deployment/wrangler-toolchain.md
 
   - id: release-provenance-artifacts
     title: Add signed or attested release artifacts
