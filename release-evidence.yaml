@@ -5,8 +5,8 @@ release:
   prepared_at: 2026-04-29
   current_baseline:
     branch: main
-    latest_known_commit: 9ebee3c38d5dd16492c651a9be47bb35fd66125f
-    source: GitHub repository state after PR #122 merge
+    latest_known_commit: 74d34c9b91a9f0da06e124dde1c5a52533bba112
+    source: GitHub repository state after PR #123 merge
     note: Confirm or regenerate this commit reference at release time before treating it as authoritative release evidence.
   controls:
     ci:
@@ -33,10 +33,14 @@ release:
         - .github/workflows/accessibility.yml
       note: Main has a clean accessibility baseline. Future accessibility remediation must start from failing artifacts or a failing main baseline.
     security:
-      status: partially-implemented
+      status: implemented
       evidence:
         - .github/workflows/security.yml
-      note: npm audit is currently advisory in the release gate pending dependency triage.
+        - security-audit-policy.json
+        - security-audit-triage.yaml
+        - scripts/security-audit-policy.sh
+        - scripts/security-audit-policy.mjs
+      note: The Release Gate now runs a policy-based security audit. Runtime high or critical findings block release. Unknown-scope high or critical findings block release until classified. Development-only critical findings block release. Development-only low, moderate and high findings remain advisory and must be tracked for remediation.
     deployment:
       status: implemented
       evidence:
@@ -59,7 +63,8 @@ release:
   required_manual_checks_before_release:
     - Confirm Release Gate has passed on the release commit.
     - Confirm Accessibility audit is clean on main.
-    - Confirm no unreviewed high-risk dependency issue is being promoted.
+    - Confirm security-audit-policy.json still matches the intended risk appetite.
+    - Confirm no unreviewed runtime or unknown-scope high or critical dependency issue is being promoted.
     - Confirm Cloudflare deployment secrets are present and scoped appropriately.
     - Confirm branch protection requires pull request review and required checks.
     - Confirm release evidence commit references match the release commit.
