@@ -177,8 +177,18 @@ async function listProjects() {
 	}
 }
 
+function projectDashboardHref(projectId) {
+	return `/pages/project-dashboard/?id=${encodeURIComponent(projectId || "")}`;
+}
+
+function projectDashboardLabel(project) {
+	return `View dashboard for ${project.name || "this project"}`;
+}
+
 function projectCard(project) {
 	const projectId = encodeURIComponent(project.id || "");
+	const dashboardHref = projectDashboardHref(project.id || "");
+	const dashboardLabel = escapeHtml(projectDashboardLabel(project));
 	const groups = (project.user_groups || [])
 		.map(group => `<li><span class="tag">${escapeHtml(group)}</span></li>`)
 		.join("");
@@ -196,10 +206,13 @@ function projectCard(project) {
 <article class="card" aria-labelledby="project-title-${projectId}">
 	<p class="project-org">${escapeHtml(project.org || project.Org || "Home Office Biometrics")}</p>
 	<h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
-		<a class="govuk-link" href="/pages/project-dashboard/?id=${projectId}" rel="bookmark">${escapeHtml(project.name)}</a>
+		<a class="govuk-link" href="${dashboardHref}" rel="bookmark">${escapeHtml(project.name)}</a>
 	</h2>
 	<p class="project-meta"><strong>Phase:</strong> ${escapeHtml(project["rops:servicePhase"] || "")} · <strong>Status:</strong> ${escapeHtml(project["rops:projectStatus"] || "")}</p>
 	${project.description ? `<section class="project-summary"><p>${escapeHtml(project.description)}</p></section>` : ""}
+	<p class="project-actions">
+		<a class="govuk-button govuk-button--secondary project-dashboard-action" href="${dashboardHref}" aria-label="${dashboardLabel}">View dashboard</a>
+	</p>
 	${project.user_groups?.length ? `<section class="user-groups" aria-labelledby="user-groups-${projectId}"><h3 id="user-groups-${projectId}" class="project-groups-title">User Groups</h3><ul class="tags" role="list">${groups}</ul></section>` : ""}
 	<section class="project-extra">
 		<details class="project-details">
