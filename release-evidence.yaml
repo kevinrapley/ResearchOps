@@ -2,11 +2,11 @@ release:
   repository: kevinrapley/ResearchOps
   release_profile: standard
   evidence_version: 1
-  prepared_at: 2026-04-29
+  prepared_at: 2026-04-30
   current_baseline:
     branch: main
-    latest_known_commit: 74d34c9b91a9f0da06e124dde1c5a52533bba112
-    source: GitHub repository state after PR #123 merge
+    latest_known_commit: c9aea09679b491f4b314faab1a5a330175a438db
+    source: GitHub repository state after PR #124 merge
     note: Confirm or regenerate this commit reference at release time before treating it as authoritative release evidence.
   controls:
     ci:
@@ -46,6 +46,9 @@ release:
       evidence:
         - .github/workflows/deploy-worker.yml
         - infra/cloudflare/wrangler.toml
+        - deployment-toolchain.yaml
+        - docs/deployment/wrangler-toolchain.md
+      note: Wrangler deployment tooling is pinned. Do not use wrangler@latest in release or deployment workflows.
     governance:
       status: implemented
       evidence:
@@ -66,5 +69,6 @@ release:
     - Confirm security-audit-policy.json still matches the intended risk appetite.
     - Confirm no unreviewed runtime or unknown-scope high or critical dependency issue is being promoted.
     - Confirm Cloudflare deployment secrets are present and scoped appropriately.
+    - Confirm Wrangler version evidence matches deployment-toolchain.yaml and the deployment workflow.
     - Confirm branch protection requires pull request review and required checks.
     - Confirm release evidence commit references match the release commit.

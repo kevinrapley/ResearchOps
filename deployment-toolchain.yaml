@@ -1,0 +1,26 @@
+deployment_toolchain:
+  repository: kevinrapley/ResearchOps
+  evidence_version: 1
+  prepared_at: 2026-04-30
+  cloudflare_worker:
+    tool: wrangler
+    version: 4.34.0
+    invocation: npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/wrangler.toml
+    workflow: .github/workflows/deploy-worker.yml
+    config: infra/cloudflare/wrangler.toml
+  policy:
+    pinning_required: true
+    floating_latest_allowed: false
+    upgrade_cadence: Review before tagged releases or when Cloudflare requires a compatibility update.
+    validation_before_upgrade:
+      - npm ci
+      - npm run validate
+      - npm run lint
+      - npm test
+      - npx --yes wrangler@${WRANGLER_VERSION} --version
+    rollback:
+      method: Revert the Wrangler version change in deployment-toolchain.yaml and .github/workflows/deploy-worker.yml.
+  notes:
+    - Keep WRANGLER_VERSION in the workflow aligned with this file.
+    - Do not use wrangler@latest in release or deployment workflows.
+    - Record the deployed Wrangler version in workflow logs before deploy.
