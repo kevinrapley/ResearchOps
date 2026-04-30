@@ -7,20 +7,20 @@ cd "$ROOT_DIR"
 OUTPUT_DIR="${SECURITY_AUDIT_OUTPUT_DIR:-artifacts/release-gate}"
 RAW_REPORT="$OUTPUT_DIR/security-audit-raw.json"
 POLICY_REPORT="$OUTPUT_DIR/security-audit-policy-report.json"
+POLICY_STDOUT="$OUTPUT_DIR/security-audit-policy-stdout.json"
 
 mkdir -p "$OUTPUT_DIR"
 
 set +e
 npm audit --audit-level=low --json > "$RAW_REPORT"
 NPM_AUDIT_EXIT="$?"
-set -e
-
 node scripts/security-audit-policy.mjs \
 	--audit "$RAW_REPORT" \
-	--output "$POLICY_REPORT"
-
+	--output "$POLICY_REPORT" > "$POLICY_STDOUT"
 POLICY_EXIT="$?"
-cat "$POLICY_REPORT"
+set -e
+
+cat "$POLICY_STDOUT"
 
 if [ "$POLICY_EXIT" -ne 0 ]; then
 	exit "$POLICY_EXIT"
