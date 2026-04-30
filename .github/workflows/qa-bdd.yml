@@ -15,6 +15,8 @@ on:
   pull_request:
   push:
     branches: [main]
+    paths-ignore:
+      - "reports-site/**"
   workflow_run:
     workflows: ["QA • Playwright E2E"]
     types: [completed]
@@ -76,10 +78,12 @@ jobs:
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Preflight BASE_URL
+      - name: Diagnose BASE_URL
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
+            && echo "BASE_URL responded before BDD run." \
+            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
       - name: Run BDD smoke suite
         run: npm run qa:cucumber:ci
@@ -109,7 +113,7 @@ jobs:
     timeout-minutes: 10
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -143,10 +147,12 @@ jobs:
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Preflight BASE_URL
+      - name: Diagnose BASE_URL
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
+            && echo "BASE_URL responded before BDD run." \
+            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
       - name: Run BDD visual walkthrough
         run: npm run qa:cucumber:walkthrough
@@ -184,6 +190,30 @@ jobs:
           path: reports-site
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Persist walkthrough site to repository
+        if: >-
+          ${{
+            steps.detect_site.outputs.present == 'true' &&
+            github.event_name == 'workflow_dispatch' &&
+            inputs.publish_reporting_site == true &&
+            github.ref == 'refs/heads/main'
+          }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A reports-site
+
+          if git diff --cached --quiet; then
+            echo "No reports-site changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Update BDD walkthrough report"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
       - name: Record Wrangler toolchain version
         if: >-
@@ -244,5 +274,6 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "The visual walkthrough has been uploaded as the \`walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
+            echo "The \`reports-site\` directory was persisted to the repository." >> "$GITHUB_STEP_SUMMARY"
             echo "It was also deployed and verified at ${REPORTING_PAGES_URL}." >> "$GITHUB_STEP_SUMMARY"
           fi
