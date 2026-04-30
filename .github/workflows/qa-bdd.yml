@@ -78,10 +78,12 @@ jobs:
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Preflight BASE_URL
+      - name: Diagnose BASE_URL
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
+            && echo "BASE_URL responded before BDD run." \
+            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
       - name: Run BDD smoke suite
         run: npm run qa:cucumber:ci
@@ -145,10 +147,12 @@ jobs:
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Preflight BASE_URL
+      - name: Diagnose BASE_URL
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --max-time 10 --retry 2 "$BASE_URL" >/dev/null
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
+            && echo "BASE_URL responded before BDD run." \
+            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
       - name: Run BDD visual walkthrough
         run: npm run qa:cucumber:walkthrough
