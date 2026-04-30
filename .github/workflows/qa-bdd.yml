@@ -7,11 +7,6 @@ on:
         description: "Base URL to test"
         required: false
         type: string
-      publish_pages:
-        description: "Publish the BDD walkthrough to GitHub Pages"
-        required: false
-        default: false
-        type: boolean
   pull_request:
   push:
     branches: [main]
@@ -108,9 +103,6 @@ jobs:
     permissions:
       contents: read
 
-    outputs:
-      has_site: ${{ steps.detect_site.outputs.present }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -185,49 +177,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload Pages artifact
-        if: >-
-          ${{
-            always() &&
-            steps.detect_site.outputs.present == 'true' &&
-            github.event_name == 'workflow_dispatch' &&
-            inputs.publish_pages == true
-          }}
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: reports-site
-
-  deploy:
-    needs: walkthrough
-    if: >-
-      ${{
-        always() &&
-        needs.walkthrough.result == 'success' &&
-        needs.walkthrough.outputs.has_site == 'true' &&
-        github.event_name == 'workflow_dispatch' &&
-        inputs.publish_pages == true
-      }}
-    runs-on: ubuntu-24.04
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-
-    steps:
-      - name: Deploy walkthrough to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
-
       - name: Add job summary
+        if: always() && steps.detect_site.outputs.present == 'true'
         shell: bash
         run: |
-          URL="${{ steps.deploy.outputs.page_url }}"
           echo "## BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Open the gallery:** ${URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough has been uploaded as the \`walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
+          echo "Download and open \`index.html\` from the artifact to review the walkthrough." >> "$GITHUB_STEP_SUMMARY"
