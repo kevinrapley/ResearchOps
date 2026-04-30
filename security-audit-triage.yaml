@@ -14,7 +14,10 @@ triage:
     development_dependencies: 349
   decision:
     release_blocking: false
-    rationale: Current observed findings are in development and QA tooling, not in the production runtime dependency surface. They remain visible in release-gate evidence and should be remediated through dependency upgrades where safe.
+    rationale: >-
+      Current observed findings are in development and QA tooling, not in the
+      production runtime dependency surface. They remain visible in release-gate
+      evidence and should be remediated through dependency upgrades where safe.
   known_findings:
     - package: flatted
       severity: high
@@ -47,13 +50,13 @@ triage:
         - GHSA-2g4f-4pwh-qvx6
       decision: advisory
       remediation: Upgrade direct and transitive dependency where compatible.
-    - package: '@cucumber/cucumber'
+    - package: "@cucumber/cucumber"
       severity: moderate
       scope: development
       via:
-        - '@cucumber/gherkin'
-        - '@cucumber/gherkin-utils'
-        - '@cucumber/messages'
+        - "@cucumber/gherkin"
+        - "@cucumber/gherkin-utils"
+        - "@cucumber/messages"
       decision: advisory
       remediation: Assess major upgrade to Cucumber after checking BDD suite compatibility.
   required_next_steps:
