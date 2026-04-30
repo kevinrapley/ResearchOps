@@ -14,6 +14,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "Projects page");
+includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "Projects page");
 includes(pageSource, "href=\"/css/projects.css\"", "Projects page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/projects-page.js\"", "Projects page");
 includes(pageSource, "src=\"/js/projects-page.js\"", "Projects page");
@@ -25,6 +26,10 @@ includes(stylesheetSource, ".project-org", "Projects stylesheet");
 includes(stylesheetSource, ".project-title", "Projects stylesheet");
 includes(stylesheetSource, ".project-meta", "Projects stylesheet");
 includes(stylesheetSource, ".project-summary", "Projects stylesheet");
+includes(stylesheetSource, ".project-actions", "Projects stylesheet");
+includes(stylesheetSource, ".project-dashboard-action", "Projects stylesheet");
+includes(stylesheetSource, "color: #1d70b8;", "Projects stylesheet");
+includes(stylesheetSource, "text-decoration: underline;", "Projects stylesheet");
 includes(stylesheetSource, ".user-groups", "Projects stylesheet");
 includes(stylesheetSource, ".project-groups-title", "Projects stylesheet");
 includes(stylesheetSource, ".tags", "Projects stylesheet");
@@ -41,6 +46,13 @@ includes(controllerSource, "project-org", "Projects controller");
 includes(controllerSource, "project-title", "Projects controller");
 includes(controllerSource, "project-meta", "Projects controller");
 includes(controllerSource, "project-summary", "Projects controller");
+includes(controllerSource, "project-actions", "Projects controller");
+includes(controllerSource, "project-dashboard-action", "Projects controller");
+includes(controllerSource, "View dashboard", "Projects controller");
+includes(controllerSource, "View dashboard for", "Projects controller");
+includes(controllerSource, "projectDashboardHref", "Projects controller");
+includes(controllerSource, "projectDashboardLabel", "Projects controller");
+includes(controllerSource, "govuk-button govuk-button--secondary", "Projects controller");
 includes(controllerSource, "user-groups", "Projects controller");
 includes(controllerSource, "project-groups-title", "Projects controller");
 includes(controllerSource, "tags", "Projects controller");
