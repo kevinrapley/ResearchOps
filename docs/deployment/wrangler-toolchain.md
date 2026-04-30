@@ -6,7 +6,7 @@ The deployment workflow must use a pinned Wrangler version. It must not use `wra
 
 ## Current pinned version
 
-`4.38.0`
+`4.34.0`
 
 The value is recorded in two places:
 
