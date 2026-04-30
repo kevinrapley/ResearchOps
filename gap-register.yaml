@@ -14,14 +14,30 @@ gaps:
 
   - id: security-audit-release-blocking
     title: Decide when high-severity dependency findings become blocking
-    status: open
+    status: implemented
     severity: medium
     owner: repository-maintainers
-    context: The Release Gate records npm audit findings as advisory to avoid suddenly blocking delivery while known findings are triaged.
-    mitigation: Triage current npm audit findings, document accepted risks, then make high/critical findings blocking for release mode.
+    context: The Release Gate now runs a policy-based npm audit check. Runtime high or critical findings block release. Unknown-scope high or critical findings block release until classified. Development-only critical findings block release. Development-only low, moderate and high findings are recorded as advisory while dependency upgrades are planned.
+    mitigation: Keep `security-audit-policy.json` and `security-audit-triage.yaml` current. Revisit the policy before tagged releases and after dependency upgrades.
     evidence:
       - .github/workflows/release-gate.yml
       - .github/workflows/security.yml
+      - security-audit-policy.json
+      - security-audit-triage.yaml
+      - scripts/security-audit-policy.sh
+      - scripts/security-audit-policy.mjs
+
+  - id: dependency-upgrade-security-findings
+    title: Remediate advisory development dependency findings
+    status: open
+    severity: medium
+    owner: repository-maintainers
+    context: Current npm audit findings are classified as development-only and advisory under the release policy, but they should still be remediated through safe dependency upgrades.
+    mitigation: Upgrade affected toolchain dependencies, then rerun validation, route-state tests, Cucumber tests, Playwright tests, Release Gate and Accessibility.
+    evidence:
+      - security-audit-triage.yaml
+      - package.json
+      - package-lock.json
 
   - id: deployment-tool-pinning
     title: Pin Wrangler deployment tooling

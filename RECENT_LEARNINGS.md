@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-29 — Security audit findings need policy classification
+
+Context: npm audit can return non-zero for development-only tooling findings even when the production runtime dependency surface is not affected.
+
+Learning: Release gates should not hide dependency findings, but they should classify them by dependency scope and severity before deciding whether to block release.
+
+Action: Use `security-audit-policy.json` and the policy evaluator to block runtime high or critical findings, block unknown-scope high or critical findings until classified, and keep development-only low, moderate and high findings visible as advisory evidence.
+
 ## 2026-04-29 — Release evidence can become stale after merge
 
 Context: `release-evidence.yaml` can record a baseline commit that is correct when written but stale after subsequent PRs merge.

@@ -10,6 +10,7 @@
     "validate": "bash ./scripts/validate.sh",
     "audit:performance": "bash ./scripts/performance-audit.sh",
     "audit:performance:write": "bash ./scripts/performance-audit.sh --write docs/performance/performance-inventory.md",
+    "audit:security": "bash ./scripts/security-audit-policy.sh",
     "test": "node --test",
     "test:e2e": "playwright test",
     "qa:browsers": "playwright install --with-deps chromium",
