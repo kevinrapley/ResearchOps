@@ -30,4 +30,3 @@ includes(studyControllerSource, "loadStudyCollection(\"/api/consent-forms\", stu
 includes(studyControllerSource, "disableLink(\"#link-session\"", "study page controller");
 includes(studyControllerSource, "enableLink(\"#link-session\"", "study page controller");
 includes(studyControllerSource, "event.target.closest(\"a[data-disabled-link='true']\")", "study page controller");
-excludes(studyControllerSource, "setReadinessItem(\"session\", \"Available\", \"Open the session workspace when the study setup is ready.\");", "study page controller");
