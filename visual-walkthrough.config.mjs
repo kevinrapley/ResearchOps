@@ -10,7 +10,15 @@ export const visualWalkthroughConfig = {
 	description:
 		'Generated evidence of the current application build, covering registered pages and important interaction states.',
 	publicRoot: 'public',
-	excludedRoutes: ['/partials/footer.html', '/partials/header.html'],
+	excludedRoutes: [
+		'/clear.html',
+		'/partials/debug-boot.html',
+		'/partials/debug.html',
+		'/partials/footer.html',
+		'/partials/header.html',
+		'/partials/html-head.html',
+		'/partials/project-tabs.html',
+	],
 	pages: [
 		{
 			id: 'home',
