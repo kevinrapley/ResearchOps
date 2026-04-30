@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-30 — Prettier must be executed, not inferred
+
+Context: A new visual walkthrough registry test failed `prettier -c .` even though the code broadly followed the repository indentation rules. The remaining failure came from Prettier's wrapping decisions for chained calls and long assertions, not from JavaScript semantics.
+
+Learning: Formatter compliance cannot be reliably inferred from rules, memory, house style, or visual inspection. Prettier is an executable formatter with specific line-breaking behaviour. API-based file writes are especially exposed because they bypass the local edit-save-format loop.
+
+Action: Treat actual Prettier execution as the source of truth. When writing JavaScript through API-based edits, pre-wrap chained calls and assertions in the shape Prettier normally emits, then rely on `npm run format:check` or CI to verify. Where possible, use a local checkout or a formatter-capable agent path before opening or updating a PR.
+
 ## 2026-04-30 — Prettier follows the repository EditorConfig
 
 Context: A new route-state regression test repeatedly failed `prettier -c .` because it was written with space indentation. The repository has `.editorconfig` with `indent_style = tab`.
