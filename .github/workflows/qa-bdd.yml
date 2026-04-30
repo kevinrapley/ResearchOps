@@ -106,11 +106,12 @@ jobs:
         needs.bdd-smoke.result == 'success' &&
         (
           github.event_name == 'workflow_dispatch' ||
-          github.ref == 'refs/heads/main'
+          github.ref == 'refs/heads/main' ||
+          github.event.workflow_run.head_branch == 'main'
         )
       }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     permissions:
       contents: write
@@ -147,70 +148,87 @@ jobs:
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
+      - name: Resolve report persistence target
+        id: persist_target
+        shell: bash
+        run: |
+          enabled="false"
+          target_branch=""
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            target_branch="$GITHUB_REF_NAME"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            target_branch="$GITHUB_REF_NAME"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
+            target_branch="$(node -e "const fs = require('node:fs'); const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')); console.log(event.workflow_run?.head_branch || '');")"
+          fi
+
+          if [ "$target_branch" = "main" ]; then
+            enabled="true"
+          fi
+
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+          echo "target_branch=$target_branch" >> "$GITHUB_OUTPUT"
+          echo "Report persistence enabled: $enabled"
+          echo "Report persistence target branch: ${target_branch:-none}"
+
       - name: Diagnose BASE_URL
         shell: bash
         run: |
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
-            && echo "BASE_URL responded before BDD run." \
-            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
+            && echo "BASE_URL responded before visual walkthrough run." \
+            || echo "BASE_URL did not respond during preflight. Continuing so the visual walkthrough can produce the authoritative result."
 
-      - name: Run BDD visual walkthrough
-        run: npm run qa:cucumber:walkthrough
+      - name: Run application visual walkthrough
+        run: npm run qa:visual-walkthrough
 
-      - name: Merge Cucumber report into walkthrough site
-        if: always()
-        shell: bash
-        run: |
-          mkdir -p reports-site
-          if [ -f "reports/cucumber-report.html" ]; then
-            cp reports/cucumber-report.html reports-site/cucumber-report.html
-          fi
-          if [ -f "reports/cucumber-report.json" ]; then
-            cp reports/cucumber-report.json reports-site/cucumber-report.json
-          fi
-
-      - name: Detect walkthrough site
+      - name: Detect visual walkthrough site
         id: detect_site
         if: always()
         shell: bash
         run: |
-          if [ -f "reports-site/index.html" ]; then
+          if [ -f "reports-site/index.html" ] && [ -f "reports-site/manifest.json" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
-            echo "Walkthrough site detected."
+            echo "Visual walkthrough site detected."
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "No walkthrough site found."
+            echo "No visual walkthrough site found."
           fi
 
-      - name: Upload walkthrough artifact
+      - name: Upload visual walkthrough artifact
         if: always() && steps.detect_site.outputs.present == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: walkthrough-site
+          name: visual-walkthrough-site
           path: reports-site
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Persist walkthrough site to repository
+      - name: Persist visual walkthrough site to repository
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
-            github.event_name != 'pull_request' &&
-            github.ref == 'refs/heads/main'
+            steps.persist_target.outputs.enabled == 'true'
           }}
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          echo "Repository status before staging report files:"
+          git status --short reports-site || true
+
           git add -A reports-site
+
+          echo "Staged report file changes:"
+          git diff --cached --stat || true
 
           if git diff --cached --quiet; then
             echo "No reports-site changes to commit."
             exit 0
           fi
 
-          git commit -m "Update BDD walkthrough report"
+          git commit -m "Update application visual walkthrough report"
           git pull --rebase origin main
           git push origin HEAD:main
 
@@ -223,7 +241,7 @@ jobs:
           }}
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
-      - name: Deploy walkthrough to Cloudflare Pages reporting site
+      - name: Deploy visual walkthrough to Cloudflare Pages reporting site
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
@@ -238,7 +256,7 @@ jobs:
             --project-name=${REPORTING_PAGES_PROJECT} \
             --branch=main \
             --commit-hash=${GITHUB_SHA} \
-            --commit-message="BDD walkthrough ${GITHUB_RUN_ID}"
+            --commit-message="Visual walkthrough ${GITHUB_RUN_ID}"
 
       - name: Verify reporting site was updated
         if: >-
@@ -249,7 +267,7 @@ jobs:
           }}
         shell: bash
         run: |
-          expected_started_at="$(node -e "const fs = require('node:fs'); const html = fs.readFileSync('reports-site/index.html', 'utf8'); const match = html.match(/Run started: ([^<]+)/); if (!match) process.exit(1); console.log(match[1]);")"
+          expected_started_at="$(node -e "const fs = require('node:fs'); const manifest = JSON.parse(fs.readFileSync('reports-site/manifest.json', 'utf8')); console.log(manifest.startedAt);")"
           echo "Expected reporting timestamp: ${expected_started_at}"
 
           for attempt in {1..18}; do
@@ -269,11 +287,13 @@ jobs:
         if: always() && steps.detect_site.outputs.present == 'true'
         shell: bash
         run: |
-          echo "## BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough has been uploaded as the \`walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
-          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "The \`reports-site\` directory was persisted to the repository." >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough has been uploaded as the \`visual-walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
+          echo "Persistence enabled: \`${{ steps.persist_target.outputs.enabled }}\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Persistence target branch: \`${{ steps.persist_target.outputs.target_branch }}\`." >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.persist_target.outputs.enabled }}" = "true" ]; then
+            echo "The \`reports-site\` directory was persisted to the repository when changes were present." >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
             echo "It was also deployed and verified at ${REPORTING_PAGES_URL}." >> "$GITHUB_STEP_SUMMARY"
