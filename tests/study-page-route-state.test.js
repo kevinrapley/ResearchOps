@@ -32,6 +32,9 @@ includes(pageSource, "id=\"link-session\"", "study page");
 includes(pageSource, "id=\"link-guides\"", "study page");
 includes(pageSource, "id=\"link-participants\"", "study page");
 includes(pageSource, "id=\"desc-cancel\"", "study page");
+includes(pageSource, "aria-disabled=\"true\"", "study page");
+includes(pageSource, "data-disabled-link=\"true\"", "study page");
+includes(pageSource, "Not available yet", "study page");
 excludes(pageSource, "class=\"btn", "study page");
 excludes(pageSource, "class=\"board\"", "study page");
 excludes(pageSource, "board__item study-action", "study page");
@@ -50,13 +53,16 @@ includes(controllerSource, "apiUrl(\"/api/projects\")", "study page controller")
 includes(controllerSource, "apiUrl(\"/api/studies\")", "study page controller");
 includes(controllerSource, "showError", "study page controller");
 includes(controllerSource, "renderReadiness", "study page controller");
+includes(controllerSource, "async function loadReadinessContext", "study page controller");
+includes(controllerSource, "function evaluateReadiness", "study page controller");
+includes(controllerSource, "function renderSessionGate", "study page controller");
+includes(controllerSource, "function disableLink", "study page controller");
 includes(controllerSource, "route(\"/pages/study/guides/\", params)", "study page controller");
 includes(controllerSource, "route(\"/pages/study/participants/\", params)", "study page controller");
 includes(controllerSource, "route(\"/pages/study/session/\", params)", "study page controller");
 includes(controllerSource, "pid", "study page controller");
 includes(controllerSource, "sid", "study page controller");
 includes(controllerSource, "study:desc:save", "study page controller");
-excludes(controllerSource, "disableLink", "study page controller");
 excludes(controllerSource, "alert(", "study page controller");
 
 includes(studyCssSource, ".study-task-list", "study css");
