@@ -7,6 +7,11 @@ on:
         description: "Base URL to test"
         required: false
         type: string
+      publish_reporting_site:
+        description: "Publish the walkthrough to the Cloudflare Pages reporting site"
+        required: false
+        default: true
+        type: boolean
   pull_request:
   push:
     branches: [main]
@@ -23,6 +28,8 @@ concurrency:
 
 env:
   CI: true
+  WRANGLER_VERSION: "4.34.0"
+  REPORTING_PAGES_PROJECT: reopsreporting
 
 jobs:
   bdd-smoke:
@@ -177,6 +184,27 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Record Wrangler toolchain version
+        if: >-
+          ${{
+            steps.detect_site.outputs.present == 'true' &&
+            github.event_name == 'workflow_dispatch' &&
+            inputs.publish_reporting_site == true
+          }}
+        run: npx --yes wrangler@${WRANGLER_VERSION} --version
+
+      - name: Deploy walkthrough to Cloudflare Pages reporting site
+        if: >-
+          ${{
+            steps.detect_site.outputs.present == 'true' &&
+            github.event_name == 'workflow_dispatch' &&
+            inputs.publish_reporting_site == true
+          }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx --yes wrangler@${WRANGLER_VERSION} pages deploy reports-site --project-name=${REPORTING_PAGES_PROJECT}
+
       - name: Add job summary
         if: always() && steps.detect_site.outputs.present == 'true'
         shell: bash
@@ -184,4 +212,6 @@ jobs:
           echo "## BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "The visual walkthrough has been uploaded as the \`walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
-          echo "Download and open \`index.html\` from the artifact to review the walkthrough." >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
+            echo "It was also deployed to https://reopsreporting.pages.dev/." >> "$GITHUB_STEP_SUMMARY"
+          fi
