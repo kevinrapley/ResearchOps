@@ -115,7 +115,7 @@ jobs:
           run_check "format-check" "Format check" "npm run format:check" "true"
           run_check "unit-tests" "Unit tests" "npm test" "true"
           run_check "performance-audit" "Performance audit" "npm run audit:performance --if-present" "true"
-          run_check "security-audit-high" "Security audit advisory" "npm audit --audit-level=high --json" "false"
+          run_check "security-audit-policy" "Security audit policy" "npm run audit:security" "true"
 
           gate_ended_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
