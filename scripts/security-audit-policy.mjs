@@ -119,6 +119,7 @@ function classifyScope(vulnerability, packageScopes, packageJson) {
 
 	if (directRuntimeDependencies.has(vulnerability.name)) return 'runtime';
 	if (directDevelopmentDependencies.has(vulnerability.name)) return 'development';
+	if (directRuntimeDependencies.size === 0) return 'development';
 
 	const nodes = vulnerability.nodes || [];
 	let sawProd = false;
