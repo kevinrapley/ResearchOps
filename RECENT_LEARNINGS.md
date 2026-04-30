@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-04-30 — Deployment tools must be pinned
+
+Context: The Worker deployment workflow used `wrangler@latest`, which allowed the deployment toolchain to change without a repository change.
+
+Learning: Floating deployment tooling weakens release evidence because a clean validation run does not prove the same toolchain will be used later.
+
+Action: Pin Wrangler in `.github/workflows/deploy-worker.yml`, keep the pinned version aligned with `deployment-toolchain.yaml`, and record the Wrangler version in deployment logs.
+
 ## 2026-04-29 — Security audit findings need policy classification
 
 Context: npm audit can return non-zero for development-only tooling findings even when the production runtime dependency surface is not affected.
