@@ -150,7 +150,7 @@ export const visualWalkthroughConfig = {
 						'Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.',
 					mockRoutes: [
 						{
-							url: '**/api/ai-rewrite?mode=objectives',
+							url: '**/api/ai-rewrite**',
 							method: 'POST',
 							body: {
 								summary:
