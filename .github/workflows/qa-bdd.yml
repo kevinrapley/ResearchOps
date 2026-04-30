@@ -195,8 +195,7 @@ jobs:
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
-            github.event_name == 'workflow_dispatch' &&
-            inputs.publish_reporting_site == true &&
+            github.event_name != 'pull_request' &&
             github.ref == 'refs/heads/main'
           }}
         shell: bash
@@ -273,7 +272,9 @@ jobs:
           echo "## BDD Visual Walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "The visual walkthrough has been uploaded as the \`walkthrough-site\` workflow artifact." >> "$GITHUB_STEP_SUMMARY"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "The \`reports-site\` directory was persisted to the repository." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
             echo "It was also deployed and verified at ${REPORTING_PAGES_URL}." >> "$GITHUB_STEP_SUMMARY"
           fi
