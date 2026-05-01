@@ -4,71 +4,164 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Synthesis — ResearchOps</title>
+	<title>Synthesis for this study — ResearchOps</title>
 
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/synthesize.css" media="screen" />
-	<link rel="modulepreload" href="/js/synthesize-page.js" />
+	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501" media="screen" />
+	<link rel="modulepreload" href="/js/synthesize-page.js?v=study-synthesis-20260501" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{"active":"Synthesis","subtitle":"Synthesis"}'>
+	<x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Study synthesis"}'>
 	</x-include>
 
-	<main id="main-content" class="govuk-body" role="main" tabindex="-1">
-		<div class="grid synthesize-grid">
-			<div class="panel synthesize-panel">
-				<h2 class="govuk-heading-m">Evidence (notes by tag)</h2>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="filter">Filter by tag</label>
-					<input id="filter" class="govuk-input synthesize-filter" placeholder="Filter by tag (optional)" />
-				</div>
-				<div id="evidence" class="evidence-list"></div>
+	<main id="main-content" class="container govuk-body" role="main" tabindex="-1">
+		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+			<ol class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="/pages/projects/">Project</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-study" class="govuk-breadcrumbs__link" href="#">Study</a></li>
+				<li class="govuk-breadcrumbs__list-item" aria-current="page">Synthesis</li>
+			</ol>
+		</nav>
+
+		<div id="synthesis-error" class="govuk-error-summary" role="alert" tabindex="-1" hidden aria-hidden="true">
+			<h2 class="govuk-error-summary__title">There is a problem</h2>
+			<div class="govuk-error-summary__body">
+				<ul id="synthesis-error-list" class="govuk-list govuk-error-summary__list"></ul>
 			</div>
-			<div class="panel synthesize-panel">
-				<h2 class="govuk-heading-m">Clusters</h2>
-				<div id="clusters" class="cluster-list"></div>
-				<div class="cluster-create">
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="newCluster">New cluster name</label>
-						<input id="newCluster" class="govuk-input" placeholder="New cluster name" />
-					</div>
-					<div class="govuk-button-group">
-						<button id="addCluster" class="govuk-button">Add cluster</button>
-					</div>
-				</div>
-				<div class="theme-publish">
-					<h3 class="govuk-heading-s">Publish theme from cluster</h3>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="clusterSelect">Cluster</label>
-						<select id="clusterSelect" class="govuk-select"></select>
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="themeLabel">Theme label</label>
-						<input id="themeLabel" class="govuk-input" placeholder="Theme label" />
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="themeDesc">Theme description</label>
-						<textarea id="themeDesc" class="govuk-textarea" placeholder="Theme description"></textarea>
-					</div>
-					<div class="govuk-button-group">
-						<button id="publish" class="govuk-button">Publish theme</button>
-					</div>
-					<div id="status" class="govuk-hint synthesize-status"></div>
-				</div>
+		</div>
+
+		<div id="synthesis-status" class="synthesis-status" aria-live="polite"></div>
+
+		<header class="synthesis-hero">
+			<div>
+				<p id="synthesis-eyebrow" class="project-org">Study synthesis</p>
+				<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
+				<p id="study-context-text" class="govuk-body synthesis-context">Load evidence from a study to create traceable themes.</p>
 			</div>
+			<div class="synthesis-hero__actions">
+				<a id="back-to-study" href="/pages/projects/" class="govuk-button govuk-button--secondary">Back to study</a>
+			</div>
+		</header>
+
+		<section class="synthesis-summary" aria-label="Synthesis summary">
+			<dl class="govuk-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Project</dt>
+					<dd id="summary-project" class="govuk-summary-list__value">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Study</dt>
+					<dd id="summary-study" class="govuk-summary-list__value">–</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Evidence</dt>
+					<dd id="summary-evidence-count" class="govuk-summary-list__value">0 evidence items</dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Themes</dt>
+					<dd id="summary-theme-count" class="govuk-summary-list__value">0 themes</dd>
+				</div>
+			</dl>
+		</section>
+
+		<div id="synthesis-workspace" class="synthesis-grid">
+			<section class="panel synthesis-panel" aria-labelledby="evidence-title">
+				<header class="synthesis-panel__header">
+					<div>
+						<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
+						<p class="govuk-body">Select evidence notes and add them to a working cluster.</p>
+					</div>
+				</header>
+
+				<div class="evidence-toolbar">
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="tag-filter">Filter by tag</label>
+						<div id="tag-filter-hint" class="govuk-hint">Use a tag, framework category or safeguarding label.</div>
+						<input id="tag-filter" class="govuk-input" autocomplete="off" spellcheck="false" aria-describedby="tag-filter-hint" />
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="target-cluster">Add selected evidence to</label>
+						<select id="target-cluster" class="govuk-select"></select>
+					</div>
+					<button id="add-selected-evidence" type="button" class="govuk-button govuk-button--secondary">Add selected evidence</button>
+				</div>
+
+				<div id="evidence-empty" class="synthesis-empty" hidden>
+					<h3 class="govuk-heading-s">No evidence has been captured for this study yet</h3>
+					<p class="govuk-body">Run or complete sessions, then return here to group evidence into themes.</p>
+				</div>
+				<div id="evidence-list" class="evidence-list"></div>
+			</section>
+
+			<section class="panel synthesis-panel" aria-labelledby="clusters-title">
+				<header class="synthesis-panel__header">
+					<div>
+						<h2 id="clusters-title" class="govuk-heading-m">Working clusters</h2>
+						<p class="govuk-body">Clusters are provisional groups of related evidence.</p>
+					</div>
+				</header>
+
+				<form id="cluster-form" class="cluster-create" novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="cluster-label">Cluster name</label>
+						<input id="cluster-label" class="govuk-input" autocomplete="off" />
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="cluster-description">Cluster description</label>
+						<textarea id="cluster-description" class="govuk-textarea" rows="4"></textarea>
+					</div>
+					<button id="create-cluster" type="submit" class="govuk-button">Create cluster</button>
+				</form>
+
+				<div id="clusters-empty" class="synthesis-empty" hidden>
+					<p class="govuk-body">No clusters have been created yet.</p>
+				</div>
+				<div id="cluster-list" class="cluster-list"></div>
+			</section>
+
+			<section class="panel synthesis-panel synthesis-panel--wide" aria-labelledby="themes-title">
+				<header class="synthesis-panel__header">
+					<div>
+						<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
+						<p class="govuk-body">Create themes from clusters. Each theme keeps links to the source evidence IDs.</p>
+					</div>
+				</header>
+
+				<form id="theme-form" class="theme-create" novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="theme-cluster">Cluster</label>
+						<select id="theme-cluster" class="govuk-select"></select>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="theme-label">Theme name</label>
+						<input id="theme-label" class="govuk-input" autocomplete="off" />
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="theme-description">Theme description</label>
+						<textarea id="theme-description" class="govuk-textarea" rows="5"></textarea>
+					</div>
+					<button id="create-theme" type="submit" class="govuk-button">Create theme</button>
+				</form>
+
+				<div id="themes-empty" class="synthesis-empty" hidden>
+					<p class="govuk-body">No themes have been created for this study yet.</p>
+				</div>
+				<div id="theme-list" class="theme-list"></div>
+			</section>
 		</div>
 	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module" src="/js/synthesize-page.js"></script>
+	<script type="module" src="/js/synthesize-page.js?v=study-synthesis-20260501"></script>
 </body>
 
 </html>
