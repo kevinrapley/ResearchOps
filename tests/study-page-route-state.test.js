@@ -15,6 +15,7 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+includes(pageSource, "<html lang=\"en-GB\">", "study page");
 includes(pageSource, "/js/study-page.js", "study page");
 includes(pageSource, "/css/govuk/govuk-buttons.css", "study page");
 includes(pageSource, "/css/study-page.css", "study page");
@@ -24,8 +25,9 @@ includes(pageSource, "id=\"study-error\"", "study page");
 includes(pageSource, "role=\"alert\"", "study page");
 includes(pageSource, "Study readiness", "study page");
 includes(pageSource, "Study setup tasks", "study page");
+includes(pageSource, "Study analysis tasks", "study page");
 includes(pageSource, "Synthesize study evidence", "study page");
-includes(pageSource, "Group evidence notes into clusters and create traceable study-level themes.", "study page");
+includes(pageSource, "Group evidence notes into working cluster groupings and create traceable study-level themes.", "study page");
 includes(pageSource, "class=\"study-readiness-list\"", "study page");
 includes(pageSource, "class=\"readiness-item\"", "study page");
 includes(pageSource, "class=\"study-task-list\"", "study page");
