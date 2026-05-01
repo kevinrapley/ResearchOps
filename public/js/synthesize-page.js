@@ -1,247 +1,449 @@
 /**
  * @file public/js/synthesize-page.js
  * @module SynthesizePage
- * @summary Local ResearchOps synthesis UI for legacy SDK records.
+ * @summary Study-scoped synthesis workspace for traceable evidence clustering and theme creation.
  */
 
-const filterInput = document.getElementById("filter");
-const evidenceContainer = document.getElementById("evidence");
-const clustersContainer = document.getElementById("clusters");
-const newClusterInput = document.getElementById("newCluster");
-const addClusterButton = document.getElementById("addCluster");
-const clusterSelect = document.getElementById("clusterSelect");
-const themeLabelInput = document.getElementById("themeLabel");
-const themeDescriptionInput = document.getElementById("themeDesc");
-const publishButton = document.getElementById("publish");
-const statusMessage = document.getElementById("status");
+const API_ORIGIN =
+  document.documentElement?.dataset?.apiOrigin ||
+  window.API_ORIGIN ||
+  window.RESEARCHOPS_API_ORIGIN ||
+  (location.hostname.endsWith("pages.dev") ? "https://rops-api.digikev-kevin-rapley.workers.dev" : location.origin);
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+const els = {
+  error: $("#synthesis-error"),
+  errorList: $("#synthesis-error-list"),
+  status: $("#synthesis-status"),
+  title: $("#synthesis-title"),
+  context: $("#study-context-text"),
+  breadcrumbProject: $("#breadcrumb-project"),
+  breadcrumbStudy: $("#breadcrumb-study"),
+  backToStudy: $("#back-to-study"),
+  summaryProject: $("#summary-project"),
+  summaryStudy: $("#summary-study"),
+  summaryEvidenceCount: $("#summary-evidence-count"),
+  summaryThemeCount: $("#summary-theme-count"),
+  tagFilter: $("#tag-filter"),
+  targetCluster: $("#target-cluster"),
+  addSelectedEvidence: $("#add-selected-evidence"),
+  evidenceEmpty: $("#evidence-empty"),
+  evidenceList: $("#evidence-list"),
+  clusterForm: $("#cluster-form"),
+  clusterLabel: $("#cluster-label"),
+  clusterDescription: $("#cluster-description"),
+  clustersEmpty: $("#clusters-empty"),
+  clusterList: $("#cluster-list"),
+  themeForm: $("#theme-form"),
+  themeCluster: $("#theme-cluster"),
+  themeLabel: $("#theme-label"),
+  themeDescription: $("#theme-description"),
+  themesEmpty: $("#themes-empty"),
+  themeList: $("#theme-list")
+};
+
+const state = {
+  pid: "",
+  sid: "",
+  study: null,
+  evidence: [],
+  clusters: [],
+  themes: [],
+  selectedEvidenceIds: new Set(),
+  activeTagFilter: ""
+};
+
+function apiUrl(path) {
+  const p = String(path || "");
+  return `${API_ORIGIN}${p.startsWith("/") ? p : `/${p}`}`;
+}
+
+function route(path, params = {}) {
+  const url = new URL(path, window.location.origin);
+  for (const [key, value] of Object.entries(params)) {
+    if (value) url.searchParams.set(key, value);
+  }
+  return `${url.pathname}${url.search}`;
+}
 
 function escapeHtml(value) {
-	return String(value ?? "")
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-function uid(prefix) {
-	return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now()}`;
+function pluralise(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function getCtx() {
-	return {
-		org: localStorage.getItem("rops.org") || "home-office-biometrics",
-		project: localStorage.getItem("rops.project") || "demo",
-		study: localStorage.getItem("rops.study") || "demo",
-		user: localStorage.getItem("rops.user") || "you@homeoffice.gov.uk"
-	};
+function studyDisplayName(study = {}) {
+  return study.title || study.studyId || study.method || "Study";
 }
 
-function readStoredEntities() {
-	const entities = [];
-
-	for (let index = 0; index < localStorage.length; index += 1) {
-		const key = localStorage.key(index);
-		if (!key) continue;
-
-		try {
-			const value = JSON.parse(localStorage.getItem(key) || "null");
-			if (value && typeof value === "object" && value.entityType) {
-				entities.push(value);
-			}
-		} catch {
-			// Ignore non-JSON localStorage entries.
-		}
-	}
-
-	return entities;
+function normaliseTag(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
-function searchEntities({ type = "" } = {}) {
-	const entities = readStoredEntities();
-	return type ? entities.filter(entity => entity.entityType === type) : entities;
+function clearErrors() {
+  if (!els.error || !els.errorList) return;
+  els.error.hidden = true;
+  els.error.setAttribute("aria-hidden", "true");
+  els.errorList.innerHTML = "";
 }
 
-function envelope(entityType, body) {
-	const ctx = getCtx();
-
-	return {
-		id: body.id || uid(entityType.toLowerCase()),
-		type: entityType,
-		entityType,
-		created: new Date().toISOString(),
-		creator: ctx.user,
-		scope: {
-			org: ctx.org,
-			project: ctx.project,
-			study: ctx.study
-		},
-		...body
-	};
+function showErrors(messages = []) {
+  if (!els.error || !els.errorList) return;
+  const items = messages.map(message => `<li>${escapeHtml(message)}</li>`).join("");
+  els.errorList.innerHTML = items;
+  els.error.hidden = false;
+  els.error.removeAttribute("aria-hidden");
+  els.error.focus();
 }
 
-function saveEntity(collection, entity) {
-	localStorage.setItem(`${collection}:${entity.id}`, JSON.stringify(entity));
-	return entity;
+function setStatus(message) {
+  if (els.status) els.status.textContent = message || "";
 }
 
-function createCluster({ label, members = [], id } = {}) {
-	const cluster = envelope("Cluster", {
-		id,
-		name: label || "Untitled cluster",
-		members
-	});
-
-	return saveEntity("cluster", cluster);
+async function jsonFetch(url, options = {}) {
+  const response = await fetch(url, {
+    cache: "no-store",
+    ...options,
+    headers: {
+      "content-type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : {};
+  if (!response.ok || body?.ok === false) {
+    throw new Error(body?.error || `Request failed (${response.status})`);
+  }
+  return body;
 }
 
-function publishTheme({ label, description = "", evidenceIds = [] } = {}) {
-	const theme = envelope("Theme", {
-		name: label,
-		description,
-		evidenceIds
-	});
+function evidenceMatchesFilter(item) {
+  const filter = normaliseTag(state.activeTagFilter);
+  if (!filter) return true;
 
-	return saveEntity("theme", theme);
+  return (item.tags || []).some(tag => normaliseTag(tag).includes(filter));
 }
 
-function makeElement(html) {
-	const wrapper = document.createElement("div");
-	wrapper.innerHTML = html.trim();
-	return wrapper.firstElementChild;
+function selectedEvidenceIds() {
+  return $$("input[name='evidence-id']:checked", els.evidenceList).map(input => input.value);
 }
 
-async function loadEvidence(tagFilter = "") {
-	if (!evidenceContainer) return;
-
-	const notes = searchEntities({ type: "Note" });
-	const tags = searchEntities({ type: "Tag" });
-	const tagsByNote = new Map();
-
-	for (const tag of tags) {
-		const existing = tagsByNote.get(tag.hasTarget) || [];
-		existing.push(tag);
-		tagsByNote.set(tag.hasTarget, existing);
-	}
-
-	evidenceContainer.innerHTML = "";
-
-	for (const note of notes) {
-		const noteTags = tagsByNote.get(note.id) || [];
-		const filter = tagFilter.trim().toLowerCase();
-
-		if (filter && !noteTags.some(tag => String(tag.name || "").toLowerCase().includes(filter))) {
-			continue;
-		}
-
-		const tagHtml = noteTags
-			.map(tag => `<span class="tag">${escapeHtml(tag.name)}</span>`)
-			.join("");
-
-		const card = makeElement(`<div class="note" draggable="true" data-id="${escapeHtml(note.id)}">
-	<div><strong>${escapeHtml(new Date(note.created).toLocaleString())}</strong></div>
-	<div>${escapeHtml(note.hasBody)}</div>
-	<div>${tagHtml}</div>
-</div>`);
-
-		card.addEventListener("dragstart", event => {
-			event.dataTransfer.setData("text/plain", note.id);
-		});
-
-		evidenceContainer.appendChild(card);
-	}
-
-	if (!evidenceContainer.children.length) {
-		evidenceContainer.innerHTML = '<div class="govuk-hint">No evidence found.</div>';
-	}
+function clusterById(clusterId) {
+  return state.clusters.find(cluster => cluster.id === clusterId) || null;
 }
 
-async function loadClusters() {
-	if (!clustersContainer || !clusterSelect) return;
-
-	const clusters = searchEntities({ type: "Cluster" });
-
-	clustersContainer.innerHTML = "";
-	clusterSelect.innerHTML = "";
-
-	for (const cluster of clusters) {
-		const box = makeElement(`<div class="cluster" data-id="${escapeHtml(cluster.id)}">
-	<div><strong>${escapeHtml(cluster.name)}</strong> <span class="govuk-hint">(${escapeHtml((cluster.members || []).length)} items)</span></div>
-	<div class="bin"></div>
-</div>`);
-
-		box.addEventListener("dragover", event => event.preventDefault());
-		box.addEventListener("drop", async event => {
-			const noteId = event.dataTransfer.getData("text/plain");
-			const fresh = searchEntities({ type: "Cluster" }).find(item => item.id === cluster.id) || cluster;
-			const members = new Set([...(fresh.members || []), noteId]);
-
-			createCluster({
-				label: cluster.name,
-				members: Array.from(members),
-				id: cluster.id
-			});
-
-			await loadClusters();
-		});
-
-		clustersContainer.appendChild(box);
-
-		const option = document.createElement("option");
-		option.value = cluster.id;
-		option.textContent = cluster.name;
-		clusterSelect.appendChild(option);
-	}
-
-	if (!clusters.length) {
-		clustersContainer.innerHTML = '<div class="govuk-hint">No clusters yet.</div>';
-	}
+function evidenceById(evidenceId) {
+  return state.evidence.find(item => item.id === evidenceId) || null;
 }
 
-async function addCluster() {
-	const label = newClusterInput?.value.trim() || "";
-	if (!label) return;
-
-	createCluster({ label, members: [] });
-	if (newClusterInput) newClusterInput.value = "";
-	await loadClusters();
+function clusterEvidence(cluster) {
+  return (cluster?.evidenceIds || []).map(evidenceById).filter(Boolean);
 }
 
-async function handlePublishTheme() {
-	const clusterId = clusterSelect?.value || "";
-	if (!clusterId) {
-		alert("Create/select a cluster.");
-		return;
-	}
-
-	const cluster = searchEntities({ type: "Cluster" }).find(item => item.id === clusterId);
-	const label = themeLabelInput?.value.trim() || "";
-	const description = themeDescriptionInput?.value.trim() || "";
-
-	if (!label) {
-		alert("Theme label required.");
-		return;
-	}
-
-	const theme = publishTheme({
-		label,
-		description,
-		evidenceIds: cluster?.members || []
-	});
-
-	if (statusMessage) statusMessage.textContent = `Published theme ${theme.id}`;
+function updateSummary() {
+  const study = state.study || {};
+  if (els.summaryProject) els.summaryProject.textContent = study.projectName || "Project";
+  if (els.summaryStudy) els.summaryStudy.textContent = studyDisplayName(study);
+  if (els.summaryEvidenceCount) els.summaryEvidenceCount.textContent = pluralise(state.evidence.length, "evidence item");
+  if (els.summaryThemeCount) els.summaryThemeCount.textContent = pluralise(state.themes.length, "theme");
 }
 
-addClusterButton?.addEventListener("click", addCluster);
-publishButton?.addEventListener("click", handlePublishTheme);
-filterInput?.addEventListener("input", event => loadEvidence(event.target.value));
+function renderContext() {
+  const study = state.study || {};
+  const title = studyDisplayName(study);
+  const projectName = study.projectName || "Project";
+  const studyHref = route("/pages/study/", { pid: state.pid || study.projectId, sid: state.sid });
+  const projectHref = route("/pages/project-dashboard/", { id: state.pid || study.projectId });
 
-await loadEvidence("");
-await loadClusters();
+  document.body.setAttribute("data-study-id", state.sid || "");
+  if (state.pid || study.projectId) document.body.setAttribute("data-project-id", state.pid || study.projectId);
+
+  if (els.title) els.title.textContent = `Synthesis for ${title}`;
+  if (els.context) els.context.textContent = `Create traceable study-level themes for ${projectName}.`;
+  if (els.breadcrumbProject) {
+    els.breadcrumbProject.textContent = projectName;
+    els.breadcrumbProject.href = projectHref;
+  }
+  if (els.breadcrumbStudy) {
+    els.breadcrumbStudy.textContent = title;
+    els.breadcrumbStudy.href = studyHref;
+  }
+  if (els.backToStudy) els.backToStudy.href = studyHref;
+  updateSummary();
+}
+
+function renderEvidence() {
+  if (!els.evidenceList || !els.evidenceEmpty) return;
+
+  const visibleEvidence = state.evidence.filter(evidenceMatchesFilter);
+  els.evidenceEmpty.hidden = state.evidence.length !== 0;
+
+  if (!state.evidence.length) {
+    els.evidenceList.innerHTML = "";
+    return;
+  }
+
+  if (!visibleEvidence.length) {
+    els.evidenceList.innerHTML = '<p class="govuk-hint">No evidence matches this filter.</p>';
+    return;
+  }
+
+  els.evidenceList.innerHTML = visibleEvidence
+    .map(item => {
+      const tags = (item.tags || []).map(tag => `<span class="synthesis-tag">${escapeHtml(tag)}</span>`).join("");
+      const source = item.sourceLabel || item.sessionId || "Session note";
+      return `<article class="evidence-card" data-evidence-id="${escapeHtml(item.id)}">
+  <div class="govuk-checkboxes__item evidence-card__select">
+    <input class="govuk-checkboxes__input" id="evidence-${escapeHtml(item.id)}" name="evidence-id" type="checkbox" value="${escapeHtml(item.id)}">
+    <label class="govuk-label govuk-checkboxes__label" for="evidence-${escapeHtml(item.id)}">Select this evidence</label>
+  </div>
+  <div class="evidence-card__body">
+    <p class="evidence-card__source">${escapeHtml(source)}</p>
+    <p class="govuk-body">${escapeHtml(item.excerpt || item.contentPlain || "No note text available.")}</p>
+    ${tags ? `<div class="synthesis-tags">${tags}</div>` : ""}
+  </div>
+</article>`;
+    })
+    .join("");
+}
+
+function optionHtml(clusters, placeholder) {
+  const options = clusters.map(cluster => `<option value="${escapeHtml(cluster.id)}">${escapeHtml(cluster.label)}</option>`).join("");
+  return `<option value="">${escapeHtml(placeholder)}</option>${options}`;
+}
+
+function renderClusterSelects() {
+  const html = optionHtml(state.clusters, state.clusters.length ? "Select a cluster" : "Create a cluster first");
+  if (els.targetCluster) els.targetCluster.innerHTML = html;
+  if (els.themeCluster) els.themeCluster.innerHTML = html;
+}
+
+function renderClusters() {
+  if (!els.clusterList || !els.clustersEmpty) return;
+
+  els.clustersEmpty.hidden = state.clusters.length !== 0;
+  renderClusterSelects();
+
+  if (!state.clusters.length) {
+    els.clusterList.innerHTML = "";
+    return;
+  }
+
+  els.clusterList.innerHTML = state.clusters
+    .map(cluster => {
+      const evidenceItems = clusterEvidence(cluster);
+      const evidenceList = evidenceItems.length
+        ? `<ul class="govuk-list govuk-list--bullet">${evidenceItems
+            .map(item => `<li>${escapeHtml(item.excerpt || item.id)}</li>`)
+            .join("")}</ul>`
+        : '<p class="govuk-hint">No evidence added yet.</p>';
+
+      return `<article class="cluster-card" data-cluster-id="${escapeHtml(cluster.id)}">
+  <h3 class="govuk-heading-s">${escapeHtml(cluster.label)}</h3>
+  ${cluster.description ? `<p class="govuk-body">${escapeHtml(cluster.description)}</p>` : ""}
+  <p class="govuk-hint">${pluralise(evidenceItems.length, "evidence item")}</p>
+  ${evidenceList}
+</article>`;
+    })
+    .join("");
+}
+
+function renderThemes() {
+  if (!els.themeList || !els.themesEmpty) return;
+
+  els.themesEmpty.hidden = state.themes.length !== 0;
+  if (!state.themes.length) {
+    els.themeList.innerHTML = "";
+    return;
+  }
+
+  els.themeList.innerHTML = state.themes
+    .map(theme => `<article class="theme-card" data-theme-id="${escapeHtml(theme.id)}">
+  <h3 class="govuk-heading-s">${escapeHtml(theme.label)}</h3>
+  ${theme.description ? `<p class="govuk-body">${escapeHtml(theme.description)}</p>` : ""}
+  <p class="govuk-hint">${pluralise((theme.evidenceIds || []).length, "source evidence item")}</p>
+  <details class="govuk-details">
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Source evidence IDs</span></summary>
+    <div class="govuk-details__text"><code>${escapeHtml((theme.evidenceIds || []).join(", "))}</code></div>
+  </details>
+</article>`)
+    .join("");
+}
+
+function renderAll() {
+  renderContext();
+  renderEvidence();
+  renderClusters();
+  renderThemes();
+}
+
+async function loadStudySynthesis() {
+  const evidenceUrl = new URL(apiUrl("/api/synthesis/evidence"));
+  evidenceUrl.searchParams.set("sid", state.sid);
+  if (state.pid) evidenceUrl.searchParams.set("pid", state.pid);
+
+  const synthesisUrl = new URL(apiUrl("/api/synthesis"));
+  synthesisUrl.searchParams.set("sid", state.sid);
+  if (state.pid) synthesisUrl.searchParams.set("pid", state.pid);
+
+  const [evidenceBody, synthesisBody] = await Promise.all([jsonFetch(evidenceUrl.toString()), jsonFetch(synthesisUrl.toString())]);
+
+  state.study = evidenceBody.study || synthesisBody.study || { id: state.sid };
+  state.pid = state.pid || state.study.projectId || "";
+  state.evidence = Array.isArray(evidenceBody.evidence) ? evidenceBody.evidence : [];
+  state.clusters = Array.isArray(synthesisBody.clusters) ? synthesisBody.clusters : [];
+  state.themes = Array.isArray(synthesisBody.themes) ? synthesisBody.themes : [];
+}
+
+async function createCluster(event) {
+  event.preventDefault();
+  clearErrors();
+
+  const label = els.clusterLabel?.value.trim() || "";
+  const description = els.clusterDescription?.value.trim() || "";
+  if (!label) {
+    showErrors(["Enter a cluster name."]);
+    return;
+  }
+
+  const url = new URL(apiUrl("/api/synthesis/clusters"));
+  url.searchParams.set("sid", state.sid);
+
+  const body = await jsonFetch(url.toString(), {
+    method: "POST",
+    body: JSON.stringify({ label, description, evidenceIds: [] })
+  });
+
+  state.clusters.push(body.cluster);
+  if (els.clusterLabel) els.clusterLabel.value = "";
+  if (els.clusterDescription) els.clusterDescription.value = "";
+  setStatus(`Created cluster ${body.cluster.label}.`);
+  renderAll();
+}
+
+async function addSelectedEvidenceToCluster() {
+  clearErrors();
+  const clusterId = els.targetCluster?.value || "";
+  const ids = selectedEvidenceIds();
+
+  if (!clusterId) {
+    showErrors(["Select a cluster to add evidence to."]);
+    return;
+  }
+  if (!ids.length) {
+    showErrors(["Select at least one evidence item."]);
+    return;
+  }
+
+  const cluster = clusterById(clusterId);
+  const mergedEvidenceIds = [...new Set([...(cluster?.evidenceIds || []), ...ids])];
+  const url = new URL(apiUrl(`/api/synthesis/clusters/${encodeURIComponent(clusterId)}`));
+  url.searchParams.set("sid", state.sid);
+
+  const body = await jsonFetch(url.toString(), {
+    method: "PATCH",
+    body: JSON.stringify({ evidenceIds: mergedEvidenceIds })
+  });
+
+  state.clusters = state.clusters.map(item => (item.id === body.cluster.id ? body.cluster : item));
+  state.selectedEvidenceIds = new Set();
+  $$("input[name='evidence-id']:checked", els.evidenceList).forEach(input => {
+    input.checked = false;
+  });
+  setStatus(`Added ${pluralise(ids.length, "evidence item")} to ${body.cluster.label}.`);
+  renderAll();
+}
+
+async function createTheme(event) {
+  event.preventDefault();
+  clearErrors();
+
+  const clusterId = els.themeCluster?.value || "";
+  const label = els.themeLabel?.value.trim() || "";
+  const description = els.themeDescription?.value.trim() || "";
+  const cluster = clusterById(clusterId);
+  const errors = [];
+
+  if (!clusterId) errors.push("Select a cluster.");
+  if (!label) errors.push("Enter a theme name.");
+  if (!cluster || !(cluster.evidenceIds || []).length) errors.push("Add at least one evidence item to the cluster before creating a theme.");
+
+  if (errors.length) {
+    showErrors(errors);
+    return;
+  }
+
+  const url = new URL(apiUrl("/api/synthesis/themes"));
+  url.searchParams.set("sid", state.sid);
+
+  const body = await jsonFetch(url.toString(), {
+    method: "POST",
+    body: JSON.stringify({ clusterId, label, description })
+  });
+
+  state.themes.push(body.theme);
+  if (els.themeLabel) els.themeLabel.value = "";
+  if (els.themeDescription) els.themeDescription.value = "";
+  setStatus(`Created theme ${body.theme.label}.`);
+  renderAll();
+}
+
+function bindEvents() {
+  els.tagFilter?.addEventListener("input", event => {
+    state.activeTagFilter = event.target.value || "";
+    renderEvidence();
+  });
+  els.clusterForm?.addEventListener("submit", event => {
+    createCluster(event).catch(error => showErrors([error.message]));
+  });
+  els.addSelectedEvidence?.addEventListener("click", () => {
+    addSelectedEvidenceToCluster().catch(error => showErrors([error.message]));
+  });
+  els.themeForm?.addEventListener("submit", event => {
+    createTheme(event).catch(error => showErrors([error.message]));
+  });
+}
+
+async function init() {
+  bindEvents();
+  clearErrors();
+
+  const params = new URLSearchParams(window.location.search);
+  state.sid = params.get("sid") || "";
+  state.pid = params.get("pid") || "";
+
+  if (!state.sid) {
+    showErrors(["The synthesis page needs a study ID in the URL."]);
+    renderAll();
+    return;
+  }
+
+  try {
+    setStatus("Loading synthesis workspace…");
+    await loadStudySynthesis();
+    setStatus("");
+    renderAll();
+  } catch (error) {
+    showErrors(["Could not load synthesis for this study.", error.message]);
+  }
+}
+
+await init();
 
 window.__ropsSynthesize = Object.freeze({
-	createCluster,
-	publishTheme,
-	readStoredEntities,
-	searchEntities
+  apiUrl,
+  route,
+  evidenceMatchesFilter,
+  createCluster,
+  addSelectedEvidenceToCluster,
+  createTheme
 });
