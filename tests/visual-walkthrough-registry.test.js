@@ -50,6 +50,12 @@ function actionTextValues(stateId) {
 		.map((action) => action.text);
 }
 
+function actionSelectorValues(stateId) {
+	return (stateById(stateId)?.actions || [])
+		.filter((action) => action.type === 'waitForSelector')
+		.map((action) => action.selector);
+}
+
 const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
 	.map(routeFromPublicFile)
 	.filter((route) => !visualWalkthroughConfig.excludedRoutes.includes(route));
@@ -105,6 +111,13 @@ assert.ok(
 		`Created working cluster grouping ${synthesisEmptyCluster.label}.`
 	),
 	'Expected cluster creation capture to wait for the production status text'
+);
+
+assert.ok(
+	actionSelectorValues('theme-blocked-without-evidence').includes(
+		`[data-cluster-id="${synthesisEmptyCluster.id}"]`
+	),
+	'Expected blocked theme capture to wait for the visible cluster card rather than a hidden option'
 );
 
 assert.ok(
