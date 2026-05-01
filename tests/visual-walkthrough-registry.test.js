@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
-import { synthesisPath } from '../visual-walkthrough.synthesis-fixtures.mjs';
+import { synthesisEmptyCluster, synthesisPath } from '../visual-walkthrough.synthesis-fixtures.mjs';
 import {
 	synthesisDefaultState,
 	synthesisVisualStates,
@@ -38,6 +38,16 @@ function routeFromPublicFile(filePath) {
 	if (relativePath === 'index.html') return '/';
 
 	return `/${relativePath}`;
+}
+
+function stateById(stateId) {
+	return synthesisVisualStates.find((state) => state.id === stateId);
+}
+
+function actionTextValues(stateId) {
+	return (stateById(stateId)?.actions || [])
+		.filter((action) => action.type === 'waitForText')
+		.map((action) => action.text);
 }
 
 const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
@@ -88,6 +98,20 @@ assert.deepEqual(
 		'theme-created',
 	],
 	'Expected synthesis walkthrough states to cover the production first-slice workflow'
+);
+
+assert.ok(
+	actionTextValues('working-cluster-created').includes(
+		`Created working cluster grouping ${synthesisEmptyCluster.label}.`
+	),
+	'Expected cluster creation capture to wait for the production status text'
+);
+
+assert.ok(
+	actionTextValues('theme-blocked-without-evidence').includes(
+		'Add evidence to a working cluster grouping before creating a theme.'
+	),
+	'Expected blocked theme capture to wait for the disabled-control hint rather than selecting a disabled control'
 );
 
 for (const state of synthesisVisualStates) {
