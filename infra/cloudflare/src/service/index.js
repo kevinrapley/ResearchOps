@@ -17,6 +17,7 @@ import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
+import * as Synthesis from "./synthesis.js";
 
 /* Reflexive Journals */
 import * as Journals from "./journals.js";
@@ -176,6 +177,14 @@ export class ResearchOpsService {
 	createStudy = (req, origin) => Studies.createStudy(this, req, origin);
 	listStudies = (origin, url) => Studies.listStudies(this, origin, url);
 	updateStudy = (req, origin, studyId) => Studies.updateStudy(this, req, origin, studyId);
+
+	/* ─────────────── Study synthesis ─────────────── */
+	listSynthesisEvidence = (origin, url) => Synthesis.listSynthesisEvidence(this, origin, url);
+	listSynthesis = (origin, url) => Synthesis.listSynthesis(this, origin, url);
+	createSynthesisCluster = (req, origin, url) => Synthesis.createSynthesisCluster(this, req, origin, url);
+	updateSynthesisCluster = (req, origin, url, clusterId) => Synthesis.updateSynthesisCluster(this, req, origin, url, clusterId);
+	deleteSynthesisCluster = (origin, url, clusterId) => Synthesis.deleteSynthesisCluster(this, origin, url, clusterId);
+	createSynthesisTheme = (req, origin, url) => Synthesis.createSynthesisTheme(this, req, origin, url);
 
 	/* ─────────────── Guides ─────────────── */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);

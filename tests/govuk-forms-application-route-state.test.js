@@ -67,9 +67,15 @@ includes(sessionsPage, "aria-describedby=\"when-hint\"", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
 
 const synthesizePage = read("public/pages/synthesize/index.html");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"filter\">Filter by tag</label>", "Synthesize route");
-includes(synthesizePage, "<textarea id=\"themeDesc\" class=\"govuk-textarea\"", "Synthesize route");
-excludes(synthesizePage, "<textarea id=\"themeDesc\" class=\"govuk-input\"", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"tag-filter\">Filter by tag</label>", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"target-cluster\">Add selected evidence to</label>", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"cluster-label\">Cluster name</label>", "Synthesize route");
+includes(synthesizePage, "<textarea id=\"cluster-description\" class=\"govuk-textarea\"", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">Cluster</label>", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-label\">Theme name</label>", "Synthesize route");
+includes(synthesizePage, "<textarea id=\"theme-description\" class=\"govuk-textarea\"", "Synthesize route");
+excludes(synthesizePage, "<textarea id=\"theme-description\" class=\"govuk-input\"", "Synthesize route");
+excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
 const dashboardPage = read("public/pages/project-dashboard/index.html");
 includes(dashboardPage, "<select id=\"study-method\" class=\"govuk-select\"", "Project Dashboard route");
