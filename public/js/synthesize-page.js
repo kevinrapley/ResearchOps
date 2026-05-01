@@ -29,17 +29,22 @@ const els = {
   tagFilter: $("#tag-filter"),
   targetCluster: $("#target-cluster"),
   addSelectedEvidence: $("#add-selected-evidence"),
+  addSelectedEvidenceHint: $("#add-selected-evidence-hint"),
   evidenceEmpty: $("#evidence-empty"),
   evidenceList: $("#evidence-list"),
   clusterForm: $("#cluster-form"),
   clusterLabel: $("#cluster-label"),
   clusterDescription: $("#cluster-description"),
+  createCluster: $("#create-cluster"),
+  createClusterHint: $("#create-cluster-hint"),
   clustersEmpty: $("#clusters-empty"),
   clusterList: $("#cluster-list"),
   themeForm: $("#theme-form"),
   themeCluster: $("#theme-cluster"),
   themeLabel: $("#theme-label"),
   themeDescription: $("#theme-description"),
+  createTheme: $("#create-theme"),
+  createThemeHint: $("#create-theme-hint"),
   themesEmpty: $("#themes-empty"),
   themeList: $("#theme-list")
 };
@@ -51,7 +56,6 @@ const state = {
   evidence: [],
   clusters: [],
   themes: [],
-  selectedEvidenceIds: new Set(),
   activeTagFilter: ""
 };
 
@@ -98,7 +102,7 @@ function clearErrors() {
 
 function showErrors(messages = []) {
   if (!els.error || !els.errorList) return;
-  const items = messages.map(message => `<li>${escapeHtml(message)}</li>`).join("");
+  const items = messages.map((message) => `<li>${escapeHtml(message)}</li>`).join("");
   els.errorList.innerHTML = items;
   els.error.hidden = false;
   els.error.removeAttribute("aria-hidden");
@@ -107,6 +111,11 @@ function showErrors(messages = []) {
 
 function setStatus(message) {
   if (els.status) els.status.textContent = message || "";
+}
+
+function setDisabled(element, disabled) {
+  if (!element) return;
+  element.disabled = Boolean(disabled);
 }
 
 async function jsonFetch(url, options = {}) {
@@ -130,23 +139,27 @@ function evidenceMatchesFilter(item) {
   const filter = normaliseTag(state.activeTagFilter);
   if (!filter) return true;
 
-  return (item.tags || []).some(tag => normaliseTag(tag).includes(filter));
+  return (item.tags || []).some((tag) => normaliseTag(tag).includes(filter));
 }
 
 function selectedEvidenceIds() {
-  return $$("input[name='evidence-id']:checked", els.evidenceList).map(input => input.value);
+  return $$("input[name='evidence-id']:checked", els.evidenceList).map((input) => input.value);
 }
 
 function clusterById(clusterId) {
-  return state.clusters.find(cluster => cluster.id === clusterId) || null;
+  return state.clusters.find((cluster) => cluster.id === clusterId) || null;
 }
 
 function evidenceById(evidenceId) {
-  return state.evidence.find(item => item.id === evidenceId) || null;
+  return state.evidence.find((item) => item.id === evidenceId) || null;
 }
 
 function clusterEvidence(cluster) {
   return (cluster?.evidenceIds || []).map(evidenceById).filter(Boolean);
+}
+
+function clustersWithEvidence() {
+  return state.clusters.filter((cluster) => (cluster.evidenceIds || []).length > 0);
 }
 
 function updateSummary() {
@@ -155,6 +168,56 @@ function updateSummary() {
   if (els.summaryStudy) els.summaryStudy.textContent = studyDisplayName(study);
   if (els.summaryEvidenceCount) els.summaryEvidenceCount.textContent = pluralise(state.evidence.length, "evidence item");
   if (els.summaryThemeCount) els.summaryThemeCount.textContent = pluralise(state.themes.length, "theme");
+}
+
+function updateActionAvailability() {
+  const hasStudy = Boolean(state.sid);
+  const hasEvidence = state.evidence.length > 0;
+  const hasClusters = state.clusters.length > 0;
+  const hasEligibleThemeClusters = clustersWithEvidence().length > 0;
+  const hasSelectedEvidence = selectedEvidenceIds().length > 0;
+  const hasTargetCluster = Boolean(els.targetCluster?.value);
+  const hasClusterLabel = Boolean(els.clusterLabel?.value.trim());
+  const hasThemeCluster = Boolean(els.themeCluster?.value);
+  const hasThemeLabel = Boolean(els.themeLabel?.value.trim());
+  const canCreateCluster = hasStudy && hasEvidence && hasClusterLabel;
+  const canAddEvidence = hasStudy && hasEvidence && hasClusters && hasSelectedEvidence && hasTargetCluster;
+  const canCreateTheme = hasStudy && hasEligibleThemeClusters && hasThemeCluster && hasThemeLabel;
+
+  setDisabled(els.clusterLabel, !hasStudy || !hasEvidence);
+  setDisabled(els.clusterDescription, !hasStudy || !hasEvidence);
+  setDisabled(els.createCluster, !canCreateCluster);
+  setDisabled(els.targetCluster, !hasStudy || !hasEvidence || !hasClusters);
+  setDisabled(els.addSelectedEvidence, !canAddEvidence);
+  setDisabled(els.themeCluster, !hasStudy || !hasEligibleThemeClusters);
+  setDisabled(els.themeLabel, !hasStudy || !hasEligibleThemeClusters || !hasThemeCluster);
+  setDisabled(els.themeDescription, !hasStudy || !hasEligibleThemeClusters || !hasThemeCluster);
+  setDisabled(els.createTheme, !canCreateTheme);
+
+  if (els.createClusterHint) {
+    if (!hasStudy) els.createClusterHint.textContent = "Open this page from a study before creating a working cluster grouping.";
+    else if (!hasEvidence) els.createClusterHint.textContent = "Capture evidence before creating a working cluster grouping.";
+    else if (!hasClusterLabel) els.createClusterHint.textContent = "Enter a cluster grouping name before creating it.";
+    else els.createClusterHint.textContent = "Create a provisional group of related evidence.";
+  }
+
+  if (els.addSelectedEvidenceHint) {
+    if (!hasStudy) els.addSelectedEvidenceHint.textContent = "Open this page from a study before adding evidence.";
+    else if (!hasEvidence) els.addSelectedEvidenceHint.textContent = "Capture evidence before adding it to a working cluster grouping.";
+    else if (!hasClusters) els.addSelectedEvidenceHint.textContent = "Create a working cluster grouping before adding evidence.";
+    else if (!hasSelectedEvidence) els.addSelectedEvidenceHint.textContent = "Select at least one evidence note to add.";
+    else if (!hasTargetCluster) els.addSelectedEvidenceHint.textContent = "Select a working cluster grouping to add the evidence to.";
+    else els.addSelectedEvidenceHint.textContent = "Add the selected evidence to the chosen working cluster grouping.";
+  }
+
+  if (els.createThemeHint) {
+    if (!hasStudy) els.createThemeHint.textContent = "Open this page from a study before creating a theme.";
+    else if (!hasClusters) els.createThemeHint.textContent = "Create a working cluster grouping before creating a theme.";
+    else if (!hasEligibleThemeClusters) els.createThemeHint.textContent = "Add evidence to a working cluster grouping before creating a theme.";
+    else if (!hasThemeCluster) els.createThemeHint.textContent = "Select a working cluster grouping to turn into a theme.";
+    else if (!hasThemeLabel) els.createThemeHint.textContent = "Enter a theme name before creating it.";
+    else els.createThemeHint.textContent = "Create a theme that remains traceable to the evidence used.";
+  }
 }
 
 function renderContext() {
@@ -168,7 +231,7 @@ function renderContext() {
   if (state.pid || study.projectId) document.body.setAttribute("data-project-id", state.pid || study.projectId);
 
   if (els.title) els.title.textContent = `Synthesis for ${title}`;
-  if (els.context) els.context.textContent = `Create traceable study-level themes for ${projectName}.`;
+  if (els.context) els.context.textContent = `Group study evidence for ${projectName} into themes you can trace back to source notes.`;
   if (els.breadcrumbProject) {
     els.breadcrumbProject.textContent = projectName;
     els.breadcrumbProject.href = projectHref;
@@ -198,8 +261,8 @@ function renderEvidence() {
   }
 
   els.evidenceList.innerHTML = visibleEvidence
-    .map(item => {
-      const tags = (item.tags || []).map(tag => `<span class="synthesis-tag">${escapeHtml(tag)}</span>`).join("");
+    .map((item) => {
+      const tags = (item.tags || []).map((tag) => `<span class="synthesis-tag">${escapeHtml(tag)}</span>`).join("");
       const source = item.sourceLabel || item.sessionId || "Session note";
       return `<article class="evidence-card" data-evidence-id="${escapeHtml(item.id)}">
   <div class="govuk-checkboxes__item evidence-card__select">
@@ -217,14 +280,27 @@ function renderEvidence() {
 }
 
 function optionHtml(clusters, placeholder) {
-  const options = clusters.map(cluster => `<option value="${escapeHtml(cluster.id)}">${escapeHtml(cluster.label)}</option>`).join("");
+  const options = clusters.map((cluster) => `<option value="${escapeHtml(cluster.id)}">${escapeHtml(cluster.label)}</option>`).join("");
   return `<option value="">${escapeHtml(placeholder)}</option>${options}`;
 }
 
 function renderClusterSelects() {
-  const html = optionHtml(state.clusters, state.clusters.length ? "Select a cluster" : "Create a cluster first");
-  if (els.targetCluster) els.targetCluster.innerHTML = html;
-  if (els.themeCluster) els.themeCluster.innerHTML = html;
+  const targetClusterValue = els.targetCluster?.value || "";
+  const themeClusterValue = els.themeCluster?.value || "";
+  const targetHtml = optionHtml(state.clusters, state.clusters.length ? "Select a working cluster grouping" : "Create a working cluster grouping first");
+  const themeHtml = optionHtml(
+    clustersWithEvidence(),
+    clustersWithEvidence().length ? "Select a working cluster grouping" : "Add evidence to a working cluster grouping first"
+  );
+
+  if (els.targetCluster) {
+    els.targetCluster.innerHTML = targetHtml;
+    els.targetCluster.value = state.clusters.some((cluster) => cluster.id === targetClusterValue) ? targetClusterValue : "";
+  }
+  if (els.themeCluster) {
+    els.themeCluster.innerHTML = themeHtml;
+    els.themeCluster.value = clustersWithEvidence().some((cluster) => cluster.id === themeClusterValue) ? themeClusterValue : "";
+  }
 }
 
 function renderClusters() {
@@ -239,11 +315,11 @@ function renderClusters() {
   }
 
   els.clusterList.innerHTML = state.clusters
-    .map(cluster => {
+    .map((cluster) => {
       const evidenceItems = clusterEvidence(cluster);
       const evidenceList = evidenceItems.length
         ? `<ul class="govuk-list govuk-list--bullet">${evidenceItems
-            .map(item => `<li>${escapeHtml(item.excerpt || item.id)}</li>`)
+            .map((item) => `<li>${escapeHtml(item.excerpt || item.id)}</li>`)
             .join("")}</ul>`
         : '<p class="govuk-hint">No evidence added yet.</p>';
 
@@ -267,15 +343,17 @@ function renderThemes() {
   }
 
   els.themeList.innerHTML = state.themes
-    .map(theme => `<article class="theme-card" data-theme-id="${escapeHtml(theme.id)}">
+    .map(
+      (theme) => `<article class="theme-card" data-theme-id="${escapeHtml(theme.id)}">
   <h3 class="govuk-heading-s">${escapeHtml(theme.label)}</h3>
   ${theme.description ? `<p class="govuk-body">${escapeHtml(theme.description)}</p>` : ""}
   <p class="govuk-hint">${pluralise((theme.evidenceIds || []).length, "source evidence item")}</p>
   <details class="govuk-details">
-    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Source evidence IDs</span></summary>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Evidence used for this theme</span></summary>
     <div class="govuk-details__text"><code>${escapeHtml((theme.evidenceIds || []).join(", "))}</code></div>
   </details>
-</article>`)
+</article>`
+    )
     .join("");
 }
 
@@ -284,6 +362,7 @@ function renderAll() {
   renderEvidence();
   renderClusters();
   renderThemes();
+  updateActionAvailability();
 }
 
 async function loadStudySynthesis() {
@@ -310,8 +389,12 @@ async function createCluster(event) {
 
   const label = els.clusterLabel?.value.trim() || "";
   const description = els.clusterDescription?.value.trim() || "";
+  if (!state.evidence.length) {
+    showErrors(["Capture evidence before creating a working cluster grouping."]);
+    return;
+  }
   if (!label) {
-    showErrors(["Enter a cluster name."]);
+    showErrors(["Enter a cluster grouping name."]);
     return;
   }
 
@@ -326,7 +409,7 @@ async function createCluster(event) {
   state.clusters.push(body.cluster);
   if (els.clusterLabel) els.clusterLabel.value = "";
   if (els.clusterDescription) els.clusterDescription.value = "";
-  setStatus(`Created cluster ${body.cluster.label}.`);
+  setStatus(`Created working cluster grouping ${body.cluster.label}.`);
   renderAll();
 }
 
@@ -336,7 +419,7 @@ async function addSelectedEvidenceToCluster() {
   const ids = selectedEvidenceIds();
 
   if (!clusterId) {
-    showErrors(["Select a cluster to add evidence to."]);
+    showErrors(["Select a working cluster grouping to add evidence to."]);
     return;
   }
   if (!ids.length) {
@@ -354,9 +437,8 @@ async function addSelectedEvidenceToCluster() {
     body: JSON.stringify({ evidenceIds: mergedEvidenceIds })
   });
 
-  state.clusters = state.clusters.map(item => (item.id === body.cluster.id ? body.cluster : item));
-  state.selectedEvidenceIds = new Set();
-  $$("input[name='evidence-id']:checked", els.evidenceList).forEach(input => {
+  state.clusters = state.clusters.map((item) => (item.id === body.cluster.id ? body.cluster : item));
+  $$("input[name='evidence-id']:checked", els.evidenceList).forEach((input) => {
     input.checked = false;
   });
   setStatus(`Added ${pluralise(ids.length, "evidence item")} to ${body.cluster.label}.`);
@@ -373,9 +455,9 @@ async function createTheme(event) {
   const cluster = clusterById(clusterId);
   const errors = [];
 
-  if (!clusterId) errors.push("Select a cluster.");
+  if (!clusterId) errors.push("Select a working cluster grouping.");
   if (!label) errors.push("Enter a theme name.");
-  if (!cluster || !(cluster.evidenceIds || []).length) errors.push("Add at least one evidence item to the cluster before creating a theme.");
+  if (!cluster || !(cluster.evidenceIds || []).length) errors.push("Add at least one evidence item to the working cluster grouping before creating a theme.");
 
   if (errors.length) {
     showErrors(errors);
@@ -398,18 +480,24 @@ async function createTheme(event) {
 }
 
 function bindEvents() {
-  els.tagFilter?.addEventListener("input", event => {
+  els.tagFilter?.addEventListener("input", (event) => {
     state.activeTagFilter = event.target.value || "";
     renderEvidence();
+    updateActionAvailability();
   });
-  els.clusterForm?.addEventListener("submit", event => {
-    createCluster(event).catch(error => showErrors([error.message]));
+  els.evidenceList?.addEventListener("change", updateActionAvailability);
+  els.targetCluster?.addEventListener("change", updateActionAvailability);
+  els.clusterLabel?.addEventListener("input", updateActionAvailability);
+  els.themeCluster?.addEventListener("change", updateActionAvailability);
+  els.themeLabel?.addEventListener("input", updateActionAvailability);
+  els.clusterForm?.addEventListener("submit", (event) => {
+    createCluster(event).catch((error) => showErrors([error.message]));
   });
   els.addSelectedEvidence?.addEventListener("click", () => {
-    addSelectedEvidenceToCluster().catch(error => showErrors([error.message]));
+    addSelectedEvidenceToCluster().catch((error) => showErrors([error.message]));
   });
-  els.themeForm?.addEventListener("submit", event => {
-    createTheme(event).catch(error => showErrors([error.message]));
+  els.themeForm?.addEventListener("submit", (event) => {
+    createTheme(event).catch((error) => showErrors([error.message]));
   });
 }
 
@@ -445,5 +533,6 @@ window.__ropsSynthesize = Object.freeze({
   evidenceMatchesFilter,
   createCluster,
   addSelectedEvidenceToCluster,
-  createTheme
+  createTheme,
+  updateActionAvailability
 });

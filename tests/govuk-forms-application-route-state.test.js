@@ -32,7 +32,6 @@ function excludes(source, text, label) {
 
 for (const route of formRoutes) {
   const source = read(route);
-
   includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
   includes(source, "govuk-form-group", route);
   includes(source, "govuk-label", route);
@@ -69,12 +68,14 @@ excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions 
 const synthesizePage = read("public/pages/synthesize/index.html");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"tag-filter\">Filter by tag</label>", "Synthesize route");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"target-cluster\">Add selected evidence to</label>", "Synthesize route");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"cluster-label\">Cluster name</label>", "Synthesize route");
-includes(synthesizePage, "<textarea id=\"cluster-description\" class=\"govuk-textarea\"", "Synthesize route");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">Cluster</label>", "Synthesize route");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-label\">Theme name</label>", "Synthesize route");
-includes(synthesizePage, "<textarea id=\"theme-description\" class=\"govuk-textarea\"", "Synthesize route");
-excludes(synthesizePage, "<textarea id=\"theme-description\" class=\"govuk-input\"", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"cluster-label\">Cluster grouping name</label>", "Synthesize route");
+includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">Working cluster grouping</label>", "Synthesize route");
+includes(synthesizePage, "aria-describedby=\"add-selected-evidence-hint\"", "Synthesize route");
+includes(synthesizePage, "aria-describedby=\"create-cluster-hint\"", "Synthesize route");
+includes(synthesizePage, "aria-describedby=\"create-theme-hint\"", "Synthesize route");
+includes(synthesizePage, "disabled>Add selected evidence</button>", "Synthesize route");
+includes(synthesizePage, "disabled>Create cluster grouping</button>", "Synthesize route");
+includes(synthesizePage, "disabled>Create theme</button>", "Synthesize route");
 excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
 const dashboardPage = read("public/pages/project-dashboard/index.html");
