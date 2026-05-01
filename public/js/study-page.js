@@ -242,6 +242,7 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", params));
 	enableLink("#link-guides", route("/pages/study/guides/", params));
 	enableLink("#link-participants", route("/pages/study/participants/", params));
+	enableLink("#link-synthesis", route("/pages/synthesize/", params));
 
 	const editStudy = $("#edit-study");
 	if (editStudy) editStudy.href = `${route("/pages/study/", params)}#edit`;
