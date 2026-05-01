@@ -84,6 +84,26 @@ async function handleProjects(request, env) {
   return serviceFor(env).listProjectsFromAirtable(origin, url);
 }
 
+async function handleSynthesis(request, env, apiPath) {
+  const url = new URL(request.url);
+  const origin = request.headers.get("Origin") || "";
+  const service = serviceFor(env);
+
+  if (apiPath === "/api/synthesis/evidence" && request.method === "GET") return service.listSynthesisEvidence(origin, url);
+  if (apiPath === "/api/synthesis" && request.method === "GET") return service.listSynthesis(origin, url);
+  if (apiPath === "/api/synthesis/clusters" && request.method === "POST") return service.createSynthesisCluster(request, origin, url);
+  if (apiPath === "/api/synthesis/themes" && request.method === "POST") return service.createSynthesisTheme(request, origin, url);
+
+  const clusterMatch = apiPath.match(/^\/api\/synthesis\/clusters\/([^/]+)$/);
+  if (clusterMatch) {
+    const clusterId = decodeURIComponent(clusterMatch[1]);
+    if (request.method === "PATCH") return service.updateSynthesisCluster(request, origin, url, clusterId);
+    if (request.method === "DELETE") return service.deleteSynthesisCluster(origin, url, clusterId);
+  }
+
+  return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 async function handleConsentForms(request, env, apiPath) {
   const url = new URL(request.url);
   const origin = request.headers.get("Origin") || "";
@@ -111,6 +131,7 @@ export default {
     try {
       let result;
       if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
+      else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
       else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
       else result = await handleRequest(request, env, ctx);
       return withCORS(env, request, coerceResponse(result));
