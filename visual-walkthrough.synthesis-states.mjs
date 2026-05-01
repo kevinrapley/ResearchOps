@@ -76,7 +76,7 @@ export const synthesisVisualStates = [
 			},
 			{
 				type: 'waitForText',
-				text: `Created cluster ${synthesisEmptyCluster.label}.`,
+				text: `Created working cluster grouping ${synthesisEmptyCluster.label}.`,
 			},
 		],
 	},
@@ -122,22 +122,12 @@ export const synthesisVisualStates = [
 		mockRoutes: synthesisMockRoutes({ clusters: [synthesisEmptyCluster] }),
 		actions: [
 			{
-				type: 'select',
-				selector: '#theme-cluster',
-				value: synthesisEmptyCluster.id,
-			},
-			{
-				type: 'fill',
-				selector: '#theme-label',
-				value: synthesisTheme.label,
-			},
-			{
-				type: 'click',
-				selector: '#create-theme',
+				type: 'waitForText',
+				text: synthesisEmptyCluster.label,
 			},
 			{
 				type: 'waitForText',
-				text: 'Add at least one evidence item to the cluster before creating a theme.',
+				text: 'Add evidence to a working cluster grouping before creating a theme.',
 			},
 		],
 	},
