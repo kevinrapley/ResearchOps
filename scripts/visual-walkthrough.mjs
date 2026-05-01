@@ -204,10 +204,12 @@ async function captureReport() {
 
 	try {
 		for (const pageConfig of visualWalkthroughConfig.pages) {
-			const states = [
-				{ id: 'default', title: 'Default state', description: 'Initial loaded page state.' },
-				...(pageConfig.states || []),
-			];
+			const defaultState = pageConfig.defaultState || {
+				id: 'default',
+				title: 'Default state',
+				description: 'Initial loaded page state.',
+			};
+			const states = [defaultState, ...(pageConfig.states || [])];
 			const capturedStates = [];
 
 			for (const stateConfig of states) {
