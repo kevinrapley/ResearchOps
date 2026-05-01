@@ -1,4 +1,4 @@
-/* ==========================================================================
+/* ===========================================================================
    ResearchOps UI • Study synthesis route stylesheet
    Service:    Home Office Biometrics — ResearchOps
    Route:      /pages/synthesize/
@@ -30,20 +30,40 @@
 	}
 
 .synthesis-summary {
-	max-width: 760px;
+	max-width: 920px;
 	margin-bottom: 32px;
 	}
 
-.synthesis-grid {
+.synthesis-summary-list {
+	margin-bottom: 0;
+	}
+
+.synthesis-summary-list__row {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 110px minmax(0, 1fr);
+	align-items: baseline;
+	border-bottom: 0;
+	margin-bottom: 8px;
+	}
+
+.synthesis-summary-list__key {
+	width: auto;
+	margin-bottom: 0;
+	padding: 0;
+	font-weight: 700;
+	}
+
+.synthesis-summary-list__value {
+	margin: 0;
+	padding: 0;
+	}
+
+.synthesis-grid,
+.synthesis-flow {
 	display: grid;
 	gap: 24px;
 	grid-template-columns: 1fr;
-	}
-
-@media (min-width: 1000px) {
-	.synthesis-grid {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		}
 	}
 
 .synthesis-panel {
@@ -165,9 +185,21 @@
 	background: #f3f2f1;
 	}
 
+.synthesis-empty--route,
+.synthesis-empty--locked {
+	max-width: 760px;
+	border-top: 5px solid #1d70b8;
+	background: #ffffff;
+	}
+
+.synthesis-empty .govuk-heading-m,
 .synthesis-empty .govuk-heading-s,
 .synthesis-empty .govuk-body {
 	margin-top: 0;
+	}
+
+.synthesis-empty .govuk-button {
+	margin-bottom: 0;
 	}
 
 .govuk-button:disabled,
@@ -218,6 +250,11 @@
 
 	.synthesis-hero__actions {
 		margin-top: 12px;
+		}
+
+	.synthesis-summary-list__row {
+		grid-template-columns: 1fr;
+		gap: 2px;
 		}
 	}
 
