@@ -126,7 +126,8 @@ export const synthesisVisualStates = [
 	{
 		id: 'theme-blocked-without-evidence',
 		title: 'Theme creation hidden before evidence is grouped',
-		description: 'Theme creation remains hidden until at least one working cluster grouping contains source evidence.',
+		description:
+			'Theme creation remains hidden until at least one working cluster grouping contains source evidence.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({ clusters: [synthesisEmptyCluster] }),
 		actions: [
