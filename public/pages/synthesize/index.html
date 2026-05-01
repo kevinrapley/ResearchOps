@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 
 <head>
 	<meta charset="utf-8" />
@@ -11,8 +11,8 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501" media="screen" />
-	<link rel="modulepreload" href="/js/synthesize-page.js?v=study-synthesis-20260501" />
+	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-state-gates" media="screen" />
+	<link rel="modulepreload" href="/js/synthesize-page.js?v=study-synthesis-20260501-state-gates" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
@@ -44,7 +44,7 @@
 			<div>
 				<p id="synthesis-eyebrow" class="project-org">Study synthesis</p>
 				<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
-				<p id="study-context-text" class="govuk-body synthesis-context">Load evidence from a study to create traceable themes.</p>
+				<p id="study-context-text" class="govuk-body synthesis-context">Group study evidence into themes you can trace back to source notes.</p>
 			</div>
 			<div class="synthesis-hero__actions">
 				<a id="back-to-study" href="/pages/projects/" class="govuk-button govuk-button--secondary">Back to study</a>
@@ -77,7 +77,7 @@
 				<header class="synthesis-panel__header">
 					<div>
 						<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
-						<p class="govuk-body">Select evidence notes and add them to a working cluster.</p>
+						<p class="govuk-body">Select evidence notes and add them to a working cluster grouping.</p>
 					</div>
 				</header>
 
@@ -89,9 +89,12 @@
 					</div>
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="target-cluster">Add selected evidence to</label>
-						<select id="target-cluster" class="govuk-select"></select>
+						<select id="target-cluster" class="govuk-select" aria-describedby="add-selected-evidence-hint" disabled></select>
 					</div>
-					<button id="add-selected-evidence" type="button" class="govuk-button govuk-button--secondary">Add selected evidence</button>
+					<div class="synthesis-action-block">
+						<button id="add-selected-evidence" type="button" class="govuk-button govuk-button--secondary" aria-describedby="add-selected-evidence-hint" disabled>Add selected evidence</button>
+						<p id="add-selected-evidence-hint" class="govuk-hint">Create a working cluster grouping and select evidence before adding evidence.</p>
+					</div>
 				</div>
 
 				<div id="evidence-empty" class="synthesis-empty" hidden>
@@ -104,25 +107,26 @@
 			<section class="panel synthesis-panel" aria-labelledby="clusters-title">
 				<header class="synthesis-panel__header">
 					<div>
-						<h2 id="clusters-title" class="govuk-heading-m">Working clusters</h2>
-						<p class="govuk-body">Clusters are provisional groups of related evidence.</p>
+						<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
+						<p class="govuk-body">Cluster groupings are provisional groups of related evidence.</p>
 					</div>
 				</header>
 
 				<form id="cluster-form" class="cluster-create" novalidate>
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="cluster-label">Cluster name</label>
-						<input id="cluster-label" class="govuk-input" autocomplete="off" />
+						<label class="govuk-label" for="cluster-label">Cluster grouping name</label>
+						<input id="cluster-label" class="govuk-input" autocomplete="off" aria-describedby="create-cluster-hint" disabled />
 					</div>
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="cluster-description">Cluster description</label>
-						<textarea id="cluster-description" class="govuk-textarea" rows="4"></textarea>
+						<label class="govuk-label" for="cluster-description">Cluster grouping description</label>
+						<textarea id="cluster-description" class="govuk-textarea" rows="4" disabled></textarea>
 					</div>
-					<button id="create-cluster" type="submit" class="govuk-button">Create cluster</button>
+					<button id="create-cluster" type="submit" class="govuk-button" aria-describedby="create-cluster-hint" disabled>Create cluster grouping</button>
+					<p id="create-cluster-hint" class="govuk-hint">Capture evidence before creating a working cluster grouping.</p>
 				</form>
 
 				<div id="clusters-empty" class="synthesis-empty" hidden>
-					<p class="govuk-body">No clusters have been created yet.</p>
+					<p class="govuk-body">No working cluster groupings have been created yet.</p>
 				</div>
 				<div id="cluster-list" class="cluster-list"></div>
 			</section>
@@ -131,24 +135,25 @@
 				<header class="synthesis-panel__header">
 					<div>
 						<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
-						<p class="govuk-body">Create themes from clusters. Each theme keeps links to the source evidence IDs.</p>
+						<p class="govuk-body">Create themes from working cluster groupings. Each theme keeps links to the evidence used.</p>
 					</div>
 				</header>
 
 				<form id="theme-form" class="theme-create" novalidate>
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="theme-cluster">Cluster</label>
-						<select id="theme-cluster" class="govuk-select"></select>
+						<label class="govuk-label" for="theme-cluster">Working cluster grouping</label>
+						<select id="theme-cluster" class="govuk-select" aria-describedby="create-theme-hint" disabled></select>
 					</div>
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="theme-label">Theme name</label>
-						<input id="theme-label" class="govuk-input" autocomplete="off" />
+						<input id="theme-label" class="govuk-input" autocomplete="off" aria-describedby="create-theme-hint" disabled />
 					</div>
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="theme-description">Theme description</label>
-						<textarea id="theme-description" class="govuk-textarea" rows="5"></textarea>
+						<textarea id="theme-description" class="govuk-textarea" rows="5" disabled></textarea>
 					</div>
-					<button id="create-theme" type="submit" class="govuk-button">Create theme</button>
+					<button id="create-theme" type="submit" class="govuk-button" aria-describedby="create-theme-hint" disabled>Create theme</button>
+					<p id="create-theme-hint" class="govuk-hint">Add evidence to a working cluster grouping before creating a theme.</p>
 				</form>
 
 				<div id="themes-empty" class="synthesis-empty" hidden>
@@ -161,7 +166,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module" src="/js/synthesize-page.js?v=study-synthesis-20260501"></script>
+	<script type="module" src="/js/synthesize-page.js?v=study-synthesis-20260501-state-gates"></script>
 </body>
 
 </html>
