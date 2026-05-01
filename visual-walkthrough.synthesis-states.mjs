@@ -20,7 +20,8 @@ import {
 export const synthesisDefaultState = {
 	id: 'missing-sid-error',
 	title: 'Missing study ID error state',
-	description: 'Synthesis loaded without a study ID; the page shows the blocking route-context error.',
+	description:
+		'Synthesis loaded without a study ID; the page shows the blocking route-context error.',
 };
 
 export const synthesisVisualStates = [
@@ -40,7 +41,8 @@ export const synthesisVisualStates = [
 	{
 		id: 'evidence-loaded',
 		title: 'Evidence loaded state',
-		description: 'Study synthesis with realistic evidence notes loaded from mocked session evidence.',
+		description:
+			'Study synthesis with realistic evidence notes loaded from mocked session evidence.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes(),
 		actions: [
@@ -53,7 +55,8 @@ export const synthesisVisualStates = [
 	{
 		id: 'working-cluster-created',
 		title: 'Working cluster grouping created',
-		description: 'A researcher creates a provisional working cluster grouping before adding evidence.',
+		description:
+			'A researcher creates a provisional working cluster grouping before adding evidence.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({ extraRoutes: [clusterCreateMockRoute()] }),
 		actions: [

@@ -12,7 +12,8 @@ export const synthesisPath = `/pages/synthesize/?pid=${synthesisProjectId}&sid=$
 const synthesisEvidenceRoute = /\/api\/synthesis\/evidence(?:\?.*)?$/;
 const synthesisSummaryRoute = /\/api\/synthesis(?:\?.*)?$/;
 const synthesisClusterCreateRoute = /\/api\/synthesis\/clusters(?:\?.*)?$/;
-const synthesisClusterUpdateRoute = /\/api\/synthesis\/clusters\/cluster-confidence-start(?:\?.*)?$/;
+const synthesisClusterUpdateRoute =
+	/\/api\/synthesis\/clusters\/cluster-confidence-start(?:\?.*)?$/;
 const synthesisThemeCreateRoute = /\/api\/synthesis\/themes(?:\?.*)?$/;
 
 export const synthesisStudy = {
@@ -73,7 +74,12 @@ export const synthesisTheme = {
 	evidenceIds: ['ev-confidence-before-start', 'ev-language-support'],
 };
 
-export function synthesisMockRoutes({ evidence = synthesisEvidence, clusters = [], themes = [], extraRoutes = [] } = {}) {
+export function synthesisMockRoutes({
+	evidence = synthesisEvidence,
+	clusters = [],
+	themes = [],
+	extraRoutes = [],
+} = {}) {
 	return [
 		{
 			url: synthesisEvidenceRoute,
