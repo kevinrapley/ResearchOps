@@ -122,8 +122,8 @@ export const synthesisVisualStates = [
 		mockRoutes: synthesisMockRoutes({ clusters: [synthesisEmptyCluster] }),
 		actions: [
 			{
-				type: 'waitForText',
-				text: synthesisEmptyCluster.label,
+				type: 'waitForSelector',
+				selector: `[data-cluster-id="${synthesisEmptyCluster.id}"]`,
 			},
 			{
 				type: 'waitForText',
