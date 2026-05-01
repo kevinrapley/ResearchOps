@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { synthesisPath } from '../visual-walkthrough.synthesis-fixtures.mjs';
+import {
+	synthesisDefaultState,
+	synthesisVisualStates,
+} from '../visual-walkthrough.synthesis-states.mjs';
 
 function listHtmlFiles(dir) {
 	if (!fs.existsSync(dir)) return [];
@@ -41,6 +46,7 @@ const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
 
 const registeredRoutes = visualWalkthroughConfig.pages.map((page) => page.path);
 const registeredIds = visualWalkthroughConfig.pages.map((page) => page.id);
+const synthesisStateIds = synthesisVisualStates.map((state) => state.id);
 
 for (const route of discoveredRoutes) {
 	assert.ok(
@@ -64,3 +70,38 @@ assert.equal(
 	registeredIds.length,
 	'Expected registered page ids to be unique'
 );
+
+assert.equal(
+	synthesisDefaultState.id,
+	'missing-sid-error',
+	'Expected synthesis walkthrough to capture the missing study ID error as its default state'
+);
+
+assert.deepEqual(
+	synthesisStateIds,
+	[
+		'empty-evidence',
+		'evidence-loaded',
+		'working-cluster-created',
+		'evidence-added-to-cluster',
+		'theme-blocked-without-evidence',
+		'theme-created',
+	],
+	'Expected synthesis walkthrough states to cover the production first-slice workflow'
+);
+
+for (const state of synthesisVisualStates) {
+	assert.equal(
+		state.path,
+		synthesisPath,
+		`Expected synthesis state to use the study-scoped route: ${state.id}`
+	);
+	assert.ok(
+		Array.isArray(state.mockRoutes) && state.mockRoutes.length >= 2,
+		`Expected synthesis state to provide mocked API routes: ${state.id}`
+	);
+	assert.ok(
+		Array.isArray(state.actions) && state.actions.length >= 1,
+		`Expected synthesis state to provide capture actions: ${state.id}`
+	);
+}

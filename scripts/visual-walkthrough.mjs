@@ -9,6 +9,10 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import {
+	synthesisDefaultState,
+	synthesisVisualStates,
+} from '../visual-walkthrough.synthesis-states.mjs';
 
 const OUTPUT_DIR = 'reports-site';
 const SCREENSHOTS_DIR = path.join(OUTPUT_DIR, 'screenshots');
@@ -93,6 +97,18 @@ function validateRegistry() {
 	if (failures.length > 0) {
 		throw new Error(`Visual walkthrough registry is incomplete:\n- ${failures.join('\n- ')}`);
 	}
+}
+
+function pageCaptureConfig(pageConfig) {
+	if (pageConfig.id !== 'synthesize') return pageConfig;
+
+	return {
+		...pageConfig,
+		title: 'Study synthesis',
+		description: 'Study-scoped evidence grouping and theme creation page.',
+		defaultState: synthesisDefaultState,
+		states: [...(pageConfig.states || []), ...synthesisVisualStates],
+	};
 }
 
 async function settlePage(page) {
@@ -203,11 +219,14 @@ async function captureReport() {
 	const failures = [];
 
 	try {
-		for (const pageConfig of visualWalkthroughConfig.pages) {
-			const states = [
-				{ id: 'default', title: 'Default state', description: 'Initial loaded page state.' },
-				...(pageConfig.states || []),
-			];
+		for (const rawPageConfig of visualWalkthroughConfig.pages) {
+			const pageConfig = pageCaptureConfig(rawPageConfig);
+			const defaultState = pageConfig.defaultState || {
+				id: 'default',
+				title: 'Default state',
+				description: 'Initial loaded page state.',
+			};
+			const states = [defaultState, ...(pageConfig.states || [])];
 			const capturedStates = [];
 
 			for (const stateConfig of states) {
