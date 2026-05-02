@@ -12,6 +12,7 @@ import * as Projects from "./projects.js";
 import * as Studies from "./studies.js";
 import * as Guides from "./guides.js";
 import * as ConsentForms from "./consent-forms.js";
+import * as ParticipantConsent from "./participant-consent.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as Partials from "./partials.js";
@@ -51,6 +52,7 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} AIRTABLE_TABLE_STUDIES
  * @property {string} AIRTABLE_TABLE_GUIDES
  * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
+ * @property {string} AIRTABLE_TABLE_PARTICIPANT_CONSENT
  * @property {string} AIRTABLE_TABLE_PARTIALS
  * @property {string} AIRTABLE_TABLE_PARTICIPANTS
  * @property {string} AIRTABLE_TABLE_SESSIONS
@@ -199,6 +201,11 @@ export class ResearchOpsService {
 	readConsentForm = (origin, formId) => ConsentForms.readConsentForm(this, origin, formId);
 	updateConsentForm = (req, origin, formId) => ConsentForms.updateConsentForm(this, req, origin, formId);
 	publishConsentForm = (origin, formId) => ConsentForms.publishConsentForm(this, origin, formId);
+
+	/* ─────────────── Participant Consent ─────────────── */
+	listParticipantConsent = (origin, url) => ParticipantConsent.listParticipantConsent(this, origin, url);
+	createParticipantConsent = (req, origin) => ParticipantConsent.createParticipantConsent(this, req, origin);
+	updateParticipantConsent = (req, origin, recordId) => ParticipantConsent.updateParticipantConsent(this, req, origin, recordId);
 
 	/* ─────────────── Partials ─────────────── */
 	listPartials = (origin) => Partials.listPartials(this, origin);
