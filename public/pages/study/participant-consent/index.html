@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en-GB">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Participant consent — ResearchOps</title>
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
+	<link rel="stylesheet" href="/css/participant-consent.css" media="screen" />
+
+	<link rel="modulepreload" href="/js/participant-consent-page.js" />
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/participant-consent-page.js" defer></script>
+</head>
+
+<body>
+	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+
+	<x-include src="/partials/header.html" vars='{
+    "active":"Projects",
+    "subtitle":"Study — participant consent"
+  }'></x-include>
+
+	<main id="main" class="container govuk-body participant-consent-page" role="main">
+		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+			<ol class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="#">Project</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-study" class="govuk-breadcrumbs__link" href="#">Study</a></li>
+				<li class="govuk-breadcrumbs__list-item" aria-current="page">Participant consent</li>
+			</ol>
+		</nav>
+
+		<div id="consent-error" class="govuk-error-summary" role="alert" tabindex="-1" hidden aria-hidden="true">
+			<h2 class="govuk-error-summary__title">There is a problem</h2>
+			<ul id="consent-error-list" class="govuk-error-summary__list"></ul>
+		</div>
+
+		<div class="participant-consent-hero">
+			<div>
+				<p id="study-context" class="project-org">Study</p>
+				<h1 class="govuk-heading-l">Manage participant consent</h1>
+				<p class="govuk-body participant-consent-context">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
+			</div>
+			<div class="participant-consent-hero__actions">
+				<a id="back-to-study" href="/pages/study/" class="govuk-button govuk-button--secondary">Back to Study</a>
+			</div>
+		</div>
+
+		<p id="participant-consent-status" class="participant-consent-status" role="status" aria-live="polite">Loading participant consent.</p>
+
+		<section id="no-context-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+			<h2 class="govuk-heading-m">Open this page from a study</h2>
+			<p class="govuk-body">The participant consent page needs a project ID and study ID in the URL.</p>
+		</section>
+
+		<section id="no-consent-form-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+			<h2 class="govuk-heading-m">Create and publish a consent form before recording participant consent</h2>
+			<p class="govuk-body">Participant consent must be recorded against the version of the consent form that was shown or read to the participant.</p>
+			<a id="create-consent-forms-link" href="#" class="govuk-button">Create consent forms</a>
+		</section>
+
+		<section id="no-participants-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+			<h2 class="govuk-heading-m">Add participants before recording consent</h2>
+			<p class="govuk-body">Add participants to this study before recording individual consent responses.</p>
+			<a id="schedule-participants-link" href="#" class="govuk-button">Schedule participants</a>
+		</section>
+
+		<section id="consent-workspace" class="participant-consent-workspace" hidden>
+			<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
+				<h2 id="consent-summary-title" class="govuk-heading-m">Consent coverage</h2>
+				<dl class="participant-consent-summary govuk-summary-list">
+					<div class="participant-consent-summary__row">
+						<dt class="participant-consent-summary__key">Published form</dt>
+						<dd id="summary-published-form" class="participant-consent-summary__value">—</dd>
+					</div>
+					<div class="participant-consent-summary__row">
+						<dt class="participant-consent-summary__key">Participants</dt>
+						<dd id="summary-participants" class="participant-consent-summary__value">—</dd>
+					</div>
+					<div class="participant-consent-summary__row">
+						<dt class="participant-consent-summary__key">Ready</dt>
+						<dd id="summary-ready" class="participant-consent-summary__value">—</dd>
+					</div>
+					<div class="participant-consent-summary__row">
+						<dt class="participant-consent-summary__key">Needs action</dt>
+						<dd id="summary-action-needed" class="participant-consent-summary__value">—</dd>
+					</div>
+				</dl>
+			</section>
+
+			<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
+				<div class="participant-consent-panel__header">
+					<div>
+						<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
+						<p class="govuk-body">Select a participant to record or review consent. Status is shown in text and does not rely on colour.</p>
+					</div>
+				</div>
+
+				<div class="table-wrap">
+					<table class="govuk-table participant-consent-table" aria-label="Participant consent">
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th scope="col" class="govuk-table__header">Participant</th>
+								<th scope="col" class="govuk-table__header">Consent status</th>
+								<th scope="col" class="govuk-table__header">Permissions</th>
+								<th scope="col" class="govuk-table__header">Recorded</th>
+								<th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="participant-consent-tbody" class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell" colspan="5">Loading participants.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section id="consent-record-panel" class="participant-consent-panel" aria-labelledby="record-consent-title" hidden>
+				<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
+				<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
+
+				<form id="participant-consent-form" novalidate>
+					<input id="participant-id" type="hidden" />
+					<input id="consent-record-id" type="hidden" />
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="consent-form-select">Consent form version</label>
+						<div id="consent-form-select-hint" class="govuk-hint">Use the published consent form shown, sent or read to the participant.</div>
+						<select id="consent-form-select" class="govuk-select" aria-describedby="consent-form-select-hint"></select>
+					</div>
+
+					<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">
+						<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Consent statements</legend>
+						<div id="consent-items-hint" class="govuk-hint">Required statements must be agreed before a participant is ready for a session. Optional declined permissions should still be visible to the research team.</div>
+						<div id="consent-items-list"></div>
+					</fieldset>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="capture-method">Capture method</label>
+						<select id="capture-method" class="govuk-select">
+							<option value="">Select a capture method</option>
+							<option value="Verbal">Verbal</option>
+							<option value="Signed form">Signed form</option>
+							<option value="Email">Email</option>
+							<option value="Imported">Imported</option>
+						</select>
+					</div>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="recorded-by">Recorded by</label>
+						<input id="recorded-by" class="govuk-input" autocomplete="name" />
+					</div>
+
+					<details class="govuk-details participant-consent-withdrawal">
+						<summary class="govuk-details__summary">Record withdrawal or do not proceed</summary>
+						<div class="govuk-details__text">
+							<div class="govuk-form-group">
+								<div class="govuk-checkboxes">
+									<div class="govuk-checkboxes__item">
+										<input id="consent-withdrawn" class="govuk-checkboxes__input" type="checkbox" />
+										<label class="govuk-label govuk-checkboxes__label" for="consent-withdrawn">Consent has been withdrawn or the session should not proceed</label>
+									</div>
+								</div>
+							</div>
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="withdrawal-reason">Reason or note</label>
+								<textarea id="withdrawal-reason" class="govuk-textarea" rows="3"></textarea>
+							</div>
+						</div>
+					</details>
+
+					<div class="participant-consent-form__actions">
+						<button id="save-participant-consent" class="govuk-button" type="submit">Save consent response</button>
+						<button id="cancel-participant-consent" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
+					</div>
+				</form>
+			</section>
+		</section>
+	</main>
+
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+</body>
+
+</html>
