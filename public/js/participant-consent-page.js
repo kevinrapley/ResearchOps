@@ -58,6 +58,19 @@ const state = {
 
 const $ = (selector, root = document) => root.querySelector(selector);
 
+function escapeHtml(value) {
+	return String(value ?? "")
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
+}
+
+function safeToken(value) {
+	return String(value || "item").replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
 function apiUrl(path) {
 	const p = String(path || "");
 	return `${API_ORIGIN}${p.startsWith("/") ? p : "/" + p}`;
@@ -268,16 +281,17 @@ function renderParticipantTable() {
 		tr.dataset.participantConsentRow = participant.id;
 
 		const tags = permissionTags(record)
-			.map(tag => `<span class="participant-consent-tag${/declined|not asked|Do not proceed/i.test(tag) ? " participant-consent-tag--warning" : ""}">${tag}</span>`)
+			.map(tag => `<span class="participant-consent-tag${/declined|not asked|Do not proceed/i.test(tag) ? " participant-consent-tag--warning" : ""}">${escapeHtml(tag)}</span>`)
 			.join(" ");
 		const action = record ? "Review consent" : "Record consent";
+		const participantName = participant.display_name || participant.name || "Participant";
 
 		tr.innerHTML = `
-			<th scope="row" class="govuk-table__header">${participant.display_name || participant.name || "Participant"}</th>
-			<td class="govuk-table__cell">${status}</td>
+			<th scope="row" class="govuk-table__header">${escapeHtml(participantName)}</th>
+			<td class="govuk-table__cell">${escapeHtml(status)}</td>
 			<td class="govuk-table__cell"><span class="participant-consent-tag-list">${tags}</span></td>
-			<td class="govuk-table__cell">${record?.recordedAt || "Not recorded"}</td>
-			<td class="govuk-table__cell"><button type="button" class="govuk-button govuk-button--secondary" data-record-consent="${participant.id}">${action}</button></td>
+			<td class="govuk-table__cell">${escapeHtml(record?.recordedAt || "Not recorded")}</td>
+			<td class="govuk-table__cell"><button type="button" class="govuk-button govuk-button--secondary" data-record-consent="${escapeHtml(participant.id)}">${escapeHtml(action)}</button></td>
 		`;
 		tbody.appendChild(tr);
 	}
@@ -305,20 +319,21 @@ function renderConsentItems(record = null, form = latestPublishedForm()) {
 		const group = document.createElement("div");
 		group.className = "participant-consent-item";
 		const current = record?.responses?.[item.id] || "not-asked";
+		const token = safeToken(item.id);
 		group.innerHTML = `
-			<p class="participant-consent-item__label">${item.label}<span class="participant-consent-item__requirement">${item.required ? "Required" : "Optional"}</span></p>
+			<p class="participant-consent-item__label">${escapeHtml(item.label)}<span class="participant-consent-item__requirement">${item.required ? "Required" : "Optional"}</span></p>
 			<div class="govuk-radios govuk-radios--inline">
 				<div class="govuk-radios__item">
-					<input id="consent-${item.id}-agreed" class="govuk-radios__input" name="consent-${item.id}" type="radio" value="agreed" ${current === "agreed" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${item.id}-agreed">Agreed</label>
+					<input id="consent-${token}-agreed" class="govuk-radios__input" name="consent-${token}" type="radio" value="agreed" ${current === "agreed" ? "checked" : ""} />
+					<label class="govuk-label govuk-radios__label" for="consent-${token}-agreed">Agreed</label>
 				</div>
 				<div class="govuk-radios__item">
-					<input id="consent-${item.id}-declined" class="govuk-radios__input" name="consent-${item.id}" type="radio" value="declined" ${current === "declined" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${item.id}-declined">Declined</label>
+					<input id="consent-${token}-declined" class="govuk-radios__input" name="consent-${token}" type="radio" value="declined" ${current === "declined" ? "checked" : ""} />
+					<label class="govuk-label govuk-radios__label" for="consent-${token}-declined">Declined</label>
 				</div>
 				<div class="govuk-radios__item">
-					<input id="consent-${item.id}-not-asked" class="govuk-radios__input" name="consent-${item.id}" type="radio" value="not-asked" ${current === "not-asked" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${item.id}-not-asked">Not asked</label>
+					<input id="consent-${token}-not-asked" class="govuk-radios__input" name="consent-${token}" type="radio" value="not-asked" ${current === "not-asked" ? "checked" : ""} />
+					<label class="govuk-label govuk-radios__label" for="consent-${token}-not-asked">Not asked</label>
 				</div>
 			</div>
 		`;
@@ -350,7 +365,8 @@ function selectParticipant(participantId) {
 function collectResponses(form = latestPublishedForm()) {
 	const responses = {};
 	for (const item of consentItemsForForm(form)) {
-		const checked = document.querySelector(`input[name="consent-${item.id}"]:checked`);
+		const token = safeToken(item.id);
+		const checked = document.querySelector(`input[name="consent-${token}"]:checked`);
 		responses[item.id] = checked?.value || "not-asked";
 	}
 	return responses;
