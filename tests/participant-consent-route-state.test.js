@@ -51,6 +51,8 @@ includes(controllerSource, "return \"Needs review\"", "participant consent contr
 includes(controllerSource, "return \"Needs consent\"", "participant consent controller");
 includes(controllerSource, "return \"Ready for session\"", "participant consent controller");
 includes(controllerSource, "return \"Withdrawn\"", "participant consent controller");
+includes(controllerSource, "breadcrumbStudy.textContent = \"Study\"", "participant consent controller");
+includes(controllerSource, "breadcrumbStudy.setAttribute(\"aria-label\"", "participant consent controller");
 includes(controllerSource, "function renderParticipantTable", "participant consent controller");
 includes(controllerSource, "function renderConsentItems", "participant consent controller");
 includes(controllerSource, "async function saveConsent", "participant consent controller");
@@ -69,6 +71,11 @@ includes(stylesheetSource, ".participant-consent-table", "participant consent st
 includes(stylesheetSource, "min-width: 760px;", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-item", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-tag", "participant consent stylesheet");
+includes(stylesheetSource, "@media (max-width: 699px)", "participant consent stylesheet");
+includes(stylesheetSource, "flex-direction: column-reverse;", "participant consent stylesheet");
+includes(stylesheetSource, ".participant-consent-hero__actions .govuk-button", "participant consent stylesheet");
+includes(stylesheetSource, "font-size: 32px;", "participant consent stylesheet");
+includes(stylesheetSource, "overflow-wrap: anywhere;", "participant consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "participant consent stylesheet");
 excludes(stylesheetSource, ".govuk-error-summary", "participant consent stylesheet");
 
