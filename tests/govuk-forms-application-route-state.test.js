@@ -14,6 +14,7 @@ const formRoutes = [
   "public/pages/study/index.html",
   "public/pages/study/guides/index.html",
   "public/pages/study/consent-forms/index.html",
+  "public/pages/study/participant-consent/index.html",
   "public/pages/study/participants/index.html",
   "public/pages/study/session/index.html"
 ];
@@ -109,6 +110,16 @@ const consentFormsPage = read("public/pages/study/consent-forms/index.html");
 includes(consentFormsPage, "href=\"/css/govuk/govuk-forms.css\"", "Consent Forms route");
 includes(consentFormsPage, "aria-describedby=\"consent-variables-error\"", "Consent Forms route");
 includes(consentFormsPage, "class=\"govuk-button-group actions-bar\"", "Consent Forms route");
+
+const participantConsentPage = read("public/pages/study/participant-consent/index.html");
+includes(participantConsentPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant Consent route");
+includes(participantConsentPage, "id=\"participant-consent-form\"", "Participant Consent route");
+includes(participantConsentPage, "id=\"consent-form-select\"", "Participant Consent route");
+includes(participantConsentPage, "id=\"capture-method\"", "Participant Consent route");
+includes(participantConsentPage, "id=\"recorded-by\"", "Participant Consent route");
+includes(participantConsentPage, "id=\"withdrawal-reason\"", "Participant Consent route");
+includes(participantConsentPage, "class=\"govuk-fieldset participant-consent-items\"", "Participant Consent route");
+includes(participantConsentPage, "class=\"govuk-checkboxes__input\"", "Participant Consent route");
 
 const participantsPage = read("public/pages/study/participants/index.html");
 includes(participantsPage, "href=\"/css/govuk/govuk-forms.css\"", "Participants route");
