@@ -224,6 +224,7 @@ function updateRoutes() {
 	const studyHref = route("/pages/study/", params);
 	const consentFormsHref = route("/pages/study/consent-forms/", params);
 	const participantsHref = route("/pages/study/participants/", params);
+	const currentStudyTitle = studyTitle(state.study || {});
 
 	const breadcrumbProject = $("#breadcrumb-project");
 	if (breadcrumbProject) {
@@ -233,7 +234,9 @@ function updateRoutes() {
 	const breadcrumbStudy = $("#breadcrumb-study");
 	if (breadcrumbStudy) {
 		breadcrumbStudy.href = studyHref;
-		breadcrumbStudy.textContent = studyTitle(state.study || {});
+		breadcrumbStudy.textContent = "Study";
+		breadcrumbStudy.setAttribute("aria-label", `Study: ${currentStudyTitle}`);
+		breadcrumbStudy.title = currentStudyTitle;
 	}
 	const backToStudy = $("#back-to-study");
 	if (backToStudy) backToStudy.href = studyHref;
