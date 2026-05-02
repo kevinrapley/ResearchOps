@@ -34,6 +34,7 @@ includes(pageSource, "id=\"no-participants-state\"", "participant consent page")
 includes(pageSource, "Add participants before recording consent", "participant consent page");
 includes(pageSource, "id=\"consent-workspace\"", "participant consent page");
 includes(pageSource, "id=\"summary-published-form\"", "participant consent page");
+includes(pageSource, "class=\"table-wrap\"", "participant consent page");
 includes(pageSource, "class=\"govuk-table participant-consent-table\"", "participant consent page");
 includes(pageSource, "id=\"participant-consent-form\"", "participant consent page");
 includes(pageSource, "id=\"consent-form-select\"", "participant consent page");
@@ -58,8 +59,14 @@ includes(controllerSource, "Could not save participant consent", "participant co
 excludes(controllerSource, "alert(", "participant consent controller");
 
 includes(stylesheetSource, ".participant-consent-page", "participant consent stylesheet");
+includes(stylesheetSource, ".participant-consent-page [hidden]", "participant consent stylesheet");
+includes(stylesheetSource, "display: none;", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-panel", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-summary__row", "participant consent stylesheet");
+includes(stylesheetSource, ".table-wrap", "participant consent stylesheet");
+includes(stylesheetSource, "overflow-x: auto;", "participant consent stylesheet");
+includes(stylesheetSource, ".participant-consent-table", "participant consent stylesheet");
+includes(stylesheetSource, "min-width: 760px;", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-item", "participant consent stylesheet");
 includes(stylesheetSource, ".participant-consent-tag", "participant consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "participant consent stylesheet");
