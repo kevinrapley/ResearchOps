@@ -1,0 +1,209 @@
+/* ===========================================================================
+   ResearchOps UI • Participant consent route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/study/participant-consent/
+   Build:      GOV.UK typography + colours; mobile-first
+   Repo:       /css/participant-consent.css
+   License:    All rights reserved
+   ========================================================================== */
+
+.participant-consent-page {
+	max-width: 1120px;
+	}
+
+.participant-consent-hero {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 24px;
+	}
+
+.participant-consent-hero__actions {
+	flex: 0 0 auto;
+	}
+
+.participant-consent-context {
+	max-width: 72ch;
+	}
+
+.participant-consent-status {
+	min-height: 1.5rem;
+	margin-bottom: 16px;
+	font-weight: 700;
+	}
+
+.participant-consent-workspace {
+	display: grid;
+	gap: 24px;
+	}
+
+.participant-consent-panel {
+	border-top: 5px solid #1d70b8;
+	margin-bottom: 24px;
+	padding-top: 20px;
+	}
+
+.participant-consent-panel__header {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 16px;
+	}
+
+.participant-consent-summary {
+	max-width: 920px;
+	margin-bottom: 0;
+	}
+
+.participant-consent-summary__row {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: 140px minmax(0, 1fr);
+	align-items: baseline;
+	border-bottom: 0;
+	margin-bottom: 8px;
+	}
+
+.participant-consent-summary__key {
+	width: auto;
+	margin-bottom: 0;
+	padding: 0;
+	font-weight: 700;
+	}
+
+.participant-consent-summary__value {
+	margin: 0;
+	padding: 0;
+	}
+
+.participant-consent-table .govuk-button {
+	margin-bottom: 0;
+	}
+
+.participant-consent-empty {
+	border: 1px solid #b1b4b6;
+	margin-bottom: 24px;
+	padding: 16px;
+	background: #f3f2f1;
+	}
+
+.participant-consent-empty--route {
+	max-width: 760px;
+	border-top: 5px solid #1d70b8;
+	background: #ffffff;
+	}
+
+.participant-consent-empty .govuk-heading-m,
+.participant-consent-empty .govuk-body {
+	margin-top: 0;
+	}
+
+.participant-consent-empty .govuk-button {
+	margin-bottom: 0;
+	}
+
+.participant-consent-items {
+	margin-bottom: 24px;
+	}
+
+.participant-consent-item {
+	border: 1px solid #b1b4b6;
+	margin-bottom: 12px;
+	padding: 16px;
+	background: #ffffff;
+	}
+
+.participant-consent-item__label {
+	margin-top: 0;
+	margin-bottom: 8px;
+	font-weight: 700;
+	}
+
+.participant-consent-item__requirement {
+	display: inline-block;
+	margin-left: 8px;
+	font-size: 0.9rem;
+	font-weight: 700;
+	}
+
+.participant-consent-form__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	}
+
+.participant-consent-form__actions .govuk-button {
+	margin-bottom: 0;
+	}
+
+.participant-consent-withdrawal {
+	margin-bottom: 24px;
+	}
+
+.participant-consent-tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	}
+
+.participant-consent-tag {
+	display: inline-block;
+	border: 1px solid #b1b4b6;
+	border-radius: 14px;
+	padding: 2px 8px;
+	background: #ffffff;
+	color: #0b0c0c;
+	font-size: 12px;
+	font-weight: 700;
+	}
+
+.participant-consent-tag--warning {
+	border-color: #f47738;
+	background: #fff7bf;
+	}
+
+.govuk-error-summary {
+	border: 5px solid #d4351c;
+	margin-bottom: 24px;
+	padding: 16px;
+	}
+
+.govuk-error-summary__title {
+	margin-top: 0;
+	}
+
+.govuk-error-summary__list {
+	margin-bottom: 0;
+	}
+
+.govuk-button:disabled,
+.govuk-button[disabled] {
+	background-color: #b1b4b6;
+	box-shadow: none;
+	color: #ffffff;
+	cursor: not-allowed;
+	}
+
+@media (max-width: 699px) {
+	.participant-consent-hero {
+		display: block;
+		}
+
+	.participant-consent-hero__actions {
+		margin-top: 12px;
+		}
+
+	.participant-consent-summary__row {
+		grid-template-columns: 1fr;
+		gap: 2px;
+		}
+
+	.participant-consent-panel__header {
+		display: block;
+		}
+	}
+
+/* transparency begins in the cascade */
