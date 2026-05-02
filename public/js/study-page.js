@@ -106,16 +106,18 @@ async function loadStudyCollection(path, studyId, key) {
 }
 
 async function loadReadinessContext(studyId) {
-	const [participants, guides, consentForms] = await Promise.all([
+	const [participants, guides, consentForms, participantConsentRecords] = await Promise.all([
 		loadStudyCollection("/api/participants", studyId, "participants"),
 		loadStudyCollection("/api/guides", studyId, "guides"),
-		loadStudyCollection("/api/consent-forms", studyId, "consentForms")
+		loadStudyCollection("/api/consent-forms", studyId, "consentForms"),
+		loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords")
 	]);
 
 	return {
 		participants,
 		guides,
-		consentForms
+		consentForms,
+		participantConsentRecords
 	};
 }
 
@@ -159,6 +161,11 @@ function isPublishedLike(item = {}) {
 	return ["published", "ready", "approved", "complete", "completed"].includes(status);
 }
 
+function isParticipantConsentReady(record = {}) {
+	const status = normaliseStatus(record.status);
+	return status === "ready for session" && record.withdrawn !== true;
+}
+
 function evaluateReadiness(study, context = {}) {
 	const hasDescription = !!String(study.description || "").trim();
 	const status = String(study.status || "").trim() || "Planned";
@@ -166,10 +173,13 @@ function evaluateReadiness(study, context = {}) {
 	const participants = Array.isArray(context.participants) ? context.participants : [];
 	const guides = Array.isArray(context.guides) ? context.guides : [];
 	const consentForms = Array.isArray(context.consentForms) ? context.consentForms : [];
+	const participantConsentRecords = Array.isArray(context.participantConsentRecords) ? context.participantConsentRecords : [];
 
 	const participantsReady = participants.length > 0;
 	const guideReady = guides.some(isPublishedLike);
-	const consentReady = consentForms.some(isPublishedLike);
+	const consentMaterialsReady = consentForms.some(isPublishedLike);
+	const readyParticipantConsent = participantConsentRecords.filter(isParticipantConsentReady);
+	const participantConsentReady = readyParticipantConsent.length > 0;
 
 	return {
 		description: {
@@ -192,10 +202,15 @@ function evaluateReadiness(study, context = {}) {
 			state: guideReady ? "Ready" : "Action needed",
 			text: guideReady ? "A published discussion guide is available for this study." : "Create, review and publish the discussion guide before running a session."
 		},
-		consent: {
-			ready: consentReady,
-			state: consentReady ? "Ready" : "Action needed",
-			text: consentReady ? "A published consent form is available for this study." : "Create, review and publish consent forms before running a session."
+		consentMaterials: {
+			ready: consentMaterialsReady,
+			state: consentMaterialsReady ? "Ready" : "Action needed",
+			text: consentMaterialsReady ? "A published consent form is available for this study." : "Create, review and publish consent forms before recording participant consent."
+		},
+		participantConsent: {
+			ready: participantConsentReady,
+			state: participantConsentReady ? "Ready" : "Action needed",
+			text: participantConsentReady ? `${readyParticipantConsent.length} participant${readyParticipantConsent.length === 1 ? " is" : "s are"} ready for session.` : "Record required participant consent before beginning a session."
 		}
 	};
 }
@@ -208,7 +223,7 @@ function renderSessionGate(readiness, sessionHref) {
 	const ready = isStudyReady(readiness);
 	const blockedReasons = Object.entries(readiness)
 		.filter(([, item]) => item.ready !== true)
-		.map(([key]) => key);
+		.map(([key]) => key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`));
 
 	if (ready) {
 		setReadinessItem("session", "Available", "Open the session workspace when the study setup is ready.");
@@ -231,7 +246,8 @@ function renderReadiness(study, context, sessionHref) {
 	setReadinessItem("status", readiness.status.state, readiness.status.text);
 	setReadinessItem("participants", readiness.participants.state, readiness.participants.text);
 	setReadinessItem("guide", readiness.guide.state, readiness.guide.text);
-	setReadinessItem("consent", readiness.consent.state, readiness.consent.text);
+	setReadinessItem("consent-materials", readiness.consentMaterials.state, readiness.consentMaterials.text);
+	setReadinessItem("participant-consent", readiness.participantConsent.state, readiness.participantConsent.text);
 	renderSessionGate(readiness, sessionHref);
 }
 
@@ -240,6 +256,7 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", params));
+	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", params));
 	enableLink("#link-guides", route("/pages/study/guides/", params));
 	enableLink("#link-participants", route("/pages/study/participants/", params));
 	enableLink("#link-synthesis", route("/pages/synthesize/", params));
