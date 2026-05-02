@@ -165,28 +165,6 @@
 	background: #fff7bf;
 	}
 
-.govuk-error-summary {
-	border: 5px solid #d4351c;
-	margin-bottom: 24px;
-	padding: 16px;
-	}
-
-.govuk-error-summary__title {
-	margin-top: 0;
-	}
-
-.govuk-error-summary__list {
-	margin-bottom: 0;
-	}
-
-.govuk-button:disabled,
-.govuk-button[disabled] {
-	background-color: #b1b4b6;
-	box-shadow: none;
-	color: #ffffff;
-	cursor: not-allowed;
-	}
-
 @media (max-width: 699px) {
 	.participant-consent-hero {
 		display: block;
