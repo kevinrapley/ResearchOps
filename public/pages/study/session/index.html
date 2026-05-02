@@ -21,9 +21,11 @@
 	<link rel="stylesheet" href="/css/session.css" media="screen" />
 
 	<link rel="modulepreload" href="/components/session-controller.js" />
+	<link rel="modulepreload" href="/components/session-consent-controller.js" />
 
 	<script type="module" src="/components/layout.js" defer></script>
 	<script type="module" src="/components/session-controller.js" defer></script>
+	<script type="module" src="/components/session-consent-controller.js" defer></script>
 </head>
 
 <body typeof="schema:WebPage" resource="#page" about="#page" vocab="https://schema.org/">
@@ -76,6 +78,12 @@
 
 		<section class="session-controls" aria-labelledby="controls-title">
 			<h2 id="controls-title" class="govuk-heading-m">Session controls</h2>
+
+			<div id="consent-gate-message" class="consent-gate-message" role="alert" hidden>
+				<h3 class="govuk-heading-s">Participant consent must be checked before this session starts</h3>
+				<p id="consent-gate-message-body" class="govuk-body">Choose a participant to review consent status.</p>
+				<a id="manage-participant-consent-link" href="/pages/study/participant-consent/" class="govuk-button govuk-button--secondary">Manage participant consent</a>
+			</div>
 
 			<div class="controls-row">
 				<button id="btn-start" class="govuk-button">&#x25B6; Start</button>
