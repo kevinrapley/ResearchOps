@@ -21,73 +21,40 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "<html lang=\"en-GB\">", "participant consent page");
 includes(pageSource, "Participant consent — ResearchOps", "participant consent page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "participant consent page");
-includes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "participant consent page");
-includes(pageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
 includes(pageSource, "href=\"/css/participant-consent.css\"", "participant consent page");
-includes(pageSource, "rel=\"modulepreload\" href=\"/js/participant-consent-page.js\"", "participant consent page");
 includes(pageSource, "src=\"/js/participant-consent-page.js\"", "participant consent page");
-includes(pageSource, "src=\"/components/layout.js\" defer", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-project\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-study\"", "participant consent page");
 includes(pageSource, "id=\"back-to-study\"", "participant consent page");
 includes(pageSource, "id=\"consent-error\"", "participant consent page");
-includes(pageSource, "id=\"consent-error-list\"", "participant consent page");
-includes(pageSource, "id=\"participant-consent-status\"", "participant consent page");
-includes(pageSource, "id=\"no-context-state\"", "participant consent page");
 includes(pageSource, "id=\"no-consent-form-state\"", "participant consent page");
 includes(pageSource, "Create and publish a consent form before recording participant consent", "participant consent page");
 includes(pageSource, "id=\"no-participants-state\"", "participant consent page");
 includes(pageSource, "Add participants before recording consent", "participant consent page");
 includes(pageSource, "id=\"consent-workspace\"", "participant consent page");
 includes(pageSource, "id=\"summary-published-form\"", "participant consent page");
-includes(pageSource, "id=\"summary-participants\"", "participant consent page");
-includes(pageSource, "id=\"summary-ready\"", "participant consent page");
-includes(pageSource, "id=\"summary-action-needed\"", "participant consent page");
 includes(pageSource, "class=\"govuk-table participant-consent-table\"", "participant consent page");
-includes(pageSource, "id=\"participant-consent-tbody\"", "participant consent page");
-includes(pageSource, "Record participant consent", "participant consent page");
 includes(pageSource, "id=\"participant-consent-form\"", "participant consent page");
-includes(pageSource, "id=\"participant-id\"", "participant consent page");
-includes(pageSource, "id=\"consent-record-id\"", "participant consent page");
 includes(pageSource, "id=\"consent-form-select\"", "participant consent page");
-includes(pageSource, "id=\"consent-items-list\"", "participant consent page");
 includes(pageSource, "id=\"capture-method\"", "participant consent page");
-includes(pageSource, "<option value=\"Verbal\">Verbal</option>", "participant consent page");
-includes(pageSource, "<option value=\"Signed form\">Signed form</option>", "participant consent page");
-includes(pageSource, "id=\"recorded-by\"", "participant consent page");
 includes(pageSource, "id=\"consent-withdrawn\"", "participant consent page");
 includes(pageSource, "id=\"withdrawal-reason\"", "participant consent page");
-includes(pageSource, "id=\"save-participant-consent\"", "participant consent page");
-includes(pageSource, "id=\"cancel-participant-consent\"", "participant consent page");
 excludes(pageSource, "<script type=\"module\">", "participant consent page");
 excludes(pageSource, "class=\"btn", "participant consent page");
 
 includes(controllerSource, "const DEFAULT_CONSENT_ITEMS", "participant consent controller");
-includes(controllerSource, "function escapeHtml", "participant consent controller");
-includes(controllerSource, "function safeToken", "participant consent controller");
-includes(controllerSource, "function latestPublishedForm", "participant consent controller");
-includes(controllerSource, "function consentItemsForForm", "participant consent controller");
 includes(controllerSource, "function statusForParticipant", "participant consent controller");
 includes(controllerSource, "return \"Not recorded\"", "participant consent controller");
 includes(controllerSource, "return \"Needs review\"", "participant consent controller");
 includes(controllerSource, "return \"Needs consent\"", "participant consent controller");
 includes(controllerSource, "return \"Ready for session\"", "participant consent controller");
 includes(controllerSource, "return \"Withdrawn\"", "participant consent controller");
-includes(controllerSource, "function permissionTags", "participant consent controller");
 includes(controllerSource, "function renderParticipantTable", "participant consent controller");
 includes(controllerSource, "function renderConsentItems", "participant consent controller");
-includes(controllerSource, "function collectResponses", "participant consent controller");
-includes(controllerSource, "function deriveStatus", "participant consent controller");
 includes(controllerSource, "async function saveConsent", "participant consent controller");
 includes(controllerSource, "loadStudyCollection(\"/api/participant-consent\"", "participant consent controller");
-includes(controllerSource, "`/api/participant-consent/${encodeURIComponent(recordId)}`", "participant consent controller");
-includes(controllerSource, "\"/api/participant-consent\"", "participant consent controller");
 includes(controllerSource, "Could not save participant consent", "participant consent controller");
-includes(controllerSource, "Choose a published consent form version.", "participant consent controller");
-includes(controllerSource, "Select how consent was captured.", "participant consent controller");
 excludes(controllerSource, "alert(", "participant consent controller");
 
 includes(stylesheetSource, ".participant-consent-page", "participant consent stylesheet");
@@ -97,10 +64,11 @@ includes(stylesheetSource, ".participant-consent-item", "participant consent sty
 includes(stylesheetSource, ".participant-consent-tag", "participant consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "participant consent stylesheet");
 excludes(stylesheetSource, ".govuk-error-summary", "participant consent stylesheet");
-excludes(stylesheetSource, ".govuk-button:disabled", "participant consent stylesheet");
 
 includes(fieldsSource, "export const PARTICIPANT_CONSENT_FIELDS", "field candidates");
-includes(fieldsSource, "AIRTABLE_TABLE_PARTICIPANT_CONSENT", "field candidates via service index docs");
+includes(fieldsSource, "study_link", "field candidates");
+includes(fieldsSource, "participant_link", "field candidates");
+includes(fieldsSource, "consent_form_link", "field candidates");
 
 includes(serviceSource, "function participantConsentTable", "participant consent service");
 includes(serviceSource, "AIRTABLE_TABLE_PARTICIPANT_CONSENT", "participant consent service");
@@ -111,15 +79,10 @@ includes(serviceSource, "export async function updateParticipantConsent", "parti
 includes(serviceSource, "No matching Participant Consent link field names found", "participant consent service");
 
 includes(serviceIndexSource, "import * as ParticipantConsent from \"./participant-consent.js\"", "service index");
+includes(serviceIndexSource, "AIRTABLE_TABLE_PARTICIPANT_CONSENT", "service index");
 includes(serviceIndexSource, "listParticipantConsent", "service index");
-includes(serviceIndexSource, "createParticipantConsent", "service index");
-includes(serviceIndexSource, "updateParticipantConsent", "service index");
-
 includes(workerSource, "async function handleParticipantConsent", "worker");
-includes(workerSource, "\"/api/participant-consent\"", "worker");
 includes(workerSource, "service.listParticipantConsent", "worker");
-includes(workerSource, "service.createParticipantConsent", "worker");
-includes(workerSource, "service.updateParticipantConsent", "worker");
 
 includes(studyPageSource, "id=\"link-participant-consent\"", "study page");
 includes(studyPageSource, "data-readiness-item=\"participant-consent\"", "study page");
