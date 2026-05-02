@@ -11,6 +11,10 @@
 	max-width: 1120px;
 	}
 
+.participant-consent-page [hidden] {
+	display: none;
+	}
+
 .participant-consent-hero {
 	display: flex;
 	gap: 16px;
@@ -76,6 +80,15 @@
 .participant-consent-summary__value {
 	margin: 0;
 	padding: 0;
+	}
+
+.table-wrap {
+	max-width: 100%;
+	overflow-x: auto;
+	}
+
+.participant-consent-table {
+	min-width: 760px;
 	}
 
 .participant-consent-table .govuk-button {
