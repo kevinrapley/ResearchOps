@@ -68,7 +68,7 @@ function recordToParticipantConsent(record) {
 		responses: parseResponses(pick(PARTICIPANT_CONSENT_FIELDS.responses)),
 		status: normaliseStatus(pick(PARTICIPANT_CONSENT_FIELDS.status)),
 		captureMethod: String(pick(PARTICIPANT_CONSENT_FIELDS.capture_method) || "").trim(),
-		withdrawn: withdrawn === true || /^true|yes|withdrawn$/i.test(String(withdrawn || "")),
+		withdrawn: withdrawn === true || /^(true|yes|withdrawn)$/i.test(String(withdrawn || "")),
 		withdrawalReason: String(pick(PARTICIPANT_CONSENT_FIELDS.withdrawal_reason) || "").trim(),
 		recordedBy: String(pick(PARTICIPANT_CONSENT_FIELDS.recorded_by) || "").trim(),
 		recordedAt: String(pick(PARTICIPANT_CONSENT_FIELDS.recorded_at) || record.createdTime || "").trim(),
@@ -161,6 +161,11 @@ export async function listParticipantConsent(svc, origin, url) {
 	}
 }
 
+async function tryCreateWithLinks(svc, payload, studyLinkField, participantLinkField, consentFormLinkField) {
+	const fields = fieldsFromPayload(payload, { studyLinkField, participantLinkField, consentFormLinkField });
+	return airtableTryWrite(atBaseUrl(svc), airtableKey(svc), "POST", fields, svc.cfg.TIMEOUT_MS);
+}
+
 export async function createParticipantConsent(svc, request, origin) {
 	let payload;
 	try {
@@ -179,8 +184,7 @@ export async function createParticipantConsent(svc, request, origin) {
 	for (const studyLinkField of PARTICIPANT_CONSENT_FIELDS.study_link) {
 		for (const participantLinkField of PARTICIPANT_CONSENT_FIELDS.participant_link) {
 			for (const consentFormLinkField of PARTICIPANT_CONSENT_FIELDS.consent_form_link) {
-				const fields = fieldsFromPayload(payload, { studyLinkField, participantLinkField, consentFormLinkField });
-				const attempt = await airtableTryWrite(atBaseUrl(svc), airtableKey(svc), "POST", fields, svc.cfg.TIMEOUT_MS);
+				const attempt = await tryCreateWithLinks(svc, payload, studyLinkField, participantLinkField, consentFormLinkField);
 				if (attempt.ok) {
 					const record = attempt.json.records?.[0];
 					return svc.json({ ok: true, participantConsent: recordToParticipantConsent(record) }, 200, svc.corsHeaders(origin));
@@ -190,6 +194,13 @@ export async function createParticipantConsent(svc, request, origin) {
 					return svc.json({ ok: false, error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, svc.corsHeaders(origin));
 				}
 			}
+
+			const withoutConsentFormLink = await tryCreateWithLinks(svc, payload, studyLinkField, participantLinkField, null);
+			if (withoutConsentFormLink.ok) {
+				const record = withoutConsentFormLink.json.records?.[0];
+				return svc.json({ ok: true, participantConsent: recordToParticipantConsent(record), consent_form_link_fallback: "omitted" }, 200, svc.corsHeaders(origin));
+			}
+			lastDetail = withoutConsentFormLink.detail || lastDetail;
 		}
 	}
 
