@@ -15,7 +15,7 @@ const startWizardStakeholders = [
 ].join('\n');
 const startWizardObjectives = [
 	'Understand where users need assisted digital support during the application journey, including before they start, while completing evidence tasks, and after submission.',
-	'Identify the operational signals that help staff recognise accessibility, safeguarding, language and confidence-related needs without collecting unnecessary personal data.',
+	'Identify the operational signals that help staff recognise accessibility, safeguarding, language support and confidence-related needs without collecting unnecessary personal data.',
 	'Assess whether existing content and contact routes give users enough confidence to complete the service or seek support at the right time.',
 ].join('\n');
 const startWizardUserGroups =
@@ -288,6 +288,13 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/consent-forms/index.html',
 			description: 'Study-specific consent form configuration page.',
+		},
+		{
+			id: 'study-participant-consent',
+			title: 'Participant consent',
+			group: 'Study',
+			path: '/pages/study/participant-consent/index.html',
+			description: 'Study-scoped participant consent recording and review page.',
 		},
 		{
 			id: 'search',
