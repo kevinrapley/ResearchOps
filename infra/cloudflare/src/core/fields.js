@@ -41,6 +41,22 @@ export const CONSENT_FORM_FIELD_NAMES = {
 	updatedAt: ["Updated At", "UpdatedAt"]
 };
 
+/** Candidate names for the Participant Consent↔Study, Participant and Consent Form links */
+export const PARTICIPANT_CONSENT_FIELDS = {
+	study_link: ["Study", "Study ID", "Project Study", "Project Studies", "Studies"],
+	participant_link: ["Participant", "Participants", "Participant ID"],
+	consent_form_link: ["Consent Form", "Consent Forms", "Consent Form ID"],
+	consent_form_version: ["Consent Form Version", "Form Version", "Version"],
+	responses: ["Responses (JSON)", "Consent Responses", "Responses"],
+	status: ["Status", "Consent Status"],
+	capture_method: ["Capture Method", "Method"],
+	withdrawn: ["Withdrawn", "Consent Withdrawn"],
+	withdrawal_reason: ["Withdrawal Reason", "Reason"],
+	recorded_by: ["Recorded By", "Researcher"],
+	recorded_at: ["Recorded At", "Recorded"],
+	updated_at: ["Updated At", "Updated"]
+};
+
 /** Participants & Sessions Airtable field names */
 export const PARTICIPANT_FIELDS = {
 	display_name: ["Display Name", "Name", "Participant"],
