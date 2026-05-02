@@ -180,11 +180,35 @@
 
 @media (max-width: 699px) {
 	.participant-consent-hero {
-		display: block;
+		display: flex;
+		flex-direction: column-reverse;
+		gap: 12px;
+		margin-bottom: 18px;
 		}
 
 	.participant-consent-hero__actions {
-		margin-top: 12px;
+		width: 100%;
+		margin-top: 0;
+		}
+
+	.participant-consent-hero__actions .govuk-button {
+		box-sizing: border-box;
+		width: 100%;
+		text-align: center;
+		}
+
+	.participant-consent-page .govuk-heading-l {
+		font-size: 32px;
+		line-height: 1.15;
+		overflow-wrap: anywhere;
+		}
+
+	.participant-consent-context {
+		max-width: none;
+		}
+
+	.participant-consent-status {
+		min-height: 0;
 		}
 
 	.participant-consent-summary__row {
