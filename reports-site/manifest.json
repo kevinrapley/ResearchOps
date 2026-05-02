@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-01T21:32:24.028Z",
+  "startedAt": "2026-05-02T13:01:21.902Z",
   "baseURL": "https://researchops.pages.dev/",
   "pageCount": 16,
   "stateCount": 28,
@@ -20,7 +20,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/",
-          "durationMs": 995,
+          "durationMs": 1032,
           "screenshot": "screenshots/core__home__default.png"
         }
       ]
@@ -38,7 +38,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 958,
+          "durationMs": 1077,
           "screenshot": "screenshots/core__start__default.png"
         },
         {
@@ -47,7 +47,7 @@
           "description": "Project name, description, phase and status entered using believable discovery-stage dummy data.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 1789,
+          "durationMs": 1870,
           "screenshot": "screenshots/core__start__step-1-filled.png"
         },
         {
@@ -56,7 +56,7 @@
           "description": "Second wizard step after a valid project definition has been entered on step 1.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 2215,
+          "durationMs": 2317,
           "screenshot": "screenshots/core__start__step-2-default.png"
         },
         {
@@ -65,7 +65,7 @@
           "description": "Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 2912,
+          "durationMs": 2946,
           "screenshot": "screenshots/core__start__step-2-filled-no-ai.png"
         },
         {
@@ -74,7 +74,7 @@
           "description": "Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3572,
+          "durationMs": 3644,
           "screenshot": "screenshots/core__start__step-2-ai-rewrite-shown.png"
         },
         {
@@ -83,7 +83,7 @@
           "description": "Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3253,
+          "durationMs": 3335,
           "screenshot": "screenshots/core__start__step-3-default.png"
         },
         {
@@ -92,7 +92,7 @@
           "description": "Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3884,
+          "durationMs": 3990,
           "screenshot": "screenshots/core__start__step-3-filled.png"
         }
       ]
@@ -110,7 +110,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/index.html",
-          "durationMs": 3502,
+          "durationMs": 3416,
           "screenshot": "screenshots/projects__projects__default.png"
         }
       ]
@@ -128,7 +128,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-          "durationMs": 2007,
+          "durationMs": 1234,
           "screenshot": "screenshots/projects__project-dashboard__default.png"
         }
       ]
@@ -146,7 +146,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-          "durationMs": 992,
+          "durationMs": 1078,
           "screenshot": "screenshots/projects__outcomes__default.png"
         }
       ]
@@ -164,7 +164,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-          "durationMs": 1098,
+          "durationMs": 1214,
           "screenshot": "screenshots/projects__journals__default.png"
         }
       ]
@@ -182,7 +182,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/index.html",
-          "durationMs": 1031,
+          "durationMs": 1230,
           "screenshot": "screenshots/study__study__default.png"
         }
       ]
@@ -200,7 +200,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-          "durationMs": 981,
+          "durationMs": 1017,
           "screenshot": "screenshots/study__study-guides__default.png"
         }
       ]
@@ -218,7 +218,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-          "durationMs": 1031,
+          "durationMs": 1111,
           "screenshot": "screenshots/study__study-participants__default.png"
         }
       ]
@@ -236,7 +236,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/session/index.html",
-          "durationMs": 942,
+          "durationMs": 1059,
           "screenshot": "screenshots/study__study-session__default.png"
         }
       ]
@@ -254,7 +254,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-          "durationMs": 993,
+          "durationMs": 1078,
           "screenshot": "screenshots/study__study-consent-forms__default.png"
         }
       ]
@@ -272,7 +272,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/search/index.html",
-          "durationMs": 914,
+          "durationMs": 1015,
           "screenshot": "screenshots/utilities__search__default.png"
         }
       ]
@@ -290,7 +290,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/notes/index.html",
-          "durationMs": 942,
+          "durationMs": 1008,
           "screenshot": "screenshots/utilities__notes__default.png"
         }
       ]
@@ -308,7 +308,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/consent/index.html",
-          "durationMs": 918,
+          "durationMs": 1052,
           "screenshot": "screenshots/utilities__consent__default.png"
         }
       ]
@@ -326,7 +326,7 @@
           "description": "Initial loaded page state.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/sessions/index.html",
-          "durationMs": 905,
+          "durationMs": 1069,
           "screenshot": "screenshots/utilities__sessions__default.png"
         }
       ]
@@ -344,7 +344,7 @@
           "description": "Synthesis loaded without a study ID; the page shows the blocking route-context error.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-          "durationMs": 1097,
+          "durationMs": 995,
           "screenshot": "screenshots/analysis__synthesize__missing-sid-error.png"
         },
         {
@@ -353,7 +353,7 @@
           "description": "Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1343,
+          "durationMs": 1407,
           "screenshot": "screenshots/analysis__synthesize__empty-evidence.png"
         },
         {
@@ -362,7 +362,7 @@
           "description": "Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1162,
+          "durationMs": 1227,
           "screenshot": "screenshots/analysis__synthesize__evidence-loaded.png"
         },
         {
@@ -371,7 +371,7 @@
           "description": "A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2085,
+          "durationMs": 2141,
           "screenshot": "screenshots/analysis__synthesize__working-cluster-created.png"
         },
         {
@@ -380,7 +380,7 @@
           "description": "A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2124,
+          "durationMs": 2175,
           "screenshot": "screenshots/analysis__synthesize__evidence-added-to-cluster.png"
         },
         {
@@ -389,7 +389,7 @@
           "description": "Theme creation remains hidden until at least one working cluster grouping contains source evidence.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1427,
+          "durationMs": 1476,
           "screenshot": "screenshots/analysis__synthesize__theme-blocked-without-evidence.png"
         },
         {
@@ -398,7 +398,7 @@
           "description": "A theme is created from a populated cluster and the source evidence IDs remain inspectable.",
           "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2368,
+          "durationMs": 2402,
           "screenshot": "screenshots/analysis__synthesize__theme-created.png"
         }
       ]
