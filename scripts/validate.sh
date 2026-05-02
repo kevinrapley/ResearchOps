@@ -72,6 +72,7 @@ require_file "tests/synthesize-page-route-state.test.js"
 require_file "tests/start-page-route-state.test.js"
 require_file "tests/participants-page-route-state.test.js"
 require_file "tests/consent-forms-route-state.test.js"
+require_file "tests/participant-consent-route-state.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -259,5 +260,8 @@ node tests/participants-page-route-state.test.js
 
 info "checking Consent Forms route-state contract"
 node tests/consent-forms-route-state.test.js
+
+info "checking Participant Consent route-state contract"
+node tests/participant-consent-route-state.test.js
 
 info "validation passed"
