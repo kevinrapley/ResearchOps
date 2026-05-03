@@ -26,6 +26,13 @@ const els = {
   summaryStudy: $("#summary-study"),
   summaryEvidenceCount: $("#summary-evidence-count"),
   summaryThemeCount: $("#summary-theme-count"),
+  noEvidenceState: $("#no-evidence-state"),
+  captureEvidenceLink: $("#capture-evidence-link"),
+  workspace: $("#synthesis-workspace"),
+  clustersSection: $("#clusters-section"),
+  evidenceSection: $("#evidence-section"),
+  themesLocked: $("#themes-locked"),
+  themesSection: $("#themes-section"),
   tagFilter: $("#tag-filter"),
   targetCluster: $("#target-cluster"),
   addSelectedEvidence: $("#add-selected-evidence"),
@@ -118,6 +125,11 @@ function setDisabled(element, disabled) {
   element.disabled = Boolean(disabled);
 }
 
+function setHidden(element, hidden) {
+  if (!element) return;
+  element.hidden = Boolean(hidden);
+}
+
 async function jsonFetch(url, options = {}) {
   const response = await fetch(url, {
     cache: "no-store",
@@ -160,6 +172,36 @@ function clusterEvidence(cluster) {
 
 function clustersWithEvidence() {
   return state.clusters.filter((cluster) => (cluster.evidenceIds || []).length > 0);
+}
+
+function workflowState() {
+  const hasStudy = Boolean(state.sid);
+  const hasEvidence = state.evidence.length > 0;
+  const hasClusters = state.clusters.length > 0;
+  const hasGroupedEvidence = clustersWithEvidence().length > 0;
+
+  return {
+    hasStudy,
+    hasEvidence,
+    hasClusters,
+    hasGroupedEvidence,
+    showNoEvidenceState: hasStudy && !hasEvidence,
+    showWorkspace: hasStudy && hasEvidence,
+    showClusters: hasStudy && hasEvidence,
+    showEvidenceSelection: hasStudy && hasEvidence && hasClusters,
+    showThemesLocked: hasStudy && hasEvidence && hasClusters && !hasGroupedEvidence,
+    showThemes: hasStudy && hasEvidence && hasGroupedEvidence
+  };
+}
+
+function updateWorkflowVisibility() {
+  const flow = workflowState();
+  setHidden(els.noEvidenceState, !flow.showNoEvidenceState);
+  setHidden(els.workspace, !flow.showWorkspace);
+  setHidden(els.clustersSection, !flow.showClusters);
+  setHidden(els.evidenceSection, !flow.showEvidenceSelection);
+  setHidden(els.themesLocked, !flow.showThemesLocked);
+  setHidden(els.themesSection, !flow.showThemes);
 }
 
 function updateSummary() {
@@ -226,6 +268,7 @@ function renderContext() {
   const projectName = study.projectName || "Project";
   const studyHref = route("/pages/study/", { pid: state.pid || study.projectId, sid: state.sid });
   const projectHref = route("/pages/project-dashboard/", { id: state.pid || study.projectId });
+  const sessionHref = route("/pages/study/session/", { pid: state.pid || study.projectId, sid: state.sid });
 
   document.body.setAttribute("data-study-id", state.sid || "");
   if (state.pid || study.projectId) document.body.setAttribute("data-project-id", state.pid || study.projectId);
@@ -241,6 +284,7 @@ function renderContext() {
     els.breadcrumbStudy.href = studyHref;
   }
   if (els.backToStudy) els.backToStudy.href = studyHref;
+  if (els.captureEvidenceLink) els.captureEvidenceLink.href = sessionHref;
   updateSummary();
 }
 
@@ -363,6 +407,7 @@ function renderAll() {
   renderClusters();
   renderThemes();
   updateActionAvailability();
+  updateWorkflowVisibility();
 }
 
 async function loadStudySynthesis() {
@@ -531,6 +576,8 @@ window.__ropsSynthesize = Object.freeze({
   apiUrl,
   route,
   evidenceMatchesFilter,
+  workflowState,
+  updateWorkflowVisibility,
   createCluster,
   addSelectedEvidenceToCluster,
   createTheme,

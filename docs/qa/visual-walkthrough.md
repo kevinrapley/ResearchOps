@@ -4,15 +4,16 @@ The application visual walkthrough is a generated evidence site for the current 
 
 The smoke suite answers: did a small number of routes load and meet basic assertions?
 
-The visual walkthrough answers: what does the application look like across registered pages and important interaction states?
+The visual walkthrough answers: what does the application look like across registered pages, important interaction states, desktop layouts and mobile layouts?
 
 ## Output
 
 The walkthrough writes to `reports-site/`:
 
-- `index.html` — browsable report
+- `index.html` — browsable report with a desktop/mobile screenshot switcher
 - `manifest.json` — machine-readable run evidence
-- `screenshots/*.png` — captured page and state evidence
+- `screenshots/desktop/*.png` — desktop captured page and state evidence
+- `screenshots/mobile/*.png` — mobile captured page and state evidence
 
 The generated report is uploaded as the `visual-walkthrough-site` workflow artifact. On main branch runs, `reports-site/` is committed back to the repository when generated output changes.
 
@@ -21,6 +22,41 @@ The generated report is uploaded as the `visual-walkthrough-site` workflow artif
 The source of truth is `visual-walkthrough.config.mjs`.
 
 Every public HTML application route must have a page entry. The registry test fails if a new public HTML page is added without a matching walkthrough entry.
+
+The report captures every configured profile in `profiles`. The current contract is:
+
+```js
+profiles: [
+	{
+		id: 'desktop',
+		title: 'Desktop',
+		description: 'Desktop Chromium viewport, 1440 × 1200.',
+		contextOptions: {
+			viewport: {
+				width: 1440,
+				height: 1200,
+			},
+		},
+	},
+	{
+		id: 'mobile',
+		title: 'Mobile',
+		description: 'Mobile Chromium emulation, 412 × 915, touch enabled.',
+		contextOptions: {
+			viewport: {
+				width: 412,
+				height: 915,
+			},
+			deviceScaleFactor: 2.625,
+			hasTouch: true,
+			isMobile: true,
+			userAgent: '...',
+		},
+	},
+];
+```
+
+Desktop screenshots are captured with a Chromium desktop viewport. Mobile screenshots are captured by running the same state catalogue in a Playwright mobile Chromium context.
 
 A page entry looks like this:
 
@@ -101,6 +137,34 @@ Supported action types are:
 
 Prefer stable selectors such as `data-testid`, semantic landmarks, labelled controls and GOV.UK component classes. Avoid brittle selectors based on position or incidental CSS.
 
+Each state is captured independently for every profile. A state must therefore work in both desktop and mobile layouts. Do not rely on state leakage from a previous screenshot.
+
+## Study-scoped page states
+
+Study-scoped pages should not use an unscoped missing-context error as their only default screenshot.
+
+Use a deterministic study-scoped route and mocked API responses for the default operational state. Keep missing-context as an explicit named error state.
+
+For example, participant consent uses:
+
+```js
+{
+	id: 'study-participant-consent',
+	title: 'Participant consent',
+	path: '/pages/study/participant-consent/index.html',
+	defaultState: participantConsentDefaultState,
+	states: participantConsentVisualStates,
+}
+```
+
+The participant consent catalogue captures:
+
+- loaded consent workspace with project and study context
+- missing study context
+- no published consent form
+- no participants
+- participant selected for consent review
+
 ## Capturing wizard flows
 
 Wizard flows should be captured as a sequence of named states on the same page entry.
@@ -141,47 +205,6 @@ const stepTwoActions = [
 
 Use `mockRoutes` for deterministic visual states that depend on an API response. This avoids making the visual walkthrough dependent on live AI responses, model latency, quota or content variation.
 
-Example:
-
-```js
-{
-	id: 'objectives-ai-rewrite-shown',
-	title: 'Objectives AI rewrite shown',
-	description: 'Shows the AI rewrite panel after the objectives threshold is met.',
-	mockRoutes: [
-		{
-			url: '**/api/ai-rewrite**',
-			method: 'POST',
-			body: {
-				summary: 'The objectives are clear and researchable.',
-				suggestions: [
-					{
-						category: 'Focus',
-						severity: 'medium',
-						tip: 'Make each objective test one decision or assumption.',
-						why: 'This helps the team trace findings back to specific service decisions.',
-					},
-				],
-				rewrite: '1. Understand where users need support.\n2. Identify operational signals.',
-				flags: {
-					possible_personal_data: false,
-				},
-			},
-		},
-	],
-	actions: [
-		{
-			type: 'click',
-			selector: '#btn-obj-ai-rewrite',
-		},
-		{
-			type: 'waitForText',
-			text: 'Concise rewrite (optional):',
-		},
-	],
-}
-```
-
 Prefer mocked AI responses for walkthrough evidence. Live AI calls should be reserved for integration tests where the purpose is to test the service boundary.
 
 ## Local command
@@ -193,6 +216,8 @@ npm run qa:visual-walkthrough
 ```
 
 The command uses `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` when provided. Otherwise it falls back to `https://researchops.pages.dev/`.
+
+The command runs the same registered page and state catalogue for each configured profile. It then writes one report with a screenshot switcher and profile-specific screenshot directories.
 
 ## CI behaviour
 

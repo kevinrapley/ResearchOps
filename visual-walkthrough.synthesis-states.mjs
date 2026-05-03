@@ -28,27 +28,32 @@ export const synthesisVisualStates = [
 	{
 		id: 'empty-evidence',
 		title: 'Empty evidence state',
-		description: 'Study synthesis loaded with valid study context but no captured evidence notes.',
+		description:
+			'Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({ evidence: [] }),
 		actions: [
 			{
 				type: 'waitForText',
-				text: 'No evidence has been captured for this study yet',
+				text: 'Capture evidence before starting synthesis',
+			},
+			{
+				type: 'waitForText',
+				text: 'Capture evidence in a session',
 			},
 		],
 	},
 	{
 		id: 'evidence-loaded',
-		title: 'Evidence loaded state',
+		title: 'Evidence available before working clusters',
 		description:
-			'Study synthesis with realistic evidence notes loaded from mocked session evidence.',
+			'Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes(),
 		actions: [
 			{
 				type: 'waitForText',
-				text: synthesisEvidence[0].excerpt,
+				text: 'Create a working cluster grouping before selecting evidence.',
 			},
 		],
 	},
@@ -56,7 +61,7 @@ export const synthesisVisualStates = [
 		id: 'working-cluster-created',
 		title: 'Working cluster grouping created',
 		description:
-			'A researcher creates a provisional working cluster grouping before adding evidence.',
+			'A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({ extraRoutes: [clusterCreateMockRoute()] }),
 		actions: [
@@ -78,13 +83,17 @@ export const synthesisVisualStates = [
 				type: 'waitForText',
 				text: `Created working cluster grouping ${synthesisEmptyCluster.label}.`,
 			},
+			{
+				type: 'waitForText',
+				text: synthesisEvidence[0].excerpt,
+			},
 		],
 	},
 	{
 		id: 'evidence-added-to-cluster',
 		title: 'Evidence added to working cluster grouping',
 		description:
-			'A researcher selects two evidence notes and adds them to an existing working cluster grouping.',
+			'A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({
 			clusters: [synthesisEmptyCluster],
@@ -116,14 +125,15 @@ export const synthesisVisualStates = [
 	},
 	{
 		id: 'theme-blocked-without-evidence',
-		title: 'Theme creation blocked without evidence',
-		description: 'Theme creation is blocked until the selected cluster contains source evidence.',
+		title: 'Theme creation hidden before evidence is grouped',
+		description:
+			'Theme creation remains hidden until at least one working cluster grouping contains source evidence.',
 		path: synthesisPath,
 		mockRoutes: synthesisMockRoutes({ clusters: [synthesisEmptyCluster] }),
 		actions: [
 			{
-				type: 'waitForText',
-				text: synthesisEmptyCluster.label,
+				type: 'waitForSelector',
+				selector: `[data-cluster-id="${synthesisEmptyCluster.id}"]`,
 			},
 			{
 				type: 'waitForText',

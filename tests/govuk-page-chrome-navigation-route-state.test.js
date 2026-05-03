@@ -21,6 +21,7 @@ const pagesUsingSharedChrome = [
   "public/pages/study/participants/index.html",
   "public/pages/study/session/index.html",
   "public/pages/study/consent-forms/index.html",
+  "public/pages/study/participant-consent/index.html",
   "public/pages/search/index.html",
   "public/pages/notes/index.html",
   "public/pages/consent/index.html",

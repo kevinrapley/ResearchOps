@@ -11,8 +11,8 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-state-gates" media="screen" />
-	<link rel="modulepreload" href="/js/synthesize-page.js?v=study-synthesis-20260501-state-gates" />
+	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure" media="screen" />
+	<link rel="modulepreload" href="/js/synthesize-page.js?v=study-synthesis-20260501-progressive-disclosure" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
@@ -52,28 +52,61 @@
 		</header>
 
 		<section class="synthesis-summary" aria-label="Synthesis summary">
-			<dl class="govuk-summary-list">
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Project</dt>
-					<dd id="summary-project" class="govuk-summary-list__value">–</dd>
+			<dl class="govuk-summary-list synthesis-summary-list">
+				<div class="govuk-summary-list__row synthesis-summary-list__row">
+					<dt class="govuk-summary-list__key synthesis-summary-list__key">Project</dt>
+					<dd id="summary-project" class="govuk-summary-list__value synthesis-summary-list__value">–</dd>
 				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Study</dt>
-					<dd id="summary-study" class="govuk-summary-list__value">–</dd>
+				<div class="govuk-summary-list__row synthesis-summary-list__row">
+					<dt class="govuk-summary-list__key synthesis-summary-list__key">Study</dt>
+					<dd id="summary-study" class="govuk-summary-list__value synthesis-summary-list__value">–</dd>
 				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Evidence</dt>
-					<dd id="summary-evidence-count" class="govuk-summary-list__value">0 evidence items</dd>
+				<div class="govuk-summary-list__row synthesis-summary-list__row">
+					<dt class="govuk-summary-list__key synthesis-summary-list__key">Evidence</dt>
+					<dd id="summary-evidence-count" class="govuk-summary-list__value synthesis-summary-list__value">0 evidence items</dd>
 				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Themes</dt>
-					<dd id="summary-theme-count" class="govuk-summary-list__value">0 themes</dd>
+				<div class="govuk-summary-list__row synthesis-summary-list__row">
+					<dt class="govuk-summary-list__key synthesis-summary-list__key">Themes</dt>
+					<dd id="summary-theme-count" class="govuk-summary-list__value synthesis-summary-list__value">0 themes</dd>
 				</div>
 			</dl>
 		</section>
 
-		<div id="synthesis-workspace" class="synthesis-grid">
-			<section class="panel synthesis-panel" aria-labelledby="evidence-title">
+		<section id="no-evidence-state" class="synthesis-empty synthesis-empty--route" hidden>
+			<h2 class="govuk-heading-m">Capture evidence before starting synthesis</h2>
+			<p class="govuk-body">No evidence has been captured for this study yet. Capture evidence during a research session, then return here to group it into working clusters and themes.</p>
+			<a id="capture-evidence-link" href="/pages/study/session/" class="govuk-button">Capture evidence in a session</a>
+		</section>
+
+		<div id="synthesis-workspace" class="synthesis-flow" hidden>
+			<section id="clusters-section" class="panel synthesis-panel" aria-labelledby="clusters-title">
+				<header class="synthesis-panel__header">
+					<div>
+						<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
+						<p class="govuk-body">Create a working cluster grouping before selecting evidence. Cluster groupings are provisional groups of related evidence.</p>
+					</div>
+				</header>
+
+				<form id="cluster-form" class="cluster-create" novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="cluster-label">Cluster grouping name</label>
+						<input id="cluster-label" class="govuk-input" autocomplete="off" aria-describedby="create-cluster-hint" disabled />
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="cluster-description">Cluster grouping description</label>
+						<textarea id="cluster-description" class="govuk-textarea" rows="4" disabled></textarea>
+					</div>
+					<button id="create-cluster" type="submit" class="govuk-button" aria-describedby="create-cluster-hint" disabled>Create cluster grouping</button>
+					<p id="create-cluster-hint" class="govuk-hint">Capture evidence before creating a working cluster grouping.</p>
+				</form>
+
+				<div id="clusters-empty" class="synthesis-empty" hidden>
+					<p class="govuk-body">No working cluster groupings have been created yet.</p>
+				</div>
+				<div id="cluster-list" class="cluster-list"></div>
+			</section>
+
+			<section id="evidence-section" class="panel synthesis-panel" aria-labelledby="evidence-title" hidden>
 				<header class="synthesis-panel__header">
 					<div>
 						<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
@@ -104,34 +137,12 @@
 				<div id="evidence-list" class="evidence-list"></div>
 			</section>
 
-			<section class="panel synthesis-panel" aria-labelledby="clusters-title">
-				<header class="synthesis-panel__header">
-					<div>
-						<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
-						<p class="govuk-body">Cluster groupings are provisional groups of related evidence.</p>
-					</div>
-				</header>
-
-				<form id="cluster-form" class="cluster-create" novalidate>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="cluster-label">Cluster grouping name</label>
-						<input id="cluster-label" class="govuk-input" autocomplete="off" aria-describedby="create-cluster-hint" disabled />
-					</div>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="cluster-description">Cluster grouping description</label>
-						<textarea id="cluster-description" class="govuk-textarea" rows="4" disabled></textarea>
-					</div>
-					<button id="create-cluster" type="submit" class="govuk-button" aria-describedby="create-cluster-hint" disabled>Create cluster grouping</button>
-					<p id="create-cluster-hint" class="govuk-hint">Capture evidence before creating a working cluster grouping.</p>
-				</form>
-
-				<div id="clusters-empty" class="synthesis-empty" hidden>
-					<p class="govuk-body">No working cluster groupings have been created yet.</p>
-				</div>
-				<div id="cluster-list" class="cluster-list"></div>
+			<section id="themes-locked" class="synthesis-empty synthesis-empty--locked" hidden>
+				<h2 class="govuk-heading-m">Create themes after adding evidence to a cluster</h2>
+				<p class="govuk-body">Add evidence to a working cluster grouping before creating a theme.</p>
 			</section>
 
-			<section class="panel synthesis-panel synthesis-panel--wide" aria-labelledby="themes-title">
+			<section id="themes-section" class="panel synthesis-panel" aria-labelledby="themes-title" hidden>
 				<header class="synthesis-panel__header">
 					<div>
 						<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
@@ -166,7 +177,7 @@
 
 	<x-include src="/partials/footer.html"></x-include>
 
-	<script type="module" src="/js/synthesize-page.js?v=study-synthesis-20260501-state-gates"></script>
+	<script type="module" src="/js/synthesize-page.js?v=study-synthesis-20260501-progressive-disclosure"></script>
 </body>
 
 </html>

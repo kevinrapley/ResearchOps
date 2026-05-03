@@ -6,6 +6,7 @@ const dashboardPageSource = fs.readFileSync("public/pages/project-dashboard/inde
 const studyPageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
 const guidesPageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
 const participantsPageSource = fs.readFileSync("public/pages/study/participants/index.html", "utf8");
+const participantConsentPageSource = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
 const participantsModuleSource = fs.readFileSync("public/components/participants/participants-page.js", "utf8");
 const participantsSchedulerSource = fs.readFileSync("public/pages/study/participants/scheduler.js", "utf8");
 const outcomesPageSource = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
@@ -61,6 +62,13 @@ includes(participantsPageSource, "<table id=\"sessionsTable\" class=\"govuk-tabl
 includes(participantsPageSource, "<tbody id=\"sessions-tbody\" class=\"govuk-table__body\"></tbody>", "participants page");
 excludes(participantsPageSource, "role=\"table\"", "participants page");
 excludes(participantsPageSource, "role=\"columnheader\"", "participants page");
+
+includes(participantConsentPageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"govuk-table participant-consent-table\"", "participant consent page");
+includes(participantConsentPageSource, "<tbody id=\"participant-consent-tbody\" class=\"govuk-table__body\">", "participant consent page");
+includes(participantConsentPageSource, "class=\"participant-consent-summary govuk-summary-list\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"participant-consent-summary__key\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"participant-consent-summary__value\"", "participant consent page");
 
 includes(participantsModuleSource, "document.createElement(\"tr\")", "participants module");
 includes(participantsModuleSource, "govuk-table__row", "participants module");

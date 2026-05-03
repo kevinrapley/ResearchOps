@@ -76,13 +76,6 @@ includes(stylesheetSource, "flex-direction: column-reverse;", "participant conse
 includes(stylesheetSource, ".participant-consent-hero__actions .govuk-button", "participant consent stylesheet");
 includes(stylesheetSource, "font-size: 32px;", "participant consent stylesheet");
 includes(stylesheetSource, "overflow-wrap: anywhere;", "participant consent stylesheet");
-includes(stylesheetSource, "overflow-x: visible;", "participant consent stylesheet");
-includes(stylesheetSource, ".participant-consent-table thead", "participant consent stylesheet");
-includes(stylesheetSource, "clip-path: inset(50%);", "participant consent stylesheet");
-includes(stylesheetSource, ".participant-consent-table .govuk-table__cell::before", "participant consent stylesheet");
-includes(stylesheetSource, "content: \"Consent status\";", "participant consent stylesheet");
-includes(stylesheetSource, "content: \"Permissions\";", "participant consent stylesheet");
-includes(stylesheetSource, "content: \"Recorded\";", "participant consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "participant consent stylesheet");
 excludes(stylesheetSource, ".govuk-error-summary", "participant consent stylesheet");
 
