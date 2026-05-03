@@ -2,6 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import {
+	participantConsentDefaultState,
+	participantConsentVisualStates,
+} from '../visual-walkthrough.participant-consent-states.mjs';
+import {
+	participantConsentMockRoutes,
+	participantConsentPath,
+} from '../visual-walkthrough.participant-consent-fixtures.mjs';
 import { synthesisEmptyCluster, synthesisPath } from '../visual-walkthrough.synthesis-fixtures.mjs';
 import {
 	synthesisDefaultState,
@@ -63,6 +71,7 @@ const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
 const registeredRoutes = visualWalkthroughConfig.pages.map((page) => page.path);
 const registeredIds = visualWalkthroughConfig.pages.map((page) => page.id);
 const synthesisStateIds = synthesisVisualStates.map((state) => state.id);
+const participantConsentStateIds = participantConsentVisualStates.map((state) => state.id);
 
 for (const route of discoveredRoutes) {
 	assert.ok(
@@ -85,6 +94,12 @@ assert.equal(
 	new Set(registeredIds).size,
 	registeredIds.length,
 	'Expected registered page ids to be unique'
+);
+
+assert.deepEqual(
+	visualWalkthroughConfig.captureDevices,
+	['desktop', 'mobile'],
+	'Expected visual walkthrough to capture both desktop and mobile screenshots'
 );
 
 assert.equal(
@@ -142,3 +157,57 @@ for (const state of synthesisVisualStates) {
 		`Expected synthesis state to provide capture actions: ${state.id}`
 	);
 }
+
+assert.equal(
+	participantConsentDefaultState.id,
+	'default',
+	'Expected participant consent default screenshot to be the loaded study-scoped workspace'
+);
+
+assert.equal(
+	participantConsentDefaultState.path,
+	participantConsentPath,
+	'Expected participant consent default screenshot to use a project and study scoped route'
+);
+
+assert.ok(
+	Array.isArray(participantConsentDefaultState.mockRoutes) &&
+		participantConsentDefaultState.mockRoutes.length >= 5,
+	'Expected participant consent default state to provide deterministic mocked API routes'
+);
+
+assert.deepEqual(
+	participantConsentStateIds,
+	['missing-context-error', 'no-published-consent-form', 'no-participants', 'participant-selected'],
+	'Expected participant consent walkthrough states to cover route errors, setup blockers and review flow'
+);
+
+assert.equal(
+	participantConsentVisualStates.find((state) => state.id === 'missing-context-error')?.path,
+	undefined,
+	'Expected missing-context participant consent state to use the unscoped page route'
+);
+
+for (const state of participantConsentVisualStates.filter(
+	(item) => item.id !== 'missing-context-error'
+)) {
+	assert.equal(
+		state.path,
+		participantConsentPath,
+		`Expected participant consent state to use the study-scoped route: ${state.id}`
+	);
+	assert.ok(
+		Array.isArray(state.mockRoutes) && state.mockRoutes.length >= 5,
+		`Expected participant consent state to provide mocked API routes: ${state.id}`
+	);
+	assert.ok(
+		Array.isArray(state.actions) && state.actions.length >= 1,
+		`Expected participant consent state to provide capture actions: ${state.id}`
+	);
+}
+
+assert.equal(
+	participantConsentMockRoutes().length,
+	5,
+	'Expected participant consent fixture to cover projects, studies, participants, consent forms and consent records'
+);
