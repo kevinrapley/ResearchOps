@@ -179,6 +179,13 @@
 	}
 
 @media (max-width: 699px) {
+	.participant-consent-page {
+		box-sizing: border-box;
+		width: 100%;
+		padding-right: 12px;
+		padding-left: 12px;
+		}
+
 	.participant-consent-hero {
 		display: flex;
 		flex-direction: column-reverse;
@@ -211,9 +218,26 @@
 		min-height: 0;
 		}
 
+	.participant-consent-workspace {
+		gap: 18px;
+		}
+
+	.participant-consent-panel {
+		position: relative;
+		clear: both;
+		z-index: 0;
+		margin-bottom: 18px;
+		padding-top: 16px;
+		}
+
 	.participant-consent-summary__row {
-		grid-template-columns: 1fr;
-		gap: 2px;
+		grid-template-columns: minmax(118px, 38%) minmax(0, 1fr);
+		gap: 10px;
+		align-items: baseline;
+		}
+
+	.participant-consent-summary__value {
+		overflow-wrap: anywhere;
 		}
 
 	.participant-consent-panel__header {
@@ -225,6 +249,7 @@
 		}
 
 	.participant-consent-table {
+		display: block;
 		width: 100%;
 		min-width: 0;
 		border-collapse: separate;
@@ -250,7 +275,14 @@
 		width: 100%;
 		}
 
+	.participant-consent-table .govuk-table__body {
+		position: relative;
+		z-index: 1;
+		}
+
 	.participant-consent-table .govuk-table__row {
+		position: relative;
+		z-index: 1;
 		border: 1px solid #b1b4b6;
 		margin-bottom: 16px;
 		background: #ffffff;
@@ -258,6 +290,9 @@
 
 	.participant-consent-table .govuk-table__header,
 	.participant-consent-table .govuk-table__cell {
+		position: relative;
+		z-index: 1;
+		border: 0;
 		border-bottom: 1px solid #b1b4b6;
 		padding: 12px;
 		}
@@ -266,11 +301,42 @@
 		background: #f3f2f1;
 		}
 
+	.participant-consent-table .govuk-table__header::before,
 	.participant-consent-table .govuk-table__cell::before {
-		content: attr(data-label);
 		display: block;
 		margin-bottom: 4px;
 		font-weight: 700;
+		}
+
+	.participant-consent-table .govuk-table__header::before {
+		content: "Participant";
+		}
+
+	.participant-consent-table .govuk-table__row > :nth-child(2)::before {
+		content: "Consent status";
+		}
+
+	.participant-consent-table .govuk-table__row > :nth-child(3)::before {
+		content: "Permissions";
+		}
+
+	.participant-consent-table .govuk-table__row > :nth-child(4)::before {
+		content: "Recorded";
+		}
+
+	.participant-consent-table .govuk-table__row > :nth-child(5) {
+		border-bottom: 0;
+		padding-top: 16px;
+		}
+
+	.participant-consent-table .govuk-table__row > :nth-child(5)::before {
+		content: none;
+		}
+
+	.participant-consent-table [data-record-consent] {
+		position: relative;
+		z-index: 2;
+		scroll-margin-top: 24px;
 		}
 
 	.participant-consent-table__actions {
@@ -281,7 +347,19 @@
 		content: none;
 		}
 
-	.participant-consent-table__actions .govuk-button {
+	.participant-consent-table__actions .govuk-button,
+	.participant-consent-table .govuk-table__row > :nth-child(5) .govuk-button {
+		box-sizing: border-box;
+		width: 100%;
+		text-align: center;
+		}
+
+	.participant-consent-form__actions {
+		display: grid;
+		gap: 12px;
+		}
+
+	.participant-consent-form__actions .govuk-button {
 		box-sizing: border-box;
 		width: 100%;
 		text-align: center;
