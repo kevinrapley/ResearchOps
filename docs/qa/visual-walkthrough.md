@@ -12,7 +12,7 @@ The walkthrough writes to `reports-site/`:
 
 - `index.html` — browsable report with a desktop/mobile screenshot switcher
 - `manifest.json` — machine-readable run evidence
-- `screenshots/*.png` — desktop captured page and state evidence
+- `screenshots/desktop/*.png` — desktop captured page and state evidence
 - `screenshots/mobile/*.png` — mobile captured page and state evidence
 
 The generated report is uploaded as the `visual-walkthrough-site` workflow artifact. On main branch runs, `reports-site/` is committed back to the repository when generated output changes.
@@ -23,13 +23,40 @@ The source of truth is `visual-walkthrough.config.mjs`.
 
 Every public HTML application route must have a page entry. The registry test fails if a new public HTML page is added without a matching walkthrough entry.
 
-The report captures the configured devices in `captureDevices`. The current contract is:
+The report captures every configured profile in `profiles`. The current contract is:
 
 ```js
-captureDevices: ['desktop', 'mobile'];
+profiles: [
+	{
+		id: 'desktop',
+		title: 'Desktop',
+		description: 'Desktop Chromium viewport, 1440 × 1200.',
+		contextOptions: {
+			viewport: {
+				width: 1440,
+				height: 1200,
+			},
+		},
+	},
+	{
+		id: 'mobile',
+		title: 'Mobile',
+		description: 'Mobile Chromium emulation, 412 × 915, touch enabled.',
+		contextOptions: {
+			viewport: {
+				width: 412,
+				height: 915,
+			},
+			deviceScaleFactor: 2.625,
+			hasTouch: true,
+			isMobile: true,
+			userAgent: '...',
+		},
+	},
+];
 ```
 
-Desktop screenshots are captured with a Chromium desktop viewport. Mobile screenshots are captured by running the same walkthrough with Playwright Chromium using iPhone device emulation.
+Desktop screenshots are captured with a Chromium desktop viewport. Mobile screenshots are captured by running the same state catalogue in a Playwright mobile Chromium context.
 
 A page entry looks like this:
 
@@ -110,7 +137,7 @@ Supported action types are:
 
 Prefer stable selectors such as `data-testid`, semantic landmarks, labelled controls and GOV.UK component classes. Avoid brittle selectors based on position or incidental CSS.
 
-Each state is captured independently for desktop and mobile. A state must therefore work in both layouts. Do not rely on state leakage from a previous screenshot.
+Each state is captured independently for every profile. A state must therefore work in both desktop and mobile layouts. Do not rely on state leakage from a previous screenshot.
 
 ## Study-scoped page states
 
@@ -190,7 +217,7 @@ npm run qa:visual-walkthrough
 
 The command uses `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` when provided. Otherwise it falls back to `https://researchops.pages.dev/`.
 
-The command first captures the desktop report, then runs the mobile walkthrough post-processing step. The mobile step writes temporary output to `reports-site-mobile/`, copies mobile screenshots into `reports-site/screenshots/mobile/`, and rewrites the report with the desktop/mobile switcher.
+The command runs the same registered page and state catalogue for each configured profile. It then writes one report with a screenshot switcher and profile-specific screenshot directories.
 
 ## CI behaviour
 
