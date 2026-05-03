@@ -93,7 +93,35 @@ export const visualWalkthroughConfig = {
 	description:
 		'Generated evidence of the current application build, covering registered pages and important interaction states.',
 	publicRoot: 'public',
-	captureDevices: ['desktop', 'mobile'],
+	profiles: [
+		{
+			id: 'desktop',
+			title: 'Desktop',
+			description: 'Desktop Chromium viewport, 1440 × 1200.',
+			contextOptions: {
+				viewport: {
+					width: 1440,
+					height: 1200,
+				},
+			},
+		},
+		{
+			id: 'mobile',
+			title: 'Mobile',
+			description: 'Mobile Chromium emulation, 412 × 915, touch enabled.',
+			contextOptions: {
+				viewport: {
+					width: 412,
+					height: 915,
+				},
+				deviceScaleFactor: 2.625,
+				hasTouch: true,
+				isMobile: true,
+				userAgent:
+					'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36',
+			},
+		},
+	],
 	excludedRoutes: [
 		'/clear.html',
 		'/partials/debug-boot.html',
