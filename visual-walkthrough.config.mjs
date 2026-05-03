@@ -98,6 +98,7 @@ export const visualWalkthroughConfig = {
 	description:
 		'Generated evidence of the current application build, covering registered pages and important interaction states.',
 	publicRoot: 'public',
+	captureDevices: ['desktop', 'mobile'],
 	excludedRoutes: [
 		'/clear.html',
 		'/partials/debug-boot.html',
