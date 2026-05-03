@@ -96,6 +96,10 @@ export const participantConsentVisualStates = [
 		mockRoutes: participantConsentMockRoutes(),
 		actions: [
 			{
+				type: 'waitForText',
+				text: 'Participant consent loaded.',
+			},
+			{
 				type: 'click',
 				selector: `[data-record-consent="${participantConsentParticipants[0].id}"]`,
 			},
