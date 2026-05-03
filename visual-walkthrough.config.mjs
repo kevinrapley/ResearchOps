@@ -1,5 +1,10 @@
 /* eslint-env node */
 
+import {
+	participantConsentDefaultState,
+	participantConsentVisualStates,
+} from './visual-walkthrough.participant-consent-states.mjs';
+
 /**
  * @file visual-walkthrough.config.mjs
  * @summary Registry of application pages and states captured by the visual walkthrough report.
@@ -165,7 +170,7 @@ export const visualWalkthroughConfig = {
 									},
 									{
 										category: 'Inclusion',
-										severity: 'high',
+					बत				severity: 'high',
 										tip: 'Include users with low digital confidence and users who need accessibility or language support.',
 										why: 'Assisted digital services can otherwise optimise for confident users and miss support needs.',
 									},
@@ -296,6 +301,8 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/participant-consent/index.html',
 			description: 'Study-scoped participant consent recording and review page.',
+			defaultState: participantConsentDefaultState,
+			states: participantConsentVisualStates,
 		},
 		{
 			id: 'search',
