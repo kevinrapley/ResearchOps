@@ -17,7 +17,7 @@
     "qa:cucumber": "cucumber-js -p default",
     "qa:cucumber:ci": "cucumber-js -p default",
     "qa:cucumber:walkthrough": "BDD_CAPTURE_SCREENSHOTS=true cucumber-js -p default",
-    "qa:visual-walkthrough": "node scripts/visual-walkthrough.mjs && node scripts/visual-walkthrough-mobile.mjs"
+    "qa:visual-walkthrough": "node scripts/visual-walkthrough.mjs"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
