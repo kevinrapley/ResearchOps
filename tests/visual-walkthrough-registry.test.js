@@ -70,6 +70,7 @@ const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
 
 const registeredRoutes = visualWalkthroughConfig.pages.map((page) => page.path);
 const registeredIds = visualWalkthroughConfig.pages.map((page) => page.id);
+const profileIds = visualWalkthroughConfig.profiles.map((profile) => profile.id);
 const synthesisStateIds = synthesisVisualStates.map((state) => state.id);
 const participantConsentStateIds = participantConsentVisualStates.map((state) => state.id);
 
@@ -97,10 +98,24 @@ assert.equal(
 );
 
 assert.deepEqual(
-	visualWalkthroughConfig.captureDevices,
+	profileIds,
 	['desktop', 'mobile'],
 	'Expected visual walkthrough to capture both desktop and mobile screenshots'
 );
+
+for (const profile of visualWalkthroughConfig.profiles) {
+	assert.equal(Boolean(profile.title), true, `Expected profile to have a title: ${profile.id}`);
+	assert.equal(
+		Boolean(profile.contextOptions?.viewport?.width),
+		true,
+		`Expected profile to define viewport width: ${profile.id}`
+	);
+	assert.equal(
+		Boolean(profile.contextOptions?.viewport?.height),
+		true,
+		`Expected profile to define viewport height: ${profile.id}`
+	);
+}
 
 assert.equal(
 	synthesisDefaultState.id,
