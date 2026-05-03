@@ -19,11 +19,31 @@ const SCREENSHOTS_DIR = path.join(OUTPUT_DIR, 'screenshots');
 const MANIFEST_FILE = path.join(OUTPUT_DIR, 'manifest.json');
 const INDEX_FILE = path.join(OUTPUT_DIR, 'index.html');
 const DEFAULT_BASE_URL = 'https://researchops.pages.dev/';
+const DEFAULT_PROFILES = [
+	{
+		id: 'desktop',
+		title: 'Desktop',
+		description: 'Desktop Chromium viewport, 1440 × 1200.',
+		contextOptions: {
+			viewport: {
+				width: 1440,
+				height: 1200,
+			},
+		},
+	},
+];
 
 const startedAt = new Date().toISOString();
 const baseURL = normalizeBaseURL(
 	process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL || DEFAULT_BASE_URL
 );
+const captureProfiles = (visualWalkthroughConfig.profiles || DEFAULT_PROFILES).map((profile) => ({
+	...profile,
+	id: slugify(profile.id || profile.title || 'profile'),
+	title: profile.title || profile.id || 'Profile',
+	description: profile.description || '',
+	contextOptions: profile.contextOptions || {},
+}));
 
 function normalizeBaseURL(value) {
 	const url = String(value || '').trim();
@@ -82,7 +102,14 @@ function getDiscoveredApplicationRoutes() {
 function validateRegistry() {
 	const registeredRoutes = new Set(visualWalkthroughConfig.pages.map((page) => page.path));
 	const registeredIds = new Set();
+	const profileIds = new Set();
 	const failures = [];
+
+	for (const profile of captureProfiles) {
+		if (!profile.id) failures.push('Every visual walkthrough profile must have an id.');
+		if (profileIds.has(profile.id)) failures.push(`Duplicate visual walkthrough profile id: ${profile.id}`);
+		profileIds.add(profile.id);
+	}
 
 	for (const page of visualWalkthroughConfig.pages) {
 		if (registeredIds.has(page.id)) failures.push(`Duplicate page id: ${page.id}`);
@@ -164,24 +191,23 @@ async function runAction(page, action) {
 	throw new Error(`Unsupported visual walkthrough action type: ${action.type}`);
 }
 
-async function captureState(browser, pageConfig, stateConfig) {
+async function captureState(browser, pageConfig, stateConfig, profile) {
 	const context = await browser.newContext({
 		ignoreHTTPSErrors: true,
 		reducedMotion: 'reduce',
-		viewport: {
-			width: 1440,
-			height: 1200,
-		},
+		...profile.contextOptions,
 	});
 	const page = await context.newPage();
 	const stateId = stateConfig.id || 'default';
 	const screenshotFile = `${slugify(pageConfig.group)}__${slugify(pageConfig.id)}__${slugify(stateId)}.png`;
-	const screenshotPath = path.join(SCREENSHOTS_DIR, screenshotFile);
+	const screenshotDir = path.join(SCREENSHOTS_DIR, profile.id);
+	const screenshotPath = path.join(screenshotDir, screenshotFile);
 	const statePath = stateConfig.path || pageConfig.path;
 	const url = new URL(statePath, baseURL).toString();
 	const started = Date.now();
 
 	try {
+		ensureDir(screenshotDir);
 		await registerMockRoutes(page, stateConfig);
 		const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 		if (!response) throw new Error(`No HTTP response for ${url}`);
@@ -196,17 +222,26 @@ async function captureState(browser, pageConfig, stateConfig) {
 		await page.screenshot({ path: screenshotPath, fullPage: true, animations: 'disabled' });
 
 		return {
-			id: stateId,
-			title: stateConfig.title || 'Default state',
-			description: stateConfig.description || '',
+			profile: profile.id,
+			profileTitle: profile.title,
 			status: 'captured',
 			url,
 			durationMs: Date.now() - started,
-			screenshot: `screenshots/${screenshotFile}`,
+			screenshot: `screenshots/${profile.id}/${screenshotFile}`,
 		};
 	} finally {
 		await context.close();
 	}
+}
+
+function createFailedCapture(pageConfig, stateConfig, profile, error) {
+	return {
+		profile: profile.id,
+		profileTitle: profile.title,
+		status: 'failed',
+		url: new URL(stateConfig.path || pageConfig.path, baseURL).toString(),
+		error: error.message,
+	};
 }
 
 async function captureReport() {
@@ -230,23 +265,38 @@ async function captureReport() {
 			const capturedStates = [];
 
 			for (const stateConfig of states) {
-				try {
-					const state = await captureState(browser, pageConfig, stateConfig);
-					capturedStates.push(state);
-					console.log(`[visual-walkthrough] captured ${pageConfig.id}/${state.id}`);
-				} catch (error) {
-					const failure = { page: pageConfig.id, state: stateConfig.id || 'default', message: error.message };
-					capturedStates.push({
-						id: failure.state,
-						title: stateConfig.title || 'Default state',
-						description: stateConfig.description || '',
-						status: 'failed',
-						url: new URL(stateConfig.path || pageConfig.path, baseURL).toString(),
-						error: failure.message,
-					});
-					failures.push(failure);
-					console.error(`[visual-walkthrough] failed ${failure.page}/${failure.state}: ${failure.message}`);
+				const state = {
+					id: stateConfig.id || 'default',
+					title: stateConfig.title || 'Default state',
+					description: stateConfig.description || '',
+					url: new URL(stateConfig.path || pageConfig.path, baseURL).toString(),
+					status: 'captured',
+					captures: [],
+				};
+
+				for (const profile of captureProfiles) {
+					try {
+						const capture = await captureState(browser, pageConfig, stateConfig, profile);
+						state.captures.push(capture);
+						if (profile.id === captureProfiles[0]?.id) state.screenshot = capture.screenshot;
+						console.log(`[visual-walkthrough] captured ${pageConfig.id}/${state.id}/${profile.id}`);
+					} catch (error) {
+						const failure = {
+							page: pageConfig.id,
+							state: state.id,
+							profile: profile.id,
+							message: error.message,
+						};
+						state.status = 'failed';
+						state.captures.push(createFailedCapture(pageConfig, stateConfig, profile, error));
+						failures.push(failure);
+						console.error(
+							`[visual-walkthrough] failed ${failure.page}/${failure.state}/${failure.profile}: ${failure.message}`
+						);
+					}
 				}
+
+				capturedStates.push(state);
 			}
 
 			capturedPages.push({
@@ -262,20 +312,31 @@ async function captureReport() {
 		await browser.close();
 	}
 
+	const stateCount = capturedPages.reduce((total, page) => total + page.states.length, 0);
+	const captureCount = capturedPages.reduce(
+		(total, page) => total + page.states.reduce((stateTotal, state) => stateTotal + state.captures.length, 0),
+		0
+	);
 	const manifest = {
 		title: visualWalkthroughConfig.title,
 		description: visualWalkthroughConfig.description,
 		startedAt,
 		baseURL,
+		profiles: captureProfiles.map((profile) => ({
+			id: profile.id,
+			title: profile.title,
+			description: profile.description,
+		})),
 		pageCount: capturedPages.length,
-		stateCount: capturedPages.reduce((total, page) => total + page.states.length, 0),
+		stateCount,
+		captureCount,
 		failureCount: failures.length,
 		pages: capturedPages,
 		failures,
 	};
 
 	writeReport(manifest);
-	if (failures.length > 0) throw new Error(`Visual walkthrough failed for ${failures.length} state(s).`);
+	if (failures.length > 0) throw new Error(`Visual walkthrough failed for ${failures.length} capture(s).`);
 }
 
 function groupPages(pages) {
@@ -285,6 +346,36 @@ function groupPages(pages) {
 		groups.get(page.group).push(page);
 	}
 	return [...groups.entries()];
+}
+
+function renderProfileSwitcher(profiles) {
+	return `
+		<nav class="profile-switcher" aria-label="Screenshot profile">
+			<p class="profile-switcher__label">Screenshot set</p>
+			<div class="profile-switcher__controls">
+				${profiles
+					.map(
+						(profile) => `
+				<button type="button" class="profile-switcher__button" data-profile-filter="${escapeHtml(profile.id)}" aria-pressed="false">
+					${escapeHtml(profile.title)}
+				</button>`
+					)
+					.join('')}
+			</div>
+		</nav>`;
+}
+
+function renderCapture(page, state, capture) {
+	const failedClass = capture.status === 'failed' ? ' failed' : '';
+	return `
+				<section class="capture${failedClass}" data-profile="${escapeHtml(capture.profile)}">
+					<div class="capture__header">
+						<h5>${escapeHtml(capture.profileTitle)}</h5>
+						<p class="meta">${escapeHtml(capture.status)} · ${escapeHtml(capture.url)}</p>
+						${capture.error ? `<p>${escapeHtml(capture.error)}</p>` : ''}
+					</div>
+					${capture.screenshot ? `<a href="${escapeHtml(capture.screenshot)}"><img loading="lazy" src="${escapeHtml(capture.screenshot)}" alt="${escapeHtml(page.title)}: ${escapeHtml(state.title)} — ${escapeHtml(capture.profileTitle)}" /></a>` : ''}
+				</section>`;
 }
 
 function renderHtml(manifest) {
@@ -302,19 +393,30 @@ function renderHtml(manifest) {
 		h1 { margin: 0 0 8px; }
 		h2 { margin-top: 32px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
 		h3 { margin: 0 0 4px; }
+		h4 { margin: 0 0 4px; }
+		h5 { margin: 0 0 4px; font-size: 1rem; }
 		.badge { background: #eef; border: 1px solid #99c; border-radius: 6px; display: inline-block; padding: 6px 10px; }
 		.meta { color: #444; margin: 0; }
 		.group { margin-bottom: 40px; }
+		.profile-switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+		.profile-switcher__label { font-weight: 700; margin: 0; }
+		.profile-switcher__controls { display: flex; flex-wrap: wrap; gap: 8px; }
+		.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
+		.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
 		.page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 		.states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
 		.state__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
 		.state__header p { margin: 4px 0 0; }
-		.state img { display: block; width: 100%; height: auto; }
+		.capture { border-top: 1px solid #e5e5e5; }
+		.capture:first-of-type { border-top: 0; }
+		.capture__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
+		.capture img { display: block; width: 100%; height: auto; }
 		.failed { border-color: #d4351c; }
-		.failed .state__header { background: #fff4f2; }
+		.failed .state__header, .failed .capture__header { background: #fff4f2; }
 		.summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+		[hidden] { display: none !important; }
 	</style>
 </head>
 <body>
@@ -328,9 +430,11 @@ function renderHtml(manifest) {
 		<div class="summary">
 			<span class="badge">${manifest.pageCount} pages</span>
 			<span class="badge">${manifest.stateCount} states</span>
+			<span class="badge">${manifest.captureCount} screenshots</span>
 			<span class="badge">${manifest.failureCount} failures</span>
 		</div>
 	</header>
+	${renderProfileSwitcher(manifest.profiles)}
 	${groups
 		.map(
 			([group, pages]) => `
@@ -354,9 +458,8 @@ function renderHtml(manifest) {
 						<h4>${escapeHtml(state.title)}</h4>
 						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
 						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
-						${state.error ? `<p>${escapeHtml(state.error)}</p>` : ''}
 					</div>
-					${state.screenshot ? `<a href="${escapeHtml(state.screenshot)}"><img loading="lazy" src="${escapeHtml(state.screenshot)}" alt="${escapeHtml(page.title)}: ${escapeHtml(state.title)}" /></a>` : ''}
+					${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
 				</section>`
 					)
 					.join('')}
@@ -367,6 +470,25 @@ function renderHtml(manifest) {
 	</section>`
 		)
 		.join('')}
+	<script>
+		(() => {
+			const buttons = Array.from(document.querySelectorAll('[data-profile-filter]'));
+			const captures = Array.from(document.querySelectorAll('[data-profile]'));
+			function activate(profile) {
+				document.body.dataset.activeProfile = profile;
+				for (const button of buttons) {
+					button.setAttribute('aria-pressed', String(button.dataset.profileFilter === profile));
+				}
+				for (const capture of captures) {
+					capture.hidden = capture.dataset.profile !== profile;
+				}
+			}
+			for (const button of buttons) {
+				button.addEventListener('click', () => activate(button.dataset.profileFilter));
+			}
+			activate(buttons[0]?.dataset.profileFilter || 'desktop');
+		})();
+	</script>
 </body>
 </html>`;
 }
