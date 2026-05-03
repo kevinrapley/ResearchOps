@@ -2,8 +2,8 @@ name: Publish Walkthrough (Pages)
 
 on:
   workflow_run:
-    workflows: [ "CI" ]
-    types: [ completed ]
+    workflows: ["qa-bdd"]
+    types: [completed]
 
 permissions:
   contents: read
@@ -16,28 +16,30 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main'
+      }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      # Pull the walkthrough site produced by CI
-      - name: Download walkthrough artifact from CI
+      - name: Download visual walkthrough artifact from qa-bdd
         uses: dawidd6/action-download-artifact@v8
         with:
-          workflow: CI
+          workflow: qa-bdd
           run_id: ${{ github.event.workflow_run.id }}
-          name: walkthrough-site
+          name: visual-walkthrough-site
           path: ./reports-site
           if_no_artifact_found: fail
 
-      # Also pull the Cucumber HTML report and place it inside the site root
       - name: Download cucumber HTML report
         uses: dawidd6/action-download-artifact@v8
         with:
-          workflow: CI
+          workflow: qa-bdd
           run_id: ${{ github.event.workflow_run.id }}
           name: cucumber-report
           path: ./__cuke
@@ -50,7 +52,6 @@ jobs:
             mv __cuke/cucumber-report.html reports-site/
           fi
 
-      # Optional: ensure there's at least an index.html (nice safety net)
       - name: Ensure site has an index
         run: |
           if [ ! -f "reports-site/index.html" ]; then
@@ -58,7 +59,7 @@ jobs:
             <!doctype html><meta charset="utf-8">
             <title>Walkthrough</title>
             <h1>Walkthrough site not generated for this run.</h1>
-            <p>The CI job may not have produced screenshots yet.</p>
+            <p>The qa-bdd workflow did not produce screenshots for this run.</p>
             HTML
           fi
 
@@ -71,13 +72,13 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Add Job Summary
+      - name: Add job summary
         run: |
           URL="${{ steps.deployment.outputs.page_url }}"
-          echo "## ✅ BDD Visual Walkthrough" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Open the gallery:** ${URL}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> Tip: The gallery shows each step with its screenshot, grouped by scenario." >> $GITHUB_STEP_SUMMARY
+          echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Open the gallery:** ${URL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open Cucumber HTML report](${URL}cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots." >> "$GITHUB_STEP_SUMMARY"
