@@ -1,10 +1,23 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-03T14:37:50.231Z",
+  "startedAt": "2026-05-03T17:14:08.341Z",
   "baseURL": "https://researchops.pages.dev/",
+  "profiles": [
+    {
+      "id": "desktop",
+      "title": "Desktop",
+      "description": "Desktop Chromium viewport, 1440 × 1200."
+    },
+    {
+      "id": "mobile",
+      "title": "Mobile",
+      "description": "Mobile Chromium emulation, 412 × 915, touch enabled."
+    }
+  ],
   "pageCount": 17,
-  "stateCount": 29,
+  "stateCount": 33,
+  "captureCount": 66,
   "failureCount": 0,
   "pages": [
     {
@@ -18,10 +31,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/",
-          "durationMs": 1066,
-          "screenshot": "screenshots/core__home__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/",
+              "durationMs": 1016,
+              "screenshot": "screenshots/desktop/core__home__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/",
+              "durationMs": 1178,
+              "screenshot": "screenshots/mobile/core__home__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__home__default.png"
         }
       ]
     },
@@ -36,64 +66,183 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 1087,
-          "screenshot": "screenshots/core__start__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 980,
+              "screenshot": "screenshots/desktop/core__start__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1077,
+              "screenshot": "screenshots/mobile/core__start__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__default.png"
         },
         {
           "id": "step-1-filled",
           "title": "Step 1 completed with project definition",
           "description": "Project name, description, phase and status entered using believable discovery-stage dummy data.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 1939,
-          "screenshot": "screenshots/core__start__step-1-filled.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1833,
+              "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1903,
+              "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
         },
         {
           "id": "step-2-default",
           "title": "Step 2 default state",
           "description": "Second wizard step after a valid project definition has been entered on step 1.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 2313,
-          "screenshot": "screenshots/core__start__step-2-default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2217,
+              "screenshot": "screenshots/desktop/core__start__step-2-default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2341,
+              "screenshot": "screenshots/mobile/core__start__step-2-default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-2-default.png"
         },
         {
           "id": "step-2-filled-no-ai",
           "title": "Step 2 completed without AI rewrite invoked",
           "description": "Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3012,
-          "screenshot": "screenshots/core__start__step-2-filled-no-ai.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2869,
+              "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3101,
+              "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
         },
         {
           "id": "step-2-ai-rewrite-shown",
           "title": "Step 2 AI rewrite shown",
           "description": "Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3675,
-          "screenshot": "screenshots/core__start__step-2-ai-rewrite-shown.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3536,
+              "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3828,
+              "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
         },
         {
           "id": "step-3-default",
           "title": "Step 3 default state",
           "description": "Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 3352,
-          "screenshot": "screenshots/core__start__step-3-default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3264,
+              "screenshot": "screenshots/desktop/core__start__step-3-default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3395,
+              "screenshot": "screenshots/mobile/core__start__step-3-default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-3-default.png"
         },
         {
           "id": "step-3-filled",
           "title": "Step 3 completed before create project",
           "description": "Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/start/index.html",
-          "durationMs": 4007,
-          "screenshot": "screenshots/core__start__step-3-filled.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3866,
+              "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 4001,
+              "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
         }
       ]
     },
@@ -108,10 +257,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/index.html",
-          "durationMs": 3538,
-          "screenshot": "screenshots/projects__projects__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/index.html",
+              "durationMs": 1491,
+              "screenshot": "screenshots/desktop/projects__projects__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/index.html",
+              "durationMs": 1651,
+              "screenshot": "screenshots/mobile/projects__projects__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/projects__projects__default.png"
         }
       ]
     },
@@ -126,10 +292,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-          "durationMs": 1714,
-          "screenshot": "screenshots/projects__project-dashboard__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
+              "durationMs": 1351,
+              "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
+              "durationMs": 1560,
+              "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
         }
       ]
     },
@@ -144,10 +327,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-          "durationMs": 1113,
-          "screenshot": "screenshots/projects__outcomes__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
+              "durationMs": 1036,
+              "screenshot": "screenshots/desktop/projects__outcomes__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
+              "durationMs": 1193,
+              "screenshot": "screenshots/mobile/projects__outcomes__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/projects__outcomes__default.png"
         }
       ]
     },
@@ -162,10 +362,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-          "durationMs": 1087,
-          "screenshot": "screenshots/projects__journals__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
+              "durationMs": 990,
+              "screenshot": "screenshots/desktop/projects__journals__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
+              "durationMs": 1108,
+              "screenshot": "screenshots/mobile/projects__journals__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/projects__journals__default.png"
         }
       ]
     },
@@ -180,10 +397,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/index.html",
-          "durationMs": 1093,
-          "screenshot": "screenshots/study__study__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/index.html",
+              "durationMs": 1031,
+              "screenshot": "screenshots/desktop/study__study__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/index.html",
+              "durationMs": 1215,
+              "screenshot": "screenshots/mobile/study__study__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study__default.png"
         }
       ]
     },
@@ -198,10 +432,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-          "durationMs": 1041,
-          "screenshot": "screenshots/study__study-guides__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/guides/index.html",
+              "durationMs": 997,
+              "screenshot": "screenshots/desktop/study__study-guides__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/guides/index.html",
+              "durationMs": 1257,
+              "screenshot": "screenshots/mobile/study__study-guides__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-guides__default.png"
         }
       ]
     },
@@ -216,10 +467,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-          "durationMs": 1107,
-          "screenshot": "screenshots/study__study-participants__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participants/index.html",
+              "durationMs": 1002,
+              "screenshot": "screenshots/desktop/study__study-participants__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participants/index.html",
+              "durationMs": 1161,
+              "screenshot": "screenshots/mobile/study__study-participants__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participants__default.png"
         }
       ]
     },
@@ -234,10 +502,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/session/index.html",
-          "durationMs": 1038,
-          "screenshot": "screenshots/study__study-session__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/session/index.html",
+              "durationMs": 970,
+              "screenshot": "screenshots/desktop/study__study-session__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/session/index.html",
+              "durationMs": 1112,
+              "screenshot": "screenshots/mobile/study__study-session__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-session__default.png"
         }
       ]
     },
@@ -252,10 +537,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-          "durationMs": 1082,
-          "screenshot": "screenshots/study__study-consent-forms__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
+              "durationMs": 980,
+              "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
+              "durationMs": 1157,
+              "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
         }
       ]
     },
@@ -268,12 +570,133 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
+          "title": "Consent workspace loaded",
+          "description": "Participant consent loaded with study context, a published consent form, participants and existing consent records.",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
           "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1629,
+              "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1766,
+              "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
+        },
+        {
+          "id": "missing-context-error",
+          "title": "Missing study context error state",
+          "description": "Participant consent loaded without project and study IDs; the page shows a blocking route-context message.",
           "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-          "durationMs": 1042,
-          "screenshot": "screenshots/study__study-participant-consent__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
+              "durationMs": 1116,
+              "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
+              "durationMs": 1227,
+              "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
+        },
+        {
+          "id": "no-published-consent-form",
+          "title": "No published consent form state",
+          "description": "The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1346,
+              "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1434,
+              "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
+        },
+        {
+          "id": "no-participants",
+          "title": "No participants state",
+          "description": "The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1362,
+              "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1426,
+              "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
+        },
+        {
+          "id": "participant-selected",
+          "title": "Participant selected for consent review",
+          "description": "A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1898,
+              "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 2234,
+              "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
         }
       ]
     },
@@ -288,10 +711,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/search/index.html",
-          "durationMs": 1010,
-          "screenshot": "screenshots/utilities__search__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/search/index.html",
+              "durationMs": 906,
+              "screenshot": "screenshots/desktop/utilities__search__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/search/index.html",
+              "durationMs": 994,
+              "screenshot": "screenshots/mobile/utilities__search__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/utilities__search__default.png"
         }
       ]
     },
@@ -306,10 +746,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/notes/index.html",
-          "durationMs": 1026,
-          "screenshot": "screenshots/utilities__notes__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/notes/index.html",
+              "durationMs": 914,
+              "screenshot": "screenshots/desktop/utilities__notes__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/notes/index.html",
+              "durationMs": 1018,
+              "screenshot": "screenshots/mobile/utilities__notes__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/utilities__notes__default.png"
         }
       ]
     },
@@ -324,10 +781,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/consent/index.html",
-          "durationMs": 1010,
-          "screenshot": "screenshots/utilities__consent__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/consent/index.html",
+              "durationMs": 910,
+              "screenshot": "screenshots/desktop/utilities__consent__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/consent/index.html",
+              "durationMs": 999,
+              "screenshot": "screenshots/mobile/utilities__consent__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/utilities__consent__default.png"
         }
       ]
     },
@@ -342,10 +816,27 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/sessions/index.html",
-          "durationMs": 1034,
-          "screenshot": "screenshots/utilities__sessions__default.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/sessions/index.html",
+              "durationMs": 949,
+              "screenshot": "screenshots/desktop/utilities__sessions__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/sessions/index.html",
+              "durationMs": 1031,
+              "screenshot": "screenshots/mobile/utilities__sessions__default.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/utilities__sessions__default.png"
         }
       ]
     },
@@ -360,64 +851,183 @@
           "id": "missing-sid-error",
           "title": "Missing study ID error state",
           "description": "Synthesis loaded without a study ID; the page shows the blocking route-context error.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-          "durationMs": 996,
-          "screenshot": "screenshots/analysis__synthesize__missing-sid-error.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/index.html",
+              "durationMs": 913,
+              "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/index.html",
+              "durationMs": 993,
+              "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
         },
         {
           "id": "empty-evidence",
           "title": "Empty evidence state",
           "description": "Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1440,
-          "screenshot": "screenshots/analysis__synthesize__empty-evidence.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1356,
+              "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1472,
+              "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
         },
         {
           "id": "evidence-loaded",
           "title": "Evidence available before working clusters",
           "description": "Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1249,
-          "screenshot": "screenshots/analysis__synthesize__evidence-loaded.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1151,
+              "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1288,
+              "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
         },
         {
           "id": "working-cluster-created",
           "title": "Working cluster grouping created",
           "description": "A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2149,
-          "screenshot": "screenshots/analysis__synthesize__working-cluster-created.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2074,
+              "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2326,
+              "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
         },
         {
           "id": "evidence-added-to-cluster",
           "title": "Evidence added to working cluster grouping",
           "description": "A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2177,
-          "screenshot": "screenshots/analysis__synthesize__evidence-added-to-cluster.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2123,
+              "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2388,
+              "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
         },
         {
           "id": "theme-blocked-without-evidence",
           "title": "Theme creation hidden before evidence is grouped",
           "description": "Theme creation remains hidden until at least one working cluster grouping contains source evidence.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 1522,
-          "screenshot": "screenshots/analysis__synthesize__theme-blocked-without-evidence.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1413,
+              "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1644,
+              "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
         },
         {
           "id": "theme-created",
           "title": "Theme created with evidence traceability",
           "description": "A theme is created from a populated cluster and the source evidence IDs remain inspectable.",
-          "status": "captured",
           "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-          "durationMs": 2399,
-          "screenshot": "screenshots/analysis__synthesize__theme-created.png"
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2334,
+              "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2607,
+              "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
+            }
+          ],
+          "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
         }
       ]
     }

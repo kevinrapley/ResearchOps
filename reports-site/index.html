@@ -10,19 +10,30 @@
 		h1 { margin: 0 0 8px; }
 		h2 { margin-top: 32px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
 		h3 { margin: 0 0 4px; }
+		h4 { margin: 0 0 4px; }
+		h5 { margin: 0 0 4px; font-size: 1rem; }
 		.badge { background: #eef; border: 1px solid #99c; border-radius: 6px; display: inline-block; padding: 6px 10px; }
 		.meta { color: #444; margin: 0; }
 		.group { margin-bottom: 40px; }
+		.profile-switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+		.profile-switcher__label { font-weight: 700; margin: 0; }
+		.profile-switcher__controls { display: flex; flex-wrap: wrap; gap: 8px; }
+		.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
+		.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
 		.page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 		.states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
 		.state__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
 		.state__header p { margin: 4px 0 0; }
-		.state img { display: block; width: 100%; height: auto; }
+		.capture { border-top: 1px solid #e5e5e5; }
+		.capture:first-of-type { border-top: 0; }
+		.capture__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
+		.capture img { display: block; width: 100%; height: auto; }
 		.failed { border-color: #d4351c; }
-		.failed .state__header { background: #fff4f2; }
+		.failed .state__header, .failed .capture__header { background: #fff4f2; }
 		.summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+		[hidden] { display: none !important; }
 	</style>
 </head>
 <body>
@@ -31,14 +42,28 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-03T14:37:50.231Z</p>
+			<p class="meta">Run started: 2026-05-03T17:14:08.341Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
-			<span class="badge">29 states</span>
+			<span class="badge">33 states</span>
+			<span class="badge">66 screenshots</span>
 			<span class="badge">0 failures</span>
 		</div>
 	</header>
+	
+		<nav class="profile-switcher" aria-label="Screenshot profile">
+			<p class="profile-switcher__label">Screenshot set</p>
+			<div class="profile-switcher__controls">
+				
+				<button type="button" class="profile-switcher__button" data-profile-filter="desktop" aria-pressed="false">
+					Desktop
+				</button>
+				<button type="button" class="profile-switcher__button" data-profile-filter="mobile" aria-pressed="false">
+					Mobile
+				</button>
+			</div>
+		</nav>
 	
 	<section class="group" id="core">
 		<h2>Core</h2>
@@ -56,9 +81,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/</p>
 						
 					</div>
-					<a href="screenshots/core__home__default.png"><img loading="lazy" src="screenshots/core__home__default.png" alt="Home: Default state" /></a>
+					<a href="screenshots/desktop/core__home__default.png"><img loading="lazy" src="screenshots/desktop/core__home__default.png" alt="Home: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__home__default.png"><img loading="lazy" src="screenshots/mobile/core__home__default.png" alt="Home: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -75,63 +115,168 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__default.png"><img loading="lazy" src="screenshots/core__start__default.png" alt="Start research project: Default state" /></a>
+					<a href="screenshots/desktop/core__start__default.png"><img loading="lazy" src="screenshots/desktop/core__start__default.png" alt="Start research project: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__default.png"><img loading="lazy" src="screenshots/mobile/core__start__default.png" alt="Start research project: Default state — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 1 completed with project definition</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Project name, description, phase and status entered using believable discovery-stage dummy data.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/core__start__step-1-filled.png" alt="Start research project: Step 1 completed with project definition" /></a>
+					<a href="screenshots/desktop/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/desktop/core__start__step-1-filled.png" alt="Start research project: Step 1 completed with project definition — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/mobile/core__start__step-1-filled.png" alt="Start research project: Step 1 completed with project definition — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 2 default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Second wizard step after a valid project definition has been entered on step 1.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-2-default.png"><img loading="lazy" src="screenshots/core__start__step-2-default.png" alt="Start research project: Step 2 default state" /></a>
+					<a href="screenshots/desktop/core__start__step-2-default.png"><img loading="lazy" src="screenshots/desktop/core__start__step-2-default.png" alt="Start research project: Step 2 default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-2-default.png"><img loading="lazy" src="screenshots/mobile/core__start__step-2-default.png" alt="Start research project: Step 2 default state — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 2 completed without AI rewrite invoked</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/core__start__step-2-filled-no-ai.png" alt="Start research project: Step 2 completed without AI rewrite invoked" /></a>
+					<a href="screenshots/desktop/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/desktop/core__start__step-2-filled-no-ai.png" alt="Start research project: Step 2 completed without AI rewrite invoked — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/mobile/core__start__step-2-filled-no-ai.png" alt="Start research project: Step 2 completed without AI rewrite invoked — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 2 AI rewrite shown</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-2-ai-rewrite-shown.png"><img loading="lazy" src="screenshots/core__start__step-2-ai-rewrite-shown.png" alt="Start research project: Step 2 AI rewrite shown" /></a>
+					<a href="screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"><img loading="lazy" src="screenshots/desktop/core__start__step-2-ai-rewrite-shown.png" alt="Start research project: Step 2 AI rewrite shown — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"><img loading="lazy" src="screenshots/mobile/core__start__step-2-ai-rewrite-shown.png" alt="Start research project: Step 2 AI rewrite shown — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 3 default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-3-default.png"><img loading="lazy" src="screenshots/core__start__step-3-default.png" alt="Start research project: Step 3 default state" /></a>
+					<a href="screenshots/desktop/core__start__step-3-default.png"><img loading="lazy" src="screenshots/desktop/core__start__step-3-default.png" alt="Start research project: Step 3 default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-3-default.png"><img loading="lazy" src="screenshots/mobile/core__start__step-3-default.png" alt="Start research project: Step 3 default state — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Step 3 completed before create project</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						
 					</div>
-					<a href="screenshots/core__start__step-3-filled.png"><img loading="lazy" src="screenshots/core__start__step-3-filled.png" alt="Start research project: Step 3 completed before create project" /></a>
+					<a href="screenshots/desktop/core__start__step-3-filled.png"><img loading="lazy" src="screenshots/desktop/core__start__step-3-filled.png" alt="Start research project: Step 3 completed before create project — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/core__start__step-3-filled.png"><img loading="lazy" src="screenshots/mobile/core__start__step-3-filled.png" alt="Start research project: Step 3 completed before create project — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -152,9 +297,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/projects/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/index.html</p>
 						
 					</div>
-					<a href="screenshots/projects__projects__default.png"><img loading="lazy" src="screenshots/projects__projects__default.png" alt="Projects: Default state" /></a>
+					<a href="screenshots/desktop/projects__projects__default.png"><img loading="lazy" src="screenshots/desktop/projects__projects__default.png" alt="Projects: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/projects__projects__default.png"><img loading="lazy" src="screenshots/mobile/projects__projects__default.png" alt="Projects: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -171,9 +331,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/project-dashboard/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/project-dashboard/index.html</p>
 						
 					</div>
-					<a href="screenshots/projects__project-dashboard__default.png"><img loading="lazy" src="screenshots/projects__project-dashboard__default.png" alt="Project dashboard: Default state" /></a>
+					<a href="screenshots/desktop/projects__project-dashboard__default.png"><img loading="lazy" src="screenshots/desktop/projects__project-dashboard__default.png" alt="Project dashboard: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/project-dashboard/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/projects__project-dashboard__default.png"><img loading="lazy" src="screenshots/mobile/projects__project-dashboard__default.png" alt="Project dashboard: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -190,9 +365,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/projects/outcomes/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/outcomes/index.html</p>
 						
 					</div>
-					<a href="screenshots/projects__outcomes__default.png"><img loading="lazy" src="screenshots/projects__outcomes__default.png" alt="Project outcomes: Default state" /></a>
+					<a href="screenshots/desktop/projects__outcomes__default.png"><img loading="lazy" src="screenshots/desktop/projects__outcomes__default.png" alt="Project outcomes: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/outcomes/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/projects__outcomes__default.png"><img loading="lazy" src="screenshots/mobile/projects__outcomes__default.png" alt="Project outcomes: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -209,9 +399,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/projects/journals/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/journals/index.html</p>
 						
 					</div>
-					<a href="screenshots/projects__journals__default.png"><img loading="lazy" src="screenshots/projects__journals__default.png" alt="Project journals: Default state" /></a>
+					<a href="screenshots/desktop/projects__journals__default.png"><img loading="lazy" src="screenshots/desktop/projects__journals__default.png" alt="Project journals: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/projects/journals/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/projects__journals__default.png"><img loading="lazy" src="screenshots/mobile/projects__journals__default.png" alt="Project journals: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -232,9 +437,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/index.html</p>
 						
 					</div>
-					<a href="screenshots/study__study__default.png"><img loading="lazy" src="screenshots/study__study__default.png" alt="Study overview: Default state" /></a>
+					<a href="screenshots/desktop/study__study__default.png"><img loading="lazy" src="screenshots/desktop/study__study__default.png" alt="Study overview: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study__default.png"><img loading="lazy" src="screenshots/mobile/study__study__default.png" alt="Study overview: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -251,9 +471,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/guides/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/guides/index.html</p>
 						
 					</div>
-					<a href="screenshots/study__study-guides__default.png"><img loading="lazy" src="screenshots/study__study-guides__default.png" alt="Discussion guides: Default state" /></a>
+					<a href="screenshots/desktop/study__study-guides__default.png"><img loading="lazy" src="screenshots/desktop/study__study-guides__default.png" alt="Discussion guides: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/guides/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-guides__default.png"><img loading="lazy" src="screenshots/mobile/study__study-guides__default.png" alt="Discussion guides: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -270,9 +505,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/participants/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participants/index.html</p>
 						
 					</div>
-					<a href="screenshots/study__study-participants__default.png"><img loading="lazy" src="screenshots/study__study-participants__default.png" alt="Participants: Default state" /></a>
+					<a href="screenshots/desktop/study__study-participants__default.png"><img loading="lazy" src="screenshots/desktop/study__study-participants__default.png" alt="Participants: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participants/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participants__default.png"><img loading="lazy" src="screenshots/mobile/study__study-participants__default.png" alt="Participants: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -289,9 +539,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/session/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/session/index.html</p>
 						
 					</div>
-					<a href="screenshots/study__study-session__default.png"><img loading="lazy" src="screenshots/study__study-session__default.png" alt="Study session: Default state" /></a>
+					<a href="screenshots/desktop/study__study-session__default.png"><img loading="lazy" src="screenshots/desktop/study__study-session__default.png" alt="Study session: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/session/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-session__default.png"><img loading="lazy" src="screenshots/mobile/study__study-session__default.png" alt="Study session: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -308,9 +573,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/consent-forms/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/consent-forms/index.html</p>
 						
 					</div>
-					<a href="screenshots/study__study-consent-forms__default.png"><img loading="lazy" src="screenshots/study__study-consent-forms__default.png" alt="Study consent forms: Default state" /></a>
+					<a href="screenshots/desktop/study__study-consent-forms__default.png"><img loading="lazy" src="screenshots/desktop/study__study-consent-forms__default.png" alt="Study consent forms: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/consent-forms/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-consent-forms__default.png"><img loading="lazy" src="screenshots/mobile/study__study-consent-forms__default.png" alt="Study consent forms: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -324,12 +604,123 @@
 				
 				<section class="state ">
 					<div class="state__header">
-						<h4>Default state</h4>
-						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/index.html</p>
-						<p>Initial loaded page state.</p>
+						<h4>Consent workspace loaded</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						<p>Participant consent loaded with study context, a published consent form, participants and existing consent records.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
 						
 					</div>
-					<a href="screenshots/study__study-participant-consent__default.png"><img loading="lazy" src="screenshots/study__study-participant-consent__default.png" alt="Participant consent: Default state" /></a>
+					<a href="screenshots/desktop/study__study-participant-consent__default.png"><img loading="lazy" src="screenshots/desktop/study__study-participant-consent__default.png" alt="Participant consent: Consent workspace loaded — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participant-consent__default.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__default.png" alt="Participant consent: Consent workspace loaded — Mobile" /></a>
+				</section>
+				</section>
+				<section class="state ">
+					<div class="state__header">
+						<h4>Missing study context error state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/index.html</p>
+						<p>Participant consent loaded without project and study IDs; the page shows a blocking route-context message.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/index.html</p>
+						
+					</div>
+					<a href="screenshots/desktop/study__study-participant-consent__missing-context-error.png"><img loading="lazy" src="screenshots/desktop/study__study-participant-consent__missing-context-error.png" alt="Participant consent: Missing study context error state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participant-consent__missing-context-error.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__missing-context-error.png" alt="Participant consent: Missing study context error state — Mobile" /></a>
+				</section>
+				</section>
+				<section class="state ">
+					<div class="state__header">
+						<h4>No published consent form state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						<p>The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"><img loading="lazy" src="screenshots/desktop/study__study-participant-consent__no-published-consent-form.png" alt="Participant consent: No published consent form state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__no-published-consent-form.png" alt="Participant consent: No published consent form state — Mobile" /></a>
+				</section>
+				</section>
+				<section class="state ">
+					<div class="state__header">
+						<h4>No participants state</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						<p>The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/desktop/study__study-participant-consent__no-participants.png"><img loading="lazy" src="screenshots/desktop/study__study-participant-consent__no-participants.png" alt="Participant consent: No participants state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participant-consent__no-participants.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__no-participants.png" alt="Participant consent: No participants state — Mobile" /></a>
+				</section>
+				</section>
+				<section class="state ">
+					<div class="state__header">
+						<h4>Participant selected for consent review</h4>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						<p>A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/desktop/study__study-participant-consent__participant-selected.png"><img loading="lazy" src="screenshots/desktop/study__study-participant-consent__participant-selected.png" alt="Participant consent: Participant selected for consent review — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/study__study-participant-consent__participant-selected.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__participant-selected.png" alt="Participant consent: Participant selected for consent review — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -350,9 +741,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/search/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/search/index.html</p>
 						
 					</div>
-					<a href="screenshots/utilities__search__default.png"><img loading="lazy" src="screenshots/utilities__search__default.png" alt="Search: Default state" /></a>
+					<a href="screenshots/desktop/utilities__search__default.png"><img loading="lazy" src="screenshots/desktop/utilities__search__default.png" alt="Search: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/search/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/utilities__search__default.png"><img loading="lazy" src="screenshots/mobile/utilities__search__default.png" alt="Search: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -369,9 +775,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/notes/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/notes/index.html</p>
 						
 					</div>
-					<a href="screenshots/utilities__notes__default.png"><img loading="lazy" src="screenshots/utilities__notes__default.png" alt="Notes: Default state" /></a>
+					<a href="screenshots/desktop/utilities__notes__default.png"><img loading="lazy" src="screenshots/desktop/utilities__notes__default.png" alt="Notes: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/notes/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/utilities__notes__default.png"><img loading="lazy" src="screenshots/mobile/utilities__notes__default.png" alt="Notes: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -388,9 +809,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/consent/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/consent/index.html</p>
 						
 					</div>
-					<a href="screenshots/utilities__consent__default.png"><img loading="lazy" src="screenshots/utilities__consent__default.png" alt="Consent: Default state" /></a>
+					<a href="screenshots/desktop/utilities__consent__default.png"><img loading="lazy" src="screenshots/desktop/utilities__consent__default.png" alt="Consent: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/consent/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/utilities__consent__default.png"><img loading="lazy" src="screenshots/mobile/utilities__consent__default.png" alt="Consent: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -407,9 +843,24 @@
 						<h4>Default state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/sessions/index.html</p>
 						<p>Initial loaded page state.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/sessions/index.html</p>
 						
 					</div>
-					<a href="screenshots/utilities__sessions__default.png"><img loading="lazy" src="screenshots/utilities__sessions__default.png" alt="Sessions: Default state" /></a>
+					<a href="screenshots/desktop/utilities__sessions__default.png"><img loading="lazy" src="screenshots/desktop/utilities__sessions__default.png" alt="Sessions: Default state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/sessions/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/utilities__sessions__default.png"><img loading="lazy" src="screenshots/mobile/utilities__sessions__default.png" alt="Sessions: Default state — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
@@ -430,66 +881,190 @@
 						<h4>Missing study ID error state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/index.html</p>
 						<p>Synthesis loaded without a study ID; the page shows the blocking route-context error.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/index.html</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__missing-sid-error.png"><img loading="lazy" src="screenshots/analysis__synthesize__missing-sid-error.png" alt="Study synthesis: Missing study ID error state" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__missing-sid-error.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__missing-sid-error.png" alt="Study synthesis: Missing study ID error state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/index.html</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__missing-sid-error.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__missing-sid-error.png" alt="Study synthesis: Missing study ID error state — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Empty evidence state</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__empty-evidence.png"><img loading="lazy" src="screenshots/analysis__synthesize__empty-evidence.png" alt="Study synthesis: Empty evidence state" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__empty-evidence.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__empty-evidence.png" alt="Study synthesis: Empty evidence state — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__empty-evidence.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__empty-evidence.png" alt="Study synthesis: Empty evidence state — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Evidence available before working clusters</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__evidence-loaded.png"><img loading="lazy" src="screenshots/analysis__synthesize__evidence-loaded.png" alt="Study synthesis: Evidence available before working clusters" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__evidence-loaded.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__evidence-loaded.png" alt="Study synthesis: Evidence available before working clusters — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__evidence-loaded.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__evidence-loaded.png" alt="Study synthesis: Evidence available before working clusters — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Working cluster grouping created</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__working-cluster-created.png"><img loading="lazy" src="screenshots/analysis__synthesize__working-cluster-created.png" alt="Study synthesis: Working cluster grouping created" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__working-cluster-created.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__working-cluster-created.png" alt="Study synthesis: Working cluster grouping created — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__working-cluster-created.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__working-cluster-created.png" alt="Study synthesis: Working cluster grouping created — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Evidence added to working cluster grouping</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__evidence-added-to-cluster.png"><img loading="lazy" src="screenshots/analysis__synthesize__evidence-added-to-cluster.png" alt="Study synthesis: Evidence added to working cluster grouping" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png" alt="Study synthesis: Evidence added to working cluster grouping — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png" alt="Study synthesis: Evidence added to working cluster grouping — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Theme creation hidden before evidence is grouped</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>Theme creation remains hidden until at least one working cluster grouping contains source evidence.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__theme-blocked-without-evidence.png"><img loading="lazy" src="screenshots/analysis__synthesize__theme-blocked-without-evidence.png" alt="Study synthesis: Theme creation hidden before evidence is grouped" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png" alt="Study synthesis: Theme creation hidden before evidence is grouped — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png" alt="Study synthesis: Theme creation hidden before evidence is grouped — Mobile" /></a>
+				</section>
 				</section>
 				<section class="state ">
 					<div class="state__header">
 						<h4>Theme created with evidence traceability</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>A theme is created from a populated cluster and the source evidence IDs remain inspectable.</p>
+					</div>
+					
+				<section class="capture" data-profile="desktop">
+					<div class="capture__header">
+						<h5>Desktop</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						
 					</div>
-					<a href="screenshots/analysis__synthesize__theme-created.png"><img loading="lazy" src="screenshots/analysis__synthesize__theme-created.png" alt="Study synthesis: Theme created with evidence traceability" /></a>
+					<a href="screenshots/desktop/analysis__synthesize__theme-created.png"><img loading="lazy" src="screenshots/desktop/analysis__synthesize__theme-created.png" alt="Study synthesis: Theme created with evidence traceability — Desktop" /></a>
+				</section>
+				<section class="capture" data-profile="mobile">
+					<div class="capture__header">
+						<h5>Mobile</h5>
+						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+						
+					</div>
+					<a href="screenshots/mobile/analysis__synthesize__theme-created.png"><img loading="lazy" src="screenshots/mobile/analysis__synthesize__theme-created.png" alt="Study synthesis: Theme created with evidence traceability — Mobile" /></a>
+				</section>
 				</section>
 			</div>
 		</article>
 	</section>
+	<script>
+		(() => {
+			const buttons = Array.from(document.querySelectorAll('[data-profile-filter]'));
+			const captures = Array.from(document.querySelectorAll('[data-profile]'));
+			function activate(profile) {
+				document.body.dataset.activeProfile = profile;
+				for (const button of buttons) {
+					button.setAttribute('aria-pressed', String(button.dataset.profileFilter === profile));
+				}
+				for (const capture of captures) {
+					capture.hidden = capture.dataset.profile !== profile;
+				}
+			}
+			for (const button of buttons) {
+				button.addEventListener('click', () => activate(button.dataset.profileFilter));
+			}
+			activate(buttons[0]?.dataset.profileFilter || 'desktop');
+		})();
+	</script>
 </body>
 </html>
