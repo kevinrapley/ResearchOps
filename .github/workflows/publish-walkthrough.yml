@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout reporting tools
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Download visual walkthrough artifact from qa-bdd
         uses: dawidd6/action-download-artifact@v8
