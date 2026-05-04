@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  WRANGLER_VERSION: "4.34.0"
+  WRANGLER_VERSION: "4.87.0"
   REPORTING_PAGES_PROJECT: reopsreporting
   REPORTING_PAGES_URL: https://reopsreporting.pages.dev/
 
@@ -76,7 +76,7 @@ jobs:
       - name: Merge cucumber evidence into reporting site
         run: node scripts/merge-cucumber-report.mjs
 
-      - name: Verify Cloudflare credentials
+      - name: Verify Cloudflare Pages project access
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -93,6 +93,45 @@ jobs:
             echo "CF_ACCOUNT_ID is not configured for this repository." >&2
             exit 1
           fi
+
+          response_file="${RUNNER_TEMP}/cloudflare-pages-project.json"
+          endpoint="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${REPORTING_PAGES_PROJECT}"
+
+          status="$(curl --silent --show-error --output "$response_file" --write-out "%{http_code}" \
+            --request GET "$endpoint" \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --header "Content-Type: application/json" || true)"
+
+          node <<'NODE' "$response_file" "$status" "$REPORTING_PAGES_PROJECT"
+          const fs = require('node:fs');
+
+          const [, , responsePath, status, projectName] = process.argv;
+          let body = {};
+
+          try {
+            body = JSON.parse(fs.readFileSync(responsePath, 'utf8'));
+          } catch {
+            body = {};
+          }
+
+          if (status === '200' && body.success === true) {
+            console.log(`Cloudflare Pages project access verified for ${projectName}.`);
+            process.exit(0);
+          }
+
+          const error = Array.isArray(body.errors) && body.errors.length > 0 ? body.errors[0] : {};
+          const code = error.code || 'unknown';
+          const message = error.message || 'Cloudflare did not return a readable error message.';
+
+          console.error('Cloudflare Pages access check failed before deployment.');
+          console.error(`Endpoint: /accounts/***/pages/projects/${projectName}`);
+          console.error(`HTTP status: ${status}`);
+          console.error(`Cloudflare error: ${message} [code: ${code}]`);
+          console.error('Required secret fix: replace CF_API_TOKEN with a Cloudflare API token from the same account as CF_ACCOUNT_ID.');
+          console.error('Required token scope: Account > Cloudflare Pages > Edit for the account that owns this Pages project.');
+          console.error('Also confirm the GitHub secret CF_ACCOUNT_ID is the account ID for the Pages project, not another Cloudflare account.');
+          process.exit(1);
+          NODE
 
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
