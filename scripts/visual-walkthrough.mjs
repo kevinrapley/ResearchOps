@@ -13,7 +13,7 @@ import {
 	synthesisDefaultState,
 	synthesisVisualStates,
 } from '../visual-walkthrough.synthesis-states.mjs';
-import { buildStateAcceptanceGherkin } from './merge-cucumber-report.mjs';
+import { buildStateAcceptanceGherkin } from './researchops-state-acceptance.mjs';
 
 const OUTPUT_DIR = 'reports-site';
 const SCREENSHOTS_DIR = path.join(OUTPUT_DIR, 'screenshots');
