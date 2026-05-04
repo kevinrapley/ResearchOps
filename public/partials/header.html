@@ -2,20 +2,22 @@
 <a class="govuk-skip-link" href="#main-content">Skip to main content</a>
 
 <header class="govuk-header" role="banner">
-	<div class="govuk-header__container">
-		<div class="govuk-header__service-name">
-			<a class="govuk-header__link" href="/">
-				{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
+	<div class="govuk-header__container govuk-width-container">
+		<div class="govuk-header__logo">
+			<a class="govuk-header__link govuk-header__link--homepage" href="/" aria-label="GOV.UK home">
+				<span class="govuk-header__logotype">GOV.UK</span>
 			</a>
 		</div>
-		{{#subtitle}}
-			<p class="govuk-header__service-description">{{subtitle}}</p>
-		{{/subtitle}}
 	</div>
 </header>
 
 <nav class="govuk-service-navigation" data-active="{{active}}" aria-label="Service navigation">
-	<div class="govuk-service-navigation__container">
+	<div class="govuk-service-navigation__container govuk-width-container">
+		<span class="govuk-service-navigation__service-name">
+			<a class="govuk-service-navigation__link" href="/">
+				{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
+			</a>
+		</span>
 		<ul class="govuk-service-navigation__list">
 			<li class="govuk-service-navigation__item">
 				<a class="govuk-service-navigation__link" href="/" data-nav="Home">Home</a>
@@ -52,9 +54,6 @@
 		}
 
 		function ensureMainContentTarget() {
-			var existing = document.getElementById("main-content");
-			if (existing) return;
-
 			var main = document.querySelector("main");
 			if (!main) return;
 
@@ -62,17 +61,11 @@
 
 			if (!main.id) {
 				main.id = "main-content";
-				if (!main.hasAttribute("tabindex")) {
-					main.setAttribute("tabindex", "-1");
-				}
-				return;
 			}
 
-			var target = document.createElement("div");
-			target.id = "main-content";
-			target.className = "govuk-main-wrapper__target";
-			target.setAttribute("tabindex", "-1");
-			main.parentNode.insertBefore(target, main);
+			if (main.id === "main-content" && !main.hasAttribute("tabindex")) {
+				main.setAttribute("tabindex", "-1");
+			}
 		}
 
 		function init() {
