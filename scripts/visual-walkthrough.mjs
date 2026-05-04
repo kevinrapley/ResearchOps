@@ -13,6 +13,7 @@ import {
 	synthesisDefaultState,
 	synthesisVisualStates,
 } from '../visual-walkthrough.synthesis-states.mjs';
+import { buildStateAcceptanceGherkin } from './merge-cucumber-report.mjs';
 
 const OUTPUT_DIR = 'reports-site';
 const SCREENSHOTS_DIR = path.join(OUTPUT_DIR, 'screenshots');
@@ -296,6 +297,7 @@ async function captureReport() {
 					}
 				}
 
+				state.acceptanceCriteria = buildStateAcceptanceGherkin(pageConfig, state, stateConfig);
 				capturedStates.push(state);
 			}
 
@@ -365,6 +367,16 @@ function renderProfileSwitcher(profiles) {
 		</nav>`;
 }
 
+function renderStateAcceptanceCriteria(state) {
+	if (!state.acceptanceCriteria) return '';
+
+	return `
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>${escapeHtml(state.acceptanceCriteria)}</code></pre>
+					</details>`;
+}
+
 function renderCapture(page, state, capture) {
 	const failedClass = capture.status === 'failed' ? ' failed' : '';
 	return `
@@ -409,6 +421,11 @@ function renderHtml(manifest) {
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
 		.state__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
 		.state__header p { margin: 4px 0 0; }
+		.state-acceptance-criteria { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+		.state-acceptance-criteria summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
+		.state-acceptance-criteria summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
 		.capture { border-top: 1px solid #e5e5e5; }
 		.capture:first-of-type { border-top: 0; }
 		.capture__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
@@ -459,6 +476,7 @@ function renderHtml(manifest) {
 						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
 						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
 					</div>
+					${renderStateAcceptanceCriteria(state)}
 					${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
 				</section>`
 					)

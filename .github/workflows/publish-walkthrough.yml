@@ -87,6 +87,15 @@ jobs:
       - name: Merge cucumber evidence into reporting site
         run: node scripts/merge-cucumber-report.mjs
 
+      - name: Verify local reporting site evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          grep -F 'data-state-acceptance-criteria' reports-site/index.html >/dev/null
+          grep -F 'Gherkin acceptance criteria for this state' reports-site/index.html >/dev/null
+          grep -F 'Feature:' reports-site/index.html >/dev/null
+
       - name: Verify Cloudflare Pages project access
         shell: bash
         env:
@@ -167,7 +176,17 @@ jobs:
           for attempt in {1..18}; do
             body="$(curl --fail --silent --show-error --location --max-time 10 "${REPORTING_PAGES_URL}?run=${GITHUB_RUN_ID}-${attempt}" || true)"
             if printf '%s' "$body" | grep -F "Run started: ${expected_started_at}" >/dev/null; then
-              echo "Reporting site updated: ${REPORTING_PAGES_URL}"
+              if ! printf '%s' "$body" | grep -F "Gherkin acceptance criteria for this state" >/dev/null; then
+                echo "Reporting site updated but state-level Gherkin acceptance criteria were not found." >&2
+                exit 1
+              fi
+
+              if ! printf '%s' "$body" | grep -F "data-state-acceptance-criteria" >/dev/null; then
+                echo "Reporting site updated but the state acceptance criteria details panel marker was not found." >&2
+                exit 1
+              fi
+
+              echo "Reporting site updated with state-level Gherkin criteria: ${REPORTING_PAGES_URL}"
               exit 0
             fi
             echo "Reporting site has not updated yet. Attempt ${attempt}/18."
@@ -183,7 +202,7 @@ jobs:
         run: |
           echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough and Cucumber evidence were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough, route-level Cucumber evidence and state-level Gherkin acceptance criteria were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Open the gallery:** ${REPORTING_PAGES_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -191,4 +210,4 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "[Open raw Cucumber HTML report](${REPORTING_PAGES_URL}cucumber/cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with route-level Cucumber evidence where scenarios map to a route." >> "$GITHUB_STEP_SUMMARY"
+          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"
