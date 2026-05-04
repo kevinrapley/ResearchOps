@@ -13,12 +13,17 @@ const CONFIG = Object.freeze({
 
 const container = document.getElementById("list");
 
+function setListBusy(isBusy) {
+	if (!container) return;
+	container.setAttribute("aria-busy", isBusy ? "true" : "false");
+}
+
 function escapeHtml(value) {
 	return String(value ?? "")
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
+		.replace(/\"/g, "&quot;")
 		.replace(/'/g, "&#39;");
 }
 
@@ -205,18 +210,18 @@ function projectCard(project) {
 	return `
 <article class="card" aria-labelledby="project-title-${projectId}">
 	<p class="project-org">${escapeHtml(project.org || project.Org || "Home Office Biometrics")}</p>
-	<h2 id="project-title-${projectId}" class="project-title govuk-heading-m">
+	<h3 id="project-title-${projectId}" class="project-title govuk-heading-m">
 		<a class="govuk-link" href="${dashboardHref}" rel="bookmark">${escapeHtml(project.name)}</a>
-	</h2>
+	</h3>
 	<p class="project-meta"><strong>Phase:</strong> ${escapeHtml(project["rops:servicePhase"] || "")} · <strong>Status:</strong> ${escapeHtml(project["rops:projectStatus"] || "")}</p>
 	${project.description ? `<section class="project-summary"><p>${escapeHtml(project.description)}</p></section>` : ""}
 	<p class="project-actions">
 		<a class="govuk-button govuk-button--secondary project-dashboard-action" href="${dashboardHref}" aria-label="${dashboardLabel}">View dashboard</a>
 	</p>
-	${project.user_groups?.length ? `<section class="user-groups" aria-labelledby="user-groups-${projectId}"><h3 id="user-groups-${projectId}" class="project-groups-title">User Groups</h3><ul class="tags" role="list">${groups}</ul></section>` : ""}
+	${project.user_groups?.length ? `<section class="user-groups" aria-labelledby="user-groups-${projectId}"><h4 id="user-groups-${projectId}" class="project-groups-title">User groups</h4><ul class="tags" role="list">${groups}</ul></section>` : ""}
 	<section class="project-extra">
 		<details class="project-details">
-			<summary class="govuk-link">Stakeholders &amp; Objectives</summary>
+			<summary class="govuk-link">Stakeholders and objectives</summary>
 			<div class="details-columns">
 				<div><h4 class="govuk-heading-s">Stakeholders</h4><ul role="list">${stakeholders || "<li class='lede'>None</li>"}</ul></div>
 				<div><h4 class="govuk-heading-s">Objectives</h4><ul role="list">${objectives || "<li class='lede'>None</li>"}</ul></div>
@@ -226,10 +231,29 @@ function projectCard(project) {
 </article>`;
 }
 
+function renderEmptyState() {
+	container.innerHTML = `
+<div class="projects-empty-state" role="status">
+	<h3 class="govuk-heading-m">No projects yet</h3>
+	<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
+	<p><a class="govuk-link" href="/pages/start/">Start a research project</a></p>
+</div>`;
+}
+
+function renderErrorState(error) {
+	container.innerHTML = `
+<div class="projects-error-state" role="alert">
+	<h3 class="govuk-heading-m">Could not load projects</h3>
+	<p class="govuk-body">Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.</p>
+	<p class="govuk-body">Technical detail: ${escapeHtml(error?.message || error)}</p>
+	<p><a class="govuk-link" href="/pages/start/">Start a research project</a></p>
+</div>`;
+}
+
 function render(projects, source) {
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	if (!projects.length) {
-		container.innerHTML = '<p class="lede">No projects yet. <a class="govuk-link" href="./pages/start/">Create one</a>.</p>';
+		renderEmptyState();
 		return;
 	}
 	container.innerHTML = projects.map(projectCard).join("");
@@ -243,11 +267,14 @@ function render(projects, source) {
 
 (async () => {
 	if (!container) return;
+	setListBusy(true);
 	try {
 		const { source, projects } = await listProjects();
 		render(projects, source);
 	} catch (error) {
-		container.innerHTML = `<p class="lede">Could not load projects (${escapeHtml(error?.message || error)}).</p>`;
+		renderErrorState(error);
+	} finally {
+		setListBusy(false);
 	}
 })();
 
