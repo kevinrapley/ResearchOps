@@ -128,7 +128,10 @@ test('buildStateAcceptanceGherkin derives user-centred criteria from state actio
 
 	assert.match(gherkin, /Feature: Define a research project/);
 	assert.match(gherkin, /As a user researcher/);
-	assert.match(gherkin, /I want to define a research project with objectives, stakeholders and ownership/);
+	assert.match(
+		gherkin,
+		/I want to define a research project with objectives, stakeholders and ownership/
+	);
 	assert.match(gherkin, /When I visit the start research project service/);
 	assert.match(gherkin, /Scenario: Work with the "Step 2 AI rewrite shown" state/);
 	assert.match(gherkin, /When I select "Improve objectives with AI"/);
