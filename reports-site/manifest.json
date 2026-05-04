@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-04T19:43:25.098Z",
+  "startedAt": "2026-05-04T20:10:06.099Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -39,7 +39,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 998,
+              "durationMs": 1028,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -47,12 +47,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1160,
+              "durationMs": 1272,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__home__default.png",
-          "acceptanceCriteria": "Feature: Home visual walkthrough\n\nScenario: Default state\n  Given the route \"/\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Access the ResearchOps home page\n\n  As a user researcher\n  I want to access the ResearchOps home page\n  So that I can choose the right ResearchOps journey for my work\n\n  Background:\n    Given I am a user researcher\n    When I visit the ResearchOps home page\n\n  Scenario: View the ResearchOps service identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the tagline \"Objective orientated applied user research done well.\"\n    And I should see the page heading \"ResearchOps Demo Suite\"\n    And I should see introductory text explaining that the service supports applied user research with operations, governance and accessibility baked in\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should warn me not to enter real participant personal data\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home                   |\n      | Start research project |\n      | Projects               |\n    And the \"Home\" navigation item should be shown as the current page\n\n  Scenario: View the available research journeys\n    Then I should see the section heading \"Choose a journey to explore\"\n    And I should see journey cards for:\n      | Journey title                                      | Category        |\n      | Start a new research project                       | Getting started |\n      | Set clear research objectives                      | Team alignment  |\n      | Recruit participants for user research studies     | Recruitment     |\n\n  Scenario: Start a new research project journey\n    Given I can see the \"Start a new research project\" journey card\n    Then I should see the question \"How might we define the research project?\"\n    And I should see a description explaining that the project will be defined with its service phase and project status before adding stakeholders and objectives\n    When I select \"Go to start research project service\"\n    Then I should be taken to the start research project service\n\n  Scenario: Open the research objectives journey\n    Given I can see the \"Set clear research objectives\" journey card\n    Then I should see the question \"How might we overcome the impact of unclear objectives in user research?\"\n    And I should see a description explaining that misaligned objectives can affect research, design and delivery teams\n    When I select \"Go to objective definition service\"\n    Then I should be taken to the objective definition service\n\n  Scenario: Open the participant recruitment journey\n    Given I can see the \"Recruit participants for user research studies\" journey card\n    Then I should see the question \"How might we ensure that participant recruitment reflects the diversity and needs of the service's real users?\"\n    And I should see a description explaining the risk of biased, exclusionary or ineffective findings when recruitment is poorly planned\n    When I select \"Go to participant management service\"\n    Then I should be taken to the participant management service\n\n  Scenario: Access the home page using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through the primary navigation links\n    And I should be able to move focus through each journey call-to-action\n    And I should be able to activate each link using the keyboard\n\n  Scenario: Understand the page structure with assistive technology\n    Then the page should have one clear main heading\n    And the journey section should have a meaningful heading\n    And each journey card should expose its title, supporting text and call-to-action in a logical reading order\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\""
         }
       ]
     },
@@ -75,7 +75,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 982,
+              "durationMs": 1103,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -83,12 +83,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1030,
+              "durationMs": 1204,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__default.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-1-filled",
@@ -102,7 +102,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1835,
+              "durationMs": 1884,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -110,12 +110,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1893,
+              "durationMs": 1984,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-1-filled.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 1 completed with project definition\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 1 completed with project definition\" state\n  And the state purpose is \"Project name, description, phase and status entered using believable discovery-stage dummy data.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 1 completed with project definition\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for project name, description, phase and status entered using believable discovery-stage dummy data.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-2-default",
@@ -129,7 +129,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2225,
+              "durationMs": 2278,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -137,12 +137,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2324,
+              "durationMs": 2438,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-default.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 default state\" state\n  And the state purpose is \"Second wizard step after a valid project definition has been entered on step 1.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for second wizard step after a valid project definition has been entered on step 1.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-2-filled-no-ai",
@@ -156,7 +156,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2920,
+              "durationMs": 2910,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -164,12 +164,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3126,
+              "durationMs": 3168,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 completed without AI rewrite invoked\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 completed without AI rewrite invoked\" state\n  And the state purpose is \"Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 completed without AI rewrite invoked\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-2-ai-rewrite-shown",
@@ -183,7 +183,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3584,
+              "durationMs": 3607,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -191,12 +191,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3857,
+              "durationMs": 3921,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 AI rewrite shown\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 AI rewrite shown\" state\n  And the state purpose is \"Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  Then the selector \"#ai-objectives-tools:not(.hidden)\" should be visible\n  When I choose the control \"#btn-obj-ai-rewrite\"\n  Then I should see \"Concise rewrite (optional):\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 AI rewrite shown\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    Then the \"AI objectives support panel\" section should be available\n    And I select \"Improve objectives with AI\"\n    Then I should see \"Concise rewrite (optional):\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-3-default",
@@ -210,7 +210,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3297,
+              "durationMs": 3299,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -218,12 +218,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3383,
+              "durationMs": 3407,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-default.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 3 default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 3 default state\" state\n  And the state purpose is \"Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  When I choose the control \"#next3\"\n  Then the selector \"#step3\" should be visible\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 3 default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for final wizard step after the project definition, stakeholders, objectives and user groups have been entered.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    And I select \"Continue to lead researcher and notes\"\n    Then the \"Lead researcher and notes step\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "step-3-filled",
@@ -237,7 +237,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3935,
+              "durationMs": 3921,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -245,12 +245,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3969,
+              "durationMs": 4061,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-filled.png",
-          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 3 completed before create project\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 3 completed before create project\" state\n  And the state purpose is \"Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  When I choose the control \"#next3\"\n  Then the selector \"#step3\" should be visible\n  When I enter \"Alex Morgan\" into \"#lead_name\"\n  When I enter \"alex.morgan@example.gov.uk\" into \"#lead_email\"\n  When I enter \"Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.\" into \"#p_notes\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 3 completed before create project\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for lead researcher, email and project notes entered on the final wizard step before project creation is submitted.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    And I select \"Continue to lead researcher and notes\"\n    Then the \"Lead researcher and notes step\" section should be available\n    And I enter \"Alex Morgan\" into the \"Lead researcher name\" field\n    And I enter \"alex.morgan@example.gov.uk\" into the \"Lead researcher email\" field\n    And I enter \"Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.\" into the \"Project notes\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -273,7 +273,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1560,
+              "durationMs": 3458,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -281,12 +281,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1697,
+              "durationMs": 1664,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/projects__projects__default.png",
-          "acceptanceCriteria": "Feature: Projects visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Review research projects\n\n  As a user researcher\n  I want to review existing research projects\n  So that I can find the right project and continue the right ResearchOps task\n\n  Background:\n    Given I am a user researcher\n    When I visit the projects page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project list page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the projects page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -309,7 +309,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1419,
+              "durationMs": 1408,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -317,12 +317,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1514,
+              "durationMs": 1884,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard__default.png",
-          "acceptanceCriteria": "Feature: Project dashboard visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/project-dashboard/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Review a research project dashboard\n\n  As a user researcher\n  I want to review the status, evidence and next actions for a research project\n  So that I can coordinate research activity across the team\n\n  Background:\n    Given I am a user researcher\n    When I visit the project dashboard\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project dashboard page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project dashboard\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -345,7 +345,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1027,
+              "durationMs": 1086,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -353,12 +353,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1204,
+              "durationMs": 1264,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/projects__outcomes__default.png",
-          "acceptanceCriteria": "Feature: Project outcomes visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/outcomes/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Manage project outcomes\n\n  As a user researcher\n  I want to review findings, outputs and decisions for a project\n  So that I can keep research outcomes traceable to evidence and recommendations\n\n  Background:\n    Given I am a user researcher\n    When I visit the project outcomes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports outcomes page for project-level findings and outputs.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project outcomes page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -381,7 +381,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1068,
+              "durationMs": 1097,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -389,12 +389,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1167,
+              "durationMs": 1214,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/projects__journals__default.png",
-          "acceptanceCriteria": "Feature: Project journals visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/journals/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Capture reflexive journal entries\n\n  As a user researcher\n  I want to capture reflexive notes during a project\n  So that I can make assumptions, decisions and researcher influence visible\n\n  Background:\n    Given I am a user researcher\n    When I visit the project journals page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports reflexive journal page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project journals page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -417,7 +417,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1010,
+              "durationMs": 1079,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -425,12 +425,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1248,
+              "durationMs": 1345,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study__default.png",
-          "acceptanceCriteria": "Feature: Study overview visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Review study readiness\n\n  As a user researcher\n  I want to review a study and its readiness controls\n  So that I can prepare research activity before sessions begin\n\n  Background:\n    Given I am a user researcher\n    When I visit the study overview page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study overview and readiness controls.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study overview page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -453,7 +453,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 984,
+              "durationMs": 1107,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -461,12 +461,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1175,
+              "durationMs": 1219,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-guides__default.png",
-          "acceptanceCriteria": "Feature: Discussion guides visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/guides/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the discussion guides page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -489,7 +489,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1002,
+              "durationMs": 1074,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -497,12 +497,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1163,
+              "durationMs": 1228,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participants__default.png",
-          "acceptanceCriteria": "Feature: Participants visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/participants/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Manage study participants\n\n  As a user researcher\n  I want to review and manage participants for a study\n  So that recruitment and session planning reflect the study needs\n\n  Background:\n    Given I am a user researcher\n    When I visit the participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports participants page for a study.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the participants page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -525,7 +525,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1017,
+              "durationMs": 994,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -533,12 +533,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1163,
+              "durationMs": 1172,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-session__default.png",
-          "acceptanceCriteria": "Feature: Study session visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/session/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study session page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -561,7 +561,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 977,
+              "durationMs": 1087,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -569,12 +569,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1182,
+              "durationMs": 1230,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-consent-forms__default.png",
-          "acceptanceCriteria": "Feature: Study consent forms visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/consent-forms/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Configure study consent forms\n\n  As a user researcher\n  I want to configure the consent statements needed for a study\n  So that participants can give informed consent before research activity proceeds\n\n  Background:\n    Given I am a user researcher\n    When I visit the study consent forms page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-specific consent form configuration page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study consent forms page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -597,7 +597,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1608,
+              "durationMs": 1690,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -605,12 +605,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1761,
+              "durationMs": 1856,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__default.png",
-          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Consent workspace loaded\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"Consent workspace loaded\" state\n  And the state purpose is \"Participant consent loaded with study context, a published consent form, participants and existing consent records.\"\n  Then I should see \"Participant consent loaded.\"\n  Then I should see \"Assisted digital interview consent form\"\n  Then I should see \"Ready for session\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Consent workspace loaded\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for participant consent loaded with study context, a published consent form, participants and existing consent records.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Participant consent loaded.\"\n    Then I should see \"Assisted digital interview consent form\"\n    Then I should see \"Ready for session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "missing-context-error",
@@ -624,7 +624,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1166,
+              "durationMs": 1164,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -632,12 +632,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1203,
+              "durationMs": 1252,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png",
-          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Missing study context error state\n  Given the route \"/pages/study/participant-consent/index.html\" is available\n  And I am reviewing the \"Missing study context error state\" state\n  And the state purpose is \"Participant consent loaded without project and study IDs; the page shows a blocking route-context message.\"\n  Then I should see \"Open this page from a study\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Missing study context error state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for participant consent loaded without project and study IDs; the page shows a blocking route-context message.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Open this page from a study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "no-published-consent-form",
@@ -651,7 +651,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1420,
+              "durationMs": 1439,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -659,12 +659,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1596,
+              "durationMs": 1542,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png",
-          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: No published consent form state\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"No published consent form state\" state\n  And the state purpose is \"The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.\"\n  Then I should see \"Create and publish a consent form before recording participant consent\"\n  Then I should see \"Create consent forms\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"No published consent form state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for the study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Create and publish a consent form before recording participant consent\"\n    Then I should see \"Create consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "no-participants",
@@ -678,7 +678,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1355,
+              "durationMs": 1383,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -686,12 +686,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1450,
+              "durationMs": 1500,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png",
-          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: No participants state\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"No participants state\" state\n  And the state purpose is \"The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.\"\n  Then I should see \"Add participants before recording consent\"\n  Then I should see \"Schedule participants\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"No participants state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for the study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Add participants before recording consent\"\n    Then I should see \"Schedule participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "participant-selected",
@@ -705,7 +705,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1928,
+              "durationMs": 2016,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -713,12 +713,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2366,
+              "durationMs": 2378,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png",
-          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Participant selected for consent review\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"Participant selected for consent review\" state\n  And the state purpose is \"A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.\"\n  Then I should see \"Participant consent loaded.\"\n  When I choose the control \"[data-record-consent=\\\"participant-sofia-patel\\\"]\"\n  Then I should see \"Review consent for Sofia Patel\"\n  Then I should see \"Record withdrawal or do not proceed\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Participant selected for consent review\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for a researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Participant consent loaded.\"\n    And I select \"Record consent\"\n    Then I should see \"Review consent for Sofia Patel\"\n    Then I should see \"Record withdrawal or do not proceed\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -741,7 +741,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 911,
+              "durationMs": 983,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -749,12 +749,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1002,
+              "durationMs": 1053,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/utilities__search__default.png",
-          "acceptanceCriteria": "Feature: Search visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/search/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Search ResearchOps evidence\n\n  As a user researcher\n  I want to search across ResearchOps material\n  So that I can find relevant evidence, records and project information quickly\n\n  Background:\n    Given I am a user researcher\n    When I visit the search page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports search page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the search page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -777,7 +777,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 932,
+              "durationMs": 960,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -785,12 +785,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1021,
+              "durationMs": 1086,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/utilities__notes__default.png",
-          "acceptanceCriteria": "Feature: Notes visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/notes/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Capture research notes\n\n  As a user researcher\n  I want to capture and review research notes\n  So that evidence can be used later for synthesis and decisions\n\n  Background:\n    Given I am a user researcher\n    When I visit the notes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports notes page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the notes page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -813,7 +813,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 926,
+              "durationMs": 974,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -821,12 +821,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1017,
+              "durationMs": 1073,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/utilities__consent__default.png",
-          "acceptanceCriteria": "Feature: Consent visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/consent/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Review consent information\n\n  As a user researcher\n  I want to review consent information\n  So that I can understand what consent is needed before research activity continues\n\n  Background:\n    Given I am a user researcher\n    When I visit the consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports consent page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the consent page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -849,7 +849,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 949,
+              "durationMs": 955,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -857,12 +857,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1015,
+              "durationMs": 1068,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
           "screenshot": "screenshots/desktop/utilities__sessions__default.png",
-          "acceptanceCriteria": "Feature: Sessions visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/sessions/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Review research sessions\n\n  As a user researcher\n  I want to review scheduled and completed research sessions\n  So that I can coordinate session delivery and follow-up activity\n\n  Background:\n    Given I am a user researcher\n    When I visit the sessions page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports sessions list page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the sessions page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     },
@@ -885,7 +885,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 934,
+              "durationMs": 942,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -893,12 +893,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1005,
+              "durationMs": 1060,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Missing study ID error state\n  Given the route \"/pages/synthesize/index.html\" is available\n  And I am reviewing the \"Missing study ID error state\" state\n  And the state purpose is \"Synthesis loaded without a study ID; the page shows the blocking route-context error.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Missing study ID error state\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for synthesis loaded without a study ID; the page shows the blocking route-context error.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "empty-evidence",
@@ -912,7 +912,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1361,
+              "durationMs": 1427,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -920,12 +920,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1452,
+              "durationMs": 1516,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Empty evidence state\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Empty evidence state\" state\n  And the state purpose is \"Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.\"\n  Then I should see \"Capture evidence before starting synthesis\"\n  Then I should see \"Capture evidence in a session\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Empty evidence state\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Capture evidence before starting synthesis\"\n    Then I should see \"Capture evidence in a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "evidence-loaded",
@@ -939,7 +939,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1191,
+              "durationMs": 1237,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -947,12 +947,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1282,
+              "durationMs": 1330,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Evidence available before working clusters\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Evidence available before working clusters\" state\n  And the state purpose is \"Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.\"\n  Then I should see \"Create a working cluster grouping before selecting evidence.\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Evidence available before working clusters\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Create a working cluster grouping before selecting evidence.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "working-cluster-created",
@@ -966,7 +966,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2072,
+              "durationMs": 2115,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -974,12 +974,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2326,
+              "durationMs": 2371,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Working cluster grouping created\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Working cluster grouping created\" state\n  And the state purpose is \"A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.\"\n  When I enter \"Confidence before the form starts\" into \"#cluster-label\"\n  When I enter \"Evidence about how users judge whether they are ready to begin the service.\" into \"#cluster-description\"\n  When I choose the control \"#create-cluster\"\n  Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n  Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Working cluster grouping created\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Confidence before the form starts\" into the \"Working cluster label\" field\n    And I enter \"Evidence about how users judge whether they are ready to begin the service.\" into the \"Working cluster description\" field\n    And I select \"Create working cluster grouping\"\n    Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n    Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "evidence-added-to-cluster",
@@ -993,7 +993,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2125,
+              "durationMs": 2185,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -1001,12 +1001,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2375,
+              "durationMs": 2455,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Evidence added to working cluster grouping\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Evidence added to working cluster grouping\" state\n  And the state purpose is \"A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.\"\n  When I check \"#evidence-ev-confidence-before-start\"\n  When I check \"#evidence-ev-language-support\"\n  When I select \"cluster-confidence-start\" from \"#target-cluster\"\n  When I choose the control \"#add-selected-evidence\"\n  Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Evidence added to working cluster grouping\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I select the \"evidence item\" checkbox\n    And I select the \"evidence item\" checkbox\n    And I choose \"cluster-confidence-start\" from the \"Target working cluster grouping\" field\n    And I select \"Add selected evidence to the working cluster grouping\"\n    Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "theme-blocked-without-evidence",
@@ -1020,7 +1020,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1412,
+              "durationMs": 1477,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -1028,12 +1028,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1654,
+              "durationMs": 1747,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Theme creation hidden before evidence is grouped\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Theme creation hidden before evidence is grouped\" state\n  And the state purpose is \"Theme creation remains hidden until at least one working cluster grouping contains source evidence.\"\n  Then the selector \"[data-cluster-id=\\\"cluster-confidence-start\\\"]\" should be visible\n  Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Theme creation hidden before evidence is grouped\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for theme creation remains hidden until at least one working cluster grouping contains source evidence.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then the \"working cluster grouping\" section should be available\n    Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         },
         {
           "id": "theme-created",
@@ -1047,7 +1047,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2325,
+              "durationMs": 2390,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1055,12 +1055,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2621,
+              "durationMs": 2717,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png",
-          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Theme created with evidence traceability\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Theme created with evidence traceability\" state\n  And the state purpose is \"A theme is created from a populated cluster and the source evidence IDs remain inspectable.\"\n  When I select \"cluster-confidence-start\" from \"#theme-cluster\"\n  When I enter \"Digital confidence is shaped before the form starts\" into \"#theme-label\"\n  When I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into \"#theme-description\"\n  When I choose the control \"#create-theme\"\n  Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n  When I choose the control \".theme-card .govuk-details__summary\"\n  And the captured evidence status should be \"captured\""
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Theme created with evidence traceability\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a theme is created from a populated cluster and the source evidence IDs remain inspectable.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I choose \"cluster-confidence-start\" from the \"Working cluster grouping for the theme\" field\n    And I enter \"Digital confidence is shaped before the form starts\" into the \"Theme label\" field\n    And I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into the \"Theme description\" field\n    And I select \"Create theme\"\n    Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n    And I select \"theme traceability details\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse"
         }
       ]
     }

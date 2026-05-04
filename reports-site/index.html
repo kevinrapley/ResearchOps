@@ -47,7 +47,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-04T19:43:25.098Z</p>
+			<p class="meta">Run started: 2026-05-04T20:10:06.099Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
@@ -90,14 +90,75 @@
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Home visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Access the ResearchOps home page
 
-Scenario: Default state
-  Given the route &quot;/&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to access the ResearchOps home page
+  So that I can choose the right ResearchOps journey for my work
+
+  Background:
+    Given I am a user researcher
+    When I visit the ResearchOps home page
+
+  Scenario: View the ResearchOps service identity
+    Then I should see the service name &quot;ResearchOps Demo Suite&quot;
+    And I should see the tagline &quot;Objective orientated applied user research done well.&quot;
+    And I should see the page heading &quot;ResearchOps Demo Suite&quot;
+    And I should see introductory text explaining that the service supports applied user research with operations, governance and accessibility baked in
+
+  Scenario: Understand that the service is a prototype
+    Then I should see a prototype banner
+    And the banner should warn me not to enter real participant personal data
+
+  Scenario: Navigate using the primary navigation
+    Then I should see primary navigation links for:
+      | Home                   |
+      | Start research project |
+      | Projects               |
+    And the &quot;Home&quot; navigation item should be shown as the current page
+
+  Scenario: View the available research journeys
+    Then I should see the section heading &quot;Choose a journey to explore&quot;
+    And I should see journey cards for:
+      | Journey title                                      | Category        |
+      | Start a new research project                       | Getting started |
+      | Set clear research objectives                      | Team alignment  |
+      | Recruit participants for user research studies     | Recruitment     |
+
+  Scenario: Start a new research project journey
+    Given I can see the &quot;Start a new research project&quot; journey card
+    Then I should see the question &quot;How might we define the research project?&quot;
+    And I should see a description explaining that the project will be defined with its service phase and project status before adding stakeholders and objectives
+    When I select &quot;Go to start research project service&quot;
+    Then I should be taken to the start research project service
+
+  Scenario: Open the research objectives journey
+    Given I can see the &quot;Set clear research objectives&quot; journey card
+    Then I should see the question &quot;How might we overcome the impact of unclear objectives in user research?&quot;
+    And I should see a description explaining that misaligned objectives can affect research, design and delivery teams
+    When I select &quot;Go to objective definition service&quot;
+    Then I should be taken to the objective definition service
+
+  Scenario: Open the participant recruitment journey
+    Given I can see the &quot;Recruit participants for user research studies&quot; journey card
+    Then I should see the question &quot;How might we ensure that participant recruitment reflects the diversity and needs of the service&#39;s real users?&quot;
+    And I should see a description explaining the risk of biased, exclusionary or ineffective findings when recruitment is poorly planned
+    When I select &quot;Go to participant management service&quot;
+    Then I should be taken to the participant management service
+
+  Scenario: Access the home page using a keyboard
+    Given I am navigating with a keyboard
+    Then I should be able to move focus through the primary navigation links
+    And I should be able to move focus through each journey call-to-action
+    And I should be able to activate each link using the keyboard
+
+  Scenario: Understand the page structure with assistive technology
+    Then the page should have one clear main heading
+    And the journey section should have a meaningful heading
+    And each journey card should expose its title, supporting text and call-to-action in a logical reading order
+
+  Scenario: View footer information
+    Then I should see the footer text &quot;© 2026 Home Office Biometrics · ResearchOps v1.0.0&quot;</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -136,14 +197,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Default state
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -172,17 +253,38 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 1 completed with project definition
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 1 completed with project definition&quot; state
-  And the state purpose is &quot;Project name, description, phase and status entered using believable discovery-stage dummy data.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 1 completed with project definition&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for project name, description, phase and status entered using believable discovery-stage dummy data.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -211,19 +313,40 @@ Scenario: Step 1 completed with project definition
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 2 default state
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 2 default state&quot; state
-  And the state purpose is &quot;Second wizard step after a valid project definition has been entered on step 1.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  When I choose the control &quot;#next2&quot;
-  Then the selector &quot;#step2&quot; should be visible
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 2 default state&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for second wizard step after a valid project definition has been entered on step 1.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    And I select &quot;Continue to stakeholders and objectives&quot;
+    Then the &quot;Stakeholders, objectives and user groups step&quot; section should be available
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -252,22 +375,43 @@ Scenario: Step 2 default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 2 completed without AI rewrite invoked
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 2 completed without AI rewrite invoked&quot; state
-  And the state purpose is &quot;Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  When I choose the control &quot;#next2&quot;
-  Then the selector &quot;#step2&quot; should be visible
-  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
-  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
-  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 2 completed without AI rewrite invoked&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    And I select &quot;Continue to stakeholders and objectives&quot;
+    Then the &quot;Stakeholders, objectives and user groups step&quot; section should be available
+    And I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk&quot; into the &quot;Stakeholders&quot; field
+    And I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…&quot; into the &quot;Research objectives&quot; field
+    And I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into the &quot;User groups&quot; field
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -296,25 +440,46 @@ Scenario: Step 2 completed without AI rewrite invoked
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 2 AI rewrite shown
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 2 AI rewrite shown&quot; state
-  And the state purpose is &quot;Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  When I choose the control &quot;#next2&quot;
-  Then the selector &quot;#step2&quot; should be visible
-  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
-  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
-  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
-  Then the selector &quot;#ai-objectives-tools:not(.hidden)&quot; should be visible
-  When I choose the control &quot;#btn-obj-ai-rewrite&quot;
-  Then I should see &quot;Concise rewrite (optional):&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 2 AI rewrite shown&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    And I select &quot;Continue to stakeholders and objectives&quot;
+    Then the &quot;Stakeholders, objectives and user groups step&quot; section should be available
+    And I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk&quot; into the &quot;Stakeholders&quot; field
+    And I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…&quot; into the &quot;Research objectives&quot; field
+    And I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into the &quot;User groups&quot; field
+    Then the &quot;AI objectives support panel&quot; section should be available
+    And I select &quot;Improve objectives with AI&quot;
+    Then I should see &quot;Concise rewrite (optional):&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -343,24 +508,45 @@ Scenario: Step 2 AI rewrite shown
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 3 default state
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 3 default state&quot; state
-  And the state purpose is &quot;Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  When I choose the control &quot;#next2&quot;
-  Then the selector &quot;#step2&quot; should be visible
-  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
-  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
-  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
-  When I choose the control &quot;#next3&quot;
-  Then the selector &quot;#step3&quot; should be visible
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 3 default state&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for final wizard step after the project definition, stakeholders, objectives and user groups have been entered.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    And I select &quot;Continue to stakeholders and objectives&quot;
+    Then the &quot;Stakeholders, objectives and user groups step&quot; section should be available
+    And I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk&quot; into the &quot;Stakeholders&quot; field
+    And I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…&quot; into the &quot;Research objectives&quot; field
+    And I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into the &quot;User groups&quot; field
+    And I select &quot;Continue to lead researcher and notes&quot;
+    Then the &quot;Lead researcher and notes step&quot; section should be available
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -389,27 +575,48 @@ Scenario: Step 3 default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Define a research project
 
-Scenario: Step 3 completed before create project
-  Given the route &quot;/pages/start/index.html&quot; is available
-  And I am reviewing the &quot;Step 3 completed before create project&quot; state
-  And the state purpose is &quot;Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.&quot;
-  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
-  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
-  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
-  When I select &quot;planning&quot; from &quot;#p_status&quot;
-  When I choose the control &quot;#next2&quot;
-  Then the selector &quot;#step2&quot; should be visible
-  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
-  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
-  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
-  When I choose the control &quot;#next3&quot;
-  Then the selector &quot;#step3&quot; should be visible
-  When I enter &quot;Alex Morgan&quot; into &quot;#lead_name&quot;
-  When I enter &quot;alex.morgan@example.gov.uk&quot; into &quot;#lead_email&quot;
-  When I enter &quot;Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.&quot; into &quot;#p_notes&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to define a research project with objectives, stakeholders and ownership
+  So that my team can start research work with shared context and traceable intent
+
+  Background:
+    Given I am a user researcher
+    When I visit the start research project service
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports start page for creating or beginning research project work.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Step 3 completed before create project&quot; state
+    Given I am using the start research project service
+    Then the interface should make it clear that this state is for lead researcher, email and project notes entered on the final wizard step before project creation is submitted.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Assisted Digital Support Discovery&quot; into the &quot;Project name&quot; field
+    And I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…&quot; into the &quot;Project description&quot; field
+    And I choose &quot;discovery&quot; from the &quot;Service phase&quot; field
+    And I choose &quot;planning&quot; from the &quot;Project status&quot; field
+    And I select &quot;Continue to stakeholders and objectives&quot;
+    Then the &quot;Stakeholders, objectives and user groups step&quot; section should be available
+    And I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk&quot; into the &quot;Stakeholders&quot; field
+    And I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…&quot; into the &quot;Research objectives&quot; field
+    And I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into the &quot;User groups&quot; field
+    And I select &quot;Continue to lead researcher and notes&quot;
+    Then the &quot;Lead researcher and notes step&quot; section should be available
+    And I enter &quot;Alex Morgan&quot; into the &quot;Lead researcher name&quot; field
+    And I enter &quot;alex.morgan@example.gov.uk&quot; into the &quot;Lead researcher email&quot; field
+    And I enter &quot;Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.&quot; into the &quot;Project notes&quot; field
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -452,14 +659,34 @@ Scenario: Step 3 completed before create project
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Projects visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Review research projects
 
-Scenario: Default state
-  Given the route &quot;/pages/projects/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review existing research projects
+  So that I can find the right project and continue the right ResearchOps task
+
+  Background:
+    Given I am a user researcher
+    When I visit the projects page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports project list page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the projects page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -498,14 +725,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Project dashboard visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Review a research project dashboard
 
-Scenario: Default state
-  Given the route &quot;/pages/project-dashboard/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review the status, evidence and next actions for a research project
+  So that I can coordinate research activity across the team
+
+  Background:
+    Given I am a user researcher
+    When I visit the project dashboard
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports project dashboard page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the project dashboard
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -544,14 +791,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Project outcomes visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Manage project outcomes
 
-Scenario: Default state
-  Given the route &quot;/pages/projects/outcomes/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review findings, outputs and decisions for a project
+  So that I can keep research outcomes traceable to evidence and recommendations
+
+  Background:
+    Given I am a user researcher
+    When I visit the project outcomes page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports outcomes page for project-level findings and outputs.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the project outcomes page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -590,14 +857,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Project journals visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Capture reflexive journal entries
 
-Scenario: Default state
-  Given the route &quot;/pages/projects/journals/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to capture reflexive notes during a project
+  So that I can make assumptions, decisions and researcher influence visible
+
+  Background:
+    Given I am a user researcher
+    When I visit the project journals page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports reflexive journal page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the project journals page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -640,14 +927,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study overview visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Review study readiness
 
-Scenario: Default state
-  Given the route &quot;/pages/study/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review a study and its readiness controls
+  So that I can prepare research activity before sessions begin
+
+  Background:
+    Given I am a user researcher
+    When I visit the study overview page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study overview and readiness controls.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the study overview page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -686,14 +993,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Discussion guides visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Manage discussion guides
 
-Scenario: Default state
-  Given the route &quot;/pages/study/guides/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to create, review and organise discussion guides for a study
+  So that sessions are run with consistent and purposeful research prompts
+
+  Background:
+    Given I am a user researcher
+    When I visit the discussion guides page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports discussion guide list and editor page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the discussion guides page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -732,14 +1059,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participants visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Manage study participants
 
-Scenario: Default state
-  Given the route &quot;/pages/study/participants/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review and manage participants for a study
+  So that recruitment and session planning reflect the study needs
+
+  Background:
+    Given I am a user researcher
+    When I visit the participants page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports participants page for a study.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the participants page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -778,14 +1125,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study session visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Run a research session
 
-Scenario: Default state
-  Given the route &quot;/pages/study/session/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to run a research session and capture notes
+  So that session evidence is recorded consistently and safely
+
+  Background:
+    Given I am a user researcher
+    When I visit the study session page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports session running and note capture page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the study session page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -824,14 +1191,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study consent forms visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Configure study consent forms
 
-Scenario: Default state
-  Given the route &quot;/pages/study/consent-forms/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to configure the consent statements needed for a study
+  So that participants can give informed consent before research activity proceeds
+
+  Background:
+    Given I am a user researcher
+    When I visit the study consent forms page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-specific consent form configuration page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the study consent forms page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -870,16 +1257,37 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Record participant consent
 
-Scenario: Consent workspace loaded
-  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
-  And I am reviewing the &quot;Consent workspace loaded&quot; state
-  And the state purpose is &quot;Participant consent loaded with study context, a published consent form, participants and existing consent records.&quot;
-  Then I should see &quot;Participant consent loaded.&quot;
-  Then I should see &quot;Assisted digital interview consent form&quot;
-  Then I should see &quot;Ready for session&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to record and review participant consent for a study
+  So that research only proceeds where consent is clear, current and auditable
+
+  Background:
+    Given I am a user researcher
+    When I visit the participant consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped participant consent recording and review page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Consent workspace loaded&quot; state
+    Given I am using the participant consent page
+    Then the interface should make it clear that this state is for participant consent loaded with study context, a published consent form, participants and existing consent records.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Participant consent loaded.&quot;
+    Then I should see &quot;Assisted digital interview consent form&quot;
+    Then I should see &quot;Ready for session&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -908,14 +1316,35 @@ Scenario: Consent workspace loaded
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Record participant consent
 
-Scenario: Missing study context error state
-  Given the route &quot;/pages/study/participant-consent/index.html&quot; is available
-  And I am reviewing the &quot;Missing study context error state&quot; state
-  And the state purpose is &quot;Participant consent loaded without project and study IDs; the page shows a blocking route-context message.&quot;
-  Then I should see &quot;Open this page from a study&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to record and review participant consent for a study
+  So that research only proceeds where consent is clear, current and auditable
+
+  Background:
+    Given I am a user researcher
+    When I visit the participant consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped participant consent recording and review page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Missing study context error state&quot; state
+    Given I am using the participant consent page
+    Then the interface should make it clear that this state is for participant consent loaded without project and study IDs; the page shows a blocking route-context message.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Open this page from a study&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -944,15 +1373,36 @@ Scenario: Missing study context error state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Record participant consent
 
-Scenario: No published consent form state
-  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
-  And I am reviewing the &quot;No published consent form state&quot; state
-  And the state purpose is &quot;The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.&quot;
-  Then I should see &quot;Create and publish a consent form before recording participant consent&quot;
-  Then I should see &quot;Create consent forms&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to record and review participant consent for a study
+  So that research only proceeds where consent is clear, current and auditable
+
+  Background:
+    Given I am a user researcher
+    When I visit the participant consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped participant consent recording and review page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;No published consent form state&quot; state
+    Given I am using the participant consent page
+    Then the interface should make it clear that this state is for the study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Create and publish a consent form before recording participant consent&quot;
+    Then I should see &quot;Create consent forms&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -981,15 +1431,36 @@ Scenario: No published consent form state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Record participant consent
 
-Scenario: No participants state
-  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
-  And I am reviewing the &quot;No participants state&quot; state
-  And the state purpose is &quot;The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.&quot;
-  Then I should see &quot;Add participants before recording consent&quot;
-  Then I should see &quot;Schedule participants&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to record and review participant consent for a study
+  So that research only proceeds where consent is clear, current and auditable
+
+  Background:
+    Given I am a user researcher
+    When I visit the participant consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped participant consent recording and review page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;No participants state&quot; state
+    Given I am using the participant consent page
+    Then the interface should make it clear that this state is for the study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Add participants before recording consent&quot;
+    Then I should see &quot;Schedule participants&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1018,17 +1489,38 @@ Scenario: No participants state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Record participant consent
 
-Scenario: Participant selected for consent review
-  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
-  And I am reviewing the &quot;Participant selected for consent review&quot; state
-  And the state purpose is &quot;A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.&quot;
-  Then I should see &quot;Participant consent loaded.&quot;
-  When I choose the control &quot;[data-record-consent=\&quot;participant-sofia-patel\&quot;]&quot;
-  Then I should see &quot;Review consent for Sofia Patel&quot;
-  Then I should see &quot;Record withdrawal or do not proceed&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to record and review participant consent for a study
+  So that research only proceeds where consent is clear, current and auditable
+
+  Background:
+    Given I am a user researcher
+    When I visit the participant consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped participant consent recording and review page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Participant selected for consent review&quot; state
+    Given I am using the participant consent page
+    Then the interface should make it clear that this state is for a researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Participant consent loaded.&quot;
+    And I select &quot;Record consent&quot;
+    Then I should see &quot;Review consent for Sofia Patel&quot;
+    Then I should see &quot;Record withdrawal or do not proceed&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1071,14 +1563,34 @@ Scenario: Participant selected for consent review
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Search visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Search ResearchOps evidence
 
-Scenario: Default state
-  Given the route &quot;/pages/search/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to search across ResearchOps material
+  So that I can find relevant evidence, records and project information quickly
+
+  Background:
+    Given I am a user researcher
+    When I visit the search page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports search page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the search page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1117,14 +1629,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Notes visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Capture research notes
 
-Scenario: Default state
-  Given the route &quot;/pages/notes/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to capture and review research notes
+  So that evidence can be used later for synthesis and decisions
+
+  Background:
+    Given I am a user researcher
+    When I visit the notes page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports notes page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the notes page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1163,14 +1695,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Consent visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Review consent information
 
-Scenario: Default state
-  Given the route &quot;/pages/consent/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review consent information
+  So that I can understand what consent is needed before research activity continues
+
+  Background:
+    Given I am a user researcher
+    When I visit the consent page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports consent page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the consent page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1209,14 +1761,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Sessions visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Review research sessions
 
-Scenario: Default state
-  Given the route &quot;/pages/sessions/index.html&quot; is available
-  And I am reviewing the &quot;Default state&quot; state
-  And the state purpose is &quot;Initial loaded page state.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to review scheduled and completed research sessions
+  So that I can coordinate session delivery and follow-up activity
+
+  Background:
+    Given I am a user researcher
+    When I visit the sessions page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports sessions list page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Default state&quot; state
+    Given I am using the sessions page
+    Then the interface should make it clear that this state is for initial loaded page state.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1259,14 +1831,34 @@ Scenario: Default state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Missing study ID error state
-  Given the route &quot;/pages/synthesize/index.html&quot; is available
-  And I am reviewing the &quot;Missing study ID error state&quot; state
-  And the state purpose is &quot;Synthesis loaded without a study ID; the page shows the blocking route-context error.&quot;
-  Then the page should load without a visual walkthrough failure
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Missing study ID error state&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for synthesis loaded without a study ID; the page shows the blocking route-context error.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Use the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1295,15 +1887,36 @@ Scenario: Missing study ID error state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Empty evidence state
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Empty evidence state&quot; state
-  And the state purpose is &quot;Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.&quot;
-  Then I should see &quot;Capture evidence before starting synthesis&quot;
-  Then I should see &quot;Capture evidence in a session&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Empty evidence state&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Capture evidence before starting synthesis&quot;
+    Then I should see &quot;Capture evidence in a session&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1332,14 +1945,35 @@ Scenario: Empty evidence state
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Evidence available before working clusters
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Evidence available before working clusters&quot; state
-  And the state purpose is &quot;Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.&quot;
-  Then I should see &quot;Create a working cluster grouping before selecting evidence.&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Evidence available before working clusters&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then I should see &quot;Create a working cluster grouping before selecting evidence.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1368,18 +2002,39 @@ Scenario: Evidence available before working clusters
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Working cluster grouping created
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Working cluster grouping created&quot; state
-  And the state purpose is &quot;A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.&quot;
-  When I enter &quot;Confidence before the form starts&quot; into &quot;#cluster-label&quot;
-  When I enter &quot;Evidence about how users judge whether they are ready to begin the service.&quot; into &quot;#cluster-description&quot;
-  When I choose the control &quot;#create-cluster&quot;
-  Then I should see &quot;Created working cluster grouping Confidence before the form starts.&quot;
-  Then I should see &quot;I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Working cluster grouping created&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for a researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I enter &quot;Confidence before the form starts&quot; into the &quot;Working cluster label&quot; field
+    And I enter &quot;Evidence about how users judge whether they are ready to begin the service.&quot; into the &quot;Working cluster description&quot; field
+    And I select &quot;Create working cluster grouping&quot;
+    Then I should see &quot;Created working cluster grouping Confidence before the form starts.&quot;
+    Then I should see &quot;I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1408,18 +2063,39 @@ Scenario: Working cluster grouping created
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Evidence added to working cluster grouping
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Evidence added to working cluster grouping&quot; state
-  And the state purpose is &quot;A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.&quot;
-  When I check &quot;#evidence-ev-confidence-before-start&quot;
-  When I check &quot;#evidence-ev-language-support&quot;
-  When I select &quot;cluster-confidence-start&quot; from &quot;#target-cluster&quot;
-  When I choose the control &quot;#add-selected-evidence&quot;
-  Then I should see &quot;Added 2 evidence items to Confidence before the form starts.&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Evidence added to working cluster grouping&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for a researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I select the &quot;evidence item&quot; checkbox
+    And I select the &quot;evidence item&quot; checkbox
+    And I choose &quot;cluster-confidence-start&quot; from the &quot;Target working cluster grouping&quot; field
+    And I select &quot;Add selected evidence to the working cluster grouping&quot;
+    Then I should see &quot;Added 2 evidence items to Confidence before the form starts.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1448,15 +2124,36 @@ Scenario: Evidence added to working cluster grouping
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Theme creation hidden before evidence is grouped
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Theme creation hidden before evidence is grouped&quot; state
-  And the state purpose is &quot;Theme creation remains hidden until at least one working cluster grouping contains source evidence.&quot;
-  Then the selector &quot;[data-cluster-id=\&quot;cluster-confidence-start\&quot;]&quot; should be visible
-  Then I should see &quot;Add evidence to a working cluster grouping before creating a theme.&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Theme creation hidden before evidence is grouped&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for theme creation remains hidden until at least one working cluster grouping contains source evidence.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    Then the &quot;working cluster grouping&quot; section should be available
+    Then I should see &quot;Add evidence to a working cluster grouping before creating a theme.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
@@ -1485,19 +2182,40 @@ Scenario: Theme creation hidden before evidence is grouped
 					
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
 						<summary>Gherkin acceptance criteria for this state</summary>
-						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+						<pre class="gherkin-criteria"><code>Feature: Synthesize research evidence
 
-Scenario: Theme created with evidence traceability
-  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
-  And I am reviewing the &quot;Theme created with evidence traceability&quot; state
-  And the state purpose is &quot;A theme is created from a populated cluster and the source evidence IDs remain inspectable.&quot;
-  When I select &quot;cluster-confidence-start&quot; from &quot;#theme-cluster&quot;
-  When I enter &quot;Digital confidence is shaped before the form starts&quot; into &quot;#theme-label&quot;
-  When I enter &quot;Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.&quot; into &quot;#theme-description&quot;
-  When I choose the control &quot;#create-theme&quot;
-  Then I should see &quot;Created theme Digital confidence is shaped before the form starts.&quot;
-  When I choose the control &quot;.theme-card .govuk-details__summary&quot;
-  And the captured evidence status should be &quot;captured&quot;</code></pre>
+  As a user researcher
+  I want to group evidence and create traceable themes
+  So that insights and recommendations remain connected to source evidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the study synthesis page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports study-scoped evidence grouping and theme creation page.
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Work with the &quot;Theme created with evidence traceability&quot; state
+    Given I am using the study synthesis page
+    Then the interface should make it clear that this state is for a theme is created from a populated cluster and the source evidence IDs remain inspectable.
+    And I should be given enough context to decide what to do next
+
+  Scenario: Complete the interaction needed for this state
+    Given I am ready to work with this ResearchOps state
+    When I choose &quot;cluster-confidence-start&quot; from the &quot;Working cluster grouping for the theme&quot; field
+    And I enter &quot;Digital confidence is shaped before the form starts&quot; into the &quot;Theme label&quot; field
+    And I enter &quot;Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.&quot; into the &quot;Theme description&quot; field
+    And I select &quot;Create theme&quot;
+    Then I should see &quot;Created theme Digital confidence is shaped before the form starts.&quot;
+    And I select &quot;theme traceability details&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use the state accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
 					</details>
 					
 				<section class="capture" data-profile="desktop">
