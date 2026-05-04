@@ -75,7 +75,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-04T22:19:27.045Z</p>
+			<p class="meta">Run started: 2026-05-04T22:40:11.793Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
@@ -195,77 +195,85 @@
     Then I should see the service name &quot;ResearchOps Demo Suite&quot;
     And I should see the tagline &quot;Objective orientated applied user research done well.&quot;
     And I should see the page heading &quot;ResearchOps Demo Suite&quot;
-    And I should see introductory text explaining that the service supports applied user research with operations, governance and accessibility baked in
+    And I should see introductory text that says &quot;Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.&quot;
 
   Scenario: Understand that the service is a prototype
     Then I should see a prototype banner
-    And the banner should warn me not to enter real participant personal data
+    And the banner should say &quot;This is a ResearchOps prototype. Do not enter real participant personal data.&quot;
 
   Scenario: Navigate using the primary navigation
     Then I should see primary navigation links for:
-      | Home                   |
+      | Home |
       | Start research project |
-      | Projects               |
+      | Projects |
     And the &quot;Home&quot; navigation item should be shown as the current page
 
-  Scenario: Know where to start
-    Then I should see guidance that says &quot;New to ResearchOps? Start by creating a research project.&quot;
-    And I should understand that a project gives me somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations
-    And creating a research project should be presented as the first meaningful action
+  Scenario: Start with a research project
+    Then I should see guidance headed &quot;Start by creating a research project&quot;
+    And I should see text explaining that &quot;A project gives you somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations.&quot;
+    And I should see text explaining that &quot;Create the project first. Later parts of the service become useful once the research work has somewhere to live.&quot;
+    And the primary call to action should be &quot;Start a research project&quot;
 
-  Scenario: View the available research journeys
-    Then I should see the section heading &quot;Choose a journey to explore&quot;
-    And I should see journey cards for:
-      | Journey title                                      | Category        |
-      | Start a new research project                       | Getting started |
-      | Set clear research objectives                      | Team alignment  |
-      | Recruit participants for user research studies     | Recruitment     |
-
-  Scenario: Start a new research project journey
-    Given I can see the &quot;Start a new research project&quot; journey card
-    Then I should see the question &quot;How might we define the research project?&quot;
-    And I should see a description explaining that the project will be defined with its service phase and project status before adding stakeholders and objectives
-    When I select &quot;Go to start research project service&quot;
+  Scenario: Move to project creation
+    Given I can see the &quot;Start a research project&quot; call to action
+    When I select &quot;Start a research project&quot;
     Then I should be taken to the start research project service
-
-  Scenario: Open the research objectives journey
-    Given I can see the &quot;Set clear research objectives&quot; journey card
-    Then I should see the question &quot;How might we overcome the impact of unclear objectives in user research?&quot;
-    And I should see a description explaining that misaligned objectives can affect research, design and delivery teams
-    When I select &quot;Go to objective definition service&quot;
-    Then I should be taken to the objective definition service
-
-  Scenario: Open the participant recruitment journey
-    Given I can see the &quot;Recruit participants for user research studies&quot; journey card
-    Then I should see the question &quot;How might we ensure that participant recruitment reflects the diversity and needs of the service&#39;s real users?&quot;
-    And I should see a description explaining the risk of biased, exclusionary or ineffective findings when recruitment is poorly planned
-    When I select &quot;Go to participant management service&quot;
-    Then I should be taken to the participant management service
 
   Scenario: Understand the ResearchOps lifecycle
     Then I should see a section called &quot;How ResearchOps supports a research project&quot;
-    And I should see an explanation that ResearchOps follows the shape of a user research project
-    And I should understand that I should start by creating a project
-    And I should understand that later stages become useful once a project has been created
+    And I should see text explaining that &quot;ResearchOps follows the shape of a user research project. Start by creating a project. Then add studies, participants, sessions, notes, evidence, insights and recommendations as the work develops.&quot;
+    And I should see text explaining that &quot;This sequence is a mental model, not a set of first-visit shortcuts. It shows how the work becomes connected over time.&quot;
+    And I should see text explaining that &quot;Define the research work, service phase, team context and objectives.&quot;
+    And I should see text explaining that &quot;Plan a specific round of research within the project.&quot;
+    And I should see text explaining that &quot;Recruit and manage people taking part in the study.&quot;
+    And I should see text explaining that &quot;Schedule and run research sessions.&quot;
+    And I should see text explaining that &quot;Capture observations and structured session notes.&quot;
+    And I should see text explaining that &quot;Organise what was seen, heard or recorded.&quot;
+    And I should see text explaining that &quot;Analyse evidence into meaningful findings.&quot;
+    And I should see text explaining that &quot;Turn findings into decisions, actions and service improvements.&quot;
 
-  Scenario: View the lifecycle sequence
+  Scenario: View the lifecycle sequence as a mental model
     Then I should see the lifecycle stages in this order:
-      | Stage           |
-      | Project         |
-      | Study           |
-      | Participants    |
-      | Sessions        |
-      | Notes           |
-      | Evidence        |
-      | Insights        |
-      | Recommendations |
+      | Step | Stage | Purpose |
+      | Step 1 of 8 | Project | Define the research work, service phase, team context and objectives. |
+      | Step 2 of 8 | Study | Plan a specific round of research within the project. |
+      | Step 3 of 8 | Participants | Recruit and manage people taking part in the study. |
+      | Step 4 of 8 | Sessions | Schedule and run research sessions. |
+      | Step 5 of 8 | Notes | Capture observations and structured session notes. |
+      | Step 6 of 8 | Evidence | Organise what was seen, heard or recorded. |
+      | Step 7 of 8 | Insights | Analyse evidence into meaningful findings. |
+      | Step 8 of 8 | Recommendations | Turn findings into decisions, actions and service improvements. |
     And each stage should include a short explanation of what happens at that point
 
   Scenario: Avoid misleading lifecycle links
-    Then lifecycle stages should not appear as links unless they open a valid journey for my current context
-    And later lifecycle stages should not be presented as primary calls to action
-    And the lifecycle should support orientation rather than behave like a menu
+    Then lifecycle stages should be presented as orientation rather than as a menu
+    And later lifecycle stages should not be presented as first-visit shortcuts
+    And the page should make it clear that later work becomes useful after a project has been created
 
+  Scenario: Review later ResearchOps tasks
+    Then I should see a section called &quot;What you can do after creating a project&quot;
+    And I should see text explaining that &quot;These parts of ResearchOps are shown as orientation. They make more sense after a project record has been created.&quot;
+    And I should see orientation cards for:
+      | Task | Category | Availability |
+      | Set clear research objectives | Team alignment | Available after project creation |
+      | Recruit participants for user research studies | Recruitment | Available after study planning |
+      | Turn research evidence into recommendations | Evidence and analysis | Available after sessions |
+
+  Scenario: Understand the &quot;Set clear research objectives&quot; task
+    Given I can see the &quot;Set clear research objectives&quot; orientation card
+    Then I should see that it is &quot;Available after project creation&quot;
+    And I should see the question &quot;How might we overcome the impact of unclear objectives in user research?&quot;
+    And I should see supporting text that says &quot;Use the project space to align stakeholder objectives with research, design and delivery work.&quot;
+  Scenario: Understand the &quot;Recruit participants for user research studies&quot; task
+    Given I can see the &quot;Recruit participants for user research studies&quot; orientation card
+    Then I should see that it is &quot;Available after study planning&quot;
+    And I should see the question &quot;How might we ensure that participant recruitment reflects the diversity and needs of the service’s real users?&quot;
+    And I should see supporting text that says &quot;Plan recruitment so findings are not biased, exclusionary or weakly connected to the service’s real users.&quot;
+  Scenario: Understand the &quot;Turn research evidence into recommendations&quot; task
+    Given I can see the &quot;Turn research evidence into recommendations&quot; orientation card
+    Then I should see that it is &quot;Available after sessions&quot;
+    And I should see the question &quot;How might we keep evidence, insights and recommendations connected?&quot;
+    And I should see supporting text that says &quot;Use structured notes and evidence trails to show how research findings lead to service decisions.&quot;
   Scenario: Use the lifecycle sequence on a mobile device
     Given I am viewing the home page on a mobile device
     Then the lifecycle sequence should remain readable
@@ -275,15 +283,15 @@
   Scenario: Access the home page using a keyboard
     Given I am navigating with a keyboard
     Then I should be able to move focus through the primary navigation links
-    And I should be able to move focus through each journey call-to-action
-    And I should be able to activate each link using the keyboard
+    And I should be able to move focus to &quot;Start a research project&quot;
+    And I should be able to activate links, buttons and form controls without a mouse
 
   Scenario: Understand the page structure with assistive technology
     Then the page should have one clear main heading
-    And the journey section should have a meaningful heading
+    And the start guidance section should have a meaningful heading
     And the lifecycle should be marked up as an ordered sequence
-    And each journey card should expose its title, supporting text and call-to-action in a logical reading order
     And each lifecycle stage should expose its name and explanation in a logical reading order
+    And each orientation card should expose its title, supporting text and availability in a logical reading order
 
   Scenario: View footer information
     Then I should see the footer text &quot;© 2026 Home Office Biometrics · ResearchOps v1.0.0&quot;</code></pre>
