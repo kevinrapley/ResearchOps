@@ -97,7 +97,7 @@ test('buildStateAcceptanceGherkin writes ResearchOps home criteria from a user r
 	assert.doesNotMatch(gherkin, /captured evidence status/);
 });
 
-test('buildStateAcceptanceGherkin derives user-centred criteria from state actions', () => {
+test('buildStateAcceptanceGherkin writes source-derived start-project criteria', () => {
 	const gherkin = buildStateAcceptanceGherkin(
 		{
 			id: 'start',
@@ -106,9 +106,9 @@ test('buildStateAcceptanceGherkin derives user-centred criteria from state actio
 			description: 'Start page for creating or beginning research project work.',
 		},
 		{
-			id: 'step-2-ai-rewrite-shown',
-			title: 'Step 2 AI rewrite shown',
-			description: 'The AI rewrite panel is shown after eligible objectives are entered.',
+			id: 'step-4-check-answers',
+			title: 'Step 4 check your answers before create project',
+			description: 'The review step is shown before project creation is submitted.',
 			status: 'captured',
 		},
 		{
@@ -116,30 +116,69 @@ test('buildStateAcceptanceGherkin derives user-centred criteria from state actio
 			actions: [
 				{
 					type: 'click',
-					selector: '#btn-obj-ai-rewrite',
-				},
-				{
-					type: 'waitForText',
-					text: 'Concise rewrite (optional):',
+					selector: '#next4',
 				},
 			],
 		}
 	);
 
-	assert.match(gherkin, /Feature: Define a research project/);
+	assert.match(gherkin, /Feature: Start a new research project/);
 	assert.match(gherkin, /As a user researcher/);
 	assert.match(
 		gherkin,
-		/I want to define a research project with objectives, stakeholders and ownership/
+		/I want to define a research project with clear context, objectives and ownership/
 	);
 	assert.match(gherkin, /When I visit the start research project service/);
-	assert.match(gherkin, /Scenario: Work with the "Step 2 AI rewrite shown" state/);
-	assert.match(gherkin, /When I select "Improve objectives with AI"/);
-	assert.match(gherkin, /Then I should see "Concise rewrite \(optional\):"/);
-	assert.match(gherkin, /Scenario: Use the state accessibly/);
+	assert.match(gherkin, /Scenario: Understand the steps in the guided process/);
+	assert.match(gherkin, /Step 1 of 4 \| Define the project/);
+	assert.match(gherkin, /Step 4 of 4 \| Check your answers before creating the project/);
+	assert.match(gherkin, /Scenario: Recover when required research framing fields are missing/);
+	assert.match(gherkin, /Enter at least one research objective/);
+	assert.match(gherkin, /Enter at least one user group/);
+	assert.match(gherkin, /This sends the objectives you entered to an AI service/);
+	assert.match(gherkin, /Scenario: Check answers before creating the project/);
+	assert.match(gherkin, /GOV\.UK summary list/);
+	assert.match(gherkin, /Scenario: Complete the guided process using a keyboard/);
 	assert.doesNotMatch(gherkin, /Given the route/);
 	assert.doesNotMatch(gherkin, /I am reviewing/);
 	assert.doesNotMatch(gherkin, /captured evidence status/);
+});
+
+test('buildStateAcceptanceGherkin derives user-centred criteria from state actions for generic pages', () => {
+	const gherkin = buildStateAcceptanceGherkin(
+		{
+			id: 'synthesize',
+			title: 'Synthesize',
+			path: '/pages/synthesize/index.html',
+			description: 'Synthesis page.',
+		},
+		{
+			id: 'theme-created',
+			title: 'Theme created',
+			description: 'A theme has been created from grouped evidence.',
+			status: 'captured',
+		},
+		{
+			path: '/pages/synthesize/index.html',
+			actions: [
+				{
+					type: 'fill',
+					selector: '#theme-label',
+					value: 'Confidence and support needs',
+				},
+				{
+					type: 'click',
+					selector: '#create-theme',
+				},
+			],
+		}
+	);
+
+	assert.match(gherkin, /Feature: Synthesize research evidence/);
+	assert.match(gherkin, /When I enter "Confidence and support needs" into the "Theme label" field/);
+	assert.match(gherkin, /And I select "Create theme"/);
+	assert.match(gherkin, /Scenario: Use the state accessibly/);
+	assert.doesNotMatch(gherkin, /Given the route/);
 });
 
 test('mergeCucumberReport creates a dedicated page and keeps existing state Gherkin panels', () => {
