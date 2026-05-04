@@ -85,8 +85,21 @@ jobs:
             && echo "BASE_URL responded before BDD run." \
             || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
+      - name: Prepare Cucumber report directory
+        run: mkdir -p reports
+
       - name: Run BDD smoke suite
         run: npm run qa:cucumber:ci
+
+      - name: List Cucumber report outputs
+        if: always()
+        shell: bash
+        run: |
+          if [ -d reports ]; then
+            find reports -maxdepth 2 -type f -print
+          else
+            echo "No reports directory was created."
+          fi
 
       - name: Upload Cucumber report
         if: always()
@@ -96,7 +109,7 @@ jobs:
           path: |
             reports/cucumber-report.html
             reports/cucumber-report.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
 
   walkthrough:
