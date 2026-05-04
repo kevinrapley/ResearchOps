@@ -2,12 +2,17 @@
 
 /**
  * @file scripts/merge-cucumber-report.mjs
- * @summary Merge Cucumber evidence into the generated visual walkthrough reporting site.
+ * @summary Merge Cucumber evidence and state-level acceptance criteria into the visual walkthrough reporting site.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import {
+	synthesisDefaultState,
+	synthesisVisualStates,
+} from '../visual-walkthrough.synthesis-states.mjs';
 
 const DEFAULT_SITE_DIR = 'reports-site';
 const DEFAULT_CUCUMBER_DIR = '__cuke';
@@ -155,6 +160,162 @@ function renderGherkinCriteria(scenario) {
 	return `<pre class="gherkin-criteria"><code>${escapeHtml(scenario.gherkin)}</code></pre>`;
 }
 
+function normaliseText(value = '') {
+	return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function truncateForGherkin(value = '', maxLength = 160) {
+	const text = normaliseText(value);
+	if (text.length <= maxLength) return text;
+	return `${text.slice(0, maxLength - 1)}…`;
+}
+
+function quoteGherkin(value = '') {
+	return String(value).replaceAll('"', '\\"');
+}
+
+function stepFromAction(action = {}) {
+	const timeoutText = action.timeout ? ` within ${action.timeout}ms` : '';
+
+	if (action.type === 'waitForText') {
+		return `Then I should see "${quoteGherkin(truncateForGherkin(action.text))}"${timeoutText}`;
+	}
+
+	if (action.type === 'waitForSelector') {
+		const state = action.state || 'visible';
+		return `Then the selector "${quoteGherkin(action.selector)}" should be ${state}${timeoutText}`;
+	}
+
+	if (action.type === 'click') {
+		return `When I choose the control "${quoteGherkin(action.selector)}"`;
+	}
+
+	if (action.type === 'fill') {
+		return `When I enter "${quoteGherkin(truncateForGherkin(action.value))}" into "${quoteGherkin(
+			action.selector
+		)}"`;
+	}
+
+	if (action.type === 'select') {
+		return `When I select "${quoteGherkin(action.value)}" from "${quoteGherkin(action.selector)}"`;
+	}
+
+	if (action.type === 'check') {
+		return `When I check "${quoteGherkin(action.selector)}"`;
+	}
+
+	if (action.type === 'uncheck') {
+		return `When I uncheck "${quoteGherkin(action.selector)}"`;
+	}
+
+	if (action.type === 'press') {
+		return `When I press "${quoteGherkin(action.key)}" on "${quoteGherkin(action.selector || 'body')}"`;
+	}
+
+	if (action.type === 'wait') {
+		return `When I wait ${action.ms ?? 250}ms for the interface to settle`;
+	}
+
+	return `When the visual walkthrough performs the "${quoteGherkin(action.type || 'unknown')}" action`;
+}
+
+function sourcePageConfig(pageId) {
+	const sourcePage = visualWalkthroughConfig.pages.find((page) => page.id === pageId);
+	if (!sourcePage) return null;
+
+	if (sourcePage.id !== 'synthesize') return sourcePage;
+
+	return {
+		...sourcePage,
+		title: 'Study synthesis',
+		description: 'Study-scoped evidence grouping and theme creation page.',
+		defaultState: synthesisDefaultState,
+		states: [...(sourcePage.states || []), ...synthesisVisualStates],
+	};
+}
+
+function sourceStateConfig(page, state) {
+	const sourcePage = sourcePageConfig(page.id);
+	const genericDefaultState = {
+		id: 'default',
+		title: 'Default state',
+		description: 'Initial loaded page state.',
+	};
+	const sourceStates = [sourcePage?.defaultState || genericDefaultState, ...(sourcePage?.states || [])];
+
+	return sourceStates.find((sourceState) => (sourceState.id || 'default') === state.id) || null;
+}
+
+export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState = null) {
+	const route = normalizeRoute(sourceState?.path || state.url || page.path || '/');
+	const sourceActions = Array.isArray(sourceState?.actions) ? sourceState.actions : [];
+	const lines = [
+		`Feature: ${page.title || 'Application route'} visual walkthrough`,
+		'',
+		`Scenario: ${state.title || 'Default state'}`,
+		`  Given the route "${quoteGherkin(route)}" is available`,
+		`  And I am reviewing the "${quoteGherkin(state.title || 'Default state')}" state`,
+	];
+
+	if (state.description) {
+		lines.push(`  And the state purpose is "${quoteGherkin(truncateForGherkin(state.description, 220))}"`);
+	}
+
+	if (sourceActions.length > 0) {
+		for (const action of sourceActions) {
+			lines.push(`  ${stepFromAction(action)}`);
+		}
+	} else if (state.status === 'failed') {
+		lines.push('  Then the report should show the capture failure for investigation');
+	} else {
+		lines.push('  Then the page should load without a visual walkthrough failure');
+	}
+
+	lines.push(`  And the captured evidence status should be "${quoteGherkin(state.status || 'captured')}"`);
+
+	return lines.join('\n');
+}
+
+function renderStateAcceptanceDetails(page, state) {
+	const sourceState = sourceStateConfig(page, state);
+	const gherkin = buildStateAcceptanceGherkin(page, state, sourceState);
+
+	return `
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>${escapeHtml(gherkin)}</code></pre>
+					</details>`;
+}
+
+function injectStateAcceptanceCriteria(indexHtml, manifest) {
+	if (indexHtml.includes('data-state-acceptance-criteria')) return indexHtml;
+
+	let html = indexHtml;
+
+	for (const page of manifest.pages || []) {
+		const articleStart = html.indexOf(`<article class="page-card" id="${page.id}">`);
+		if (articleStart === -1) continue;
+
+		let searchFrom = articleStart;
+
+		for (const state of page.states || []) {
+			const stateStart = html.indexOf('<section class="state', searchFrom);
+			if (stateStart === -1) break;
+
+			const headerEndMarker = '\n\t\t\t\t\t</div>';
+			const headerEnd = html.indexOf(headerEndMarker, stateStart);
+			if (headerEnd === -1) break;
+
+			const insertAt = headerEnd + headerEndMarker.length;
+			const details = renderStateAcceptanceDetails(page, state);
+			html = `${html.slice(0, insertAt)}${details}${html.slice(insertAt)}`;
+			searchFrom = insertAt + details.length;
+		}
+	}
+
+	return html;
+}
+
 export function buildCucumberEvidence(features = []) {
 	const scenarios = [];
 	const routes = new Map();
@@ -289,14 +450,15 @@ function injectCucumberStyles(indexHtml) {
 		.cucumber-site-nav { border-bottom: 1px solid #b1b4b6; display: flex; flex-wrap: wrap; gap: 16px; margin: -8px 0 24px; padding: 0 0 16px; }
 		.cucumber-site-nav a { color: #1d70b8; font-weight: 700; }
 		.cucumber-route-evidence { border-top: 1px solid #d8d8d8; padding: 12px 16px; }
-		.cucumber-route-evidence summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
-		.cucumber-route-evidence summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+		.cucumber-route-evidence summary, .state-acceptance-criteria summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
+		.cucumber-route-evidence summary:focus, .state-acceptance-criteria summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 		.cucumber-route-scenarios { display: grid; gap: 12px; margin-top: 12px; }
 		.cucumber-route-scenario { border-left: 5px solid #1d70b8; padding-left: 12px; }
 		.cucumber-route-scenario h4 { margin: 0 0 4px; }
 		.cucumber-route-scenario h5 { margin: 12px 0 4px; }
 		.cucumber-route-scenario p { margin: 4px 0; }
 		.cucumber-route-scenario span { color: #505a5f; }
+		.state-acceptance-criteria { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
 		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
 		.cucumber-status { display: inline-block; margin-right: 8px; text-transform: capitalize; }
@@ -426,6 +588,7 @@ export function mergeCucumberReport(options = {}) {
 		indexHtml = injectCucumberStyles(indexHtml);
 		indexHtml = injectCucumberNavigation(indexHtml);
 		indexHtml = injectRouteDetails(indexHtml, manifest, evidence);
+		indexHtml = injectStateAcceptanceCriteria(indexHtml, manifest);
 		fs.writeFileSync(indexPath, indexHtml);
 	}
 
