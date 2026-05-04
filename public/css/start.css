@@ -21,7 +21,12 @@
 	margin-top: 0;
 	}
 
-.start-step .lede {
+.start-step[hidden] {
+	display: none;
+	}
+
+.start-step .lede,
+.start-step .govuk-body {
 	max-width: 760px;
 	}
 
@@ -50,7 +55,8 @@
 	margin: 0;
 	}
 
-.start-form .cta {
+.start-form .cta,
+.start-step .cta {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
@@ -58,7 +64,7 @@
 	}
 
 .start-panel {
-	margin: 12px 0;
+	margin: 12px 0 24px;
 	}
 
 .start-assist {
@@ -71,6 +77,20 @@
 
 .start-error {
 	margin: 12px 0;
+	}
+
+.start-summary-list {
+	margin-bottom: 24px;
+	}
+
+.start-summary-list .govuk-summary-list__value {
+	word-break: break-word;
+	}
+
+@media (min-width: 40.0625em) {
+	.start-summary-list .govuk-summary-list__actions {
+		width: 20%;
+		}
 	}
 
 /* transparency begins in the cascade */
