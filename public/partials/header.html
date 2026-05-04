@@ -2,11 +2,14 @@
 <a class="govuk-skip-link" href="#main-content">Skip to main content</a>
 
 <header class="govuk-header" role="banner">
-	<div class="govuk-header__container govuk-width-container">
+	<div class="govuk-header__container">
 		<div class="govuk-header__logo">
-			<a class="govuk-header__link govuk-header__link--homepage" href="/" aria-label="GOV.UK home">
+			<a class="govuk-header__link" href="/" aria-label="GOV.UK home">
 				<span class="govuk-header__logotype">GOV.UK</span>
 			</a>
+		</div>
+		<div class="govuk-header__service-name">
+			{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
 		</div>
 	</div>
 </header>
@@ -54,17 +57,17 @@
 		}
 
 		function ensureMainContentTarget() {
-			var main = document.querySelector("main");
-			if (!main) return;
+			var target = document.querySelector("main");
+			if (!target) return;
 
-			main.classList.add("govuk-main-wrapper");
+			target.classList.add("govuk-main-wrapper");
 
-			if (!main.id) {
-				main.id = "main-content";
+			if (!target.id) {
+				target.id = "main-content";
 			}
 
-			if (main.id === "main-content" && !main.hasAttribute("tabindex")) {
-				main.setAttribute("tabindex", "-1");
+			if (target.id === "main-content" && !target.hasAttribute("tabindex")) {
+				target.setAttribute("tabindex", "-1");
 			}
 		}
 
