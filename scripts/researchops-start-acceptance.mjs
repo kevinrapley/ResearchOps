@@ -9,6 +9,12 @@ import fs from 'node:fs';
 
 const SOURCE = 'public/pages/start/index.html';
 const ENTITIES = { amp: '&', copy: '©', lt: '<', gt: '>', middot: '·', nbsp: ' ', quot: '"', rsquo: '’' };
+const VALIDATION_MESSAGES = {
+	projectName: 'Enter a project name.',
+	projectDescription: 'Enter a project description.',
+	objectives: 'Enter at least one research objective.',
+	userGroups: 'Enter at least one user group.',
+};
 
 function html() {
 	try {
@@ -169,6 +175,8 @@ export function buildStartAcceptanceCriteriaFromSource() {
 		'    When I try to continue without a project name or description',
 		'    Then I should see a GOV.UK error summary headed "There is a problem"',
 		'    And the error summary should link to the fields that need attention',
+		`    And I should see the error message "${quote(VALIDATION_MESSAGES.projectName)}"`,
+		`    And I should see the error message "${quote(VALIDATION_MESSAGES.projectDescription)}"`,
 		'    And each invalid field should expose its error message to assistive technology',
 		'',
 		'  Scenario: Use AI assistance for the project description deliberately',
@@ -189,6 +197,8 @@ export function buildStartAcceptanceCriteriaFromSource() {
 		'    Then I should see a GOV.UK error summary headed "There is a problem"',
 		`    And the error summary should link to "${quote(page.targetFields[1][0])}"`,
 		`    And the error summary should link to "${quote(page.targetFields[2][0])}"`,
+		`    And I should see the error message "${quote(VALIDATION_MESSAGES.objectives)}"`,
+		`    And I should see the error message "${quote(VALIDATION_MESSAGES.userGroups)}"`,
 		'',
 		'  Scenario: Use AI assistance for objectives deliberately',
 		`    Given I have entered enough text in "${quote(page.targetFields[1][0])}"`,
