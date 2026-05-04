@@ -75,7 +75,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-04T21:24:25.111Z</p>
+			<p class="meta">Run started: 2026-05-04T21:32:56.215Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
@@ -208,6 +208,11 @@
       | Projects               |
     And the &quot;Home&quot; navigation item should be shown as the current page
 
+  Scenario: Know where to start
+    Then I should see guidance that says &quot;New to ResearchOps? Start by creating a research project.&quot;
+    And I should understand that a project gives me somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations
+    And creating a research project should be presented as the first meaningful action
+
   Scenario: View the available research journeys
     Then I should see the section heading &quot;Choose a journey to explore&quot;
     And I should see journey cards for:
@@ -237,6 +242,36 @@
     When I select &quot;Go to participant management service&quot;
     Then I should be taken to the participant management service
 
+  Scenario: Understand the ResearchOps lifecycle
+    Then I should see a section called &quot;How ResearchOps supports a research project&quot;
+    And I should see an explanation that ResearchOps follows the shape of a user research project
+    And I should understand that I should start by creating a project
+    And I should understand that later stages become useful once a project has been created
+
+  Scenario: View the lifecycle sequence
+    Then I should see the lifecycle stages in this order:
+      | Stage           |
+      | Project         |
+      | Study           |
+      | Participants    |
+      | Sessions        |
+      | Notes           |
+      | Evidence        |
+      | Insights        |
+      | Recommendations |
+    And each stage should include a short explanation of what happens at that point
+
+  Scenario: Avoid misleading lifecycle links
+    Then lifecycle stages should not appear as links unless they open a valid journey for my current context
+    And later lifecycle stages should not be presented as primary calls to action
+    And the lifecycle should support orientation rather than behave like a menu
+
+  Scenario: Use the lifecycle sequence on a mobile device
+    Given I am viewing the home page on a mobile device
+    Then the lifecycle sequence should remain readable
+    And the stages should appear in the correct order
+    And no content should require horizontal scrolling
+
   Scenario: Access the home page using a keyboard
     Given I am navigating with a keyboard
     Then I should be able to move focus through the primary navigation links
@@ -246,7 +281,9 @@
   Scenario: Understand the page structure with assistive technology
     Then the page should have one clear main heading
     And the journey section should have a meaningful heading
+    And the lifecycle should be marked up as an ordered sequence
     And each journey card should expose its title, supporting text and call-to-action in a logical reading order
+    And each lifecycle stage should expose its name and explanation in a logical reading order
 
   Scenario: View footer information
     Then I should see the footer text &quot;© 2026 Home Office Biometrics · ResearchOps v1.0.0&quot;</code></pre>
