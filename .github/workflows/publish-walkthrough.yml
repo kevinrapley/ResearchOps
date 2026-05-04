@@ -53,14 +53,26 @@ jobs:
           fi
 
       - name: Ensure site has an index
+        shell: bash
         run: |
+          set -euo pipefail
+
           if [ ! -f "reports-site/index.html" ]; then
-            cat > reports-site/index.html <<'HTML'
-            <!doctype html><meta charset="utf-8">
-            <title>Walkthrough</title>
-            <h1>Walkthrough site not generated for this run.</h1>
-            <p>The qa-bdd workflow did not produce screenshots for this run.</p>
-            HTML
+            mkdir -p reports-site
+
+            {
+              printf '%s\n' '<!doctype html>'
+              printf '%s\n' '<html lang="en-GB">'
+              printf '%s\n' '<head>'
+              printf '%s\n' '<meta charset="utf-8">'
+              printf '%s\n' '<title>Walkthrough</title>'
+              printf '%s\n' '</head>'
+              printf '%s\n' '<body>'
+              printf '%s\n' '<h1>Walkthrough site not generated for this run.</h1>'
+              printf '%s\n' '<p>The qa-bdd workflow did not produce screenshots for this run.</p>'
+              printf '%s\n' '</body>'
+              printf '%s\n' '</html>'
+            } > reports-site/index.html
           fi
 
       - name: Upload Pages artifact
