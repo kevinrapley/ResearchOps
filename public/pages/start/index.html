@@ -9,9 +9,10 @@
 
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/start.css" media="screen" />
 
 	<!-- Components/layout first -->
@@ -19,7 +20,7 @@
 
 	<!-- Step 1 owner: imports copilot-suggester internally and sets window.__descAssistActive -->
 	<script type="module" src="/js/start-description-assist.js" defer></script>
-	
+
 	<!-- Step 2 owner: wires objectives AI & rule suggestions -->
 	<script type="module" src="/js/start-objectives-assist.js" defer></script>
 
@@ -28,160 +29,251 @@
 </head>
 
 <body>
+	<noscript>
+		<a class="govuk-skip-link" href="#main-content">Skip to main content</a>
+
+		<header class="govuk-header" role="banner">
+			<div class="govuk-header__container govuk-width-container">
+				<div class="govuk-header__logo">
+					<a class="govuk-header__link govuk-header__link--homepage" href="/" aria-label="GOV.UK home">
+						<span class="govuk-header__logotype">GOV.UK</span>
+					</a>
+				</div>
+			</div>
+		</header>
+
+		<nav class="govuk-service-navigation" aria-label="Service navigation">
+			<div class="govuk-service-navigation__container govuk-width-container">
+				<span class="govuk-service-navigation__service-name">
+					<a class="govuk-service-navigation__link" href="/">ResearchOps Demo Suite</a>
+				</span>
+				<ul class="govuk-service-navigation__list">
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/">Home</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/start/" aria-current="page">Start research project</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/projects/">Projects</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="govuk-phase-banner" role="note" aria-label="Service phase">
+			<p class="govuk-phase-banner__content">
+				<strong class="govuk-tag">Prototype</strong>
+				<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
+			</p>
+		</div>
+	</noscript>
+
 	<x-include src="/partials/debug.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{
+	<x-include
+		src="/partials/header.html"
+		vars='{
 			"active":"Start Research Project",
 			"subtitle":"Define service phase, set status, add stakeholders and objectives"
 		}'>
 	</x-include>
 
-	<main class="govuk-body" role="main">
-		<div class="card start-card">
-			<h1 class="govuk-heading-l page-title">Start a new research project</h1>
-			<p class="lede">
-				Define the project within a service phase and current status, then capture stakeholders and initial objectives.
-			</p>
-
-			<!-- Step 1 -->
-			<section id="step1" class="start-step">
-				<h2 class="govuk-heading-m">Step 1 of 3</h2>
-				<p class="lede">Define the project’s service phase and status</p>
-
-				<div id="error-summary" class="govuk-error-summary start-panel" style="display:none" role="alert" aria-live="polite" tabindex="-1"></div>
-
-				<form id="projectForm" class="start-form" novalidate>
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_name">Project name</label>
-						<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" />
-						<p id="p_name_error" class="govuk-error-message start-error" style="display:none"></p>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<header class="page-intro">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<h1 class="govuk-heading-xl page-title" id="start-title">Start a new research project</h1>
+						<p class="lede">
+							Define the project within a service phase and current status, then capture stakeholders and initial objectives.
+						</p>
+						<p class="govuk-body">
+							Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.
+						</p>
 					</div>
+				</div>
+			</header>
 
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_desc">Description</label>
-						<p id="p_desc_help" class="govuk-hint">Write what you plan to research. Do not include personal data.</p>
-						<textarea id="p_desc" name="description" class="govuk-textarea" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
-						<p id="p_desc_error" class="govuk-error-message start-error" style="display:none"></p>
-					</div>
-
-					<!-- Description assistance controls -->
-					<div id="ai-tools" class="toolbar mt-2 hidden start-assist" aria-label="Description assistance">
-						<button class="govuk-button govuk-button--secondary" id="btn-ai-rewrite" type="button">Try AI rewrite</button>
-						<small id="ai-rewrite-status" class="mono muted" aria-live="polite"></small>
-					</div>
-
-					<!-- Rule-based suggestions (client only) -->
-					<div id="description-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
-
-					<!-- AI output (summary + suggestions + optional rewrite) -->
-					<div id="ai-rewrite-output" class="mt-2 start-assist-output" aria-live="polite"></div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_phase">Service phase</label>
-						<select id="p_phase" name="phase" class="govuk-select">
-							<optgroup label="Service phases">
-								<option value="pre-discovery" selected>Pre-Discovery</option>
-								<option value="discovery">Discovery</option>
-								<option value="alpha">Alpha</option>
-								<option value="beta">Beta</option>
-								<option value="live">Live</option>
-								<option value="retired">Retired</option>
-							</optgroup>
-						</select>
-					</div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_status">Project status</label>
-						<select id="p_status" name="status" class="govuk-select">
-							<optgroup label="Project statuses">
-								<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
-								<option value="planning">Planning research</option>
-								<option value="conducting">Conducting research</option>
-								<option value="synthesis">Synthesis &amp; analysis</option>
-								<option value="shared">Shared &amp; socialised research</option>
-								<option value="monitoring">Monitoring metrics</option>
-							</optgroup>
-						</select>
-					</div>
-
-					<div class="govuk-button-group cta">
-						<button class="govuk-button" id="next2" type="submit">Continue</button>
-					</div>
-				</form>
-			</section>
-
-			<!-- Step 2 -->
-			<section id="step2" class="start-step" style="display:none">
-				<h2 class="govuk-heading-m">Step 2 of 3</h2>
-				<p class="lede">Define the project’s stakeholders, objectives, and user groups</p>
-
-				<form id="targetForm" class="start-form">
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_stakeholders">Stakeholders</label>
-						<p id="p_stakeholders_help" class="govuk-hint">Enter one stakeholder per line using the format: name | role | email.</p>
-						<textarea id="p_stakeholders" class="govuk-textarea" aria-describedby="p_stakeholders_help"></textarea>
-					</div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_objectives">Initial objectives</label>
-						<p id="p_objectives_help" class="govuk-hint">List your research objectives. Keep them action-oriented. Avoid personal data.</p>
-						<textarea id="p_objectives" name="p_objectives" class="govuk-textarea" rows="5" aria-describedby="p_objectives_help"></textarea>
-						<div id="ai-objectives-tools" class="toolbar mt-2 hidden start-assist" aria-label="Objectives assistance">
-							<button class="govuk-button govuk-button--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
-							<button class="govuk-button govuk-button--secondary" id="btn-obj-ai-rewrite" type="button">Try AI rewrite</button>
-							<small id="ai-obj-status" class="mono muted" aria-live="polite"></small>
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<div class="card start-card">
+						<div id="error-summary" class="govuk-error-summary start-panel" aria-labelledby="error-summary-title" role="alert" tabindex="-1" hidden>
+							<h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+							<div class="govuk-error-summary__body">
+								<ul id="error-list" class="govuk-list govuk-error-summary__list"></ul>
+							</div>
 						</div>
+
+						<!-- Step 1 -->
+						<section id="step1" class="start-step" aria-labelledby="step1-title">
+							<p class="govuk-caption-l">Step 1 of 4</p>
+							<h2 class="govuk-heading-m" id="step1-title">Define the project</h2>
+							<p class="govuk-body">Give the project a name, description, service phase and current status.</p>
+
+							<form id="projectForm" class="start-form" novalidate>
+								<div id="p_name_group" class="govuk-form-group">
+									<label class="govuk-label" for="p_name">Project name</label>
+									<p id="p_name_hint" class="govuk-hint">Use a short name the research team and stakeholders will recognise.</p>
+									<p id="p_name_error" class="govuk-error-message start-error" hidden></p>
+									<input id="p_name" name="name" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_name_hint" />
+								</div>
+
+								<div id="p_desc_group" class="govuk-form-group">
+									<label class="govuk-label" for="p_desc">Description</label>
+									<p id="p_desc_help" class="govuk-hint">Write what you plan to research. Do not include participant personal data.</p>
+									<p id="p_desc_error" class="govuk-error-message start-error" hidden></p>
+									<textarea id="p_desc" name="description" class="govuk-textarea" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
+								</div>
+
+								<div id="ai-tools" class="toolbar mt-2 hidden start-assist" aria-label="Description assistance">
+									<p id="ai-rewrite-help" class="govuk-hint">
+										This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.
+									</p>
+									<button class="govuk-button govuk-button--secondary" id="btn-ai-rewrite" type="button" aria-describedby="ai-rewrite-help">Try AI rewrite</button>
+									<small id="ai-rewrite-status" class="mono muted" aria-live="polite"></small>
+								</div>
+
+								<div id="description-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
+								<div id="ai-rewrite-output" class="mt-2 start-assist-output" aria-live="polite"></div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_phase">Service phase</label>
+									<select id="p_phase" name="phase" class="govuk-select">
+										<optgroup label="Service phases">
+											<option value="pre-discovery" selected>Pre-Discovery</option>
+											<option value="discovery">Discovery</option>
+											<option value="alpha">Alpha</option>
+											<option value="beta">Beta</option>
+											<option value="live">Live</option>
+											<option value="retired">Retired</option>
+										</optgroup>
+									</select>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_status">Project status</label>
+									<select id="p_status" name="status" class="govuk-select">
+										<optgroup label="Project statuses">
+											<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
+											<option value="planning">Planning research</option>
+											<option value="conducting">Conducting research</option>
+											<option value="synthesis">Synthesis &amp; analysis</option>
+											<option value="shared">Shared &amp; socialised research</option>
+											<option value="monitoring">Monitoring metrics</option>
+										</optgroup>
+									</select>
+								</div>
+
+								<div class="govuk-button-group cta">
+									<button class="govuk-button" id="next2" type="submit">Continue</button>
+								</div>
+							</form>
+						</section>
+
+						<!-- Step 2 -->
+						<section id="step2" class="start-step" hidden aria-labelledby="step2-title">
+							<p class="govuk-caption-l">Step 2 of 4</p>
+							<h2 class="govuk-heading-m" id="step2-title">Add stakeholders, objectives and user groups</h2>
+							<p class="govuk-body">Add the people involved, what the research needs to learn and who the research should include.</p>
+
+							<form id="targetForm" class="start-form" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_stakeholders">Stakeholders</label>
+									<p id="p_stakeholders_help" class="govuk-hint">Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership.</p>
+									<textarea id="p_stakeholders" class="govuk-textarea" aria-describedby="p_stakeholders_help"></textarea>
+								</div>
+
+								<div id="p_objectives_group" class="govuk-form-group">
+									<label class="govuk-label" for="p_objectives">Initial objectives</label>
+									<p id="p_objectives_help" class="govuk-hint">List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data.</p>
+									<p id="p_objectives_error" class="govuk-error-message start-error" hidden></p>
+									<textarea id="p_objectives" name="p_objectives" class="govuk-textarea" rows="5" required aria-required="true" aria-invalid="false" aria-describedby="p_objectives_help"></textarea>
+									<div id="ai-objectives-tools" class="toolbar mt-2 hidden start-assist" aria-label="Objectives assistance">
+										<p id="ai-objectives-help" class="govuk-hint">
+											This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.
+										</p>
+										<button class="govuk-button govuk-button--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
+										<button class="govuk-button govuk-button--secondary" id="btn-obj-ai-rewrite" type="button" aria-describedby="ai-objectives-help">Try AI rewrite</button>
+										<small id="ai-obj-status" class="mono muted" aria-live="polite"></small>
+									</div>
+								</div>
+
+								<div id="objectives-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
+								<div id="ai-objectives-output" class="mt-2 start-assist-output" aria-live="polite"></div>
+
+								<div id="p_usergroups_group" class="govuk-form-group">
+									<label class="govuk-label" for="p_usergroups">User groups</label>
+									<p id="p_usergroups_help" class="govuk-hint">Enter at least one user group as a comma-separated list.</p>
+									<p id="p_usergroups_error" class="govuk-error-message start-error" hidden></p>
+									<input id="p_usergroups" class="govuk-input" required aria-required="true" aria-invalid="false" aria-describedby="p_usergroups_help" />
+								</div>
+
+								<div class="govuk-button-group cta">
+									<button class="govuk-button govuk-button--secondary" id="prev1" type="button">Back</button>
+									<button class="govuk-button" id="next3" type="button">Continue</button>
+								</div>
+							</form>
+						</section>
+
+						<!-- Step 3 -->
+						<section id="step3" class="start-step" hidden aria-labelledby="step3-title">
+							<p class="govuk-caption-l">Step 3 of 4</p>
+							<h2 class="govuk-heading-m" id="step3-title">Add project ownership and notes</h2>
+							<p class="govuk-body">Add supplementary information about who owns the research and anything the team should know before the project is created.</p>
+
+							<form id="researchForm" class="start-form" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="lead_name">Lead researcher</label>
+									<input id="lead_name" class="govuk-input" value="" />
+								</div>
+
+								<div id="lead_email_group" class="govuk-form-group">
+									<label class="govuk-label" for="lead_email">Researcher&rsquo;s email</label>
+									<p id="lead_email_hint" class="govuk-hint">Use a work email address.</p>
+									<p id="lead_email_error" class="govuk-error-message start-error" hidden></p>
+									<input id="lead_email" type="email" class="govuk-input" value="" aria-invalid="false" aria-describedby="lead_email_hint" />
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_notes">Notes</label>
+									<p id="p_notes_help" class="govuk-hint">Add project notes that will help the team start the work. Do not include participant personal data.</p>
+									<textarea id="p_notes" class="govuk-textarea" aria-describedby="p_notes_help"></textarea>
+								</div>
+
+								<div class="govuk-button-group cta">
+									<button class="govuk-button govuk-button--secondary" id="prev2" type="button">Back</button>
+									<button class="govuk-button" id="next4" type="button">Continue</button>
+								</div>
+							</form>
+						</section>
+
+						<!-- Step 4 -->
+						<section id="step4" class="start-step" hidden aria-labelledby="step4-title">
+							<p class="govuk-caption-l">Step 4 of 4</p>
+							<h2 class="govuk-heading-m" id="step4-title">Check your answers before creating the project</h2>
+							<p class="govuk-body">Review the project setup before it is saved. You can go back to change anything that is missing or unclear.</p>
+
+							<dl id="check-answers-list" class="govuk-summary-list start-summary-list" aria-live="polite"></dl>
+
+							<div class="govuk-button-group cta">
+								<button class="govuk-button govuk-button--secondary" id="prev3" type="button">Back</button>
+								<button class="govuk-button" id="finish" type="button">Create project</button>
+							</div>
+						</section>
 					</div>
-
-					<!-- Rule-based/AI suggestions (Objectives) -->
-					<div id="objectives-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
-
-					<!-- AI rewrite preview (Objectives) -->
-					<div id="ai-objectives-output" class="mt-2 start-assist-output" aria-live="polite"></div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_usergroups">User groups</label>
-						<p id="p_usergroups_help" class="govuk-hint">Enter user groups as a comma-separated list.</p>
-						<input id="p_usergroups" class="govuk-input" aria-describedby="p_usergroups_help" />
-					</div>
-
-					<div class="govuk-button-group cta">
-						<button class="govuk-button" id="prev1" type="button">Back</button>
-						<button class="govuk-button" id="next3" type="button">Continue</button>
-					</div>
-				</form>
-			</section>
-
-			<!-- Step 3 -->
-			<section id="step3" class="start-step" style="display:none">
-				<h2 class="govuk-heading-m">Step 3 of 3</h2>
-				<p class="lede">Supplementary information about the project</p>
-
-				<form id="researchForm" class="start-form">
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="lead_name">Lead researcher</label>
-						<input id="lead_name" class="govuk-input" value="" />
-					</div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="lead_email">Researcher&rsquo;s email</label>
-						<input id="lead_email" type="email" class="govuk-input" value="" />
-					</div>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="p_notes">Notes</label>
-						<textarea id="p_notes" class="govuk-textarea"></textarea>
-					</div>
-
-					<div class="govuk-button-group cta">
-						<button class="govuk-button" id="prev2" type="button">Back</button>
-						<button class="govuk-button" id="finish" type="button">Create project</button>
-					</div>
-				</form>
-			</section>
+				</div>
+			</div>
 		</div>
 	</main>
 
-	<!-- Global footer -->
+	<noscript>
+		<footer class="govuk-footer" role="contentinfo">
+			<div class="govuk-footer__container govuk-width-container">
+				<p class="govuk-footer__meta">© 2026 Home Office Biometrics · ResearchOps v1.0.0</p>
+			</div>
+		</footer>
+	</noscript>
+
 	<x-include src="/partials/footer.html"></x-include>
 </body>
 
