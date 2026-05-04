@@ -1,29 +1,23 @@
-/* ==========================================================================
-   ResearchOps UI • Home lifecycle orientation
-   Version:    v1.0.0
-   Service:    Home Office Biometrics — ResearchOps
-   Build:      GOV.UK typography + colours; mobile-first
-   Repo:       /css/home-lifecycle.css
-   ========================================================================== */
+/* ==========================================================================   ResearchOps UI • Home lifecycle orientation   Version:    v1.0.0   Service:    Home Office Biometrics — ResearchOps   Build:      GOV.UK typography + colours; mobile-first   Repo:       /css/home-lifecycle.css   ========================================================================== */
 
-.start-guidance,
-.lifecycle-map {
+.app-start-guidance,
+.app-lifecycle-map {
 	margin: 32px 0;
 	padding: 24px;
 	border: 1px solid #b1b4b6;
 	background: #ffffff;
 	}
 
-.start-guidance {
+.app-start-guidance {
 	border-left: 6px solid #1d70b8;
 	}
 
-.start-guidance .govuk-heading-l,
-.lifecycle-map .govuk-heading-l {
+.app-start-guidance .govuk-heading-l,
+.app-lifecycle-map .govuk-heading-l {
 	margin-top: 0;
 	}
 
-.lifecycle-sequence {
+.app-lifecycle-sequence {
 	display: grid;
 	gap: 16px;
 	grid-template-columns: 1fr;
@@ -33,7 +27,7 @@
 	counter-reset: lifecycle-stage;
 	}
 
-.lifecycle-sequence__item {
+.app-lifecycle-sequence__item {
 	position: relative;
 	min-width: 0;
 	padding: 16px 16px 16px 64px;
@@ -42,7 +36,7 @@
 	counter-increment: lifecycle-stage;
 	}
 
-.lifecycle-sequence__item::before {
+.app-lifecycle-sequence__item::before {
 	content: counter(lifecycle-stage);
 	position: absolute;
 	top: 16px;
@@ -60,7 +54,7 @@
 	color: #0b0c0c;
 	}
 
-.lifecycle-sequence__item::after {
+.app-lifecycle-sequence__item::after {
 	content: "↓";
 	position: absolute;
 	bottom: -17px;
@@ -70,25 +64,25 @@
 	color: #505a5f;
 	}
 
-.lifecycle-sequence__item:last-child::after {
+.app-lifecycle-sequence__item:last-child::after {
 	content: none;
 	}
 
-.lifecycle-sequence__heading {
+.app-lifecycle-sequence__heading {
 	margin: 0 0 4px;
 	}
 
-.lifecycle-sequence__body {
+.app-lifecycle-sequence__body {
 	margin: 0;
 	color: #505a5f;
 	}
 
 @media (min-width: 760px) {
-	.lifecycle-sequence {
+	.app-lifecycle-sequence {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
-	.lifecycle-sequence__item::after {
+	.app-lifecycle-sequence__item::after {
 		content: "→";
 		top: 28px;
 		right: -13px;
@@ -96,23 +90,23 @@
 		left: auto;
 		}
 
-	.lifecycle-sequence__item:nth-child(2n)::after,
-	.lifecycle-sequence__item:last-child::after {
+	.app-lifecycle-sequence__item:nth-child(2n)::after,
+	.app-lifecycle-sequence__item:last-child::after {
 		content: none;
 		}
 	}
 
 @media (min-width: 1100px) {
-	.lifecycle-sequence {
+	.app-lifecycle-sequence {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 
-	.lifecycle-sequence__item:nth-child(2n)::after {
+	.app-lifecycle-sequence__item:nth-child(2n)::after {
 		content: "→";
 		}
 
-	.lifecycle-sequence__item:nth-child(4n)::after,
-	.lifecycle-sequence__item:last-child::after {
+	.app-lifecycle-sequence__item:nth-child(4n)::after,
+	.app-lifecycle-sequence__item:last-child::after {
 		content: none;
 		}
 	}
