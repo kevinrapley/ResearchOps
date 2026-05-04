@@ -27,6 +27,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout reporting tools
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
       - name: Download visual walkthrough artifact from qa-bdd
         uses: dawidd6/action-download-artifact@v8
         with:
@@ -36,21 +41,14 @@ jobs:
           path: ./reports-site
           if_no_artifact_found: fail
 
-      - name: Download cucumber HTML report
+      - name: Download cucumber report artifact from qa-bdd
         uses: dawidd6/action-download-artifact@v8
         with:
           workflow: qa-bdd
           run_id: ${{ github.event.workflow_run.id }}
           name: cucumber-report
           path: ./__cuke
-          if_no_artifact_found: warn
-
-      - name: Merge cucumber report into site
-        run: |
-          mkdir -p reports-site
-          if [ -f "__cuke/cucumber-report.html" ]; then
-            mv __cuke/cucumber-report.html reports-site/
-          fi
+          if_no_artifact_found: fail
 
       - name: Ensure site has an index
         shell: bash
@@ -74,6 +72,9 @@ jobs:
               printf '%s\n' '</html>'
             } > reports-site/index.html
           fi
+
+      - name: Merge cucumber evidence into reporting site
+        run: node scripts/merge-cucumber-report.mjs
 
       - name: Verify Cloudflare credentials
         shell: bash
@@ -132,10 +133,12 @@ jobs:
         run: |
           echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough was published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough and Cucumber evidence were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Open the gallery:** ${REPORTING_PAGES_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "[Open Cucumber HTML report](${REPORTING_PAGES_URL}cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open Cucumber report summary](${REPORTING_PAGES_URL}cucumber.html)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots." >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open raw Cucumber HTML report](${REPORTING_PAGES_URL}cucumber/cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with route-level Cucumber evidence where scenarios map to a route." >> "$GITHUB_STEP_SUMMARY"
