@@ -57,10 +57,11 @@
 		}
 
 		function ensureMainContentTarget() {
-			var target = document.querySelector("main");
-			if (!target) return;
+			var main = document.querySelector("main");
+			if (!main) return;
 
-			target.classList.add("govuk-main-wrapper");
+			var target = main;
+			main.classList.add("govuk-main-wrapper");
 
 			if (!target.id) {
 				target.id = "main-content";
