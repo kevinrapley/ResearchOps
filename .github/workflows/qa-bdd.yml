@@ -211,6 +211,9 @@ jobs:
       - name: Run application visual walkthrough
         run: npm run qa:visual-walkthrough
 
+      - name: Sync source-derived acceptance criteria
+        run: node scripts/sync-report-acceptance-criteria.mjs reports-site
+
       - name: Detect visual walkthrough site
         id: detect_site
         if: always()

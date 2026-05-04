@@ -84,6 +84,9 @@ jobs:
             } > reports-site/index.html
           fi
 
+      - name: Sync source-derived acceptance criteria
+        run: node scripts/sync-report-acceptance-criteria.mjs reports-site
+
       - name: Merge cucumber evidence into reporting site
         run: node scripts/merge-cucumber-report.mjs
 
@@ -93,11 +96,18 @@ jobs:
           set -euo pipefail
 
           grep -F 'data-state-acceptance-criteria' reports-site/index.html >/dev/null
-          grep -F 'Gherkin acceptance criteria for this state' reports-site/index.html >/dev/null
+          grep -F 'What this screen state should support' reports-site/index.html >/dev/null
           grep -F 'Feature:' reports-site/index.html >/dev/null
           grep -F 'As a user researcher' reports-site/index.html >/dev/null
           grep -F 'Access the ResearchOps home page' reports-site/index.html >/dev/null
           grep -F 'So that I can choose the right ResearchOps journey for my work' reports-site/index.html >/dev/null
+          grep -F 'What you can do after creating a project' reports-site/index.html >/dev/null
+          grep -F 'Turn research evidence into recommendations' reports-site/index.html >/dev/null
+
+          if grep -F 'Choose a journey to explore' reports-site/index.html >/dev/null; then
+            echo "Reporting site still contains stale home-page acceptance criteria." >&2
+            exit 1
+          fi
 
       - name: Verify Cloudflare Pages project access
         shell: bash
@@ -179,8 +189,8 @@ jobs:
           for attempt in {1..18}; do
             body="$(curl --fail --silent --show-error --location --max-time 10 "${REPORTING_PAGES_URL}?run=${GITHUB_RUN_ID}-${attempt}" || true)"
             if printf '%s' "$body" | grep -F "Run started: ${expected_started_at}" >/dev/null; then
-              if ! printf '%s' "$body" | grep -F "Gherkin acceptance criteria for this state" >/dev/null; then
-                echo "Reporting site updated but state-level Gherkin acceptance criteria were not found." >&2
+              if ! printf '%s' "$body" | grep -F "What this screen state should support" >/dev/null; then
+                echo "Reporting site updated but state acceptance criteria details panels were not found." >&2
                 exit 1
               fi
 
@@ -199,7 +209,22 @@ jobs:
                 exit 1
               fi
 
-              echo "Reporting site updated with user-centred state-level Gherkin criteria: ${REPORTING_PAGES_URL}"
+              if ! printf '%s' "$body" | grep -F "What you can do after creating a project" >/dev/null; then
+                echo "Reporting site updated but source-derived home-page criteria were not found." >&2
+                exit 1
+              fi
+
+              if ! printf '%s' "$body" | grep -F "Turn research evidence into recommendations" >/dev/null; then
+                echo "Reporting site updated but current home-page orientation criteria were not found." >&2
+                exit 1
+              fi
+
+              if printf '%s' "$body" | grep -F "Choose a journey to explore" >/dev/null; then
+                echo "Reporting site updated but still contains stale home-page acceptance criteria." >&2
+                exit 1
+              fi
+
+              echo "Reporting site updated with source-derived state-level Gherkin criteria: ${REPORTING_PAGES_URL}"
               exit 0
             fi
             echo "Reporting site has not updated yet. Attempt ${attempt}/18."
@@ -215,7 +240,7 @@ jobs:
         run: |
           echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough, route-level Cucumber evidence and user-centred state-level Gherkin acceptance criteria were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough, route-level Cucumber evidence and source-derived state-level Gherkin acceptance criteria were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Open the gallery:** ${REPORTING_PAGES_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -223,4 +248,4 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "[Open raw Cucumber HTML report](${REPORTING_PAGES_URL}cucumber/cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with user-centred Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"
+          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with source-derived Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"
