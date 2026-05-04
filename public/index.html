@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/home-lifecycle.css" media="screen" />
 	
 	<!-- Layout + custom elements -->
 	<script type="module" src="/components/layout.js" defer></script>
@@ -27,6 +28,13 @@
 			<h1 class="govuk-heading-xl" id="home-title">ResearchOps Demo Suite</h1>
 			<p class="lede">Explore how we run applied user research with strong operations, governance, and accessibility baked in.</p>
 		</header>
+
+		<section class="app-start-guidance" aria-labelledby="start-guidance-title">
+			<h2 class="govuk-heading-l" id="start-guidance-title">New to ResearchOps? Start by creating a research project.</h2>
+			<p class="govuk-body">
+				A project gives you somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations.
+			</p>
+		</section>
 
 		<section class="card-section" aria-labelledby="card-section-title">
 			<h2 class="govuk-heading-l" id="card-section-title">Choose a journey to explore</h2>
@@ -91,6 +99,51 @@
 					</p>
 				</article>
 			</div>
+		</section>
+
+		<section class="app-lifecycle-map" aria-labelledby="lifecycle-map-title">
+			<h2 class="govuk-heading-l" id="lifecycle-map-title">How ResearchOps supports a research project</h2>
+			<p class="govuk-body">
+				ResearchOps follows the shape of a user research project. Start by creating a project. Then add studies, participants, sessions, notes, evidence, insights and recommendations as the work develops.
+			</p>
+			<p class="govuk-body">
+				Later stages become useful once a project has been created and the research work has somewhere to live.
+			</p>
+
+			<ol class="app-lifecycle-sequence" aria-label="ResearchOps lifecycle">
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Project</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Define the research work, service phase, team context and objectives.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Study</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Plan a specific round of research within the project.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Participants</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Recruit and manage people taking part in the study.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Sessions</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Schedule and run research sessions.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Notes</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Capture observations and structured session notes.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Evidence</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Organise what was seen, heard or recorded.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Insights</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Analyse evidence into meaningful findings.</p>
+				</li>
+				<li class="app-lifecycle-sequence__item">
+					<h3 class="govuk-heading-s app-lifecycle-sequence__heading">Recommendations</h3>
+					<p class="govuk-body app-lifecycle-sequence__body">Turn findings into decisions, actions and service improvements.</p>
+				</li>
+			</ol>
 		</section>
 	</main>
 
