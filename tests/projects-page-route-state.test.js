@@ -14,6 +14,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "Projects page");
+includes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "Projects page");
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "Projects page");
 includes(
   pageSource,
@@ -31,9 +32,31 @@ includes(
   "Projects page"
 );
 includes(pageSource, "src=\"/components/layout.js\" defer", "Projects page");
-includes(pageSource, "id=\"list\"", "Projects page");
+includes(pageSource, "class=\"govuk-skip-link\" href=\"#main-content\"", "Projects page");
+includes(pageSource, "class=\"govuk-service-navigation\"", "Projects page");
+includes(pageSource, "href=\"/pages/projects/\" aria-current=\"page\"", "Projects page");
+includes(pageSource, "class=\"govuk-phase-banner\"", "Projects page");
+includes(pageSource, "Do not enter real participant personal data", "Projects page");
+includes(pageSource, "<main class=\"govuk-main-wrapper\" id=\"main-content\" role=\"main\" tabindex=\"-1\">", "Projects page");
+includes(pageSource, "class=\"govuk-width-container\"", "Projects page");
+includes(pageSource, "id=\"projects-title\"", "Projects page");
+includes(pageSource, "Review research projects created in ResearchOps.", "Projects page");
+includes(pageSource, "id=\"projects-list-title\"", "Projects page");
+includes(pageSource, "id=\"list\" class=\"projects-list\"", "Projects page");
+includes(pageSource, "aria-busy=\"true\"", "Projects page");
+includes(pageSource, "aria-labelledby=\"projects-list-title\"", "Projects page");
+includes(pageSource, "Project records need JavaScript to load", "Projects page");
+includes(pageSource, "href=\"/pages/start/\"", "Projects page");
+excludes(pageSource, "href=\"./pages/start/\"", "Projects page");
 excludes(pageSource, "<script type=\"module\">", "Projects page");
 
+includes(stylesheetSource, ".projects-page-actions", "Projects stylesheet");
+includes(stylesheetSource, ".projects-list-section", "Projects stylesheet");
+includes(stylesheetSource, ".projects-list", "Projects stylesheet");
+includes(stylesheetSource, ".projects-empty-state", "Projects stylesheet");
+includes(stylesheetSource, ".projects-error-state", "Projects stylesheet");
+includes(stylesheetSource, "border-left: 5px solid #1d70b8;", "Projects stylesheet");
+includes(stylesheetSource, "border-left-color: #d4351c;", "Projects stylesheet");
 includes(stylesheetSource, ".project-org", "Projects stylesheet");
 includes(stylesheetSource, ".project-title", "Projects stylesheet");
 includes(stylesheetSource, ".project-meta", "Projects stylesheet");
@@ -54,6 +77,8 @@ excludes(stylesheetSource, ".projects-grid", "Projects stylesheet");
 excludes(stylesheetSource, ".project-card", "Projects stylesheet");
 excludes(stylesheetSource, ".skel", "Projects stylesheet");
 
+includes(controllerSource, "setListBusy", "Projects controller");
+includes(controllerSource, "aria-busy", "Projects controller");
 includes(controllerSource, "project-org", "Projects controller");
 includes(controllerSource, "project-title", "Projects controller");
 includes(controllerSource, "project-meta", "Projects controller");
@@ -66,9 +91,17 @@ includes(controllerSource, "projectDashboardHref", "Projects controller");
 includes(controllerSource, "projectDashboardLabel", "Projects controller");
 includes(controllerSource, "govuk-button govuk-button--secondary", "Projects controller");
 includes(controllerSource, "user-groups", "Projects controller");
+includes(controllerSource, "User groups", "Projects controller");
+includes(controllerSource, "Stakeholders and objectives", "Projects controller");
 includes(controllerSource, "project-groups-title", "Projects controller");
 includes(controllerSource, "tags", "Projects controller");
 includes(controllerSource, "tag", "Projects controller");
 includes(controllerSource, "project-extra", "Projects controller");
 includes(controllerSource, "project-details", "Projects controller");
 includes(controllerSource, "details-columns", "Projects controller");
+includes(controllerSource, "renderEmptyState", "Projects controller");
+includes(controllerSource, "No projects yet", "Projects controller");
+includes(controllerSource, "href=\"/pages/start/\"", "Projects controller");
+includes(controllerSource, "renderErrorState", "Projects controller");
+includes(controllerSource, "Could not load projects", "Projects controller");
+excludes(controllerSource, "href=\"./pages/start/\"", "Projects controller");
