@@ -23,7 +23,10 @@ test('projects criteria are generated from the current Projects page source', ()
 
 	assert.match(gherkin, /Feature: Review research projects/);
 	assert.match(gherkin, /Review research projects created in ResearchOps/);
-	assert.match(gherkin, /Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations/);
+	assert.match(
+		gherkin,
+		/Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations/
+	);
 	assert.match(gherkin, /Scenario: Start a new project from the Projects page/);
 	assert.match(gherkin, /Scenario: Understand the project list/);
 	assert.match(gherkin, /Projects are shown with the newest created project first/);
@@ -155,7 +158,10 @@ test('syncReportAcceptanceCriteria refreshes stale Projects criteria in the repo
 	assert.match(projectsState.acceptanceCriteria, /No projects yet/);
 	assert.match(projectsState.acceptanceCriteria, /Project records need JavaScript to load/);
 	assert.equal(projectsState.criteriaSource.path, 'public/pages/projects/index.html');
-	assert.equal(projectsState.criteriaSource.generator, 'scripts/researchops-projects-acceptance.mjs');
+	assert.equal(
+		projectsState.criteriaSource.generator,
+		'scripts/researchops-projects-acceptance.mjs'
+	);
 	assert.match(indexHtml, /Project records need JavaScript to load/);
 	assert.doesNotMatch(indexHtml, /Stale projects criteria/);
 });
