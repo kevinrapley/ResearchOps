@@ -6,6 +6,7 @@
  */
 
 import { buildHomeAcceptanceCriteriaFromSource } from './researchops-home-acceptance.mjs';
+import { buildStartAcceptanceCriteriaFromSource } from './researchops-start-acceptance.mjs';
 
 const PAGE_STORIES = {
 	home: {
@@ -15,10 +16,10 @@ const PAGE_STORIES = {
 		so: 'I can choose the right ResearchOps journey for my work',
 	},
 	start: {
-		feature: 'Define a research project',
+		feature: 'Start a new research project',
 		context: 'start research project service',
-		want: 'define a research project with objectives, stakeholders and ownership',
-		so: 'my team can start research work with shared context and traceable intent',
+		want: 'define a research project with clear context, objectives and ownership',
+		so: 'my team can start research work with shared intent and traceable setup information',
 	},
 	projects: {
 		feature: 'Review research projects',
@@ -123,12 +124,15 @@ const SELECTOR_LABELS = {
 	'#lead_name': 'Lead researcher name',
 	'#lead_email': 'Lead researcher email',
 	'#p_notes': 'Project notes',
-	'#next2': 'Continue to stakeholders and objectives',
-	'#next3': 'Continue to lead researcher and notes',
+	'#next2': 'Continue to stakeholders, objectives and user groups',
+	'#next3': 'Continue to project ownership and notes',
+	'#next4': 'Continue to check your answers',
+	'#finish': 'Create project',
 	'#btn-obj-ai-rewrite': 'Improve objectives with AI',
 	'#ai-objectives-tools:not(.hidden)': 'AI objectives support panel',
 	'#step2': 'Stakeholders, objectives and user groups step',
-	'#step3': 'Lead researcher and notes step',
+	'#step3': 'Project ownership and notes step',
+	'#step4': 'Check your answers step',
 	'#cluster-label': 'Working cluster label',
 	'#cluster-description': 'Working cluster description',
 	'#create-cluster': 'Create working cluster grouping',
@@ -248,6 +252,7 @@ function buildActionScenario(sourceActions = []) {
 
 export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState = null) {
 	if (page.id === 'home') return buildHomeAcceptanceCriteriaFromSource();
+	if (page.id === 'start') return buildStartAcceptanceCriteriaFromSource();
 
 	const story = storyForPage(page);
 	const statePurpose = state.description
