@@ -73,6 +73,7 @@ const registeredIds = visualWalkthroughConfig.pages.map((page) => page.id);
 const profileIds = visualWalkthroughConfig.profiles.map((profile) => profile.id);
 const synthesisStateIds = synthesisVisualStates.map((state) => state.id);
 const participantConsentStateIds = participantConsentVisualStates.map((state) => state.id);
+const visualWalkthroughSource = fs.readFileSync('scripts/visual-walkthrough.mjs', 'utf8');
 
 for (const route of discoveredRoutes) {
 	assert.ok(
@@ -116,6 +117,30 @@ for (const profile of visualWalkthroughConfig.profiles) {
 		`Expected profile to define viewport height: ${profile.id}`
 	);
 }
+
+assert.match(
+	visualWalkthroughSource,
+	/state\.acceptanceCriteria = buildStateAcceptanceGherkin\(pageConfig, state, stateConfig\);/,
+	'Expected visual walkthrough generation to attach Gherkin acceptance criteria to every state'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/renderStateAcceptanceCriteria\(state\)/,
+	'Expected visual walkthrough rendering to output state-level acceptance criteria in each state card'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/data-state-acceptance-criteria/,
+	'Expected visual walkthrough HTML to include a stable state acceptance criteria marker'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Gherkin acceptance criteria for this state/,
+	'Expected visual walkthrough HTML to label the state-level Gherkin details panel'
+);
 
 assert.equal(
 	synthesisDefaultState.id,
