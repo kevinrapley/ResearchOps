@@ -1,6 +1,6 @@
 /* ========================================================================== 
    ResearchOps UI • Home lifecycle orientation
-   Version:    v1.0.0
+   Version:    v1.1.0
    Service:    Home Office Biometrics — ResearchOps
    Build:      GOV.UK typography + colours; mobile-first
    Repo:       /css/home-lifecycle.css
@@ -30,41 +30,21 @@
 	margin: 24px 0 0;
 	padding: 0;
 	list-style: none;
-	counter-reset: lifecycle-stage;
 	}
 
 .app-lifecycle-sequence__item {
 	position: relative;
 	min-width: 0;
-	padding: 16px 16px 16px 64px;
+	padding: 16px;
 	border: 1px solid #b1b4b6;
 	background: #f8f8f8;
-	counter-increment: lifecycle-stage;
-	}
-
-.app-lifecycle-sequence__item::before {
-	content: counter(lifecycle-stage);
-	position: absolute;
-	top: 16px;
-	left: 16px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 32px;
-	height: 32px;
-	border: 2px solid #0b0c0c;
-	border-radius: 50%;
-	font-weight: 700;
-	line-height: 1;
-	background: #ffffff;
-	color: #0b0c0c;
 	}
 
 .app-lifecycle-sequence__item::after {
 	content: "↓";
 	position: absolute;
 	bottom: -17px;
-	left: 30px;
+	left: 16px;
 	font-weight: 700;
 	line-height: 1;
 	color: #505a5f;
@@ -74,6 +54,17 @@
 	content: none;
 	}
 
+.app-lifecycle-sequence__step {
+	display: inline-block;
+	margin: 0 0 8px;
+	padding: 2px 8px 1px;
+	background: #1d70b8;
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.25;
+	}
+
 .app-lifecycle-sequence__heading {
 	margin: 0 0 4px;
 	}
@@ -81,6 +72,13 @@
 .app-lifecycle-sequence__body {
 	margin: 0;
 	color: #505a5f;
+	}
+
+@media (max-width: 640px) {
+	.app-start-guidance,
+	.app-lifecycle-map {
+		padding: 16px;
+		}
 	}
 
 @media (min-width: 760px) {
