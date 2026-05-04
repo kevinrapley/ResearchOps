@@ -12,25 +12,109 @@
 	<link rel="modulepreload" href="/js/projects-page.js?v=projects-dashboard-action-20260501" />
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/projects.css?v=projects-dashboard-action-20260501" media="screen" />
 
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
+	<noscript>
+		<a class="govuk-skip-link" href="#main-content">Skip to main content</a>
+
+		<header class="govuk-header" role="banner">
+			<div class="govuk-header__container govuk-width-container">
+				<div class="govuk-header__logo">
+					<a class="govuk-header__link govuk-header__link--homepage" href="/" aria-label="GOV.UK home">
+						<span class="govuk-header__logotype">GOV.UK</span>
+					</a>
+				</div>
+			</div>
+		</header>
+
+		<nav class="govuk-service-navigation" aria-label="Service navigation">
+			<div class="govuk-service-navigation__container govuk-width-container">
+				<span class="govuk-service-navigation__service-name">
+					<a class="govuk-service-navigation__link" href="/">ResearchOps Demo Suite</a>
+				</span>
+				<ul class="govuk-service-navigation__list">
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/">Home</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/start/">Start research project</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/projects/" aria-current="page">Projects</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="govuk-phase-banner" role="note" aria-label="Service phase">
+			<p class="govuk-phase-banner__content">
+				<strong class="govuk-tag">Prototype</strong>
+				<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
+			</p>
+		</div>
+	</noscript>
+
 	<x-include src="/partials/debug.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{
+	<x-include
+		src="/partials/header.html"
+		vars='{
 			"active":"Projects",
 			"subtitle":"Browse projects created in this demo suite"
 		}'>
 	</x-include>
 
-	<main class="govuk-body" role="main">
-		<h1 class="govuk-heading-l page-title">Projects</h1>
-		<div id="list" aria-live="polite"></div>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<header class="page-intro">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<h1 class="govuk-heading-xl page-title" id="projects-title">Projects</h1>
+						<p class="lede">Review research projects created in ResearchOps.</p>
+						<p class="govuk-body">Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.</p>
+						<p class="projects-page-actions">
+							<a class="govuk-button" href="/pages/start/" role="button" draggable="false">Start a research project</a>
+						</p>
+					</div>
+				</div>
+			</header>
+
+			<section class="projects-list-section" aria-labelledby="projects-list-title">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<h2 class="govuk-heading-l" id="projects-list-title">Research projects</h2>
+						<p class="govuk-body">Projects are shown with the newest created project first.</p>
+					</div>
+				</div>
+
+				<div id="list" class="projects-list" aria-live="polite" aria-busy="true" aria-labelledby="projects-list-title">
+					<p class="lede">Loading projects.</p>
+				</div>
+
+				<noscript>
+					<div class="projects-empty-state" role="status">
+						<h3 class="govuk-heading-m">Project records need JavaScript to load</h3>
+						<p class="govuk-body">You can still start a new research project from this page.</p>
+						<p><a class="govuk-link" href="/pages/start/">Start a research project</a></p>
+					</div>
+				</noscript>
+			</section>
+		</div>
 	</main>
+
+	<noscript>
+		<footer class="govuk-footer" role="contentinfo">
+			<div class="govuk-footer__container govuk-width-container">
+				<p class="govuk-footer__meta">© 2026 Home Office Biometrics · ResearchOps v1.0.0</p>
+			</div>
+		</footer>
+	</noscript>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
 	</x-include>
