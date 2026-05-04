@@ -138,6 +138,23 @@ function buildStep(step = {}) {
 	};
 }
 
+function gherkinStepLine(step) {
+	return `  ${String(step.keyword || '').trim()} ${String(step.text || '').trim()}`.trimEnd();
+}
+
+function buildGherkinCriteria(scenario) {
+	return [
+		`Feature: ${scenario.feature}`,
+		'',
+		`${String(scenario.keyword || 'Scenario').trim()}: ${scenario.name}`,
+		...scenario.steps.map(gherkinStepLine),
+	].join('\n');
+}
+
+function renderGherkinCriteria(scenario) {
+	return `<pre class="gherkin-criteria"><code>${escapeHtml(scenario.gherkin)}</code></pre>`;
+}
+
 export function buildCucumberEvidence(features = []) {
 	const scenarios = [];
 	const routes = new Map();
@@ -162,6 +179,7 @@ export function buildCucumberEvidence(features = []) {
 				steps,
 			};
 
+			item.gherkin = buildGherkinCriteria(item);
 			scenarios.push(item);
 
 			for (const route of scenarioRoutes) {
@@ -208,17 +226,18 @@ function renderScenarioList(scenarios) {
 		return '<p class="cucumber-empty">No Cucumber scenarios are mapped to this route.</p>';
 	}
 
-	return `<ul class="cucumber-scenario-list">
+	return `<div class="cucumber-route-scenarios">
 		${scenarios
 			.map(
-				(scenario) => `<li>
-					${statusTag(scenario.status)}
-					<a href="${CUCUMBER_PAGE_FILE}#${escapeHtml(scenario.id)}">${escapeHtml(scenario.name)}</a>
-					<span>${escapeHtml(scenario.feature)}</span>
-				</li>`
+				(scenario) => `<article class="cucumber-route-scenario">
+					<h4><a href="${CUCUMBER_PAGE_FILE}#${escapeHtml(scenario.id)}">${escapeHtml(scenario.name)}</a></h4>
+					<p>${statusTag(scenario.status)} <span>${escapeHtml(scenario.feature)}</span></p>
+					<h5>Gherkin success criteria</h5>
+					${renderGherkinCriteria(scenario)}
+				</article>`
 			)
 			.join('')}
-	</ul>`;
+	</div>`;
 }
 
 function renderRouteDetails(scenarios) {
@@ -272,9 +291,14 @@ function injectCucumberStyles(indexHtml) {
 		.cucumber-route-evidence { border-top: 1px solid #d8d8d8; padding: 12px 16px; }
 		.cucumber-route-evidence summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
 		.cucumber-route-evidence summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
-		.cucumber-scenario-list { margin: 12px 0 0; padding-left: 20px; }
-		.cucumber-scenario-list li { margin: 8px 0; }
-		.cucumber-scenario-list span { color: #505a5f; display: block; }
+		.cucumber-route-scenarios { display: grid; gap: 12px; margin-top: 12px; }
+		.cucumber-route-scenario { border-left: 5px solid #1d70b8; padding-left: 12px; }
+		.cucumber-route-scenario h4 { margin: 0 0 4px; }
+		.cucumber-route-scenario h5 { margin: 12px 0 4px; }
+		.cucumber-route-scenario p { margin: 4px 0; }
+		.cucumber-route-scenario span { color: #505a5f; }
+		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
 		.cucumber-status { display: inline-block; margin-right: 8px; text-transform: capitalize; }
 		.cucumber-status--passed { color: #00703c; }
 		.cucumber-status--failed { color: #d4351c; }
@@ -299,6 +323,7 @@ function renderCucumberPage(evidence, options = {}) {
 		header { border-bottom: 1px solid #b1b4b6; margin-bottom: 24px; padding-bottom: 16px; }
 		h1 { margin: 0 0 8px; }
 		h2 { border-bottom: 1px solid #b1b4b6; margin-top: 32px; padding-bottom: 8px; }
+		h4 { margin: 16px 0 8px; }
 		.summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
 		.badge { border: 2px solid #0b0c0c; display: inline-block; font-weight: 700; padding: 8px 12px; }
 		.badge--passed { border-color: #00703c; color: #00703c; }
@@ -308,6 +333,8 @@ function renderCucumberPage(evidence, options = {}) {
 		.scenario { border: 1px solid #b1b4b6; margin: 16px 0; padding: 16px; }
 		.scenario h3 { margin-top: 0; }
 		.meta { color: #505a5f; margin: 4px 0; }
+		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 16px; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
 		.steps { margin: 12px 0 0; padding-left: 24px; }
 		.steps li { margin: 8px 0; }
 		.error { background: #fff4f2; border-left: 5px solid #d4351c; padding: 8px 12px; white-space: pre-wrap; }
@@ -345,6 +372,9 @@ function renderCucumberPage(evidence, options = {}) {
 			<h3>${escapeHtml(scenario.name)}</h3>
 			<p class="meta">${escapeHtml(scenario.feature)} · ${scenario.keyword} · <span class="status status--${escapeHtml(scenario.status)}">${escapeHtml(scenario.status)}</span></p>
 			<p class="meta">Routes: ${scenario.routes.length > 0 ? scenario.routes.map(escapeHtml).join(', ') : 'No route mapped'}</p>
+			<h4>Gherkin success criteria</h4>
+			${renderGherkinCriteria(scenario)}
+			<h4>Execution steps</h4>
 			<ol class="steps">
 				${scenario.steps
 					.map(
