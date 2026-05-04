@@ -244,22 +244,49 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          echo "Repository status before staging report files:"
+          generated_site="${RUNNER_TEMP}/reports-site-generated"
+          rm -rf "$generated_site"
+          mkdir -p "$generated_site"
+          cp -a reports-site/. "$generated_site/"
+
+          echo "Generated report file changes before persistence:"
           git status --short reports-site || true
 
-          git add -A reports-site
+          for attempt in 1 2 3; do
+            echo "Persist attempt ${attempt}/3."
 
-          echo "Staged report file changes:"
-          git diff --cached --stat || true
+            git fetch origin main:refs/remotes/origin/main
+            git reset --hard origin/main
 
-          if git diff --cached --quiet; then
-            echo "No reports-site changes to commit."
-            exit 0
-          fi
+            rm -rf reports-site
+            mkdir -p reports-site
+            cp -a "$generated_site/." reports-site/
 
-          git commit -m "Update application visual walkthrough report"
-          git pull --rebase origin main
-          git push origin HEAD:main
+            echo "Repository status before staging report files:"
+            git status --short reports-site || true
+
+            git add -A reports-site
+
+            echo "Staged report file changes:"
+            git diff --cached --stat || true
+
+            if git diff --cached --quiet; then
+              echo "No reports-site changes to commit."
+              exit 0
+            fi
+
+            git commit -m "Update application visual walkthrough report"
+
+            if git push origin HEAD:main; then
+              echo "Visual walkthrough report persisted to main."
+              exit 0
+            fi
+
+            echo "Push was not fast-forward. Retrying against the latest main."
+          done
+
+          echo "Unable to persist visual walkthrough report after 3 attempts."
+          exit 1
 
       - name: Record Wrangler toolchain version
         if: >-
