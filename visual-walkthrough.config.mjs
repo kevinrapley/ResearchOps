@@ -88,6 +88,39 @@ const stepThreeActions = [
 	},
 ];
 
+const stepThreeFilledActions = [
+	...stepThreeActions,
+	{
+		type: 'fill',
+		selector: '#lead_name',
+		value: 'Alex Morgan',
+	},
+	{
+		type: 'fill',
+		selector: '#lead_email',
+		value: 'alex.morgan@example.gov.uk',
+	},
+	{
+		type: 'fill',
+		selector: '#p_notes',
+		value:
+			'Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.',
+	},
+];
+
+const checkAnswersActions = [
+	...stepThreeFilledActions,
+	{
+		type: 'click',
+		selector: '#next4',
+	},
+	{
+		type: 'waitForSelector',
+		selector: '#step4',
+		state: 'visible',
+	},
+];
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description:
@@ -215,33 +248,22 @@ export const visualWalkthroughConfig = {
 					id: 'step-3-default',
 					title: 'Step 3 default state',
 					description:
-						'Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.',
+						'Final data-entry step after the project definition, stakeholders, objectives and user groups have been entered.',
 					actions: stepThreeActions,
 				},
 				{
 					id: 'step-3-filled',
-					title: 'Step 3 completed before create project',
+					title: 'Step 3 completed before check answers',
 					description:
-						'Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.',
-					actions: [
-						...stepThreeActions,
-						{
-							type: 'fill',
-							selector: '#lead_name',
-							value: 'Alex Morgan',
-						},
-						{
-							type: 'fill',
-							selector: '#lead_email',
-							value: 'alex.morgan@example.gov.uk',
-						},
-						{
-							type: 'fill',
-							selector: '#p_notes',
-							value:
-								'Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.',
-						},
-					],
+						'Lead researcher, email and project notes entered on the final data-entry step before the check-your-answers review.',
+					actions: stepThreeFilledActions,
+				},
+				{
+					id: 'step-4-check-answers',
+					title: 'Step 4 check your answers before create project',
+					description:
+						'Check-your-answers step summarising the project definition, research framing, ownership and notes before project creation is submitted.',
+					actions: checkAnswersActions,
 				},
 			],
 		},
