@@ -186,6 +186,9 @@ test('mergeCucumberReport creates a dedicated page and injects route and state G
 	assert.match(indexPage, /Gherkin acceptance criteria for this state/);
 	assert.match(indexPage, /Feature: Projects visual walkthrough/);
 	assert.match(indexPage, /Scenario: Default state/);
-	assert.match(indexPage, /Given the route &quot;\/pages\/projects\/index\.html&quot; is available/);
+	assert.match(
+		indexPage,
+		/Given the route &quot;\/pages\/projects\/index\.html&quot; is available/
+	);
 	assert.equal(fs.existsSync(path.join(siteDir, 'cucumber', 'cucumber-report.html')), true);
 });
