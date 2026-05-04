@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-04T22:42:01.201Z",
+  "startedAt": "2026-05-04T23:20:54.485Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -78,8 +78,8 @@
     }
   ],
   "pageCount": 17,
-  "stateCount": 33,
-  "captureCount": 66,
+  "stateCount": 34,
+  "captureCount": 68,
   "failureCount": 0,
   "pages": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1069,
+              "durationMs": 1024,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1364,
+              "durationMs": 1324,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -161,7 +161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 990,
+              "durationMs": 954,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -169,7 +169,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1127,
+              "durationMs": 1150,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -188,7 +188,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__default.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -207,7 +207,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1810,
+              "durationMs": 1786,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -215,7 +215,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1952,
+              "durationMs": 1928,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -234,7 +234,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-1-filled.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 1 completed with project definition\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for project name, description, phase and status entered using believable discovery-stage dummy data.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -253,7 +253,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2219,
+              "durationMs": 2333,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -261,7 +261,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2389,
+              "durationMs": 2394,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -280,7 +280,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-default.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for second wizard step after a valid project definition has been entered on step 1.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -299,7 +299,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2918,
+              "durationMs": 2886,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -307,7 +307,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3115,
+              "durationMs": 3108,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
@@ -326,7 +326,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 completed without AI rewrite invoked\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -345,7 +345,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3557,
+              "durationMs": 3567,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -353,7 +353,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3853,
+              "durationMs": 3885,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -372,7 +372,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 2 AI rewrite shown\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    Then the \"AI objectives support panel\" section should be available\n    And I select \"Improve objectives with AI\"\n    Then I should see \"Concise rewrite (optional):\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -382,7 +382,7 @@
         {
           "id": "step-3-default",
           "title": "Step 3 default state",
-          "description": "Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.",
+          "description": "Final data-entry step after the project definition, stakeholders, objectives and user groups have been entered.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -391,7 +391,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3305,
+              "durationMs": 3295,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -399,7 +399,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3349,
+              "durationMs": 3431,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -418,7 +418,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-default.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 3 default state\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for final wizard step after the project definition, stakeholders, objectives and user groups have been entered.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    And I select \"Continue to lead researcher and notes\"\n    Then the \"Lead researcher and notes step\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -427,8 +427,8 @@
         },
         {
           "id": "step-3-filled",
-          "title": "Step 3 completed before create project",
-          "description": "Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.",
+          "title": "Step 3 completed before check answers",
+          "description": "Lead researcher, email and project notes entered on the final data-entry step before the check-your-answers review.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -437,7 +437,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3881,
+              "durationMs": 3878,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -445,7 +445,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3995,
+              "durationMs": 4042,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -464,7 +464,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-filled.png",
-          "acceptanceCriteria": "Feature: Define a research project\n\n  As a user researcher\n  I want to define a research project with objectives, stakeholders and ownership\n  So that my team can start research work with shared context and traceable intent\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports start page for creating or beginning research project work.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Step 3 completed before create project\" state\n    Given I am using the start research project service\n    Then the interface should make it clear that this state is for lead researcher, email and project notes entered on the final wizard step before project creation is submitted.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Assisted Digital Support Discovery\" into the \"Project name\" field\n    And I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence…\" into the \"Project description\" field\n    And I choose \"discovery\" from the \"Service phase\" field\n    And I choose \"planning\" from the \"Project status\" field\n    And I select \"Continue to stakeholders and objectives\"\n    Then the \"Stakeholders, objectives and user groups step\" section should be available\n    And I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@example.gov.uk\" into the \"Stakeholders\" field\n    And I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise accessibility, safegu…\" into the \"Research objectives\" field\n    And I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into the \"User groups\" field\n    And I select \"Continue to lead researcher and notes\"\n    Then the \"Lead researcher and notes step\" section should be available\n    And I enter \"Alex Morgan\" into the \"Lead researcher name\" field\n    And I enter \"alex.morgan@example.gov.uk\" into the \"Lead researcher email\" field\n    And I enter \"Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.\" into the \"Project notes\" field\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "step-4-check-answers",
+          "title": "Step 4 check your answers before create project",
+          "description": "Check-your-answers step summarising the project definition, research framing, ownership and notes before project creation is submitted.",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 4345,
+              "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 4586,
+              "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png",
+          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -492,7 +538,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1554,
+              "durationMs": 1665,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -500,7 +546,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1671,
+              "durationMs": 1705,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -547,7 +593,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1283,
+              "durationMs": 1316,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -555,7 +601,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1517,
+              "durationMs": 1657,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -602,7 +648,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1072,
+              "durationMs": 1013,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -610,7 +656,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1190,
+              "durationMs": 1176,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -657,7 +703,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1097,
+              "durationMs": 1025,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -665,7 +711,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1304,
+              "durationMs": 1096,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -712,7 +758,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1029,
+              "durationMs": 1004,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -720,7 +766,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1294,
+              "durationMs": 1269,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -767,7 +813,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 999,
+              "durationMs": 978,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -775,7 +821,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1145,
+              "durationMs": 1150,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -822,7 +868,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1010,
+              "durationMs": 1064,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -830,7 +876,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1176,
+              "durationMs": 1147,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -877,7 +923,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1001,
+              "durationMs": 995,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -885,7 +931,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1147,
+              "durationMs": 1102,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -932,7 +978,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 999,
+              "durationMs": 988,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -940,7 +986,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1208,
+              "durationMs": 1162,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -987,7 +1033,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1618,
+              "durationMs": 1623,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -995,7 +1041,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1838,
+              "durationMs": 1802,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -1033,7 +1079,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1143,
+              "durationMs": 1173,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -1041,7 +1087,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1229,
+              "durationMs": 1246,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -1079,7 +1125,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1388,
+              "durationMs": 1386,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1087,7 +1133,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1482,
+              "durationMs": 1463,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -1125,7 +1171,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1363,
+              "durationMs": 1352,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -1133,7 +1179,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1455,
+              "durationMs": 1429,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -1171,7 +1217,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1948,
+              "durationMs": 1923,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -1179,7 +1225,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2372,
+              "durationMs": 2396,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -1226,7 +1272,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 912,
+              "durationMs": 931,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -1234,7 +1280,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1015,
+              "durationMs": 1009,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -1281,7 +1327,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 967,
+              "durationMs": 962,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -1289,7 +1335,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1046,
+              "durationMs": 1026,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -1336,7 +1382,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 922,
+              "durationMs": 933,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -1344,7 +1390,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1012,
+              "durationMs": 1013,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -1391,7 +1437,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 943,
+              "durationMs": 982,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -1399,7 +1445,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1032,
+              "durationMs": 1012,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -1446,7 +1492,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 927,
+              "durationMs": 951,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -1454,7 +1500,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1023,
+              "durationMs": 1019,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
@@ -1492,7 +1538,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1334,
+              "durationMs": 1338,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -1500,7 +1546,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1513,
+              "durationMs": 1471,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
@@ -1538,7 +1584,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1182,
+              "durationMs": 1157,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -1546,7 +1592,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1329,
+              "durationMs": 1302,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
@@ -1584,7 +1630,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2076,
+              "durationMs": 2055,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -1592,7 +1638,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2335,
+              "durationMs": 2304,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
@@ -1630,7 +1676,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2120,
+              "durationMs": 2108,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -1638,7 +1684,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2454,
+              "durationMs": 2423,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -1676,7 +1722,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1459,
+              "durationMs": 1440,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -1684,7 +1730,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1721,
+              "durationMs": 1668,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -1722,7 +1768,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2347,
+              "durationMs": 2359,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1730,7 +1776,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2643,
+              "durationMs": 2640,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
