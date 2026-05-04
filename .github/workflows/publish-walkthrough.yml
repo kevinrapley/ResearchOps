@@ -95,6 +95,9 @@ jobs:
           grep -F 'data-state-acceptance-criteria' reports-site/index.html >/dev/null
           grep -F 'Gherkin acceptance criteria for this state' reports-site/index.html >/dev/null
           grep -F 'Feature:' reports-site/index.html >/dev/null
+          grep -F 'As a user researcher' reports-site/index.html >/dev/null
+          grep -F 'Access the ResearchOps home page' reports-site/index.html >/dev/null
+          grep -F 'So that I can choose the right ResearchOps journey for my work' reports-site/index.html >/dev/null
 
       - name: Verify Cloudflare Pages project access
         shell: bash
@@ -186,7 +189,17 @@ jobs:
                 exit 1
               fi
 
-              echo "Reporting site updated with state-level Gherkin criteria: ${REPORTING_PAGES_URL}"
+              if ! printf '%s' "$body" | grep -F "As a user researcher" >/dev/null; then
+                echo "Reporting site updated but user-centred acceptance criteria were not found." >&2
+                exit 1
+              fi
+
+              if ! printf '%s' "$body" | grep -F "Access the ResearchOps home page" >/dev/null; then
+                echo "Reporting site updated but the ResearchOps home-page acceptance criteria were not found." >&2
+                exit 1
+              fi
+
+              echo "Reporting site updated with user-centred state-level Gherkin criteria: ${REPORTING_PAGES_URL}"
               exit 0
             fi
             echo "Reporting site has not updated yet. Attempt ${attempt}/18."
@@ -202,7 +215,7 @@ jobs:
         run: |
           echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough, route-level Cucumber evidence and state-level Gherkin acceptance criteria were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough, route-level Cucumber evidence and user-centred state-level Gherkin acceptance criteria were published to the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Open the gallery:** ${REPORTING_PAGES_URL}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -210,4 +223,4 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "[Open raw Cucumber HTML report](${REPORTING_PAGES_URL}cucumber/cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"
+          echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with user-centred Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"

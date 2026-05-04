@@ -3,11 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import {
-	buildCucumberEvidence,
-	buildStateAcceptanceGherkin,
-	mergeCucumberReport,
-} from '../scripts/merge-cucumber-report.mjs';
+import { buildStateAcceptanceGherkin } from '../scripts/researchops-state-acceptance.mjs';
+import { buildCucumberEvidence, mergeCucumberReport } from '../scripts/merge-cucumber-report.mjs';
 
 const cucumberJson = [
 	{
@@ -65,12 +62,48 @@ test('buildCucumberEvidence maps scenarios to visited routes and keeps Gherkin c
 	);
 });
 
-test('buildStateAcceptanceGherkin derives route-state criteria from state actions', () => {
+test('buildStateAcceptanceGherkin writes ResearchOps home criteria from a user researcher perspective', () => {
+	const gherkin = buildStateAcceptanceGherkin(
+		{
+			id: 'home',
+			title: 'Home',
+			path: '/',
+			description: 'ResearchOps landing page.',
+		},
+		{
+			id: 'default',
+			title: 'Default state',
+			description: 'Initial loaded page state.',
+			status: 'captured',
+		},
+		{
+			id: 'default',
+			title: 'Default state',
+			description: 'Initial loaded page state.',
+		}
+	);
+
+	assert.match(gherkin, /Feature: Access the ResearchOps home page/);
+	assert.match(gherkin, /As a user researcher/);
+	assert.match(gherkin, /I want to access the ResearchOps home page/);
+	assert.match(gherkin, /So that I can choose the right ResearchOps journey for my work/);
+	assert.match(gherkin, /Scenario: View the ResearchOps service identity/);
+	assert.match(gherkin, /ResearchOps Demo Suite/);
+	assert.match(gherkin, /Objective orientated applied user research done well\./);
+	assert.match(gherkin, /Scenario: Navigate using the primary navigation/);
+	assert.match(gherkin, /Start research project/);
+	assert.match(gherkin, /Scenario: Access the home page using a keyboard/);
+	assert.doesNotMatch(gherkin, /Given the route/);
+	assert.doesNotMatch(gherkin, /captured evidence status/);
+});
+
+test('buildStateAcceptanceGherkin derives user-centred criteria from state actions', () => {
 	const gherkin = buildStateAcceptanceGherkin(
 		{
 			id: 'start',
 			title: 'Start research project',
 			path: '/pages/start/index.html',
+			description: 'Start page for creating or beginning research project work.',
 		},
 		{
 			id: 'step-2-ai-rewrite-shown',
@@ -93,15 +126,23 @@ test('buildStateAcceptanceGherkin derives route-state criteria from state action
 		}
 	);
 
-	assert.match(gherkin, /Feature: Start research project visual walkthrough/);
-	assert.match(gherkin, /Scenario: Step 2 AI rewrite shown/);
-	assert.match(gherkin, /Given the route "\/pages\/start\/index\.html" is available/);
-	assert.match(gherkin, /When I choose the control "#btn-obj-ai-rewrite"/);
+	assert.match(gherkin, /Feature: Define a research project/);
+	assert.match(gherkin, /As a user researcher/);
+	assert.match(
+		gherkin,
+		/I want to define a research project with objectives, stakeholders and ownership/
+	);
+	assert.match(gherkin, /When I visit the start research project service/);
+	assert.match(gherkin, /Scenario: Work with the "Step 2 AI rewrite shown" state/);
+	assert.match(gherkin, /When I select "Improve objectives with AI"/);
 	assert.match(gherkin, /Then I should see "Concise rewrite \(optional\):"/);
-	assert.match(gherkin, /And the captured evidence status should be "captured"/);
+	assert.match(gherkin, /Scenario: Use the state accessibly/);
+	assert.doesNotMatch(gherkin, /Given the route/);
+	assert.doesNotMatch(gherkin, /I am reviewing/);
+	assert.doesNotMatch(gherkin, /captured evidence status/);
 });
 
-test('mergeCucumberReport creates a dedicated page and injects route and state Gherkin', () => {
+test('mergeCucumberReport creates a dedicated page and keeps existing state Gherkin panels', () => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'researchops-cucumber-'));
 	const siteDir = path.join(dir, 'reports-site');
 	const cucumberDir = path.join(dir, '__cuke');
@@ -155,6 +196,10 @@ test('mergeCucumberReport creates a dedicated page and injects route and state G
 			'\t\t\t\t\t\t<p class="meta">captured · https://researchops.pages.dev/pages/projects/index.html</p>',
 			'\t\t\t\t\t\t<p>Initial loaded page state.</p>',
 			'\t\t\t\t\t</div>',
+			'\t\t\t\t\t<details class="state-acceptance-criteria" data-state-acceptance-criteria>',
+			'\t\t\t\t\t\t<summary>Gherkin acceptance criteria for this state</summary>',
+			'\t\t\t\t\t\t<pre class="gherkin-criteria"><code>Feature: Review research projects</code></pre>',
+			'\t\t\t\t\t</details>',
 			'\t\t\t\t\t<section class="capture" data-profile="desktop"></section>',
 			'\t\t\t\t</section>',
 			'\t\t\t</div>',
@@ -184,11 +229,6 @@ test('mergeCucumberReport creates a dedicated page and injects route and state G
 	assert.match(indexPage, /When I visit &quot;\/pages\/projects\/index\.html&quot;/);
 	assert.match(indexPage, /cucumber\.html#smoke-projects-page-loads/);
 	assert.match(indexPage, /Gherkin acceptance criteria for this state/);
-	assert.match(indexPage, /Feature: Projects visual walkthrough/);
-	assert.match(indexPage, /Scenario: Default state/);
-	assert.match(
-		indexPage,
-		/Given the route &quot;\/pages\/projects\/index\.html&quot; is available/
-	);
+	assert.match(indexPage, /Feature: Review research projects/);
 	assert.equal(fs.existsSync(path.join(siteDir, 'cucumber', 'cucumber-report.html')), true);
 });
