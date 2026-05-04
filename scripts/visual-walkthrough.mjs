@@ -34,6 +34,47 @@ const DEFAULT_PROFILES = [
 	},
 ];
 
+const BESPOKE_CRITERIA_PAGE_IDS = new Set(['home']);
+
+const RESEARCHOPS_JOURNEYS = [
+	{
+		id: 'start-research-work',
+		title: 'Start research work',
+		description: 'Create or find the project context needed before research activity begins.',
+		pageIds: ['home', 'start', 'projects', 'project-dashboard'],
+	},
+	{
+		id: 'prepare-a-study',
+		title: 'Prepare a study',
+		description: 'Set up the study, discussion materials and participant planning controls.',
+		pageIds: ['study', 'study-guides', 'study-participants'],
+	},
+	{
+		id: 'manage-participants-and-consent',
+		title: 'Manage participants and consent',
+		description: 'Check consent structures and participant readiness before sessions proceed.',
+		pageIds: ['study-consent-forms', 'study-participant-consent', 'study-participants'],
+	},
+	{
+		id: 'run-sessions',
+		title: 'Run sessions',
+		description: 'Coordinate research sessions and capture structured evidence safely.',
+		pageIds: ['sessions', 'study-session', 'notes'],
+	},
+	{
+		id: 'synthesize-evidence',
+		title: 'Synthesize evidence',
+		description: 'Group evidence, capture reflection and form traceable themes.',
+		pageIds: ['synthesize', 'journals', 'outcomes'],
+	},
+	{
+		id: 'review-outcomes',
+		title: 'Review outcomes',
+		description: 'Review project outcomes and search across ResearchOps evidence.',
+		pageIds: ['outcomes', 'search'],
+	},
+];
+
 const startedAt = new Date().toISOString();
 const baseURL = normalizeBaseURL(
 	process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL || DEFAULT_BASE_URL
@@ -136,6 +177,50 @@ function pageCaptureConfig(pageConfig) {
 		description: 'Study-scoped evidence grouping and theme creation page.',
 		defaultState: synthesisDefaultState,
 		states: [...(pageConfig.states || []), ...synthesisVisualStates],
+	};
+}
+
+function normaliseDesignRisk(value = {}, fallback = {}) {
+	return {
+		risk: value.risk || fallback.risk || 'No specific design risk recorded for this state.',
+		impact:
+			value.impact ||
+			fallback.impact ||
+			'No additional impact has been identified beyond the standard route review.',
+		recommendedChange:
+			value.recommendedChange ||
+			fallback.recommendedChange ||
+			'Review this state during the next design critique and update the walkthrough registry if a risk is found.',
+		owner: value.owner || fallback.owner || 'UCD team',
+		status: value.status || fallback.status || 'No risk recorded',
+	};
+}
+
+function designRiskForState(pageConfig = {}, stateConfig = {}) {
+	return normaliseDesignRisk(stateConfig.designRisk, pageConfig.designRisk);
+}
+
+function criteriaMaturityForState(pageConfig = {}, state = {}) {
+	if (!state.acceptanceCriteria) {
+		return {
+			label: 'Missing criteria',
+			slug: 'missing',
+			description: 'No usable state-level acceptance criteria were generated for this state.',
+		};
+	}
+
+	if (BESPOKE_CRITERIA_PAGE_IDS.has(pageConfig.id)) {
+		return {
+			label: 'Bespoke criteria',
+			slug: 'bespoke',
+			description: 'This state uses hand-authored, route-specific acceptance criteria.',
+		};
+	}
+
+	return {
+		label: 'Needs review',
+		slug: 'needs-review',
+		description: 'This state uses generated acceptance criteria that require UCD review before approval.',
 	};
 }
 
@@ -273,6 +358,14 @@ async function captureReport() {
 					url: new URL(stateConfig.path || pageConfig.path, baseURL).toString(),
 					status: 'captured',
 					captures: [],
+					designRisk: designRiskForState(pageConfig, stateConfig),
+					evidenceTypes: [
+						'Screenshot evidence',
+						'Route-level Cucumber evidence',
+						'State-level acceptance criteria',
+						'Accessibility evidence',
+						'Design-risk notes',
+					],
 				};
 
 				for (const profile of captureProfiles) {
@@ -298,6 +391,7 @@ async function captureReport() {
 				}
 
 				state.acceptanceCriteria = buildStateAcceptanceGherkin(pageConfig, state, stateConfig);
+				state.criteriaMaturity = criteriaMaturityForState(pageConfig, state);
 				capturedStates.push(state);
 			}
 
@@ -329,6 +423,7 @@ async function captureReport() {
 			title: profile.title,
 			description: profile.description,
 		})),
+		journeys: RESEARCHOPS_JOURNEYS,
 		pageCount: capturedPages.length,
 		stateCount,
 		captureCount,
@@ -351,9 +446,16 @@ function groupPages(pages) {
 }
 
 function renderProfileSwitcher(profiles) {
+	const compareButton = profiles.length > 1
+		? `
+				<button type="button" class="profile-switcher__button" data-profile-filter="compare" aria-pressed="false">
+					Compare
+				</button>`
+		: '';
+
 	return `
 		<nav class="profile-switcher" aria-label="Screenshot profile">
-			<p class="profile-switcher__label">Screenshot set</p>
+			<p class="profile-switcher__label">View</p>
 			<div class="profile-switcher__controls">
 				${profiles
 					.map(
@@ -362,9 +464,76 @@ function renderProfileSwitcher(profiles) {
 					${escapeHtml(profile.title)}
 				</button>`
 					)
-					.join('')}
+					.join('')}${compareButton}
 			</div>
 		</nav>`;
+}
+
+function renderJourneyNavigation(manifest) {
+	const pagesById = new Map((manifest.pages || []).map((page) => [page.id, page]));
+	const journeys = manifest.journeys || [];
+
+	if (journeys.length === 0) return '';
+
+	return `
+	<section class="journey-nav" aria-labelledby="journey-nav-title">
+		<div class="journey-nav__header">
+			<h2 id="journey-nav-title">ResearchOps journeys</h2>
+			<p class="meta">Review the visual evidence by workflow, not only by page.</p>
+		</div>
+		<div class="journey-nav__grid">
+			${journeys
+				.map((journey) => {
+					const journeyPages = (journey.pageIds || []).map((pageId) => pagesById.get(pageId)).filter(Boolean);
+					return `
+			<article class="journey-card" id="journey-${escapeHtml(journey.id)}">
+				<h3>${escapeHtml(journey.title)}</h3>
+				<p>${escapeHtml(journey.description)}</p>
+				<ul>
+					${journeyPages
+						.map((page) => `<li><a href="#${escapeHtml(page.id)}">${escapeHtml(page.title)}</a></li>`)
+						.join('')}
+				</ul>
+			</article>`;
+				})
+				.join('')}
+		</div>
+	</section>`;
+}
+
+function renderCriteriaMaturityTag(state) {
+	const maturity = state.criteriaMaturity || criteriaMaturityForState({}, state);
+
+	return `<strong class="criteria-tag criteria-tag--${escapeHtml(maturity.slug)}" title="${escapeHtml(
+		maturity.description
+	)}">${escapeHtml(maturity.label)}</strong>`;
+}
+
+function renderEvidenceTypes(state) {
+	const types = state.evidenceTypes || [];
+	if (types.length === 0) return '';
+
+	return `
+					<div class="evidence-types" aria-label="Evidence types for this state">
+						${types.map((type) => `<span>${escapeHtml(type)}</span>`).join('')}
+					</div>`;
+}
+
+function renderDesignRisk(state) {
+	const designRisk = state.designRisk;
+	if (!designRisk) return '';
+
+	return `
+					<section class="design-risk" aria-label="Design-risk notes">
+						<h5>Design-risk notes</h5>
+						<dl>
+							<div><dt>Design risk</dt><dd>${escapeHtml(designRisk.risk)}</dd></div>
+							<div><dt>Impact</dt><dd>${escapeHtml(designRisk.impact)}</dd></div>
+							<div><dt>Recommended change</dt><dd>${escapeHtml(designRisk.recommendedChange)}</dd></div>
+							<div><dt>Owner</dt><dd>${escapeHtml(designRisk.owner)}</dd></div>
+							<div><dt>Status</dt><dd>${escapeHtml(designRisk.status)}</dd></div>
+						</dl>
+					</section>`;
 }
 
 function renderStateAcceptanceCriteria(state) {
@@ -372,22 +541,46 @@ function renderStateAcceptanceCriteria(state) {
 
 	return `
 					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
-						<summary>Gherkin acceptance criteria for this state</summary>
+						<summary>What this screen state should support</summary>
+						<div class="state-acceptance-criteria__meta">
+							${renderCriteriaMaturityTag(state)}
+							<span>Format: Gherkin acceptance criteria</span>
+						</div>
 						<pre class="gherkin-criteria"><code>${escapeHtml(state.acceptanceCriteria)}</code></pre>
 					</details>`;
+}
+
+function screenshotCaption(page, state, capture) {
+	return `${page.title} — ${state.title} — ${capture.profileTitle}`;
+}
+
+function screenshotAltText(page, state, capture) {
+	const pagePurpose = page.description || 'ResearchOps page';
+	const statePurpose = state.description || state.title || 'current state';
+
+	return `Screenshot of the ${page.title} page in the ${state.title} state for ${capture.profileTitle}. It shows ${pagePurpose} and the interface state for ${statePurpose}`;
 }
 
 function renderCapture(page, state, capture) {
 	const failedClass = capture.status === 'failed' ? ' failed' : '';
 	return `
-				<section class="capture${failedClass}" data-profile="${escapeHtml(capture.profile)}">
-					<div class="capture__header">
-						<h5>${escapeHtml(capture.profileTitle)}</h5>
-						<p class="meta">${escapeHtml(capture.status)} · ${escapeHtml(capture.url)}</p>
-						${capture.error ? `<p>${escapeHtml(capture.error)}</p>` : ''}
-					</div>
-					${capture.screenshot ? `<a href="${escapeHtml(capture.screenshot)}"><img loading="lazy" src="${escapeHtml(capture.screenshot)}" alt="${escapeHtml(page.title)}: ${escapeHtml(state.title)} — ${escapeHtml(capture.profileTitle)}" /></a>` : ''}
-				</section>`;
+					<section class="capture${failedClass}" data-profile="${escapeHtml(capture.profile)}">
+						<div class="capture__header">
+							<h5>Screenshot evidence</h5>
+							<p class="meta">${escapeHtml(capture.profileTitle)} · ${escapeHtml(capture.status)} · ${escapeHtml(capture.url)}</p>
+							${capture.error ? `<p>${escapeHtml(capture.error)}</p>` : ''}
+						</div>
+						${
+							capture.screenshot
+								? `<figure class="capture__figure">
+									<a href="${escapeHtml(capture.screenshot)}"><img loading="lazy" src="${escapeHtml(capture.screenshot)}" alt="${escapeHtml(
+										screenshotAltText(page, state, capture)
+									)}" /></a>
+									<figcaption>${escapeHtml(screenshotCaption(page, state, capture))}</figcaption>
+								</figure>`
+								: ''
+						}
+					</section>`;
 }
 
 function renderHtml(manifest) {
@@ -410,26 +603,54 @@ function renderHtml(manifest) {
 		.badge { background: #eef; border: 1px solid #99c; border-radius: 6px; display: inline-block; padding: 6px 10px; }
 		.meta { color: #444; margin: 0; }
 		.group { margin-bottom: 40px; }
+		.journey-nav { border-bottom: 1px solid #d8d8d8; margin: 0 0 24px; padding: 0 0 24px; }
+		.journey-nav__header h2 { border-bottom: 0; margin: 0 0 4px; padding: 0; }
+		.journey-nav__grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 16px; }
+		.journey-card { border-left: 5px solid #1d70b8; background: #f3f2f1; padding: 12px 16px; }
+		.journey-card h3 { margin: 0 0 6px; }
+		.journey-card p { margin: 0 0 8px; }
+		.journey-card ul { margin: 0; padding-left: 20px; }
+		.journey-card a { color: #1d70b8; font-weight: 700; }
 		.profile-switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
 		.profile-switcher__label { font-weight: 700; margin: 0; }
 		.profile-switcher__controls { display: flex; flex-wrap: wrap; gap: 8px; }
 		.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
 		.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
+		.profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
 		.page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 		.states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
 		.state__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
 		.state__header p { margin: 4px 0 0; }
+		.evidence-types { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+		.evidence-types span { background: #f3f2f1; border: 1px solid #b1b4b6; display: inline-block; font-size: 0.875rem; padding: 3px 6px; }
+		.criteria-tag { border: 2px solid #0b0c0c; display: inline-block; font-size: 0.875rem; line-height: 1; padding: 4px 6px; }
+		.criteria-tag--bespoke { border-color: #00703c; color: #00703c; }
+		.criteria-tag--needs-review { border-color: #f47738; color: #6b3a00; }
+		.criteria-tag--generated { border-color: #1d70b8; color: #1d70b8; }
+		.criteria-tag--missing { border-color: #d4351c; color: #d4351c; }
 		.state-acceptance-criteria { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
 		.state-acceptance-criteria summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
 		.state-acceptance-criteria summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+		.state-acceptance-criteria__meta { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
 		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
 		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
+		.design-risk { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+		.design-risk h5 { margin-bottom: 8px; }
+		.design-risk dl { margin: 0; }
+		.design-risk div { display: grid; gap: 4px; grid-template-columns: minmax(120px, 0.35fr) 1fr; margin: 0 0 6px; }
+		.design-risk dt { font-weight: 700; }
+		.design-risk dd { margin: 0; }
+		.state__captures { display: block; }
+		body[data-active-profile="compare"] .state { grid-column: 1 / -1; }
+		body[data-active-profile="compare"] .state__captures { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 		.capture { border-top: 1px solid #e5e5e5; }
 		.capture:first-of-type { border-top: 0; }
 		.capture__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
+		.capture__figure { margin: 0; }
 		.capture img { display: block; width: 100%; height: auto; }
+		.capture figcaption { border-top: 1px solid #e5e5e5; color: #444; font-weight: 700; padding: 8px 12px; }
 		.failed { border-color: #d4351c; }
 		.failed .state__header, .failed .capture__header { background: #fff4f2; }
 		.summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -452,6 +673,7 @@ function renderHtml(manifest) {
 		</div>
 	</header>
 	${renderProfileSwitcher(manifest.profiles)}
+	${renderJourneyNavigation(manifest)}
 	${groups
 		.map(
 			([group, pages]) => `
@@ -470,14 +692,20 @@ function renderHtml(manifest) {
 				${page.states
 					.map(
 						(state) => `
-				<section class="state ${state.status === 'failed' ? 'failed' : ''}">
+				<section class="state ${state.status === 'failed' ? 'failed' : ''}" id="${escapeHtml(
+						slugify(`${page.id}-${state.id}`)
+					)}" data-state-id="${escapeHtml(state.id)}">
 					<div class="state__header">
 						<h4>${escapeHtml(state.title)}</h4>
 						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
 						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
+						${renderEvidenceTypes(state)}
 					</div>
 					${renderStateAcceptanceCriteria(state)}
-					${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
+					${renderDesignRisk(state)}
+					<div class="state__captures">
+						${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
+					</div>
 				</section>`
 					)
 					.join('')}
@@ -493,13 +721,15 @@ function renderHtml(manifest) {
 			const buttons = Array.from(document.querySelectorAll('[data-profile-filter]'));
 			const captures = Array.from(document.querySelectorAll('[data-profile]'));
 			function activate(profile) {
+				const scrollY = window.scrollY;
 				document.body.dataset.activeProfile = profile;
 				for (const button of buttons) {
 					button.setAttribute('aria-pressed', String(button.dataset.profileFilter === profile));
 				}
 				for (const capture of captures) {
-					capture.hidden = capture.dataset.profile !== profile;
+					capture.hidden = profile !== 'compare' && capture.dataset.profile !== profile;
 				}
+				window.requestAnimationFrame(() => window.scrollTo({ top: scrollY }));
 			}
 			for (const button of buttons) {
 				button.addEventListener('click', () => activate(button.dataset.profileFilter));

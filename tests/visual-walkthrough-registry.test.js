@@ -138,8 +138,98 @@ assert.match(
 
 assert.match(
 	visualWalkthroughSource,
+	/What this screen state should support/,
+	'Expected visual walkthrough HTML to label the state-level details panel by screen-state purpose'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Format: Gherkin acceptance criteria/,
+	'Expected state-level details panels to keep the Gherkin format label inside the panel'
+);
+
+assert.doesNotMatch(
+	visualWalkthroughSource,
 	/Gherkin acceptance criteria for this state/,
-	'Expected visual walkthrough HTML to label the state-level Gherkin details panel'
+	'Expected state-level details panels not to use delivery-tooling wording as the summary label'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Bespoke criteria/,
+	'Expected the report to expose criteria maturity tags'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Needs review/,
+	'Expected generated criteria to be visibly marked for UCD review'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/ResearchOps journeys/,
+	'Expected the report to include a journey-led review section above page cards'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Start research work/,
+	'Expected journey-led reporting to include the start research work journey'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Design-risk notes/,
+	'Expected each state card to support structured design-risk notes'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Recommended change/,
+	'Expected design-risk notes to expose recommended changes'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/State-level acceptance criteria/,
+	'Expected evidence type labels to separate state-level acceptance criteria from other evidence'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/Route-level Cucumber evidence/,
+	'Expected evidence type labels to distinguish route-level Cucumber evidence'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/data-profile-filter="compare"/,
+	'Expected the report to provide a desktop and mobile Compare view'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/profile !== 'compare'/,
+	'Expected Compare view to show all captures for the same state together'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/window\.scrollY/,
+	'Expected profile switching to preserve the reviewer scroll position where possible'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/<figcaption>/,
+	'Expected screenshots to include visible captions'
+);
+
+assert.match(
+	visualWalkthroughSource,
+	/screenshotAltText\(page, state, capture\)/,
+	'Expected screenshots to include descriptive alt text generated from page, state and viewport'
 );
 
 assert.equal(
