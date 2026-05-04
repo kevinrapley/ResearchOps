@@ -55,7 +55,10 @@ test('buildCucumberEvidence maps scenarios to visited routes and keeps Gherkin c
 	assert.match(evidence.scenarios[0].gherkin, /Scenario: Projects page loads/);
 	assert.match(evidence.scenarios[0].gherkin, /Given the site base URL/);
 	assert.match(evidence.scenarios[0].gherkin, /When I visit "\/pages\/projects\/index.html"/);
-	assert.match(evidence.scenarios[0].gherkin, /Then the page should have a <title> containing "Projects"/);
+	assert.match(
+		evidence.scenarios[0].gherkin,
+		/Then the page should have a <title> containing "Projects"/
+	);
 });
 
 test('mergeCucumberReport creates a dedicated page and injects route details with Gherkin', () => {
