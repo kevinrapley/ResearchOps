@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-04T19:24:09.133Z",
+  "startedAt": "2026-05-04T19:41:43.278Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -39,7 +39,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1063,
+              "durationMs": 1118,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -47,11 +47,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1261,
+              "durationMs": 1304,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__home__default.png"
+          "screenshot": "screenshots/desktop/core__home__default.png",
+          "acceptanceCriteria": "Feature: Home visual walkthrough\n\nScenario: Default state\n  Given the route \"/\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -74,7 +75,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1042,
+              "durationMs": 1787,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -82,11 +83,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1152,
+              "durationMs": 1321,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__default.png"
+          "screenshot": "screenshots/desktop/core__start__default.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-1-filled",
@@ -100,7 +102,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1870,
+              "durationMs": 1928,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -108,11 +110,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1998,
+              "durationMs": 2055,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
+          "screenshot": "screenshots/desktop/core__start__step-1-filled.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 1 completed with project definition\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 1 completed with project definition\" state\n  And the state purpose is \"Project name, description, phase and status entered using believable discovery-stage dummy data.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-2-default",
@@ -126,7 +129,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2299,
+              "durationMs": 2734,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -134,11 +137,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2362,
+              "durationMs": 2567,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-2-default.png"
+          "screenshot": "screenshots/desktop/core__start__step-2-default.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 default state\" state\n  And the state purpose is \"Second wizard step after a valid project definition has been entered on step 1.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-2-filled-no-ai",
@@ -152,7 +156,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2955,
+              "durationMs": 3176,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -160,11 +164,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3197,
+              "durationMs": 3367,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
+          "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 completed without AI rewrite invoked\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 completed without AI rewrite invoked\" state\n  And the state purpose is \"Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-2-ai-rewrite-shown",
@@ -178,7 +183,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3591,
+              "durationMs": 3847,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -186,11 +191,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3917,
+              "durationMs": 4320,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
+          "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 2 AI rewrite shown\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 2 AI rewrite shown\" state\n  And the state purpose is \"Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  Then the selector \"#ai-objectives-tools:not(.hidden)\" should be visible\n  When I choose the control \"#btn-obj-ai-rewrite\"\n  Then I should see \"Concise rewrite (optional):\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-3-default",
@@ -204,7 +210,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3331,
+              "durationMs": 3474,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -212,11 +218,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3465,
+              "durationMs": 3686,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-3-default.png"
+          "screenshot": "screenshots/desktop/core__start__step-3-default.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 3 default state\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 3 default state\" state\n  And the state purpose is \"Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  When I choose the control \"#next3\"\n  Then the selector \"#step3\" should be visible\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "step-3-filled",
@@ -230,7 +237,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3957,
+              "durationMs": 4268,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -238,11 +245,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4007,
+              "durationMs": 4287,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
-          "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
+          "screenshot": "screenshots/desktop/core__start__step-3-filled.png",
+          "acceptanceCriteria": "Feature: Start research project visual walkthrough\n\nScenario: Step 3 completed before create project\n  Given the route \"/pages/start/index.html\" is available\n  And I am reviewing the \"Step 3 completed before create project\" state\n  And the state purpose is \"Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.\"\n  When I enter \"Assisted Digital Support Discovery\" into \"#p_name\"\n  When I enter \"This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …\" into \"#p_desc\"\n  When I select \"discovery\" from \"#p_phase\"\n  When I select \"planning\" from \"#p_status\"\n  When I choose the control \"#next2\"\n  Then the selector \"#step2\" should be visible\n  When I enter \"Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…\" into \"#p_stakeholders\"\n  When I enter \"Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…\" into \"#p_objectives\"\n  When I enter \"Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support\" into \"#p_usergroups\"\n  When I choose the control \"#next3\"\n  Then the selector \"#step3\" should be visible\n  When I enter \"Alex Morgan\" into \"#lead_name\"\n  When I enter \"alex.morgan@example.gov.uk\" into \"#lead_email\"\n  When I enter \"Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.\" into \"#p_notes\"\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -265,7 +273,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1342,
+              "durationMs": 3604,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -273,11 +281,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1613,
+              "durationMs": 2288,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/projects__projects__default.png"
+          "screenshot": "screenshots/desktop/projects__projects__default.png",
+          "acceptanceCriteria": "Feature: Projects visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -300,7 +309,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1370,
+              "durationMs": 1845,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -308,11 +317,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1593,
+              "durationMs": 1769,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
+          "screenshot": "screenshots/desktop/projects__project-dashboard__default.png",
+          "acceptanceCriteria": "Feature: Project dashboard visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/project-dashboard/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -335,7 +345,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1086,
+              "durationMs": 1179,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -343,11 +353,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1256,
+              "durationMs": 1330,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/projects__outcomes__default.png"
+          "screenshot": "screenshots/desktop/projects__outcomes__default.png",
+          "acceptanceCriteria": "Feature: Project outcomes visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/outcomes/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -370,7 +381,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1140,
+              "durationMs": 1210,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -378,11 +389,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1309,
+              "durationMs": 1357,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/projects__journals__default.png"
+          "screenshot": "screenshots/desktop/projects__journals__default.png",
+          "acceptanceCriteria": "Feature: Project journals visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/projects/journals/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -405,7 +417,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1183,
+              "durationMs": 1126,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -413,11 +425,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1310,
+              "durationMs": 1444,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study__default.png"
+          "screenshot": "screenshots/desktop/study__study__default.png",
+          "acceptanceCriteria": "Feature: Study overview visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -440,7 +453,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1048,
+              "durationMs": 1223,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -448,11 +461,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1273,
+              "durationMs": 1283,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-guides__default.png"
+          "screenshot": "screenshots/desktop/study__study-guides__default.png",
+          "acceptanceCriteria": "Feature: Discussion guides visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/guides/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -475,7 +489,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1121,
+              "durationMs": 1169,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -483,11 +497,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1249,
+              "durationMs": 1308,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participants__default.png"
+          "screenshot": "screenshots/desktop/study__study-participants__default.png",
+          "acceptanceCriteria": "Feature: Participants visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/participants/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -510,7 +525,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1028,
+              "durationMs": 1074,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -518,11 +533,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1152,
+              "durationMs": 1258,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-session__default.png"
+          "screenshot": "screenshots/desktop/study__study-session__default.png",
+          "acceptanceCriteria": "Feature: Study session visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/session/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -545,7 +561,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1030,
+              "durationMs": 1719,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -553,11 +569,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1206,
+              "durationMs": 1830,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
+          "screenshot": "screenshots/desktop/study__study-consent-forms__default.png",
+          "acceptanceCriteria": "Feature: Study consent forms visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/study/consent-forms/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -580,7 +597,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1811,
+              "durationMs": 1695,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -588,11 +605,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1875,
+              "durationMs": 1923,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
+          "screenshot": "screenshots/desktop/study__study-participant-consent__default.png",
+          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Consent workspace loaded\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"Consent workspace loaded\" state\n  And the state purpose is \"Participant consent loaded with study context, a published consent form, participants and existing consent records.\"\n  Then I should see \"Participant consent loaded.\"\n  Then I should see \"Assisted digital interview consent form\"\n  Then I should see \"Ready for session\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "missing-context-error",
@@ -606,7 +624,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1200,
+              "durationMs": 1258,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -614,11 +632,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1285,
+              "durationMs": 1323,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
+          "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png",
+          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Missing study context error state\n  Given the route \"/pages/study/participant-consent/index.html\" is available\n  And I am reviewing the \"Missing study context error state\" state\n  And the state purpose is \"Participant consent loaded without project and study IDs; the page shows a blocking route-context message.\"\n  Then I should see \"Open this page from a study\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "no-published-consent-form",
@@ -632,7 +651,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1417,
+              "durationMs": 1515,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -640,11 +659,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1497,
+              "durationMs": 1549,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
+          "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png",
+          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: No published consent form state\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"No published consent form state\" state\n  And the state purpose is \"The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.\"\n  Then I should see \"Create and publish a consent form before recording participant consent\"\n  Then I should see \"Create consent forms\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "no-participants",
@@ -658,7 +678,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1422,
+              "durationMs": 1473,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -666,11 +686,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1505,
+              "durationMs": 1543,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
+          "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png",
+          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: No participants state\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"No participants state\" state\n  And the state purpose is \"The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.\"\n  Then I should see \"Add participants before recording consent\"\n  Then I should see \"Schedule participants\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "participant-selected",
@@ -684,7 +705,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2023,
+              "durationMs": 2063,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -692,11 +713,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2384,
+              "durationMs": 2443,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
-          "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
+          "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png",
+          "acceptanceCriteria": "Feature: Participant consent visual walkthrough\n\nScenario: Participant selected for consent review\n  Given the route \"/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001\" is available\n  And I am reviewing the \"Participant selected for consent review\" state\n  And the state purpose is \"A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.\"\n  Then I should see \"Participant consent loaded.\"\n  When I choose the control \"[data-record-consent=\\\"participant-sofia-patel\\\"]\"\n  Then I should see \"Review consent for Sofia Patel\"\n  Then I should see \"Record withdrawal or do not proceed\"\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -719,7 +741,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 956,
+              "durationMs": 1034,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -727,11 +749,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1016,
+              "durationMs": 1085,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/utilities__search__default.png"
+          "screenshot": "screenshots/desktop/utilities__search__default.png",
+          "acceptanceCriteria": "Feature: Search visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/search/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -754,7 +777,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 992,
+              "durationMs": 994,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -762,11 +785,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1064,
+              "durationMs": 1132,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/utilities__notes__default.png"
+          "screenshot": "screenshots/desktop/utilities__notes__default.png",
+          "acceptanceCriteria": "Feature: Notes visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/notes/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -789,7 +813,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 975,
+              "durationMs": 1208,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -797,11 +821,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1035,
+              "durationMs": 1122,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/utilities__consent__default.png"
+          "screenshot": "screenshots/desktop/utilities__consent__default.png",
+          "acceptanceCriteria": "Feature: Consent visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/consent/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -824,7 +849,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1038,
+              "durationMs": 1058,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -832,11 +857,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1054,
+              "durationMs": 1123,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
-          "screenshot": "screenshots/desktop/utilities__sessions__default.png"
+          "screenshot": "screenshots/desktop/utilities__sessions__default.png",
+          "acceptanceCriteria": "Feature: Sessions visual walkthrough\n\nScenario: Default state\n  Given the route \"/pages/sessions/index.html\" is available\n  And I am reviewing the \"Default state\" state\n  And the state purpose is \"Initial loaded page state.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         }
       ]
     },
@@ -859,7 +885,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 975,
+              "durationMs": 1028,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -867,11 +893,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1071,
+              "durationMs": 1107,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Missing study ID error state\n  Given the route \"/pages/synthesize/index.html\" is available\n  And I am reviewing the \"Missing study ID error state\" state\n  And the state purpose is \"Synthesis loaded without a study ID; the page shows the blocking route-context error.\"\n  Then the page should load without a visual walkthrough failure\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "empty-evidence",
@@ -885,7 +912,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1408,
+              "durationMs": 1448,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -893,11 +920,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1553,
+              "durationMs": 1558,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Empty evidence state\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Empty evidence state\" state\n  And the state purpose is \"Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.\"\n  Then I should see \"Capture evidence before starting synthesis\"\n  Then I should see \"Capture evidence in a session\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "evidence-loaded",
@@ -911,7 +939,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1220,
+              "durationMs": 1282,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -919,11 +947,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1370,
+              "durationMs": 1392,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Evidence available before working clusters\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Evidence available before working clusters\" state\n  And the state purpose is \"Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.\"\n  Then I should see \"Create a working cluster grouping before selecting evidence.\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "working-cluster-created",
@@ -937,7 +966,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2119,
+              "durationMs": 2234,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -945,11 +974,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2343,
+              "durationMs": 2465,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Working cluster grouping created\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Working cluster grouping created\" state\n  And the state purpose is \"A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.\"\n  When I enter \"Confidence before the form starts\" into \"#cluster-label\"\n  When I enter \"Evidence about how users judge whether they are ready to begin the service.\" into \"#cluster-description\"\n  When I choose the control \"#create-cluster\"\n  Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n  Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "evidence-added-to-cluster",
@@ -963,7 +993,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2185,
+              "durationMs": 2226,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -971,11 +1001,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2471,
+              "durationMs": 2537,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Evidence added to working cluster grouping\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Evidence added to working cluster grouping\" state\n  And the state purpose is \"A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.\"\n  When I check \"#evidence-ev-confidence-before-start\"\n  When I check \"#evidence-ev-language-support\"\n  When I select \"cluster-confidence-start\" from \"#target-cluster\"\n  When I choose the control \"#add-selected-evidence\"\n  Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "theme-blocked-without-evidence",
@@ -989,7 +1020,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1503,
+              "durationMs": 1612,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -997,11 +1028,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1808,
+              "durationMs": 2338,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Theme creation hidden before evidence is grouped\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Theme creation hidden before evidence is grouped\" state\n  And the state purpose is \"Theme creation remains hidden until at least one working cluster grouping contains source evidence.\"\n  Then the selector \"[data-cluster-id=\\\"cluster-confidence-start\\\"]\" should be visible\n  Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n  And the captured evidence status should be \"captured\""
         },
         {
           "id": "theme-created",
@@ -1015,7 +1047,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2356,
+              "durationMs": 2754,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1023,11 +1055,12 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2751,
+              "durationMs": 2727,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
-          "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
+          "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png",
+          "acceptanceCriteria": "Feature: Study synthesis visual walkthrough\n\nScenario: Theme created with evidence traceability\n  Given the route \"/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001\" is available\n  And I am reviewing the \"Theme created with evidence traceability\" state\n  And the state purpose is \"A theme is created from a populated cluster and the source evidence IDs remain inspectable.\"\n  When I select \"cluster-confidence-start\" from \"#theme-cluster\"\n  When I enter \"Digital confidence is shaped before the form starts\" into \"#theme-label\"\n  When I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into \"#theme-description\"\n  When I choose the control \"#create-theme\"\n  Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n  When I choose the control \".theme-card .govuk-details__summary\"\n  And the captured evidence status should be \"captured\""
         }
       ]
     }

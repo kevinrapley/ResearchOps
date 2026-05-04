@@ -26,6 +26,11 @@
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
 		.state__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
 		.state__header p { margin: 4px 0 0; }
+		.state-acceptance-criteria { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
+		.state-acceptance-criteria summary { color: #1d70b8; cursor: pointer; font-weight: 700; }
+		.state-acceptance-criteria summary:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+		.gherkin-criteria { background: #f3f2f1; border: 1px solid #b1b4b6; margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+		.gherkin-criteria code { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }
 		.capture { border-top: 1px solid #e5e5e5; }
 		.capture:first-of-type { border-top: 0; }
 		.capture__header { padding: 10px 12px; border-bottom: 1px solid #e5e5e5; }
@@ -42,7 +47,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-04T19:24:09.133Z</p>
+			<p class="meta">Run started: 2026-05-04T19:41:43.278Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
@@ -83,6 +88,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Home visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -117,6 +134,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -140,6 +169,21 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Project name, description, phase and status entered using believable discovery-stage dummy data.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 1 completed with project definition
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 1 completed with project definition&quot; state
+  And the state purpose is &quot;Project name, description, phase and status entered using believable discovery-stage dummy data.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -165,6 +209,23 @@
 						<p>Second wizard step after a valid project definition has been entered on step 1.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 2 default state
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 2 default state&quot; state
+  And the state purpose is &quot;Second wizard step after a valid project definition has been entered on step 1.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  When I choose the control &quot;#next2&quot;
+  Then the selector &quot;#step2&quot; should be visible
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -188,6 +249,26 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 2 completed without AI rewrite invoked
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 2 completed without AI rewrite invoked&quot; state
+  And the state purpose is &quot;Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  When I choose the control &quot;#next2&quot;
+  Then the selector &quot;#step2&quot; should be visible
+  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
+  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
+  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -213,6 +294,29 @@
 						<p>Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 2 AI rewrite shown
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 2 AI rewrite shown&quot; state
+  And the state purpose is &quot;Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  When I choose the control &quot;#next2&quot;
+  Then the selector &quot;#step2&quot; should be visible
+  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
+  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
+  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
+  Then the selector &quot;#ai-objectives-tools:not(.hidden)&quot; should be visible
+  When I choose the control &quot;#btn-obj-ai-rewrite&quot;
+  Then I should see &quot;Concise rewrite (optional):&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -237,6 +341,28 @@
 						<p>Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 3 default state
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 3 default state&quot; state
+  And the state purpose is &quot;Final wizard step after the project definition, stakeholders, objectives and user groups have been entered.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  When I choose the control &quot;#next2&quot;
+  Then the selector &quot;#step2&quot; should be visible
+  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
+  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
+  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
+  When I choose the control &quot;#next3&quot;
+  Then the selector &quot;#step3&quot; should be visible
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -260,6 +386,31 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
 						<p>Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Start research project visual walkthrough
+
+Scenario: Step 3 completed before create project
+  Given the route &quot;/pages/start/index.html&quot; is available
+  And I am reviewing the &quot;Step 3 completed before create project&quot; state
+  And the state purpose is &quot;Lead researcher, email and project notes entered on the final wizard step before project creation is submitted.&quot;
+  When I enter &quot;Assisted Digital Support Discovery&quot; into &quot;#p_name&quot;
+  When I enter &quot;This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on …&quot; into &quot;#p_desc&quot;
+  When I select &quot;discovery&quot; from &quot;#p_phase&quot;
+  When I select &quot;planning&quot; from &quot;#p_status&quot;
+  When I choose the control &quot;#next2&quot;
+  Then the selector &quot;#step2&quot; should be visible
+  When I enter &quot;Priya Shah | Service owner | priya.shah@example.gov.uk Mark Evans | Operations lead | mark.evans@example.gov.uk Amelia Brown | Policy adviser | amelia.brown@ex…&quot; into &quot;#p_stakeholders&quot;
+  When I enter &quot;Understand where users need assisted digital support before, during and after the application journey. Identify operational signals that help staff recognise a…&quot; into &quot;#p_objectives&quot;
+  When I enter &quot;Applicants with low digital confidence, support workers, caseworkers, users with accessibility needs, users who need language support&quot; into &quot;#p_usergroups&quot;
+  When I choose the control &quot;#next3&quot;
+  Then the selector &quot;#step3&quot; should be visible
+  When I enter &quot;Alex Morgan&quot; into &quot;#lead_name&quot;
+  When I enter &quot;alex.morgan@example.gov.uk&quot; into &quot;#lead_email&quot;
+  When I enter &quot;Initial recruitment should include users with different levels of digital confidence and staff who handle assisted digital requests.&quot; into &quot;#p_notes&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -299,6 +450,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Projects visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/projects/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -332,6 +495,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/project-dashboard/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Project dashboard visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/project-dashboard/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -367,6 +542,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Project outcomes visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/projects/outcomes/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -400,6 +587,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/projects/journals/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Project journals visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/projects/journals/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -439,6 +638,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study overview visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/study/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -472,6 +683,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/guides/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Discussion guides visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/study/guides/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -507,6 +730,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participants visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/study/participants/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -540,6 +775,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/session/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study session visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/study/session/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -575,6 +822,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study consent forms visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/study/consent-forms/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -609,6 +868,20 @@
 						<p>Participant consent loaded with study context, a published consent form, participants and existing consent records.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+
+Scenario: Consent workspace loaded
+  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
+  And I am reviewing the &quot;Consent workspace loaded&quot; state
+  And the state purpose is &quot;Participant consent loaded with study context, a published consent form, participants and existing consent records.&quot;
+  Then I should see &quot;Participant consent loaded.&quot;
+  Then I should see &quot;Assisted digital interview consent form&quot;
+  Then I should see &quot;Ready for session&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -632,6 +905,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/index.html</p>
 						<p>Participant consent loaded without project and study IDs; the page shows a blocking route-context message.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+
+Scenario: Missing study context error state
+  Given the route &quot;/pages/study/participant-consent/index.html&quot; is available
+  And I am reviewing the &quot;Missing study context error state&quot; state
+  And the state purpose is &quot;Participant consent loaded without project and study IDs; the page shows a blocking route-context message.&quot;
+  Then I should see &quot;Open this page from a study&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -657,6 +942,19 @@
 						<p>The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+
+Scenario: No published consent form state
+  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
+  And I am reviewing the &quot;No published consent form state&quot; state
+  And the state purpose is &quot;The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.&quot;
+  Then I should see &quot;Create and publish a consent form before recording participant consent&quot;
+  Then I should see &quot;Create consent forms&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -681,6 +979,19 @@
 						<p>The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+
+Scenario: No participants state
+  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
+  And I am reviewing the &quot;No participants state&quot; state
+  And the state purpose is &quot;The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.&quot;
+  Then I should see &quot;Add participants before recording consent&quot;
+  Then I should see &quot;Schedule participants&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -704,6 +1015,21 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
 						<p>A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Participant consent visual walkthrough
+
+Scenario: Participant selected for consent review
+  Given the route &quot;/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001&quot; is available
+  And I am reviewing the &quot;Participant selected for consent review&quot; state
+  And the state purpose is &quot;A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.&quot;
+  Then I should see &quot;Participant consent loaded.&quot;
+  When I choose the control &quot;[data-record-consent=\&quot;participant-sofia-patel\&quot;]&quot;
+  Then I should see &quot;Review consent for Sofia Patel&quot;
+  Then I should see &quot;Record withdrawal or do not proceed&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -743,6 +1069,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Search visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/search/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -776,6 +1114,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/notes/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Notes visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/notes/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -811,6 +1161,18 @@
 						<p>Initial loaded page state.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Consent visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/consent/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -844,6 +1206,18 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/sessions/index.html</p>
 						<p>Initial loaded page state.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Sessions visual walkthrough
+
+Scenario: Default state
+  Given the route &quot;/pages/sessions/index.html&quot; is available
+  And I am reviewing the &quot;Default state&quot; state
+  And the state purpose is &quot;Initial loaded page state.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -883,6 +1257,18 @@
 						<p>Synthesis loaded without a study ID; the page shows the blocking route-context error.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Missing study ID error state
+  Given the route &quot;/pages/synthesize/index.html&quot; is available
+  And I am reviewing the &quot;Missing study ID error state&quot; state
+  And the state purpose is &quot;Synthesis loaded without a study ID; the page shows the blocking route-context error.&quot;
+  Then the page should load without a visual walkthrough failure
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -906,6 +1292,19 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Empty evidence state
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Empty evidence state&quot; state
+  And the state purpose is &quot;Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.&quot;
+  Then I should see &quot;Capture evidence before starting synthesis&quot;
+  Then I should see &quot;Capture evidence in a session&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -931,6 +1330,18 @@
 						<p>Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Evidence available before working clusters
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Evidence available before working clusters&quot; state
+  And the state purpose is &quot;Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.&quot;
+  Then I should see &quot;Create a working cluster grouping before selecting evidence.&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -954,6 +1365,22 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Working cluster grouping created
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Working cluster grouping created&quot; state
+  And the state purpose is &quot;A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.&quot;
+  When I enter &quot;Confidence before the form starts&quot; into &quot;#cluster-label&quot;
+  When I enter &quot;Evidence about how users judge whether they are ready to begin the service.&quot; into &quot;#cluster-description&quot;
+  When I choose the control &quot;#create-cluster&quot;
+  Then I should see &quot;Created working cluster grouping Confidence before the form starts.&quot;
+  Then I should see &quot;I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
@@ -979,6 +1406,22 @@
 						<p>A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Evidence added to working cluster grouping
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Evidence added to working cluster grouping&quot; state
+  And the state purpose is &quot;A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.&quot;
+  When I check &quot;#evidence-ev-confidence-before-start&quot;
+  When I check &quot;#evidence-ev-language-support&quot;
+  When I select &quot;cluster-confidence-start&quot; from &quot;#target-cluster&quot;
+  When I choose the control &quot;#add-selected-evidence&quot;
+  Then I should see &quot;Added 2 evidence items to Confidence before the form starts.&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -1003,6 +1446,19 @@
 						<p>Theme creation remains hidden until at least one working cluster grouping contains source evidence.</p>
 					</div>
 					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Theme creation hidden before evidence is grouped
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Theme creation hidden before evidence is grouped&quot; state
+  And the state purpose is &quot;Theme creation remains hidden until at least one working cluster grouping contains source evidence.&quot;
+  Then the selector &quot;[data-cluster-id=\&quot;cluster-confidence-start\&quot;]&quot; should be visible
+  Then I should see &quot;Add evidence to a working cluster grouping before creating a theme.&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
+					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
 						<h5>Desktop</h5>
@@ -1026,6 +1482,23 @@
 						<p class="meta">captured · https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 						<p>A theme is created from a populated cluster and the source evidence IDs remain inspectable.</p>
 					</div>
+					
+					<details class="state-acceptance-criteria" data-state-acceptance-criteria>
+						<summary>Gherkin acceptance criteria for this state</summary>
+						<pre class="gherkin-criteria"><code>Feature: Study synthesis visual walkthrough
+
+Scenario: Theme created with evidence traceability
+  Given the route &quot;/pages/synthesize/?pid=recVisualProject001&amp;sid=recVisualStudy001&quot; is available
+  And I am reviewing the &quot;Theme created with evidence traceability&quot; state
+  And the state purpose is &quot;A theme is created from a populated cluster and the source evidence IDs remain inspectable.&quot;
+  When I select &quot;cluster-confidence-start&quot; from &quot;#theme-cluster&quot;
+  When I enter &quot;Digital confidence is shaped before the form starts&quot; into &quot;#theme-label&quot;
+  When I enter &quot;Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.&quot; into &quot;#theme-description&quot;
+  When I choose the control &quot;#create-theme&quot;
+  Then I should see &quot;Created theme Digital confidence is shaped before the form starts.&quot;
+  When I choose the control &quot;.theme-card .govuk-details__summary&quot;
+  And the captured evidence status should be &quot;captured&quot;</code></pre>
+					</details>
 					
 				<section class="capture" data-profile="desktop">
 					<div class="capture__header">
