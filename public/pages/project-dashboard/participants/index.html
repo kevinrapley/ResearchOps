@@ -9,10 +9,12 @@
 	<title>Add participant — ResearchOps</title>
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="modulepreload" href="/js/project-participant-context.js" />
 	<link rel="modulepreload" href="/pages/project-dashboard/participants/participants-project.js" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
@@ -29,99 +31,104 @@
 		}'>
 	</x-include>
 
-	<main id="main" class="govuk-body" role="main" data-project-id="">
-		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
-			<ol class="govuk-breadcrumbs__list">
-				<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
-					<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
-						<span property="schema:name">Projects</span>
-					</a>
-					<meta property="schema:position" content="1" />
-				</li>
-				<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
-					<a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
-						<span property="schema:name">Project</span>
-					</a>
-					<meta property="schema:position" content="2" />
-				</li>
-				<li class="govuk-breadcrumbs__list-item" aria-current="page" property="schema:itemListElement" typeof="schema:ListItem">
-					<span property="schema:name">Add participant</span>
-					<meta property="schema:position" content="3" />
-				</li>
-			</ol>
-		</nav>
+	<main id="main-content" class="govuk-main-wrapper" role="main" tabindex="-1" data-project-id="">
+		<div class="govuk-width-container">
+			<nav class="govuk-breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
+				<ol class="govuk-breadcrumbs__list">
+					<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
+						<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+							<span property="schema:name">Projects</span>
+						</a>
+						<meta property="schema:position" content="1" />
+					</li>
+					<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
+						<a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+							<span property="schema:name">Project</span>
+						</a>
+						<meta property="schema:position" content="2" />
+					</li>
+					<li class="govuk-breadcrumbs__list-item" aria-current="page" property="schema:itemListElement" typeof="schema:ListItem">
+						<span property="schema:name">Add participant</span>
+						<meta property="schema:position" content="3" />
+					</li>
+				</ol>
+			</nav>
 
-		<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to project dashboard</a>
+			<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to project dashboard</a>
 
-		<div class="dashboard-hero">
-			<p id="project-eyebrow" class="project-org">Project</p>
-			<h1 class="govuk-heading-l">Add participant</h1>
-			<p class="lede">Add participants through a study-specific workflow so recruitment, consent and sessions remain traceable.</p>
+			<div class="dashboard-hero">
+				<p id="project-eyebrow" class="project-org">Project</p>
+				<h1 class="govuk-heading-l">Add participant</h1>
+				<p class="lede">Add participants through a study-specific workflow so recruitment, consent and sessions remain traceable.</p>
+			</div>
+
+			<div id="participant-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" aria-labelledby="participant-error-summary-title" hidden>
+				<h2 id="participant-error-summary-title" class="govuk-error-summary__title">There is a problem</h2>
+				<div class="govuk-error-summary__body">
+					<ul class="govuk-list govuk-error-summary__list" id="participant-error-list"></ul>
+				</div>
+			</div>
+
+			<div id="no-studies-panel" class="card" hidden>
+				<h2 class="govuk-heading-m">Create a study first</h2>
+				<p>Participants must be linked to a study before they can be added.</p>
+				<a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button">Add study</a>
+			</div>
+
+			<form id="add-participant-form" novalidate>
+				<input id="project-id" name="project_airtable_id" type="hidden" value="" />
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="study-select">Study</label>
+					<div id="study-select-hint" class="govuk-hint">Choose the study this participant belongs to.</div>
+					<select id="study-select" name="study" class="govuk-select" aria-describedby="study-select-hint" required>
+						<option value="">Choose a study</option>
+					</select>
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="participant-display-name">Display name</label>
+					<div id="participant-display-name-hint" class="govuk-hint">Use a pseudonym or operational display name. Do not add unnecessary personal data.</div>
+					<input id="participant-display-name" name="display_name" class="govuk-input govuk-!-width-two-thirds" autocomplete="off" aria-describedby="participant-display-name-hint" required />
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="participant-email">Email</label>
+					<input id="participant-email" name="email" class="govuk-input govuk-!-width-two-thirds" type="email" autocomplete="off" />
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="participant-phone">Phone</label>
+					<input id="participant-phone" name="phone" class="govuk-input govuk-!-width-two-thirds" type="tel" autocomplete="off" />
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="participant-channel">Channel preference</label>
+					<select id="participant-channel" name="channel_pref" class="govuk-select">
+						<option value="email">Email</option>
+						<option value="sms">SMS</option>
+					</select>
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="participant-access-needs">Access needs</label>
+					<div id="participant-access-needs-hint" class="govuk-hint">Only record support needs needed to run the research safely and accessibly.</div>
+					<textarea id="participant-access-needs" name="access_needs" class="govuk-textarea govuk-!-width-two-thirds" rows="4" aria-describedby="participant-access-needs-hint"></textarea>
+				</div>
+
+				<div class="govuk-button-group">
+					<button id="participant-submit" class="govuk-button" type="submit">Create participant</button>
+					<a id="cancel-participant" class="govuk-button govuk-button--secondary" href="/pages/projects/">Cancel</a>
+				</div>
+
+				<p id="participant-status" class="hint" role="status" aria-live="polite"></p>
+			</form>
 		</div>
-
-		<div id="participant-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" aria-labelledby="participant-error-summary-title" hidden>
-			<h2 id="participant-error-summary-title" class="govuk-error-summary__title">There is a problem</h2>
-			<div class="govuk-error-summary__body">
-				<ul class="govuk-list govuk-error-summary__list" id="participant-error-list"></ul>
-			</div>
-		</div>
-
-		<div id="no-studies-panel" class="card" hidden>
-			<h2 class="govuk-heading-m">Create a study first</h2>
-			<p>Participants must be linked to a study before they can be added.</p>
-			<a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button">Add study</a>
-		</div>
-
-		<form id="add-participant-form" novalidate>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="study-select">Study</label>
-				<div id="study-select-hint" class="govuk-hint">Choose the study this participant belongs to.</div>
-				<select id="study-select" name="study" class="govuk-select" aria-describedby="study-select-hint" required>
-					<option value="">Choose a study</option>
-				</select>
-			</div>
-
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="participant-display-name">Display name</label>
-				<div id="participant-display-name-hint" class="govuk-hint">Use a pseudonym or operational display name. Do not add unnecessary personal data.</div>
-				<input id="participant-display-name" name="display_name" class="govuk-input govuk-!-width-two-thirds" autocomplete="off" aria-describedby="participant-display-name-hint" required />
-			</div>
-
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="participant-email">Email</label>
-				<input id="participant-email" name="email" class="govuk-input govuk-!-width-two-thirds" type="email" autocomplete="off" />
-			</div>
-
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="participant-phone">Phone</label>
-				<input id="participant-phone" name="phone" class="govuk-input govuk-!-width-two-thirds" type="tel" autocomplete="off" />
-			</div>
-
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="participant-channel">Channel preference</label>
-				<select id="participant-channel" name="channel_pref" class="govuk-select">
-					<option value="email">Email</option>
-					<option value="sms">SMS</option>
-				</select>
-			</div>
-
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="participant-access-needs">Access needs</label>
-				<div id="participant-access-needs-hint" class="govuk-hint">Only record support needs needed to run the research safely and accessibly.</div>
-				<textarea id="participant-access-needs" name="access_needs" class="govuk-textarea govuk-!-width-two-thirds" rows="4" aria-describedby="participant-access-needs-hint"></textarea>
-			</div>
-
-			<div class="govuk-button-group">
-				<button id="participant-submit" class="govuk-button" type="submit">Create participant</button>
-				<a id="cancel-participant" class="govuk-button govuk-button--secondary" href="/pages/projects/">Cancel</a>
-			</div>
-
-			<p id="participant-status" class="hint" role="status" aria-live="polite"></p>
-		</form>
 	</main>
 
 	<x-include src="/partials/footer.html"></x-include>
 
+	<script type="module" src="/js/project-participant-context.js"></script>
 	<script type="module" src="/pages/project-dashboard/participants/participants-project.js"></script>
 </body>
 

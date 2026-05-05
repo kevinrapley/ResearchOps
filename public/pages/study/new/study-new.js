@@ -23,8 +23,11 @@ function setProjectLinks(projectId, project = {}) {
   const dashboardHref = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
   const projectName = project.name || project.Name || "Project";
 
-  const main = $("#main");
+  const main = $("#main-content");
   if (main) main.dataset.projectId = projectId;
+
+  const projectInput = $("#project-id");
+  if (projectInput) projectInput.value = projectId;
 
   const breadcrumbProject = $("#breadcrumb-project");
   if (breadcrumbProject) {
@@ -66,6 +69,9 @@ function showErrors(errors) {
 
 function validate() {
   const errors = [];
+  if (!fieldValue("#project-id")) {
+    errors.push({ id: "project-id", message: "Missing project id" });
+  }
   if (!fieldValue("#study-method")) {
     errors.push({ id: "study-method", message: "Choose a research method" });
   }
@@ -130,7 +136,7 @@ function initForm(projectId) {
 (async function bootstrap() {
   const projectId = projectIdFromUrl();
   if (!projectId) {
-    showErrors([{ id: "study-title-input", message: "Missing project id" }]);
+    showErrors([{ id: "project-id", message: "Missing project id" }]);
     return;
   }
 
