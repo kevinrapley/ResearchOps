@@ -300,7 +300,8 @@ export const visualWalkthroughConfig = {
 			title: 'Import participants',
 			group: 'Projects',
 			path: '/pages/project-dashboard/participants/import/index.html',
-			description: 'Import study-linked participants from CSV from the project dashboard action workflow.',
+			description:
+				'Import study-linked participants from CSV from the project dashboard action workflow.',
 		},
 		{
 			id: 'outcomes',
