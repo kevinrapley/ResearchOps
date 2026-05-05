@@ -22,36 +22,40 @@ function projectScopedHref(path, queryKey, projectId, hash = "") {
 	return `${path}?${query}${hash ? `#${hash}` : ""}`;
 }
 
-function setProjectContext() {
-	const projectId = currentProjectId();
+function resolvedProjectId() {
+	return currentProjectId() || document.querySelector("main")?.dataset?.projectId || "";
+}
+
+function syncProjectContext() {
+	const projectId = resolvedProjectId();
+	if (!projectId) return;
+
 	const main = document.querySelector("main");
-	if (main && projectId) {
+	if (main) {
 		main.dataset.projectId = projectId;
 		main.dataset.projectAirtableId = projectId;
 	}
-	return projectId;
-}
-
-function syncProjectScopedLinks() {
-	const projectId = currentProjectId() || document.querySelector("main")?.dataset?.projectId || "";
-	if (!projectId) return;
 
 	for (const [id, path, queryKey, hash] of PROJECT_SCOPED_LINKS) {
 		const link = document.getElementById(id);
 		if (!link) continue;
-		link.setAttribute("href", projectScopedHref(path, queryKey, projectId, hash));
+
+		const href = projectScopedHref(path, queryKey, projectId, hash);
+		if (link.getAttribute("href") !== href) {
+			link.setAttribute("href", href);
+		}
 	}
 }
 
 function initProjectDashboardContext() {
-	setProjectContext();
-	syncProjectScopedLinks();
+	syncProjectContext();
 
-	const observer = new MutationObserver(() => syncProjectScopedLinks());
-	for (const [id] of PROJECT_SCOPED_LINKS) {
-		const link = document.getElementById(id);
-		if (link) observer.observe(link, { attributes: true, attributeFilter: ["href"] });
-	}
+	let attempts = 0;
+	const timer = window.setInterval(() => {
+		syncProjectContext();
+		attempts += 1;
+		if (attempts >= 50) window.clearInterval(timer);
+	}, 100);
 }
 
 if (document.readyState === "loading") {
