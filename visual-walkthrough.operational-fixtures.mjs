@@ -164,6 +164,11 @@ export function operationalMockRoutes() {
 			},
 		},
 		{
+			url: /\/api\/projects\/[^/?]+(?:\?.*)?$/,
+			method: 'GET',
+			body: operationalProject,
+		},
+		{
 			url: /\/api\/studies(?:\?.*)?$/,
 			method: 'GET',
 			body: {
