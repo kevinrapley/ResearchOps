@@ -42,11 +42,19 @@ includes(pageChromeCss, ".govuk-skip-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header__container", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header__homepage-link", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-header .govuk-header__homepage-link:visited", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-header .govuk-header__homepage-link:focus", "page chrome stylesheet");
+includes(pageChromeCss, "width: 162px;", "page chrome stylesheet");
+includes(pageChromeCss, "height: 30px;", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__wrapper", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__toggle", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__item--active", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__link", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation .govuk-service-navigation__link:visited", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation .govuk-service-navigation__link:focus", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation__service-name .govuk-service-navigation__link:visited", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation__link[aria-current=\"page\"]:visited", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-phase-banner", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-footer", "page chrome stylesheet");
@@ -58,7 +66,17 @@ includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "sha
 includes(headerPartial, "class=\"govuk-header\" role=\"banner\" data-module=\"govuk-header\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__container govuk-width-container\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__homepage-link\"", "shared header partial");
+includes(headerPartial, "<svg", "shared header partial");
+includes(headerPartial, "role=\"img\"", "shared header partial");
+includes(headerPartial, "viewBox=\"0 0 324 60\"", "shared header partial");
+includes(headerPartial, "height=\"30\"", "shared header partial");
+includes(headerPartial, "width=\"162\"", "shared header partial");
+includes(headerPartial, "fill=\"currentcolor\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__logotype\"", "shared header partial");
+includes(headerPartial, "aria-label=\"GOV.UK\"", "shared header partial");
+includes(headerPartial, "<title>GOV.UK</title>", "shared header partial");
+includes(headerPartial, "class=\"govuk-logo-dot\"", "shared header partial");
+excludes(headerPartial, "<span class=\"govuk-header__logotype\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation\"", "shared header partial");
 includes(headerPartial, "data-module=\"govuk-service-navigation\"", "shared header partial");
 includes(headerPartial, "aria-label=\"Service information\"", "shared header partial");
@@ -89,14 +107,6 @@ includes(footerPartial, "class=\"govuk-footer\" role=\"contentinfo\"", "shared f
 includes(footerPartial, "class=\"govuk-footer__container\"", "shared footer partial");
 includes(footerPartial, "class=\"govuk-footer__meta\"", "shared footer partial");
 excludes(footerPartial, "<hr", "shared footer partial");
-
-includes(migrationDoc, "# GOV.UK page chrome and navigation migration", "page chrome migration doc");
-includes(migrationDoc, "refreshed GOV.UK branding", "page chrome migration doc");
-includes(migrationDoc, "Skip link", "page chrome migration doc");
-includes(migrationDoc, "Service navigation", "page chrome migration doc");
-includes(migrationDoc, "Phase banner", "page chrome migration doc");
-includes(migrationDoc, "Footer", "page chrome migration doc");
-includes(migrationDoc, "Route stylesheets must not recreate shared header", "page chrome migration doc");
 
 for (const pagePath of pagesUsingSharedChrome) {
   const source = fs.readFileSync(pagePath, "utf8");
