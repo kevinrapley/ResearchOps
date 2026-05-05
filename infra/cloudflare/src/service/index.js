@@ -137,6 +137,7 @@ export class ResearchOpsService {
 	/* ─────────────── Projects ─────────────── */
 	listProjectsFromAirtable = (origin, url) => Projects.listProjectsFromAirtable(this, origin, url);
 	getProjectById = (origin, projectId) => Projects.getProjectById(this, origin, projectId);
+	updateProjectFraming = (req, origin, projectId) => Projects.updateProjectFraming(this, req, origin, projectId);
 
 	/* ─────────────── Journal Entries ─────────────── */
 	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
