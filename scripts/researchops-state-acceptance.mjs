@@ -184,6 +184,10 @@ function lowerFirst(value = '') {
 	return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
 }
 
+function sentenceFragment(value = '') {
+	return lowerFirst(normaliseText(value)).replace(/[.?!:;]+$/u, '');
+}
+
 function storyForPage(page = {}) {
 	return (
 		PAGE_STORIES[page.id] || {
@@ -275,9 +279,12 @@ export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState =
 	if (page.id === 'projects') return buildProjectsAcceptanceCriteriaFromSource();
 
 	const story = storyForPage(page);
-	const statePurpose = state.description
-		? truncateForGherkin(state.description, 220)
-		: `the ${lowerFirst(state.title || 'current view')}`;
+	const statePurpose = sentenceFragment(
+		state.description
+			? truncateForGherkin(state.description, 220)
+			: `the ${lowerFirst(state.title || 'current view')}`
+	);
+	const pagePurpose = sentenceFragment(page.description || story.want);
 	const sourceActions = Array.isArray(sourceState?.actions) ? sourceState.actions : [];
 
 	return [
@@ -292,12 +299,13 @@ export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState =
 		`    When I visit the ${story.context}`,
 		'',
 		'  Scenario: Understand the page purpose',
-		`    Then I should see content that supports ${lowerFirst(page.description || story.want)}`,
+		`    Then I should see content that supports ${pagePurpose}`,
 		'    And I should understand what ResearchOps task I can complete from this page',
 		'',
 		`  Scenario: Use "${quoteGherkin(state.title || 'Default view')}" in the ResearchOps journey`,
 		`    Given I am using the ${story.context}`,
-		`    Then I should understand how ${lowerFirst(statePurpose)} supports my research work`,
+		'    Then I should understand the research value of this part of the journey',
+		`    And I should see that ${statePurpose}`,
 		'    And I should be given enough service context to decide what to do next',
 		'',
 		...buildActionScenario(sourceActions).map((line) => `  ${line}`),
