@@ -141,7 +141,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-05T22:42:23.290Z</p>
+			<p class="meta">Run started: 2026-05-05T23:35:43.903Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">20 pages</span>
@@ -1023,9 +1023,9 @@
 				</section>
 				<section class="state " id="start-step-2-filled-no-ai" data-state-id="step-2-filled-no-ai">
 					<div class="state__header">
-						<h4>Step 2 completed without AI rewrite invoked</h4>
+						<h4>Step 2 completed with researcher-authored context</h4>
 						<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
-						<p>Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.</p>
+						<p>Stakeholders, objectives and user groups entered with realistic planning data before continuing to the next step.</p>
 						
 					<div class="evidence-types" aria-label="Evidence types for this state">
 						<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -1208,8 +1208,8 @@
 							
 						</div>
 						<figure class="capture__figure">
-									<a href="screenshots/desktop/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/desktop/core__start__step-2-filled-no-ai.png" alt="Screenshot of the Start research project page in the Step 2 completed without AI rewrite invoked state for Desktop. It shows Start page for creating or beginning research project work. and the interface state for Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested." /></a>
-									<figcaption>Start research project — Step 2 completed without AI rewrite invoked — Desktop</figcaption>
+									<a href="screenshots/desktop/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/desktop/core__start__step-2-filled-no-ai.png" alt="Screenshot of the Start research project page in the Step 2 completed with researcher-authored context state for Desktop. It shows Start page for creating or beginning research project work. and the interface state for Stakeholders, objectives and user groups entered with realistic planning data before continuing to the next step." /></a>
+									<figcaption>Start research project — Step 2 completed with researcher-authored context — Desktop</figcaption>
 								</figure>
 					</section>
 					<section class="capture" data-profile="mobile">
@@ -1219,8 +1219,8 @@
 							
 						</div>
 						<figure class="capture__figure">
-									<a href="screenshots/mobile/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/mobile/core__start__step-2-filled-no-ai.png" alt="Screenshot of the Start research project page in the Step 2 completed without AI rewrite invoked state for Mobile. It shows Start page for creating or beginning research project work. and the interface state for Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested." /></a>
-									<figcaption>Start research project — Step 2 completed without AI rewrite invoked — Mobile</figcaption>
+									<a href="screenshots/mobile/core__start__step-2-filled-no-ai.png"><img loading="lazy" src="screenshots/mobile/core__start__step-2-filled-no-ai.png" alt="Screenshot of the Start research project page in the Step 2 completed with researcher-authored context state for Mobile. It shows Start page for creating or beginning research project work. and the interface state for Stakeholders, objectives and user groups entered with realistic planning data before continuing to the next step." /></a>
+									<figcaption>Start research project — Step 2 completed with researcher-authored context — Mobile</figcaption>
 								</figure>
 					</section>
 					</div>
@@ -4732,71 +4732,83 @@
       "Default state",
       "Step 1 completed with project definition",
       "Step 2 default state",
-      "Step 2 completed without AI rewrite invoked",
+      "Step 2 completed with researcher-authored context",
       "Step 2 AI rewrite shown",
       "Step 3 default state",
       "Step 3 completed before check answers",
       "Step 4 check your answers before create project"
     ],
-    "duplicateMarkers": [
+    "legacyMarkers": [
       "Feature: Start a new research project",
+      "Scenario: View the guided process identity",
+      "Scenario: Understand that the service is a prototype",
+      "Scenario: Navigate using the primary navigation",
+      "Scenario: Understand the steps in the guided process",
       "The guided project setup could collect plausible project metadata without making privacy boundaries"
     ],
     "acceptanceStatus": "needs-review",
     "designRiskStatus": "needs-review",
-    "gherkin": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I use the start research project journey\n\n  Scenario: Complete the guided project setup safely\n    Then I should understand what project information is needed before I commit anything\n    And I should be able to define project context, objectives, ownership and notes without entering participant personal data\n    And I should be able to review the full project setup before creating the project",
+    "gherkin": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I use the start research project journey\n\n  Scenario: Complete the guided project setup safely\n    Then I should understand what project information is needed before I commit anything\n    And I should be able to define project context, objectives, ownership and notes without entering participant personal data\n    And I should be able to review the full project setup before creating the project\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |",
     "designRisk": {
       "risk": "The start-project journey is the commitment point for the ResearchOps evidence model. Weak context capture can make later studies, participants, sessions, analysis and reporting appear traceable when the project framing is weak or unsafe.",
-      "impact": "Teams may create ambiguous project records, over-trust unsupported wording, collect unsafe notes or weaken the evidence-to-insight-to-recommendation chain before research begins.",
+      "impact": "Teams may create ambiguous project records, collect unsafe notes or weaken the evidence-to-insight-to-recommendation chain before research begins.",
       "recommendation": "Review the journey against GOV.UK form, focus, error-summary, hint, button and check-answers patterns. Confirm privacy boundaries, progressive disclosure, validation and keyboard recovery before accepting the walkthrough group."
     },
     "states": {
       "Default state": {
+        "title": "Default state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
         "gherkin": "Feature: Default state\n\n  Background:\n    Given I am a user researcher\n    When the Start a new research project loads\n\n  Scenario: Step 1 of 4 Define the project\n    Then focus should be applied to the Project name text field\n    And the yellow GOV.UK focus style should be present\n    Then I should be able to immediately type in the text field\n\n  Scenario: Providing a description\n    When I want to enter a description of the project\n    Then I should be able to tab, click, or tap in to the Description textarea field\n    And the yellow GOV.UK focus style should be present\n    Then I should be able to type in the textarea field\n\n  Scenario: Selecting service phase\n    When I want to select the service phase my project is in\n    Then I should be able to tab, click, or tap in to the Service phase option group\n    And the yellow GOV.UK focus style should be present\n    Then I should be able to use keyboard, mouse, or mobile controls to select from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n\n  Scenario: Selecting project status\n    When I want to select the status my project is in\n    Then I should be able to tab, click, or tap in to the Project status option group\n    And the yellow GOV.UK focus style should be present\n    Then I should be able to use keyboard, mouse, or mobile controls to select from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Continuing to the next step\n    When I have provided the required Step 1 project information\n    Then I should be able to tab, click, or tap the Continue button\n    And the yellow GOV.UK focus style should be present on the Continue button\n    And activating Continue should move me to the next step without losing the answers I have entered",
         "risk": "The initial state carries first-interaction risk. Project name focus, yellow GOV.UK focus styling, radio-group operability and the Continue button must work predictably before the user invests effort in the guided journey."
       },
       "Step 1 completed with project definition": {
+        "title": "Step 1 completed with project definition",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Step 1 completed with project definition\n\n  Background:\n    Given I am a user researcher\n    When I have completed Step 1 of the start research project journey\n\n  Scenario: Continue after defining the project\n    Then I should see that the project name, description, service phase and status have been retained\n    And I should understand that I can continue to the next step\n    And I should be able to go back or correct the definition without losing progress",
+        "gherkin": "Feature: Step 1 completed with project definition\n\n  Background:\n    Given I am a user researcher\n    When I have completed Step 1 of the start research project journey\n\n  Scenario: Continue after defining the project\n    Then I should see that the project name, description, service phase and status have been retained\n    And I should be able to go back or correct the definition without losing progress",
         "risk": "A completed first step must show progress without implying that the project is already sufficiently framed for research governance."
       },
       "Step 2 default state": {
+        "title": "Step 2 default state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Step 2 default state\n\n  Background:\n    Given I am a user researcher\n    When I reach Step 2 of the start research project journey\n\n  Scenario: Provide objectives and user-group context\n    Then I should understand what additional research context is needed\n    And I should be able to enter stakeholders, objectives and user groups in clear text fields\n    And I should be able to continue using keyboard, mouse or mobile controls",
+        "gherkin": "Feature: Step 2 default state\n\n  Background:\n    Given I am a user researcher\n    When I reach Step 2 of the start research project journey\n\n  Scenario: Provide objectives and user-group context\n    Then I should be able to enter stakeholders, objectives and user groups in clear text fields\n    And I should be able to continue using keyboard, mouse or mobile controls",
         "risk": "This state must ask for research framing in user-centred terms rather than implementation terms that only make sense to Airtable, APIs or internal data models."
       },
-      "Step 2 completed without AI rewrite invoked": {
+      "Step 2 completed with researcher-authored context": {
+        "title": "Step 2 completed with researcher-authored context",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Step 2 completed without assisted wording\n\n  Background:\n    Given I am a user researcher\n    When I have entered stakeholders, objectives and user groups myself\n\n  Scenario: Continue with researcher-authored wording\n    Then I should see that my own wording has been retained\n    And I should be able to continue without being asked to replace it\n    And I should remain able to amend the content before creating the project",
-        "risk": "Researcher-authored wording must remain a complete and trusted path so the service does not normalise unnecessary automation or weaken accountability for project framing."
+        "gherkin": "Feature: Step 2 completed with researcher-authored context\n\n  Background:\n    Given I am a user researcher\n    When I have entered stakeholders, objectives and user groups in my own wording\n\n  Scenario: Continue with researcher-authored wording\n    Then I should see that my own wording has been retained\n    And I should remain able to amend the content before creating the project",
+        "risk": "Researcher-authored wording must remain a complete and trusted path so the service does not weaken accountability for project framing."
       },
       "Step 2 AI rewrite shown": {
+        "title": "Step 2 assisted rewrite shown",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: AI-assisted wording state\n\n  Background:\n    Given I am a user researcher\n    When I use the AI-assisted wording state in the start research project journey\n\n  Scenario: Use AI assistance deliberately\n    Given AI-assisted wording is available\n    Then I should understand what information will be sent to the AI service\n    And AI assistance should only run when I explicitly request it\n    And I should remain able to reject, amend or ignore AI-suggested wording",
+        "gherkin": "Feature: Assisted wording state\n\n  Background:\n    Given I am a user researcher\n    When I use the assisted wording state in the start research project journey\n\n  Scenario: Use AI assistance deliberately\n    Given AI-assisted wording is available\n    Then I should understand what information will be sent to the AI service\n    And AI assistance should only run when I explicitly request it\n    And I should remain able to reject, amend or ignore AI-suggested wording",
         "risk": "AI-suggested wording creates provenance and accountability risk unless the suggestion is clearly attributable, optional and under user control."
       },
       "Step 3 default state": {
+        "title": "Step 3 default state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Step 3 default state\n\n  Background:\n    Given I am a user researcher\n    When I reach Step 3 of the start research project journey\n\n  Scenario: Add ownership and notes safely\n    Then I should understand what ownership, governance or planning information is needed\n    And I should be able to enter notes without being encouraged to include participant personal data\n    And I should be able to continue without needing knowledge of internal data structures",
+        "gherkin": "Feature: Step 3 default state\n\n  Background:\n    Given I am a user researcher\n    When I reach Step 3 of the start research project journey\n\n  Scenario: Add ownership and notes safely\n    Then I should be able to enter ownership and planning notes\n    And I should not be encouraged to include participant personal data",
         "risk": "The ownership and notes step can become a privacy leakage point if it invites broad free-text capture without clear boundaries."
       },
       "Step 3 completed before check answers": {
+        "title": "Step 3 completed before check answers",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Step 3 completed before check answers\n\n  Background:\n    Given I am a user researcher\n    When I have entered ownership and notes\n\n  Scenario: Move toward review after ownership and notes are entered\n    Then I should understand that this information will be included in the project record\n    And I should still be able to correct earlier answers\n    And my answers should remain available when I continue to the review step",
+        "gherkin": "Feature: Step 3 completed before check answers\n\n  Background:\n    Given I am a user researcher\n    When I have entered ownership and notes\n\n  Scenario: Move toward review after ownership and notes are entered\n    Then my answers should remain available when I continue to the review step\n    And I should still be able to correct earlier answers",
         "risk": "Project setup mistakes propagate into later ResearchOps journeys, so correction routes must remain available until the project is created."
       },
       "Step 4 check your answers before create project": {
+        "title": "Step 4 check answers before creating the project",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Check answers before creating the project\n\n  Background:\n    Given I am a user researcher\n    When I reach the check-your-answers step\n\n  Scenario: Review the project setup before committing it\n    Then I should be able to review the full project setup\n    And I should be able to identify and change inaccurate answers\n    And I should understand that creating the project commits the setup information to the ResearchOps record",
+        "gherkin": "Feature: Check answers before creating the project\n\n  Background:\n    Given I am a user researcher\n    When I reach the check-your-answers step\n\n  Scenario: Review the project setup before committing it\n    Then I should be able to identify and change inaccurate answers\n    And I should understand that creating the project commits the setup information to the ResearchOps record",
         "risk": "The check-answers state is the final safeguard against weak or incorrect project records and should follow GOV.UK summary-list and change-link conventions."
       }
     }
@@ -4810,14 +4822,14 @@
       "No participants state",
       "Participant selected for consent review"
     ],
-    "duplicateMarkers": [
+    "legacyMarkers": [
       "Feature: Record participant consent",
       "Feature: Participant consent",
       "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough"
     ],
     "acceptanceStatus": "needs-review",
     "designRiskStatus": "needs-review",
-    "gherkin": "Feature: Participant consent\n\n  As a user researcher\n  I want to review and record consent within the correct participant, study and consent-form context\n  So that consent evidence is clear, current and auditable before research activity continues\n\n  Background:\n    Given I am a user researcher\n    When I use the participant consent journey\n\n  Scenario: Work within the correct consent context\n    Then I should see the project, study, participant and consent-form context needed to trust the consent record\n    And I should be prevented from recording consent where the required context is missing or incomplete\n\n  Scenario: Distinguish setup blockers from valid consent states\n    Then I should understand whether the blocker is missing route context, no published consent form or no participants\n    And each blocker should provide a recovery route that matches the problem\n\n  Scenario: Review participant consent safely\n    Given a participant is selected\n    Then I should see which participant, study and consent form the record relates to\n    And I should understand required statements, optional permissions and withdrawal controls before making changes\n\n  Scenario: Use the consent journey accessibly\n    Then consent options should be semantically grouped and labelled\n    And status messages, blockers and validation should be exposed to assistive technology",
+    "gherkin": "Feature: Participant consent\n\n  As a user researcher\n  I want to review and record consent within the correct participant, study and consent-form context\n  So that consent evidence is clear, current and auditable before research activity continues\n\n  Background:\n    Given I am a user researcher\n    When I use the participant consent journey\n\n  Scenario: Work within the correct consent context\n    Then I should see the project, study, participant and consent-form context needed to trust the consent record\n    And I should be prevented from recording consent where the required context is missing or incomplete\n\n  Scenario: Distinguish setup blockers from valid consent states\n    Then I should understand whether the blocker is missing route context, no published consent form or no participants\n    And each blocker should provide a recovery route that matches the problem\n\n  Scenario: Review participant consent safely\n    Given a participant is selected\n    Then I should see which participant, study and consent form the record relates to\n    And I should understand required statements, optional permissions and withdrawal controls before making changes",
     "designRisk": {
       "risk": "Participant consent is a high-trust research governance activity. Ambiguity about participant, study or consent-form context creates ethical, operational and evidence-integrity risk.",
       "impact": "Research may proceed without clear, current and reviewable consent evidence, or consent may be attributed to the wrong participant, study or consent form.",
@@ -4825,33 +4837,38 @@
     },
     "states": {
       "Consent workspace loaded": {
+        "title": "Consent workspace loaded",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Consent workspace loaded\n\n  Background:\n    Given I am a user researcher\n    When the participant consent workspace loads with valid study context\n\n  Scenario: Understand the available consent action\n    Then I should be able to identify the study context and published consent form\n    And I should be able to identify whether participants are available for consent review\n    And I should understand the next consent action needed before a session proceeds",
+        "gherkin": "Feature: Consent workspace loaded\n\n  Background:\n    Given I am a user researcher\n    When the participant consent workspace loads with valid study context\n\n  Scenario: Understand the available consent action\n    Then I should be able to identify whether participants are available for consent review\n    And I should understand the next consent action needed before a session proceeds",
         "risk": "The loaded state must make the selected study context visible enough to prevent accidental consent capture against the wrong study."
       },
       "Missing study context error state": {
+        "title": "Missing study context error state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Missing study context error state\n\n  Background:\n    Given I am a user researcher\n    When the participant consent page is missing project or study context\n\n  Scenario: Recover from missing consent route context\n    When required consent context is missing or invalid\n    Then I should see GOV.UK-compatible validation or blocker messaging\n    And the problem should be exposed through an error summary or equivalent page-level message\n    And I should be given a clear recovery route rather than an empty consent screen",
+        "gherkin": "Feature: Missing study context error state\n\n  Background:\n    Given I am a user researcher\n    When the participant consent page is missing project or study context\n\n  Scenario: Recover from missing consent route context\n    Then I should be told that participant consent cannot continue\n    And I should be given a clear recovery route rather than an empty consent screen",
         "risk": "Missing-context states should be treated as controlled error states and must not resemble valid empty states."
       },
       "No published consent form state": {
+        "title": "No published consent form state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: No published consent form state\n\n  Background:\n    Given I am a user researcher\n    When no published consent form exists for the study\n\n  Scenario: Block consent capture until a consent form is published\n    Then I should understand that participant consent cannot be captured yet\n    And I should know that a consent form must be created or published first\n    And I should be able to navigate to the appropriate study setup action",
+        "gherkin": "Feature: No published consent form state\n\n  Background:\n    Given I am a user researcher\n    When no published consent form exists for the study\n\n  Scenario: Block consent capture until a consent form is published\n    Then I should understand that participant consent cannot be captured yet\n    And I should know that a consent form must be created or published first",
         "risk": "Capturing consent without a published consent form would weaken consent provenance, so the blocked state should be explicit and actionable."
       },
       "No participants state": {
+        "title": "No participants state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: No participants state\n\n  Background:\n    Given I am a user researcher\n    When no participants are available for the study\n\n  Scenario: Block consent capture until participants exist\n    Then I should understand that consent cannot be captured yet\n    And I should know how to add or schedule participants before returning to consent\n    And the state should not be confused with a participant-loading failure",
+        "gherkin": "Feature: No participants state\n\n  Background:\n    Given I am a user researcher\n    When no participants are available for the study\n\n  Scenario: Block consent capture until participants exist\n    Then I should understand that consent cannot be captured yet\n    And the state should not be confused with a participant-loading failure",
         "risk": "The state should distinguish between no participant records and a participant-loading failure to avoid incorrect operational decisions."
       },
       "Participant selected for consent review": {
+        "title": "Participant selected for consent review",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Participant selected for consent review\n\n  Background:\n    Given I am a user researcher\n    When I select a participant for consent review\n\n  Scenario: Review consent for the selected participant\n    Then I should see which participant is selected\n    And I should understand the consent options that apply to that participant and study\n    And I should be able to continue without confusing this participant with another record",
+        "gherkin": "Feature: Participant selected for consent review\n\n  Background:\n    Given I am a user researcher\n    When I select a participant for consent review\n\n  Scenario: Review consent for the selected participant\n    Then I should see which participant is selected\n    And I should understand the consent options that apply to that participant and study",
         "risk": "The selected-participant state carries the highest risk of misattribution, so participant identity, pseudonym and consent scope must be unambiguous."
       }
     }
@@ -4867,13 +4884,13 @@
       "Theme creation hidden before evidence is grouped",
       "Theme created with evidence traceability"
     ],
-    "duplicateMarkers": [
+    "legacyMarkers": [
       "Feature: Synthesize research evidence",
       "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear"
     ],
     "acceptanceStatus": "needs-review",
     "designRiskStatus": "needs-review",
-    "gherkin": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I use the study synthesis journey\n\n  Scenario: Maintain traceability from evidence to theme\n    Given evidence is available for synthesis\n    Then I should be able to review evidence provenance before grouping it\n    And I should be able to create working clusters before turning evidence into themes\n    And created themes should remain connected to their source evidence\n\n  Scenario: Prevent unsupported theme creation\n    Given no evidence has been added to a working cluster\n    Then I should be prevented from creating a theme\n    And I should understand what evidence action is needed before the theme action becomes available\n\n  Scenario: Use the analysis journey accessibly\n    Then evidence selection, cluster creation, theme creation and blocked states should be keyboard operable\n    And status changes should be exposed clearly enough for assistive technology users",
+    "gherkin": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I use the study synthesis journey\n\n  Scenario: Maintain traceability from evidence to theme\n    Given evidence is available for synthesis\n    Then I should be able to review evidence provenance before grouping it\n    And I should be able to create working clusters before turning evidence into themes\n    And created themes should remain connected to their source evidence\n\n  Scenario: Prevent unsupported theme creation\n    Given no evidence has been added to a working cluster\n    Then I should be prevented from creating a theme\n    And I should understand what evidence action is needed before the theme action becomes available",
     "designRisk": {
       "risk": "The analysis journey is central to ResearchOps traceability. If the UI weakens the evidence-to-theme chain, the service can produce recommendations that appear stronger than the underlying evidence supports.",
       "impact": "Insights and recommendations could be accepted without sufficient evidence provenance, confidence context or an auditable analytical decision trail.",
@@ -4881,50 +4898,62 @@
     },
     "states": {
       "Missing study ID error state": {
+        "title": "Missing study ID error state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Missing study ID error state\n\n  Background:\n    Given I am a user researcher\n    When the study synthesis page is missing a study ID\n\n  Scenario: Recover from missing study context\n    When required study context is missing or invalid\n    Then I should see GOV.UK-compatible validation or blocker messaging\n    And I should be told that synthesis cannot start\n    And I should be able to return to a valid study context",
+        "gherkin": "Feature: Missing study ID error state\n\n  Background:\n    Given I am a user researcher\n    When the study synthesis page is missing a study ID\n\n  Scenario: Recover from missing study context\n    Then I should be told that synthesis cannot start\n    And I should be able to return to a valid study context",
         "risk": "This state should remain an explicit route-context error and should not be treated as an operational synthesis state."
       },
       "Empty evidence state": {
+        "title": "Empty evidence state",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Empty evidence state\n\n  Background:\n    Given I am a user researcher\n    When the study has no captured evidence notes\n\n  Scenario: Understand that no evidence is available\n    Then I should understand that synthesis cannot proceed yet\n    And I should know what evidence capture action is needed before analysis can start\n    And the page should not imply that analysis is complete",
+        "gherkin": "Feature: Empty evidence state\n\n  Background:\n    Given I am a user researcher\n    When the study has no captured evidence notes\n\n  Scenario: Understand that no evidence is available\n    Then I should understand that synthesis cannot proceed yet\n    And the page should not imply that analysis is complete",
         "risk": "The empty-evidence state must not imply that analysis is complete or that absence of evidence is itself an insight."
       },
       "Evidence available before working clusters": {
+        "title": "Evidence available before working clusters",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Evidence available before working clusters\n\n  Background:\n    Given I am a user researcher\n    When evidence is available for the study\n\n  Scenario: Review evidence before clustering\n    Then I should be able to review source evidence before grouping it\n    And I should understand that a working cluster is needed before evidence can be added\n    And I should have enough provenance context to make a defensible analytical decision",
+        "gherkin": "Feature: Evidence available before working clusters\n\n  Background:\n    Given I am a user researcher\n    When evidence is available for the study\n\n  Scenario: Review evidence before clustering\n    Then I should be able to review source evidence before grouping it\n    And I should have enough provenance context to make a defensible analytical decision",
         "risk": "Available evidence should preserve provenance cues so later clusters and themes can be audited."
       },
       "Working cluster grouping created": {
+        "title": "Working cluster grouping created",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Working cluster grouping created\n\n  Background:\n    Given I am a user researcher\n    When I have created a working cluster grouping\n\n  Scenario: Treat a working cluster as provisional\n    Then I should understand that the cluster is provisional\n    And I should be able to add evidence before treating it as a theme\n    And the cluster should not be presented with the same authority as a final insight",
+        "gherkin": "Feature: Working cluster grouping created\n\n  Background:\n    Given I am a user researcher\n    When I have created a working cluster grouping\n\n  Scenario: Treat a working cluster as provisional\n    Then I should understand that the cluster is provisional\n    And I should be able to add evidence before treating it as a theme",
         "risk": "Working clusters are provisional and must not be presented with the same authority as validated themes."
       },
       "Evidence added to working cluster grouping": {
+        "title": "Evidence added to working cluster grouping",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Evidence added to working cluster grouping\n\n  Background:\n    Given I am a user researcher\n    When selected evidence has been added to a working cluster\n\n  Scenario: Add evidence to a working cluster\n    Then I should be able to see what evidence belongs to the cluster\n    And I should understand how cluster membership can be challenged or changed later\n    And the evidence movement should remain auditable",
+        "gherkin": "Feature: Evidence added to working cluster grouping\n\n  Background:\n    Given I am a user researcher\n    When selected evidence has been added to a working cluster\n\n  Scenario: Add evidence to a working cluster\n    Then I should be able to see what evidence belongs to the cluster\n    And the evidence movement should remain auditable",
         "risk": "Evidence movement should be auditable so that cluster membership can be corrected or challenged later."
       },
       "Theme creation hidden before evidence is grouped": {
+        "title": "Theme creation hidden before evidence is grouped",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Theme creation hidden before evidence is grouped\n\n  Background:\n    Given I am a user researcher\n    When no evidence has been grouped into a working cluster\n\n  Scenario: Block theme creation without grouped evidence\n    Then theme creation should remain unavailable\n    And I should understand what evidence action is needed before I can create a theme\n    And the unavailable action should not be presented as a successful analytical outcome",
+        "gherkin": "Feature: Theme creation hidden before evidence is grouped\n\n  Background:\n    Given I am a user researcher\n    When no evidence has been grouped into a working cluster\n\n  Scenario: Block theme creation without grouped evidence\n    Then theme creation should remain unavailable\n    And I should understand what evidence action is needed before I can create a theme",
         "risk": "Blocking unsupported theme creation is a core evidence-integrity safeguard and the recovery route should be explicit and keyboard accessible."
       },
       "Theme created with evidence traceability": {
+        "title": "Theme created with evidence traceability",
         "acceptanceStatus": "needs-review",
         "designRiskStatus": "needs-review",
-        "gherkin": "Feature: Theme created with evidence traceability\n\n  Background:\n    Given I am a user researcher\n    When a theme has been created from grouped evidence\n\n  Scenario: Review a created theme with traceability\n    Then I should see that the theme remains connected to its source evidence\n    And I should be able to inspect enough provenance to support later recommendations\n    And the theme should not appear stronger than the evidence behind it",
+        "gherkin": "Feature: Theme created with evidence traceability\n\n  Background:\n    Given I am a user researcher\n    When a theme has been created from grouped evidence\n\n  Scenario: Review a created theme with traceability\n    Then I should see that the theme remains connected to its source evidence\n    And the theme should not appear stronger than the evidence behind it",
         "risk": "The created-theme state must show enough provenance to stop themes becoming detached claims."
       }
     }
   }
 };
+  const LEGACY_SUMMARIES = [
+    'State-level acceptance criteria',
+    'Design-risk notes',
+    'What this screen state should support'
+  ];
 
   function textOf(element) {
     return (element.innerText || element.textContent || '').replace(/\s+/g, ' ').trim();
@@ -5013,7 +5042,7 @@
 
     details.open = true;
     panel.dataset.reportingReviewLevel = 'state';
-    panel.append(createElement('h4', 'reporting-review__heading', label + ' — state-specific review evidence'));
+    panel.append(createElement('h4', 'reporting-review__heading', (state.title || label) + ' — state-specific review evidence'));
     details.append(summary);
     details.append(createElement('p', 'reporting-review__summary', 'Specific to this screenshot state. Shared grouping criteria and shared design risk are shown once at grouping level.'));
     details.append(createHeadingWithStatus('h5', 'Gherkin acceptance criteria', state.acceptanceStatus));
@@ -5043,27 +5072,43 @@
     return findSmallestContainerContaining(document.body, label, 'Screenshot evidence') || findSmallestContainerContaining(document.body, label);
   }
 
-  function hideDuplicatedReviewBlocks(group, root) {
-    for (const marker of group.duplicateMarkers || []) {
-      const candidates = Array.from(root.querySelectorAll('details, pre, code, dl, table, section, div'))
-        .filter((element) => {
-          if (element.classList.contains('reporting-review') || element.classList.contains('reporting-review-hidden-duplicate')) {
-            return false;
-          }
+  function hideElement(element) {
+    if (!element || element.classList.contains('reporting-review') || element.classList.contains('reporting-review-hidden-duplicate')) {
+      return;
+    }
 
-          const elementText = textOf(element);
-          return elementText.includes(marker) && elementText.length < 9000;
-        })
-        .sort((left, right) => textOf(left).length - textOf(right).length);
+    element.classList.add('reporting-review-hidden-duplicate');
+    element.setAttribute('hidden', '');
+  }
 
-      for (const candidate of candidates) {
-        if (candidate.closest('.reporting-review-hidden-duplicate')) {
-          continue;
-        }
+  function hideLegacyReviewEvidence(group, root) {
+    for (const details of Array.from(root.querySelectorAll('details'))) {
+      if (details.closest('.reporting-review')) {
+        continue;
+      }
 
-        candidate.classList.add('reporting-review-hidden-duplicate');
-        candidate.setAttribute('hidden', '');
-        break;
+      const summaryText = textOf(details.querySelector('summary') || details);
+      const detailsText = textOf(details);
+
+      if (LEGACY_SUMMARIES.some((summary) => summaryText.includes(summary))) {
+        hideElement(details);
+        continue;
+      }
+
+      if ((group.legacyMarkers || []).some((marker) => detailsText.includes(marker))) {
+        hideElement(details);
+      }
+    }
+
+    for (const candidate of Array.from(root.querySelectorAll('pre, code, dl, table'))) {
+      if (candidate.closest('.reporting-review') || candidate.closest('.reporting-review-hidden-duplicate')) {
+        continue;
+      }
+
+      const candidateText = textOf(candidate);
+
+      if ((group.legacyMarkers || []).some((marker) => candidateText.includes(marker))) {
+        hideElement(candidate);
       }
     }
   }
@@ -5077,7 +5122,7 @@
       return;
     }
 
-    const existingDetails = card.querySelector('details');
+    const existingDetails = card.querySelector('details:not(.reporting-review__details)');
 
     if (existingDetails) {
       existingDetails.insertAdjacentElement('beforebegin', panel);
@@ -5103,10 +5148,11 @@
     }
 
     for (const [label, card] of stateCards) {
-      hideDuplicatedReviewBlocks(group, card);
+      hideLegacyReviewEvidence(group, card);
 
       if (!card.querySelector('[data-reporting-review-level="state"]')) {
         insertAfterStateControls(card, createStatePanel(label, group.states[label] || {
+          title: label,
           acceptanceStatus: 'needs-review',
           designRiskStatus: 'needs-review',
           gherkin: 'Feature: Review this state\n\n  Scenario: Review this state\n    Then I should understand the ResearchOps task supported by this state',
@@ -5117,10 +5163,11 @@
   }
 
   function applyReportingReviewGrouping() {
-    if (document.documentElement.dataset.reportingReviewGroupingApplied === 'true') {
+    if (document.documentElement.dataset.reportingReviewRepetitionPassApplied === 'true') {
       return;
     }
 
+    document.documentElement.dataset.reportingReviewRepetitionPassApplied = 'true';
     document.documentElement.dataset.reportingReviewGroupingApplied = 'true';
 
     for (const group of Object.values(GROUPS)) {
