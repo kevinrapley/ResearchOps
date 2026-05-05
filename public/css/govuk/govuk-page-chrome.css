@@ -104,8 +104,8 @@
 	text-underline-offset: 0.1em;
 	}
 
-.govuk-header__homepage-link:focus,
-.govuk-header__link:focus {
+.govuk-header .govuk-header__homepage-link:focus,
+.govuk-header .govuk-header__link:focus {
 	background-color: #ffdd00;
 	color: #0b0c0c;
 	outline: 3px solid #ffdd00;
@@ -120,8 +120,9 @@
 
 .govuk-header__logotype {
 	display: inline-block;
-	font-size: 30px;
-	line-height: 1;
+	width: 162px;
+	height: 30px;
+	vertical-align: middle;
 	}
 
 .govuk-header__service-name,
@@ -198,14 +199,14 @@
 	color: #1a65a6;
 	}
 
-.govuk-service-navigation__link:hover {
+.govuk-service-navigation .govuk-service-navigation__link:hover {
 	color: #0f385c;
 	text-decoration: underline;
 	text-decoration-thickness: 3px;
 	text-underline-offset: 0.1em;
 	}
 
-.govuk-service-navigation__link:focus {
+.govuk-service-navigation .govuk-service-navigation__link:focus {
 	background-color: #ffdd00;
 	color: #0b0c0c;
 	outline: 3px solid #ffdd00;
@@ -424,10 +425,6 @@
 
 	.govuk-header__container {
 		min-height: 44px;
-		}
-
-	.govuk-header__logotype {
-		font-size: 24px;
 		}
 
 	.govuk-service-navigation__container {
