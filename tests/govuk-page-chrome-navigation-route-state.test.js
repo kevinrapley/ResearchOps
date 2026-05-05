@@ -67,16 +67,17 @@ includes(pageChromeCss, "/* transparency begins in the cascade */", "page chrome
 
 includes(headerServiceBrandCss, "GOV.UK header product-name alignment", "header product-name stylesheet");
 includes(headerServiceBrandCss, ".govuk-header .govuk-header__homepage-link:hover", "header product-name stylesheet");
+includes(headerServiceBrandCss, "display: inline-block;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "margin-bottom: -3px;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "border-bottom: 3px solid;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "word-spacing: -6px;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "top: -3px;", "header product-name stylesheet");
-includes(headerServiceBrandCss, "margin-right: 0.4375rem;", "header product-name stylesheet");
+includes(headerServiceBrandCss, "margin-right: 7px;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "margin-bottom: 2px;", "header product-name stylesheet");
 includes(headerServiceBrandCss, ".govuk-header .govuk-header__product-name", "header product-name stylesheet");
 includes(headerServiceBrandCss, "display: inline-table;", "header product-name stylesheet");
-includes(headerServiceBrandCss, "margin-bottom: -0.0625rem;", "header product-name stylesheet");
-includes(headerServiceBrandCss, "font-size: 1.9375rem;", "header product-name stylesheet");
+includes(headerServiceBrandCss, "margin-bottom: -1px;", "header product-name stylesheet");
+includes(headerServiceBrandCss, "font-size: 31px;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "letter-spacing: -0.015em;", "header product-name stylesheet");
 includes(headerServiceBrandCss, "vertical-align: top;", "header product-name stylesheet");
 includes(headerServiceBrandCss, ".govuk-service-navigation .govuk-service-navigation__link:visited", "header product-name stylesheet");
