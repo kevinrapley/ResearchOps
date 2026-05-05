@@ -177,7 +177,7 @@ test('buildStateAcceptanceGherkin derives user-centred criteria from state actio
 	assert.match(gherkin, /Feature: Synthesize research evidence/);
 	assert.match(gherkin, /When I enter "Confidence and support needs" into the "Theme label" field/);
 	assert.match(gherkin, /And I select "Create theme"/);
-	assert.match(gherkin, /Scenario: Use the state accessibly/);
+	assert.match(gherkin, /Scenario: Use this part of the journey accessibly/);
 	assert.doesNotMatch(gherkin, /Given the route/);
 });
 
