@@ -1,6 +1,11 @@
 /* eslint-env node */
 
 import {
+	operationalDefaultState,
+	operationalDesignRisks,
+	operationalPaths,
+} from './visual-walkthrough.operational-fixtures.mjs';
+import {
 	participantConsentDefaultState,
 	participantConsentVisualStates,
 } from './visual-walkthrough.participant-consent-states.mjs';
@@ -171,6 +176,7 @@ export const visualWalkthroughConfig = {
 			group: 'Core',
 			path: '/',
 			description: 'ResearchOps landing page.',
+			designRisk: operationalDesignRisks.home,
 		},
 		{
 			id: 'start',
@@ -178,6 +184,7 @@ export const visualWalkthroughConfig = {
 			group: 'Core',
 			path: '/pages/start/index.html',
 			description: 'Start page for creating or beginning research project work.',
+			designRisk: operationalDesignRisks.start,
 			states: [
 				{
 					id: 'step-1-filled',
@@ -273,6 +280,7 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/projects/index.html',
 			description: 'Project list page.',
+			designRisk: operationalDesignRisks.projects,
 		},
 		{
 			id: 'project-dashboard',
@@ -280,6 +288,14 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/project-dashboard/index.html',
 			description: 'Project dashboard page.',
+			designRisk: operationalDesignRisks.projectDashboard,
+			defaultState: operationalDefaultState({
+				title: 'Project dashboard with operational project context',
+				description:
+					'Dashboard captured with a deterministic project ID, project metadata, linked stakeholders and study context.',
+				path: operationalPaths.projectDashboard,
+				waitForText: 'Assisted Digital Support Discovery',
+			}),
 		},
 		{
 			id: 'project-dashboard-add-study',
@@ -287,6 +303,14 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/study/new/index.html',
 			description: 'Create a study from the project dashboard action workflow.',
+			designRisk: operationalDesignRisks.addStudy,
+			defaultState: operationalDefaultState({
+				title: 'Add study with parent project context',
+				description:
+					'Add-study workflow captured with the parent project ID present in the URL so project relationship and return routes can be reviewed.',
+				path: operationalPaths.addStudy,
+				waitForText: 'Add study',
+			}),
 		},
 		{
 			id: 'project-dashboard-add-participant',
@@ -294,6 +318,14 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/project-dashboard/participants/index.html',
 			description: 'Add a study-linked participant from the project dashboard action workflow.',
+			designRisk: operationalDesignRisks.addParticipant,
+			defaultState: operationalDefaultState({
+				title: 'Add participant with parent project context',
+				description:
+					'Participant workflow captured with the project ID present so privacy copy, project ownership and study-linking context can be evaluated.',
+				path: operationalPaths.addParticipant,
+				waitForText: 'Add participant',
+			}),
 		},
 		{
 			id: 'project-dashboard-import-participants',
@@ -302,6 +334,14 @@ export const visualWalkthroughConfig = {
 			path: '/pages/project-dashboard/participants/import/index.html',
 			description:
 				'Import study-linked participants from CSV from the project dashboard action workflow.',
+			designRisk: operationalDesignRisks.importParticipants,
+			defaultState: operationalDefaultState({
+				title: 'Import participants with parent project context',
+				description:
+					'CSV import workflow captured with the project ID present so file-upload guidance, privacy warnings and bulk-error recovery can be reviewed.',
+				path: operationalPaths.importParticipants,
+				waitForText: 'Import participants',
+			}),
 		},
 		{
 			id: 'outcomes',
@@ -309,6 +349,14 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/projects/outcomes/index.html',
 			description: 'Outcomes page for project-level findings and outputs.',
+			designRisk: operationalDesignRisks.outcomes,
+			defaultState: operationalDefaultState({
+				title: 'Project outcomes with project context',
+				description:
+					'Outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated.',
+				path: operationalPaths.outcomes,
+				waitForText: 'Project outcomes',
+			}),
 		},
 		{
 			id: 'journals',
@@ -316,6 +364,14 @@ export const visualWalkthroughConfig = {
 			group: 'Projects',
 			path: '/pages/projects/journals/index.html',
 			description: 'Reflexive journal page.',
+			designRisk: operationalDesignRisks.journals,
+			defaultState: operationalDefaultState({
+				title: 'Project journals with project context',
+				description:
+					'Reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work.',
+				path: operationalPaths.journals,
+				waitForText: 'Project journals',
+			}),
 		},
 		{
 			id: 'study',
@@ -323,6 +379,14 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/index.html',
 			description: 'Study overview and readiness controls.',
+			designRisk: operationalDesignRisks.study,
+			defaultState: operationalDefaultState({
+				title: 'Study overview with readiness context',
+				description:
+					'Study overview captured with project and study IDs, participants, guides, consent forms and consent records present.',
+				path: operationalPaths.study,
+				waitForText: 'Assisted digital support interview round 1',
+			}),
 		},
 		{
 			id: 'study-guides',
@@ -330,6 +394,14 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/guides/index.html',
 			description: 'Discussion guide list and editor page.',
+			designRisk: operationalDesignRisks.studyGuides,
+			defaultState: operationalDefaultState({
+				title: 'Discussion guides with study context',
+				description:
+					'Discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed.',
+				path: operationalPaths.studyGuides,
+				waitForText: 'Discussion guides',
+			}),
 		},
 		{
 			id: 'study-participants',
@@ -337,6 +409,14 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/participants/index.html',
 			description: 'Participants page for a study.',
+			designRisk: operationalDesignRisks.studyParticipants,
+			defaultState: operationalDefaultState({
+				title: 'Study participants with participant records',
+				description:
+					'Participants page captured with study-scoped participant records so recruitment, scheduling and consent readiness can be reviewed.',
+				path: operationalPaths.studyParticipants,
+				waitForText: 'Participants',
+			}),
 		},
 		{
 			id: 'study-session',
@@ -344,6 +424,14 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/session/index.html',
 			description: 'Session running and note capture page.',
+			designRisk: operationalDesignRisks.studySession,
+			defaultState: operationalDefaultState({
+				title: 'Study session with project and study context',
+				description:
+					'Session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed.',
+				path: operationalPaths.studySession,
+				waitForText: 'Study session',
+			}),
 		},
 		{
 			id: 'study-consent-forms',
@@ -351,6 +439,14 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/consent-forms/index.html',
 			description: 'Study-specific consent form configuration page.',
+			designRisk: operationalDesignRisks.studyConsentForms,
+			defaultState: operationalDefaultState({
+				title: 'Study consent forms with study context',
+				description:
+					'Consent form configuration captured with project and study IDs so publishing state and consent wording can be reviewed.',
+				path: operationalPaths.studyConsentForms,
+				waitForText: 'Consent forms',
+			}),
 		},
 		{
 			id: 'study-participant-consent',
@@ -358,6 +454,7 @@ export const visualWalkthroughConfig = {
 			group: 'Study',
 			path: '/pages/study/participant-consent/index.html',
 			description: 'Study-scoped participant consent recording and review page.',
+			designRisk: operationalDesignRisks.participantConsent,
 			defaultState: participantConsentDefaultState,
 			states: participantConsentVisualStates,
 		},
@@ -367,6 +464,7 @@ export const visualWalkthroughConfig = {
 			group: 'Utilities',
 			path: '/pages/search/index.html',
 			description: 'Search page.',
+			designRisk: operationalDesignRisks.search,
 		},
 		{
 			id: 'notes',
@@ -374,6 +472,7 @@ export const visualWalkthroughConfig = {
 			group: 'Utilities',
 			path: '/pages/notes/index.html',
 			description: 'Notes page.',
+			designRisk: operationalDesignRisks.notes,
 		},
 		{
 			id: 'consent',
@@ -381,6 +480,7 @@ export const visualWalkthroughConfig = {
 			group: 'Utilities',
 			path: '/pages/consent/index.html',
 			description: 'Consent page.',
+			designRisk: operationalDesignRisks.consent,
 		},
 		{
 			id: 'sessions',
@@ -388,6 +488,7 @@ export const visualWalkthroughConfig = {
 			group: 'Utilities',
 			path: '/pages/sessions/index.html',
 			description: 'Sessions list page.',
+			designRisk: operationalDesignRisks.sessions,
 		},
 		{
 			id: 'synthesize',
@@ -395,6 +496,7 @@ export const visualWalkthroughConfig = {
 			group: 'Analysis',
 			path: '/pages/synthesize/index.html',
 			description: 'Synthesis page.',
+			designRisk: operationalDesignRisks.synthesize,
 		},
 	],
 };
