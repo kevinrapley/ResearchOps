@@ -355,7 +355,7 @@ export const visualWalkthroughConfig = {
 				description:
 					'Outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated.',
 				path: operationalPaths.outcomes,
-				waitForText: 'Project outcomes',
+				waitForText: 'Impact & ROI',
 			}),
 		},
 		{
@@ -370,7 +370,7 @@ export const visualWalkthroughConfig = {
 				description:
 					'Reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work.',
 				path: operationalPaths.journals,
-				waitForText: 'Project journals',
+				waitForText: 'Reflexive Journal & Analysis',
 			}),
 		},
 		{
@@ -400,7 +400,7 @@ export const visualWalkthroughConfig = {
 				description:
 					'Discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed.',
 				path: operationalPaths.studyGuides,
-				waitForText: 'Discussion guides',
+				waitForText: 'Guides for this study',
 			}),
 		},
 		{
@@ -430,7 +430,7 @@ export const visualWalkthroughConfig = {
 				description:
 					'Session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed.',
 				path: operationalPaths.studySession,
-				waitForText: 'Study session',
+				waitForText: 'Begin a session',
 			}),
 		},
 		{
