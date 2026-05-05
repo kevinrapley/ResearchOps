@@ -89,7 +89,10 @@ test('AI-specific criteria is limited to the AI-specific state evidence', () => 
 });
 
 test('guided-process step details are kept at start group level only', () => {
-	assert.match(GROUP_REVIEW_MODEL.start.gherkin, /Scenario: Understand the steps in the guided process/);
+	assert.match(
+		GROUP_REVIEW_MODEL.start.gherkin,
+		/Scenario: Understand the steps in the guided process/
+	);
 
 	for (const state of Object.values(GROUP_REVIEW_MODEL.start.states)) {
 		assert.doesNotMatch(
