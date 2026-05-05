@@ -3,6 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 import {
+	operationalMockRoutes,
+	operationalPaths,
+	operationalProjectId,
+	operationalStudyId,
+} from '../visual-walkthrough.operational-fixtures.mjs';
+import {
 	participantConsentDefaultState,
 	participantConsentVisualStates,
 } from '../visual-walkthrough.participant-consent-states.mjs';
@@ -64,6 +70,20 @@ function actionSelectorValues(stateId) {
 		.map((action) => action.selector);
 }
 
+function pageById(pageId) {
+	return visualWalkthroughConfig.pages.find((page) => page.id === pageId);
+}
+
+function assertDefaultStatePath(pageId, expectedPath, message) {
+	const page = pageById(pageId);
+	assert.equal(
+		Boolean(page?.defaultState?.path),
+		true,
+		`Expected ${pageId} to define a default state path`
+	);
+	assert.equal(page.defaultState.path, expectedPath, message);
+}
+
 const discoveredRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
 	.map(routeFromPublicFile)
 	.filter((route) => !visualWalkthroughConfig.excludedRoutes.includes(route));
@@ -74,6 +94,7 @@ const profileIds = visualWalkthroughConfig.profiles.map((profile) => profile.id)
 const synthesisStateIds = synthesisVisualStates.map((state) => state.id);
 const participantConsentStateIds = participantConsentVisualStates.map((state) => state.id);
 const visualWalkthroughSource = fs.readFileSync('scripts/visual-walkthrough.mjs', 'utf8');
+const stateAcceptanceSource = fs.readFileSync('scripts/researchops-state-acceptance.mjs', 'utf8');
 
 for (const route of discoveredRoutes) {
 	assert.ok(
@@ -90,6 +111,26 @@ for (const page of visualWalkthroughConfig.pages) {
 	);
 	assert.equal(Boolean(page.title), true, `Expected registered page to have a title: ${page.id}`);
 	assert.equal(Boolean(page.group), true, `Expected registered page to have a group: ${page.id}`);
+	assert.equal(
+		Boolean(page.designRisk?.risk),
+		true,
+		`Expected page to define a design risk: ${page.id}`
+	);
+	assert.equal(
+		Boolean(page.designRisk?.impact),
+		true,
+		`Expected page to define design risk impact: ${page.id}`
+	);
+	assert.equal(
+		Boolean(page.designRisk?.recommendedChange),
+		true,
+		`Expected page to define design risk recommendation: ${page.id}`
+	);
+	assert.doesNotMatch(
+		`${page.designRisk.risk} ${page.designRisk.impact} ${page.designRisk.recommendedChange}`,
+		/No specific design risk recorded|No additional impact has been identified|Review this state during the next design critique/,
+		`Expected page to use a route-specific design-risk assessment: ${page.id}`
+	);
 }
 
 assert.equal(
@@ -115,6 +156,90 @@ for (const profile of visualWalkthroughConfig.profiles) {
 		Boolean(profile.contextOptions?.viewport?.height),
 		true,
 		`Expected profile to define viewport height: ${profile.id}`
+	);
+}
+
+assert.equal(
+	operationalMockRoutes().length >= 7,
+	true,
+	'Expected operational walkthrough fixtures to cover project, study, participant, guide, consent and session APIs'
+);
+
+assertDefaultStatePath(
+	'project-dashboard',
+	operationalPaths.projectDashboard,
+	'Expected project dashboard walkthrough to capture a real project-scoped URL'
+);
+assertDefaultStatePath(
+	'project-dashboard-add-study',
+	operationalPaths.addStudy,
+	'Expected add-study walkthrough to keep the parent project ID in the URL'
+);
+assertDefaultStatePath(
+	'project-dashboard-add-participant',
+	operationalPaths.addParticipant,
+	'Expected add-participant walkthrough to keep the parent project ID in the URL'
+);
+assertDefaultStatePath(
+	'project-dashboard-import-participants',
+	operationalPaths.importParticipants,
+	'Expected import-participants walkthrough to keep the parent project ID in the URL'
+);
+assertDefaultStatePath(
+	'study',
+	operationalPaths.study,
+	'Expected study overview walkthrough to capture a project and study scoped URL'
+);
+assertDefaultStatePath(
+	'study-guides',
+	operationalPaths.studyGuides,
+	'Expected discussion guides walkthrough to capture a project and study scoped URL'
+);
+assertDefaultStatePath(
+	'study-participants',
+	operationalPaths.studyParticipants,
+	'Expected study participants walkthrough to capture a project and study scoped URL'
+);
+assertDefaultStatePath(
+	'study-session',
+	operationalPaths.studySession,
+	'Expected study session walkthrough to capture a project and study scoped URL'
+);
+assertDefaultStatePath(
+	'study-consent-forms',
+	operationalPaths.studyConsentForms,
+	'Expected consent forms walkthrough to capture a project and study scoped URL'
+);
+
+for (const pageId of [
+	'project-dashboard',
+	'project-dashboard-add-study',
+	'project-dashboard-add-participant',
+	'project-dashboard-import-participants',
+	'study',
+	'study-guides',
+	'study-participants',
+	'study-session',
+	'study-consent-forms',
+]) {
+	const page = pageById(pageId);
+	assert.ok(
+		page.defaultState.path.includes(operationalProjectId),
+		`Expected ${pageId} walkthrough path to include the operational project ID`
+	);
+}
+
+for (const pageId of [
+	'study',
+	'study-guides',
+	'study-participants',
+	'study-session',
+	'study-consent-forms',
+]) {
+	const page = pageById(pageId);
+	assert.ok(
+		page.defaultState.path.includes(operationalStudyId),
+		`Expected ${pageId} walkthrough path to include the operational study ID`
 	);
 }
 
@@ -152,6 +277,36 @@ assert.doesNotMatch(
 	visualWalkthroughSource,
 	/Gherkin acceptance criteria for this state/,
 	'Expected state-level details panels not to use delivery-tooling wording as the summary label'
+);
+
+assert.match(
+	stateAcceptanceSource,
+	/ResearchOps journey/,
+	'Expected generated Gherkin criteria to be framed around the user journey rather than the report artefact'
+);
+
+assert.match(
+	stateAcceptanceSource,
+	/Add a study to a research project/,
+	'Expected generated Gherkin criteria to include project-dashboard action journeys'
+);
+
+assert.doesNotMatch(
+	stateAcceptanceSource,
+	/ready to work with this ResearchOps state/,
+	'Expected generated Gherkin criteria not to describe the reporting site state as the user task'
+);
+
+assert.doesNotMatch(
+	stateAcceptanceSource,
+	/Use the state accessibly/,
+	'Expected generated Gherkin criteria to avoid reporting-site state language in accessibility scenarios'
+);
+
+assert.doesNotMatch(
+	stateAcceptanceSource,
+	/Work with the "/,
+	'Expected generated Gherkin criteria to avoid generic state wording in scenario titles'
 );
 
 assert.match(

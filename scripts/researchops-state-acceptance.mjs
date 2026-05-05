@@ -34,6 +34,24 @@ const PAGE_STORIES = {
 		want: 'review the status, evidence and next actions for a research project',
 		so: 'I can coordinate research activity across the team',
 	},
+	'project-dashboard-add-study': {
+		feature: 'Add a study to a research project',
+		context: 'add study journey',
+		want: 'add a study to the correct project',
+		so: 'study planning remains traceable to the project context',
+	},
+	'project-dashboard-add-participant': {
+		feature: 'Add a participant to a research project',
+		context: 'add participant journey',
+		want: 'add a participant from the correct project context',
+		so: 'recruitment records are connected to the right research work',
+	},
+	'project-dashboard-import-participants': {
+		feature: 'Import participants for a research project',
+		context: 'import participants journey',
+		want: 'import participant records with clear project context and safe guidance',
+		so: 'bulk participant setup does not weaken privacy, consent or traceability',
+	},
 	outcomes: {
 		feature: 'Manage project outcomes',
 		context: 'project outcomes page',
@@ -237,15 +255,15 @@ function buildActionScenario(sourceActions = []) {
 
 	if (relevantActions.length === 0) {
 		return [
-			'Scenario: Use the default view',
+			'Scenario: Understand the default view',
 			'  Then I should understand what ResearchOps task this page supports',
-			'  And I should be able to choose an appropriate next action',
+			'  And I should be able to choose an appropriate next action for my work',
 		];
 	}
 
 	return [
-		'Scenario: Complete the interaction needed for this state',
-		'  Given I am ready to work with this ResearchOps state',
+		'Scenario: Complete the interaction needed for this ResearchOps task',
+		'  Given I am ready to continue this ResearchOps journey',
 		...relevantActions.map(buildActionStep),
 		'  Then I should be able to continue the ResearchOps journey with confidence',
 	];
@@ -259,7 +277,7 @@ export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState =
 	const story = storyForPage(page);
 	const statePurpose = state.description
 		? truncateForGherkin(state.description, 220)
-		: `the ${lowerFirst(state.title || 'current')} state`;
+		: `the ${lowerFirst(state.title || 'current view')}`;
 	const sourceActions = Array.isArray(sourceState?.actions) ? sourceState.actions : [];
 
 	return [
@@ -277,14 +295,14 @@ export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState =
 		`    Then I should see content that supports ${lowerFirst(page.description || story.want)}`,
 		'    And I should understand what ResearchOps task I can complete from this page',
 		'',
-		`  Scenario: Work with the "${quoteGherkin(state.title || 'Default')}" state`,
+		`  Scenario: Use "${quoteGherkin(state.title || 'Default view')}" in the ResearchOps journey`,
 		`    Given I am using the ${story.context}`,
-		`    Then the interface should make it clear that this state is for ${lowerFirst(statePurpose)}`,
-		'    And I should be given enough context to decide what to do next',
+		`    Then I should understand how ${lowerFirst(statePurpose)} supports my research work`,
+		'    And I should be given enough service context to decide what to do next',
 		'',
 		...buildActionScenario(sourceActions).map((line) => `  ${line}`),
 		'',
-		'  Scenario: Use the state accessibly',
+		'  Scenario: Use this part of the journey accessibly',
 		'    Then the page should have one clear main heading',
 		'    And headings, labels and controls should be exposed in a logical reading order',
 		'    And I should be able to move through the available controls using a keyboard',
