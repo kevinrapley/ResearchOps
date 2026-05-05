@@ -293,12 +293,14 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The visual walkthrough publish job did not update the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "The generated publish candidate was uploaded as the \\`visual-walkthrough-site-publish-candidate\\` workflow artifact before deployment." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "If the failure point is the Cloudflare Pages access check, replace \\`CF_API_TOKEN\\` with a token from the same Cloudflare account as \\`CF_ACCOUNT_ID\\`." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Required token scope: Account > Cloudflare Pages > Edit for the account that owns \\`${REPORTING_PAGES_PROJECT}\\`." >> "$GITHUB_STEP_SUMMARY"
+          {
+            printf '%s\n' '## Application visual walkthrough'
+            printf '%s\n' ''
+            printf '%s\n' 'The visual walkthrough publish job did not update the Cloudflare Pages reporting site.'
+            printf '%s\n' ''
+            printf '%s\n' 'The generated publish candidate was uploaded as the `visual-walkthrough-site-publish-candidate` workflow artifact before deployment.'
+            printf '%s\n' ''
+            printf '%s\n' 'If the failure point is the Cloudflare Pages access check, replace `CF_API_TOKEN` with a token from the same Cloudflare account as `CF_ACCOUNT_ID`.'
+            printf '%s\n' ''
+            printf 'Required token scope: Account > Cloudflare Pages > Edit for the account that owns `%s`.\n' "${REPORTING_PAGES_PROJECT}"
+          } >> "$GITHUB_STEP_SUMMARY"
