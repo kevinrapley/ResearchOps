@@ -336,7 +336,7 @@
 #back-to-project.govuk-back-link {
 	display: block;
 	width: fit-content;
-	margin: 0 0 24px auto;
+	margin: 0 24px 24px auto;
 	padding: 8px 10px 7px;
 	border: 2px solid transparent;
 	background: #f4f8fb;
