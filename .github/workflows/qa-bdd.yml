@@ -217,6 +217,9 @@ jobs:
       - name: Apply reporting review repetition pass
         run: node scripts/apply-reporting-review-repetition-pass.mjs reports-site
 
+      - name: Finalise reporting review repetition pass
+        run: node scripts/finalise-reporting-review-repetition-pass.mjs reports-site
+
       - name: Detect visual walkthrough site
         id: detect_site
         if: always()
