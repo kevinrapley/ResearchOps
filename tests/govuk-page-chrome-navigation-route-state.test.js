@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageChromeCss = fs.readFileSync("public/css/govuk/govuk-page-chrome.css", "utf8");
+const headerServiceBrandCss = fs.readFileSync(
+  "public/css/govuk/govuk-header-service-brand.css",
+  "utf8"
+);
 const headerPartial = fs.readFileSync("public/partials/header.html", "utf8");
 const footerPartial = fs.readFileSync("public/partials/footer.html", "utf8");
 const migrationDoc = fs.readFileSync(
@@ -53,7 +57,6 @@ includes(pageChromeCss, ".govuk-service-navigation__item--active", "page chrome 
 includes(pageChromeCss, ".govuk-service-navigation__link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation .govuk-service-navigation__link:visited", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation .govuk-service-navigation__link:focus", "page chrome stylesheet");
-includes(pageChromeCss, ".govuk-service-navigation__service-name .govuk-service-navigation__link:visited", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__link[aria-current=\"page\"]:visited", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-phase-banner", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link", "page chrome stylesheet");
@@ -62,7 +65,18 @@ includes(pageChromeCss, "background: #1d70b8;", "page chrome stylesheet");
 includes(pageChromeCss, "background: #f4f8fb;", "page chrome stylesheet");
 includes(pageChromeCss, "/* transparency begins in the cascade */", "page chrome stylesheet");
 
+includes(headerServiceBrandCss, "GOV.UK header service brand alignment", "header service brand stylesheet");
+includes(headerServiceBrandCss, ".govuk-header .govuk-header__homepage-link:hover", "header service brand stylesheet");
+includes(headerServiceBrandCss, "box-shadow: 0 3px 0 #ffffff;", "header service brand stylesheet");
+includes(headerServiceBrandCss, "color: #ffffff;", "header service brand stylesheet");
+includes(headerServiceBrandCss, ".govuk-header .govuk-header__service-name", "header service brand stylesheet");
+includes(headerServiceBrandCss, "font-size: 30px;", "header service brand stylesheet");
+includes(headerServiceBrandCss, ".govuk-service-navigation .govuk-service-navigation__link:visited", "header service brand stylesheet");
+includes(headerServiceBrandCss, ".govuk-service-navigation__link[aria-current=\"page\"]:visited", "header service brand stylesheet");
+includes(headerServiceBrandCss, "/* transparency begins in the cascade */", "header service brand stylesheet");
+
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
+includes(headerPartial, "href=\"/css/govuk/govuk-header-service-brand.css\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header\" role=\"banner\" data-module=\"govuk-header\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__container govuk-width-container\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__homepage-link\"", "shared header partial");
@@ -76,11 +90,14 @@ includes(headerPartial, "class=\"govuk-header__logotype\"", "shared header parti
 includes(headerPartial, "aria-label=\"GOV.UK\"", "shared header partial");
 includes(headerPartial, "<title>GOV.UK</title>", "shared header partial");
 includes(headerPartial, "class=\"govuk-logo-dot\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-header__service-name\"", "shared header partial");
+includes(headerPartial, "ResearchOps Demo Suite", "shared header partial");
 excludes(headerPartial, "<span class=\"govuk-header__logotype\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation\"", "shared header partial");
 includes(headerPartial, "data-module=\"govuk-service-navigation\"", "shared header partial");
 includes(headerPartial, "aria-label=\"Service information\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-service-navigation__service-name\"", "shared header partial");
+excludes(headerPartial, "class=\"govuk-service-navigation__service-name\"", "shared header partial");
+excludes(headerPartial, "{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation__wrapper\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation__toggle govuk-js-service-navigation-toggle\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation__list\"", "shared header partial");
