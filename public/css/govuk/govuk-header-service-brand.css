@@ -57,7 +57,8 @@
 	margin-right: 0;
 	}
 
-.govuk-header .govuk-header__product-name {
+.govuk-header .govuk-header__product-name,
+.govuk-header .govuk-header__service-name {
 	display: inline-table;
 	margin-bottom: -0.0625rem;
 	color: inherit;
@@ -76,7 +77,8 @@
 		forced-color-adjust: none;
 		}
 
-	.govuk-header .govuk-header__product-name {
+	.govuk-header .govuk-header__product-name,
+	.govuk-header .govuk-header__service-name {
 		background: transparent;
 		color: LinkText;
 		}
