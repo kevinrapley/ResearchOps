@@ -301,6 +301,7 @@ jobs:
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
       - name: Deploy visual walkthrough to Cloudflare Pages reporting site
+        id: deploy_reporting_site
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
@@ -316,6 +317,41 @@ jobs:
             --branch=main \
             --commit-hash=${GITHUB_SHA} \
             --commit-message="Visual walkthrough ${GITHUB_RUN_ID}"
+
+      - name: Show Wrangler failure log
+        if: >-
+          ${{
+            always() &&
+            steps.deploy_reporting_site.outcome == 'failure'
+          }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          latest="$(ls -t "$HOME/.config/.wrangler/logs"/wrangler-*.log 2>/dev/null | head -n 1 || true)"
+
+          if [ -z "$latest" ]; then
+            echo "No Wrangler log file was found."
+            exit 0
+          fi
+
+          echo "Wrangler log: $latest"
+          echo "::group::Wrangler failure log tail"
+          tail -n 240 "$latest"
+          echo "::endgroup::"
+
+      - name: Upload Wrangler logs
+        if: >-
+          ${{
+            always() &&
+            steps.deploy_reporting_site.outcome == 'failure'
+          }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrangler-pages-deploy-logs
+          path: ~/.config/.wrangler/logs/*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Verify reporting site was updated
         if: >-
