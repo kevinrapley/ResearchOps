@@ -54,6 +54,7 @@ export async function createStudy(svc, request, origin) {
 
 	const fields = {
 		Project: [payload.project_airtable_id],
+		Title: typeof payload.title === "string" ? payload.title : undefined,
 		Method: payload.method,
 		Description: mdToAirtableRich(payload.description || ""),
 		Status: typeof payload.status === "string" ? payload.status : undefined,
@@ -87,11 +88,12 @@ export async function createStudy(svc, request, origin) {
 		const nowIso = new Date().toISOString();
 		await svc.githubCsvAppend({
 			path: svc.env.GH_PATH_STUDIES,
-			header: ["AirtableId", "ProjectAirtableId", "StudyId", "Method", "Status", "Description", "CreatedAt"],
+			header: ["AirtableId", "ProjectAirtableId", "StudyId", "Title", "Method", "Status", "Description", "CreatedAt"],
 			row: [
 				studyId,
 				payload.project_airtable_id,
 				payload.study_id || "",
+				payload.title || "",
 				payload.method || "",
 				payload.status || "",
 				payload.description || "",
@@ -163,6 +165,7 @@ export async function listStudies(svc, origin, url) {
 				return {
 					id: r.id,
 					studyId: f["Study ID"] || "",
+					title: f.Title || f.title || "",
 					method: f.Method || "",
 					status: f.Status || "",
 					description: f.Description || "",
@@ -180,8 +183,8 @@ export async function listStudies(svc, origin, url) {
 
 /**
  * Update a Study (Airtable partial update).
- * Accepts: { description?, method?, status?, study_id? }
- * Writes to Airtable fields: Description, Method, Status, "Study ID".
+ * Accepts: { description?, method?, status?, study_id?, title? }
+ * Writes to Airtable fields: Description, Method, Status, "Study ID", Title.
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {Request} request
  * @param {string} origin
@@ -202,6 +205,7 @@ export async function updateStudy(svc, request, origin, studyId) {
 	try { payload = JSON.parse(new TextDecoder().decode(body)); } catch { return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin)); }
 
 	const fields = {
+		Title: typeof payload.title === "string" ? payload.title : undefined,
 		Description: typeof payload.description === "string" ? mdToAirtableRich(payload.description) : undefined,
 		Method: typeof payload.method === "string" ? payload.method : undefined,
 		Status: typeof payload.status === "string" ? payload.status : undefined,
