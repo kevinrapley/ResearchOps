@@ -75,7 +75,7 @@
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p class="meta">Generated evidence of the current application build, covering registered pages and important interaction states.</p>
 			<p class="meta">Base URL: https://researchops.pages.dev/</p>
-			<p class="meta">Run started: 2026-05-04T23:20:54.485Z</p>
+			<p class="meta">Run started: 2026-05-05T00:03:00.783Z</p>
 		</div>
 		<div class="summary">
 			<span class="badge">17 pages</span>
@@ -2016,24 +2016,91 @@
     Given I am a user researcher
     When I visit the projects page
 
-  Scenario: Understand the page purpose
-    Then I should see content that supports project list page.
-    And I should understand what ResearchOps task I can complete from this page
+  Scenario: View the Projects page identity
+    Then I should see the service name &quot;ResearchOps Demo Suite&quot;
+    And I should see the page heading &quot;Projects&quot;
+    And I should see introductory text that says &quot;Review research projects created in ResearchOps.&quot;
+    And I should see supporting text that says &quot;Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.&quot;
 
-  Scenario: Work with the &quot;Default state&quot; state
-    Given I am using the projects page
-    Then the interface should make it clear that this state is for initial loaded page state.
-    And I should be given enough context to decide what to do next
+  Scenario: Understand that the service is a prototype
+    Then I should see a prototype banner
+    And the banner should say &quot;This is a ResearchOps prototype. Do not enter real participant personal data.&quot;
 
-  Scenario: Use the default view
-    Then I should understand what ResearchOps task this page supports
-    And I should be able to choose an appropriate next action
+  Scenario: Navigate using the primary navigation
+    Then I should see primary navigation links for:
+      | Home |
+      | Start research project |
+      | Projects |
+    And the &quot;Projects&quot; navigation item should be shown as the current page
 
-  Scenario: Use the state accessibly
+  Scenario: Start a new project from the Projects page
+    Then I should see the primary action &quot;Start a research project&quot;
+    When I select &quot;Start a research project&quot;
+    Then I should be taken to the start research project service
+
+  Scenario: Understand the project list
+    Then I should see a section called &quot;Research projects&quot;
+    And I should see text explaining that &quot;Projects are shown with the newest created project first.&quot;
+    And I should see loading text that says &quot;Loading projects.&quot; until project records are ready
+    And project records should be presented newest first when they load
+
+  Scenario: Review loaded project records
+    When project records load successfully
+    Then each project card should expose:
+      | Project organisation |
+      | Project title |
+      | Phase |
+      | Status |
+      | Description |
+      | View dashboard |
+      | User groups |
+      | Stakeholders and objectives |
+    And each project card should provide a dashboard link for continuing work on that project
+
+  Scenario: Open a project dashboard
+    Given project records have loaded
+    When I select &quot;View dashboard&quot; for a project
+    Then I should be taken to that project dashboard
+    And the selected project should be identified by its project ID
+
+  Scenario: Recover when there are no projects yet
+    When no project records are available
+    Then I should see a status message headed &quot;No projects yet&quot;
+    And I should see text explaining that &quot;Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.&quot;
+    And I should be able to select &quot;Start a research project&quot;
+
+  Scenario: Recover when project records cannot load
+    When project records cannot be loaded
+    Then I should see an alert headed &quot;Could not load projects&quot;
+    And I should see text explaining that &quot;Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.&quot;
+    And I should be able to select &quot;Start a research project&quot; so I can continue setting up research work
+
+  Scenario: Use the page without JavaScript
+    Given JavaScript is not available
+    Then I should see fallback guidance headed &quot;Project records need JavaScript to load&quot;
+    And I should see text explaining that &quot;You can still start a new research project from this page.&quot;
+    And I should still be able to select &quot;Start a research project&quot;
+
+  Scenario: Access the Projects page using a keyboard
+    Given I am navigating with a keyboard
+    Then I should be able to move focus to the main content
+    And I should be able to move focus through the primary navigation links
+    And I should be able to move focus to &quot;Start a research project&quot;
+    And I should be able to activate project dashboard links without a mouse
+
+  Scenario: Understand the page structure with assistive technology
     Then the page should have one clear main heading
-    And headings, labels and controls should be exposed in a logical reading order
-    And I should be able to move through the available controls using a keyboard
-    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+    And the project list should be labelled by &quot;Research projects&quot;
+    And the project list should announce loading, empty and error-state changes politely or as an alert as appropriate
+    And the project list should expose when it is busy loading project records
+    And each project card should expose its heading, metadata, user groups, stakeholders and objectives in a logical reading order
+
+  Scenario: Use the Projects page on a mobile device
+    Then the page introduction, project list, project cards, empty state and error state should remain readable
+    And no content should require horizontal scrolling
+
+  Scenario: View footer information
+    Then I should see the footer text &quot;© 2026 Home Office Biometrics · ResearchOps v1.0.0&quot;</code></pre>
 					</details>
 					
 					<section class="design-risk" aria-label="Design-risk notes">

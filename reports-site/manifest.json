@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-04T23:20:54.485Z",
+  "startedAt": "2026-05-05T00:03:00.783Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1024,
+              "durationMs": 1102,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1324,
+              "durationMs": 1287,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -161,7 +161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 954,
+              "durationMs": 915,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -169,7 +169,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1150,
+              "durationMs": 1083,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -207,7 +207,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1786,
+              "durationMs": 1797,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -215,7 +215,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1928,
+              "durationMs": 1886,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -253,7 +253,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2333,
+              "durationMs": 2182,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -261,7 +261,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2394,
+              "durationMs": 2319,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -299,7 +299,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2886,
+              "durationMs": 2819,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -345,7 +345,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3567,
+              "durationMs": 3489,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -353,7 +353,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3885,
+              "durationMs": 3742,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -391,7 +391,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3295,
+              "durationMs": 3203,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -399,7 +399,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3431,
+              "durationMs": 3460,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -437,7 +437,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3878,
+              "durationMs": 3838,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -445,7 +445,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4042,
+              "durationMs": 3948,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -483,7 +483,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4345,
+              "durationMs": 4283,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -491,7 +491,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4586,
+              "durationMs": 4506,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
@@ -538,7 +538,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1665,
+              "durationMs": 2037,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -546,7 +546,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1705,
+              "durationMs": 2140,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -565,11 +565,16 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__projects__default.png",
-          "acceptanceCriteria": "Feature: Review research projects\n\n  As a user researcher\n  I want to review existing research projects\n  So that I can find the right project and continue the right ResearchOps task\n\n  Background:\n    Given I am a user researcher\n    When I visit the projects page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project list page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the projects page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review research projects\n\n  As a user researcher\n  I want to review existing research projects\n  So that I can find the right project and continue the right ResearchOps task\n\n  Background:\n    Given I am a user researcher\n    When I visit the projects page\n\n  Scenario: View the Projects page identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Projects\"\n    And I should see introductory text that says \"Review research projects created in ResearchOps.\"\n    And I should see supporting text that says \"Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Projects\" navigation item should be shown as the current page\n\n  Scenario: Start a new project from the Projects page\n    Then I should see the primary action \"Start a research project\"\n    When I select \"Start a research project\"\n    Then I should be taken to the start research project service\n\n  Scenario: Understand the project list\n    Then I should see a section called \"Research projects\"\n    And I should see text explaining that \"Projects are shown with the newest created project first.\"\n    And I should see loading text that says \"Loading projects.\" until project records are ready\n    And project records should be presented newest first when they load\n\n  Scenario: Review loaded project records\n    When project records load successfully\n    Then each project card should expose:\n      | Project organisation |\n      | Project title |\n      | Phase |\n      | Status |\n      | Description |\n      | View dashboard |\n      | User groups |\n      | Stakeholders and objectives |\n    And each project card should provide a dashboard link for continuing work on that project\n\n  Scenario: Open a project dashboard\n    Given project records have loaded\n    When I select \"View dashboard\" for a project\n    Then I should be taken to that project dashboard\n    And the selected project should be identified by its project ID\n\n  Scenario: Recover when there are no projects yet\n    When no project records are available\n    Then I should see a status message headed \"No projects yet\"\n    And I should see text explaining that \"Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n    And I should be able to select \"Start a research project\"\n\n  Scenario: Recover when project records cannot load\n    When project records cannot be loaded\n    Then I should see an alert headed \"Could not load projects\"\n    And I should see text explaining that \"Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.\"\n    And I should be able to select \"Start a research project\" so I can continue setting up research work\n\n  Scenario: Use the page without JavaScript\n    Given JavaScript is not available\n    Then I should see fallback guidance headed \"Project records need JavaScript to load\"\n    And I should see text explaining that \"You can still start a new research project from this page.\"\n    And I should still be able to select \"Start a research project\"\n\n  Scenario: Access the Projects page using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus to the main content\n    And I should be able to move focus through the primary navigation links\n    And I should be able to move focus to \"Start a research project\"\n    And I should be able to activate project dashboard links without a mouse\n\n  Scenario: Understand the page structure with assistive technology\n    Then the page should have one clear main heading\n    And the project list should be labelled by \"Research projects\"\n    And the project list should announce loading, empty and error-state changes politely or as an alert as appropriate\n    And the project list should expose when it is busy loading project records\n    And each project card should expose its heading, metadata, user groups, stakeholders and objectives in a logical reading order\n\n  Scenario: Use the Projects page on a mobile device\n    Then the page introduction, project list, project cards, empty state and error state should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
             "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          },
+          "criteriaSource": {
+            "type": "source-derived",
+            "path": "public/pages/projects/index.html",
+            "generator": "scripts/researchops-projects-acceptance.mjs"
           }
         }
       ]
@@ -593,7 +598,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1316,
+              "durationMs": 1778,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -601,7 +606,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1657,
+              "durationMs": 1938,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -648,7 +653,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1013,
+              "durationMs": 948,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -656,7 +661,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1176,
+              "durationMs": 1252,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -703,7 +708,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1025,
+              "durationMs": 1062,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -711,7 +716,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1096,
+              "durationMs": 1056,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -758,7 +763,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1004,
+              "durationMs": 995,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -766,7 +771,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1269,
+              "durationMs": 1191,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -813,7 +818,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 978,
+              "durationMs": 980,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -821,7 +826,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1150,
+              "durationMs": 1153,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -868,7 +873,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1064,
+              "durationMs": 960,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -876,7 +881,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1147,
+              "durationMs": 1114,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -923,7 +928,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 995,
+              "durationMs": 955,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -931,7 +936,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1102,
+              "durationMs": 1055,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -978,7 +983,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 988,
+              "durationMs": 930,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -986,7 +991,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1162,
+              "durationMs": 1124,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -1033,7 +1038,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1623,
+              "durationMs": 1556,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -1041,7 +1046,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1802,
+              "durationMs": 1720,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -1079,7 +1084,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1173,
+              "durationMs": 1114,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -1087,7 +1092,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1246,
+              "durationMs": 1151,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -1125,7 +1130,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1386,
+              "durationMs": 1304,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1133,7 +1138,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1463,
+              "durationMs": 1406,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -1171,7 +1176,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1352,
+              "durationMs": 1320,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -1179,7 +1184,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1429,
+              "durationMs": 1396,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -1217,7 +1222,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1923,
+              "durationMs": 1864,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -1225,7 +1230,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2396,
+              "durationMs": 2210,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -1272,7 +1277,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 931,
+              "durationMs": 902,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -1280,7 +1285,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1009,
+              "durationMs": 976,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -1327,7 +1332,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 962,
+              "durationMs": 946,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -1335,7 +1340,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1026,
+              "durationMs": 972,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -1382,7 +1387,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 933,
+              "durationMs": 894,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -1390,7 +1395,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1013,
+              "durationMs": 992,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -1437,7 +1442,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 982,
+              "durationMs": 927,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -1445,7 +1450,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1012,
+              "durationMs": 974,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -1492,7 +1497,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 951,
+              "durationMs": 885,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -1500,7 +1505,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1019,
+              "durationMs": 997,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
@@ -1538,7 +1543,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1338,
+              "durationMs": 1297,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -1546,7 +1551,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1471,
+              "durationMs": 1423,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
@@ -1584,7 +1589,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1157,
+              "durationMs": 1141,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -1592,7 +1597,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1302,
+              "durationMs": 1244,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
@@ -1630,7 +1635,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2055,
+              "durationMs": 2010,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -1638,7 +1643,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2304,
+              "durationMs": 2246,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
@@ -1676,7 +1681,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2108,
+              "durationMs": 2070,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -1684,7 +1689,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2423,
+              "durationMs": 2296,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -1722,7 +1727,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1440,
+              "durationMs": 1356,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -1730,7 +1735,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1668,
+              "durationMs": 1616,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -1768,7 +1773,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2359,
+              "durationMs": 2271,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1776,7 +1781,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2640,
+              "durationMs": 2530,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
