@@ -202,9 +202,9 @@ export const visualWalkthroughConfig = {
 				},
 				{
 					id: 'step-2-filled-no-ai',
-					title: 'Step 2 completed without AI rewrite invoked',
+					title: 'Step 2 completed with researcher-authored context',
 					description:
-						'Stakeholders, objectives and user groups entered with realistic planning data before the AI rewrite is requested.',
+						'Stakeholders, objectives and user groups entered with realistic planning data before continuing to the next step.',
 					actions: stepTwoFilledActions,
 				},
 				{
