@@ -1,9 +1,9 @@
-/* ==========================================================================
+/* ===========================================================================
    GOV.UK Frontend v6 compatibility layer
    Service:    Home Office Biometrics — ResearchOps
    Scope:      Canonical GOV.UK component contracts loaded after legacy route CSS
    Repo:       /css/govuk/govuk-frontend-v6.css
-   ========================================================================== */
+   =========================================================================== */
 
 .govuk-visually-hidden {
 	position: absolute !important;
@@ -209,17 +209,6 @@
 	font-weight: 700;
 	}
 
-.govuk-error-message .govuk-visually-hidden {
-	position: static !important;
-	width: auto !important;
-	height: auto !important;
-	margin: 0 !important;
-	overflow: visible !important;
-	clip: auto !important;
-	clip-path: none !important;
-	white-space: inherit !important;
-	}
-
 .govuk-fieldset {
 	min-width: 0;
 	margin: 0;
@@ -380,6 +369,7 @@
 .govuk-checkboxes__input,
 .govuk-radios__input {
 	position: absolute;
+	z-index: 1;
 	top: 0;
 	left: 0;
 	width: 40px;
@@ -408,6 +398,7 @@
 	height: 40px;
 	border: 2px solid #0b0c0c;
 	background: #ffffff;
+	pointer-events: none;
 	}
 
 .govuk-radios__label::before {
@@ -426,6 +417,7 @@
 	border-width: 0 0 5px 5px;
 	border-color: #0b0c0c;
 	opacity: 0;
+	pointer-events: none;
 	}
 
 .govuk-radios__label::after {
@@ -438,6 +430,7 @@
 	border: 10px solid #0b0c0c;
 	border-radius: 50%;
 	opacity: 0;
+	pointer-events: none;
 	}
 
 .govuk-checkboxes__input:checked + .govuk-checkboxes__label::after,
