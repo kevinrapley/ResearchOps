@@ -82,7 +82,10 @@ test('start research project group criteria uses the grouping-level journey cont
 	assert.match(group.gherkin, /Scenario: Complete the guided project setup safely/);
 	assert.match(group.gherkin, /without entering participant personal data/);
 	assert.doesNotMatch(group.gherkin, /Scenario: Use AI assistance deliberately/);
-	assert.doesNotMatch(group.gherkin, /Scenario: Recover from missing or invalid project information/);
+	assert.doesNotMatch(
+		group.gherkin,
+		/Scenario: Recover from missing or invalid project information/
+	);
 });
 
 test('start research project default state criteria covers focused controls and continue action', () => {
@@ -100,7 +103,10 @@ test('start research project default state criteria covers focused controls and 
 test('AI assistance criteria is limited to the AI-specific start-project state', () => {
 	const startStates = GROUP_REVIEW_MODEL.start.states;
 
-	assert.match(startStates['Step 2 AI rewrite shown'].gherkin, /Scenario: Use AI assistance deliberately/);
+	assert.match(
+		startStates['Step 2 AI rewrite shown'].gherkin,
+		/Scenario: Use AI assistance deliberately/
+	);
 
 	for (const [label, state] of Object.entries(startStates)) {
 		if (label === 'Step 2 AI rewrite shown') continue;
