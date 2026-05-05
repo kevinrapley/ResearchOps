@@ -33,14 +33,26 @@ export function ensureGovukFrontendV6Stylesheet(root = document) {
 	const head = doc.head;
 	if (!head) return;
 
-	const existing = head.querySelector(`link[rel="stylesheet"][href="${GOVUK_FRONTEND_V6_STYLESHEET}"]`);
-	if (existing) return;
+	const selector = `link[rel="stylesheet"][href="${GOVUK_FRONTEND_V6_STYLESHEET}"]`;
+	const existing = head.querySelector(selector);
+	const link = existing || doc.createElement("link");
 
-	const link = doc.createElement("link");
-	link.rel = "stylesheet";
-	link.href = GOVUK_FRONTEND_V6_STYLESHEET;
-	link.media = "screen";
+	if (!existing) {
+		link.rel = "stylesheet";
+		link.href = GOVUK_FRONTEND_V6_STYLESHEET;
+		link.media = "screen";
+	}
+
 	link.dataset.govukFrontendV6 = "true";
+
+	const stylesheets = Array.from(head.querySelectorAll('link[rel="stylesheet"]')).filter((candidate) => candidate !== link);
+	const lastStylesheet = stylesheets[stylesheets.length - 1];
+
+	if (lastStylesheet) {
+		lastStylesheet.after(link);
+		return;
+	}
+
 	head.appendChild(link);
 }
 
