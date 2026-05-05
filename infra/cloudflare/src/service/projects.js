@@ -4,7 +4,7 @@
  * @summary Project-related handlers with robust GitHub CSV fallback + deep diagnostics.
  */
 
-import { toMs, safeText } from "../core/utils.js";
+import { fetchWithTimeout, toMs, safeText } from "../core/utils.js";
 
 /**
  * @typedef {import('./index.js').ServiceContext} ServiceContext
@@ -70,6 +70,32 @@ function requireEnv(ctx, keys) {
   if (miss.length) throw new Error(`Missing env: ${miss.join(", ")}`);
 }
 
+function normaliseLines(value) {
+  if (Array.isArray(value)) return value.map(item => String(item || "").trim()).filter(Boolean);
+  return String(value || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+}
+
+function normaliseCommas(value) {
+  if (Array.isArray(value)) return value.map(item => String(item || "").trim()).filter(Boolean);
+  return String(value || "").split(",").map(item => item.trim()).filter(Boolean);
+}
+
+function normaliseStakeholders(value) {
+  if (Array.isArray(value)) {
+    return value.map(item => ({
+      name: String(item?.name || item?.Name || "").trim(),
+      role: String(item?.role || item?.Role || "").trim(),
+      email: String(item?.email || item?.Email || "").trim()
+    })).filter(item => item.name || item.role || item.email);
+  }
+
+  try {
+    return normaliseStakeholders(JSON.parse(value || "[]"));
+  } catch {
+    return [];
+  }
+}
+
 function mapProject(r) {
   const f = r?.fields || {};
   return {
@@ -78,9 +104,9 @@ function mapProject(r) {
     description: f.Description || "",
     "rops:servicePhase": f.Phase || "",
     "rops:projectStatus": f.Status || "",
-    objectives: String(f.Objectives || "").split("\n").filter(Boolean),
-    user_groups: String(f.UserGroups || "").split(",").map(s => s.trim()).filter(Boolean),
-    stakeholders: (() => { try { return JSON.parse(f.Stakeholders || "[]"); } catch { return []; } })(),
+    objectives: normaliseLines(f.Objectives || ""),
+    user_groups: normaliseCommas(f.UserGroups || ""),
+    stakeholders: normaliseStakeholders(f.Stakeholders || "[]"),
     createdAt: r.createdTime || f.CreatedAt || ""
   };
 }
@@ -125,7 +151,6 @@ export async function listProjectsFromAirtable(ctx, origin, url) {
     let atUrl = `https://api.airtable.com/v0/${base}/${tProjects}?pageSize=${limit}`;
     if (view) atUrl += `&view=${encodeURIComponent(view)}`;
 
-    // ── Deep diagnostics for the puzzling HTML 200
     ctx.log.info?.("airtable.projects.request", { url: atUrl });
 
     const pRes = await fetch(atUrl, {
@@ -322,4 +347,66 @@ export async function getProjectById(ctx, origin, projectId) {
   }
 
   return ctx.json(project, 200, jsonHeaders(ctx, origin, { "x-rops-source": "airtable" }));
+}
+
+/* ───────────────────────── Update Project Framing ───────────────────────── */
+
+export async function updateProjectFraming(ctx, request, origin, projectId) {
+  if (!projectId) {
+    return ctx.json({ ok: false, error: "Missing project id" }, 400, jsonHeaders(ctx, origin));
+  }
+
+  try {
+    requireEnv(ctx, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
+  } catch (e) {
+    return ctx.json({ ok: false, error: String(e?.message || e) }, 500, jsonHeaders(ctx, origin));
+  }
+
+  const body = await request.arrayBuffer();
+  if (body.byteLength > ctx.cfg.MAX_BODY_BYTES) {
+    return ctx.json({ ok: false, error: "Payload too large" }, 413, jsonHeaders(ctx, origin));
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(new TextDecoder().decode(body));
+  } catch {
+    return ctx.json({ ok: false, error: "Invalid JSON" }, 400, jsonHeaders(ctx, origin));
+  }
+
+  const fields = {};
+  if (Object.hasOwn(payload, "objectives")) fields.Objectives = normaliseLines(payload.objectives).join("\n");
+  if (Object.hasOwn(payload, "user_groups")) fields.UserGroups = normaliseCommas(payload.user_groups).join(", ");
+  if (Object.hasOwn(payload, "stakeholders")) fields.Stakeholders = JSON.stringify(normaliseStakeholders(payload.stakeholders));
+
+  if (Object.keys(fields).length === 0) {
+    return ctx.json({ ok: false, error: "No updatable project framing fields provided" }, 400, jsonHeaders(ctx, origin));
+  }
+
+  const base = ctx.env.AIRTABLE_BASE_ID;
+  const table = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
+  const atUrl = `https://api.airtable.com/v0/${base}/${table}`;
+
+  const res = await fetchWithTimeout(atUrl, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({ records: [{ id: projectId, fields }] })
+  }, ctx.cfg.TIMEOUT_MS);
+
+  const text = await res.text();
+  if (!res.ok) {
+    ctx.log.error("airtable.project.update.fail", { status: res.status, text: safeText(text) });
+    return ctx.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, jsonHeaders(ctx, origin));
+  }
+
+  let data;
+  try { data = JSON.parse(text); } catch { data = { records: [] }; }
+  const project = mapProject(data.records?.[0] || { id: projectId, fields });
+
+  if (ctx.env.AUDIT === "true") ctx.log.info("project.framing.updated", { projectId, fields: Object.keys(fields) });
+  return ctx.json({ ok: true, project }, 200, jsonHeaders(ctx, origin, { "x-rops-source": "airtable" }));
 }
