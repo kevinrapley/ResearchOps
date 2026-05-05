@@ -26,6 +26,24 @@
  * optional debug gating, auto-nav activation, queued re-renders, and footer defaults.
  */
 
+const GOVUK_FRONTEND_V6_STYLESHEET = "/css/govuk/govuk-frontend-v6.css";
+
+export function ensureGovukFrontendV6Stylesheet(root = document) {
+	const doc = root.ownerDocument || root;
+	const head = doc.head;
+	if (!head) return;
+
+	const existing = head.querySelector(`link[rel="stylesheet"][href="${GOVUK_FRONTEND_V6_STYLESHEET}"]`);
+	if (existing) return;
+
+	const link = doc.createElement("link");
+	link.rel = "stylesheet";
+	link.href = GOVUK_FRONTEND_V6_STYLESHEET;
+	link.media = "screen";
+	link.dataset.govukFrontendV6 = "true";
+	head.appendChild(link);
+}
+
 class XInclude extends HTMLElement {
 	static get observedAttributes() { return ["src", "vars", "debug-only"]; }
 
@@ -222,6 +240,8 @@ class XInclude extends HTMLElement {
 }
 
 if (!customElements.get("x-include")) customElements.define("x-include", XInclude);
+
+ensureGovukFrontendV6Stylesheet();
 
 // Optional helper
 export function whenIncludesReady(root = document) {
