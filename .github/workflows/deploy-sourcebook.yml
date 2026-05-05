@@ -2,11 +2,9 @@ name: Deploy Sourcebook to Cloudflare Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "docs/devops/sourcebook/**"
-      - ".github/workflows/deploy-sourcebook.yml"
-  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -30,7 +28,6 @@ jobs:
           branch: main
           directory: ./docs/devops/sourcebook
 
-      # Optional: ensure there's at least an index.html (nice safety net)
       - name: Ensure site has an index
         run: |
           if [ ! -f "docs/devops/sourcebook/index.html" ]; then
