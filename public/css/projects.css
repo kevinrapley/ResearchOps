@@ -7,6 +7,37 @@
    License:    All rights reserved
    ========================================================================== */
 
+/* Projects page structure */
+
+.projects-page-actions {
+	margin: 24px 0 0;
+	}
+
+.projects-list-section {
+	margin-top: 16px;
+	}
+
+.projects-list {
+	margin-top: 16px;
+	}
+
+.projects-empty-state,
+.projects-error-state {
+	margin: 24px 0;
+	border-left: 5px solid #1d70b8;
+	padding: 16px 20px;
+	background: #f3f2f1;
+	}
+
+.projects-error-state {
+	border-left-color: #d4351c;
+	}
+
+.projects-empty-state .govuk-heading-m,
+.projects-error-state .govuk-heading-m {
+	margin-top: 0;
+	}
+
 /* Projects page card content */
 
 .project-org {

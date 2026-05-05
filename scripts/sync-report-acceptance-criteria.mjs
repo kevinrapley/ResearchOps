@@ -9,8 +9,22 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildHomeAcceptanceCriteriaFromSource } from './researchops-home-acceptance.mjs';
+import { buildProjectsAcceptanceCriteriaFromSource } from './researchops-projects-acceptance.mjs';
 
 const DEFAULT_SITE_DIR = 'reports-site';
+
+const CRITERIA_BUILDERS = {
+	home: {
+		path: 'public/index.html',
+		generator: 'scripts/researchops-home-acceptance.mjs',
+		build: buildHomeAcceptanceCriteriaFromSource,
+	},
+	projects: {
+		path: 'public/pages/projects/index.html',
+		generator: 'scripts/researchops-projects-acceptance.mjs',
+		build: buildProjectsAcceptanceCriteriaFromSource,
+	},
+};
 
 function escapeHtml(value = '') {
 	return String(value)
@@ -29,17 +43,17 @@ function writeJson(filePath, value) {
 	fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
-function findHomeState(manifest) {
-	const homePage = (manifest.pages || []).find((page) => page.id === 'home');
-	if (!homePage) throw new Error('No home page entry found in reports-site manifest.');
+function findPage(manifest, pageId) {
+	return (manifest.pages || []).find((page) => page.id === pageId);
+}
 
-	const defaultState = (homePage.states || []).find((state) => state.id === 'default');
-	if (!defaultState) throw new Error('No default home state found in reports-site manifest.');
-
+function findDefaultState(page, pageId) {
+	const defaultState = (page.states || []).find((state) => state.id === 'default');
+	if (!defaultState) throw new Error(`No default ${pageId} state found in reports-site manifest.`);
 	return defaultState;
 }
 
-function replaceHtmlCriteria(html, oldCriteria, nextCriteria) {
+function replaceHtmlCriteria(html, pageId, oldCriteria, nextCriteria) {
 	const oldEscaped = escapeHtml(oldCriteria || '');
 	const nextEscaped = escapeHtml(nextCriteria || '');
 
@@ -47,12 +61,47 @@ function replaceHtmlCriteria(html, oldCriteria, nextCriteria) {
 		return html.replace(oldEscaped, nextEscaped);
 	}
 
-	const homeArticlePattern = /(<article\b[^>]*id="home"[^>]*>[\s\S]*?<pre\b[^>]*class="gherkin-criteria"[^>]*>\s*<code>)([\s\S]*?)(<\/code>\s*<\/pre>[\s\S]*?<\/article>)/i;
-	if (!homeArticlePattern.test(html)) {
-		throw new Error('Could not find the home-page acceptance criteria block in reports-site/index.html.');
+	const articlePattern = new RegExp(
+		`(<article\\b[^>]*id=["']${pageId}["'][^>]*>[\\s\\S]*?<pre\\b[^>]*class=["']gherkin-criteria["'][^>]*>\\s*<code>)([\\s\\S]*?)(<\\/code>\\s*<\\/pre>[\\s\\S]*?<\\/article>)`,
+		'i'
+	);
+
+	if (!articlePattern.test(html)) {
+		throw new Error(`Could not find the ${pageId} acceptance criteria block in reports-site/index.html.`);
 	}
 
-	return html.replace(homeArticlePattern, `$1${nextEscaped}$3`);
+	return html.replace(articlePattern, `$1${nextEscaped}$3`);
+}
+
+function syncPageAcceptanceCriteria(manifest, html, pageId, config) {
+	const page = findPage(manifest, pageId);
+	if (!page) {
+		return {
+			pageId,
+			changed: false,
+			skipped: true,
+			reason: `No ${pageId} page entry found in reports-site manifest.`,
+		};
+	}
+
+	const state = findDefaultState(page, pageId);
+	const previousCriteria = state.acceptanceCriteria || '';
+	const nextCriteria = config.build();
+
+	state.acceptanceCriteria = nextCriteria;
+	state.criteriaSource = {
+		type: 'source-derived',
+		path: config.path,
+		generator: config.generator,
+	};
+
+	return {
+		pageId,
+		changed: previousCriteria !== nextCriteria,
+		previousLength: previousCriteria.length,
+		nextLength: nextCriteria.length,
+		html: replaceHtmlCriteria(html, pageId, previousCriteria, nextCriteria),
+	};
 }
 
 export function syncReportAcceptanceCriteria(options = {}) {
@@ -64,27 +113,29 @@ export function syncReportAcceptanceCriteria(options = {}) {
 	if (!fs.existsSync(indexPath)) throw new Error(`Missing ${indexPath}.`);
 
 	const manifest = readJson(manifestPath);
-	const homeState = findHomeState(manifest);
-	const previousCriteria = homeState.acceptanceCriteria || '';
-	const nextCriteria = buildHomeAcceptanceCriteriaFromSource();
+	let html = fs.readFileSync(indexPath, 'utf8');
+	const pages = options.pages || Object.keys(CRITERIA_BUILDERS);
+	const results = [];
 
-	homeState.acceptanceCriteria = nextCriteria;
-	homeState.criteriaSource = {
-		type: 'source-derived',
-		path: 'public/index.html',
-		generator: 'scripts/researchops-home-acceptance.mjs',
-	};
+	for (const pageId of pages) {
+		const config = CRITERIA_BUILDERS[pageId];
+		if (!config) throw new Error(`No acceptance criteria builder registered for ${pageId}.`);
+
+		const result = syncPageAcceptanceCriteria(manifest, html, pageId, config);
+		if (result.html) html = result.html;
+		results.push(Object.fromEntries(Object.entries(result).filter(([key]) => key !== 'html')));
+	}
 
 	writeJson(manifestPath, manifest);
+	fs.writeFileSync(indexPath, html, 'utf8');
 
-	const html = fs.readFileSync(indexPath, 'utf8');
-	const updatedHtml = replaceHtmlCriteria(html, previousCriteria, nextCriteria);
-	fs.writeFileSync(indexPath, updatedHtml, 'utf8');
+	const changed = results.some((result) => result.changed);
 
 	return {
-		changed: previousCriteria !== nextCriteria,
-		previousLength: previousCriteria.length,
-		nextLength: nextCriteria.length,
+		changed,
+		results,
+		previousLength: results[0]?.previousLength || 0,
+		nextLength: results[0]?.nextLength || 0,
 	};
 }
 

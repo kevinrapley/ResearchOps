@@ -6,6 +6,7 @@
  */
 
 import { buildHomeAcceptanceCriteriaFromSource } from './researchops-home-acceptance.mjs';
+import { buildProjectsAcceptanceCriteriaFromSource } from './researchops-projects-acceptance.mjs';
 import { buildStartAcceptanceCriteriaFromSource } from './researchops-start-acceptance.mjs';
 
 const PAGE_STORIES = {
@@ -253,6 +254,7 @@ function buildActionScenario(sourceActions = []) {
 export function buildStateAcceptanceGherkin(page = {}, state = {}, sourceState = null) {
 	if (page.id === 'home') return buildHomeAcceptanceCriteriaFromSource();
 	if (page.id === 'start') return buildStartAcceptanceCriteriaFromSource();
+	if (page.id === 'projects') return buildProjectsAcceptanceCriteriaFromSource();
 
 	const story = storyForPage(page);
 	const statePurpose = state.description
