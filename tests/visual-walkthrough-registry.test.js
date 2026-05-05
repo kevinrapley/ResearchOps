@@ -76,7 +76,11 @@ function pageById(pageId) {
 
 function assertDefaultStatePath(pageId, expectedPath, message) {
 	const page = pageById(pageId);
-	assert.equal(Boolean(page?.defaultState?.path), true, `Expected ${pageId} to define a default state path`);
+	assert.equal(
+		Boolean(page?.defaultState?.path),
+		true,
+		`Expected ${pageId} to define a default state path`
+	);
 	assert.equal(page.defaultState.path, expectedPath, message);
 }
 
@@ -107,8 +111,16 @@ for (const page of visualWalkthroughConfig.pages) {
 	);
 	assert.equal(Boolean(page.title), true, `Expected registered page to have a title: ${page.id}`);
 	assert.equal(Boolean(page.group), true, `Expected registered page to have a group: ${page.id}`);
-	assert.equal(Boolean(page.designRisk?.risk), true, `Expected page to define a design risk: ${page.id}`);
-	assert.equal(Boolean(page.designRisk?.impact), true, `Expected page to define design risk impact: ${page.id}`);
+	assert.equal(
+		Boolean(page.designRisk?.risk),
+		true,
+		`Expected page to define a design risk: ${page.id}`
+	);
+	assert.equal(
+		Boolean(page.designRisk?.impact),
+		true,
+		`Expected page to define design risk impact: ${page.id}`
+	);
 	assert.equal(
 		Boolean(page.designRisk?.recommendedChange),
 		true,
