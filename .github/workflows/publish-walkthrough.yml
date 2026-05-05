@@ -135,7 +135,9 @@ jobs:
             --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             --header "Content-Type: application/json" || true)"
 
-          node <<'NODE' "$response_file" "$status" "$REPORTING_PAGES_PROJECT"
+          echo "Cloudflare Pages access check HTTP status: ${status}"
+
+          node - "$response_file" "$status" "$REPORTING_PAGES_PROJECT" <<'NODE'
           const fs = require('node:fs');
 
           const [, , responsePath, status, projectName] = process.argv;
