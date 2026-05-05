@@ -84,6 +84,28 @@ async function handleProjects(request, env) {
 	return serviceFor(env).listProjectsFromAirtable(origin, url);
 }
 
+async function handleProjectRecord(request, env, apiPath) {
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	const match = apiPath.match(/^\/api\/projects\/([^/]+)$/);
+
+	if (!match) {
+		return new Response(JSON.stringify({ error: "Not found", path: apiPath }), {
+			status: 404,
+			headers: { "content-type": "application/json; charset=utf-8" }
+		});
+	}
+
+	const projectId = decodeURIComponent(match[1]);
+	if (request.method === "GET") return service.getProjectById(origin, projectId);
+	if (request.method === "PATCH") return service.updateProjectFraming(request, origin, projectId);
+
+	return new Response(JSON.stringify({ error: "Method not allowed" }), {
+		status: 405,
+		headers: { "content-type": "application/json; charset=utf-8" }
+	});
+}
+
 async function handleSynthesis(request, env, apiPath) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
@@ -142,6 +164,7 @@ export default {
 		try {
 			let result;
 			if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
+			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
 			else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);

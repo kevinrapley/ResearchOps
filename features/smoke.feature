@@ -14,5 +14,5 @@ Feature: Smoke
     Given the site base URL
     When I visit "/pages/start/index.html"
     Then I should see an element "main"
-    And I should see an element "header"
+    And I should see an element "header.govuk-header"
     And I should see an element "footer"

@@ -282,6 +282,28 @@ export const visualWalkthroughConfig = {
 			description: 'Project dashboard page.',
 		},
 		{
+			id: 'project-dashboard-add-study',
+			title: 'Add study',
+			group: 'Projects',
+			path: '/pages/study/new/index.html',
+			description: 'Create a study from the project dashboard action workflow.',
+		},
+		{
+			id: 'project-dashboard-add-participant',
+			title: 'Add participant',
+			group: 'Projects',
+			path: '/pages/project-dashboard/participants/index.html',
+			description: 'Add a study-linked participant from the project dashboard action workflow.',
+		},
+		{
+			id: 'project-dashboard-import-participants',
+			title: 'Import participants',
+			group: 'Projects',
+			path: '/pages/project-dashboard/participants/import/index.html',
+			description:
+				'Import study-linked participants from CSV from the project dashboard action workflow.',
+		},
+		{
 			id: 'outcomes',
 			title: 'Project outcomes',
 			group: 'Projects',

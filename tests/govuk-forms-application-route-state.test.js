@@ -9,9 +9,12 @@ const formRoutes = [
   "public/pages/sessions/index.html",
   "public/pages/synthesize/index.html",
   "public/pages/project-dashboard/index.html",
+  "public/pages/project-dashboard/participants/index.html",
+  "public/pages/project-dashboard/participants/import/index.html",
   "public/pages/projects/outcomes/index.html",
   "public/pages/projects/journals/index.html",
   "public/pages/study/index.html",
+  "public/pages/study/new/index.html",
   "public/pages/study/guides/index.html",
   "public/pages/study/consent-forms/index.html",
   "public/pages/study/participant-consent/index.html",
@@ -80,9 +83,28 @@ includes(synthesizePage, "disabled>Create theme</button>", "Synthesize route");
 excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
 const dashboardPage = read("public/pages/project-dashboard/index.html");
-includes(dashboardPage, "<select id=\"study-method\" class=\"govuk-select\"", "Project Dashboard route");
-includes(dashboardPage, "aria-describedby=\"study-notes-hint\"", "Project Dashboard route");
-includes(dashboardPage, "class=\"govuk-button-group actions-bar\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"add-stakeholder-form\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"add-objective-form\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"add-user-group-form\"", "Project Dashboard route");
+includes(dashboardPage, "aria-describedby=\"objective-text-hint\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"add-participant-link\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"import-participants-link\"", "Project Dashboard route");
+includes(dashboardPage, "id=\"add-study-link\"", "Project Dashboard route");
+excludes(dashboardPage, "id=\"study-dialog\"", "Project Dashboard route");
+
+const projectParticipantsPage = read("public/pages/project-dashboard/participants/index.html");
+includes(projectParticipantsPage, "id=\"add-participant-form\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"participant-error-summary\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"study-select\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"participant-display-name\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"create-study-link\"", "Project participant route");
+
+const participantImportPage = read("public/pages/project-dashboard/participants/import/index.html");
+includes(participantImportPage, "id=\"import-participants-form\"", "Participant import route");
+includes(participantImportPage, "id=\"import-error-summary\"", "Participant import route");
+includes(participantImportPage, "id=\"participants-csv\"", "Participant import route");
+includes(participantImportPage, "id=\"preview-csv\"", "Participant import route");
+includes(participantImportPage, "id=\"preview-section\"", "Participant import route");
 
 const outcomesPage = read("public/pages/projects/outcomes/index.html");
 includes(outcomesPage, "href=\"/css/govuk/govuk-forms.css\"", "Outcomes route");
@@ -100,6 +122,13 @@ const studyPage = read("public/pages/study/index.html");
 includes(studyPage, "href=\"/css/govuk/govuk-forms.css\"", "Study route");
 includes(studyPage, "class=\"govuk-form-group\"", "Study route");
 includes(studyPage, "aria-describedby=\"desc-input-hint\"", "Study route");
+
+const newStudyPage = read("public/pages/study/new/index.html");
+includes(newStudyPage, "id=\"add-study-form\"", "Add Study route");
+includes(newStudyPage, "id=\"study-error-summary\"", "Add Study route");
+includes(newStudyPage, "id=\"study-method\" name=\"method\" class=\"govuk-select\"", "Add Study route");
+includes(newStudyPage, "aria-describedby=\"study-notes-hint\"", "Add Study route");
+includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
 
 const guidesPage = read("public/pages/study/guides/index.html");
 includes(guidesPage, "class=\"govuk-form-group editor__title-field\"", "Guides route");
