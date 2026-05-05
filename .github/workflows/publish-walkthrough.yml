@@ -109,6 +109,15 @@ jobs:
             exit 1
           fi
 
+      - name: Upload reporting site publish candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-walkthrough-site-publish-candidate
+          path: reports-site
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Verify Cloudflare Pages project access
         shell: bash
         env:
@@ -264,8 +273,8 @@ jobs:
           echo "Reporting site did not show the generated run timestamp after deployment."
           exit 1
 
-      - name: Add job summary
-        if: always()
+      - name: Add successful publication job summary
+        if: success()
         shell: bash
         run: |
           echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
@@ -279,3 +288,17 @@ jobs:
           echo "[Open raw Cucumber HTML report](${REPORTING_PAGES_URL}cucumber/cucumber-report.html)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "> The gallery shows registered application pages and interaction states across desktop and mobile screenshots, with source-derived Gherkin criteria inside each state card." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add failed publication job summary
+        if: failure()
+        shell: bash
+        run: |
+          echo "## Application visual walkthrough" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "The visual walkthrough publish job did not update the Cloudflare Pages reporting site." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "The generated publish candidate was uploaded as the \\`visual-walkthrough-site-publish-candidate\\` workflow artifact before deployment." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "If the failure point is the Cloudflare Pages access check, replace \\`CF_API_TOKEN\\` with a token from the same Cloudflare account as \\`CF_ACCOUNT_ID\\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Required token scope: Account > Cloudflare Pages > Edit for the account that owns \\`${REPORTING_PAGES_PROJECT}\\`." >> "$GITHUB_STEP_SUMMARY"
