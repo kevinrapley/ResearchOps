@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-05T15:10:04.893Z",
+  "startedAt": "2026-05-05T17:37:36.697Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1058,
+              "durationMs": 1046,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,16 +109,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1424,
+              "durationMs": 1357,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The landing page may look visually complete while failing to explain the safest route into research setup, evidence review or synthesis work.",
+            "impact": "User researchers could choose the wrong workflow, duplicate records or miss the intended evidence-to-insight traceability model.",
+            "recommendedChange": "Review the page against GOV.UK start-point conventions, link purpose, visible service identity and keyboard-accessible navigation.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -161,7 +161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 969,
+              "durationMs": 977,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -169,16 +169,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1110,
+              "durationMs": 1111,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -207,7 +207,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1832,
+              "durationMs": 1827,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -215,16 +215,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1938,
+              "durationMs": 1948,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -253,7 +253,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2231,
+              "durationMs": 2241,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -261,16 +261,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2388,
+              "durationMs": 2376,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -299,7 +299,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2897,
+              "durationMs": 2913,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -307,16 +307,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3198,
+              "durationMs": 3138,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -345,7 +345,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3558,
+              "durationMs": 3581,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -353,16 +353,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3923,
+              "durationMs": 3877,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -391,7 +391,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3298,
+              "durationMs": 3318,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -399,16 +399,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3660,
+              "durationMs": 3544,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -437,7 +437,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3981,
+              "durationMs": 3934,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -445,16 +445,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4026,
+              "durationMs": 4016,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -483,7 +483,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4413,
+              "durationMs": 4373,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -491,16 +491,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4702,
+              "durationMs": 4601,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
+            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
+            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -538,7 +538,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1970,
+              "durationMs": 3387,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -546,16 +546,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 2290,
+              "durationMs": 1764,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The project list may not make project status, ownership and next actions clear enough for a user researcher returning to active work.",
+            "impact": "Users may open the wrong project or miss whether a project is ready for study, participant or synthesis activity.",
+            "recommendedChange": "Check that the list uses GOV.UK table/list conventions, meaningful link text, visible status language and realistic project records.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -588,34 +588,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
+          "title": "Project dashboard with operational project context",
+          "description": "Dashboard captured with a deterministic project ID, project metadata, linked stakeholders and study context.",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1860,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
+              "durationMs": 2902,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/index.html",
-              "durationMs": 1781,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
+              "durationMs": 2397,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The dashboard can appear operational while actions, study readiness and project context are not grounded in a real project ID.",
+            "impact": "Users may create studies, participants or outcomes against the wrong project or lose confidence in the platform state.",
+            "recommendedChange": "Capture this page with a deterministic project ID, linked studies and operational content, then review action routing and GOV.UK component use.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -625,7 +625,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard__default.png",
-          "acceptanceCriteria": "Feature: Review a research project dashboard\n\n  As a user researcher\n  I want to review the status, evidence and next actions for a research project\n  So that I can coordinate research activity across the team\n\n  Background:\n    Given I am a user researcher\n    When I visit the project dashboard\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project dashboard page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project dashboard\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review a research project dashboard\n\n  As a user researcher\n  I want to review the status, evidence and next actions for a research project\n  So that I can coordinate research activity across the team\n\n  Background:\n    Given I am a user researcher\n    When I visit the project dashboard\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project dashboard page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project dashboard with operational project context\" in the ResearchOps journey\n    Given I am using the project dashboard\n    Then I should understand the research value of this part of the journey\n    And I should see that dashboard captured with a deterministic project ID, project metadata, linked stakeholders and study context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted Digital Support Discovery\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -643,34 +643,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/new/index.html",
+          "title": "Add study with parent project context",
+          "description": "Add-study workflow captured with the parent project ID present in the URL so project relationship and return routes can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/new/index.html",
-              "durationMs": 939,
+              "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
+              "durationMs": 1172,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/new/index.html",
-              "durationMs": 1060,
+              "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
+              "durationMs": 1285,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The add-study workflow may not preserve the parent project context clearly enough through the form.",
+            "impact": "A study could be created without a traceable project relationship, weakening downstream planning and synthesis.",
+            "recommendedChange": "Validate the form with a project-scoped URL, clear heading context, GOV.UK form groups, accessible errors and a safe return route.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -680,7 +680,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png",
-          "acceptanceCriteria": "Feature: Use the Add study page\n\n  As a user researcher\n  I want to use the add study page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the add study page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add study with parent project context\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that add-study workflow captured with the parent project ID present in the URL so project relationship and return routes can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -698,34 +698,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/index.html",
+          "title": "Add participant with parent project context",
+          "description": "Participant workflow captured with the project ID present so privacy copy, project ownership and study-linking context can be evaluated.",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/index.html",
-              "durationMs": 984,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
+              "durationMs": 1206,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/index.html",
-              "durationMs": 1084,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
+              "durationMs": 1260,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The participant workflow may invite participant data entry without enough study and project context.",
+            "impact": "Participant records could be attached to the wrong research activity or collect more personal data than the prototype stance allows.",
+            "recommendedChange": "Capture with a project-scoped URL and review labels, privacy copy, required-field errors and navigation back to the owning project.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -735,7 +735,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png",
-          "acceptanceCriteria": "Feature: Use the Add participant page\n\n  As a user researcher\n  I want to use the add participant page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the add participant page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports add a study-linked participant from the project dashboard action workflow.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the add participant page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Add a participant to a research project\n\n  As a user researcher\n  I want to add a participant from the correct project context\n  So that recruitment records are connected to the right research work\n\n  Background:\n    Given I am a user researcher\n    When I visit the add participant journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports add a study-linked participant from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add participant with parent project context\" in the ResearchOps journey\n    Given I am using the add participant journey\n    Then I should understand the research value of this part of the journey\n    And I should see that participant workflow captured with the project ID present so privacy copy, project ownership and study-linking context can be evaluated\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add participant\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -753,34 +753,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/index.html",
+          "title": "Import participants with parent project context",
+          "description": "CSV import workflow captured with the project ID present so file-upload guidance, privacy warnings and bulk-error recovery can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/index.html",
-              "durationMs": 925,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
+              "durationMs": 1140,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/index.html",
-              "durationMs": 1076,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
+              "durationMs": 1354,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The import workflow may make bulk participant upload look safer or more complete than it is.",
+            "impact": "Bulk upload mistakes can create consent, scheduling and data-minimisation risks at scale.",
+            "recommendedChange": "Review file-upload markup, CSV guidance, error recovery, privacy warnings and project context before treating the state as acceptable.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -790,7 +790,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png",
-          "acceptanceCriteria": "Feature: Use the Import participants page\n\n  As a user researcher\n  I want to use the import participants page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the import participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports import study-linked participants from CSV from the project dashboard action workflow.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the import participants page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Import participants for a research project\n\n  As a user researcher\n  I want to import participant records with clear project context and safe guidance\n  So that bulk participant setup does not weaken privacy, consent or traceability\n\n  Background:\n    Given I am a user researcher\n    When I visit the import participants journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports import study-linked participants from CSV from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Import participants with parent project context\" in the ResearchOps journey\n    Given I am using the import participants journey\n    Then I should understand the research value of this part of the journey\n    And I should see that cSV import workflow captured with the project ID present so file-upload guidance, privacy warnings and bulk-error recovery can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Import participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -808,34 +808,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
+          "title": "Project outcomes with project context",
+          "description": "Outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated.",
+          "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1007,
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
+              "durationMs": 1203,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/projects/outcomes/index.html",
-              "durationMs": 1214,
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
+              "durationMs": 1418,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Outcomes can be presented as conclusions without enough visible connection to evidence, insights and recommendations.",
+            "impact": "Teams may over-trust weak findings or lose the audit trail between evidence and delivery decisions.",
+            "recommendedChange": "Evaluate whether outcomes use GOV.UK summary/list patterns and make evidence provenance, status and next actions visible.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -845,7 +845,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__outcomes__default.png",
-          "acceptanceCriteria": "Feature: Manage project outcomes\n\n  As a user researcher\n  I want to review findings, outputs and decisions for a project\n  So that I can keep research outcomes traceable to evidence and recommendations\n\n  Background:\n    Given I am a user researcher\n    When I visit the project outcomes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports outcomes page for project-level findings and outputs.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project outcomes page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage project outcomes\n\n  As a user researcher\n  I want to review findings, outputs and decisions for a project\n  So that I can keep research outcomes traceable to evidence and recommendations\n\n  Background:\n    Given I am a user researcher\n    When I visit the project outcomes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports outcomes page for project-level findings and outputs\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project outcomes with project context\" in the ResearchOps journey\n    Given I am using the project outcomes page\n    Then I should understand the research value of this part of the journey\n    And I should see that outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Impact & ROI\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -863,34 +863,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
+          "title": "Project journals with project context",
+          "description": "Reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work.",
+          "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1001,
+              "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
+              "durationMs": 1884,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/projects/journals/index.html",
-              "durationMs": 1094,
+              "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
+              "durationMs": 2131,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Reflexive journal states may look like generic notes rather than a deliberate record of assumptions, decisions and researcher influence.",
+            "impact": "The team may miss bias, decision provenance or safeguarding reflections that should inform synthesis.",
+            "recommendedChange": "Review category labels, empty states, entry creation, privacy guidance and traceability back to project context.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -900,7 +900,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__journals__default.png",
-          "acceptanceCriteria": "Feature: Capture reflexive journal entries\n\n  As a user researcher\n  I want to capture reflexive notes during a project\n  So that I can make assumptions, decisions and researcher influence visible\n\n  Background:\n    Given I am a user researcher\n    When I visit the project journals page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports reflexive journal page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the project journals page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Capture reflexive journal entries\n\n  As a user researcher\n  I want to capture reflexive notes during a project\n  So that I can make assumptions, decisions and researcher influence visible\n\n  Background:\n    Given I am a user researcher\n    When I visit the project journals page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports reflexive journal page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project journals with project context\" in the ResearchOps journey\n    Given I am using the project journals page\n    Then I should understand the research value of this part of the journey\n    And I should see that reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Reflexive Journal & Analysis\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -918,34 +918,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/index.html",
+          "title": "Study overview with readiness context",
+          "description": "Study overview captured with project and study IDs, participants, guides, consent forms and consent records present.",
+          "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1117,
+              "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1231,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/index.html",
-              "durationMs": 1303,
+              "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1455,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The study overview may show readiness controls without enough realistic setup data to prove the session gate works.",
+            "impact": "Researchers could start sessions before guides, consent materials, participants or participant consent are ready.",
+            "recommendedChange": "Capture with project and study IDs, mocked readiness data and visible links to guides, participants, consent and synthesis.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -955,7 +955,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study__default.png",
-          "acceptanceCriteria": "Feature: Review study readiness\n\n  As a user researcher\n  I want to review a study and its readiness controls\n  So that I can prepare research activity before sessions begin\n\n  Background:\n    Given I am a user researcher\n    When I visit the study overview page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study overview and readiness controls.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study overview page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review study readiness\n\n  As a user researcher\n  I want to review a study and its readiness controls\n  So that I can prepare research activity before sessions begin\n\n  Background:\n    Given I am a user researcher\n    When I visit the study overview page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study overview and readiness controls\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study overview with readiness context\" in the ResearchOps journey\n    Given I am using the study overview page\n    Then I should understand the research value of this part of the journey\n    And I should see that study overview captured with project and study IDs, participants, guides, consent forms and consent records present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted digital support interview round 1\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -973,34 +973,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/guides/index.html",
+          "title": "Discussion guides with study context",
+          "description": "Discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1001,
+              "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1804,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/guides/index.html",
-              "durationMs": 1219,
+              "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2157,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Discussion guide management may not make draft, published and reusable guide states clear enough.",
+            "impact": "Inconsistent or unapproved guides can affect research quality and comparability across sessions.",
+            "recommendedChange": "Review editor/list structure, heading hierarchy, save/publish affordances and GOV.UK button/link treatment.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1010,7 +1010,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-guides__default.png",
-          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the discussion guides page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Discussion guides with study context\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Guides for this study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1028,34 +1028,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/participants/index.html",
+          "title": "Study participants with participant records",
+          "description": "Participants page captured with study-scoped participant records so recruitment, scheduling and consent readiness can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1009,
+              "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1313,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/participants/index.html",
-              "durationMs": 1188,
+              "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1382,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The participants view may not distinguish recruitment, scheduling and consent readiness clearly.",
+            "impact": "Research teams may invite or schedule participants before consent or safeguarding requirements are understood.",
+            "recommendedChange": "Capture with study-scoped participant fixtures and review table/list semantics, status tags, filters and keyboard access.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1065,7 +1065,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participants__default.png",
-          "acceptanceCriteria": "Feature: Manage study participants\n\n  As a user researcher\n  I want to review and manage participants for a study\n  So that recruitment and session planning reflect the study needs\n\n  Background:\n    Given I am a user researcher\n    When I visit the participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports participants page for a study.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the participants page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage study participants\n\n  As a user researcher\n  I want to review and manage participants for a study\n  So that recruitment and session planning reflect the study needs\n\n  Background:\n    Given I am a user researcher\n    When I visit the participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports participants page for a study\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study participants with participant records\" in the ResearchOps journey\n    Given I am using the participants page\n    Then I should understand the research value of this part of the journey\n    And I should see that participants page captured with study-scoped participant records so recruitment, scheduling and consent readiness can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1083,34 +1083,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/session/index.html",
+          "title": "Study session with project and study context",
+          "description": "Session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 991,
+              "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1203,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/session/index.html",
-              "durationMs": 1165,
+              "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1334,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "The session workspace may imply that a session can start without clear participant, consent and study readiness context.",
+            "impact": "Unsafe session starts can create consent, safeguarding and evidence-quality risks.",
+            "recommendedChange": "Review session controls, timing, note structure, consent visibility and keyboard operation against GOV.UK and WCAG expectations.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1120,7 +1120,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-session__default.png",
-          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study session page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study session with project and study context\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Begin a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1138,34 +1138,34 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
+          "title": "Study consent forms with study context",
+          "description": "Consent form configuration captured with project and study IDs so publishing state and consent wording can be reviewed.",
+          "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1029,
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1226,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://researchops.pages.dev/pages/study/consent-forms/index.html",
-              "durationMs": 1218,
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1464,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Consent form configuration may not make publishing status, wording and participant comprehension clear enough.",
+            "impact": "Researchers may rely on incomplete consent statements before participant activity begins.",
+            "recommendedChange": "Review fieldsets, checkboxes, summary content, publication state and error handling using GOV.UK form patterns.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1175,7 +1175,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-consent-forms__default.png",
-          "acceptanceCriteria": "Feature: Configure study consent forms\n\n  As a user researcher\n  I want to configure the consent statements needed for a study\n  So that participants can give informed consent before research activity proceeds\n\n  Background:\n    Given I am a user researcher\n    When I visit the study consent forms page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-specific consent form configuration page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the study consent forms page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Configure study consent forms\n\n  As a user researcher\n  I want to configure the consent statements needed for a study\n  So that participants can give informed consent before research activity proceeds\n\n  Background:\n    Given I am a user researcher\n    When I visit the study consent forms page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-specific consent form configuration page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study consent forms with study context\" in the ResearchOps journey\n    Given I am using the study consent forms page\n    Then I should understand the research value of this part of the journey\n    And I should see that consent form configuration captured with project and study IDs so publishing state and consent wording can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1203,7 +1203,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1632,
+              "durationMs": 1625,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -1211,16 +1211,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1823,
+              "durationMs": 1778,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
+            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
+            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1230,7 +1230,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__default.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Consent workspace loaded\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for participant consent loaded with study context, a published consent form, participants and existing consent records.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Participant consent loaded.\"\n    Then I should see \"Assisted digital interview consent form\"\n    Then I should see \"Ready for session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Consent workspace loaded\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that participant consent loaded with study context, a published consent form, participants and existing consent records\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participant consent loaded.\"\n    Then I should see \"Assisted digital interview consent form\"\n    Then I should see \"Ready for session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1257,16 +1257,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1243,
+              "durationMs": 1197,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
+            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
+            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1276,7 +1276,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Missing study context error state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for participant consent loaded without project and study IDs; the page shows a blocking route-context message.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Open this page from a study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing study context error state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that participant consent loaded without project and study IDs; the page shows a blocking route-context message\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Open this page from a study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1295,7 +1295,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1338,
+              "durationMs": 1355,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1303,16 +1303,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1472,
+              "durationMs": 1475,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
+            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
+            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1322,7 +1322,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"No published consent form state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for the study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Create and publish a consent form before recording participant consent\"\n    Then I should see \"Create consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"No published consent form state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that the study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Create and publish a consent form before recording participant consent\"\n    Then I should see \"Create consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1341,7 +1341,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1354,
+              "durationMs": 1345,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -1349,16 +1349,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1454,
+              "durationMs": 1461,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
+            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
+            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1368,7 +1368,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"No participants state\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for the study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Add participants before recording consent\"\n    Then I should see \"Schedule participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"No participants state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that the study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add participants before recording consent\"\n    Then I should see \"Schedule participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1387,7 +1387,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1951,
+              "durationMs": 1897,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -1395,16 +1395,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2410,
+              "durationMs": 2405,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
+            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
+            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1414,7 +1414,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Participant selected for consent review\" state\n    Given I am using the participant consent page\n    Then the interface should make it clear that this state is for a researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Participant consent loaded.\"\n    And I select \"Record consent\"\n    Then I should see \"Review consent for Sofia Patel\"\n    Then I should see \"Record withdrawal or do not proceed\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Participant selected for consent review\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participant consent loaded.\"\n    And I select \"Record consent\"\n    Then I should see \"Review consent for Sofia Patel\"\n    Then I should see \"Record withdrawal or do not proceed\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1442,7 +1442,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 923,
+              "durationMs": 922,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -1450,16 +1450,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 988,
+              "durationMs": 1004,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Search may return visually plausible results without making scope, result type and relevance clear.",
+            "impact": "Users may treat weak or unrelated results as evidence for a project decision.",
+            "recommendedChange": "Review search input labelling, result summaries, empty states, keyboard access and provenance cues.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1469,7 +1469,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/utilities__search__default.png",
-          "acceptanceCriteria": "Feature: Search ResearchOps evidence\n\n  As a user researcher\n  I want to search across ResearchOps material\n  So that I can find relevant evidence, records and project information quickly\n\n  Background:\n    Given I am a user researcher\n    When I visit the search page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports search page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the search page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Search ResearchOps evidence\n\n  As a user researcher\n  I want to search across ResearchOps material\n  So that I can find relevant evidence, records and project information quickly\n\n  Background:\n    Given I am a user researcher\n    When I visit the search page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports search page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Default state\" in the ResearchOps journey\n    Given I am using the search page\n    Then I should understand the research value of this part of the journey\n    And I should see that initial loaded page state\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1497,7 +1497,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 941,
+              "durationMs": 985,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -1505,16 +1505,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1036,
+              "durationMs": 1053,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Notes may be captured without enough context about session, study, source and later synthesis use.",
+            "impact": "Evidence can become hard to trace, compare or safely reuse.",
+            "recommendedChange": "Review note metadata, source context, privacy guidance, save feedback and accessible form behaviour.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1524,7 +1524,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/utilities__notes__default.png",
-          "acceptanceCriteria": "Feature: Capture research notes\n\n  As a user researcher\n  I want to capture and review research notes\n  So that evidence can be used later for synthesis and decisions\n\n  Background:\n    Given I am a user researcher\n    When I visit the notes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports notes page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the notes page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Capture research notes\n\n  As a user researcher\n  I want to capture and review research notes\n  So that evidence can be used later for synthesis and decisions\n\n  Background:\n    Given I am a user researcher\n    When I visit the notes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports notes page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Default state\" in the ResearchOps journey\n    Given I am using the notes page\n    Then I should understand the research value of this part of the journey\n    And I should see that initial loaded page state\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1552,7 +1552,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 935,
+              "durationMs": 939,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -1560,16 +1560,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1028,
+              "durationMs": 1004,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Generic consent information may not be clearly connected to the specific study and participant workflow.",
+            "impact": "Users may misunderstand what consent must be configured, recorded or reviewed before a session.",
+            "recommendedChange": "Review the content against informed consent, plain English, GOV.UK typography and accessible link behaviour.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1579,7 +1579,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/utilities__consent__default.png",
-          "acceptanceCriteria": "Feature: Review consent information\n\n  As a user researcher\n  I want to review consent information\n  So that I can understand what consent is needed before research activity continues\n\n  Background:\n    Given I am a user researcher\n    When I visit the consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports consent page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the consent page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review consent information\n\n  As a user researcher\n  I want to review consent information\n  So that I can understand what consent is needed before research activity continues\n\n  Background:\n    Given I am a user researcher\n    When I visit the consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports consent page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Default state\" in the ResearchOps journey\n    Given I am using the consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that initial loaded page state\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1607,7 +1607,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 976,
+              "durationMs": 939,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -1615,16 +1615,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1023,
+              "durationMs": 1038,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Sessions may look schedulable without showing readiness, consent and follow-up obligations.",
+            "impact": "Research activity could be coordinated from incomplete or misleading operational data.",
+            "recommendedChange": "Review status language, date/time presentation, participant context, and links into the session workspace.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1634,7 +1634,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/utilities__sessions__default.png",
-          "acceptanceCriteria": "Feature: Review research sessions\n\n  As a user researcher\n  I want to review scheduled and completed research sessions\n  So that I can coordinate session delivery and follow-up activity\n\n  Background:\n    Given I am a user researcher\n    When I visit the sessions page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports sessions list page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Default state\" state\n    Given I am using the sessions page\n    Then the interface should make it clear that this state is for initial loaded page state.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review research sessions\n\n  As a user researcher\n  I want to review scheduled and completed research sessions\n  So that I can coordinate session delivery and follow-up activity\n\n  Background:\n    Given I am a user researcher\n    When I visit the sessions page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports sessions list page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Default state\" in the ResearchOps journey\n    Given I am using the sessions page\n    Then I should understand the research value of this part of the journey\n    And I should see that initial loaded page state\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1662,7 +1662,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 942,
+              "durationMs": 940,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -1670,16 +1670,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1053,
+              "durationMs": 1095,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1689,7 +1689,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Missing study ID error state\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for synthesis loaded without a study ID; the page shows the blocking route-context error.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Use the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing study ID error state\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that synthesis loaded without a study ID; the page shows the blocking route-context error\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1708,7 +1708,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1342,
+              "durationMs": 1357,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -1716,16 +1716,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1500,
+              "durationMs": 1487,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1735,7 +1735,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Empty evidence state\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Capture evidence before starting synthesis\"\n    Then I should see \"Capture evidence in a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Empty evidence state\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Capture evidence before starting synthesis\"\n    Then I should see \"Capture evidence in a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1754,7 +1754,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1202,
+              "durationMs": 1200,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -1762,16 +1762,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1348,
+              "durationMs": 1286,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1781,7 +1781,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Evidence available before working clusters\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then I should see \"Create a working cluster grouping before selecting evidence.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Evidence available before working clusters\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Create a working cluster grouping before selecting evidence.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1800,7 +1800,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2109,
+              "durationMs": 2101,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -1808,16 +1808,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2382,
+              "durationMs": 2293,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1827,7 +1827,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Working cluster grouping created\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I enter \"Confidence before the form starts\" into the \"Working cluster label\" field\n    And I enter \"Evidence about how users judge whether they are ready to begin the service.\" into the \"Working cluster description\" field\n    And I select \"Create working cluster grouping\"\n    Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n    Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Working cluster grouping created\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I enter \"Confidence before the form starts\" into the \"Working cluster label\" field\n    And I enter \"Evidence about how users judge whether they are ready to begin the service.\" into the \"Working cluster description\" field\n    And I select \"Create working cluster grouping\"\n    Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n    Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1846,7 +1846,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2136,
+              "durationMs": 2123,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -1854,16 +1854,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2459,
+              "durationMs": 2425,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1873,7 +1873,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Evidence added to working cluster grouping\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I select the \"evidence item\" checkbox\n    And I select the \"evidence item\" checkbox\n    And I choose \"cluster-confidence-start\" from the \"Target working cluster grouping\" field\n    And I select \"Add selected evidence to the working cluster grouping\"\n    Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Evidence added to working cluster grouping\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I select the \"evidence item\" checkbox\n    And I select the \"evidence item\" checkbox\n    And I choose \"cluster-confidence-start\" from the \"Target working cluster grouping\" field\n    And I select \"Add selected evidence to the working cluster grouping\"\n    Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1892,7 +1892,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1437,
+              "durationMs": 1445,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -1900,16 +1900,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1716,
+              "durationMs": 1671,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1919,7 +1919,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Theme creation hidden before evidence is grouped\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for theme creation remains hidden until at least one working cluster grouping contains source evidence.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    Then the \"working cluster grouping\" section should be available\n    Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Theme creation hidden before evidence is grouped\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that theme creation remains hidden until at least one working cluster grouping contains source evidence\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"working cluster grouping\" section should be available\n    Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1938,7 +1938,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2352,
+              "durationMs": 2356,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1946,16 +1946,16 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2701,
+              "durationMs": 2642,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
           "designRisk": {
-            "risk": "No specific design risk recorded for this state.",
-            "impact": "No additional impact has been identified beyond the standard route review.",
-            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
+            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
+            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
             "owner": "UCD team",
-            "status": "No risk recorded"
+            "status": "Needs UCD review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
@@ -1965,7 +1965,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page.\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Work with the \"Theme created with evidence traceability\" state\n    Given I am using the study synthesis page\n    Then the interface should make it clear that this state is for a theme is created from a populated cluster and the source evidence IDs remain inspectable.\n    And I should be given enough context to decide what to do next\n\n  Scenario: Complete the interaction needed for this state\n    Given I am ready to work with this ResearchOps state\n    When I choose \"cluster-confidence-start\" from the \"Working cluster grouping for the theme\" field\n    And I enter \"Digital confidence is shaped before the form starts\" into the \"Theme label\" field\n    And I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into the \"Theme description\" field\n    And I select \"Create theme\"\n    Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n    And I select \"theme traceability details\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use the state accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Theme created with evidence traceability\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a theme is created from a populated cluster and the source evidence IDs remain inspectable\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I choose \"cluster-confidence-start\" from the \"Working cluster grouping for the theme\" field\n    And I enter \"Digital confidence is shaped before the form starts\" into the \"Theme label\" field\n    And I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into the \"Theme description\" field\n    And I select \"Create theme\"\n    Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n    And I select \"theme traceability details\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
