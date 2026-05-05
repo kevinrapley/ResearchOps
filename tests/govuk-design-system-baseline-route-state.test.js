@@ -6,8 +6,12 @@ const componentInventory = fs.readFileSync("docs/design-system/researchops-compo
 const performanceAudit = fs.readFileSync("docs/performance/initial-load-audit.md", "utf8");
 const buttonMigration = fs.readFileSync("docs/design-system/govuk-button-migration.md", "utf8");
 const formMigration = fs.readFileSync("docs/design-system/govuk-form-migration.md", "utf8");
+const frontendV6Migration = fs.readFileSync("docs/design-system/govuk-frontend-v6-migration.md", "utf8");
 const buttonCss = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 const formCss = fs.readFileSync("public/css/govuk/govuk-forms.css", "utf8");
+const tableCss = fs.readFileSync("public/css/govuk/govuk-tables.css", "utf8");
+const frontendV6Css = fs.readFileSync("public/css/govuk/govuk-frontend-v6.css", "utf8");
+const layoutJs = fs.readFileSync("public/components/layout.js", "utf8");
 const dashboardCss = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 const dashboardPage = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
 
@@ -63,6 +67,28 @@ includes(formCss, ".govuk-textarea", "GOV.UK form stylesheet");
 includes(formCss, ".govuk-select", "GOV.UK form stylesheet");
 includes(formCss, ".govuk-error-summary", "GOV.UK form stylesheet");
 includes(formCss, ".govuk-button-group", "GOV.UK form stylesheet");
+
+includes(tableCss, ".govuk-table", "GOV.UK table stylesheet");
+includes(tableCss, ".govuk-summary-list", "GOV.UK table stylesheet");
+includes(tableCss, ".govuk-summary-list__actions", "GOV.UK table stylesheet");
+
+includes(frontendV6Migration, "# GOV.UK Frontend v6 migration", "GOV.UK Frontend v6 migration");
+includes(frontendV6Migration, "forms, buttons, error summaries, fieldsets, radios, checkboxes, file upload, tables, summary lists, tags and notification states", "GOV.UK Frontend v6 migration");
+includes(frontendV6Migration, "Do not add new route-level component approximations", "GOV.UK Frontend v6 migration");
+
+includes(frontendV6Css, ".govuk-file-upload", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-radios__label::before", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-checkboxes__label::before", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-error-summary__list a", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-table .govuk-table__header", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-summary-list__row", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-tag--green", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-notification-banner--success", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, "/* transparency begins in the cascade */", "GOV.UK Frontend v6 stylesheet");
+
+includes(layoutJs, "GOVUK_FRONTEND_V6_STYLESHEET", "layout component");
+includes(layoutJs, "/css/govuk/govuk-frontend-v6.css", "layout component");
+includes(layoutJs, "ensureGovukFrontendV6Stylesheet();", "layout component");
 
 includes(dashboardPage, "class=\"section\"", "project dashboard page");
 includes(dashboardPage, "class=\"section__header\"", "project dashboard page");
