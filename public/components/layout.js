@@ -21,7 +21,7 @@
  * - Supported tags: {{key}}, {{{key}}}, {{& key}}, {{#section}}...{{/section}}, {{^section}}...{{/section}}
  * - Dot notation paths are supported (e.g., {{project.name}}). Array item scope is available as {{.}}.
  * - The element injects content directly into itself (no Shadow DOM) so page CSS applies normally.
- * - After render, if a container has [data-active="Name"], any descendant with [data-nav="Name"] gets .active.
+ * - After render, if a container has [data-active="Name"], any descendant with [data-nav="Name"] gets the GOV.UK active service navigation state.
  *
  * optional debug gating, auto-nav activation, queued re-renders, and footer defaults.
  */
@@ -195,8 +195,10 @@ class XInclude extends HTMLElement {
 			if (!target) return;
 			el.querySelectorAll("[data-nav]").forEach(link => {
 				const isMatch = (link.getAttribute("data-nav") || "").trim() === target;
+				const item = link.closest(".govuk-service-navigation__item");
+				if (item) item.classList.toggle("govuk-service-navigation__item--active", isMatch);
 				link.classList.toggle("active", isMatch);
-				if (isMatch) link.setAttribute("aria-current", "page");
+				if (isMatch) link.setAttribute("aria-current", "true");
 				else link.removeAttribute("aria-current");
 			});
 		});

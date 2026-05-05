@@ -8,6 +8,7 @@ const migrationDoc = fs.readFileSync(
   "docs/design-system/govuk-page-chrome-navigation-migration.md",
   "utf8"
 );
+const layoutSource = fs.readFileSync("public/components/layout.js", "utf8");
 
 const pagesUsingSharedChrome = [
   "public/index.html",
@@ -40,36 +41,49 @@ function excludes(source, text, label) {
 includes(pageChromeCss, ".govuk-skip-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header__container", "page chrome stylesheet");
-includes(pageChromeCss, ".govuk-header__service-name", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-header__homepage-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation__wrapper", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation__toggle", "page chrome stylesheet");
+includes(pageChromeCss, ".govuk-service-navigation__item--active", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-service-navigation__link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-phase-banner", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-back-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-footer", "page chrome stylesheet");
+includes(pageChromeCss, "background: #1d70b8;", "page chrome stylesheet");
+includes(pageChromeCss, "background: #f4f8fb;", "page chrome stylesheet");
 includes(pageChromeCss, "/* transparency begins in the cascade */", "page chrome stylesheet");
 
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header\" role=\"banner\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header__container\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header__service-name\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header__link\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-header\" role=\"banner\" data-module=\"govuk-header\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-header__container govuk-width-container\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-header__homepage-link\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-header__logotype\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation\"", "shared header partial");
-includes(headerPartial, "aria-label=\"Service navigation\"", "shared header partial");
+includes(headerPartial, "data-module=\"govuk-service-navigation\"", "shared header partial");
+includes(headerPartial, "aria-label=\"Service information\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-service-navigation__service-name\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-service-navigation__wrapper\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-service-navigation__toggle govuk-js-service-navigation-toggle\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-service-navigation__list\"", "shared header partial");
 includes(headerPartial, "data-active=\"{{active}}\"", "shared header partial");
 includes(headerPartial, "data-nav=\"Home\"", "shared header partial");
 includes(headerPartial, "data-nav=\"Start Research Project\"", "shared header partial");
 includes(headerPartial, "data-nav=\"Projects\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-phase-banner\"", "shared header partial");
+includes(headerPartial, "class=\"govuk-phase-banner govuk-width-container\"", "shared header partial");
 includes(headerPartial, "Do not enter real participant personal data", "shared header partial");
 includes(headerPartial, "ensurePageChromeStylesheet", "shared header partial");
 includes(headerPartial, "ensureMainContentTarget", "shared header partial");
+includes(headerPartial, "initServiceNavigation", "shared header partial");
 includes(headerPartial, "main.classList.add(\"govuk-main-wrapper\")", "shared header partial");
 includes(headerPartial, "target.id = \"main-content\"", "shared header partial");
 excludes(headerPartial, "main.setAttribute(\"id\", \"main-content\")", "shared header partial");
-excludes(headerPartial, "aria-hidden", "shared header partial");
 excludes(headerPartial, "class=\"rops-header\"", "shared header partial");
 excludes(headerPartial, "class=\"nav govuk-body\"", "shared header partial");
+
+includes(layoutSource, "govuk-service-navigation__item--active", "layout helper");
+includes(layoutSource, "aria-current", "layout helper");
+includes(layoutSource, "\"true\"", "layout helper");
 
 includes(footerPartial, "class=\"govuk-footer\" role=\"contentinfo\"", "shared footer partial");
 includes(footerPartial, "class=\"govuk-footer__container\"", "shared footer partial");
@@ -77,6 +91,7 @@ includes(footerPartial, "class=\"govuk-footer__meta\"", "shared footer partial")
 excludes(footerPartial, "<hr", "shared footer partial");
 
 includes(migrationDoc, "# GOV.UK page chrome and navigation migration", "page chrome migration doc");
+includes(migrationDoc, "refreshed GOV.UK branding", "page chrome migration doc");
 includes(migrationDoc, "Skip link", "page chrome migration doc");
 includes(migrationDoc, "Service navigation", "page chrome migration doc");
 includes(migrationDoc, "Phase banner", "page chrome migration doc");

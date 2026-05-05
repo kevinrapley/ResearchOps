@@ -1,43 +1,47 @@
 <!-- public/partials/header.html -->
 <a class="govuk-skip-link" href="#main-content">Skip to main content</a>
 
-<header class="govuk-header" role="banner">
-	<div class="govuk-header__container">
+<header class="govuk-header" role="banner" data-module="govuk-header">
+	<div class="govuk-header__container govuk-width-container">
 		<div class="govuk-header__logo">
-			<a class="govuk-header__link" href="/" aria-label="GOV.UK home">
-				<span class="govuk-header__logotype">GOV.UK</span>
+			<a href="/" class="govuk-header__homepage-link" aria-label="GOV.UK home">
+				<span class="govuk-header__logotype" aria-hidden="true">GOV.UK</span>
 			</a>
-		</div>
-		<div class="govuk-header__service-name">
-			{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
 		</div>
 	</div>
 </header>
 
-<nav class="govuk-service-navigation" data-active="{{active}}" aria-label="Service navigation">
-	<div class="govuk-service-navigation__container govuk-width-container">
-		<span class="govuk-service-navigation__service-name">
-			<a class="govuk-service-navigation__link" href="/">
-				{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
-			</a>
-		</span>
-		<ul class="govuk-service-navigation__list">
-			<li class="govuk-service-navigation__item">
-				<a class="govuk-service-navigation__link" href="/" data-nav="Home">Home</a>
-			</li>
-			<li class="govuk-service-navigation__item">
-				<a class="govuk-service-navigation__link" href="/pages/start/" data-nav="Start Research Project">Start research project</a>
-			</li>
-			<li class="govuk-service-navigation__item">
-				<a class="govuk-service-navigation__link" href="/pages/projects/" data-nav="Projects">Projects</a>
-			</li>
-		</ul>
+<section aria-label="Service information" class="govuk-service-navigation" data-module="govuk-service-navigation" data-active="{{active}}">
+	<div class="govuk-width-container">
+		<div class="govuk-service-navigation__container">
+			<span class="govuk-service-navigation__service-name">
+				<a class="govuk-service-navigation__link" href="/">
+					{{#title}}{{title}}{{/title}}{{^title}}ResearchOps Demo Suite{{/title}}
+				</a>
+			</span>
+			<nav aria-label="Menu" class="govuk-service-navigation__wrapper">
+				<button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" hidden aria-hidden="true">
+					Menu
+				</button>
+				<ul class="govuk-service-navigation__list" id="navigation">
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/" data-nav="Home">Home</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/start/" data-nav="Start Research Project">Start research project</a>
+					</li>
+					<li class="govuk-service-navigation__item">
+						<a class="govuk-service-navigation__link" href="/pages/projects/" data-nav="Projects">Projects</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
 	</div>
-</nav>
+</section>
 
-<div class="govuk-phase-banner" role="note" aria-label="Service phase">
+<div class="govuk-phase-banner govuk-width-container" role="note" aria-label="Service phase">
 	<p class="govuk-phase-banner__content">
-		<strong class="govuk-tag">Prototype</strong>
+		<strong class="govuk-tag govuk-phase-banner__content__tag">Prototype</strong>
 		<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
 	</p>
 </div>
@@ -72,9 +76,30 @@
 			}
 		}
 
+		function initServiceNavigation() {
+			var nav = document.querySelector(".govuk-service-navigation");
+			if (!nav) return;
+
+			var toggle = nav.querySelector(".govuk-js-service-navigation-toggle");
+			var list = nav.querySelector("#navigation");
+			if (!toggle || !list) return;
+
+			toggle.hidden = false;
+			toggle.removeAttribute("aria-hidden");
+			toggle.setAttribute("aria-expanded", "false");
+			list.classList.add("govuk-service-navigation__list--collapsed");
+
+			toggle.addEventListener("click", function () {
+				var expanded = toggle.getAttribute("aria-expanded") === "true";
+				toggle.setAttribute("aria-expanded", String(!expanded));
+				list.classList.toggle("govuk-service-navigation__list--collapsed", expanded);
+			});
+		}
+
 		function init() {
 			ensurePageChromeStylesheet();
 			ensureMainContentTarget();
+			initServiceNavigation();
 		}
 
 		if (document.readyState === "loading") {
