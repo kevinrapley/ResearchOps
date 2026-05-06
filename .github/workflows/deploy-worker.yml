@@ -11,8 +11,6 @@ on:
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-worker.yml"
-      - "deployment-toolchain.yaml"
-      - "docs/deployment/wrangler-toolchain.md"
   workflow_dispatch: {}
 
 permissions:
