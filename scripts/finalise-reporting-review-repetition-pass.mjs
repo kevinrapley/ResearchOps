@@ -2,7 +2,7 @@
 
 /**
  * @file scripts/finalise-reporting-review-repetition-pass.mjs
- * @summary Remove obsolete non-state wording from the generated reporting review script.
+ * @summary Remove obsolete wording and correct generated reporting review placement.
  */
 
 import fs from 'node:fs';
@@ -26,6 +26,34 @@ export const REPLACEMENTS = Object.freeze([
 	],
 ]);
 
+export const ORIGINAL_GROUP_PANEL_INSERTION = `    const firstCard = stateCards[0][1];
+
+    if (!firstCard.parentElement.querySelector('[data-reporting-review-level="group"][data-reporting-review-group="' + group.title + '"]')) {
+      const groupPanel = createGroupPanel(group);
+      groupPanel.dataset.reportingReviewGroup = group.title;
+      firstCard.insertAdjacentElement('beforebegin', groupPanel);
+    }`;
+
+export const GROUP_HEADER_PANEL_INSERTION = `    const firstCard = stateCards[0][1];
+    const statesContainer = firstCard.closest('.states') || firstCard.parentElement;
+    const pageCard = statesContainer ? statesContainer.closest('.page-card') : null;
+    const headerPanel = pageCard ? pageCard.querySelector('.page-card__header') : null;
+    const groupPanelScope = pageCard || statesContainer || firstCard.parentElement;
+
+    if (!groupPanelScope.querySelector('[data-reporting-review-level="group"][data-reporting-review-group="' + group.title + '"]')) {
+      const groupPanel = createGroupPanel(group);
+      groupPanel.dataset.reportingReviewGroup = group.title;
+      groupPanel.dataset.reportingReviewPlacement = headerPanel ? 'group-header' : 'before-states';
+
+      if (headerPanel) {
+        headerPanel.append(groupPanel);
+      } else if (statesContainer) {
+        statesContainer.insertAdjacentElement('beforebegin', groupPanel);
+      } else {
+        firstCard.insertAdjacentElement('beforebegin', groupPanel);
+      }
+    }`;
+
 function applyReplacements(value) {
 	return REPLACEMENTS.reduce(
 		(result, [pattern, replacement]) => result.replace(pattern, replacement),
@@ -33,8 +61,12 @@ function applyReplacements(value) {
 	);
 }
 
+function applyGroupHeaderPanelPlacement(value) {
+	return String(value || '').replace(ORIGINAL_GROUP_PANEL_INSERTION, GROUP_HEADER_PANEL_INSERTION);
+}
+
 export function finaliseReportingReviewRepetitionHtml(html) {
-	return applyReplacements(html);
+	return applyGroupHeaderPanelPlacement(applyReplacements(html));
 }
 
 export function finaliseReportingReviewRepetitionPass(options = {}) {
