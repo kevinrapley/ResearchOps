@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "infra/cloudflare/**"
+      - "!infra/cloudflare/agent-gateway/**"
       - "functions/**"
       - "config/**"
       - "package.json"
