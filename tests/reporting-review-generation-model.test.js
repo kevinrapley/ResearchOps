@@ -103,7 +103,7 @@ test('curated start states replace old full-page generated criteria', () => {
 	assert.doesNotMatch(defaultState.acceptanceCriteria, /Navigate using the primary navigation/);
 	assert.match(researcherAuthoredState.acceptanceCriteria, /Feature: Step 2 completed with researcher-authored context/);
 	assert.doesNotMatch(researcherAuthoredState.acceptanceCriteria, /AI description assistance/);
-	assert.doesNotMatch(researcherAuthoredState.acceptanceCriteria, /automated rewriting is required/);
+	assert.match(researcherAuthoredState.acceptanceCriteria, /should not imply that automated rewriting is required/);
 });
 
 test('rendered report emits group evidence above states without runtime grouping script', () => {
