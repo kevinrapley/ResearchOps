@@ -236,7 +236,7 @@ function renderEmptyState() {
 <div class="projects-empty-state" role="status">
 	<h3 class="govuk-heading-m">No projects yet</h3>
 	<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-	<p><a class="govuk-link" href="/pages/start/">Start a research project</a></p>
+	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
 </div>`;
 }
 
@@ -246,7 +246,7 @@ function renderErrorState(error) {
 	<h3 class="govuk-heading-m">Could not load projects</h3>
 	<p class="govuk-body">Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.</p>
 	<p class="govuk-body">Technical detail: ${escapeHtml(error?.message || error)}</p>
-	<p><a class="govuk-link" href="/pages/start/">Start a research project</a></p>
+	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
 </div>`;
 }
 
