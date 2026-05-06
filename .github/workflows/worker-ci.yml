@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "infra/cloudflare/**"
+      - "infra/cloudflare/agent-gateway/**"
       - "functions/**"
       - "src/**"
       - "config/**"
@@ -15,6 +16,7 @@ on:
       - "docs/deployment/wrangler-toolchain.md"
       - ".github/workflows/worker-ci.yml"
       - ".github/workflows/deploy-worker.yml"
+      - ".github/workflows/deploy-agent-gateway.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -31,7 +33,7 @@ env:
 
 jobs:
   worker-ci:
-    name: Validate Cloudflare Worker
+    name: Validate Cloudflare Workers
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -60,5 +62,8 @@ jobs:
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
-      - name: Validate Worker deployment bundle
+      - name: Validate ResearchOps API Worker deployment bundle
         run: npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/wrangler.toml --dry-run
+
+      - name: Validate ResearchOps Agent Gateway Worker deployment bundle
+        run: npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/agent-gateway/wrangler.toml --dry-run
