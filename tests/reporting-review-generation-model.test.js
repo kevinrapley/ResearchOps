@@ -174,8 +174,12 @@ test('non-curated pages keep generated screen-state criteria', () => {
 test('walkthrough workflow restores source-derived criteria sync before rendering', () => {
 	const workflow = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
 	const walkthroughIndex = workflow.indexOf('npm run qa:visual-walkthrough');
-	const syncIndex = workflow.indexOf('node scripts/sync-report-acceptance-criteria.mjs reports-site');
-	const renderIndex = workflow.indexOf('node scripts/render-reporting-review-site.mjs reports-site');
+	const syncIndex = workflow.indexOf(
+		'node scripts/sync-report-acceptance-criteria.mjs reports-site'
+	);
+	const renderIndex = workflow.indexOf(
+		'node scripts/render-reporting-review-site.mjs reports-site'
+	);
 
 	assert.ok(walkthroughIndex > -1);
 	assert.ok(syncIndex > walkthroughIndex);
