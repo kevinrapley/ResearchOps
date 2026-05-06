@@ -179,6 +179,14 @@ export const visualWalkthroughConfig = {
 			designRisk: operationalDesignRisks.home,
 		},
 		{
+			id: 'start-overview',
+			title: 'Start a research project',
+			group: 'Core',
+			path: '/pages/start/overview/index.html',
+			description: 'Overview page for creating a research project.',
+			designRisk: operationalDesignRisks.start,
+		},
+		{
 			id: 'start',
 			title: 'Start research project',
 			group: 'Core',
