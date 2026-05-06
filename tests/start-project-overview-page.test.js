@@ -3,6 +3,9 @@ import fs from 'node:fs';
 
 const overviewPage = fs.readFileSync('public/pages/start/overview/index.html', 'utf8');
 const visualWalkthroughConfig = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
+const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
+const homePage = fs.readFileSync('public/index.html', 'utf8');
+const projectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
 
 function textContent(source, selectorPattern) {
 	const match = source.match(selectorPattern);
@@ -24,6 +27,14 @@ function headingText(source, level) {
 				.trim()
 		)
 		.filter(Boolean);
+}
+
+function linkHref(source, linkText) {
+	const pattern = new RegExp(`<a\\b([^>]*)>[\\s\\S]*?${linkText}[\\s\\S]*?<\\/a>`, 'i');
+	const match = source.match(pattern);
+	if (!match) return '';
+	const href = match[1].match(/href="([^"]+)"/);
+	return href ? href[1] : '';
 }
 
 assert.equal(headingText(overviewPage, 1).length, 1, 'Start overview page should have one h1');
@@ -67,4 +78,25 @@ assert.equal(
 	visualWalkthroughConfig.includes("path: '/pages/start/index.html'"),
 	true,
 	'Visual walkthrough config should keep the existing four-step start route'
+);
+
+assert.equal(
+	linkHref(headerPartial, 'Start research project'),
+	'/pages/start/overview/',
+	'Shared service navigation should route Start research project to the overview page'
+);
+assert.equal(
+	linkHref(homePage, 'Start research project'),
+	'/pages/start/overview/',
+	'Home page Start a research project button should route to the overview page'
+);
+assert.equal(
+	linkHref(projectsPage, 'Start a research project'),
+	'/pages/start/overview/',
+	'Projects page Start a research project button should route to the overview page'
+);
+assert.equal(
+	overviewPage.includes('href="/pages/start/"'),
+	true,
+	'Overview page should keep the Start now action routed to the existing creation form'
 );
