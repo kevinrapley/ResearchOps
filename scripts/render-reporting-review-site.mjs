@@ -79,12 +79,20 @@ function renderCriteriaMaturity(state = {}) {
 	return `<strong class="criteria-tag criteria-tag--${escapeHtml(maturity.slug)}">${escapeHtml(maturity.label)}</strong>`;
 }
 
+function criteriaSourceForState(state = {}) {
+	return state.acceptanceCriteriaSource || state.criteriaSource?.type || 'generated';
+}
+
 function renderStateAcceptanceCriteria(state = {}) {
-	if (!state.acceptanceCriteria || state.suppressGeneratedStateCriteria !== true) return '';
+	if (!state.acceptanceCriteria) return '';
+
+	const summary = state.suppressGeneratedStateCriteria === true
+		? 'What this state should support'
+		: 'What this screen state should support';
 
 	return `
-					<details class="state-acceptance-criteria" data-acceptance-criteria-source="${escapeHtml(state.acceptanceCriteriaSource || 'generated')}">
-						<summary>What this state should support</summary>
+					<details class="state-acceptance-criteria" data-acceptance-criteria-source="${escapeHtml(criteriaSourceForState(state))}">
+						<summary>${summary}</summary>
 						<div class="state-acceptance-criteria__meta">
 							${renderCriteriaMaturity(state)}
 							<span>Format: Gherkin acceptance criteria</span>
@@ -94,7 +102,7 @@ function renderStateAcceptanceCriteria(state = {}) {
 }
 
 function renderDesignRisk(state = {}) {
-	if (!state.designRisk || state.suppressGeneratedStateCriteria !== true) return '';
+	if (!state.designRisk) return '';
 
 	return `
 					<section class="design-risk" aria-label="Design-risk notes">
@@ -158,8 +166,7 @@ function renderPage(page = {}) {
 					${(page.states || []).map((state) => renderState(page, state)).join('')}
 				</div>
 			</article>`;
-}
-
+}\n
 function renderJourneyNavigation(manifest = {}) {
 	const pagesById = new Map((manifest.pages || []).map((page) => [page.id, page]));
 	const journeys = manifest.journeys || [];
