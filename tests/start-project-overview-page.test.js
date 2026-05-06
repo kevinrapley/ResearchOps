@@ -35,7 +35,10 @@ function anchors(source) {
 		const href = match[1].match(/href="([^"]+)"/);
 		return {
 			href: href ? href[1] : '',
-			text: match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+			text: match[2]
+				.replace(/<[^>]+>/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim(),
 		};
 	});
 }
