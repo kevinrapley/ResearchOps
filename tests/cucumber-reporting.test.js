@@ -132,22 +132,13 @@ test('buildStateAcceptanceGherkin writes source-derived start-project criteria',
 	assert.match(gherkin, /When I visit the start research project service/);
 	assert.match(gherkin, /Scenario: Understand the steps in the guided process/);
 	assert.match(gherkin, /Step 1 of 4 \| Define the project/);
-	assert.match(
-		gherkin,
-		/Scenario: Define the project with essential information only/
-	);
-	assert.match(
-		gherkin,
-		/service phase should be set to "Discovery" by default/
-	);
+	assert.match(gherkin, /Scenario: Define the project with essential information only/);
+	assert.match(gherkin, /service phase should be set to "Discovery" by default/);
 	assert.match(
 		gherkin,
 		/project status should be set to "Goal setting & problem defining" by default/
 	);
-	assert.match(
-		gherkin,
-		/not be asked to choose a service phase or project status in Step 1/
-	);
+	assert.match(gherkin, /not be asked to choose a service phase or project status in Step 1/);
 	assert.match(gherkin, /Step 4 of 4 \| Check your answers before creating the project/);
 	assert.match(gherkin, /Scenario: Recover when required research framing fields are missing/);
 	assert.match(gherkin, /Enter at least one research objective/);
