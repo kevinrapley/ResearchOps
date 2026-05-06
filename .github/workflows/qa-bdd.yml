@@ -211,14 +211,8 @@ jobs:
       - name: Run application visual walkthrough
         run: npm run qa:visual-walkthrough
 
-      - name: Sync source-derived acceptance criteria
-        run: node scripts/sync-report-acceptance-criteria.mjs reports-site
-
-      - name: Apply reporting review repetition pass
-        run: node scripts/apply-reporting-review-repetition-pass.mjs reports-site
-
-      - name: Finalise reporting review repetition pass
-        run: node scripts/finalise-reporting-review-repetition-pass.mjs reports-site
+      - name: Render reporting review site from manifest evidence
+        run: node scripts/render-reporting-review-site.mjs reports-site
 
       - name: Detect visual walkthrough site
         id: detect_site
