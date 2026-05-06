@@ -26,7 +26,14 @@ export async function tailRecentErrors(env: CloudflareEnv, request: ToolRequest)
       throw new Error(`Recent Worker error log read failed with status ${response.status}.`);
     }
 
-    return response.json().catch(async () => ({ value: await response.text() }));
+    const text = await response.text();
+    if (!text) return [];
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { value: text };
+    }
   }
 
   const scriptName = stringValue(request.input?.scriptName);
