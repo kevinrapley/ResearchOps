@@ -15,21 +15,6 @@ on:
       - "docs/deployment/wrangler-toolchain.md"
       - ".github/workflows/worker-ci.yml"
       - ".github/workflows/deploy-worker.yml"
-  push:
-    branches: [main]
-    paths:
-      - "infra/cloudflare/**"
-      - "functions/**"
-      - "src/**"
-      - "config/**"
-      - "scripts/**"
-      - "tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - "deployment-toolchain.yaml"
-      - "docs/deployment/wrangler-toolchain.md"
-      - ".github/workflows/worker-ci.yml"
-      - ".github/workflows/deploy-worker.yml"
   workflow_dispatch: {}
 
 permissions:
