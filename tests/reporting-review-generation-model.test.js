@@ -1,8 +1,19 @@
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyReportingReviewEvidenceToManifest } from '../scripts/reporting-review-evidence.mjs';
 import { renderReportingReviewHtml } from '../scripts/render-reporting-review-site.mjs';
+
+function captureFixture(profile, title) {
+	return {
+		profile,
+		profileTitle: title,
+		status: 'captured',
+		url: `https://researchops.pages.dev/${profile}`,
+		screenshot: `screenshots/${profile}/fixture.png`,
+	};
+}
 
 function stateFixture(id, title, acceptanceCriteria = 'Generated full-page criteria') {
 	return {
@@ -25,7 +36,7 @@ function stateFixture(id, title, acceptanceCriteria = 'Generated full-page crite
 			status: 'Needs review',
 		},
 		evidenceTypes: ['Screenshot evidence', 'State-level acceptance criteria'],
-		captures: [],
+		captures: [captureFixture('desktop', 'Desktop'), captureFixture('mobile', 'Mobile')],
 	};
 }
 
@@ -36,6 +47,18 @@ function manifestFixture() {
 		startedAt: '2026-05-06T00:00:00.000Z',
 		baseURL: 'https://researchops.pages.dev/',
 		failureCount: 0,
+		profiles: [
+			{
+				id: 'desktop',
+				title: 'Desktop',
+				description: 'Desktop Chromium viewport.',
+			},
+			{
+				id: 'mobile',
+				title: 'Mobile',
+				description: 'Mobile Chromium viewport.',
+			},
+		],
 		pages: [
 			{
 				id: 'home',
@@ -146,4 +169,33 @@ test('non-curated pages keep generated screen-state criteria', () => {
 
 	assert.match(homeFragment, /What this screen state should support/);
 	assert.match(homeFragment, /Generated full-page criteria/);
+});
+
+test('walkthrough workflow restores source-derived criteria sync before rendering', () => {
+	const workflow = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
+	const walkthroughIndex = workflow.indexOf('npm run qa:visual-walkthrough');
+	const syncIndex = workflow.indexOf(
+		'node scripts/sync-report-acceptance-criteria.mjs reports-site'
+	);
+	const renderIndex = workflow.indexOf(
+		'node scripts/render-reporting-review-site.mjs reports-site'
+	);
+
+	assert.ok(walkthroughIndex > -1);
+	assert.ok(syncIndex > walkthroughIndex);
+	assert.ok(renderIndex > syncIndex);
+});
+
+test('rendered report preserves profile filtering controls and capture targets', () => {
+	const html = renderReportingReviewHtml(manifestFixture());
+
+	assert.match(html, /class="profile-switcher"/);
+	assert.match(html, /aria-label="Screenshot profile"/);
+	assert.match(html, /data-profile-filter="desktop" aria-pressed="true"/);
+	assert.match(html, /data-profile-filter="mobile" aria-pressed="false"/);
+	assert.match(html, /data-profile-filter="compare" aria-pressed="false"/);
+	assert.match(html, /class="capture" data-profile="desktop"/);
+	assert.match(html, /class="capture" data-profile="mobile"/);
+	assert.match(html, /document\.documentElement\.dataset\.profileFilter = activeProfile/);
+	assert.match(html, /capture\.hidden = !showAll && capture\.dataset\.profile !== activeProfile/);
 });
