@@ -48,9 +48,11 @@ async function runTool(request: Request, env: Env): Promise<Response> {
 
   const toolRequest = await readToolRequest(request);
   const auditId = createAuditId();
+  let policyAccepted = false;
 
   try {
     assertAuthorized(toolRequest);
+    policyAccepted = true;
     await persistAudit(env, toolRequest, auditId, "accepted", true, "Request accepted by policy.");
 
     const cloudflareEnv = requireCloudflareEnv(env);
@@ -66,7 +68,9 @@ async function runTool(request: Request, env: Env): Promise<Response> {
     } satisfies ToolResponse);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await persistAudit(env, toolRequest, auditId, "failed", false, message).catch(() => undefined);
+    await persistAudit(env, toolRequest, auditId, policyAccepted ? "failed" : "blocked", false, message).catch(
+      () => undefined,
+    );
 
     return jsonResponse(
       {
