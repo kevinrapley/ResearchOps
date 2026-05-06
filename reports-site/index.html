@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-06T03:07:20.917Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-06T03:51:52.119Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -236,6 +236,92 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<p class="meta">Mobile · captured · https://researchops.pages.dev/</p>
 			
 			<figure class="capture__figure"><a href="screenshots/mobile/core__home__default.png"><img loading="lazy" src="screenshots/mobile/core__home__default.png" alt="Screenshot of Home in the Default state state for Mobile." /></a><figcaption>Home — Default state — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+		</div>
+	</article>
+	<article class="page-card" id="start-overview" data-review-group-id="" data-review-evidence-level="generated">
+		<div class="page-card__header">
+			<h3>Start a research project</h3>
+			<p class="meta">/pages/start/overview/index.html</p>
+			<p>Overview page for creating a research project.</p>
+			
+		</div>
+		<div class="states">
+			
+	<article class="state" id="start-overview-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Default state</h4>
+			<p class="meta">captured · https://researchops.pages.dev/pages/start/overview/index.html</p>
+			<p>Initial loaded page state.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Start a research project page
+
+  As a user researcher
+  I want to use the start a research project page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the start a research project page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports overview page for creating a research project
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Default state&quot; in the ResearchOps journey
+    Given I am using the start a research project page
+    Then I should understand the research value of this part of the journey
+    And I should see that initial loaded page state
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Understand the default view
+    Then I should understand what ResearchOps task this page supports
+    And I should be able to choose an appropriate next action for my work
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.</dd></div>
+			<div><dt>Impact</dt><dd>Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.</dd></div>
+			<div><dt>Recommended change</dt><dd>Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>Needs UCD review</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/start/overview/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/core__start-overview__default.png"><img loading="lazy" src="screenshots/desktop/core__start-overview__default.png" alt="Screenshot of Start a research project in the Default state state for Desktop." /></a><figcaption>Start a research project — Default state — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/start/overview/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/core__start-overview__default.png"><img loading="lazy" src="screenshots/mobile/core__start-overview__default.png" alt="Screenshot of Start a research project in the Default state state for Mobile." /></a><figcaption>Start a research project — Default state — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
