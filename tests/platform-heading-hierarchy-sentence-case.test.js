@@ -20,13 +20,13 @@ function headingText(source, level) {
 function assertHasOneStaticH1(source, label) {
 	const h1s = headingText(source, 1);
 	assert.equal(h1s.length, 1, `${label} should expose exactly one static h1`);
+	return h1s[0];
 }
 
-assertHasOneStaticH1(homePage, 'Home page');
-assert.equal(headingText(homePage, 1)[0], 'ResearchOps demo suite');
+assert.equal(assertHasOneStaticH1(homePage, 'Home page'), 'ResearchOps demo suite');
 assert.equal(homePage.includes('>ResearchOps Demo Suite</h1>'), false);
 
-assertHasOneStaticH1(projectDashboardPage, 'Project dashboard page');
+assert.equal(assertHasOneStaticH1(projectDashboardPage, 'Project dashboard page'), 'Project dashboard');
 
 for (const forbiddenHeading of [
 	'Service Stage',
