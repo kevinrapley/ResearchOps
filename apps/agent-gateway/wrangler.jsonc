@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "researchops-agent-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "RESEARCHOPS_ADMIN_ORIGIN": "https://researchops.pages.dev"
+  },
+  "d1_databases": [
+    {
+      "binding": "AUDIT_DB",
+      "database_name": "researchops-agent-gateway-audit",
+      "database_id": "REPLACE_WITH_PRODUCTION_AUDIT_D1_DATABASE_ID"
+    }
+  ]
+}
