@@ -44,8 +44,12 @@ for (const route of formRoutes) {
 const startPage = read("public/pages/start/index.html");
 includes(startPage, "id=\"error-summary\" class=\"govuk-error-summary start-panel\"", "Start route");
 includes(startPage, "class=\"govuk-textarea\"", "Start route");
-includes(startPage, "class=\"govuk-select\"", "Start route");
 includes(startPage, "class=\"govuk-button-group cta\"", "Start route");
+includes(startPage, "Give the project a name and description.", "Start route");
+includes(startPage, "ResearchOps will start the project in Discovery with the status Goal setting &amp; problem defining.", "Start route");
+excludes(startPage, "class=\"govuk-select\"", "Start route");
+excludes(startPage, "id=\"p_phase\"", "Start route");
+excludes(startPage, "id=\"p_status\"", "Start route");
 excludes(startPage, "<label class=\"govuk-body\"", "Start route");
 excludes(startPage, "class=\"form-group\"", "Start route");
 
