@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-06T13:56:44.624Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-06T14:05:07.511Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -347,6 +347,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 
   Scenario: Complete the guided project setup safely
     Then I should understand what project information is needed before I commit anything
+    And Step 1 should ask only for the essential project name and description
+    And the project should start with service phase &quot;Discovery&quot; and status &quot;Goal setting &amp; problem defining&quot; by default
     And I should be able to review the full setup before creating the project
 
   Scenario: Understand the guided process
@@ -387,7 +389,8 @@ h3, h4, h5 { margin: 0 0 6px; }
   Scenario: Complete Step 1 controls
     Then I should be able to enter the project name
     And I should be able to enter the project description
-    And I should be able to select the service phase and project status
+    And I should not be asked to select the service phase or project status in Step 1
+    And the project should use &quot;Discovery&quot; and &quot;Goal setting &amp; problem defining&quot; as default values
     And I should be able to continue without losing my answers</code></pre>
 		</details>
 		
@@ -395,7 +398,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Design-risk notes</h5>
 			
 		<dl class="review-risk-list">
-			<div><dt>Design risk</dt><dd>The first state must make the core form controls clear and operable.</dd></div>
+			<div><dt>Design risk</dt><dd>The first state must make the essential form controls clear and operable while avoiding unnecessary early classification choices.</dd></div>
 			<div><dt>Impact</dt><dd>If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.</dd></div>
 			<div><dt>Recommended change</dt><dd>Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.</dd></div>
 			<div><dt>Owner</dt><dd>UCD team</dd></div>
@@ -420,9 +423,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 	<article class="state" id="start-step-1-filled" data-review-group-id="start" data-review-evidence-level="state" data-suppress-generated-state-criteria="true">
 		<div class="state__header">
-			<h4>Step 1 completed with project definition</h4>
+			<h4>Step 1 completed with essential project definition</h4>
 			<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
-			<p>Project name, description, phase and status entered using believable discovery-stage dummy data.</p>
+			<p>Project name and description entered using believable discovery-stage dummy data, with phase and status set by default.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>State-level curated acceptance criteria</span><span>State-level curated design-risk notes</span>
@@ -437,9 +440,10 @@ h3, h4, h5 { margin: 0 0 6px; }
 			</div>
 			<pre class="gherkin-criteria"><code>Feature: Step 1 completed
 
-  Scenario: Continue after defining the project
-    Then my project definition should be retained
-    And I should be able to go back or correct it without losing progress</code></pre>
+  Scenario: Continue after defining essential project information
+    Then my project name and description should be retained
+    And the default service phase and project status should be retained for review
+    And I should be able to go back or correct editable answers without losing progress</code></pre>
 		</details>
 		
 		<section class="design-risk" aria-label="Design-risk notes">
@@ -459,13 +463,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/start/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/desktop/core__start__step-1-filled.png" alt="Screenshot of Start research project in the Step 1 completed with project definition state for Desktop." /></a><figcaption>Start research project — Step 1 completed with project definition — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/desktop/core__start__step-1-filled.png" alt="Screenshot of Start research project in the Step 1 completed with essential project definition state for Desktop." /></a><figcaption>Start research project — Step 1 completed with essential project definition — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/start/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/mobile/core__start__step-1-filled.png" alt="Screenshot of Start research project in the Step 1 completed with project definition state for Mobile." /></a><figcaption>Start research project — Step 1 completed with project definition — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/core__start__step-1-filled.png"><img loading="lazy" src="screenshots/mobile/core__start__step-1-filled.png" alt="Screenshot of Start research project in the Step 1 completed with essential project definition state for Mobile." /></a><figcaption>Start research project — Step 1 completed with essential project definition — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -473,7 +477,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div class="state__header">
 			<h4>Step 2 default state</h4>
 			<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
-			<p>Second wizard step after a valid project definition has been entered on step 1.</p>
+			<p>Second wizard step after a valid project name and description have been entered on step 1.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>State-level curated acceptance criteria</span><span>State-level curated design-risk notes</span>
@@ -728,7 +732,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div class="state__header">
 			<h4>Step 4 check your answers before create project</h4>
 			<p class="meta">captured · https://researchops.pages.dev/pages/start/index.html</p>
-			<p>Check-your-answers step summarising the project definition, research framing, ownership and notes before project creation is submitted.</p>
+			<p>Check-your-answers step summarising the project definition, default phase and status, research framing, ownership and notes before project creation is submitted.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>State-level curated acceptance criteria</span><span>State-level curated design-risk notes</span>
@@ -744,7 +748,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<pre class="gherkin-criteria"><code>Feature: Check answers before creating the project
 
   Scenario: Review before committing
-    Then I should be able to identify and change inaccurate answers
+    Then I should be able to identify and change inaccurate editable answers
+    And I should see the default service phase and project status before creating the project
     And I should understand that creating the project commits the setup information</code></pre>
 		</details>
 		
