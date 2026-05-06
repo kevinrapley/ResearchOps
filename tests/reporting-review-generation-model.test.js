@@ -52,8 +52,16 @@ function manifestFixture() {
 				path: '/pages/start/index.html',
 				description: 'Start page',
 				states: [
-					stateFixture('default', 'Default state', 'Feature: Start a new research project\nScenario: Navigate using the primary navigation'),
-					stateFixture('step-2-filled-no-ai', 'Step 2 completed with researcher-authored context', 'Feature: Start a new research project\nScenario: Use AI description assistance'),
+					stateFixture(
+						'default',
+						'Default state',
+						'Feature: Start a new research project\nScenario: Navigate using the primary navigation'
+					),
+					stateFixture(
+						'step-2-filled-no-ai',
+						'Step 2 completed with researcher-authored context',
+						'Feature: Start a new research project\nScenario: Use AI description assistance'
+					),
 				],
 			},
 			{
@@ -97,13 +105,21 @@ test('curated start states replace old full-page generated criteria', () => {
 	const manifest = applyReportingReviewEvidenceToManifest(manifestFixture());
 	const startPage = manifest.pages.find((page) => page.id === 'start');
 	const defaultState = startPage.states.find((state) => state.id === 'default');
-	const researcherAuthoredState = startPage.states.find((state) => state.id === 'step-2-filled-no-ai');
+	const researcherAuthoredState = startPage.states.find(
+		(state) => state.id === 'step-2-filled-no-ai'
+	);
 
 	assert.match(defaultState.acceptanceCriteria, /Feature: Start project default state/);
 	assert.doesNotMatch(defaultState.acceptanceCriteria, /Navigate using the primary navigation/);
-	assert.match(researcherAuthoredState.acceptanceCriteria, /Feature: Step 2 completed with researcher-authored context/);
+	assert.match(
+		researcherAuthoredState.acceptanceCriteria,
+		/Feature: Step 2 completed with researcher-authored context/
+	);
 	assert.doesNotMatch(researcherAuthoredState.acceptanceCriteria, /AI description assistance/);
-	assert.match(researcherAuthoredState.acceptanceCriteria, /should not imply that automated rewriting is required/);
+	assert.match(
+		researcherAuthoredState.acceptanceCriteria,
+		/should not imply that automated rewriting is required/
+	);
 });
 
 test('rendered report emits group evidence above states without runtime grouping script', () => {
