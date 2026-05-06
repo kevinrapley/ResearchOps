@@ -1,0 +1,64 @@
+name: Worker CI
+
+on:
+  pull_request:
+    paths:
+      - "infra/cloudflare/**"
+      - "functions/**"
+      - "src/**"
+      - "config/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "deployment-toolchain.yaml"
+      - "docs/deployment/wrangler-toolchain.md"
+      - ".github/workflows/worker-ci.yml"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  WRANGLER_VERSION: "4.34.0"
+
+jobs:
+  worker-ci:
+    name: Validate Cloudflare Worker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run validation contract
+        run: npm run validate
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Record Wrangler toolchain version
+        run: npx --yes wrangler@${WRANGLER_VERSION} --version
+
+      - name: Validate Worker deployment bundle
+        run: npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/wrangler.toml --dry-run
