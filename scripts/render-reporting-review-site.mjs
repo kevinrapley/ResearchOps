@@ -154,6 +154,68 @@ function renderPage(page = {}) {
 	</article>`;
 }
 
+function renderProfileSwitcher(profiles = []) {
+	if (!Array.isArray(profiles) || profiles.length === 0) return '';
+
+	const compareButton = profiles.length > 1
+		? `
+			<button type="button" class="profile-switcher__button" data-profile-filter="compare" aria-pressed="false">
+				Compare
+			</button>`
+		: '';
+
+	return `
+	<nav class="profile-switcher" aria-label="Screenshot profile">
+		<p class="profile-switcher__label">View</p>
+		<div class="profile-switcher__controls">
+			${profiles
+				.map(
+					(profile, index) => `
+			<button type="button" class="profile-switcher__button" data-profile-filter="${escapeHtml(profile.id)}" aria-pressed="${index === 0 ? 'true' : 'false'}">
+				${escapeHtml(profile.title || profile.id)}
+			</button>`
+				)
+				.join('')}${compareButton}
+		</div>
+	</nav>`;
+}
+
+function renderProfileSwitcherScript(profiles = []) {
+	if (!Array.isArray(profiles) || profiles.length === 0) return '';
+
+	const defaultProfile = profiles[0]?.id || '';
+
+	return `
+	<script>
+	(function () {
+		const defaultProfile = ${JSON.stringify(defaultProfile)};
+		const buttons = Array.from(document.querySelectorAll('[data-profile-filter]'));
+		const captures = Array.from(document.querySelectorAll('.capture[data-profile]'));
+
+		function applyProfileFilter(profile) {
+			const activeProfile = profile || defaultProfile;
+			const showAll = activeProfile === 'compare';
+
+			document.documentElement.dataset.profileFilter = activeProfile;
+
+			for (const button of buttons) {
+				button.setAttribute('aria-pressed', button.dataset.profileFilter === activeProfile ? 'true' : 'false');
+			}
+
+			for (const capture of captures) {
+				capture.hidden = !showAll && capture.dataset.profile !== activeProfile;
+			}
+		}
+
+		for (const button of buttons) {
+			button.addEventListener('click', () => applyProfileFilter(button.dataset.profileFilter));
+		}
+
+		applyProfileFilter(defaultProfile);
+	})();
+	</script>`;
+}
+
 function renderStyles() {
 	return `body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 24px; line-height: 1.45; color: #111; background: #fff; }
 header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid #d8d8d8; margin-bottom: 24px; padding-bottom: 16px; }
@@ -162,6 +224,12 @@ h2 { margin-top: 32px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
 h3, h4, h5 { margin: 0 0 6px; }
 .meta { color: #444; margin: 0; }
 .badge { background: #eef; border: 1px solid #99c; border-radius: 6px; display: inline-block; padding: 6px 10px; }
+.profile-switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+.profile-switcher__label { font-weight: 700; margin: 0; }
+.profile-switcher__controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
+.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
+.profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 .group { margin-bottom: 40px; }
 .page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
 .page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
@@ -207,6 +275,7 @@ export function renderReportingReviewHtml(manifest = {}) {
 		</div>
 		<p class="badge">${escapeHtml(reviewedManifest.failureCount)} failures</p>
 	</header>
+	${renderProfileSwitcher(reviewedManifest.profiles)}
 	<main>
 		${groups.map(([group, pages]) => `
 		<section class="group" aria-labelledby="group-${escapeHtml(group)}">
@@ -214,6 +283,7 @@ export function renderReportingReviewHtml(manifest = {}) {
 			${pages.map(renderPage).join('')}
 		</section>`).join('')}
 	</main>
+	${renderProfileSwitcherScript(reviewedManifest.profiles)}
 </body>
 </html>`;
 }
