@@ -29,12 +29,20 @@ function headingText(source, level) {
 		.filter(Boolean);
 }
 
+function anchors(source) {
+	const pattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+	return [...source.matchAll(pattern)].map((match) => {
+		const href = match[1].match(/href="([^"]+)"/);
+		return {
+			href: href ? href[1] : '',
+			text: match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+		};
+	});
+}
+
 function linkHref(source, linkText) {
-	const pattern = new RegExp(`<a\\b([^>]*)>[\\s\\S]*?${linkText}[\\s\\S]*?<\\/a>`, 'i');
-	const match = source.match(pattern);
-	if (!match) return '';
-	const href = match[1].match(/href="([^"]+)"/);
-	return href ? href[1] : '';
+	const link = anchors(source).find((anchor) => anchor.text === linkText);
+	return link ? link.href : '';
 }
 
 assert.equal(headingText(overviewPage, 1).length, 1, 'Start overview page should have one h1');
@@ -86,7 +94,7 @@ assert.equal(
 	'Shared service navigation should route Start research project to the overview page'
 );
 assert.equal(
-	linkHref(homePage, 'Start research project'),
+	linkHref(homePage, 'Start a research project'),
 	'/pages/start/overview/',
 	'Home page Start a research project button should route to the overview page'
 );
