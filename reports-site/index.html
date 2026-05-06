@@ -11,6 +11,12 @@ h2 { margin-top: 32px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
 h3, h4, h5 { margin: 0 0 6px; }
 .meta { color: #444; margin: 0; }
 .badge { background: #eef; border: 1px solid #99c; border-radius: 6px; display: inline-block; padding: 6px 10px; }
+.profile-switcher { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+.profile-switcher__label { font-weight: 700; margin: 0; }
+.profile-switcher__controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
+.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
+.profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 .group { margin-bottom: 40px; }
 .page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
 .page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
@@ -39,10 +45,26 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-06T00:50:28.022Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-06T01:02:12.198Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
+	
+	<nav class="profile-switcher" aria-label="Screenshot profile">
+		<p class="profile-switcher__label">View</p>
+		<div class="profile-switcher__controls">
+			
+			<button type="button" class="profile-switcher__button" data-profile-filter="desktop" aria-pressed="true">
+				Desktop
+			</button>
+			<button type="button" class="profile-switcher__button" data-profile-filter="mobile" aria-pressed="false">
+				Mobile
+			</button>
+			<button type="button" class="profile-switcher__button" data-profile-filter="compare" aria-pressed="false">
+				Compare
+			</button>
+		</div>
+	</nav>
 	<main>
 		
 		<section class="group" aria-labelledby="group-Core">
@@ -68,7 +90,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		</div>
 		</div>
 		
-		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="source-derived">
 			<summary>What this screen state should support</summary>
 			<div class="state-acceptance-criteria__meta">
 				<strong class="criteria-tag criteria-tag--bespoke">Bespoke criteria</strong>
@@ -693,7 +715,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		</div>
 		</div>
 		
-		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="source-derived">
 			<summary>What this screen state should support</summary>
 			<div class="state-acceptance-criteria__meta">
 				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
@@ -2829,5 +2851,34 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</section>
 	</main>
+	
+	<script>
+	(function () {
+		const defaultProfile = "desktop";
+		const buttons = Array.from(document.querySelectorAll('[data-profile-filter]'));
+		const captures = Array.from(document.querySelectorAll('.capture[data-profile]'));
+
+		function applyProfileFilter(profile) {
+			const activeProfile = profile || defaultProfile;
+			const showAll = activeProfile === 'compare';
+
+			document.documentElement.dataset.profileFilter = activeProfile;
+
+			for (const button of buttons) {
+				button.setAttribute('aria-pressed', button.dataset.profileFilter === activeProfile ? 'true' : 'false');
+			}
+
+			for (const capture of captures) {
+				capture.hidden = !showAll && capture.dataset.profile !== activeProfile;
+			}
+		}
+
+		for (const button of buttons) {
+			button.addEventListener('click', () => applyProfileFilter(button.dataset.profileFilter));
+		}
+
+		applyProfileFilter(defaultProfile);
+	})();
+	</script>
 </body>
 </html>
