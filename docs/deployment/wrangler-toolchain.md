@@ -1,19 +1,47 @@
 # Wrangler deployment toolchain
 
-ResearchOps deploys its Cloudflare Worker through GitHub Actions using Wrangler.
+ResearchOps deploys Cloudflare Workers through GitHub Actions using Wrangler.
 
-The deployment workflow must use a pinned Wrangler version. It must not use `wrangler@latest`.
+Deployment workflows must use a pinned Wrangler version. They must not use `wrangler@latest`.
 
 ## Current pinned version
 
 `4.34.0`
 
-The value is recorded in two places:
+The value is recorded in these places:
 
 - `.github/workflows/deploy-worker.yml`
+- `.github/workflows/deploy-agent-gateway.yml`
+- `.github/workflows/worker-ci.yml`
 - `deployment-toolchain.yaml`
 
 Keep these values aligned.
+
+## Cloudflare deployables
+
+ResearchOps has two Cloudflare Worker deployables.
+
+### ResearchOps API Worker
+
+This is the main service API Worker.
+
+```text
+config: infra/cloudflare/wrangler.toml
+workflow: .github/workflows/deploy-worker.yml
+```
+
+The API Worker workflow must not deploy only because the agent gateway changes.
+
+### ResearchOps Agent Gateway Worker
+
+This is the production-safe capability layer for AI-agent access to Cloudflare resources.
+
+```text
+config: infra/cloudflare/agent-gateway/wrangler.toml
+workflow: .github/workflows/deploy-agent-gateway.yml
+```
+
+The agent gateway is a separate Worker. It has separate secrets, a separate audit D1 binding and a separate deployment workflow.
 
 ## Why this is pinned
 
@@ -28,11 +56,13 @@ Pinning Wrangler gives the release gate and deployment workflow a stable toolcha
 When upgrading Wrangler:
 
 1. Change `WRANGLER_VERSION` in `.github/workflows/deploy-worker.yml`.
-2. Change the matching version in `deployment-toolchain.yaml`.
-3. Run repository validation.
-4. Confirm `npx --yes wrangler@${WRANGLER_VERSION} --version` succeeds.
-5. Review Cloudflare release notes and any compatibility-date implications.
-6. Deploy through the workflow, not a local unrecorded command.
+2. Change `WRANGLER_VERSION` in `.github/workflows/deploy-agent-gateway.yml`.
+3. Change `WRANGLER_VERSION` in `.github/workflows/worker-ci.yml`.
+4. Change the matching version in `deployment-toolchain.yaml`.
+5. Run repository validation.
+6. Confirm `npx --yes wrangler@${WRANGLER_VERSION} --version` succeeds.
+7. Review Cloudflare release notes and any compatibility-date implications.
+8. Deploy through the relevant workflow, not a local unrecorded command.
 
 ## Release evidence
 
@@ -45,6 +75,16 @@ Deployment evidence should include:
 - deployment target
 - validation status before deployment
 
+For the agent gateway, evidence should also include confirmation that:
+
+- the audit D1 binding is configured
+- the gateway uses a narrow Cloudflare API token
+- the deployment was triggered deliberately through `.github/workflows/deploy-agent-gateway.yml`
+
 ## Rollback
 
-Revert the Wrangler version change in both files and rerun the deployment workflow.
+For the ResearchOps API Worker, revert the relevant application or infrastructure change and rerun `.github/workflows/deploy-worker.yml`.
+
+For the ResearchOps Agent Gateway Worker, revert the relevant gateway change and rerun `.github/workflows/deploy-agent-gateway.yml`.
+
+If the Wrangler version itself caused the problem, revert the version change in all workflow files and `deployment-toolchain.yaml`, then rerun the affected deployment workflow.
