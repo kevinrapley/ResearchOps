@@ -26,7 +26,10 @@ function assertHasOneStaticH1(source, label) {
 assert.equal(assertHasOneStaticH1(homePage, 'Home page'), 'ResearchOps demo suite');
 assert.equal(homePage.includes('>ResearchOps Demo Suite</h1>'), false);
 
-assert.equal(assertHasOneStaticH1(projectDashboardPage, 'Project dashboard page'), 'Project dashboard');
+assert.equal(
+	assertHasOneStaticH1(projectDashboardPage, 'Project dashboard page'),
+	'Project dashboard'
+);
 
 for (const forbiddenHeading of [
 	'Service Stage',
