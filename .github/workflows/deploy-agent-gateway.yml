@@ -2,6 +2,7 @@ name: Deploy ResearchOps Agent Gateway
 
 on:
   workflow_dispatch: {}
+  # Automatic deployment, if later enabled, must be scoped to infra/cloudflare/agent-gateway/**.
 
 permissions:
   contents: read
