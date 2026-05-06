@@ -33,6 +33,8 @@ const START_GROUP = `Feature: Start a new research project
 
   Scenario: Complete the guided project setup safely
     Then I should understand what project information is needed before I commit anything
+    And Step 1 should ask only for the essential project name and description
+    And the project should start with service phase "Discovery" and status "Goal setting & problem defining" by default
     And I should be able to review the full setup before creating the project
 
   Scenario: Understand the guided process
@@ -71,14 +73,14 @@ export const REPORTING_REVIEW_GROUPS = Object.freeze({
 		gherkin: START_GROUP,
 		designRisk: risk('The start-project journey is the commitment point for the ResearchOps evidence model. Weak framing can make later work appear traceable when the project context is weak.'),
 		states: {
-			default: state('Default state', 'Feature: Start project default state\n\n  Scenario: Complete Step 1 controls\n    Then I should be able to enter the project name\n    And I should be able to enter the project description\n    And I should be able to select the service phase and project status\n    And I should be able to continue without losing my answers', 'The first state must make the core form controls clear and operable.'),
-			'step-1-filled': state('Step 1 completed with project definition', 'Feature: Step 1 completed\n\n  Scenario: Continue after defining the project\n    Then my project definition should be retained\n    And I should be able to go back or correct it without losing progress', 'A completed first step must show progress without implying that the project is fully governed.'),
+			default: state('Default state', 'Feature: Start project default state\n\n  Scenario: Complete Step 1 controls\n    Then I should be able to enter the project name\n    And I should be able to enter the project description\n    And I should not be asked to select the service phase or project status in Step 1\n    And the project should use "Discovery" and "Goal setting & problem defining" as default values\n    And I should be able to continue without losing my answers', 'The first state must make the essential form controls clear and operable while avoiding unnecessary early classification choices.'),
+			'step-1-filled': state('Step 1 completed with essential project definition', 'Feature: Step 1 completed\n\n  Scenario: Continue after defining essential project information\n    Then my project name and description should be retained\n    And the default service phase and project status should be retained for review\n    And I should be able to go back or correct editable answers without losing progress', 'A completed first step must show progress without implying that the project is fully governed.'),
 			'step-2-default': state('Step 2 default state', 'Feature: Step 2 default state\n\n  Scenario: Provide research framing context\n    Then I should be able to enter stakeholders, objectives and user groups\n    And each field should explain the planning information expected', 'This state must ask for research framing in user-centred terms.'),
 			'step-2-filled-no-ai': state('Step 2 completed with researcher-authored context', 'Feature: Step 2 completed with researcher-authored context\n\n  Scenario: Continue with researcher-authored wording\n    Then my wording should be retained\n    And the service should not imply that automated rewriting is required', 'Researcher-authored wording must remain a complete and trusted path.'),
 			'step-2-ai-rewrite-shown': state('Step 2 assisted rewrite shown', 'Feature: Step 2 assisted rewrite shown\n\n  Scenario: Use assisted wording deliberately\n    Then assistance should only run after an explicit user action\n    And I should remain able to reject, amend or ignore suggested wording', 'Assisted wording creates provenance and accountability risk unless suggestions are optional and under user control.'),
 			'step-3-default': state('Step 3 default state', 'Feature: Step 3 default state\n\n  Scenario: Add ownership and notes safely\n    Then I should be able to enter ownership and planning notes\n    And the service should not encourage unnecessary personal data capture', 'The notes step can become a privacy leakage point if broad free-text capture is not bounded.'),
 			'step-3-filled': state('Step 3 completed before check answers', 'Feature: Step 3 completed before check answers\n\n  Scenario: Move toward review\n    Then my answers should remain available on the review step\n    And I should still be able to correct earlier answers', 'Correction routes must remain available until the project is created.'),
-			'step-4-check-answers': state('Step 4 check answers before creating the project', 'Feature: Check answers before creating the project\n\n  Scenario: Review before committing\n    Then I should be able to identify and change inaccurate answers\n    And I should understand that creating the project commits the setup information', 'The check-answers state is the final safeguard against weak or incorrect project records.'),
+			'step-4-check-answers': state('Step 4 check answers before creating the project', 'Feature: Check answers before creating the project\n\n  Scenario: Review before committing\n    Then I should be able to identify and change inaccurate editable answers\n    And I should see the default service phase and project status before creating the project\n    And I should understand that creating the project commits the setup information', 'The check-answers state is the final safeguard against weak or incorrect project records.'),
 		},
 	},
 	'participant-consent': {
@@ -123,10 +125,10 @@ export function reportingReviewGroupForPage(page = {}) {
 	return GROUPS_BY_PAGE_ID[page.id] || null;
 }
 
-export function reportingReviewStateFor(page = {}, state = {}) {
+export function reportingReviewStateFor(page = {}, item = {}) {
 	const group = reportingReviewGroupForPage(page);
 	if (!group) return null;
-	return group.states[state.id] || null;
+	return group.states[item.id] || null;
 }
 
 export function applyReportingReviewEvidenceToManifest(manifest = {}) {

@@ -18,9 +18,8 @@ function valueOf(field) {
 	return (field?.value || "").trim();
 }
 
-function selectedText(field) {
-	return field?.selectedOptions?.[0]?.textContent?.trim() || valueOf(field);
-}
+const DEFAULT_PROJECT_PHASE = "Discovery";
+const DEFAULT_PROJECT_STATUS = "Goal setting & problem defining";
 
 const steps = [
 	document.querySelector("#step1"),
@@ -36,8 +35,6 @@ const projectForm = document.querySelector("#projectForm");
 
 const p_name = document.querySelector("#p_name");
 const p_desc = document.querySelector("#p_desc");
-const p_phase = document.querySelector("#p_phase");
-const p_status = document.querySelector("#p_status");
 const taStakeholders = document.querySelector("#p_stakeholders");
 const taObjectives = document.querySelector("#p_objectives");
 const inputUserGroups = document.querySelector("#p_usergroups");
@@ -110,7 +107,7 @@ function goToStep(n) {
 	});
 
 	const current = steps[n - 1];
-	const focusable = current?.querySelector("input, textarea, select, button, [tabindex]");
+	const focusable = current?.querySelector("input, textarea, button, [tabindex]");
 	if (focusable && typeof focusable.focus === "function") focusable.focus();
 }
 
@@ -183,10 +180,12 @@ function buildPayload() {
 		const parts = line.split("|").map(s => s.trim());
 		return { name: parts[0] || "", role: parts[1] || "", email: parts[2] || "" };
 	});
-	const out = {
+	return {
 		org: "Home Office Biometrics",
 		name: valueOf(p_name),
 		description: valueOf(p_desc),
+		phase: DEFAULT_PROJECT_PHASE,
+		status: DEFAULT_PROJECT_STATUS,
 		objectives,
 		user_groups,
 		stakeholders,
@@ -195,11 +194,6 @@ function buildPayload() {
 		notes: valueOf(notes),
 		id: ""
 	};
-	const phase = coerceSelect(p_phase?.value, PHASE_OPTIONS);
-	const status = coerceSelect(p_status?.value, STATUS_OPTIONS);
-	if (phase) out.phase = phase;
-	if (status) out.status = status;
-	return out;
 }
 
 function summaryValue(value) {
@@ -212,8 +206,8 @@ function renderCheckAnswers() {
 	const rows = [
 		["Project name", valueOf(p_name), "#p_name"],
 		["Description", valueOf(p_desc), "#p_desc"],
-		["Service phase", selectedText(p_phase), "#p_phase"],
-		["Project status", selectedText(p_status), "#p_status"],
+		["Service phase", DEFAULT_PROJECT_PHASE, ""],
+		["Project status", DEFAULT_PROJECT_STATUS, ""],
 		["Stakeholders", valueOf(taStakeholders), "#p_stakeholders"],
 		["Initial objectives", valueOf(taObjectives), "#p_objectives"],
 		["User groups", valueOf(inputUserGroups), "#p_usergroups"],
@@ -225,7 +219,7 @@ function renderCheckAnswers() {
 		<div class="govuk-summary-list__row">
 			<dt class="govuk-summary-list__key">${esc(key)}</dt>
 			<dd class="govuk-summary-list__value">${summaryValue(value)}</dd>
-			<dd class="govuk-summary-list__actions"><a class="govuk-link" href="${esc(href)}" data-change-target="${esc(href)}">Change<span class="govuk-visually-hidden"> ${esc(key)}</span></a></dd>
+			${href ? `<dd class="govuk-summary-list__actions"><a class="govuk-link" href="${esc(href)}" data-change-target="${esc(href)}">Change<span class="govuk-visually-hidden"> ${esc(key)}</span></a></dd>` : '<dd class="govuk-summary-list__actions"><span class="muted">Set by default</span></dd>'}
 		</div>`).join("");
 }
 
@@ -293,7 +287,7 @@ function onChangeAnswer(event) {
 	if (!link) return;
 	event.preventDefault();
 	const target = link.getAttribute("data-change-target") || "";
-	if (["#p_name", "#p_desc", "#p_phase", "#p_status"].includes(target)) goToStep(1);
+	if (["#p_name", "#p_desc"].includes(target)) goToStep(1);
 	else if (["#p_stakeholders", "#p_objectives", "#p_usergroups"].includes(target)) goToStep(2);
 	else goToStep(3);
 	document.querySelector(target)?.focus?.();
@@ -325,6 +319,8 @@ export {
 	createProject,
 	buildPayload,
 	coerceSelect,
+	DEFAULT_PROJECT_PHASE,
+	DEFAULT_PROJECT_STATUS,
 	PHASE_OPTIONS,
 	STATUS_OPTIONS,
 	goToStep,

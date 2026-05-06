@@ -5,7 +5,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="sda-auto" content="true" />
-	<title>Start a New Research Project — ResearchOps Demo Suite</title>
+	<title>Start a new research project — ResearchOps Demo Suite</title>
 
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
@@ -74,7 +74,7 @@
 		src="/partials/header.html"
 		vars='{
 			"active":"Start Research Project",
-			"subtitle":"Define service phase, set status, add stakeholders and objectives"
+			"subtitle":"Define the project, add research framing and set ownership"
 		}'>
 	</x-include>
 
@@ -85,7 +85,7 @@
 					<div class="govuk-grid-column-two-thirds">
 						<h1 class="govuk-heading-xl page-title" id="start-title">Start a new research project</h1>
 						<p class="lede">
-							Define the project within a service phase and current status, then capture stakeholders and initial objectives.
+							Define the project, then capture stakeholders, initial objectives, user groups and ownership.
 						</p>
 						<p class="govuk-body">
 							Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.
@@ -108,7 +108,8 @@
 						<section id="step1" class="start-step" aria-labelledby="step1-title">
 							<p class="govuk-caption-l">Step 1 of 4</p>
 							<h2 class="govuk-heading-m" id="step1-title">Define the project</h2>
-							<p class="govuk-body">Give the project a name, description, service phase and current status.</p>
+							<p class="govuk-body">Give the project a name and description.</p>
+							<p class="govuk-body">ResearchOps will start the project in Discovery with the status Goal setting &amp; problem defining.</p>
 
 							<form id="projectForm" class="start-form" novalidate>
 								<div id="p_name_group" class="govuk-form-group">
@@ -135,34 +136,6 @@
 
 								<div id="description-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
 								<div id="ai-rewrite-output" class="mt-2 start-assist-output" aria-live="polite"></div>
-
-								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_phase">Service phase</label>
-									<select id="p_phase" name="phase" class="govuk-select">
-										<optgroup label="Service phases">
-											<option value="pre-discovery" selected>Pre-Discovery</option>
-											<option value="discovery">Discovery</option>
-											<option value="alpha">Alpha</option>
-											<option value="beta">Beta</option>
-											<option value="live">Live</option>
-											<option value="retired">Retired</option>
-										</optgroup>
-									</select>
-								</div>
-
-								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_status">Project status</label>
-									<select id="p_status" name="status" class="govuk-select">
-										<optgroup label="Project statuses">
-											<option value="goal-setting" selected>Goal setting &amp; problem defining</option>
-											<option value="planning">Planning research</option>
-											<option value="conducting">Conducting research</option>
-											<option value="synthesis">Synthesis &amp; analysis</option>
-											<option value="shared">Shared &amp; socialised research</option>
-											<option value="monitoring">Monitoring metrics</option>
-										</optgroup>
-									</select>
-								</div>
 
 								<div class="govuk-button-group cta">
 									<button class="govuk-button" id="next2" type="submit">Continue</button>
