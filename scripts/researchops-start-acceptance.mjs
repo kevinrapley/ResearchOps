@@ -15,6 +15,10 @@ const VALIDATION_MESSAGES = {
 	objectives: 'Enter at least one research objective.',
 	userGroups: 'Enter at least one user group.',
 };
+const PROJECT_DEFAULTS = {
+	phase: 'Discovery',
+	status: 'Goal setting & problem defining',
+};
 
 function html() {
 	try {
@@ -72,28 +76,22 @@ function step(source = '', id = '', fallback = []) {
 	];
 }
 
-function options(source = '', id = '', fallback = []) {
-	const select = byId(source, id);
-	const found = all(select, /<option\b[^>]*>([\s\S]*?)<\/option>/gi);
-	return found.length ? found : fallback;
-}
-
 function rows(values = []) {
 	return values.map(row => `      | ${row.map(item => quote(item)).join(' | ')} |`);
 }
 
 function model() {
 	const source = html();
-	const intro = source.match(/<header\b(?=[^>]*class=["'][^"']*\bpage-intro\b)[^>]*>([\s\S]*?)<\/header>/i)?.[0] || '';
+	const intro = source.match(/<div\b(?=[^>]*class=["'][^"']*\bpage-intro\b)[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/i)?.[0] || '';
 	const nav = all(source, /<a\b(?=[^>]*class=["'][^"']*\bgovuk-service-navigation__link\b)[^>]*>([\s\S]*?)<\/a>/gi).filter(item => item !== 'ResearchOps Demo Suite');
 	return {
 		heading: first(source, /<h1\b(?=[^>]*id=["']start-title["'])[^>]*>([\s\S]*?)<\/h1>/i, 'Start a new research project'),
-		lede: first(intro, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, 'Define the project within a service phase and current status, then capture stakeholders and initial objectives.'),
+		lede: first(intro, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, 'Define the project, then capture stakeholders, initial objectives, user groups and ownership.'),
 		intro: first(intro, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, 'Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.'),
 		prototype: first(source, /<span\b(?=[^>]*class=["'][^"']*\bgovuk-phase-banner__text\b)[^>]*>([\s\S]*?)<\/span>/i, 'This is a ResearchOps prototype. Do not enter real participant personal data.'),
 		nav: nav.length ? nav : ['Home', 'Start research project', 'Projects'],
 		steps: [
-			step(source, 'step1', ['Step 1 of 4', 'Define the project', 'Give the project a name, description, service phase and current status.']),
+			step(source, 'step1', ['Step 1 of 4', 'Define the project', 'Give the project a name and description.']),
 			step(source, 'step2', ['Step 2 of 4', 'Add stakeholders, objectives and user groups', 'Add the people involved, what the research needs to learn and who the research should include.']),
 			step(source, 'step3', ['Step 3 of 4', 'Add project ownership and notes', 'Add supplementary information about who owns the research and anything the team should know before the project is created.']),
 			step(source, 'step4', ['Step 4 of 4', 'Check your answers before creating the project', 'Review the project setup before it is saved. You can go back to change anything that is missing or unclear.']),
@@ -101,9 +99,8 @@ function model() {
 		projectFields: [
 			[label(source, 'p_name', 'Project name'), hint(source, 'p_name_hint', 'Use a short name the research team and stakeholders will recognise.')],
 			[label(source, 'p_desc', 'Description'), hint(source, 'p_desc_help', 'Write what you plan to research. Do not include participant personal data.')],
-			[label(source, 'p_phase', 'Service phase'), 'No additional hint text.'],
-			[label(source, 'p_status', 'Project status'), 'No additional hint text.'],
 		],
+		defaults: PROJECT_DEFAULTS,
 		targetFields: [
 			[label(source, 'p_stakeholders', 'Stakeholders'), hint(source, 'p_stakeholders_help', 'Enter one stakeholder per line using the format: name | role | work email.')],
 			[label(source, 'p_objectives', 'Initial objectives'), hint(source, 'p_objectives_help', 'List at least one research objective.')],
@@ -114,8 +111,6 @@ function model() {
 			[label(source, 'lead_email', 'Researcher’s email'), hint(source, 'lead_email_hint', 'Use a work email address.')],
 			[label(source, 'p_notes', 'Notes'), hint(source, 'p_notes_help', 'Add project notes that will help the team start the work.')],
 		],
-		phases: options(source, 'p_phase', ['Pre-Discovery', 'Discovery', 'Alpha', 'Beta', 'Live', 'Retired']),
-		statuses: options(source, 'p_status', ['Goal setting & problem defining', 'Planning research', 'Conducting research', 'Synthesis & analysis', 'Shared & socialised research', 'Monitoring metrics']),
 		descriptionAi: hint(source, 'ai-rewrite-help', 'This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.'),
 		objectivesAi: hint(source, 'ai-objectives-help', 'This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.'),
 		footer: first(source, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-footer__meta\b)[^>]*>([\s\S]*?)<\/p>/i, '© 2026 Home Office Biometrics · ResearchOps v1.0.0'),
@@ -128,7 +123,13 @@ function fieldRows(fields = []) {
 
 export function buildStartAcceptanceCriteriaFromSource() {
 	const page = model();
-	const reviewFields = [...page.projectFields, ...page.targetFields, ...page.ownershipFields].map(([field]) => [field]);
+	const reviewFields = [
+		...page.projectFields.map(([field]) => [field]),
+		['Service phase', page.defaults.phase, 'Set by default'],
+		['Project status', page.defaults.status, 'Set by default'],
+		...page.targetFields.map(([field]) => [field]),
+		...page.ownershipFields.map(([field]) => [field]),
+	];
 	return [
 		'Feature: Start a new research project',
 		'',
@@ -160,15 +161,14 @@ export function buildStartAcceptanceCriteriaFromSource() {
 		'      | Step | Heading | Purpose |',
 		...rows(page.steps),
 		'',
-		'  Scenario: Define the project',
+		'  Scenario: Define the project with essential information only',
 		`    Given I am on "${quote(page.steps[0][1])}"`,
 		'    Then I should be asked for:',
 		'      | Field | Guidance |',
 		...fieldRows(page.projectFields),
-		'    And I should be able to choose a service phase from:',
-		...rows(page.phases.map(item => [item])),
-		'    And I should be able to choose a project status from:',
-		...rows(page.statuses.map(item => [item])),
+		`    And the service phase should be set to "${quote(page.defaults.phase)}" by default`,
+		`    And the project status should be set to "${quote(page.defaults.status)}" by default`,
+		'    And I should not be asked to choose a service phase or project status in Step 1',
 		'',
 		'  Scenario: Recover when required project definition fields are missing',
 		`    Given I am on "${quote(page.steps[0][1])}"`,
@@ -216,13 +216,16 @@ export function buildStartAcceptanceCriteriaFromSource() {
 		`    Given I have completed "${quote(page.steps[2][1])}"`,
 		`    When I continue to "${quote(page.steps[3][1])}"`,
 		'    Then I should see a GOV.UK summary list containing:',
+		'      | Field | Value | Status |',
 		...rows(reviewFields),
-		'    And I should be able to go back and change any answer before creating the project',
+		'    And I should see that service phase and project status have been set by default',
+		'    And I should be able to go back and change editable answers before creating the project',
 		'',
 		'  Scenario: Create the project',
 		`    Given I have reviewed "${quote(page.steps[3][1])}"`,
 		'    When I select "Create project"',
 		'    Then the project should be submitted to ResearchOps',
+		'    And the submitted project should use the default service phase and project status',
 		'    And I should be taken to the projects page when creation succeeds',
 		'',
 		'  Scenario: Recover from a project creation error',
