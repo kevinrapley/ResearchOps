@@ -12,8 +12,7 @@ RESEARCHOPS_ADMIN_ORIGIN = "https://researchops.pages.dev"
 enabled = true
 
 # Audit D1
-# Replace database_id before production deployment.
 [[d1_databases]]
 binding = "AUDIT_DB"
 database_name = "researchops-agent-gateway-audit"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "75196021-d2a9-435f-a0ac-654baeb111d4"
