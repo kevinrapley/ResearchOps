@@ -5,7 +5,11 @@ import {
 	applyReportingReviewRepetitionPassToHtml,
 	GROUP_REVIEW_MODEL,
 } from '../scripts/apply-reporting-review-repetition-pass.mjs';
-import { finaliseReportingReviewRepetitionHtml } from '../scripts/finalise-reporting-review-repetition-pass.mjs';
+import {
+	finaliseReportingReviewRepetitionHtml,
+	GROUP_HEADER_PANEL_INSERTION,
+	ORIGINAL_GROUP_PANEL_INSERTION,
+} from '../scripts/finalise-reporting-review-repetition-pass.mjs';
 
 function buildFixtureReport() {
 	return `<!doctype html>
@@ -15,22 +19,30 @@ function buildFixtureReport() {
 	<title>Fixture report</title>
 </head>
 <body>
-	<section>
-		<h3>Default state</h3>
-		<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
-		<details open>
-			<summary>State-level acceptance criteria</summary>
-			<pre>Scenario: View the guided process identity</pre>
-		</details>
-	</section>
-	<section>
-		<h3>Step 2 completed with researcher-authored context</h3>
-		<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
-	</section>
-	<section>
-		<h3>Step 2 AI rewrite shown</h3>
-		<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
-	</section>
+	<article class="page-card" id="start">
+		<div class="page-card__header">
+			<h3>Start research project</h3>
+			<p>Start a new research project.</p>
+		</div>
+		<div class="states">
+			<section class="state">
+				<h3>Default state</h3>
+				<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
+				<details open>
+					<summary>State-level acceptance criteria</summary>
+					<pre>Scenario: View the guided process identity</pre>
+				</details>
+			</section>
+			<section class="state">
+				<h3>Step 2 completed with researcher-authored context</h3>
+				<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
+			</section>
+			<section class="state">
+				<h3>Step 2 AI rewrite shown</h3>
+				<p>Screenshot evidence State-level acceptance criteria Accessibility evidence Design-risk notes</p>
+			</section>
+		</div>
+	</article>
 </body>
 </html>`;
 }
@@ -45,6 +57,19 @@ test('finalised reporting review pass renders grouping and state details contrac
 	assert.match(html, /reporting-review__status/);
 	assert.match(html, /Feature: Start a new research project/);
 	assert.match(html, /Scenario: Understand the steps in the guided process/);
+});
+
+test('finalised reporting review pass moves group panels to the page-card header', () => {
+	const html = finaliseReportingReviewRepetitionHtml(
+		applyReportingReviewRepetitionPassToHtml(buildFixtureReport())
+	);
+
+	assert.match(html, /const statesContainer = firstCard\.closest\('\.states'\)/);
+	assert.match(html, /const headerPanel = pageCard \? pageCard\.querySelector\('\.page-card__header'\) : null/);
+	assert.match(html, /groupPanel\.dataset\.reportingReviewPlacement = headerPanel \? 'group-header' : 'before-states'/);
+	assert.match(html, /headerPanel\.append\(groupPanel\)/);
+	assert.doesNotMatch(html, new RegExp(ORIGINAL_GROUP_PANEL_INSERTION.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+	assert.equal(GROUP_HEADER_PANEL_INSERTION.includes('firstCard.insertAdjacentElement(\'beforebegin\', groupPanel)'), true);
 });
 
 test('finalised reporting review pass removes non-AI state AI wording', () => {
