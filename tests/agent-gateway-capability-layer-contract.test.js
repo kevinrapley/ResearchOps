@@ -15,6 +15,7 @@ const files = {
 	client: `${gatewayRoot}/src/cloudflare/client.ts`,
 	wrangler: `${gatewayRoot}/wrangler.toml`,
 	readme: `${gatewayRoot}/README.md`,
+	migration: `${gatewayRoot}/migrations/0001_agent_gateway_audit.sql`,
 	workerCi: ".github/workflows/worker-ci.yml",
 	deployGateway: ".github/workflows/deploy-agent-gateway.yml",
 	deploymentToolchain: "deployment-toolchain.yaml",
@@ -63,6 +64,49 @@ for (const tool of expectedTools) {
 	includes("index", `"${tool}"`, "agent gateway router");
 }
 
+const auditColumns = [
+	"row_id INTEGER PRIMARY KEY AUTOINCREMENT",
+	"id TEXT NOT NULL",
+	"tool TEXT NOT NULL",
+	"environment TEXT NOT NULL",
+	"actor TEXT NOT NULL",
+	"reason TEXT NOT NULL",
+	"phase TEXT NOT NULL",
+	"ok INTEGER NOT NULL",
+	"message TEXT NOT NULL",
+	"created_at TEXT NOT NULL",
+	"fixture_name TEXT",
+	"request_id TEXT",
+	"target_resource_type TEXT",
+	"target_resource_id TEXT",
+	"operation_class TEXT",
+	"ip_hash TEXT",
+	"user_agent_hash TEXT",
+	"commit_sha TEXT",
+	"workflow_run_id TEXT",
+	"input_hash TEXT",
+];
+
+for (const column of auditColumns) {
+	includes("migration", column, "agent gateway audit migration");
+	includes("audit", column, "agent gateway defensive audit schema");
+}
+
+const auditIndexes = [
+	"idx_agent_gateway_audit_created_at",
+	"idx_agent_gateway_audit_actor",
+	"idx_agent_gateway_audit_tool",
+	"idx_agent_gateway_audit_phase",
+	"idx_agent_gateway_audit_operation_class",
+	"idx_agent_gateway_audit_target_resource",
+	"idx_agent_gateway_audit_request_id",
+];
+
+for (const indexName of auditIndexes) {
+	includes("migration", indexName, "agent gateway audit migration");
+	includes("audit", indexName, "agent gateway defensive audit schema");
+}
+
 const includeChecks = [
 	["schemas", 'environment: "production";', "agent gateway schemas"],
 	["schemas", "actor: string;", "agent gateway schemas"],
@@ -97,6 +141,9 @@ const includeChecks = [
 	["audit", "completed", "agent gateway audit log"],
 	["audit", "failed", "agent gateway audit log"],
 	["audit", "blocked", "agent gateway audit log"],
+	["audit", "inputHash: await hashInput", "agent gateway audit log"],
+	["audit", "operationClass: operationClass", "agent gateway audit log"],
+	["audit", "targetResourceType: targetResourceType", "agent gateway audit log"],
 	["index", "AGENT_GATEWAY_TOKEN", "agent gateway router"],
 	["index", "authorization", "agent gateway router"],
 	["index", "assertAuthorized", "agent gateway router"],
@@ -136,7 +183,7 @@ const includeChecks = [
 	["wrangler", "AUDIT_DB", "agent gateway Wrangler config"],
 	[
 		"wrangler",
-		"00000000-0000-0000-0000-000000000000",
+		"75196021-d2a9-435f-a0ac-654baeb111d4",
 		"agent gateway Wrangler config",
 	],
 	["readme", "production-safe capability layer", "agent gateway README"],
@@ -197,3 +244,5 @@ for (const [key, text, label] of includeChecks) {
 
 excludes("client", "X-Auth-Key", "Cloudflare API client");
 excludes("client", "X-Auth-Email", "Cloudflare API client");
+excludes("audit", "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", "agent gateway audit log");
+excludes("wrangler", "00000000-0000-0000-0000-000000000000", "agent gateway Wrangler config");
