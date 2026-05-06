@@ -133,7 +133,12 @@ test('curated start states replace old full-page generated criteria', () => {
 	);
 
 	assert.match(defaultState.acceptanceCriteria, /Feature: Start project default state/);
+	assert.match(defaultState.acceptanceCriteria, /not be asked to select the service phase or project status in Step 1/);
+	assert.match(defaultState.acceptanceCriteria, /Discovery/);
+	assert.match(defaultState.acceptanceCriteria, /Goal setting & problem defining/);
 	assert.doesNotMatch(defaultState.acceptanceCriteria, /Navigate using the primary navigation/);
+	assert.doesNotMatch(defaultState.acceptanceCriteria, /Service phase option group/);
+	assert.doesNotMatch(defaultState.acceptanceCriteria, /Project status option group/);
 	assert.match(
 		researcherAuthoredState.acceptanceCriteria,
 		/Feature: Step 2 completed with researcher-authored context/
@@ -157,6 +162,8 @@ test('rendered report emits group evidence above states without runtime grouping
 	assert.match(html, /data-suppress-generated-state-criteria="true"/);
 	assert.match(html, /What this grouping should support/);
 	assert.match(html, /What this state should support/);
+	assert.match(html, /Step 1 should ask only for the essential project name and description/);
+	assert.match(html, /Goal setting &amp; problem defining/);
 	assert.doesNotMatch(html, /reporting-review-grouping-script/);
 	assert.doesNotMatch(html, /insertAdjacentElement/);
 });
