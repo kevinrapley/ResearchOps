@@ -27,16 +27,6 @@ const projectDefinitionActions = [
 		value:
 			'This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance. The research will focus on confidence, evidence expectations, safeguarding, accessibility and language support needs.',
 	},
-	{
-		type: 'select',
-		selector: '#p_phase',
-		value: 'discovery',
-	},
-	{
-		type: 'select',
-		selector: '#p_status',
-		value: 'planning',
-	},
 ];
 
 const stepTwoActions = [
@@ -196,16 +186,16 @@ export const visualWalkthroughConfig = {
 			states: [
 				{
 					id: 'step-1-filled',
-					title: 'Step 1 completed with project definition',
+					title: 'Step 1 completed with essential project definition',
 					description:
-						'Project name, description, phase and status entered using believable discovery-stage dummy data.',
+						'Project name and description entered using believable discovery-stage dummy data, with phase and status set by default.',
 					actions: projectDefinitionActions,
 				},
 				{
 					id: 'step-2-default',
 					title: 'Step 2 default state',
 					description:
-						'Second wizard step after a valid project definition has been entered on step 1.',
+						'Second wizard step after a valid project name and description have been entered on step 1.',
 					actions: stepTwoActions,
 				},
 				{
@@ -277,7 +267,7 @@ export const visualWalkthroughConfig = {
 					id: 'step-4-check-answers',
 					title: 'Step 4 check your answers before create project',
 					description:
-						'Check-your-answers step summarising the project definition, research framing, ownership and notes before project creation is submitted.',
+						'Check-your-answers step summarising the project definition, default phase and status, research framing, ownership and notes before project creation is submitted.',
 					actions: checkAnswersActions,
 				},
 			],
