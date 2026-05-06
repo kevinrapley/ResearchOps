@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-05T23:37:13.636Z",
+  "startedAt": "2026-05-06T00:48:54.425Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1092,
+              "durationMs": 1116,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1414,
+              "durationMs": 1497,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -133,11 +133,6 @@
             "label": "Bespoke criteria",
             "slug": "bespoke",
             "description": "This state uses hand-authored, route-specific acceptance criteria."
-          },
-          "criteriaSource": {
-            "type": "source-derived",
-            "path": "public/index.html",
-            "generator": "scripts/researchops-home-acceptance.mjs"
           }
         }
       ]
@@ -161,7 +156,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 994,
+              "durationMs": 1047,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -169,31 +164,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1113,
+              "durationMs": 1151,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "The first state must make the core form controls clear and operable.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__default.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Start project default state\n\n  Scenario: Complete Step 1 controls\n    Then I should be able to enter the project name\n    And I should be able to enter the project description\n    And I should be able to select the service phase and project status\n    And I should be able to continue without losing my answers",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-1-filled",
@@ -207,7 +204,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1832,
+              "durationMs": 1983,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -215,31 +212,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1981,
+              "durationMs": 2038,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "A completed first step must show progress without implying that the project is fully governed.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-1-filled.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 1 completed\n\n  Scenario: Continue after defining the project\n    Then my project definition should be retained\n    And I should be able to go back or correct it without losing progress",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-2-default",
@@ -253,7 +252,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2249,
+              "durationMs": 2296,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -261,31 +260,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2441,
+              "durationMs": 2451,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "This state must ask for research framing in user-centred terms.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-default.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 2 default state\n\n  Scenario: Provide research framing context\n    Then I should be able to enter stakeholders, objectives and user groups\n    And each field should explain the planning information expected",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-2-filled-no-ai",
@@ -299,7 +300,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2925,
+              "durationMs": 2981,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -307,31 +308,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3169,
+              "durationMs": 3211,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "Researcher-authored wording must remain a complete and trusted path.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 2 completed with researcher-authored context\n\n  Scenario: Continue with researcher-authored wording\n    Then my wording should be retained\n    And the service should not imply that automated rewriting is required",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-2-ai-rewrite-shown",
@@ -345,7 +348,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3617,
+              "durationMs": 3651,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -353,31 +356,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3943,
+              "durationMs": 3970,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "Assisted wording creates provenance and accountability risk unless suggestions are optional and under user control.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 2 assisted rewrite shown\n\n  Scenario: Use assisted wording deliberately\n    Then assistance should only run after an explicit user action\n    And I should remain able to reject, amend or ignore suggested wording",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-3-default",
@@ -391,7 +396,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3309,
+              "durationMs": 3344,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -399,31 +404,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3519,
+              "durationMs": 3491,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "The notes step can become a privacy leakage point if broad free-text capture is not bounded.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-default.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 3 default state\n\n  Scenario: Add ownership and notes safely\n    Then I should be able to enter ownership and planning notes\n    And the service should not encourage unnecessary personal data capture",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-3-filled",
@@ -437,7 +444,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3933,
+              "durationMs": 3971,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -445,31 +452,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4043,
+              "durationMs": 4058,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "Correction routes must remain available until the project is created.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-3-filled.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Step 3 completed before check answers\n\n  Scenario: Move toward review\n    Then my answers should remain available on the review step\n    And I should still be able to correct earlier answers",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "step-4-check-answers",
@@ -483,7 +492,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4380,
+              "durationMs": 4429,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -491,33 +500,158 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4648,
+              "durationMs": 4715,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
           "designRisk": {
-            "risk": "The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.",
-            "impact": "Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.",
-            "recommendedChange": "Evaluate the journey against GOV.UK form, error-summary, hint, button and check-answers patterns before accepting the walkthrough state.",
+            "risk": "The check-answers state is the final safeguard against weak or incorrect project records.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png",
-          "acceptanceCriteria": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a research project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Background:\n    Given I am a user researcher\n    When I visit the start research project service\n\n  Scenario: View the guided process identity\n    Then I should see the service name \"ResearchOps Demo Suite\"\n    And I should see the page heading \"Start a new research project\"\n    And I should see introductory text that says \"Define the project within a service phase and current status, then capture stakeholders and initial objectives.\"\n    And I should see supporting text that says \"Use this guided process to create the project record that will later hold studies, participants, sessions, notes, evidence, insights and recommendations.\"\n\n  Scenario: Understand that the service is a prototype\n    Then I should see a prototype banner\n    And the banner should say \"This is a ResearchOps prototype. Do not enter real participant personal data.\"\n\n  Scenario: Navigate using the primary navigation\n    Then I should see primary navigation links for:\n      | Home |\n      | Start research project |\n      | Projects |\n    And the \"Start research project\" navigation item should be shown as the current page\n\n  Scenario: Understand the steps in the guided process\n    Then I should be guided through these steps in order:\n      | Step | Heading | Purpose |\n      | Step 1 of 4 | Define the project | Give the project a name, description, service phase and current status. |\n      | Step 2 of 4 | Add stakeholders, objectives and user groups | Add the people involved, what the research needs to learn and who the research should include. |\n      | Step 3 of 4 | Add project ownership and notes | Add supplementary information about who owns the research and anything the team should know before the project is created. |\n      | Step 4 of 4 | Check your answers before creating the project | Review the project setup before it is saved. You can go back to change anything that is missing or unclear. |\n\n  Scenario: Define the project\n    Given I am on \"Define the project\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Project name | Use a short name the research team and stakeholders will recognise. |\n      | Description | Write what you plan to research. Do not include participant personal data. |\n      | Service phase | No additional hint text. |\n      | Project status | No additional hint text. |\n    And I should be able to choose a service phase from:\n      | Pre-Discovery |\n      | Discovery |\n      | Alpha |\n      | Beta |\n      | Live |\n      | Retired |\n    And I should be able to choose a project status from:\n      | Goal setting & problem defining |\n      | Planning research |\n      | Conducting research |\n      | Synthesis & analysis |\n      | Shared & socialised research |\n      | Monitoring metrics |\n\n  Scenario: Recover when required project definition fields are missing\n    Given I am on \"Define the project\"\n    When I try to continue without a project name or description\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to the fields that need attention\n    And I should see the error message \"Enter a project name.\"\n    And I should see the error message \"Enter a project description.\"\n    And each invalid field should expose its error message to assistive technology\n\n  Scenario: Use AI assistance for the project description deliberately\n    Given I have entered enough text in \"Description\"\n    Then I should see AI disclosure text that says \"This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add stakeholders, objectives and user groups\n    Given I have completed \"Define the project\"\n    When I continue to \"Add stakeholders, objectives and user groups\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Stakeholders | Enter one stakeholder per line using the format: name | role | work email. Staff contact details should only be added where needed for project ownership. |\n      | Initial objectives | List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data. |\n      | User groups | Enter at least one user group as a comma-separated list. |\n\n  Scenario: Recover when required research framing fields are missing\n    Given I am on \"Add stakeholders, objectives and user groups\"\n    When I try to continue without objectives or user groups\n    Then I should see a GOV.UK error summary headed \"There is a problem\"\n    And the error summary should link to \"Initial objectives\"\n    And the error summary should link to \"User groups\"\n    And I should see the error message \"Enter at least one research objective.\"\n    And I should see the error message \"Enter at least one user group.\"\n\n  Scenario: Use AI assistance for objectives deliberately\n    Given I have entered enough text in \"Initial objectives\"\n    Then I should see AI disclosure text that says \"This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.\"\n    And AI rewrite should only run when I explicitly select \"Try AI rewrite\"\n\n  Scenario: Add project ownership and notes\n    Given I have completed \"Add stakeholders, objectives and user groups\"\n    When I continue to \"Add project ownership and notes\"\n    Then I should be asked for:\n      | Field | Guidance |\n      | Lead researcher | No additional hint text. |\n      | Researcher’s email | Use a work email address. |\n      | Notes | Add project notes that will help the team start the work. Do not include participant personal data. |\n\n  Scenario: Check answers before creating the project\n    Given I have completed \"Add project ownership and notes\"\n    When I continue to \"Check your answers before creating the project\"\n    Then I should see a GOV.UK summary list containing:\n      | Project name |\n      | Description |\n      | Service phase |\n      | Project status |\n      | Stakeholders |\n      | Initial objectives |\n      | User groups |\n      | Lead researcher |\n      | Researcher’s email |\n      | Notes |\n    And I should be able to go back and change any answer before creating the project\n\n  Scenario: Create the project\n    Given I have reviewed \"Check your answers before creating the project\"\n    When I select \"Create project\"\n    Then the project should be submitted to ResearchOps\n    And I should be taken to the projects page when creation succeeds\n\n  Scenario: Recover from a project creation error\n    When project creation fails\n    Then I should see a GOV.UK error summary\n    And I should remain in the guided process so I can recover without losing my answers\n\n  Scenario: Complete the guided process using a keyboard\n    Given I am navigating with a keyboard\n    Then I should be able to move focus through each field and button in order\n    And I should be able to move forward and back through the steps without a mouse\n    And validation errors should move focus to the error summary\n\n  Scenario: Understand the guided process with assistive technology\n    Then the page should have one clear main heading\n    And each step should have a meaningful heading\n    And field labels, hints and error messages should be exposed in a logical reading order\n    And the check answers step should expose each answer as a summary list row\n\n  Scenario: Use the guided process on a mobile device\n    Then the fields, buttons, AI disclosure text and check answers list should remain readable\n    And no content should require horizontal scrolling\n\n  Scenario: View footer information\n    Then I should see the footer text \"© 2026 Home Office Biometrics · ResearchOps v1.0.0\"",
+          "acceptanceCriteria": "Feature: Check answers before creating the project\n\n  Scenario: Review before committing\n    Then I should be able to identify and change inaccurate answers\n    And I should understand that creating the project commits the setup information",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "start",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
+        }
+      ],
+      "reviewGroupId": "start",
+      "reviewEvidenceLevel": "group",
+      "reviewEvidence": {
+        "id": "start",
+        "pageId": "start",
+        "title": "Start research project",
+        "acceptanceStatus": "needs-review",
+        "designRiskStatus": "needs-review",
+        "gherkin": "Feature: Start a new research project\n\n  As a user researcher\n  I want to define a project with clear context, objectives and ownership\n  So that my team can start research work with shared intent and traceable setup information\n\n  Scenario: Complete the guided project setup safely\n    Then I should understand what project information is needed before I commit anything\n    And I should be able to review the full setup before creating the project\n\n  Scenario: Understand the guided process\n    Then I should be guided through project definition, research framing, ownership and check-your-answers steps",
+        "designRisk": {
+          "risk": "The start-project journey is the commitment point for the ResearchOps evidence model. Weak framing can make later work appear traceable when the project context is weak.",
+          "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+          "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+          "owner": "UCD team",
+          "status": "Needs review"
+        },
+        "states": {
+          "default": {
+            "title": "Default state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Start project default state\n\n  Scenario: Complete Step 1 controls\n    Then I should be able to enter the project name\n    And I should be able to enter the project description\n    And I should be able to select the service phase and project status\n    And I should be able to continue without losing my answers",
+            "designRisk": {
+              "risk": "The first state must make the core form controls clear and operable.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-1-filled": {
+            "title": "Step 1 completed with project definition",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 1 completed\n\n  Scenario: Continue after defining the project\n    Then my project definition should be retained\n    And I should be able to go back or correct it without losing progress",
+            "designRisk": {
+              "risk": "A completed first step must show progress without implying that the project is fully governed.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-2-default": {
+            "title": "Step 2 default state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 2 default state\n\n  Scenario: Provide research framing context\n    Then I should be able to enter stakeholders, objectives and user groups\n    And each field should explain the planning information expected",
+            "designRisk": {
+              "risk": "This state must ask for research framing in user-centred terms.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-2-filled-no-ai": {
+            "title": "Step 2 completed with researcher-authored context",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 2 completed with researcher-authored context\n\n  Scenario: Continue with researcher-authored wording\n    Then my wording should be retained\n    And the service should not imply that automated rewriting is required",
+            "designRisk": {
+              "risk": "Researcher-authored wording must remain a complete and trusted path.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-2-ai-rewrite-shown": {
+            "title": "Step 2 assisted rewrite shown",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 2 assisted rewrite shown\n\n  Scenario: Use assisted wording deliberately\n    Then assistance should only run after an explicit user action\n    And I should remain able to reject, amend or ignore suggested wording",
+            "designRisk": {
+              "risk": "Assisted wording creates provenance and accountability risk unless suggestions are optional and under user control.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-3-default": {
+            "title": "Step 3 default state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 3 default state\n\n  Scenario: Add ownership and notes safely\n    Then I should be able to enter ownership and planning notes\n    And the service should not encourage unnecessary personal data capture",
+            "designRisk": {
+              "risk": "The notes step can become a privacy leakage point if broad free-text capture is not bounded.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-3-filled": {
+            "title": "Step 3 completed before check answers",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Step 3 completed before check answers\n\n  Scenario: Move toward review\n    Then my answers should remain available on the review step\n    And I should still be able to correct earlier answers",
+            "designRisk": {
+              "risk": "Correction routes must remain available until the project is created.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "step-4-check-answers": {
+            "title": "Step 4 check answers before creating the project",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Check answers before creating the project\n\n  Scenario: Review before committing\n    Then I should be able to identify and change inaccurate answers\n    And I should understand that creating the project commits the setup information",
+            "designRisk": {
+              "risk": "The check-answers state is the final safeguard against weak or incorrect project records.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
           }
         }
-      ]
+      }
     },
     {
       "id": "projects",
@@ -538,7 +672,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1471,
+              "durationMs": 3277,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -546,7 +680,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1758,
+              "durationMs": 2807,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -570,11 +704,6 @@
             "label": "Needs review",
             "slug": "needs-review",
             "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          },
-          "criteriaSource": {
-            "type": "source-derived",
-            "path": "public/pages/projects/index.html",
-            "generator": "scripts/researchops-projects-acceptance.mjs"
           }
         }
       ]
@@ -598,7 +727,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 1928,
+              "durationMs": 2831,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -606,7 +735,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 2260,
+              "durationMs": 2169,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -653,7 +782,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1178,
+              "durationMs": 1242,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
@@ -661,7 +790,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1296,
+              "durationMs": 1381,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
@@ -708,7 +837,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1190,
+              "durationMs": 1221,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
@@ -716,7 +845,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1287,
+              "durationMs": 1354,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
@@ -763,7 +892,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1173,
+              "durationMs": 1272,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
@@ -771,7 +900,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1246,
+              "durationMs": 1320,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
@@ -818,7 +947,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1239,
+              "durationMs": 1291,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -826,7 +955,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1420,
+              "durationMs": 1488,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -873,7 +1002,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 1586,
+              "durationMs": 1733,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -881,7 +1010,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 2403,
+              "durationMs": 1688,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -928,7 +1057,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1274,
+              "durationMs": 1299,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -936,7 +1065,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1517,
+              "durationMs": 1529,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -983,7 +1112,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1873,
+              "durationMs": 1729,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -991,7 +1120,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2219,
+              "durationMs": 1869,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -1038,7 +1167,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1266,
+              "durationMs": 1303,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -1046,7 +1175,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1423,
+              "durationMs": 1505,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -1093,7 +1222,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1187,
+              "durationMs": 1241,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -1101,7 +1230,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1506,
+              "durationMs": 1425,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -1148,7 +1277,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1284,
+              "durationMs": 1307,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -1156,7 +1285,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1540,
+              "durationMs": 1603,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -1203,7 +1332,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1613,
+              "durationMs": 1679,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -1211,31 +1340,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1809,
+              "durationMs": 1898,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
           "designRisk": {
-            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
-            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
-            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
+            "risk": "The loaded state must make the selected study context visible enough to prevent accidental misattribution.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__default.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Consent workspace loaded\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that participant consent loaded with study context, a published consent form, participants and existing consent records\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participant consent loaded.\"\n    Then I should see \"Assisted digital interview consent form\"\n    Then I should see \"Ready for session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Consent workspace loaded\n\n  Scenario: Understand the available consent action\n    Then I should identify the study context and published consent form\n    And I should understand the next consent action needed",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "participant-consent",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "missing-context-error",
@@ -1249,7 +1380,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1145,
+              "durationMs": 1180,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -1257,31 +1388,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1218,
+              "durationMs": 1304,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
           "designRisk": {
-            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
-            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
-            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
+            "risk": "Missing context must be treated as a controlled error state.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing study context error state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that participant consent loaded without project and study IDs; the page shows a blocking route-context message\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Open this page from a study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Missing study context error state\n\n  Scenario: Recover from missing consent route context\n    Then I should be told that participant consent cannot continue\n    And I should be given a recovery route rather than an empty consent screen",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "participant-consent",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "no-published-consent-form",
@@ -1295,7 +1428,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1362,
+              "durationMs": 1442,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1303,31 +1436,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1482,
+              "durationMs": 1556,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
           "designRisk": {
-            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
-            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
-            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
+            "risk": "Capturing consent without a published form would weaken provenance.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"No published consent form state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that the study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Create and publish a consent form before recording participant consent\"\n    Then I should see \"Create consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: No published consent form state\n\n  Scenario: Block consent capture until a form is published\n    Then I should understand that consent cannot be captured yet\n    And I should know that a consent form must be created or published first",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "participant-consent",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "no-participants",
@@ -1341,7 +1476,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1338,
+              "durationMs": 1410,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -1349,31 +1484,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1503,
+              "durationMs": 1500,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
           "designRisk": {
-            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
-            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
-            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
+            "risk": "The state must distinguish no records from a technical loading problem.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"No participants state\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that the study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add participants before recording consent\"\n    Then I should see \"Schedule participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: No participants state\n\n  Scenario: Block consent capture until participants exist\n    Then I should understand that consent cannot be captured yet\n    And this should not be confused with a loading failure",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "participant-consent",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "participant-selected",
@@ -1387,7 +1524,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1942,
+              "durationMs": 2009,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -1395,33 +1532,119 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2374,
+              "durationMs": 2443,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
           "designRisk": {
-            "risk": "Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.",
-            "impact": "Research may proceed without clear, current and reviewable consent evidence.",
-            "recommendedChange": "Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.",
+            "risk": "The selected-participant state carries misattribution risk.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png",
-          "acceptanceCriteria": "Feature: Record participant consent\n\n  As a user researcher\n  I want to record and review participant consent for a study\n  So that research only proceeds where consent is clear, current and auditable\n\n  Background:\n    Given I am a user researcher\n    When I visit the participant consent page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped participant consent recording and review page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Participant selected for consent review\" in the ResearchOps journey\n    Given I am using the participant consent page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participant consent loaded.\"\n    And I select \"Record consent\"\n    Then I should see \"Review consent for Sofia Patel\"\n    Then I should see \"Record withdrawal or do not proceed\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Participant selected for consent review\n\n  Scenario: Review consent for the selected participant\n    Then I should see which participant is selected\n    And I should understand the consent options that apply to that participant and study",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "participant-consent",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
+        }
+      ],
+      "reviewGroupId": "participant-consent",
+      "reviewEvidenceLevel": "group",
+      "reviewEvidence": {
+        "id": "participant-consent",
+        "pageId": "study-participant-consent",
+        "title": "Participant consent",
+        "acceptanceStatus": "needs-review",
+        "designRiskStatus": "needs-review",
+        "gherkin": "Feature: Participant consent\n\n  As a user researcher\n  I want to review and record consent within the correct participant, study and consent-form context\n  So that consent evidence is clear, current and auditable\n\n  Scenario: Work within the correct consent context\n    Then I should see the project, study, participant and consent-form context needed to trust the record\n    And I should be blocked where required context is missing or incomplete",
+        "designRisk": {
+          "risk": "Consent is a high-trust research governance activity. Ambiguity about participant, study or consent-form context creates evidence-integrity risk.",
+          "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+          "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+          "owner": "UCD team",
+          "status": "Needs review"
+        },
+        "states": {
+          "default": {
+            "title": "Consent workspace loaded",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Consent workspace loaded\n\n  Scenario: Understand the available consent action\n    Then I should identify the study context and published consent form\n    And I should understand the next consent action needed",
+            "designRisk": {
+              "risk": "The loaded state must make the selected study context visible enough to prevent accidental misattribution.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "missing-context-error": {
+            "title": "Missing study context error state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Missing study context error state\n\n  Scenario: Recover from missing consent route context\n    Then I should be told that participant consent cannot continue\n    And I should be given a recovery route rather than an empty consent screen",
+            "designRisk": {
+              "risk": "Missing context must be treated as a controlled error state.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "no-published-consent-form": {
+            "title": "No published consent form state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: No published consent form state\n\n  Scenario: Block consent capture until a form is published\n    Then I should understand that consent cannot be captured yet\n    And I should know that a consent form must be created or published first",
+            "designRisk": {
+              "risk": "Capturing consent without a published form would weaken provenance.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "no-participants": {
+            "title": "No participants state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: No participants state\n\n  Scenario: Block consent capture until participants exist\n    Then I should understand that consent cannot be captured yet\n    And this should not be confused with a loading failure",
+            "designRisk": {
+              "risk": "The state must distinguish no records from a technical loading problem.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "participant-selected": {
+            "title": "Participant selected for consent review",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Participant selected for consent review\n\n  Scenario: Review consent for the selected participant\n    Then I should see which participant is selected\n    And I should understand the consent options that apply to that participant and study",
+            "designRisk": {
+              "risk": "The selected-participant state carries misattribution risk.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
           }
         }
-      ]
+      }
     },
     {
       "id": "search",
@@ -1442,7 +1665,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 933,
+              "durationMs": 1012,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -1450,7 +1673,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1018,
+              "durationMs": 1050,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -1497,7 +1720,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 942,
+              "durationMs": 1026,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -1505,7 +1728,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1032,
+              "durationMs": 1173,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -1552,7 +1775,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 941,
+              "durationMs": 1052,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -1560,7 +1783,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1029,
+              "durationMs": 1097,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -1607,7 +1830,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 955,
+              "durationMs": 1010,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -1615,7 +1838,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1029,
+              "durationMs": 1193,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -1662,7 +1885,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 923,
+              "durationMs": 1018,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -1670,31 +1893,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1038,
+              "durationMs": 1099,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "This should remain an explicit route-context error.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing study ID error state\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that synthesis loaded without a study ID; the page shows the blocking route-context error\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Missing study ID error state\n\n  Scenario: Recover from missing study context\n    Then I should be told that synthesis cannot start\n    And I should be able to return to a valid study context",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "empty-evidence",
@@ -1708,7 +1933,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1346,
+              "durationMs": 1407,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -1716,31 +1941,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1525,
+              "durationMs": 1551,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Absence of evidence must not be presented as an insight.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Empty evidence state\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Capture evidence before starting synthesis\"\n    Then I should see \"Capture evidence in a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Empty evidence state\n\n  Scenario: Understand that no evidence is available\n    Then I should understand that synthesis cannot proceed yet\n    And the page should not imply that analysis is complete",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "evidence-loaded",
@@ -1754,7 +1981,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1183,
+              "durationMs": 1219,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -1762,31 +1989,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1351,
+              "durationMs": 1398,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Available evidence should preserve provenance cues.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Evidence available before working clusters\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Create a working cluster grouping before selecting evidence.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Evidence available before working clusters\n\n  Scenario: Review evidence before clustering\n    Then I should review source evidence before grouping it\n    And I should have enough provenance context to make a defensible analytical decision",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "working-cluster-created",
@@ -1800,7 +2029,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2093,
+              "durationMs": 2174,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -1808,31 +2037,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2367,
+              "durationMs": 2420,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Working clusters must remain visibly provisional.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Working cluster grouping created\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I enter \"Confidence before the form starts\" into the \"Working cluster label\" field\n    And I enter \"Evidence about how users judge whether they are ready to begin the service.\" into the \"Working cluster description\" field\n    And I select \"Create working cluster grouping\"\n    Then I should see \"Created working cluster grouping Confidence before the form starts.\"\n    Then I should see \"I was not sure whether I had the right documents before I started, so I nearly called the helpline instead of continuing online.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Working cluster grouping created\n\n  Scenario: Treat a working cluster as provisional\n    Then I should understand that the cluster is provisional\n    And it should not be presented with the same authority as a final insight",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "evidence-added-to-cluster",
@@ -1846,7 +2077,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2141,
+              "durationMs": 2210,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -1854,31 +2085,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2437,
+              "durationMs": 2544,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Evidence movement should be auditable.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Evidence added to working cluster grouping\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I select the \"evidence item\" checkbox\n    And I select the \"evidence item\" checkbox\n    And I choose \"cluster-confidence-start\" from the \"Target working cluster grouping\" field\n    And I select \"Add selected evidence to the working cluster grouping\"\n    Then I should see \"Added 2 evidence items to Confidence before the form starts.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Evidence added to working cluster grouping\n\n  Scenario: Add evidence to a working cluster\n    Then I should see what evidence belongs to the cluster\n    And evidence movement should remain auditable",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "theme-blocked-without-evidence",
@@ -1892,7 +2125,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1430,
+              "durationMs": 1523,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -1900,31 +2133,33 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1697,
+              "durationMs": 1769,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Blocking unsupported theme creation is an evidence-integrity safeguard.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Theme creation hidden before evidence is grouped\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that theme creation remains hidden until at least one working cluster grouping contains source evidence\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"working cluster grouping\" section should be available\n    Then I should see \"Add evidence to a working cluster grouping before creating a theme.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Theme creation hidden before evidence is grouped\n\n  Scenario: Block theme creation without grouped evidence\n    Then theme creation should remain unavailable\n    And I should understand what evidence action is needed",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
-          }
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
         },
         {
           "id": "theme-created",
@@ -1938,7 +2173,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2339,
+              "durationMs": 2416,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -1946,33 +2181,145 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2671,
+              "durationMs": 2707,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
           "designRisk": {
-            "risk": "Synthesis states may make clusters and themes look authoritative before evidence quantity, provenance and confidence are clear.",
-            "impact": "Insights and recommendations could be accepted without sufficient traceability to source evidence.",
-            "recommendedChange": "Review evidence grouping, theme creation, disabled states, provenance details and GOV.UK component conformance.",
+            "risk": "Created themes must show enough provenance to stop themes becoming detached claims.",
+            "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+            "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
             "owner": "UCD team",
-            "status": "Needs UCD review"
+            "status": "Needs review"
           },
           "evidenceTypes": [
             "Screenshot evidence",
-            "Route-level Cucumber evidence",
-            "State-level acceptance criteria",
-            "Accessibility evidence",
-            "Design-risk notes"
+            "State-level curated acceptance criteria",
+            "State-level curated design-risk notes"
           ],
           "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png",
-          "acceptanceCriteria": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the study synthesis page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-scoped evidence grouping and theme creation page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Theme created with evidence traceability\" in the ResearchOps journey\n    Given I am using the study synthesis page\n    Then I should understand the research value of this part of the journey\n    And I should see that a theme is created from a populated cluster and the source evidence IDs remain inspectable\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    When I choose \"cluster-confidence-start\" from the \"Working cluster grouping for the theme\" field\n    And I enter \"Digital confidence is shaped before the form starts\" into the \"Theme label\" field\n    And I enter \"Users decide whether to continue based on evidence expectations, support routes and confidence before they begin entering details.\" into the \"Theme description\" field\n    And I select \"Create theme\"\n    Then I should see \"Created theme Digital confidence is shaped before the form starts.\"\n    And I select \"theme traceability details\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Theme created with evidence traceability\n\n  Scenario: Review a created theme with traceability\n    Then the theme should remain connected to source evidence\n    And it should not appear stronger than the evidence behind it",
           "criteriaMaturity": {
-            "label": "Needs review",
-            "slug": "needs-review",
-            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+            "label": "Curated criteria",
+            "slug": "curated",
+            "description": "Explicit repo-backed review evidence replaces generated full-page criteria for this state."
+          },
+          "reviewGroupId": "analysis",
+          "reviewEvidenceLevel": "state",
+          "acceptanceCriteriaSource": "repo-curated",
+          "suppressGeneratedStateCriteria": true
+        }
+      ],
+      "reviewGroupId": "analysis",
+      "reviewEvidenceLevel": "group",
+      "reviewEvidence": {
+        "id": "analysis",
+        "pageId": "synthesize",
+        "title": "Study synthesis",
+        "acceptanceStatus": "needs-review",
+        "designRiskStatus": "needs-review",
+        "gherkin": "Feature: Synthesize research evidence\n\n  As a user researcher\n  I want to group evidence and create traceable themes\n  So that insights and recommendations remain connected to source evidence\n\n  Scenario: Maintain traceability from evidence to theme\n    Then I should be able to review evidence provenance before grouping it\n    And created themes should remain connected to their source evidence\n\n  Scenario: Prevent unsupported theme creation\n    Then I should be prevented from creating a theme until evidence has been grouped",
+        "designRisk": {
+          "risk": "The analysis journey is central to ResearchOps traceability. Weak evidence-to-theme links can make recommendations appear stronger than the evidence supports.",
+          "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+          "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+          "owner": "UCD team",
+          "status": "Needs review"
+        },
+        "states": {
+          "missing-sid-error": {
+            "title": "Missing study ID error state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Missing study ID error state\n\n  Scenario: Recover from missing study context\n    Then I should be told that synthesis cannot start\n    And I should be able to return to a valid study context",
+            "designRisk": {
+              "risk": "This should remain an explicit route-context error.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "empty-evidence": {
+            "title": "Empty evidence state",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Empty evidence state\n\n  Scenario: Understand that no evidence is available\n    Then I should understand that synthesis cannot proceed yet\n    And the page should not imply that analysis is complete",
+            "designRisk": {
+              "risk": "Absence of evidence must not be presented as an insight.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "evidence-loaded": {
+            "title": "Evidence available before working clusters",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Evidence available before working clusters\n\n  Scenario: Review evidence before clustering\n    Then I should review source evidence before grouping it\n    And I should have enough provenance context to make a defensible analytical decision",
+            "designRisk": {
+              "risk": "Available evidence should preserve provenance cues.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "working-cluster-created": {
+            "title": "Working cluster grouping created",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Working cluster grouping created\n\n  Scenario: Treat a working cluster as provisional\n    Then I should understand that the cluster is provisional\n    And it should not be presented with the same authority as a final insight",
+            "designRisk": {
+              "risk": "Working clusters must remain visibly provisional.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "evidence-added-to-cluster": {
+            "title": "Evidence added to working cluster grouping",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Evidence added to working cluster grouping\n\n  Scenario: Add evidence to a working cluster\n    Then I should see what evidence belongs to the cluster\n    And evidence movement should remain auditable",
+            "designRisk": {
+              "risk": "Evidence movement should be auditable.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "theme-blocked-without-evidence": {
+            "title": "Theme creation hidden before evidence is grouped",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Theme creation hidden before evidence is grouped\n\n  Scenario: Block theme creation without grouped evidence\n    Then theme creation should remain unavailable\n    And I should understand what evidence action is needed",
+            "designRisk": {
+              "risk": "Blocking unsupported theme creation is an evidence-integrity safeguard.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
+          },
+          "theme-created": {
+            "title": "Theme created with evidence traceability",
+            "acceptanceStatus": "needs-review",
+            "designRiskStatus": "needs-review",
+            "gherkin": "Feature: Theme created with evidence traceability\n\n  Scenario: Review a created theme with traceability\n    Then the theme should remain connected to source evidence\n    And it should not appear stronger than the evidence behind it",
+            "designRisk": {
+              "risk": "Created themes must show enough provenance to stop themes becoming detached claims.",
+              "impact": "If this is accepted without review, ResearchOps traceability, accessibility or user confidence may be weakened.",
+              "recommendedChange": "Review this evidence against ResearchOps intent, GOV.UK component conventions and WCAG 2.2 AA expectations.",
+              "owner": "UCD team",
+              "status": "Needs review"
+            }
           }
         }
-      ]
+      }
     }
   ],
   "failures": []
