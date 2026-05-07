@@ -1,0 +1,117 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://researchops.local/schemas/agent-trace-event.schema.json",
+	"title": "ResearchOps Agent Trace Event",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"actor",
+		"eventHash",
+		"eventId",
+		"eventType",
+		"payload",
+		"previousEventHash",
+		"redaction",
+		"schemaVersion",
+		"severity",
+		"timestamp",
+		"traceId",
+		"traceLayer"
+	],
+	"properties": {
+		"actor": {
+			"type": "object",
+			"additionalProperties": true,
+			"required": ["id", "kind"],
+			"properties": {
+				"id": {
+					"type": "string",
+					"minLength": 1
+				},
+				"kind": {
+					"type": "string",
+					"enum": ["agent", "system", "tool", "user", "validator"]
+				},
+				"model": {
+					"type": "string"
+				},
+				"role": {
+					"type": "string"
+				}
+			}
+		},
+		"eventHash": {
+			"type": "string",
+			"pattern": "^sha256:[a-f0-9]{64}$"
+		},
+		"eventId": {
+			"type": "string",
+			"pattern": "^evt-[a-z0-9-]+$"
+		},
+		"eventType": {
+			"type": "string"
+		},
+		"hashes": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "string"
+			}
+		},
+		"parentEventId": {
+			"type": "string"
+		},
+		"payload": {
+			"type": "object"
+		},
+		"previousEventHash": {
+			"anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "string",
+					"pattern": "^sha256:[a-f0-9]{64}$"
+				}
+			]
+		},
+		"redaction": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["containsSensitiveMaterial", "redacted", "redactionReasons"],
+			"properties": {
+				"containsSensitiveMaterial": {
+					"type": "boolean"
+				},
+				"redacted": {
+					"type": "boolean"
+				},
+				"redactionReasons": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"schemaVersion": {
+			"type": "string",
+			"const": "1.0.0"
+		},
+		"severity": {
+			"type": "string",
+			"enum": ["debug", "error", "info", "notice", "warning"]
+		},
+		"timestamp": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"traceId": {
+			"type": "string",
+			"pattern": "^atrace-[0-9]{8}-[0-9]{6}-[a-z0-9-]+$"
+		},
+		"traceLayer": {
+			"type": "string",
+			"enum": ["behavioural", "mechanistic", "operational", "training"]
+		}
+	}
+}
