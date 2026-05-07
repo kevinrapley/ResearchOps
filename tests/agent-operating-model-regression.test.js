@@ -13,7 +13,7 @@ test("repository operating model selects always-load bundles", () => {
 	assert.deepEqual(ids.slice(0, 3), [
 		"github-diamond",
 		"researchops-developer",
-		"gold-standard-gov-product",
+		"gov-product-assistant-gold-standard",
 	]);
 });
 
@@ -23,8 +23,8 @@ test("repository operating model selects conditional bundles by task text", () =
 	);
 
 	assert.ok(ids.includes("cloudflare-core-developer"));
-	assert.ok(ids.includes("airtable-public-api"));
-	assert.ok(ids.includes("mural-public-api"));
+	assert.ok(ids.includes("airtable-public-api-developer"));
+	assert.ok(ids.includes("mural-public-api-developer"));
 });
 
 test("repository operating model sources are referenced from AGENTS.md", () => {
