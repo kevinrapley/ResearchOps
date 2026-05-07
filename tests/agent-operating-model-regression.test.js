@@ -48,6 +48,16 @@ test("repository operating model selects conditional bundles by structured rule 
 	}
 });
 
+test("repository operating model preserves registry keyword fallback", () => {
+	const task = "Improve the service page";
+	const bundle = bundleById(task, "govuk-design-system");
+
+	assert.ok(bundle);
+	assert.equal(bundle.selectionEvidence.selectionBasis, "registry-keyword-fallback");
+	assert.deepEqual(bundle.selectionEvidence.matchedPhrases, []);
+	assert.ok(bundle.selectionEvidence.matchedRegistryKeywords.includes("page"));
+});
+
 test("repository operating model exposes task facets for trace reports", () => {
 	const taskText = "Improve GOV.UK form accessibility and page content.";
 	const model = loadOperatingModel({ taskText });
