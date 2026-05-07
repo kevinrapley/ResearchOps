@@ -1,0 +1,59 @@
+{
+	"traceId": "atrace-20260507-researchops-design-critique",
+	"createdAt": "2026-05-07T17:40:00+01:00",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/design-critique-trace-current-main",
+	"trigger": "[reasoning]",
+	"task": {
+		"summary": "Apply the 8-round ResearchOps platform design critique as repository documentation with full traceability.",
+		"constraint": "No action is to be taken on the priorities raised."
+	},
+	"operatingModelSourcesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json"
+	],
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer",
+		"gov-product-assistant-gold-standard",
+		"govuk-design-system"
+	],
+	"correctiveBranchBehaviour": {
+		"abandonedBranch": "feature/design-critique-trace",
+		"reason": "The branch was created from the PR #209 merge commit, then compare showed it was two commits behind main before file changes.",
+		"replacementBranch": "feature/design-critique-trace-current-main",
+		"forceUpdateUsedForWork": false
+	},
+	"created": [
+		"docs/design-critiques/researchops-platform-design-critique-2026-05-07.md",
+		"docs/agent-audit/reasoning/2026/05/07/researchops-design-critique-trace.md",
+		"docs/agent-audit/reasoning/2026/05/07/researchops-design-critique-trace.json"
+	],
+	"modified": [],
+	"nonActionBoundary": [
+		"No product priorities implemented.",
+		"No backlog issues created.",
+		"No acceptance criteria created.",
+		"No code, UI, tests or configuration changed."
+	],
+	"validationDesigned": [
+		"review critique completeness",
+		"review full participant transcript coverage",
+		"review P1 to P3 collation",
+		"review explicit non-action boundary",
+		"review trace artefact presence"
+	],
+	"validationNotClaimed": [
+		"full local npm run lint",
+		"full local npm run validate",
+		"full local npm test"
+	],
+	"residualRisks": [
+		"The critique is not a usability test finding.",
+		"The P1 to P3 list is a critique output, not an approved implementation roadmap.",
+		"The critique should not be actioned until separately reviewed and approved."
+	]
+}
