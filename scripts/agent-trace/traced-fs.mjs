@@ -12,8 +12,23 @@ function hashContent(content) {
   return `sha256:${crypto.createHash("sha256").update(content).digest("hex")}`;
 }
 
-function relativePath(rootDir, filePath) {
-  return path.relative(rootDir, path.resolve(rootDir, filePath));
+function resolveInsideRoot(rootDir, filePath) {
+  if (path.isAbsolute(filePath)) {
+    throw new Error(`Traced filesystem path must be relative: ${filePath}`);
+  }
+
+  const resolvedRoot = path.resolve(rootDir);
+  const resolvedPath = path.resolve(resolvedRoot, filePath);
+  const relative = path.relative(resolvedRoot, resolvedPath);
+
+  if (relative === "" || relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(`Traced filesystem path escapes root: ${filePath}`);
+  }
+
+  return {
+    absolutePath: resolvedPath,
+    relative
+  };
 }
 
 /**
@@ -27,7 +42,7 @@ export class TracedFilesystem {
    * @param {string} [options.rootDir] Repository root directory.
    */
   constructor(trace, options = {}) {
-    this.rootDir = options.rootDir || process.cwd();
+    this.rootDir = path.resolve(options.rootDir || process.cwd());
     this.trace = trace;
   }
 
@@ -38,9 +53,8 @@ export class TracedFilesystem {
    * @returns {Promise<string>} File contents.
    */
   async readTextFile(filePath, purpose) {
-    const absolutePath = path.resolve(this.rootDir, filePath);
+    const { absolutePath, relative } = resolveInsideRoot(this.rootDir, filePath);
     const content = await fs.readFile(absolutePath, "utf8");
-    const relative = relativePath(this.rootDir, absolutePath);
 
     this.trace.event("file.read", {
       bytes: Buffer.byteLength(content, "utf8"),
@@ -60,8 +74,7 @@ export class TracedFilesystem {
    * @returns {Promise<{ contentHash: string, path: string }>} Write metadata.
    */
   async writeTextFile(filePath, content, purpose) {
-    const absolutePath = path.resolve(this.rootDir, filePath);
-    const relative = relativePath(this.rootDir, absolutePath);
+    const { absolutePath, relative } = resolveInsideRoot(this.rootDir, filePath);
     const contentHash = hashContent(content);
 
     this.trace.event("file.write.planned", {
