@@ -25,10 +25,11 @@ The gateway is intended for agent-facing operations such as:
 ## Endpoint
 
 ```text
+GET /health
 POST /tools
 ```
 
-Every request must include:
+Every `/tools` request must include:
 
 ```text
 Authorization: Bearer <AGENT_GATEWAY_TOKEN>
@@ -46,6 +47,34 @@ Example request:
 		"databaseId": "<production-d1-database-id>"
 	}
 }
+```
+
+## OpenAPI connector contract
+
+The secured API connector contract is source-controlled at:
+
+```text
+infra/cloudflare/agent-gateway/openapi.yaml
+```
+
+Use it to expose the gateway as an API tool connector without exposing raw Cloudflare credentials.
+
+Connector authentication must use an HTTP bearer token secret:
+
+```text
+AGENT_GATEWAY_TOKEN
+```
+
+Do not paste this token into chat.
+
+Do not commit this token to GitHub.
+
+Do not configure the connector with `CF_API_TOKEN`.
+
+Connector setup instructions are documented at:
+
+```text
+docs/deployment/agent-gateway-openapi-connector.md
 ```
 
 ## Production write rules
@@ -113,7 +142,7 @@ npx --yes wrangler@${WRANGLER_VERSION} secret put CF_ACCOUNT_ID --config infra/c
 
 ## Deployment
 
-Replace the audit D1 database ID in `infra/cloudflare/agent-gateway/wrangler.toml`, then deploy through the dedicated workflow.
+Deploy through the dedicated workflow.
 
 Manual deployment command:
 
