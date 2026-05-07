@@ -1,6 +1,7 @@
 {
 	"traceId": "atrace-20260507-trace-layer-evals",
 	"createdAt": "2026-05-07T15:35:00+01:00",
+	"updatedAt": "2026-05-07T15:50:00+01:00",
 	"repository": "kevinrapley/ResearchOps",
 	"branch": "feature/trace-layer-evals",
 	"trigger": "[reasoning]",
@@ -11,6 +12,20 @@
 		"cleanBranch": "feature/trace-layer-evals",
 		"forceUpdateUsedForWork": false
 	},
+	"reviewCorrections": [
+		{
+			"source": "PR #208 P2 review comment",
+			"issue": "The loader stopped after structured-rule anyOf matching and did not fall back to registry keywords.",
+			"correction": "Preserved registry keyword fallback with explicit selectionBasis registry-keyword-fallback and matchedRegistryKeywords evidence.",
+			"coverage": "Regression test asserts Improve the service page selects govuk-design-system through registry keyword page."
+		},
+		{
+			"source": "PR #208 P2 review comment",
+			"issue": "The eval runner did not enforce expectedSafeguards, expectedEvidence or forbiddenFailureModes.",
+			"correction": "Eval runner now validates expected safeguards, expected evidence, forbidden failure modes, latest-prompt conflict detection and reasoning trace outputs.",
+			"coverage": "agent:evals now fails if declared behavioural controls are not represented in loader output."
+		}
+	],
 	"traceLayers": [
 		"operational",
 		"behavioural",
@@ -38,6 +53,7 @@
 		"package.json",
 		"scripts/validate.sh",
 		"scripts/agent-operating-model/load-operating-model.mjs",
+		"scripts/agent-operating-model/run-behavioural-evals.mjs",
 		"scripts/agent-operating-model/validate-operating-model.mjs",
 		"tests/agent-operating-model-regression.test.js"
 	],
