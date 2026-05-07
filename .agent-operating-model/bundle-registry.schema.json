@@ -1,0 +1,70 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://researchops.local/schemas/bundle-registry.schema.json",
+	"title": "ResearchOps Agent Bundle Registry",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["version", "updated", "bundlePackage", "defaultLoadOrder", "bundles"],
+	"properties": {
+		"version": {
+			"type": "string"
+		},
+		"updated": {
+			"type": "string"
+		},
+		"bundlePackage": {
+			"type": "string"
+		},
+		"defaultLoadOrder": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"bundles": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"id",
+					"name",
+					"role",
+					"precedence",
+					"load",
+					"keywords",
+					"mustRecordInTrace"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9-]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"role": {
+						"type": "string"
+					},
+					"precedence": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"load": {
+						"type": "string",
+						"enum": ["always", "conditional"]
+					},
+					"keywords": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"mustRecordInTrace": {
+						"type": "boolean"
+					}
+				}
+			}
+		}
+	}
+}
