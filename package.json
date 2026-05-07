@@ -14,6 +14,7 @@
     "agent:model": "node scripts/agent-operating-model/load-operating-model.mjs",
     "agent:model:validate": "node scripts/agent-operating-model/validate-operating-model.mjs",
     "agent:bundles:validate": "node scripts/agent-operating-model/validate-bundle-registry.mjs",
+    "agent:evals": "node scripts/agent-operating-model/run-behavioural-evals.mjs",
     "trace:validate": "node scripts/agent-trace/validate-traces.mjs",
     "test": "node --test",
     "test:e2e": "playwright test",
