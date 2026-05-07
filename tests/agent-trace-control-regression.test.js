@@ -62,6 +62,13 @@ test("agent trace control records auditable evidence", async () => {
 		authorization: "Bearer secret-token",
 		ownerEmail: "user@example.com",
 	});
+	trace.event("command.completed", {
+		command: "test-command",
+		exitCode: 0,
+		purpose: "Exercise bare bearer redaction.",
+		stderr: "Bearer stderr-secret-token",
+		stdout: "Bearer stdout-secret-token",
+	});
 	bundles.apply(
 		{
 			id: "github-diamond",
@@ -91,6 +98,23 @@ test("agent trace control records auditable evidence", async () => {
 		"Exercise traced file write.",
 	);
 
+	await assert.rejects(
+		tracedFs.writeTextFile(
+			"../outside.txt",
+			"escape",
+			"Reject path traversal.",
+		),
+		/escapes root/,
+	);
+	await assert.rejects(
+		tracedFs.writeTextFile(
+			path.join(rootDir, "absolute.txt"),
+			"escape",
+			"Reject absolute path.",
+		),
+		/must be relative/,
+	);
+
 	const reportDir = path.join(rootDir, "docs", "agent-audit", "reasoning");
 	const markdownPath = path.join(reportDir, `${trace.traceId}.md`);
 	const summaryPath = path.join(reportDir, `${trace.traceId}.json`);
@@ -115,6 +139,8 @@ test("agent trace control records auditable evidence", async () => {
 	assert.match(serialisedEvents, /\[REDACTED_EMAIL\]/);
 	assert.match(serialisedEvents, /"token":"\[reasoning\]"/);
 	assert.doesNotMatch(serialisedEvents, /secret-token/);
+	assert.doesNotMatch(serialisedEvents, /stderr-secret-token/);
+	assert.doesNotMatch(serialisedEvents, /stdout-secret-token/);
 	assert.doesNotMatch(serialisedEvents, /user@example.com/);
 	assert.equal(events[0].previousEventHash, null);
 	assert.equal(events[1].previousEventHash, events[0].eventHash);
