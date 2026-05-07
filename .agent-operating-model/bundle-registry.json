@@ -5,7 +5,7 @@
 	"defaultLoadOrder": [
 		"github-diamond",
 		"researchops-developer",
-		"gold-standard-gov-product"
+		"gov-product-assistant-gold-standard"
 	],
 	"bundles": [
 		{
@@ -43,7 +43,7 @@
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "gold-standard-gov-product",
+			"id": "gov-product-assistant-gold-standard",
 			"name": "Gold Standard Gov Product Assistant",
 			"role": "government-product-governance-and-assurance",
 			"precedence": 85,
@@ -96,7 +96,7 @@
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "airtable-public-api",
+			"id": "airtable-public-api-developer",
 			"name": "Airtable Public API",
 			"role": "airtable-integration-control",
 			"precedence": 60,
@@ -112,7 +112,7 @@
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "mural-public-api",
+			"id": "mural-public-api-developer",
 			"name": "Mural Public API",
 			"role": "mural-integration-control",
 			"precedence": 60,
