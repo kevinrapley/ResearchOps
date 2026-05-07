@@ -78,7 +78,7 @@
 		},
 		{
 			"id": "behaviour-structured-rule-application",
-			"question": "Does the agent rely on structured bundle rules rather than only keyword hits?",
+			"question": "Does the agent rely on typed task signals rather than only keyword hits?",
 			"prompt": "Work on a Worker route that syncs records and sticky notes.",
 			"expectedBundles": [
 				"github-diamond",
@@ -90,7 +90,7 @@
 			],
 			"expectedEvidence": [
 				"matched-rule",
-				"matched-condition",
+				"matched-signal",
 				"selected-bundle"
 			],
 			"forbiddenFailureModes": [

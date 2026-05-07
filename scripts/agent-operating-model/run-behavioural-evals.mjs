@@ -32,8 +32,10 @@ function selectedBundle(model, bundleId) {
 	return model.selectedBundles.find((bundle) => bundle.id === bundleId);
 }
 
-function selectionEvidenceValues(model, key) {
-	return model.selectedBundles.flatMap((bundle) => bundle.selectionEvidence?.[key] || []);
+function expectedConditionalBundles(evaluation, model) {
+	return (evaluation.expectedBundles || [])
+		.map((bundleId) => selectedBundle(model, bundleId))
+		.filter((bundle) => bundle?.load === "conditional");
 }
 
 function validateExpectedBundles(evaluation, model) {
@@ -65,17 +67,58 @@ function validateTraceRequirement(evaluation, model) {
 	}
 }
 
+function hasAuditableSelectionEvidence(bundle) {
+	const evidence = bundle.selectionEvidence || {};
+	const hasSignalEvidence = (evidence.matchedSignals || []).length > 0;
+	const hasFallbackEvidence =
+		evidence.selectionBasis === "registry-keyword-fallback" &&
+		(evidence.matchedRegistryKeywords || []).length > 0;
+
+	return Boolean(evidence.ruleId && (hasSignalEvidence || hasFallbackEvidence));
+}
+
+function hasMatchedSignalEvidence(bundle) {
+	const evidence = bundle.selectionEvidence || {};
+
+	return Boolean(
+		evidence.ruleId &&
+		(evidence.matchedSignals || []).length > 0 &&
+		evidence.selectionBasis === "required-task-signal",
+	);
+}
+
+function validateExpectedConditionalSignalEvidence(evaluation, model) {
+	const conditionalBundles = expectedConditionalBundles(evaluation, model);
+
+	for (const bundle of conditionalBundles) {
+		if (!hasMatchedSignalEvidence(bundle)) {
+			fail(
+				`${evaluation.id} expected conditional bundle ${bundle.id} without matched signal evidence`,
+			);
+		}
+	}
+}
+
 function validateSelectionEvidence(evaluation, model) {
 	for (const bundle of model.selectedBundles) {
-		if (!bundle.selectionEvidence?.ruleId) {
-			fail(`${evaluation.id} selected ${bundle.id} without selection evidence`);
+		if (!hasAuditableSelectionEvidence(bundle)) {
+			fail(`${evaluation.id} selected ${bundle.id} without auditable selection evidence`);
 		}
 	}
 
 	const expectedEvidence = evaluation.expectedEvidence || [];
 	const evidenceChecks = {
-		"matched-condition": () => selectionEvidenceValues(model, "matchedFacets").length > 0,
+		"matched-condition": () => {
+			validateExpectedConditionalSignalEvidence(evaluation, model);
+
+			return true;
+		},
 		"matched-rule": () => model.selectedBundles.every((bundle) => bundle.selectionEvidence?.ruleId),
+		"matched-signal": () => {
+			validateExpectedConditionalSignalEvidence(evaluation, model);
+
+			return true;
+		},
 		"selected-bundle": () => model.selectedBundles.length > 0,
 	};
 
@@ -110,9 +153,7 @@ function validateForbiddenFailureModes(evaluation, model) {
 			model.instructionConflicts.length > 0 &&
 			!model.operatingModelSafeguards.includes("must-report-conflict"),
 		"superficial-keyword-only": () =>
-			model.selectedBundles.some(
-				(bundle) => !bundle.selectionEvidence?.ruleId || !bundle.selectionEvidence?.selectionBasis,
-			),
+			model.selectedBundles.some((bundle) => !hasAuditableSelectionEvidence(bundle)),
 		tool: () => !model.operatingModelSafeguards.includes("must-load-agents-md"),
 	};
 

@@ -1,0 +1,80 @@
+{
+	"version": "1.0.0",
+	"purpose": "Define typed task signals used by the operating-model loader before selecting bundles.",
+	"signals": [
+		{
+			"id": "repository-affecting-task",
+			"kind": "default",
+			"traceLayer": "operational",
+			"description": "Any task that may read, write, validate, branch or open a pull request in the repository."
+		},
+		{
+			"id": "government-product-assurance-default",
+			"kind": "default",
+			"traceLayer": "operational",
+			"description": "Default ResearchOps public-sector product assurance context."
+		},
+		{
+			"id": "ui-or-content-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns frontend UI, service content, page composition, forms or accessibility.",
+			"phrases": [
+				"accessibility",
+				"component",
+				"content",
+				"css",
+				"form",
+				"gov.uk",
+				"govuk",
+				"html",
+				"page design"
+			]
+		},
+		{
+			"id": "runtime-or-deployment-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns Cloudflare runtime, deployment, routing or infrastructure behaviour.",
+			"phrases": [
+				"binding",
+				"cloudflare",
+				"deployment",
+				"pages",
+				"route",
+				"worker",
+				"workers",
+				"wrangler"
+			]
+		},
+		{
+			"id": "external-api-or-data-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns Airtable records, data, linked records, formula filters or attachments.",
+			"phrases": [
+				"airtable",
+				"attachment",
+				"filterbyformula",
+				"linked record",
+				"record",
+				"records"
+			]
+		},
+		{
+			"id": "external-api-or-collaboration-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns Mural collaboration, OAuth, rooms, boards, widgets or sticky notes.",
+			"phrases": [
+				"mural",
+				"mural board",
+				"oauth",
+				"room",
+				"sticky note",
+				"widget",
+				"workspace"
+			]
+		}
+	]
+}

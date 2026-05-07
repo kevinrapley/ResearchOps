@@ -34,67 +34,25 @@ function phraseMatches(taskText, phrase) {
 	return normalise(taskText).includes(normalise(phrase));
 }
 
-function inferTaskFacets(taskText) {
-	return [
-		{
-			id: "repository-affecting-task",
-			matched: true,
-		},
-		{
-			id: "government-product-assurance-default",
-			matched: true,
-		},
-		{
-			id: "ui-or-content-change",
-			matched: [
-				"accessibility",
-				"component",
-				"content",
-				"css",
-				"form",
-				"gov.uk",
-				"govuk",
-				"html",
-				"page",
-			].some((phrase) => phraseMatches(taskText, phrase)),
-		},
-		{
-			id: "runtime-or-deployment-change",
-			matched: [
-				"binding",
-				"cloudflare",
-				"deployment",
-				"pages",
-				"route",
-				"worker",
-				"workers",
-				"wrangler",
-			].some((phrase) => phraseMatches(taskText, phrase)),
-		},
-		{
-			id: "external-api-or-data-change",
-			matched: [
-				"airtable",
-				"attachment",
-				"filterbyformula",
-				"linked record",
-				"record",
-				"records",
-			].some((phrase) => phraseMatches(taskText, phrase)),
-		},
-		{
-			id: "external-api-or-collaboration-change",
-			matched: [
-				"mural",
-				"mural board",
-				"oauth",
-				"room",
-				"sticky note",
-				"widget",
-				"workspace",
-			].some((phrase) => phraseMatches(taskText, phrase)),
-		},
-	].filter((facet) => facet.matched);
+function matchedSignalPhrases(signal, taskText) {
+	return (signal.phrases || []).filter((phrase) => phraseMatches(taskText, phrase));
+}
+
+function inferTaskSignals(taskText, signalCatalog) {
+	return signalCatalog.signals
+		.map((signal) => {
+			const matchedPhrases = matchedSignalPhrases(signal, taskText);
+			const matched = signal.kind === "default" || matchedPhrases.length > 0;
+
+			return {
+				id: signal.id,
+				kind: signal.kind,
+				matched,
+				matchedPhrases,
+				traceLayer: signal.traceLayer,
+			};
+		})
+		.filter((signal) => signal.matched);
 }
 
 function inferInstructionConflicts(taskText) {
@@ -129,53 +87,55 @@ function traceOutputsFor(taskText) {
 	return taskText.includes("[reasoning]") ? [...REASONING_TRACE_OUTPUTS] : [];
 }
 
-function allFacetsMatch(requiredFacets, facets) {
-	const facetIds = new Set(facets.map((facet) => facet.id));
+function allSignalsMatch(requiredSignals, signals) {
+	const signalIds = new Set(signals.map((signal) => signal.id));
 
-	return (requiredFacets || []).every((facet) => facetIds.has(facet));
+	return (requiredSignals || []).every((signal) => signalIds.has(signal));
 }
 
-function matchedRulePhrases(rule, taskText) {
-	return (rule.anyOf || []).filter((phrase) => phraseMatches(taskText, phrase));
+function matchedSignals(requiredSignals, signals) {
+	const required = new Set(requiredSignals || []);
+
+	return signals.filter((signal) => required.has(signal.id));
 }
 
 function matchedRegistryKeywords(bundle, taskText) {
 	return (bundle.keywords || []).filter((keyword) => phraseMatches(taskText, keyword));
 }
 
-function evaluateRule(rule, bundle, taskText, facets) {
+function evaluateRule(rule, bundle, taskText, signals) {
+	const requiredSignals = rule.requiredSignals || [];
+	const selectedSignals = matchedSignals(requiredSignals, signals);
+	const signalsMatched = allSignalsMatch(requiredSignals, signals);
+
 	if (rule.type === "always") {
 		return {
 			matched: true,
-			matchedFacets: rule.evidenceRequired || [],
-			matchedPhrases: [],
+			matchedPhrases: selectedSignals.flatMap((signal) => signal.matchedPhrases),
 			matchedRegistryKeywords: [],
+			matchedSignals: selectedSignals.map((signal) => signal.id),
 			ruleId: rule.id,
-			selectionBasis: "always",
+			selectionBasis: "required-task-signal",
 			traceLayer: rule.traceLayer || "operational",
 		};
 	}
 
-	const facetsMatched = allFacetsMatch(rule.allOf, facets);
-	const phrases = matchedRulePhrases(rule, taskText);
 	const registryKeywords = matchedRegistryKeywords(bundle, taskText);
-	const structuredMatched = facetsMatched && phrases.length > 0;
-	const fallbackMatched = facetsMatched && !structuredMatched && registryKeywords.length > 0;
-	const matched = structuredMatched || fallbackMatched;
+	const fallbackMatched = !signalsMatched && registryKeywords.length > 0;
+	const matched = signalsMatched || fallbackMatched;
 
 	return {
 		matched,
-		matchedFacets: rule.allOf || [],
-		matchedPhrases: phrases,
+		matchedPhrases: selectedSignals.flatMap((signal) => signal.matchedPhrases),
 		matchedRegistryKeywords: registryKeywords,
+		matchedSignals: selectedSignals.map((signal) => signal.id),
 		ruleId: rule.id,
-		selectionBasis: structuredMatched ? "structured-rule" : "registry-keyword-fallback",
+		selectionBasis: signalsMatched ? "required-task-signal" : "registry-keyword-fallback",
 		traceLayer: rule.traceLayer || "behavioural",
 	};
 }
 
-function selectBundles(registry, selectionRules, taskText) {
-	const facets = inferTaskFacets(taskText);
+function selectBundles(registry, selectionRules, taskText, signals) {
 	const bundleById = new Map(registry.bundles.map((bundle) => [bundle.id, bundle]));
 	const selected = [];
 	const skipped = [];
@@ -187,7 +147,7 @@ function selectBundles(registry, selectionRules, taskText) {
 			continue;
 		}
 
-		const result = evaluateRule(rule, bundle, taskText, facets);
+		const result = evaluateRule(rule, bundle, taskText, signals);
 		const record = {
 			...bundle,
 			selectionEvidence: result,
@@ -201,7 +161,6 @@ function selectBundles(registry, selectionRules, taskText) {
 	}
 
 	return {
-		facets,
 		selectedBundles: selected.sort((left, right) => right.precedence - left.precedence),
 		skippedBundles: skipped.sort((left, right) => right.precedence - left.precedence),
 	};
@@ -217,7 +176,9 @@ export function loadOperatingModel(options = {}) {
 	const taskText = options.taskText || "";
 	const registry = readJson(".agent-operating-model/bundle-registry.json");
 	const selectionRules = readJson(".agent-operating-model/selection-rules.json");
-	const selected = selectBundles(registry, selectionRules, taskText);
+	const signalCatalog = readJson(".agent-operating-model/task-signal-catalog.json");
+	const taskSignals = inferTaskSignals(taskText, signalCatalog);
+	const selected = selectBundles(registry, selectionRules, taskText, taskSignals);
 	const safeguards = inferOperatingModelSafeguards(taskText);
 
 	return {
@@ -239,7 +200,8 @@ export function loadOperatingModel(options = {}) {
 			name: bundle.name,
 			selectionEvidence: bundle.selectionEvidence,
 		})),
-		taskFacets: selected.facets,
+		taskFacets: taskSignals,
+		taskSignals,
 		traceOutputs: traceOutputsFor(taskText),
 	};
 }

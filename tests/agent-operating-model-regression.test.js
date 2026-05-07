@@ -25,7 +25,7 @@ test("repository operating model selects always-load bundles", () => {
 	]);
 });
 
-test("repository operating model selects conditional bundles by structured rule evidence", () => {
+test("repository operating model selects conditional bundles from typed task signals", () => {
 	const task =
 		"Fix a Cloudflare Worker route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
@@ -41,31 +41,33 @@ test("repository operating model selects conditional bundles by structured rule 
 	]) {
 		const bundle = bundleById(task, bundleId);
 
-		assert.equal(bundle.selectionEvidence.selectionBasis, "structured-rule");
+		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
 		assert.equal(bundle.selectionEvidence.traceLayer, "behavioural");
 		assert.ok(bundle.selectionEvidence.ruleId);
+		assert.ok(bundle.selectionEvidence.matchedSignals.length > 0);
 		assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
 	}
 });
 
-test("repository operating model preserves registry keyword fallback", () => {
+test("repository operating model preserves explicit registry keyword fallback", () => {
 	const task = "Improve the service page";
 	const bundle = bundleById(task, "govuk-design-system");
 
 	assert.ok(bundle);
 	assert.equal(bundle.selectionEvidence.selectionBasis, "registry-keyword-fallback");
 	assert.deepEqual(bundle.selectionEvidence.matchedPhrases, []);
+	assert.deepEqual(bundle.selectionEvidence.matchedSignals, []);
 	assert.ok(bundle.selectionEvidence.matchedRegistryKeywords.includes("page"));
 });
 
-test("repository operating model exposes task facets for trace reports", () => {
+test("repository operating model exposes typed task signals for trace reports", () => {
 	const taskText = "Improve GOV.UK form accessibility and page content.";
 	const model = loadOperatingModel({ taskText });
-	const facetIds = model.taskFacets.map((facet) => facet.id);
+	const signalIds = model.taskSignals.map((signal) => signal.id);
 	const ids = model.selectedBundles.map((bundle) => bundle.id);
 
-	assert.ok(facetIds.includes("repository-affecting-task"));
-	assert.ok(facetIds.includes("ui-or-content-change"));
+	assert.ok(signalIds.includes("repository-affecting-task"));
+	assert.ok(signalIds.includes("ui-or-content-change"));
 	assert.ok(ids.includes("govuk-design-system"));
 });
 
@@ -76,6 +78,7 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/orchestration.xml",
 		".agent-operating-model/bundle-registry.json",
 		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/task-signal-catalog.json",
 		".agent-operating-model/bootstrap-checklist.md",
 		".agent-operating-model/precedence-policy.md",
 		".agent-operating-model/trace-policy.md",

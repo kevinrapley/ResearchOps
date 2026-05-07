@@ -14,6 +14,7 @@ The source files are:
 
 - `.agent-operating-model/orchestration.xml`
 - `.agent-operating-model/bundle-registry.json`
+- `.agent-operating-model/task-signal-catalog.json`
 - `.agent-operating-model/selection-rules.json`
 - `.agent-operating-model/bootstrap-checklist.md`
 - `.agent-operating-model/precedence-policy.md`
@@ -27,13 +28,15 @@ For each repository-affecting task, the agent must:
 1. Read this `AGENTS.md` file.
 2. Read `.agent-operating-model/orchestration.xml`.
 3. Read `.agent-operating-model/bundle-registry.json`.
-4. Read `.agent-operating-model/selection-rules.json`.
-5. Inspect `docs/devops/ResearchOps-Bundle-Setup.zip` as the authoritative bundle package.
-6. Identify always-load bundles.
-7. Identify conditional bundles relevant to the task.
-8. Apply precedence from `.agent-operating-model/precedence-policy.md`.
-9. Record bundle decisions if trace mode is active.
-10. Stop and report the missing source if the operating model cannot be loaded.
+4. Read `.agent-operating-model/task-signal-catalog.json`.
+5. Read `.agent-operating-model/selection-rules.json`.
+6. Inspect `docs/devops/ResearchOps-Bundle-Setup.zip` as the authoritative bundle package.
+7. Identify always-load bundles.
+8. Identify typed task signals.
+9. Identify conditional bundles relevant to the task from signal-based rules.
+10. Apply precedence from `.agent-operating-model/precedence-policy.md`.
+11. Record bundle decisions if trace mode is active.
+12. Stop and report the missing source if the operating model cannot be loaded.
 
 When the user includes `[reasoning]`, the agent must produce an auditable trace according to `.agent-operating-model/trace-policy.md` and the trace tooling under `scripts/agent-trace/`.
 

@@ -20,6 +20,7 @@ const REQUIRED_FILES = [
 	".agent-operating-model/precedence-policy.md",
 	".agent-operating-model/trace-policy.md",
 	".agent-operating-model/trace-layers.md",
+	".agent-operating-model/task-signal-catalog.json",
 	".agent-operating-model/selection-rules.json",
 	".agent-operating-model/behavioural-evals.json",
 	"docs/devops/ResearchOps-Bundle-Setup.zip",
@@ -32,6 +33,8 @@ const REQUIRED_FILES = [
 const REQUIRED_AGENT_REFERENCES = [
 	".agent-operating-model/orchestration.xml",
 	".agent-operating-model/bundle-registry.json",
+	".agent-operating-model/task-signal-catalog.json",
+	".agent-operating-model/selection-rules.json",
 	".agent-operating-model/bootstrap-checklist.md",
 	".agent-operating-model/precedence-policy.md",
 	".agent-operating-model/trace-policy.md",
@@ -112,12 +115,36 @@ if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 5)
 	fail("behavioural-evals.json must contain at least five evals");
 }
 
+const signalCatalog = readJson(".agent-operating-model/task-signal-catalog.json");
+const signalIds = new Set(signalCatalog.signals.map((signal) => signal.id));
+
+for (const requiredSignal of [
+	"repository-affecting-task",
+	"government-product-assurance-default",
+	"ui-or-content-change",
+	"runtime-or-deployment-change",
+	"external-api-or-data-change",
+	"external-api-or-collaboration-change",
+]) {
+	if (!signalIds.has(requiredSignal)) {
+		fail(`task-signal-catalog.json is missing signal: ${requiredSignal}`);
+	}
+}
+
 const selectionRules = readJson(".agent-operating-model/selection-rules.json");
 const ruleBundleIds = new Set(selectionRules.rules.map((rule) => rule.bundleId));
 
 for (const bundleId of MANIFEST_BUNDLE_IDS) {
 	if (!ruleBundleIds.has(bundleId)) {
 		fail(`selection-rules.json is missing bundle rule: ${bundleId}`);
+	}
+}
+
+for (const rule of selectionRules.rules) {
+	for (const signalId of rule.requiredSignals || []) {
+		if (!signalIds.has(signalId)) {
+			fail(`selection rule ${rule.id} references unknown signal: ${signalId}`);
+		}
 	}
 }
 
@@ -170,6 +197,15 @@ for (const expectedId of [
 for (const bundle of model.selectedBundles) {
 	if (!bundle.selectionEvidence?.ruleId) {
 		fail(`loader did not return selection evidence for ${bundle.id}`);
+	}
+
+	const hasSignalEvidence = bundle.selectionEvidence.matchedSignals?.length > 0;
+	const hasFallbackEvidence =
+		bundle.selectionEvidence.selectionBasis === "registry-keyword-fallback" &&
+		bundle.selectionEvidence.matchedRegistryKeywords?.length > 0;
+
+	if (!hasSignalEvidence && !hasFallbackEvidence) {
+		fail(`loader did not return signal or fallback evidence for ${bundle.id}`);
 	}
 }
 
