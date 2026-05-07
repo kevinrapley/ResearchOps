@@ -42,3 +42,10 @@ dist/
 build/
 coverage/
 .lighthouseci/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
