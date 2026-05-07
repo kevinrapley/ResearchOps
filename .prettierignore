@@ -30,6 +30,9 @@ public/components/guides/print.css
 *.gif
 *.svg
 
+# Repository operating model control files are validated by agent:model:validate.
+.agent-operating-model/**
+
 # Optional: skip infra & templates if you prefer to keep their whitespace
 # (uncomment if you want CI green first, then re-enable gradually)
 # .github/**
