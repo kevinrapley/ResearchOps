@@ -1,6 +1,6 @@
 # Agent trace: signal-based bundle selection model
 
-> This is an auditable trace for a repository-affecting task that included `[reasoning]`. It records operating-model loading, branch hygiene, task interpretation, implementation decisions and validation design. It does not expose private chain-of-thought.
+> This is an auditable trace for a repository-affecting task that included `[reasoning]`. It records operating-model loading, branch hygiene, task interpretation, implementation decisions, review corrections and validation design. It does not expose private chain-of-thought.
 
 ## Run metadata
 
@@ -56,6 +56,17 @@ The selection pipeline now separates three concerns:
 
 This reduces superficial keyword matching without pretending to provide model-internal attention evidence.
 
+## P2 review correction
+
+A PR #209 review comment found that `expectedEvidence: ["matched-signal"]` was still too weak. It only checked whether some selected bundle had `matchedSignals`, so always-load bundles could satisfy the eval even if expected conditional bundles fell back to registry keywords after signal-catalog drift.
+
+Correction:
+
+- `run-behavioural-evals.mjs` now identifies expected conditional bundles for each eval.
+- For `matched-signal` and `matched-condition`, each expected conditional bundle must have `selectionBasis: required-task-signal`.
+- Each expected conditional bundle must also carry non-empty `matchedSignals` evidence.
+- Registry keyword fallback remains valid only when the eval does not require matched-signal evidence for that conditional bundle.
+
 ## Files created
 
 - `.agent-operating-model/task-signal-catalog.json`
@@ -107,7 +118,11 @@ Updated `load-operating-model.mjs` so it:
 
 ### Behavioural eval update
 
-Updated `run-behavioural-evals.mjs` so `superficial-keyword-only` fails unless selected bundles have auditable signal evidence or explicit registry fallback evidence.
+Updated `run-behavioural-evals.mjs` so:
+
+- `superficial-keyword-only` fails unless selected bundles have auditable signal evidence or explicit registry fallback evidence
+- `matched-signal` evals require every expected conditional bundle to carry matched signal evidence
+- expected conditional bundles cannot satisfy matched-signal evidence through always-load bundle defaults
 
 ### Regression coverage
 
@@ -127,6 +142,7 @@ Validation now checks that:
 - task signal IDs referenced by selection rules exist in the catalogue
 - selected bundles include either signal evidence or explicit registry fallback evidence
 - behavioural evals expect `matched-signal` evidence rather than the older `matched-condition` wording
+- matched-signal evals require expected conditional bundles to carry matched signal evidence
 - repository validation requires the task signal catalogue
 
 ## Validation not claimed
