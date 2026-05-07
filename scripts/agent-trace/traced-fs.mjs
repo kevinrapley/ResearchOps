@@ -12,22 +12,107 @@ function hashContent(content) {
   return `sha256:${crypto.createHash("sha256").update(content).digest("hex")}`;
 }
 
-function resolveInsideRoot(rootDir, filePath) {
+function missing(error) {
+  return error?.code === "ENOENT";
+}
+
+function inside(rootPath, targetPath) {
+  const relative = path.relative(rootPath, targetPath);
+
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function lexicalPath(rootDir, filePath) {
   if (path.isAbsolute(filePath)) {
     throw new Error(`Traced filesystem path must be relative: ${filePath}`);
   }
 
-  const resolvedRoot = path.resolve(rootDir);
-  const resolvedPath = path.resolve(resolvedRoot, filePath);
-  const relative = path.relative(resolvedRoot, resolvedPath);
+  const rootPath = path.resolve(rootDir);
+  const targetPath = path.resolve(rootPath, filePath);
+  const relative = path.relative(rootPath, targetPath);
 
   if (relative === "" || relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error(`Traced filesystem path escapes root: ${filePath}`);
   }
 
+  return { relative, rootPath, targetPath };
+}
+
+async function optionalRealpath(filePath) {
+  try {
+    return await fs.realpath(filePath);
+  } catch (error) {
+    if (missing(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+async function nearestExisting(rootDir, targetPath) {
+  const rootPath = path.resolve(rootDir);
+  let currentPath = targetPath;
+
+  while (currentPath !== rootPath) {
+    try {
+      await fs.lstat(currentPath);
+      return currentPath;
+    } catch (error) {
+      if (!missing(error)) {
+        throw error;
+      }
+
+      currentPath = path.dirname(currentPath);
+    }
+  }
+
+  return rootPath;
+}
+
+async function realRootAndTarget(rootDir, targetPath, filePath) {
+  const realRoot = await fs.realpath(rootDir);
+  const realTarget = await fs.realpath(targetPath);
+
+  if (!inside(realRoot, realTarget)) {
+    throw new Error(`Traced filesystem path escapes root: ${filePath}`);
+  }
+
+  return { realRoot, realTarget };
+}
+
+async function readablePath(rootDir, filePath) {
+  const lexical = lexicalPath(rootDir, filePath);
+  const { realTarget } = await realRootAndTarget(rootDir, lexical.targetPath, filePath);
+
   return {
-    absolutePath: resolvedPath,
-    relative
+    absolutePath: realTarget,
+    relative: lexical.relative
+  };
+}
+
+async function writablePath(rootDir, filePath) {
+  const lexical = lexicalPath(rootDir, filePath);
+  const parentPath = path.dirname(lexical.targetPath);
+  const nearestPath = await nearestExisting(rootDir, parentPath);
+  const { realRoot } = await realRootAndTarget(rootDir, nearestPath, filePath);
+  const existingTarget = await optionalRealpath(lexical.targetPath);
+
+  if (existingTarget && !inside(realRoot, existingTarget)) {
+    throw new Error(`Traced filesystem path escapes root: ${filePath}`);
+  }
+
+  await fs.mkdir(parentPath, { recursive: true });
+
+  const realParent = await fs.realpath(parentPath);
+
+  if (!inside(realRoot, realParent)) {
+    throw new Error(`Traced filesystem path escapes root: ${filePath}`);
+  }
+
+  return {
+    absolutePath: existingTarget || path.join(realParent, path.basename(lexical.targetPath)),
+    relative: lexical.relative
   };
 }
 
@@ -53,7 +138,7 @@ export class TracedFilesystem {
    * @returns {Promise<string>} File contents.
    */
   async readTextFile(filePath, purpose) {
-    const { absolutePath, relative } = resolveInsideRoot(this.rootDir, filePath);
+    const { absolutePath, relative } = await readablePath(this.rootDir, filePath);
     const content = await fs.readFile(absolutePath, "utf8");
 
     this.trace.event("file.read", {
@@ -74,7 +159,7 @@ export class TracedFilesystem {
    * @returns {Promise<{ contentHash: string, path: string }>} Write metadata.
    */
   async writeTextFile(filePath, content, purpose) {
-    const { absolutePath, relative } = resolveInsideRoot(this.rootDir, filePath);
+    const { absolutePath, relative } = await writablePath(this.rootDir, filePath);
     const contentHash = hashContent(content);
 
     this.trace.event("file.write.planned", {
@@ -84,7 +169,6 @@ export class TracedFilesystem {
       purpose
     });
 
-    await fs.mkdir(path.dirname(absolutePath), { recursive: true });
     await fs.writeFile(absolutePath, content, "utf8");
 
     this.trace.event("file.write.completed", {
