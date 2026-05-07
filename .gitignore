@@ -5,6 +5,7 @@ coverage/
 .tmp/
 .logs/
 *.log
+.agent-traces/
 
 # === Lockfiles & caches ===
 package-lock.json
