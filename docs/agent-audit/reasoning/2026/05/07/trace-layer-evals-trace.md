@@ -92,6 +92,34 @@ This branch adds `.agent-operating-model/selection-rules.json` and updates `load
 
 This makes the selection auditable. It does not claim true model-internal attention evidence.
 
+## P2 review corrections
+
+Two review comments were left on PR #208.
+
+### Preserve registry keyword fallback
+
+The review found that the loader had stopped after structured-rule `anyOf` matching and no longer fell back to registry keywords. This regressed cases such as `Improve the service page`, where the GOV.UK bundle registry contains `page` but the structured rule had `page design`.
+
+Correction:
+
+- `load-operating-model.mjs` now evaluates structured rules first.
+- If the structured rule has no phrase match, it falls back to bundle registry keywords when required facets match.
+- Fallback selections are labelled with `selectionBasis: registry-keyword-fallback`.
+- Fallback evidence records `matchedRegistryKeywords`.
+- Regression coverage asserts that `Improve the service page` selects `govuk-design-system` via fallback.
+
+### Enforce declared eval safeguards
+
+The review found that `run-behavioural-evals.mjs` checked expected bundles and static `[reasoning]` output declarations, but did not enforce `expectedSafeguards`, `expectedEvidence` or `forbiddenFailureModes`.
+
+Correction:
+
+- `run-behavioural-evals.mjs` now validates expected safeguards against loader output.
+- It validates expected evidence such as matched rule, matched condition and selected bundle.
+- It validates forbidden failure modes: instruction, context, priority, tool, explanation and superficial keyword-only.
+- It validates latest-prompt conflict detection for repository-rule precedence.
+- It validates declared trace outputs for `[reasoning]` prompts against loader-produced `traceOutputs`.
+
 ## Mechanistic boundary
 
 The repository cannot directly inspect model activations. Mechanistic trace entries must therefore be labelled as hypotheses unless supported by model-internal tooling.
@@ -114,6 +142,7 @@ This prevents behavioural evidence being misreported as direct mechanistic evide
 - `scripts/validate.sh`
 - `scripts/agent-operating-model/load-operating-model.mjs`
 - `scripts/agent-operating-model/validate-operating-model.mjs`
+- `scripts/agent-operating-model/run-behavioural-evals.mjs`
 - `tests/agent-operating-model-regression.test.js`
 
 ## Validation designed
@@ -125,6 +154,8 @@ Validation now checks:
 - `agent:evals` exists in `package.json`
 - behavioural evals can run through `npm run validate`
 - selected bundles contain structured selection evidence
+- registry keyword fallback remains available
+- eval safeguards, expected evidence and forbidden failure modes are enforced
 - trace layers include `operational`, `behavioural`, `mechanistic` and `training`
 
 ## Validation not claimed
@@ -135,4 +166,4 @@ I have not claimed full local `npm run lint`, `npm run validate` or `npm test` s
 
 - Behavioural evals test the repository loader, not the hidden internal state of a hosted model.
 - Mechanistic claims remain hypotheses unless future tooling can inspect model-internal representations.
-- The structured rules still use phrase matching as one input, but now require rule IDs, facets and selection evidence instead of returning unlabelled keyword hits.
+- The structured rules still use phrase matching as one input, but now require rule IDs, facets, matched phrases or explicit registry-keyword fallback evidence instead of returning unlabelled keyword hits.
