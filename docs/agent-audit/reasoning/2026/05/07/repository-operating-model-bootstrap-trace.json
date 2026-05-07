@@ -1,6 +1,7 @@
 {
 	"traceId": "atrace-20260507-repo-model-bootstrap",
 	"createdAt": "2026-05-07T13:00:00+01:00",
+	"updatedAt": "2026-05-07T14:05:00+01:00",
 	"repository": "kevinrapley/ResearchOps",
 	"branch": "feature/repo-model-trace",
 	"trigger": "[reasoning]",
@@ -12,6 +13,23 @@
 		"abandonedBranch": "feature/repo-agent-model",
 		"reason": "The branch was one commit ahead and two commits behind main, and the initial run did not create the requested reasoning trace.",
 		"replacementBranch": "feature/repo-model-trace"
+	},
+	"reviewCorrection": {
+		"source": "PR #207 P2 review comment",
+		"issue": "Registry bundle IDs must match IDs declared by ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml.",
+		"replacedIds": {
+			"gold-standard-gov-product": "gov-product-assistant-gold-standard",
+			"airtable-public-api": "airtable-public-api-developer",
+			"mural-public-api": "mural-public-api-developer"
+		},
+		"filesUpdated": [
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/orchestration.xml",
+			"scripts/agent-operating-model/validate-operating-model.mjs",
+			"tests/agent-operating-model-regression.test.js",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.md",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.json"
+		]
 	},
 	"operatingModelSources": [
 		"AGENTS.md",
@@ -26,13 +44,13 @@
 		"alwaysLoad": [
 			"github-diamond",
 			"researchops-developer",
-			"gold-standard-gov-product"
+			"gov-product-assistant-gold-standard"
 		],
 		"conditional": [
 			"govuk-design-system",
 			"cloudflare-core-developer",
-			"airtable-public-api",
-			"mural-public-api"
+			"airtable-public-api-developer",
+			"mural-public-api-developer"
 		]
 	},
 	"implementation": {
@@ -74,7 +92,7 @@
 	},
 	"limitations": [
 		"The GitHub connector could confirm the bundle ZIP path and blob metadata, but could not extract the binary ZIP contents through text fetch.",
-		"The registry therefore validates the ZIP presence and signature, but does not fabricate internal ZIP entry names.",
+		"The manifest ID correction is based on the PR review comment identifying the IDs declared in ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml.",
 		"The bundle selector uses auditable keyword matching and can later be replaced by a manifest extracted from the authoritative ZIP package."
 	]
 }
