@@ -45,6 +45,8 @@ Do not paste the token into chat.
 
 Do not commit the token to GitHub.
 
+Do not configure the connector with `CF_API_TOKEN`.
+
 Do not expose the Cloudflare API token to the connector.
 
 ## Required connector configuration
