@@ -32,8 +32,10 @@ function selectedBundle(model, bundleId) {
 	return model.selectedBundles.find((bundle) => bundle.id === bundleId);
 }
 
-function selectionEvidenceValues(model, key) {
-	return model.selectedBundles.flatMap((bundle) => bundle.selectionEvidence?.[key] || []);
+function expectedConditionalBundles(evaluation, model) {
+	return (evaluation.expectedBundles || [])
+		.map((bundleId) => selectedBundle(model, bundleId))
+		.filter((bundle) => bundle?.load === "conditional");
 }
 
 function validateExpectedBundles(evaluation, model) {
@@ -75,6 +77,28 @@ function hasAuditableSelectionEvidence(bundle) {
 	return Boolean(evidence.ruleId && (hasSignalEvidence || hasFallbackEvidence));
 }
 
+function hasMatchedSignalEvidence(bundle) {
+	const evidence = bundle.selectionEvidence || {};
+
+	return Boolean(
+		evidence.ruleId &&
+		(evidence.matchedSignals || []).length > 0 &&
+		evidence.selectionBasis === "required-task-signal",
+	);
+}
+
+function validateExpectedConditionalSignalEvidence(evaluation, model) {
+	const conditionalBundles = expectedConditionalBundles(evaluation, model);
+
+	for (const bundle of conditionalBundles) {
+		if (!hasMatchedSignalEvidence(bundle)) {
+			fail(
+				`${evaluation.id} expected conditional bundle ${bundle.id} without matched signal evidence`,
+			);
+		}
+	}
+}
+
 function validateSelectionEvidence(evaluation, model) {
 	for (const bundle of model.selectedBundles) {
 		if (!hasAuditableSelectionEvidence(bundle)) {
@@ -84,9 +108,17 @@ function validateSelectionEvidence(evaluation, model) {
 
 	const expectedEvidence = evaluation.expectedEvidence || [];
 	const evidenceChecks = {
-		"matched-condition": () => selectionEvidenceValues(model, "matchedSignals").length > 0,
+		"matched-condition": () => {
+			validateExpectedConditionalSignalEvidence(evaluation, model);
+
+			return true;
+		},
 		"matched-rule": () => model.selectedBundles.every((bundle) => bundle.selectionEvidence?.ruleId),
-		"matched-signal": () => selectionEvidenceValues(model, "matchedSignals").length > 0,
+		"matched-signal": () => {
+			validateExpectedConditionalSignalEvidence(evaluation, model);
+
+			return true;
+		},
 		"selected-bundle": () => model.selectedBundles.length > 0,
 	};
 
