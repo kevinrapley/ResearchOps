@@ -10,6 +10,9 @@ import { validateTrace } from "../scripts/agent-trace/trace-validator.mjs";
 import { AgentTraceWriter } from "../scripts/agent-trace/trace-writer.mjs";
 import { TracedFilesystem } from "../scripts/agent-trace/traced-fs.mjs";
 
+const FIXTURE_DATE = new Date("2026-05-06T21:17:00Z");
+const SECRET_FIXTURE = "Authorization: Bearer secret-token\nuser@example.com\n";
+
 async function readJsonl(filePath) {
 	const text = await fs.readFile(filePath, "utf8");
 
@@ -19,26 +22,26 @@ async function readJsonl(filePath) {
 		.map((line) => JSON.parse(line));
 }
 
-test("agent trace records bundle application, file boundaries, redaction and report rendering", async () => {
-	const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "agent-trace-"));
-	const sourcePath = path.join(rootDir, "AGENTS.md");
-
-	await fs.writeFile(
-		sourcePath,
-		"Authorization: Bearer secret-token\nuser@example.com\n",
-		"utf8",
-	);
-
-	const trace = new AgentTraceWriter({
+function createTrace(rootDir) {
+	return new AgentTraceWriter({
 		actor: {
 			id: "test-agent",
 			kind: "agent",
 			model: "test-model",
 		},
-		date: new Date("2026-05-06T21:17:00Z"),
+		date: FIXTURE_DATE,
 		rootDir,
 		slug: "agent-audit-control",
 	});
+}
+
+test("agent trace control records auditable evidence", async () => {
+	const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "agent-trace-"));
+	const sourcePath = path.join(rootDir, "AGENTS.md");
+
+	await fs.writeFile(sourcePath, SECRET_FIXTURE, "utf8");
+
+	const trace = createTrace(rootDir);
 	const tracedFs = new TracedFilesystem(trace, { rootDir });
 	const bundles = new BundleRecorder(trace);
 
@@ -88,20 +91,9 @@ test("agent trace records bundle application, file boundaries, redaction and rep
 		"Exercise traced file write.",
 	);
 
-	const markdownPath = path.join(
-		rootDir,
-		"docs",
-		"agent-audit",
-		"reasoning",
-		`${trace.traceId}.md`,
-	);
-	const summaryPath = path.join(
-		rootDir,
-		"docs",
-		"agent-audit",
-		"reasoning",
-		`${trace.traceId}.json`,
-	);
+	const reportDir = path.join(rootDir, "docs", "agent-audit", "reasoning");
+	const markdownPath = path.join(reportDir, `${trace.traceId}.md`);
+	const summaryPath = path.join(reportDir, `${trace.traceId}.json`);
 
 	await renderTrace(trace.eventPath, markdownPath, summaryPath);
 	trace.event("report.rendered", {
