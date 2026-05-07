@@ -8,6 +8,7 @@ import crypto from "node:crypto";
 
 const SECRET_PATTERNS = [
   /(Authorization:\s*Bearer\s+)[A-Za-z0-9._~+/=-]+/gi,
+  /(\bBearer\s+)[A-Za-z0-9._~+/=-]+/gi,
   /(api[_-]?key["']?\s*[:=]\s*["']?)[A-Za-z0-9._~+/=-]+/gi,
   /(token["']?\s*[:=]\s*["']?)[A-Za-z0-9._~+/=-]+/gi,
   /(secret["']?\s*[:=]\s*["']?)[A-Za-z0-9._~+/=-]+/gi,
