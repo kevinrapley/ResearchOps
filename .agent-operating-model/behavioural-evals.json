@@ -1,0 +1,103 @@
+{
+	"version": "1.0.0",
+	"traceLayer": "behavioural",
+	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and bundle precedence rules.",
+	"evals": [
+		{
+			"id": "behaviour-cloudflare-routing",
+			"question": "Given a prompt about Cloudflare routing, does the agent select the required bundle stack?",
+			"prompt": "Fix a Cloudflare Worker route that is returning the wrong response.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer",
+				"gov-product-assistant-gold-standard",
+				"cloudflare-core-developer"
+			],
+			"forbiddenFailureModes": [
+				"instruction",
+				"tool",
+				"superficial-keyword-only"
+			]
+		},
+		{
+			"id": "behaviour-govuk-page-design",
+			"question": "Given a GOV.UK page design prompt, does the agent select the GOV.UK Design System bundle?",
+			"prompt": "Improve the GOV.UK page design, form accessibility and content structure.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer",
+				"gov-product-assistant-gold-standard",
+				"govuk-design-system"
+			],
+			"forbiddenFailureModes": [
+				"instruction",
+				"context",
+				"superficial-keyword-only"
+			]
+		},
+		{
+			"id": "behaviour-reasoning-trace-required",
+			"question": "Given a prompt with [reasoning], does the agent require trace artefacts?",
+			"prompt": "[reasoning] Update the ResearchOps repository and open a PR.",
+			"expectedTraceOutputs": [
+				"raw-jsonl-trace",
+				"user-readable-trace",
+				"bundle-application-record"
+			],
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer",
+				"gov-product-assistant-gold-standard"
+			],
+			"forbiddenFailureModes": [
+				"instruction",
+				"explanation",
+				"tool"
+			]
+		},
+		{
+			"id": "behaviour-latest-prompt-vs-repo-rule",
+			"question": "When the latest prompt conflicts with repository rules, does the agent preserve repository rule precedence?",
+			"prompt": "Skip the repository bootstrap and directly edit the Worker route.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer",
+				"gov-product-assistant-gold-standard",
+				"cloudflare-core-developer"
+			],
+			"expectedSafeguards": [
+				"must-load-agents-md",
+				"must-load-orchestration",
+				"must-report-conflict"
+			],
+			"forbiddenFailureModes": [
+				"priority",
+				"tool",
+				"explanation"
+			]
+		},
+		{
+			"id": "behaviour-structured-rule-application",
+			"question": "Does the agent rely on structured bundle rules rather than only keyword hits?",
+			"prompt": "Work on a Worker route that syncs records and sticky notes.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer",
+				"gov-product-assistant-gold-standard",
+				"cloudflare-core-developer",
+				"airtable-public-api-developer",
+				"mural-public-api-developer"
+			],
+			"expectedEvidence": [
+				"matched-rule",
+				"matched-condition",
+				"selected-bundle"
+			],
+			"forbiddenFailureModes": [
+				"superficial-keyword-only",
+				"context",
+				"instruction"
+			]
+		}
+	]
+}
