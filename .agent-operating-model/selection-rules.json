@@ -1,0 +1,93 @@
+{
+	"version": "1.0.0",
+	"purpose": "Provide auditable structured rules for selecting agent bundles before falling back to keyword evidence.",
+	"rules": [
+		{
+			"id": "always-github-diamond",
+			"bundleId": "github-diamond",
+			"traceLayer": "operational",
+			"type": "always",
+			"evidenceRequired": ["repository-affecting-task"]
+		},
+		{
+			"id": "always-researchops-developer",
+			"bundleId": "researchops-developer",
+			"traceLayer": "operational",
+			"type": "always",
+			"evidenceRequired": ["repository-affecting-task"]
+		},
+		{
+			"id": "always-gov-product-assistant",
+			"bundleId": "gov-product-assistant-gold-standard",
+			"traceLayer": "operational",
+			"type": "always",
+			"evidenceRequired": ["government-product-assurance-default"]
+		},
+		{
+			"id": "conditional-govuk-design-system",
+			"bundleId": "govuk-design-system",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"allOf": ["ui-or-content-change"],
+			"anyOf": [
+				"gov.uk",
+				"govuk",
+				"accessibility",
+				"html",
+				"css",
+				"form",
+				"component",
+				"content design",
+				"page design"
+			]
+		},
+		{
+			"id": "conditional-cloudflare-core",
+			"bundleId": "cloudflare-core-developer",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"allOf": ["runtime-or-deployment-change"],
+			"anyOf": [
+				"cloudflare",
+				"worker",
+				"workers",
+				"pages",
+				"wrangler",
+				"route",
+				"binding",
+				"deployment"
+			]
+		},
+		{
+			"id": "conditional-airtable-api",
+			"bundleId": "airtable-public-api-developer",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"allOf": ["external-api-or-data-change"],
+			"anyOf": [
+				"airtable",
+				"record",
+				"records",
+				"linked record",
+				"filterbyformula",
+				"attachment"
+			]
+		},
+		{
+			"id": "conditional-mural-api",
+			"bundleId": "mural-public-api-developer",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"allOf": ["external-api-or-collaboration-change"],
+			"anyOf": [
+				"mural",
+				"oauth",
+				"workspace",
+				"room",
+				"mural board",
+				"widget",
+				"sticky note"
+			]
+		}
+	]
+}
