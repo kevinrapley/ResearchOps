@@ -33,6 +33,9 @@ public/components/guides/print.css
 # Repository operating model control files are validated by agent:model:validate.
 .agent-operating-model/**
 
+# Generated trace reports are validated by the agent trace process.
+docs/agent-audit/reasoning/**
+
 # Optional: skip infra & templates if you prefer to keep their whitespace
 # (uncomment if you want CI green first, then re-enable gradually)
 # .github/**
