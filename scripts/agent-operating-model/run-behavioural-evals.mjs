@@ -65,17 +65,28 @@ function validateTraceRequirement(evaluation, model) {
 	}
 }
 
+function hasAuditableSelectionEvidence(bundle) {
+	const evidence = bundle.selectionEvidence || {};
+	const hasSignalEvidence = (evidence.matchedSignals || []).length > 0;
+	const hasFallbackEvidence =
+		evidence.selectionBasis === "registry-keyword-fallback" &&
+		(evidence.matchedRegistryKeywords || []).length > 0;
+
+	return Boolean(evidence.ruleId && (hasSignalEvidence || hasFallbackEvidence));
+}
+
 function validateSelectionEvidence(evaluation, model) {
 	for (const bundle of model.selectedBundles) {
-		if (!bundle.selectionEvidence?.ruleId) {
-			fail(`${evaluation.id} selected ${bundle.id} without selection evidence`);
+		if (!hasAuditableSelectionEvidence(bundle)) {
+			fail(`${evaluation.id} selected ${bundle.id} without auditable selection evidence`);
 		}
 	}
 
 	const expectedEvidence = evaluation.expectedEvidence || [];
 	const evidenceChecks = {
-		"matched-condition": () => selectionEvidenceValues(model, "matchedFacets").length > 0,
+		"matched-condition": () => selectionEvidenceValues(model, "matchedSignals").length > 0,
 		"matched-rule": () => model.selectedBundles.every((bundle) => bundle.selectionEvidence?.ruleId),
+		"matched-signal": () => selectionEvidenceValues(model, "matchedSignals").length > 0,
 		"selected-bundle": () => model.selectedBundles.length > 0,
 	};
 
@@ -110,9 +121,7 @@ function validateForbiddenFailureModes(evaluation, model) {
 			model.instructionConflicts.length > 0 &&
 			!model.operatingModelSafeguards.includes("must-report-conflict"),
 		"superficial-keyword-only": () =>
-			model.selectedBundles.some(
-				(bundle) => !bundle.selectionEvidence?.ruleId || !bundle.selectionEvidence?.selectionBasis,
-			),
+			model.selectedBundles.some((bundle) => !hasAuditableSelectionEvidence(bundle)),
 		tool: () => !model.operatingModelSafeguards.includes("must-load-agents-md"),
 	};
 
