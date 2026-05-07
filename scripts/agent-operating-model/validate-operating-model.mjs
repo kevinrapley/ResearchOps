@@ -19,8 +19,12 @@ const REQUIRED_FILES = [
 	".agent-operating-model/bootstrap-checklist.md",
 	".agent-operating-model/precedence-policy.md",
 	".agent-operating-model/trace-policy.md",
+	".agent-operating-model/trace-layers.md",
+	".agent-operating-model/selection-rules.json",
+	".agent-operating-model/behavioural-evals.json",
 	"docs/devops/ResearchOps-Bundle-Setup.zip",
 	"scripts/agent-operating-model/load-operating-model.mjs",
+	"scripts/agent-operating-model/run-behavioural-evals.mjs",
 	"scripts/agent-operating-model/validate-bundle-registry.mjs",
 	"scripts/agent-operating-model/validate-operating-model.mjs",
 ];
@@ -44,6 +48,8 @@ const MANIFEST_BUNDLE_IDS = [
 	"mural-public-api-developer",
 ];
 
+const TRACE_LAYERS = ["operational", "behavioural", "mechanistic", "training"];
+
 function fail(message) {
 	console.error(`agent:model:validate: ${message}`);
 	process.exit(1);
@@ -59,6 +65,18 @@ function requireFile(relativePath) {
 
 function readText(relativePath) {
 	return fs.readFileSync(path.join(ROOT_DIR, relativePath), "utf8");
+}
+
+function readJson(relativePath) {
+	return JSON.parse(readText(relativePath));
+}
+
+function requireTraceLayers(text, label) {
+	for (const layer of TRACE_LAYERS) {
+		if (!text.includes(layer)) {
+			fail(`${label} must reference trace layer: ${layer}`);
+		}
+	}
 }
 
 for (const file of REQUIRED_FILES) {
@@ -81,6 +99,28 @@ for (const expected of ["bundleOrchestration", "[reasoning]", ...MANIFEST_BUNDLE
 	}
 }
 
+const traceLayers = readText(".agent-operating-model/trace-layers.md");
+requireTraceLayers(traceLayers, "trace-layers.md");
+
+const behaviouralEvals = readJson(".agent-operating-model/behavioural-evals.json");
+
+if (behaviouralEvals.traceLayer !== "behavioural") {
+	fail("behavioural-evals.json must declare traceLayer behavioural");
+}
+
+if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 5) {
+	fail("behavioural-evals.json must contain at least five evals");
+}
+
+const selectionRules = readJson(".agent-operating-model/selection-rules.json");
+const ruleBundleIds = new Set(selectionRules.rules.map((rule) => rule.bundleId));
+
+for (const bundleId of MANIFEST_BUNDLE_IDS) {
+	if (!ruleBundleIds.has(bundleId)) {
+		fail(`selection-rules.json is missing bundle rule: ${bundleId}`);
+	}
+}
+
 const pkg = JSON.parse(readText("package.json"));
 const scripts = pkg.scripts || {};
 
@@ -88,6 +128,7 @@ for (const scriptName of [
 	"agent:model",
 	"agent:model:validate",
 	"agent:bundles:validate",
+	"agent:evals",
 ]) {
 	if (!scripts[scriptName]) {
 		fail(`package.json is missing ${scriptName}`);
@@ -95,6 +136,10 @@ for (const scriptName of [
 }
 
 execFileSync("node", ["scripts/agent-operating-model/validate-bundle-registry.mjs"], {
+	stdio: "inherit",
+});
+
+execFileSync("node", ["scripts/agent-operating-model/run-behavioural-evals.mjs"], {
 	stdio: "inherit",
 });
 
@@ -119,6 +164,12 @@ for (const expectedId of [
 ]) {
 	if (!selectedIds.includes(expectedId)) {
 		fail(`loader did not select expected bundle: ${expectedId}`);
+	}
+}
+
+for (const bundle of model.selectedBundles) {
+	if (!bundle.selectionEvidence?.ruleId) {
+		fail(`loader did not return selection evidence for ${bundle.id}`);
 	}
 }
 
