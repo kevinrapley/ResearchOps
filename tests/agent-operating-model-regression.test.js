@@ -49,14 +49,14 @@ test("repository operating model selects conditional bundles by structured rule 
 });
 
 test("repository operating model exposes task facets for trace reports", () => {
-	const model = loadOperatingModel({
-		taskText: "Improve GOV.UK form accessibility and page content.",
-	});
+	const taskText = "Improve GOV.UK form accessibility and page content.";
+	const model = loadOperatingModel({ taskText });
 	const facetIds = model.taskFacets.map((facet) => facet.id);
+	const ids = model.selectedBundles.map((bundle) => bundle.id);
 
 	assert.ok(facetIds.includes("repository-affecting-task"));
 	assert.ok(facetIds.includes("ui-or-content-change"));
-	assert.ok(selectedIds(model.taskText).includes("github-diamond") === false);
+	assert.ok(ids.includes("govuk-design-system"));
 });
 
 test("repository operating model sources are referenced from AGENTS.md", () => {
