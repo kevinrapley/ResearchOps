@@ -16,6 +16,8 @@ const files = {
 	wrangler: `${gatewayRoot}/wrangler.toml`,
 	readme: `${gatewayRoot}/README.md`,
 	migration: `${gatewayRoot}/migrations/0001_agent_gateway_audit.sql`,
+	openapi: `${gatewayRoot}/openapi.yaml`,
+	connectorDocs: "docs/deployment/agent-gateway-openapi-connector.md",
 	workerCi: ".github/workflows/worker-ci.yml",
 	deployGateway: ".github/workflows/deploy-agent-gateway.yml",
 	deploymentToolchain: "deployment-toolchain.yaml",
@@ -62,6 +64,7 @@ for (const tool of expectedTools) {
 	includes("schemas", `"${tool}"`, "agent gateway tool schemas");
 	includes("allowlist", `"${tool}"`, "agent gateway allowlist");
 	includes("index", `"${tool}"`, "agent gateway router");
+	includes("openapi", `- ${tool}`, "agent gateway OpenAPI contract");
 }
 
 const auditColumns = [
@@ -194,10 +197,73 @@ const includeChecks = [
 	],
 	["readme", "Do not use an account-wide super token", "agent gateway README"],
 	["readme", "audit = persisted", "agent gateway README"],
+	["readme", "infra/cloudflare/agent-gateway/openapi.yaml", "agent gateway README"],
+	[
+		"readme",
+		"docs/deployment/agent-gateway-openapi-connector.md",
+		"agent gateway README",
+	],
 	[
 		"readme",
 		"npx --yes wrangler@${WRANGLER_VERSION} deploy --config infra/cloudflare/agent-gateway/wrangler.toml",
 		"agent gateway README",
+	],
+	["openapi", "openapi: 3.1.0", "agent gateway OpenAPI contract"],
+	[
+		"openapi",
+		"ResearchOps Cloudflare Agent Gateway",
+		"agent gateway OpenAPI contract",
+	],
+	[
+		"openapi",
+		"https://researchops-agent-gateway.digikev-kevin-rapley.workers.dev",
+		"agent gateway OpenAPI contract",
+	],
+	["openapi", "operationId: getAgentGatewayHealth", "agent gateway OpenAPI contract"],
+	["openapi", "operationId: runAgentGatewayTool", "agent gateway OpenAPI contract"],
+	["openapi", "bearerAuth", "agent gateway OpenAPI contract"],
+	[
+		"openapi",
+		"Store AGENT_GATEWAY_TOKEN as a connector secret",
+		"agent gateway OpenAPI contract",
+	],
+	[
+		"openapi",
+		"Never expose this token in chat, source control or logs",
+		"agent gateway OpenAPI contract",
+	],
+	["openapi", "const: production", "agent gateway OpenAPI contract"],
+	["openapi", "cloudflare.d1.runReadOnlyQuery", "agent gateway OpenAPI contract"],
+	["openapi", "cloudflare.kv.putJsonUnderPrefix", "agent gateway OpenAPI contract"],
+	[
+		"openapi",
+		"pattern: ^/admin/agents/durable-objects/",
+		"agent gateway OpenAPI contract",
+	],
+	[
+		"connectorDocs",
+		"The connector does not receive raw Cloudflare credentials",
+		"agent gateway connector docs",
+	],
+	[
+		"connectorDocs",
+		"Do not configure the connector with `CF_API_TOKEN`",
+		"agent gateway connector docs",
+	],
+	[
+		"connectorDocs",
+		"infra/cloudflare/agent-gateway/openapi.yaml",
+		"agent gateway connector docs",
+	],
+	[
+		"connectorDocs",
+		"Authorization: Bearer <AGENT_GATEWAY_TOKEN>",
+		"agent gateway connector docs",
+	],
+	[
+		"connectorDocs",
+		"accepted\ncompleted",
+		"agent gateway connector docs",
 	],
 	["workerCi", "infra/cloudflare/agent-gateway/**", "Worker CI workflow"],
 	[
@@ -246,3 +312,4 @@ excludes("client", "X-Auth-Key", "Cloudflare API client");
 excludes("client", "X-Auth-Email", "Cloudflare API client");
 excludes("audit", "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", "agent gateway audit log");
 excludes("wrangler", "00000000-0000-0000-0000-000000000000", "agent gateway Wrangler config");
+excludes("openapi", "CF_API_TOKEN", "agent gateway OpenAPI contract");
