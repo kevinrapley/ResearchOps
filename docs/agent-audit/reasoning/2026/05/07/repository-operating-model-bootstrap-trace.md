@@ -1,6 +1,6 @@
 # Agent trace: repository operating model bootstrap
 
-> This is an auditable agent trace generated for a task that included `[reasoning]`. It records task interpretation, corrective branch behaviour, operating-model sources, implementation decisions, validation design and residual risks. It does not expose private chain-of-thought.
+> This is an auditable agent trace generated for a task that included `[reasoning]`. It records task interpretation, corrective branch behaviour, operating-model sources, implementation decisions, review correction, validation design and residual risks. It does not expose private chain-of-thought.
 
 ## Run metadata
 
@@ -39,24 +39,47 @@ Corrective action:
 - `.agent-operating-model/trace-policy.md`
 - `docs/devops/ResearchOps-Bundle-Setup.zip`
 
-The ZIP file is treated as the authoritative bundle package. The GitHub connector could confirm the repository path and blob metadata, but it could not extract the binary ZIP contents through text fetch. The implementation therefore validates that the ZIP exists and has a ZIP signature, but does not fabricate internal entry names.
+The ZIP file is treated as the authoritative bundle package. The GitHub connector could confirm the repository path and blob metadata, but it could not extract the binary ZIP contents through text fetch. A PR review then supplied the manifest IDs declared by `ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml`, and the registry, orchestration XML, validator and regression test were updated to match those IDs.
 
 ## Bundle selection model
 
 The registry defines these always-load bundles:
 
-- GitHub Diamond
-- ResearchOps Developer
-- Gold Standard Gov Product Assistant
+- `github-diamond`
+- `researchops-developer`
+- `gov-product-assistant-gold-standard`
 
 The registry defines these conditional bundles:
 
-- GOV.UK Design System
-- Cloudflare Core Developer
-- Airtable Public API
-- Mural Public API
+- `govuk-design-system`
+- `cloudflare-core-developer`
+- `airtable-public-api-developer`
+- `mural-public-api-developer`
 
 Conditional bundles are selected by keyword matching against the task text. The loader returns selected and skipped bundles so agents can explain their operating-model application.
+
+## Review correction
+
+The open PR received a P2 review comment stating that the registry IDs must match the authoritative ZIP manifest IDs. The shortened IDs were:
+
+- `gold-standard-gov-product`
+- `airtable-public-api`
+- `mural-public-api`
+
+They were replaced with the manifest IDs:
+
+- `gov-product-assistant-gold-standard`
+- `airtable-public-api-developer`
+- `mural-public-api-developer`
+
+The correction was applied to:
+
+- `.agent-operating-model/bundle-registry.json`
+- `.agent-operating-model/orchestration.xml`
+- `scripts/agent-operating-model/validate-operating-model.mjs`
+- `tests/agent-operating-model-regression.test.js`
+- this trace report
+- this trace summary JSON
 
 ## Implementation decisions
 
@@ -117,6 +140,7 @@ The new validation checks that:
 - the bundle package exists and has a ZIP signature
 - package scripts exist
 - the loader selects expected bundles for a representative mixed task
+- the orchestration XML contains the manifest-aligned bundle IDs
 
 ## Validation limitation
 
@@ -124,10 +148,10 @@ I have not claimed full local `npm run lint`, `npm run validate` or `npm test` s
 
 ## Residual risks
 
-- The GitHub connector could not unpack `docs/devops/ResearchOps-Bundle-Setup.zip`, so registry entries are based on the bundle identities already provided in the task history and orchestration design rather than inspecting internal ZIP entries.
+- The GitHub connector could not itself unpack `docs/devops/ResearchOps-Bundle-Setup.zip`; the manifest ID correction is based on the PR review comment that identified the IDs declared in `ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml`.
 - The loader uses keyword matching. This is deliberately simple and auditable, but later work may replace it with a stricter manifest extracted from the ZIP package.
 - The operating model now creates a repository contract, but an external agent still needs repository access and an instruction to read `AGENTS.md` first.
 
 ## Next step
 
-Open a PR from `feature/repo-model-trace` into `main` and let CI provide the definitive lint, validation and test results.
+Let CI provide the definitive lint, validation and test results for PR #207.
