@@ -24,46 +24,153 @@ function hasAll(actualValues, expectedValues) {
 	return expectedValues.every((value) => actualValues.includes(value));
 }
 
-function validateTraceRequirement(evaluation) {
-	if (!evaluation.prompt.includes("[reasoning]")) {
-		return;
-	}
-
-	const expectedTraceOutputs = evaluation.expectedTraceOutputs || [];
-
-	for (const output of ["raw-jsonl-trace", "user-readable-trace", "bundle-application-record"]) {
-		if (!expectedTraceOutputs.includes(output)) {
-			fail(`${evaluation.id} is missing expected trace output: ${output}`);
-		}
-	}
+function selectedIds(model) {
+	return model.selectedBundles.map((bundle) => bundle.id);
 }
 
-function runEval(evaluation) {
-	const model = loadOperatingModel({ taskText: evaluation.prompt });
-	const selectedIds = model.selectedBundles.map((bundle) => bundle.id);
+function selectedBundle(model, bundleId) {
+	return model.selectedBundles.find((bundle) => bundle.id === bundleId);
+}
+
+function selectionEvidenceValues(model, key) {
+	return model.selectedBundles.flatMap((bundle) => bundle.selectionEvidence?.[key] || []);
+}
+
+function validateExpectedBundles(evaluation, model) {
+	const ids = selectedIds(model);
 	const missingBundles = (evaluation.expectedBundles || []).filter(
-		(bundleId) => !selectedIds.includes(bundleId),
+		(bundleId) => !ids.includes(bundleId),
 	);
 
 	if (missingBundles.length) {
 		fail(`${evaluation.id} did not select bundles: ${missingBundles.join(", ")}`);
 	}
 
-	if (!hasAll(selectedIds, evaluation.expectedBundles || [])) {
+	if (!hasAll(ids, evaluation.expectedBundles || [])) {
 		fail(`${evaluation.id} selected bundle set is incomplete`);
 	}
+}
 
+function validateTraceRequirement(evaluation, model) {
+	if (!evaluation.prompt.includes("[reasoning]")) {
+		return;
+	}
+
+	const expectedTraceOutputs = evaluation.expectedTraceOutputs || [];
+
+	for (const output of expectedTraceOutputs) {
+		if (!model.traceOutputs.includes(output)) {
+			fail(`${evaluation.id} did not produce expected trace output: ${output}`);
+		}
+	}
+}
+
+function validateSelectionEvidence(evaluation, model) {
 	for (const bundle of model.selectedBundles) {
 		if (!bundle.selectionEvidence?.ruleId) {
 			fail(`${evaluation.id} selected ${bundle.id} without selection evidence`);
 		}
 	}
 
-	validateTraceRequirement(evaluation);
+	const expectedEvidence = evaluation.expectedEvidence || [];
+	const evidenceChecks = {
+		"matched-condition": () => selectionEvidenceValues(model, "matchedFacets").length > 0,
+		"matched-rule": () => model.selectedBundles.every((bundle) => bundle.selectionEvidence?.ruleId),
+		"selected-bundle": () => model.selectedBundles.length > 0,
+	};
+
+	for (const expected of expectedEvidence) {
+		const check = evidenceChecks[expected];
+
+		if (!check) {
+			fail(`${evaluation.id} declares unsupported expected evidence: ${expected}`);
+		}
+
+		if (!check()) {
+			fail(`${evaluation.id} missing expected evidence: ${expected}`);
+		}
+	}
+}
+
+function validateExpectedSafeguards(evaluation, model) {
+	for (const expected of evaluation.expectedSafeguards || []) {
+		if (!model.operatingModelSafeguards.includes(expected)) {
+			fail(`${evaluation.id} missing expected safeguard: ${expected}`);
+		}
+	}
+}
+
+function validateForbiddenFailureModes(evaluation, model) {
+	const modeChecks = {
+		context: () => model.selectedBundles.length === 0,
+		explanation: () =>
+			evaluation.prompt.includes("[reasoning]") && model.traceOutputs.length === 0,
+		instruction: () => !selectedIds(model).includes("github-diamond"),
+		priority: () =>
+			model.instructionConflicts.length > 0 &&
+			!model.operatingModelSafeguards.includes("must-report-conflict"),
+		"superficial-keyword-only": () =>
+			model.selectedBundles.some(
+				(bundle) => !bundle.selectionEvidence?.ruleId || !bundle.selectionEvidence?.selectionBasis,
+			),
+		tool: () => !model.operatingModelSafeguards.includes("must-load-agents-md"),
+	};
+
+	for (const mode of evaluation.forbiddenFailureModes || []) {
+		const check = modeChecks[mode];
+
+		if (!check) {
+			fail(`${evaluation.id} declares unsupported forbidden failure mode: ${mode}`);
+		}
+
+		if (check()) {
+			fail(`${evaluation.id} exhibits forbidden failure mode: ${mode}`);
+		}
+	}
+}
+
+function validateLatestPromptConflict(evaluation, model) {
+	if (evaluation.id !== "behaviour-latest-prompt-vs-repo-rule") {
+		return;
+	}
+
+	if (!model.instructionConflicts.includes("latest-prompt-conflicts-repository-bootstrap")) {
+		fail(`${evaluation.id} did not record the latest prompt versus repository rule conflict`);
+	}
+}
+
+function validateRegistryFallback(evaluation, model) {
+	if (evaluation.id !== "behaviour-govuk-page-design") {
+		return;
+	}
+
+	const bundle = selectedBundle(model, "govuk-design-system");
+
+	if (!bundle) {
+		fail(`${evaluation.id} did not select govuk-design-system`);
+	}
+
+	if (bundle.selectionEvidence.selectionBasis === "registry-keyword-fallback") {
+		if (!bundle.selectionEvidence.matchedRegistryKeywords.length) {
+			fail(`${evaluation.id} fallback did not record matched registry keywords`);
+		}
+	}
+}
+
+function runEval(evaluation) {
+	const model = loadOperatingModel({ taskText: evaluation.prompt });
+
+	validateExpectedBundles(evaluation, model);
+	validateTraceRequirement(evaluation, model);
+	validateSelectionEvidence(evaluation, model);
+	validateExpectedSafeguards(evaluation, model);
+	validateForbiddenFailureModes(evaluation, model);
+	validateLatestPromptConflict(evaluation, model);
+	validateRegistryFallback(evaluation, model);
 
 	return {
 		id: evaluation.id,
-		selectedBundles: selectedIds,
+		selectedBundles: selectedIds(model),
 		status: "passed",
 	};
 }
