@@ -17,7 +17,7 @@
 		<alwaysLoad>
 			<bundleRef id="github-diamond" />
 			<bundleRef id="researchops-developer" />
-			<bundleRef id="gold-standard-gov-product" />
+			<bundleRef id="gov-product-assistant-gold-standard" />
 		</alwaysLoad>
 
 		<conditionalLoad>
@@ -27,10 +27,10 @@
 			<bundleRef id="cloudflare-core-developer">
 				<when>Cloudflare Workers, Pages, Wrangler, routes, bindings or deployment are in scope.</when>
 			</bundleRef>
-			<bundleRef id="airtable-public-api">
+			<bundleRef id="airtable-public-api-developer">
 				<when>Airtable tables, records, linked records, formula filters or attachments are in scope.</when>
 			</bundleRef>
-			<bundleRef id="mural-public-api">
+			<bundleRef id="mural-public-api-developer">
 				<when>Mural OAuth, workspaces, rooms, murals, widgets or sticky notes are in scope.</when>
 			</bundleRef>
 		</conditionalLoad>
