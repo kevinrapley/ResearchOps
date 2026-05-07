@@ -17,9 +17,7 @@
     "qa:cucumber": "cucumber-js -p default",
     "qa:cucumber:ci": "cucumber-js -p default --format progress --format html:reports/cucumber-report.html --format json:reports/cucumber-report.json",
     "qa:cucumber:walkthrough": "BDD_CAPTURE_SCREENSHOTS=true cucumber-js -p default",
-    "qa:visual-walkthrough": "node scripts/visual-walkthrough.mjs",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev"
+    "qa:visual-walkthrough": "node scripts/visual-walkthrough.mjs"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
@@ -33,8 +31,7 @@
     "eslint-plugin-promise": "^7.2.1",
     "globals": "^14.0.0",
     "playwright": "^1.56.1",
-    "prettier": "^3.6.2",
-    "wrangler": "^4.88.0"
+    "prettier": "^3.6.2"
   },
   "engines": {
     "node": ">=20"
