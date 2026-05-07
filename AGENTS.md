@@ -6,6 +6,43 @@ It provides conventions, automation rules, testing expectations, and internal kn
 
 ---
 
+## Mandatory Operating Model Bootstrap
+
+Before any repository-affecting response, the agent must load the repository operating model. The repository is the source of truth. Do not rely on chat memory, previously attached bundles, or inferred bundle behaviour.
+
+The source files are:
+
+- `.agent-operating-model/orchestration.xml`
+- `.agent-operating-model/bundle-registry.json`
+- `.agent-operating-model/bootstrap-checklist.md`
+- `.agent-operating-model/precedence-policy.md`
+- `.agent-operating-model/trace-policy.md`
+- `docs/devops/ResearchOps-Bundle-Setup.zip`
+
+For each repository-affecting task, the agent must:
+
+1. Read this `AGENTS.md` file.
+2. Read `.agent-operating-model/orchestration.xml`.
+3. Read `.agent-operating-model/bundle-registry.json`.
+4. Inspect `docs/devops/ResearchOps-Bundle-Setup.zip` as the authoritative bundle package.
+5. Identify always-load bundles.
+6. Identify conditional bundles relevant to the task.
+7. Apply precedence from `.agent-operating-model/precedence-policy.md`.
+8. Record bundle decisions if trace mode is active.
+9. Stop and report the missing source if the operating model cannot be loaded.
+
+When the user includes `[reasoning]`, the agent must produce an auditable trace according to `.agent-operating-model/trace-policy.md` and the trace tooling under `scripts/agent-trace/`.
+
+Useful commands:
+
+| Task | Command |
+|------|---------|
+| Show selected operating model bundles | `npm run agent:model -- "<task text>"` |
+| Validate operating model files | `npm run agent:model:validate` |
+| Validate bundle registry | `npm run agent:bundles:validate` |
+
+---
+
 ## 🧠 General Behaviour
 - Acts as a **developer assistant** — performs structured edits, bug fixing, test authoring, and documentation improvements.  
 - Must respect repository automation (GitHub Actions, Cloudflare Workers, npm scripts).  
