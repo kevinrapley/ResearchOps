@@ -14,9 +14,12 @@ The source files are:
 
 - `.agent-operating-model/orchestration.xml`
 - `.agent-operating-model/bundle-registry.json`
+- `.agent-operating-model/selection-rules.json`
 - `.agent-operating-model/bootstrap-checklist.md`
 - `.agent-operating-model/precedence-policy.md`
 - `.agent-operating-model/trace-policy.md`
+- `.agent-operating-model/trace-layers.md`
+- `.agent-operating-model/behavioural-evals.json`
 - `docs/devops/ResearchOps-Bundle-Setup.zip`
 
 For each repository-affecting task, the agent must:
@@ -24,12 +27,13 @@ For each repository-affecting task, the agent must:
 1. Read this `AGENTS.md` file.
 2. Read `.agent-operating-model/orchestration.xml`.
 3. Read `.agent-operating-model/bundle-registry.json`.
-4. Inspect `docs/devops/ResearchOps-Bundle-Setup.zip` as the authoritative bundle package.
-5. Identify always-load bundles.
-6. Identify conditional bundles relevant to the task.
-7. Apply precedence from `.agent-operating-model/precedence-policy.md`.
-8. Record bundle decisions if trace mode is active.
-9. Stop and report the missing source if the operating model cannot be loaded.
+4. Read `.agent-operating-model/selection-rules.json`.
+5. Inspect `docs/devops/ResearchOps-Bundle-Setup.zip` as the authoritative bundle package.
+6. Identify always-load bundles.
+7. Identify conditional bundles relevant to the task.
+8. Apply precedence from `.agent-operating-model/precedence-policy.md`.
+9. Record bundle decisions if trace mode is active.
+10. Stop and report the missing source if the operating model cannot be loaded.
 
 When the user includes `[reasoning]`, the agent must produce an auditable trace according to `.agent-operating-model/trace-policy.md` and the trace tooling under `scripts/agent-trace/`.
 
@@ -38,6 +42,7 @@ Useful commands:
 | Task | Command |
 |------|---------|
 | Show selected operating model bundles | `npm run agent:model -- "<task text>"` |
+| Run behavioural operating-model evals | `npm run agent:evals` |
 | Validate operating model files | `npm run agent:model:validate` |
 | Validate bundle registry | `npm run agent:bundles:validate` |
 
