@@ -1,0 +1,63 @@
+{
+	"traceId": "atrace-20260507-trace-layer-evals",
+	"createdAt": "2026-05-07T15:35:00+01:00",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/trace-layer-evals",
+	"trigger": "[reasoning]",
+	"correctiveBranchBehaviour": {
+		"taintedBranch": "feature/trace-layers",
+		"issue": "Branch was created from a main commit that became behind current main during setup. A force-update was attempted and immediately stopped after user correction.",
+		"outcome": "The force update did not take effect. The tainted branch was abandoned. A clean branch was created from current main.",
+		"cleanBranch": "feature/trace-layer-evals",
+		"forceUpdateUsedForWork": false
+	},
+	"traceLayers": [
+		"operational",
+		"behavioural",
+		"mechanistic",
+		"training"
+	],
+	"driftCategories": [
+		"instruction",
+		"context",
+		"priority",
+		"tool",
+		"explanation",
+		"mechanistic"
+	],
+	"created": [
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/selection-rules.json",
+		"scripts/agent-operating-model/run-behavioural-evals.mjs",
+		"docs/agent-audit/reasoning/2026/05/07/trace-layer-evals-trace.md",
+		"docs/agent-audit/reasoning/2026/05/07/trace-layer-evals-trace.json"
+	],
+	"modified": [
+		"AGENTS.md",
+		"package.json",
+		"scripts/validate.sh",
+		"scripts/agent-operating-model/load-operating-model.mjs",
+		"scripts/agent-operating-model/validate-operating-model.mjs",
+		"tests/agent-operating-model-regression.test.js"
+	],
+	"behaviouralEvals": [
+		"behaviour-cloudflare-routing",
+		"behaviour-govuk-page-design",
+		"behaviour-reasoning-trace-required",
+		"behaviour-latest-prompt-vs-repo-rule",
+		"behaviour-structured-rule-application"
+	],
+	"mechanisticBoundary": "No direct activation evidence is produced. Mechanistic trace entries are hypotheses unless model-internal tooling is available.",
+	"validationDesigned": [
+		"npm run agent:evals",
+		"npm run agent:model:validate",
+		"npm run validate",
+		"node --test tests/agent-operating-model-regression.test.js"
+	],
+	"validationNotClaimed": [
+		"full local npm run lint",
+		"full local npm run validate",
+		"full local npm test"
+	]
+}
