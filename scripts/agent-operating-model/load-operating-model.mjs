@@ -8,6 +8,17 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT_DIR = process.cwd();
+const BASE_OPERATING_MODEL_SAFEGUARDS = Object.freeze([
+	"must-load-agents-md",
+	"must-load-orchestration",
+	"must-load-bundle-registry",
+	"must-apply-bundle-precedence",
+]);
+const REASONING_TRACE_OUTPUTS = Object.freeze([
+	"raw-jsonl-trace",
+	"user-readable-trace",
+	"bundle-application-record",
+]);
 
 function readJson(relativePath) {
 	const fullPath = path.join(ROOT_DIR, relativePath);
@@ -86,37 +97,79 @@ function inferTaskFacets(taskText) {
 	].filter((facet) => facet.matched);
 }
 
+function inferInstructionConflicts(taskText) {
+	const text = normalise(taskText);
+
+	if ((text.includes("skip") || text.includes("ignore")) && text.includes("bootstrap")) {
+		return ["latest-prompt-conflicts-repository-bootstrap"];
+	}
+
+	return [];
+}
+
+function inferOperatingModelSafeguards(taskText) {
+	const safeguards = [...BASE_OPERATING_MODEL_SAFEGUARDS];
+	const conflicts = inferInstructionConflicts(taskText);
+
+	if (conflicts.length) {
+		safeguards.push("must-report-conflict");
+	}
+
+	if (taskText.includes("[reasoning]")) {
+		safeguards.push("must-create-trace");
+	}
+
+	return {
+		conflicts,
+		safeguards,
+	};
+}
+
+function traceOutputsFor(taskText) {
+	return taskText.includes("[reasoning]") ? [...REASONING_TRACE_OUTPUTS] : [];
+}
+
 function allFacetsMatch(requiredFacets, facets) {
 	const facetIds = new Set(facets.map((facet) => facet.id));
 
 	return (requiredFacets || []).every((facet) => facetIds.has(facet));
 }
 
-function matchedPhrases(rule, taskText) {
+function matchedRulePhrases(rule, taskText) {
 	return (rule.anyOf || []).filter((phrase) => phraseMatches(taskText, phrase));
 }
 
-function evaluateRule(rule, taskText, facets) {
+function matchedRegistryKeywords(bundle, taskText) {
+	return (bundle.keywords || []).filter((keyword) => phraseMatches(taskText, keyword));
+}
+
+function evaluateRule(rule, bundle, taskText, facets) {
 	if (rule.type === "always") {
 		return {
 			matched: true,
 			matchedFacets: rule.evidenceRequired || [],
 			matchedPhrases: [],
+			matchedRegistryKeywords: [],
 			ruleId: rule.id,
 			selectionBasis: "always",
 			traceLayer: rule.traceLayer || "operational",
 		};
 	}
 
-	const phrases = matchedPhrases(rule, taskText);
-	const matched = allFacetsMatch(rule.allOf, facets) && phrases.length > 0;
+	const facetsMatched = allFacetsMatch(rule.allOf, facets);
+	const phrases = matchedRulePhrases(rule, taskText);
+	const registryKeywords = matchedRegistryKeywords(bundle, taskText);
+	const structuredMatched = facetsMatched && phrases.length > 0;
+	const fallbackMatched = facetsMatched && !structuredMatched && registryKeywords.length > 0;
+	const matched = structuredMatched || fallbackMatched;
 
 	return {
 		matched,
 		matchedFacets: rule.allOf || [],
 		matchedPhrases: phrases,
+		matchedRegistryKeywords: registryKeywords,
 		ruleId: rule.id,
-		selectionBasis: "structured-rule",
+		selectionBasis: structuredMatched ? "structured-rule" : "registry-keyword-fallback",
 		traceLayer: rule.traceLayer || "behavioural",
 	};
 }
@@ -134,7 +187,7 @@ function selectBundles(registry, selectionRules, taskText) {
 			continue;
 		}
 
-		const result = evaluateRule(rule, taskText, facets);
+		const result = evaluateRule(rule, bundle, taskText, facets);
 		const record = {
 			...bundle,
 			selectionEvidence: result,
@@ -165,9 +218,12 @@ export function loadOperatingModel(options = {}) {
 	const registry = readJson(".agent-operating-model/bundle-registry.json");
 	const selectionRules = readJson(".agent-operating-model/selection-rules.json");
 	const selected = selectBundles(registry, selectionRules, taskText);
+	const safeguards = inferOperatingModelSafeguards(taskText);
 
 	return {
 		bundlePackage: registry.bundlePackage,
+		instructionConflicts: safeguards.conflicts,
+		operatingModelSafeguards: safeguards.safeguards,
 		registryVersion: registry.version,
 		selectedBundles: selected.selectedBundles.map((bundle) => ({
 			id: bundle.id,
@@ -184,6 +240,7 @@ export function loadOperatingModel(options = {}) {
 			selectionEvidence: bundle.selectionEvidence,
 		})),
 		taskFacets: selected.facets,
+		traceOutputs: traceOutputsFor(taskText),
 	};
 }
 
