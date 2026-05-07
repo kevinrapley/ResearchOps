@@ -115,6 +115,20 @@ test("agent trace control records auditable evidence", async () => {
 		/must be relative/,
 	);
 
+	const externalDir = await fs.mkdtemp(path.join(os.tmpdir(), "agent-trace-outside-"));
+	const externalFile = path.join(externalDir, "outside.txt");
+
+	await fs.writeFile(externalFile, "outside", "utf8");
+	await fs.symlink(externalDir, path.join(rootDir, "link"), "dir");
+	await assert.rejects(
+		tracedFs.readTextFile("link/outside.txt", "Reject symlink read."),
+		/escapes root/,
+	);
+	await assert.rejects(
+		tracedFs.writeTextFile("link/pwn.txt", "escape", "Reject symlink write."),
+		/escapes root/,
+	);
+
 	const reportDir = path.join(rootDir, "docs", "agent-audit", "reasoning");
 	const markdownPath = path.join(reportDir, `${trace.traceId}.md`);
 	const summaryPath = path.join(reportDir, `${trace.traceId}.json`);
