@@ -34,6 +34,16 @@ const REQUIRED_AGENT_REFERENCES = [
 	"docs/devops/ResearchOps-Bundle-Setup.zip",
 ];
 
+const MANIFEST_BUNDLE_IDS = [
+	"github-diamond",
+	"researchops-developer",
+	"gov-product-assistant-gold-standard",
+	"govuk-design-system",
+	"cloudflare-core-developer",
+	"airtable-public-api-developer",
+	"mural-public-api-developer",
+];
+
 function fail(message) {
 	console.error(`agent:model:validate: ${message}`);
 	process.exit(1);
@@ -65,17 +75,7 @@ for (const reference of REQUIRED_AGENT_REFERENCES) {
 
 const orchestration = readText(".agent-operating-model/orchestration.xml");
 
-for (const expected of [
-	"bundleOrchestration",
-	"github-diamond",
-	"researchops-developer",
-	"gold-standard-gov-product",
-	"govuk-design-system",
-	"cloudflare-core-developer",
-	"airtable-public-api",
-	"mural-public-api",
-	"[reasoning]",
-]) {
+for (const expected of ["bundleOrchestration", "[reasoning]", ...MANIFEST_BUNDLE_IDS]) {
 	if (!orchestration.includes(expected)) {
 		fail(`orchestration.xml must contain ${expected}`);
 	}
@@ -112,10 +112,10 @@ const selectedIds = model.selectedBundles.map((bundle) => bundle.id);
 for (const expectedId of [
 	"github-diamond",
 	"researchops-developer",
-	"gold-standard-gov-product",
+	"gov-product-assistant-gold-standard",
 	"cloudflare-core-developer",
-	"airtable-public-api",
-	"mural-public-api",
+	"airtable-public-api-developer",
+	"mural-public-api-developer",
 ]) {
 	if (!selectedIds.includes(expectedId)) {
 		fail(`loader did not select expected bundle: ${expectedId}`);
