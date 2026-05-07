@@ -160,7 +160,7 @@ done < <(find . \
 	-path './.git' -prune -o \
 	-path './playwright-report' -prune -o \
 	-path './test-results' -prune -o \
-	-name '*.js' -print0)
+	\( -name '*.js' -o -name '*.mjs' \) -print0)
 
 info "checking shell script syntax"
 bash -n ./scripts/performance-audit.sh
