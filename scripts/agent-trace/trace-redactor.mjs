@@ -60,6 +60,10 @@ function redactString(value) {
   };
 }
 
+function isSafeControlValue(value) {
+  return typeof value === "string" && /^\[[a-z0-9-]+\]$/i.test(value);
+}
+
 function redactObject(value) {
   let redacted = false;
   const reasons = [];
@@ -69,10 +73,11 @@ function redactObject(value) {
     const lowerKey = key.toLowerCase();
 
     if (
-      lowerKey.includes("authorization") ||
-      lowerKey.includes("password") ||
-      lowerKey.includes("secret") ||
-      lowerKey.includes("token")
+      !isSafeControlValue(item) &&
+      (lowerKey.includes("authorization") ||
+        lowerKey.includes("password") ||
+        lowerKey.includes("secret") ||
+        lowerKey.includes("token"))
     ) {
       output[key] = "[REDACTED]";
       redacted = true;
