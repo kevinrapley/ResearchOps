@@ -1,0 +1,132 @@
+{
+	"version": "1.0.0",
+	"updated": "2026-05-07",
+	"bundlePackage": "docs/devops/ResearchOps-Bundle-Setup.zip",
+	"defaultLoadOrder": [
+		"github-diamond",
+		"researchops-developer",
+		"gov-product-assistant-gold-standard"
+	],
+	"bundles": [
+		{
+			"id": "github-diamond",
+			"name": "GitHub Diamond",
+			"role": "primary-repository-governance",
+			"precedence": 100,
+			"load": "always",
+			"keywords": [
+				"repository",
+				"github",
+				"branch",
+				"pull request",
+				"pr",
+				"ci",
+				"commit"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "researchops-developer",
+			"name": "ResearchOps Developer",
+			"role": "platform-specific-development-control",
+			"precedence": 90,
+			"load": "always",
+			"keywords": [
+				"researchops",
+				"platform",
+				"worker",
+				"service",
+				"router",
+				"study",
+				"project"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "gov-product-assistant-gold-standard",
+			"name": "Gold Standard Gov Product Assistant",
+			"role": "government-product-governance-and-assurance",
+			"precedence": 85,
+			"load": "always",
+			"keywords": [
+				"government",
+				"governance",
+				"assurance",
+				"service standard",
+				"risk",
+				"harm"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "govuk-design-system",
+			"name": "GOV.UK Design System",
+			"role": "service-ui-accessibility-pattern-control",
+			"precedence": 80,
+			"load": "conditional",
+			"keywords": [
+				"gov.uk",
+				"govuk",
+				"accessibility",
+				"html",
+				"css",
+				"form",
+				"component",
+				"content design",
+				"page"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "cloudflare-core-developer",
+			"name": "Cloudflare Core Developer",
+			"role": "cloudflare-worker-pages-runtime-control",
+			"precedence": 70,
+			"load": "conditional",
+			"keywords": [
+				"cloudflare",
+				"worker",
+				"workers",
+				"pages",
+				"wrangler",
+				"route",
+				"binding",
+				"deployment"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "airtable-public-api-developer",
+			"name": "Airtable Public API",
+			"role": "airtable-integration-control",
+			"precedence": 60,
+			"load": "conditional",
+			"keywords": [
+				"airtable",
+				"record",
+				"records",
+				"linked record",
+				"filterbyformula",
+				"attachment"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "mural-public-api-developer",
+			"name": "Mural Public API",
+			"role": "mural-integration-control",
+			"precedence": 60,
+			"load": "conditional",
+			"keywords": [
+				"mural",
+				"oauth",
+				"workspace",
+				"room",
+				"mural board",
+				"widget",
+				"sticky note"
+			],
+			"mustRecordInTrace": true
+		}
+	]
+}

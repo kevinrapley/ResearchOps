@@ -26,6 +26,18 @@ require_dir() {
 info "checking repository contract"
 require_file "package.json"
 require_file "eslint.config.js"
+require_file "AGENTS.md"
+require_file ".agent-operating-model/README.md"
+require_file ".agent-operating-model/orchestration.xml"
+require_file ".agent-operating-model/bundle-registry.json"
+require_file ".agent-operating-model/bundle-registry.schema.json"
+require_file ".agent-operating-model/bootstrap-checklist.md"
+require_file ".agent-operating-model/precedence-policy.md"
+require_file ".agent-operating-model/trace-policy.md"
+require_file "docs/devops/ResearchOps-Bundle-Setup.zip"
+require_file "scripts/agent-operating-model/load-operating-model.mjs"
+require_file "scripts/agent-operating-model/validate-bundle-registry.mjs"
+require_file "scripts/agent-operating-model/validate-operating-model.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
@@ -81,7 +93,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -99,6 +111,9 @@ if (scripts['audit:performance'] !== 'bash ./scripts/performance-audit.sh') {
 	process.exit(1);
 }
 NODE
+
+info "checking repository operating model"
+node scripts/agent-operating-model/validate-operating-model.mjs
 
 info "checking Wrangler assets directory"
 node --input-type=module <<'NODE'
@@ -145,7 +160,7 @@ done < <(find . \
 	-path './.git' -prune -o \
 	-path './playwright-report' -prune -o \
 	-path './test-results' -prune -o \
-	-name '*.js' -print0)
+	\( -name '*.js' -o -name '*.mjs' \) -print0)
 
 info "checking shell script syntax"
 bash -n ./scripts/performance-audit.sh

@@ -1,0 +1,98 @@
+{
+	"traceId": "atrace-20260507-repo-model-bootstrap",
+	"createdAt": "2026-05-07T13:00:00+01:00",
+	"updatedAt": "2026-05-07T14:05:00+01:00",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/repo-model-trace",
+	"trigger": "[reasoning]",
+	"task": {
+		"summary": "Make the repository the operating-model source of truth and require agents to bootstrap from it before repository-affecting work.",
+		"userOutcome": "Do not make the user re-attach bundles and do not rely on chat memory for the operating model."
+	},
+	"correctiveAction": {
+		"abandonedBranch": "feature/repo-agent-model",
+		"reason": "The branch was one commit ahead and two commits behind main, and the initial run did not create the requested reasoning trace.",
+		"replacementBranch": "feature/repo-model-trace"
+	},
+	"reviewCorrection": {
+		"source": "PR #207 P2 review comment",
+		"issue": "Registry bundle IDs must match IDs declared by ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml.",
+		"replacedIds": {
+			"gold-standard-gov-product": "gov-product-assistant-gold-standard",
+			"airtable-public-api": "airtable-public-api-developer",
+			"mural-public-api": "mural-public-api-developer"
+		},
+		"filesUpdated": [
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/orchestration.xml",
+			"scripts/agent-operating-model/validate-operating-model.mjs",
+			"tests/agent-operating-model-regression.test.js",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.md",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.json"
+		]
+	},
+	"operatingModelSources": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		"docs/devops/ResearchOps-Bundle-Setup.zip"
+	],
+	"bundles": {
+		"alwaysLoad": [
+			"github-diamond",
+			"researchops-developer",
+			"gov-product-assistant-gold-standard"
+		],
+		"conditional": [
+			"govuk-design-system",
+			"cloudflare-core-developer",
+			"airtable-public-api-developer",
+			"mural-public-api-developer"
+		]
+	},
+	"implementation": {
+		"created": [
+			".agent-operating-model/README.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/bundle-registry.schema.json",
+			".agent-operating-model/bootstrap-checklist.md",
+			".agent-operating-model/precedence-policy.md",
+			".agent-operating-model/trace-policy.md",
+			"scripts/agent-operating-model/load-operating-model.mjs",
+			"scripts/agent-operating-model/validate-bundle-registry.mjs",
+			"scripts/agent-operating-model/validate-operating-model.mjs",
+			"tests/agent-operating-model-regression.test.js",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.md",
+			"docs/agent-audit/reasoning/2026/05/07/repository-operating-model-bootstrap-trace.json"
+		],
+		"modified": [
+			"AGENTS.md",
+			".prettierignore",
+			"package.json",
+			"scripts/validate.sh"
+		]
+	},
+	"validation": {
+		"designed": [
+			"npm run agent:model",
+			"npm run agent:bundles:validate",
+			"npm run agent:model:validate",
+			"npm run validate",
+			"node --test tests/agent-operating-model-regression.test.js"
+		],
+		"notClaimed": [
+			"full local npm run lint",
+			"full local npm run validate",
+			"full local npm test"
+		]
+	},
+	"limitations": [
+		"The GitHub connector could confirm the bundle ZIP path and blob metadata, but could not extract the binary ZIP contents through text fetch.",
+		"The manifest ID correction is based on the PR review comment identifying the IDs declared in ResearchOps-Bundle-Setup/multi-bundle-orchestration.xml.",
+		"The bundle selector uses auditable keyword matching and can later be replaced by a manifest extracted from the authoritative ZIP package."
+	]
+}
