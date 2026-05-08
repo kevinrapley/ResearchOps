@@ -28,10 +28,10 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - Repository migration and manual D1 workflow exist.
 - Authentication tests are wired into `npm run validate`.
 - CI repeatedly reported Prettier formatting failures in `tests/auth-route-permissions.test.js`.
-- The latest fix removes fragile inline JSON string fixtures and uses `JSON.stringify` through a helper.
-- A temporary local Prettier 3.6.2 check on the planned file content passed.
+- Root cause is now identified: Prettier reads `.editorconfig`, and this repository sets `indent_style = tab`.
+- Earlier temporary file checks were wrong because they ran outside the repository tree and missed `.editorconfig`.
+- `tests/auth-route-permissions.test.js` has now been replaced with repository Prettier output using tabs.
 - Repository-level CI has not yet confirmed the latest fix.
-- The Prettier tooling investigation and future prevention-rule candidate have been recorded in checkpoint 025 and the consolidated JSON trace.
 
 ## Checkpoint index
 
@@ -46,13 +46,15 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 | 016 | [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md) | Complete |
 | 017 | [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md) | Complete |
 | 018 | [`authentication-role-selection-checkpoint-018-lint-fix-plan.md`](authentication-role-selection-checkpoint-018-lint-fix-plan.md) | Complete |
-| 019 | [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md) | Complete |
+| 019 | [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md) | Superseded by 027 |
 | 020 | [`authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md`](authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md) | Complete |
-| 021 | [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md) | Complete |
-| 022 | [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md) | Complete |
-| 023 | [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md) | Complete |
-| 024 | [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md) | Complete |
-| 025 | [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md) | Complete |
+| 021 | [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md) | Superseded by 027 |
+| 022 | [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md) | Superseded by 026 |
+| 023 | [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md) | Superseded by 026 |
+| 024 | [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md) | Fixture improvement retained; root format fix superseded by 027 |
+| 025 | [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md) | Superseded by 026 and 027 |
+| 026 | [`authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md`](authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md) | Complete |
+| 027 | [`authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md`](authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md) | Committed; pending CI confirmation |
 
 ## Files changed so far on this branch
 
@@ -75,7 +77,91 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- checkpoint markdown files 010 to 025
+- checkpoint markdown files 010 to 027
+
+## Prettier failure record
+
+### Repeated symptom
+
+CI repeatedly failed during:
+
+```bash
+prettier -c .
+```
+
+The reported file was always:
+
+```text
+tests/auth-route-permissions.test.js
+```
+
+### Root cause
+
+Repository `.editorconfig` contains:
+
+```ini
+[*]
+indent_style = tab
+indent_size = 2
+```
+
+Prettier reads `.editorconfig` by default. Therefore JavaScript files in this repository must use tab indentation unless a more specific override is introduced.
+
+Temporary standalone file checks outside the repository tree missed this rule. Those checks incorrectly passed because Prettier fell back to its default space indentation.
+
+### Exact fix committed
+
+`tests/auth-route-permissions.test.js` was replaced with the Prettier 3.6.2 output produced when `.editorconfig` is present.
+
+The concrete fix is tab indentation.
+
+Before:
+
+```js
+import {
+  assertRoutePermission,
+  resolveRoutePermissionDeclaration,
+  routePermissionErrorResponse,
+} from "../infra/cloudflare/src/core/auth/route-permissions.js";
+```
+
+After:
+
+```js
+import {
+	assertRoutePermission,
+	resolveRoutePermissionDeclaration,
+	routePermissionErrorResponse,
+} from "../infra/cloudflare/src/core/auth/route-permissions.js";
+```
+
+The JSON fixture helper improvement from checkpoint 024 is retained:
+
+```js
+function requiredPermissions(...codes) {
+	return JSON.stringify(codes);
+}
+```
+
+### Workflow change decision
+
+The proposed workaround of adding `npx prettier --write .` before lint in CI should not be used as the primary fix.
+
+CI should detect formatting drift. It should not silently mutate the runner workspace without committing the change back to the branch.
+
+Correct practice is to run formatting before committing:
+
+```bash
+npm run format
+```
+
+or targeted:
+
+```bash
+npx prettier --write tests/auth-route-permissions.test.js
+```
+
+Both commands must be run from the repository root so `.editorconfig` is applied.
 
 ## Implementation checkpoints
 
@@ -254,25 +340,32 @@ Purpose:
 - Record branch readiness before opening PR #215.
 - State that live D1 had not been migrated and validation had not been executed in this environment.
 
-### Checkpoint 18: route-permission test lint fix plan
+### Checkpoints 18 to 25: Prettier false starts and tooling findings
+
+These checkpoints record the repeated Prettier investigation and the earlier incorrect hypotheses.
+
+Key correction:
+
+- Inline JSON fixture cleanup was useful but not the formatting root cause.
+- The root cause was repository `.editorconfig` tab indentation.
+- Earlier temporary checks were invalid because they did not include `.editorconfig`.
+
+### Checkpoint 26: Prettier root cause plan
 
 Trace file created:
 
-- [`authentication-role-selection-checkpoint-018-lint-fix-plan.md`](authentication-role-selection-checkpoint-018-lint-fix-plan.md)
-
-Reported failure:
-
-- `npm run lint` failed because Prettier reported `tests/auth-route-permissions.test.js`.
+- [`authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md`](authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md)
 
 Purpose:
 
-- Record the formatting-only fix plan before changing the test file.
+- Record `.editorconfig` tab indentation as the true root cause.
+- Record that CI auto-formatting should not replace explicit committed formatting fixes.
 
-### Checkpoint 19: route-permission test lint fix complete
+### Checkpoint 27: Prettier root cause fix complete
 
 Trace file created:
 
-- [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md)
+- [`authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md`](authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md)
 
 File changed:
 
@@ -280,113 +373,9 @@ File changed:
 
 Purpose:
 
-- Reformat a long `assertRoutePermission` call to satisfy Prettier.
-- CI later showed another Prettier formatting change remained.
-
-### Checkpoint 20: route-permission test lint fix rerun plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md`](authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md)
-
-Reported failure:
-
-- `./node_modules/.bin/prettier -c .` again reported `tests/auth-route-permissions.test.js`.
-
-Purpose:
-
-- Record the repeated Prettier failure.
-- Identify the remaining long `assertRoutePermission` call in `assertMissingRouteFailsClosed`.
-
-### Checkpoint 21: route-permission test lint fix rerun complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md)
-
-File changed:
-
-- `tests/auth-route-permissions.test.js`
-
-Purpose:
-
-- Rewrite `tests/auth-route-permissions.test.js` to match local Prettier output.
-- Record that a temporary file-level Prettier check reported `All matched files use Prettier code style!`.
-- CI later still reported the same file.
-
-### Checkpoint 22: escaped JSON lint fix plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md)
-
-Purpose:
-
-- Record the repeated Prettier failure and identify escaped inline JSON string fixtures as the remaining fragile pattern.
-
-### Checkpoint 23: JSON fixture lint fix plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md)
-
-Purpose:
-
-- Plan the resilient correction of replacing inline JSON string fixtures with `JSON.stringify` through a helper.
-
-### Checkpoint 24: JSON fixture lint fix complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md)
-
-File changed:
-
-- `tests/auth-route-permissions.test.js`
-
-Purpose:
-
-- Add `requiredPermissions(...codes)` helper.
-- Replace inline JSON string fixtures with `requiredPermissions("...")` calls.
-- Preserve the same JSON string value consumed by the route-permission parser.
-
-### Checkpoint 25: Prettier tooling findings
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md)
-
-Purpose:
-
-- Record the repository lint scripts and Prettier version.
-- Record that repository search did not find a dedicated Prettier config.
-- Record that cloning the branch into the execution container failed because `github.com` could not be resolved.
-- Record that true repository-level `npm run format` or `prettier --write .` could not be executed from this assistant environment.
-- Record the latest helper-based fix pattern and a candidate repository rule once CI confirms the fix.
-
-Code pattern recorded:
-
-```js
-function requiredPermissions(...codes) {
-  return JSON.stringify(codes);
-}
-```
-
-Before:
-
-```js
-required_permissions_json: '["audit.view"]',
-```
-
-After:
-
-```js
-required_permissions_json: requiredPermissions("audit.view"),
-```
-
-Prevention-rule candidate after CI confirmation:
-
-> Do not hand-write escaped JSON fixtures in JavaScript tests where the target code expects a JSON string. Use `JSON.stringify` through a named helper, then run `npm run format` or `npx prettier --write <file>` before committing.
+- Apply repository Prettier output with tab indentation.
+- Preserve route-permission test behaviour.
+- Record future prevention guidance.
 
 ## Real D1 implementation requirement
 
@@ -404,9 +393,8 @@ Required next implementation controls:
 
 - Initial CI lint failed on Prettier formatting in `tests/auth-route-permissions.test.js`.
 - CI repeated the Prettier formatting failure for the same file.
-- The latest fix replaces inline JSON fixtures with a helper to remove formatting ambiguity.
-- A temporary Prettier 3.6.2 check on the planned file content passed.
-- True repository-level `prettier --write .` has not been executed from this assistant environment because a branch checkout was not available.
+- Root cause identified as `.editorconfig` tab indentation.
+- `tests/auth-route-permissions.test.js` has been rewritten with repository Prettier tab output.
 - CI has not yet confirmed that the repository-level check passes.
 - No live D1 migration has been run.
 
@@ -414,18 +402,17 @@ Required next implementation controls:
 
 `AGENTS.md` says commits should be incremental and atomic with a diff of no more than 300 lines.
 
-Current issue:
+Current issues:
 
 - the Access identity resolver commit had more than 300 added lines
-- this is recorded as a process deviation
-- repeated formatting fixes were attempted without a true repository-level `prettier --write` against the branch checkout
+- repeated formatting fixes were attempted without repository-root Prettier context
 
 Correction for future steps:
 
 - split future changes into smaller files and smaller commits
 - update trace before or alongside code changes
 - update both markdown and JSON trace records where a checkpoint changes the implementation state
-- for formatting failures, prefer `npm run format` or `npx prettier --write <file>` in a real repository checkout before committing
+- for formatting failures, run Prettier from the repository root so `.editorconfig` applies
 - do not claim repository-level formatting success until CI or a real repository checkout confirms it
 
 ## Pending next steps
@@ -433,8 +420,7 @@ Correction for future steps:
 Candidate next steps:
 
 - wait for PR CI to rerun and inspect any new failure
-- if Prettier still fails, obtain the exact Prettier `--write` diff from CI or from a real repository checkout and commit that output
-- after CI confirms the fix, create permanent repository guidance from checkpoint 025
+- after CI confirms the fix, create permanent repository guidance from checkpoints 026 and 027
 - apply the D1 migration through the manual workflow after review or explicit release decision
 - wire route-permission checks into the next protected product endpoint in a narrow slice
 
