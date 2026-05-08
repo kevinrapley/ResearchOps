@@ -180,6 +180,26 @@ Test coverage currently asserted:
 - Migration contains required auth control-plane tables.
 - Migration contains `scope_type`, `scope_id`, `safeguarding.audit.view`, `audit.export` and `participant.pii.export`.
 
+## Implementation checkpoint 5: route-permission middleware plan
+
+Next planned file:
+
+- `infra/cloudflare/src/core/auth/route-permissions.js`
+
+Purpose:
+
+- Add a small real authorisation helper that reads declared route permissions from D1.
+- Fail closed when a protected route has no declaration.
+- Deny access where the authenticated context lacks a required permission.
+- Avoid exposing missing permission codes to ordinary users.
+
+Boundary for this step:
+
+- Do not wire the helper into every existing product route yet.
+- Do not create mock users or mock roles.
+- Do not change Airtable behaviour yet.
+- Keep the slice small and testable.
+
 ## Trace governance correction
 
 The user raised a valid governance concern that trace records were not being continuously updated as implementation proceeded.
@@ -189,6 +209,7 @@ Correction now applied:
 - this trace checkpoint exists on the active implementation branch
 - the test file was created only after the first trace checkpoint was recorded
 - this trace was updated immediately after the test file was created
+- the route-permission middleware plan has been recorded before creating that file
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
 
@@ -219,8 +240,7 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- run or reason-check the new test route file if tool access allows
-- add route-permission middleware as a small separate module
+- create `infra/cloudflare/src/core/auth/route-permissions.js`
 - add route-permission tests for fail-closed behaviour
 - document environment variables required for Cloudflare Access JWT validation
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
