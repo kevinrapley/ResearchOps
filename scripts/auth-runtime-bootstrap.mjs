@@ -63,7 +63,6 @@ const statements = [
 ];
 
 if (assignSafeguardingLead) {
-	statements.append?.();
 	statements.push(
 		`INSERT INTO auth_role_assignments (id, user_id, role_id, scope_type, scope_id, assignment_status, requested_reason, approved_at) SELECT ${sql(safeguardingAssignmentId)}, u.id, 'role_safeguarding_lead', 'team', ${sql(teamId)}, 'active', 'Explicit auth runtime bootstrap safeguarding lead assignment', strftime('%Y-%m-%dT%H:%M:%fZ', 'now') FROM auth_users u WHERE lower(u.email) = lower(${sql(email)}) ON CONFLICT(user_id, role_id, scope_type, scope_id) DO UPDATE SET assignment_status = 'active', requested_reason = 'Explicit auth runtime bootstrap safeguarding lead assignment', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now');`,
 	);
