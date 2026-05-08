@@ -111,6 +111,7 @@ Skip rationale:
 | 014 | [`authentication-role-selection-checkpoint-014-validation-wiring-plan.md`](authentication-role-selection-checkpoint-014-validation-wiring-plan.md) | Complete |
 | 015 | [`authentication-role-selection-checkpoint-015-validation-wiring-complete.md`](authentication-role-selection-checkpoint-015-validation-wiring-complete.md) | Complete |
 | 016 | [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md) | Complete |
+| 017 | [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md) | Complete |
 
 ## Files changed so far on this branch
 
@@ -140,6 +141,7 @@ Agent trace files:
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md`
 
 ## Implementation checkpoints
 
@@ -418,6 +420,24 @@ Purpose:
 - Link checkpoint markdown files from the main markdown trace.
 - Record checkpoint events in one JSON trace rather than separate checkpoint JSON files.
 
+### Checkpoint 17: PR readiness plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md)
+
+Branch comparison:
+
+- status: ahead
+- ahead by: 29 commits
+- behind by: 0 commits
+- base commit: `8305adeed3b7e4047f132bc8c50347ce47e6205f`
+
+Purpose:
+
+- Record branch readiness before opening a pull request.
+- Ensure the PR states that live D1 has not been migrated and validation has not been executed in this environment.
+
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
@@ -472,7 +492,6 @@ The test files and D1 workflow have been created but not executed in this enviro
 
 Candidate next steps:
 
-- run or trigger validation through PR CI
 - open a PR for review and CI execution
 - apply the D1 migration through the manual workflow after review or explicit release decision
 - wire route-permission checks into the next protected product endpoint in a narrow slice
