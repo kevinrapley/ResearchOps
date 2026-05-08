@@ -1,0 +1,278 @@
+{
+  "trace_id": "atrace-20260508-authentication-role-selection-real-implementation",
+  "trace_layer": "operational",
+  "trigger_token_detected": "[reasoning]",
+  "date": "2026-05-08",
+  "repository": "kevinrapley/ResearchOps",
+  "active_branch": "feature/auth-foundation-real-d1-current-main",
+  "base_branch": "main",
+  "base_commit_at_branch_creation": "8305adeed3b7e4047f132bc8c50347ce47e6205f",
+  "companion_markdown_trace": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md",
+  "status": {
+    "repository_migration_created": true,
+    "manual_d1_apply_workflow_created": true,
+    "live_d1_migration_applied": false,
+    "validation_executed_in_this_environment": false,
+    "pull_request_opened": false
+  },
+  "user_direction": [
+    {
+      "sequence": 1,
+      "summary": "Build the authentication role-selection capability systematically from the captured documentation."
+    },
+    {
+      "sequence": 2,
+      "summary": "Do not implement this as a mock identity build. Build the real authentication foundation."
+    },
+    {
+      "sequence": 3,
+      "summary": "Continuously maintain reasoning trace files during the build instead of reconstructing them at the end."
+    },
+    {
+      "sequence": 4,
+      "summary": "The build must include real D1 table creation and seeding where necessary, with evidence before claiming live D1 changes."
+    },
+    {
+      "sequence": 5,
+      "summary": "Cloudflare APIs and Cloudflare Developer Platform bundles are in scope, but live Cloudflare execution must be evidenced before being claimed."
+    },
+    {
+      "sequence": 6,
+      "summary": "Maintain a companion JSON trace and link checkpoint markdown files from the main markdown trace. Keep checkpoint JSON consolidated in this single JSON file."
+    }
+  ],
+  "selected_bundles": [
+    "github-diamond",
+    "researchops-developer",
+    "gov-product-assistant-gold-standard",
+    "govuk-design-system",
+    "cloudflare-core-developer",
+    "cloudflare-developer-platform-bundle",
+    "cloudflare-agents-workbench",
+    "airtable-public-api-developer"
+  ],
+  "skipped_bundles": [
+    {
+      "bundle": "mural-public-api-developer",
+      "reason": "No Mural OAuth, workspace, room, board, widget or sticky-note implementation is in scope for this authentication slice."
+    }
+  ],
+  "changed_files": {
+    "implementation": [
+      ".github/workflows/apply-d1-auth-foundation.yml",
+      "infra/cloudflare/migrations/0001_auth_foundation.sql",
+      "infra/cloudflare/src/core/auth/access.js",
+      "infra/cloudflare/src/core/auth/route-permissions.js",
+      "infra/cloudflare/src/worker.js",
+      "scripts/validate.sh",
+      "tests/auth-foundation-route-state.test.js",
+      "tests/auth-route-permissions.test.js"
+    ],
+    "product_documentation": [
+      "docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md"
+    ],
+    "trace_files": [
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md"
+    ]
+  },
+  "checkpoints": [
+    {
+      "id": "001",
+      "title": "D1 auth foundation migration",
+      "kind": "implementation",
+      "status": "complete_in_repository_not_applied_to_live_d1",
+      "files_changed": ["infra/cloudflare/migrations/0001_auth_foundation.sql"],
+      "summary": "Created the real D1 control-plane migration for users, identities, teams, memberships, permissions, roles, role-permission mappings, role assignments, permission exceptions, auth events, audit events and route permissions.",
+      "decision_coverage": [
+        "D1 is the canonical control plane.",
+        "scope_type and scope_id exist from the first schema.",
+        "Team is the first enforceable scope while project and study scopes are structurally supported.",
+        "Sensitive and reserved permissions are represented explicitly.",
+        "General audit and safeguarding audit are separate permissions."
+      ],
+      "live_environment_status": "not_applied"
+    },
+    {
+      "id": "002",
+      "title": "Cloudflare Access identity resolver",
+      "kind": "implementation",
+      "status": "complete_in_repository",
+      "files_changed": ["infra/cloudflare/src/core/auth/access.js"],
+      "summary": "Added a real Cloudflare Access identity resolver that reads Cf-Access-Jwt-Assertion, validates Access JWT structure, signature, expiry and audience, maps the provider identity to a ResearchOps D1 user, and returns active team, roles and permissions.",
+      "non_goals": [
+        "No mock identity behaviour.",
+        "No password authentication.",
+        "No role-management UI.",
+        "No Airtable schema change."
+      ]
+    },
+    {
+      "id": "003",
+      "title": "Worker route wiring",
+      "kind": "implementation",
+      "status": "complete_in_repository",
+      "files_changed": ["infra/cloudflare/src/worker.js"],
+      "summary": "Wired GET /api/me and GET /api/me/permissions through the Cloudflare Access identity resolver and allowed X-ResearchOps-Team-Id as a request header."
+    },
+    {
+      "id": "004",
+      "title": "Authentication foundation route-state tests",
+      "kind": "test",
+      "status": "created_not_executed_here",
+      "files_changed": ["tests/auth-foundation-route-state.test.js"],
+      "summary": "Added tests for identity route fail-closed behaviour, Worker route wiring, absence of mock identity mode, route-permission wiring and D1 migration structure."
+    },
+    {
+      "id": "005",
+      "title": "Route-permission helper plan",
+      "kind": "trace_plan",
+      "status": "captured_in_main_trace",
+      "summary": "Recorded the plan to add a D1-backed route-permission helper before creating the helper."
+    },
+    {
+      "id": "006",
+      "title": "Route-permission helper created",
+      "kind": "implementation",
+      "status": "complete_in_repository",
+      "files_changed": ["infra/cloudflare/src/core/auth/route-permissions.js"],
+      "summary": "Added a helper that reads route declarations from auth_route_permissions, fails closed where no declaration exists, checks required permissions and avoids exposing missing permission codes unless diagnostics are explicitly requested."
+    },
+    {
+      "id": "007",
+      "title": "Route-permission helper tests",
+      "kind": "test",
+      "status": "created_not_executed_here",
+      "files_changed": ["tests/auth-route-permissions.test.js"],
+      "summary": "Added tests for declared route resolution, missing-route fail-closed behaviour, ordinary denied response redaction, diagnostic missing permission codes and matching-permission allow behaviour."
+    },
+    {
+      "id": "008",
+      "title": "Controlled D1 migration path plan",
+      "kind": "trace_plan",
+      "status": "captured_in_main_trace",
+      "summary": "Recorded the plan to create a manual workflow_dispatch path for applying the D1 auth foundation migration to the remote researchops-d1 database."
+    },
+    {
+      "id": "009",
+      "title": "Controlled D1 migration workflow created",
+      "kind": "implementation",
+      "status": "complete_in_repository_not_run",
+      "files_changed": [".github/workflows/apply-d1-auth-foundation.yml"],
+      "summary": "Added a manual GitHub Actions workflow that requires explicit confirmation inputs and uses Wrangler d1 execute --remote to apply the auth foundation migration, with optional post-apply table and seed checks.",
+      "live_environment_status": "workflow_created_not_run"
+    },
+    {
+      "id": "010",
+      "title": "Route-permission wiring plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md",
+      "summary": "Recorded the plan to wire assertRoutePermission into GET /api/me and GET /api/me/permissions before code changes were made.",
+      "planned_files": ["infra/cloudflare/src/core/auth/access.js", "tests/auth-foundation-route-state.test.js"]
+    },
+    {
+      "id": "011",
+      "title": "Route-permission wiring complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md",
+      "files_changed": ["infra/cloudflare/src/core/auth/access.js", "tests/auth-foundation-route-state.test.js"],
+      "summary": "Recorded that identity routes now call assertRoutePermission(request, env, context) after Cloudflare Access identity resolution and that tests assert this wiring."
+    },
+    {
+      "id": "012",
+      "title": "Cloudflare operations documentation plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md",
+      "summary": "Recorded the plan to create operational documentation for Cloudflare Access, D1 binding, workflow inputs, live evidence and rollout controls before writing the documentation."
+    },
+    {
+      "id": "013",
+      "title": "Cloudflare operations documentation complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md",
+      "files_changed": ["docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md"],
+      "summary": "Recorded creation of the Cloudflare operations note covering Access runtime values, RESEARCHOPS_D1, researchops-d1, GitHub secrets, D1 workflow inputs, expected tables, seed counts, verification queries, rollout order and evidence requirements."
+    },
+    {
+      "id": "014",
+      "title": "Validation wiring plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
+      "summary": "Recorded the plan to wire authentication tests into scripts/validate.sh before changing the validation contract."
+    },
+    {
+      "id": "015",
+      "title": "Validation wiring complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
+      "files_changed": ["scripts/validate.sh"],
+      "summary": "Recorded that scripts/validate.sh now requires and runs tests/auth-foundation-route-state.test.js and tests/auth-route-permissions.test.js."
+    },
+    {
+      "id": "016",
+      "title": "Trace index and JSON plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
+      "files_changed": [
+        "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json",
+        "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md"
+      ],
+      "summary": "Recorded the user correction that the companion JSON trace must be maintained and checkpoint markdown files must be linked from the main trace. This JSON file consolidates checkpoint traces rather than creating individual checkpoint JSON files."
+    }
+  ],
+  "real_d1_requirement": {
+    "migration_file": "infra/cloudflare/migrations/0001_auth_foundation.sql",
+    "manual_workflow": ".github/workflows/apply-d1-auth-foundation.yml",
+    "database_name": "researchops-d1",
+    "worker_binding": "RESEARCHOPS_D1",
+    "status": "repository_path_created_live_execution_not_claimed",
+    "evidence_required_before_claiming_live_tables": [
+      "successful GitHub Actions run for Apply D1 Authentication Foundation",
+      "successful direct Wrangler execution against --remote",
+      "successful Cloudflare API evidence showing auth tables and seed records exist"
+    ]
+  },
+  "validation_status": {
+    "new_tests_created": [
+      "tests/auth-foundation-route-state.test.js",
+      "tests/auth-route-permissions.test.js"
+    ],
+    "new_tests_wired_into_validate": true,
+    "validate_script_executed_here": false,
+    "test_success_claimed": false
+  },
+  "process_deviations": [
+    {
+      "summary": "The Access identity resolver commit exceeded the preferred 300-line atomic diff size from AGENTS.md.",
+      "correction": "Future changes should be split into smaller files and commits, with trace checkpoints before or alongside each change."
+    }
+  ],
+  "residual_risks": [
+    "Cloudflare Access JWT validation depends on environment configuration for certificates and audience.",
+    "The D1 migration has not yet been run in the live environment.",
+    "The route wiring has not yet been validated by executed tests.",
+    "Route-permission helper is only wired into identity routes so far.",
+    "No pull request has been opened for this branch yet."
+  ],
+  "next_candidates": [
+    "Update the main markdown trace with a linked checkpoint index.",
+    "Run or trigger validation through PR CI.",
+    "Open a PR for review and CI execution.",
+    "Apply the D1 migration through the manual workflow after review or explicit release decision.",
+    "Wire route-permission checks into the next protected product endpoint in a narrow slice."
+  ]
+}
