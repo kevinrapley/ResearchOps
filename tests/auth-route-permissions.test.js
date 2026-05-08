@@ -108,10 +108,14 @@ async function assertDiagnosticsCanIncludeMissingPermissionCodes() {
   };
 
   try {
-    await assertRoutePermission(requestFor("/api/auth/role-assignments", "POST"), env, {
-      authenticated: true,
-      permissions: [],
-    });
+    await assertRoutePermission(
+      requestFor("/api/auth/role-assignments", "POST"),
+      env,
+      {
+        authenticated: true,
+        permissions: [],
+      },
+    );
     assert.fail("Expected role assignment permission to be denied");
   } catch (error) {
     const response = routePermissionErrorResponse(error, {
