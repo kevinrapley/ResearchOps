@@ -88,6 +88,7 @@ Current implementation files created or modified:
 
 - `infra/cloudflare/migrations/0001_auth_foundation.sql`
 - `infra/cloudflare/src/core/auth/access.js`
+- `infra/cloudflare/src/core/auth/route-permissions.js`
 - `infra/cloudflare/src/worker.js`
 - `tests/auth-foundation-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
@@ -182,7 +183,7 @@ Test coverage currently asserted:
 
 ## Implementation checkpoint 5: route-permission middleware plan
 
-Next planned file:
+Planned file before creation:
 
 - `infra/cloudflare/src/core/auth/route-permissions.js`
 
@@ -200,6 +201,27 @@ Boundary for this step:
 - Do not change Airtable behaviour yet.
 - Keep the slice small and testable.
 
+## Implementation checkpoint 6: route-permission helper created
+
+File created:
+
+- `infra/cloudflare/src/core/auth/route-permissions.js`
+
+Purpose:
+
+- Read route declarations from `auth_route_permissions` in D1.
+- Fail closed where no route permission declaration exists.
+- Check an authenticated context for required permissions.
+- Return ordinary permission-denied responses without exposing missing permission codes.
+- Allow diagnostics to include details only when explicitly requested by the caller.
+
+Current boundary:
+
+- The helper is not yet wired into existing product routes.
+- It does not create users or roles.
+- It does not change Airtable behaviour.
+- It still needs unit tests.
+
 ## Trace governance correction
 
 The user raised a valid governance concern that trace records were not being continuously updated as implementation proceeded.
@@ -209,7 +231,8 @@ Correction now applied:
 - this trace checkpoint exists on the active implementation branch
 - the test file was created only after the first trace checkpoint was recorded
 - this trace was updated immediately after the test file was created
-- the route-permission middleware plan has been recorded before creating that file
+- the route-permission middleware plan was recorded before creating that file
+- the trace was updated after route-permission helper creation
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
 
@@ -240,7 +263,6 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- create `infra/cloudflare/src/core/auth/route-permissions.js`
 - add route-permission tests for fail-closed behaviour
 - document environment variables required for Cloudflare Access JWT validation
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
