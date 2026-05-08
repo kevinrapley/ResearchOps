@@ -27,42 +27,10 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - Live D1 migration has not been applied.
 - Repository migration and manual D1 workflow exist.
 - Authentication tests are wired into `npm run validate`.
-- CI reported a Prettier formatting failure in `tests/auth-route-permissions.test.js`.
-- A formatting-only fix has been committed.
-- CI has not yet confirmed that the formatting fix passes.
-
-## User task summary
-
-The user asked to begin systematically building authentication role selection into the application using all captured documentation.
-
-The user corrected the course by stating that this must not be a mock implementation. The work was restarted from current `main` on `feature/auth-foundation-real-d1-current-main`.
-
-The user required continuous `[reasoning]` trace updates during the build and clarified that the work must systematically build the real authentication role-selection capability, including D1 table creation and seeding where necessary.
-
-The user clarified that Cloudflare APIs are in scope and provided Cloudflare Developer Platform and Cloudflare Agents Workbench bundles.
-
-The user then clarified that this main markdown trace must link to checkpoint markdown files and that the companion JSON trace must be maintained as one consolidated JSON record.
-
-## Operating-model sources loaded
-
-Repository operating-model sources loaded during this workstream:
-
-- `AGENTS.md`
-- `.agent-operating-model/orchestration.xml`
-- `.agent-operating-model/bundle-registry.json`
-- `.agent-operating-model/task-signal-catalog.json`
-- `.agent-operating-model/selection-rules.json`
-- `.agent-operating-model/bootstrap-checklist.md`
-- `.agent-operating-model/precedence-policy.md`
-- `.agent-operating-model/trace-policy.md`
-- `.agent-operating-model/trace-layers.md`
-- `.agent-operating-model/behavioural-evals.json`
-- `docs/devops/ResearchOps-Bundle-Setup.zip`
-
-Uploaded Cloudflare bundle files inspected:
-
-- `/mnt/data/cloudflare-developer-platform-bundle.zip`
-- `/mnt/data/cloudflare-agents-workbench.zip`
+- CI reported repeated Prettier formatting failures in `tests/auth-route-permissions.test.js`.
+- A second formatting-only fix has been committed.
+- A temporary local Prettier check on the file content reported: `All matched files use Prettier code style!`
+- Repository-level CI has not yet confirmed the fix.
 
 ## Checkpoint index
 
@@ -78,6 +46,8 @@ Uploaded Cloudflare bundle files inspected:
 | 017 | [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md) | Complete |
 | 018 | [`authentication-role-selection-checkpoint-018-lint-fix-plan.md`](authentication-role-selection-checkpoint-018-lint-fix-plan.md) | Complete |
 | 019 | [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md) | Complete |
+| 020 | [`authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md`](authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md) | Complete |
+| 021 | [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md) | Complete |
 
 ## Files changed so far on this branch
 
@@ -100,7 +70,7 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- checkpoint markdown files 010 to 019
+- checkpoint markdown files 010 to 021
 
 ## Implementation checkpoints
 
@@ -306,6 +276,37 @@ File changed:
 Purpose:
 
 - Reformat a long `assertRoutePermission` call to satisfy Prettier.
+- CI later showed another Prettier formatting change remained.
+
+### Checkpoint 20: route-permission test lint fix rerun plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md`](authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md)
+
+Reported failure:
+
+- `./node_modules/.bin/prettier -c .` again reported `tests/auth-route-permissions.test.js`.
+
+Purpose:
+
+- Record the repeated Prettier failure.
+- Identify the remaining long `assertRoutePermission` call in `assertMissingRouteFailsClosed`.
+
+### Checkpoint 21: route-permission test lint fix rerun complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md)
+
+File changed:
+
+- `tests/auth-route-permissions.test.js`
+
+Purpose:
+
+- Rewrite `tests/auth-route-permissions.test.js` to match local Prettier output.
+- Record that a temporary file-level Prettier check reported `All matched files use Prettier code style!`.
 - No test behaviour was changed.
 
 ## Real D1 implementation requirement
@@ -323,8 +324,10 @@ Required next implementation controls:
 ## Validation status
 
 - Initial CI lint failed on Prettier formatting in `tests/auth-route-permissions.test.js`.
-- A formatting-only fix has been committed.
-- CI has not yet confirmed that the fix passes.
+- CI repeated the Prettier formatting failure for the same file.
+- A second formatting-only fix has been committed.
+- A temporary file-level Prettier check on the file content passed.
+- CI has not yet confirmed that the repository-level check passes.
 - No live D1 migration has been run.
 
 ## Process issue recorded
@@ -357,4 +360,4 @@ Candidate next steps:
 - Cloudflare Access JWT validation depends on environment configuration for Access certificates and audience.
 - The D1 migration has not yet been run in the live environment.
 - Route-permission helper is only wired into identity routes so far.
-- The latest lint fix still needs CI confirmation.
+- The latest lint fix still needs repository-level CI confirmation.
