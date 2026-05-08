@@ -23,6 +23,8 @@ The user then raised a trace governance concern: trace records must be continuou
 
 The user then clarified that the work must not become trace-only or document-only. It must systematically build the real authentication role-selection capability, including D1 table creation and seeding where necessary.
 
+The user then clarified that Cloudflare APIs are in scope for this build and provided Cloudflare Developer Platform and Cloudflare Agents Workbench bundles.
+
 ## Operating-model sources loaded before repository-affecting work
 
 The repository operating model had already been loaded during this workstream from the following files:
@@ -39,6 +41,31 @@ The repository operating model had already been loaded during this workstream fr
 - `.agent-operating-model/behavioural-evals.json`
 - `docs/devops/ResearchOps-Bundle-Setup.zip`
 
+## Additional Cloudflare bundle sources loaded
+
+Uploaded bundle files inspected during this implementation:
+
+- `/mnt/data/cloudflare-developer-platform-bundle.zip`
+- `/mnt/data/cloudflare-agents-workbench.zip`
+
+Relevant bundle materials inspected:
+
+- `cloudflare-developer-platform-bundle/prompt.body.xml`
+- `cloudflare-developer-platform-bundle/domains/state-and-data-domain.xml`
+- `cloudflare-developer-platform-bundle/references/cloudflare-product-surface-reference.xml`
+- `cloudflare-developer-platform-bundle/workflows/implementation-phasing-workflow.xml`
+- `cloudflare-agents-workbench/prompt.body.xml`
+- `cloudflare-agents-workbench/policies/non-invented-api-policy.xml`
+- `cloudflare-agents-workbench/policies/freshness-and-citation-policy.xml`
+
+Cloudflare bundle implications for this slice:
+
+- D1 is the selected relational control-plane store for native Cloudflare-hosted application data.
+- Workers remain the server-side policy enforcement point.
+- The implementation should use the smallest viable Cloudflare product set before adding extra platform services.
+- Cloudflare Agents are not part of this slice because access-control decisions must stay deterministic and auditable.
+- Cloudflare API or Wrangler execution may be used to apply real D1 changes, but live D1 changes must not be claimed without execution evidence.
+
 ## Selected bundles
 
 Selected bundles:
@@ -48,6 +75,8 @@ Selected bundles:
 - `gov-product-assistant-gold-standard`
 - `govuk-design-system`
 - `cloudflare-core-developer`
+- `cloudflare-developer-platform-bundle`
+- `cloudflare-agents-workbench`
 - `airtable-public-api-developer`
 
 Selection rationale:
@@ -57,6 +86,8 @@ Selection rationale:
 - `gov-product-assistant-gold-standard` applies because the task affects governance, personal data, safeguarding and assurance.
 - `govuk-design-system` applies because account, role and permission UI are in scope for the wider implementation.
 - `cloudflare-core-developer` applies because Worker, D1 and Cloudflare Access are in scope.
+- `cloudflare-developer-platform-bundle` applies because this slice uses Workers and D1 as Cloudflare platform services.
+- `cloudflare-agents-workbench` applies as a boundary bundle: it confirms agents are not the decision-maker for role assignment or access control in this slice.
 - `airtable-public-api-developer` applies because the implementation must protect Airtable behind Worker authorisation.
 
 ## Skipped bundles
@@ -75,7 +106,8 @@ Skip rationale:
 - ResearchOps Developer governs the platform architecture and service boundary.
 - Gold Standard Gov Product Assistant governs personal data, safeguarding, governance and service assurance risk.
 - GOV.UK Design System governs UI and accessibility when UI changes begin.
-- Cloudflare Core Developer governs Worker, D1, Access JWT and binding behaviour.
+- Cloudflare Core Developer and Cloudflare Developer Platform govern Worker, D1, Access JWT and binding behaviour.
+- Cloudflare Agents Workbench governs agent boundaries and prevents invented agent/API claims.
 - Airtable Public API governs the boundary that Airtable remains a data layer and not an authorisation engine.
 
 ## Branch hygiene
@@ -88,6 +120,7 @@ Skip rationale:
 
 Current implementation files created or modified:
 
+- `.github/workflows/apply-d1-auth-foundation.yml`
 - `infra/cloudflare/migrations/0001_auth_foundation.sql`
 - `infra/cloudflare/src/core/auth/access.js`
 - `infra/cloudflare/src/core/auth/route-permissions.js`
@@ -248,7 +281,7 @@ Test coverage currently asserted:
 
 ## Implementation checkpoint 8: controlled D1 migration path plan
 
-Next planned file:
+Planned file before creation:
 
 - `.github/workflows/apply-d1-auth-foundation.yml`
 
@@ -266,23 +299,41 @@ Boundary for this step:
 - It must not claim the migration has run.
 - It must record that real D1 table creation is only confirmed after a successful workflow run.
 
+## Implementation checkpoint 9: controlled D1 migration workflow created
+
+File created:
+
+- `.github/workflows/apply-d1-auth-foundation.yml`
+
+Purpose:
+
+- Provide a manual GitHub Actions path for applying `infra/cloudflare/migrations/0001_auth_foundation.sql` to the remote `researchops-d1` D1 database.
+- Require explicit confirmation inputs: `researchops-d1` and `APPLY_AUTH_FOUNDATION`.
+- Use Wrangler `d1 execute` with `--remote` against `infra/cloudflare/wrangler.toml`.
+- Run optional post-apply checks for `auth_%` tables and seed record counts.
+
+Current boundary:
+
+- The workflow has been added but not run.
+- The live D1 database has not been changed by this assistant turn.
+- Real table creation and seeding are only confirmed after a successful workflow run or direct Cloudflare API evidence.
+
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
 
-The build must include a safe path to apply the migration to the real `researchops-d1` database that is bound as `RESEARCHOPS_D1` in `infra/cloudflare/wrangler.toml`.
+The build now includes a safe manual path to apply the migration to the real `researchops-d1` database that is bound as `RESEARCHOPS_D1` in `infra/cloudflare/wrangler.toml`.
 
 Required next implementation controls:
 
-- Add or confirm a controlled Wrangler command path for applying `infra/cloudflare/migrations/0001_auth_foundation.sql` to the remote D1 database.
-- Prefer a manual `workflow_dispatch` or explicitly documented maintainer command rather than an automatic push-time migration.
-- Ensure the seed records in the migration create permissions, roles, role-permission mappings and route permission declarations.
-- Do not claim live D1 tables have been created until Wrangler migration output or other direct Cloudflare evidence confirms it.
+- Run the manual workflow or use an equivalent direct Cloudflare API/Wrangler path before claiming real D1 tables exist.
+- Preserve the seed records in the migration for permissions, roles, role-permission mappings and route permission declarations.
+- Capture the workflow result or API output in this trace once the migration has actually run.
 
 Tool boundary:
 
-- The current available tool access is GitHub repository access.
-- Direct Cloudflare execution has not been performed through this assistant turn.
+- The current available repository tool access has created the workflow and migration.
+- Direct Cloudflare execution has not been performed in this step.
 - Therefore live D1 creation cannot be claimed yet.
 
 ## Trace governance correction
@@ -298,7 +349,8 @@ Correction now applied:
 - the trace was updated after route-permission helper creation
 - the route-permission test creation was recorded immediately after the file was created
 - the real D1 application requirement has now been recorded explicitly
-- the controlled D1 migration path plan has been recorded before creating that workflow
+- the controlled D1 migration path plan was recorded before creating that workflow
+- the trace was updated after creating the controlled D1 migration workflow
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
 
@@ -321,7 +373,7 @@ Correction for future steps:
 
 No local lint, format, typecheck, test or build result is claimed at this checkpoint.
 
-The test files have been created but not yet executed in this environment.
+The test files and D1 workflow have been created but not executed in this environment.
 
 ## Pending next steps
 
@@ -329,14 +381,15 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- create `.github/workflows/apply-d1-auth-foundation.yml`
-- document environment variables required for Cloudflare Access JWT validation
+- document required Cloudflare Access environment variables and D1 workflow execution steps
+- wire route-permission checks into the first protected endpoint in a narrow slice
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
+- run repository tests or open a PR for CI execution
 
 ## Residual risks
 
 - Cloudflare Access JWT validation depends on environment configuration for Access certificates and audience.
-- The D1 migration has not yet been run in an environment.
+- The D1 migration has not yet been run in the live environment.
 - The route wiring has not yet been validated by test execution.
-- The implementation is not yet protected by a route-permission middleware for wider product routes.
+- The route-permission helper is not yet wired into existing product routes.
 - No PR has been opened for this branch yet.
