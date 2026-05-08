@@ -7,41 +7,23 @@
   "active_branch": "feature/auth-foundation-real-d1-current-main",
   "base_branch": "main",
   "base_commit_at_branch_creation": "8305adeed3b7e4047f132bc8c50347ce47e6205f",
+  "pull_request": {
+    "number": 215,
+    "url": "https://github.com/kevinrapley/ResearchOps/pull/215",
+    "state": "open"
+  },
   "companion_markdown_trace": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md",
   "status": {
     "repository_migration_created": true,
     "manual_d1_apply_workflow_created": true,
     "live_d1_migration_applied": false,
     "validation_executed_in_this_environment": false,
-    "pull_request_opened": false,
-    "pr_readiness_checked": true
+    "pull_request_opened": true,
+    "pr_readiness_checked": true,
+    "latest_known_ci_failure": "Prettier formatting warning in tests/auth-route-permissions.test.js",
+    "latest_known_ci_failure_fix_committed": true,
+    "latest_known_ci_failure_fix_validated_by_ci": false
   },
-  "user_direction": [
-    {
-      "sequence": 1,
-      "summary": "Build the authentication role-selection capability systematically from the captured documentation."
-    },
-    {
-      "sequence": 2,
-      "summary": "Do not implement this as a mock identity build. Build the real authentication foundation."
-    },
-    {
-      "sequence": 3,
-      "summary": "Continuously maintain reasoning trace files during the build instead of reconstructing them at the end."
-    },
-    {
-      "sequence": 4,
-      "summary": "The build must include real D1 table creation and seeding where necessary, with evidence before claiming live D1 changes."
-    },
-    {
-      "sequence": 5,
-      "summary": "Cloudflare APIs and Cloudflare Developer Platform bundles are in scope, but live Cloudflare execution must be evidenced before being claimed."
-    },
-    {
-      "sequence": 6,
-      "summary": "Maintain a companion JSON trace and link checkpoint markdown files from the main markdown trace. Keep checkpoint JSON consolidated in this single JSON file."
-    }
-  ],
   "selected_bundles": [
     "github-diamond",
     "researchops-developer",
@@ -82,15 +64,17 @@
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
-      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md"
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md"
     ]
   },
   "branch_comparison": {
     "base": "main",
     "head": "feature/auth-foundation-real-d1-current-main",
     "status": "ahead",
-    "ahead_by": 29,
-    "behind_by": 0,
+    "ahead_by_after_lint_fix": 34,
+    "behind_by_after_lint_fix": 0,
     "base_commit": "8305adeed3b7e4047f132bc8c50347ce47e6205f"
   },
   "checkpoints": [
@@ -100,14 +84,7 @@
       "kind": "implementation",
       "status": "complete_in_repository_not_applied_to_live_d1",
       "files_changed": ["infra/cloudflare/migrations/0001_auth_foundation.sql"],
-      "summary": "Created the real D1 control-plane migration for users, identities, teams, memberships, permissions, roles, role-permission mappings, role assignments, permission exceptions, auth events, audit events and route permissions.",
-      "decision_coverage": [
-        "D1 is the canonical control plane.",
-        "scope_type and scope_id exist from the first schema.",
-        "Team is the first enforceable scope while project and study scopes are structurally supported.",
-        "Sensitive and reserved permissions are represented explicitly.",
-        "General audit and safeguarding audit are separate permissions."
-      ],
+      "summary": "Created the real D1 control-plane migration for users, identities, teams, memberships, permissions, roles, role-permission mappings, role assignments, permission exceptions, auth events, audit events and route permissions. It also seeds permissions, roles, role-permission mappings and route declarations.",
       "live_environment_status": "not_applied"
     },
     {
@@ -117,12 +94,7 @@
       "status": "complete_in_repository",
       "files_changed": ["infra/cloudflare/src/core/auth/access.js"],
       "summary": "Added a real Cloudflare Access identity resolver that reads Cf-Access-Jwt-Assertion, validates Access JWT structure, signature, expiry and audience, maps the provider identity to a ResearchOps D1 user, and returns active team, roles and permissions.",
-      "non_goals": [
-        "No mock identity behaviour.",
-        "No password authentication.",
-        "No role-management UI.",
-        "No Airtable schema change."
-      ]
+      "non_goals": ["No mock identity behaviour", "No password authentication", "No role-management UI", "No Airtable schema change"]
     },
     {
       "id": "003",
@@ -185,8 +157,7 @@
       "kind": "trace_checkpoint",
       "status": "complete",
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md",
-      "summary": "Recorded the plan to wire assertRoutePermission into GET /api/me and GET /api/me/permissions before code changes were made.",
-      "planned_files": ["infra/cloudflare/src/core/auth/access.js", "tests/auth-foundation-route-state.test.js"]
+      "summary": "Recorded the plan to wire assertRoutePermission into GET /api/me and GET /api/me/permissions before code changes were made."
     },
     {
       "id": "011",
@@ -237,10 +208,7 @@
       "kind": "trace_checkpoint",
       "status": "complete",
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
-      "files_changed": [
-        "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json",
-        "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md"
-      ],
+      "files_changed": ["docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json", "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md"],
       "summary": "Recorded the user correction that the companion JSON trace must be maintained and checkpoint markdown files must be linked from the main trace. This JSON file consolidates checkpoint traces rather than creating individual checkpoint JSON files."
     },
     {
@@ -249,12 +217,24 @@
       "kind": "trace_checkpoint",
       "status": "complete",
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
-      "summary": "Recorded branch comparison before opening a pull request. The branch is ahead of main by 29 commits and behind by 0. The planned PR must state that live D1 has not been migrated and that validation has not been executed in this environment.",
-      "branch_comparison": {
-        "ahead_by": 29,
-        "behind_by": 0,
-        "base_commit": "8305adeed3b7e4047f132bc8c50347ce47e6205f"
-      }
+      "summary": "Recorded branch comparison before opening a pull request. The branch was ahead of main by 29 commits and behind by 0 before PR creation."
+    },
+    {
+      "id": "018",
+      "title": "Route-permission test lint fix plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
+      "summary": "Recorded the CI lint failure from npm run lint. Prettier reported tests/auth-route-permissions.test.js. The planned fix was formatting-only with no behavioural test change."
+    },
+    {
+      "id": "019",
+      "title": "Route-permission test lint fix complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
+      "files_changed": ["tests/auth-route-permissions.test.js"],
+      "summary": "Recorded that the long assertRoutePermission call in tests/auth-route-permissions.test.js was reformatted for Prettier. No test behaviour was changed. CI has not yet confirmed the fix."
     }
   ],
   "real_d1_requirement": {
@@ -270,13 +250,12 @@
     ]
   },
   "validation_status": {
-    "new_tests_created": [
-      "tests/auth-foundation-route-state.test.js",
-      "tests/auth-route-permissions.test.js"
-    ],
+    "new_tests_created": ["tests/auth-foundation-route-state.test.js", "tests/auth-route-permissions.test.js"],
     "new_tests_wired_into_validate": true,
     "validate_script_executed_here": false,
-    "test_success_claimed": false
+    "test_success_claimed": false,
+    "latest_lint_failure_fixed_in_repository": true,
+    "latest_lint_failure_confirmed_fixed_by_ci": false
   },
   "process_deviations": [
     {
@@ -289,11 +268,10 @@
     "The D1 migration has not yet been run in the live environment.",
     "The route wiring has not yet been validated by executed tests.",
     "Route-permission helper is only wired into identity routes so far.",
-    "No pull request has been opened for this branch yet."
+    "The latest lint fix still needs CI confirmation."
   ],
   "next_candidates": [
-    "Update the main markdown trace with checkpoint 017.",
-    "Open a PR for review and CI execution.",
+    "Wait for PR CI to rerun and inspect any new failure.",
     "Apply the D1 migration through the manual workflow after review or explicit release decision.",
     "Wire route-permission checks into the next protected product endpoint in a narrow slice.",
     "Continue role-management UI and role-assignment API in separate slices."
