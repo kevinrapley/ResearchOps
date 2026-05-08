@@ -15,10 +15,21 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - Date: 2026-05-08
 - Repository: `kevinrapley/ResearchOps`
 - Active branch: `feature/auth-foundation-real-d1-current-main`
+- Pull request: `#215`
 - Base branch: `main`
 - Base commit at branch creation: `8305adeed3b7e4047f132bc8c50347ce47e6205f`
 - Trigger token detected: `[reasoning]`
 - Trace layer: `operational`
+
+## Current status
+
+- PR #215 is open.
+- Live D1 migration has not been applied.
+- Repository migration and manual D1 workflow exist.
+- Authentication tests are wired into `npm run validate`.
+- CI reported a Prettier formatting failure in `tests/auth-route-permissions.test.js`.
+- A formatting-only fix has been committed.
+- CI has not yet confirmed that the formatting fix passes.
 
 ## User task summary
 
@@ -53,53 +64,6 @@ Uploaded Cloudflare bundle files inspected:
 - `/mnt/data/cloudflare-developer-platform-bundle.zip`
 - `/mnt/data/cloudflare-agents-workbench.zip`
 
-Relevant Cloudflare bundle materials inspected:
-
-- `cloudflare-developer-platform-bundle/prompt.body.xml`
-- `cloudflare-developer-platform-bundle/domains/state-and-data-domain.xml`
-- `cloudflare-developer-platform-bundle/references/cloudflare-product-surface-reference.xml`
-- `cloudflare-developer-platform-bundle/workflows/implementation-phasing-workflow.xml`
-- `cloudflare-agents-workbench/prompt.body.xml`
-- `cloudflare-agents-workbench/policies/non-invented-api-policy.xml`
-- `cloudflare-agents-workbench/policies/freshness-and-citation-policy.xml`
-
-## Selected bundles
-
-Selected bundles:
-
-- `github-diamond`
-- `researchops-developer`
-- `gov-product-assistant-gold-standard`
-- `govuk-design-system`
-- `cloudflare-core-developer`
-- `cloudflare-developer-platform-bundle`
-- `cloudflare-agents-workbench`
-- `airtable-public-api-developer`
-
-Skipped bundle:
-
-- `mural-public-api-developer`
-
-Skip rationale:
-
-- No Mural OAuth, workspace, room, board, widget or sticky-note implementation is in scope for this authentication slice.
-
-## Precedence decisions
-
-- GitHub Diamond governs branch hygiene, atomic changes, validation evidence and PR discipline.
-- ResearchOps Developer governs the platform architecture and service boundary.
-- Gold Standard Gov Product Assistant governs personal data, safeguarding, governance and service assurance risk.
-- GOV.UK Design System governs UI and accessibility when UI changes begin.
-- Cloudflare Core Developer and Cloudflare Developer Platform govern Worker, D1, Access JWT and binding behaviour.
-- Cloudflare Agents Workbench governs agent boundaries and prevents invented agent/API claims.
-- Airtable Public API governs the boundary that Airtable remains a data layer and not an authorisation engine.
-
-## Branch hygiene
-
-- Earlier branch `feature/auth-foundation-d1-rbac-current-main` diverged from `main` after new commits landed.
-- Fresh branch `feature/auth-foundation-real-d1-current-main` was created from current `main` commit `8305adeed3b7e4047f132bc8c50347ce47e6205f`.
-- No force update was used.
-
 ## Checkpoint index
 
 | Checkpoint | File | Status |
@@ -112,6 +76,8 @@ Skip rationale:
 | 015 | [`authentication-role-selection-checkpoint-015-validation-wiring-complete.md`](authentication-role-selection-checkpoint-015-validation-wiring-complete.md) | Complete |
 | 016 | [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md) | Complete |
 | 017 | [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md) | Complete |
+| 018 | [`authentication-role-selection-checkpoint-018-lint-fix-plan.md`](authentication-role-selection-checkpoint-018-lint-fix-plan.md) | Complete |
+| 019 | [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md) | Complete |
 
 ## Files changed so far on this branch
 
@@ -134,14 +100,7 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md`
+- checkpoint markdown files 010 to 019
 
 ## Implementation checkpoints
 
@@ -154,37 +113,11 @@ File created:
 Purpose:
 
 - Create the D1 control-plane schema for real authentication and role selection.
+- Seed permissions, roles, role-permission mappings and route permission declarations.
 
-Schema coverage:
+Live status:
 
-- `auth_users`
-- `auth_identities`
-- `auth_teams`
-- `auth_team_memberships`
-- `auth_permissions`
-- `auth_roles`
-- `auth_role_permissions`
-- `auth_role_assignments`
-- `auth_permission_exceptions`
-- `auth_events`
-- `auth_audit_events`
-- `auth_route_permissions`
-
-Seed coverage:
-
-- permission records
-- role records
-- role-permission mappings
-- route permission declarations
-
-Decision coverage:
-
-- D1 is the canonical control plane.
-- `scope_type` and `scope_id` are present from the first schema.
-- Team is the first enforceable scope while project and study scope are supported structurally.
-- Sensitive permissions are represented separately.
-- Reserved export permissions are represented without implementing export.
-- General audit and safeguarding audit are separate permissions.
+- The migration has not been applied to the live `researchops-d1` database.
 
 ### Checkpoint 2: Cloudflare Access identity resolver
 
@@ -195,17 +128,16 @@ File created:
 Purpose:
 
 - Resolve a real authenticated identity from the `Cf-Access-Jwt-Assertion` header.
-- Validate the Access JWT signature using Cloudflare Access certificates.
-- Validate token expiry and audience.
-- Map the validated provider identity to a D1 ResearchOps user.
+- Validate Access JWT structure, signature, expiry and audience.
+- Map the provider identity to a D1 ResearchOps user.
 - Return active team, roles and permissions from D1.
 
 Non-goals:
 
-- It does not create mock identity behaviour.
-- It does not implement password authentication.
-- It does not implement role-management UI.
-- It does not change Airtable schema.
+- No mock identity behaviour.
+- No password authentication.
+- No role-management UI.
+- No Airtable schema change.
 
 ### Checkpoint 3: Worker route wiring
 
@@ -216,7 +148,7 @@ File modified:
 Purpose:
 
 - Route `GET /api/me` and `GET /api/me/permissions` through the real Cloudflare Access identity resolver.
-- Add `X-ResearchOps-Team-Id` to allowed request headers so an authenticated user can select an active team context.
+- Add `X-ResearchOps-Team-Id` to allowed request headers.
 
 ### Checkpoint 4: auth foundation route tests
 
@@ -228,21 +160,8 @@ Purpose:
 
 - Confirm identity routes fail closed without `Cf-Access-Jwt-Assertion`.
 - Confirm Worker route wiring sends `/api/me` and `/api/me/permissions` through `core/auth/access.js`.
-- Confirm no mock identity mode exists in `core/auth/access.js`.
-- Confirm the D1 migration contains required control-plane tables, scoped role fields and reserved permissions.
-
-### Checkpoint 5: route-permission middleware plan
-
-Planned file before creation:
-
-- `infra/cloudflare/src/core/auth/route-permissions.js`
-
-Purpose:
-
-- Add a real authorisation helper that reads declared route permissions from D1.
-- Fail closed when a protected route has no declaration.
-- Deny access where the authenticated context lacks a required permission.
-- Avoid exposing missing permission codes to ordinary users.
+- Confirm no mock identity mode exists.
+- Confirm route-permission wiring and D1 migration structure.
 
 ### Checkpoint 6: route-permission helper created
 
@@ -256,12 +175,11 @@ Purpose:
 - Fail closed where no route permission declaration exists.
 - Check an authenticated context for required permissions.
 - Return ordinary permission-denied responses without exposing missing permission codes.
-- Allow diagnostics to include details only when explicitly requested by the caller.
 
 Current boundary:
 
-- The helper is now used by the identity routes.
-- The helper is not yet wired into all existing product routes.
+- The helper is used by the identity routes.
+- The helper is not yet wired into all product routes.
 
 ### Checkpoint 7: route-permission helper tests
 
@@ -277,18 +195,6 @@ Purpose:
 - Confirm diagnostics can include missing permission codes only when explicitly requested.
 - Confirm a matching permission allows the route.
 
-### Checkpoint 8: controlled D1 migration path plan
-
-Planned file before creation:
-
-- `.github/workflows/apply-d1-auth-foundation.yml`
-
-Purpose:
-
-- Provide a manual `workflow_dispatch` path for applying the authentication foundation migration to the real remote D1 database.
-- Require explicit confirmation input before executing the migration.
-- Use Wrangler against `infra/cloudflare/wrangler.toml` and `infra/cloudflare/migrations/0001_auth_foundation.sql`.
-
 ### Checkpoint 9: controlled D1 migration workflow created
 
 File created:
@@ -297,32 +203,17 @@ File created:
 
 Purpose:
 
-- Provide a manual GitHub Actions path for applying `infra/cloudflare/migrations/0001_auth_foundation.sql` to the remote `researchops-d1` D1 database.
+- Provide a manual GitHub Actions path for applying `infra/cloudflare/migrations/0001_auth_foundation.sql` to remote `researchops-d1`.
 - Require explicit confirmation inputs: `researchops-d1` and `APPLY_AUTH_FOUNDATION`.
-- Use Wrangler `d1 execute` with `--remote` against `infra/cloudflare/wrangler.toml`.
-- Run optional post-apply checks for `auth_%` tables and seed record counts.
+- Use Wrangler `d1 execute` with `--remote`.
+- Run optional post-apply checks for tables and seed counts.
 
 Current boundary:
 
-- The workflow has been added but not run.
-- The live D1 database has not been changed by this assistant turn.
-- Real table creation and seeding are only confirmed after a successful workflow run or direct Cloudflare API evidence.
-
-### Checkpoint 10: route-permission wiring plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`](authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md)
-
-Purpose:
-
-- Record the plan before wiring route-permission checks into the first real identity endpoints.
+- The workflow has not been run.
+- Live D1 has not been changed.
 
 ### Checkpoint 11: route-permission wiring complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md`](authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md)
 
 Files changed:
 
@@ -331,28 +222,9 @@ Files changed:
 
 Purpose:
 
-- `GET /api/me` and `GET /api/me/permissions` now call `assertRoutePermission(request, env, context)` after Cloudflare Access identity resolution.
-- The route-state test now asserts route-permission wiring exists.
-
-Decision coverage:
-
-- Authenticated identity is not enough on its own. Identity-facing product endpoints now pass through declared D1 route-permission policy.
-
-### Checkpoint 12: Cloudflare operations documentation plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`](authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md)
-
-Purpose:
-
-- Record the plan before creating operational documentation for Cloudflare Access, D1 and the migration workflow.
+- `GET /api/me` and `GET /api/me/permissions` now call `assertRoutePermission(request, env, context)` after identity resolution.
 
 ### Checkpoint 13: Cloudflare operations documentation complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md`](authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md)
 
 File created:
 
@@ -361,27 +233,12 @@ File created:
 Purpose:
 
 - Document Cloudflare Access runtime values.
-- Document the `RESEARCHOPS_D1` binding and `researchops-d1` target.
-- Document GitHub secrets for Wrangler execution.
+- Document `RESEARCHOPS_D1` and `researchops-d1`.
 - Document manual D1 workflow inputs.
-- Document expected D1 tables, seed counts and post-apply verification queries.
-- Document rollout order, retry notes and evidence required before claiming live D1 creation.
-
-### Checkpoint 14: validation wiring plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-014-validation-wiring-plan.md`](authentication-role-selection-checkpoint-014-validation-wiring-plan.md)
-
-Purpose:
-
-- Record the plan before wiring authentication tests into the repository validation contract.
+- Document expected tables, seed counts and post-apply checks.
+- Document evidence required before claiming live D1 creation.
 
 ### Checkpoint 15: validation wiring complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-015-validation-wiring-complete.md`](authentication-role-selection-checkpoint-015-validation-wiring-complete.md)
 
 File changed:
 
@@ -389,8 +246,7 @@ File changed:
 
 Purpose:
 
-- Require both authentication foundation test files.
-- Run both authentication foundation test files during `npm run validate`.
+- Require and run both authentication foundation test files during `npm run validate`.
 
 Validation contract additions:
 
@@ -399,15 +255,7 @@ node tests/auth-foundation-route-state.test.js
 node tests/auth-route-permissions.test.js
 ```
 
-Decision coverage:
-
-- Authentication foundation checks are now part of the standard CI validation path used by Worker deployment.
-
 ### Checkpoint 16: trace index and JSON plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md)
 
 Files created or updated:
 
@@ -418,7 +266,7 @@ Purpose:
 
 - Create and maintain the consolidated JSON trace.
 - Link checkpoint markdown files from the main markdown trace.
-- Record checkpoint events in one JSON trace rather than separate checkpoint JSON files.
+- Record checkpoint events in one JSON trace.
 
 ### Checkpoint 17: PR readiness plan
 
@@ -426,23 +274,45 @@ Trace file created:
 
 - [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md)
 
-Branch comparison:
+Purpose:
 
-- status: ahead
-- ahead by: 29 commits
-- behind by: 0 commits
-- base commit: `8305adeed3b7e4047f132bc8c50347ce47e6205f`
+- Record branch readiness before opening PR #215.
+- State that live D1 had not been migrated and validation had not been executed in this environment.
+
+### Checkpoint 18: route-permission test lint fix plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-018-lint-fix-plan.md`](authentication-role-selection-checkpoint-018-lint-fix-plan.md)
+
+Reported failure:
+
+- `npm run lint` failed because Prettier reported `tests/auth-route-permissions.test.js`.
 
 Purpose:
 
-- Record branch readiness before opening a pull request.
-- Ensure the PR states that live D1 has not been migrated and validation has not been executed in this environment.
+- Record the formatting-only fix plan before changing the test file.
+
+### Checkpoint 19: route-permission test lint fix complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md)
+
+File changed:
+
+- `tests/auth-route-permissions.test.js`
+
+Purpose:
+
+- Reformat a long `assertRoutePermission` call to satisfy Prettier.
+- No test behaviour was changed.
 
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
 
-The build now includes a safe manual path to apply the migration to the real `researchops-d1` database that is bound as `RESEARCHOPS_D1` in `infra/cloudflare/wrangler.toml`.
+The build includes a safe manual path to apply the migration to the real `researchops-d1` database bound as `RESEARCHOPS_D1` in `infra/cloudflare/wrangler.toml`.
 
 Required next implementation controls:
 
@@ -450,21 +320,12 @@ Required next implementation controls:
 - Preserve seed records in the migration for permissions, roles, role-permission mappings and route permission declarations.
 - Capture workflow result or API output in this trace once the migration has actually run.
 
-Tool boundary:
+## Validation status
 
-- Repository tool access has created the workflow and migration.
-- Direct Cloudflare execution has not been performed in this step.
-- Therefore live D1 creation cannot be claimed yet.
-
-## Trace governance correction
-
-Correction applied:
-
-- trace checkpoints are now written before or immediately after each implementation step
-- main trace links to checkpoint markdown files
-- consolidated JSON trace represents checkpoint events in one file
-- live D1 status is explicitly separated from repository migration status
-- future responses should report both implementation progress and trace updates
+- Initial CI lint failed on Prettier formatting in `tests/auth-route-permissions.test.js`.
+- A formatting-only fix has been committed.
+- CI has not yet confirmed that the fix passes.
+- No live D1 migration has been run.
 
 ## Process issue recorded
 
@@ -482,17 +343,11 @@ Correction for future steps:
 - update both markdown and JSON trace records where a checkpoint changes the implementation state
 - do not batch large design and code changes without a trace checkpoint
 
-## Validation not yet claimed
-
-No local lint, format, typecheck, test or build result is claimed at this checkpoint.
-
-The test files and D1 workflow have been created but not executed in this environment.
-
 ## Pending next steps
 
 Candidate next steps:
 
-- open a PR for review and CI execution
+- wait for PR CI to rerun and inspect any new failure
 - apply the D1 migration through the manual workflow after review or explicit release decision
 - wire route-permission checks into the next protected product endpoint in a narrow slice
 - continue role-management UI and role-assignment API in separate slices
@@ -501,6 +356,5 @@ Candidate next steps:
 
 - Cloudflare Access JWT validation depends on environment configuration for Access certificates and audience.
 - The D1 migration has not yet been run in the live environment.
-- The route wiring has not yet been validated by test execution.
 - Route-permission helper is only wired into identity routes so far.
-- No PR has been opened for this branch yet.
+- The latest lint fix still needs CI confirmation.
