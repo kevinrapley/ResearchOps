@@ -31,6 +31,7 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - The latest fix removes fragile inline JSON string fixtures and uses `JSON.stringify` through a helper.
 - A temporary local Prettier 3.6.2 check on the planned file content passed.
 - Repository-level CI has not yet confirmed the latest fix.
+- The Prettier tooling investigation and future prevention-rule candidate have been recorded in checkpoint 025 and the consolidated JSON trace.
 
 ## Checkpoint index
 
@@ -51,6 +52,7 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 | 022 | [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md) | Complete |
 | 023 | [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md) | Complete |
 | 024 | [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md) | Complete |
+| 025 | [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md) | Complete |
 
 ## Files changed so far on this branch
 
@@ -73,7 +75,7 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- checkpoint markdown files 010 to 024
+- checkpoint markdown files 010 to 025
 
 ## Implementation checkpoints
 
@@ -348,6 +350,44 @@ Purpose:
 - Replace inline JSON string fixtures with `requiredPermissions("...")` calls.
 - Preserve the same JSON string value consumed by the route-permission parser.
 
+### Checkpoint 25: Prettier tooling findings
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md)
+
+Purpose:
+
+- Record the repository lint scripts and Prettier version.
+- Record that repository search did not find a dedicated Prettier config.
+- Record that cloning the branch into the execution container failed because `github.com` could not be resolved.
+- Record that true repository-level `npm run format` or `prettier --write .` could not be executed from this assistant environment.
+- Record the latest helper-based fix pattern and a candidate repository rule once CI confirms the fix.
+
+Code pattern recorded:
+
+```js
+function requiredPermissions(...codes) {
+  return JSON.stringify(codes);
+}
+```
+
+Before:
+
+```js
+required_permissions_json: '["audit.view"]',
+```
+
+After:
+
+```js
+required_permissions_json: requiredPermissions("audit.view"),
+```
+
+Prevention-rule candidate after CI confirmation:
+
+> Do not hand-write escaped JSON fixtures in JavaScript tests where the target code expects a JSON string. Use `JSON.stringify` through a named helper, then run `npm run format` or `npx prettier --write <file>` before committing.
+
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
@@ -366,6 +406,7 @@ Required next implementation controls:
 - CI repeated the Prettier formatting failure for the same file.
 - The latest fix replaces inline JSON fixtures with a helper to remove formatting ambiguity.
 - A temporary Prettier 3.6.2 check on the planned file content passed.
+- True repository-level `prettier --write .` has not been executed from this assistant environment because a branch checkout was not available.
 - CI has not yet confirmed that the repository-level check passes.
 - No live D1 migration has been run.
 
@@ -377,22 +418,25 @@ Current issue:
 
 - the Access identity resolver commit had more than 300 added lines
 - this is recorded as a process deviation
+- repeated formatting fixes were attempted without a true repository-level `prettier --write` against the branch checkout
 
 Correction for future steps:
 
 - split future changes into smaller files and smaller commits
 - update trace before or alongside code changes
 - update both markdown and JSON trace records where a checkpoint changes the implementation state
-- do not batch large design and code changes without a trace checkpoint
+- for formatting failures, prefer `npm run format` or `npx prettier --write <file>` in a real repository checkout before committing
+- do not claim repository-level formatting success until CI or a real repository checkout confirms it
 
 ## Pending next steps
 
 Candidate next steps:
 
 - wait for PR CI to rerun and inspect any new failure
+- if Prettier still fails, obtain the exact Prettier `--write` diff from CI or from a real repository checkout and commit that output
+- after CI confirms the fix, create permanent repository guidance from checkpoint 025
 - apply the D1 migration through the manual workflow after review or explicit release decision
 - wire route-permission checks into the next protected product endpoint in a narrow slice
-- continue role-management UI and role-assignment API in separate slices
 
 ## Residual risks
 
