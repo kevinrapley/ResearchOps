@@ -1,9 +1,9 @@
 # Authentication and role-selection requirements
 
-Date: 2026-05-08  
-Status: requirements and architecture discussion  
-Scope: product, service, UI, Cloudflare, D1 and Airtable requirements  
-System-change boundary: no application code, configuration, schema migration, Airtable change or Cloudflare setting is changed by this document
+**Date:** 2026-05-08  
+**Status:** requirements and architecture discussion  
+**Scope:** product, service, UI, Cloudflare, D1 and Airtable requirements  
+**System-change boundary:** no application code, configuration, schema migration, Airtable change or Cloudflare setting is changed by this document
 
 ## Purpose
 

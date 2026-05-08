@@ -1,9 +1,9 @@
 # Authentication and role-selection reference notes
 
-Date: 2026-05-08  
-Related requirements: `docs/product/authentication-role-selection-requirements-2026-05-08.md`  
-Status: supporting reference notes  
-System-change boundary: no application code, configuration, D1 schema, Airtable schema or Cloudflare setting is changed by this document
+**Date:** 2026-05-08  
+**Related requirements:** [`authentication-role-selection-requirements-2026-05-08.md`](authentication-role-selection-requirements-2026-05-08.md)  
+**Status:** supporting reference notes  
+**System-change boundary:** no application code, configuration, D1 schema, Airtable schema or Cloudflare setting is changed by this document
 
 ## Purpose
 
