@@ -28,10 +28,11 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - Repository migration and manual D1 workflow exist.
 - Authentication tests are wired into `npm run validate`.
 - CI repeatedly reported Prettier formatting failures in `tests/auth-route-permissions.test.js`.
-- Root cause is now identified: Prettier reads `.editorconfig`, and this repository sets `indent_style = tab`.
+- Root cause is identified: Prettier reads `.editorconfig`, and this repository sets `indent_style = tab`.
 - Earlier temporary file checks were wrong because they ran outside the repository tree and missed `.editorconfig`.
-- `tests/auth-route-permissions.test.js` has now been replaced with repository Prettier output using tabs.
-- Repository-level CI has not yet confirmed the latest fix.
+- `tests/auth-route-permissions.test.js` has been replaced with repository Prettier output using tabs.
+- The repository now has explicit Prettier automation to prevent repeated guesswork.
+- Repository-level CI has not yet confirmed the latest automation and formatting changes.
 
 ## Checkpoint index
 
@@ -55,16 +56,21 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 | 025 | [`authentication-role-selection-checkpoint-025-prettier-tooling-findings.md`](authentication-role-selection-checkpoint-025-prettier-tooling-findings.md) | Superseded by 026 and 027 |
 | 026 | [`authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md`](authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md) | Complete |
 | 027 | [`authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md`](authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md) | Committed; pending CI confirmation |
+| 028 | [`authentication-role-selection-checkpoint-028-format-automation-plan.md`](authentication-role-selection-checkpoint-028-format-automation-plan.md) | Complete |
+| 029 | [`authentication-role-selection-checkpoint-029-format-automation-complete.md`](authentication-role-selection-checkpoint-029-format-automation-complete.md) | Committed; pending CI confirmation |
 
 ## Files changed so far on this branch
 
 Implementation files:
 
 - `.github/workflows/apply-d1-auth-foundation.yml`
+- `.github/workflows/format-branch.yml`
+- `.github/workflows/format-pr.yml`
 - `infra/cloudflare/migrations/0001_auth_foundation.sql`
 - `infra/cloudflare/src/core/auth/access.js`
 - `infra/cloudflare/src/core/auth/route-permissions.js`
 - `infra/cloudflare/src/worker.js`
+- `prettier.config.mjs`
 - `scripts/validate.sh`
 - `tests/auth-foundation-route-state.test.js`
 - `tests/auth-route-permissions.test.js`
@@ -77,9 +83,9 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- checkpoint markdown files 010 to 027
+- checkpoint markdown files 010 to 029
 
-## Prettier failure record
+## Prettier failure and automation record
 
 ### Repeated symptom
 
@@ -109,7 +115,7 @@ Prettier reads `.editorconfig` by default. Therefore JavaScript files in this re
 
 Temporary standalone file checks outside the repository tree missed this rule. Those checks incorrectly passed because Prettier fell back to its default space indentation.
 
-### Exact fix committed
+### Exact file fix committed
 
 `tests/auth-route-permissions.test.js` was replaced with the Prettier 3.6.2 output produced when `.editorconfig` is present.
 
@@ -143,9 +149,33 @@ function requiredPermissions(...codes) {
 }
 ```
 
+### Automation implemented
+
+`prettier.config.mjs` makes the tab contract explicit:
+
+```js
+export default {
+	useTabs: true,
+	tabWidth: 2,
+	endOfLine: "lf",
+};
+```
+
+`.github/workflows/format-pr.yml` remains strict, but now captures the exact repair patch on failure:
+
+```bash
+./node_modules/.bin/prettier --write .
+git diff -- . > prettier-fix.patch
+cat prettier-fix.patch
+```
+
+The workflow uploads `prettier-fix.patch` as an artifact.
+
+`.github/workflows/format-branch.yml` is a manual `workflow_dispatch` repair path. It checks out a named branch, runs `npm run format`, and commits/pushes formatting changes only if there is a diff.
+
 ### Workflow change decision
 
-The proposed workaround of adding `npx prettier --write .` before lint in CI should not be used as the primary fix.
+The proposed workaround of adding `npx prettier --write .` before lint in normal CI should not be used as the primary validation fix.
 
 CI should detect formatting drift. It should not silently mutate the runner workspace without committing the change back to the branch.
 
@@ -161,11 +191,11 @@ or targeted:
 npx prettier --write tests/auth-route-permissions.test.js
 ```
 
-Both commands must be run from the repository root so `.editorconfig` is applied.
+Both commands must be run from the repository root so `.editorconfig` and `prettier.config.mjs` are applied.
 
-## Implementation checkpoints
+## Authentication implementation checkpoints
 
-### Checkpoint 1: D1 auth foundation migration
+### D1 auth foundation migration
 
 File created:
 
@@ -180,7 +210,7 @@ Live status:
 
 - The migration has not been applied to the live `researchops-d1` database.
 
-### Checkpoint 2: Cloudflare Access identity resolver
+### Cloudflare Access identity resolver
 
 File created:
 
@@ -200,7 +230,7 @@ Non-goals:
 - No role-management UI.
 - No Airtable schema change.
 
-### Checkpoint 3: Worker route wiring
+### Worker route wiring
 
 File modified:
 
@@ -211,7 +241,7 @@ Purpose:
 - Route `GET /api/me` and `GET /api/me/permissions` through the real Cloudflare Access identity resolver.
 - Add `X-ResearchOps-Team-Id` to allowed request headers.
 
-### Checkpoint 4: auth foundation route tests
+### Auth foundation route tests
 
 File created:
 
@@ -224,7 +254,7 @@ Purpose:
 - Confirm no mock identity mode exists.
 - Confirm route-permission wiring and D1 migration structure.
 
-### Checkpoint 6: route-permission helper created
+### Route-permission helper
 
 File created:
 
@@ -242,7 +272,7 @@ Current boundary:
 - The helper is used by the identity routes.
 - The helper is not yet wired into all product routes.
 
-### Checkpoint 7: route-permission helper tests
+### Route-permission helper tests
 
 File created:
 
@@ -256,7 +286,7 @@ Purpose:
 - Confirm diagnostics can include missing permission codes only when explicitly requested.
 - Confirm a matching permission allows the route.
 
-### Checkpoint 9: controlled D1 migration workflow created
+### Controlled D1 migration workflow
 
 File created:
 
@@ -273,109 +303,6 @@ Current boundary:
 
 - The workflow has not been run.
 - Live D1 has not been changed.
-
-### Checkpoint 11: route-permission wiring complete
-
-Files changed:
-
-- `infra/cloudflare/src/core/auth/access.js`
-- `tests/auth-foundation-route-state.test.js`
-
-Purpose:
-
-- `GET /api/me` and `GET /api/me/permissions` now call `assertRoutePermission(request, env, context)` after identity resolution.
-
-### Checkpoint 13: Cloudflare operations documentation complete
-
-File created:
-
-- `docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md`
-
-Purpose:
-
-- Document Cloudflare Access runtime values.
-- Document `RESEARCHOPS_D1` and `researchops-d1`.
-- Document manual D1 workflow inputs.
-- Document expected tables, seed counts and post-apply checks.
-- Document evidence required before claiming live D1 creation.
-
-### Checkpoint 15: validation wiring complete
-
-File changed:
-
-- `scripts/validate.sh`
-
-Purpose:
-
-- Require and run both authentication foundation test files during `npm run validate`.
-
-Validation contract additions:
-
-```bash
-node tests/auth-foundation-route-state.test.js
-node tests/auth-route-permissions.test.js
-```
-
-### Checkpoint 16: trace index and JSON plan
-
-Files created or updated:
-
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
-
-Purpose:
-
-- Create and maintain the consolidated JSON trace.
-- Link checkpoint markdown files from the main markdown trace.
-- Record checkpoint events in one JSON trace.
-
-### Checkpoint 17: PR readiness plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-017-pr-readiness-plan.md`](authentication-role-selection-checkpoint-017-pr-readiness-plan.md)
-
-Purpose:
-
-- Record branch readiness before opening PR #215.
-- State that live D1 had not been migrated and validation had not been executed in this environment.
-
-### Checkpoints 18 to 25: Prettier false starts and tooling findings
-
-These checkpoints record the repeated Prettier investigation and the earlier incorrect hypotheses.
-
-Key correction:
-
-- Inline JSON fixture cleanup was useful but not the formatting root cause.
-- The root cause was repository `.editorconfig` tab indentation.
-- Earlier temporary checks were invalid because they did not include `.editorconfig`.
-
-### Checkpoint 26: Prettier root cause plan
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md`](authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md)
-
-Purpose:
-
-- Record `.editorconfig` tab indentation as the true root cause.
-- Record that CI auto-formatting should not replace explicit committed formatting fixes.
-
-### Checkpoint 27: Prettier root cause fix complete
-
-Trace file created:
-
-- [`authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md`](authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md)
-
-File changed:
-
-- `tests/auth-route-permissions.test.js`
-
-Purpose:
-
-- Apply repository Prettier output with tab indentation.
-- Preserve route-permission test behaviour.
-- Record future prevention guidance.
 
 ## Real D1 implementation requirement
 
@@ -395,6 +322,7 @@ Required next implementation controls:
 - CI repeated the Prettier formatting failure for the same file.
 - Root cause identified as `.editorconfig` tab indentation.
 - `tests/auth-route-permissions.test.js` has been rewritten with repository Prettier tab output.
+- Formatting automation is now in place to expose or commit exact Prettier output.
 - CI has not yet confirmed that the repository-level check passes.
 - No live D1 migration has been run.
 
@@ -412,7 +340,7 @@ Correction for future steps:
 - split future changes into smaller files and smaller commits
 - update trace before or alongside code changes
 - update both markdown and JSON trace records where a checkpoint changes the implementation state
-- for formatting failures, run Prettier from the repository root so `.editorconfig` applies
+- for formatting failures, run Prettier from the repository root so `.editorconfig` and `prettier.config.mjs` apply
 - do not claim repository-level formatting success until CI or a real repository checkout confirms it
 
 ## Pending next steps
@@ -420,7 +348,8 @@ Correction for future steps:
 Candidate next steps:
 
 - wait for PR CI to rerun and inspect any new failure
-- after CI confirms the fix, create permanent repository guidance from checkpoints 026 and 027
+- if format still fails, use the new `prettier-fix.patch` artifact or run the manual `Format branch` workflow against `feature/auth-foundation-real-d1-current-main`
+- after CI confirms the format path, create permanent repository guidance from checkpoints 026 to 029
 - apply the D1 migration through the manual workflow after review or explicit release decision
 - wire route-permission checks into the next protected product endpoint in a narrow slice
 
@@ -429,4 +358,4 @@ Candidate next steps:
 - Cloudflare Access JWT validation depends on environment configuration for Access certificates and audience.
 - The D1 migration has not yet been run in the live environment.
 - Route-permission helper is only wired into identity routes so far.
-- The latest lint fix still needs repository-level CI confirmation.
+- The latest format automation still needs repository-level CI confirmation.
