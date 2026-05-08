@@ -1,9 +1,9 @@
 # ResearchOps platform design critique
 
-Date: 2026-05-07  
-Scope: critique record only  
-Status: documentation-only artefact  
-Action constraint: no implementation action is to be taken from the priorities in this document unless separately requested and approved.
+**Date:** 2026-05-07  
+**Scope:** critique record only  
+**Status:** documentation-only artefact  
+**Action constraint:** no implementation action is to be taken from the priorities in this document unless separately requested and approved.
 
 ## Applied lenses
 
