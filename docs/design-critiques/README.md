@@ -17,9 +17,10 @@ docs/design-critiques/26/05/07/
 - Store new design critique records inside the dated folder pattern.
 - Use `YY`, `MM` and `DD` as two-digit values.
 - Keep filenames descriptive and stable.
-- Add or update a dated folder `README.md` when adding records.
+- Keep README guidance at the `docs/design-critiques/` root only.
+- Do not add `README.md` files inside individual `DD` folders.
 - Keep root-level design critique documents out of this directory except this `README.md`.
 
-## Current dated indexes
+## Current dated folders
 
 - [`26/05/07/`](26/05/07/)
