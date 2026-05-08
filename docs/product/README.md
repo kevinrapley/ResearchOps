@@ -17,14 +17,15 @@ docs/product/26/05/08/
 - Store new product records inside the dated folder pattern.
 - Use `YY`, `MM` and `DD` as two-digit values.
 - Keep filenames descriptive and stable.
-- Add or update a dated folder `README.md` when adding records.
-- Keep root-level product documents out of this directory except this `README.md` once legacy files have been safely migrated.
+- Keep README guidance at the `docs/product/` root only.
+- Do not add `README.md` files inside individual `DD` folders.
+- Keep root-level product documents out of this directory except this `README.md` once legacy files have been migrated.
 
 ## Migration note
 
-Most existing flat product records have been moved into dated folders. If a legacy flat product record remains, treat the dated copy as canonical and remove the flat copy only when the exact blob metadata is available for a safe content-preserving deletion.
+Most existing flat product records have been moved into dated folders. If a legacy flat product record remains, treat the dated copy as canonical and remove the flat copy only when exact blob metadata is available.
 
-## Current dated indexes
+## Current dated folders
 
 - [`26/05/07/`](26/05/07/)
 - [`26/05/08/`](26/05/08/)
