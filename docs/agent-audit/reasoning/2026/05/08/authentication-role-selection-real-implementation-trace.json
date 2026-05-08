@@ -13,7 +13,8 @@
     "manual_d1_apply_workflow_created": true,
     "live_d1_migration_applied": false,
     "validation_executed_in_this_environment": false,
-    "pull_request_opened": false
+    "pull_request_opened": false,
+    "pr_readiness_checked": true
   },
   "user_direction": [
     {
@@ -80,8 +81,17 @@
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
-      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md"
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md"
     ]
+  },
+  "branch_comparison": {
+    "base": "main",
+    "head": "feature/auth-foundation-real-d1-current-main",
+    "status": "ahead",
+    "ahead_by": 29,
+    "behind_by": 0,
+    "base_commit": "8305adeed3b7e4047f132bc8c50347ce47e6205f"
   },
   "checkpoints": [
     {
@@ -232,6 +242,19 @@
         "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md"
       ],
       "summary": "Recorded the user correction that the companion JSON trace must be maintained and checkpoint markdown files must be linked from the main trace. This JSON file consolidates checkpoint traces rather than creating individual checkpoint JSON files."
+    },
+    {
+      "id": "017",
+      "title": "PR readiness plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
+      "summary": "Recorded branch comparison before opening a pull request. The branch is ahead of main by 29 commits and behind by 0. The planned PR must state that live D1 has not been migrated and that validation has not been executed in this environment.",
+      "branch_comparison": {
+        "ahead_by": 29,
+        "behind_by": 0,
+        "base_commit": "8305adeed3b7e4047f132bc8c50347ce47e6205f"
+      }
     }
   ],
   "real_d1_requirement": {
@@ -269,10 +292,10 @@
     "No pull request has been opened for this branch yet."
   ],
   "next_candidates": [
-    "Update the main markdown trace with a linked checkpoint index.",
-    "Run or trigger validation through PR CI.",
+    "Update the main markdown trace with checkpoint 017.",
     "Open a PR for review and CI execution.",
     "Apply the D1 migration through the manual workflow after review or explicit release decision.",
-    "Wire route-permission checks into the next protected product endpoint in a narrow slice."
+    "Wire route-permission checks into the next protected product endpoint in a narrow slice.",
+    "Continue role-management UI and role-assignment API in separate slices."
   ]
 }
