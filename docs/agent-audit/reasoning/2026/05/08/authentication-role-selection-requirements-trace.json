@@ -1,6 +1,7 @@
 {
 	"traceId": "atrace-20260508-authentication-role-selection-requirements",
 	"createdAt": "2026-05-08T08:05:00+01:00",
+	"updatedAt": "2026-05-08T08:20:00+01:00",
 	"repository": "kevinrapley/ResearchOps",
 	"branch": "feature/auth-requirements-trace-current-main",
 	"trigger": "[reasoning]",
@@ -41,6 +42,20 @@
 		"docs/devops/ResearchOps-Bundle-Setup.zip",
 		"docs/product/researchops-design-critique-backlog-2026-05-07.md"
 	],
+	"referenceNotes": {
+		"path": "docs/product/authentication-role-selection-reference-notes-2026-05-08.md",
+		"topics": [
+			"GOV.UK account creation pattern",
+			"GOV.UK pattern coverage",
+			"Cloudflare Access JWT validation",
+			"Cloudflare Access cookies and sessions",
+			"D1 Worker bindings",
+			"D1 database binding configuration",
+			"Cloudflare Workers secrets",
+			"Cloudflare Turnstile server-side validation",
+			"Cloudflare Agents boundary"
+		]
+	},
 	"selectedBundles": [
 		{
 			"id": "github-diamond",
@@ -90,10 +105,14 @@
 	},
 	"created": [
 		"docs/product/authentication-role-selection-requirements-2026-05-08.md",
+		"docs/product/authentication-role-selection-reference-notes-2026-05-08.md",
 		"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.md",
 		"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.json"
 	],
-	"modified": [],
+	"modified": [
+		"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.md",
+		"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.json"
+	],
 	"nonImplementationBoundary": [
 		"No application code changed.",
 		"No UI changed.",
@@ -108,6 +127,7 @@
 		"review P1 dependency coverage",
 		"review UI, Cloudflare, D1 and Airtable coverage",
 		"review implementation methods and capability matrix",
+		"review reference notes",
 		"review explicit non-implementation boundary",
 		"review trace artefact presence"
 	],
