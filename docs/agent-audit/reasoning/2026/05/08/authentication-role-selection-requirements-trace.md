@@ -57,6 +57,8 @@ Repository files read:
 - `docs/devops/ResearchOps-Bundle-Setup.zip`
 - `docs/product/researchops-design-critique-backlog-2026-05-07.md`
 
+Public reference material was checked for currency during the requirements pass and recorded in `docs/product/authentication-role-selection-reference-notes-2026-05-08.md`.
+
 ## Selected bundles
 
 The selected bundles were:
@@ -114,12 +116,16 @@ Corrective action:
 ## Files created
 
 - `docs/product/authentication-role-selection-requirements-2026-05-08.md`
+- `docs/product/authentication-role-selection-reference-notes-2026-05-08.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.json`
 
 ## Files modified
 
-None.
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.md`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-requirements-trace.json`
+
+The modified files were trace corrections to include the reference-notes artefact.
 
 ## Requirements recorded
 
@@ -149,6 +155,20 @@ The requirements document records:
 - route map
 - open questions
 
+## Reference notes recorded
+
+The reference notes record implementation references for:
+
+- GOV.UK account creation pattern
+- GOV.UK pattern coverage
+- Cloudflare Access JWT validation
+- Cloudflare Access cookies and sessions
+- D1 Worker bindings
+- D1 database binding configuration
+- Cloudflare Workers secrets
+- Cloudflare Turnstile server-side validation
+- Cloudflare Agents boundary
+
 ## Cloudflare AI/Agent boundary
 
 Cloudflare AI and Agents were considered as enabled for this pass. The requirements document treats them as supporting capabilities for admin guidance, role explanation, audit summarisation and guided configuration.
@@ -166,6 +186,7 @@ This documentation-only branch should be reviewed for:
 - UI, Cloudflare, D1 and Airtable coverage
 - implementation-method comparison
 - capability matrix completeness
+- reference-note relevance
 - explicit non-implementation boundary
 - trace artefact presence
 
