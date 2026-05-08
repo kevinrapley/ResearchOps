@@ -84,13 +84,13 @@ Skip rationale:
 
 ## Files changed so far on this branch
 
-Current branch comparison against `main` shows three changed files:
+Current implementation files created or modified:
 
 - `infra/cloudflare/migrations/0001_auth_foundation.sql`
 - `infra/cloudflare/src/core/auth/access.js`
 - `infra/cloudflare/src/worker.js`
-
-No test file has been created yet. A check for `tests/auth-foundation-route-state.test.js` returned not found.
+- `tests/auth-foundation-route-state.test.js`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 
 ## Implementation checkpoint 1: D1 auth foundation migration
 
@@ -158,15 +158,38 @@ Purpose:
 - Route `GET /api/me` and `GET /api/me/permissions` through the real Cloudflare Access identity resolver.
 - Add `X-ResearchOps-Team-Id` to allowed request headers so an authenticated user can select an active team context.
 
+## Implementation checkpoint 4: Auth foundation route tests
+
+File created:
+
+- `tests/auth-foundation-route-state.test.js`
+
+Purpose:
+
+- Confirm the identity routes fail closed without `Cf-Access-Jwt-Assertion`.
+- Confirm Worker route wiring sends `/api/me` and `/api/me/permissions` through `core/auth/access.js`.
+- Confirm no mock identity mode exists in `core/auth/access.js`.
+- Confirm the D1 migration contains the required control-plane tables, scoped role fields and reserved permissions.
+
+Test coverage currently asserted:
+
+- `GET /api/me` returns `401` without an Access JWT.
+- `GET /api/me/permissions` returns `401` without an Access JWT.
+- Worker source imports and routes to `handleMeRoute`.
+- Auth resolver source contains no `RESEARCHOPS_AUTH_MODE`, `MOCK` or `mock` identity branch.
+- Migration contains required auth control-plane tables.
+- Migration contains `scope_type`, `scope_id`, `safeguarding.audit.view`, `audit.export` and `participant.pii.export`.
+
 ## Trace governance correction
 
 The user raised a valid governance concern that trace records were not being continuously updated as implementation proceeded.
 
 Correction now applied:
 
-- this trace checkpoint has been created on the active implementation branch
+- this trace checkpoint exists on the active implementation branch
+- the test file was created only after the first trace checkpoint was recorded
+- this trace was updated immediately after the test file was created
 - future implementation steps must update this trace before or alongside code changes
-- test file creation has been paused until this trace checkpoint exists
 - future responses should report both implementation progress and trace updates
 
 ## Process issue recorded
@@ -184,23 +207,23 @@ Correction for future steps:
 - update this trace as each implementation step completes
 - do not batch large design and code changes without a trace checkpoint
 
-## Pending next step
-
-The user asked to keep the planned test file in memory before creation:
-
-- `tests/auth-foundation-route-state.test.js`
-
-The intended test file should verify:
-
-- `/api/me` fails closed without `Cf-Access-Jwt-Assertion`
-- `/api/me/permissions` fails closed without `Cf-Access-Jwt-Assertion`
-- Worker routes identity endpoints through the Access resolver
-- no mock identity mode exists in the auth resolver
-- the D1 migration contains the required control-plane tables and scoped role fields
-
 ## Validation not yet claimed
 
 No local lint, format, typecheck, test or build result is claimed at this checkpoint.
+
+The new test file has been created but not yet executed in this environment.
+
+## Pending next steps
+
+The next implementation slice should be small and trace-updated before or alongside changes.
+
+Candidate next steps:
+
+- run or reason-check the new test route file if tool access allows
+- add route-permission middleware as a small separate module
+- add route-permission tests for fail-closed behaviour
+- document environment variables required for Cloudflare Access JWT validation
+- consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
 
 ## Residual risks
 
