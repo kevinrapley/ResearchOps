@@ -1,3 +1,4 @@
+import { handleMeRoute } from "./core/auth/access.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
 
@@ -30,7 +31,7 @@ function buildCorsHeaders(env, request) {
 		"Access-Control-Allow-Origin": resolveAllowedOrigin(env, request),
 		"Vary": "Origin",
 		"Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-		"Access-Control-Allow-Headers": "Authorization, Content-Type",
+		"Access-Control-Allow-Headers": "Authorization, Content-Type, X-ResearchOps-Team-Id",
 		"Access-Control-Allow-Credentials": "true"
 	};
 }
@@ -163,7 +164,8 @@ export default {
 
 		try {
 			let result;
-			if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
+			if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
+			else if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
 			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
