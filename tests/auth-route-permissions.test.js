@@ -58,10 +58,14 @@ async function assertMissingRouteFailsClosed() {
   const env = { RESEARCHOPS_D1: createD1(null) };
 
   try {
-    await assertRoutePermission(requestFor("/api/unknown-protected-route"), env, {
-      authenticated: true,
-      permissions: [{ code: "audit.view" }],
-    });
+    await assertRoutePermission(
+      requestFor("/api/unknown-protected-route"),
+      env,
+      {
+        authenticated: true,
+        permissions: [{ code: "audit.view" }],
+      },
+    );
     assert.fail("Expected missing route permission declaration to fail closed");
   } catch (error) {
     const response = routePermissionErrorResponse(error);
