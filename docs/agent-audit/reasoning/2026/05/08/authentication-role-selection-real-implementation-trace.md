@@ -246,6 +246,26 @@ Test coverage currently asserted:
 - diagnostic permission-denied responses can include `missingPermissions`
 - matching permission `audit.view` allows `/api/audit/team-events`
 
+## Implementation checkpoint 8: controlled D1 migration path plan
+
+Next planned file:
+
+- `.github/workflows/apply-d1-auth-foundation.yml`
+
+Purpose:
+
+- Provide a manual `workflow_dispatch` path for applying the authentication foundation migration to the real remote D1 database.
+- Require an explicit confirmation input before executing the migration.
+- Use the existing Cloudflare secret pattern: `CF_API_TOKEN` and `CF_ACCOUNT_ID`.
+- Use Wrangler against `infra/cloudflare/wrangler.toml` and `infra/cloudflare/migrations/0001_auth_foundation.sql`.
+
+Boundary for this step:
+
+- The workflow is manual only.
+- It must not run automatically on push.
+- It must not claim the migration has run.
+- It must record that real D1 table creation is only confirmed after a successful workflow run.
+
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
@@ -278,6 +298,7 @@ Correction now applied:
 - the trace was updated after route-permission helper creation
 - the route-permission test creation was recorded immediately after the file was created
 - the real D1 application requirement has now been recorded explicitly
+- the controlled D1 migration path plan has been recorded before creating that workflow
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
 
@@ -308,7 +329,7 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- add a controlled remote D1 migration application path
+- create `.github/workflows/apply-d1-auth-foundation.yml`
 - document environment variables required for Cloudflare Access JWT validation
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
 
