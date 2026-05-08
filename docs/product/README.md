@@ -18,7 +18,11 @@ docs/product/26/05/08/
 - Use `YY`, `MM` and `DD` as two-digit values.
 - Keep filenames descriptive and stable.
 - Add or update a dated folder `README.md` when adding records.
-- Keep root-level product documents out of this directory except this `README.md`.
+- Keep root-level product documents out of this directory except this `README.md` once legacy files have been safely migrated.
+
+## Migration note
+
+Most existing flat product records have been moved into dated folders. If a legacy flat product record remains, treat the dated copy as canonical and remove the flat copy only when the exact blob metadata is available for a safe content-preserving deletion.
 
 ## Current dated indexes
 
