@@ -21,6 +21,8 @@ The user then corrected the course by stating that this must not be a mock imple
 
 The user then raised a trace governance concern: trace records must be continuously updated as the build progresses, rather than reconstructed at the end.
 
+The user then clarified that the work must not become trace-only or document-only. It must systematically build the real authentication role-selection capability, including D1 table creation and seeding where necessary.
+
 ## Operating-model sources loaded before repository-affecting work
 
 The repository operating model had already been loaded during this workstream from the following files:
@@ -222,6 +224,25 @@ Current boundary:
 - It does not change Airtable behaviour.
 - It still needs unit tests.
 
+## Real D1 implementation requirement
+
+The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
+
+The build must include a safe path to apply the migration to the real `researchops-d1` database that is bound as `RESEARCHOPS_D1` in `infra/cloudflare/wrangler.toml`.
+
+Required next implementation controls:
+
+- Add or confirm a controlled Wrangler command path for applying `infra/cloudflare/migrations/0001_auth_foundation.sql` to the remote D1 database.
+- Prefer a manual `workflow_dispatch` or explicitly documented maintainer command rather than an automatic push-time migration.
+- Ensure the seed records in the migration create permissions, roles, role-permission mappings and route permission declarations.
+- Do not claim live D1 tables have been created until Wrangler migration output or other direct Cloudflare evidence confirms it.
+
+Tool boundary:
+
+- The current available tool access is GitHub repository access.
+- Direct Cloudflare execution has not been performed through this assistant turn.
+- Therefore live D1 creation cannot be claimed yet.
+
 ## Trace governance correction
 
 The user raised a valid governance concern that trace records were not being continuously updated as implementation proceeded.
@@ -233,6 +254,7 @@ Correction now applied:
 - this trace was updated immediately after the test file was created
 - the route-permission middleware plan was recorded before creating that file
 - the trace was updated after route-permission helper creation
+- the real D1 application requirement has now been recorded explicitly
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
 
@@ -263,7 +285,8 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- add route-permission tests for fail-closed behaviour
+- create `tests/auth-route-permissions.test.js`
+- add a controlled remote D1 migration application path
 - document environment variables required for Cloudflare Access JWT validation
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
 
