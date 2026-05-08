@@ -92,6 +92,10 @@ require_file "tests/consent-forms-route-state.test.js"
 require_file "tests/participant-consent-route-state.test.js"
 require_file "tests/auth-foundation-route-state.test.js"
 require_file "tests/auth-route-permissions.test.js"
+require_file "tests/auth-runtime-bootstrap-route-state.test.js"
+require_file "scripts/auth-runtime-bootstrap.mjs"
+require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
+require_file "docs/product/26/05/08/auth-runtime-bootstrap-2026-05-08.md"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -228,6 +232,9 @@ node tests/auth-foundation-route-state.test.js
 
 info "checking authentication route-permission contract"
 node tests/auth-route-permissions.test.js
+
+info "checking authentication runtime bootstrap contract"
+node tests/auth-runtime-bootstrap-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
