@@ -2,6 +2,13 @@
 
 > This is an auditable trace for repository-affecting work triggered by `[reasoning]`. It records what happened, what changed, what remains unverified, and what must happen next. It does not expose private chain-of-thought.
 
+## Trace files
+
+- Main markdown trace: `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
+- Consolidated JSON trace: [`authentication-role-selection-real-implementation-trace.json`](authentication-role-selection-real-implementation-trace.json)
+
+The checkpoint markdown files are used to keep this large build readable. Their captured events are also represented in the single consolidated JSON trace. Individual checkpoint JSON files are intentionally not created.
+
 ## Run metadata
 
 - Trace ID: `atrace-20260508-authentication-role-selection-real-implementation`
@@ -21,7 +28,9 @@ The user corrected the course by stating that this must not be a mock implementa
 
 The user required continuous `[reasoning]` trace updates during the build and clarified that the work must systematically build the real authentication role-selection capability, including D1 table creation and seeding where necessary.
 
-The user also clarified that Cloudflare APIs are in scope and provided Cloudflare Developer Platform and Cloudflare Agents Workbench bundles.
+The user clarified that Cloudflare APIs are in scope and provided Cloudflare Developer Platform and Cloudflare Agents Workbench bundles.
+
+The user then clarified that this main markdown trace must link to checkpoint markdown files and that the companion JSON trace must be maintained as one consolidated JSON record.
 
 ## Operating-model sources loaded
 
@@ -91,6 +100,18 @@ Skip rationale:
 - Fresh branch `feature/auth-foundation-real-d1-current-main` was created from current `main` commit `8305adeed3b7e4047f132bc8c50347ce47e6205f`.
 - No force update was used.
 
+## Checkpoint index
+
+| Checkpoint | File | Status |
+|---:|---|---|
+| 010 | [`authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`](authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md) | Complete |
+| 011 | [`authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md`](authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md) | Complete |
+| 012 | [`authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`](authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md) | Complete |
+| 013 | [`authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md`](authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md) | Complete |
+| 014 | [`authentication-role-selection-checkpoint-014-validation-wiring-plan.md`](authentication-role-selection-checkpoint-014-validation-wiring-plan.md) | Complete |
+| 015 | [`authentication-role-selection-checkpoint-015-validation-wiring-complete.md`](authentication-role-selection-checkpoint-015-validation-wiring-complete.md) | Complete |
+| 016 | [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md) | Complete |
+
 ## Files changed so far on this branch
 
 Implementation files:
@@ -111,14 +132,18 @@ Product and operational documentation:
 Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md`
 
-## Implementation checkpoint 1: D1 auth foundation migration
+## Implementation checkpoints
+
+### Checkpoint 1: D1 auth foundation migration
 
 File created:
 
@@ -159,7 +184,7 @@ Decision coverage:
 - Reserved export permissions are represented without implementing export.
 - General audit and safeguarding audit are separate permissions.
 
-## Implementation checkpoint 2: Cloudflare Access identity resolver
+### Checkpoint 2: Cloudflare Access identity resolver
 
 File created:
 
@@ -180,7 +205,7 @@ Non-goals:
 - It does not implement role-management UI.
 - It does not change Airtable schema.
 
-## Implementation checkpoint 3: Worker route wiring
+### Checkpoint 3: Worker route wiring
 
 File modified:
 
@@ -191,7 +216,7 @@ Purpose:
 - Route `GET /api/me` and `GET /api/me/permissions` through the real Cloudflare Access identity resolver.
 - Add `X-ResearchOps-Team-Id` to allowed request headers so an authenticated user can select an active team context.
 
-## Implementation checkpoint 4: auth foundation route tests
+### Checkpoint 4: auth foundation route tests
 
 File created:
 
@@ -204,7 +229,7 @@ Purpose:
 - Confirm no mock identity mode exists in `core/auth/access.js`.
 - Confirm the D1 migration contains required control-plane tables, scoped role fields and reserved permissions.
 
-## Implementation checkpoint 5: route-permission middleware plan
+### Checkpoint 5: route-permission middleware plan
 
 Planned file before creation:
 
@@ -217,7 +242,7 @@ Purpose:
 - Deny access where the authenticated context lacks a required permission.
 - Avoid exposing missing permission codes to ordinary users.
 
-## Implementation checkpoint 6: route-permission helper created
+### Checkpoint 6: route-permission helper created
 
 File created:
 
@@ -236,7 +261,7 @@ Current boundary:
 - The helper is now used by the identity routes.
 - The helper is not yet wired into all existing product routes.
 
-## Implementation checkpoint 7: route-permission helper tests
+### Checkpoint 7: route-permission helper tests
 
 File created:
 
@@ -250,7 +275,7 @@ Purpose:
 - Confirm diagnostics can include missing permission codes only when explicitly requested.
 - Confirm a matching permission allows the route.
 
-## Implementation checkpoint 8: controlled D1 migration path plan
+### Checkpoint 8: controlled D1 migration path plan
 
 Planned file before creation:
 
@@ -262,7 +287,7 @@ Purpose:
 - Require explicit confirmation input before executing the migration.
 - Use Wrangler against `infra/cloudflare/wrangler.toml` and `infra/cloudflare/migrations/0001_auth_foundation.sql`.
 
-## Implementation checkpoint 9: controlled D1 migration workflow created
+### Checkpoint 9: controlled D1 migration workflow created
 
 File created:
 
@@ -281,17 +306,21 @@ Current boundary:
 - The live D1 database has not been changed by this assistant turn.
 - Real table creation and seeding are only confirmed after a successful workflow run or direct Cloudflare API evidence.
 
-## Implementation checkpoint 10: route-permission wiring plan
+### Checkpoint 10: route-permission wiring plan
 
 Trace file created:
 
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`
+- [`authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md`](authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md)
 
 Purpose:
 
 - Record the plan before wiring route-permission checks into the first real identity endpoints.
 
-## Implementation checkpoint 11: route-permission wiring complete
+### Checkpoint 11: route-permission wiring complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md`](authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md)
 
 Files changed:
 
@@ -307,17 +336,21 @@ Decision coverage:
 
 - Authenticated identity is not enough on its own. Identity-facing product endpoints now pass through declared D1 route-permission policy.
 
-## Implementation checkpoint 12: Cloudflare operations documentation plan
+### Checkpoint 12: Cloudflare operations documentation plan
 
 Trace file created:
 
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`
+- [`authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md`](authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md)
 
 Purpose:
 
 - Record the plan before creating operational documentation for Cloudflare Access, D1 and the migration workflow.
 
-## Implementation checkpoint 13: Cloudflare operations documentation complete
+### Checkpoint 13: Cloudflare operations documentation complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md`](authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md)
 
 File created:
 
@@ -332,17 +365,21 @@ Purpose:
 - Document expected D1 tables, seed counts and post-apply verification queries.
 - Document rollout order, retry notes and evidence required before claiming live D1 creation.
 
-## Implementation checkpoint 14: validation wiring plan
+### Checkpoint 14: validation wiring plan
 
 Trace file created:
 
-- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md`
+- [`authentication-role-selection-checkpoint-014-validation-wiring-plan.md`](authentication-role-selection-checkpoint-014-validation-wiring-plan.md)
 
 Purpose:
 
 - Record the plan before wiring authentication tests into the repository validation contract.
 
-## Implementation checkpoint 15: validation wiring complete
+### Checkpoint 15: validation wiring complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-015-validation-wiring-complete.md`](authentication-role-selection-checkpoint-015-validation-wiring-complete.md)
 
 File changed:
 
@@ -364,6 +401,23 @@ Decision coverage:
 
 - Authentication foundation checks are now part of the standard CI validation path used by Worker deployment.
 
+### Checkpoint 16: trace index and JSON plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-016-trace-index-json-plan.md`](authentication-role-selection-checkpoint-016-trace-index-json-plan.md)
+
+Files created or updated:
+
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
+- `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
+
+Purpose:
+
+- Create and maintain the consolidated JSON trace.
+- Link checkpoint markdown files from the main markdown trace.
+- Record checkpoint events in one JSON trace rather than separate checkpoint JSON files.
+
 ## Real D1 implementation requirement
 
 The current SQL migration is a real D1 migration file, but creating the migration file in the repository is not the same as applying it to the live D1 database.
@@ -384,12 +438,11 @@ Tool boundary:
 
 ## Trace governance correction
 
-The user raised a valid governance concern that trace records were not being continuously updated as implementation proceeded.
-
 Correction applied:
 
 - trace checkpoints are now written before or immediately after each implementation step
-- main trace is updated after major groups of work
+- main trace links to checkpoint markdown files
+- consolidated JSON trace represents checkpoint events in one file
 - live D1 status is explicitly separated from repository migration status
 - future responses should report both implementation progress and trace updates
 
@@ -406,6 +459,7 @@ Correction for future steps:
 
 - split future changes into smaller files and smaller commits
 - update trace before or alongside code changes
+- update both markdown and JSON trace records where a checkpoint changes the implementation state
 - do not batch large design and code changes without a trace checkpoint
 
 ## Validation not yet claimed
