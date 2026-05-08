@@ -49,6 +49,17 @@ function assertWorkerRoutesAuthThroughAccessResolver() {
   assert.match(workerSource, /apiPath === "\/api\/me\/permissions"/);
 }
 
+function assertIdentityRoutesUseRoutePermissions() {
+  const authSource = fs.readFileSync(
+    "infra/cloudflare/src/core/auth/access.js",
+    "utf8",
+  );
+
+  assert.match(authSource, /assertRoutePermission/);
+  assert.match(authSource, /routePermissionErrorResponse/);
+  assert.match(authSource, /await assertRoutePermission\(request, env, context\)/);
+}
+
 function assertNoMockIdentityModeExists() {
   const authSource = fs.readFileSync(
     "infra/cloudflare/src/core/auth/access.js",
@@ -96,5 +107,6 @@ function assertMigrationContainsRequiredControlPlaneTables() {
 await assertMeRouteFailsClosedWithoutAccessToken();
 await assertPermissionsRouteFailsClosedWithoutAccessToken();
 assertWorkerRoutesAuthThroughAccessResolver();
+assertIdentityRoutesUseRoutePermissions();
 assertNoMockIdentityModeExists();
 assertMigrationContainsRequiredControlPlaneTables();
