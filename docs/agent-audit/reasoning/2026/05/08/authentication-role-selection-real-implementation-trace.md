@@ -93,6 +93,7 @@ Current implementation files created or modified:
 - `infra/cloudflare/src/core/auth/route-permissions.js`
 - `infra/cloudflare/src/worker.js`
 - `tests/auth-foundation-route-state.test.js`
+- `tests/auth-route-permissions.test.js`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 
 ## Implementation checkpoint 1: D1 auth foundation migration
@@ -222,7 +223,28 @@ Current boundary:
 - The helper is not yet wired into existing product routes.
 - It does not create users or roles.
 - It does not change Airtable behaviour.
-- It still needs unit tests.
+
+## Implementation checkpoint 7: route-permission helper tests
+
+File created:
+
+- `tests/auth-route-permissions.test.js`
+
+Purpose:
+
+- Confirm declared route permissions can be resolved from a D1-style binding.
+- Confirm protected routes fail closed when no route declaration exists.
+- Confirm missing permissions are denied without exposing missing permission codes to ordinary users.
+- Confirm diagnostics can include missing permission codes only when explicitly requested.
+- Confirm a matching permission allows the route.
+
+Test coverage currently asserted:
+
+- route declarations resolve method, route pattern, required permissions and auth state
+- missing route declarations produce `route_permission_missing`
+- ordinary permission-denied responses do not contain `details`
+- diagnostic permission-denied responses can include `missingPermissions`
+- matching permission `audit.view` allows `/api/audit/team-events`
 
 ## Real D1 implementation requirement
 
@@ -254,6 +276,7 @@ Correction now applied:
 - this trace was updated immediately after the test file was created
 - the route-permission middleware plan was recorded before creating that file
 - the trace was updated after route-permission helper creation
+- the route-permission test creation was recorded immediately after the file was created
 - the real D1 application requirement has now been recorded explicitly
 - future implementation steps must update this trace before or alongside code changes
 - future responses should report both implementation progress and trace updates
@@ -277,7 +300,7 @@ Correction for future steps:
 
 No local lint, format, typecheck, test or build result is claimed at this checkpoint.
 
-The new test file has been created but not yet executed in this environment.
+The test files have been created but not yet executed in this environment.
 
 ## Pending next steps
 
@@ -285,7 +308,6 @@ The next implementation slice should be small and trace-updated before or alongs
 
 Candidate next steps:
 
-- create `tests/auth-route-permissions.test.js`
 - add a controlled remote D1 migration application path
 - document environment variables required for Cloudflare Access JWT validation
 - consider splitting the Access resolver into smaller modules if PR review flags the earlier large commit
