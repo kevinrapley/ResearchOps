@@ -90,6 +90,8 @@ require_file "tests/start-page-route-state.test.js"
 require_file "tests/participants-page-route-state.test.js"
 require_file "tests/consent-forms-route-state.test.js"
 require_file "tests/participant-consent-route-state.test.js"
+require_file "tests/auth-foundation-route-state.test.js"
+require_file "tests/auth-route-permissions.test.js"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -220,6 +222,12 @@ node tests/govuk-page-chrome-navigation-route-state.test.js
 
 info "checking GOV.UK breadcrumb and back-link route-state contract"
 node tests/govuk-breadcrumb-back-link-route-state.test.js
+
+info "checking authentication foundation route-state contract"
+node tests/auth-foundation-route-state.test.js
+
+info "checking authentication route-permission contract"
+node tests/auth-route-permissions.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js

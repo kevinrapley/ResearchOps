@@ -29,5 +29,25 @@ jobs:
       - name: Install dependencies without lifecycle scripts
         run: npm ci --ignore-scripts
 
-      - name: Check formatting
-        run: ./node_modules/.bin/prettier -c .
+      - name: Check formatting and capture patch
+        shell: bash
+        run: |
+          set +e
+          ./node_modules/.bin/prettier -c .
+          status=$?
+          set -e
+
+          if [ "$status" -ne 0 ]; then
+            ./node_modules/.bin/prettier --write .
+            git diff -- . > prettier-fix.patch
+            cat prettier-fix.patch
+            exit "$status"
+          fi
+
+      - name: Upload Prettier patch
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-fix.patch
+          path: prettier-fix.patch
+          if-no-files-found: ignore

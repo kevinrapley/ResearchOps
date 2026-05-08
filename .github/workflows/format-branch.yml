@@ -1,0 +1,54 @@
+name: Format branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to format
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-branch-${{ inputs.branch }}
+  cancel-in-progress: false
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Run Prettier format
+        run: npm run format
+
+      - name: Commit formatting changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          git commit -m "Apply Prettier formatting"
+          git push origin HEAD:${{ inputs.branch }}
