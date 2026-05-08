@@ -5,6 +5,10 @@ import {
   routePermissionErrorResponse,
 } from "../infra/cloudflare/src/core/auth/route-permissions.js";
 
+function requiredPermissions(...codes) {
+  return JSON.stringify(codes);
+}
+
 function createD1(declaration) {
   return {
     prepare() {
@@ -38,7 +42,7 @@ function requestFor(path, method = "GET") {
 async function assertDeclaredRouteIsResolved() {
   const env = {
     RESEARCHOPS_D1: createD1({
-      required_permissions_json: '["audit.view"]',
+      required_permissions_json: requiredPermissions("audit.view"),
       auth_required: 1,
     }),
   };
@@ -81,7 +85,7 @@ async function assertMissingRouteFailsClosed() {
 async function assertMissingPermissionIsDeniedWithoutDetails() {
   const env = {
     RESEARCHOPS_D1: createD1({
-      required_permissions_json: '["safeguarding.audit.view"]',
+      required_permissions_json: requiredPermissions("safeguarding.audit.view"),
       auth_required: 1,
     }),
   };
@@ -106,7 +110,7 @@ async function assertMissingPermissionIsDeniedWithoutDetails() {
 async function assertDiagnosticsCanIncludeMissingPermissionCodes() {
   const env = {
     RESEARCHOPS_D1: createD1({
-      required_permissions_json: '["role.assign"]',
+      required_permissions_json: requiredPermissions("role.assign"),
       auth_required: 1,
     }),
   };
@@ -135,7 +139,7 @@ async function assertDiagnosticsCanIncludeMissingPermissionCodes() {
 async function assertMatchingPermissionAllowsRoute() {
   const env = {
     RESEARCHOPS_D1: createD1({
-      required_permissions_json: '["audit.view"]',
+      required_permissions_json: requiredPermissions("audit.view"),
       auth_required: 1,
     }),
   };
