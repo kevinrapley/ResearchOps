@@ -4,21 +4,54 @@
 	"trigger_token_detected": "[reasoning]",
 	"date": "2026-05-08",
 	"repository": "kevinrapley/ResearchOps",
-	"active_branch": "feature/auth-foundation-real-d1-current-main",
+	"active_branch": "feature/live-d1-auth-foundation-migration",
 	"pull_request": {
 		"number": 215,
 		"url": "https://github.com/kevinrapley/ResearchOps/pull/215",
-		"state": "open"
+		"state": "merged"
 	},
 	"status": {
 		"repository_migration_created": true,
 		"manual_d1_apply_workflow_created": true,
-		"live_d1_migration_applied": false,
+		"live_d1_migration_applied": true,
+		"live_d1_migration_evidenced": true,
 		"pull_request_opened": true,
 		"prettier_root_cause_identified": true,
-		"prettier_root_cause": "Prettier reads repository .editorconfig by default. The repository requires tab indentation via indent_style = tab, while earlier temporary file checks were outside the repository tree and used Prettier space defaults.",
-		"format_automation_implemented": true,
-		"latest_format_automation_ci_confirmed": false
+		"format_automation_implemented": true
+	},
+	"live_d1_migration_result": {
+		"workflow_job": "Apply authentication foundation to remote D1",
+		"branch": "feature/live-d1-auth-foundation-migration",
+		"commit_checked_out": "5ee5636cdd38cd984033cbb810a6fa61714a4a32",
+		"database_name": "researchops-d1",
+		"database_id": "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04",
+		"migration_file": "infra/cloudflare/migrations/0001_auth_foundation.sql",
+		"wrangler_version": "4.34.0",
+		"migration_success": true,
+		"total_queries_executed": 23,
+		"rows_read": 30,
+		"rows_written": 148,
+		"database_size_mb": "0.31",
+		"auth_tables_verified": [
+			"auth_audit_events",
+			"auth_events",
+			"auth_identities",
+			"auth_permission_exceptions",
+			"auth_permissions",
+			"auth_role_assignments",
+			"auth_role_permissions",
+			"auth_roles",
+			"auth_route_permissions",
+			"auth_team_memberships",
+			"auth_teams",
+			"auth_users"
+		],
+		"seed_counts_verified": {
+			"permissions": 17,
+			"roles": 6,
+			"role_permissions": 15,
+			"route_permissions": 6
+		}
 	},
 	"changed_files": {
 		"implementation": [
@@ -40,93 +73,34 @@
 		"trace_files": [
 			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md",
 			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-028-format-automation-plan.md",
-			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-029-format-automation-complete.md"
+			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-033-live-d1-migration-branch-created.md",
+			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-034-live-d1-migration-auth-failure.md",
+			"docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-035-live-d1-migration-success.md"
 		]
-	},
-	"prettier_automation": {
-		"explicit_config": {
-			"file": "prettier.config.mjs",
-			"content": "export default { useTabs: true, tabWidth: 2, endOfLine: \"lf\" };",
-			"purpose": "Make the formatting contract visible rather than relying only on .editorconfig."
-		},
-		"strict_check_workflow": {
-			"file": ".github/workflows/format-pr.yml",
-			"behaviour": "Run Prettier check. If it fails, run Prettier write in the runner, print the resulting git diff, upload prettier-fix.patch, then fail the workflow.",
-			"reason": "Future failures show the exact patch rather than only the filename."
-		},
-		"manual_repair_workflow": {
-			"file": ".github/workflows/format-branch.yml",
-			"trigger": "workflow_dispatch",
-			"behaviour": "Check out a named branch, run npm run format, commit and push formatting changes only when there is a diff.",
-			"reason": "Provides a controlled rescue path that commits exact Prettier output to the branch."
-		},
-		"ci_decision": {
-			"normal_lint_stays_strict": true,
-			"do_not_silently_run_prettier_write_before_lint": true,
-			"reason": "CI should detect formatting drift. Repair automation must commit exact output to the branch."
-		}
 	},
 	"checkpoints": [
 		{
-			"id": "026",
-			"title": "Prettier root cause plan",
+			"id": "033",
+			"title": "Live D1 migration branch created",
 			"status": "complete",
-			"summary": "Identified .editorconfig tab indentation as the true root cause and rejected CI auto-formatting as the primary validation fix."
+			"summary": "Created feature/live-d1-auth-foundation-migration to continue live migration work away from direct main commits."
 		},
 		{
-			"id": "027",
-			"title": "Prettier root cause fix complete",
-			"status": "committed_pending_ci_confirmation",
-			"files_changed": ["tests/auth-route-permissions.test.js"],
-			"summary": "Applied repository Prettier output with tab indentation to tests/auth-route-permissions.test.js."
+			"id": "034",
+			"title": "Live D1 migration authentication failure",
+			"status": "superseded_by_successful_rerun",
+			"summary": "First run reached the correct D1 database but failed on Cloudflare token authorisation before migration completion."
 		},
 		{
-			"id": "028",
-			"title": "Format automation plan",
+			"id": "035",
+			"title": "Live D1 migration success",
 			"status": "complete",
-			"summary": "Planned explicit Prettier config, diagnostic PR formatting workflow, and manual branch formatting workflow."
-		},
-		{
-			"id": "029",
-			"title": "Format automation complete",
-			"status": "committed_pending_ci_confirmation",
-			"files_changed": [
-				"prettier.config.mjs",
-				".github/workflows/format-pr.yml",
-				".github/workflows/format-branch.yml"
-			],
-			"summary": "Implemented the automation path: explicit Prettier tab config, exact patch output on PR formatting failure, and manual format-and-commit workflow."
+			"summary": "Successful rerun applied the migration to remote D1 and verified auth tables plus seed counts."
 		}
 	],
-	"real_d1_requirement": {
-		"migration_file": "infra/cloudflare/migrations/0001_auth_foundation.sql",
-		"manual_workflow": ".github/workflows/apply-d1-auth-foundation.yml",
-		"database_name": "researchops-d1",
-		"worker_binding": "RESEARCHOPS_D1",
-		"status": "repository_path_created_live_execution_not_claimed"
-	},
 	"residual_risks": [
-		"The latest format automation still needs repository-level CI confirmation.",
-		"The D1 migration has not yet been run in the live environment.",
-		"Route-permission helper is only wired into identity routes so far."
+		"Route-permission helper is only wired into identity routes so far.",
+		"Cloudflare Access runtime values still need to be configured before authenticated runtime use.",
+		"observability.persist warning remains in infra/cloudflare/wrangler.toml."
 	]
 }
