@@ -1,3 +1,8 @@
+import {
+  assertRoutePermission,
+  routePermissionErrorResponse
+} from "./route-permissions.js";
+
 const PROVIDER = "cloudflare_access";
 
 const JSON_HEADERS = {
@@ -290,6 +295,8 @@ export async function resolveAuthenticatedContext(request, env) {
 export async function handleMeRoute(request, env, apiPath) {
   try {
     const context = await resolveAuthenticatedContext(request, env);
+    await assertRoutePermission(request, env, context);
+
     if (apiPath === "/api/me/permissions") {
       return jsonResponse({
         ok: true,
@@ -304,6 +311,11 @@ export async function handleMeRoute(request, env, apiPath) {
     if (error instanceof AuthError) {
       return jsonResponse({ ok: false, error: error.code, message: error.message }, error.status);
     }
-    return jsonResponse({ ok: false, error: "authentication_error", message: "Authentication could not be completed." }, 500);
+
+    try {
+      return routePermissionErrorResponse(error);
+    } catch {
+      return jsonResponse({ ok: false, error: "authentication_error", message: "Authentication could not be completed." }, 500);
+    }
   }
 }
