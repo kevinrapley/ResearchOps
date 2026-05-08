@@ -20,9 +20,10 @@
     "validation_executed_in_this_environment": false,
     "pull_request_opened": true,
     "pr_readiness_checked": true,
-    "latest_known_ci_failure": "Prettier formatting warning in tests/auth-route-permissions.test.js",
+    "latest_known_ci_failure": "Repeated Prettier formatting warning in tests/auth-route-permissions.test.js",
     "latest_known_ci_failure_fix_committed": true,
-    "latest_known_ci_failure_fix_validated_by_ci": false
+    "latest_known_ci_failure_fix_validated_by_ci": false,
+    "temporary_prettier_check_used_for_latest_fix": true
   },
   "selected_bundles": [
     "github-diamond",
@@ -66,16 +67,10 @@
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
-      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md"
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md"
     ]
-  },
-  "branch_comparison": {
-    "base": "main",
-    "head": "feature/auth-foundation-real-d1-current-main",
-    "status": "ahead",
-    "ahead_by_after_lint_fix": 34,
-    "behind_by_after_lint_fix": 0,
-    "base_commit": "8305adeed3b7e4047f132bc8c50347ce47e6205f"
   },
   "checkpoints": [
     {
@@ -93,8 +88,7 @@
       "kind": "implementation",
       "status": "complete_in_repository",
       "files_changed": ["infra/cloudflare/src/core/auth/access.js"],
-      "summary": "Added a real Cloudflare Access identity resolver that reads Cf-Access-Jwt-Assertion, validates Access JWT structure, signature, expiry and audience, maps the provider identity to a ResearchOps D1 user, and returns active team, roles and permissions.",
-      "non_goals": ["No mock identity behaviour", "No password authentication", "No role-management UI", "No Airtable schema change"]
+      "summary": "Added a real Cloudflare Access identity resolver that reads Cf-Access-Jwt-Assertion, validates Access JWT structure, signature, expiry and audience, maps the provider identity to a ResearchOps D1 user, and returns active team, roles and permissions."
     },
     {
       "id": "003",
@@ -113,13 +107,6 @@
       "summary": "Added tests for identity route fail-closed behaviour, Worker route wiring, absence of mock identity mode, route-permission wiring and D1 migration structure."
     },
     {
-      "id": "005",
-      "title": "Route-permission helper plan",
-      "kind": "trace_plan",
-      "status": "captured_in_main_trace",
-      "summary": "Recorded the plan to add a D1-backed route-permission helper before creating the helper."
-    },
-    {
       "id": "006",
       "title": "Route-permission helper created",
       "kind": "implementation",
@@ -136,13 +123,6 @@
       "summary": "Added tests for declared route resolution, missing-route fail-closed behaviour, ordinary denied response redaction, diagnostic missing permission codes and matching-permission allow behaviour."
     },
     {
-      "id": "008",
-      "title": "Controlled D1 migration path plan",
-      "kind": "trace_plan",
-      "status": "captured_in_main_trace",
-      "summary": "Recorded the plan to create a manual workflow_dispatch path for applying the D1 auth foundation migration to the remote researchops-d1 database."
-    },
-    {
       "id": "009",
       "title": "Controlled D1 migration workflow created",
       "kind": "implementation",
@@ -150,14 +130,6 @@
       "files_changed": [".github/workflows/apply-d1-auth-foundation.yml"],
       "summary": "Added a manual GitHub Actions workflow that requires explicit confirmation inputs and uses Wrangler d1 execute --remote to apply the auth foundation migration, with optional post-apply table and seed checks.",
       "live_environment_status": "workflow_created_not_run"
-    },
-    {
-      "id": "010",
-      "title": "Route-permission wiring plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-010-route-permission-wiring-plan.md",
-      "summary": "Recorded the plan to wire assertRoutePermission into GET /api/me and GET /api/me/permissions before code changes were made."
     },
     {
       "id": "011",
@@ -169,14 +141,6 @@
       "summary": "Recorded that identity routes now call assertRoutePermission(request, env, context) after Cloudflare Access identity resolution and that tests assert this wiring."
     },
     {
-      "id": "012",
-      "title": "Cloudflare operations documentation plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-012-cloudflare-operations-doc-plan.md",
-      "summary": "Recorded the plan to create operational documentation for Cloudflare Access, D1 binding, workflow inputs, live evidence and rollout controls before writing the documentation."
-    },
-    {
       "id": "013",
       "title": "Cloudflare operations documentation complete",
       "kind": "trace_checkpoint",
@@ -186,14 +150,6 @@
       "summary": "Recorded creation of the Cloudflare operations note covering Access runtime values, RESEARCHOPS_D1, researchops-d1, GitHub secrets, D1 workflow inputs, expected tables, seed counts, verification queries, rollout order and evidence requirements."
     },
     {
-      "id": "014",
-      "title": "Validation wiring plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-014-validation-wiring-plan.md",
-      "summary": "Recorded the plan to wire authentication tests into scripts/validate.sh before changing the validation contract."
-    },
-    {
       "id": "015",
       "title": "Validation wiring complete",
       "kind": "trace_checkpoint",
@@ -201,23 +157,6 @@
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
       "files_changed": ["scripts/validate.sh"],
       "summary": "Recorded that scripts/validate.sh now requires and runs tests/auth-foundation-route-state.test.js and tests/auth-route-permissions.test.js."
-    },
-    {
-      "id": "016",
-      "title": "Trace index and JSON plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-016-trace-index-json-plan.md",
-      "files_changed": ["docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json", "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md"],
-      "summary": "Recorded the user correction that the companion JSON trace must be maintained and checkpoint markdown files must be linked from the main trace. This JSON file consolidates checkpoint traces rather than creating individual checkpoint JSON files."
-    },
-    {
-      "id": "017",
-      "title": "PR readiness plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-017-pr-readiness-plan.md",
-      "summary": "Recorded branch comparison before opening a pull request. The branch was ahead of main by 29 commits and behind by 0 before PR creation."
     },
     {
       "id": "018",
@@ -234,7 +173,24 @@
       "status": "complete",
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
       "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Recorded that the long assertRoutePermission call in tests/auth-route-permissions.test.js was reformatted for Prettier. No test behaviour was changed. CI has not yet confirmed the fix."
+      "summary": "Recorded that the long assertRoutePermission call in tests/auth-route-permissions.test.js was reformatted for Prettier. CI later showed another Prettier formatting change remained."
+    },
+    {
+      "id": "020",
+      "title": "Route-permission test lint fix rerun plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md",
+      "summary": "Recorded the repeated CI Prettier failure in tests/auth-route-permissions.test.js and identified the remaining long assertRoutePermission call in assertMissingRouteFailsClosed."
+    },
+    {
+      "id": "021",
+      "title": "Route-permission test lint fix rerun complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md",
+      "files_changed": ["tests/auth-route-permissions.test.js"],
+      "summary": "Recorded that tests/auth-route-permissions.test.js was rewritten to match local Prettier output. A temporary local Prettier check on that file content reported that all matched files use Prettier code style. Repository-level CI confirmation is still pending."
     }
   ],
   "real_d1_requirement": {
@@ -255,7 +211,8 @@
     "validate_script_executed_here": false,
     "test_success_claimed": false,
     "latest_lint_failure_fixed_in_repository": true,
-    "latest_lint_failure_confirmed_fixed_by_ci": false
+    "latest_lint_failure_confirmed_fixed_by_ci": false,
+    "latest_file_level_prettier_check_on_temp_copy_passed": true
   },
   "process_deviations": [
     {
