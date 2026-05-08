@@ -53,8 +53,32 @@ jobs:
       - name: Run validation contract
         run: npm run validate
 
-      - name: Run lint
-        run: npm run lint
+      - name: Check Prettier formatting and capture patch
+        id: prettier
+        shell: bash
+        run: |
+          set +e
+          ./node_modules/.bin/prettier -c .
+          status=$?
+          set -e
+
+          if [ "$status" -ne 0 ]; then
+            ./node_modules/.bin/prettier --write .
+            git diff -- . > prettier-fix.patch
+            cat prettier-fix.patch
+            exit "$status"
+          fi
+
+      - name: Upload Prettier patch
+        if: failure() && steps.prettier.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-fix.patch
+          path: prettier-fix.patch
+          if-no-files-found: ignore
+
+      - name: Run ESLint
+        run: ./node_modules/.bin/eslint .
 
       - name: Run unit tests
         run: npm test
