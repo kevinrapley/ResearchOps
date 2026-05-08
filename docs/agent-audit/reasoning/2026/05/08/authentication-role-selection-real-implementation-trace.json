@@ -12,36 +12,19 @@
     "url": "https://github.com/kevinrapley/ResearchOps/pull/215",
     "state": "open"
   },
-  "companion_markdown_trace": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md",
   "status": {
     "repository_migration_created": true,
     "manual_d1_apply_workflow_created": true,
     "live_d1_migration_applied": false,
-    "validation_executed_in_this_environment": false,
     "pull_request_opened": true,
-    "pr_readiness_checked": true,
     "latest_known_ci_failure": "Repeated Prettier formatting warning in tests/auth-route-permissions.test.js",
     "latest_known_ci_failure_fix_committed": true,
     "latest_known_ci_failure_fix_validated_by_ci": false,
-    "temporary_prettier_check_used_for_latest_fix": true,
-    "repository_level_prettier_write_executed_in_assistant_environment": false
+    "root_cause_identified": true,
+    "root_cause": "Prettier reads repository .editorconfig by default. The repository requires tab indentation via indent_style = tab, while earlier temporary file checks were outside the repository tree and used Prettier space defaults.",
+    "repository_level_prettier_write_executed_in_assistant_environment": false,
+    "prettier_write_simulated_with_repository_editorconfig": true
   },
-  "selected_bundles": [
-    "github-diamond",
-    "researchops-developer",
-    "gov-product-assistant-gold-standard",
-    "govuk-design-system",
-    "cloudflare-core-developer",
-    "cloudflare-developer-platform-bundle",
-    "cloudflare-agents-workbench",
-    "airtable-public-api-developer"
-  ],
-  "skipped_bundles": [
-    {
-      "bundle": "mural-public-api-developer",
-      "reason": "No Mural OAuth, workspace, room, board, widget or sticky-note implementation is in scope for this authentication slice."
-    }
-  ],
   "changed_files": {
     "implementation": [
       ".github/workflows/apply-d1-auth-foundation.yml",
@@ -74,7 +57,9 @@
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md",
-      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md"
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md"
     ]
   },
   "prettier_investigation": {
@@ -85,175 +70,161 @@
       "format_check": "prettier -c ."
     },
     "prettier_version_from_package_json": "^3.6.2",
-    "dedicated_prettier_config_found_by_repository_search": false,
-    "attempted_repository_clone_for_exact_prettier_write": {
-      "attempted": true,
-      "result": "failed",
-      "reason": "container could not resolve github.com"
+    "repository_editorconfig": {
+      "path": ".editorconfig",
+      "indent_style": "tab",
+      "indent_size": "2",
+      "effect": "Prettier reads .editorconfig by default, so JavaScript files are expected to use tab indentation in this repository."
     },
-    "file_level_temp_check": {
-      "command": "npx --yes prettier@3.6.2 -c /tmp/auth-route-permissions-v2.test.js",
-      "result": "All matched files use Prettier code style!"
+    "failed_local_method": {
+      "description": "Temporary file-level checks outside the repository tree passed incorrectly because the repository .editorconfig was absent.",
+      "lesson": "Run Prettier from the repository root or with a matching .editorconfig."
     },
-    "latest_fix_pattern": {
-      "before": "required_permissions_json: '[\"audit.view\"]',",
-      "after": "required_permissions_json: requiredPermissions(\"audit.view\"),",
-      "helper": "function requiredPermissions(...codes) { return JSON.stringify(codes); }",
-      "reason": "Avoid hand-written escaped JSON string fixtures so Prettier has no quote/escape ambiguity to normalise."
+    "correct_reproduction": {
+      "steps": [
+        "Place .editorconfig beside the test file in a temporary repository tree.",
+        "Run npx --yes prettier@3.6.2 -c tests/auth-route-permissions.test.js.",
+        "The check fails when the file uses spaces.",
+        "Run npx --yes prettier@3.6.2 --write tests/auth-route-permissions.test.js.",
+        "The written output uses tabs and then passes Prettier."
+      ]
+    },
+    "exact_fix": {
+      "file": "tests/auth-route-permissions.test.js",
+      "change": "Replace space indentation with repository Prettier output using tab indentation.",
+      "before_example": "import {\n  assertRoutePermission,\n  resolveRoutePermissionDeclaration,\n  routePermissionErrorResponse,\n} from \"../infra/cloudflare/src/core/auth/route-permissions.js\";",
+      "after_example": "import {\n\tassertRoutePermission,\n\tresolveRoutePermissionDeclaration,\n\troutePermissionErrorResponse,\n} from \"../infra/cloudflare/src/core/auth/route-permissions.js\";",
+      "behavioural_impact": "none"
+    },
+    "copilot_workflow_suggestion_assessment": {
+      "suggestion": "Add npx prettier --write . before lint in CI.",
+      "decision": "Do not use as the primary validation fix.",
+      "reason": "CI should detect formatting drift rather than silently mutating the runner workspace. A --write step does not commit the result back to the branch."
     }
   },
   "checkpoints": [
     {
       "id": "001",
       "title": "D1 auth foundation migration",
-      "kind": "implementation",
       "status": "complete_in_repository_not_applied_to_live_d1",
-      "files_changed": ["infra/cloudflare/migrations/0001_auth_foundation.sql"],
-      "summary": "Created the real D1 control-plane migration for users, identities, teams, memberships, permissions, roles, role-permission mappings, role assignments, permission exceptions, auth events, audit events and route permissions. It also seeds permissions, roles, role-permission mappings and route declarations.",
-      "live_environment_status": "not_applied"
+      "files_changed": ["infra/cloudflare/migrations/0001_auth_foundation.sql"]
     },
     {
       "id": "002",
       "title": "Cloudflare Access identity resolver",
-      "kind": "implementation",
       "status": "complete_in_repository",
-      "files_changed": ["infra/cloudflare/src/core/auth/access.js"],
-      "summary": "Added a real Cloudflare Access identity resolver that reads Cf-Access-Jwt-Assertion, validates Access JWT structure, signature, expiry and audience, maps the provider identity to a ResearchOps D1 user, and returns active team, roles and permissions."
+      "files_changed": ["infra/cloudflare/src/core/auth/access.js"]
     },
     {
       "id": "003",
       "title": "Worker route wiring",
-      "kind": "implementation",
       "status": "complete_in_repository",
-      "files_changed": ["infra/cloudflare/src/worker.js"],
-      "summary": "Wired GET /api/me and GET /api/me/permissions through the Cloudflare Access identity resolver and allowed X-ResearchOps-Team-Id as a request header."
+      "files_changed": ["infra/cloudflare/src/worker.js"]
     },
     {
       "id": "004",
       "title": "Authentication foundation route-state tests",
-      "kind": "test",
       "status": "created_not_executed_here",
-      "files_changed": ["tests/auth-foundation-route-state.test.js"],
-      "summary": "Added tests for identity route fail-closed behaviour, Worker route wiring, absence of mock identity mode, route-permission wiring and D1 migration structure."
+      "files_changed": ["tests/auth-foundation-route-state.test.js"]
     },
     {
       "id": "006",
       "title": "Route-permission helper created",
-      "kind": "implementation",
       "status": "complete_in_repository",
-      "files_changed": ["infra/cloudflare/src/core/auth/route-permissions.js"],
-      "summary": "Added a helper that reads route declarations from auth_route_permissions, fails closed where no declaration exists, checks required permissions and avoids exposing missing permission codes unless diagnostics are explicitly requested."
+      "files_changed": ["infra/cloudflare/src/core/auth/route-permissions.js"]
     },
     {
       "id": "007",
       "title": "Route-permission helper tests",
-      "kind": "test",
       "status": "created_not_executed_here",
-      "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Added tests for declared route resolution, missing-route fail-closed behaviour, ordinary denied response redaction, diagnostic missing permission codes and matching-permission allow behaviour."
+      "files_changed": ["tests/auth-route-permissions.test.js"]
     },
     {
       "id": "009",
       "title": "Controlled D1 migration workflow created",
-      "kind": "implementation",
       "status": "complete_in_repository_not_run",
-      "files_changed": [".github/workflows/apply-d1-auth-foundation.yml"],
-      "summary": "Added a manual GitHub Actions workflow that requires explicit confirmation inputs and uses Wrangler d1 execute --remote to apply the auth foundation migration, with optional post-apply table and seed checks.",
-      "live_environment_status": "workflow_created_not_run"
+      "files_changed": [".github/workflows/apply-d1-auth-foundation.yml"]
     },
     {
       "id": "011",
       "title": "Route-permission wiring complete",
-      "kind": "trace_checkpoint",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-011-route-permission-wiring-complete.md",
-      "files_changed": ["infra/cloudflare/src/core/auth/access.js", "tests/auth-foundation-route-state.test.js"],
-      "summary": "Recorded that identity routes now call assertRoutePermission(request, env, context) after Cloudflare Access identity resolution and that tests assert this wiring."
+      "files_changed": ["infra/cloudflare/src/core/auth/access.js", "tests/auth-foundation-route-state.test.js"]
     },
     {
       "id": "013",
       "title": "Cloudflare operations documentation complete",
-      "kind": "trace_checkpoint",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-013-cloudflare-operations-doc-complete.md",
-      "files_changed": ["docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md"],
-      "summary": "Recorded creation of the Cloudflare operations note covering Access runtime values, RESEARCHOPS_D1, researchops-d1, GitHub secrets, D1 workflow inputs, expected tables, seed counts, verification queries, rollout order and evidence requirements."
+      "files_changed": ["docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md"]
     },
     {
       "id": "015",
       "title": "Validation wiring complete",
-      "kind": "trace_checkpoint",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-015-validation-wiring-complete.md",
-      "files_changed": ["scripts/validate.sh"],
-      "summary": "Recorded that scripts/validate.sh now requires and runs tests/auth-foundation-route-state.test.js and tests/auth-route-permissions.test.js."
+      "files_changed": ["scripts/validate.sh"]
     },
     {
       "id": "018",
       "title": "Route-permission test lint fix plan",
-      "kind": "trace_checkpoint",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
-      "summary": "Recorded the CI lint failure from npm run lint. Prettier reported tests/auth-route-permissions.test.js. The planned fix was formatting-only with no behavioural test change."
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md"
     },
     {
       "id": "019",
       "title": "Route-permission test lint fix complete",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
-      "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Recorded that the long assertRoutePermission call in tests/auth-route-permissions.test.js was reformatted for Prettier. CI later showed another Prettier formatting change remained."
+      "status": "superseded_by_027",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md"
     },
     {
       "id": "020",
       "title": "Route-permission test lint fix rerun plan",
-      "kind": "trace_checkpoint",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md",
-      "summary": "Recorded the repeated CI Prettier failure in tests/auth-route-permissions.test.js and identified the remaining long assertRoutePermission call in assertMissingRouteFailsClosed."
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md"
     },
     {
       "id": "021",
       "title": "Route-permission test lint fix rerun complete",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md",
-      "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Recorded that tests/auth-route-permissions.test.js was rewritten to match local Prettier output. A temporary local Prettier check on that file content reported that all matched files use Prettier code style. Repository-level CI later still reported the same file."
+      "status": "superseded_by_027",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md"
     },
     {
       "id": "022",
       "title": "Escaped JSON lint fix plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md",
-      "summary": "Recorded the repeated Prettier failure and identified escaped inline JSON string fixtures as the remaining fragile pattern."
+      "status": "superseded_by_026",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md"
     },
     {
       "id": "023",
       "title": "JSON fixture lint fix plan",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md",
-      "summary": "Planned the resilient correction of replacing inline JSON string fixtures with JSON.stringify through a helper."
+      "status": "superseded_by_026",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md"
     },
     {
       "id": "024",
       "title": "JSON fixture lint fix complete",
-      "kind": "trace_checkpoint",
-      "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md",
-      "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Added requiredPermissions(...codes) and replaced inline JSON string fixtures with requiredPermissions calls. This preserves parser input while removing escaped JSON literal formatting ambiguity."
+      "status": "partially_retained_fixture_improvement_but_not_root_format_fix",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md"
     },
     {
       "id": "025",
       "title": "Prettier tooling findings",
-      "kind": "trace_checkpoint",
+      "status": "superseded_by_026_and_027",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md"
+    },
+    {
+      "id": "026",
+      "title": "Prettier root cause plan",
       "status": "complete",
-      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md",
-      "summary": "Recorded the repository lint scripts, Prettier version, absence of a discovered Prettier config, failed repository clone attempt, file-level Prettier check, latest helper-based fix pattern and draft prevention rule for future instructions."
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-026-prettier-root-cause-plan.md",
+      "summary": "Identified .editorconfig tab indentation as the true root cause and rejected CI auto-formatting as the primary validation fix."
+    },
+    {
+      "id": "027",
+      "title": "Prettier root cause fix complete",
+      "status": "committed_pending_ci_confirmation",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-027-prettier-root-cause-fix-complete.md",
+      "files_changed": ["tests/auth-route-permissions.test.js"],
+      "summary": "Applied the repository Prettier output with tab indentation to tests/auth-route-permissions.test.js. No behavioural test change."
     }
   ],
   "real_d1_requirement": {
@@ -261,12 +232,7 @@
     "manual_workflow": ".github/workflows/apply-d1-auth-foundation.yml",
     "database_name": "researchops-d1",
     "worker_binding": "RESEARCHOPS_D1",
-    "status": "repository_path_created_live_execution_not_claimed",
-    "evidence_required_before_claiming_live_tables": [
-      "successful GitHub Actions run for Apply D1 Authentication Foundation",
-      "successful direct Wrangler execution against --remote",
-      "successful Cloudflare API evidence showing auth tables and seed records exist"
-    ]
+    "status": "repository_path_created_live_execution_not_claimed"
   },
   "validation_status": {
     "new_tests_created": ["tests/auth-foundation-route-state.test.js", "tests/auth-route-permissions.test.js"],
@@ -275,35 +241,26 @@
     "test_success_claimed": false,
     "latest_lint_failure_fixed_in_repository": true,
     "latest_lint_failure_confirmed_fixed_by_ci": false,
-    "latest_file_level_prettier_check_on_temp_copy_passed": true
+    "latest_root_cause_fixed_by_tab_indentation": true
   },
   "prevention_rule_candidate_after_ci_confirmation": {
-    "rule": "Do not hand-write escaped JSON fixtures in JavaScript tests where the target code expects a JSON string. Use JSON.stringify through a named helper, then run npm run format or npx prettier --write <file> before committing.",
-    "example_helper": "function requiredPermissions(...codes) { return JSON.stringify(codes); }",
-    "example_usage": "required_permissions_json: requiredPermissions(\"audit.view\"),"
+    "rule": "Run Prettier from the repository root so it reads .editorconfig. Do not rely on temporary standalone file checks outside the repository tree. JavaScript files inherit indent_style = tab from .editorconfig unless a file-specific override is added.",
+    "commands": [
+      "npm run format",
+      "npx prettier --write tests/auth-route-permissions.test.js",
+      "npm run format:check"
+    ],
+    "do_not": "Do not add prettier --write . as a normal pre-lint step in CI. CI should detect formatting drift; developers or automation should commit formatted output before lint runs."
   },
   "process_deviations": [
     {
-      "summary": "The Access identity resolver commit exceeded the preferred 300-line atomic diff size from AGENTS.md.",
-      "correction": "Future changes should be split into smaller files and commits, with trace checkpoints before or alongside each change."
-    },
-    {
-      "summary": "Repeated formatting fixes were attempted without repository-level Prettier --write execution against a branch checkout.",
-      "correction": "For future formatting failures, prefer running npm run format or npx prettier --write <file> in a real repository checkout before committing; if tool access cannot do that, record the boundary and avoid claiming repository-level formatting success."
+      "summary": "Repeated formatting fixes were attempted without repository-root Prettier context.",
+      "correction": "For future formatting failures, run Prettier from a real repository root or reproduce .editorconfig beside the target file before committing."
     }
   ],
   "residual_risks": [
-    "Cloudflare Access JWT validation depends on environment configuration for certificates and audience.",
+    "The latest lint fix still needs repository-level CI confirmation.",
     "The D1 migration has not yet been run in the live environment.",
-    "The route wiring has not yet been validated by executed tests.",
-    "Route-permission helper is only wired into identity routes so far.",
-    "The latest lint fix still needs repository-level CI confirmation."
-  ],
-  "next_candidates": [
-    "Wait for PR CI to rerun and inspect any new failure.",
-    "If Prettier still fails, obtain exact Prettier write diff from CI or run npm run format in a repository checkout and commit the resulting file.",
-    "After CI confirms the fix, create permanent repository guidance based on checkpoint 025.",
-    "Apply the D1 migration through the manual workflow after review or explicit release decision.",
-    "Wire route-permission checks into the next protected product endpoint in a narrow slice."
+    "Route-permission helper is only wired into identity routes so far."
   ]
 }
