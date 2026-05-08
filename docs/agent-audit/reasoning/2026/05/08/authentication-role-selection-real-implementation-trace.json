@@ -23,7 +23,8 @@
     "latest_known_ci_failure": "Repeated Prettier formatting warning in tests/auth-route-permissions.test.js",
     "latest_known_ci_failure_fix_committed": true,
     "latest_known_ci_failure_fix_validated_by_ci": false,
-    "temporary_prettier_check_used_for_latest_fix": true
+    "temporary_prettier_check_used_for_latest_fix": true,
+    "repository_level_prettier_write_executed_in_assistant_environment": false
   },
   "selected_bundles": [
     "github-diamond",
@@ -69,8 +70,37 @@
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-018-lint-fix-plan.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-019-lint-fix-complete.md",
       "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md",
-      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md"
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md",
+      "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md"
     ]
+  },
+  "prettier_investigation": {
+    "reported_file": "tests/auth-route-permissions.test.js",
+    "repository_scripts": {
+      "lint": "prettier -c . && eslint .",
+      "format": "prettier -w .",
+      "format_check": "prettier -c ."
+    },
+    "prettier_version_from_package_json": "^3.6.2",
+    "dedicated_prettier_config_found_by_repository_search": false,
+    "attempted_repository_clone_for_exact_prettier_write": {
+      "attempted": true,
+      "result": "failed",
+      "reason": "container could not resolve github.com"
+    },
+    "file_level_temp_check": {
+      "command": "npx --yes prettier@3.6.2 -c /tmp/auth-route-permissions-v2.test.js",
+      "result": "All matched files use Prettier code style!"
+    },
+    "latest_fix_pattern": {
+      "before": "required_permissions_json: '[\"audit.view\"]',",
+      "after": "required_permissions_json: requiredPermissions(\"audit.view\"),",
+      "helper": "function requiredPermissions(...codes) { return JSON.stringify(codes); }",
+      "reason": "Avoid hand-written escaped JSON string fixtures so Prettier has no quote/escape ambiguity to normalise."
+    }
   },
   "checkpoints": [
     {
@@ -190,7 +220,40 @@
       "status": "complete",
       "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md",
       "files_changed": ["tests/auth-route-permissions.test.js"],
-      "summary": "Recorded that tests/auth-route-permissions.test.js was rewritten to match local Prettier output. A temporary local Prettier check on that file content reported that all matched files use Prettier code style. Repository-level CI confirmation is still pending."
+      "summary": "Recorded that tests/auth-route-permissions.test.js was rewritten to match local Prettier output. A temporary local Prettier check on that file content reported that all matched files use Prettier code style. Repository-level CI later still reported the same file."
+    },
+    {
+      "id": "022",
+      "title": "Escaped JSON lint fix plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md",
+      "summary": "Recorded the repeated Prettier failure and identified escaped inline JSON string fixtures as the remaining fragile pattern."
+    },
+    {
+      "id": "023",
+      "title": "JSON fixture lint fix plan",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md",
+      "summary": "Planned the resilient correction of replacing inline JSON string fixtures with JSON.stringify through a helper."
+    },
+    {
+      "id": "024",
+      "title": "JSON fixture lint fix complete",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md",
+      "files_changed": ["tests/auth-route-permissions.test.js"],
+      "summary": "Added requiredPermissions(...codes) and replaced inline JSON string fixtures with requiredPermissions calls. This preserves parser input while removing escaped JSON literal formatting ambiguity."
+    },
+    {
+      "id": "025",
+      "title": "Prettier tooling findings",
+      "kind": "trace_checkpoint",
+      "status": "complete",
+      "checkpoint_file": "docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-checkpoint-025-prettier-tooling-findings.md",
+      "summary": "Recorded the repository lint scripts, Prettier version, absence of a discovered Prettier config, failed repository clone attempt, file-level Prettier check, latest helper-based fix pattern and draft prevention rule for future instructions."
     }
   ],
   "real_d1_requirement": {
@@ -214,10 +277,19 @@
     "latest_lint_failure_confirmed_fixed_by_ci": false,
     "latest_file_level_prettier_check_on_temp_copy_passed": true
   },
+  "prevention_rule_candidate_after_ci_confirmation": {
+    "rule": "Do not hand-write escaped JSON fixtures in JavaScript tests where the target code expects a JSON string. Use JSON.stringify through a named helper, then run npm run format or npx prettier --write <file> before committing.",
+    "example_helper": "function requiredPermissions(...codes) { return JSON.stringify(codes); }",
+    "example_usage": "required_permissions_json: requiredPermissions(\"audit.view\"),"
+  },
   "process_deviations": [
     {
       "summary": "The Access identity resolver commit exceeded the preferred 300-line atomic diff size from AGENTS.md.",
       "correction": "Future changes should be split into smaller files and commits, with trace checkpoints before or alongside each change."
+    },
+    {
+      "summary": "Repeated formatting fixes were attempted without repository-level Prettier --write execution against a branch checkout.",
+      "correction": "For future formatting failures, prefer running npm run format or npx prettier --write <file> in a real repository checkout before committing; if tool access cannot do that, record the boundary and avoid claiming repository-level formatting success."
     }
   ],
   "residual_risks": [
@@ -225,12 +297,13 @@
     "The D1 migration has not yet been run in the live environment.",
     "The route wiring has not yet been validated by executed tests.",
     "Route-permission helper is only wired into identity routes so far.",
-    "The latest lint fix still needs CI confirmation."
+    "The latest lint fix still needs repository-level CI confirmation."
   ],
   "next_candidates": [
     "Wait for PR CI to rerun and inspect any new failure.",
+    "If Prettier still fails, obtain exact Prettier write diff from CI or run npm run format in a repository checkout and commit the resulting file.",
+    "After CI confirms the fix, create permanent repository guidance based on checkpoint 025.",
     "Apply the D1 migration through the manual workflow after review or explicit release decision.",
-    "Wire route-permission checks into the next protected product endpoint in a narrow slice.",
-    "Continue role-management UI and role-assignment API in separate slices."
+    "Wire route-permission checks into the next protected product endpoint in a narrow slice."
   ]
 }
