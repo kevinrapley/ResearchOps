@@ -27,10 +27,10 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 - Live D1 migration has not been applied.
 - Repository migration and manual D1 workflow exist.
 - Authentication tests are wired into `npm run validate`.
-- CI reported repeated Prettier formatting failures in `tests/auth-route-permissions.test.js`.
-- A second formatting-only fix has been committed.
-- A temporary local Prettier check on the file content reported: `All matched files use Prettier code style!`
-- Repository-level CI has not yet confirmed the fix.
+- CI repeatedly reported Prettier formatting failures in `tests/auth-route-permissions.test.js`.
+- The latest fix removes fragile inline JSON string fixtures and uses `JSON.stringify` through a helper.
+- A temporary local Prettier 3.6.2 check on the planned file content passed.
+- Repository-level CI has not yet confirmed the latest fix.
 
 ## Checkpoint index
 
@@ -48,6 +48,9 @@ The checkpoint markdown files are used to keep this large build readable. Their 
 | 019 | [`authentication-role-selection-checkpoint-019-lint-fix-complete.md`](authentication-role-selection-checkpoint-019-lint-fix-complete.md) | Complete |
 | 020 | [`authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md`](authentication-role-selection-checkpoint-020-lint-fix-rerun-plan.md) | Complete |
 | 021 | [`authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md`](authentication-role-selection-checkpoint-021-lint-fix-rerun-complete.md) | Complete |
+| 022 | [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md) | Complete |
+| 023 | [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md) | Complete |
+| 024 | [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md) | Complete |
 
 ## Files changed so far on this branch
 
@@ -70,7 +73,7 @@ Agent trace files:
 
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.md`
 - `docs/agent-audit/reasoning/2026/05/08/authentication-role-selection-real-implementation-trace.json`
-- checkpoint markdown files 010 to 021
+- checkpoint markdown files 010 to 024
 
 ## Implementation checkpoints
 
@@ -307,7 +310,43 @@ Purpose:
 
 - Rewrite `tests/auth-route-permissions.test.js` to match local Prettier output.
 - Record that a temporary file-level Prettier check reported `All matched files use Prettier code style!`.
-- No test behaviour was changed.
+- CI later still reported the same file.
+
+### Checkpoint 22: escaped JSON lint fix plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md`](authentication-role-selection-checkpoint-022-lint-fix-escaped-json-plan.md)
+
+Purpose:
+
+- Record the repeated Prettier failure and identify escaped inline JSON string fixtures as the remaining fragile pattern.
+
+### Checkpoint 23: JSON fixture lint fix plan
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md`](authentication-role-selection-checkpoint-023-lint-fix-json-fixture-plan.md)
+
+Purpose:
+
+- Plan the resilient correction of replacing inline JSON string fixtures with `JSON.stringify` through a helper.
+
+### Checkpoint 24: JSON fixture lint fix complete
+
+Trace file created:
+
+- [`authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md`](authentication-role-selection-checkpoint-024-lint-fix-json-fixture-complete.md)
+
+File changed:
+
+- `tests/auth-route-permissions.test.js`
+
+Purpose:
+
+- Add `requiredPermissions(...codes)` helper.
+- Replace inline JSON string fixtures with `requiredPermissions("...")` calls.
+- Preserve the same JSON string value consumed by the route-permission parser.
 
 ## Real D1 implementation requirement
 
@@ -325,8 +364,8 @@ Required next implementation controls:
 
 - Initial CI lint failed on Prettier formatting in `tests/auth-route-permissions.test.js`.
 - CI repeated the Prettier formatting failure for the same file.
-- A second formatting-only fix has been committed.
-- A temporary file-level Prettier check on the file content passed.
+- The latest fix replaces inline JSON fixtures with a helper to remove formatting ambiguity.
+- A temporary Prettier 3.6.2 check on the planned file content passed.
 - CI has not yet confirmed that the repository-level check passes.
 - No live D1 migration has been run.
 
