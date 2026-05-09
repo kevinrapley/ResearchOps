@@ -75,11 +75,23 @@
 				"auth-runtime-bootstrap.sql",
 				"auth-runtime-bootstrap-verify.sql"
 			],
-			"commits_generated_sql": false
+			"commits_generated_sql": false,
+			"deterministic_id_strategy": {
+				"review_issue": "The initial membership and assignment IDs used the team suffix only, so a different admin email bootstrapped into the same team could hit primary-key conflicts before the unique user/team or role-assignment conflict handlers applied.",
+				"fix": "Membership and assignment IDs now include team material, user/email material and a deterministic SHA-256 digest of teamId:email.",
+				"id_components": [
+					"teamSuffix = stableSuffix(teamId, 40)",
+					"userSuffix = stableSuffix(email, 40)",
+					"principalDigest = sha256(teamId:email).slice(0, 16)",
+					"principalSuffix = teamSuffix_userSuffix_principalDigest"
+				],
+				"outcome": "Reruns for the same user and team stay idempotent, while different admin emails in the same team receive different primary IDs."
+			}
 		},
 		"validation": {
 			"test_path": "tests/auth-runtime-bootstrap-route-state.test.js",
-			"wired_into": "scripts/validate.sh"
+			"wired_into": "scripts/validate.sh",
+			"review_fix_coverage": "Tests now assert that the generator uses stableDigest, teamSuffix, userSuffix and principalSuffix for deterministic IDs."
 		}
 	},
 	"safeguarding_boundary": {
