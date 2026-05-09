@@ -6,13 +6,13 @@ const workflowSource = fs.readFileSync('.github/workflows/bootstrap-d1-auth-runt
 const generatorSource = fs.readFileSync('scripts/auth-runtime-bootstrap.mjs', 'utf8');
 
 function assertAccessLinksSeededUsersByEmail() {
-	assert.match(accessSource, /async function findUserByEmail\(db, email\)/);
-	assert.match(accessSource, /lower\(email\) = lower\(\?\)/);
-	assert.match(accessSource, /async function linkAccessIdentityToUser\(db, user, payload\)/);
+	assert.match(accessSource, /async function findUserByEmail/);
+	assert.match(accessSource, /lower\(email\) = lower/);
+	assert.match(accessSource, /async function linkAccessIdentityToUser/);
 	assert.match(accessSource, /INSERT OR IGNORE INTO auth_identities/);
-	assert.match(accessSource, /const seededUser = await findUserByEmail\(db, email\);/);
-	assert.match(accessSource, /return linkAccessIdentityToUser\(db, seededUser, payload\);/);
-	assert.match(accessSource, /const pendingUser = await createPendingUserForAccessPayload\(db, payload\);/);
+	assert.match(accessSource, /const seededUser = await findUserByEmail/);
+	assert.match(accessSource, /return linkAccessIdentityToUser/);
+	assert.match(accessSource, /const pendingUser = await createPendingUserForAccessPayload/);
 }
 
 function assertBootstrapWorkflowIsManualAndGuarded() {
@@ -50,6 +50,19 @@ function assertBootstrapGeneratorCreatesRequiredRecords() {
 	assert.match(generatorSource, /ON CONFLICT\(user_id, role_id, scope_type, scope_id\) DO UPDATE/);
 }
 
+function assertBootstrapIdsIncludeTeamAndUser() {
+	assert.match(generatorSource, /import crypto from 'node:crypto';/);
+	assert.match(generatorSource, /function stableDigest/);
+	assert.match(generatorSource, /const teamSuffix = stableSuffix\(teamId, 40\);/);
+	assert.match(generatorSource, /const userSuffix = stableSuffix\(email, 40\);/);
+	assert.match(generatorSource, /const principalDigest = stableDigest/);
+	assert.match(generatorSource, /const principalSuffix =/);
+	assert.match(generatorSource, /const membershipId = `mem_bootstrap_/);
+	assert.match(generatorSource, /const teamAdminAssignmentId = `asn_bootstrap_team_admin_/);
+	assert.match(generatorSource, /const safeguardingAssignmentId = `asn_bootstrap_safeguarding_/);
+}
+
 assertAccessLinksSeededUsersByEmail();
 assertBootstrapWorkflowIsManualAndGuarded();
 assertBootstrapGeneratorCreatesRequiredRecords();
+assertBootstrapIdsIncludeTeamAndUser();
