@@ -12,7 +12,7 @@ Previous slice: authentication role assignment API, merged through PR #219.
 
 ## Purpose
 
-A Team Admin account now exists in live D1 and the role-assignment API has been merged into `main`.
+A Team Admin account exists in live D1 and the role-assignment API has been merged into `main`.
 
 This slice adds a Team Admin user interface for assigning D1-backed roles to existing active team members.
 
@@ -26,7 +26,28 @@ The page is:
 
 The first iteration proved the plumbing. It loaded `/api/me`, detected `role.assign` and submitted to `POST /api/auth/role-assignments`.
 
-The second iteration reworks the page as a safer administrative journey rather than a diagnostic form.
+The second iteration reworked the page as a safer administrative journey rather than a diagnostic form.
+
+The final PR #220 pass tightened the page against GOV.UK component conventions, removed the remaining project-level navigation, moved breadcrumbs before the main landmark, removed technical permission codes from the user-facing UI and locked those choices into route-state tests.
+
+## Final validation status
+
+The latest checked PR head was:
+
+```text
+1198b7aa51987ab0abe6a257eb7376c813d26b51
+```
+
+GitHub Actions for that head reported success for:
+
+- Format pull request
+- QA — Broken links (Lychee)
+- Accessibility audit (pa11y-ci)
+- Validate ResearchOps
+- qa-bdd
+- CI
+- Release Gate
+- Worker CI
 
 ## UI behaviour
 
@@ -72,29 +93,52 @@ Page:
 public/pages/team/role-assignments/index.html
 ```
 
-The second iteration page includes:
+The page includes:
 
+- breadcrumb navigation before the main landmark
 - compact team-scope panel
 - team member email field
 - user ID field inside a details component
 - role radios with role descriptions
-- role summary panel with permission codes
+- role summary panel with plain-language abilities
 - governed access-duration radios
 - conditional day, month and year expiry date input
 - audit reason textarea
 - sensitive-role confirmation checkbox
 - Safeguarding Lead confirmation checkbox
 - error summary
-- check-and-confirm panel
+- check-and-confirm summary list
 - success and error result panels
+
+## Design decision: top-level admin information architecture
+
+The page is now treated as a top-level administration area for the ResearchOps installation.
+
+The page uses breadcrumb navigation:
+
+```text
+Home > Team administration
+```
+
+The previous `Back to projects` link has been removed. No other back button or back link is shown.
+
+The `Clear form` reset button has also been removed because clearing the whole form is not a primary user need and creates avoidable accidental-reset risk.
+
+The breadcrumb is placed before:
+
+```text
+<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+```
+
+The route-state test now asserts this ordering so the page does not regress to breadcrumbs inside the main landmark.
 
 ## Design decision: remove self-access panel
 
-The first iteration showed a large “Your current access” panel.
+The first iteration showed a large `Your current access` panel.
 
 That was useful for proving authentication, but it made the page talk about the admin when the task is to assign access to another person.
 
-The second iteration keeps the permission check but reduces the successful state to team scope.
+The current page keeps the permission check but reduces the successful state to team scope.
 
 This shifts the page from an authentication diagnostic to a role-assignment task.
 
@@ -108,6 +152,8 @@ The user ID field is treated as a secondary escape route and is hidden inside:
 Use a user ID instead
 ```
 
+No user ID example is shown. The copy tells admins to use the user ID only when copied from ResearchOps.
+
 The user ID field uses a half-width input.
 
 This reflects the likely content length and reduces accidental use of internal identifiers.
@@ -116,7 +162,7 @@ This reflects the likely content length and reduces accidental use of internal i
 
 The first iteration used a select.
 
-The second iteration uses radios so all role choices and short descriptions are visible at the point of decision.
+The current page uses radios so all role choices and short descriptions are visible at the point of decision.
 
 Roles shown:
 
@@ -127,7 +173,9 @@ Roles shown:
 - Safeguarding Lead
 - Team Admin
 
-The selected role still updates a visible role summary and permission-code panel.
+The selected role updates a visible role summary.
+
+The summary now shows plain-language abilities only. It does not show technical permission codes such as `governed.create`, `governed.edit`, `safeguarding.view` or `team.manage`.
 
 ## Design decision: governed duration instead of arbitrary date-time
 
@@ -135,7 +183,7 @@ The first iteration used a free `datetime-local` input and helper text that said
 
 That was misleading because the system is intended to govern role assignment through expiry policy.
 
-The second iteration asks:
+The current page asks:
 
 ```text
 How long should this role last?
@@ -155,6 +203,18 @@ If the admin chooses a specific date, the UI reveals day, month and year fields.
 
 The client converts the chosen duration into `expiresAt` for the API request. The server remains authoritative.
 
+## Design decision: GOV.UK component conformance pass
+
+The final pass tightened the markup and styles around GOV.UK component conventions:
+
+- breadcrumb navigation replaces the back link
+- details component uses `govuk-details__summary` and `govuk-details__summary-text`
+- role and duration choices use GOV.UK radio markup
+- sensitive confirmations use GOV.UK-style warning text plus checkbox fieldsets
+- the check-and-confirm state uses summary-list classes
+- width utility classes are used for two-thirds and one-half input widths
+- plain-language role abilities replace technical permission codes
+
 ## Client implementation
 
 Client script:
@@ -169,12 +229,12 @@ The script:
 - detects `role.assign`
 - hides the form when role assignment is unavailable
 - shows team scope when role assignment is available
-- presents role metadata and permission codes
+- presents role metadata as plain-language abilities
 - reveals sensitive-role confirmations only when needed
-- reveals custom expiry date inputs only when “Until a specific date” is selected
+- reveals custom expiry date inputs only when `Until a specific date` is selected
 - validates the form before the check-and-confirm panel
 - prevents POST during ordinary form submit
-- builds the review summary
+- builds the GOV.UK summary-list review state
 - sends the API request only from the confirm button
 - shows success and error responses
 
@@ -186,17 +246,19 @@ Stylesheet:
 public/css/auth-role-assignments.css
 ```
 
-Second iteration styling covers:
+Current styling covers:
 
 - compact team-scope panel
 - blocked-access state
 - two-thirds width email field
 - half-width user ID field
 - two-thirds width reason textarea
-- radio layout
+- GOV.UK details arrow affordance
+- radio label and hint alignment
 - GOV.UK-style date input sizing
-- sensitive confirmation blocks
-- check-and-confirm panel
+- GOV.UK-style warning text
+- checkbox confirmation blocks
+- summary-list review state
 - success and error result panels
 - responsive full-width behaviour on small screens
 
@@ -245,8 +307,13 @@ tests/auth-role-assignment-ui-route-state.test.js
 The test now checks:
 
 - page structure
+- breadcrumb-based admin information architecture
+- breadcrumb placement before the main landmark
+- removal of back links
+- removal of the clear form reset control
 - removal of the self-access panel from the successful state
 - team-scope messaging
+- user ID details component without a user ID example
 - role radios instead of select
 - governed duration radios
 - conditional custom date inputs
@@ -258,7 +325,9 @@ The test now checks:
 - request contract fields
 - client validation messages
 - check-and-confirm before POST
-- visible role metadata and permission codes
+- plain-language role abilities
+- absence of technical permission codes in the UI
+- GOV.UK warning text, checkbox and summary-list hooks
 - stylesheet hooks for width affordance and review state
 
 The test is wired into:
@@ -275,7 +344,7 @@ The visual walkthrough registry was previously updated to include:
 /pages/team/role-assignments/index.html
 ```
 
-The second iteration updates the walkthrough state to wait for:
+The walkthrough state waits for:
 
 ```text
 You are assigning roles in
@@ -371,6 +440,19 @@ permissions include role.assign
 This evidence showed the page could detect the seeded Team Admin context once Cloudflare Access AUD and team-domain configuration were corrected outside this repository.
 
 Raw personal identifiers are not committed in this trace.
+
+## Final stabilisation pass
+
+A final stabilisation pass was completed on PR #220.
+
+It:
+
+- moved breadcrumb navigation before the main landmark
+- repaired the role-assignment page markup after a compacted intermediate edit
+- removed a transient stray non-ASCII artefact introduced during editing
+- asserted breadcrumb placement in the route-state test
+- confirmed the PR was mergeable after the pass
+- confirmed the latest checked CI set was green
 
 ## Product documentation
 
