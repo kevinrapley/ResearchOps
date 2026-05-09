@@ -6,7 +6,7 @@ const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', '
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
 
 function assertPageStructure() {
-	assert.match(pageSource, /<title>Assign a role to a team member — ResearchOps Demo Suite<\/title>/);
+	assert.match(pageSource, /<title>Assign a role to a team member [-—] ResearchOps Demo Suite<\/title>/);
 	assert.match(pageSource, /id="role-assignment-title"/);
 	assert.match(pageSource, /Assign a role to a team member/);
 	assert.match(pageSource, /id="auth-context"/);
@@ -31,12 +31,29 @@ function assertPageStructure() {
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
+function assertTopLevelAdminInformationArchitecture() {
+	assert.match(pageSource, /govuk-breadcrumbs/);
+	assert.match(pageSource, />Home</);
+	assert.match(pageSource, />Team administration</);
+	assert.doesNotMatch(pageSource, /govuk-back-link/);
+	assert.doesNotMatch(pageSource, /Back to projects/);
+	assert.doesNotMatch(pageSource, /type="reset"/);
+	assert.doesNotMatch(pageSource, /Clear form/);
+}
+
 function assertCurrentAccessPanelIsReducedToTeamScope() {
 	assert.doesNotMatch(pageSource, /Your current access/);
 	assert.match(pageSource, /Team scope/);
 	assert.match(scriptSource, /You are assigning roles in/);
 	assert.match(scriptSource, /You cannot assign roles/);
 	assert.doesNotMatch(scriptSource, /Current roles:/);
+}
+
+function assertUserIdUsesDetailsWithoutExample() {
+	assert.match(pageSource, /govuk-details__summary-text/);
+	assert.match(pageSource, /Use a user ID instead/);
+	assert.doesNotMatch(pageSource, /usr_bootstrap/);
+	assert.doesNotMatch(pageSource, /For example, <code>/);
 }
 
 function assertRoleOptionsUseRadios() {
@@ -87,7 +104,7 @@ function assertClientBuildsCorrectRequestContract() {
 
 function assertClientValidatesBeforeReview() {
 	assert.match(scriptSource, /function validate\(values\)/);
-	assert.match(scriptSource, /Enter a team member’s email address or user ID/);
+	assert.match(scriptSource, /Enter a team member's email address or user ID/);
 	assert.match(scriptSource, /Select the role they need/);
 	assert.match(scriptSource, /Select how long this role should last/);
 	assert.match(scriptSource, /Enter a real expiry date/);
@@ -104,41 +121,59 @@ function assertNoPostBeforeConfirm() {
 	assert.match(scriptSource, /dom\.confirm\?\.addEventListener\("click", submitAssignment\)/);
 }
 
-function assertRoleMetadataIsVisibleClientSide() {
-	assert.match(scriptSource, /const ROLE_DETAILS = Object\.freeze/);
-	assert.match(scriptSource, /governed\.create/);
-	assert.match(scriptSource, /governed\.edit/);
-	assert.match(scriptSource, /governed\.review/);
-	assert.match(scriptSource, /governed\.approve/);
-	assert.match(scriptSource, /recommendation\.own/);
-	assert.match(scriptSource, /safeguarding\.view/);
-	assert.match(scriptSource, /safeguarding\.audit\.view/);
-	assert.match(scriptSource, /team\.manage/);
-	assert.match(scriptSource, /role\.assign/);
+function assertRoleAbilitiesArePlainLanguage() {
+	assert.match(scriptSource, /abilities/);
+	assert.match(scriptSource, /View restricted safeguarding details/);
+	assert.match(scriptSource, /Record safeguarding observations/);
+	assert.match(scriptSource, /Resolve safeguarding concerns/);
+	assert.match(scriptSource, /View safeguarding audit events/);
+	assert.match(scriptSource, /Manage team members and team settings/);
+	assert.match(scriptSource, /Assign roles/);
+	assert.match(scriptSource, /View general audit events/);
+	assert.doesNotMatch(scriptSource, /governed\.create/);
+	assert.doesNotMatch(scriptSource, /governed\.edit/);
+	assert.doesNotMatch(scriptSource, /governed\.review/);
+	assert.doesNotMatch(scriptSource, /governed\.approve/);
+	assert.doesNotMatch(scriptSource, /recommendation\.own/);
+	assert.doesNotMatch(scriptSource, /safeguarding\.view/);
+	assert.doesNotMatch(scriptSource, /safeguarding\.audit\.view/);
+	assert.doesNotMatch(scriptSource, /team\.manage/);
+	assert.doesNotMatch(pageSource, /governed\.create/);
+	assert.doesNotMatch(pageSource, /safeguarding\.view/);
+}
+
+function assertGOVUKComponentMarkup() {
+	assert.match(pageSource, /govuk-warning-text/);
+	assert.match(pageSource, /govuk-checkboxes/);
+	assert.match(scriptSource, /govuk-summary-list/);
+	assert.match(scriptSource, /govuk-summary-list__row/);
+	assert.match(scriptSource, /govuk-summary-list__actions/);
 }
 
 function assertStylesExist() {
 	assert.match(styleSource, /\.auth-role-assignment-scope__panel/);
-	assert.match(styleSource, /\.auth-role-assignment-input--email/);
-	assert.match(styleSource, /width: 66\.66%/);
-	assert.match(styleSource, /\.auth-role-assignment-input--user-id/);
-	assert.match(styleSource, /width: 50%/);
+	assert.match(styleSource, /width-two-thirds/);
+	assert.match(styleSource, /width-one-half/);
+	assert.match(styleSource, /govuk-details__summary::before/);
 	assert.match(styleSource, /\.auth-role-assignment-radios/);
 	assert.match(styleSource, /\.auth-role-assignment-custom-date/);
-	assert.match(styleSource, /\.auth-role-assignment-sensitive/);
-	assert.match(styleSource, /\.auth-role-assignment-review/);
+	assert.match(styleSource, /govuk-warning-text/);
+	assert.match(styleSource, /govuk-summary-list/);
 	assert.match(styleSource, /\.auth-role-assignment-result--success/);
 	assert.match(styleSource, /\.auth-role-assignment-result--error/);
 	assert.match(styleSource, /transparency begins in the cascade/);
 }
 
 assertPageStructure();
+assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
+assertUserIdUsesDetailsWithoutExample();
 assertRoleOptionsUseRadios();
 assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
 assertClientBuildsCorrectRequestContract();
 assertClientValidatesBeforeReview();
 assertNoPostBeforeConfirm();
-assertRoleMetadataIsVisibleClientSide();
+assertRoleAbilitiesArePlainLanguage();
+assertGOVUKComponentMarkup();
 assertStylesExist();
