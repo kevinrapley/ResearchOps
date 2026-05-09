@@ -4,12 +4,14 @@
    Scope:      Team role assignment UI
    ========================================================================== */
 
-.govuk-\!-width-two-thirds {
+.govuk-\!-width-two-thirds,
+[class~="govuk-!-width-two-thirds"] {
 	width: 66.66% !important;
 	max-width: 100%;
 	}
 
-.govuk-\!-width-one-half {
+.govuk-\!-width-one-half,
+[class~="govuk-!-width-one-half"] {
 	width: 50% !important;
 	max-width: 100%;
 	}
@@ -118,44 +120,96 @@
 	border-left: 5px solid #b1b4b6;
 	}
 
-.auth-role-assignment-radios {
+.auth-role-assignment-radios,
+.auth-role-assignment-checkboxes {
 	max-width: 760px;
 	}
 
 .auth-role-assignment-radios .govuk-radios__item {
-	display: grid;
-	gap: 2px 10px;
-	grid-template-columns: 32px 1fr;
-	align-items: start;
+	display: block;
+	position: relative;
 	min-height: 40px;
-	margin-bottom: 15px;
+	margin-bottom: 10px;
+	padding-left: 40px;
+	clear: left;
 	}
 
 .auth-role-assignment-radios .govuk-radios__input {
-	grid-column: 1;
-	grid-row: 1 / span 2;
-	width: 32px;
-	height: 32px;
+	position: absolute;
+	z-index: 1;
+	top: -2px;
+	left: -2px;
+	width: 44px;
+	height: 44px;
 	margin: 0;
+	opacity: 0;
+	cursor: pointer;
 	}
 
 .auth-role-assignment-radios .govuk-radios__label {
-	grid-column: 2;
-	grid-row: 1;
+	display: inline-block;
 	margin-bottom: 0;
-	padding-top: 3px;
+	padding: 8px 15px 5px;
+	cursor: pointer;
+	touch-action: manipulation;
 	font-weight: 700;
+	line-height: 1.25;
+	}
+
+.auth-role-assignment-radios .govuk-radios__label::before {
+	content: "";
+	box-sizing: border-box;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 40px;
+	height: 40px;
+	border: 2px solid currentColor;
+	border-radius: 50%;
+	background: transparent;
+	}
+
+.auth-role-assignment-radios .govuk-radios__label::after {
+	content: "";
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 0;
+	height: 0;
+	border: 10px solid currentColor;
+	border-radius: 50%;
+	opacity: 0;
+	background: currentColor;
+	}
+
+.auth-role-assignment-radios .govuk-radios__input:focus + .govuk-radios__label::before {
+	border-width: 4px;
+	outline: 3px solid transparent;
+	outline-offset: 1px;
+	box-shadow: 0 0 0 4px #ffdd00;
+	}
+
+.auth-role-assignment-radios .govuk-radios__input:checked + .govuk-radios__label::after {
+	opacity: 1;
 	}
 
 .auth-role-assignment-radios .govuk-radios__hint {
-	grid-column: 2;
-	grid-row: 2;
-	margin: 0;
+	display: block;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-right: 15px;
+	padding-left: 15px;
 	color: #505a5f;
+	line-height: 1.25;
+	}
+
+.auth-role-assignment-radios .govuk-radios__hint[data-clicks-radio="true"] {
+	cursor: pointer;
 	}
 
 .auth-role-assignment-summary {
 	max-width: 760px;
+	margin-top: 20px;
 	margin-bottom: 20px;
 	padding: 20px;
 	border-left: 5px solid #1d70b8;
@@ -164,6 +218,11 @@
 
 .auth-role-assignment-summary .govuk-heading-s {
 	margin-top: 0;
+	margin-bottom: 10px;
+	}
+
+.auth-role-assignment-summary p:last-child {
+	margin-bottom: 0;
 	}
 
 .auth-role-assignment-summary__abilities {
@@ -235,6 +294,9 @@
 .auth-role-assignment-sensitive {
 	max-width: 760px;
 	margin-bottom: 20px;
+	padding: 0;
+	border: 0;
+	background: transparent;
 	}
 
 .auth-role-assignment-review {
@@ -304,7 +366,9 @@ code {
 
 @media (max-width: 640px) {
 	.govuk-\!-width-two-thirds,
-	.govuk-\!-width-one-half {
+	.govuk-\!-width-one-half,
+	[class~="govuk-!-width-two-thirds"],
+	[class~="govuk-!-width-one-half"] {
 		width: 100% !important;
 		}
 
