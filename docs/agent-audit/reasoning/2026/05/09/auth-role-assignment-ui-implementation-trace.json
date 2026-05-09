@@ -13,7 +13,8 @@
 		"implemented": true,
 		"pull_request_opened": true,
 		"runtime_verified": false,
-		"unit_test_fix_applied": true
+		"unit_test_fix_applied": true,
+		"feature_preview_api_origin_fix_applied": true
 	},
 	"page": {
 		"path": "public/pages/team/role-assignments/index.html",
@@ -36,6 +37,11 @@
 		"submits_to": "POST /api/auth/role-assignments",
 		"requires_permission": "role.assign",
 		"credentials_mode": "include",
+		"api_base_default": "same-origin empty string",
+		"api_base_override_sources": [
+			"document.documentElement.dataset.apiOrigin",
+			"window.API_ORIGIN"
+		],
 		"form_fields": [
 			"targetEmail",
 			"targetUserId",
@@ -66,6 +72,8 @@
 			"role options",
 			"GET /api/me context loading",
 			"POST /api/auth/role-assignments submission",
+			"same-origin API calls by default",
+			"no hard-coded Worker API origin",
 			"role.assign gate",
 			"request contract fields",
 			"client validation messages",
@@ -83,6 +91,16 @@
 			"Added route-specific teamRoleAssignments design risk.",
 			"Registered team-role-assignments in visual-walkthrough.config.mjs.",
 			"Configured the default walkthrough state to use the deterministic Team Admin context."
+		]
+	},
+	"feature_preview_failure": {
+		"reported_url": "https://b6e77d8b.researchops.pages.dev/pages/team/role-assignments/",
+		"reported_message": "Could not confirm your team role access. Load failed",
+		"cause": "The client forced Pages preview origins to call the Worker origin directly instead of using the Pages same-origin /api/* redirect proxy.",
+		"fix": [
+			"Changed the default API base to the same-origin empty string.",
+			"Kept explicit override support through document.documentElement.dataset.apiOrigin and window.API_ORIGIN.",
+			"Updated route-state tests to assert the Worker URL is not hard-coded."
 		]
 	},
 	"boundaries": [
