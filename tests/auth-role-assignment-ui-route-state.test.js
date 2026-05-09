@@ -75,18 +75,30 @@ function assertRoleOptionsUseGOVUKRadios() {
 	assert.match(pageSource, /Start with the lowest role that gives the person what they need/);
 }
 
-function assertRoleRadiosDoNotRepeatAbilityCopy() {
+function assertRoleRadioHintsAreUsefulAndClickable() {
 	const roleSection = pageSource.slice(pageSource.indexOf('id="role-section-title"'), pageSource.indexOf('id="duration-section-title"'));
 
-	assert.doesNotMatch(roleSection, /govuk-radios__hint/);
-	assert.doesNotMatch(roleSection, /Can observe low-risk research context without seeing participant personal data/);
-	assert.doesNotMatch(roleSection, /Can create and update governed research records/);
-	assert.doesNotMatch(roleSection, /Can view, record, resolve and audit safeguarding concerns/);
-	assert.doesNotMatch(roleSection, /Can manage team membership, role assignment and general audit oversight/);
+	assert.match(roleSection, /govuk-radios__hint/);
+	assert.match(roleSection, /Can observe low-risk research context without seeing participant personal data/);
+	assert.match(roleSection, /Can create and update governed research records/);
+	assert.match(roleSection, /Can create, update and review governed research records/);
+	assert.match(roleSection, /Can review and approve governed research records/);
+	assert.match(roleSection, /Can view, record, resolve and audit safeguarding concerns/);
+	assert.match(roleSection, /Can manage team membership, role assignment and general audit oversight/);
+	assert.match(scriptSource, /function makeRadioHintSelectable\(event\)/);
+	assert.match(scriptSource, /event\.target\.closest\("\.auth-role-assignment-radios \.govuk-radios__hint"\)/);
+	assert.match(scriptSource, /input\.checked = true/);
+	assert.match(scriptSource, /input\.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/);
+	assert.match(scriptSource, /hint\.dataset\.clicksRadio = "true"/);
+	assert.match(scriptSource, /dom\.form\.addEventListener\("click", makeRadioHintSelectable\)/);
+}
+
+function assertSelectedRoleSummaryUsesAbilityListOnly() {
 	assert.doesNotMatch(scriptSource, /description:/);
 	assert.doesNotMatch(scriptSource, /<h3 class="govuk-heading-s">/);
 	assert.doesNotMatch(scriptSource, /This is a sensitive role/);
 	assert.match(scriptSource, /This role can:/);
+	assert.match(scriptSource, /auth-role-assignment-summary__abilities/);
 }
 
 function assertPageStylesDoNotRecreateGOVUKRadioInternals() {
@@ -202,7 +214,8 @@ assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
 assertUserIdUsesDetailsWithoutExample();
 assertRoleOptionsUseGOVUKRadios();
-assertRoleRadiosDoNotRepeatAbilityCopy();
+assertRoleRadioHintsAreUsefulAndClickable();
+assertSelectedRoleSummaryUsesAbilityListOnly();
 assertPageStylesDoNotRecreateGOVUKRadioInternals();
 assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
