@@ -1,0 +1,89 @@
+{
+	"trace_id": "atrace-20260509-auth-role-assignment-ui-implementation",
+	"trace_layer": "operational",
+	"date": "2026-05-09",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/auth-role-assignment-ui",
+	"slice": {
+		"name": "auth-role-assignment-ui",
+		"previous_slice": "authentication role assignment API",
+		"previous_slice_status": "complete and merged through PR #219"
+	},
+	"status": {
+		"implemented": true,
+		"pull_request_opened": false,
+		"runtime_verified": false
+	},
+	"page": {
+		"path": "public/pages/team/role-assignments/index.html",
+		"route": "/pages/team/role-assignments/"
+	},
+	"files_changed": [
+		"public/pages/team/role-assignments/index.html",
+		"public/js/auth-role-assignment-page.js",
+		"public/css/auth-role-assignments.css",
+		"tests/auth-role-assignment-ui-route-state.test.js",
+		"scripts/validate.sh",
+		"docs/product/26/05/09/auth-role-assignment-ui-2026-05-09.md",
+		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.md",
+		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.json"
+	],
+	"client_behaviour": {
+		"loads_context_from": "GET /api/me",
+		"submits_to": "POST /api/auth/role-assignments",
+		"requires_permission": "role.assign",
+		"credentials_mode": "include",
+		"form_fields": [
+			"targetEmail",
+			"targetUserId",
+			"roleKey",
+			"requestedReason",
+			"expiresAt",
+			"sensitiveRoleConfirmation",
+			"safeguardingConfirmation"
+		]
+	},
+	"roles_visible_in_ui": [
+		"observer",
+		"researcher",
+		"research_lead",
+		"approver",
+		"safeguarding_lead",
+		"team_admin"
+	],
+	"sensitive_role_controls": {
+		"sensitiveRoleConfirmation": "ASSIGN_SENSITIVE_ROLE",
+		"safeguardingConfirmation": "ASSIGN_SAFEGUARDING_LEAD"
+	},
+	"validation": {
+		"test": "tests/auth-role-assignment-ui-route-state.test.js",
+		"wired_into": "scripts/validate.sh",
+		"checks": [
+			"page structure",
+			"role options",
+			"GET /api/me context loading",
+			"POST /api/auth/role-assignments submission",
+			"role.assign gate",
+			"request contract fields",
+			"client validation messages",
+			"role metadata and permission codes",
+			"stylesheet hooks"
+		]
+	},
+	"boundaries": [
+		"No user search endpoint is created.",
+		"No users are created by this UI.",
+		"No team memberships are created by this UI.",
+		"No full team member list is added.",
+		"No role removal is added.",
+		"No permission exceptions are supported.",
+		"The D1 route-status workflow is not run by this PR."
+	],
+	"next_steps_after_merge": [
+		"Deploy the page.",
+		"Open /pages/team/role-assignments/ with the seeded Team Admin account.",
+		"Confirm the page detects role.assign.",
+		"Assign a non-sensitive role to an existing active team member.",
+		"Verify auth_role_assignments and auth_audit_events."
+	]
+}
