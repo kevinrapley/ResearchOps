@@ -1,0 +1,95 @@
+/* ==========================================================================
+   Auth role assignment page
+   Service:    Home Office Biometrics — ResearchOps
+   Scope:      Team role assignment UI
+   ========================================================================== */
+
+.auth-role-assignment-page__header {
+	margin-bottom: 30px;
+	}
+
+.auth-role-assignment-status {
+	margin-bottom: 30px;
+	}
+
+.auth-role-assignment-status__panel {
+	max-width: 760px;
+	padding: 20px;
+	border: 2px solid #b1b4b6;
+	background: #f3f2f1;
+	}
+
+.auth-role-assignment-status__panel--ready {
+	border-color: #00703c;
+	background: #f3fff7;
+	}
+
+.auth-role-assignment-status__panel--blocked {
+	border-color: #d4351c;
+	background: #fff7f7;
+	}
+
+.auth-role-assignment-status__panel p:last-child {
+	margin-bottom: 0;
+	}
+
+.auth-role-assignment-summary {
+	margin-bottom: 20px;
+	padding: 20px;
+	border-left: 5px solid #1d70b8;
+	background: #f3f2f1;
+	}
+
+.auth-role-assignment-summary .govuk-heading-s {
+	margin-top: 0;
+	}
+
+.auth-role-assignment-summary__permissions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 0 0 15px;
+	padding: 0;
+	list-style: none;
+	}
+
+.auth-role-assignment-summary__permissions li {
+	margin: 0;
+	}
+
+.auth-role-assignment-sensitive {
+	margin-bottom: 20px;
+	padding: 20px;
+	border-left: 5px solid #f47738;
+	background: #fff7f0;
+	}
+
+.auth-role-assignment-result {
+	max-width: 760px;
+	margin-top: 30px;
+	padding: 20px;
+	border: 5px solid #1d70b8;
+	}
+
+.auth-role-assignment-result--success {
+	border-color: #00703c;
+	background: #f3fff7;
+	}
+
+.auth-role-assignment-result--error {
+	border-color: #d4351c;
+	background: #fff7f7;
+	}
+
+.auth-role-assignment-result .govuk-heading-m {
+	margin-top: 0;
+	}
+
+code {
+	padding: 2px 4px;
+	background: #f3f2f1;
+	font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	font-size: 0.95em;
+	}
+
+/* transparency begins in the cascade */
