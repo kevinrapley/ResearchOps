@@ -11,7 +11,7 @@
 	},
 	"status": {
 		"implemented": true,
-		"pull_request_opened": false,
+		"pull_request_opened": true,
 		"route_status_workflow_run": false,
 		"deployed_worker_runtime_verified": false
 	},
@@ -19,6 +19,11 @@
 		"method": "POST",
 		"path": "/api/auth/role-assignments",
 		"required_permission": "role.assign"
+	},
+	"pull_request": {
+		"number": 219,
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/219",
+		"state": "open"
 	},
 	"files_changed": [
 		"infra/cloudflare/src/core/auth/role-assignments.js",
@@ -39,16 +44,18 @@
 			"check D1 route permission declaration",
 			"require role.assign",
 			"validate request body",
+			"reject conflicting targetUserId and targetEmail values unless both resolve to the same user",
 			"scope assignment to caller active team",
 			"require target user to be active team member",
 			"require explicit confirmation for sensitive roles",
 			"require extra explicit confirmation for safeguarding_lead",
-			"create or reactivate team-scoped role assignment",
-			"record auth audit event"
+			"create or reactivate team-scoped role assignment and audit event in one D1 batch",
+			"fail closed if D1 batch writes are not available"
 		]
 	},
 	"request_contract": {
-		"target": "targetUserId or targetEmail",
+		"target": "targetUserId or targetEmail. If both are supplied, both must resolve to the same user.",
+		"target_conflict_error": "target_identifier_conflict",
 		"required": ["roleKey", "requestedReason"],
 		"optional": ["expiresAt"],
 		"sensitive_role_confirmation": "ASSIGN_SENSITIVE_ROLE",
@@ -59,8 +66,24 @@
 		"assignment_unique_key": ["user_id", "role_id", "scope_type", "scope_id"],
 		"audit_table": "auth_audit_events",
 		"audit_event_type": "auth.role_assignment.created",
-		"audit_permission_code": "role.assign"
+		"audit_permission_code": "role.assign",
+		"atomic_write_strategy": "The assignment statement and audit statement are executed together using db.batch([assignmentStatement, auditStatement]).",
+		"fail_closed_error_when_batch_unavailable": "role_assignment_transaction_unavailable"
 	},
+	"review_fixes": [
+		{
+			"priority": "P1",
+			"title": "Make role assignment and audit writes atomic",
+			"risk": "Separate writes could leave a role active without the required audit event if audit insertion failed after assignment insertion.",
+			"fix": "Prepare assignment and audit statements and execute them with D1 batch. Refuse to write when batch support is unavailable."
+		},
+		{
+			"priority": "P2",
+			"title": "Reject conflicting target identifiers",
+			"risk": "A stale hidden targetUserId could silently override a visible edited targetEmail and assign a role to the wrong user.",
+			"fix": "Resolve both identifiers when both are present and reject the request unless they resolve to the same user."
+		}
+	],
 	"route_status_migration": {
 		"migration": "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql",
 		"workflow": ".github/workflows/apply-d1-auth-role-assignment-route.yml",
@@ -71,7 +94,11 @@
 	},
 	"validation": {
 		"test": "tests/auth-role-assignment-api-route-state.test.js",
-		"wired_into": "scripts/validate.sh"
+		"wired_into": "scripts/validate.sh",
+		"review_fix_coverage": [
+			"asserts conflicting target identifier rejection",
+			"asserts D1 batch is required for assignment and audit writes"
+		]
 	},
 	"boundaries": [
 		"No role-management UI is created in this slice.",
