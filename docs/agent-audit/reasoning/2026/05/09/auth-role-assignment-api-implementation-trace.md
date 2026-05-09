@@ -63,6 +63,14 @@ requestedReason
 
 `expiresAt` is optional and must be a valid ISO-8601 date-time when provided.
 
+If both `targetUserId` and `targetEmail` are supplied, both must resolve to the same user. Otherwise, the request is rejected with:
+
+```text
+target_identifier_conflict
+```
+
+This prevents a stale hidden user ID from assigning the role to a different user than the visible email shown to an admin.
+
 ## Sensitive role guard
 
 Sensitive roles require explicit confirmation:
@@ -117,6 +125,34 @@ outcome = succeeded
 
 `is_safeguarding` is set when assigning `safeguarding_lead`.
 
+## Atomic write review fix
+
+A PR review comment identified that assignment and audit writes were originally separate D1 statements.
+
+That could leave a sensitive role active if the assignment write succeeded but the audit write failed.
+
+The handler now prepares both statements and writes them through:
+
+```text
+db.batch([assignmentStatement, auditStatement])
+```
+
+If `db.batch` is not available, the endpoint fails closed with:
+
+```text
+role_assignment_transaction_unavailable
+```
+
+This prevents the endpoint from making a role assignment when it cannot also make the required audit write safely.
+
+## Conflicting target identifier review fix
+
+A PR review comment identified that a request containing both `targetUserId` and `targetEmail` would previously use the user ID and ignore the email.
+
+The handler now resolves both identifiers when both are supplied and rejects the request unless they identify the same user.
+
+This prevents stale or mismatched UI state from assigning a role to an unintended user.
+
 ## D1 route-status migration
 
 A migration has been added:
@@ -149,7 +185,7 @@ A route-state test has been added:
 tests/auth-role-assignment-api-route-state.test.js
 ```
 
-The test checks Worker route wiring, authentication and route-permission use, active-team scoping, target user and reason validation, sensitive and safeguarding confirmation requirements, assignment writes, audit writes and D1 route-status migration intent.
+The test checks Worker route wiring, authentication and route-permission use, active-team scoping, target user and reason validation, sensitive and safeguarding confirmation requirements, atomic assignment/audit writes, conflicting target identifier rejection and D1 route-status migration intent.
 
 ## Product documentation
 
