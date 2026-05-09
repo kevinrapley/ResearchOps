@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 
 function fail(message) {
@@ -21,6 +22,10 @@ function stableSuffix(value, maxLength = 80) {
 		.replace(/[^a-z0-9_-]+/g, '_')
 		.replace(/^_+|_+$/g, '')
 		.slice(0, maxLength);
+}
+
+function stableDigest(value) {
+	return crypto.createHash('sha256').update(value).digest('hex').slice(0, 16);
 }
 
 const email = requireEnv('ADMIN_EMAIL').toLowerCase();
@@ -47,10 +52,11 @@ if (teamName.length < 2 || teamName.length > 120) {
 	fail('TEAM_NAME must be between 2 and 120 characters');
 }
 
-const teamSuffix = stableSuffix(teamId, 48);
-const userSuffix = stableSuffix(email, 64);
-const principalSuffix = `${teamSuffix}_${userSuffix}`;
-const userId = `usr_bootstrap_${userSuffix}`;
+const teamSuffix = stableSuffix(teamId, 40);
+const userSuffix = stableSuffix(email, 40);
+const principalDigest = stableDigest(`${teamId}:${email}`);
+const principalSuffix = `${teamSuffix}_${userSuffix}_${principalDigest}`;
+const userId = `usr_bootstrap_${userSuffix}_${stableDigest(email)}`;
 const membershipId = `mem_bootstrap_${principalSuffix}`;
 const teamAdminAssignmentId = `asn_bootstrap_team_admin_${principalSuffix}`;
 const safeguardingAssignmentId = `asn_bootstrap_safeguarding_${principalSuffix}`;
