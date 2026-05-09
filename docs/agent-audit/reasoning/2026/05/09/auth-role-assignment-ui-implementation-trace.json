@@ -11,8 +11,9 @@
 	},
 	"status": {
 		"implemented": true,
-		"pull_request_opened": false,
-		"runtime_verified": false
+		"pull_request_opened": true,
+		"runtime_verified": false,
+		"unit_test_fix_applied": true
 	},
 	"page": {
 		"path": "public/pages/team/role-assignments/index.html",
@@ -24,6 +25,8 @@
 		"public/css/auth-role-assignments.css",
 		"tests/auth-role-assignment-ui-route-state.test.js",
 		"scripts/validate.sh",
+		"visual-walkthrough.config.mjs",
+		"visual-walkthrough.operational-fixtures.mjs",
 		"docs/product/26/05/09/auth-role-assignment-ui-2026-05-09.md",
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.md",
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.json"
@@ -68,6 +71,18 @@
 			"client validation messages",
 			"role metadata and permission codes",
 			"stylesheet hooks"
+		]
+	},
+	"unit_test_failure": {
+		"test": "tests/visual-walkthrough-registry.test.js",
+		"message": "Expected visual walkthrough registry to include public route: /pages/team/role-assignments/index.html",
+		"cause": "The new public HTML route was not registered in visual-walkthrough.config.mjs.",
+		"fix": [
+			"Added teamRoleAssignments path to visual-walkthrough.operational-fixtures.mjs.",
+			"Added deterministic Team Admin /api/me fixture data.",
+			"Added route-specific teamRoleAssignments design risk.",
+			"Registered team-role-assignments in visual-walkthrough.config.mjs.",
+			"Configured the default walkthrough state to use the deterministic Team Admin context."
 		]
 	},
 	"boundaries": [
