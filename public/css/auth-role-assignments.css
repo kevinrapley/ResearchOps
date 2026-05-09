@@ -1,4 +1,4 @@
-/* ==========================================================================
+/* ============================================================================
    Auth role assignment page
    Service:    Home Office Biometrics — ResearchOps
    Scope:      Team role assignment UI
@@ -8,32 +8,96 @@
 	margin-bottom: 30px;
 	}
 
-.auth-role-assignment-status {
+.auth-role-assignment-scope {
 	margin-bottom: 30px;
 	}
 
-.auth-role-assignment-status__panel {
+.auth-role-assignment-scope__panel {
 	max-width: 760px;
-	padding: 20px;
-	border: 2px solid #b1b4b6;
+	padding: 15px 20px;
+	border-left: 5px solid #1d70b8;
 	background: #f3f2f1;
 	}
 
-.auth-role-assignment-status__panel--ready {
-	border-color: #00703c;
-	background: #f3fff7;
-	}
-
-.auth-role-assignment-status__panel--blocked {
-	border-color: #d4351c;
+.auth-role-assignment-scope__panel--blocked {
+	border-left-color: #d4351c;
 	background: #fff7f7;
 	}
 
-.auth-role-assignment-status__panel p:last-child {
+.auth-role-assignment-scope__panel p:last-child {
 	margin-bottom: 0;
 	}
 
+.auth-role-assignment-section {
+	margin-bottom: 35px;
+	}
+
+.auth-role-assignment-input {
+	max-width: 100%;
+	}
+
+.auth-role-assignment-input--email {
+	width: 66.66%;
+	}
+
+.auth-role-assignment-input--user-id {
+	width: 50%;
+	}
+
+.auth-role-assignment-textarea {
+	width: 66.66%;
+	max-width: 100%;
+	}
+
+.auth-role-assignment-details {
+	max-width: 760px;
+	margin-bottom: 25px;
+	}
+
+.auth-role-assignment-details .govuk-details__summary {
+	display: inline-block;
+	margin-bottom: 10px;
+	color: #1d70b8;
+	cursor: pointer;
+	text-decoration: underline;
+	}
+
+.auth-role-assignment-details .govuk-details__text {
+	padding: 15px 20px;
+	border-left: 5px solid #b1b4b6;
+	}
+
+.auth-role-assignment-radios {
+	max-width: 760px;
+	}
+
+.auth-role-assignment-radios .govuk-radios__item {
+	position: relative;
+	min-height: 40px;
+	margin-bottom: 15px;
+	padding-left: 42px;
+	}
+
+.auth-role-assignment-radios .govuk-radios__input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 32px;
+	height: 32px;
+	}
+
+.auth-role-assignment-radios .govuk-radios__label {
+	display: block;
+	font-weight: 700;
+	}
+
+.auth-role-assignment-radios .govuk-radios__hint {
+	margin-top: 3px;
+	color: #505a5f;
+	}
+
 .auth-role-assignment-summary {
+	max-width: 760px;
 	margin-bottom: 20px;
 	padding: 20px;
 	border-left: 5px solid #1d70b8;
@@ -57,11 +121,80 @@
 	margin: 0;
 	}
 
+.auth-role-assignment-custom-date {
+	max-width: 500px;
+	margin-top: 20px;
+	}
+
+.auth-role-assignment-custom-date .govuk-date-input {
+	display: flex;
+	gap: 15px;
+	align-items: flex-start;
+	}
+
+.auth-role-assignment-custom-date .govuk-date-input__item {
+	margin-right: 0;
+	}
+
+.govuk-input--width-2 {
+	max-width: 4.5em;
+	}
+
+.govuk-input--width-4 {
+	max-width: 6em;
+	}
+
 .auth-role-assignment-sensitive {
+	max-width: 760px;
 	margin-bottom: 20px;
 	padding: 20px;
 	border-left: 5px solid #f47738;
 	background: #fff7f0;
+	}
+
+.auth-role-assignment-warning {
+	margin-bottom: 15px;
+	}
+
+.auth-role-assignment-warning strong {
+	display: block;
+	margin-bottom: 5px;
+	}
+
+.auth-role-assignment-warning p:last-child {
+	margin-bottom: 0;
+	}
+
+.auth-role-assignment-review {
+	max-width: 760px;
+	margin-top: 30px;
+	padding: 20px;
+	border: 2px solid #1d70b8;
+	background: #f3f2f1;
+	}
+
+.auth-role-assignment-review .govuk-heading-l {
+	margin-top: 0;
+	}
+
+.auth-role-assignment-review__list {
+	margin: 0 0 25px;
+	}
+
+.auth-role-assignment-review__row {
+	display: grid;
+	gap: 15px;
+	grid-template-columns: minmax(140px, 1fr) 2fr;
+	padding: 10px 0;
+	border-bottom: 1px solid #b1b4b6;
+	}
+
+.auth-role-assignment-review__row dt {
+	font-weight: 700;
+	}
+
+.auth-role-assignment-review__row dd {
+	margin: 0;
 	}
 
 .auth-role-assignment-result {
@@ -90,6 +223,18 @@ code {
 	background: #f3f2f1;
 	font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 	font-size: 0.95em;
+	}
+
+@media (max-width: 640px) {
+	.auth-role-assignment-input--email,
+	.auth-role-assignment-input--user-id,
+	.auth-role-assignment-textarea {
+		width: 100%;
+		}
+
+	.auth-role-assignment-review__row {
+		grid-template-columns: 1fr;
+		}
 	}
 
 /* transparency begins in the cascade */
