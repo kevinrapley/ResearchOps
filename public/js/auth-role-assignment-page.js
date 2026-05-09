@@ -5,10 +5,7 @@
  */
 
 const CONFIG = Object.freeze({
-	API_BASE:
-		document.documentElement?.dataset?.apiOrigin ||
-		window.API_ORIGIN ||
-		(location.hostname.endsWith("pages.dev") ? "https://rops-api.digikev-kevin-rapley.workers.dev" : location.origin),
+	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "",
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 });
