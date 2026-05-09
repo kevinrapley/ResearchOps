@@ -48,6 +48,9 @@ require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
 require_file "public/css/govuk/govuk-tables.css"
 require_file "public/css/govuk/govuk-page-chrome.css"
+require_file "public/css/auth-role-assignments.css"
+require_file "public/js/auth-role-assignment-page.js"
+require_file "public/pages/team/role-assignments/index.html"
 require_file "docs/performance/initial-load-audit.md"
 require_file "docs/performance/performance-inventory-tooling.md"
 require_file "docs/design-system/govuk-compliance-audit.md"
@@ -97,14 +100,18 @@ require_file "tests/auth-foundation-route-state.test.js"
 require_file "tests/auth-route-permissions.test.js"
 require_file "tests/auth-runtime-bootstrap-route-state.test.js"
 require_file "tests/auth-role-assignment-api-route-state.test.js"
+require_file "tests/auth-role-assignment-ui-route-state.test.js"
 require_file "scripts/auth-runtime-bootstrap.mjs"
 require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
 require_file "docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md"
 require_file "docs/product/26/05/09/auth-role-assignment-api-2026-05-09.md"
+require_file "docs/product/26/05/09/auth-role-assignment-ui-2026-05-09.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.json"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.json"
+require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.md"
+require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.json"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -247,6 +254,9 @@ node tests/auth-runtime-bootstrap-route-state.test.js
 
 info "checking authentication role assignment API contract"
 node tests/auth-role-assignment-api-route-state.test.js
+
+info "checking authentication role assignment UI contract"
+node tests/auth-role-assignment-ui-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
