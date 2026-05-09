@@ -4,6 +4,39 @@
    Scope:      Team role assignment UI
    ========================================================================== */
 
+.govuk-\!-width-two-thirds {
+	width: 66.66% !important;
+	max-width: 100%;
+	}
+
+.govuk-\!-width-one-half {
+	width: 50% !important;
+	max-width: 100%;
+	}
+
+.govuk-list {
+	margin-top: 0;
+	margin-bottom: 15px;
+	padding-left: 0;
+	}
+
+.govuk-list--bullet {
+	padding-left: 20px;
+	list-style-type: disc;
+	}
+
+.govuk-visually-hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+	}
+
 .auth-role-assignment-page__header {
 	margin-bottom: 30px;
 	}
@@ -32,34 +65,52 @@
 	margin-bottom: 35px;
 	}
 
-.auth-role-assignment-input {
-	max-width: 100%;
-	}
-
-.auth-role-assignment-input--email {
-	width: 66.66%;
-	}
-
-.auth-role-assignment-input--user-id {
-	width: 50%;
-	}
-
-.auth-role-assignment-textarea {
-	width: 66.66%;
-	max-width: 100%;
-	}
-
 .auth-role-assignment-details {
 	max-width: 760px;
 	margin-bottom: 25px;
 	}
 
 .auth-role-assignment-details .govuk-details__summary {
+	position: relative;
 	display: inline-block;
 	margin-bottom: 10px;
+	padding-left: 25px;
 	color: #1d70b8;
 	cursor: pointer;
 	text-decoration: underline;
+	}
+
+.auth-role-assignment-details .govuk-details__summary::-webkit-details-marker {
+	display: none;
+	}
+
+.auth-role-assignment-details .govuk-details__summary::marker {
+	content: "";
+	}
+
+.auth-role-assignment-details .govuk-details__summary::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	left: 0;
+	border-color: transparent transparent transparent currentColor;
+	border-style: solid;
+	border-width: 7px 0 7px 12px;
+	}
+
+.auth-role-assignment-details[open] .govuk-details__summary::before {
+	top: 7px;
+	border-color: currentColor transparent transparent transparent;
+	border-width: 12px 7px 0;
+	}
+
+.auth-role-assignment-details .govuk-details__summary:focus {
+	background-color: #ffdd00;
+	color: #0b0c0c;
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
+	text-decoration: none;
 	}
 
 .auth-role-assignment-details .govuk-details__text {
@@ -72,27 +123,34 @@
 	}
 
 .auth-role-assignment-radios .govuk-radios__item {
-	position: relative;
+	display: grid;
+	gap: 2px 10px;
+	grid-template-columns: 32px 1fr;
+	align-items: start;
 	min-height: 40px;
 	margin-bottom: 15px;
-	padding-left: 42px;
 	}
 
 .auth-role-assignment-radios .govuk-radios__input {
-	position: absolute;
-	top: 0;
-	left: 0;
+	grid-column: 1;
+	grid-row: 1 / span 2;
 	width: 32px;
 	height: 32px;
+	margin: 0;
 	}
 
 .auth-role-assignment-radios .govuk-radios__label {
-	display: block;
+	grid-column: 2;
+	grid-row: 1;
+	margin-bottom: 0;
+	padding-top: 3px;
 	font-weight: 700;
 	}
 
 .auth-role-assignment-radios .govuk-radios__hint {
-	margin-top: 3px;
+	grid-column: 2;
+	grid-row: 2;
+	margin: 0;
 	color: #505a5f;
 	}
 
@@ -108,17 +166,8 @@
 	margin-top: 0;
 	}
 
-.auth-role-assignment-summary__permissions {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-	margin: 0 0 15px;
-	padding: 0;
-	list-style: none;
-	}
-
-.auth-role-assignment-summary__permissions li {
-	margin: 0;
+.auth-role-assignment-summary__abilities {
+	margin-bottom: 15px;
 	}
 
 .auth-role-assignment-custom-date {
@@ -144,25 +193,48 @@
 	max-width: 6em;
 	}
 
+.govuk-warning-text {
+	position: relative;
+	min-height: 35px;
+	margin-bottom: 20px;
+	padding-left: 45px;
+	}
+
+.govuk-warning-text__icon {
+	position: absolute;
+	top: -3px;
+	left: 0;
+	display: inline-block;
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	background: #0b0c0c;
+	color: #ffffff;
+	font-weight: 700;
+	line-height: 35px;
+	text-align: center;
+	}
+
+.govuk-warning-text__text {
+	display: block;
+	font-weight: 700;
+	}
+
+.govuk-warning-text__assistive {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+	}
+
 .auth-role-assignment-sensitive {
 	max-width: 760px;
 	margin-bottom: 20px;
-	padding: 20px;
-	border-left: 5px solid #f47738;
-	background: #fff7f0;
-	}
-
-.auth-role-assignment-warning {
-	margin-bottom: 15px;
-	}
-
-.auth-role-assignment-warning strong {
-	display: block;
-	margin-bottom: 5px;
-	}
-
-.auth-role-assignment-warning p:last-child {
-	margin-bottom: 0;
 	}
 
 .auth-role-assignment-review {
@@ -177,24 +249,29 @@
 	margin-top: 0;
 	}
 
-.auth-role-assignment-review__list {
+.govuk-summary-list {
 	margin: 0 0 25px;
 	}
 
-.auth-role-assignment-review__row {
+.govuk-summary-list__row {
 	display: grid;
 	gap: 15px;
-	grid-template-columns: minmax(140px, 1fr) 2fr;
+	grid-template-columns: minmax(140px, 1fr) 2fr auto;
 	padding: 10px 0;
 	border-bottom: 1px solid #b1b4b6;
 	}
 
-.auth-role-assignment-review__row dt {
+.govuk-summary-list__key {
 	font-weight: 700;
 	}
 
-.auth-role-assignment-review__row dd {
+.govuk-summary-list__value,
+.govuk-summary-list__actions {
 	margin: 0;
+	}
+
+.govuk-summary-list__actions {
+	text-align: right;
 	}
 
 .auth-role-assignment-result {
@@ -226,14 +303,17 @@ code {
 	}
 
 @media (max-width: 640px) {
-	.auth-role-assignment-input--email,
-	.auth-role-assignment-input--user-id,
-	.auth-role-assignment-textarea {
-		width: 100%;
+	.govuk-\!-width-two-thirds,
+	.govuk-\!-width-one-half {
+		width: 100% !important;
 		}
 
-	.auth-role-assignment-review__row {
+	.govuk-summary-list__row {
 		grid-template-columns: 1fr;
+		}
+
+	.govuk-summary-list__actions {
+		text-align: left;
 		}
 	}
 
