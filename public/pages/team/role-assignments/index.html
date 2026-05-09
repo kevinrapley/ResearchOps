@@ -89,12 +89,30 @@
 									<div class="govuk-hint" id="role-key-hint">Start with the lowest role that gives the person what they need.</div>
 									<p class="govuk-error-message" id="role-key-error" hidden></p>
 									<div class="govuk-radios auth-role-assignment-radios" data-module="govuk-radios" aria-describedby="role-key-hint">
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-observer" name="roleKey" type="radio" value="observer" /><label class="govuk-label govuk-radios__label" for="role-key-observer">Observer</label><div class="govuk-hint govuk-radios__hint">Can observe low-risk research context without seeing participant personal data.</div></div>
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-researcher" name="roleKey" type="radio" value="researcher" /><label class="govuk-label govuk-radios__label" for="role-key-researcher">Researcher</label><div class="govuk-hint govuk-radios__hint">Can create and update governed research records.</div></div>
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-research-lead" name="roleKey" type="radio" value="research_lead" /><label class="govuk-label govuk-radios__label" for="role-key-research-lead">Research Lead</label><div class="govuk-hint govuk-radios__hint">Can create, update and review governed research records.</div></div>
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-approver" name="roleKey" type="radio" value="approver" /><label class="govuk-label govuk-radios__label" for="role-key-approver">Approver</label><div class="govuk-hint govuk-radios__hint">Can review and approve governed research records.</div></div>
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" /><label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead</label><div class="govuk-hint govuk-radios__hint">Can view, record, resolve and audit safeguarding concerns.</div></div>
-										<div class="govuk-radios__item"><input class="govuk-radios__input" id="role-key-team-admin" name="roleKey" type="radio" value="team_admin" /><label class="govuk-label govuk-radios__label" for="role-key-team-admin">Team Admin</label><div class="govuk-hint govuk-radios__hint">Can manage team membership, role assignment and general audit oversight.</div></div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-observer" name="roleKey" type="radio" value="observer" />
+											<label class="govuk-label govuk-radios__label" for="role-key-observer">Observer</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-researcher" name="roleKey" type="radio" value="researcher" />
+											<label class="govuk-label govuk-radios__label" for="role-key-researcher">Researcher</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-research-lead" name="roleKey" type="radio" value="research_lead" />
+											<label class="govuk-label govuk-radios__label" for="role-key-research-lead">Research Lead</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-approver" name="roleKey" type="radio" value="approver" />
+											<label class="govuk-label govuk-radios__label" for="role-key-approver">Approver</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" />
+											<label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-team-admin" name="roleKey" type="radio" value="team_admin" />
+											<label class="govuk-label govuk-radios__label" for="role-key-team-admin">Team Admin</label>
+										</div>
 									</div>
 								</fieldset>
 								<div id="role-summary" class="auth-role-assignment-summary" aria-live="polite" hidden></div>
