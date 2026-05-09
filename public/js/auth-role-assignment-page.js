@@ -13,40 +13,45 @@ const CONFIG = Object.freeze({
 const ROLE_DETAILS = Object.freeze({
 	observer: {
 		label: "Observer",
-		description: "Can observe low-risk research context without participant personal data reveal.",
+		description: "Can observe low-risk research context without seeing participant personal data.",
 		sensitive: false,
-		permissions: [],
+		abilities: ["Observe low-risk research context without seeing participant personal data."],
 	},
 	researcher: {
 		label: "Researcher",
-		description: "Can create and edit governed research records.",
+		description: "Can create and update governed research records.",
 		sensitive: false,
-		permissions: ["governed.create", "governed.edit"],
+		abilities: ["Create governed research records.", "Update governed research records."],
 	},
 	research_lead: {
 		label: "Research Lead",
-		description: "Can create, edit and review governed research records.",
+		description: "Can create, update and review governed research records.",
 		sensitive: true,
-		permissions: ["governed.create", "governed.edit", "governed.review"],
+		abilities: ["Create governed research records.", "Update governed research records.", "Review governed research records."],
 	},
 	approver: {
 		label: "Approver",
-		description: "Can approve governed research records and own accepted recommendations.",
+		description: "Can review and approve governed research records.",
 		sensitive: true,
-		permissions: ["governed.review", "governed.approve", "recommendation.own"],
+		abilities: ["Review governed research records.", "Approve governed research records.", "Own accepted recommendations."],
 	},
 	safeguarding_lead: {
 		label: "Safeguarding Lead",
 		description: "Can view, record, resolve and audit safeguarding concerns.",
 		sensitive: true,
 		safeguarding: true,
-		permissions: ["safeguarding.view", "safeguarding.record", "safeguarding.resolve", "safeguarding.audit.view"],
+		abilities: [
+			"View restricted safeguarding details.",
+			"Record safeguarding observations.",
+			"Resolve safeguarding concerns.",
+			"View safeguarding audit events.",
+		],
 	},
 	team_admin: {
 		label: "Team Admin",
 		description: "Can manage team membership, role assignment and general audit oversight.",
 		sensitive: true,
-		permissions: ["team.manage", "role.assign", "audit.view"],
+		abilities: ["Manage team members and team settings.", "Assign roles.", "View general audit events."],
 	},
 });
 
@@ -198,15 +203,17 @@ function renderRoleSummary() {
 		return;
 	}
 
-	const permissions = detail.permissions.length
-		? `<ul class="auth-role-assignment-summary__permissions">${detail.permissions.map((permission) => `<li><code>${escapeHtml(permission)}</code></li>`).join("")}</ul>`
-		: '<p class="govuk-body">This role currently has no direct permissions.</p>';
+	const abilities = detail.abilities.length
+		? `<p class="govuk-body">This role can:</p><ul class="govuk-list govuk-list--bullet auth-role-assignment-summary__abilities">${detail.abilities
+				.map((ability) => `<li>${escapeHtml(ability)}</li>`)
+				.join("")}</ul>`
+		: '<p class="govuk-body">This role does not add any direct capabilities.</p>';
 
 	dom.roleSummary.hidden = false;
 	dom.roleSummary.innerHTML = `
 <h3 class="govuk-heading-s">${escapeHtml(detail.label)}</h3>
 <p class="govuk-body">${escapeHtml(detail.description)}</p>
-${permissions}
+${abilities}
 ${detail.sensitive ? '<p class="govuk-body"><strong>This is a sensitive role.</strong></p>' : ""}
 `;
 	dom.sensitiveFieldset.hidden = !detail.sensitive;
@@ -320,7 +327,7 @@ function validate(values) {
 	const detail = roleDetail(values.roleKey);
 
 	if (!values.targetEmail && !values.targetUserId) {
-		addError(errors, "target-email", "Enter a team member’s email address or user ID.", "#target-email");
+		addError(errors, "target-email", "Enter a team member's email address or user ID.", "#target-email");
 	}
 
 	if (!values.roleKey) {
@@ -369,24 +376,34 @@ function requestBody(values) {
 function reviewSummaryRows(values) {
 	const detail = roleDetail(values.roleKey) || {};
 	return [
-		["Team member email", values.targetEmail || "Not provided"],
-		["User ID", values.targetUserId || "Not provided"],
-		["Team", activeTeamLabel(state.context)],
-		["Role", detail.label || values.roleKey],
-		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set"],
-		["Expiry date", expiryLabelFor(values)],
-		["Reason", values.requestedReason],
+		["Team member email", values.targetEmail || "Not provided", "#target-email"],
+		["User ID", values.targetUserId || "Not provided", "#target-user-id"],
+		["Team", activeTeamLabel(state.context), ""],
+		["Role", detail.label || values.roleKey, "#role-key-observer"],
+		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set", "#duration-30"],
+		["Expiry date", expiryLabelFor(values), values.durationPreset === "custom" ? "#expiry-day" : "#duration-custom"],
+		["Reason", values.requestedReason, "#requested-reason"],
 	];
+}
+
+function renderSummaryAction(key, href) {
+	if (!href) return '<dd class="govuk-summary-list__actions"></dd>';
+	return `
+<dd class="govuk-summary-list__actions">
+	<a class="govuk-link" href="${escapeHtml(href)}">Change<span class="govuk-visually-hidden"> ${escapeHtml(key.toLowerCase())}</span></a>
+</dd>
+`;
 }
 
 function renderReview(values) {
 	if (!dom.review || !dom.reviewBody) return;
 	const rows = reviewSummaryRows(values)
 		.map(
-			([key, value]) => `
-<div class="auth-role-assignment-review__row">
-	<dt>${escapeHtml(key)}</dt>
-	<dd>${escapeHtml(value)}</dd>
+			([key, value, href]) => `
+<div class="govuk-summary-list__row">
+	<dt class="govuk-summary-list__key">${escapeHtml(key)}</dt>
+	<dd class="govuk-summary-list__value">${escapeHtml(value)}</dd>
+	${renderSummaryAction(key, href)}
 </div>
 `
 		)
@@ -395,7 +412,7 @@ function renderReview(values) {
 	state.reviewValues = values;
 	state.reviewBody = requestBody(values);
 	dom.reviewBody.innerHTML = `
-<dl class="auth-role-assignment-review__list">
+<dl class="govuk-summary-list auth-role-assignment-review__list">
 ${rows}
 </dl>
 `;
@@ -508,15 +525,6 @@ function init() {
 	dom.change?.addEventListener("click", () => {
 		hideReview();
 		dom.form.focus?.();
-	});
-	dom.form.addEventListener("reset", () => {
-		window.setTimeout(() => {
-			clearFieldErrors();
-			renderRoleSummary();
-			renderDurationControls();
-			hideReview();
-			if (dom.result) dom.result.hidden = true;
-		}, 0);
 	});
 	renderRoleSummary();
 	renderDurationControls();
