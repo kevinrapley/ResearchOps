@@ -13,31 +13,26 @@ const CONFIG = Object.freeze({
 const ROLE_DETAILS = Object.freeze({
 	observer: {
 		label: "Observer",
-		description: "Can observe low-risk research context without seeing participant personal data.",
 		sensitive: false,
 		abilities: ["Observe low-risk research context without seeing participant personal data."],
 	},
 	researcher: {
 		label: "Researcher",
-		description: "Can create and update governed research records.",
 		sensitive: false,
 		abilities: ["Create governed research records.", "Update governed research records."],
 	},
 	research_lead: {
 		label: "Research Lead",
-		description: "Can create, update and review governed research records.",
 		sensitive: true,
 		abilities: ["Create governed research records.", "Update governed research records.", "Review governed research records."],
 	},
 	approver: {
 		label: "Approver",
-		description: "Can review and approve governed research records.",
 		sensitive: true,
 		abilities: ["Review governed research records.", "Approve governed research records.", "Own accepted recommendations."],
 	},
 	safeguarding_lead: {
 		label: "Safeguarding Lead",
-		description: "Can view, record, resolve and audit safeguarding concerns.",
 		sensitive: true,
 		safeguarding: true,
 		abilities: [
@@ -49,7 +44,6 @@ const ROLE_DETAILS = Object.freeze({
 	},
 	team_admin: {
 		label: "Team Admin",
-		description: "Can manage team membership, role assignment and general audit oversight.",
 		sensitive: true,
 		abilities: ["Manage team members and team settings.", "Assign roles.", "View general audit events."],
 	},
@@ -203,18 +197,12 @@ function renderRoleSummary() {
 		return;
 	}
 
-	const abilities = detail.abilities.length
+	dom.roleSummary.hidden = false;
+	dom.roleSummary.innerHTML = detail.abilities.length
 		? `<p class="govuk-body">This role can:</p><ul class="govuk-list govuk-list--bullet auth-role-assignment-summary__abilities">${detail.abilities
 				.map((ability) => `<li>${escapeHtml(ability)}</li>`)
 				.join("")}</ul>`
 		: '<p class="govuk-body">This role does not add any direct capabilities.</p>';
-
-	dom.roleSummary.hidden = false;
-	dom.roleSummary.innerHTML = `
-<h3 class="govuk-heading-s">${escapeHtml(detail.label)}</h3>
-${abilities}
-${detail.sensitive ? '<p class="govuk-body"><strong>This is a sensitive role.</strong></p>' : ""}
-`;
 	dom.sensitiveFieldset.hidden = !detail.sensitive;
 	dom.safeguardingFieldset.hidden = !detail.safeguarding;
 }
