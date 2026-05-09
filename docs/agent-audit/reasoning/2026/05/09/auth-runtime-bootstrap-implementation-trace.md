@@ -120,6 +120,39 @@ auth-runtime-bootstrap-verify.sql
 
 The generated SQL files are not committed.
 
+## Deterministic bootstrap ID review fix
+
+A PR review comment identified that the original deterministic membership and assignment IDs were derived from `team_id` only.
+
+That meant bootstrapping a different `admin_email` into the same team could reuse these primary keys:
+
+```text
+mem_bootstrap_${teamSuffix}
+asn_bootstrap_team_admin_${teamSuffix}
+```
+
+The unique constraints on `(user_id, team_id)` and `(user_id, role_id, scope_type, scope_id)` would not handle a primary-key conflict on `id`, so D1 could abort instead of creating the replacement admin record.
+
+The generator has been changed so membership and assignment IDs include both team and user material plus a deterministic digest:
+
+```text
+principalDigest = sha256(teamId:email).slice(0, 16)
+principalSuffix = teamSuffix_userSuffix_principalDigest
+membershipId = mem_bootstrap_${principalSuffix}
+teamAdminAssignmentId = asn_bootstrap_team_admin_${principalSuffix}
+safeguardingAssignmentId = asn_bootstrap_safeguarding_${principalSuffix}
+```
+
+The user ID also includes an email-derived digest:
+
+```text
+usr_bootstrap_${userSuffix}_${stableDigest(email)}
+```
+
+This keeps reruns for the same user and team idempotent while avoiding collisions when bootstrapping a different admin email into the same team.
+
+Validation coverage was updated to assert that the generator uses `stableDigest`, `teamSuffix`, `userSuffix` and `principalSuffix` for deterministic IDs.
+
 ## Safeguarding boundary
 
 `team_admin` is assigned by default.
@@ -147,6 +180,7 @@ Validation coverage checks:
 - confirmation inputs are required
 - generated SQL files are applied and verified
 - bootstrap generator covers users, teams, memberships, role assignments and audit event creation
+- deterministic membership and assignment IDs include both team and user material
 
 The test is wired into:
 
