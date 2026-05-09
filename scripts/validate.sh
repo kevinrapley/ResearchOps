@@ -63,6 +63,9 @@ require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
 require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
+require_file "infra/cloudflare/src/core/auth/role-assignments.js"
+require_file "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql"
+require_file ".github/workflows/apply-d1-auth-role-assignment-route.yml"
 require_file "tests/govuk-design-system-baseline-route-state.test.js"
 require_file "tests/govuk-forms-application-route-state.test.js"
 require_file "tests/govuk-tables-summary-lists-application-route-state.test.js"
@@ -93,11 +96,15 @@ require_file "tests/participant-consent-route-state.test.js"
 require_file "tests/auth-foundation-route-state.test.js"
 require_file "tests/auth-route-permissions.test.js"
 require_file "tests/auth-runtime-bootstrap-route-state.test.js"
+require_file "tests/auth-role-assignment-api-route-state.test.js"
 require_file "scripts/auth-runtime-bootstrap.mjs"
 require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
 require_file "docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md"
+require_file "docs/product/26/05/09/auth-role-assignment-api-2026-05-09.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.json"
+require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.md"
+require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.json"
 require_dir "infra/cloudflare/src/service"
 
 info "checking package.json scripts"
@@ -237,6 +244,9 @@ node tests/auth-route-permissions.test.js
 
 info "checking authentication runtime bootstrap contract"
 node tests/auth-runtime-bootstrap-route-state.test.js
+
+info "checking authentication role assignment API contract"
+node tests/auth-role-assignment-api-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
