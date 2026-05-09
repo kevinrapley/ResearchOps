@@ -32,7 +32,13 @@ function assertPageStructure() {
 }
 
 function assertTopLevelAdminInformationArchitecture() {
+	const breadcrumbIndex = pageSource.indexOf('class="govuk-breadcrumbs"');
+	const mainIndex = pageSource.indexOf('<main class="govuk-main-wrapper"');
+
 	assert.match(pageSource, /govuk-breadcrumbs/);
+	assert.ok(breadcrumbIndex > -1, 'Expected breadcrumb navigation to exist');
+	assert.ok(mainIndex > -1, 'Expected main landmark to exist');
+	assert.ok(breadcrumbIndex < mainIndex, 'Expected breadcrumb navigation to sit before main');
 	assert.match(pageSource, />Home</);
 	assert.match(pageSource, />Team administration</);
 	assert.doesNotMatch(pageSource, /govuk-back-link/);
