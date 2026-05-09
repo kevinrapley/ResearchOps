@@ -16,6 +16,7 @@
 <body>
 	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
 	<x-include src="/partials/header.html" vars='{"active":"Team administration","subtitle":"Manage team role access"}'></x-include>
+
 	<div class="govuk-width-container">
 		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 			<ol class="govuk-breadcrumbs__list">
@@ -24,12 +25,16 @@
 			</ol>
 		</nav>
 	</div>
+
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 		<div class="govuk-width-container">
 			<div id="role-assignment-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" hidden>
 				<h2 class="govuk-error-summary__title">There is a problem</h2>
-				<div class="govuk-error-summary__body"><ul class="govuk-error-summary__list" id="role-assignment-error-list"></ul></div>
+				<div class="govuk-error-summary__body">
+					<ul class="govuk-error-summary__list" id="role-assignment-error-list"></ul>
+				</div>
 			</div>
+
 			<header class="page-intro auth-role-assignment-page__header">
 				<div class="govuk-grid-row">
 					<div class="govuk-grid-column-two-thirds">
@@ -40,14 +45,19 @@
 					</div>
 				</div>
 			</header>
+
 			<section class="auth-role-assignment-scope" aria-labelledby="team-scope-title">
 				<h2 class="govuk-heading-m" id="team-scope-title">Team scope</h2>
-				<div id="auth-context" class="auth-role-assignment-scope__panel" aria-live="polite" aria-busy="true"><p class="govuk-body">Checking which team you can manage.</p></div>
+				<div id="auth-context" class="auth-role-assignment-scope__panel" aria-live="polite" aria-busy="true">
+					<p class="govuk-body">Checking which team you can manage.</p>
+				</div>
 			</section>
+
 			<section aria-labelledby="assign-role-form-title" id="role-assignment-form-section">
 				<div class="govuk-grid-row">
 					<div class="govuk-grid-column-two-thirds">
 						<h2 class="govuk-heading-l" id="assign-role-form-title">Role assignment details</h2>
+
 						<form id="role-assignment-form" novalidate>
 							<section class="auth-role-assignment-section" aria-labelledby="team-member-section-title">
 								<h3 class="govuk-heading-m" id="team-member-section-title">1. Team member</h3>
@@ -57,6 +67,7 @@
 									<p class="govuk-error-message" id="target-email-error" hidden></p>
 									<input class="govuk-input govuk-!-width-two-thirds" id="target-email" name="targetEmail" type="email" autocomplete="email" aria-describedby="target-email-hint" />
 								</div>
+
 								<details class="govuk-details auth-role-assignment-details" id="target-user-id-details">
 									<summary class="govuk-details__summary"><span class="govuk-details__summary-text">Use a user ID instead</span></summary>
 									<div class="govuk-details__text">
@@ -69,6 +80,7 @@
 									</div>
 								</details>
 							</section>
+
 							<section class="auth-role-assignment-section" aria-labelledby="role-section-title">
 								<h3 class="govuk-heading-m" id="role-section-title">2. Role</h3>
 								<fieldset class="govuk-fieldset" id="role-key-group">
@@ -86,6 +98,7 @@
 								</fieldset>
 								<div id="role-summary" class="auth-role-assignment-summary" aria-live="polite" hidden></div>
 							</section>
+
 							<section class="auth-role-assignment-section" aria-labelledby="duration-section-title">
 								<h3 class="govuk-heading-m" id="duration-section-title">3. Access duration</h3>
 								<fieldset class="govuk-fieldset" id="role-duration-group">
@@ -104,7 +117,7 @@
 									<fieldset class="govuk-fieldset" role="group" aria-describedby="custom-expiry-date-hint">
 										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What date should this role expire?</legend>
 										<div class="govuk-hint" id="custom-expiry-date-hint">For example, 30 9 2026. Access ends at the end of the selected day.</div>
-					اق				<p class="govuk-error-message" id="custom-expiry-date-error" hidden></p>
+										<p class="govuk-error-message" id="custom-expiry-date-error" hidden></p>
 										<div class="govuk-date-input" id="custom-expiry-date">
 											<div class="govuk-date-input__item"><div class="govuk-form-group"><label class="govuk-label govuk-date-input__label" for="expiry-day">Day</label><input class="govuk-input govuk-date-input__input govuk-input--width-2" id="expiry-day" name="expiryDay" type="text" inputmode="numeric" autocomplete="off" /></div></div>
 											<div class="govuk-date-input__item"><div class="govuk-form-group"><label class="govuk-label govuk-date-input__label" for="expiry-month">Month</label><input class="govuk-input govuk-date-input__input govuk-input--width-2" id="expiry-month" name="expiryMonth" type="text" inputmode="numeric" autocomplete="off" /></div></div>
@@ -113,6 +126,7 @@
 									</fieldset>
 								</div>
 							</section>
+
 							<section class="auth-role-assignment-section" aria-labelledby="reason-section-title">
 								<h3 class="govuk-heading-m" id="reason-section-title">4. Reason</h3>
 								<div class="govuk-form-group" id="requested-reason-group">
@@ -122,6 +136,7 @@
 									<textarea class="govuk-textarea govuk-!-width-two-thirds" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
 								</div>
 							</section>
+
 							<div class="govuk-form-group auth-role-assignment-sensitive" id="sensitive-role-fieldset" hidden>
 								<fieldset class="govuk-fieldset" aria-describedby="sensitive-role-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Sensitive role confirmation</legend>
@@ -130,6 +145,7 @@
 									<div class="govuk-checkboxes" data-module="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="sensitive-role-confirmation" name="sensitiveRoleConfirmation" type="checkbox" value="ASSIGN_SENSITIVE_ROLE" /><label class="govuk-label govuk-checkboxes__label" for="sensitive-role-confirmation">I confirm this sensitive role assignment is intentional.</label></div></div>
 								</fieldset>
 							</div>
+
 							<div class="govuk-form-group auth-role-assignment-sensitive" id="safeguarding-fieldset" hidden>
 								<fieldset class="govuk-fieldset" aria-describedby="safeguarding-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Safeguarding access confirmation</legend>
@@ -138,20 +154,24 @@
 									<div class="govuk-checkboxes" data-module="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="safeguarding-confirmation" name="safeguardingConfirmation" type="checkbox" value="ASSIGN_SAFEGUARDING_LEAD" /><label class="govuk-label govuk-checkboxes__label" for="safeguarding-confirmation">I confirm this person needs Safeguarding Lead access.</label></div></div>
 								</fieldset>
 							</div>
+
 							<div class="govuk-button-group"><button class="govuk-button" type="submit" id="submit-role-assignment">Check details</button></div>
 						</form>
+
 						<section id="role-assignment-review" class="auth-role-assignment-review" aria-labelledby="role-assignment-review-title" tabindex="-1" hidden>
 							<h2 class="govuk-heading-l" id="role-assignment-review-title">Check and confirm</h2>
 							<p class="govuk-body">The system will confirm the person exists and is an active member of this team when you assign the role.</p>
 							<div id="role-assignment-review-body"></div>
 							<div class="govuk-button-group"><button class="govuk-button" type="button" id="confirm-role-assignment">Confirm and assign role</button><button class="govuk-button govuk-button--secondary" type="button" id="change-role-assignment">Change details</button></div>
 						</section>
+
 						<div id="role-assignment-result" class="auth-role-assignment-result" aria-live="polite" hidden></div>
 					</div>
 				</div>
 			</section>
 		</div>
 	</main>
+
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 	<script type="module" src="/js/auth-role-assignment-page.js"></script>
 </body>
