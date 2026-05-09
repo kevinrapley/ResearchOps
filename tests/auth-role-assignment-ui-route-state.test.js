@@ -25,6 +25,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="safeguarding-confirmation"/);
 	assert.match(pageSource, /id="role-assignment-review"/);
 	assert.match(pageSource, /id="confirm-role-assignment"/);
+	assert.match(pageSource, /Confirm and assign role/);
 	assert.match(pageSource, /id="role-assignment-result"/);
 	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
@@ -101,7 +102,6 @@ function assertNoPostBeforeConfirm() {
 	assert.match(scriptSource, /async function submitAssignment\(\)/);
 	assert.match(scriptSource, /dom\.form\.addEventListener\("submit", prepareReview\)/);
 	assert.match(scriptSource, /dom\.confirm\?\.addEventListener\("click", submitAssignment\)/);
-	assert.match(scriptSource, /Confirm and assign role/);
 }
 
 function assertRoleMetadataIsVisibleClientSide() {
