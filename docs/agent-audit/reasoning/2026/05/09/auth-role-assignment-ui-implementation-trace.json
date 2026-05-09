@@ -4,6 +4,11 @@
 	"date": "2026-05-09",
 	"repository": "kevinrapley/ResearchOps",
 	"branch": "feature/auth-role-assignment-ui",
+	"pull_request": {
+		"number": 220,
+		"state": "open",
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/220"
+	},
 	"slice": {
 		"name": "auth-role-assignment-ui",
 		"previous_slice": "authentication role assignment API",
@@ -12,13 +17,15 @@
 	"status": {
 		"implemented": true,
 		"pull_request_opened": true,
-		"runtime_verified": false,
+		"runtime_verified": true,
 		"unit_test_fix_applied": true,
-		"feature_preview_api_origin_fix_applied": true
+		"feature_preview_api_origin_fix_applied": true,
+		"second_iteration_design_applied": true
 	},
 	"page": {
 		"path": "public/pages/team/role-assignments/index.html",
-		"route": "/pages/team/role-assignments/"
+		"route": "/pages/team/role-assignments/",
+		"title": "Assign a role to a team member"
 	},
 	"files_changed": [
 		"public/pages/team/role-assignments/index.html",
@@ -32,6 +39,32 @@
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.md",
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.json"
 	],
+	"second_iteration_design_changes": [
+		{
+			"change": "Removed prominent self-access panel from successful state.",
+			"reason": "The page should focus on assigning access to another person, not on displaying the admin's own roles."
+		},
+		{
+			"change": "Kept permission check but reduced successful state to compact team-scope copy.",
+			"reason": "Admins need to know the team scope; they do not need a diagnostic display of their own roles when authorised."
+		},
+		{
+			"change": "Set the email input to two-thirds width and moved user ID into a details component with a half-width input.",
+			"reason": "The visual affordance should match the expected content length and keep the normal path focused on human-readable email."
+		},
+		{
+			"change": "Replaced the role select with radios.",
+			"reason": "The roles are few, consequential and need visible descriptions at the point of decision."
+		},
+		{
+			"change": "Replaced arbitrary datetime input with governed duration radios and conditional day/month/year date input.",
+			"reason": "Role expiry is a governed access-period decision, not a timestamp-entry task."
+		},
+		{
+			"change": "Added check-and-confirm panel before POST.",
+			"reason": "The write action should not occur on ordinary form submit for a sensitive administrative task."
+		}
+	],
 	"client_behaviour": {
 		"loads_context_from": "GET /api/me",
 		"submits_to": "POST /api/auth/role-assignments",
@@ -42,10 +75,17 @@
 			"document.documentElement.dataset.apiOrigin",
 			"window.API_ORIGIN"
 		],
+		"successful_access_display": "team scope only",
+		"blocked_access_display": "blocking message and hidden form",
+		"write_flow": "form submit validates and renders review; confirm button performs POST",
 		"form_fields": [
 			"targetEmail",
 			"targetUserId",
 			"roleKey",
+			"durationPreset",
+			"expiryDay",
+			"expiryMonth",
+			"expiryYear",
 			"requestedReason",
 			"expiresAt",
 			"sensitiveRoleConfirmation",
@@ -60,6 +100,13 @@
 		"safeguarding_lead",
 		"team_admin"
 	],
+	"duration_options_visible_in_ui": [
+		"30 days",
+		"60 days",
+		"90 days",
+		"180 days",
+		"Until a specific date"
+	],
 	"sensitive_role_controls": {
 		"sensitiveRoleConfirmation": "ASSIGN_SENSITIVE_ROLE",
 		"safeguardingConfirmation": "ASSIGN_SAFEGUARDING_LEAD"
@@ -69,16 +116,20 @@
 		"wired_into": "scripts/validate.sh",
 		"checks": [
 			"page structure",
-			"role options",
+			"removal of self-access panel from successful state",
+			"team-scope messaging",
+			"role radios instead of select",
+			"governed duration radios",
+			"conditional custom date inputs",
 			"GET /api/me context loading",
-			"POST /api/auth/role-assignments submission",
+			"POST /api/auth/role-assignments submission only after confirmation",
 			"same-origin API calls by default",
 			"no hard-coded Worker API origin",
 			"role.assign gate",
 			"request contract fields",
 			"client validation messages",
 			"role metadata and permission codes",
-			"stylesheet hooks"
+			"stylesheet hooks for width affordance and review state"
 		]
 	},
 	"unit_test_failure": {
@@ -103,10 +154,28 @@
 			"Updated route-state tests to assert the Worker URL is not hard-coded."
 		]
 	},
+	"cloudflare_access_runtime_evidence": {
+		"source": "manual branch-preview retest reported by user",
+		"raw_personal_identifiers_committed": false,
+		"result": {
+			"api_me_ok": true,
+			"authenticated": true,
+			"provider": "cloudflare_access",
+			"active_team": "team_researchops_core",
+			"roles_observed": ["safeguarding_lead", "team_admin"],
+			"permissions_include_role_assign": true
+		},
+		"configuration_learning": [
+			"The original AUD value was a Pages web analytics tag, not an Access AUD.",
+			"CLOUDFLARE_ACCESS_TEAM_DOMAIN must not include https:// for the current Worker code path.",
+			"The Worker receives the Pages Access JWT through the Pages proxy path, so the Worker AUD value must align with the Pages Access application AUD for that route."
+		]
+	},
 	"boundaries": [
 		"No user search endpoint is created.",
 		"No users are created by this UI.",
 		"No team memberships are created by this UI.",
+		"The target user is not resolved before the check-and-confirm panel in this slice.",
 		"No full team member list is added.",
 		"No role removal is added.",
 		"No permission exceptions are supported.",
@@ -115,7 +184,10 @@
 	"next_steps_after_merge": [
 		"Deploy the page.",
 		"Open /pages/team/role-assignments/ with the seeded Team Admin account.",
-		"Confirm the page detects role.assign.",
+		"Confirm the page shows active team scope.",
+		"Confirm the page hides the form for users without role.assign.",
+		"Choose a non-sensitive role and governed duration.",
+		"Confirm the check-and-confirm panel appears before the write.",
 		"Assign a non-sensitive role to an existing active team member.",
 		"Verify auth_role_assignments and auth_audit_events."
 	]
