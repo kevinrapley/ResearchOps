@@ -50,17 +50,36 @@ const ROLE_DETAILS = Object.freeze({
 	},
 });
 
+const DURATION_LABELS = Object.freeze({
+	30: "30 days",
+	60: "60 days",
+	90: "90 days",
+	180: "180 days",
+	custom: "Until a specific date",
+});
+
+const state = {
+	context: null,
+	reviewValues: null,
+	reviewBody: null,
+};
+
 const dom = {
 	context: document.getElementById("auth-context"),
 	form: document.getElementById("role-assignment-form"),
+	formSection: document.getElementById("role-assignment-form-section"),
 	errorSummary: document.getElementById("role-assignment-error-summary"),
 	errorList: document.getElementById("role-assignment-error-list"),
 	result: document.getElementById("role-assignment-result"),
-	roleKey: document.getElementById("role-key"),
 	roleSummary: document.getElementById("role-summary"),
 	sensitiveFieldset: document.getElementById("sensitive-role-fieldset"),
 	safeguardingFieldset: document.getElementById("safeguarding-fieldset"),
+	customExpiryDateGroup: document.getElementById("custom-expiry-date-group"),
 	submit: document.getElementById("submit-role-assignment"),
+	review: document.getElementById("role-assignment-review"),
+	reviewBody: document.getElementById("role-assignment-review-body"),
+	confirm: document.getElementById("confirm-role-assignment"),
+	change: document.getElementById("change-role-assignment"),
 };
 
 function escapeHtml(value) {
@@ -79,6 +98,7 @@ function setBusy(element, isBusy) {
 
 function setDisabled(isDisabled) {
 	if (dom.submit) dom.submit.disabled = isDisabled;
+	if (dom.confirm) dom.confirm.disabled = isDisabled;
 }
 
 function endpoint(path) {
@@ -117,46 +137,58 @@ function permissionCodes(permissions) {
 	return new Set((permissions || []).map((permission) => permission.code).filter(Boolean));
 }
 
-function roleLabels(roles) {
-	return (roles || []).map((role) => role.label || role.key).filter(Boolean);
+function activeTeamLabel(context) {
+	return context?.activeTeam?.name || context?.activeTeam?.id || "No active team";
 }
 
 function renderAuthContext(data) {
 	if (!dom.context) return;
-	const user = data.user || {};
-	const activeTeam = data.activeTeam || {};
+	state.context = data;
 	const permissions = permissionCodes(data.permissions);
 	const canAssignRoles = permissions.has("role.assign");
-	const roles = roleLabels(data.roles || []);
+	const activeTeam = data.activeTeam || {};
 
-	dom.context.classList.toggle("auth-role-assignment-status__panel--ready", canAssignRoles);
-	dom.context.classList.toggle("auth-role-assignment-status__panel--blocked", !canAssignRoles);
-	dom.context.innerHTML = `
-<p class="govuk-body"><strong>${escapeHtml(user.displayName || user.email || "Signed-in user")}</strong></p>
-<p class="govuk-body">Active team: <code>${escapeHtml(activeTeam.id || "No active team")}</code></p>
-<p class="govuk-body">Current roles: ${roles.length ? escapeHtml(roles.join(", ")) : "No active roles"}</p>
-${canAssignRoles ? '<p class="govuk-body">You can assign team roles because you have <code>role.assign</code>.</p>' : '<p class="govuk-body">You cannot assign team roles because <code>role.assign</code> is not available in this team.</p>'}
+	dom.context.classList.toggle("auth-role-assignment-scope__panel--blocked", !canAssignRoles);
+	dom.context.innerHTML = canAssignRoles
+		? `
+<p class="govuk-body">You are assigning roles in <strong>${escapeHtml(activeTeam.name || activeTeam.id || "your active team")}</strong>.</p>
+`
+		: `
+<p class="govuk-body"><strong>You cannot assign roles.</strong></p>
+<p class="govuk-body">You do not have permission to assign roles for ${escapeHtml(activeTeam.name || activeTeam.id || "this team")}.</p>
 `;
 	setDisabled(!canAssignRoles);
+	if (dom.form) dom.form.hidden = !canAssignRoles;
+	if (dom.review) dom.review.hidden = true;
 }
 
 function renderAuthContextError(error) {
 	if (!dom.context) return;
-	dom.context.classList.add("auth-role-assignment-status__panel--blocked");
+	dom.context.classList.add("auth-role-assignment-scope__panel--blocked");
 	dom.context.innerHTML = `
-<p class="govuk-body"><strong>Could not confirm your team role access.</strong></p>
+<p class="govuk-body"><strong>You cannot assign roles.</strong></p>
 <p class="govuk-body">${escapeHtml(error?.message || error)}</p>
 `;
 	setDisabled(true);
+	if (dom.form) dom.form.hidden = true;
+	if (dom.review) dom.review.hidden = true;
 }
 
 function roleDetail(roleKey) {
 	return ROLE_DETAILS[roleKey] || null;
 }
 
+function selectedRoleKey() {
+	return document.querySelector('input[name="roleKey"]:checked')?.value || "";
+}
+
+function selectedDurationPreset() {
+	return document.querySelector('input[name="durationPreset"]:checked')?.value || "";
+}
+
 function renderRoleSummary() {
-	if (!dom.roleKey || !dom.roleSummary || !dom.sensitiveFieldset || !dom.safeguardingFieldset) return;
-	const detail = roleDetail(dom.roleKey.value);
+	if (!dom.roleSummary || !dom.sensitiveFieldset || !dom.safeguardingFieldset) return;
+	const detail = roleDetail(selectedRoleKey());
 
 	if (!detail) {
 		dom.roleSummary.hidden = true;
@@ -181,9 +213,15 @@ ${detail.sensitive ? '<p class="govuk-body"><strong>This is a sensitive role.</s
 	dom.safeguardingFieldset.hidden = !detail.safeguarding;
 }
 
+function renderDurationControls() {
+	if (!dom.customExpiryDateGroup) return;
+	dom.customExpiryDateGroup.hidden = selectedDurationPreset() !== "custom";
+}
+
 function clearFieldErrors() {
-	document.querySelectorAll(".govuk-form-group--error").forEach((element) => {
+	document.querySelectorAll(".govuk-form-group--error, .govuk-fieldset--error").forEach((element) => {
 		element.classList.remove("govuk-form-group--error");
+		element.classList.remove("govuk-fieldset--error");
 	});
 	document.querySelectorAll(".govuk-error-message").forEach((element) => {
 		element.hidden = true;
@@ -199,11 +237,17 @@ function addError(errors, field, message, href) {
 	errors.push({ field, message, href });
 }
 
+function groupElementFor(field) {
+	return document.getElementById(`${field}-group`) || document.getElementById(`${field}-fieldset`);
+}
+
 function showErrors(errors) {
 	for (const error of errors) {
-		const group = document.getElementById(`${error.field}-group`) || document.getElementById(`${error.field}-fieldset`);
+		const group = groupElementFor(error.field);
 		const message = document.getElementById(`${error.field}-error`);
-		if (group) group.classList.add("govuk-form-group--error");
+		if (group) {
+			group.classList.add(group.tagName === "FIELDSET" ? "govuk-fieldset--error" : "govuk-form-group--error");
+		}
 		if (message) {
 			message.hidden = false;
 			message.textContent = `Error: ${error.message}`;
@@ -224,12 +268,51 @@ function formValues() {
 	return {
 		targetEmail: String(data.get("targetEmail") || "").trim(),
 		targetUserId: String(data.get("targetUserId") || "").trim(),
-		roleKey: String(data.get("roleKey") || "").trim(),
+		roleKey: selectedRoleKey(),
 		requestedReason: String(data.get("requestedReason") || "").trim(),
-		expiresAt: String(data.get("expiresAt") || "").trim(),
+		durationPreset: selectedDurationPreset(),
+		expiryDay: String(data.get("expiryDay") || "").trim(),
+		expiryMonth: String(data.get("expiryMonth") || "").trim(),
+		expiryYear: String(data.get("expiryYear") || "").trim(),
 		sensitiveRoleConfirmation: data.get("sensitiveRoleConfirmation") || "",
 		safeguardingConfirmation: data.get("safeguardingConfirmation") || "",
 	};
+}
+
+function customDateParts(values) {
+	const day = Number(values.expiryDay);
+	const month = Number(values.expiryMonth);
+	const year = Number(values.expiryYear);
+
+	if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) return null;
+	const date = new Date(year, month - 1, day, 23, 59, 59, 999);
+	if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+	return date;
+}
+
+function expiresAtFor(values) {
+	if (["30", "60", "90", "180"].includes(values.durationPreset)) {
+		const date = new Date();
+		date.setDate(date.getDate() + Number(values.durationPreset));
+		date.setHours(23, 59, 59, 999);
+		return date;
+	}
+
+	if (values.durationPreset === "custom") {
+		return customDateParts(values);
+	}
+
+	return null;
+}
+
+function expiryLabelFor(values) {
+	const expiry = expiresAtFor(values);
+	if (!expiry) return "Not set";
+	return expiry.toLocaleDateString("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
 }
 
 function validate(values) {
@@ -237,23 +320,27 @@ function validate(values) {
 	const detail = roleDetail(values.roleKey);
 
 	if (!values.targetEmail && !values.targetUserId) {
-		addError(errors, "target-email", "Enter a team member email or user ID.", "#target-email");
+		addError(errors, "target-email", "Enter a team member’s email address or user ID.", "#target-email");
 	}
 
 	if (!values.roleKey) {
-		addError(errors, "role-key", "Select a role to assign.", "#role-key");
+		addError(errors, "role-key", "Select the role they need.", "#role-key-observer");
+	}
+
+	if (!values.durationPreset) {
+		addError(errors, "role-duration", "Select how long this role should last.", "#duration-30");
+	}
+
+	if (values.durationPreset === "custom" && !customDateParts(values)) {
+		addError(errors, "custom-expiry-date", "Enter a real expiry date.", "#expiry-day");
 	}
 
 	if (values.requestedReason.length < 12) {
-		addError(errors, "requested-reason", "Enter a reason of at least 12 characters.", "#requested-reason");
-	}
-
-	if (values.expiresAt && Number.isNaN(Date.parse(values.expiresAt))) {
-		addError(errors, "expires-at", "Enter a valid expiry date and time.", "#expires-at");
+		addError(errors, "requested-reason", "Enter why you are assigning this role.", "#requested-reason");
 	}
 
 	if (detail?.sensitive && values.sensitiveRoleConfirmation !== "ASSIGN_SENSITIVE_ROLE") {
-		addError(errors, "sensitive-role", "Confirm the sensitive role assignment.", "#sensitive-role-confirmation");
+		addError(errors, "sensitive-role", "Confirm this sensitive role assignment is intentional.", "#sensitive-role-confirmation");
 	}
 
 	if (detail?.safeguarding && values.safeguardingConfirmation !== "ASSIGN_SAFEGUARDING_LEAD") {
@@ -264,6 +351,7 @@ function validate(values) {
 }
 
 function requestBody(values) {
+	const expiry = expiresAtFor(values);
 	const body = {
 		roleKey: values.roleKey,
 		requestedReason: values.requestedReason,
@@ -271,11 +359,54 @@ function requestBody(values) {
 
 	if (values.targetEmail) body.targetEmail = values.targetEmail;
 	if (values.targetUserId) body.targetUserId = values.targetUserId;
-	if (values.expiresAt) body.expiresAt = new Date(values.expiresAt).toISOString();
+	if (expiry) body.expiresAt = expiry.toISOString();
 	if (values.sensitiveRoleConfirmation) body.sensitiveRoleConfirmation = values.sensitiveRoleConfirmation;
 	if (values.safeguardingConfirmation) body.safeguardingConfirmation = values.safeguardingConfirmation;
 
 	return body;
+}
+
+function reviewSummaryRows(values) {
+	const detail = roleDetail(values.roleKey) || {};
+	return [
+		["Team member email", values.targetEmail || "Not provided"],
+		["User ID", values.targetUserId || "Not provided"],
+		["Team", activeTeamLabel(state.context)],
+		["Role", detail.label || values.roleKey],
+		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set"],
+		["Expiry date", expiryLabelFor(values)],
+		["Reason", values.requestedReason],
+	];
+}
+
+function renderReview(values) {
+	if (!dom.review || !dom.reviewBody) return;
+	const rows = reviewSummaryRows(values)
+		.map(
+			([key, value]) => `
+<div class="auth-role-assignment-review__row">
+	<dt>${escapeHtml(key)}</dt>
+	<dd>${escapeHtml(value)}</dd>
+</div>
+`
+		)
+		.join("");
+
+	state.reviewValues = values;
+	state.reviewBody = requestBody(values);
+	dom.reviewBody.innerHTML = `
+<dl class="auth-role-assignment-review__list">
+${rows}
+</dl>
+`;
+	dom.review.hidden = false;
+	dom.review.focus();
+}
+
+function hideReview() {
+	state.reviewValues = null;
+	state.reviewBody = null;
+	if (dom.review) dom.review.hidden = true;
 }
 
 function showResult(data) {
@@ -306,9 +437,10 @@ ${data?.error ? `<p class="govuk-body">Error code: <code>${escapeHtml(data.error
 `;
 }
 
-async function handleSubmit(event) {
+function prepareReview(event) {
 	event.preventDefault();
 	clearFieldErrors();
+	hideReview();
 	if (dom.result) dom.result.hidden = true;
 
 	const values = formValues();
@@ -318,12 +450,18 @@ async function handleSubmit(event) {
 		return;
 	}
 
+	renderReview(values);
+}
+
+async function submitAssignment() {
+	if (!state.reviewBody) return;
+
 	setDisabled(true);
 	try {
 		const response = await fetchJson("/api/auth/role-assignments", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify(requestBody(values)),
+			body: JSON.stringify(state.reviewBody),
 		});
 
 		if (!response.ok || !response.data?.ok) {
@@ -334,6 +472,8 @@ async function handleSubmit(event) {
 		showResult(response.data);
 		dom.form.reset();
 		renderRoleSummary();
+		renderDurationControls();
+		hideReview();
 	} catch (error) {
 		showServerError({ message: error?.message || error }, 0);
 	} finally {
@@ -359,16 +499,27 @@ async function initAuthContext() {
 
 function init() {
 	if (!dom.form) return;
-	dom.roleKey?.addEventListener("change", renderRoleSummary);
-	dom.form.addEventListener("submit", handleSubmit);
+	document.querySelectorAll('input[name="roleKey"]').forEach((input) => input.addEventListener("change", renderRoleSummary));
+	document
+		.querySelectorAll('input[name="durationPreset"]')
+		.forEach((input) => input.addEventListener("change", renderDurationControls));
+	dom.form.addEventListener("submit", prepareReview);
+	dom.confirm?.addEventListener("click", submitAssignment);
+	dom.change?.addEventListener("click", () => {
+		hideReview();
+		dom.form.focus?.();
+	});
 	dom.form.addEventListener("reset", () => {
 		window.setTimeout(() => {
 			clearFieldErrors();
 			renderRoleSummary();
+			renderDurationControls();
+			hideReview();
 			if (dom.result) dom.result.hidden = true;
 		}, 0);
 	});
 	renderRoleSummary();
+	renderDurationControls();
 	initAuthContext();
 }
 
@@ -377,6 +528,8 @@ init();
 window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
 	ROLE_DETAILS,
+	DURATION_LABELS,
 	validate,
 	requestBody,
+	expiresAtFor,
 });
