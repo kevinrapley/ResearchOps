@@ -1,10 +1,10 @@
-import { resolveAuthenticatedContext } from './access.js';
-import { assertRoutePermission, routePermissionErrorResponse } from './route-permissions.js';
+import { resolveAuthenticatedContext } from "./access.js";
+import { assertRoutePermission, routePermissionErrorResponse } from "./route-permissions.js";
 
 const JSON_HEADERS = {
-	'content-type': 'application/json; charset=utf-8',
-	'cache-control': 'no-store',
-	'x-content-type-options': 'nosniff',
+	"content-type": "application/json; charset=utf-8",
+	"cache-control": "no-store",
+	"x-content-type-options": "nosniff"
 };
 
 class RoleAssignmentError extends Error {
@@ -21,11 +21,11 @@ function jsonResponse(body, status = 200) {
 
 function dbFor(env = {}) {
 	const db = env.RESEARCHOPS_D1;
-	if (!db || typeof db.prepare !== 'function') {
+	if (!db || typeof db.prepare !== "function") {
 		throw new RoleAssignmentError(
 			503,
-			'role_assignment_store_unavailable',
-			'Role assignments cannot be changed right now.',
+			"role_assignment_store_unavailable",
+			"Role assignments cannot be changed right now."
 		);
 	}
 	return db;
@@ -35,26 +35,39 @@ function makeId(prefix) {
 	return `${prefix}_${crypto.randomUUID()}`;
 }
 
+function stableHash(value) {
+	let hash = 2166136261;
+	for (const char of String(value)) {
+		hash ^= char.charCodeAt(0);
+		hash = Math.imul(hash, 16777619);
+	}
+	return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function stableAssignmentId(userId, roleId, teamId) {
+	return `asn_${stableHash(`${userId}:${roleId}:${teamId}`)}`;
+}
+
 function normaliseEmail(email) {
-	return String(email || '')
+	return String(email || "")
 		.trim()
 		.toLowerCase();
 }
 
 function cleanText(value) {
-	return String(value || '').trim();
+	return String(value || "").trim();
 }
 
 async function readJson(request) {
 	try {
 		const body = await request.json();
-		if (!body || typeof body !== 'object' || Array.isArray(body)) {
-			throw new RoleAssignmentError(400, 'invalid_request_body', 'Request body must be a JSON object.');
+		if (!body || typeof body !== "object" || Array.isArray(body)) {
+			throw new RoleAssignmentError(400, "invalid_request_body", "Request body must be a JSON object.");
 		}
 		return body;
 	} catch (error) {
 		if (error instanceof RoleAssignmentError) throw error;
-		throw new RoleAssignmentError(400, 'invalid_json', 'Request body must be valid JSON.');
+		throw new RoleAssignmentError(400, "invalid_json", "Request body must be valid JSON.");
 	}
 }
 
@@ -65,8 +78,8 @@ function targetSelectorFor(body) {
 	if (!targetUserId && !targetEmail) {
 		throw new RoleAssignmentError(
 			400,
-			'target_required',
-			'Provide targetUserId or targetEmail for the user receiving the role.',
+			"target_required",
+			"Provide targetUserId or targetEmail for the user receiving the role."
 		);
 	}
 
@@ -76,7 +89,7 @@ function targetSelectorFor(body) {
 function requestedRoleKeyFor(body) {
 	const roleKey = cleanText(body.roleKey);
 	if (!roleKey) {
-		throw new RoleAssignmentError(400, 'role_required', 'Provide roleKey for the role to assign.');
+		throw new RoleAssignmentError(400, "role_required", "Provide roleKey for the role to assign.");
 	}
 	return roleKey;
 }
@@ -86,8 +99,8 @@ function requestedReasonFor(body) {
 	if (requestedReason.length < 12) {
 		throw new RoleAssignmentError(
 			400,
-			'role_assignment_reason_required',
-			'Provide a clear reason for assigning this role.',
+			"role_assignment_reason_required",
+			"Provide a clear reason for assigning this role."
 		);
 	}
 	return requestedReason;
@@ -101,8 +114,8 @@ function expiresAtFor(body) {
 	if (Number.isNaN(parsed)) {
 		throw new RoleAssignmentError(
 			400,
-			'invalid_expiry',
-			'expiresAt must be an ISO-8601 date-time when provided.',
+			"invalid_expiry",
+			"expiresAt must be an ISO-8601 date-time when provided."
 		);
 	}
 
@@ -113,8 +126,8 @@ function assertActiveTeam(context) {
 	if (!context.activeTeam?.id) {
 		throw new RoleAssignmentError(
 			403,
-			'active_team_required',
-			'Choose an active team before assigning roles.',
+			"active_team_required",
+			"Choose an active team before assigning roles."
 		);
 	}
 	return context.activeTeam;
@@ -125,19 +138,19 @@ function assertSensitiveRoleConfirmation(role, body) {
 	const roleIsSensitive = role.is_sensitive === 1 || role.approval_required === 1;
 	if (!roleIsSensitive) return;
 
-	if (body.sensitiveRoleConfirmation !== 'ASSIGN_SENSITIVE_ROLE') {
+	if (body.sensitiveRoleConfirmation !== "ASSIGN_SENSITIVE_ROLE") {
 		throw new RoleAssignmentError(
 			400,
-			'sensitive_role_confirmation_required',
-			'Confirm that this sensitive role assignment is intentional.',
+			"sensitive_role_confirmation_required",
+			"Confirm that this sensitive role assignment is intentional."
 		);
 	}
 
-	if (roleKey === 'safeguarding_lead' && body.safeguardingConfirmation !== 'ASSIGN_SAFEGUARDING_LEAD') {
+	if (roleKey === "safeguarding_lead" && body.safeguardingConfirmation !== "ASSIGN_SAFEGUARDING_LEAD") {
 		throw new RoleAssignmentError(
 			400,
-			'safeguarding_role_confirmation_required',
-			'Confirm that safeguarding lead access is intentionally required.',
+			"safeguarding_role_confirmation_required",
+			"Confirm that safeguarding lead access is intentionally required."
 		);
 	}
 }
@@ -154,26 +167,48 @@ async function readRole(db, roleKey) {
 		.first();
 }
 
-async function readTargetUser(db, targetUserId, targetEmail) {
-	let query = `
-		SELECT id, email, display_name, account_status
-		FROM auth_users
-		WHERE id = ?
-		LIMIT 1
-	`;
-	let value = targetUserId;
+async function readUserById(db, targetUserId) {
+	if (!targetUserId) return null;
+	return db
+		.prepare(`
+			SELECT id, email, display_name, account_status
+			FROM auth_users
+			WHERE id = ?
+			LIMIT 1
+		`)
+		.bind(targetUserId)
+		.first();
+}
 
-	if (!targetUserId && targetEmail) {
-		query = `
+async function readUserByEmail(db, targetEmail) {
+	if (!targetEmail) return null;
+	return db
+		.prepare(`
 			SELECT id, email, display_name, account_status
 			FROM auth_users
 			WHERE lower(email) = lower(?)
 			LIMIT 1
-		`;
-		value = targetEmail;
+		`)
+		.bind(targetEmail)
+		.first();
+}
+
+async function readTargetUser(db, targetUserId, targetEmail) {
+	const userById = await readUserById(db, targetUserId);
+	const userByEmail = await readUserByEmail(db, targetEmail);
+
+	if (targetUserId && targetEmail) {
+		if (!userById || !userByEmail || userById.id !== userByEmail.id) {
+			throw new RoleAssignmentError(
+				400,
+				"target_identifier_conflict",
+				"targetUserId and targetEmail must resolve to the same user."
+			);
+		}
+		return userById;
 	}
 
-	return db.prepare(query).bind(value).first();
+	return userById || userByEmail;
 }
 
 async function readActiveMembership(db, targetUserId, teamId) {
@@ -200,10 +235,8 @@ async function readAssignment(db, targetUserId, roleId, teamId) {
 		.first();
 }
 
-async function writeAssignment(db, context, targetUser, role, team, requestedReason, expiresAt) {
-	const assignmentId = makeId('asn');
-
-	await db
+function prepareAssignmentStatement(db, assignmentId, context, targetUser, role, team, requestedReason, expiresAt) {
+	return db
 		.prepare(`
 			INSERT INTO auth_role_assignments
 				(id, user_id, role_id, scope_type, scope_id, assignment_status, requested_reason, approved_by_user_id, approved_at, expires_at)
@@ -216,15 +249,12 @@ async function writeAssignment(db, context, targetUser, role, team, requestedRea
 				expires_at = excluded.expires_at,
 				updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 		`)
-		.bind(assignmentId, targetUser.id, role.id, team.id, requestedReason, context.user.id, expiresAt)
-		.run();
-
-	return readAssignment(db, targetUser.id, role.id, team.id);
+		.bind(assignmentId, targetUser.id, role.id, team.id, requestedReason, context.user.id, expiresAt);
 }
 
-async function writeAuditEvent(db, request, context, targetUser, role, team, requestedReason, assignment) {
+function prepareAuditStatement(db, request, context, targetUser, role, team, requestedReason, assignmentId) {
 	const url = new URL(request.url);
-	await db
+	return db
 		.prepare(`
 			INSERT INTO auth_audit_events
 				(id, event_type, actor_user_id, team_id, target_type, target_id, permission_code, route_path, outcome, is_safeguarding, metadata_json)
@@ -232,22 +262,56 @@ async function writeAuditEvent(db, request, context, targetUser, role, team, req
 				'role_key', ?,
 				'target_user_id', ?,
 				'requested_reason', ?,
-				'assignment_status', ?
+				'assignment_status', 'active'
 			))
 		`)
 		.bind(
-			makeId('audit'),
+			makeId("audit"),
 			context.user.id,
 			team.id,
-			assignment.id,
+			assignmentId,
 			url.pathname,
-			role.role_key === 'safeguarding_lead' ? 1 : 0,
+			role.role_key === "safeguarding_lead" ? 1 : 0,
 			role.role_key,
 			targetUser.id,
-			requestedReason,
-			assignment.assignment_status,
-		)
-		.run();
+			requestedReason
+		);
+}
+
+async function writeAssignmentWithAudit(db, request, context, targetUser, role, team, requestedReason, expiresAt) {
+	if (typeof db.batch !== "function") {
+		throw new RoleAssignmentError(
+			503,
+			"role_assignment_transaction_unavailable",
+			"Role assignment writes cannot be made safely right now."
+		);
+	}
+
+	const existingAssignment = await readAssignment(db, targetUser.id, role.id, team.id);
+	const assignmentId = existingAssignment?.id || stableAssignmentId(targetUser.id, role.id, team.id);
+	const assignmentStatement = prepareAssignmentStatement(
+		db,
+		assignmentId,
+		context,
+		targetUser,
+		role,
+		team,
+		requestedReason,
+		expiresAt
+	);
+	const auditStatement = prepareAuditStatement(
+		db,
+		request,
+		context,
+		targetUser,
+		role,
+		team,
+		requestedReason,
+		assignmentId
+	);
+
+	await db.batch([assignmentStatement, auditStatement]);
+	return readAssignment(db, targetUser.id, role.id, team.id);
 }
 
 async function assignRole(request, env, context, body) {
@@ -260,37 +324,45 @@ async function assignRole(request, env, context, body) {
 	const role = await readRole(db, roleKey);
 
 	if (!role) {
-		throw new RoleAssignmentError(404, 'role_not_found', 'The requested role does not exist.');
+		throw new RoleAssignmentError(404, "role_not_found", "The requested role does not exist.");
 	}
 
 	assertSensitiveRoleConfirmation(role, body);
 
 	const targetUser = await readTargetUser(db, targetUserId, targetEmail);
 	if (!targetUser) {
-		throw new RoleAssignmentError(404, 'target_user_not_found', 'The target user does not exist.');
+		throw new RoleAssignmentError(404, "target_user_not_found", "The target user does not exist.");
 	}
 
-	if (['suspended', 'closed'].includes(targetUser.account_status)) {
-		throw new RoleAssignmentError(409, 'target_user_inactive', 'The target user cannot receive roles.');
+	if (["suspended", "closed"].includes(targetUser.account_status)) {
+		throw new RoleAssignmentError(409, "target_user_inactive", "The target user cannot receive roles.");
 	}
 
 	const membership = await readActiveMembership(db, targetUser.id, team.id);
 	if (!membership) {
 		throw new RoleAssignmentError(
 			400,
-			'target_not_team_member',
-			'The target user must be an active member of the active team before a role can be assigned.',
+			"target_not_team_member",
+			"The target user must be an active member of the active team before a role can be assigned."
 		);
 	}
 
-	const assignment = await writeAssignment(db, context, targetUser, role, team, requestedReason, expiresAt);
-	await writeAuditEvent(db, request, context, targetUser, role, team, requestedReason, assignment);
+	const assignment = await writeAssignmentWithAudit(
+		db,
+		request,
+		context,
+		targetUser,
+		role,
+		team,
+		requestedReason,
+		expiresAt
+	);
 
 	return {
 		assignment,
 		role,
 		targetUser,
-		team,
+		team
 	};
 }
 
@@ -312,23 +384,23 @@ export async function handleRoleAssignmentsRoute(request, env) {
 				assignment: {
 					id: result.assignment.id,
 					status: result.assignment.assignment_status,
-					scopeType: 'team',
+					scopeType: "team",
 					scopeId: result.team.id,
-					expiresAt: result.assignment.expires_at,
+					expiresAt: result.assignment.expires_at
 				},
 				role: {
 					key: result.role.role_key,
 					label: result.role.label,
-					sensitive: result.role.is_sensitive === 1,
+					sensitive: result.role.is_sensitive === 1
 				},
 				targetUser: {
 					id: result.targetUser.id,
 					email: result.targetUser.email,
 					displayName: result.targetUser.display_name,
-					accountStatus: result.targetUser.account_status,
-				},
+					accountStatus: result.targetUser.account_status
+				}
 			},
-			201,
+			201
 		);
 	} catch (error) {
 		try {
@@ -346,10 +418,10 @@ export async function handleRoleAssignmentsRoute(request, env) {
 		return jsonResponse(
 			{
 				ok: false,
-				error: 'role_assignment_error',
-				message: 'Role assignment could not be completed.',
+				error: "role_assignment_error",
+				message: "Role assignment could not be completed."
 			},
-			500,
+			500
 		);
 	}
 }
