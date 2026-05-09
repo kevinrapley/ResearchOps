@@ -458,17 +458,17 @@ export const visualWalkthroughConfig = {
 		},
 		{
 			id: 'team-role-assignments',
-			title: 'Assign team roles',
+			title: 'Assign a role to a team member',
 			group: 'Team administration',
 			path: '/pages/team/role-assignments/index.html',
 			description: 'Team Admin role assignment page.',
 			designRisk: operationalDesignRisks.teamRoleAssignments,
 			defaultState: operationalDefaultState({
-				title: 'Role assignment form with Team Admin access',
+				title: 'Role assignment form with Team Admin scope',
 				description:
-					'Role assignment page captured with a deterministic Team Admin context so role.assign gating, sensitive-role copy and audit-reason fields can be reviewed.',
+					'Role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed.',
 				path: operationalPaths.teamRoleAssignments,
-				waitForText: 'You can assign team roles because you have',
+				waitForText: 'You are assigning roles in',
 			}),
 		},
 		{
