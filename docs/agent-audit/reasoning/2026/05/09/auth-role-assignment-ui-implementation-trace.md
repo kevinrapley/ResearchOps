@@ -158,6 +158,34 @@ The test is wired into:
 scripts/validate.sh
 ```
 
+## Unit test failure fix
+
+The first CI unit-test run failed in:
+
+```text
+tests/visual-walkthrough-registry.test.js
+```
+
+Failure:
+
+```text
+Expected visual walkthrough registry to include public route: /pages/team/role-assignments/index.html
+```
+
+Cause:
+
+The new public page had been added, but the visual walkthrough registry had not been updated. The registry test discovers every public HTML page and requires each non-excluded route to have a registered walkthrough page entry.
+
+Fix applied:
+
+- added `teamRoleAssignments` to `operationalPaths`
+- added deterministic Team Admin `/api/me` fixture data to `visual-walkthrough.operational-fixtures.mjs`
+- added a route-specific `teamRoleAssignments` design-risk entry
+- registered `team-role-assignments` in `visual-walkthrough.config.mjs`
+- set its default state to use the deterministic Team Admin context
+
+This makes the new route visible to the visual walkthrough system rather than bypassing the test.
+
 ## Product documentation
 
 Product documentation lives at:
