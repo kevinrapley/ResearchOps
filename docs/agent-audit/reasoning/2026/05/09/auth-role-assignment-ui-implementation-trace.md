@@ -145,6 +145,7 @@ The test checks:
 - role selector options
 - use of `/api/me`
 - use of `/api/auth/role-assignments`
+- same-origin API calls by default
 - `credentials: "include"`
 - `role.assign` gate
 - request contract fields
@@ -185,6 +186,44 @@ Fix applied:
 - set its default state to use the deterministic Team Admin context
 
 This makes the new route visible to the visual walkthrough system rather than bypassing the test.
+
+## Feature preview API-origin fix
+
+Manual testing on the Cloudflare Pages feature-branch preview showed the page loaded but the current access panel displayed:
+
+```text
+Could not confirm your team role access.
+Load failed
+```
+
+Cause:
+
+The client forced `pages.dev` origins to call the Worker origin directly:
+
+```text
+https://rops-api.digikev-kevin-rapley.workers.dev
+```
+
+That bypassed the Pages `_redirects` same-origin `/api/*` proxy. In the browser, the call could fail before returning a normal JSON API error because the page was making a cross-origin authenticated request from the Pages preview.
+
+Fix applied:
+
+The default API base is now same-origin:
+
+```text
+API_BASE = document.documentElement.dataset.apiOrigin || window.API_ORIGIN || ""
+```
+
+This means feature previews call:
+
+```text
+/api/me
+/api/auth/role-assignments
+```
+
+on the same Pages preview origin, allowing `_redirects` to proxy to the Worker while keeping browser credentials and CORS behaviour aligned.
+
+The route-state test now asserts the client no longer hard-codes the Worker URL.
 
 ## Product documentation
 
