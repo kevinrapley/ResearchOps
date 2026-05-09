@@ -1,0 +1,88 @@
+{
+	"trace_id": "atrace-20260509-auth-role-assignment-api-implementation",
+	"trace_layer": "operational",
+	"date": "2026-05-09",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/auth-role-assignment-api",
+	"slice": {
+		"name": "auth-role-assignment-api",
+		"previous_slice": "auth runtime bootstrap live evidence",
+		"previous_slice_status": "complete and merged through PR #218"
+	},
+	"status": {
+		"implemented": true,
+		"pull_request_opened": false,
+		"route_status_workflow_run": false,
+		"deployed_worker_runtime_verified": false
+	},
+	"endpoint": {
+		"method": "POST",
+		"path": "/api/auth/role-assignments",
+		"required_permission": "role.assign"
+	},
+	"files_changed": [
+		"infra/cloudflare/src/core/auth/role-assignments.js",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/migrations/0002_auth_role_assignment_route.sql",
+		".github/workflows/apply-d1-auth-role-assignment-route.yml",
+		"tests/auth-role-assignment-api-route-state.test.js",
+		"scripts/validate.sh",
+		"docs/product/26/05/09/auth-role-assignment-api-2026-05-09.md",
+		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.md",
+		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.json"
+	],
+	"implementation": {
+		"route_handler": "infra/cloudflare/src/core/auth/role-assignments.js",
+		"worker_wiring": "infra/cloudflare/src/worker.js",
+		"behaviour": [
+			"resolve authenticated Cloudflare Access context",
+			"check D1 route permission declaration",
+			"require role.assign",
+			"validate request body",
+			"scope assignment to caller active team",
+			"require target user to be active team member",
+			"require explicit confirmation for sensitive roles",
+			"require extra explicit confirmation for safeguarding_lead",
+			"create or reactivate team-scoped role assignment",
+			"record auth audit event"
+		]
+	},
+	"request_contract": {
+		"target": "targetUserId or targetEmail",
+		"required": ["roleKey", "requestedReason"],
+		"optional": ["expiresAt"],
+		"sensitive_role_confirmation": "ASSIGN_SENSITIVE_ROLE",
+		"safeguarding_confirmation": "ASSIGN_SAFEGUARDING_LEAD"
+	},
+	"database_writes": {
+		"assignment_table": "auth_role_assignments",
+		"assignment_unique_key": ["user_id", "role_id", "scope_type", "scope_id"],
+		"audit_table": "auth_audit_events",
+		"audit_event_type": "auth.role_assignment.created",
+		"audit_permission_code": "role.assign"
+	},
+	"route_status_migration": {
+		"migration": "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql",
+		"workflow": ".github/workflows/apply-d1-auth-role-assignment-route.yml",
+		"confirmation_inputs": {
+			"confirm_database_name": "researchops-d1",
+			"confirm_operation": "APPLY_AUTH_ROLE_ASSIGNMENT_ROUTE"
+		}
+	},
+	"validation": {
+		"test": "tests/auth-role-assignment-api-route-state.test.js",
+		"wired_into": "scripts/validate.sh"
+	},
+	"boundaries": [
+		"No role-management UI is created in this slice.",
+		"No users or team memberships are created by this endpoint.",
+		"No cross-team assignment is supported.",
+		"No permission exceptions are assigned.",
+		"The route-status workflow is not run by this PR."
+	],
+	"next_steps_after_merge": [
+		"Run Apply D1 Auth Role Assignment Route from GitHub Actions.",
+		"Test POST /api/auth/role-assignments as the seeded Team Admin.",
+		"Record live endpoint evidence after runtime verification."
+	]
+}
