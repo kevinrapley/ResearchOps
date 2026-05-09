@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Assign team roles — ResearchOps Demo Suite</title>
+	<title>Assign a role to a team member — ResearchOps Demo Suite</title>
 
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
@@ -34,24 +34,6 @@
 		<div class="govuk-width-container">
 			<a class="govuk-back-link" href="/pages/projects/">Back to projects</a>
 
-			<header class="page-intro auth-role-assignment-page__header">
-				<div class="govuk-grid-row">
-					<div class="govuk-grid-column-two-thirds">
-						<span class="govuk-caption-l">Team administration</span>
-						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign team roles</h1>
-						<p class="lede">Give an existing team member a role within your active ResearchOps team.</p>
-						<p class="govuk-body">The user must already exist and be an active member of your team. Sensitive roles need explicit confirmation before they can be assigned.</p>
-					</div>
-				</div>
-			</header>
-
-			<section class="auth-role-assignment-status" aria-labelledby="signed-in-status-title">
-				<h2 class="govuk-heading-m" id="signed-in-status-title">Your current access</h2>
-				<div id="auth-context" class="auth-role-assignment-status__panel" aria-live="polite" aria-busy="true">
-					<p class="govuk-body">Checking your team role access.</p>
-				</div>
-			</section>
-
 			<div id="role-assignment-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" hidden>
 				<h2 class="govuk-error-summary__title">There is a problem</h2>
 				<div class="govuk-error-summary__body">
@@ -59,60 +41,195 @@
 				</div>
 			</div>
 
-			<section aria-labelledby="assign-role-form-title">
+			<header class="page-intro auth-role-assignment-page__header">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-l">Team administration</span>
+						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign a role to a team member</h1>
+						<p class="lede">Use this page to give an existing team member access to a role in ResearchOps.</p>
+						<p class="govuk-body">Only assign the lowest role they need to do their work. Role changes are recorded in the audit log.</p>
+					</div>
+				</div>
+			</header>
+
+			<section class="auth-role-assignment-scope" aria-labelledby="team-scope-title">
+				<h2 class="govuk-heading-m" id="team-scope-title">Team scope</h2>
+				<div id="auth-context" class="auth-role-assignment-scope__panel" aria-live="polite" aria-busy="true">
+					<p class="govuk-body">Checking which team you can manage.</p>
+				</div>
+			</section>
+
+			<section aria-labelledby="assign-role-form-title" id="role-assignment-form-section">
 				<div class="govuk-grid-row">
 					<div class="govuk-grid-column-two-thirds">
 						<h2 class="govuk-heading-l" id="assign-role-form-title">Role assignment details</h2>
 
 						<form id="role-assignment-form" novalidate>
-							<div class="govuk-form-group" id="target-email-group">
-								<label class="govuk-label govuk-label--s" for="target-email">Team member email</label>
-								<div class="govuk-hint" id="target-email-hint">Use the email address linked to the member's Cloudflare Access sign-in.</div>
-								<p class="govuk-error-message" id="target-email-error" hidden></p>
-								<input class="govuk-input" id="target-email" name="targetEmail" type="email" autocomplete="email" aria-describedby="target-email-hint" />
-							</div>
+							<section class="auth-role-assignment-section" aria-labelledby="team-member-section-title">
+								<h3 class="govuk-heading-m" id="team-member-section-title">1. Team member</h3>
 
-							<div class="govuk-form-group" id="target-user-id-group">
-								<label class="govuk-label" for="target-user-id">User ID, if known</label>
-								<div class="govuk-hint" id="target-user-id-hint">Optional. If you provide both email and user ID, they must resolve to the same user.</div>
-								<p class="govuk-error-message" id="target-user-id-error" hidden></p>
-								<input class="govuk-input" id="target-user-id" name="targetUserId" type="text" aria-describedby="target-user-id-hint" />
-							</div>
+								<div class="govuk-form-group" id="target-email-group">
+									<label class="govuk-label govuk-label--s" for="target-email">Team member’s email address</label>
+									<div class="govuk-hint" id="target-email-hint">Use the email address they use to sign in.</div>
+									<p class="govuk-error-message" id="target-email-error" hidden></p>
+									<input class="govuk-input auth-role-assignment-input auth-role-assignment-input--email" id="target-email" name="targetEmail" type="email" autocomplete="email" aria-describedby="target-email-hint" />
+								</div>
 
-							<div class="govuk-form-group" id="role-key-group">
-								<label class="govuk-label govuk-label--s" for="role-key">Role to assign</label>
-								<div class="govuk-hint" id="role-key-hint">Start with the lowest role that gives the person what they need.</div>
-								<p class="govuk-error-message" id="role-key-error" hidden></p>
-								<select class="govuk-select" id="role-key" name="roleKey" aria-describedby="role-key-hint">
-									<option value="">Select a role</option>
-									<option value="observer">Observer</option>
-									<option value="researcher">Researcher</option>
-									<option value="research_lead">Research Lead</option>
-									<option value="approver">Approver</option>
-									<option value="safeguarding_lead">Safeguarding Lead</option>
-									<option value="team_admin">Team Admin</option>
-								</select>
-							</div>
+								<details class="govuk-details auth-role-assignment-details" id="target-user-id-details">
+									<summary class="govuk-details__summary">Use a user ID instead</summary>
+									<div class="govuk-details__text">
+										<p class="govuk-body">Only use this if you copied the user ID from ResearchOps. If you enter both an email address and a user ID, they must belong to the same person.</p>
 
-							<div id="role-summary" class="auth-role-assignment-summary" aria-live="polite" hidden></div>
+										<div class="govuk-form-group" id="target-user-id-group">
+											<label class="govuk-label" for="target-user-id">User ID</label>
+											<div class="govuk-hint" id="target-user-id-hint">For example, <code>usr_bootstrap_...</code></div>
+											<p class="govuk-error-message" id="target-user-id-error" hidden></p>
+											<input class="govuk-input auth-role-assignment-input auth-role-assignment-input--user-id" id="target-user-id" name="targetUserId" type="text" aria-describedby="target-user-id-hint" />
+										</div>
+									</div>
+								</details>
+							</section>
 
-							<div class="govuk-form-group" id="requested-reason-group">
-								<label class="govuk-label govuk-label--s" for="requested-reason">Reason for assigning this role</label>
-								<div class="govuk-hint" id="requested-reason-hint">Write a short audit-ready reason. For example, “Joining the research team for the May study”.</div>
-								<p class="govuk-error-message" id="requested-reason-error" hidden></p>
-								<textarea class="govuk-textarea" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
-							</div>
+							<section class="auth-role-assignment-section" aria-labelledby="role-section-title">
+								<h3 class="govuk-heading-m" id="role-section-title">2. Role</h3>
 
-							<div class="govuk-form-group" id="expires-at-group">
-								<label class="govuk-label" for="expires-at">Expiry date and time, if needed</label>
-								<div class="govuk-hint" id="expires-at-hint">Optional. Leave blank for no expiry date.</div>
-								<p class="govuk-error-message" id="expires-at-error" hidden></p>
-								<input class="govuk-input" id="expires-at" name="expiresAt" type="datetime-local" aria-describedby="expires-at-hint" />
-							</div>
+								<fieldset class="govuk-fieldset" id="role-key-group">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What role do they need?</legend>
+									<div class="govuk-hint" id="role-key-hint">Start with the lowest role that gives the person what they need.</div>
+									<p class="govuk-error-message" id="role-key-error" hidden></p>
+
+									<div class="govuk-radios auth-role-assignment-radios" aria-describedby="role-key-hint">
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-observer" name="roleKey" type="radio" value="observer" />
+											<label class="govuk-label govuk-radios__label" for="role-key-observer">Observer</label>
+											<div class="govuk-hint govuk-radios__hint">Can observe low-risk research context without participant personal data reveal.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-researcher" name="roleKey" type="radio" value="researcher" />
+											<label class="govuk-label govuk-radios__label" for="role-key-researcher">Researcher</label>
+											<div class="govuk-hint govuk-radios__hint">Can create and edit governed research records.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-research-lead" name="roleKey" type="radio" value="research_lead" />
+											<label class="govuk-label govuk-radios__label" for="role-key-research-lead">Research Lead</label>
+											<div class="govuk-hint govuk-radios__hint">Can create, edit and review governed research records.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-approver" name="roleKey" type="radio" value="approver" />
+											<label class="govuk-label govuk-radios__label" for="role-key-approver">Approver</label>
+											<div class="govuk-hint govuk-radios__hint">Can review and approve governed research records.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" />
+											<label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead</label>
+											<div class="govuk-hint govuk-radios__hint">Can view, record, resolve and audit safeguarding concerns.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="role-key-team-admin" name="roleKey" type="radio" value="team_admin" />
+											<label class="govuk-label govuk-radios__label" for="role-key-team-admin">Team Admin</label>
+											<div class="govuk-hint govuk-radios__hint">Can manage team membership, role assignment and general audit oversight.</div>
+										</div>
+									</div>
+								</fieldset>
+
+								<div id="role-summary" class="auth-role-assignment-summary" aria-live="polite" hidden></div>
+							</section>
+
+							<section class="auth-role-assignment-section" aria-labelledby="duration-section-title">
+								<h3 class="govuk-heading-m" id="duration-section-title">3. Access duration</h3>
+
+								<fieldset class="govuk-fieldset" id="role-duration-group">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">How long should this role last?</legend>
+									<div class="govuk-hint" id="role-duration-hint">Choose a governed access period. The standard maximum is 180 days.</div>
+									<p class="govuk-error-message" id="role-duration-error" hidden></p>
+
+									<div class="govuk-radios auth-role-assignment-radios" aria-describedby="role-duration-hint">
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="duration-30" name="durationPreset" type="radio" value="30" />
+											<label class="govuk-label govuk-radios__label" for="duration-30">30 days</label>
+											<div class="govuk-hint govuk-radios__hint">Use for short support tasks or temporary cover.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="duration-60" name="durationPreset" type="radio" value="60" />
+											<label class="govuk-label govuk-radios__label" for="duration-60">60 days</label>
+											<div class="govuk-hint govuk-radios__hint">Use for short project involvement.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="duration-90" name="durationPreset" type="radio" value="90" />
+											<label class="govuk-label govuk-radios__label" for="duration-90">90 days</label>
+											<div class="govuk-hint govuk-radios__hint">Use for one research phase or delivery cycle.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="duration-180" name="durationPreset" type="radio" value="180" />
+											<label class="govuk-label govuk-radios__label" for="duration-180">180 days</label>
+											<div class="govuk-hint govuk-radios__hint">Use for the standard maximum team access period.</div>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="duration-custom" name="durationPreset" type="radio" value="custom" />
+											<label class="govuk-label govuk-radios__label" for="duration-custom">Until a specific date</label>
+											<div class="govuk-hint govuk-radios__hint">Use for contractors, secondments or known assignment end dates.</div>
+										</div>
+									</div>
+								</fieldset>
+
+								<div class="govuk-form-group auth-role-assignment-custom-date" id="custom-expiry-date-group" hidden>
+									<fieldset class="govuk-fieldset" role="group" aria-describedby="custom-expiry-date-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What date should this role expire?</legend>
+										<div class="govuk-hint" id="custom-expiry-date-hint">For example, 30 9 2026. Access ends at the end of the selected day.</div>
+										<p class="govuk-error-message" id="custom-expiry-date-error" hidden></p>
+
+										<div class="govuk-date-input" id="custom-expiry-date">
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="expiry-day">Day</label>
+													<input class="govuk-input govuk-date-input__input govuk-input--width-2" id="expiry-day" name="expiryDay" type="text" inputmode="numeric" autocomplete="off" />
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="expiry-month">Month</label>
+													<input class="govuk-input govuk-date-input__input govuk-input--width-2" id="expiry-month" name="expiryMonth" type="text" inputmode="numeric" autocomplete="off" />
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="expiry-year">Year</label>
+													<input class="govuk-input govuk-date-input__input govuk-input--width-4" id="expiry-year" name="expiryYear" type="text" inputmode="numeric" autocomplete="off" />
+												</div>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+							</section>
+
+							<section class="auth-role-assignment-section" aria-labelledby="reason-section-title">
+								<h3 class="govuk-heading-m" id="reason-section-title">4. Reason</h3>
+
+								<div class="govuk-form-group" id="requested-reason-group">
+									<label class="govuk-label govuk-label--s" for="requested-reason">Why are you assigning this role?</label>
+									<div class="govuk-hint" id="requested-reason-hint">This will be stored in the audit log. Include the work they need the role for. For example, “Joining the research team for the May assisted digital study”.</div>
+									<p class="govuk-error-message" id="requested-reason-error" hidden></p>
+									<textarea class="govuk-textarea auth-role-assignment-textarea" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
+								</div>
+							</section>
 
 							<fieldset class="govuk-fieldset auth-role-assignment-sensitive" id="sensitive-role-fieldset" hidden>
 								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Sensitive role confirmation</legend>
-								<div class="govuk-hint">Some roles give access to sensitive records or administrative controls.</div>
+								<div class="auth-role-assignment-warning" role="note">
+									<strong>Warning</strong>
+									<p class="govuk-body">This role gives access to sensitive records or administrative controls.</p>
+								</div>
 								<p class="govuk-error-message" id="sensitive-role-error" hidden></p>
 								<div class="govuk-checkboxes__item">
 									<input class="govuk-checkboxes__input" id="sensitive-role-confirmation" name="sensitiveRoleConfirmation" type="checkbox" value="ASSIGN_SENSITIVE_ROLE" />
@@ -131,10 +248,20 @@
 							</fieldset>
 
 							<div class="govuk-button-group">
-								<button class="govuk-button" type="submit" id="submit-role-assignment">Assign role</button>
+								<button class="govuk-button" type="submit" id="submit-role-assignment">Check details</button>
 								<button class="govuk-button govuk-button--secondary" type="reset">Clear form</button>
 							</div>
 						</form>
+
+						<section id="role-assignment-review" class="auth-role-assignment-review" aria-labelledby="role-assignment-review-title" tabindex="-1" hidden>
+							<h2 class="govuk-heading-l" id="role-assignment-review-title">Check and confirm</h2>
+							<p class="govuk-body">The system will confirm the person exists and is an active member of this team when you assign the role.</p>
+							<div id="role-assignment-review-body"></div>
+							<div class="govuk-button-group">
+								<button class="govuk-button" type="button" id="confirm-role-assignment">Confirm and assign role</button>
+								<button class="govuk-button govuk-button--secondary" type="button" id="change-role-assignment">Change details</button>
+							</div>
+						</section>
 
 						<div id="role-assignment-result" class="auth-role-assignment-result" aria-live="polite" hidden></div>
 					</div>
