@@ -47,11 +47,13 @@ if (teamName.length < 2 || teamName.length > 120) {
 	fail('TEAM_NAME must be between 2 and 120 characters');
 }
 
-const teamSuffix = stableSuffix(teamId, 60);
-const userId = `usr_bootstrap_${stableSuffix(email, 80)}`;
-const membershipId = `mem_bootstrap_${teamSuffix}`;
-const teamAdminAssignmentId = `asn_bootstrap_team_admin_${teamSuffix}`;
-const safeguardingAssignmentId = `asn_bootstrap_safeguarding_${teamSuffix}`;
+const teamSuffix = stableSuffix(teamId, 48);
+const userSuffix = stableSuffix(email, 64);
+const principalSuffix = `${teamSuffix}_${userSuffix}`;
+const userId = `usr_bootstrap_${userSuffix}`;
+const membershipId = `mem_bootstrap_${principalSuffix}`;
+const teamAdminAssignmentId = `asn_bootstrap_team_admin_${principalSuffix}`;
+const safeguardingAssignmentId = `asn_bootstrap_safeguarding_${principalSuffix}`;
 
 const statements = [
 	'PRAGMA foreign_keys = ON;',
