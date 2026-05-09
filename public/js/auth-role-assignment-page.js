@@ -212,7 +212,6 @@ function renderRoleSummary() {
 	dom.roleSummary.hidden = false;
 	dom.roleSummary.innerHTML = `
 <h3 class="govuk-heading-s">${escapeHtml(detail.label)}</h3>
-<p class="govuk-body">${escapeHtml(detail.description)}</p>
 ${abilities}
 ${detail.sensitive ? '<p class="govuk-body"><strong>This is a sensitive role.</strong></p>' : ""}
 `;
@@ -223,6 +222,16 @@ ${detail.sensitive ? '<p class="govuk-body"><strong>This is a sensitive role.</s
 function renderDurationControls() {
 	if (!dom.customExpiryDateGroup) return;
 	dom.customExpiryDateGroup.hidden = selectedDurationPreset() !== "custom";
+}
+
+function makeRadioHintSelectable(event) {
+	const hint = event.target.closest(".auth-role-assignment-radios .govuk-radios__hint");
+	if (!hint) return;
+	const item = hint.closest(".govuk-radios__item");
+	const input = item?.querySelector(".govuk-radios__input");
+	if (!input || input.disabled) return;
+	input.checked = true;
+	input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
 function clearFieldErrors() {
@@ -520,6 +529,10 @@ function init() {
 	document
 		.querySelectorAll('input[name="durationPreset"]')
 		.forEach((input) => input.addEventListener("change", renderDurationControls));
+	document.querySelectorAll(".auth-role-assignment-radios .govuk-radios__hint").forEach((hint) => {
+		hint.dataset.clicksRadio = "true";
+	});
+	dom.form.addEventListener("click", makeRadioHintSelectable);
 	dom.form.addEventListener("submit", prepareReview);
 	dom.confirm?.addEventListener("click", submitAssignment);
 	dom.change?.addEventListener("click", () => {
