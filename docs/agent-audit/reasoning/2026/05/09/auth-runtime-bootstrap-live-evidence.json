@@ -1,0 +1,75 @@
+{
+	"trace_id": "atrace-20260509-auth-runtime-bootstrap-live-evidence",
+	"trace_layer": "operational-evidence",
+	"date": "2026-05-09",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "trace/auth-runtime-bootstrap-evidence",
+	"related_pull_request": {
+		"number": 217,
+		"title": "Bootstrap authentication runtime admin access",
+		"merge_commit_sha": "cc2bc9c52523d0928a0f34a08ecbbef6d302fbc9",
+		"merged_at": "2026-05-09T00:36:24Z"
+	},
+	"runtime_workflow": {
+		"name": "Bootstrap D1 Auth Runtime",
+		"target_database": "researchops-d1",
+		"target_team": "team_researchops_core",
+		"run_status_reported_by_user": "succeeded"
+	},
+	"evidence_source": {
+		"type": "user-supplied runtime verification screenshots",
+		"screenshots_committed_to_repository": false,
+		"raw_email_committed_to_repository": false,
+		"provider_subject_committed_to_repository": false,
+		"cloudflare_secret_material_committed_to_repository": false
+	},
+	"auth_users_evidence": {
+		"record_count_observed": 1,
+		"account_status": "active",
+		"created_at": "2026-05-09T00:40:07.629Z",
+		"updated_at": "2026-05-09T00:40:07.629Z"
+	},
+	"permission_evidence": {
+		"active_roles": 2,
+		"permissions": 7,
+		"permission_exceptions": 0,
+		"scope": "team_researchops_core",
+		"roles": [
+			{
+				"role_key": "safeguarding_lead",
+				"permissions": [
+					"safeguarding.view",
+					"safeguarding.record",
+					"safeguarding.resolve",
+					"safeguarding.audit.view"
+				]
+			},
+			{
+				"role_key": "team_admin",
+				"permissions": [
+					"team.manage",
+					"role.assign",
+					"audit.view"
+				]
+			}
+		]
+	},
+	"safeguarding_role_note": {
+		"safeguarding_lead_present": true,
+		"interpretation": "Valid if the bootstrap workflow was intentionally run with safeguarding assignment enabled, or if an equivalent deliberate assignment was made.",
+		"follow_up_if_unintended": "Remove the safeguarding_lead assignment from the first admin."
+	},
+	"evidence_boundary": {
+		"d1_side_bootstrap_state_recorded": true,
+		"deployed_worker_api_verified_in_this_trace": false,
+		"endpoints_to_verify_next": [
+			"GET /api/me",
+			"GET /api/me/permissions"
+		]
+	},
+	"next_implementation_slice": {
+		"branch": "feature/auth-role-assignment-api",
+		"route": "POST /api/auth/role-assignments",
+		"purpose": "Allow an authenticated Team Admin with role.assign to assign roles to users in their active team and record the assignment in auth_audit_events."
+	}
+}
