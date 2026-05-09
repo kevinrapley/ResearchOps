@@ -6,30 +6,60 @@ const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', '
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
 
 function assertPageStructure() {
-	assert.match(pageSource, /<title>Assign team roles — ResearchOps Demo Suite<\/title>/);
+	assert.match(pageSource, /<title>Assign a role to a team member — ResearchOps Demo Suite<\/title>/);
 	assert.match(pageSource, /id="role-assignment-title"/);
+	assert.match(pageSource, /Assign a role to a team member/);
 	assert.match(pageSource, /id="auth-context"/);
 	assert.match(pageSource, /id="role-assignment-error-summary"/);
 	assert.match(pageSource, /id="role-assignment-form"/);
 	assert.match(pageSource, /id="target-email"/);
+	assert.match(pageSource, /id="target-user-id-details"/);
 	assert.match(pageSource, /id="target-user-id"/);
-	assert.match(pageSource, /id="role-key"/);
+	assert.match(pageSource, /id="role-key-observer"/);
+	assert.match(pageSource, /id="duration-30"/);
+	assert.match(pageSource, /id="duration-custom"/);
+	assert.match(pageSource, /id="custom-expiry-date-group"/);
+	assert.match(pageSource, /id="expiry-day"/);
 	assert.match(pageSource, /id="requested-reason"/);
-	assert.match(pageSource, /id="expires-at"/);
 	assert.match(pageSource, /id="sensitive-role-confirmation"/);
 	assert.match(pageSource, /id="safeguarding-confirmation"/);
+	assert.match(pageSource, /id="role-assignment-review"/);
+	assert.match(pageSource, /id="confirm-role-assignment"/);
 	assert.match(pageSource, /id="role-assignment-result"/);
 	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
-function assertRoleOptions() {
-	assert.match(pageSource, /value="observer"/);
-	assert.match(pageSource, /value="researcher"/);
-	assert.match(pageSource, /value="research_lead"/);
-	assert.match(pageSource, /value="approver"/);
-	assert.match(pageSource, /value="safeguarding_lead"/);
-	assert.match(pageSource, /value="team_admin"/);
+function assertCurrentAccessPanelIsReducedToTeamScope() {
+	assert.doesNotMatch(pageSource, /Your current access/);
+	assert.match(pageSource, /Team scope/);
+	assert.match(scriptSource, /You are assigning roles in/);
+	assert.match(scriptSource, /You cannot assign roles/);
+	assert.doesNotMatch(scriptSource, /Current roles:/);
+}
+
+function assertRoleOptionsUseRadios() {
+	assert.doesNotMatch(pageSource, /<select class="govuk-select" id="role-key"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="observer"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="researcher"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="research_lead"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="approver"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="safeguarding_lead"/);
+	assert.match(pageSource, /name="roleKey" type="radio" value="team_admin"/);
+	assert.match(pageSource, /Start with the lowest role that gives the person what they need/);
+}
+
+function assertDurationModelUsesGovernedPresets() {
+	assert.doesNotMatch(pageSource, /type="datetime-local"/);
+	assert.match(pageSource, /How long should this role last\?/);
+	assert.match(pageSource, /name="durationPreset" type="radio" value="30"/);
+	assert.match(pageSource, /name="durationPreset" type="radio" value="60"/);
+	assert.match(pageSource, /name="durationPreset" type="radio" value="90"/);
+	assert.match(pageSource, /name="durationPreset" type="radio" value="180"/);
+	assert.match(pageSource, /name="durationPreset" type="radio" value="custom"/);
+	assert.match(pageSource, /Access ends at the end of the selected day/);
+	assert.match(scriptSource, /const DURATION_LABELS = Object\.freeze/);
+	assert.match(scriptSource, /expiresAtFor/);
 }
 
 function assertClientUsesAuthAndAssignmentEndpoints() {
@@ -54,13 +84,24 @@ function assertClientBuildsCorrectRequestContract() {
 	assert.match(scriptSource, /ASSIGN_SAFEGUARDING_LEAD/);
 }
 
-function assertClientValidatesBeforePost() {
+function assertClientValidatesBeforeReview() {
 	assert.match(scriptSource, /function validate\(values\)/);
-	assert.match(scriptSource, /Enter a team member email or user ID/);
-	assert.match(scriptSource, /Select a role to assign/);
-	assert.match(scriptSource, /Enter a reason of at least 12 characters/);
-	assert.match(scriptSource, /Confirm the sensitive role assignment/);
+	assert.match(scriptSource, /Enter a team member’s email address or user ID/);
+	assert.match(scriptSource, /Select the role they need/);
+	assert.match(scriptSource, /Select how long this role should last/);
+	assert.match(scriptSource, /Enter a real expiry date/);
+	assert.match(scriptSource, /Enter why you are assigning this role/);
+	assert.match(scriptSource, /Confirm this sensitive role assignment is intentional/);
 	assert.match(scriptSource, /Confirm Safeguarding Lead access is required/);
+}
+
+function assertNoPostBeforeConfirm() {
+	assert.match(scriptSource, /function prepareReview\(event\)/);
+	assert.match(scriptSource, /function renderReview\(values\)/);
+	assert.match(scriptSource, /async function submitAssignment\(\)/);
+	assert.match(scriptSource, /dom\.form\.addEventListener\("submit", prepareReview\)/);
+	assert.match(scriptSource, /dom\.confirm\?\.addEventListener\("click", submitAssignment\)/);
+	assert.match(scriptSource, /Confirm and assign role/);
 }
 
 function assertRoleMetadataIsVisibleClientSide() {
@@ -77,20 +118,27 @@ function assertRoleMetadataIsVisibleClientSide() {
 }
 
 function assertStylesExist() {
-	assert.match(styleSource, /\.auth-role-assignment-status__panel/);
-	assert.match(styleSource, /\.auth-role-assignment-status__panel--ready/);
-	assert.match(styleSource, /\.auth-role-assignment-status__panel--blocked/);
-	assert.match(styleSource, /\.auth-role-assignment-summary/);
+	assert.match(styleSource, /\.auth-role-assignment-scope__panel/);
+	assert.match(styleSource, /\.auth-role-assignment-input--email/);
+	assert.match(styleSource, /width: 66\.66%/);
+	assert.match(styleSource, /\.auth-role-assignment-input--user-id/);
+	assert.match(styleSource, /width: 50%/);
+	assert.match(styleSource, /\.auth-role-assignment-radios/);
+	assert.match(styleSource, /\.auth-role-assignment-custom-date/);
 	assert.match(styleSource, /\.auth-role-assignment-sensitive/);
+	assert.match(styleSource, /\.auth-role-assignment-review/);
 	assert.match(styleSource, /\.auth-role-assignment-result--success/);
 	assert.match(styleSource, /\.auth-role-assignment-result--error/);
 	assert.match(styleSource, /transparency begins in the cascade/);
 }
 
 assertPageStructure();
-assertRoleOptions();
+assertCurrentAccessPanelIsReducedToTeamScope();
+assertRoleOptionsUseRadios();
+assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
 assertClientBuildsCorrectRequestContract();
-assertClientValidatesBeforePost();
+assertClientValidatesBeforeReview();
+assertNoPostBeforeConfirm();
 assertRoleMetadataIsVisibleClientSide();
 assertStylesExist();
