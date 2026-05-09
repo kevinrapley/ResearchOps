@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Assign team roles — ResearchOps Demo Suite</title>
+
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/auth-role-assignments.css" media="screen" />
+
+	<script type="module" src="/components/layout.js" defer></script>
+</head>
+
+<body>
+	<noscript>
+		<a class="govuk-skip-link" href="#main-content">Skip to main content</a>
+	</noscript>
+
+	<x-include
+		src="/partials/header.html"
+		vars='{
+			"active":"Projects",
+			"subtitle":"Manage team role access"
+		}'>
+	</x-include>
+
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<a class="govuk-back-link" href="/pages/projects/">Back to projects</a>
+
+			<header class="page-intro auth-role-assignment-page__header">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-l">Team administration</span>
+						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign team roles</h1>
+						<p class="lede">Give an existing team member a role within your active ResearchOps team.</p>
+						<p class="govuk-body">The user must already exist and be an active member of your team. Sensitive roles need explicit confirmation before they can be assigned.</p>
+					</div>
+				</div>
+			</header>
+
+			<section class="auth-role-assignment-status" aria-labelledby="signed-in-status-title">
+				<h2 class="govuk-heading-m" id="signed-in-status-title">Your current access</h2>
+				<div id="auth-context" class="auth-role-assignment-status__panel" aria-live="polite" aria-busy="true">
+					<p class="govuk-body">Checking your team role access.</p>
+				</div>
+			</section>
+
+			<div id="role-assignment-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" hidden>
+				<h2 class="govuk-error-summary__title">There is a problem</h2>
+				<div class="govuk-error-summary__body">
+					<ul class="govuk-error-summary__list" id="role-assignment-error-list"></ul>
+				</div>
+			</div>
+
+			<section aria-labelledby="assign-role-form-title">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<h2 class="govuk-heading-l" id="assign-role-form-title">Role assignment details</h2>
+
+						<form id="role-assignment-form" novalidate>
+							<div class="govuk-form-group" id="target-email-group">
+								<label class="govuk-label govuk-label--s" for="target-email">Team member email</label>
+								<div class="govuk-hint" id="target-email-hint">Use the email address linked to the member's Cloudflare Access sign-in.</div>
+								<p class="govuk-error-message" id="target-email-error" hidden></p>
+								<input class="govuk-input" id="target-email" name="targetEmail" type="email" autocomplete="email" aria-describedby="target-email-hint" />
+							</div>
+
+							<div class="govuk-form-group" id="target-user-id-group">
+								<label class="govuk-label" for="target-user-id">User ID, if known</label>
+								<div class="govuk-hint" id="target-user-id-hint">Optional. If you provide both email and user ID, they must resolve to the same user.</div>
+								<p class="govuk-error-message" id="target-user-id-error" hidden></p>
+								<input class="govuk-input" id="target-user-id" name="targetUserId" type="text" aria-describedby="target-user-id-hint" />
+							</div>
+
+							<div class="govuk-form-group" id="role-key-group">
+								<label class="govuk-label govuk-label--s" for="role-key">Role to assign</label>
+								<div class="govuk-hint" id="role-key-hint">Start with the lowest role that gives the person what they need.</div>
+								<p class="govuk-error-message" id="role-key-error" hidden></p>
+								<select class="govuk-select" id="role-key" name="roleKey" aria-describedby="role-key-hint">
+									<option value="">Select a role</option>
+									<option value="observer">Observer</option>
+									<option value="researcher">Researcher</option>
+									<option value="research_lead">Research Lead</option>
+									<option value="approver">Approver</option>
+									<option value="safeguarding_lead">Safeguarding Lead</option>
+									<option value="team_admin">Team Admin</option>
+								</select>
+							</div>
+
+							<div id="role-summary" class="auth-role-assignment-summary" aria-live="polite" hidden></div>
+
+							<div class="govuk-form-group" id="requested-reason-group">
+								<label class="govuk-label govuk-label--s" for="requested-reason">Reason for assigning this role</label>
+								<div class="govuk-hint" id="requested-reason-hint">Write a short audit-ready reason. For example, “Joining the research team for the May study”.</div>
+								<p class="govuk-error-message" id="requested-reason-error" hidden></p>
+								<textarea class="govuk-textarea" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
+							</div>
+
+							<div class="govuk-form-group" id="expires-at-group">
+								<label class="govuk-label" for="expires-at">Expiry date and time, if needed</label>
+								<div class="govuk-hint" id="expires-at-hint">Optional. Leave blank for no expiry date.</div>
+								<p class="govuk-error-message" id="expires-at-error" hidden></p>
+								<input class="govuk-input" id="expires-at" name="expiresAt" type="datetime-local" aria-describedby="expires-at-hint" />
+							</div>
+
+							<fieldset class="govuk-fieldset auth-role-assignment-sensitive" id="sensitive-role-fieldset" hidden>
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Sensitive role confirmation</legend>
+								<div class="govuk-hint">Some roles give access to sensitive records or administrative controls.</div>
+								<p class="govuk-error-message" id="sensitive-role-error" hidden></p>
+								<div class="govuk-checkboxes__item">
+									<input class="govuk-checkboxes__input" id="sensitive-role-confirmation" name="sensitiveRoleConfirmation" type="checkbox" value="ASSIGN_SENSITIVE_ROLE" />
+									<label class="govuk-label govuk-checkboxes__label" for="sensitive-role-confirmation">I confirm this sensitive role assignment is intentional.</label>
+								</div>
+							</fieldset>
+
+							<fieldset class="govuk-fieldset auth-role-assignment-sensitive" id="safeguarding-fieldset" hidden>
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Safeguarding access confirmation</legend>
+								<div class="govuk-hint">Safeguarding Lead can view, record, resolve and audit safeguarding concerns.</div>
+								<p class="govuk-error-message" id="safeguarding-error" hidden></p>
+								<div class="govuk-checkboxes__item">
+									<input class="govuk-checkboxes__input" id="safeguarding-confirmation" name="safeguardingConfirmation" type="checkbox" value="ASSIGN_SAFEGUARDING_LEAD" />
+									<label class="govuk-label govuk-checkboxes__label" for="safeguarding-confirmation">I confirm Safeguarding Lead access is required.</label>
+								</div>
+							</fieldset>
+
+							<div class="govuk-button-group">
+								<button class="govuk-button" type="submit" id="submit-role-assignment">Assign role</button>
+								<button class="govuk-button govuk-button--secondary" type="reset">Clear form</button>
+							</div>
+						</form>
+
+						<div id="role-assignment-result" class="auth-role-assignment-result" aria-live="polite" hidden></div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'>
+	</x-include>
+
+	<script type="module" src="/js/auth-role-assignment-page.js"></script>
+</body>
+
+</html>
