@@ -20,7 +20,24 @@
 		"runtime_verified": true,
 		"unit_test_fix_applied": true,
 		"feature_preview_api_origin_fix_applied": true,
-		"second_iteration_design_applied": true
+		"second_iteration_design_applied": true,
+		"govuk_conformance_pass_applied": true,
+		"final_stabilisation_pass_applied": true,
+		"pr_mergeable_after_final_code_pass": true
+	},
+	"validation_status": {
+		"latest_checked_code_head": "1198b7aa51987ab0abe6a257eb7376c813d26b51",
+		"latest_checked_code_head_result": "success",
+		"successful_workflows_observed": [
+			"Format pull request",
+			"QA - Broken links (Lychee)",
+			"Accessibility audit (pa11y-ci)",
+			"Validate ResearchOps",
+			"qa-bdd",
+			"CI",
+			"Release Gate",
+			"Worker CI"
+		]
 	},
 	"page": {
 		"path": "public/pages/team/role-assignments/index.html",
@@ -39,6 +56,14 @@
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.md",
 		"docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-ui-implementation-trace.json"
 	],
+	"information_architecture": {
+		"area": "top-level Team administration",
+		"breadcrumb": "Home > Team administration",
+		"breadcrumb_before_main_landmark": true,
+		"removed_back_to_projects": true,
+		"removed_back_links": true,
+		"removed_clear_form_reset": true
+	},
 	"second_iteration_design_changes": [
 		{
 			"change": "Removed prominent self-access panel from successful state.",
@@ -53,15 +78,23 @@
 			"reason": "The visual affordance should match the expected content length and keep the normal path focused on human-readable email."
 		},
 		{
+			"change": "Removed the user ID example.",
+			"reason": "The UI should not surface internal bootstrap-looking identifiers as examples."
+		},
+		{
 			"change": "Replaced the role select with radios.",
 			"reason": "The roles are few, consequential and need visible descriptions at the point of decision."
+		},
+		{
+			"change": "Replaced technical permission-code display with plain-language abilities.",
+			"reason": "Admins need to understand what a role allows without reading implementation codes."
 		},
 		{
 			"change": "Replaced arbitrary datetime input with governed duration radios and conditional day/month/year date input.",
 			"reason": "Role expiry is a governed access-period decision, not a timestamp-entry task."
 		},
 		{
-			"change": "Added check-and-confirm panel before POST.",
+			"change": "Added check-and-confirm summary-list panel before POST.",
 			"reason": "The write action should not occur on ordinary form submit for a sensitive administrative task."
 		}
 	],
@@ -100,6 +133,20 @@
 		"safeguarding_lead",
 		"team_admin"
 	],
+	"role_ability_display": {
+		"format": "plain language abilities",
+		"technical_permission_codes_visible_to_user": false,
+		"technical_codes_removed_from_ui": [
+			"governed.create",
+			"governed.edit",
+			"governed.review",
+			"governed.approve",
+			"recommendation.own",
+			"safeguarding.view",
+			"safeguarding.audit.view",
+			"team.manage"
+		]
+	},
 	"duration_options_visible_in_ui": [
 		"30 days",
 		"60 days",
@@ -108,16 +155,33 @@
 		"Until a specific date"
 	],
 	"sensitive_role_controls": {
+		"pattern": "GOV.UK-style warning text plus checkbox fieldset",
 		"sensitiveRoleConfirmation": "ASSIGN_SENSITIVE_ROLE",
 		"safeguardingConfirmation": "ASSIGN_SAFEGUARDING_LEAD"
+	},
+	"govuk_component_conformance": {
+		"breadcrumbs": true,
+		"details_component": true,
+		"radios": true,
+		"date_input": true,
+		"warning_text": true,
+		"checkboxes": true,
+		"error_summary": true,
+		"summary_list_review": true,
+		"width_utility_affordance": true
 	},
 	"validation": {
 		"test": "tests/auth-role-assignment-ui-route-state.test.js",
 		"wired_into": "scripts/validate.sh",
 		"checks": [
 			"page structure",
+			"breadcrumb-based admin information architecture",
+			"breadcrumb placement before main landmark",
+			"removal of back links",
+			"removal of clear form reset control",
 			"removal of self-access panel from successful state",
 			"team-scope messaging",
+			"user ID details component without a user ID example",
 			"role radios instead of select",
 			"governed duration radios",
 			"conditional custom date inputs",
@@ -128,7 +192,9 @@
 			"role.assign gate",
 			"request contract fields",
 			"client validation messages",
-			"role metadata and permission codes",
+			"plain-language role abilities",
+			"absence of technical permission codes in the UI",
+			"GOV.UK warning text, checkbox and summary-list hooks",
 			"stylesheet hooks for width affordance and review state"
 		]
 	},
@@ -169,6 +235,17 @@
 			"The original AUD value was a Pages web analytics tag, not an Access AUD.",
 			"CLOUDFLARE_ACCESS_TEAM_DOMAIN must not include https:// for the current Worker code path.",
 			"The Worker receives the Pages Access JWT through the Pages proxy path, so the Worker AUD value must align with the Pages Access application AUD for that route."
+		]
+	},
+	"final_stabilisation_pass": {
+		"completed": true,
+		"changes": [
+			"Moved breadcrumb navigation before the main landmark.",
+			"Repaired role-assignment page markup after a compacted intermediate edit.",
+			"Removed a transient stray non-ASCII artefact introduced during editing.",
+			"Asserted breadcrumb placement in the route-state test.",
+			"Confirmed the PR was mergeable after the final code pass.",
+			"Confirmed the latest checked CI set was green."
 		]
 	},
 	"boundaries": [
