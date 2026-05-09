@@ -18,11 +18,25 @@ The page is:
 
 As a Team Admin, I need to assign a role to an existing team member, so that role changes can be made through a governed interface rather than manual SQL or ad hoc API calls.
 
-## Second iteration design changes
+## Information architecture
 
-The second iteration changes the page from an authentication diagnostic plus form into a safer administrative task flow.
+This page is now treated as part of top-level Team administration for the ResearchOps installation.
 
-The prominent “Your current access” panel has been removed from the successful state. The page still checks `/api/me`, but it now only shows a compact team-scope statement when the user can assign roles.
+The page uses breadcrumb navigation:
+
+```text
+Home > Team administration
+```
+
+The previous `Back to projects` link has been removed. Role assignment is not a project-level task.
+
+No other back button or back link is shown on this page.
+
+## Iteration summary
+
+The page has moved from an authentication diagnostic plus form into a safer administrative task flow.
+
+The prominent `Your current access` panel has been removed from the successful state. The page still checks `/api/me`, but it now only shows a compact team-scope statement when the user can assign roles.
 
 The default successful state says which team the admin is managing:
 
@@ -36,18 +50,19 @@ If the user cannot assign roles, the page shows a blocking message instead of th
 
 The page contains:
 
+- breadcrumb navigation
 - compact team-scope panel
 - team member email field
 - user ID field hidden inside a details component
 - role radios with role descriptions
-- role summary panel with permission codes
+- role summary panel with plain-language abilities
 - governed access-duration radios
 - conditional date input for a specific expiry date
 - audit reason textarea
 - sensitive-role confirmation checkbox
 - Safeguarding Lead confirmation checkbox
 - GOV.UK-style error summary
-- check-and-confirm panel
+- check-and-confirm summary list
 - success and error result panels
 
 ## Runtime behaviour
@@ -96,7 +111,7 @@ The API accepts either `targetEmail` or `targetUserId`. If both are sent, the AP
 
 ## Team member fields
 
-The email field is the primary target identifier and uses a two-thirds width.
+The email field is the primary target identifier and uses a two-thirds width input.
 
 The user ID field is hidden inside a details component labelled:
 
@@ -104,7 +119,7 @@ The user ID field is hidden inside a details component labelled:
 Use a user ID instead
 ```
 
-This keeps the normal path focused on the human-readable sign-in email address while preserving an escape route for known user IDs.
+No user ID example is shown. The admin is told to use this field only if they copied the user ID from ResearchOps.
 
 The user ID field uses a half-width input because user IDs are shorter and more structured than email addresses.
 
@@ -114,7 +129,7 @@ The role selector is now a set of radios rather than a select.
 
 This makes every available role visible at the point of decision and allows each role to carry a short description.
 
-The first UI supports assigning the seeded D1 roles:
+The UI supports assigning the seeded D1 roles:
 
 - Observer
 - Researcher
@@ -123,13 +138,13 @@ The first UI supports assigning the seeded D1 roles:
 - Safeguarding Lead
 - Team Admin
 
-The UI shows the selected role description and permission codes before confirmation.
+The selected role summary shows plain-language abilities only. It does not show technical permission codes such as `governed.create` or `safeguarding.view`.
 
 ## Access duration
 
 The first iteration used an arbitrary date-time field and helper text that implied no expiry date.
 
-That was incorrect for a governed role-assignment model. The second iteration asks:
+That was incorrect for a governed role-assignment model. The current page asks:
 
 ```text
 How long should this role last?
@@ -151,6 +166,8 @@ The client converts the selected duration or date into `expiresAt` for the API r
 
 ## Sensitive role controls
 
+Sensitive role confirmation now uses a GOV.UK-style warning text block followed by a checkbox fieldset.
+
 For sensitive roles, the user must tick:
 
 ```text
@@ -166,7 +183,7 @@ sensitiveRoleConfirmation = ASSIGN_SENSITIVE_ROLE
 For `safeguarding_lead`, the user must also tick:
 
 ```text
-I confirm Safeguarding Lead access is required.
+I confirm this person needs Safeguarding Lead access.
 ```
 
 This sends:
@@ -174,6 +191,28 @@ This sends:
 ```text
 safeguardingConfirmation = ASSIGN_SAFEGUARDING_LEAD
 ```
+
+## Check and confirm
+
+The check-and-confirm state uses summary-list style rows.
+
+The admin can review:
+
+- team member email
+- user ID, if provided
+- team
+- role
+- access duration
+- expiry date
+- reason
+
+The actual D1 write only happens after the admin selects:
+
+```text
+Confirm and assign role
+```
+
+The previous `Clear form` reset button has been removed.
 
 ## Validation
 
@@ -193,14 +232,16 @@ The server remains authoritative.
 
 The page uses:
 
+- `govuk-breadcrumbs`
 - `govuk-error-summary`
 - form groups with labels, hints and error messages
 - radios for single-choice role and duration decisions
 - details component affordance for the secondary user ID path
 - GOV.UK-style date input for specific expiry dates
-- fieldsets for sensitive confirmations
+- warning text for sensitive access consequences
+- checkbox fieldsets for sensitive confirmations
 - visible role summary before confirmation
-- check-and-confirm panel before POST
+- summary-list style check-and-confirm panel before POST
 - `aria-live` regions for team-scope and result messages
 - `aria-busy` while checking current access
 
