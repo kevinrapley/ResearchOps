@@ -40,6 +40,12 @@ or:
 targetEmail
 ```
 
+If both are supplied, both identifiers must resolve to the same user. Otherwise, the endpoint rejects the request with:
+
+```text
+target_identifier_conflict
+```
+
 Required role field:
 
 ```text
@@ -108,6 +114,18 @@ outcome = succeeded
 
 Safeguarding lead assignment audit events are marked as safeguarding-related.
 
+## Atomic write behaviour
+
+The assignment and audit statements are prepared together and executed through D1 batch execution.
+
+If batch execution is not available, the endpoint fails closed with:
+
+```text
+role_assignment_transaction_unavailable
+```
+
+This prevents a role from being granted when the required audit event cannot be written safely.
+
 ## D1 route status migration
 
 A small migration marks the route declaration as implemented:
@@ -128,6 +146,13 @@ Required confirmation inputs:
 confirm_database_name = researchops-d1
 confirm_operation = APPLY_AUTH_ROLE_ASSIGNMENT_ROUTE
 ```
+
+## Review hardening applied
+
+Two review comments were addressed before merge:
+
+- assignment and audit writes are now batch-bound so the endpoint does not knowingly grant access without recording the audit event
+- conflicting target identifiers are now rejected unless `targetUserId` and `targetEmail` resolve to the same user
 
 ## Boundary
 
