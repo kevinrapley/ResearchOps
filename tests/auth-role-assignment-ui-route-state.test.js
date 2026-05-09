@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const pageSource = fs.readFileSync('public/pages/team/role-assignments/index.html', 'utf8');
 const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
+const govukFrontendSource = fs.readFileSync('public/css/govuk/govuk-frontend-v6.css', 'utf8');
 
 function assertPageStructure() {
 	assert.match(pageSource, /<title>Assign a role to a team member [-—] ResearchOps Demo Suite<\/title>/);
@@ -62,15 +63,41 @@ function assertUserIdUsesDetailsWithoutExample() {
 	assert.doesNotMatch(pageSource, /For example, <code>/);
 }
 
-function assertRoleOptionsUseRadios() {
+function assertRoleOptionsUseGOVUKRadios() {
 	assert.doesNotMatch(pageSource, /<select class="govuk-select" id="role-key"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="observer"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="researcher"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="research_lead"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="approver"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="safeguarding_lead"/);
-	assert.match(pageSource, /name="roleKey" type="radio" value="team_admin"/);
+	assert.match(pageSource, /<div class="govuk-radios auth-role-assignment-radios" data-module="govuk-radios" aria-describedby="role-key-hint">/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-observer" name="roleKey" type="radio" value="observer" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-observer">Observer<\/label>/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-researcher" name="roleKey" type="radio" value="researcher" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-researcher">Researcher<\/label>/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-research-lead" name="roleKey" type="radio" value="research_lead" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-research-lead">Research Lead<\/label>/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-approver" name="roleKey" type="radio" value="approver" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-approver">Approver<\/label>/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead<\/label>/);
+	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-team-admin" name="roleKey" type="radio" value="team_admin" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-team-admin">Team Admin<\/label>/);
 	assert.match(pageSource, /Start with the lowest role that gives the person what they need/);
+}
+
+function assertRoleRadiosDoNotRepeatAbilityCopy() {
+	const roleSection = pageSource.slice(pageSource.indexOf('id="role-section-title"'), pageSource.indexOf('id="duration-section-title"'));
+
+	assert.doesNotMatch(roleSection, /govuk-radios__hint/);
+	assert.doesNotMatch(roleSection, /Can observe low-risk research context without seeing participant personal data/);
+	assert.doesNotMatch(roleSection, /Can create and update governed research records/);
+	assert.doesNotMatch(roleSection, /Can view, record, resolve and audit safeguarding concerns/);
+	assert.doesNotMatch(roleSection, /Can manage team membership, role assignment and general audit oversight/);
+	assert.doesNotMatch(scriptSource, /description:/);
+	assert.doesNotMatch(scriptSource, /<h3 class="govuk-heading-s">/);
+	assert.doesNotMatch(scriptSource, /This is a sensitive role/);
+	assert.match(scriptSource, /This role can:/);
+}
+
+function assertPageStylesDoNotRecreateGOVUKRadioInternals() {
+	assert.match(govukFrontendSource, /\.govuk-radios__item/);
+	assert.match(govukFrontendSource, /\.govuk-radios__input/);
+	assert.match(govukFrontendSource, /\.govuk-radios__label::before/);
+	assert.match(govukFrontendSource, /\.govuk-radios__input:checked \+ \.govuk-radios__label::after/);
+	assert.doesNotMatch(styleSource, /\.auth-role-assignment-radios \.govuk-radios__item/);
+	assert.doesNotMatch(styleSource, /\.auth-role-assignment-radios \.govuk-radios__input/);
+	assert.doesNotMatch(styleSource, /\.auth-role-assignment-radios \.govuk-radios__label::before/);
+	assert.doesNotMatch(styleSource, /\.auth-role-assignment-radios \.govuk-radios__label::after/);
 }
 
 function assertDurationModelUsesGovernedPresets() {
@@ -174,7 +201,9 @@ assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
 assertUserIdUsesDetailsWithoutExample();
-assertRoleOptionsUseRadios();
+assertRoleOptionsUseGOVUKRadios();
+assertRoleRadiosDoNotRepeatAbilityCopy();
+assertPageStylesDoNotRecreateGOVUKRadioInternals();
 assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
 assertClientBuildsCorrectRequestContract();
