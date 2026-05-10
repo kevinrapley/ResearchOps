@@ -12,6 +12,10 @@ function countCases(text) {
 	return Array.from(text.matchAll(/^- id: /gm)).length;
 }
 
+function escapedPattern(text) {
+	return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+}
+
 test("Airtable bundle uses JSON schemas as the authoritative schema contracts", () => {
 	assert.ok(fs.existsSync(`${BUNDLE_DIR}/grade.schema.json`));
 	assert.ok(fs.existsSync(`${BUNDLE_DIR}/output.schema.json`));
@@ -41,7 +45,7 @@ test("Airtable eval orchestration declares pipelines and minimum coverage", () =
 		"minimum_redteam_cases: 12",
 		"schema_policy:",
 	]) {
-		assert.match(evals, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+		assert.match(evals, escapedPattern(expected));
 	}
 });
 
@@ -52,8 +56,14 @@ test("Airtable regression and red-team suites meet declared coverage minimums", 
 
 	assert.match(evals, /minimum_regression_cases: 18/);
 	assert.match(evals, /minimum_redteam_cases: 12/);
-	assert.ok(regressionCases >= 18, `expected at least 18 regression cases, got ${regressionCases}`);
-	assert.ok(redteamCases >= 12, `expected at least 12 red-team cases, got ${redteamCases}`);
+	assert.ok(
+		regressionCases >= 18,
+		`expected at least 18 regression cases, got ${regressionCases}`,
+	);
+	assert.ok(
+		redteamCases >= 12,
+		`expected at least 12 red-team cases, got ${redteamCases}`,
+	);
 });
 
 test("Airtable bundle records the operating-model hardening queue", () => {
@@ -66,6 +76,6 @@ test("Airtable bundle records the operating-model hardening queue", () => {
 		"Mural bundle incident backfill",
 		"Multi-functional-team red-team expansion",
 	]) {
-		assert.match(queue, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+		assert.match(queue, escapedPattern(expected));
 	}
 });
