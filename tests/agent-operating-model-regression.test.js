@@ -24,6 +24,18 @@ function assertCanonicalBundle(bundle) {
 	assert.ok(fs.existsSync(`${bundle.canonicalPath}${bundle.promptBody}`));
 }
 
+function cloudflarePath(relativePath) {
+	return `.agent-operating-model/bundles/cloudflare/${relativePath}`;
+}
+
+function cloudflareFile(relativePath) {
+	return fs.readFileSync(cloudflarePath(relativePath), "utf8");
+}
+
+function extractUrls(text) {
+	return Array.from(text.matchAll(/https:\/\/[^\s"']+/g)).map((match) => match[0]);
+}
+
 test("repository operating model selects always-load bundles", () => {
 	const bundles = selectedBundles("Update documentation for the ResearchOps platform.");
 	const ids = bundles.map((bundle) => bundle.id);
@@ -112,6 +124,69 @@ test("repository operating model exposes typed task signals for trace reports", 
 	assert.ok(ids.includes("govuk-design-system"));
 	assert.equal(model.canonicalRoot, ".agent-operating-model/bundles/");
 	assert.equal(Object.hasOwn(model, "bundlePackage"), false);
+});
+
+test("Cloudflare bundle manifest assets exist", () => {
+	const manifest = cloudflareFile("registry-manifest.yaml");
+	const assetPaths = Array.from(manifest.matchAll(/^- path: (.+)$/gm)).map((match) => match[1]);
+
+	assert.ok(assetPaths.length > 30);
+
+	for (const assetPath of assetPaths) {
+		assert.ok(fs.existsSync(cloudflarePath(assetPath)), `${assetPath} should exist`);
+	}
+});
+
+test("Cloudflare bundle source catalogue covers XML reference URLs", () => {
+	const catalogue = cloudflareFile("references/source-catalog.yaml");
+	const sourceUrls = extractUrls(catalogue);
+
+	assert.ok(sourceUrls.length > 25);
+
+	for (const sourceUrl of sourceUrls) {
+		assert.ok(
+			sourceUrl.startsWith("https://developers.cloudflare.com/"),
+			`${sourceUrl} should use developers.cloudflare.com`,
+		);
+	}
+
+	const referenceFiles = fs
+		.readdirSync(cloudflarePath("references"))
+		.filter((file) => file.endsWith(".xml"));
+
+	for (const referenceFile of referenceFiles) {
+		for (const sourceUrl of extractUrls(cloudflareFile(`references/${referenceFile}`))) {
+			assert.ok(
+				sourceUrl.startsWith("https://developers.cloudflare.com/"),
+				`${sourceUrl} should use developers.cloudflare.com`,
+			);
+			assert.ok(
+				catalogue.includes(sourceUrl),
+				`${sourceUrl} from ${referenceFile} should be listed in source-catalog.yaml`,
+			);
+		}
+	}
+});
+
+test("Cloudflare bundle entrypoints include expanded operational modules", () => {
+	const promptSpec = cloudflareFile("prompt.spec.yaml");
+	const promptBody = cloudflareFile("prompt.body.xml");
+
+	for (const expected of [
+		"references/deployment-versions-and-triggers.xml",
+		"references/testing-and-observability.xml",
+		"references/compatibility-and-limits.xml",
+		"references/service-bindings-and-edge-connectivity.xml",
+		"modes/cloudflare-build.xml",
+		"modes/cloudflare-review.xml",
+		"modes/cloudflare-release.xml",
+		"contracts/wrangler-configuration-review.schema.json",
+		"contracts/cloudflare-validation-evidence.schema.json",
+		"contracts/cloudflare-gap-register.schema.json",
+	]) {
+		assert.ok(promptSpec.includes(expected), `${expected} should be in prompt.spec.yaml`);
+		assert.ok(promptBody.includes(expected), `${expected} should be in prompt.body.xml`);
+	}
 });
 
 test("repository operating model sources are referenced from AGENTS.md", () => {
