@@ -52,6 +52,23 @@ test("repository operating model selects Cloudflare for runtime and deployment w
 	assertCanonicalBundle(bundle);
 });
 
+test("repository operating model does not match short Cloudflare tokens inside hashes", () => {
+	const task = "Please review b1f84bb6781b7ed18a85acba4dc4c7d444e1bba4";
+	const ids = selectedIds(task);
+
+	assert.equal(ids.includes("cloudflare"), false);
+});
+
+test("repository operating model still matches standalone short Cloudflare product tokens", () => {
+	const task = "Review D1 prepared statements and R2 object storage usage.";
+	const bundle = bundleById(task, "cloudflare");
+
+	assert.ok(bundle);
+	assert.ok(bundle.selectionEvidence.matchedPhrases.includes("d1"));
+	assert.ok(bundle.selectionEvidence.matchedPhrases.includes("r2"));
+	assertCanonicalBundle(bundle);
+});
+
 test("repository operating model selects conditional API bundles from typed task signals", () => {
 	const task = "Fix a route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
