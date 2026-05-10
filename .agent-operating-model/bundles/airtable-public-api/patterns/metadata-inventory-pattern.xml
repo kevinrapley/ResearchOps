@@ -1,0 +1,1 @@
+<pattern id="metadata-inventory-pattern"><purpose>Use listBases and getBaseSchema to inventory accessible bases and table schemas before generating integration code.</purpose></pattern>

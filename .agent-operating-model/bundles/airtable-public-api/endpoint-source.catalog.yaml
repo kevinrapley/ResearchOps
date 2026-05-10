@@ -1,0 +1,119 @@
+bundle_id: airtable-public-api-developer-contract-bundle
+bundle_version: 1.0.0
+sources:
+- operation_id: listRecords
+  source_url: https://airtable.com/developers/web/api/list-records
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createRecords
+  source_url: https://airtable.com/developers/web/api/create-records
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: getRecord
+  source_url: https://airtable.com/developers/web/api/get-record
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: updateRecord
+  source_url: https://airtable.com/developers/web/api/update-record
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: deleteRecord
+  source_url: https://airtable.com/developers/web/api/delete-record
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: updateMultipleRecords
+  source_url: https://airtable.com/developers/web/api/update-multiple-records
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: deleteMultipleRecords
+  source_url: https://airtable.com/developers/web/api/delete-multiple-records
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: listComments
+  source_url: https://airtable.com/developers/web/api/list-comments
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createComment
+  source_url: https://airtable.com/developers/web/api/create-comment
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: updateComment
+  source_url: https://airtable.com/developers/web/api/update-comment
+  source_status: official-reference-page-observed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: deleteComment
+  source_url: https://airtable.com/developers/web/api/delete-comment
+  source_status: official-reference-url-pattern
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: listBases
+  source_url: https://airtable.com/developers/web/api/list-bases
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: getBaseSchema
+  source_url: https://airtable.com/developers/web/api/get-base-schema
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: listViews
+  source_url: https://airtable.com/developers/web/api/list-views
+  source_status: official-reference-page-observed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createBase
+  source_url: https://airtable.com/developers/web/api/create-base
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createTable
+  source_url: https://airtable.com/developers/web/api/create-table
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: updateTable
+  source_url: https://airtable.com/developers/web/api/update-table
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createField
+  source_url: https://airtable.com/developers/web/api/create-field
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: updateField
+  source_url: https://airtable.com/developers/web/api/update-field
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: listWebhooks
+  source_url: https://airtable.com/developers/web/api/list-webhooks
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: createWebhook
+  source_url: https://airtable.com/developers/web/api/create-webhook
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: deleteWebhook
+  source_url: https://airtable.com/developers/web/api/delete-webhook
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: getWebhookPayloads
+  source_url: https://airtable.com/developers/web/api/get-webhook-payloads
+  source_status: official-reference-url-secondary-confirmed
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- operation_id: refreshWebhook
+  source_url: https://airtable.com/developers/web/api/refresh-webhook
+  source_status: derived-from-public-webhooks-guide
+  note: Official Airtable developer reference URL or official-url pattern for this operation.
+- doc_id: web_api_overview
+  source_url: https://support.airtable.com/docs/public-rest-api
+  source_status: official-support-doc
+  note: Official support overview for Web API fundamentals, pagination, and API record limits.
+- doc_id: rate_limits
+  source_url: https://support.airtable.com/docs/managing-api-call-limits-in-airtable
+  source_status: official-support-doc
+  note: Official support note for rate limits, PAT aggregate rate limits, batching up to 10, and performUpsert mention.
+- doc_id: webhooks_overview
+  source_url: https://support.airtable.com/hc/en-us/articles/4418875596439
+  source_status: official-support-doc
+  note: Official support note for public webhook availability and positioning.
+- doc_id: finding_ids
+  source_url: https://support.airtable.com/docs/finding-airtable-ids
+  source_status: official-support-doc
+  note: Official support note for finding base, field, and record ids.
+- doc_id: enterprise_api_overview
+  source_url: https://support.airtable.com/docs/airtable-enterprise-api
+  source_status: official-support-doc
+  note: Official support note that Enterprise API is a separate plan-gated surface.

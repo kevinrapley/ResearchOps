@@ -1,0 +1,8 @@
+authentication: Bearer token
+token_forms:
+- Personal access token
+- OAuth access token
+header: 'Authorization: Bearer <token>'
+notes:
+- Official support docs describe personal access tokens as the standard auth mechanism for Web API requests.
+- Enterprise-only docs require server-side use for Enterprise API endpoints; this bundle keeps Enterprise as a boundary.

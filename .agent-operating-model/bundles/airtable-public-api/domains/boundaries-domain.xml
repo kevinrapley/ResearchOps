@@ -1,0 +1,8 @@
+<domain id="boundaries-domain">
+  <purpose>Maintain hard boundaries around plan-gated or insufficiently public Airtable surfaces.</purpose>
+  <rules>
+    <rule>Enterprise API and eDiscovery APIs are separate surfaces and are out of scope for this bundle.</rule>
+    <rule>Do not claim exhaustive coverage for plan-gated admin endpoints whose detailed docs are not publicly inspectable.</rule>
+    <rule>Sync API and MCP may be referenced as adjacent strategies but are not core contract surfaces here unless explicitly modeled.</rule>
+  </rules>
+</domain>

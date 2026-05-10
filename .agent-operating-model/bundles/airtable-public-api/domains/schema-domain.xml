@@ -1,0 +1,8 @@
+<domain id="schema-domain">
+  <purpose>Handle schema discovery and schema mutation for bases, tables, fields, and views metadata.</purpose>
+  <rules>
+    <rule>Use getBaseSchema before proposing type-sensitive integrations.</rule>
+    <rule>Do not pretend unsupported field-option rewrites are universally available.</rule>
+    <rule>Separate schema reads from schema writes.</rule>
+  </rules>
+</domain>

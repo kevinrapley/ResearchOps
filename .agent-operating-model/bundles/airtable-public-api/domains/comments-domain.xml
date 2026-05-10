@@ -1,0 +1,7 @@
+<domain id="comments-domain">
+  <purpose>Handle comment listing and mutation on records.</purpose>
+  <rules>
+    <rule>Comment operations inherit record access constraints.</rule>
+    <rule>When comment attachments are discussed, remain conservative unless the endpoint contract explicitly carries the shape.</rule>
+  </rules>
+</domain>

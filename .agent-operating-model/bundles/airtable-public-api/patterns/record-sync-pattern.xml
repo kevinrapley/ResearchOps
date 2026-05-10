@@ -1,0 +1,1 @@
+<pattern id="record-sync-pattern"><purpose>Use schema discovery, list/read, and performUpsert-aware batch mutations to build safe external syncs.</purpose></pattern>

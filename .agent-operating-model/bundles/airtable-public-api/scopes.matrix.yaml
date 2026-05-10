@@ -1,0 +1,47 @@
+auth_profile: Bearer token via personal access token or OAuth access token.
+scopes:
+- name: data.records:read
+  use_for:
+  - listRecords
+  - getRecord
+  note: Read record data.
+- name: data.records:write
+  use_for:
+  - createRecords
+  - updateRecord
+  - deleteRecord
+  - updateMultipleRecords
+  - deleteMultipleRecords
+  note: Write record data.
+- name: data.recordComments:read
+  use_for:
+  - listComments
+  note: Read record comments.
+- name: data.recordComments:write
+  use_for:
+  - createComment
+  - updateComment
+  - deleteComment
+  note: Create, update and delete record comments.
+- name: schema.bases:read
+  use_for:
+  - listBases
+  - getBaseSchema
+  - listViews
+  note: Read base schema and metadata.
+- name: schema.bases:write
+  use_for:
+  - createBase
+  - createTable
+  - updateTable
+  - createField
+  - updateField
+  note: Modify base schema objects.
+- name: webhook:manage
+  use_for:
+  - listWebhooks
+  - createWebhook
+  - deleteWebhook
+  - getWebhookPayloads
+  - refreshWebhook
+  note: Create, inspect, consume, and renew webhooks.

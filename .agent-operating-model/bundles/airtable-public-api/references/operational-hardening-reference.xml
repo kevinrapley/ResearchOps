@@ -1,0 +1,1 @@
+<reference id="operational-hardening-reference"><rule>Production guidance must mention pagination, batching, retries, token storage, and least-privilege scopes.</rule></reference>

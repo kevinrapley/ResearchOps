@@ -1,0 +1,52 @@
+bundle_id: airtable-public-api-developer-contract-bundle
+bundle_version: 1.0.0
+bundle_kind: hybrid-agent-bundle
+title: Airtable Public API Developer Contract Bundle
+assembly:
+  root_prompt: prompt.body.xml
+  domain_modules:
+  - auth-domain.xml
+  - boundaries-domain.xml
+  - comments-domain.xml
+  - operational-constraints-domain.xml
+  - records-domain.xml
+  - schema-domain.xml
+  - webhooks-domain.xml
+  workflow_modules:
+  - boundary-and-failure-workflow.xml
+  - endpoint-resolution-workflow.xml
+  - pagination-rate-limit-workflow.xml
+  - request-classification-workflow.xml
+  - schema-write-safety-workflow.xml
+  - webhook-verification-workflow.xml
+  pattern_modules:
+  - comment-automation-pattern.xml
+  - metadata-inventory-pattern.xml
+  - record-sync-pattern.xml
+  - schema-bootstrap-pattern.xml
+  - webhook-consumer-pattern.xml
+  contract_assets:
+  - endpoint-coverage.matrix.yaml
+  - endpoint-source.catalog.yaml
+  - scopes.matrix.yaml
+  - contracts/endpoint-contracts.index.yaml
+evaluation:
+  regression_suite: tests.regression.yaml
+  redteam_suite: tests.redteam.yaml
+  graders:
+  - boundary-integrity-grader.xml
+  - bundle-architecture-grader.xml
+  - endpoint-coverage-grader.xml
+  - evaluation-coverage-grader.xml
+  - portability-grader.xml
+  - schema-contract-grader.xml
+  - source-grounding-grader.xml
+  - topology-fit-grader.xml
+boundaries:
+  explicit_out_of_scope:
+  - Enterprise API detailed admin surface
+  - eDiscovery API
+  - MCP server
+  - undocumented endpoints
+  adjacent_not_core:
+  - Sync API

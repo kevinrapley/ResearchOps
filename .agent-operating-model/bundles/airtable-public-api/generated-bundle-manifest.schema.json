@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_id",
+    "bundle_version",
+    "entrypoints",
+    "inventory_summary",
+    "hashes"
+  ],
+  "properties": {
+    "bundle_id": {
+      "type": "string"
+    },
+    "bundle_version": {
+      "type": "string"
+    },
+    "bundle_kind": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "entrypoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inventory_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "hashes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "bytes"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
