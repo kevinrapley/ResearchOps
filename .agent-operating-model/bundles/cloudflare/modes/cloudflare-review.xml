@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mode_module id="cloudflare-review" version="1.0.0">
+  <title>Cloudflare Review Mode</title>
+  <purpose>Review Cloudflare implementation proposals, configuration and pull requests for runtime, binding, deployment, security and observability risk.</purpose>
+  <required_checks>
+    <check>Wrangler entrypoint, compatibility_date, compatibility_flags and environment overrides are explicit.</check>
+    <check>Cloudflare bindings match code usage and are available in the target environment.</check>
+    <check>Sensitive values are secrets or Secrets Store bindings, not plaintext vars.</check>
+    <check>Worker-to-Worker calls use Service Bindings where applicable.</check>
+    <check>D1 access uses prepared statements for untrusted values.</check>
+    <check>R2, KV, D1, Durable Objects, Queues, Workflows, Workers AI and Vectorize assumptions match documented APIs.</check>
+    <check>Limits and account-plan assumptions are recorded.</check>
+    <check>Testing evidence distinguishes local runtime, preview deployment and production deployment.</check>
+    <check>Observability, rollback and deployment evidence are sufficient for the risk level.</check>
+  </required_checks>
+</mode_module>

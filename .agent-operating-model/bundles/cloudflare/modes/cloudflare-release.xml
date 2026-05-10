@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mode_module id="cloudflare-release" version="1.0.0">
+  <title>Cloudflare Release Mode</title>
+  <purpose>Prepare Cloudflare changes for deployment with explicit validation, rollback and observability evidence.</purpose>
+  <required_evidence>
+    <evidence>Current and target Worker version or deployment reference where available.</evidence>
+    <evidence>Wrangler configuration diff and affected environments.</evidence>
+    <evidence>Binding and secret changes.</evidence>
+    <evidence>Compatibility date and compatibility flag changes.</evidence>
+    <evidence>Durable Object migration status, if applicable.</evidence>
+    <evidence>Local, preview and production validation boundaries.</evidence>
+    <evidence>Rollback, gradual deployment or version override plan where applicable.</evidence>
+    <evidence>Observability checks, including logs, exceptions, metrics or traces.</evidence>
+  </required_evidence>
+</mode_module>
