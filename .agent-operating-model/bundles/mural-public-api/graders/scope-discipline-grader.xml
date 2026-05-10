@@ -1,0 +1,6 @@
+<grader id="scope-discipline-grader">
+  <criterion>Least-privilege scope selection is explicit and tied to exact operations.</criterion>
+  <criterion>workspaces:write is cited for inviteuserstoworkspace and never confused with workspaces:read.</criterion>
+  <criterion>murals:write covers mural membership changes (invite, update permission, remove); rooms:write covers room membership changes.</criterion>
+  <criterion>No write scope is recommended where a read scope suffices.</criterion>
+</grader>

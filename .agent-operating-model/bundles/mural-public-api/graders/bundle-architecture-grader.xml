@@ -1,0 +1,6 @@
+<grader id="bundle-architecture-grader">
+  <criterion>Bundle uses domains, workflows, and patterns because the surface is broad and stateful.</criterion>
+  <criterion>Public API families have semantic homes instead of one monolithic module.</criterion>
+  <criterion>The users-domain covers all 10 Users-family operations, not just identity retrieval.</criterion>
+  <criterion>The membership-and-invitation-pattern covers workspace, room, and mural membership lifecycle sequences.</criterion>
+</grader>
