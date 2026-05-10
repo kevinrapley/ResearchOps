@@ -1,0 +1,14 @@
+src/
+tests/unit/
+tests/integration/
+tests/contract/
+docs/api/
+contracts/
+schemas/
+examples/payloads/
+.github/
+README.md
+CONTRIBUTING.md
+SECURITY.md
+CODEOWNERS
+RECENT_LEARNINGS.md

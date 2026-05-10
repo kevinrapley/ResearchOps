@@ -1,0 +1,12 @@
+src/
+public/
+tests/unit/
+tests/e2e/
+tests/accessibility/
+docs/
+.github/
+README.md
+CONTRIBUTING.md
+SECURITY.md
+CODEOWNERS
+RECENT_LEARNINGS.md
