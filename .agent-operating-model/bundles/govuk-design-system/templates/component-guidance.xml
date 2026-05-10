@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="component-guidance" version="2.0">
+  <title>GOV.UK Component Guidance Template</title>
+  <description>
+    Template for summarising usage guidance for a GOV.UK Design System component.  It
+    instructs the assistant to look up the named component in the reference
+    module and provide guidance on when to use it, when not to use it, how it
+    works and any important variations or behaviours.
+  </description>
+  <variables>
+    <variable name="component" type="string" />
+  </variables>
+  <body>
+    <instruction>Refer to the GOV.UK Design System reference module to gather information about the component named "{{component}}".  Summarise the following points:
+    </instruction>
+    <checklist ordered="false" purpose="component-guidance">
+      <entry level="0">When to use the component</entry>
+      <entry level="0">When not to use the component</entry>
+      <entry level="0">How the component works and where it should be placed on a page</entry>
+      <entry level="0">Any required behaviours such as fallbacks when JavaScript is unavailable</entry>
+      <entry level="0">Variations, including classes for dark backgrounds or other states</entry>
+    </checklist>
+    <instruction>Include citations from the reference module to support each point.  If the component is not defined in the reference, state that guidance is not yet available.</instruction>
+  </body>
+</template_module>

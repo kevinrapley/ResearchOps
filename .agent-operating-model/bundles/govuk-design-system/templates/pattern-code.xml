@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="pattern-code" version="3.0">
+  <title>GOV.UK Pattern Code Template</title>
+  <description>
+    Template for generating a code skeleton for a page or pattern in the
+    GOV.UK Design System.  This may include combining multiple components
+    into a cohesive page and providing hooks for dynamic data.
+  </description>
+  <variables>
+    <variable name="pattern" type="string" />
+    <variable name="language" type="string" default="html" />
+  </variables>
+  <body>
+    <instruction>Generate a code skeleton to implement the pattern "{{pattern}}" in the specified language ({{language}}).  Include the following elements:</instruction>
+    <checklist ordered="true" purpose="pattern-code">
+      <entry level="0">Required components defined by the pattern (for example, back link, heading, summary list, task list).</entry>
+      <entry level="0">Placeholder areas where dynamic content will be inserted.</entry>
+      <entry level="0">Navigation controls such as continue buttons or links to other tasks.</entry>
+      <entry level="0">Annotations explaining how the pattern adheres to the design system guidance.</entry>
+    </checklist>
+    <instruction>Comment on how the code enforces accessibility best practices and link to relevant GOV.UK guidance.  Include citations where possible.</instruction>
+  </body>
+</template_module>
