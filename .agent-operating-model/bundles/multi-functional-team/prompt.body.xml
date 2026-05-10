@@ -41,118 +41,258 @@
     <always_load>references/task-catalog.xml</always_load>
     <always_load>templates/global-documentation.xml</always_load>
     <always_load>templates/high-stakes-compliance-summary.xml</always_load>
-    <always_load>templates/harm-register.xml</always_load>
   </assembly>
   <role_registry>
-    <role_ref id="accessibility" file="roles/accessibility.xml"/>
-    <role_ref id="business-analysis" file="roles/business-analysis.xml"/>
-    <role_ref id="content-design" file="roles/content-design.xml"/>
-    <role_ref id="content-strategy" file="roles/content-strategy.xml"/>
-    <role_ref id="data-analyst" file="roles/data-analyst.xml"/>
-    <role_ref id="data-science" file="roles/data-science.xml"/>
-    <role_ref id="delivery-operations" file="roles/delivery-operations.xml"/>
-    <role_ref id="developer" file="roles/developer.xml"/>
-    <role_ref id="devops" file="roles/devops.xml"/>
-    <role_ref id="ethical-ai" file="roles/ethical-ai.xml"/>
-    <role_ref id="governance" file="roles/governance.xml"/>
-    <role_ref id="information-architect" file="roles/information-architect.xml"/>
-    <role_ref id="interaction-design" file="roles/interaction-design.xml"/>
-    <role_ref id="legal" file="roles/legal.xml"/>
-    <role_ref id="policy" file="roles/policy.xml"/>
-    <role_ref id="privacy" file="roles/privacy.xml"/>
-    <role_ref id="product-management" file="roles/product-management.xml"/>
-    <role_ref id="quality-assurance" file="roles/quality-assurance.xml"/>
-    <role_ref id="research-operations" file="roles/research-operations.xml"/>
-    <role_ref id="safeguarding-lead" file="roles/safeguarding-lead.xml"/>
-    <role_ref id="security" file="roles/security.xml"/>
-    <role_ref id="service-design" file="roles/service-design.xml"/>
-    <role_ref id="service-owner" file="roles/service-owner.xml"/>
-    <role_ref id="solutions-architecture" file="roles/solutions-architecture.xml"/>
-    <role_ref id="team-mode" file="roles/team-mode.xml"/>
-    <role_ref id="technical-architecture" file="roles/technical-architecture.xml"/>
-    <role_ref id="trauma-informed-design-advocate" file="roles/trauma-informed-design-advocate.xml"/>
-    <role_ref id="user-research" file="roles/user-research.xml"/>
+    <role_ref id="accessibility" file="roles/accessibility.xml">
+      <title>Accessibility &amp; Inclusion Operating Rules</title>
+    </role_ref>
+    <role_ref id="business-analysis" file="roles/business-analysis.xml">
+      <title>Business Analysis Operating Rules</title>
+    </role_ref>
+    <role_ref id="content-design" file="roles/content-design.xml">
+      <title>Content Design Operating Rules</title>
+    </role_ref>
+    <role_ref id="content-strategy" file="roles/content-strategy.xml">
+      <title>Content Strategy Operating Rules</title>
+    </role_ref>
+    <role_ref id="data-analyst" file="roles/data-analyst.xml">
+      <title>Data Analyst Operating Rules</title>
+    </role_ref>
+    <role_ref id="data-science" file="roles/data-science.xml">
+      <title>Data Science Operating Rules</title>
+    </role_ref>
+    <role_ref id="delivery-operations" file="roles/delivery-operations.xml">
+      <title>Delivery &amp; Operations Operating Rules</title>
+    </role_ref>
+    <role_ref id="developer" file="roles/developer.xml">
+      <title>Software Developer Operating Rules</title>
+    </role_ref>
+    <role_ref id="devops" file="roles/devops.xml">
+      <title>DevOps &amp; Reliability Operating Rules</title>
+    </role_ref>
+    <role_ref id="ethical-ai" file="roles/ethical-ai.xml">
+      <title>Ethical AI Operating Rules</title>
+    </role_ref>
+    <role_ref id="governance" file="roles/governance.xml">
+      <title>Governance Operating Rules</title>
+    </role_ref>
+    <role_ref id="information-architect" file="roles/information-architect.xml">
+      <title>Information Architect Operating Rules</title>
+    </role_ref>
+    <role_ref id="interaction-design" file="roles/interaction-design.xml">
+      <title>Interaction Design Operating Rules</title>
+    </role_ref>
+    <role_ref id="legal" file="roles/legal.xml">
+      <title>Legal Operating Rules</title>
+    </role_ref>
+    <role_ref id="policy" file="roles/policy.xml">
+      <title>Policy Operating Rules</title>
+    </role_ref>
+    <role_ref id="privacy" file="roles/privacy.xml">
+      <title>Privacy Operating Rules</title>
+    </role_ref>
+    <role_ref id="product-management" file="roles/product-management.xml">
+      <title>Product Management Operating Rules</title>
+    </role_ref>
+    <role_ref id="quality-assurance" file="roles/quality-assurance.xml">
+      <title>Quality Assurance Operating Rules</title>
+    </role_ref>
+    <role_ref id="research-operations" file="roles/research-operations.xml">
+      <title>Research Operations Operating Rules</title>
+    </role_ref>
+    <role_ref id="safeguarding-lead" file="roles/safeguarding-lead.xml">
+      <title>Safeguarding Lead Operating Rules</title>
+    </role_ref>
+    <role_ref id="security" file="roles/security.xml">
+      <title>Security Operating Rules</title>
+    </role_ref>
+    <role_ref id="service-design" file="roles/service-design.xml">
+      <title>Service Design Operating Rules</title>
+    </role_ref>
+    <role_ref id="service-owner" file="roles/service-owner.xml">
+      <title>Service Owner Operating Rules</title>
+    </role_ref>
+    <role_ref id="solutions-architecture" file="roles/solutions-architecture.xml">
+      <title>Solutions Architecture Operating Rules</title>
+    </role_ref>
+    <role_ref id="team-mode" file="roles/team-mode.xml">
+      <title>TEAM MODE Operating Rules</title>
+    </role_ref>
+    <role_ref id="technical-architecture" file="roles/technical-architecture.xml">
+      <title>Technical Architecture Operating Rules</title>
+    </role_ref>
+    <role_ref id="trauma-informed-design-advocate" file="roles/trauma-informed-design-advocate.xml">
+      <title>Trauma-Informed Design Advocate Operating Rules</title>
+    </role_ref>
+    <role_ref id="user-research" file="roles/user-research.xml">
+      <title>User Research Operating Rules</title>
+    </role_ref>
   </role_registry>
   <template_registry>
-    <template_ref id="accessibility-audit-scope" file="templates/accessibility-audit-scope.xml"/>
-    <template_ref id="ai-adoption-assessment" file="templates/ai-adoption-assessment.xml"/>
-    <template_ref id="alpha-holistic-options" file="templates/alpha-holistic-options.xml"/>
-    <template_ref id="assumptions-log" file="templates/assumptions-log.xml"/>
-    <template_ref id="atrs-screening" file="templates/atrs-screening.xml"/>
-    <template_ref id="beta-live-readiness" file="templates/beta-live-readiness.xml"/>
-    <template_ref id="constraints-non-negotiables" file="templates/constraints-non-negotiables.xml"/>
-    <template_ref id="context-quality-review" file="templates/context-quality-review.xml"/>
-    <template_ref id="debate-engine-summary-template" file="templates/debate-engine-summary-template.xml"/>
-    <template_ref id="debate-transcript-template" file="templates/debate-transcript-template.xml"/>
-    <template_ref id="decision-readiness-check" file="templates/decision-readiness-check.xml"/>
-    <template_ref id="dependency-risk-map" file="templates/dependency-risk-map.xml"/>
-    <template_ref id="developer-templates" file="templates/developer-templates.xml"/>
-    <template_ref id="discovery-assumptions-knowledge-gaps" file="templates/discovery-assumptions-knowledge-gaps.xml"/>
-    <template_ref id="discovery-scope-goals" file="templates/discovery-scope-goals.xml"/>
-    <template_ref id="dpia-screening" file="templates/dpia-screening.xml"/>
-    <template_ref id="equality-impact-screening" file="templates/equality-impact-screening.xml"/>
-    <template_ref id="evidence-pack-index" file="templates/evidence-pack-index.xml"/>
-    <template_ref id="global-documentation" file="templates/global-documentation.xml"/>
-    <template_ref id="handover-continuity-brief" file="templates/handover-continuity-brief.xml"/>
-    <template_ref id="high-stakes-compliance-summary" file="templates/high-stakes-compliance-summary.xml"/>
-    <template_ref id="human-review-sign-off-register" file="templates/human-review-sign-off-register.xml"/>
-    <template_ref id="incident-review" file="templates/incident-review.xml"/>
-    <template_ref id="live-service-health" file="templates/live-service-health.xml"/>
-    <template_ref id="live-support-escalation-model" file="templates/live-support-escalation-model.xml"/>
-    <template_ref id="m365-agent-deployment-checklist" file="templates/m365-agent-deployment-checklist.xml"/>
-    <template_ref id="metrics-measurement-plan" file="templates/metrics-measurement-plan.xml"/>
-    <template_ref id="options-appraisal" file="templates/options-appraisal.xml"/>
-    <template_ref id="overview-modes-controls" file="templates/overview-modes-controls.xml"/>
-    <template_ref id="pre-discovery-opportunity" file="templates/pre-discovery-opportunity.xml"/>
-    <template_ref id="research-plan" file="templates/research-plan.xml"/>
-    <template_ref id="risk-register" file="templates/risk-register.xml"/>
-    <template_ref id="service-assessment-prep" file="templates/service-assessment-prep.xml"/>
-    <template_ref id="service-ownership-accountability" file="templates/service-ownership-accountability.xml"/>
-    <template_ref id="harm-register" file="templates/harm-register.xml"/>
+    <template_ref id="accessibility-audit-scope" file="templates/accessibility-audit-scope.xml">
+      <title>Accessibility Audit Scoping Wizard</title>
+    </template_ref>
+    <template_ref id="ai-adoption-assessment" file="templates/ai-adoption-assessment.xml">
+      <title>AI Adoption Assessment Wizard</title>
+    </template_ref>
+    <template_ref id="alpha-holistic-options" file="templates/alpha-holistic-options.xml">
+      <title>Alpha Holistic Options</title>
+    </template_ref>
+    <template_ref id="assumptions-log" file="templates/assumptions-log.xml">
+      <title>Assumptions Log</title>
+    </template_ref>
+    <template_ref id="atrs-screening" file="templates/atrs-screening.xml">
+      <title>ATRS Screening Template</title>
+    </template_ref>
+    <template_ref id="beta-live-readiness" file="templates/beta-live-readiness.xml">
+      <title>Beta Live Readiness</title>
+    </template_ref>
+    <template_ref id="constraints-non-negotiables" file="templates/constraints-non-negotiables.xml">
+      <title>Constraints Non Negotiables</title>
+    </template_ref>
+    <template_ref id="context-quality-review" file="templates/context-quality-review.xml">
+      <title>Context Quality Review</title>
+    </template_ref>
+    <template_ref id="debate-engine-summary-template" file="templates/debate-engine-summary-template.xml">
+      <title>DEBATE ENGINE — Run Summary</title>
+    </template_ref>
+    <template_ref id="debate-transcript-template" file="templates/debate-transcript-template.xml">
+      <title>DEBATE ENGINE — Full Transcript</title>
+    </template_ref>
+    <template_ref id="decision-readiness-check" file="templates/decision-readiness-check.xml">
+      <title>Decision Readiness Check</title>
+    </template_ref>
+    <template_ref id="dependency-risk-map" file="templates/dependency-risk-map.xml">
+      <title>Dependency Risk Map</title>
+    </template_ref>
+    <template_ref id="developer-templates" file="templates/developer-templates.xml">
+      <title>Developer Templates (with Code Examples)</title>
+    </template_ref>
+    <template_ref id="discovery-assumptions-knowledge-gaps" file="templates/discovery-assumptions-knowledge-gaps.xml">
+      <title>Discovery Assumptions Knowledge Gaps</title>
+    </template_ref>
+    <template_ref id="discovery-scope-goals" file="templates/discovery-scope-goals.xml">
+      <title>Discovery Wizard</title>
+    </template_ref>
+    <template_ref id="dpia-screening" file="templates/dpia-screening.xml">
+      <title>DPIA Screening Wizard</title>
+    </template_ref>
+    <template_ref id="equality-impact-screening" file="templates/equality-impact-screening.xml">
+      <title>Equality Impact Screening Template</title>
+    </template_ref>
+    <template_ref id="evidence-pack-index" file="templates/evidence-pack-index.xml">
+      <title>Evidence Pack Index</title>
+    </template_ref>
+    <template_ref id="global-documentation" file="templates/global-documentation.xml">
+      <title>Global Documentation Ruleset</title>
+    </template_ref>
+    <template_ref id="handover-continuity-brief" file="templates/handover-continuity-brief.xml">
+      <title>Handover Continuity Brief</title>
+    </template_ref>
+    <template_ref id="high-stakes-compliance-summary" file="templates/high-stakes-compliance-summary.xml">
+      <title>High-Stakes Compliance Summary</title>
+    </template_ref>
+    <template_ref id="harm-register" file="templates/harm-register.xml">
+      <title>Harm Register</title>
+    </template_ref>
+    <template_ref id="human-review-sign-off-register" file="templates/human-review-sign-off-register.xml">
+      <title>Human Review and Sign-off Register</title>
+    </template_ref>
+    <template_ref id="incident-review" file="templates/incident-review.xml">
+      <title>Post-Incident Review Wizard</title>
+    </template_ref>
+    <template_ref id="live-service-health" file="templates/live-service-health.xml">
+      <title>Live Service Health</title>
+    </template_ref>
+    <template_ref id="live-support-escalation-model" file="templates/live-support-escalation-model.xml">
+      <title>Live Support Escalation Model</title>
+    </template_ref>
+    <template_ref id="m365-agent-deployment-checklist" file="templates/m365-agent-deployment-checklist.xml">
+      <title>Microsoft 365 Agent Deployment Checklist</title>
+    </template_ref>
+    <template_ref id="metrics-measurement-plan" file="templates/metrics-measurement-plan.xml">
+      <title>Metrics Measurement Plan</title>
+    </template_ref>
+    <template_ref id="options-appraisal" file="templates/options-appraisal.xml">
+      <title>Options Appraisal Wizard</title>
+    </template_ref>
+    <template_ref id="overview-modes-controls" file="templates/overview-modes-controls.xml">
+      <title>Product Assistant Agent</title>
+    </template_ref>
+    <template_ref id="pre-discovery-opportunity" file="templates/pre-discovery-opportunity.xml">
+      <title>Pre Discovery Opportunity</title>
+    </template_ref>
+    <template_ref id="research-plan" file="templates/research-plan.xml">
+      <title>Research Plan Wizard</title>
+    </template_ref>
+    <template_ref id="risk-register" file="templates/risk-register.xml">
+      <title>Risk Register</title>
+    </template_ref>
+    <template_ref id="service-assessment-prep" file="templates/service-assessment-prep.xml">
+      <title>Service Assessment Preparation Wizard</title>
+    </template_ref>
+    <template_ref id="service-ownership-accountability" file="templates/service-ownership-accountability.xml">
+      <title>Service Ownership Accountability</title>
+    </template_ref>
   </template_registry>
+  <reference_registry>
+    <reference_ref id="command-registry" file="references/command-registry.xml">
+      <title>Command Registry</title>
+    </reference_ref>
+    <reference_ref id="core" file="references/core-rules.xml">
+      <title>Product Assistant — Core Rules (Authoritative)</title>
+    </reference_ref>
+    <reference_ref id="shared-primitives" file="references/shared-primitives.xml">
+      <title>Product Assistant Agent — Shared Reasoning Primitives</title>
+    </reference_ref>
+    <reference_ref id="contextual" file="references/contextual-mode-control.xml">
+      <title>Product Assistant Agent — Contextual Instruction Rulesets</title>
+    </reference_ref>
+    <reference_ref id="ai-diligence-statement" file="references/ai-diligence-statement.xml">
+      <title>AI diligence and assurance statement</title>
+    </reference_ref>
+    <reference_ref id="precedence-chain" file="references/precedence-chain.xml">
+      <title>Precedence Chain and Bilateral Structured Conflict Resolution</title>
+    </reference_ref>
+    <reference_ref id="subset-definitions" file="references/subset-definitions.xml">
+      <title>Named Subsets and Dynamic Team Assembly</title>
+    </reference_ref>
+    <reference_ref id="debate-engine" file="references/debate-engine.xml">
+      <title>Debate Engine — Multi-Role Design Debate with Deliberative Panel</title>
+    </reference_ref>
+    <reference_ref id="m365-operating-constraints" file="references/m365-operating-constraints.xml">
+      <title>Microsoft 365 Operating Constraints</title>
+    </reference_ref>
+    <reference_ref id="role-template" file="references/role-module-template.xml">
+      <title>Canonical Role File Template</title>
+    </reference_ref>
+    <reference_ref id="task-catalog" file="references/task-catalog.xml">
+      <title>Task Catalog</title>
+    </reference_ref>
+  </reference_registry>
   <grader_registry>
-    <grader_ref id="agent-behaviour" file="graders/agent-behaviour.xml"/>
-    <grader_ref id="role-behaviour" file="graders/role-behaviour.xml"/>
-    <grader_ref id="developer-behaviour" file="graders/developer-behaviour.xml"/>
-    <grader_ref id="debate-behaviour" file="graders/debate-behaviour.xml"/>
+    <grader_ref id="agent-behaviour" file="graders/agent-behaviour.xml">
+      <title>Global Agent Behaviour Grader</title>
+    </grader_ref>
+    <grader_ref id="role-behaviour" file="graders/role-behaviour.xml">
+      <title>Role and Team Behaviour Grader</title>
+    </grader_ref>
+    <grader_ref id="developer-behaviour" file="graders/developer-behaviour.xml">
+      <title>Developer Behaviour Grader</title>
+    </grader_ref>
+    <grader_ref id="debate-behaviour" file="graders/debate-behaviour.xml">
+      <title>Debate Behaviour Grader</title>
+    </grader_ref>
   </grader_registry>
-  <command_resolution>
-    <reference>references/command-registry.xml</reference>
-    <reference>references/contextual-mode-control.xml</reference>
-    <rule>Use longest exact command match before applying phase or depth modifiers.</rule>
-    <rule>Do not guess role activation where the command registry is ambiguous; ask a clarifying question or remain in TEAM MODE.</rule>
-  </command_resolution>
-  <task_routing>
-    <reference>references/task-catalog.xml</reference>
-    <rule>Classify the requested work before selecting templates or roles.</rule>
-    <rule>When the task is high-stakes, include the high-stakes compliance summary and relevant harm checks.</rule>
-  </task_routing>
-  <runtime_flow>
-    <step id="1" name="classify_context">
-      <instruction>Identify active mode, role, phase, depth, high-stakes status, requested template, and debate mode.</instruction>
-    </step>
-    <step id="2" name="load_modules">
-      <instruction>Load always-load references plus any active role, template, and grader modules.</instruction>
-    </step>
-    <step id="3" name="frame_response">
-      <instruction>Use shared primitives and role-specific rules to frame the answer.</instruction>
-    </step>
-    <step id="4" name="draft_response">
-      <instruction>Produce a response that respects authority limits, evidence quality, service phase, accessibility, privacy, safety, and human accountability.</instruction>
-    </step>
-    <step id="5" name="grade_response">
-      <instruction>Apply agent, role, developer, and debate graders as applicable.</instruction>
-    </step>
-    <step id="6" name="revise_or_refuse">
-      <instruction>If a grader returns fail_revise, revise once. If fail_escalate persists or a hard stop applies, refuse or escalate rather than outputting unsafe authority.</instruction>
-    </step>
-    <step id="7" name="emit_final">
-      <instruction>Return the final response using the requested or appropriate template, with assumptions, risks, and next steps where relevant.</instruction>
-    </step>
-  </runtime_flow>
-  <output_contract>
-    <schema>output.schema.json</schema>
-    <grade_schema>grade.schema.json</grade_schema>
-    <variables_schema>variables.schema.json</variables_schema>
-  </output_contract>
+  <assurance_flow>
+    <step order="1" id="infer_context">Identify active mode, role, phase, task, and requested output class before answering.</step>
+    <step order="2" id="draft_response">Produce a draft response and compact operational trace without claiming authority beyond the active remit.</step>
+    <step order="3" id="grade_global_behaviour">Run graders/agent-behaviour.xml against the draft and trace.</step>
+    <step order="4" id="grade_role_behaviour">Run graders/role-behaviour.xml; when developer mode is active also run graders/developer-behaviour.xml.</step>
+    <step order="5" id="grade_debate_behaviour">When debate mode is active, run graders/debate-behaviour.xml before panel recommendation is emitted.</step>
+    <step order="6" id="revise_or_refuse">If any grader returns fail_revise or fail_escalate, revise, refuse, or escalate before final output.</step>
+    <step order="7" id="emit_final_output">Emit the final answer using output.schema.json and, when required, append the high-stakes compliance summary.</step>
+  </assurance_flow>
+  <output_contract_ref>output.schema.json</output_contract_ref>
+  <grade_contract_ref>grade.schema.json</grade_contract_ref>
 </prompt_bundle>
