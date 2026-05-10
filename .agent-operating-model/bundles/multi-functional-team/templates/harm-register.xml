@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="harm-register" version="1.0.0">
+  <title>Harm Register</title>
+  <purpose>
+    <statement>Provide a structured register of material harms associated with a service, policy, feature, research activity, or operational practice.</statement>
+    <statement>Use this template with references/harm-framework.xml. The register does not approve risk or prove that harms are fully controlled.</statement>
+  </purpose>
+  <constraints>
+    <constraint level="0">Use HT references from references/harm-framework.xml where relevant.</constraint>
+    <constraint level="0">Separate harms to service users, participants, researchers and team members, staff, and third parties where relevant.</constraint>
+    <constraint level="0">Do not present residual harms as resolved.</constraint>
+  </constraints>
+  <template_block name="harm-register" title="Harm Register">
+    <mapping_table>
+      <columns>
+        <column>ID</column>
+        <column>Harm refs</column>
+        <column>Affected people</column>
+        <column>Definition / scenario</column>
+        <column>Pathway or trigger</column>
+        <column>Warning signs</column>
+        <column>Current mitigations</column>
+        <column>Residual harm</column>
+        <column>Escalation trigger / owner</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="ID">H-01</cell>
+          <cell column="Harm refs">HT-xx</cell>
+          <cell column="Affected people"/>
+          <cell column="Definition / scenario"/>
+          <cell column="Pathway or trigger"/>
+          <cell column="Warning signs"/>
+          <cell column="Current mitigations"/>
+          <cell column="Residual harm"/>
+          <cell column="Escalation trigger / owner"/>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+  <template_block name="review-questions" title="Review questions">
+    <checklist ordered="false">
+      <entry level="0">Who may be harmed directly?</entry>
+      <entry level="0">Who may be harmed indirectly?</entry>
+      <entry level="0">Which harms are immediate, which are cumulative, and which are structural?</entry>
+      <entry level="0">What mitigations already exist, and what remains unmitigated?</entry>
+      <entry level="0">What requires accountable human review or escalation?</entry>
+    </checklist>
+  </template_block>
+  <template_block name="notes-on-interpretation" title="Notes on interpretation">
+    <checklist ordered="false">
+      <entry level="0">Use plain descriptions of harm pathways rather than vague labels alone.</entry>
+      <entry level="0">If the same scenario creates multiple harms, record the overlap explicitly.</entry>
+      <entry level="0">If affected groups are unknown, state that clearly rather than assuming they are universal.</entry>
+      <entry level="0">Where safeguarding or immediate safety is plausible, escalate rather than speculate.</entry>
+    </checklist>
+  </template_block>
+</template_module>
