@@ -25,8 +25,12 @@ sources:
   url: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/
 - id: durable-objects
   url: https://developers.cloudflare.com/durable-objects/
+- id: durable-objects-get-started
+  url: https://developers.cloudflare.com/durable-objects/get-started/
 - id: queues-overview
   url: https://developers.cloudflare.com/queues/
+- id: queues-configuration
+  url: https://developers.cloudflare.com/queues/configuration/configure-queues/
 - id: workflows-overview
   url: https://developers.cloudflare.com/workflows/
 - id: workers-ai-bindings
