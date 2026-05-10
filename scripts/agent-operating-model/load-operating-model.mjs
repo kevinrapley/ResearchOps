@@ -167,6 +167,50 @@ function selectBundles(registry, selectionRules, taskText, signals) {
 	};
 }
 
+function requireString(value, label) {
+	if (typeof value !== "string" || !value.trim()) {
+		throw new Error(`selected bundle ${label} must be a non-empty string`);
+	}
+}
+
+function requireDirectory(relativePath, bundleId) {
+	const fullPath = path.join(ROOT_DIR, relativePath);
+
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isDirectory()) {
+		throw new Error(`selected bundle ${bundleId} missing canonical directory: ${relativePath}`);
+	}
+}
+
+function requireFile(relativePath, bundleId) {
+	const fullPath = path.join(ROOT_DIR, relativePath);
+
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+		throw new Error(`selected bundle ${bundleId} missing canonical file: ${relativePath}`);
+	}
+}
+
+function normaliseDirectory(relativePath) {
+	return relativePath.endsWith("/") ? relativePath : `${relativePath}/`;
+}
+
+function assertSelectedBundleFiles(bundle) {
+	requireString(bundle.id, "id");
+	requireString(bundle.canonicalPath, `${bundle.id}.canonicalPath`);
+	requireString(bundle.promptSpec, `${bundle.id}.promptSpec`);
+	requireString(bundle.promptBody, `${bundle.id}.promptBody`);
+
+	const canonicalPath = normaliseDirectory(bundle.canonicalPath);
+
+	requireDirectory(canonicalPath, bundle.id);
+	requireFile(path.join(canonicalPath, bundle.promptSpec), bundle.id);
+	requireFile(path.join(canonicalPath, bundle.promptBody), bundle.id);
+
+	return {
+		...bundle,
+		canonicalPath,
+	};
+}
+
 function bundleRecord(bundle) {
 	return {
 		canonicalPath: bundle.canonicalPath,
@@ -194,6 +238,7 @@ export function loadOperatingModel(options = {}) {
 	const signalCatalog = readJson(".agent-operating-model/task-signal-catalog.json");
 	const taskSignals = inferTaskSignals(taskText, signalCatalog);
 	const selected = selectBundles(registry, selectionRules, taskText, taskSignals);
+	const selectedBundles = selected.selectedBundles.map(assertSelectedBundleFiles);
 	const safeguards = inferOperatingModelSafeguards(taskText);
 
 	return {
@@ -201,7 +246,7 @@ export function loadOperatingModel(options = {}) {
 		instructionConflicts: safeguards.conflicts,
 		operatingModelSafeguards: safeguards.safeguards,
 		registryVersion: registry.version,
-		selectedBundles: selected.selectedBundles.map(bundleRecord),
+		selectedBundles: selectedBundles.map(bundleRecord),
 		skippedBundles: selected.skippedBundles.map(bundleRecord),
 		taskFacets: taskSignals,
 		taskSignals,
