@@ -1,0 +1,16 @@
+archetype: cli
+starter_tree: templates/starter-trees/cli.txt
+quality_gates:
+- formatting
+- linting
+- unit-tests
+- contract-tests
+- security
+- docs-quality
+workflows:
+- language-ci
+- ci-conformance.yml
+- dependency-review.yml
+contracts:
+- repository-contract.schema.json
+- workflow-contract.schema.json

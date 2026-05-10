@@ -1,0 +1,15 @@
+archetype: library
+starter_tree: templates/starter-trees/library.txt
+quality_gates:
+- formatting
+- linting
+- typechecking
+- unit-tests
+- security
+- docs-quality
+workflows:
+- language-ci
+- dependency-review.yml
+contracts:
+- repository-contract.schema.json
+- workflow-contract.schema.json

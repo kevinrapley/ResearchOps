@@ -1,0 +1,20 @@
+archetype: api-service
+starter_tree: templates/starter-trees/api-service.txt
+quality_gates:
+- formatting
+- linting
+- typechecking
+- unit-tests
+- contract-tests
+- integration-tests
+- security
+- docs-quality
+workflows:
+- language-ci
+- ci-conformance.yml
+- dependency-review.yml
+- codeql.yml
+contracts:
+- repository-contract.schema.json
+- endpoint-catalog.schema.json
+- workflow-contract.schema.json
