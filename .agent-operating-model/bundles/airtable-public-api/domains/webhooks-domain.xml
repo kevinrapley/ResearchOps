@@ -1,0 +1,8 @@
+<domain id="webhooks-domain">
+  <purpose>Handle webhook registration, payload retrieval, renewal, MAC verification, and consumer design.</purpose>
+  <rules>
+    <rule>Webhook consumers must verify the Airtable MAC header before trusting notifications.</rule>
+    <rule>Payload retrieval is a second step after the notification event.</rule>
+    <rule>Renewal behavior must be surfaced explicitly.</rule>
+  </rules>
+</domain>

@@ -1,0 +1,8 @@
+<domain id="records-domain">
+  <purpose>Handle record read, create, update, delete, batching, and performUpsert patterns.</purpose>
+  <rules>
+    <rule>List operations must mention offset pagination.</rule>
+    <rule>Mutation guidance must mention batching and rate-limit posture.</rule>
+    <rule>Returned records may omit empty field values.</rule>
+  </rules>
+</domain>

@@ -1,0 +1,8 @@
+<domain id="auth-domain">
+  <purpose>Resolve Airtable authentication, token placement, and least-privilege scope guidance.</purpose>
+  <rules>
+    <rule>Prefer bearer tokens via PAT or OAuth integration access tokens.</rule>
+    <rule>Never advise client-side exposure of privileged tokens.</rule>
+    <rule>Map requested work to the narrowest scope set in scopes.matrix.yaml.</rule>
+  </rules>
+</domain>
