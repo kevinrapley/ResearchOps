@@ -4,8 +4,7 @@ scopes:
   use_for:
   - listRecords
   - getRecord
-  - listComments
-  note: Read record data and comment lists.
+  note: Read record data.
 - name: data.records:write
   use_for:
   - createRecords
@@ -13,17 +12,24 @@ scopes:
   - deleteRecord
   - updateMultipleRecords
   - deleteMultipleRecords
+  note: Write record data.
+- name: data.recordComments:read
+  use_for:
+  - listComments
+  note: Read record comments.
+- name: data.recordComments:write
+  use_for:
   - createComment
   - updateComment
   - deleteComment
-  note: Write record data and record comments.
-- name: schema.base:read
+  note: Create, update and delete record comments.
+- name: schema.bases:read
   use_for:
   - listBases
   - getBaseSchema
   - listViews
   note: Read base schema and metadata.
-- name: schema.base:write
+- name: schema.bases:write
   use_for:
   - createBase
   - createTable
