@@ -24,7 +24,7 @@ auth:
   - oauth_access_token
 authorization:
   minimum_scopes:
-  - data.records:read
+  - data.recordComments:read
   scope_resolution_rule: Request the smallest viable scope set that satisfies the operation.
 parameters:
   path:
