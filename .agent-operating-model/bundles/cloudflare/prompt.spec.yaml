@@ -1,0 +1,34 @@
+bundle:
+  id: cloudflare
+  name: Cloudflare Developer Platform Prompt Bundle
+  version: 1.0.0
+  status: canonical
+  default_mode: cloudflare-build
+  source_authority: https://developers.cloudflare.com/
+  prompt_body: prompt.body.xml
+design:
+  prompt_markup: native semantic XML
+  output_contract: output.schema.json
+  grade_contract: grade.schema.json
+  variables_contract: variables.schema.json
+  source_rule: Cloudflare platform facts must come from developers.cloudflare.com only.
+assembly:
+  always_load:
+  - references/source-catalog.yaml
+  - references/cloudflare-platform-context.xml
+  - references/workers-runtime.xml
+  - references/wrangler-configuration.xml
+  - references/bindings-and-secrets.xml
+  - references/storage-and-state.xml
+  - references/pages-and-deployment.xml
+  - references/queues-workflows-ai.xml
+  role_modules:
+  - roles/cloudflare-developer.xml
+  - roles/cloudflare-devops.xml
+  - roles/cloudflare-security.xml
+  template_modules:
+  - templates/worker-route.xml
+  - templates/wrangler-config-review.xml
+  - templates/cloudflare-integration-risk.xml
+  grader_modules:
+  - graders/cloudflare-behaviour.xml

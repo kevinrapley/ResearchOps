@@ -1,0 +1,35 @@
+source_authority: developers.cloudflare.com
+last_checked: 2026-05-10
+sources:
+- id: workers-fetch-handler
+  url: https://developers.cloudflare.com/workers/runtime-apis/handlers/fetch/
+- id: workers-bindings
+  url: https://developers.cloudflare.com/workers/runtime-apis/bindings/
+- id: workers-env-vars
+  url: https://developers.cloudflare.com/workers/configuration/environment-variables/
+- id: workers-secrets
+  url: https://developers.cloudflare.com/workers/configuration/secrets/
+- id: workers-local-env
+  url: https://developers.cloudflare.com/workers/development-testing/environment-variables/
+- id: workers-routing
+  url: https://developers.cloudflare.com/workers/configuration/routing/
+- id: wrangler-configuration
+  url: https://developers.cloudflare.com/workers/wrangler/configuration/
+- id: pages-bindings
+  url: https://developers.cloudflare.com/pages/functions/bindings/
+- id: d1-prepared-statements
+  url: https://developers.cloudflare.com/d1/worker-api/prepared-statements/
+- id: kv-bindings
+  url: https://developers.cloudflare.com/kv/concepts/kv-bindings/
+- id: r2-workers-api
+  url: https://developers.cloudflare.com/r2/api/workers/workers-api-reference/
+- id: durable-objects
+  url: https://developers.cloudflare.com/durable-objects/
+- id: queues-overview
+  url: https://developers.cloudflare.com/queues/
+- id: workflows-overview
+  url: https://developers.cloudflare.com/workflows/
+- id: workers-ai-bindings
+  url: https://developers.cloudflare.com/workers-ai/configuration/bindings/
+- id: vectorize-api
+  url: https://developers.cloudflare.com/vectorize/reference/client-api/
