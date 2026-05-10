@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grader_module id="debate-behaviour" version="1.0.0">
+  <purpose>Judge whether debate-engine framing, rounds, contributions, and panel behaviour complied with the debate contract.</purpose>
+  <inputs>
+    <input>user_request</input>
+    <input>response_draft</input>
+    <input>response_trace</input>
+    <input>active_mode</input>
+    <input>active_role</input>
+    <input>active_phase</input>
+    <input>applied_modules</input>
+  </inputs>
+  <labels>
+    <label>pass</label>
+    <label>pass_with_notes</label>
+    <label>fail_revise</label>
+    <label>fail_escalate</label>
+  </labels>
+  <output_contract_ref>grade.schema.json</output_contract_ref>
+  <grader_metadata/>
+  <hard_fail_conditions>
+    <condition rule_id="single_claim">The contribution must state one specific, contestable, consequential claim</condition>
+    <condition rule_id="answers_questions">Questions directed at this participant in the previous round are answered in the current round</condition>
+  </hard_fail_conditions>
+  <criteria/>
+  <discipline_checks>
+    <discipline id="single_claim" severity="block">
+      <name>Commit to a single claim</name>
+      <description>The contribution must state one specific, contestable, consequential claim</description>
+      <check id="claim-present">
+        <rule>Contribution contains an explicit claim statement, typically in opening paragraph</rule>
+        <fail_signal>No sentence can be identified as the central claim</fail_signal>
+      </check>
+      <check id="claim-specific">
+        <rule>Claim references specific subjects, conditions, or outcomes rather than generalities</rule>
+        <fail_signal>Claim uses vague terms like 'important', 'should consider', 'matters' without specificity</fail_signal>
+      </check>
+      <check id="claim-contestable">
+        <rule>A reasonable opponent could take the opposite position</rule>
+        <fail_signal>Claim is a truism or statement of fact that no one would dispute</fail_signal>
+      </check>
+      <check id="claim-singular">
+        <rule>Contribution commits to one claim, not two or more in parallel</rule>
+        <fail_signal>Contribution hedges between multiple positions or uses 'either/or' as its thesis</fail_signal>
+      </check>
+      <remediation>Return to participant for tightening before entering record</remediation>
+    </discipline>
+    <discipline id="structured_around_claim" severity="flag">
+      <name>Structure the argument around the claim</name>
+      <description>Every paragraph traces back to the claim as support, objection, or illustration</description>
+      <check id="paragraph-traceability">
+        <rule>Each paragraph can be classified as supporting, anticipating objection to, or illustrating the claim</rule>
+        <fail_signal>One or more paragraphs cover topics unrelated to the central claim</fail_signal>
+      </check>
+      <check id="no-drift">
+        <rule>Contribution does not drift into adjacent topics not bearing on the claim</rule>
+        <fail_signal>Contribution spends significant space on topics not relevant to the claim</fail_signal>
+      </check>
+      <remediation>Return to participant with note on which paragraphs lack traceable connection</remediation>
+    </discipline>
+    <discipline id="incorporates_research" severity="flag">
+      <name>Incorporate research</name>
+      <description>The contribution cites specific evidence rather than appealing to unsourced best practice</description>
+      <check id="citations-present">
+        <rule>Contribution references at least one specific source</rule>
+        <fail_signal>No citations, references, or specific evidence present</fail_signal>
+      </check>
+      <check id="citations-relevant">
+        <rule>Citations directly support the claim or a sub-argument within the contribution</rule>
+        <fail_signal>Citations appear decorative or unconnected to the argument</fail_signal>
+      </check>
+      <check id="citations-specific">
+        <rule>Citations name specific legislation, guidance, studies, data, or documented experience</rule>
+        <fail_signal>References to 'research shows' or 'best practice' without naming the source</fail_signal>
+      </check>
+      <check id="citations-verifiable">
+        <rule>Citations are specific enough that a human reviewer could locate and verify them. Where the participant is uncertain whether a source exists in the exact form cited, the citation must be caveated as 'requires verification' rather than presented as established fact</rule>
+        <fail_signal>Citation presents a source as established fact but lacks sufficient specificity for independent verification, or cites a source the participant cannot confidently confirm exists</fail_signal>
+      </check>
+      <remediation>Return to participant to add specific citations</remediation>
+    </discipline>
+    <discipline id="anticipates_opposition" severity="flag">
+      <name>Anticipate opposing claims</name>
+      <description>The contribution names and engages at least one counterargument before it arrives</description>
+      <check id="opposition-named">
+        <rule>Contribution contains an identifiable section naming at least one likely counterargument</rule>
+        <fail_signal>No counterargument is named or addressed</fail_signal>
+      </check>
+      <check id="opposition-engaged">
+        <rule>The named counterargument is responded to with reasoning, not dismissed</rule>
+        <fail_signal>Counterargument is named but response is superficial or dismissive</fail_signal>
+      </check>
+      <check id="opposition-stated-assertively">
+        <rule>The counterargument is phrased as a positive claim with a specific mechanism, not as a conditional possibility</rule>
+        <fail_signal>Counterargument is phrased as 'it could' or 'it might' rather than as a specific assertion about when, how, and for whom the opposing position holds</fail_signal>
+      </check>
+      <check id="opposition-has-specific-beneficiary">
+        <rule>The steelmanned counterargument identifies a concrete population, scenario, or condition where the opposing position is strongest</rule>
+        <fail_signal>Counterargument appeals to a generic class of users or abstract benefit without specifying who gains, how, and through what mechanism</fail_signal>
+      </check>
+      <remediation>Return to participant with note that counterargument engagement is insufficient</remediation>
+    </discipline>
+    <discipline id="addresses_own_flaws" severity="flag">
+      <name>Address flaws in the argument</name>
+      <description>The contribution names at least one weakness in the participant's position and explains why the position still holds</description>
+      <check id="flaw-acknowledged">
+        <rule>Contribution contains an explicit acknowledgement of a weakness in its own argument</rule>
+        <fail_signal>No self-critical acknowledgement present</fail_signal>
+      </check>
+      <check id="flaw-genuine">
+        <rule>The acknowledged flaw is a substantive weakness, not a trivial one</rule>
+        <fail_signal>Acknowledged flaw is trivial, false modesty, or a pseudo-weakness that is actually a strength</fail_signal>
+      </check>
+      <check id="position-held-despite-flaw">
+        <rule>Contribution explains why the position still holds despite the acknowledged flaw</rule>
+        <fail_signal>Flaw is named but no reasoning for holding the position despite it is offered</fail_signal>
+      </check>
+      <remediation>Return to participant with note that self-critical engagement is insufficient</remediation>
+    </discipline>
+    <discipline id="asks_questions" severity="flag">
+      <name>Ask questions</name>
+      <description>The contribution asks at least one specific question of another participant</description>
+      <check id="question-present">
+        <rule>Contribution contains at least one explicit question directed at another named participant</rule>
+        <fail_signal>No questions present or questions not directed at specific participants</fail_signal>
+      </check>
+      <check id="question-productive">
+        <rule>Question targets reasoning behind an opposing claim rather than attacking the person</rule>
+        <fail_signal>Question is rhetorical, hostile, or attacks the participant rather than the argument</fail_signal>
+      </check>
+      <check id="question-specific">
+        <rule>Question is specific enough to be answered, not so broad it invites evasion</rule>
+        <fail_signal>Question is vague or phrased in a way that allows easy deflection</fail_signal>
+      </check>
+      <remediation>Return to participant to add or sharpen questions</remediation>
+    </discipline>
+    <discipline id="answers_questions" severity="block">
+      <name>Answer questions directly</name>
+      <description>Questions directed at this participant in the previous round are answered in the current round</description>
+      <check id="prior-questions-identified">
+        <rule>Contribution identifies questions directed at this participant in the previous round</rule>
+        <fail_signal>Prior questions exist but are not acknowledged</fail_signal>
+      </check>
+      <check id="answers-given">
+        <rule>Each identified question receives a direct answer</rule>
+        <fail_signal>Questions are acknowledged but answers are evasive or redirected</fail_signal>
+      </check>
+      <check id="no-evasion">
+        <rule>Answers address what was asked, not a reframed or easier version of the question</rule>
+        <fail_signal>Answer addresses a different question than the one asked</fail_signal>
+      </check>
+      <remediation>Return to participant for direct answers; evasion is a discipline failure that blocks the contribution</remediation>
+    </discipline>
+    <discipline id="tells_story" severity="flag">
+      <name>Tell a story</name>
+      <description>The contribution includes at least one concrete illustration of the abstract argument</description>
+      <check id="illustration-present">
+        <rule>Contribution contains a specific scenario, case, or example that illustrates the claim</rule>
+        <fail_signal>Argument remains abstract throughout; no concrete illustration provided</fail_signal>
+      </check>
+      <check id="illustration-relevant">
+        <rule>The illustration actually demonstrates the point being argued</rule>
+        <fail_signal>Illustration is present but does not clearly connect to the claim</fail_signal>
+      </check>
+      <check id="illustration-specific">
+        <rule>Illustration has specific details (service, user, time, outcome) rather than generic scenario</rule>
+        <fail_signal>Illustration is generic ('a user might find') rather than specific</fail_signal>
+      </check>
+      <remediation>Return to participant to add or specify concrete illustration</remediation>
+    </discipline>
+    <discipline id="appropriate_tone" severity="flag">
+      <name>Choose the right tone</name>
+      <description>The contribution matches its tone to the subject, audience, and stakes</description>
+      <check id="no-hostility">
+        <rule>Contribution attacks arguments, not participants or roles</rule>
+        <fail_signal>Contribution contains personal attacks, dismissiveness, or contempt for other participants</fail_signal>
+      </check>
+      <check id="no-condescension">
+        <rule>Contribution does not position the participant above other participants</rule>
+        <fail_signal>Contribution treats other participants as naive, uninformed, or intellectually inferior</fail_signal>
+      </check>
+      <check id="gravity-appropriate">
+        <rule>Serious stakes receive serious tone; operational questions can be more conversational</rule>
+        <fail_signal>Tone trivialises serious harm or inflates minor questions</fail_signal>
+      </check>
+      <check id="clarity-not-formality">
+        <rule>Contribution is clear rather than obscured by excessive formality or jargon</rule>
+        <fail_signal>Contribution uses formal or technical language where plain language would serve better</fail_signal>
+      </check>
+      <remediation>Return to participant with specific tone issues identified</remediation>
+    </discipline>
+    <discipline id="strong_conclusion" severity="flag">
+      <name>Deliver a strong conclusion</name>
+      <description>The contribution closes with a clear statement of what the participant wants the reader to take away</description>
+      <check id="conclusion-present">
+        <rule>Contribution ends with an identifiable conclusion paragraph</rule>
+        <fail_signal>Contribution trails off or ends mid-argument</fail_signal>
+      </check>
+      <check id="conclusion-specific">
+        <rule>Conclusion states specific action, position, or takeaway rather than general summary</rule>
+        <fail_signal>Conclusion merely restates the opening or offers vague call to consideration</fail_signal>
+      </check>
+      <check id="conclusion-actionable">
+        <rule>Conclusion gives the reader something to do, decide, or consider specifically</rule>
+        <fail_signal>Conclusion is descriptive rather than prescriptive</fail_signal>
+      </check>
+      <check id="no-qualification-drift">
+        <rule>Conclusion does not drown the main point in qualifications</rule>
+        <fail_signal>Conclusion hedges so extensively that the main point is lost</fail_signal>
+      </check>
+      <remediation>Return to participant to sharpen conclusion</remediation>
+    </discipline>
+  </discipline_checks>
+  <early_termination>
+    <rule>
+      <attribute key="trigger">unanimous_convergence</attribute>
+      <attribute key="check_after_round">2</attribute>
+      <attribute key="condition">All participants state positions within consensus_band</attribute>
+      <attribute key="consensus_band">Positions differ only on emphasis, not on substance or recommendation</attribute>
+      <attribute key="action">If distinct_positions from Round 1 was 2 or fewer, terminate debate and proceed to panel. If distinct_positions from Round 1 was 3 or more, trigger convergence scepticism stress-test round before proceeding to panel.</attribute>
+    </rule>
+    <rule>
+      <attribute key="trigger">suspicious_convergence</attribute>
+      <attribute key="check_after_round">2</attribute>
+      <attribute key="condition">All participants state positions within consensus_band AND distinct_positions from Round 1 &gt;= 3</attribute>
+      <attribute key="action">Do not proceed directly to panel. Run a single stress-test round in which at least two participants argue against the consensus. Stress-test contributions must articulate the strongest remaining case for a rejected option, identify evidence that would falsify the consensus, and name the user population or scenario most disadvantaged by the consensus recommendation. Record the stress-test round in the audit trail. Only then proceed to panel.</attribute>
+    </rule>
+    <rule>
+      <attribute key="trigger">blocking_flag</attribute>
+      <attribute key="check_every_round">True</attribute>
+      <attribute key="condition">Legal, Security, or Privacy specialist raises hard-failure flag</attribute>
+      <attribute key="action">Pause debate, surface flag, require resolution before continuing</attribute>
+    </rule>
+    <rule>
+      <attribute key="trigger">argument_exhaustion</attribute>
+      <attribute key="check_after_round">3</attribute>
+      <attribute key="condition">Current round contributions repeat previous round reasoning without new evidence or logic AND zero participants reported a position delta in the most recent round</attribute>
+      <attribute key="action">Terminate debate with note that further rounds would not add value</attribute>
+    </rule>
+  </early_termination>
+  <abort_conditions>
+    <rule>
+      <attribute key="trigger">discipline_failure</attribute>
+      <attribute key="condition">Participant fails to produce compliant contribution after 2 attempts</attribute>
+      <attribute key="action">Pause engine, surface to user, offer to add context or remove participant</attribute>
+    </rule>
+    <rule>
+      <attribute key="trigger">insufficient_information</attribute>
+      <attribute key="condition">Debate reveals question cannot be answered with available information</attribute>
+      <attribute key="action">Terminate engine, recommend scoping exercise before retry</attribute>
+    </rule>
+  </abort_conditions>
+  <round_count>
+    <attribute key="calculation.inputs[0]">complexity_mean</attribute>
+    <attribute key="calculation.inputs[1]">complexity_stddev</attribute>
+    <attribute key="calculation.inputs[2]">distinct_positions</attribute>
+    <attribute key="calculation.inputs[3]">participant_count</attribute>
+    <attribute key="calculation.rules[0].condition">complexity_mean &lt; 2.5 AND distinct_positions &lt;= 2</attribute>
+    <attribute key="calculation.rules[0].rounds">3</attribute>
+    <attribute key="calculation.rules[0].rationale">Simple problem with broad initial agreement needs stress-testing only</attribute>
+    <attribute key="calculation.rules[1].condition">(complexity_mean &gt;= 2.5 AND complexity_mean &lt; 3.5) OR distinct_positions == 3</attribute>
+    <attribute key="calculation.rules[1].rounds">5</attribute>
+    <attribute key="calculation.rules[1].rationale">Moderate complexity or meaningful disagreement needs full exploration</attribute>
+    <attribute key="calculation.rules[2].condition">complexity_mean &gt;= 3.5 AND distinct_positions &gt;= 4</attribute>
+    <attribute key="calculation.rules[2].rounds">7</attribute>
+    <attribute key="calculation.rules[2].rationale">High complexity with divergent positions needs extended argument</attribute>
+    <attribute key="calculation.rules[3].condition">complexity_stddev &gt; 1.2</attribute>
+    <attribute key="calculation.rules[3].rounds">5</attribute>
+    <attribute key="calculation.rules[3].rationale">Participants disagree on how complex the problem is; framing must be surfaced</attribute>
+    <attribute key="calculation.rules[3].override">True</attribute>
+    <attribute key="bounds.minimum">3</attribute>
+    <attribute key="bounds.maximum">7</attribute>
+    <attribute key="bounds.adjustment[0]">If participant_count &gt; 5, add 1 round to allow each voice adequate space</attribute>
+    <attribute key="bounds.adjustment[1]">If participant_count &lt; 4, subtract 1 round; fewer voices need less cycling</attribute>
+  </round_count>
+  <deliberative_panel>
+    <attribute key="composition_fixed">True</attribute>
+    <attribute key="members[0]">accessibility_expert</attribute>
+    <attribute key="members[1]">governance</attribute>
+    <attribute key="members[2]">product_management</attribute>
+    <attribute key="members[3]">legal_specialist</attribute>
+    <attribute key="members[4]">policy_specialist</attribute>
+    <attribute key="members[5]">privacy_specialist</attribute>
+    <attribute key="members[6]">security_specialist</attribute>
+    <attribute key="mode_shift.from">Adversarial debate</attribute>
+    <attribute key="mode_shift.to">Cooperative deliberation</attribute>
+    <attribute key="mode_shift.principle">Panel members operate in deliberative mode even if they also participated in the debate. Each panel role's ROLE.xml file contains a 'Deliberative panel duties' section defining what changes in PANEL mode.</attribute>
+    <attribute key="dual_role_disclosure.requirement">When a panel member also participated in the adversarial debate, the panel output must disclose which position that member argued</attribute>
+    <attribute key="dual_role_disclosure.checks[0].check">debate_positions_disclosed</attribute>
+    <attribute key="dual_role_disclosure.checks[0].rule">For each panel member who also participated in the debate, the panel output states which side they argued</attribute>
+    <attribute key="dual_role_disclosure.checks[0].fail_signal">Panel output does not disclose which debate positions its members held</attribute>
+    <attribute key="dual_role_disclosure.checks[1].check">opposing_arguments_engaged</attribute>
+    <attribute key="dual_role_disclosure.checks[1].rule">The panel demonstrates engagement with arguments from the side each dual-role member opposed, not merely the side they advocated</attribute>
+    <attribute key="dual_role_disclosure.checks[1].fail_signal">Panel deliberation only engages with arguments aligned with its members' debate positions</attribute>
+    <attribute key="dual_role_disclosure.checks[2].check">majority_alignment_noted</attribute>
+    <attribute key="dual_role_disclosure.checks[2].rule">The panel notes where its recommendation aligns with the debate majority and where it diverges</attribute>
+    <attribute key="dual_role_disclosure.checks[2].fail_signal">Panel does not make visible whether its recommendation follows or departs from the debate majority</attribute>
+    <attribute key="dual_role_disclosure.severity">flag</attribute>
+    <attribute key="dual_role_disclosure.remediation">Return to panel to add dual-role disclosures and demonstrate engagement with opposing arguments</attribute>
+    <attribute key="absent_voice_check.requirement">The panel must acknowledge which debate participant roles are not represented on the panel and assess whether their absence is material</attribute>
+    <attribute key="absent_voice_check.checks[0].check">absent_roles_listed</attribute>
+    <attribute key="absent_voice_check.checks[0].rule">Panel output lists which debate participant roles are not represented on the panel</attribute>
+    <attribute key="absent_voice_check.checks[0].fail_signal">Panel has not identified which debate voices are absent from deliberation</attribute>
+    <attribute key="absent_voice_check.checks[1].check">materiality_assessed</attribute>
+    <attribute key="absent_voice_check.checks[1].rule">For each absent role, the panel states whether that perspective is material to this specific question</attribute>
+    <attribute key="absent_voice_check.checks[1].fail_signal">Panel lists absent roles but does not assess whether their absence affects the recommendation</attribute>
+    <attribute key="absent_voice_check.checks[2].check">absent_arguments_addressed</attribute>
+    <attribute key="absent_voice_check.checks[2].rule">Panel notes which arguments from absent roles it relied on or set aside, and why</attribute>
+    <attribute key="absent_voice_check.checks[2].fail_signal">Panel does not account for how it treated arguments from roles not represented in deliberation</attribute>
+    <attribute key="absent_voice_check.severity">flag</attribute>
+    <attribute key="absent_voice_check.remediation">Return to panel to complete absent-voice assessment before finalising</attribute>
+    <attribute key="inputs[0]">debate_transcript</attribute>
+    <attribute key="inputs[1]">convergence_summary</attribute>
+    <attribute key="inputs[2]">concession_trail</attribute>
+    <attribute key="inputs[3]">convergence_scepticism_stress_test_round</attribute>
+    <attribute key="inputs[4]">framing_artefacts</attribute>
+    <attribute key="deliverable_structure.section_1.name">Viable options</attribute>
+    <attribute key="deliverable_structure.section_1.content">Options that survive legal, security, and privacy requirements</attribute>
+    <attribute key="deliverable_structure.section_1.method">Eliminate options incompatible with hard requirements surfaced in debate</attribute>
+    <attribute key="deliverable_structure.section_2.name">Ranked recommendations</attribute>
+    <attribute key="deliverable_structure.section_2.content">Viable options ranked against framing decision criteria</attribute>
+    <attribute key="deliverable_structure.section_2.method">Explicit reasoning for each ranking; no undefended intuition</attribute>
+    <attribute key="deliverable_structure.section_3.name">Failure modes of the recommended option</attribute>
+    <attribute key="deliverable_structure.section_3.content">Adversarial scrutiny of the top-ranked option</attribute>
+    <attribute key="deliverable_structure.section_3.method">Panel must address three questions: what are the most likely ways this recommendation fails in practice; which user population is worst served by this recommendation; and what operational, design, or policy cost does this recommendation impose that a rejected option would not. If the panel finds no significant failure modes, disadvantaged populations, or costs, that finding must be stated explicitly with reasoning, not left as a silence.</attribute>
+    <attribute key="deliverable_structure.section_3.checks[0].check">failure_modes_named</attribute>
+    <attribute key="deliverable_structure.section_3.checks[0].rule">At least one specific failure mode of the recommended option is identified</attribute>
+    <attribute key="deliverable_structure.section_3.checks[0].fail_signal">Panel has not subjected the recommendation to adversarial scrutiny</attribute>
+    <attribute key="deliverable_structure.section_3.checks[1].check">disadvantaged_population_named</attribute>
+    <attribute key="deliverable_structure.section_3.checks[1].rule">At least one specific user population or scenario disadvantaged by the recommendation is identified, or an explicit reasoned statement that none exists</attribute>
+    <attribute key="deliverable_structure.section_3.checks[1].fail_signal">Panel has not considered who is worst served by the recommendation</attribute>
+    <attribute key="deliverable_structure.section_3.checks[2].check">cost_of_recommendation_named</attribute>
+    <attribute key="deliverable_structure.section_3.checks[2].rule">At least one specific cost imposed by the recommendation that a rejected option would not impose is identified, or an explicit reasoned statement that none exists</attribute>
+    <attribute key="deliverable_structure.section_3.checks[2].fail_signal">Panel has not considered the trade-offs of the recommended option relative to rejected alternatives</attribute>
+    <attribute key="deliverable_structure.section_3.severity">flag</attribute>
+    <attribute key="deliverable_structure.section_3.remediation">Return to panel to complete adversarial scrutiny of the recommended option before finalising</attribute>
+    <attribute key="deliverable_structure.section_4.name">Conditions for reconsideration</attribute>
+    <attribute key="deliverable_structure.section_4.content">What would change the recommendation</attribute>
+    <attribute key="deliverable_structure.section_4.method">Identify information or context that, if different, would shift the ranking</attribute>
+    <attribute key="output_treatment.passes_to">Standard graders/agent-behaviour.xml compliance chain</attribute>
+    <attribute key="output_treatment.user_treatment">Presented as recommendation, not decision; human SRO retains decision authority</attribute>
+  </deliberative_panel>
+  <audit_record>
+    <attribute key="retention">Retained for the same period as the decision it informed, minimum 6 years</attribute>
+    <attribute key="content[0]">framing_artefacts</attribute>
+    <attribute key="content[1]">complexity_and_agreement_scores</attribute>
+    <attribute key="content[2]">participant_roster_with_selection_rationale</attribute>
+    <attribute key="content[3]">round_count_with_calculation</attribute>
+    <attribute key="content[4]">every_contribution_with_discipline_check_results</attribute>
+    <attribute key="content[5]">position_delta_statements_per_participant_per_middle_round</attribute>
+    <attribute key="content[6]">convergence_summaries_per_round</attribute>
+    <attribute key="content[7]">concession_trail_with_classification</attribute>
+    <attribute key="content[8]">convergence_scepticism_stress_test_round_if_triggered</attribute>
+    <attribute key="content[9]">early_termination_trigger_if_applicable</attribute>
+    <attribute key="content[10]">debate_transcript</attribute>
+    <attribute key="content[11]">panel_deliberation_summary</attribute>
+    <attribute key="content[12]">dual_role_disclosures</attribute>
+    <attribute key="content[13]">absent_voice_assessment</attribute>
+    <attribute key="content[14]">panel_recommendation_including_failure_modes_of_recommended_option</attribute>
+    <attribute key="content[15]">standard_linting_chain_results_on_recommendation</attribute>
+    <attribute key="content[16]">human_decision_and_rationale</attribute>
+    <attribute key="disclosure.atrs_relevance">If the decision is algorithmic or influences decisions about individuals, summary of debate and panel recommendation belongs in ATRS Tier 2 record</attribute>
+    <attribute key="disclosure.foia_treatment">Audit records are potentially disclosable under FOIA; no content should be produced that the organisation would not wish disclosed</attribute>
+  </audit_record>
+  <convergence_check>
+    <attribute key="frequency">After every completed round (i.e. after all rostered participants have contributed for that round, not after each individual contribution)</attribute>
+    <attribute key="method">Compare current round stated positions against previous round</attribute>
+    <attribute key="convergence_states[0].state">full_convergence</attribute>
+    <attribute key="convergence_states[0].condition">All participants state positions within consensus_band AND distinct_positions from Round 1 &lt;= 2</attribute>
+    <attribute key="convergence_states[0].action">Terminate debate, proceed to panel</attribute>
+    <attribute key="convergence_states[1].state">suspicious_convergence</attribute>
+    <attribute key="convergence_states[1].condition">All participants state positions within consensus_band AND distinct_positions from Round 1 &gt;= 3</attribute>
+    <attribute key="convergence_states[1].action">Do not terminate. Run convergence scepticism stress-test round. At least two participants must argue against the consensus, articulating the strongest remaining case for a rejected option, identifying falsifying evidence, and naming the most disadvantaged user population or scenario. Record this round in the audit trail. Only then proceed to panel.</attribute>
+    <attribute key="convergence_states[2].state">refined_disagreement</attribute>
+    <attribute key="convergence_states[2].condition">Disagreements persist but are now specifically articulated rather than vague</attribute>
+    <attribute key="convergence_states[2].action">Continue if rounds remain; otherwise proceed to panel with clear dispute record</attribute>
+    <attribute key="convergence_states[3].state">unchanged</attribute>
+    <attribute key="convergence_states[3].condition">Positions have not moved, no new reasoning introduced, and zero position deltas reported in most recent round</attribute>
+    <attribute key="convergence_states[3].action">Terminate early with exhaustion flag</attribute>
+    <attribute key="convergence_states[4].state">diverging</attribute>
+    <attribute key="convergence_states[4].condition">Positions are moving further apart</attribute>
+    <attribute key="convergence_states[4].action">Continue debate; diverging positions often mean the real issue is being surfaced</attribute>
+  </convergence_check>
+  <defaults>
+    <attribute key="minimum_participants">4</attribute>
+    <attribute key="maximum_participants">7</attribute>
+    <attribute key="maximum_retry_per_discipline">2</attribute>
+    <attribute key="consensus_band_tightness">Substantive agreement on claim and recommendation; differences only on emphasis</attribute>
+    <attribute key="panel_deliberation_turns">Unbounded within session, but panel must converge on recommendation before output</attribute>
+  </defaults>
+  <failure_modes>
+    <rule>
+      <attribute key="name">discipline_failure_at_scale</attribute>
+      <attribute key="condition">More than half of contributions in a round fail one or more disciplines</attribute>
+      <attribute key="likely_cause">Framing was too ambiguous or participants lack necessary context</attribute>
+      <attribute key="action">Pause debate, return to framing phase, re-establish problem statement and criteria</attribute>
+    </rule>
+    <rule>
+      <attribute key="name">one_participant_dominates</attribute>
+      <attribute key="condition">One participant produces significantly more content or is repeatedly cited by others</attribute>
+      <attribute key="likely_cause">Participant has role-based authority that is distorting the debate dynamic</attribute>
+      <attribute key="action">Orchestrator prompts other participants to engage with the dominant claim from their disciplinary perspectives</attribute>
+    </rule>
+    <rule>
+      <attribute key="name">participants_talk_past_each_other</attribute>
+      <attribute key="condition">Contributions reference different aspects of the question without engaging with each other</attribute>
+      <attribute key="likely_cause">Framing did not establish shared decision criteria</attribute>
+      <attribute key="action">Orchestrator intervenes to restate decision criteria and prompt participants to align their arguments</attribute>
+    </rule>
+    <rule>
+      <attribute key="name">position_delta_stalling</attribute>
+      <attribute key="condition">Zero participants report any position delta across two consecutive middle rounds</attribute>
+      <attribute key="likely_cause">Participants are restating positions without genuinely engaging with challenges, or the debate has reached a genuine deadlock that further rounds cannot resolve</attribute>
+      <attribute key="action">Orchestrator identifies the specific crux where positions diverge and either redirects the debate toward that crux or terminates with an exhaustion flag and a clear statement of where deadlock lies</attribute>
+    </rule>
+    <rule>
+      <attribute key="name">framing_asymmetry_unexamined</attribute>
+      <attribute key="condition">Burden-of-proof analysis was not produced or was produced but the user was not offered the reversed framing</attribute>
+      <attribute key="likely_cause">Orchestrator proceeded to debate without completing the framing symmetry check</attribute>
+      <attribute key="action">Pause debate, return to framing phase, produce the burden-of-proof analysis and reversed phrasing before continuing</attribute>
+    </rule>
+    <rule>
+      <attribute key="name">panel_cannot_reach_recommendation</attribute>
+      <attribute key="condition">Panel produces a deliberation but cannot agree on a recommendation</attribute>
+      <attribute key="likely_cause">Debate surfaced genuine value disagreements that deliberation alone cannot resolve</attribute>
+      <attribute key="action">Panel produces a split recommendation stating both positions and the underlying value difference; escalates to human for value judgment</attribute>
+    </rule>
+  </failure_modes>
+</grader_module>
