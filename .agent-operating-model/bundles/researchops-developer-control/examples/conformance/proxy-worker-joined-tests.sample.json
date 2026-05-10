@@ -1,0 +1,69 @@
+{
+  "suite": "joined-proxy-worker-contracts",
+  "purpose": "Validate the Cloudflare Pages proxy and Worker boundary together for canonical ResearchOps routes.",
+  "proxy_entrypoint": "functions/api/[[path]].js",
+  "worker_entrypoint": "infra/cloudflare/src/worker.js",
+  "worker_router": "infra/cloudflare/src/core/router.js",
+  "tests": [
+    {
+      "id": "proxy-worker-ping",
+      "method": "GET",
+      "path": "/api/_diag/ping",
+      "expected_status": 200,
+      "expected_fixture": "examples/diagnostics/ping.response.json",
+      "assertions": [
+        "proxy preserves /api tail path",
+        "worker returns canonical ping envelope",
+        "response includes merged CORS headers"
+      ]
+    },
+    {
+      "id": "proxy-worker-health",
+      "method": "GET",
+      "path": "/api/health",
+      "expected_status": 200,
+      "expected_fixture": "examples/diagnostics/health.response.json",
+      "assertions": [
+        "proxy forwards request unchanged",
+        "worker health route remains reachable through Pages",
+        "response remains application/json"
+      ]
+    },
+    {
+      "id": "proxy-worker-guides-list",
+      "method": "GET",
+      "path": "/api/guides",
+      "query_example": "?study=std_demo_001",
+      "expected_status": [
+        200,
+        400,
+        503
+      ],
+      "expected_fixture": "examples/guides/list.response.json",
+      "assertions": [
+        "query string survives the proxy boundary",
+        "guides list route shape remains stable when available",
+        "503 is treated as bounded conditional unavailability rather than route absence"
+      ]
+    },
+    {
+      "id": "proxy-worker-guides-create",
+      "method": "POST",
+      "path": "/api/guides",
+      "request_fixture": "examples/guides/create.request.json",
+      "expected_status": [
+        200,
+        201,
+        400,
+        422,
+        503
+      ],
+      "expected_fixture": "examples/guides/create.response.json",
+      "assertions": [
+        "request body is forwarded across the Pages proxy",
+        "worker mutate route receives JSON body intact",
+        "success shape remains canonical when the route is available"
+      ]
+    }
+  ]
+}

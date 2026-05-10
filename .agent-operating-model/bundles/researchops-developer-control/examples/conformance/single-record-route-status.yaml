@@ -1,0 +1,47 @@
+single_record_routes:
+  - route: GET /api/guides/{guideId}
+    status: implemented-conditional-verified
+    fixture: examples/guides/get.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/guides.js
+  - route: GET /api/sessions/{sessionId}
+    status: implemented-conditional-verified
+    fixture: examples/sessions/get.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/sessions.js
+  - route: GET /api/journal-entries/{entryId}
+    status: implemented-conditional-verified
+    fixture: examples/journals/get.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/journals.js
+  - route: GET /api/projects/{projectId}
+    status: extension-absent-verified
+    fixture: examples/conformance/route-absent.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+  - route: GET /api/studies/{studyId}
+    status: extension-absent-verified
+    fixture: examples/conformance/route-absent.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+  - route: GET /api/participants/{participantId}
+    status: extension-absent-verified
+    fixture: examples/conformance/route-absent.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/participants.js
+  - route: PATCH /api/participants/{participantId}
+    status: extension-absent-verified
+    fixture: examples/conformance/route-absent.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/participants.js
+  - route: DELETE /api/participants/{participantId}
+    status: extension-absent-verified
+    fixture: examples/conformance/route-absent.response.json
+    evidence_paths:
+      - infra/cloudflare/src/core/router.js
+      - infra/cloudflare/src/service/participants.js

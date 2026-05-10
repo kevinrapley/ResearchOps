@@ -1,0 +1,49 @@
+{
+  "tests": [
+    {
+      "id": "projects-get-one-absent",
+      "method": "GET",
+      "path": "/api/projects/{projectId}",
+      "verificationKind": "absence",
+      "expectedStatus": [
+        404,
+        405,
+        501
+      ],
+      "forbiddenInFiles": [
+        "infra/cloudflare/src/core/router.js"
+      ],
+      "fixture": "examples/conformance/route-absent.response.json"
+    },
+    {
+      "id": "studies-get-one-absent",
+      "method": "GET",
+      "path": "/api/studies/{studyId}",
+      "verificationKind": "absence",
+      "expectedStatus": [
+        404,
+        405,
+        501
+      ],
+      "forbiddenInFiles": [
+        "infra/cloudflare/src/core/router.js"
+      ],
+      "fixture": "examples/conformance/route-absent.response.json"
+    },
+    {
+      "id": "participants-single-record-absent",
+      "method": "GET",
+      "path": "/api/participants/{participantId}",
+      "verificationKind": "absence",
+      "expectedStatus": [
+        404,
+        405,
+        501
+      ],
+      "forbiddenInFiles": [
+        "infra/cloudflare/src/core/router.js"
+      ],
+      "fixture": "examples/conformance/route-absent.response.json"
+    }
+  ]
+}
