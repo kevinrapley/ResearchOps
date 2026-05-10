@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://researchops.local/schemas/researchops-developer-control-variables.schema.json",
+  "title": "ResearchOps Developer Control Variables",
+  "type": "object",
+  "properties": {
+    "repository": {"type": "string", "default": "kevinrapley/ResearchOps"},
+    "branch": {"type": "string"},
+    "mode": {"type": "string"},
+    "roles": {"type": "array", "items": {"type": "string"}},
+    "service_phase": {"type": "string"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "unknown"]},
+    "requires_visual_walkthrough": {"type": "boolean"},
+    "requires_route_contract_update": {"type": "boolean"},
+    "requires_ethics_review": {"type": "boolean"}
+  }
+}

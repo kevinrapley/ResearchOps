@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="service-module-contract-template" version="1.13.0">
+  <sections>module, route, dependencies, inputs, outputs, errors, fixtures, tests</sections>
+</template>

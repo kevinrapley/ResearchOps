@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="gap-register-template" version="1.13.0">
+  <sections>id, title, status, owner, evidence, target, review date</sections>
+</template>
