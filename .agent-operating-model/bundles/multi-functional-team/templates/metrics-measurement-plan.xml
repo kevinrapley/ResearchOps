@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="metrics-measurement-plan" version="1.0.0">
+  <title>Metrics Measurement Plan</title>
+  <overview>
+    <statement>@start-team</statement>
+  </overview>
+  <template_block name="goal" title="Goal">
+    <statement>Define a metrics and measurement plan that explains how outcomes will be assessed, without asserting success, targets, or performance conclusions.</statement>
+  </template_block>
+  <template_block name="context" title="Context">
+    <statement>We want to understand:</statement>
+    <checklist ordered="false" purpose="we-want-to-understand">
+      <entry level="0">what signals matter</entry>
+      <entry level="0">how we would know if things were improving</entry>
+      <entry level="0">what data is missing or unreliable</entry>
+    </checklist>
+    <statement>This is not a performance report.</statement>
+  </template_block>
+  <template_block name="source" title="Source">
+    <statement>Use only what I provide. If baselines, targets, or data sources are unknown, record them as Unknown.</statement>
+  </template_block>
+  <template_block name="expectations" title="Expectations">
+    <checklist ordered="false">
+      <entry level="0">Wizard steps only; do not merge steps.</entry>
+      <entry level="0">No success claims or targets.</entry>
+      <entry level="0">No optimisation or delivery instruction language.</entry>
+    </checklist>
+  </template_block>
+  <template_block name="step-1-outcomes-to-observe" title="Step 1 – Outcomes to observe">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What outcomes matter?</entry>
+      <entry level="0">For whom?</entry>
+    </checklist>
+    <statement>Output: Outcome list (no measures yet).</statement>
+  </template_block>
+  <template_block name="step-2-candidate-signals" title="Step 2 – Candidate signals">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What signals might indicate movement toward each outcome?</entry>
+      <entry level="0">Are these direct or proxy signals?</entry>
+    </checklist>
+    <statement>Output: Signal list per outcome.</statement>
+  </template_block>
+  <template_block name="step-3-data-sources-and-quality" title="Step 3 – Data sources and quality">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What data sources exist?</entry>
+      <entry level="0">Coverage, frequency, known gaps?</entry>
+    </checklist>
+    <statement>Output: Data source inventory with limitations.</statement>
+  </template_block>
+  <template_block name="step-4-baselines-and-unknowns" title="Step 4 – Baselines and unknowns">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What does “normal” look like?</entry>
+      <entry level="0">What is unknown or unavailable?</entry>
+    </checklist>
+    <statement>Output: Baseline statements or Unknowns.</statement>
+  </template_block>
+  <template_block name="step-5-measurement-plan" title="Step 5 – Measurement plan">
+    <statement>Produce:</statement>
+    <checklist ordered="false" purpose="produce">
+      <entry level="0">Outcomes → signals mapping</entry>
+      <entry level="0">Data sources + limitations</entry>
+      <entry level="0">Known Unknowns</entry>
+      <entry level="0">Open measurement questions</entry>
+    </checklist>
+    <statement>Begin at Step 1.</statement>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>measurement_integrity: description: &gt; Measurement plans must define how learning would occur, not claim performance or success. rule: Reject outputs that assert improvement or achievement.</statement>
+    <statement>no_success_or_target_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-success-or-target-language-disallowed-terms">
+      <entry level="3">successful</entry>
+      <entry level="3">achieved</entry>
+      <entry level="3">met target</entry>
+      <entry level="3">exceeded</entry>
+      <entry level="3">KPI achieved</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_optimisation_or_instruction_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-optimisation-or-instruction-language-disallowed-terms">
+      <entry level="3">optimise</entry>
+      <entry level="3">increase</entry>
+      <entry level="3">reduce</entry>
+      <entry level="3">drive</entry>
+      <entry level="3">improve by</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>outcomes_required: description: Step 1 must explicitly list Outcomes. severity: error</statement>
+    <statement>signals_must_map_to_outcomes: description: Each signal must map to an outcome. severity: error</statement>
+    <statement>limitations_required: description: Data quality limitations must be recorded where data is incomplete. severity: error</statement>
+    <statement>unknowns_required: description: Unknown baselines or unavailable data must be explicitly marked Unknown. severity: error</statement>
+    <statement>tone: allowed: [neutral, analytical, exploratory, explicit about uncertainty] disallowed: [persuasive, performance-driven, directive] severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

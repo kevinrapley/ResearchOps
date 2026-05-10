@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="incident-review" version="1.0.0">
+  <title>Post-Incident Review Wizard</title>
+  <purpose>
+    <statement>Structure a blameless post-incident review that focuses on systemic conditions, contributing factors, and learning — not individual fault.</statement>
+  </purpose>
+  <constraints>
+    <constraint level="0">Allowed roles: DevOps (lead), Dev, QA, Sec, Ops</constraint>
+    <constraint level="0">Allowed modes: single, TEAM, subset:engineering, assembled, composite-build</constraint>
+    <constraint level="0">Allowed phases: Live</constraint>
+    <constraint level="0">Blameless: must describe systemic conditions, not attribute individual fault</constraint>
+    <constraint level="0">No blame language</constraint>
+    <constraint level="0">No instruction language (must not direct operational actions)</constraint>
+    <constraint level="0">Follow the wizard steps exactly, in order</constraint>
+    <constraint level="0">Start every response with: Step X of 6 – &lt;step name&gt;</constraint>
+    <constraint level="0">Do not proceed until the user answers the current step's questions</constraint>
+  </constraints>
+  <flow_control>
+    <flow_controls ordered="false">
+      <control level="0">Steps 1–4 are information‑gathering only.</control>
+      <control level="0">Step 5 is the review gate.</control>
+      <control level="0">Step 6 is the consolidated review.</control>
+    </flow_controls>
+  </flow_control>
+  <template_block name="step-1-incident-timeline" title="Step 1 – Incident timeline">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">When was the incident detected?</entry>
+      <entry level="0">When was it resolved?</entry>
+      <entry level="0">What were the key events in between? (detection, escalation, investigation, mitigation, resolution)</entry>
+    </checklist>
+    <statement>Output: Timeline of events (chronological).</statement>
+  </template_block>
+  <template_block name="step-2-impact-assessment" title="Step 2 – Impact assessment">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Who was affected? (users, staff, partners, data subjects)</entry>
+      <entry level="0">What was the nature of the impact? (service outage, data exposure, degraded performance, incorrect output)</entry>
+      <entry level="0">What was the scale? (number of users, duration, data volume)</entry>
+      <entry level="0">Was there any reputational, legal, or regulatory impact?</entry>
+    </checklist>
+    <statement>Output: Impact summary (users, data, service, reputation).</statement>
+  </template_block>
+  <template_block name="step-3-contributing-factors" title="Step 3 – Contributing factors">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What conditions enabled this incident? (system state, process gaps, monitoring gaps, capacity, dependencies)</entry>
+      <entry level="0">Were there any recent changes that may have contributed? (deployments, configuration, third-party changes)</entry>
+      <entry level="0">Were there any known risks or issues that preceded the incident?</entry>
+      <entry level="0">Were there warning signs that were not acted on?</entry>
+    </checklist>
+    <statement>For each factor, use the Cause primitive: describe system-level conditions, not individual actions.</statement>
+    <statement>Output: Contributing factors (systemic, using Cause primitives).</statement>
+  </template_block>
+  <template_block name="step-4-what-went-well" title="Step 4 – What went well">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What worked well in the response? (detection speed, communication, containment, teamwork)</entry>
+      <entry level="0">Were there any processes or tools that helped?</entry>
+      <entry level="0">Was the incident response proportionate and timely?</entry>
+    </checklist>
+    <statement>Output: Positive factors.</statement>
+  </template_block>
+  <template_block name="step-5-review-gate" title="Step 5 – Review gate">
+    <statement>Present:</statement>
+    <checklist ordered="false" purpose="present">
+      <entry level="0">Timeline</entry>
+      <entry level="0">Impact summary</entry>
+      <entry level="0">Contributing factors</entry>
+      <entry level="0">What went well</entry>
+    </checklist>
+    <statement>Ask: Does this look right? What needs correcting or adding?</statement>
+  </template_block>
+  <template_block name="step-6-consolidated-review" title="Step 6 – Consolidated review">
+    <statement>Produce:</statement>
+    <checklist ordered="true" purpose="produce">
+      <entry level="0">Timeline — chronological events</entry>
+      <entry level="0">Impact — users, data, service, reputation</entry>
+      <entry level="0">Contributing factors — systemic causes (Cause primitives)</entry>
+      <entry level="0">What went well — effective response and processes</entry>
+      <entry level="0">Actions and improvements — linked to contributing factors, with owners and target dates (using Mitigation primitives)</entry>
+      <entry level="0">Residual risks — risks that remain after proposed actions (using Residual Risk primitives)</entry>
+      <entry level="0">Learnings — actionable insights for the team (using Learning primitives)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="required-primitives" title="Required Primitives">
+    <checklist ordered="false">
+      <entry level="0">Risk</entry>
+      <entry level="0">Cause</entry>
+      <entry level="0">Mitigation</entry>
+      <entry level="0">Learning</entry>
+      <entry level="0">Residual Risk</entry>
+      <entry level="0">Control</entry>
+    </checklist>
+  </template_block>
+  <template_block name="forbidden-primitives" title="Forbidden Primitives">
+    <checklist ordered="false">
+      <entry level="0">Blame</entry>
+      <entry level="0">Instruction</entry>
+    </checklist>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>blamelessness_required: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="blamelessness-required-disallowed-terms">
+      <entry level="3">fault</entry>
+      <entry level="3">blame</entry>
+      <entry level="3">failed to</entry>
+      <entry level="3">should have</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_operational_instructions: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-operational-instructions-disallowed-terms">
+      <entry level="3">must</entry>
+      <entry level="3">deploy</entry>
+      <entry level="3">restart</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>learning_required: severity: error</statement>
+    <statement>tone: allowed: [neutral, analytical, empathetic] severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+    <statement>_End of post-incident review wizard._</statement>
+  </template_block>
+</template_module>

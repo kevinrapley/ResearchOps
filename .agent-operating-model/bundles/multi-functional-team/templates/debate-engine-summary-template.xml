@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="debate-engine-summary-template" version="1.0.0">
+  <title>DEBATE ENGINE — Run Summary</title>
+  <template_block name="debate-engine-run-summary" title="DEBATE ENGINE — Run Summary">
+    <statement>TEMPLATE INSTRUCTIONS This file is the standalone summary produced after a debate engine run completes. It is separate from the full transcript (debate-transcript-[slug].xml) and serves two purposes:</statement>
+    <checklist ordered="true" purpose="template-instructions-this-file-is-the-standalone-summary-produced-after-a-debate-engine-run-completes-it-is-separate-from-the-full-transcript-debate-transcript-slug-md-and-serves-two-purposes">
+      <entry level="1">A readable summary for decision owners and stakeholders who need the outcome without the full record.</entry>
+      <entry level="1">A quick-reference companion to the full transcript for programme and governance use.</entry>
+    </checklist>
+    <statement>It does not replace the full transcript. The full transcript is the audit record. If this summary and the transcript conflict, the transcript governs.</statement>
+    <statement>Complete every section. Do not omit sections for brevity.</statement>
+    <statement>Date: [YYYY-MM-DD] Service / programme: [Service name and programme name] Question debated: [Restate the exact question from the transcript Phase 1] Full transcript reference: [Filename of the full transcript, e.g., debate-transcript-ai-benefits-interface.xml] Decision owner (SRO): [Name and role — or "TBC" if not yet confirmed]</statement>
+  </template_block>
+  <template_block name="configuration" title="Configuration">
+    <statement>Participants: [LIST abbreviations and role names, e.g., UR (User Researcher), BA (Business Analyst) ...] Round count: [N] rounds Complexity mean: [X.XX] | Standard deviation: [X.XX] | Distinct opening positions: [N] Stress-test triggered: [Yes — [N] Round 1 positions converged / No — convergence did not occur or Round 1 had fewer than 3 distinct positions] Early termination: [State trigger if applicable, or "No — full round count completed"]</statement>
+  </template_block>
+  <template_block name="how-the-debate-moved" title="How the Debate Moved">
+    <statement>This section is a narrative account of the debate's trajectory. It is not a transcript summary. It should read as an analytical account of what changed minds and why, not as a list of who said what. Structure: opening landscape → key exchanges → convergence or deadlock → stress-test findings (if any). Aim for 300–500 words.</statement>
+  </template_block>
+  <template_block name="opening-landscape" title="Opening Landscape">
+    <statement>[DESCRIBE the range of Round 1 positions. Name the distinct positions and which participants held them. Identify any positions that were surprising, underrepresented, or significantly at odds with the others.]</statement>
+  </template_block>
+  <template_block name="key-exchanges" title="Key Exchanges">
+    <statement>[IDENTIFY 2–4 exchanges that most significantly shifted the debate. For each:</statement>
+    <checklist ordered="false" purpose="identify-2-4-exchanges-that-most-significantly-shifted-the-debate-for-each">
+      <entry level="1">Name the participants involved</entry>
+      <entry level="1">State what the challenge or argument was</entry>
+      <entry level="1">State what moved as a result</entry>
+      <entry level="1">Explain why this was consequential — what would the debate have missed if this exchange had not happened?]</entry>
+    </checklist>
+  </template_block>
+  <template_block name="convergence-or-deadlock" title="Convergence or Deadlock">
+    <statement>[DESCRIBE the state of the debate when it closed. If convergence: state what participants converged on, how many positions collapsed into it, and whether any participants held out. If deadlock: state the crux and who held each side.]</statement>
+  </template_block>
+  <template_block name="stress-test-findings-if-applicable" title="Stress-Test Findings (if applicable)">
+    <statement>[If a stress-test was run: SUMMARISE what the two adversarial contributions argued, what evidence they identified as falsifying the consensus, and which user population they named as most disadvantaged. Assess whether these arguments changed anything for the panel — and if not, explain why.]</statement>
+  </template_block>
+  <template_block name="the-recommendation" title="The Recommendation">
+    <statement>State the panel's recommendation and ranking clearly. This section must be usable by a decision owner who has not read the full transcript. Do not use jargon without definition. Do not assume familiarity with the debate participants' arguments.</statement>
+  </template_block>
+  <template_block name="viable-options" title="Viable Options">
+    <statement>[LIST all options assessed by the panel. State their viability status clearly.]</statement>
+    <checklist ordered="false">
+      <entry level="0">Option [A] — [Name]: [Viable / Not viable — one sentence stating why]</entry>
+      <entry level="0">Option [B] — [Name]: [Viable / Not viable — one sentence. If viable with conditions, list the conditions.]</entry>
+      <entry level="0">Option [C] — [Name] (if applicable): [Viable / Not viable]</entry>
+    </checklist>
+  </template_block>
+  <template_block name="ranked-recommendation" title="Ranked Recommendation">
+    <statement>1. [RECOMMENDED OPTION] — [recommended for / recommended as, e.g., "recommended for alpha development and testing"]</statement>
+    <statement>[ONE PARAGRAPH explaining the recommendation. State what criteria it best addresses. State what the evidence base is. State the strongest argument against it and why the recommendation holds despite that argument. Do not exceed 200 words.]</statement>
+    <statement>2. [SECOND OPTION] — [e.g., "viable fallback and current default"]</statement>
+    <statement>[ONE PARAGRAPH on the second ranking. State when or under what conditions this option should be preferred.]</statement>
+    <statement>[Continue for all viable options]</statement>
+  </template_block>
+  <template_block name="key-conditions-on-the-recommendation" title="Key Conditions on the Recommendation">
+    <statement>List the specific conditions attached to the recommendation. These are non-optional. If a condition is not met, the recommendation changes. State what it changes to.</statement>
+    <mapping_table>
+      <columns>
+        <column>Condition</column>
+        <column>Type</column>
+        <column>If not met</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Condition">[CONDITION — be specific, e.g., "DPIA completed before first participant sessions"]</cell>
+          <cell column="Type">[Pre-alpha gate / Alpha exit gate / Beta deployment gate]</cell>
+          <cell column="If not met">[STATE what the team should do if this condition cannot be met — e.g., "Revert to Option A until condition is satisfied"]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Repeat for all conditions]</statement>
+  </template_block>
+  <template_block name="critical-failure-modes" title="Critical Failure Modes">
+    <statement>Taken from Panel Section 3. State the 2–3 most serious failure modes for the recommended option. This section must be honest — the panel is arguing against its own recommendation here. Do not soften or omit failure modes because they are uncomfortable.</statement>
+    <mapping_table>
+      <columns>
+        <column>Failure mode</column>
+        <column>Mechanism</column>
+        <column>Detection signal</column>
+        <column>Population most harmed</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Failure mode">[NAME]</cell>
+          <cell column="Mechanism">[One sentence: what goes wrong and how]</cell>
+          <cell column="Detection signal">[One sentence: what observable signal indicates this is happening]</cell>
+          <cell column="Population most harmed">[Name the user group]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Repeat for critical failure modes — minimum 2]</statement>
+    <statement>The user population worst served if the recommendation fails: [NAME and describe the population. State the mechanism of harm. Connect to the stress-test finding if one was run.]</statement>
+  </template_block>
+  <template_block name="escalations-to-the-sro" title="Escalations to the SRO">
+    <statement>Items requiring active human decision. The panel recommends; the SRO decides. Each escalation must state what the SRO needs to decide, by when, and what the consequence of inaction is.</statement>
+    <mapping_table>
+      <columns>
+        <column>#</column>
+        <column>Category</column>
+        <column>Issue</column>
+        <column>Decision required</column>
+        <column>By when</column>
+        <column>Consequence of inaction</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="#">1</cell>
+          <cell column="Category">[GOVERNANCE / LEGAL / RESOURCING / OTHER]</cell>
+          <cell column="Issue">[One sentence stating the issue]</cell>
+          <cell column="Decision required">[What the SRO must actively decide or confirm]</cell>
+          <cell column="By when">[Before alpha / Before beta / Before deployment / By [date]]</cell>
+          <cell column="Consequence of inaction">[What happens if this is not resolved — state the specific risk or the fallback position]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Add rows as needed]</statement>
+  </template_block>
+  <template_block name="flags-for-awareness" title="Flags for Awareness">
+    <statement>Items the SRO should be aware of but that do not require an active decision right now.</statement>
+    <mapping_table>
+      <columns>
+        <column>Flag</column>
+        <column>Category</column>
+        <column>Notes</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Flag">[DESCRIPTION]</cell>
+          <cell column="Category">[SECURITY / ETHICS / POLICY / QA / USER NEED]</cell>
+          <cell column="Notes">[One sentence on what the team should monitor or address]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Add rows as needed]</statement>
+  </template_block>
+  <template_block name="absent-voices-material-gaps" title="Absent Voices — Material Gaps">
+    <statement>Roles not in the debate whose absence affects the recommendation's completeness.</statement>
+    <mapping_table>
+      <columns>
+        <column>Absent role</column>
+        <column>Why material</column>
+        <column>Required action</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Absent role">[Role name]</cell>
+          <cell column="Why material">[One sentence: what this role would have contributed that was not covered]</cell>
+          <cell column="Required action">[Specific action — e.g., "Include in pre-alpha sprint team" or "Legal Specialist to review before alpha"]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Add rows as needed. If no material gaps, state "No material absent-voice gaps identified."]</statement>
+  </template_block>
+  <template_block name="linting-summary" title="Linting Summary">
+    <mapping_table>
+      <columns>
+        <column>Category</column>
+        <column>Status</column>
+        <column>Action required before recommendation is finalised</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Category">Legal</cell>
+          <cell column="Status">[✅ PASS / ⚠️ FLAG / 🚫 BLOCK]</cell>
+          <cell column="Action required before recommendation is finalised">[State action or "None"]</cell>
+        </row>
+        <row>
+          <cell column="Category">Security</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">Privacy</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">Accessibility</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">Ethics</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">Policy</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">QA</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+        <row>
+          <cell column="Category">User Need</cell>
+          <cell column="Status">[...]</cell>
+          <cell column="Action required before recommendation is finalised">[...]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+  <template_block name="conditions-for-reconsideration" title="Conditions for Reconsideration">
+    <statement>Conditions that would shift the recommendation:</statement>
+    <statement>[LIST the specific evidence, findings, or events from Panel Section 4 that would cause the panel to recommend differently. Be specific enough that the SRO can monitor for these conditions during delivery.]</statement>
+  </template_block>
+  <template_block name="sro-decision-record" title="SRO Decision Record">
+    <statement>Completed by the SRO after this summary and the full transcript have been reviewed. This section is the decision record. It must not be left blank.</statement>
+    <statement>SRO name and role: [NAME, ROLE] Decision date: [YYYY-MM-DD] Decision: [ACCEPT RECOMMENDATION / ACCEPT WITH MODIFICATIONS — state modifications / REJECT — state reason and alternative] Rationale: [SRO's reasoning for the decision. If accepting the recommendation, state that the conditions are understood and owned. If modifying or rejecting, explain the basis.] Conditions ownership: [For each condition in the recommendation, name who is responsible for meeting it and by when.] ATRS record updated: [Yes — [date] / Not applicable — see ATRS note in full transcript]</statement>
+    <statement>This summary is not a decision. The SRO decision record above constitutes the decision. Full transcript reference: [FILENAME]. Retain both documents for the same period as the decision (minimum 6 years).</statement>
+  </template_block>
+</template_module>

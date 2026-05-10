@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="live-support-escalation-model" version="1.0.0">
+  <title>Live Support Escalation Model</title>
+  <purpose>
+    <statement>Describe how live issues are surfaced, triaged, and escalated so that people know where concerns go and who is involved.</statement>
+    <statement>This document:</statement>
+    <checklist ordered="false" purpose="this-document">
+      <entry level="0">explains escalation paths and thresholds</entry>
+      <entry level="0">clarifies interfaces between teams</entry>
+      <entry level="0">supports safe and proportionate response</entry>
+    </checklist>
+    <statement>It does not:</statement>
+    <checklist ordered="false" purpose="it-does-not">
+      <entry level="0">define how to fix issues</entry>
+      <entry level="0">set service levels or targets</entry>
+      <entry level="0">evaluate performance</entry>
+      <entry level="0">assign blame or fault</entry>
+    </checklist>
+  </purpose>
+  <template_block name="scope" title="Scope">
+    <statement>This model applies to:</statement>
+    <checklist ordered="false" purpose="this-model-applies-to">
+      <entry level="0">live service operation</entry>
+      <entry level="0">incidents, degradation, and user-impacting issues</entry>
+      <entry level="0">concerns raised by staff, users, or partners</entry>
+    </checklist>
+    <statement>It should be reviewed when:</statement>
+    <checklist ordered="false" purpose="it-should-be-reviewed-when">
+      <entry level="0">ownership changes</entry>
+      <entry level="0">support arrangements change</entry>
+      <entry level="0">escalation paths are unclear or contested</entry>
+    </checklist>
+  </template_block>
+  <template_block name="what-counts-as-a-live-issue" title="What counts as a live issue">
+    <statement>Describe the types of situations that may require attention.</statement>
+    <statement>Examples (describe, do not prescribe):</statement>
+    <checklist ordered="false" purpose="examples-describe-do-not-prescribe">
+      <entry level="0">service unavailable or degraded</entry>
+      <entry level="0">incorrect or harmful outputs</entry>
+      <entry level="0">accessibility barriers</entry>
+      <entry level="0">data protection or security concerns</entry>
+      <entry level="0">sustained increase in user contact or complaints</entry>
+    </checklist>
+    <statement>Record uncertainty explicitly if thresholds are unclear.</statement>
+  </template_block>
+  <template_block name="signals-and-detection" title="Signals and detection">
+    <statement>Describe how issues become visible, without mandating tools or actions.</statement>
+    <checklist ordered="false">
+      <entry level="0">User‑reported signals:</entry>
+      <entry level="0">Staff‑reported signals:</entry>
+      <entry level="0">Automated or monitoring signals (if any):</entry>
+      <entry level="0">External signals (partners, media, regulators):</entry>
+    </checklist>
+    <statement>Notes:</statement>
+    <checklist ordered="false" purpose="notes">
+      <entry level="0">Absence of a signal does not imply absence of an issue.</entry>
+      <entry level="0">Signal reliability and coverage should be stated if known.</entry>
+    </checklist>
+  </template_block>
+  <template_block name="triage-and-initial-handling" title="Triage and initial handling">
+    <statement>Describe how issues are initially handled, not how they are resolved.</statement>
+    <checklist ordered="false">
+      <entry level="0">Who receives the signal first:</entry>
+      <entry level="0">How issues are categorised (if at all):</entry>
+      <entry level="0">What information is typically captured:</entry>
+      <entry level="0">Known limitations or ambiguities in triage:</entry>
+    </checklist>
+    <statement>Do not include procedural instructions.</statement>
+  </template_block>
+  <template_block name="operational-escalation" title="Operational escalation">
+    <statement>Describe when and how issues are escalated within operations.</statement>
+    <checklist ordered="false">
+      <entry level="0">Typical escalation triggers:</entry>
+      <entry level="0">Escalation route (role or team, not individuals):</entry>
+      <entry level="0">Information expected during escalation:</entry>
+      <entry level="0">Known delays or constraints:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="governance-escalation" title="Governance escalation">
+    <statement>Describe when issues move beyond operational handling.</statement>
+    <checklist ordered="false">
+      <entry level="0">Governance escalation triggers:</entry>
+      <entry level="0">Forum, role, or function involved:</entry>
+      <entry level="0">Decisions that may be taken at this level:</entry>
+      <entry level="0">Decisions explicitly not taken at this level:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="interfaces-with-other-teams-or-organisations" title="Interfaces with other teams or organisations">
+    <statement>Describe boundaries and handoffs, not responsibilities for outcomes.</statement>
+    <checklist ordered="false">
+      <entry level="0">Other internal teams involved:</entry>
+      <entry level="0">External suppliers or partners:</entry>
+      <entry level="0">Shared or ambiguous ownership areas:</entry>
+      <entry level="0">Known friction points or uncertainty:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="out-of-hours-and-continuity-considerations" title="Out‑of‑hours and continuity considerations">
+    <statement>Describe what changes outside normal working patterns, if applicable.</statement>
+    <checklist ordered="false">
+      <entry level="0">Differences in escalation routes:</entry>
+      <entry level="0">Reduced coverage or delayed response expectations:</entry>
+      <entry level="0">Known risks introduced by out‑of‑hours arrangements:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="known-gaps-and-uncertainties" title="Known gaps and uncertainties">
+    <statement>Explicitly record:</statement>
+    <checklist ordered="false" purpose="explicitly-record">
+      <entry level="0">unclear escalation thresholds</entry>
+      <entry level="0">undocumented handoffs</entry>
+      <entry level="0">reliance on informal knowledge</entry>
+      <entry level="0">upcoming changes not yet reflected</entry>
+    </checklist>
+  </template_block>
+  <template_block name="review-history" title="Review history">
+    <mapping_table>
+      <columns>
+        <column>Date</column>
+        <column>Change</column>
+        <column>Reason</column>
+        <column>Author</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Date"/>
+          <cell column="Change"/>
+          <cell column="Reason"/>
+          <cell column="Author"/>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>escalation_model_integrity: description: &gt; Live support and escalation models must describe how issues move, not how they are fixed, nor who is at fault. rule: Reject outputs that imply solutions, performance judgement, or blame.</statement>
+    <statement>no_operational_instruction_language: description: Must not include step-by-step instructions or commands. disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-operational-instruction-language-description-must-not-include-step-by-step-instructions-or-commands-disallowed-terms">
+      <entry level="3">do this</entry>
+      <entry level="3">must</entry>
+      <entry level="3">immediately fix</entry>
+      <entry level="3">restart</entry>
+      <entry level="3">deploy</entry>
+      <entry level="3">roll back</entry>
+      <entry level="3">run</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_sla_or_target_language: description: Must not define SLAs, SLOs, targets, or response times unless explicitly provided. disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-sla-or-target-language-description-must-not-define-slas-slos-targets-or-response-times-unless-explicitly-provided-disallowed-terms">
+      <entry level="3">within</entry>
+      <entry level="3">SLA</entry>
+      <entry level="3">SLO</entry>
+      <entry level="3">target time</entry>
+      <entry level="3">response time</entry>
+      <entry level="3">resolution time</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_blame_or_fault_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-blame-or-fault-language-disallowed-terms">
+      <entry level="3">at fault</entry>
+      <entry level="3">responsible for failure</entry>
+      <entry level="3">caused by</entry>
+      <entry level="3">failed to</entry>
+      <entry level="3">negligence</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>escalation_paths_required: description: Must describe at least one operational and one governance escalation path, or explicitly state Unknown. severity: error</statement>
+    <statement>ambiguity_and_uncertainty_required: description: Areas of unclear thresholds, ownership, or handoff must be explicitly recorded. severity: error</statement>
+    <statement>role_based_descriptions_only: description: Escalation paths must reference roles or teams, not named individuals. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">descriptive</entry>
+      <entry level="3">operationally-aware</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">directive</entry>
+      <entry level="3">reassuring</entry>
+      <entry level="3">accusatory</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

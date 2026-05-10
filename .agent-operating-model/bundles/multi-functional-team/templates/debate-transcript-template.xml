@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="debate-transcript-template" version="1.0.0">
+  <title>DEBATE ENGINE — Full Transcript</title>
+  <template_block name="debate-engine-full-transcript" title="DEBATE ENGINE — Full Transcript">
+    <statement>TEMPLATE INSTRUCTIONS This file is the audit record for a single debate engine run. Complete every section in order. Do not skip sections. Do not combine phases. Retain the completed record for the same period as the decision it informs (minimum 6 years).</statement>
+    <statement>Placeholder notation: [FIELD] — replace with the specific value [INSTRUCTION] — follow the instruction; delete the instruction text when done &lt;&lt;N&gt;&gt; — repeat this block N times as indicated</statement>
+    <statement>Classification: OFFICIAL — FOIA disclosable. Retain for the same period as the decision it informs (minimum 6 years). Engine version: debate-engine.xml [VERSION] / debate-lint.xml [VERSION] Date: [YYYY-MM-DD] Initiated by: [Team or individual who invoked the engine] Service / programme: [Service name and programme name] ATRS note: [STATE whether this decision concerns an AI system that may influence decisions about individuals. If yes, state that a summary of this transcript and the panel recommendation belongs in the ATRS Tier 2 record before deployment. If no, state "ATRS Tier 2 record not required for this debate."]</statement>
+  </template_block>
+  <template_block name="phase-1-problem-framing" title="PHASE 1 — Problem Framing">
+    <statement>Complete all five framing artefacts before any debate content is produced. Do not begin debate rounds until the human decision owner has confirmed or adjusted the framing. Record their confirmation at the bottom of this phase.</statement>
+  </template_block>
+  <prompt_set>
+    <statement>[SINGLE-SENTENCE QUESTION with at least two defensible answers. Must not be leading. Example form: "Should [Service/team] do [Option A] or [Option B], given [context]?" The question must name the options explicitly or make them clearly inferable.]</statement>
+  </prompt_set>
+  <template_block name="burden-of-proof-analysis" title="Burden-of-Proof Analysis">
+    <statement>Standard framing (burden on the intervention): [IDENTIFY which option is the status quo or established default. State what the burden is on the other option to demonstrate. One to three sentences.]</statement>
+    <statement>Reversed framing (burden on the status quo): [REFRAME the question so the burden falls on the default option to justify itself. State what the default option would need to demonstrate to defeat the alternative. One to three sentences.]</statement>
+    <statement>Both framings are presented to the human decision owner. The debate will proceed with [STANDARD / REVERSED — choose one, with brief rationale] framing as the baseline. Participants are expected to engage with the other framing in their arguments.</statement>
+  </template_block>
+  <template_block name="decision-criteria" title="Decision Criteria">
+    <statement>List 5–9 criteria. Each criterion must be a testable question, not a value statement. Draw criteria from the task context and the question's scope boundary.</statement>
+    <checklist ordered="true">
+      <entry level="0">[Criterion name] — [One sentence describing what this criterion is testing and why it matters for this question]</entry>
+      <entry level="0">[Criterion name] — [One sentence]</entry>
+      <entry level="0">[Criterion name] — [One sentence]</entry>
+      <entry level="0">[Criterion name] — [One sentence]</entry>
+      <entry level="0">[Criterion name] — [One sentence]</entry>
+    </checklist>
+    <statement>[Add more as needed, up to 9]</statement>
+  </template_block>
+  <template_block name="scope-boundary" title="Scope Boundary">
+    <statement>In scope: [LIST what the debate is responsible for addressing. Be specific — name the options, the affected users, the decision types, the standards that apply.]</statement>
+    <statement>Out of scope: [LIST what the debate will note but not decide. Name adjacent questions that will be deferred, and where they should go (e.g., "Security architecture — flagged for Security Specialist outside this debate").]</statement>
+  </template_block>
+  <template_block name="participant-roster" title="Participant Roster">
+    <statement>4–7 participants. Each must have genuine disciplinary stake in the question. Do not include roles whose perspective can be adequately represented by another participant.</statement>
+    <mapping_table>
+      <columns>
+        <column>Role</column>
+        <column>Abbreviation</column>
+        <column>Rationale for inclusion</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Role">[Role name]</cell>
+          <cell column="Abbreviation">[Abbrev]</cell>
+          <cell column="Rationale for inclusion">[One sentence: what specific perspective or evidence does this role hold that others cannot provide?]</cell>
+        </row>
+        <row>
+          <cell column="Role">[Role name]</cell>
+          <cell column="Abbreviation">[Abbrev]</cell>
+          <cell column="Rationale for inclusion">[One sentence]</cell>
+        </row>
+        <row>
+          <cell column="Role">[Role name]</cell>
+          <cell column="Abbreviation">[Abbrev]</cell>
+          <cell column="Rationale for inclusion">[One sentence]</cell>
+        </row>
+        <row>
+          <cell column="Role">[Role name]</cell>
+          <cell column="Abbreviation">[Abbrev]</cell>
+          <cell column="Rationale for inclusion">[One sentence]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Add more rows as needed, up to 7]</statement>
+  </template_block>
+  <template_block name="framing-confirmation" title="Framing Confirmation">
+    <statement>Confirmed by: [Name or role of human decision owner] Date confirmed: [YYYY-MM-DD] Adjustments made: [LIST any changes the decision owner made to the framing above, or state "None — framing confirmed as written."]</statement>
+  </template_block>
+  <template_block name="phase-2-complexity-and-agreement-assessment" title="PHASE 2 — Complexity and Agreement Assessment">
+    <statement>Each participant provides a complexity rating (1–5) and a one-sentence tentative position. Record ratings honestly. Do not adjust to produce a predetermined round count.</statement>
+    <mapping_table>
+      <columns>
+        <column>Participant</column>
+        <column>Complexity (1–5)</column>
+        <column>Tentative position</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Participant">[Abbrev]</cell>
+          <cell column="Complexity (1–5)">[1–5]</cell>
+          <cell column="Tentative position">[One sentence stating this participant's initial lean and the primary reason]</cell>
+        </row>
+        <row>
+          <cell column="Participant">[Abbrev]</cell>
+          <cell column="Complexity (1–5)">[1–5]</cell>
+          <cell column="Tentative position">[One sentence]</cell>
+        </row>
+        <row>
+          <cell column="Participant">[Abbrev]</cell>
+          <cell column="Complexity (1–5)">[1–5]</cell>
+          <cell column="Tentative position">[One sentence]</cell>
+        </row>
+        <row>
+          <cell column="Participant">[Abbrev]</cell>
+          <cell column="Complexity (1–5)">[1–5]</cell>
+          <cell column="Tentative position">[One sentence]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Add rows for all participants]</statement>
+  </template_block>
+  <template_block name="round-count-calculation" title="Round Count Calculation">
+    <mapping_table>
+      <columns>
+        <column>Input</column>
+        <column>Value</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Input">Complexity mean</cell>
+          <cell column="Value">[SUM ÷ participant count, to 2 decimal places]</cell>
+        </row>
+        <row>
+          <cell column="Input">Standard deviation</cell>
+          <cell column="Value">[Calculate: square root of (sum of squared deviations ÷ N)]</cell>
+        </row>
+        <row>
+          <cell column="Input">Distinct positions</cell>
+          <cell column="Value">[COUNT of substantively different tentative positions — positions that differ only in emphasis count as one]</cell>
+        </row>
+        <row>
+          <cell column="Input">Participant count</cell>
+          <cell column="Value">[N]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <mapping_table>
+      <columns>
+        <column>Rule applied</column>
+        <column>Result</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Rule applied">[STATE which complexity/positions rule applies: &lt;2.5 + ≤2 positions = 3; 2.5–3.5 or 3 positions = 5; ≥3.5 + ≥4 positions = 7]</cell>
+          <cell column="Result">[Base rounds]</cell>
+        </row>
+        <row>
+          <cell column="Rule applied">[STATE whether stddev override applies: stddev &gt;1.2 → 5 rounds]</cell>
+          <cell column="Result">[Override rounds if applicable, or "No override"]</cell>
+        </row>
+        <row>
+          <cell column="Rule applied">[STATE participant count adjustment: &gt;5 → +1; &lt;4 → −1]</cell>
+          <cell column="Result">[Adjusted rounds]</cell>
+        </row>
+        <row>
+          <cell column="Rule applied">Bounds check (min 3, max 7)</cell>
+          <cell column="Result">[Final rounds after bounds]</cell>
+        </row>
+        <row>
+          <cell column="Rule applied">Final round count</cell>
+          <cell column="Result">[N]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+  <template_block name="phase-3-the-debate" title="PHASE 3 — The Debate">
+    <statement>ROUND STRUCTURE INSTRUCTIONS Opening round (Round 1): Each participant commits to a specific, contestable, consequential claim. Middle rounds (Rounds 2 through N-1): Each participant responds to at least one opposing claim, steelmans the strongest opposing argument, addresses a flaw in their own position, asks a question of a named participant, and states a position delta. Final round (Round N): Each participant restates their claim, acknowledges what moved them, states remaining disagreement, and delivers a specific recommendation.</statement>
+    <statement>Every contribution must exhibit all Ten Disciplines (see debate-engine.xml §The Ten Disciplines). Discipline failures: BLOCK failures must be corrected before the contribution enters the record. FLAG failures are noted and the contribution proceeds.</statement>
+    <statement>Position delta format (middle rounds only): "Position unchanged because [specific reason tied to a challenge, not a restatement]." "Position narrowed — I now hold [modified claim] because [argument that moved me]." "Position strengthened because [specific reason]."</statement>
+  </template_block>
+  <template_block name="participant-abbreviation-role-name" title="[PARTICIPANT ABBREVIATION — ROLE NAME]">
+    <statement>Claim: [SINGLE specific, contestable, consequential claim. One sentence. No hedging.]</statement>
+    <statement>[ARGUMENT BODY — minimum four paragraphs: Para 1: State and defend the claim with specific evidence (legislation, published research, service data, documented experience). Cite sources specifically. Mark uncertain citations "(requires verification)". Para 2: Anticipate the strongest opposing claim. State it assertively — "For users with [specific characteristic], [opposing approach] removes [specific barrier] because [specific mechanism]." Not conditionally. Para 3: Name a genuine flaw or weakness in your own position and explain why the position holds despite it. No pseudo-weaknesses. Para 4: Concrete illustration — a named service case, historical example, user research scenario, or specific hypothetical. "A user might find" fails. Name the service, the user type, the outcome.]</statement>
+    <statement>To [NAMED PARTICIPANT]: [SPECIFIC QUESTION targeting their reasoning on a specific point. Not a rhetorical question. Not a question about the person.]</statement>
+    <statement>Conclusion: [SPECIFIC, actionable takeaway from this contribution. One to two sentences. No trailing qualifications.]</statement>
+    <statement>Repeat the block above for every participant in the roster. Order is consistent across all rounds (alphabetical by abbreviation, or as listed in Phase 1). Every participant contributes exactly once per round.</statement>
+  </template_block>
+  <template_block name="participant-abbreviation-role-name" title="[PARTICIPANT ABBREVIATION — ROLE NAME]">
+    <statement>Claim: [Single claim]</statement>
+    <statement>[Argument body — four paragraphs minimum]</statement>
+    <statement>To [NAMED PARTICIPANT]: [Specific question]</statement>
+    <statement>Conclusion: [Specific, actionable takeaway]</statement>
+    <statement>[CONTINUE FOR ALL PARTICIPANTS IN ROUND 1]</statement>
+  </template_block>
+  <template_block name="round-2-cross-examination" title="ROUND 2 — Cross-Examination">
+    <statement>Each contribution must:</statement>
+    <checklist ordered="true" purpose="each-contribution-must">
+      <entry level="2">Answer the question directed to this participant in Round 1 (BLOCK — evasion is a discipline failure)</entry>
+      <entry level="2">Respond to at least one opposing claim from Round 1</entry>
+      <entry level="2">Steelman the opposing argument assertively and specifically</entry>
+      <entry level="2">Name and engage a flaw in own argument</entry>
+      <entry level="2">State a position delta at the end</entry>
+      <entry level="2">Ask a question of a named participant</entry>
+    </checklist>
+  </template_block>
+  <template_block name="participant-abbreviation-role-name" title="[PARTICIPANT ABBREVIATION — ROLE NAME]">
+    <statement>Answering [PARTICIPANT]'s question from Round 1: [RESTATE THE QUESTION]</statement>
+    <statement>[DIRECT ANSWER — this must address the specific question. If the answer is "I don't know," say so and explain the implication for the position.]</statement>
+    <statement>Claim: [Claim for this round — may be a refinement of Round 1 claim or the same claim defended against a specific challenge]</statement>
+    <statement>[Argument body — engage with at least one Round 1 opposing argument. Steelman it. Engage the flaw in own position. Concrete illustration.]</statement>
+    <statement>Position delta: [CHOOSE ONE and complete it: "Position unchanged because [specific reason tied to a challenge from Round 1, not a restatement of the Round 1 position]." "Position narrowed — I now hold [modified claim] because [specific argument from Round 1 that moved me]." "Position strengthened because [specific challenge from Round 1 that, on examination, reinforces the position and why]."]</statement>
+    <statement>To [NAMED PARTICIPANT]: [Specific question]</statement>
+    <statement>[CONTINUE FOR ALL PARTICIPANTS IN ROUND 2]</statement>
+  </template_block>
+  <template_block name="round-n-round-title" title="ROUND [N] — [ROUND TITLE]">
+    <statement>Middle rounds: use a descriptive title that reflects the debate's progression (e.g., "Deepening the Argument", "Resolving the Cruxes", "Testing the Architecture"). Final round: title is "Final Positions and Recommendations".</statement>
+    <statement>ORCHESTRATOR INTERVENTION (use if applicable) Insert an orchestrator note if:</statement>
+    <checklist ordered="false" purpose="orchestrator-intervention-use-if-applicable-insert-an-orchestrator-note-if">
+      <entry level="2">Two consecutive middle rounds have produced zero position deltas across all participants</entry>
+    </checklist>
+    <statement>(action: identify the crux or terminate with exhaustion flag)</statement>
+    <checklist ordered="false">
+      <entry level="2">More than half of contributions in a round failed a discipline</entry>
+    </checklist>
+    <statement>(action: return to framing phase)</statement>
+    <checklist ordered="false">
+      <entry level="2">Unanimous convergence is detected after Round 2 or later</entry>
+    </checklist>
+    <statement>(action: check for suspicious convergence — if Round 1 had 3+ distinct positions, do not proceed to panel; run stress-test round first)</statement>
+    <statement>Format: Orchestrator note: [State the condition detected, which rule applies, and what action is taken.]</statement>
+  </template_block>
+  <template_block name="participant-abbreviation-role-name" title="[PARTICIPANT ABBREVIATION — ROLE NAME]">
+    <statement>[Answering [PARTICIPANT]'s question from Round [N-1]: [RESTATE QUESTION] — or, if no question was directed to this participant, state "No direct question from Round [N-1]. Engaging with [PARTICIPANT]'s claim that [CLAIM]."]</statement>
+    <statement>Claim: [Claim for this round]</statement>
+    <statement>[Argument body]</statement>
+    <statement>Position delta: [Required in all middle rounds]</statement>
+    <statement>To [NAMED PARTICIPANT]: [Specific question]</statement>
+    <statement>[CONTINUE FOR ALL PARTICIPANTS IN THIS ROUND]</statement>
+  </template_block>
+  <template_block name="final-round-final-positions-and-recommendations" title="FINAL ROUND — Final Positions and Recommendations">
+    <statement>Each participant must:</statement>
+    <checklist ordered="true" purpose="each-participant-must">
+      <entry level="2">Restate their claim — this may differ from Round 1 without inconsistency challenge</entry>
+      <entry level="2">Name which opposing arguments moved them and why</entry>
+      <entry level="2">State where disagreement remains and why they hold their position despite it</entry>
+      <entry level="2">Deliver a specific recommendation — not "it depends", not a restatement of the claim</entry>
+    </checklist>
+    <statement>Position delta is not required in the final round.</statement>
+  </template_block>
+  <template_block name="participant-abbreviation-role-name" title="[PARTICIPANT ABBREVIATION — ROLE NAME]">
+    <statement>Final claim: [Restated claim — may be a refinement of earlier claims]</statement>
+    <statement>What moved me: [NAME the specific argument(s) from other participants that shifted your position, and how they shifted it. If your position is unchanged from Round 1, name the specific challenges you engaged and explain why they did not move you.]</statement>
+    <statement>Remaining disagreement: [STATE where you still disagree with other participants and why you hold your position despite their arguments.]</statement>
+    <statement>Recommendation: [SPECIFIC, actionable recommendation. Must be a concrete course of action, not a conditional hedge. Name what should happen next, who should own it, and what evidence would change it.]</statement>
+    <statement>[CONTINUE FOR ALL PARTICIPANTS IN FINAL ROUND]</statement>
+  </template_block>
+  <template_block name="stress-test-round-trigger-suspicious-convergence" title="STRESS-TEST ROUND (trigger: suspicious convergence)">
+    <statement>Required when: unanimous convergence occurs AND Round 1 had 3 or more distinct positions. Do not skip this round even if convergence feels well-earned. Assign at least two participants to argue against the consensus. These contributions are adversarial — participants are arguing a position they may not hold. Record the stress-test clearly as stress-test contributions, not as position reversals.</statement>
+    <statement>Suspicious convergence confirmed. [N] Round 1 positions converged to consensus. Mandatory stress-test round required. Participants assigned to argue against consensus: [PARTICIPANT 1], [PARTICIPANT 2].</statement>
+  </template_block>
+  <template_block name="participant-stress-test-role-arguing-against-consensus" title="[PARTICIPANT — STRESS-TEST ROLE: arguing against consensus]">
+    <statement>The strongest case for rejecting the consensus recommendation:</statement>
+    <statement>[ARTICULATE the strongest possible argument against the consensus. This must be a genuine challenge, not a straw man. Engage the specific evidence and logic of the consensus, not a caricature of it. Minimum three paragraphs.]</statement>
+    <statement>Evidence that would falsify the consensus:</statement>
+    <statement>[NAME the specific piece of evidence, finding, or event that, if it occurred, would mean the consensus recommendation was wrong. Be precise — "the research shows worse outcomes" is not enough. "The alpha research shows a correction rate on interpretation confirmations of below 5%, indicating the confirmation is a rubber stamp in practice" is enough.]</statement>
+    <statement>The user population or scenario most disadvantaged by the consensus recommendation:</statement>
+    <statement>[NAME a specific user population or scenario that the consensus either ignores, de-prioritises, or actively harms. Be specific about the mechanism of harm. This is not an abstract fairness argument — it is a concrete account of who loses if the consensus recommendation is implemented.]</statement>
+    <statement>[SECOND STRESS-TEST PARTICIPANT — same structure]</statement>
+    <statement>Stress-test round complete. Both contributions are entered in the audit record. The panel must engage with these arguments directly in Phase 5.</statement>
+  </template_block>
+  <template_block name="phase-4-transcript-summary" title="PHASE 4 — Transcript Summary">
+    <statement>The orchestrator produces this summary after the debate closes. Participants are released from argumentative roles at this point.</statement>
+  </template_block>
+  <template_block name="convergence-summary" title="Convergence Summary">
+    <statement>Consensus: [DESCRIBE the position all or most participants converged on. State it in one or two sentences. If there is no full consensus, describe the majority position and the dissenting position.]</statement>
+    <statement>Refined disagreement: [LIST any substantive disagreements that were not resolved — not positions that were merely restated, but disagreements where both positions were defended with evidence and neither was abandoned.]</statement>
+    <statement>Open questions entering the panel: [LIST the specific unanswered questions that the debate surfaced but could not resolve. These must be specific — not "more research is needed" but "the interpretation confirmation log's feasibility at PHSO audit standard has not been tested in any comparable service."]</statement>
+  </template_block>
+  <template_block name="concession-trail" title="Concession Trail">
+    <statement>Classify every position shift. Do not leave concessions unclassified. Evidence-driven: a specific argument caused the shift. Name the argument and the participant who made it. Socially-driven: the participant moved toward the majority without citing a reason. FLAG this for the panel. Unexamined: the final position differs from the opening but no exchange accounts for it. FLAG this for the panel.</statement>
+    <mapping_table>
+      <columns>
+        <column>Participant</column>
+        <column>Round 1 position</column>
+        <column>Final position</column>
+        <column>Classification</column>
+        <column>Notes</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Participant">[Abbrev]</cell>
+          <cell column="Round 1 position">[Summarise Round 1 claim in one phrase]</cell>
+          <cell column="Final position">[Summarise final position in one phrase]</cell>
+          <cell column="Classification">[Evidence-driven / Socially-driven ⚠️ / Unexamined ⚠️]</cell>
+          <cell column="Notes">[If evidence-driven: name the argument and participant. If flagged: describe the unexplained shift.]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Repeat for all participants]</statement>
+  </template_block>
+  <template_block name="phase-5-the-deliberative-panel" title="PHASE 5 — The Deliberative Panel">
+    <statement>Fixed panel composition. Seven standing roles. Cannot be altered. Panel members operate cooperatively — the question shifts from "who is right?" to "what should we do?" Panel output is a recommendation, not a decision. Human SRO retains decision authority.</statement>
+    <statement>Panel composition: Accessibility Expert, Governance, Product Management, Legal Specialist, Policy Specialist, Privacy Specialist, Security Specialist</statement>
+  </template_block>
+  <template_block name="dual-role-disclosures" title="Dual-Role Disclosures">
+    <statement>Any panel member who also participated in the debate must disclose which side they argued. The panel must engage with arguments from the side the dual-role member opposed. Note where the recommendation aligns with or diverges from the debate majority.</statement>
+    <statement>[For each panel member who also debated:]</statement>
+    <checklist ordered="false">
+      <entry level="0">[Role] debated in Phase 3, [DESCRIBE POSITION ARGUED — e.g., "arguing toward the adaptive interface model from Round 3 onwards"]. The panel must specifically engage with [OPPOSING ARGUMENTS the dual-role member did not defend in debate].</entry>
+    </checklist>
+    <statement>[If no panel members debated, state: "No dual-role disclosures required — no panel members participated in the Phase 3 debate."]</statement>
+  </template_block>
+  <template_block name="absent-voice-assessment" title="Absent-Voice Assessment">
+    <statement>List every debate participant role not on the panel. Assess whether their absence is material to the panel's deliberation. "Material" means: the panel is relying on arguments that only that role has disciplinary authority to assess, OR the panel's recommendation creates obligations that only that role can discharge.</statement>
+    <mapping_table>
+      <columns>
+        <column>Role absent from debate</column>
+        <column>Materiality</column>
+        <column>Panel action</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Role absent from debate">[Role name]</cell>
+          <cell column="Materiality">[Material / Not material — with one-sentence reason]</cell>
+          <cell column="Panel action">[If material: state what the panel will do to address the gap — e.g., "Panel will note as a pre-alpha resourcing requirement." If not material: state why the gap is adequately covered.]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Repeat for all non-panel roles]</statement>
+  </template_block>
+  <template_block name="panel-section-1-viable-options" title="Panel Section 1: Viable Options">
+    <statement>Assess each option against the three blocking criteria: Legal, Security, Privacy. An option that fails any blocking criterion is not viable. State the legal, security, and privacy position for each option explicitly. Do not combine options to produce a single hybrid that was not debated.</statement>
+    <statement>Option [A] — [NAME]</statement>
+    <statement>Legal assessment: [State whether this option raises legal concerns. Cite the specific legislation or standard. State whether the concern is blocking or manageable. If manageable, state the required mitigation.]</statement>
+    <statement>Security assessment: [Same structure]</statement>
+    <statement>Privacy assessment: [Same structure — note UK GDPR Article 22 if automated processing of personal data is involved; note Data (Use and Access) Act 2025 if applicable]</statement>
+    <statement>Status: [Viable / Not viable — Blocked on [Legal/Security/Privacy] grounds] [If not viable, state the specific reason and which criterion blocks it.]</statement>
+    <statement>Option [B] — [NAME]</statement>
+    <statement>Legal assessment: [...]</statement>
+    <statement>Security assessment: [...]</statement>
+    <statement>Privacy assessment: [...]</statement>
+    <statement>Status: [Viable / Not viable] [If viable with conditions, list the conditions explicitly.]</statement>
+    <statement>[Repeat for all options considered in the debate]</statement>
+  </template_block>
+  <template_block name="panel-section-2-ranked-recommendations" title="Panel Section 2: Ranked Recommendations">
+    <statement>Rank viable options against the decision criteria from Phase 1. Use the table to show reasoning transparently. Then state the ranking with explicit rationale.</statement>
+    <mapping_table>
+      <columns>
+        <column>Criterion</column>
+        <column>Option [A]</column>
+        <column>Option [B]</column>
+        <column>[Option C if applicable]</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Criterion">[Criterion 1]</cell>
+          <cell column="Option [A]">[Meets / Partially meets / Does not meet — one sentence]</cell>
+          <cell column="Option [B]">[Same]</cell>
+          <cell column="[Option C if applicable]">[Same]</cell>
+        </row>
+        <row>
+          <cell column="Criterion">[Criterion 2]</cell>
+          <cell column="Option [A]">[...]</cell>
+          <cell column="Option [B]">[...]</cell>
+          <cell column="[Option C if applicable]">[...]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[Continue for all criteria from Phase 1]</statement>
+    <statement>Ranking:</statement>
+    <statement>1. [RECOMMENDED OPTION] — [recommended for / recommended as]</statement>
+    <statement>Rationale: [EXPLAIN why this option ranks first against the decision criteria. Reference the criteria table above. State what the evidence base is for the recommendation — the debate transcript, the stress-test, or both. Acknowledge the strongest argument against this ranking and explain why the recommendation holds despite it.]</statement>
+    <statement>2. [SECOND OPTION] — [viable fallback / current default / conditional recommendation]</statement>
+    <statement>Rationale: [EXPLAIN the second ranking. State the conditions under which the second-ranked option would be preferred.]</statement>
+    <statement>[Continue for all viable options]</statement>
+  </template_block>
+  <template_block name="panel-section-3-failure-modes-of-the-recommended-option" title="Panel Section 3: Failure Modes of the Recommended Option">
+    <statement>This section must be written adversarially — argue against the panel's own recommendation. If the panel cannot identify genuine failure modes, that is a finding in itself (state it explicitly). Minimum four failure modes for a high-stakes service decision.</statement>
+    <statement>How could [RECOMMENDED OPTION] fail in practice?</statement>
+    <checklist ordered="true">
+      <entry level="0">[FAILURE MODE NAME] [DESCRIBE the failure mechanism in concrete terms. Name the condition that causes it, the user population it affects, and the consequence. State a detection mechanism — what observable signal would indicate this failure is occurring before it becomes irreversible.]</entry>
+    </checklist>
+    <checklist ordered="true">
+      <entry level="0">[FAILURE MODE NAME] [Same structure]</entry>
+    </checklist>
+    <checklist ordered="true">
+      <entry level="0">[FAILURE MODE NAME] [Same structure]</entry>
+    </checklist>
+    <checklist ordered="true">
+      <entry level="0">[FAILURE MODE NAME] [Same structure]</entry>
+    </checklist>
+    <statement>[Add more as warranted by the stakes of the decision]</statement>
+    <statement>Which user population is worst served by [RECOMMENDED OPTION] if it fails?</statement>
+    <statement>[NAME the specific user population. Describe the mechanism of harm. Explain why this population bears the highest cost of failure rather than another population. This should connect to the stress-test round findings if a stress-test was run.]</statement>
+    <statement>Costs [RECOMMENDED OPTION] imposes that [REJECTED OPTION(S)] would not:</statement>
+    <statement>[LIST the costs specific to the recommended option — financial, governance, delivery, timeline, risk — that would not be incurred if a rejected option were taken instead. Be honest about this list. It is not a reason to change the recommendation; it is information the SRO needs to make an informed decision.]</statement>
+  </template_block>
+  <template_block name="panel-section-4-conditions-for-reconsideration" title="Panel Section 4: Conditions for Reconsideration">
+    <statement>State the specific evidence or context that would shift the ranking. These must be specific and, where possible, falsifiable. "More research" is not specific enough.</statement>
+    <statement>Conditions that would shift the ranking toward [SECOND-RANKED OPTION]:</statement>
+    <statement>[LIST specific conditions — named evidence, findings, events, or governance outcomes — that would cause the panel to prefer the second-ranked option over the recommended option.]</statement>
+    <statement>Conditions that would shift the ranking toward [ANY REJECTED OPTION]:</statement>
+    <statement>[LIST specific conditions that would cause the panel to reconsider an option it has rejected.]</statement>
+    <statement>Conditions that would accelerate or strengthen the recommended option:</statement>
+    <statement>[LIST specific positive conditions — evidence, resources, governance — that would increase confidence in the recommended option and potentially reduce the conditions attached to it.]</statement>
+  </template_block>
+  <template_block name="panel-escalations-and-flags" title="Panel Escalations and Flags">
+    <statement>List all items that require human decision, noting that the panel recommends and the SRO decides. Format: [ESCALATION] for items requiring active SRO decision. [FLAG] for items the SRO should be aware of but that do not require an immediate decision.</statement>
+    <statement>[List all escalations and flags. Minimum: one escalation or flag per unresolved open question from Phase 4.]</statement>
+    <checklist ordered="true">
+      <entry level="0">[ESCALATION / FLAG — CATEGORY] [STATE the issue, what the SRO needs to decide or be aware of, and by when the decision is needed.]</entry>
+    </checklist>
+    <checklist ordered="true">
+      <entry level="0">[ESCALATION / FLAG — CATEGORY] [Same structure]</entry>
+    </checklist>
+    <statement>[Continue as needed]</statement>
+  </template_block>
+  <template_block name="linting-chain-results-on-panel-recommendation" title="Linting Chain Results on Panel Recommendation">
+    <statement>Run the eight linting categories in agent-lint.config.xml precedence order. Each category returns PASS, FLAG, or BLOCK. BLOCK means the recommendation cannot be finalised until the issue is resolved. FLAG returns to the panel for resolution before finalisation. Flags must be addressed — do not mark a flag as "noted" and proceed.</statement>
+    <mapping_table>
+      <columns>
+        <column>Lint category</column>
+        <column>Status</column>
+        <column>Notes</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Lint category">Legal</cell>
+          <cell column="Status">[✅ PASS / ⚠️ FLAG / 🚫 BLOCK]</cell>
+          <cell column="Notes">[If flagged or blocked: state the specific issue and the action required to resolve it.]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">Security</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">Privacy</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">Accessibility</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">Ethics</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">Policy</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">QA</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+        <row>
+          <cell column="Lint category">User Need</cell>
+          <cell column="Status">[✅ / ⚠️ / 🚫]</cell>
+          <cell column="Notes">[...]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>[State how flags are resolved — e.g., "All flags are addressed through the programme gates specified in the recommendation. The SRO must confirm that each flag is owned and being addressed before [programme stage]."]</statement>
+  </template_block>
+  <template_block name="audit-record" title="AUDIT RECORD">
+    <statement>Complete every row. Do not leave rows blank. "Not applicable" must be justified.</statement>
+    <mapping_table>
+      <columns>
+        <column>Element</column>
+        <column>Status</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Element">Framing artefacts (question, burden-of-proof, criteria, scope, roster)</cell>
+          <cell column="Status">[Complete / Incomplete — state what is missing]</cell>
+        </row>
+        <row>
+          <cell column="Element">Framing confirmation by human decision owner</cell>
+          <cell column="Status">[Complete [date] / Pending]</cell>
+        </row>
+        <row>
+          <cell column="Element">Complexity scores with calculation</cell>
+          <cell column="Status">[Complete — mean [X], stddev [Y], [N] distinct positions, [N] rounds]</cell>
+        </row>
+        <row>
+          <cell column="Element">Round count with calculation</cell>
+          <cell column="Status">[Complete — see Phase 2]</cell>
+        </row>
+        <row>
+          <cell column="Element">All contributions with Ten Disciplines compliance</cell>
+          <cell column="Status">[Complete / [N] discipline failures noted — see round records]</cell>
+        </row>
+        <row>
+          <cell column="Element">Position delta statements for all middle rounds</cell>
+          <cell column="Status">[Complete]</cell>
+        </row>
+        <row>
+          <cell column="Element">Concession trail with classification</cell>
+          <cell column="Status">[Complete — [N] evidence-driven, [N] socially-driven ⚠️, [N] unexamined ⚠️]</cell>
+        </row>
+        <row>
+          <cell column="Element">Stress-test round</cell>
+          <cell column="Status">[Complete — [PARTICIPANTS] argued against consensus / Not triggered — [state reason]]</cell>
+        </row>
+        <row>
+          <cell column="Element">Early termination trigger</cell>
+          <cell column="Status">[State which trigger applied, or "No early termination — full round count completed"]</cell>
+        </row>
+        <row>
+          <cell column="Element">Full debate transcript</cell>
+          <cell column="Status">This document</cell>
+        </row>
+        <row>
+          <cell column="Element">Panel deliberation</cell>
+          <cell column="Status">[Complete]</cell>
+        </row>
+        <row>
+          <cell column="Element">Dual-role disclosures</cell>
+          <cell column="Status">[Complete — [N] disclosures / Not required — no panel members debated]</cell>
+        </row>
+        <row>
+          <cell column="Element">Absent-voice assessment</cell>
+          <cell column="Status">[Complete — [N] roles assessed]</cell>
+        </row>
+        <row>
+          <cell column="Element">Panel recommendation including failure modes</cell>
+          <cell column="Status">[Complete]</cell>
+        </row>
+        <row>
+          <cell column="Element">Linting chain results</cell>
+          <cell column="Status">[Complete — [N] flags raised]</cell>
+        </row>
+        <row>
+          <cell column="Element">ATRS Tier 2 record</cell>
+          <cell column="Status">[Initiated [date] / Not required — see ATRS note in header]</cell>
+        </row>
+        <row>
+          <cell column="Element">Human decision and rationale</cell>
+          <cell column="Status">[TO BE COMPLETED BY SRO — name, date, decision, rationale]</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>FOIA treatment: This audit record is potentially disclosable under the Freedom of Information Act 2000. [STATE whether any content should be considered for exemption and under which FOIA section — or state "No content in this record warrants FOIA exemption consideration."]</statement>
+    <statement>Debate engine closed. Recommendation is not a decision. Human SRO retains decision authority.</statement>
+  </template_block>
+</template_module>

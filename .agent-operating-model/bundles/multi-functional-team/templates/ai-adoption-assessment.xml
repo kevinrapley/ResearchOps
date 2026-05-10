@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="ai-adoption-assessment" version="1.0.0">
+  <title>AI Adoption Assessment Wizard</title>
+  <purpose>
+    <statement>Assess a proposed AI use case against the agent's AI principles (references/core-rules.xml §17) using the Adopt / Innovate / Transform framework. This wizard produces a structured assessment — it does not approve or reject the use of AI.</statement>
+  </purpose>
+  <constraints>
+    <constraint level="0">Allowed roles: Ethics (lead), PM, Sec, Policy, Ops</constraint>
+    <constraint level="0">Allowed modes: single, TEAM, subset:governance, composite-govern, assembled</constraint>
+    <constraint level="0">Allowed phases: Any</constraint>
+    <constraint level="0">No decision or approval language</constraint>
+    <constraint level="0">Must classify adoption level</constraint>
+    <constraint level="0">Must assess J-curve impact</constraint>
+    <constraint level="0">Must include worker voice considerations</constraint>
+    <constraint level="0">Follow the wizard steps exactly, in order</constraint>
+    <constraint level="0">Start every response with: Step X of 8 – &lt;step name&gt;</constraint>
+    <constraint level="0">Do not proceed until the user answers the current step's questions</constraint>
+  </constraints>
+  <flow_control>
+    <flow_controls ordered="false">
+      <control level="0">Steps 1–6 are information‑gathering only.</control>
+      <control level="0">Step 7 is the review gate.</control>
+      <control level="0">Step 8 is the consolidated assessment.</control>
+    </flow_controls>
+  </flow_control>
+  <template_block name="step-1-describe-the-proposed-ai-use" title="Step 1 – Describe the proposed AI use">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What is the proposed use of AI? (what task, process, or decision will AI support?)</entry>
+      <entry level="0">What problem does it address?</entry>
+      <entry level="0">Who would use it? (staff, public, both)</entry>
+      <entry level="0">What data would it use?</entry>
+      <entry level="0">Is this a new capability or a change to an existing process?</entry>
+    </checklist>
+    <statement>Output: AI use case summary (using Problem Frame).</statement>
+  </template_block>
+  <template_block name="step-2-classify-the-adoption-level" title="Step 2 – Classify the adoption level">
+    <statement>Based on Step 1, classify as:</statement>
+    <checklist ordered="false" purpose="based-on-step-1-classify-as">
+      <entry level="0">@adopt-ai — streamlining or removing low-value tasks</entry>
+      <entry level="0">@innovate-with-ai — changing how a team or product works locally</entry>
+      <entry level="0">@transform-with-ai — redesigning end-to-end services across boundaries</entry>
+    </checklist>
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Does this classification feel right?</entry>
+      <entry level="0">If innovate or transform: what cross-team or cross-organisation collaboration is needed?</entry>
+    </checklist>
+    <statement>Output: Adoption level classification with rationale.</statement>
+  </template_block>
+  <template_block name="step-3-assess-the-j-curve-impact" title="Step 3 – Assess the J-curve impact">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What transition costs are expected? (learning, dual running, rework, process redesign)</entry>
+      <entry level="0">How long might the productivity dip last?</entry>
+      <entry level="0">What support will teams need during the transition?</entry>
+      <entry level="0">Are there plans to cut headcount or budget based on projected efficiency? (flag as @cost-cutting-risk if yes)</entry>
+    </checklist>
+    <statement>Output: J-curve impact assessment (using @transition-cost, @automation-j-curve).</statement>
+  </template_block>
+  <template_block name="step-4-evaluate-human-centred-outcomes" title="Step 4 – Evaluate human-centred outcomes">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Who benefits from this AI use? How?</entry>
+      <entry level="0">Who could be negatively affected? How?</entry>
+      <entry level="0">What are the risks of not using AI in this area? (sustained dangerous workloads, locked-in poor quality, perpetuated failure demand)</entry>
+      <entry level="0">What are the risks of using AI? (bias, moral injury, over-reliance, privacy, accountability)</entry>
+    </checklist>
+    <statement>Output: Human-centred outcomes assessment (using risk primitives: @service-quality-risk, @fairness-bias-risk, @moral-injury-risk, @accountability-risk, @security-privacy-risk).</statement>
+  </template_block>
+  <template_block name="step-5-worker-engagement-and-voice" title="Step 5 – Worker engagement and voice">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Have frontline staff been consulted?</entry>
+      <entry level="0">How will staff concerns and ideas be gathered?</entry>
+      <entry level="0">Is there a route for staff to challenge or escalate concerns about the AI use?</entry>
+      <entry level="0">Are recognised staff representatives involved?</entry>
+    </checklist>
+    <statement>Output: Worker voice assessment (using @frontline-insight, @staff-engagement-opportunity, @union-partnership-opportunity, @feedback-loop).</statement>
+  </template_block>
+  <template_block name="step-6-tool-choice-and-shadow-ai-risk" title="Step 6 – Tool choice and shadow AI risk">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What tool or platform will be used?</entry>
+      <entry level="0">Is it approved for use with official data?</entry>
+      <entry level="0">Are there risks of staff using unapproved tools instead? (@shadow-ai-risk)</entry>
+      <entry level="0">What data classification applies?</entry>
+    </checklist>
+    <statement>Output: Tool choice assessment.</statement>
+  </template_block>
+  <template_block name="step-7-review-gate" title="Step 7 – Review gate">
+    <statement>Present a summary covering:</statement>
+    <checklist ordered="false" purpose="present-a-summary-covering">
+      <entry level="0">AI use case</entry>
+      <entry level="0">Adoption level</entry>
+      <entry level="0">J-curve impact</entry>
+      <entry level="0">Human-centred outcomes (benefits and risks)</entry>
+      <entry level="0">Worker voice</entry>
+      <entry level="0">Tool choice</entry>
+    </checklist>
+    <statement>Ask: Does this look right? What needs correcting?</statement>
+  </template_block>
+  <template_block name="step-8-consolidated-assessment" title="Step 8 – Consolidated assessment">
+    <statement>Produce:</statement>
+    <checklist ordered="true" purpose="produce">
+      <entry level="0">AI use case — Problem Frame and proposed use</entry>
+      <entry level="0">Adoption level — classification with rationale (adopt / innovate / transform)</entry>
+      <entry level="0">J-curve assessment — transition costs, timeline, support needs</entry>
+      <entry level="0">Human-centred outcomes — who benefits, who is affected, risks of action and inaction</entry>
+      <entry level="0">Risk register — using structured risk primitives</entry>
+      <entry level="0">Worker engagement — consultation status, feedback mechanisms, staff voice</entry>
+      <entry level="0">Tool and data assessment — approved tools, data classification, shadow AI risks</entry>
+      <entry level="0">Skills and learning — which skills will be more important, which must be preserved, learning needs</entry>
+      <entry level="0">Recommendation — advisory, with conditions and safeguards</entry>
+      <entry level="0">Next steps — what to do before proceeding (testing, governance, engagement)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="required-primitives" title="Required Primitives">
+    <checklist ordered="false">
+      <entry level="0">Problem Frame</entry>
+      <entry level="0">Risk</entry>
+      <entry level="0">Constraint</entry>
+      <entry level="0">Opportunity</entry>
+      <entry level="0">Mitigation</entry>
+      <entry level="0">Recommendation</entry>
+      <entry level="0">Scenario (where applicable)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="forbidden-primitives" title="Forbidden Primitives">
+    <checklist ordered="false">
+      <entry level="0">Decision</entry>
+      <entry level="0">Approval</entry>
+    </checklist>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>ai_assessment_integrity: description: &gt; The assessment must remain advisory and governance-aware. It must not approve, reject, or claim compliance/certification. rule: Reject outputs that read as approval, rejection, or final decision.</statement>
+    <statement>no_decision_or_approval_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-decision-or-approval-language-disallowed-terms">
+      <entry level="3">approved</entry>
+      <entry level="3">authorised</entry>
+      <entry level="3">signed off</entry>
+      <entry level="3">we will use AI</entry>
+      <entry level="3">we will not use AI</entry>
+      <entry level="3">the decision is</entry>
+      <entry level="3">proceed with AI</entry>
+      <entry level="3">reject this use case</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>adoption_level_required: description: Step 2 must explicitly classify adopt/innovate/transform. severity: error</statement>
+    <statement>j_curve_required: description: Step 3 must include transition costs and expected dip/recovery framing. severity: error</statement>
+    <statement>worker_voice_required: description: Step 5 must include staff consultation and challenge/escalation routes. severity: error</statement>
+    <statement>shadow_ai_risk_required: description: Step 6 must address approved tools and shadow AI risk where relevant. severity: error</statement>
+    <statement>no_headcount_savings_as_primary_benefit: description: Must not lead with headcount reduction as the primary benefit. disallowed_leading_phrases:</statement>
+    <checklist ordered="false" purpose="no-headcount-savings-as-primary-benefit-description-must-not-lead-with-headcount-reduction-as-the-primary-benefit-disallowed-leading-phrases">
+      <entry level="3">reduce headcount</entry>
+      <entry level="3">cut staff</entry>
+      <entry level="3">fewer people</entry>
+      <entry level="3">job reductions</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>high_stakes_risk_visibility: description: Must surface fairness/accountability/privacy risks where decisions have significant effects. severity: error</statement>
+    <statement>flow_control_enforced: description: Steps 1–6 gather input only; Step 7 review; Step 8 consolidated. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">ethical</entry>
+      <entry level="3">cautious</entry>
+      <entry level="3">explicit about uncertainty</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">persuasive</entry>
+      <entry level="3">salesy</entry>
+      <entry level="3">directive</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+    <statement>_End of AI adoption assessment wizard._</statement>
+  </template_block>
+</template_module>

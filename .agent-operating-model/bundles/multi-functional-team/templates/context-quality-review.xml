@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="context-quality-review" version="1.0.0">
+  <title>Context Quality Review</title>
+  <overview>
+    <statement>@start-team</statement>
+  </overview>
+  <template_block name="goal" title="Goal">
+    <statement>Review content and information quality to understand clarity, risk, and gaps, without rewriting or redesigning content.</statement>
+  </template_block>
+  <template_block name="context" title="Context">
+    <statement>This is a diagnostic review, not a content improvement exercise.</statement>
+  </template_block>
+  <template_block name="source" title="Source">
+    <statement>Use only content examples or descriptions I provide.</statement>
+  </template_block>
+  <template_block name="step-1-content-in-scope" title="Step 1 – Content in scope">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What content is being reviewed?</entry>
+      <entry level="0">Audience and context?</entry>
+    </checklist>
+    <statement>Output: Content inventory.</statement>
+  </template_block>
+  <template_block name="step-2-clarity-and-comprehension-risks" title="Step 2 – Clarity and comprehension risks">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What might users misunderstand?</entry>
+      <entry level="0">Where is language complex or ambiguous?</entry>
+    </checklist>
+    <statement>Output: Clarity risk list.</statement>
+  </template_block>
+  <template_block name="step-3-accuracy-and-currency-risks" title="Step 3 – Accuracy and currency risks">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What could be out of date?</entry>
+      <entry level="0">What depends on policy or guidance?</entry>
+    </checklist>
+    <statement>Output: Accuracy risk list.</statement>
+  </template_block>
+  <template_block name="step-4-harm-and-sensitivity-considerations" title="Step 4 – Harm and sensitivity considerations">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Could misunderstanding cause harm, exclusion, or poor decisions?</entry>
+    </checklist>
+    <statement>Output: Harm risk notes.</statement>
+  </template_block>
+  <template_block name="step-5-review-summary" title="Step 5 – Review summary">
+    <statement>Produce:</statement>
+    <checklist ordered="false" purpose="produce">
+      <entry level="0">Content areas reviewed</entry>
+      <entry level="0">Risks (clarity, accuracy, harm)</entry>
+      <entry level="0">Unknowns</entry>
+      <entry level="0">Questions for content/design follow‑up</entry>
+    </checklist>
+    <statement>Begin at Step 1.</statement>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>content_review_integrity: description: &gt; Content reviews must assess risk and clarity, not rewrite or propose solutions. rule: Reject outputs that include rewritten content or recommendations.</statement>
+    <statement>no_content_rewrites: description: Must not propose alternative wording or copy. severity: error</statement>
+    <statement>no_solution_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-solution-language-disallowed-terms">
+      <entry level="3">should say</entry>
+      <entry level="3">rewrite as</entry>
+      <entry level="3">change to</entry>
+      <entry level="3">replace with</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>risks_required: description: Review must surface clarity, accuracy, or harm risks. severity: error</statement>
+    <statement>unknowns_required: description: Gaps in knowledge or assurance must be recorded as Unknown. severity: error</statement>
+    <statement>tone: allowed: [neutral, analytical, risk-aware] disallowed: [editorial, directive, persuasive] severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

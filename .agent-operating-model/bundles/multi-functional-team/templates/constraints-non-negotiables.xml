@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="constraints-non-negotiables" version="1.0.0">
+  <title>Constraints Non Negotiables</title>
+  <purpose>
+    <statement>Document constraints and non‑negotiables that shape what is possible, without proposing solutions or workarounds.</statement>
+    <statement>This artefact clarifies boundaries, not approaches.</statement>
+  </purpose>
+  <template_block name="policy-legal" title="Policy / legal">
+    <statement>List constraints arising from law, regulation, or formal policy.</statement>
+  </template_block>
+  <template_block name="accessibility-and-inclusion" title="Accessibility &amp; inclusion">
+    <statement>List mandatory standards, obligations, or constraints.</statement>
+  </template_block>
+  <template_block name="security-and-privacy" title="Security &amp; privacy">
+    <statement>List constraints relating to data handling, hosting, access, or assurance.</statement>
+  </template_block>
+  <template_block name="operational" title="Operational">
+    <statement>List constraints arising from staffing, capability, or organisational structure.</statement>
+  </template_block>
+  <template_block name="technical-data" title="Technical / data">
+    <statement>List constraints relating to legacy systems, data availability, or interoperability.</statement>
+  </template_block>
+  <template_block name="non-negotiables" title="Non‑negotiables">
+    <statement>Explicit statements of what must be true, regardless of approach.</statement>
+  </template_block>
+  <template_block name="known-tensions" title="Known tensions">
+    <statement>Where constraints conflict or create trade‑offs, describe them without resolving.</statement>
+  </template_block>
+  <constraints>
+    <boundary>List areas where constraints may exist but are not yet confirmed.</boundary>
+  </constraints>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>constraints_integrity: description: &gt; Constraint documents must describe boundaries, not propose solutions or optimisations. rule: Reject outputs that suggest how to work around constraints.</statement>
+    <statement>no_solution_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-solution-language-disallowed-terms">
+      <entry level="3">workaround</entry>
+      <entry level="3">solution</entry>
+      <entry level="3">approach</entry>
+      <entry level="3">implement</entry>
+      <entry level="3">fix</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>constraints_must_be_external_or_structural: description: Constraints must not be preferences or opinions. severity: error</statement>
+    <statement>non_negotiables_must_be_explicit: description: Non-negotiables must be stated clearly and unambiguously. severity: error</statement>
+    <statement>unknown_constraints_required: description: Areas of uncertainty must be explicitly listed. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">declarative</entry>
+      <entry level="3">boundary-setting</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">persuasive</entry>
+      <entry level="3">optimistic</entry>
+      <entry level="3">directive</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

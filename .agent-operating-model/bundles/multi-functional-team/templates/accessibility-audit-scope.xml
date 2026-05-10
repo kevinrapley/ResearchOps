@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="accessibility-audit-scope" version="1.0.0">
+  <title>Accessibility Audit Scoping Wizard</title>
+  <purpose>
+    <statement>Define the scope and approach for an accessibility audit of a service or component. This wizard produces a scoping document — it does not conduct the audit itself.</statement>
+  </purpose>
+  <constraints>
+    <constraint level="0">Allowed roles: Access (lead), QA, Dev</constraint>
+    <constraint level="0">Allowed modes: single, TEAM, subset:ucd, subset:engineering, composite-build, assembled</constraint>
+    <constraint level="0">Allowed phases: Beta, Live</constraint>
+    <constraint level="0">No certification or approval language</constraint>
+    <constraint level="0">Must reference WCAG 2.2 AA criteria</constraint>
+    <constraint level="0">Follow the wizard steps exactly, in order</constraint>
+    <constraint level="0">Start every response with: Step X of 6 – &lt;step name&gt;</constraint>
+    <constraint level="0">Do not proceed until the user answers the current step's questions</constraint>
+  </constraints>
+  <flow_control>
+    <flow_controls ordered="false">
+      <control level="0">Steps 1–4 are information‑gathering only.</control>
+      <control level="0">Step 5 is the review gate.</control>
+      <control level="0">Step 6 is the consolidated scoping document.</control>
+    </flow_controls>
+  </flow_control>
+  <template_block name="step-1-service-boundaries" title="Step 1 – Service boundaries">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What service or component is being audited?</entry>
+      <entry level="0">What are the boundaries? (whole service, specific journey, specific component)</entry>
+      <entry level="0">Are there any areas explicitly excluded?</entry>
+      <entry level="0">What is the current accessibility statement status?</entry>
+    </checklist>
+    <statement>Output: Audit scope boundary definition.</statement>
+  </template_block>
+  <template_block name="step-2-user-journeys-to-test" title="Step 2 – User journeys to test">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What are the main user journeys to include?</entry>
+      <entry level="0">Are there any assisted digital or offline journeys?</entry>
+      <entry level="0">Are there staff-facing journeys to include?</entry>
+      <entry level="0">Which journeys have the highest user volume or risk?</entry>
+    </checklist>
+    <statement>Output: Journey list with priority.</statement>
+  </template_block>
+  <template_block name="step-3-assistive-technologies-and-environments" title="Step 3 – Assistive technologies and environments">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Which assistive technologies will be used?</entry>
+      <entry level="1">Screen readers (JAWS, NVDA, VoiceOver)</entry>
+      <entry level="1">Screen magnification (ZoomText, browser zoom)</entry>
+      <entry level="1">Voice control (Dragon, Voice Control)</entry>
+      <entry level="1">Switch access</entry>
+      <entry level="1">Other</entry>
+      <entry level="0">Which browsers and devices?</entry>
+      <entry level="0">Which operating systems?</entry>
+      <entry level="0">Will testing include mobile and tablet?</entry>
+    </checklist>
+    <statement>Output: Assistive technology and environment matrix.</statement>
+  </template_block>
+  <template_block name="step-4-wcag-2-2-aa-criteria-coverage" title="Step 4 – WCAG 2.2 AA criteria coverage">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Will all WCAG 2.2 AA criteria be tested, or a subset?</entry>
+      <entry level="0">Are there any known issues or exemptions to declare?</entry>
+      <entry level="0">Are there any enhanced (AAA) criteria to include?</entry>
+      <entry level="0">What evidence format is required? (per-criterion, per-journey, or both)</entry>
+    </checklist>
+    <statement>Output: Criteria coverage plan with known issues.</statement>
+  </template_block>
+  <template_block name="step-5-review-gate" title="Step 5 – Review gate">
+    <statement>Present:</statement>
+    <checklist ordered="false" purpose="present">
+      <entry level="0">Scope boundaries</entry>
+      <entry level="0">Journey list</entry>
+      <entry level="0">Assistive technology matrix</entry>
+      <entry level="0">Criteria coverage plan</entry>
+      <entry level="0">Known issues and exemptions</entry>
+    </checklist>
+    <statement>Ask: Does this look right? What needs correcting?</statement>
+  </template_block>
+  <template_block name="step-6-consolidated-scoping-document" title="Step 6 – Consolidated scoping document">
+    <statement>Produce:</statement>
+    <checklist ordered="true" purpose="produce">
+      <entry level="0">Scope — what is being audited and what is excluded</entry>
+      <entry level="0">User journeys — prioritised list with rationale</entry>
+      <entry level="0">Assistive technologies and environments — testing matrix</entry>
+      <entry level="0">WCAG criteria — coverage plan and any exemptions</entry>
+      <entry level="0">Known issues — pre-existing issues and their status</entry>
+      <entry level="0">Evidence and reporting — format, audience, and timeline</entry>
+      <entry level="0">Risks and constraints — testing limitations, resource gaps</entry>
+      <entry level="0">Dependencies — access to environments, test data, participant availability</entry>
+    </checklist>
+  </template_block>
+  <template_block name="required-primitives" title="Required Primitives">
+    <checklist ordered="false">
+      <entry level="0">Standard Reference</entry>
+      <entry level="0">Gap</entry>
+      <entry level="0">Risk</entry>
+      <entry level="0">Control</entry>
+      <entry level="0">Evidence Unit</entry>
+      <entry level="0">Dependency (where applicable)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="forbidden-primitives" title="Forbidden Primitives">
+    <checklist ordered="false">
+      <entry level="0">Certification</entry>
+      <entry level="0">Approval</entry>
+    </checklist>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>a11y_scope_integrity: description: &gt; Must scope an audit, not claim compliance or certify accessibility. rule: Reject outputs that state the service is compliant, certified, or “passes WCAG”.</statement>
+    <statement>must_reference_wcag_2_2_aa: description: WCAG 2.2 AA must be explicitly referenced. severity: error</statement>
+    <statement>no_certification_or_compliance_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-certification-or-compliance-language-disallowed-terms">
+      <entry level="3">compliant</entry>
+      <entry level="3">certified</entry>
+      <entry level="3">passes WCAG</entry>
+      <entry level="3">fully accessible</entry>
+      <entry level="3">no accessibility issues</entry>
+      <entry level="3">meets WCAG</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>flow_control_enforced: description: Steps 1–4 gather input only; Step 5 review; Step 6 consolidated. severity: error</statement>
+    <statement>journeys_required: description: Must list in-scope journeys and prioritise by volume/risk where known. severity: error</statement>
+    <statement>assisted_digital_considered: description: Must ask about assisted digital/offline and staff-facing journeys. severity: error</statement>
+    <statement>at_matrix_required: description: Must include AT + browser/device/OS matrix. severity: error</statement>
+    <statement>exclusions_explicit: description: Exclusions must be explicitly stated as out of scope. severity: error</statement>
+    <statement>exemptions_declared: description: Exemptions must be described as exemptions, not silently accepted. severity: error</statement>
+    <statement>risks_constraints_dependencies_required: description: Must include risks/constraints and dependencies affecting testing quality. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">precise</entry>
+      <entry level="3">audit-oriented</entry>
+      <entry level="3">explicit about uncertainty</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">persuasive</entry>
+      <entry level="3">celebratory</entry>
+      <entry level="3">directive</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+    <statement>_End of accessibility audit scoping wizard._</statement>
+  </template_block>
+</template_module>

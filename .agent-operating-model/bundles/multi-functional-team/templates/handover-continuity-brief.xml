@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="handover-continuity-brief" version="1.0.0">
+  <title>Handover Continuity Brief</title>
+  <purpose>
+    <statement>Preserve critical context and continuity when people, teams, or responsibilities change, so that knowledge is not lost and work does not need to be rediscovered.</statement>
+    <statement>This brief:</statement>
+    <checklist ordered="false" purpose="this-brief">
+      <entry level="0">records what is known at a point in time</entry>
+      <entry level="0">makes uncertainty explicit</entry>
+      <entry level="0">supports safe transition between people or teams</entry>
+    </checklist>
+    <statement>It does not:</statement>
+    <checklist ordered="false" purpose="it-does-not">
+      <entry level="0">re‑evaluate past decisions</entry>
+      <entry level="0">judge quality of work</entry>
+      <entry level="0">approve future direction</entry>
+      <entry level="0">reinterpret intent with hindsight</entry>
+    </checklist>
+  </purpose>
+  <template_block name="when-this-brief-should-be-used" title="When this brief should be used">
+    <statement>Use this document when:</statement>
+    <checklist ordered="false" purpose="use-this-document-when">
+      <entry level="0">team members rotate or leave</entry>
+      <entry level="0">ownership changes</entry>
+      <entry level="0">work pauses and later resumes</entry>
+      <entry level="0">responsibility moves between teams or suppliers</entry>
+    </checklist>
+    <statement>This is a continuity artefact, not a status report.</statement>
+  </template_block>
+  <template_block name="scope-of-handover" title="Scope of handover">
+    <checklist ordered="false">
+      <entry level="0">Service / product / initiative name:</entry>
+      <entry level="0">Area covered by this brief: (Discovery, Alpha, Live ops, governance, etc.)</entry>
+      <entry level="0">Date range covered:</entry>
+      <entry level="0">Audience: (who this handover is intended for)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="current-understanding-at-time-of-writing" title="Current understanding (at time of writing)">
+    <statement>Describe what is understood now, without asserting correctness.</statement>
+  </template_block>
+  <template_block name="problem-or-opportunity-frame" title="Problem or opportunity frame">
+    <checklist ordered="false">
+      <entry level="0">How the problem is currently framed</entry>
+      <entry level="0">Areas of agreement</entry>
+      <entry level="0">Areas of dispute or uncertainty</entry>
+    </checklist>
+  </template_block>
+  <template_block name="key-outcomes-or-intents" title="Key outcomes or intents">
+    <checklist ordered="false">
+      <entry level="0">Outcomes being pursued (if any)</entry>
+      <entry level="0">Who they are for</entry>
+      <entry level="0">What is explicitly not in scope</entry>
+    </checklist>
+  </template_block>
+  <template_block name="decisions-taken-historical-record-only" title="Decisions taken (historical record only)">
+    <statement>List decisions that have already been made, without justifying or revisiting them.</statement>
+    <mapping_table>
+      <columns>
+        <column>Decision</column>
+        <column>Date</column>
+        <column>Decision owner (role)</column>
+        <column>Context at the time</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Decision"/>
+          <cell column="Date"/>
+          <cell column="Decision owner (role)"/>
+          <cell column="Context at the time"/>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>Notes:</statement>
+    <checklist ordered="false" purpose="notes">
+      <entry level="0">Absence of a decision does not imply indecision.</entry>
+      <entry level="0">This is a factual record, not an endorsement.</entry>
+    </checklist>
+  </template_block>
+  <template_block name="assumptions" title="Assumptions">
+    <statement>List assumptions currently underpinning the work, with their status.</statement>
+  </template_block>
+  <constraints>
+    <boundary>List known constraints (policy, legal, technical, operational).</boundary>
+  </constraints>
+  <template_block name="known-risks-and-uncertainties" title="Known risks and uncertainties">
+    <statement>Explicitly record:</statement>
+    <checklist ordered="false" purpose="explicitly-record">
+      <entry level="0">risks that remain unresolved</entry>
+      <entry level="0">areas with limited or no evidence</entry>
+      <entry level="0">dependencies that are fragile or unclear</entry>
+    </checklist>
+    <statement>Avoid speculation about causes or solutions.</statement>
+  </template_block>
+  <template_block name="dependencies-and-interfaces" title="Dependencies and interfaces">
+    <statement>Describe who or what this work depends on, without assigning responsibility.</statement>
+    <checklist ordered="false">
+      <entry level="0">Other teams or services:</entry>
+      <entry level="0">External organisations or suppliers:</entry>
+      <entry level="0">Shared ownership areas:</entry>
+    </checklist>
+  </template_block>
+</template_module>
