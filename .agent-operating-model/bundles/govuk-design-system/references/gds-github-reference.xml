@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="gds-github-reference" version="1.0">
+  <!--
+    This module collects guidance from the GDS GitHub repositories that are
+    relevant when using or contributing to GOV.UK Frontend and related
+    projects.  It summarises installation instructions, browser support,
+    accessibility obligations, security considerations and coding standards
+    drawn from the `govuk-frontend` README and contribution guides.
+  -->
+  <purpose>Guidance from GDS GitHub repositories including installation,
+    browser support, accessibility, security and coding standards.</purpose>
+  <quick_start>
+    <rule>Install GOV.UK Frontend using either npm or by copying the
+      precompiled CSS, JavaScript and assets【794161067120215†L24-L34】.</rule>
+    <rule>After installation, use examples from the GOV.UK Design System and
+      plan to stay up to date with future releases of the package【794161067120215†L35-L40】.</rule>
+  </quick_start>
+  <browser_support>
+    <rule>GOV.UK Frontend groups browsers into grades A, B, C and X.  JavaScript
+      enhancements are only supported in grade A, B and C browsers【794161067120215†L42-L60】.</rule>
+    <rule>Grade A includes the most recent stable versions of major browsers
+      (Chrome, Firefox, Edge, Samsung Internet and Safari), while grade B
+      covers stable releases in the last six months and grade C covers
+      browsers supporting ES6 modules【794161067120215†L42-L55】.</rule>
+    <rule>Assistants should design and test services primarily for grades A,
+      B and C, and provide fallbacks for browsers in grade X【794161067120215†L56-L59】.</rule>
+  </browser_support>
+  <accessibility>
+    <rule>Using GOV.UK Frontend will help services meet WCAG 2.2 level AA but
+      teams must still check that their services meet accessibility
+      requirements【794161067120215†L71-L80】.</rule>
+    <rule>GOV.UK Frontend supports recommended assistive technologies and
+      respects user overrides of colours in browsers【794161067120215†L71-L71】.</rule>
+    <rule>When extending or modifying components, ensure that accessibility
+      remains intact and conduct manual testing with assistive tools【794161067120215†L71-L87】.</rule>
+  </accessibility>
+  <security>
+    <rule>GDS advocates responsible vulnerability disclosure.  If you find a
+      vulnerability, follow the security policy to report it【794161067120215†L93-L100】.</rule>
+    <rule>Only use supported browsers (grades A–C) when executing JavaScript
+      enhancements to mitigate security risks associated with unsupported
+      browsers【794161067120215†L42-L60】.</rule>
+  </security>
+  <contributing>
+    <rule>Use a `.govuk-` namespace for CSS classes to avoid conflicts and
+      follow the Block–Element–Modifier (BEM) methodology for naming
+      components【681682623149550†L6-L24】.</rule>
+    <rule>Name component folders and files in the singular (for example
+      `accordion`, `backlink`, `button`); only use plural names when a
+      component is always used in groups such as `breadcrumbs` or
+      `checkboxes`【524635023229627†L6-L9】.</rule>
+    <rule>Structure component folders with a `README.md`, SCSS files (`_[component].scss` and `_index.scss`), a YAML file describing macro
+      options, a Nunjucks macro, a template file and tests【524635023229627†L12-L39】.</rule>
+    <rule>Write CSS following the GDS style guide: use 2‑space soft tabs,
+      avoid nesting selectors, name classes using BEM and store colours as
+      variables instead of hard‑coded hex values【681682623149550†L16-L37】【681682623149550†L168-L204】.</rule>
+    <rule>In JavaScript, name files after the component, initialise
+      components using `data-module` attributes, target DOM elements with
+      `govuk-js-*` classes and comment code with JSDoc annotations【57926988052763†L14-L55】【57926988052763†L56-L73】.</rule>
+    <rule>Use ES modules with explicit file extensions and prefer named
+      exports over default exports【57926988052763†L123-L143】.</rule>
+    <rule>Follow the Contributor Covenant Code of Conduct and civil service
+      code when contributing to GDS repositories【794161067120215†L117-L123】.</rule>
+    <rule>Maintain clean commit histories by following the GDS Way guidance
+      on commit messages (summary not cited here) and update the changelog
+      when releasing new versions【637704145815316†L31-L88】.</rule>
+  </contributing>
+</reference_module>

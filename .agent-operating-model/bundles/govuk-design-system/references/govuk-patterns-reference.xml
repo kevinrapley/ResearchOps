@@ -1,1 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="govuk-patterns-reference" version="4.0">
+  <!--
+    This module defines guidance for common page patterns in the GOV.UK
+    Design System. Patterns describe how pages should be structured and
+    which components to include. Each pattern entry summarises when to
+    use the pattern, how it works and any behavioural requirements.
+  -->
+  <purpose>Guidance for GOV.UK page patterns such as question pages, confirmation pages, page-not-found pages, service-unavailable pages and check answers pages.</purpose>
+  <patterns>
+    <pattern name="question-pages">
+      <when_to_use>Use a question page when you need to ask the user for information. Question pages must include a back link, a page heading and a continue button【978597173728695†L370-L374】.</when_to_use>
+      <how_it_works>
+        <rule>Ask for each piece of information only once within a journey. If the same type of information is needed again, pre‑populate the fields or offer the previously entered response as an option【978597173728695†L379-L387】.</rule>
+        <rule>Ask one question per page so users can focus on a single task【978597173728695†L408-L414】.</rule>
+        <rule>Use either a <code>&lt;legend&gt;</code> within a <code>&lt;fieldset&gt;</code> or a <code>&lt;label&gt;</code> to set the page heading. This ensures that screen reader users hear the heading only once【978597173728695†L410-L416】.</rule>
+        <rule>Include a Back link at the top of the page to reassure users they can return to previous steps, but do not break the browser’s back button【978597173728695†L389-L398】.</rule>
+        <rule>If the journey includes actions that should only happen once (such as payments), implement a sensible message when the user navigates back instead of repeating the action【978597173728695†L399-L403】.</rule>
+      </how_it_works>
+      <components>Back link, heading (via legend or label), input components appropriate to the question, and a continue button. Consider adding a progress indicator if research shows it helps users【978597173728695†L370-L377】.</components>
+      <behaviour>Preserve user input on validation errors and follow the Error summary guidance when presenting errors. Use the colour palette and focus styles defined in the GOV.UK Design System【529411222321622†L196-L223】.</behaviour>
+    </pattern>
 
+    <!-- New page-level patterns -->
+    <pattern name="confirmation-pages">
+      <when_to_use>Use a confirmation page to tell users that a transaction or application has been completed and to explain what happens next【218965041266335†L300-L305】.</when_to_use>
+      <how_it_works>
+        <rule>Include a reference number if there is one; details of what happens next and when; contact details for the service; links to information or services users may need next; a link to your feedback page; and a way for users to save a record of the transaction【218965041266335†L302-L310】.</rule>
+        <rule>Do not put interactive links or buttons inside the green confirmation panel because they will not be accessible; adjust the panel or focus styles if you need to include them【218965041266335†L311-L314】.</rule>
+      </how_it_works>
+      <behaviour>Allow users who bookmark the page to return to it later, or provide helpful information when they return via a bookmark【218965041266335†L316-L323】.</behaviour>
+      <citation source="design-system">【218965041266335†L302-L310】</citation>
+    </pattern>
+
+    <pattern name="page-not-found-pages">
+      <when_to_use>Use a page‑not‑found page when someone is trying to view a page that does not exist—for example, if they select a broken link or type an incorrect web address【224588460748559†L275-L280】.</when_to_use>
+      <how_it_works>
+        <rule>Set the page title to “Page not found – service name – GOV.UK” and the H1 to “Page not found”【224588460748559†L290-L294】.</rule>
+        <rule>Provide contact information if it helps meet a user need. Contact information should either be a link to a page containing numbers and opening times or include the information directly【224588460748559†L290-L299】.</rule>
+        <rule>Write content that is clear, concise and does not blame the user. Do not include breadcrumbs, technical jargon like 404 or “bad request”, informal or humorous language or red text【224588460748559†L301-L307】.</rule>
+      </how_it_works>
+      <behaviour>Test all links and buttons in your service to ensure they work and keep addresses up to date【224588460748559†L275-L287】.</behaviour>
+      <citation source="design-system">【224588460748559†L275-L307】</citation>
+    </pattern>
+
+    <pattern name="service-unavailable-pages">
+      <when_to_use>Use a service‑unavailable page when a service has been closed on purpose, either temporarily or permanently【479895573779787†L270-L274】.</when_to_use>
+      <how_it_works>
+        <rule>Include the title “Sorry, the service is unavailable – service name – GOV.UK” and the H1 “Sorry, the service is unavailable”【479895573779787†L284-L288】.</rule>
+        <rule>Explain when the service will be available again or what to do if it is permanently closed; describe what has happened to users’ answers if they were partway through a transaction; and provide contact details and links to another service if it can help【479895573779787†L286-L295】.</rule>
+        <rule>Provide contact details either as a link to a page containing numbers and opening times or include the information directly【479895573779787†L296-L299】.</rule>
+        <rule>Keep the content clear and concise. Do not use breadcrumbs, vague phrases like “maintenance” or “improvements”, or red text【479895573779787†L301-L305】.</rule>
+      </how_it_works>
+      <behaviour>Prepare a generic service‑unavailable page that can be used at short notice and update it as soon as you know when the service will be available【479895573779787†L278-L280】.</behaviour>
+      <citation source="design-system">【479895573779787†L284-L305】</citation>
+    </pattern>
+
+    <!--
+      Index of additional patterns from the GOV.UK Design System.  Each
+      pattern entry summarises when to use it and points readers to the
+      official documentation.  A generic citation to the patterns overview
+      page is provided【846679682376231†L100-L135】.  Detailed guidance can
+      be added later by consulting the specific pattern page.
+    -->
+
+    <pattern name="addresses">
+      <when_to_use>Use this pattern when asking users for a postal
+        address.  It guides how to structure address fields and handle
+        international addresses.</when_to_use>
+      <how_it_works>Typically uses multiple text inputs for street, town,
+        county and postcode.  Offer postcode lookup and allow manual
+        entry when necessary.</how_it_works>
+      <behaviour>Validate postcodes and preserve entered data on error.
+        Follow the GOV.UK style guide for labelling address fields.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="bank-details">
+      <when_to_use>Use this pattern when you need users to provide their
+        bank account number and sort code to make or receive payments.</when_to_use>
+      <how_it_works>Provide separate inputs for sort code and account
+        number.  Explain the format requirements (for example, six‑digit
+        sort code) and include hint text.</how_it_works>
+      <behaviour>Validate the numbers server side and show inline error
+        messages.  Do not store or display bank details longer than
+        necessary.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="dates">
+      <when_to_use>Use this pattern when you need to ask users for a date
+        or range of dates, such as date of birth or the start and end
+        dates of a holiday.</when_to_use>
+      <how_it_works>Use the date input component for individual dates and
+        provide two date inputs when asking for a range.  Include hint
+        text about format and acceptable values.</how_it_works>
+      <behaviour>Validate dates, ensuring they are in the correct order
+        when asking for a range.  Preserve user input and display both
+        inline errors and an error summary when necessary.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="email-addresses">
+      <when_to_use>Use this pattern when asking users for their email
+        address.</when_to_use>
+      <how_it_works>Provide a single text input with appropriate
+        `autocomplete` attributes.  Explain how the email will be used.</how_it_works>
+      <behaviour>Validate the format of the email address and ask users
+        to confirm by entering it twice if it is critical to the
+        service.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="equality-information">
+      <when_to_use>Use this pattern when collecting sensitive equality
+        information (for example, gender, ethnic group).  It is subject
+        to additional privacy considerations.</when_to_use>
+      <how_it_works>Explain why the information is being collected and
+        how it will be used.  Provide the option to select ‘Prefer not
+        to say’ for each question.</how_it_works>
+      <behaviour>Store the data securely and allow users to leave
+        unanswered questions blank without affecting their ability to
+        complete the service.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="names">
+      <when_to_use>Use this pattern to ask users for their given and
+        family names.</when_to_use>
+      <how_it_works>Provide separate fields for first name and last name
+        when necessary.  Avoid splitting names into too many parts.</how_it_works>
+      <behaviour>Allow users with single names to enter their name in
+        only one field.  Preserve entered names on validation errors and
+        display clear error messages when names are missing.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="national-insurance-numbers">
+      <when_to_use>Use this pattern to ask users for their National
+        Insurance number.</when_to_use>
+      <how_it_works>Provide a single text input and explain that the
+        number should be in the format ‘QQ 12 34 56 C’.</how_it_works>
+      <behaviour>Validate the number format and keep the data secure.
+        Provide a link to help users find their number if they don’t
+        know it.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="passwords">
+      <when_to_use>Use this pattern when users must create or enter a
+        password.</when_to_use>
+      <how_it_works>Provide a password input with strength guidance and
+        require a confirmation field to avoid typos.</how_it_works>
+      <behaviour>Explain password requirements (length, character types)
+        and provide clear error messages when the requirements are not
+        met.  Do not store plaintext passwords.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="payment-card-details">
+      <when_to_use>Use this pattern when you need users to enter credit
+        or debit card information.</when_to_use>
+      <how_it_works>Use separate fields for card number, expiry date and
+        security code.  Explain the purpose of each field.</how_it_works>
+      <behaviour>Validate card numbers using the Luhn check and ensure
+        that payment data is handled securely.  Comply with PCI DSS
+        requirements.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="phone-numbers">
+      <when_to_use>Use this pattern to ask users for a phone number.
+        Specify whether mobile or landline numbers are acceptable.</when_to_use>
+      <how_it_works>Provide a single input with hint text describing the
+        accepted formats.  Include the country code when needed.</how_it_works>
+      <behaviour>Validate the number format and, where relevant, use
+        separate fields for international dialling codes.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="check-a-service-is-suitable">
+      <when_to_use>Use this pattern to help users determine whether a
+        service meets their needs or eligibility requirements.</when_to_use>
+      <how_it_works>Present a series of questions or statements that
+        filter users based on eligibility criteria.  Provide feedback
+        after completion.</how_it_works>
+      <behaviour>Ensure questions are clear and that users can see why
+        they may not be eligible.  Offer alternative services when
+        appropriate.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="check-answers">
+      <when_to_use>Use this pattern to allow users to review and confirm
+        the information they have entered before submission.</when_to_use>
+      <how_it_works>Display a summary list of answers with ‘Change’ links
+        next to each item.  Include a call to action to confirm and
+        submit.</how_it_works>
+      <behaviour>Prepopulate answers from previous steps and ensure that
+        users can navigate back to edit responses.  Maintain validation
+        states across changes.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="complete-multiple-tasks">
+      <when_to_use>Use this pattern when your service involves several independent tasks that users can usually complete in any order, such as filling in separate forms, uploading documents or providing multiple pieces of information【693107159745732†L414-L433】.</when_to_use>
+      <how_it_works>
+        <rule>Present a task list (see the task‑list component) showing each task with a link to the page where the task is carried out and a status tag such as ‘Not started’, ‘In progress’ or ‘Completed’【693107159745732†L414-L433】【693107159745732†L448-L533】.</rule>
+        <rule>Group tasks into sections when there are many items and label each section clearly【693107159745732†L414-L433】.</rule>
+        <rule>Mark a task as complete only after the user has submitted the required information or documents.  Consider saving partial progress and showing an ‘In progress’ status when appropriate.</rule>
+      </how_it_works>
+      <behaviour>Allow users to complete tasks in any order unless the tasks depend on each other.  Users should be able to leave and return to the service without losing progress and should see which tasks remain outstanding【693107159745732†L414-L433】.</behaviour>
+      <citation source="design-system">【693107159745732†L414-L433】【693107159745732†L448-L533】</citation>
+    </pattern>
+
+    <pattern name="confirm-phone-number">
+      <when_to_use>Use this pattern when verifying a user’s phone
+        number.</when_to_use>
+      <how_it_works>Send a one‑time code via SMS and ask the user to
+        enter it into a text input.  Provide a way to resend the code.</how_it_works>
+      <behaviour>Limit the number of attempts and explain what happens if
+        verification fails.  Do not reveal whether a particular phone
+        number is valid or not.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="confirm-email-address">
+      <when_to_use>Use this pattern when verifying a user’s email
+        address.</when_to_use>
+      <how_it_works>Send a confirmation link or code to the email
+        address provided and instruct the user to follow it.</how_it_works>
+      <behaviour>Ensure that the link expires after a reasonable period
+        and provide instructions for resending the confirmation email.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="contact-a-department">
+      <when_to_use>Use this pattern to help users contact a department or
+        service team for assistance.</when_to_use>
+      <how_it_works>Provide contact details such as phone numbers,
+        email addresses and service opening hours.  Offer alternative
+        contact methods like web forms.</how_it_works>
+      <behaviour>Ensure the contact information is accurate and up to
+        date.  Indicate expected response times and any accessibility
+        support available.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="create-username">
+      <when_to_use>Use this pattern when users need to create a unique
+        username for an account.</when_to_use>
+      <how_it_works>Ask the user to choose a username and validate it
+        against a list of unavailable names.  Provide guidance on
+        acceptable characters and length.</how_it_works>
+      <behaviour>Inform users if a username is unavailable and suggest
+        alternatives.  Do not reveal which usernames are already taken.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="create-accounts">
+      <when_to_use>Use this pattern for workflows that create user
+        accounts.</when_to_use>
+      <how_it_works>Guide users through entering personal details,
+        creating credentials and verifying contact information.  Explain
+        why each piece of information is needed.</how_it_works>
+      <behaviour>Ensure data is collected securely and provide clear
+        feedback when account creation is successful or fails.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="exit-quickly">
+      <when_to_use>Use this pattern to help users leave a page quickly
+        and discreetly (for example, in services dealing with sensitive
+        topics).</when_to_use>
+      <how_it_works>Provide an ‘Exit this page’ link that redirects
+        users to a neutral site and clears the browser history.</how_it_works>
+      <behaviour>Ensure the link is visible but unobtrusive and that
+        activating it does not trigger any additional prompts.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="navigate-a-service">
+      <when_to_use>Use this pattern when the service has multiple
+        sections and users need to move between them outside of a linear
+        flow.</when_to_use>
+      <how_it_works>Implement service navigation controls (for example,
+        side navigation or a task list) that allow users to choose which
+        section to visit.</how_it_works>
+      <behaviour>Highlight the current section and ensure navigation
+        controls are accessible.  Avoid deep nesting of navigation
+        levels.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="start-using-a-service">
+      <when_to_use>Use this pattern for the start page of your service.
+        It introduces the service, explains what users can do and
+        provides a primary call to action.</when_to_use>
+      <how_it_works>Include a clear heading, a brief description of the
+        service and a start button.  Provide information about what
+        users will need.</how_it_works>
+      <behaviour>Use the start button variant of the GOV.UK button
+        component.  Keep the content concise and actionable.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="recover-from-validation-errors">
+      <when_to_use>Use this pattern to help users correct mistakes in
+        forms and continue their journey.</when_to_use>
+      <how_it_works>Display inline error messages and an error summary at
+        the top of the page.  Preserve user input and link error
+        messages to the associated fields.</how_it_works>
+      <behaviour>Move focus to the error summary and use clear, concise
+        language to explain what went wrong and how to fix it.</behaviour>
+      <citation source="design-system">【846679682376231†L100-L135】</citation>
+    </pattern>
+
+    <pattern name="check-answers">
+      <when_to_use>Use a check answers page immediately before the confirmation screen for small to medium‑sized transactions【316074223619945†L574-L579】.  For large transactions with multiple sections, consider including a check answers page at the end of each section and test this approach with users【316074223619945†L578-L583】.</when_to_use>
+      <how_it_works>
+        <rule>Use the page title to tell the user what they need to do, otherwise they might miss the submit button at the end of the page【316074223619945†L612-L616】.</rule>
+        <rule>Break the content into sections, show only the sections that are relevant to each user and rephrase questions as concise statements【316074223619945†L619-L628】.</rule>
+        <rule>Provide a “Change” link next to each answer or group of answers so users can edit their responses.  Each change link should contain visually hidden text describing what it will change and should navigate back to the appropriate question page【316074223619945†L631-L636】.</rule>
+        <rule>When users go back to change an answer, pre‑populate the form with their previous responses and return them to the check answers page after they submit【316074223619945†L632-L645】.</rule>
+        <rule>Use the Summary list component to display multiple pieces of information of the same type, such as a list of interview appointments or application choices【316074223619945†L585-L587】.</rule>
+      </how_it_works>
+      <behaviour>Check answers pages help users feel confident and reduce errors by giving them a second chance to review their data【316074223619945†L591-L596】.  Use a two‑thirds layout on desktop devices for short answers and a full‑width layout for longer or more detailed answers【316074223619945†L600-L611】.</behaviour>
+      <citation source="design-system">【316074223619945†L574-L645】</citation>
+    </pattern>
+  </patterns>
+</reference_module>

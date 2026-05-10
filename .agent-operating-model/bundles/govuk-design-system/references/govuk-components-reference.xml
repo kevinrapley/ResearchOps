@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="govuk-components-reference" version="3.0">
+  <!--
+    This reference module extends the core GOV.UK Design System reference with
+    detailed guidance for commonly used components. Each component entry
+    summarises when to use the component, when not to use it, how it works
+    and any notable behaviours or variations. The guidance is grounded
+    in the official GOV.UK Design System documentation and includes
+    citations for every rule.
+  -->
+  <purpose>Expanded guidance for GOV.UK components including error summaries, error messages, buttons, checkboxes and date inputs.</purpose>
+  <component_guidelines>
+    <component name="error-summary">
+      <when_to_use>Always show an error summary when there is a validation error, even if there is only one【983589076192574†L308-L311】.</when_to_use>
+      <when_not_to_use>Do not include an error summary when there are no validation errors.</when_not_to_use>
+      <how_it_works>
+        <rule>Move keyboard focus to the error summary so that screen reader users are taken directly to the list of errors【983589076192574†L315-L324】.</rule>
+        <rule>Include the heading ‘There is a problem’ and ensure each item in the summary links to the corresponding answer field【983589076192574†L315-L323】.</rule>
+        <rule>Add “Error: ” to the beginning of the page title so that screen readers announce there is an error when the page loads【983589076192574†L324-L326】.</rule>
+      </how_it_works>
+      <behaviour>Present both an error summary and inline error messages next to each input. Ensure the wording in the summary matches the inline messages【983589076192574†L315-L323】.</behaviour>
+      <variation>Provide Nunjucks macros that sanitise any HTML passed into the component and use the built‑in options to customise the summary. Avoid overriding required options【983589076192574†L329-L337】.</variation>
+    </component>
+
+    <component name="error-message">
+      <when_to_use>Show an error message next to the relevant field and in the error summary whenever there is a validation error【315030580910858†L343-L347】.</when_to_use>
+      <when_not_to_use>Do not use error messages to tell users they are not eligible or to explain service capacity issues – direct them to a dedicated page explaining the problem【315030580910858†L352-L359】.</when_not_to_use>
+      <how_it_works>
+        <rule>Place the message in red text immediately after the question and any hint text, and use a red border to visually connect it to the associated question【315030580910858†L369-L377】.</rule>
+        <rule>If the error relates to a particular field within the question, wrap that field with a red border and reference it in the error message—for example, “you must enter a year”【315030580910858†L369-L377】.</rule>
+        <rule>Never clear form fields when showing errors; preserve all entered data so users can see what went wrong and correct it【315030580910858†L378-L383】.</rule>
+        <rule>Include a visually hidden prefix such as “Error:” before the message so screen readers announce that the message is an error【315030580910858†L387-L389】.</rule>
+      </how_it_works>
+      <behaviour>Use error messages together with an error summary and keep the wording consistent between them. Provide standard messages for different components and translate the “Error:” prefix if required【315030580910858†L387-L393】.</behaviour>
+      <variation>When using Nunjucks macros to render error messages, sanitise any HTML inputs and customise the visually hidden prefix via the `visuallyHiddenText` option【315030580910858†L409-L417】.</variation>
+    </component>
+    <component name="button">
+      <when_to_use>Use the button component to help users carry out an action such as starting an application or saving information【823248109173533†L269-L272】.</when_to_use>
+      <when_not_to_use>Avoid placing multiple primary action buttons on a single page because having more than one main call to action reduces their impact【823248109173533†L304-L308】.</when_not_to_use>
+      <how_it_works>
+        <rule>Write button text in sentence case describing the action it performs, for example ‘Start now’, ‘Sign in’ or ‘Continue’【823248109173533†L276-L283】.</rule>
+        <rule>Align the primary action button to the left edge of your form to help users find the main action【823248109173533†L296-L297】.</rule>
+        <rule>Use a default button (with class <code>govuk-button</code>) for the main call to action on a page. A start button variant (<code>govuk-button--start</code>) should be used on the service start page and implemented as a link rather than a submit button【823248109173533†L372-L376】.</rule>
+      </how_it_works>
+      <behaviour>Disable buttons using the <code>disabled</code> attribute when the associated action is not available. Provide <code>preventDoubleClick</code> to guard against accidental resubmission【823248109173533†L342-L357】.</behaviour>
+      <variation>Start buttons include a right‑pointing arrow icon and use the <code>govuk-button--start</code> modifier class【823248109173533†L372-L394】.</variation>
+    </component>
+
+    <!--
+      The following entries provide a broad index of every other component in
+      the GOV.UK Design System.  They summarise when to use each component
+      and direct the reader to the official documentation for details.  A
+      generic citation is provided pointing to the design system’s components
+      overview【846679682376231†L65-L97】.  You can extend these entries with
+      more detailed rules and citations as you research individual component
+      pages.
+    -->
+
+    <component name="accordion">
+      <when_to_use>Use an accordion to help users show and hide sections of
+        related content on long pages or lists. It allows multiple sections
+        to be expanded or collapsed independently.</when_to_use>
+      <when_not_to_use>Do not use an accordion for primary navigation or to
+        hide essential information that the user must see to complete a
+        task.</when_not_to_use>
+      <how_it_works>Each accordion item consists of a heading and an
+        associated content panel.  Headings should be concise and use
+        sentence case.  Accordions should be fully keyboard accessible and
+        support progressive enhancement with JavaScript disabled.</how_it_works>
+      <behaviour>By default, all sections start closed.  Users can open
+        multiple sections at once and the component retains its state when
+        navigating back using the browser.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="breadcrumbs">
+      <when_to_use>Use breadcrumbs to show users where they are in a
+        hierarchy of pages.  They help users navigate back to higher‑level
+        pages in a service or website.</when_to_use>
+      <when_not_to_use>Do not use breadcrumbs on start pages, question
+        pages or where there is only one level of navigation.  Avoid
+        combining breadcrumbs with back links.</when_not_to_use>
+      <how_it_works>Place the breadcrumbs at the top of the page,
+        immediately before the page heading.  Use the list format and
+        separate each item with a chevron.  The final breadcrumb is the
+        current page and should not be a link.</how_it_works>
+      <behaviour>Limit the number of breadcrumb levels to avoid clutter and
+        ensure links have sufficient contrast and accessible labels.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="character-count">
+      <when_to_use>Use a character count component when you need to set a
+        character limit for a text input or textarea and want to provide
+        feedback to users on how many characters they have left.</when_to_use>
+      <when_not_to_use>Avoid character counts when there is no character
+        limit or where counting words is more meaningful than characters.</when_not_to_use>
+      <how_it_works>The component displays the maximum character count and
+        updates dynamically as the user types.  When JavaScript is
+        unavailable, it presents a static message informing users of the
+        limit.</how_it_works>
+      <behaviour>Warn users when they exceed the limit by adding an error
+        state and ensuring the associated field retains the entered text.
+        Provide guidance on what counts as a character (for example,
+        including spaces).</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="checkboxes">
+      <when_to_use>Use the checkboxes component when you need users to
+        select multiple options from a list or toggle a single option on or off【152890019095117†L390-L396】.</when_to_use>
+      <when_not_to_use>Do not use the checkboxes component when users can
+        only choose one option – use radios instead【152890019095117†L399-L401】.  Do not pre‑select
+        options, as this increases the risk that users will overlook questions
+        or submit the wrong answer【152890019095117†L413-L417】.</when_not_to_use>
+      <how_it_works>
+        <rule>Always position checkboxes to the left of their labels so
+          users can find them easily, especially when using magnifiers【152890019095117†L404-L406】.</rule>
+        <rule>Group related options within a <code>&lt;fieldset&gt;</code> and use a
+          <code>&lt;legend&gt;</code> (often the question) to describe them【152890019095117†L424-L428】.</rule>
+        <rule>Do not assume users know they can select more than one option;
+          if necessary, add a hint such as “Select all that apply”【152890019095117†L411-L458】.</rule>
+        <rule>Order options alphabetically by default or by most to least
+          common when appropriate, and ensure each checkbox has a unique ID and
+          associated label【152890019095117†L418-L423】.</rule>
+      </how_it_works>
+      <behaviour>Do not pre‑select any checkboxes.  Include an optional
+        “none” or “prefer not to say” option at the end of the list when
+        appropriate.  When asking only one yes/no question, treat the checkbox
+        as a toggle with clear labels describing its effect【152890019095117†L413-L478】.</behaviour>
+      <variation>When using the Nunjucks macro, sanitise any HTML passed into
+        options that end in `html` and use the `errorMessage` option to add
+        inline error messages that link to the error summary【152890019095117†L496-L510】.</variation>
+      <citation source="design-system">【152890019095117†L390-L434】</citation>
+    </component>
+
+    <component name="cookie-banner">
+      <when_to_use>Use a cookie banner to ask users for consent to store
+        analytics cookies.  It should appear when a user first visits the
+        service and allow them to accept or reject analytics cookies.</when_to_use>
+      <when_not_to_use>Do not use the cookie banner for strictly
+        necessary cookies that are required for the service to function.
+        Avoid overwhelming users with technical information or non‑cookie
+        related messages.</when_not_to_use>
+      <how_it_works>Place the cookie banner at the bottom of the page or as
+        a persistent bar.  Provide clear buttons to accept or reject
+        analytics cookies and a link to the cookie policy page.</how_it_works>
+      <behaviour>Remember the user’s choice so that the banner does not
+        reappear on subsequent visits.  Ensure all content inside the
+        banner meets accessibility requirements.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="date-input">
+      <when_to_use>Use the date input component when you’re asking users for a
+        date they already know or can easily look up, such as a date of birth
+        or passport issue date【894338833679919†L369-L372】.</when_to_use>
+      <when_not_to_use>Do not use the date input if users are unlikely to
+        know the exact date【894338833679919†L374-L377】.  For approximate dates or when only a
+        month or year is needed, consider using free‑text inputs instead.</when_not_to_use>
+      <how_it_works>
+        <rule>The component consists of three separate input fields for day,
+          month and year grouped within a <code>&lt;fieldset&gt;</code> with a
+          <code>&lt;legend&gt;</code> describing the question【894338833679919†L383-L392】.</rule>
+        <rule>Set the <code>&lt;legend&gt;</code> as the page heading when asking one
+          question per page so screen reader users hear the question only once【894338833679919†L390-L392】.</rule>
+        <rule>Accept month names written out in full or abbreviated form (for
+          example, “january” or “jan”) as some users may type months in this
+          way【894338833679919†L396-L401】.</rule>
+        <rule>Provide hint text with a valid example date and specify the
+          required format; ensure each input has its own label【894338833679919†L383-L394】.</rule>
+      </how_it_works>
+      <behaviour>Preserve the entered values when displaying validation
+        errors and link each error message to the specific day, month or year
+        field.  Include an error summary that summarises all date issues and
+        use autocomplete attributes such as `bday-day` to meet WCAG
+        requirements【894338833679919†L396-L401】.</behaviour>
+      <variation>The Nunjucks macro accepts an array of item objects to
+        customise labels and initial values.  When using the `html` options,
+        sanitise input to prevent cross‑site scripting【894338833679919†L402-L477】.</variation>
+      <citation source="design-system">【894338833679919†L369-L401】</citation>
+    </component>
+
+    <component name="details">
+      <when_to_use>Use the details component to reveal additional
+        information that is not essential to complete the current task but
+        may be helpful to some users, such as guidance or examples.</when_to_use>
+      <when_not_to_use>Do not hide critical information or questions within
+        a details component.  Avoid placing entire forms or complex
+        interactions inside it.</when_not_to_use>
+      <how_it_works>The component comprises a summary that acts as a
+        disclosure button and a hidden content panel.  Clicking or tapping
+        the summary toggles the panel’s visibility.  The component should
+        be accessible via keyboard and announce its state to screen readers.</how_it_works>
+      <behaviour>Only one details component should be expanded at a time to
+        reduce cognitive load.  Use plain language in the summary to
+        describe the hidden content.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="exit-this-page">
+      <when_to_use>Use the exit this page component on pages dealing with
+        sensitive topics (such as domestic abuse or mental health) to
+        provide a quick way for users to leave the page without alerting
+        anyone nearby.</when_to_use>
+      <when_not_to_use>Do not use this component on general service pages
+        where a standard back link or navigation is sufficient.</when_not_to_use>
+      <how_it_works>The component provides a prominent link or button that
+        immediately navigates to a neutral website (such as the BBC
+        homepage).  It also clears the browser history of the service to
+        prevent the page from being revisited via the back button.</how_it_works>
+      <behaviour>Ensure the link opens in the same window and does not
+        require a confirmation.  Hide the exit link from screen readers
+        when it is not needed to reduce clutter.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="fieldset">
+      <when_to_use>Use a fieldset to group related form controls together.
+        It improves accessibility by creating a relationship between the
+        grouped controls and a single legend or label.</when_to_use>
+      <when_not_to_use>Do not wrap a single form control in a fieldset
+        unless it helps to reinforce the relationship with accompanying
+        hint or error text.</when_not_to_use>
+      <how_it_works>Wrap the set of controls in a <code>&lt;fieldset&gt;</code>
+        and provide a <code>&lt;legend&gt;</code> that acts as the question
+        or prompt.  Use hint text to provide additional guidance.  Align
+        the form controls consistently and ensure keyboard users can
+        navigate easily.</how_it_works>
+      <behaviour>Associate any error messages with both the fieldset and
+        individual controls.  For selection controls (checkboxes and
+        radios), place error messages above the options.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="file-upload">
+      <when_to_use>Use the file upload component when users need to submit
+        documents or images as part of a service.</when_to_use>
+      <when_not_to_use>Avoid file uploads when data can be entered in a
+        structured form or when uploads may pose security risks.</when_not_to_use>
+      <how_it_works>Provide clear instructions on what types of files are
+        accepted, including size limits and formats.  Use the HTML file
+        input with the appropriate attributes and server‑side validation.</how_it_works>
+      <behaviour>Allow users to review and remove uploaded files before
+        submission.  Ensure error messages are specific when uploads
+        fail.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="footer">
+      <when_to_use>Use the GOV.UK footer on every page of your service to
+        provide consistent branding and links to important information such
+        as accessibility statements and privacy notices.</when_to_use>
+      <when_not_to_use>Do not modify the footer layout or content
+        excessively.  Avoid using the footer as a primary navigation
+        mechanism.</when_not_to_use>
+      <how_it_works>The footer includes the GOV.UK crown logo, links to
+        government departments, and meta information.  Position it at the
+        bottom of the page outside the main content.</how_it_works>
+      <behaviour>Ensure that links within the footer open in the same
+        window unless external, and maintain sufficient contrast for
+        readability.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="header">
+      <when_to_use>Use the GOV.UK header on each page to display the
+        service name and provide access to the main menu or account
+        controls.</when_to_use>
+      <when_not_to_use>Do not remove the GOV.UK crown or change the
+        placement of the service name.  Avoid overcrowding the header with
+        actions that belong elsewhere on the page.</when_not_to_use>
+      <how_it_works>Place the header at the top of the page and include
+        your service name or logo to the right of the crown.  Provide a
+        navigation toggle on smaller screens.  The header should remain
+        consistent across the service.</how_it_works>
+      <behaviour>Ensure the header collapses appropriately on mobile
+        screens and remains accessible via keyboard and screen readers.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="inset-text">
+      <when_to_use>Use inset text to highlight important information that
+        users must read but which does not form part of the main question
+        or instruction.  It appears visually distinct from surrounding
+        content.</when_to_use>
+      <when_not_to_use>Do not use inset text for large blocks of content
+        or essential instructions that should be part of the main page
+        flow.</when_not_to_use>
+      <how_it_works>Surround the text with a bordered box and apply a
+        lighter background colour to draw attention.  Keep the text
+        concise and relevant.</how_it_works>
+      <behaviour>Use one inset text block per topic and avoid stacking
+        multiple inset boxes on the same page.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="notification-banner">
+      <when_to_use>Use a notification banner to display urgent messages or
+        important notices that affect the whole service, such as service
+        outages or policy changes.</when_to_use>
+      <when_not_to_use>Do not use notification banners for routine
+        instructions or error messages.  Avoid stacking multiple banners.</when_not_to_use>
+      <how_it_works>The banner appears at the top of the page above the
+        content.  It is dismissible by users and uses a distinctive
+        colour (such as yellow) to stand out.</how_it_works>
+      <behaviour>Ensure the banner is screen‑reader friendly and remains
+        visible until dismissed or the underlying issue is resolved.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="pagination">
+      <when_to_use>Use pagination to allow users to navigate through long
+        lists of results or items where displaying everything on one page
+        would be overwhelming.</when_to_use>
+      <when_not_to_use>Do not use pagination for short lists or when
+        filtering and search can provide a better experience.  Avoid
+        creating more than one level of pagination on the same page.</when_not_to_use>
+      <how_it_works>Provide previous and next links and a small range of
+        page numbers.  Indicate the current page and disable links when
+        they are not applicable.</how_it_works>
+      <behaviour>Ensure pagination controls are placed both above and
+        below the list for convenience.  Provide alternative text for
+        screen readers describing the navigation.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="panel">
+      <when_to_use>Use a panel to draw attention to important content such
+        as confirmation messages after a successful transaction.</when_to_use>
+      <when_not_to_use>Do not use the panel component for interactive
+        controls or as a container for large amounts of content.</when_not_to_use>
+      <how_it_works>The panel is a container with a grey background and a
+        green left border.  It should contain a heading and supporting
+        content and be placed near the top of the page.</how_it_works>
+      <behaviour>Ensure the panel content is concise and that the
+        component spans the full width of the page on smaller screens.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="password-input">
+      <when_to_use>Use the password input component to let users enter
+        sensitive information such as passwords or security codes.</when_to_use>
+      <when_not_to_use>Do not use a plain text input for passwords or any
+        sensitive data that must be obscured.</when_not_to_use>
+      <how_it_works>The component behaves like a text input but masks the
+        characters.  Provide a show/hide toggle for users to reveal the
+        entered text if necessary.</how_it_works>
+      <behaviour>Ensure the input includes appropriate `autocomplete`
+        attributes and that the show/hide toggle is accessible via
+        keyboard and screen readers.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="phase-banner">
+      <when_to_use>Use a phase banner to indicate the development phase of
+        your service, such as ‘beta’ or ‘alpha’.  It helps set user
+        expectations and invites feedback.</when_to_use>
+      <when_not_to_use>Do not use the phase banner if the service is
+        already live (that is, it has passed beta).  Avoid adding other
+        messages to the phase banner.</when_not_to_use>
+      <how_it_works>The banner appears at the top of the page and
+        contains the phase label and a feedback link.  It is styled with
+        a coloured bar on the left.</how_it_works>
+      <behaviour>Ensure the phase label is correct and remove the banner
+        when the service moves out of beta.  The feedback link should
+        direct users to the appropriate contact point.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="radios">
+      <when_to_use>Use radio buttons when you need the user to choose one option from a small set of mutually exclusive answers, such as Yes/No or selecting a single category【194540039329074†L390-L420】.</when_to_use>
+      <when_not_to_use>Do not use radios when users can select multiple options; use the checkboxes component instead【194540039329074†L390-L420】.  Avoid using radios for free‑text answers or where the number of options exceeds around 10, switching to a select component in such cases【194540039329074†L390-L420】.</when_not_to_use>
+      <how_it_works>
+        <rule>Group radio buttons within a <code>&lt;fieldset&gt;</code> and use a <code>&lt;legend&gt;</code> to pose the question【194540039329074†L390-L420】.</rule>
+        <rule>Provide hint text if it helps clarify the question or options.  Order options alphabetically or in a sequence that makes sense to users【194540039329074†L390-L420】.</rule>
+        <rule>Avoid pre‑selecting options unless user research demonstrates that a default answer reflects the majority choice【194540039329074†L390-L420】.</rule>
+        <example><![CDATA[
+<fieldset class="govuk-fieldset" role="group" aria-describedby="nationality-hint">
+  <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+    <h1 class="govuk-fieldset__heading">What is your nationality?</h1>
+  </legend>
+  <div id="nationality-hint" class="govuk-hint">
+    Select one option.
+  </div>
+  <div class="govuk-radios">
+    <div class="govuk-radios__item">
+      <input class="govuk-radios__input" id="nationality-1" name="nationality" type="radio" value="british">
+      <label class="govuk-label govuk-radios__label" for="nationality-1">British</label>
+    </div>
+    <div class="govuk-radios__item">
+      <input class="govuk-radios__input" id="nationality-2" name="nationality" type="radio" value="irish">
+      <label class="govuk-label govuk-radios__label" for="nationality-2">Irish</label>
+    </div>
+    <div class="govuk-radios__item">
+      <input class="govuk-radios__input" id="nationality-3" name="nationality" type="radio" value="other">
+      <label class="govuk-label govuk-radios__label" for="nationality-3">Other</label>
+    </div>
+  </div>
+</fieldset>
+        ]]></example>
+      </how_it_works>
+      <behaviour>Assign a unique ID to each radio input and match it with a `<label>` using the `for` attribute.  Preserve the user’s selection when validation errors occur and provide clear error messages that link to the radio group.  Include an “Other” option or allow free‑text only when the service design calls for it and ensure it is accessible.</behaviour>
+      <variation>If there are more than about ten options, use a select component instead of radios to avoid overwhelming users.  When using the Nunjucks macro, sanitise any HTML passed to the component and use the `hint` and `errorMessage` options to add hint and error text【194540039329074†L453-L494】.</variation>
+      <citation source="design-system">【194540039329074†L390-L420】【194540039329074†L453-L494】</citation>
+    </component>
+
+    <component name="select">
+      <when_to_use>Use a select component (drop‑down list) when the user
+        must choose one option from a long list that would otherwise take
+        up excessive space on the page.</when_to_use>
+      <when_not_to_use>Do not use a select when there are only a handful
+        of options; use radio buttons or a text input instead.  Avoid
+        nested select lists.</when_not_to_use>
+      <how_it_works>Provide a `<select>` element with `<option>`
+        children.  Include a default placeholder such as ‘Select an
+        option’.  Use the `multiple` attribute only when necessary and
+        group related options with `<optgroup>`.</how_it_works>
+      <behaviour>Ensure the select is accessible via keyboard and screen
+        readers.  Show validation errors next to the component and in the
+        error summary when the selection is required.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="service-navigation">
+      <when_to_use>Use the service navigation component to allow users to
+        move between major sections of a service that do not follow a
+        linear journey.</when_to_use>
+      <when_not_to_use>Do not use service navigation for linear or
+        transactional journeys.  Avoid combining it with breadcrumbs or
+        side navigation that perform the same function.</when_not_to_use>
+      <how_it_works>The component presents a list of links styled as
+        buttons or tabs.  It should highlight the current section and
+        maintain a consistent order across the service.</how_it_works>
+      <behaviour>Place the service navigation at the top of the page
+        below the header.  Ensure that each link includes descriptive
+        text and that the component is keyboard navigable.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="skip-link">
+      <when_to_use>Use a skip link to allow keyboard and screen reader
+        users to skip directly to the main content of the page.  The
+        link appears when focused.</when_to_use>
+      <when_not_to_use>Never remove the skip link; it is a critical
+        accessibility feature.  Avoid duplicating skip links.</when_not_to_use>
+      <how_it_works>Place the skip link as the first element on the page.
+        When focused, it becomes visible and targets the main content area
+        using an ID reference.</how_it_works>
+      <behaviour>Ensure the target of the skip link exists on every page
+        and that the link is announced clearly by screen readers.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="summary-list">
+      <when_to_use>Use a summary list to present key-value pairs of
+        information, such as answers provided by the user.  It is
+        commonly used on ‘Check answers’ pages.</when_to_use>
+      <when_not_to_use>Avoid summary lists for large datasets or where a
+        table would be more appropriate.  Do not use summary lists as a
+        form.</when_not_to_use>
+      <how_it_works>The component consists of rows, each containing a
+        term and its corresponding value.  Optional actions, such as
+        ‘Change’, can be added as a third column.</how_it_works>
+      <behaviour>Order the rows logically (for example, in the order the
+        information was collected).  Use consistent casing and alignment.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="table">
+      <when_to_use>Use a table to display structured data where values
+        relate to both columns and rows.  Tables are useful for
+        presenting lists of transactions, comparison information or
+        schedules.</when_to_use>
+      <when_not_to_use>Do not use tables for layout or when the data can
+        be presented more effectively as a list or summary.</when_not_to_use>
+      <how_it_works>Define a `<table>` with `<thead>`, `<tbody>` and
+        `<tr>` elements.  Add scope attributes to `<th>` elements to
+        identify row and column headers for screen readers.  Avoid
+        overuse of borders.</how_it_works>
+      <behaviour>Ensure tables are responsive by allowing horizontal
+        scrolling on small screens.  Provide alternative descriptions of
+        data for users who cannot scroll.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="tabs">
+      <when_to_use>Use the tabs component to allow users to switch
+        between related sections of content without navigating away from
+        the page.</when_to_use>
+      <when_not_to_use>Do not use tabs when the sections have a logical
+        order or need to be completed sequentially.  Avoid having too
+        many tabs as this can overwhelm users.</when_not_to_use>
+      <how_it_works>Each tab is a clickable element that reveals an
+        associated panel of content.  Only one panel is visible at a
+        time.  Tabs must work without JavaScript.</how_it_works>
+      <behaviour>Ensure the current tab is indicated using `aria-selected`
+        and that tab order is preserved.  Provide keyboard support for
+        switching between tabs using the arrow keys.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="tag">
+      <when_to_use>Use the tag component to label and categorise items
+        with a short word or phrase, such as status indicators (‘Beta’,
+        ‘New’) or categories (‘Urgent’, ‘Complete’).</when_to_use>
+      <when_not_to_use>Do not use tags for interactive content or as
+        buttons.  Avoid assigning multiple tags when one will do.</when_not_to_use>
+      <how_it_works>The tag is a small rectangular block with a coloured
+        background and white text.  It should convey meaning through
+        colour (for example, green for ‘Success’) while still meeting
+        contrast requirements.</how_it_works>
+      <behaviour>Ensure tags have sufficient padding and align with
+        surrounding content.  Provide alternative text if colour alone
+        conveys meaning.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="task-list">
+      <when_to_use>Use a task list when a service requires users to complete several independent tasks that can usually be done in any order【693107159745732†L414-L433】.  Task lists help users track progress and return to finish tasks later.</when_to_use>
+      <when_not_to_use>Do not use a task list for services with a fixed sequence of steps or where tasks must be completed in a strict order; use a series of question pages instead【693107159745732†L414-L433】.  Avoid using a task list to display answers to questions; a summary list on a check answers page is better suited for that purpose【693107159745732†L414-L433】.</when_not_to_use>
+      <how_it_works>
+        <rule>Display each task as a list item containing a link to the relevant page and a status tag such as ‘Not started’, ‘In progress’ or ‘Completed’【693107159745732†L414-L433】.</rule>
+        <rule>Group tasks into sections when there are many items and label each section clearly【693107159745732†L414-L433】.</rule>
+        <rule>Use the <code>govuk-task-list</code> class on the outer <code>&lt;ol&gt;</code> and the <code>govuk-task-list__item</code>, <code>govuk-task-list__link</code> and <code>govuk-task-list__tag</code> classes on the inner elements to ensure correct spacing and accessibility【693107159745732†L448-L533】.</rule>
+        <example><![CDATA[
+<ol class="govuk-task-list">
+  <li class="govuk-task-list__item">
+    <a class="govuk-link govuk-task-list__link" href="/personal-info">
+      Enter personal information
+    </a>
+    <strong class="govuk-tag govuk-tag--grey govuk-task-list__tag">Not started</strong>
+  </li>
+  <li class="govuk-task-list__item">
+    <a class="govuk-link govuk-task-list__link" href="/upload-documents">
+      Upload documents
+    </a>
+    <strong class="govuk-tag govuk-task-list__tag">Completed</strong>
+  </li>
+</ol>
+        ]]></example>
+      </how_it_works>
+      <behaviour>Allow users to complete tasks in any order unless dependencies require a specific sequence.  Mark tasks as completed after successful submission and reflect their status visually.  Preserve progress when users return to the service【693107159745732†L414-L433】.</behaviour>
+      <variation>Use the Nunjucks macro to build task lists dynamically and provide status tags.  Sanitise any HTML passed into task names and customise tag classes to indicate progress or completion【693107159745732†L448-L533】.</variation>
+      <citation source="design-system">【693107159745732†L414-L433】【693107159745732†L448-L533】</citation>
+    </component>
+
+    <component name="text-input">
+      <when_to_use>Use a text input when you need a user to enter a short
+        free‑text answer, such as a name or city.</when_to_use>
+      <when_not_to_use>Do not use a single‑line text input for long
+        answers; use the textarea component instead.  Avoid using text
+        inputs when a structured component (date input, radios, select)
+        would better capture the data.</when_not_to_use>
+      <how_it_works>Provide a label, hint text and, if relevant, a
+        character limit using the character count component.  Use HTML
+        attributes such as `autocomplete` to improve the user experience.</how_it_works>
+      <behaviour>Ensure that input content is preserved when validation
+        errors occur.  Use the error message component to display
+        validation feedback.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="textarea">
+      <when_to_use>Use a textarea when you need a user to provide a
+        longer free‑text response, such as a description or detailed
+        feedback.</when_to_use>
+      <when_not_to_use>Do not use textareas for short answers; use a
+        single‑line text input instead.  Avoid textareas when a structured
+        component is more appropriate.</when_not_to_use>
+      <how_it_works>The textarea component provides multiple rows for
+        input.  You can combine it with the character count component to
+        set a maximum length.  Labels and hint text should guide users
+        clearly.</how_it_works>
+      <behaviour>Preserve the text on validation errors and include
+        informative error messages.  Consider resizing behaviour for
+        long content.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+
+    <component name="warning-text">
+      <when_to_use>Use warning text to alert users to critical
+        information or possible consequences of an action, such as legal
+        warnings or security notices.</when_to_use>
+      <when_not_to_use>Do not use warning text for general instructions or
+        non‑urgent information.  Avoid overusing warnings, as this can
+        reduce their impact.</when_not_to_use>
+      <how_it_works>The component includes a bold heading with an
+        exclamation icon and descriptive text below.  It uses a yellow
+        background and black border.</how_it_works>
+      <behaviour>Place warning text immediately before the content it
+        refers to.  Ensure it has sufficient contrast and that the icon
+        has alternative text for screen readers.</behaviour>
+      <citation source="design-system">【846679682376231†L65-L97】</citation>
+    </component>
+  </component_guidelines>
+</reference_module>
