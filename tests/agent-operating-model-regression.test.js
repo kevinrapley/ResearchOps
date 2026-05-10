@@ -15,30 +15,38 @@ function bundleById(taskText, bundleId) {
 	return selectedBundles(taskText).find((bundle) => bundle.id === bundleId);
 }
 
+function assertCanonicalBundle(bundle) {
+	assert.ok(bundle.canonicalPath, `${bundle.id} should expose canonicalPath`);
+	assert.ok(bundle.promptSpec, `${bundle.id} should expose promptSpec`);
+	assert.ok(bundle.promptBody, `${bundle.id} should expose promptBody`);
+	assert.ok(fs.existsSync(bundle.canonicalPath), `${bundle.id} canonicalPath should exist`);
+	assert.ok(fs.existsSync(`${bundle.canonicalPath}${bundle.promptSpec}`));
+	assert.ok(fs.existsSync(`${bundle.canonicalPath}${bundle.promptBody}`));
+}
+
 test("repository operating model selects always-load bundles", () => {
-	const ids = selectedIds("Update documentation for the ResearchOps platform.");
+	const bundles = selectedBundles("Update documentation for the ResearchOps platform.");
+	const ids = bundles.map((bundle) => bundle.id);
 
 	assert.deepEqual(ids.slice(0, 3), [
 		"github-diamond",
-		"researchops-developer",
-		"gov-product-assistant-gold-standard",
+		"researchops-developer-control",
+		"multi-functional-team",
 	]);
+
+	for (const bundle of bundles.slice(0, 3)) {
+		assertCanonicalBundle(bundle);
+	}
 });
 
-test("repository operating model selects conditional bundles from typed task signals", () => {
-	const task =
-		"Fix a Cloudflare Worker route that writes Airtable records and syncs Mural widgets.";
+test("repository operating model selects conditional API bundles from typed task signals", () => {
+	const task = "Fix a route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
 
-	assert.ok(ids.includes("cloudflare-core-developer"));
-	assert.ok(ids.includes("airtable-public-api-developer"));
-	assert.ok(ids.includes("mural-public-api-developer"));
+	assert.ok(ids.includes("airtable-public-api"));
+	assert.ok(ids.includes("mural-public-api"));
 
-	for (const bundleId of [
-		"cloudflare-core-developer",
-		"airtable-public-api-developer",
-		"mural-public-api-developer",
-	]) {
+	for (const bundleId of ["airtable-public-api", "mural-public-api"]) {
 		const bundle = bundleById(task, bundleId);
 
 		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
@@ -46,6 +54,7 @@ test("repository operating model selects conditional bundles from typed task sig
 		assert.ok(bundle.selectionEvidence.ruleId);
 		assert.ok(bundle.selectionEvidence.matchedSignals.length > 0);
 		assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
+		assertCanonicalBundle(bundle);
 	}
 });
 
@@ -58,6 +67,7 @@ test("repository operating model preserves explicit registry keyword fallback", 
 	assert.deepEqual(bundle.selectionEvidence.matchedPhrases, []);
 	assert.deepEqual(bundle.selectionEvidence.matchedSignals, []);
 	assert.ok(bundle.selectionEvidence.matchedRegistryKeywords.includes("page"));
+	assertCanonicalBundle(bundle);
 });
 
 test("repository operating model exposes typed task signals for trace reports", () => {
@@ -69,6 +79,8 @@ test("repository operating model exposes typed task signals for trace reports", 
 	assert.ok(signalIds.includes("repository-affecting-task"));
 	assert.ok(signalIds.includes("ui-or-content-change"));
 	assert.ok(ids.includes("govuk-design-system"));
+	assert.equal(model.canonicalRoot, ".agent-operating-model/bundles/");
+	assert.equal(Object.hasOwn(model, "bundlePackage"), false);
 });
 
 test("repository operating model sources are referenced from AGENTS.md", () => {
@@ -84,8 +96,10 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/trace-policy.md",
 		".agent-operating-model/trace-layers.md",
 		".agent-operating-model/behavioural-evals.json",
-		"docs/devops/ResearchOps-Bundle-Setup.zip",
+		".agent-operating-model/bundles/",
 	]) {
 		assert.match(agents, new RegExp(reference.replace(/[.]/g, "\\.")));
 	}
+
+	assert.doesNotMatch(agents, /ResearchOps-Bundle-Setup\.zip/);
 });
