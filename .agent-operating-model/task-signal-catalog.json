@@ -1,5 +1,5 @@
 {
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"purpose": "Define typed task signals used by the operating-model loader before selecting bundles.",
 	"signals": [
 		{
@@ -35,15 +35,26 @@
 			"id": "runtime-or-deployment-change",
 			"kind": "detected",
 			"traceLayer": "behavioural",
-			"description": "The task concerns Cloudflare runtime, deployment, routing or infrastructure behaviour.",
+			"description": "The task concerns Cloudflare runtime, deployment, routing, bindings, storage, state or infrastructure behaviour.",
 			"phrases": [
 				"binding",
+				"bindings",
 				"cloudflare",
+				"d1",
 				"deployment",
+				"durable object",
+				"durable objects",
+				"kv",
 				"pages",
+				"queue",
+				"queues",
+				"r2",
 				"route",
+				"vectorize",
 				"worker",
 				"workers",
+				"workers ai",
+				"workflows",
 				"wrangler"
 			]
 		},
