@@ -27,9 +27,12 @@ test('Airtable bundle uses JSON schemas as the authoritative schema contracts', 
 	const manifest = readBundleFile('registry-manifest.yaml');
 
 	for (const fileText of [promptBody, promptSpec, manifest]) {
-		assert.doesNotMatch(fileText, /grade\.schema\.js/);
-		assert.doesNotMatch(fileText, /output\.schema\.js/);
+		assert.match(fileText, /grade\.schema\.json/);
+		assert.match(fileText, /output\.schema\.json/);
 	}
+
+	assert.doesNotMatch(manifest, /^- path: grade\.schema\.js$/m);
+	assert.doesNotMatch(manifest, /^- path: output\.schema\.js$/m);
 });
 
 test('Airtable eval orchestration declares pipelines and minimum coverage', () => {
