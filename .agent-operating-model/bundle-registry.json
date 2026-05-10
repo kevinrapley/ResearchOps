@@ -1,11 +1,11 @@
 {
-	"version": "1.0.0",
-	"updated": "2026-05-07",
-	"bundlePackage": "docs/devops/ResearchOps-Bundle-Setup.zip",
+	"version": "1.1.0",
+	"updated": "2026-05-10",
+	"canonicalRoot": ".agent-operating-model/bundles/",
 	"defaultLoadOrder": [
 		"github-diamond",
-		"researchops-developer",
-		"gov-product-assistant-gold-standard"
+		"researchops-developer-control",
+		"multi-functional-team"
 	],
 	"bundles": [
 		{
@@ -14,6 +14,9 @@
 			"role": "primary-repository-governance",
 			"precedence": 100,
 			"load": "always",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"repository",
 				"github",
@@ -26,11 +29,14 @@
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "researchops-developer",
-			"name": "ResearchOps Developer",
+			"id": "researchops-developer-control",
+			"name": "ResearchOps Developer Control",
 			"role": "platform-specific-development-control",
 			"precedence": 90,
 			"load": "always",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"researchops",
 				"platform",
@@ -38,23 +44,31 @@
 				"service",
 				"router",
 				"study",
-				"project"
+				"project",
+				"cloudflare",
+				"wrangler",
+				"deployment"
 			],
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "gov-product-assistant-gold-standard",
-			"name": "Gold Standard Gov Product Assistant",
+			"id": "multi-functional-team",
+			"name": "Multi-Functional Team",
 			"role": "government-product-governance-and-assurance",
 			"precedence": 85,
 			"load": "always",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"government",
 				"governance",
 				"assurance",
 				"service standard",
 				"risk",
-				"harm"
+				"harm",
+				"ethics",
+				"product"
 			],
 			"mustRecordInTrace": true
 		},
@@ -64,6 +78,9 @@
 			"role": "service-ui-accessibility-pattern-control",
 			"precedence": 80,
 			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"gov.uk",
 				"govuk",
@@ -78,45 +95,36 @@
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "cloudflare-core-developer",
-			"name": "Cloudflare Core Developer",
-			"role": "cloudflare-worker-pages-runtime-control",
-			"precedence": 70,
-			"load": "conditional",
-			"keywords": [
-				"cloudflare",
-				"worker",
-				"workers",
-				"pages",
-				"wrangler",
-				"route",
-				"binding",
-				"deployment"
-			],
-			"mustRecordInTrace": true
-		},
-		{
-			"id": "airtable-public-api-developer",
+			"id": "airtable-public-api",
 			"name": "Airtable Public API",
 			"role": "airtable-integration-control",
 			"precedence": 60,
 			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"airtable",
 				"record",
 				"records",
 				"linked record",
 				"filterbyformula",
-				"attachment"
+				"attachment",
+				"comment",
+				"base schema",
+				"webhook"
 			],
 			"mustRecordInTrace": true
 		},
 		{
-			"id": "mural-public-api-developer",
+			"id": "mural-public-api",
 			"name": "Mural Public API",
 			"role": "mural-integration-control",
 			"precedence": 60,
 			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
 			"keywords": [
 				"mural",
 				"oauth",
@@ -124,7 +132,9 @@
 				"room",
 				"mural board",
 				"widget",
-				"sticky note"
+				"sticky note",
+				"template",
+				"tag"
 			],
 			"mustRecordInTrace": true
 		}
