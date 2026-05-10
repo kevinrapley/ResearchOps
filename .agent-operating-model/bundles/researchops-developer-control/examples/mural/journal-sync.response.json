@@ -1,0 +1,6 @@
+{
+  "ok": true,
+  "boardId": "mural-board-123",
+  "stickyId": "sticky-456",
+  "syncMode": "duplicate-below-latest-category-sticky"
+}
