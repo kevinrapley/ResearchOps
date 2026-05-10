@@ -1,0 +1,76 @@
+name: Bug report
+description: File a bug report to help us improve this project.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.  Please answer the questions below so we can reproduce the issue.
+  - type: input
+    id: version
+    attributes:
+      label: Project version
+      description: Which version of the project are you using?
+      placeholder: e.g. v1.2.3
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, browser and any other relevant environment details.
+      placeholder: e.g. Windows 11, Chrome 120
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen.
+      placeholder: Clear and concise description of what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal sequence of steps to reproduce the bug.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Include any error messages or logs.
+      render: shell
+    validations:
+      required: false
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Browsers (if applicable)
+      description: Which browsers were used to reproduce the bug?
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
