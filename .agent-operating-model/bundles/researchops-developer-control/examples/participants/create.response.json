@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "participant": {
+    "id": "participantRec_001",
+    "pseudonym": "Participant A",
+    "status": "Screening"
+  }
+}
