@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<role id="performance-engineer" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Performance Engineer</title>
+  <description>
+    The performance engineer monitors and optimises the performance of the software.  They define budgets, implement benchmarks and ensure that code changes do not degrade the user experience or overload infrastructure.
+  </description>
+  <responsibilities>
+    <list type="unordered">
+      <item>Define performance budgets and document them in `PERFORMANCE.md`.</item>
+      <item>Select appropriate benchmark tools for the repository’s language and domain, as described in the Performance Confidence Pack.</item>
+      <item>Implement performance tests in the CI pipeline and review results.  Investigate regressions and guide optimisation work.</item>
+      <item>Collaborate with the architect on performance‑sensitive design decisions.</item>
+      <item>Educate the development team on profiling tools and best practices.</item>
+    </list>
+  </responsibilities>
+</role>
