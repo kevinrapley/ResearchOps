@@ -45,6 +45,7 @@ const MANIFEST_BUNDLE_IDS = [
 	"researchops-developer-control",
 	"multi-functional-team",
 	"govuk-design-system",
+	"cloudflare",
 	"airtable-public-api",
 	"mural-public-api",
 ];
@@ -203,6 +204,7 @@ for (const expectedId of [
 	"github-diamond",
 	"researchops-developer-control",
 	"multi-functional-team",
+	"cloudflare",
 	"airtable-public-api",
 	"mural-public-api",
 ]) {
