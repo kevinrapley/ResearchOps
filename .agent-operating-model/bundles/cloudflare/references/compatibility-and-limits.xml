@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="compatibility-and-limits" version="1.0.0">
+  <title>Compatibility, Limits and Runtime Constraints</title>
+  <source href="https://developers.cloudflare.com/workers/configuration/compatibility-dates/"/>
+  <source href="https://developers.cloudflare.com/workers/configuration/compatibility-flags/"/>
+  <source href="https://developers.cloudflare.com/workers/platform/limits/"/>
+  <reference_block name="compatibility" title="Compatibility dates and flags">
+    <checklist ordered="false">
+      <entry level="0">Treat compatibility_date as the opt-in mechanism for Workers runtime changes.</entry>
+      <entry level="0">Review compatibility_flags explicitly when Node.js compatibility, runtime behaviour or breaking runtime changes are in scope.</entry>
+      <entry level="0">Do not update compatibility_date casually on production Workers without regression evidence.</entry>
+      <entry level="0">Record the before and after compatibility date and flags in release notes.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="limits" title="Limits">
+    <checklist ordered="false">
+      <entry level="0">Check account plan limits before assuming request volume, CPU time, environment variable count, Worker size, routes, static assets or Cron Trigger capacity.</entry>
+      <entry level="0">Treat CPU time, memory, subrequest count, simultaneous open connections and log size as design constraints.</entry>
+      <entry level="0">Avoid buffering large request or response bodies when streaming is possible.</entry>
+      <entry level="0">Use Service Bindings for Worker-to-Worker calls instead of global fetch to another Worker on the same zone.</entry>
+      <entry level="0">Record any limit assumption that depends on Free, Paid, Business or Enterprise account plan state.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

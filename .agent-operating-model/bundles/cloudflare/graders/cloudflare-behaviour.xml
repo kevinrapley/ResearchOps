@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grader_module id="cloudflare-behaviour" version="1.0.0">
+  <title>Cloudflare Behaviour Grader</title>
+  <criteria>
+    <criterion id="source-authority" severity="hard">Cloudflare platform facts must be grounded in developers.cloudflare.com.</criterion>
+    <criterion id="fetch-response" severity="hard">Worker fetch handler guidance must return Response objects.</criterion>
+    <criterion id="bindings" severity="hard">Worker resource access should use bindings where applicable.</criterion>
+    <criterion id="secrets" severity="hard">Sensitive values must use secrets or Secrets Store, not plaintext vars.</criterion>
+    <criterion id="validation" severity="medium">Deployment claims must separate local, preview and production evidence.</criterion>
+  </criteria>
+</grader_module>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="wrangler-configuration" version="1.0.0">
+  <title>Wrangler Configuration Rules</title>
+  <source href="https://developers.cloudflare.com/workers/wrangler/configuration/"/>
+  <reference_block name="configuration-discipline" title="Configuration discipline">
+    <checklist ordered="false">
+      <entry level="0">Treat Wrangler configuration as the deployable contract for Worker entrypoint, compatibility date, assets and bindings.</entry>
+      <entry level="0">After changing bindings, regenerate Worker types where the project uses TypeScript type generation.</entry>
+      <entry level="0">Keep production, preview and local configuration differences explicit.</entry>
+      <entry level="0">Do not place secrets in vars.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="binding-families" title="Binding families">
+    <checklist ordered="false">
+      <entry level="0">Use D1 database bindings for D1 access from Workers.</entry>
+      <entry level="0">Use kv_namespaces for Workers KV namespaces.</entry>
+      <entry level="0">Use r2_buckets for R2 buckets.</entry>
+      <entry level="0">Use durable_objects.bindings for Durable Object classes.</entry>
+      <entry level="0">Use queues.producers and queues.consumers for Queues.</entry>
+      <entry level="0">Use ai binding for Workers AI.</entry>
+      <entry level="0">Use vectorize bindings for Vectorize indexes.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bundleOrchestration
 	xmlns="urn:researchops:agent-operating-model:bundle-orchestration"
-	version="1.1.0">
+	version="1.2.0">
 	<purpose>
 		Define how repository-aware agents load, apply, layer and trace checked-in prompt bundles for the ResearchOps platform.
 	</purpose>
@@ -31,6 +31,9 @@
 			<bundleRef id="govuk-design-system" canonicalPath=".agent-operating-model/bundles/govuk-design-system/">
 				<when>Frontend, HTML, CSS, accessibility, forms, components, content design or page design are in scope.</when>
 			</bundleRef>
+			<bundleRef id="cloudflare" canonicalPath=".agent-operating-model/bundles/cloudflare/">
+				<when>Cloudflare Workers, Pages, Wrangler, bindings, D1, KV, R2, Durable Objects, Queues, Workflows, Workers AI, Vectorize, routes or deployments are in scope.</when>
+			</bundleRef>
 			<bundleRef id="airtable-public-api" canonicalPath=".agent-operating-model/bundles/airtable-public-api/">
 				<when>Airtable tables, records, linked records, formula filters, comments, schema operations, bases, webhooks or attachments are in scope.</when>
 			</bundleRef>
@@ -45,8 +48,9 @@
 		<rule id="precedence-002">ResearchOps Developer Control governs platform architecture and repository-specific implementation.</rule>
 		<rule id="precedence-003">Multi-Functional Team governs government product, service, ethics and multidisciplinary assurance defaults.</rule>
 		<rule id="precedence-004">GOV.UK Design System governs GOV.UK UI, accessibility, interaction patterns and content patterns.</rule>
-		<rule id="precedence-005">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
-		<rule id="precedence-006">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
+		<rule id="precedence-005">Cloudflare governs Cloudflare runtime, deployment, binding and platform-product implementation details.</rule>
+		<rule id="precedence-006">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
+		<rule id="precedence-007">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
 	</precedence>
 
 	<traceability>

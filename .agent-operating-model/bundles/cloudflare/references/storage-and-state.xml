@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="storage-and-state" version="1.0.0">
+  <title>Storage and State Rules</title>
+  <source href="https://developers.cloudflare.com/d1/worker-api/prepared-statements/"/>
+  <source href="https://developers.cloudflare.com/kv/concepts/kv-bindings/"/>
+  <source href="https://developers.cloudflare.com/r2/api/workers/workers-api-reference/"/>
+  <source href="https://developers.cloudflare.com/durable-objects/"/>
+  <source href="https://developers.cloudflare.com/durable-objects/get-started/"/>
+  <reference_block name="d1" title="D1">
+    <checklist ordered="false">
+      <entry level="0">Use prepared statements and bind values rather than interpolating untrusted SQL.</entry>
+      <entry level="0">D1 supports ordered and anonymous parameters in prepared statements.</entry>
+      <entry level="0">Use run, raw, first or all according to the result shape needed.</entry>
+      <entry level="0">Append LIMIT 1 when expecting a single row; first does not alter the SQL query.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="kv" title="KV">
+    <statement>Workers KV is a key-value database replicated to Cloudflare's global network. A KV binding must point to a namespace ID, and the binding name must be a valid JavaScript identifier.</statement>
+  </reference_block>
+  <reference_block name="r2" title="R2">
+    <checklist ordered="false">
+      <entry level="0">Use R2 bindings in Workers to read, list, write and delete objects.</entry>
+      <entry level="0">R2 put stores a value and returns object metadata when successful.</entry>
+      <entry level="0">R2 deletes are strongly consistent once the Promise resolves.</entry>
+      <entry level="0">A Request body can only be accessed once; clone carefully and avoid memory-heavy duplicate reads.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="durable-objects" title="Durable Objects">
+    <checklist ordered="false">
+      <entry level="0">Use Durable Objects for stateful coordination across clients or requests.</entry>
+      <entry level="0">Configure Durable Object bindings with a binding name and class name in Wrangler.</entry>
+      <entry level="0">Use SQLite-backed Durable Objects for new classes where the docs and plan support them.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

@@ -24,6 +24,18 @@ function assertCanonicalBundle(bundle) {
 	assert.ok(fs.existsSync(`${bundle.canonicalPath}${bundle.promptBody}`));
 }
 
+function cloudflarePath(relativePath) {
+	return `.agent-operating-model/bundles/cloudflare/${relativePath}`;
+}
+
+function cloudflareFile(relativePath) {
+	return fs.readFileSync(cloudflarePath(relativePath), "utf8");
+}
+
+function extractUrls(text) {
+	return Array.from(text.matchAll(/https:\/\/[^\s"'<>]+/g)).map((match) => match[0]);
+}
+
 test("repository operating model selects always-load bundles", () => {
 	const bundles = selectedBundles("Update documentation for the ResearchOps platform.");
 	const ids = bundles.map((bundle) => bundle.id);
@@ -39,10 +51,64 @@ test("repository operating model selects always-load bundles", () => {
 	}
 });
 
+test("repository operating model selects Cloudflare for runtime and deployment work", () => {
+	const task = "Fix a Cloudflare Worker route and review the Wrangler binding configuration.";
+	const bundle = bundleById(task, "cloudflare");
+
+	assert.ok(bundle);
+	assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+	assert.equal(bundle.selectionEvidence.traceLayer, "behavioural");
+	assert.ok(bundle.selectionEvidence.ruleId);
+	assert.ok(bundle.selectionEvidence.matchedSignals.includes("runtime-or-deployment-change"));
+	assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
+	assertCanonicalBundle(bundle);
+});
+
+test("repository operating model selects Cloudflare for Worker runtime prompts", () => {
+	for (const task of ["Update the Worker fetch handler", "Review the Workers runtime"]) {
+		const bundle = bundleById(task, "cloudflare");
+
+		assert.ok(bundle, `${task} should select cloudflare`);
+		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+		assert.ok(bundle.selectionEvidence.matchedSignals.includes("runtime-or-deployment-change"));
+		assertCanonicalBundle(bundle);
+	}
+});
+
+test("repository operating model does not match short Cloudflare tokens inside hashes", () => {
+	const task = "Please review b1f84bb6781b7ed18a85acba4dc4c7d444e1bba4";
+	const ids = selectedIds(task);
+
+	assert.equal(ids.includes("cloudflare"), false);
+});
+
+test("repository operating model does not select Cloudflare for generic pages routes or queues", () => {
+	for (const task of [
+		"Update documentation pages",
+		"Fix the Airtable import queue",
+		"Review the service route for participant records",
+	]) {
+		const ids = selectedIds(task);
+
+		assert.equal(ids.includes("cloudflare"), false, `${task} should not select cloudflare`);
+	}
+});
+
+test("repository operating model still matches standalone short Cloudflare product tokens", () => {
+	const task = "Review D1 prepared statements and R2 object storage usage.";
+	const bundle = bundleById(task, "cloudflare");
+
+	assert.ok(bundle);
+	assert.ok(bundle.selectionEvidence.matchedPhrases.includes("d1"));
+	assert.ok(bundle.selectionEvidence.matchedPhrases.includes("r2"));
+	assertCanonicalBundle(bundle);
+});
+
 test("repository operating model selects conditional API bundles from typed task signals", () => {
 	const task = "Fix a route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
 
+	assert.equal(ids.includes("cloudflare"), false);
 	assert.ok(ids.includes("airtable-public-api"));
 	assert.ok(ids.includes("mural-public-api"));
 
@@ -56,6 +122,15 @@ test("repository operating model selects conditional API bundles from typed task
 		assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
 		assertCanonicalBundle(bundle);
 	}
+});
+
+test("repository operating model selects Cloudflare with qualified runtime language", () => {
+	const task = "Fix a Worker route that writes Airtable records and syncs Mural widgets.";
+	const ids = selectedIds(task);
+
+	assert.ok(ids.includes("cloudflare"));
+	assert.ok(ids.includes("airtable-public-api"));
+	assert.ok(ids.includes("mural-public-api"));
 });
 
 test("repository operating model preserves explicit registry keyword fallback", () => {
@@ -83,6 +158,69 @@ test("repository operating model exposes typed task signals for trace reports", 
 	assert.equal(Object.hasOwn(model, "bundlePackage"), false);
 });
 
+test("Cloudflare bundle manifest assets exist", () => {
+	const manifest = cloudflareFile("registry-manifest.yaml");
+	const assetPaths = Array.from(manifest.matchAll(/^- path: (.+)$/gm)).map((match) => match[1]);
+
+	assert.ok(assetPaths.length > 30);
+
+	for (const assetPath of assetPaths) {
+		assert.ok(fs.existsSync(cloudflarePath(assetPath)), `${assetPath} should exist`);
+	}
+});
+
+test("Cloudflare bundle source catalogue covers XML reference URLs", () => {
+	const catalogue = cloudflareFile("references/source-catalog.yaml");
+	const sourceUrls = extractUrls(catalogue);
+
+	assert.ok(sourceUrls.length > 25);
+
+	for (const sourceUrl of sourceUrls) {
+		assert.ok(
+			sourceUrl.startsWith("https://developers.cloudflare.com/"),
+			`${sourceUrl} should use developers.cloudflare.com`,
+		);
+	}
+
+	const referenceFiles = fs
+		.readdirSync(cloudflarePath("references"))
+		.filter((file) => file.endsWith(".xml"));
+
+	for (const referenceFile of referenceFiles) {
+		for (const sourceUrl of extractUrls(cloudflareFile(`references/${referenceFile}`))) {
+			assert.ok(
+				sourceUrl.startsWith("https://developers.cloudflare.com/"),
+				`${sourceUrl} should use developers.cloudflare.com`,
+			);
+			assert.ok(
+				catalogue.includes(sourceUrl),
+				`${sourceUrl} from ${referenceFile} should be listed in source-catalog.yaml`,
+			);
+		}
+	}
+});
+
+test("Cloudflare bundle entrypoints include expanded operational modules", () => {
+	const promptSpec = cloudflareFile("prompt.spec.yaml");
+	const promptBody = cloudflareFile("prompt.body.xml");
+
+	for (const expected of [
+		"references/deployment-versions-and-triggers.xml",
+		"references/testing-and-observability.xml",
+		"references/compatibility-and-limits.xml",
+		"references/service-bindings-and-edge-connectivity.xml",
+		"modes/cloudflare-build.xml",
+		"modes/cloudflare-review.xml",
+		"modes/cloudflare-release.xml",
+		"contracts/wrangler-configuration-review.schema.json",
+		"contracts/cloudflare-validation-evidence.schema.json",
+		"contracts/cloudflare-gap-register.schema.json",
+	]) {
+		assert.ok(promptSpec.includes(expected), `${expected} should be in prompt.spec.yaml`);
+		assert.ok(promptBody.includes(expected), `${expected} should be in prompt.body.xml`);
+	}
+});
+
 test("repository operating model sources are referenced from AGENTS.md", () => {
 	const agents = fs.readFileSync("AGENTS.md", "utf8");
 
@@ -97,6 +235,7 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/trace-layers.md",
 		".agent-operating-model/behavioural-evals.json",
 		".agent-operating-model/bundles/",
+		".agent-operating-model/bundles/cloudflare/",
 	]) {
 		assert.match(agents, new RegExp(reference.replace(/[.]/g, "\\.")));
 	}

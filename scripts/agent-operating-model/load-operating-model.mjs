@@ -31,7 +31,23 @@ function normalise(value) {
 	return String(value || "").toLowerCase();
 }
 
+function phraseRequiresTokenBoundary(phrase) {
+	return /^[a-z0-9]+$/.test(normalise(phrase));
+}
+
+function hasTokenBoundaryMatch(taskText, phrase) {
+	const text = normalise(taskText);
+	const token = normalise(phrase);
+	const pattern = new RegExp(`(^|[^a-z0-9])${token}([^a-z0-9]|$)`, "i");
+
+	return pattern.test(text);
+}
+
 function phraseMatches(taskText, phrase) {
+	if (phraseRequiresTokenBoundary(phrase)) {
+		return hasTokenBoundaryMatch(taskText, phrase);
+	}
+
 	return normalise(taskText).includes(normalise(phrase));
 }
 

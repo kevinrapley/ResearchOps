@@ -1,5 +1,5 @@
 {
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"traceLayer": "behavioural",
 	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and canonical bundle-directory precedence rules.",
 	"evals": [
@@ -10,7 +10,8 @@
 			"expectedBundles": [
 				"github-diamond",
 				"researchops-developer-control",
-				"multi-functional-team"
+				"multi-functional-team",
+				"cloudflare"
 			],
 			"forbiddenFailureModes": [
 				"instruction",
@@ -63,7 +64,8 @@
 			"expectedBundles": [
 				"github-diamond",
 				"researchops-developer-control",
-				"multi-functional-team"
+				"multi-functional-team",
+				"cloudflare"
 			],
 			"expectedSafeguards": [
 				"must-load-agents-md",
@@ -86,6 +88,7 @@
 				"github-diamond",
 				"researchops-developer-control",
 				"multi-functional-team",
+				"cloudflare",
 				"airtable-public-api",
 				"mural-public-api"
 			],

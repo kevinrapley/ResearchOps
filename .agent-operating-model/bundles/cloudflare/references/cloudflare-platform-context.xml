@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="cloudflare-platform-context" version="1.0.0">
+  <title>Cloudflare Platform Context</title>
+  <source_authority>https://developers.cloudflare.com/</source_authority>
+  <reference_block name="scope" title="Scope">
+    <statement>Use this bundle for Cloudflare Workers, Pages, Wrangler, bindings, D1, KV, R2, Durable Objects, Queues, Workflows, Workers AI, Vectorize and deployment work.</statement>
+    <statement>Do not use this bundle as a substitute for Cloudflare account permissions, dashboard state, production secrets or live Cloudflare API inspection.</statement>
+  </reference_block>
+  <reference_block name="source-rule" title="Source rule">
+    <statement>Only treat developers.cloudflare.com as authoritative for Cloudflare platform claims in this bundle.</statement>
+    <statement>If a requested behaviour is not supported by the loaded Cloudflare docs, state the evidence gap and avoid implementation claims.</statement>
+  </reference_block>
+</reference_module>
