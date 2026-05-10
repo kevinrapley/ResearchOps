@@ -32,9 +32,7 @@ function normalise(value) {
 }
 
 function phraseRequiresTokenBoundary(phrase) {
-	const token = normalise(phrase);
-
-	return /^[a-z0-9]+$/.test(token) && token.length <= 3;
+	return /^[a-z0-9]+$/.test(normalise(phrase));
 }
 
 function hasTokenBoundaryMatch(taskText, phrase) {
