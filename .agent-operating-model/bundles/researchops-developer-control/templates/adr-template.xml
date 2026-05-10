@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="adr-template" version="1.13.0">
+  <sections>context, decision, options, consequences, evidence, status</sections>
+</template>

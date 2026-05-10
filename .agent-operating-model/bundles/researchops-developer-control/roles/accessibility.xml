@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<role id="accessibility" version="1.13.0">
+  <focus>WCAG, GOV.UK component behaviour, keyboard, focus, labels, errors and assistive technology.</focus>
+</role>

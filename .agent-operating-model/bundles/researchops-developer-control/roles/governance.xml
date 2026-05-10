@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<role id="governance" version="1.13.0">
+  <focus>Controls, auditability, traceability, conformance matrix, gap register and release readiness.</focus>
+</role>
