@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="integration-contracts" version="1.13.0">
+  <purpose>Defines integration contract expectations.</purpose>
+  <contracts>
+    <contract id="airtable">Use configured base, table and field mappings; handle linked fields and API failures.</contract>
+    <contract id="mural">Keep board, room, folder and sticky-note sync behaviour explicit.</contract>
+    <contract id="cloudflare">Preserve Worker, Pages and environment boundaries.</contract>
+  </contracts>
+</reference>

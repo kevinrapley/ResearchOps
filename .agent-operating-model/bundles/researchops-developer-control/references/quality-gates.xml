@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="quality-gates" version="1.13.0">
+  <gates>
+    <gate id="validate">Run or preserve `npm run validate` where relevant.</gate>
+    <gate id="lint">Preserve lint and formatting standards.</gate>
+    <gate id="contract-tests">Run or update route contract tests for API changes.</gate>
+    <gate id="visual-walkthrough">Update walkthrough coverage for visible UI states.</gate>
+    <gate id="accessibility">Preserve WCAG and GOV.UK component expectations.</gate>
+    <gate id="release">Do not claim release readiness without green CI or explicit caveat.</gate>
+  </gates>
+</reference>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="airtable-api-spec" version="1.13.0">
+  <purpose>Provides Airtable integration constraints for ResearchOps.</purpose>
+  <rules>
+    <rule>Preserve configured table and field names unless an explicit migration is requested.</rule>
+    <rule>Handle linked-record fields as arrays where Airtable returns arrays.</rule>
+    <rule>Do not send raw personal data into logs.</rule>
+    <rule>Document formula, lookup and linked-field assumptions when route behaviour depends on them.</rule>
+  </rules>
+</reference>
