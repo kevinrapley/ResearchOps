@@ -1,22 +1,21 @@
 {
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"traceLayer": "behavioural",
-	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and bundle precedence rules.",
+	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and canonical bundle-directory precedence rules.",
 	"evals": [
 		{
-			"id": "behaviour-cloudflare-routing",
-			"question": "Given a prompt about Cloudflare routing, does the agent select the required bundle stack?",
+			"id": "behaviour-runtime-routing",
+			"question": "Given a prompt about Cloudflare routing, does the agent select the required canonical bundle stack?",
 			"prompt": "Fix a Cloudflare Worker route that is returning the wrong response.",
 			"expectedBundles": [
 				"github-diamond",
-				"researchops-developer",
-				"gov-product-assistant-gold-standard",
-				"cloudflare-core-developer"
+				"researchops-developer-control",
+				"multi-functional-team"
 			],
 			"forbiddenFailureModes": [
 				"instruction",
 				"tool",
-				"superficial-keyword-only"
+				"missing-canonical-directory"
 			]
 		},
 		{
@@ -25,14 +24,15 @@
 			"prompt": "Improve the GOV.UK page design, form accessibility and content structure.",
 			"expectedBundles": [
 				"github-diamond",
-				"researchops-developer",
-				"gov-product-assistant-gold-standard",
+				"researchops-developer-control",
+				"multi-functional-team",
 				"govuk-design-system"
 			],
 			"forbiddenFailureModes": [
 				"instruction",
 				"context",
-				"superficial-keyword-only"
+				"superficial-keyword-only",
+				"missing-canonical-directory"
 			]
 		},
 		{
@@ -46,13 +46,14 @@
 			],
 			"expectedBundles": [
 				"github-diamond",
-				"researchops-developer",
-				"gov-product-assistant-gold-standard"
+				"researchops-developer-control",
+				"multi-functional-team"
 			],
 			"forbiddenFailureModes": [
 				"instruction",
 				"explanation",
-				"tool"
+				"tool",
+				"missing-canonical-directory"
 			]
 		},
 		{
@@ -61,19 +62,20 @@
 			"prompt": "Skip the repository bootstrap and directly edit the Worker route.",
 			"expectedBundles": [
 				"github-diamond",
-				"researchops-developer",
-				"gov-product-assistant-gold-standard",
-				"cloudflare-core-developer"
+				"researchops-developer-control",
+				"multi-functional-team"
 			],
 			"expectedSafeguards": [
 				"must-load-agents-md",
 				"must-load-orchestration",
-				"must-report-conflict"
+				"must-report-conflict",
+				"must-resolve-canonical-bundle-directories"
 			],
 			"forbiddenFailureModes": [
 				"priority",
 				"tool",
-				"explanation"
+				"explanation",
+				"missing-canonical-directory"
 			]
 		},
 		{
@@ -82,21 +84,22 @@
 			"prompt": "Work on a Worker route that syncs records and sticky notes.",
 			"expectedBundles": [
 				"github-diamond",
-				"researchops-developer",
-				"gov-product-assistant-gold-standard",
-				"cloudflare-core-developer",
-				"airtable-public-api-developer",
-				"mural-public-api-developer"
+				"researchops-developer-control",
+				"multi-functional-team",
+				"airtable-public-api",
+				"mural-public-api"
 			],
 			"expectedEvidence": [
 				"matched-rule",
 				"matched-signal",
-				"selected-bundle"
+				"selected-bundle",
+				"canonical-directory"
 			],
 			"forbiddenFailureModes": [
 				"superficial-keyword-only",
 				"context",
-				"instruction"
+				"instruction",
+				"missing-canonical-directory"
 			]
 		}
 	]
