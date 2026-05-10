@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "matrixCoverage": {
+    "total": 12,
+    "covered": 12,
+    "coveragePercent": 100
+  },
+  "gaps": [],
+  "repositoryConventions": {
+    "status": "pass",
+    "checked": ["routes", "fixtures", "workflows", "docs"]
+  }
+}

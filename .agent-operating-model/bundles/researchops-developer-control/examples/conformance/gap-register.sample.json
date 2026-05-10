@@ -1,0 +1,11 @@
+{
+  "gaps": [
+    {
+      "id": "RG-001",
+      "title": "Participant single-record route not implemented",
+      "status": "accepted-extension",
+      "owner": "platform",
+      "target": "future-pr"
+    }
+  ]
+}
