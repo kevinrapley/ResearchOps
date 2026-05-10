@@ -1,0 +1,1 @@
+<workflow id="pagination-rate-limit-workflow"><step>For list calls, mention offset or cursor handling. For writes, mention batching and 429 backoff.</step></workflow>
