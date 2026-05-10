@@ -1,0 +1,117 @@
+bundle:
+  id: gov-product-assistant-gold-standard
+  name: Government Product Assistant Gold-Standard Prompt Bundle
+  version: 4.2.0
+  status: canonical
+  default_mode: team-mode
+  environment_baseline: m365-only
+  prompt_body: prompt.body.xml
+design:
+  prompt_markup: native semantic XML
+  assurance_markup: native semantic XML grader modules
+  output_contract: output.schema.json
+  grade_contract: grade.schema.json
+  variables_contract: variables.schema.json
+  principles:
+  - Prompt-bearing assets are native XML modules.
+  - Canonical XML contains no Markdown fences or source-conversion metadata.
+  - Generic document tags do not carry the architecture.
+  - Behaviour assurance is expressed through self-contained grader modules.
+  - Final outputs and grading outputs are both schema-constrained.
+assembly:
+  always_load:
+  - references/core-rules.xml
+  - references/shared-primitives.xml
+  - references/harm-framework.xml
+  - references/contextual-mode-control.xml
+  - references/command-registry.xml
+  - references/precedence-chain.xml
+  - references/subset-definitions.xml
+  - references/debate-engine.xml
+  - references/m365-operating-constraints.xml
+  - references/ai-diligence-statement.xml
+  - references/task-catalog.xml
+  - templates/global-documentation.xml
+  - templates/high-stakes-compliance-summary.xml
+  - templates/harm-register.xml
+  role_modules:
+  - roles/accessibility.xml
+  - roles/business-analysis.xml
+  - roles/content-design.xml
+  - roles/content-strategy.xml
+  - roles/data-analyst.xml
+  - roles/data-science.xml
+  - roles/delivery-operations.xml
+  - roles/developer.xml
+  - roles/devops.xml
+  - roles/ethical-ai.xml
+  - roles/governance.xml
+  - roles/information-architect.xml
+  - roles/interaction-design.xml
+  - roles/legal.xml
+  - roles/policy.xml
+  - roles/privacy.xml
+  - roles/product-management.xml
+  - roles/quality-assurance.xml
+  - roles/research-operations.xml
+  - roles/safeguarding-lead.xml
+  - roles/security.xml
+  - roles/service-design.xml
+  - roles/service-owner.xml
+  - roles/solutions-architecture.xml
+  - roles/team-mode.xml
+  - roles/technical-architecture.xml
+  - roles/trauma-informed-design-advocate.xml
+  - roles/user-research.xml
+  template_modules:
+  - templates/accessibility-audit-scope.xml
+  - templates/ai-adoption-assessment.xml
+  - templates/alpha-holistic-options.xml
+  - templates/assumptions-log.xml
+  - templates/atrs-screening.xml
+  - templates/beta-live-readiness.xml
+  - templates/constraints-non-negotiables.xml
+  - templates/context-quality-review.xml
+  - templates/debate-engine-summary-template.xml
+  - templates/debate-transcript-template.xml
+  - templates/decision-readiness-check.xml
+  - templates/dependency-risk-map.xml
+  - templates/developer-templates.xml
+  - templates/discovery-assumptions-knowledge-gaps.xml
+  - templates/discovery-scope-goals.xml
+  - templates/dpia-screening.xml
+  - templates/equality-impact-screening.xml
+  - templates/evidence-pack-index.xml
+  - templates/global-documentation.xml
+  - templates/handover-continuity-brief.xml
+  - templates/high-stakes-compliance-summary.xml
+  - templates/human-review-sign-off-register.xml
+  - templates/incident-review.xml
+  - templates/live-service-health.xml
+  - templates/live-support-escalation-model.xml
+  - templates/m365-agent-deployment-checklist.xml
+  - templates/metrics-measurement-plan.xml
+  - templates/options-appraisal.xml
+  - templates/overview-modes-controls.xml
+  - templates/pre-discovery-opportunity.xml
+  - templates/research-plan.xml
+  - templates/risk-register.xml
+  - templates/service-assessment-prep.xml
+  - templates/service-ownership-accountability.xml
+  grader_modules:
+  - graders/agent-behaviour.xml
+  - graders/role-behaviour.xml
+  - graders/developer-behaviour.xml
+  - graders/debate-behaviour.xml
+evaluation_flow:
+  steps:
+  - infer_context
+  - draft_response
+  - grade_global_behaviour
+  - grade_role_behaviour
+  - grade_debate_behaviour_if_active
+  - revise_or_refuse
+  - emit_final_output
+  blocking_labels:
+  - fail_revise
+  - fail_escalate

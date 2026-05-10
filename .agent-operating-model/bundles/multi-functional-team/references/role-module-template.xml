@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="role-module-template" version="2.0.0">
+  <title>Canonical Role Module Template</title>
+
+  <reference_block name="purpose" title="Purpose">
+    <statement>This module defines how to create a new role file using the native XML role format.</statement>
+    <statement>A role module defines activation, remit, boundaries, collaboration expectations, evidence discipline, and completion checks for one discipline or operating mode.</statement>
+    <statement>A role module is not a converted document. It is a semantic prompt asset.</statement>
+  </reference_block>
+
+  <reference_block name="file-identity" title="File Identity and Naming">
+    <statement>Each role module must be stored in the roles directory and named with the discipline identifier used by mode triggers and registries.</statement>
+    <checklist ordered="false" purpose="role-module-file-naming-rules">
+      <entry level="0">Use lowercase kebab case, for example: user-research.xml, content-strategy.xml, ethical-ai.xml.</entry>
+      <entry level="0">Use the discipline or role name, not an individual practitioner title unless that is the canonical role identifier.</entry>
+      <entry level="0">The root element id attribute should match the filename stem.</entry>
+      <entry level="0">The version attribute should change when the role behaviour changes materially.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="root-structure" title="Root Structure">
+    <statement>Every role file must use role_module as the root element.</statement>
+    <example_role_module>
+      <role_module id="discipline-name" version="1.0.0">
+        <title>Discipline Operating Rules</title>
+        <activation>
+          <trigger>@start-discipline</trigger>
+        </activation>
+        <role_definition>
+          <persona>Describe the role in one sentence.</persona>
+          <mission>State the role's operational purpose.</mission>
+        </role_definition>
+        <scope>
+          <owns>
+            <capability>List what this role owns.</capability>
+          </owns>
+          <does_not_own>
+            <capability>List what this role does not own.</capability>
+          </does_not_own>
+        </scope>
+        <shared_primitive_bindings>
+          <binding primitive="Problem Frame">
+            <interaction>State how the role uses or contributes to the primitive.</interaction>
+          </binding>
+        </shared_primitive_bindings>
+        <principles>
+          <principle priority="high">State a durable operating principle.</principle>
+        </principles>
+        <evidence_discipline>
+          <evidence_type name="Formal Evidence">
+            <description>Describe strong evidence for this role.</description>
+          </evidence_type>
+          <evidence_type name="Partner Input">
+            <description>Describe trusted cross-discipline input.</description>
+          </evidence_type>
+          <evidence_type name="Unvalidated Input">
+            <description>Describe assumptions or weak signals.</description>
+          </evidence_type>
+        </evidence_discipline>
+        <constraints>
+          <prohibited>
+            <constraint severity="high">State what the role must not do.</constraint>
+          </prohibited>
+          <permitted>
+            <constraint>State what the role is expected to do.</constraint>
+          </permitted>
+        </constraints>
+        <phase_contributions>
+          <phase name="Discovery">
+            <contribution>State how the role contributes in this phase.</contribution>
+          </phase>
+        </phase_contributions>
+        <quality_gates>
+          <gate>State the checks that outputs from this role must satisfy.</gate>
+        </quality_gates>
+        <output_contract ref="../output.schema.json"/>
+      </role_module>
+    </example_role_module>
+  </reference_block>
+
+  <reference_block name="required-elements" title="Required Elements">
+    <statement>The following elements are required in every role module:</statement>
+    <checklist ordered="false" purpose="required-role-module-elements">
+      <entry level="0">title</entry>
+      <entry level="0">activation</entry>
+      <entry level="0">role_definition</entry>
+      <entry level="0">scope</entry>
+      <entry level="0">shared_primitive_bindings</entry>
+      <entry level="0">principles</entry>
+      <entry level="0">evidence_discipline</entry>
+      <entry level="0">constraints</entry>
+      <entry level="0">phase_contributions</entry>
+      <entry level="0">quality_gates</entry>
+      <entry level="0">output_contract</entry>
+    </checklist>
+    <statement>These required elements define how the role activates, what it is for, what it owns, how it reasons, and how its outputs are judged.</statement>
+  </reference_block>
+
+  <reference_block name="activation-model" title="Activation Model">
+    <statement>The activation block declares how the role becomes active.</statement>
+    <checklist ordered="false" purpose="activation-model-rules">
+      <entry level="0">Use a single trigger element when one command activates the role.</entry>
+      <entry level="0">If the role can activate through more than one alias, use multiple trigger elements.</entry>
+      <entry level="0">Do not describe activation only in prose. Encode it explicitly.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="role-definition" title="Role Definition">
+    <statement>The role_definition block should explain the role briefly and operationally.</statement>
+    <checklist ordered="false" purpose="role-definition-rules">
+      <entry level="0">Use persona to identify the role.</entry>
+      <entry level="0">Use mission to define the role's objective.</entry>
+      <entry level="0">Avoid long narrative paragraphs.</entry>
+      <entry level="0">Describe what the role contributes in multidisciplinary delivery.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="scope-model" title="Scope Model">
+    <statement>The scope block defines authority boundaries.</statement>
+    <checklist ordered="false" purpose="scope-model-rules">
+      <entry level="0">Use owns for capabilities, responsibilities, and decisions the role is expected to carry.</entry>
+      <entry level="0">Use does_not_own for capabilities, responsibilities, and decisions outside the role's authority.</entry>
+      <entry level="0">Make boundaries explicit so the role does not absorb adjacent disciplines by accident.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="shared-primitives" title="Shared Primitive Bindings">
+    <statement>Each role must state how it contributes to or consumes the shared reasoning primitives used across the bundle.</statement>
+    <checklist ordered="false" purpose="shared-primitive-binding-rules">
+      <entry level="0">Create one binding per primitive that matters to the role.</entry>
+      <entry level="0">Use the primitive attribute to name the shared primitive exactly.</entry>
+      <entry level="0">Use interaction to explain the role's contribution, interpretation, or dependency.</entry>
+      <entry level="0">Do not use a document-style table as the primary representation.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="principles-model" title="Principles Model">
+    <statement>The principles block defines the durable operating rules that guide the role.</statement>
+    <checklist ordered="false" purpose="principles-model-rules">
+      <entry level="0">Each principle should be brief, stable, and action-guiding.</entry>
+      <entry level="0">Use priority when a principle is especially important.</entry>
+      <entry level="0">Prefer principle elements over a long prose section.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="evidence-discipline" title="Evidence Discipline">
+    <statement>Every role must state what counts as evidence and how confidence should be handled.</statement>
+    <checklist ordered="false" purpose="evidence-discipline-rules">
+      <entry level="0">Describe Formal Evidence for the discipline.</entry>
+      <entry level="0">Describe Partner Input from collaborating disciplines.</entry>
+      <entry level="0">Describe Unvalidated Input such as assumptions or early-stage reasoning.</entry>
+      <entry level="0">State that low-confidence or unvalidated inputs must be flagged.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="constraints-model" title="Constraints Model">
+    <statement>The constraints block defines prohibited and permitted behaviour.</statement>
+    <checklist ordered="false" purpose="constraints-model-rules">
+      <entry level="0">Use prohibited for behaviours the role must not perform.</entry>
+      <entry level="0">Use permitted for behaviours the role is expected or allowed to perform.</entry>
+      <entry level="0">Use severity for critical prohibitions.</entry>
+      <entry level="0">Do not bury role boundaries in narrative paragraphs.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="phase-contributions-model" title="Phase Contributions Model">
+    <statement>The phase_contributions block describes how the role contributes across service phases.</statement>
+    <checklist ordered="false" purpose="phase-contributions-model-rules">
+      <entry level="0">Use one phase element per relevant phase.</entry>
+      <entry level="0">Typical phase names are Pre-Discovery, Discovery, Alpha, Beta, and Live.</entry>
+      <entry level="0">Use contribution elements rather than generic bullet lists wherever possible.</entry>
+      <entry level="0">If the role does not materially contribute in a phase, omit that phase rather than inventing filler.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="quality-gates-model" title="Quality Gates Model">
+    <statement>The quality_gates block states what must be true before outputs from the role are treated as complete or dependable.</statement>
+    <checklist ordered="false" purpose="quality-gates-model-rules">
+      <entry level="0">Each gate should be testable or reviewable.</entry>
+      <entry level="0">Avoid vague gates such as good quality or appropriate detail.</entry>
+      <entry level="0">Prefer concrete checks such as evidence cited, boundary respected, risk surfaced, or accessibility considered.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="optional-elements" title="Optional Elements">
+    <statement>Additional semantic blocks may be added where they strengthen role behaviour and remain stable across time.</statement>
+    <checklist ordered="false" purpose="optional-role-module-elements">
+      <entry level="0">tool_policy</entry>
+      <entry level="0">interaction_policy</entry>
+      <entry level="0">decision_policy</entry>
+      <entry level="0">collaboration</entry>
+      <entry level="0">handoff</entry>
+      <entry level="0">examples</entry>
+      <entry level="0">checks</entry>
+    </checklist>
+    <statement>Only use optional elements when they carry semantic value. Do not add them as decoration.</statement>
+  </reference_block>
+
+  <reference_block name="authoring-rules" title="Authoring Rules">
+    <checklist ordered="false" purpose="authoring-rules-for-role-modules">
+      <entry level="0">Write semantic XML, not Markdown disguised as XML.</entry>
+      <entry level="0">Do not use paragraph, section, list, and item as the primary architecture.</entry>
+      <entry level="0">Use dedicated element names that express intent.</entry>
+      <entry level="0">Keep statements short and operational.</entry>
+      <entry level="0">Prefer typed child elements over mixed prose.</entry>
+      <entry level="0">Do not include provenance metadata such as converted_from or source_file in canonical role modules.</entry>
+      <entry level="0">Keep cross-file references limited to real dependencies such as shared primitives or output contracts.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="anti-patterns" title="Anti-Patterns to Avoid">
+    <checklist ordered="false" purpose="role-module-anti-patterns">
+      <entry level="0">Copying old Markdown headings into title attributes.</entry>
+      <entry level="0">Embedding fenced code blocks to show former syntax.</entry>
+      <entry level="0">Using generic document tags as the main semantic layer.</entry>
+      <entry level="0">Writing long descriptive essays instead of operational rules.</entry>
+      <entry level="0">Mixing what the role is, what it does, and what it must never do in one untyped paragraph.</entry>
+      <entry level="0">Including instructions that belong in templates, graders, or references instead of the role itself.</entry>
+    </checklist>
+  </reference_block>
+
+  <reference_block name="completion-check" title="Completion Check">
+    <statement>A new role module is ready when:</statement>
+    <checklist ordered="false" purpose="role-module-completion-check">
+      <entry level="0">The module activates through an explicit trigger.</entry>
+      <entry level="0">The remit and boundaries are unambiguous.</entry>
+      <entry level="0">The shared primitive bindings are explicit.</entry>
+      <entry level="0">The evidence discipline is defined.</entry>
+      <entry level="0">The phase contributions are meaningful.</entry>
+      <entry level="0">The quality gates are testable.</entry>
+      <entry level="0">The module points to the output contract.</entry>
+      <entry level="0">The module reads like an operational constitution, not a converted handbook page.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

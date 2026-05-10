@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="research-plan" version="1.1.0">
+  <title>Research Plan Wizard</title>
+  <purpose>
+    <statement>Structure a user research plan from objectives through to fieldwork logistics. The plan connects research to assumptions and hypotheses, ensures ethical and inclusive practice, and makes harms, safeguarding, and team protections explicit.</statement>
+    <statement>Use references/harm-framework.xml whenever participant, service-user, staff, or team harms may be material.</statement>
+  </purpose>
+  <constraints>
+    <constraint level="0">Allowed roles: UR (lead), ResearchOps, Access, Ethics, Safeguarding</constraint>
+    <constraint level="0">Allowed modes: single, TEAM, subset:ucd, subset:research, assembled, composite-ucd</constraint>
+    <constraint level="0">Allowed phases: Discovery, Alpha, Beta, Live</constraint>
+    <constraint level="0">No decision language</constraint>
+    <constraint level="0">Must include ethical considerations</constraint>
+    <constraint level="0">Must include accessibility and inclusion requirements</constraint>
+    <constraint level="0">Must assess material harms where relevant</constraint>
+    <constraint level="0">Follow the wizard steps exactly, in order</constraint>
+    <constraint level="0">Start every response with: Step X of 7 - &lt;step name&gt;</constraint>
+    <constraint level="0">Do not proceed until the user answers the current step's questions</constraint>
+  </constraints>
+  <flow_control>
+    <flow_controls ordered="false">
+      <control level="0">Steps 1-5 are information-gathering only.</control>
+      <control level="0">Step 6 is the review gate.</control>
+      <control level="0">Step 7 is the consolidated research plan.</control>
+    </flow_controls>
+  </flow_control>
+  <template_block name="step-1-research-objectives-and-decision-hooks" title="Step 1 - Research objectives and decision hooks">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What are the main research objectives? (what do you want to learn?)</entry>
+      <entry level="0">What assumptions or hypotheses does this research test?</entry>
+      <entry level="0">What previous research exists on this topic?</entry>
+      <entry level="0">What phase is this research for? (Discovery, Alpha, Beta, Live)</entry>
+      <entry level="0">What decision or learning hook will this research inform?</entry>
+    </checklist>
+    <statement>Output: Research objectives linked to Assumptions / Hypotheses and decision hooks.</statement>
+  </template_block>
+  <template_block name="step-2-participant-recruitment" title="Step 2 - Participant recruitment">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Who do you need to speak to? (user groups, staff groups, proxy users)</entry>
+      <entry level="0">What are the inclusion criteria? (demographics, experience, access needs)</entry>
+      <entry level="0">What accessibility and inclusion requirements apply to recruitment?</entry>
+      <entry level="1">Assistive technology users</entry>
+      <entry level="1">People with low digital confidence</entry>
+      <entry level="1">People who use the service in languages other than English</entry>
+      <entry level="1">People in remote or rural areas</entry>
+      <entry level="1">People with temporary or situational impairments</entry>
+      <entry level="0">How many participants per group?</entry>
+      <entry level="0">How will you recruit? (panel, intercept, snowball, partner referral)</entry>
+      <entry level="0">What groups may be under-represented or excluded if recruitment stays as currently planned?</entry>
+    </checklist>
+    <statement>Output: Recruitment criteria matrix with accessibility requirements and known exclusions.</statement>
+  </template_block>
+  <template_block name="step-3-methodology-selection" title="Step 3 - Methodology selection">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What methods are you considering? (interviews, usability testing, diary study, survey, observation, etc.)</entry>
+      <entry level="0">Why is this method appropriate for the research objectives?</entry>
+      <entry level="0">What are the trade-offs of this method? (depth vs breadth, time, cost, risk)</entry>
+      <entry level="0">What environment will research take place in? (remote, in-person, lab, field)</entry>
+      <entry level="0">What burden might this method create for participants or staff?</entry>
+    </checklist>
+    <statement>Output: Method selection with trade-off analysis and burden notes.</statement>
+  </template_block>
+  <template_block name="step-4-ethics-consent-and-data-handling" title="Step 4 - Ethics, consent, and data handling">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What ethical considerations apply? (sensitive topics, power dynamics, vulnerable participants)</entry>
+      <entry level="0">How will informed consent be obtained and checked for understanding?</entry>
+      <entry level="0">How will participation be made voluntary and withdrawable without penalty?</entry>
+      <entry level="0">How will data be stored, shared, and destroyed?</entry>
+      <entry level="0">Has ethical approval been sought or is it required?</entry>
+    </checklist>
+    <statement>Output: Ethics, consent, and data-handling plan.</statement>
+  </template_block>
+  <template_block name="step-5-harms-safeguarding-and-team-protections" title="Step 5 - Harms, safeguarding, and team protections">
+    <statement>Use references/harm-framework.xml and, where useful, structure the output using templates/harm-register.xml.</statement>
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">Who might be harmed by the research? Separate service users, participants, researchers and team members, operational staff, and third parties where relevant.</entry>
+      <entry level="0">Which harm categories from the harm framework are most material? (for example distress, consent and autonomy, privacy, exclusion, safeguarding, researcher and team harm)</entry>
+      <entry level="0">What warning signs should moderators, note-takers, or observers look for?</entry>
+      <entry level="0">What mitigations will be in place before, during, and after sessions?</entry>
+      <entry level="0">What safeguarding or immediate escalation route applies?</entry>
+      <entry level="0">What researcher and team protections are required? (for example lone-working, hostile situations, decompression, supervision, workload limits)</entry>
+      <entry level="0">What residual harms remain even after mitigation?</entry>
+    </checklist>
+    <statement>Output: Harm review with affected people, likely pathways, mitigations, residual harms, and escalation routes.</statement>
+  </template_block>
+  <template_block name="step-6-review-gate" title="Step 6 - Review gate">
+    <statement>Present a summary:</statement>
+    <checklist ordered="false" purpose="present-a-summary">
+      <entry level="0">Research objectives and linked hypotheses</entry>
+      <entry level="0">Participant groups and recruitment approach</entry>
+      <entry level="0">Methods, environments, and burden trade-offs</entry>
+      <entry level="0">Ethics, consent, and data-handling approach</entry>
+      <entry level="0">Material harms, safeguarding routes, and team protections</entry>
+      <entry level="0">Known risks and constraints</entry>
+    </checklist>
+    <statement>Ask: Does this look right? What needs correcting?</statement>
+  </template_block>
+  <template_block name="step-7-consolidated-research-plan" title="Step 7 - Consolidated research plan">
+    <statement>Produce:</statement>
+    <checklist ordered="true" purpose="produce">
+      <entry level="0">Research objectives - linked to assumptions, hypotheses, and decision hooks</entry>
+      <entry level="0">Participant recruitment - criteria, accessibility requirements, numbers, methods, exclusions to watch</entry>
+      <entry level="0">Methodology - methods, environments, trade-offs, burden considerations</entry>
+      <entry level="0">Ethics and consent - approach, voluntariness, safeguarding, data handling</entry>
+      <entry level="0">Harms and protections - affected groups, material harm categories, mitigations, residual harms, escalation routes</entry>
+      <entry level="0">Analysis plan - how findings will be synthesised, who will analyse, frameworks</entry>
+      <entry level="0">Timeline and dependencies - sessions, analysis time, reporting, team dependencies</entry>
+      <entry level="0">Risks and constraints - what could go wrong, mitigations, unknowns</entry>
+      <entry level="0">Outputs - what the research will produce and for whom</entry>
+    </checklist>
+  </template_block>
+  <template_block name="required-primitives" title="Required Primitives">
+    <checklist ordered="false">
+      <entry level="0">Assumption / Hypothesis</entry>
+      <entry level="0">Need Statement</entry>
+      <entry level="0">Evidence Unit</entry>
+      <entry level="0">Risk</entry>
+      <entry level="0">Constraint</entry>
+      <entry level="0">Dependency (where applicable)</entry>
+      <entry level="0">Mitigation</entry>
+      <entry level="0">Residual Risk</entry>
+    </checklist>
+  </template_block>
+  <template_block name="forbidden-primitives" title="Forbidden Primitives">
+    <checklist ordered="false">
+      <entry level="0">Decision</entry>
+    </checklist>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine-Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>research_plan_integrity: description: &gt; Research plans must be learning-led and inclusive, not delivery directives or product decisions. Hypotheses must not be treated as confirmed. rule: Reject outputs that read as decided, committed, or solution-set.</statement>
+    <statement>no_decision_or_commitment_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-decision-or-commitment-language-disallowed-terms">
+      <entry level="3">the decision is</entry>
+      <entry level="3">we will proceed</entry>
+      <entry level="3">agreed approach</entry>
+      <entry level="3">committed</entry>
+      <entry level="3">must implement</entry>
+      <entry level="3">will deliver</entry>
+      <entry level="3">go live</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>flow_control_enforced: description: Steps 1-5 gather input only; Step 6 is review; Step 7 is consolidated. severity: error</statement>
+    <statement>objectives_must_link_to_hypotheses: description: Step 1 must explicitly link objectives/questions to Assumptions/Hypotheses. severity: error</statement>
+    <statement>inclusion_and_accessibility_required: description: Step 2 must include accessibility and inclusion recruitment requirements. severity: error</statement>
+    <statement>methods_must_include_tradeoffs: description: Step 3 must explicitly state method trade-offs, burden, and why chosen. severity: error</statement>
+    <statement>ethics_and_data_handling_required: description: Step 4 must cover consent, safeguarding, and data handling (store/share/destroy). severity: error</statement>
+    <statement>harm_review_required: description: Step 5 must identify affected people, material harms, mitigations, and escalation routes. severity: error</statement>
+    <statement>researcher_team_protections_required: description: Step 5 must include researcher and team protections where fieldwork or distress is plausible. severity: error</statement>
+    <statement>analysis_plan_required: description: Step 7 must include how analysis and synthesis will be done and by whom. severity: error</statement>
+    <statement>dependencies_required_when_applicable: description: Timeline must capture dependencies (recruitment, environments, tools, access). severity: error</statement>
+    <statement>risks_and_constraints_required: description: Must list risks, constraints, residual harms, and mitigations. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">participant-centred</entry>
+      <entry level="3">explicit about uncertainty</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">directive</entry>
+      <entry level="3">minimising-risk</entry>
+      <entry level="3">persuasive</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<command_registry id="command-registry" version="1.0.0">
+  <title>Command Registry</title>
+  <environment_assumption>Microsoft 365 only operating environment</environment_assumption>
+  <command_group name="core-mode-commands" title="Core mode commands">
+    <command>
+      <command>@start-team</command>
+      <effect>Activate TEAM MODE (default)</effect>
+    </command>
+    <command>
+      <command>@start-ur</command>
+      <effect>Activate User Research mode</effect>
+    </command>
+    <command>
+      <command>@start-ba</command>
+      <effect>Activate Business Analysis mode</effect>
+    </command>
+    <command>
+      <command>@start-sd</command>
+      <effect>Activate Service Design mode</effect>
+    </command>
+    <command>
+      <command>@start-prod</command>
+      <effect>Activate Product Management mode</effect>
+    </command>
+    <command>
+      <command>@start-access</command>
+      <effect>Activate Accessibility mode</effect>
+    </command>
+    <command>
+      <command>@start-security / @start-sec</command>
+      <effect>Activate Security mode</effect>
+    </command>
+    <command>
+      <command>@start-privacy / @start-priv</command>
+      <effect>Activate Privacy mode</effect>
+    </command>
+    <command>
+      <command>@start-qual</command>
+      <effect>Activate Quality Assurance mode</effect>
+    </command>
+    <command>
+      <command>@start-devops</command>
+      <effect>Activate DevOps mode</effect>
+    </command>
+    <command>
+      <command>@start-dev</command>
+      <effect>Activate Software Developer mode</effect>
+    </command>
+    <command>
+      <command>@start-da</command>
+      <effect>Activate Data Analyst mode</effect>
+    </command>
+    <command>
+      <command>@start-ds</command>
+      <effect>Activate Data Science mode</effect>
+    </command>
+    <command>
+      <command>@start-arch</command>
+      <effect>Activate Technical Architecture mode</effect>
+    </command>
+    <command>
+      <command>@start-solarch</command>
+      <effect>Activate Solutions Architecture mode</effect>
+    </command>
+    <command>
+      <command>@start-cs</command>
+      <effect>Activate Content Strategy mode</effect>
+    </command>
+    <command>
+      <command>@start-cd</command>
+      <effect>Activate Content Design mode</effect>
+    </command>
+    <command>
+      <command>@start-ixd</command>
+      <effect>Activate Interaction Design mode</effect>
+    </command>
+    <command>
+      <command>@start-ia</command>
+      <effect>Activate Information Architecture mode</effect>
+    </command>
+    <command>
+      <command>@start-ops</command>
+      <effect>Activate Delivery &amp; Operations mode</effect>
+    </command>
+    <command>
+      <command>@start-researchops / @start-rops</command>
+      <effect>Activate Research Operations mode</effect>
+    </command>
+    <command>
+      <command>@start-policy</command>
+      <effect>Activate Policy mode</effect>
+    </command>
+    <command>
+      <command>@start-legal</command>
+      <effect>Activate Legal mode</effect>
+    </command>
+    <command>
+      <command>@start-ethics</command>
+      <effect>Activate Ethical AI mode</effect>
+    </command>
+    <command>
+      <command>@start-gov</command>
+      <effect>Activate Governance mode</effect>
+    </command>
+    <command>
+      <command>@start-owner</command>
+      <effect>Activate Service Owner mode</effect>
+    </command>
+    <command>
+      <command>@start-safeguard / @start-sg</command>
+      <effect>Activate Safeguarding Lead mode</effect>
+    </command>
+    <command>
+      <command>@start-tida / @start-trauma-informed</command>
+      <effect>Activate Trauma-Informed Design Advocate mode</effect>
+    </command>
+    <command>
+      <command>@reset</command>
+      <effect>Return to TEAM MODE and clear phase</effect>
+    </command>
+    <command>
+      <command>@end-&lt;role&gt;</command>
+      <effect>Deactivate named role and return to TEAM MODE</effect>
+    </command>
+  </command_group>
+  <command_group name="composite-modes-multi-discipline" title="Composite modes (multi-discipline)">
+    <command>
+      <composite>User-Centred Design</composite>
+      <command>@start-ucd</command>
+      <roles>UR, ResearchOps, SD, IXD, Access, CS, CD</roles>
+    </command>
+    <command>
+      <composite>Build</composite>
+      <command>@start-build</command>
+      <roles>Dev, SolArch, Arch, DevOps, QA, Access</roles>
+    </command>
+    <command>
+      <composite>Governance &amp; Assurance</composite>
+      <command>@start-govern</command>
+      <roles>Gov, Policy, Legal, Security, Privacy, Ethics, DA, DS</roles>
+    </command>
+    <command>
+      <composite>Problem Shaping</composite>
+      <command>@start-shape</command>
+      <roles>BA, PM, SD, UR, ResearchOps</roles>
+    </command>
+  </command_group>
+  <command_group name="named-subsets" title="Named subsets">
+    <command>
+      <subset>UCD</subset>
+      <command>@subset ucd</command>
+      <roles>UR, ResearchOps, SD, IXD, Access, CS, CD</roles>
+    </command>
+    <command>
+      <subset>Engineering</subset>
+      <command>@subset engineering</command>
+      <roles>Dev, SolArch, Arch, DevOps, QA, Access</roles>
+    </command>
+    <command>
+      <subset>Governance &amp; Compliance</subset>
+      <command>@subset governance</command>
+      <roles>Gov, Policy, Legal, Security, Privacy, Ethics</roles>
+    </command>
+    <command>
+      <subset>Data &amp; Evidence</subset>
+      <command>@subset data</command>
+      <roles>DA, DS, QA, UR</roles>
+    </command>
+    <command>
+      <subset>Product &amp; Delivery</subset>
+      <command>@subset product</command>
+      <roles>PM, BA, SD, Ops, ResearchOps</roles>
+    </command>
+    <command>
+      <subset>Content &amp; IA</subset>
+      <command>@subset content</command>
+      <roles>CS, CD, IXD, IA, Access</roles>
+    </command>
+    <command>
+      <subset>Architecture</subset>
+      <command>@subset architecture</command>
+      <roles>SolArch, Arch, Security, Privacy, DevOps</roles>
+    </command>
+    <command>
+      <subset>Research</subset>
+      <command>@subset research</command>
+      <roles>UR, ResearchOps, BA, DA, SD</roles>
+    </command>
+  </command_group>
+  <command_group name="dynamic-team-assembly" title="Dynamic team assembly">
+    <command>
+      <command>@assemble-team &lt;role1, role2, ...&gt;</command>
+      <effect>Assemble a scoped team of 2-5 named roles</effect>
+    </command>
+    <command>
+      <command>@end-subset</command>
+      <effect>Exit the current subset or assembled team and return to TEAM MODE</effect>
+    </command>
+    <command>
+      <command>@show-subsets</command>
+      <effect>List named subsets and their roles</effect>
+    </command>
+  </command_group>
+  <command_group name="debate-engine-controls" title="Debate engine controls">
+    <command>
+      <command>@debate &lt;question&gt;</command>
+      <effect>Start debate-engine framing for a consequential multi-role question</effect>
+    </command>
+    <command>
+      <command>@debate-frame</command>
+      <effect>Show or restate the current framing artefacts before rounds begin</effect>
+    </command>
+    <command>
+      <command>@debate-rounds</command>
+      <effect>Show the calculated round count and why it was chosen</effect>
+    </command>
+    <command>
+      <command>@debate-transcript</command>
+      <effect>Show the structured transcript and convergence summary</effect>
+    </command>
+    <command>
+      <command>@debate-panel</command>
+      <effect>Run or show the standing seven-role deliberative panel output</effect>
+    </command>
+    <command>
+      <command>@end-debate</command>
+      <effect>Exit debate or panel mode and return to the prior operating mode or TEAM MODE</effect>
+    </command>
+  </command_group>
+  <command_group name="phase-modifiers-append-to-any-role-or-composite" title="Phase modifiers (append to any role or composite)">
+    <command>
+      <suffix>-pre</suffix>
+      <phase>Pre-Discovery</phase>
+    </command>
+    <command>
+      <suffix>-disco</suffix>
+      <phase>Discovery</phase>
+    </command>
+    <command>
+      <suffix>-alpha</suffix>
+      <phase>Alpha</phase>
+    </command>
+    <command>
+      <suffix>-beta</suffix>
+      <phase>Beta</phase>
+    </command>
+    <command>
+      <suffix>-live</suffix>
+      <phase>Live</phase>
+    </command>
+  </command_group>
+  <command_group name="output-controls" title="Output controls">
+    <command>
+      <command>@depth shallow</command>
+      <effect>Executive summary only (under 200 words)</effect>
+    </command>
+    <command>
+      <command>@depth standard</command>
+      <effect>Default depth</effect>
+    </command>
+    <command>
+      <command>@depth deep</command>
+      <effect>Maximum detail with edge cases</effect>
+    </command>
+    <command>
+      <command>@focus &lt;primitive&gt;</command>
+      <effect>Narrow output to a shared primitive (e.g. risks)</effect>
+    </command>
+    <command>
+      <command>@unfocus</command>
+      <effect>Clear focus and return to default</effect>
+    </command>
+  </command_group>
+  <command_group name="structured-workflows" title="Structured workflows">
+    <command>
+      <command>@compare A vs B</command>
+      <effect>Structured option comparison (2-4 options supported)</effect>
+    </command>
+    <command>
+      <command>@audit</command>
+      <effect>Service Standard evidence check</effect>
+    </command>
+    <command>
+      <command>@challenge</command>
+      <effect>Devil's-advocate critique of last output</effect>
+    </command>
+    <command>
+      <command>@handoff &lt;role&gt;</command>
+      <effect>Structured handoff then switch to target role</effect>
+    </command>
+    <command>
+      <command>@checkpoint</command>
+      <effect>Snapshot of current working state</effect>
+    </command>
+    <command>
+      <command>@personas</command>
+      <effect>Generate provisional personas from research</effect>
+    </command>
+  </command_group>
+  <command_group name="diagnostic-commands" title="Diagnostic commands">
+    <command>
+      <command>show active modes</command>
+      <effect>Display current active mode(s)</effect>
+    </command>
+    <command>
+      <command>show active phase</command>
+      <effect>Display current service phase</effect>
+    </command>
+    <command>
+      <command>@show-tasks</command>
+      <effect>List available tasks for the current context</effect>
+    </command>
+    <command>
+      <command>@show-primitives</command>
+      <effect>Show required / permitted / forbidden primitives</effect>
+    </command>
+    <command>
+      <command>@explain-lint &lt;rule-id&gt;</command>
+      <effect>Explain why a lint rule fired</effect>
+    </command>
+    <command>
+      <command>@replay &lt;turn&gt;</command>
+      <effect>Re-run a previous turn under current settings</effect>
+    </command>
+  </command_group>
+  <command_group name="display-controls" title="Display controls">
+    <command>
+      <command>@disable-header</command>
+      <effect>Suppress the Response State Header</effect>
+    </command>
+    <command>
+      <command>@enable-header</command>
+      <effect>Restore the Response State Header</effect>
+    </command>
+  </command_group>
+  <notes>
+    <note>TEAM MODE is always the default unless another mode, composite, subset, or assembled team is activated.</note>
+    <note>Phase changes are human-owned; the agent never infers them.</note>
+    <note>Safety anchors (security, privacy, accessibility, ethics) always apply.</note>
+    <note>High-stakes outputs must end with the compliance summary defined in templates/high-stakes-compliance-summary.xml.</note>
+    <note>Debate mode uses references/debate-engine.xml and graders/debate-behaviour.xml before the normal compliance chain applies to the panel recommendation.</note>
+    <note>Commands are not case-sensitive but must match the spellings shown.</note>
+    <note>Commands MUST be resolved by longest-exact-match (terminated at whitespace, end-of-input, or an argument boundary), not by greedy prefix. This is required to disambiguate intrinsic prefix pairs: @start-dev vs @start-devops, @start-gov vs @start-govern. Phase-modifier suffixes (-pre, -disco, -alpha, -beta, -live) are applied only after a full base command has resolved.</note>
+  </notes>
+</command_registry>

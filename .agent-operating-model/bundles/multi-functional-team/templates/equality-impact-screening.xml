@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="equality-impact-screening" version="1.0.0">
+  <title>Equality Impact Screening Template</title>
+  <template_block name="equality-impact-screening-template" title="Equality Impact Screening Template">
+    <statement>Use when a service change, Microsoft 365 agent, workflow, or triage pattern could affect people differently across protected characteristics or vulnerability groups.</statement>
+  </template_block>
+  <template_block name="change-in-scope" title="Change in scope">
+    <checklist ordered="false">
+      <entry level="0">Proposed change</entry>
+      <entry level="0">Owner</entry>
+      <entry level="0">Service phase</entry>
+      <entry level="0">M365 surface in scope</entry>
+    </checklist>
+  </template_block>
+  <template_block name="people-affected" title="People affected">
+    <checklist ordered="false">
+      <entry level="0">Primary users</entry>
+      <entry level="0">Staff</entry>
+      <entry level="0">Third parties</entry>
+      <entry level="0">Vulnerable or excluded groups</entry>
+    </checklist>
+  </template_block>
+  <template_block name="potential-differential-impact" title="Potential differential impact">
+    <checklist ordered="false">
+      <entry level="0">Access</entry>
+      <entry level="0">Comprehension</entry>
+      <entry level="0">Error burden</entry>
+      <entry level="0">Delay</entry>
+      <entry level="0">Escalation</entry>
+      <entry level="0">Surveillance or stigma</entry>
+    </checklist>
+  </template_block>
+  <template_block name="evidence" title="Evidence">
+    <checklist ordered="false">
+      <entry level="0">User research</entry>
+      <entry level="0">Ops data</entry>
+      <entry level="0">Complaints / incidents</entry>
+      <entry level="0">Policy / legal input</entry>
+      <entry level="0">Gaps and assumptions</entry>
+    </checklist>
+  </template_block>
+  <template_block name="controls-and-mitigations" title="Controls and mitigations">
+    <checklist ordered="false">
+      <entry level="0">Alternative routes</entry>
+      <entry level="0">Human support</entry>
+      <entry level="0">Accessibility adjustments</entry>
+      <entry level="0">Monitoring signals</entry>
+      <entry level="0">Review cadence</entry>
+    </checklist>
+  </template_block>
+  <template_block name="screening-outcome" title="Screening outcome">
+    <checklist ordered="false">
+      <entry level="0">No material impact identified</entry>
+      <entry level="0">Potential impact — mitigate and monitor</entry>
+      <entry level="0">Potentially significant impact — escalate for fuller assessment</entry>
+    </checklist>
+  </template_block>
+</template_module>

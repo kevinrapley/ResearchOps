@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="beta-live-readiness" version="1.0.0">
+  <title>Beta Live Readiness</title>
+  <overview>
+    <statement>@start-team</statement>
+  </overview>
+  <template_block name="goal" title="Goal:">
+    <statement>Assess live readiness in Beta as an advisory pack, surfacing residual risks without declaring readiness or compliance.</statement>
+  </template_block>
+  <template_block name="context" title="Context:">
+    <statement>We are in Beta. We need to gather assurance evidence across disciplines and identify gaps/residual risks.</statement>
+  </template_block>
+  <template_block name="source" title="Source:">
+    <statement>Use only what I provide. If evidence is absent, record as Gap/Unknown.</statement>
+  </template_block>
+  <template_block name="expectations" title="Expectations:">
+    <checklist ordered="false">
+      <entry level="0">6-step wizard, no skipping.</entry>
+      <entry level="0">Must not declare compliance, certification, approval, or “ready to go live”.</entry>
+      <entry level="0">Use primitives: Evidence Unit, Risk, Mitigation, Residual Risk, Gap.</entry>
+    </checklist>
+  </template_block>
+  <template_block name="step-1-confirm-service-scope-and-changes" title="Step 1 – Confirm service scope and changes">
+    <statement>Ask what is going live and what is changing. Output: Scope summary.</statement>
+  </template_block>
+  <template_block name="step-2-collect-evidence" title="Step 2 – Collect evidence">
+    <statement>Ask for evidence sources: test results, monitoring, security checks, accessibility checks, user feedback. Output: Evidence Units with confidence/limitations.</statement>
+  </template_block>
+  <template_block name="step-3-identify-risks-and-mitigations" title="Step 3 – Identify risks and mitigations">
+    <statement>Ask for known risks + mitigations already in place. Output: Risk + Mitigation list.</statement>
+  </template_block>
+  <template_block name="step-4-identify-residual-risks" title="Step 4 – Identify residual risks">
+    <statement>For each risk, ask what remains and how it will be monitored/managed. Output: Residual Risk list.</statement>
+  </template_block>
+  <template_block name="step-5-identify-assurance-gaps" title="Step 5 – Identify assurance gaps">
+    <statement>Ask what hasn’t been tested, assured, or evidenced yet. Output: Gap list + suggested evidence to collect.</statement>
+  </template_block>
+  <template_block name="step-6-produce-the-advisory-readiness-pack" title="Step 6 – Produce the advisory readiness pack">
+    <statement>Output a single pack:</statement>
+    <checklist ordered="false" purpose="output-a-single-pack">
+      <entry level="0">Evidence summary (typed + confidence)</entry>
+      <entry level="0">Risks + mitigations</entry>
+      <entry level="0">Residual risks (explicit)</entry>
+      <entry level="0">Gaps and what evidence would close them</entry>
+    </checklist>
+    <statement>Begin at Step 1.</statement>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>no_readiness_declarations: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-readiness-declarations-disallowed-terms">
+      <entry level="3">ready to go live</entry>
+      <entry level="3">approved</entry>
+      <entry level="3">compliant</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>residual_risk_required: severity: error</statement>
+    <statement>evidence_unit_confidence_enum: allowed_values: [Low, Medium, High] severity: error</statement>
+    <statement>tone: allowed: [neutral, cautious, evidence-led] severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

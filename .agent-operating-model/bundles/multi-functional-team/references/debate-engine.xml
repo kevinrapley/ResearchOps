@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="debate-engine" version="1.0.0">
+  <title>Debate Engine — Multi-Role Design Debate with Deliberative Panel</title>
+  <reference_block name="debate-engine-multi-role-design-debate-with-deliberative-panel" title="Debate Engine — Multi-Role Design Debate with Deliberative Panel">
+    <statement>This module defines a self-contained debate engine that runs inside a single LLM session. It coordinates structured argument between multiple role agents on complex design questions, then passes the transcript to a standing panel of seven governance-critical roles who produce a deliberative recommendation.</statement>
+    <statement>The engine addresses a specific failure mode in multi-agent systems: when roles contribute perspectives in parallel without being forced to defend positions under pressure, important trade-offs get hidden rather than surfaced, and weak arguments pass unchallenged.</statement>
+  </reference_block>
+  <invocation_policy>
+    <statement>Invoke when all three conditions are met:</statement>
+    <checklist ordered="false" purpose="invoke-when-all-three-conditions-are-met">
+      <entry level="0">No single obviously correct answer exists.</entry>
+      <entry level="0">The decision is consequential — difficult to reverse, affects many users, involves public money, or carries legal or reputational risk.</entry>
+      <entry level="0">The team needs competing arguments at full strength before deciding.</entry>
+    </checklist>
+    <statement>Do not invoke when:</statement>
+    <checklist ordered="false" purpose="do-not-invoke-when">
+      <entry level="0">The question is settled by legislation or established standards.</entry>
+      <entry level="0">The decision is low-stakes or easily reversible.</entry>
+      <entry level="0">Time pressure requires immediate action — escalate to human instead.</entry>
+      <entry level="0">Only two agents are in conflict — use the bilateral protocol in references/precedence-chain.xml.</entry>
+    </checklist>
+  </invocation_policy>
+  <phase_model>
+    <statement>Five phases in strict order.</statement>
+  </phase_model>
+  <reference_block name="phase-1-problem-framing" title="Phase 1: Problem Framing">
+    <statement>Produce five framing artefacts before any debate begins:</statement>
+    <checklist ordered="true" purpose="produce-five-framing-artefacts-before-any-debate-begins">
+      <entry level="0">Question statement — Single-sentence question with at least two defensible answers. Not a leading question.</entry>
+      <entry level="0">Burden-of-proof analysis — Identify which option the question treats as the status quo and which as the intervention. Produce a second phrasing that reverses the burden. Present both to the user.</entry>
+      <entry level="0">Decision criteria — Factors that matter, drawn from task context.</entry>
+      <entry level="0">Scope boundary — What is in scope and what is not.</entry>
+      <entry level="0">Participant roster — 4–7 roles with genuine stake in the question.</entry>
+    </checklist>
+    <statement>Exit condition: user confirms or adjusts the framing. Do not begin debate until framing is approved.</statement>
+  </reference_block>
+  <reference_block name="phase-2-complexity-and-agreement-assessment" title="Phase 2: Complexity and Agreement Assessment">
+    <statement>Each participant rates complexity (1–5) and states a one-sentence tentative position.</statement>
+    <statement>Calculate mean and standard deviation of complexity ratings. Count distinct positions.</statement>
+    <mapping_table>
+      <columns>
+        <column>Complexity mean</column>
+        <column>Distinct positions</column>
+        <column>Rounds</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Complexity mean">Below 2.5</cell>
+          <cell column="Distinct positions">2 or fewer</cell>
+          <cell column="Rounds">3</cell>
+        </row>
+        <row>
+          <cell column="Complexity mean">2.5–3.5</cell>
+          <cell column="Distinct positions">3</cell>
+          <cell column="Rounds">5</cell>
+        </row>
+        <row>
+          <cell column="Complexity mean">Above 3.5</cell>
+          <cell column="Distinct positions">4 or more</cell>
+          <cell column="Rounds">7</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>Overrides:</statement>
+    <checklist ordered="false" purpose="overrides">
+      <entry level="0">Standard deviation above 1.2 → 5 rounds regardless of mean.</entry>
+      <entry level="0">Participant count above 5 → add 1 round. Below 4 → subtract 1 round.</entry>
+      <entry level="0">Bounds: minimum 3, maximum 7.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="phase-3-the-debate-rounds" title="Phase 3: The Debate Rounds">
+    <statement>Round definition: A round is a complete cycle of all rostered participants contributing. Every participant contributes exactly once per round. Do not advance the round counter until every participant has delivered a compliant contribution. If the roster has 6 participants and the engine runs 5 rounds, the debate contains 30 contributions.</statement>
+    <statement>Opening round (Round 1):</statement>
+    <checklist ordered="false" purpose="opening-round-round-1">
+      <entry level="0">Each participant commits to a specific, contestable, consequential claim with initial defence.</entry>
+      <entry level="0">Return weak claims for tightening before they enter the record.</entry>
+    </checklist>
+    <statement>Middle rounds (Rounds 2 through n-1):</statement>
+    <checklist ordered="false" purpose="middle-rounds-rounds-2-through-n-1">
+      <entry level="0">Each participant responds to at least one opposing claim.</entry>
+      <entry level="0">Before rejecting, identify what you accept — including a concrete scenario where the opposing position would be the better choice.</entry>
+      <entry level="0">After cross-examination exchanges, state a position delta: "Position unchanged because [specific reason]," "Position narrowed — I now hold [modified claim] because [argument that moved me]," or "Position strengthened because [specific reason]." The "unchanged" option requires a reason tied to the challenge, not a restatement.</entry>
+      <entry level="0">If zero deltas across two consecutive middle rounds, the orchestrator intervenes to identify the crux or terminates with an exhaustion flag.</entry>
+    </checklist>
+    <statement>Final round (Round n):</statement>
+    <checklist ordered="false" purpose="final-round-round-n">
+      <entry level="0">Each participant restates their claim, acknowledges which opposing arguments moved them, states where disagreement remains and why, and delivers a specific recommendation.</entry>
+      <entry level="0">Participants may modify their original claim without inconsistency challenge.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="phase-4-transcript-and-convergence-summary" title="Phase 4: Transcript and Convergence Summary">
+    <statement>The orchestrator produces:</statement>
+    <checklist ordered="false" purpose="the-orchestrator-produces">
+      <entry level="0">Structured transcript — framing artefacts, scores, claims, key exchanges, final positions.</entry>
+      <entry level="0">Convergence summary — consensus, refined disagreement, open questions.</entry>
+      <entry level="0">Concession trail — for each participant, which Round 1 positions were abandoned or narrowed, classified as: evidence-driven (specific argument caused the shift), socially-driven (moved toward majority without citing a reason), or unexamined (final position differs from opening but no exchange accounts for it). Flag socially-driven and unexamined concessions for the panel.</entry>
+    </checklist>
+    <statement>Convergence scepticism: If full convergence occurs and the opening round contained 3+ distinct positions, run a stress-test round before proceeding to the panel. At least two participants must argue against the consensus, articulate the strongest remaining case for a rejected option, identify falsifying evidence, and name the most disadvantaged user population. Record the stress-test in the audit trail.</statement>
+    <statement>Participants are then released from argumentative roles.</statement>
+  </reference_block>
+  <reference_block name="phase-5-the-deliberative-panel" title="Phase 5: The Deliberative Panel">
+    <statement>Fixed composition. Seven standing roles:</statement>
+    <mapping_table purpose="fixed-composition-seven-standing-roles">
+      <columns>
+        <column>Panel role</column>
+        <column>Role file</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Panel role">Accessibility Expert</cell>
+          <cell column="Role file">roles/accessibility.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Governance</cell>
+          <cell column="Role file">roles/governance.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Product Management</cell>
+          <cell column="Role file">roles/product-management.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Legal Specialist</cell>
+          <cell column="Role file">roles/legal.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Policy Specialist</cell>
+          <cell column="Role file">roles/policy.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Privacy Specialist</cell>
+          <cell column="Role file">roles/privacy.xml</cell>
+        </row>
+        <row>
+          <cell column="Panel role">Security Specialist</cell>
+          <cell column="Role file">roles/security.xml</cell>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>Each role file contains a §4a "Deliberative panel duties" section defining behaviour in PANEL mode.</statement>
+    <statement>Mode shift: Panel members operate cooperatively. The question shifts from "who is right" to "what should we do."</statement>
+    <statement>Dual-role disclosure: If a panel member also debated, the output must state which side they argued. The panel must engage with arguments from the side each dual-role member opposed. Note where the recommendation aligns with or diverges from the debate majority.</statement>
+    <statement>Absent-voice check: List debate participant roles not on the panel. Assess whether their absence is material. Note arguments from absent roles that the panel relied on or set aside. Flag material gaps for the human decision owner.</statement>
+    <statement>Panel output (four sections):</statement>
+    <checklist ordered="true" purpose="panel-output-four-sections">
+      <entry level="0">Viable options — options that survive legal, security, and privacy requirements.</entry>
+      <entry level="0">Ranked recommendations — viable options ranked against framing decision criteria with explicit reasoning.</entry>
+      <entry level="0">Failure modes of the recommended option — how could it fail in practice; which user population is worst served; what costs does it impose that rejected options would not. If none, state that explicitly with reasoning.</entry>
+      <entry level="0">Conditions for reconsideration — what information or context would shift the ranking.</entry>
+    </checklist>
+    <statement>Output treatment: Passes through graders/agent-behaviour.xml compliance chain. Presented as recommendation, not decision. Human SRO retains decision authority.</statement>
+  </reference_block>
+  <reference_block name="the-ten-disciplines" title="The Ten Disciplines">
+    <statement>Every contribution in every round must exhibit all ten. Enforced by graders/debate-behaviour.xml. Severity is block or flag.</statement>
+    <checklist ordered="true">
+      <entry level="0">Commit to a single claim (block) — One specific, contestable, consequential claim. No hedging between multiple positions.</entry>
+      <entry level="0">Structure around the claim (flag) — Every paragraph traces back to the claim as support, objection, or illustration.</entry>
+      <entry level="0">Incorporate research (flag) — Cite specific sources: UK legislation, government guidance, ICO/EHRC/NCSC/NAO publications, published studies, service data, user research findings, documented experience. No unsourced appeals to best practice. Caveat uncertain citations as "requires verification" — the linter checks format, not existence.</entry>
+      <entry level="0">Anticipate opposing claims (flag) — Name and engage at least one counterargument in its strongest form. State it assertively with a specific mechanism and beneficiary, not conditionally. "It could help some users" fails. "For users with [specific condition], this approach removes [specific barrier] because [specific mechanism]" passes.</entry>
+      <entry level="0">Address flaws in own argument (flag) — Name a substantive weakness and explain why the position holds despite it. Pseudo-weaknesses do not count.</entry>
+      <entry level="0">Ask questions (flag) — Ask at least one specific question of a named participant, targeting reasoning not the person.</entry>
+      <entry level="0">Answer questions directly (block) — Answer questions from the previous round. No evasion or redirection. Applies from Round 2.</entry>
+      <entry level="0">Tell a story (flag) — Include a concrete illustration: named service case, historical example, user research scenario, or specific hypothetical. "A user might find" fails.</entry>
+      <entry level="0">Choose the right tone (flag) — Match tone to subject and stakes. No hostility, condescension, obscuring formality, or trivialising informality. Role-specific tone guidance in graders/debate-behaviour.xml.</entry>
+      <entry level="0">Deliver a strong conclusion (flag) — Close with a specific, actionable takeaway. No trailing off, restating the opening, or drowning the point in qualifications.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="early-termination-triggers" title="Early Termination Triggers">
+    <statement>The engine terminates before the full round count if any of the following occur:</statement>
+    <checklist ordered="false" purpose="the-engine-terminates-before-the-full-round-count-if-any-of-the-following-occur">
+      <entry level="0">Unanimous convergence — After any round from Round 2 onwards, all participants state positions within the consensus band (substantive agreement on claim and recommendation; differences only on emphasis).</entry>
+      <entry level="0">Blocking flag raised — Any of the top three linting roles (Legal, Security, Privacy) raises a hard-failure flag during the debate. The engine pauses, surfaces the flag, and requires resolution before continuing.</entry>
+      <entry level="0">Argument exhaustion — Participants are repeating positions without advancing new reasoning. Further rounds would not add value.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="abort-conditions" title="Abort Conditions">
+    <statement>The engine aborts and escalates to the user if any of the following occur:</statement>
+    <checklist ordered="false" purpose="the-engine-aborts-and-escalates-to-the-user-if-any-of-the-following-occur">
+      <entry level="0">Discipline failure at scale — More than half of contributions in a round fail one or more disciplines. Likely cause: ambiguous framing or missing context. Action: return to framing phase.</entry>
+      <entry level="0">Participant cannot meet disciplines — A participant fails to produce a compliant contribution after two attempts. Likely cause: insufficient information or expertise. Action: pause for user to provide context or remove the participant.</entry>
+      <entry level="0">Question cannot be answered — The debate reveals the question cannot be answered with available information. Action: terminate engine and recommend scoping exercise before retry.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="failure-modes-and-handling" title="Failure Modes and Handling">
+    <statement>Participants talk past each other:</statement>
+    <checklist ordered="false" purpose="participants-talk-past-each-other">
+      <entry level="0">Condition: Contributions reference different aspects of the question without engaging with each other.</entry>
+      <entry level="0">Likely cause: Framing did not establish shared decision criteria.</entry>
+      <entry level="0">Action: Orchestrator restates decision criteria and prompts alignment.</entry>
+    </checklist>
+    <statement>One participant dominates:</statement>
+    <checklist ordered="false" purpose="one-participant-dominates">
+      <entry level="0">Condition: One participant produces significantly more content or is repeatedly cited by others.</entry>
+      <entry level="0">Likely cause: Role-based authority distorts debate dynamics.</entry>
+      <entry level="0">Action: Orchestrator prompts other participants to engage with the dominant claim from their disciplinary perspectives.</entry>
+    </checklist>
+    <statement>Panel cannot reach recommendation:</statement>
+    <checklist ordered="false" purpose="panel-cannot-reach-recommendation">
+      <entry level="0">Condition: Panel produces deliberation but cannot agree on a recommendation.</entry>
+      <entry level="0">Likely cause: Debate surfaced genuine value disagreements that deliberation alone cannot resolve.</entry>
+      <entry level="0">Action: Panel produces split recommendation stating both positions and the underlying value difference; escalates to human for value judgment.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="audit-record" title="Audit Record">
+    <statement>Every debate produces a persistent audit record. Retention is the same period as the decision it informed (minimum 6 years). The record contains:</statement>
+    <checklist ordered="false" purpose="every-debate-produces-a-persistent-audit-record-retention-is-the-same-period-as-the-decision-it-informed-minimum-6-years-the-record-contains">
+      <entry level="0">Framing artefacts (question, burden-of-proof analysis, criteria, scope, roster)</entry>
+      <entry level="0">Complexity and agreement scores with calculation</entry>
+      <entry level="0">Participant roster with selection rationale</entry>
+      <entry level="0">Round count with calculation</entry>
+      <entry level="0">Every contribution with discipline check results</entry>
+      <entry level="0">Position delta statements per participant per middle round</entry>
+      <entry level="0">Convergence summaries per round</entry>
+      <entry level="0">Concession trail with classification</entry>
+      <entry level="0">Stress-test round if triggered</entry>
+      <entry level="0">Early termination trigger if applicable</entry>
+      <entry level="0">Full debate transcript</entry>
+      <entry level="0">Panel deliberation summary</entry>
+      <entry level="0">Dual-role disclosures</entry>
+      <entry level="0">Absent-voice assessment</entry>
+      <entry level="0">Panel recommendation including failure modes</entry>
+      <entry level="0">Linting chain results on recommendation</entry>
+      <entry level="0">Human decision and rationale (captured separately)</entry>
+    </checklist>
+    <statement>ATRS treatment: If the decision is algorithmic or influences decisions about individuals, a summary of the debate and panel recommendation belongs in the Algorithmic Transparency Recording Standard Tier 2 record.</statement>
+    <statement>FOIA treatment: Audit records are potentially disclosable under the Freedom of Information Act 2000. No content should be produced that the organisation would not wish disclosed.</statement>
+  </reference_block>
+  <reference_block name="compliance-chain" title="Compliance Chain">
+    <statement>The panel recommendation passes the eight linting categories in graders/agent-behaviour.xml: Legal (block), Security (block), Privacy (block), Accessibility (flag), Ethics (flag), Policy (flag), QA (flag), User Need (flag). Flags return to the panel for resolution before the recommendation is finalised.</statement>
+  </reference_block>
+  <reference_block name="temperature" title="Temperature">
+    <statement>Temperature controls sampling diversity. High where diversity matters most (opening positions, steelmanning, stress-testing). Low where precision matters most (scoring, classification, audit).</statement>
+    <checklist ordered="false">
+      <entry level="0">Orchestrator operations: 0.1–0.6</entry>
+      <entry level="0">Debate contributions: 0.2–0.95 (opening round baseline 0.8, steelman passages 0.8, position deltas 0.3)</entry>
+      <entry level="0">Panel deliberation: 0.2–0.7 (mode reduction −0.2 from debate, failure modes section 0.6)</entry>
+      <entry level="0">UCD roles: +0.1 adjustment. Compliance and data roles: −0.1 adjustment.</entry>
+    </checklist>
+    <statement>All values and role-family mappings in graders/debate-behaviour.xml.</statement>
+  </reference_block>
+  <reference_block name="integration-with-the-existing-compliance-chain" title="Integration with the Existing Compliance Chain">
+    <statement>The debate engine sits alongside the standard compliance chain, not outside it. The panel's recommendation is an output like any other and must pass the eight linting categories defined in graders/agent-behaviour.xml:</statement>
+    <checklist ordered="true" purpose="the-debate-engine-sits-alongside-the-standard-compliance-chain-not-outside-it-the-panel-s-recommendation-is-an-output-like-any-other-and-must-pass-the-eight-linting-categories-defined-in-graders-agent-behaviour-xml">
+      <entry level="0">Legal (blocking)</entry>
+      <entry level="0">Security (blocking)</entry>
+      <entry level="0">Privacy (blocking)</entry>
+      <entry level="0">Accessibility (flagging)</entry>
+      <entry level="0">Ethics (flagging)</entry>
+      <entry level="0">Policy (flagging)</entry>
+      <entry level="0">QA (flagging)</entry>
+      <entry level="0">User Need (flagging)</entry>
+    </checklist>
+    <statement>Flags raised by the linting chain return to the panel for resolution before the recommendation is finalised.</statement>
+    <statement>The result is an output that has been shaped by rigorous debate, synthesised by a multidisciplinary panel, and checked by the full compliance engine. The output is not infallible, but it has passed through the strongest structured reasoning the system is capable of. Human review and decision remain required.</statement>
+  </reference_block>
+  <reference_block name="configuration-reference" title="Configuration Reference">
+    <statement>All configurable parameters are stored in graders/debate-behaviour.xml. The most relevant defaults:</statement>
+    <checklist ordered="false" purpose="all-configurable-parameters-are-stored-in-graders-debate-behaviour-xml-the-most-relevant-defaults">
+      <entry level="0">Minimum participants: 4</entry>
+      <entry level="0">Maximum participants: 7</entry>
+      <entry level="0">Minimum rounds: 3</entry>
+      <entry level="0">Maximum rounds: 7</entry>
+      <entry level="0">Max discipline retries: 2</entry>
+      <entry level="0">Consensus band: substantive agreement on claim and recommendation; differences only on emphasis</entry>
+      <entry level="0">Panel composition: fixed at seven roles listed in Phase 5</entry>
+      <entry level="0">Temperatures: see graders/debate-behaviour.xml temperature_configuration section</entry>
+    </checklist>
+    <statement>This document describes the design. The YAML enforces it.</statement>
+  </reference_block>
+</reference_module>

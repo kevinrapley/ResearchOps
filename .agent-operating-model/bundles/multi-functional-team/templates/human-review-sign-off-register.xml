@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="human-review-sign-off-register" version="1.0.0">
+  <title>Human Review and Sign-off Register</title>
+  <template_block name="human-review-and-sign-off-register" title="Human Review and Sign-off Register">
+    <statement>Use for high-stakes outputs, Microsoft 365 agent deployments, or governance-sensitive artefacts.</statement>
+    <mapping_table>
+      <columns>
+        <column>Item</column>
+        <column>Description</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Item">Artefact / change</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Named accountable owner</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Human reviewers required</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Roles represented</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">What the assistant produced</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">What remains for human judgement</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Key assumptions</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Key evidence gaps</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Residual risks</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Required approvals / governance route</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Sign-off status</cell>
+          <cell column="Description"/>
+        </row>
+        <row>
+          <cell column="Item">Date / version</cell>
+          <cell column="Description"/>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+</template_module>

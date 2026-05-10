@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="dependency-risk-map" version="1.0.0">
+  <title>Dependency Risk Map</title>
+  <overview>
+    <statement>@start-team</statement>
+  </overview>
+  <template_block name="goal" title="Goal">
+    <statement>Map dependencies and external risks that could affect outcomes, without assigning blame or committing to mitigations.</statement>
+  </template_block>
+  <template_block name="context" title="Context">
+    <statement>This wizard is for understanding:</statement>
+    <checklist ordered="false" purpose="this-wizard-is-for-understanding">
+      <entry level="0">what we rely on</entry>
+      <entry level="0">where uncertainty or fragility exists</entry>
+      <entry level="0">what is outside the team’s direct control</entry>
+    </checklist>
+  </template_block>
+  <template_block name="source" title="Source">
+    <statement>Use only what I provide. If ownership or reliability is unclear, record as Unknown.</statement>
+  </template_block>
+  <template_block name="step-1-identify-dependencies" title="Step 1 – Identify dependencies">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What do we depend on? (teams, systems, suppliers, policies, data)</entry>
+    </checklist>
+    <statement>Output: Dependency list.</statement>
+  </template_block>
+  <template_block name="step-2-dependency-characteristics" title="Step 2 – Dependency characteristics">
+    <statement>For each dependency, ask:</statement>
+    <checklist ordered="false" purpose="for-each-dependency-ask">
+      <entry level="0">Owner (if known)</entry>
+      <entry level="0">Stability/reliability</entry>
+      <entry level="0">Change frequency</entry>
+    </checklist>
+    <statement>Output: Dependency profiles.</statement>
+  </template_block>
+  <template_block name="step-3-risks-if-dependency-fails-or-changes" title="Step 3 – Risks if dependency fails or changes">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">What could go wrong?</entry>
+      <entry level="0">What would the impact be?</entry>
+    </checklist>
+    <statement>Output: Risk statements per dependency.</statement>
+  </template_block>
+  <template_block name="step-4-visibility-and-uncertainty" title="Step 4 – Visibility and uncertainty">
+    <statement>Ask:</statement>
+    <checklist ordered="false" purpose="ask">
+      <entry level="0">How visible is this dependency?</entry>
+      <entry level="0">What don’t we know?</entry>
+    </checklist>
+    <statement>Output: Visibility notes + Unknowns.</statement>
+  </template_block>
+  <template_block name="step-5-dependency-risk-map" title="Step 5 – Dependency risk map">
+    <statement>Produce:</statement>
+    <checklist ordered="false" purpose="produce">
+      <entry level="0">Dependency list</entry>
+      <entry level="0">Associated risks</entry>
+      <entry level="0">Unknowns</entry>
+      <entry level="0">Open questions for discovery or governance</entry>
+    </checklist>
+    <statement>Begin at Step 1.</statement>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>dependency_mapping_integrity: description: &gt; Dependency mapping must surface uncertainty and risk, not assign blame or solutions. rule: Reject outputs that imply fault, ownership decisions, or fixes.</statement>
+    <statement>no_blame_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-blame-language-disallowed-terms">
+      <entry level="3">failed to</entry>
+      <entry level="3">at fault</entry>
+      <entry level="3">responsible for</entry>
+      <entry level="3">caused by</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_mitigation_commitments: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-mitigation-commitments-disallowed-terms">
+      <entry level="3">we will mitigate</entry>
+      <entry level="3">fix</entry>
+      <entry level="3">resolve</entry>
+      <entry level="3">ensure</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>dependencies_required: description: Step 1 must list at least one dependency or explicitly state none are known. severity: error</statement>
+    <statement>risks_required_per_dependency: description: Each dependency must have a corresponding risk or Unknown. severity: error</statement>
+    <statement>unknowns_required: description: Unknown ownership or reliability must be recorded as Unknown. severity: error</statement>
+    <statement>tone: allowed: [neutral, analytical, non-judgemental] disallowed: [accusatory, directive, reassuring] severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>

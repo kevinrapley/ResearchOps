@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="service-ownership-accountability" version="1.0.0">
+  <title>Service Ownership Accountability</title>
+  <purpose>
+    <statement>Provide a clear, explicit record of service ownership and accountability so that responsibilities, authorities, and escalation paths are understood.</statement>
+    <statement>This document does not:</statement>
+    <checklist ordered="false" purpose="this-document-does-not">
+      <entry level="0">evaluate performance</entry>
+      <entry level="0">assign blame</entry>
+      <entry level="0">approve decisions</entry>
+      <entry level="0">imply responsibility for outcomes</entry>
+    </checklist>
+    <statement>Its role is descriptive, not judgemental.</statement>
+  </purpose>
+  <template_block name="scope" title="Scope">
+    <statement>This record applies to:</statement>
+    <checklist ordered="false" purpose="this-record-applies-to">
+      <entry level="0">a service, product, or capability</entry>
+      <entry level="0">its ongoing operation and governance</entry>
+      <entry level="0">decision‑making responsibilities</entry>
+    </checklist>
+    <statement>It should be updated when ownership or accountability materially changes.</statement>
+  </template_block>
+  <template_block name="service-identification" title="Service identification">
+    <checklist ordered="false">
+      <entry level="0">Service name:</entry>
+      <entry level="0">Description (plain English):</entry>
+      <entry level="0">Current phase: (Discovery / Alpha / Beta / Live / Other)</entry>
+      <entry level="0">Operational context: (public‑facing, internal, hybrid)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="service-owner" title="Service owner">
+    <checklist ordered="false">
+      <entry level="0">Role title:</entry>
+      <entry level="0">Organisation / unit:</entry>
+      <entry level="0">Accountable for:</entry>
+      <entry level="1">overall service direction</entry>
+      <entry level="1">prioritisation within agreed constraints</entry>
+      <entry level="0">Not accountable for:</entry>
+      <entry level="1">individual delivery tasks</entry>
+      <entry level="1">operational incidents caused by external factors (unless explicitly stated)</entry>
+    </checklist>
+  </template_block>
+  <template_block name="product-delivery-ownership-if-applicable" title="Product / delivery ownership (if applicable)">
+    <checklist ordered="false">
+      <entry level="0">Role title(s):</entry>
+      <entry level="0">Scope of responsibility:</entry>
+      <entry level="0">Decision boundaries:</entry>
+      <entry level="1">what this role can decide independently</entry>
+      <entry level="1">what must be escalated</entry>
+    </checklist>
+  </template_block>
+  <template_block name="operational-ownership" title="Operational ownership">
+    <checklist ordered="false">
+      <entry level="0">Role / team:</entry>
+      <entry level="0">Accountable for:</entry>
+      <entry level="1">day‑to‑day running</entry>
+      <entry level="1">monitoring and response</entry>
+      <entry level="0">Escalation responsibilities:</entry>
+      <entry level="1">when and how issues are escalated</entry>
+    </checklist>
+  </template_block>
+  <template_block name="decision-authorities" title="Decision authorities">
+    <statement>Describe who can make which types of decisions, without implying what decisions should be made.</statement>
+    <mapping_table>
+      <columns>
+        <column>Decision type</column>
+        <column>Authority</column>
+        <column>Constraints</column>
+        <column>Escalation required?</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Decision type"/>
+          <cell column="Authority"/>
+          <cell column="Constraints"/>
+          <cell column="Escalation required?"/>
+        </row>
+      </rows>
+    </mapping_table>
+    <statement>Notes:</statement>
+    <checklist ordered="false" purpose="notes">
+      <entry level="0">Absence of authority does not imply lack of competence.</entry>
+      <entry level="0">Constraints should reference policy, law, or governance — not preferences.</entry>
+    </checklist>
+  </template_block>
+  <template_block name="escalation-paths" title="Escalation paths">
+    <statement>Describe how concerns move, not how they are resolved.</statement>
+  </template_block>
+  <template_block name="operational-escalation" title="Operational escalation">
+    <checklist ordered="false">
+      <entry level="0">Trigger conditions:</entry>
+      <entry level="0">Escalation route:</entry>
+      <entry level="0">Expected handover information:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="governance-escalation" title="Governance escalation">
+    <checklist ordered="false">
+      <entry level="0">Trigger conditions:</entry>
+      <entry level="0">Escalation forum or role:</entry>
+      <entry level="0">Information required:</entry>
+    </checklist>
+  </template_block>
+  <template_block name="interfaces-and-dependencies" title="Interfaces and dependencies">
+    <statement>List ownership boundaries, not solutions.</statement>
+    <checklist ordered="false">
+      <entry level="0">Other services depended on:</entry>
+      <entry level="0">External organisations or suppliers:</entry>
+      <entry level="0">Shared ownership areas:</entry>
+      <entry level="0">Known ambiguity in responsibility (record explicitly):</entry>
+    </checklist>
+  </template_block>
+  <template_block name="known-gaps-and-uncertainties" title="Known gaps and uncertainties">
+    <statement>Explicitly record:</statement>
+    <checklist ordered="false" purpose="explicitly-record">
+      <entry level="0">unclear ownership</entry>
+      <entry level="0">contested accountability</entry>
+      <entry level="0">transitional arrangements</entry>
+      <entry level="0">upcoming changes not yet confirmed</entry>
+    </checklist>
+  </template_block>
+  <template_block name="review-history" title="Review history">
+    <mapping_table>
+      <columns>
+        <column>Date</column>
+        <column>Change</column>
+        <column>Reason</column>
+        <column>Author</column>
+      </columns>
+      <rows>
+        <row>
+          <cell column="Date"/>
+          <cell column="Change"/>
+          <cell column="Reason"/>
+          <cell column="Author"/>
+        </row>
+      </rows>
+    </mapping_table>
+  </template_block>
+  <template_block name="linting-rules-machine-readable-yaml" title="Linting Rules (Machine‑Readable YAML)">
+    <statement>```yaml lint: mode: hard-fail</statement>
+    <statement>ownership_record_integrity: description: &gt; Ownership records must describe accountability structures without assigning blame, responsibility for outcomes, or approval. rule: Reject outputs that imply fault, performance judgement, or sign-off.</statement>
+    <statement>no_blame_or_fault_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-blame-or-fault-language-disallowed-terms">
+      <entry level="3">responsible for failure</entry>
+      <entry level="3">accountable for incident</entry>
+      <entry level="3">caused by</entry>
+      <entry level="3">at fault</entry>
+      <entry level="3">failed to</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_performance_or_evaluation_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-performance-or-evaluation-language-disallowed-terms">
+      <entry level="3">effective</entry>
+      <entry level="3">ineffective</entry>
+      <entry level="3">good ownership</entry>
+      <entry level="3">poor ownership</entry>
+      <entry level="3">strong leadership</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>no_approval_or_signoff_language: disallowed_terms:</statement>
+    <checklist ordered="false" purpose="no-approval-or-signoff-language-disallowed-terms">
+      <entry level="3">approved</entry>
+      <entry level="3">signed off</entry>
+      <entry level="3">authorised</entry>
+      <entry level="3">agreed by</entry>
+      <entry level="3">endorsed</entry>
+    </checklist>
+    <statement>severity: error</statement>
+    <statement>accountability_must_be_role_based: description: &gt; Accountability must be assigned to roles or functions, not named individuals, unless explicitly required by the user. severity: error</statement>
+    <statement>decision_authority_must_include_constraints: description: &gt; Decision authorities must include constraints or escalation boundaries. severity: error</statement>
+    <statement>gaps_and_uncertainties_required: description: &gt; Areas of unclear or transitional ownership must be explicitly recorded. severity: error</statement>
+    <statement>tone: allowed:</statement>
+    <checklist ordered="false" purpose="tone-allowed">
+      <entry level="3">neutral</entry>
+      <entry level="3">descriptive</entry>
+      <entry level="3">governance-aware</entry>
+    </checklist>
+    <statement>disallowed:</statement>
+    <checklist ordered="false" purpose="disallowed">
+      <entry level="3">accusatory</entry>
+      <entry level="3">persuasive</entry>
+      <entry level="3">reassuring</entry>
+      <entry level="3">directive</entry>
+    </checklist>
+    <statement>severity: error ```</statement>
+    <statement>If any lint rule is violated, the assistant must rewrite its output before responding.</statement>
+  </template_block>
+</template_module>
