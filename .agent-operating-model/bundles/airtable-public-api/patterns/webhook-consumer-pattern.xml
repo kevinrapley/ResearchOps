@@ -1,0 +1,1 @@
+<pattern id="webhook-consumer-pattern"><purpose>Create a webhook, verify MAC on notifications, then fetch payload pages until mightHaveMore is false.</purpose></pattern>
