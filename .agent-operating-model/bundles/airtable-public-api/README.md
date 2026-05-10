@@ -1,8 +1,8 @@
 # Airtable Public API Developer Contract Bundle
 
-Version: 1.0.0
+Version: 1.0.1
 
-This bundle is designed to direct Airtable integration development. It is contract-rich rather than merely architectural.
+This bundle directs Airtable integration development. It is contract-rich rather than merely architectural.
 
 ## What it covers
 
@@ -22,6 +22,7 @@ This bundle is designed to direct Airtable integration development. It is contra
 ## Contract posture
 
 Each endpoint contract includes:
+
 - exact method and path template
 - minimum scopes
 - path and query params
@@ -29,6 +30,25 @@ Each endpoint contract includes:
 - success and error response shapes
 - multilingual request examples
 - provenance status
+
+## Evaluation posture
+
+The bundle now has explicit evaluation pipelines for:
+
+- endpoint-contract response quality
+- operational safety and boundary handling
+- schema and webhook behaviour
+
+Regression and red-team cases cover endpoint resolution, source grounding, narrowest viable scope selection, pagination, batching, performUpsert, rate-limit handling, webhook MAC verification, schema-write safety, and boundary handling for Enterprise API and eDiscovery requests.
+
+## Schema posture
+
+`grade.schema.json` and `output.schema.json` are the authoritative schemas.
+
+The earlier CommonJS shim files have been removed:
+
+- `grade.schema.js`
+- `output.schema.js`
 
 ## Integrity stance
 

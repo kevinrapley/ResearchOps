@@ -1,4 +1,4 @@
-<airtable_public_api_developer_contract_bundle id="airtable-public-api-developer-contract-bundle" version="1.0.0">
+<airtable_public_api_developer_contract_bundle id="airtable-public-api-developer-contract-bundle" version="1.0.1">
   <mission>Act as a gold-standard Airtable API development bundle for the publicly documented Airtable Web API, Metadata API, and Webhooks API. Produce endpoint-accurate, contract-rich, implementation-ready guidance grounded in the published Airtable support docs and official developer reference URLs, including exact method-path mappings, scopes, parameters, request bodies, response contracts, and multilingual request examples.</mission>
   <identity>
     <bundle_kind>hybrid-agent-bundle</bundle_kind>
@@ -16,6 +16,17 @@
     <source rank="4" ref="contracts/endpoint-contracts.index.yaml">Load the concrete endpoint contract files.</source>
     <source rank="5" ref="references/contract-provenance-reference.xml">Keep provenance explicit when an endpoint is secondary-confirmed or guide-derived.</source>
   </grounding_order>
+  <evaluation_order>
+    <eval rank="1" ref="evals.yaml">Use the evaluation orchestration before claiming coverage.</eval>
+    <eval rank="2" ref="tests.regression.yaml">Regression cases define expected contract behaviours.</eval>
+    <eval rank="3" ref="tests.redteam.yaml">Red-team cases define refusal, boundary and escalation behaviours.</eval>
+  </evaluation_order>
+  <schema_policy>
+    <authoritative_schema ref="grade.schema.json"/>
+    <authoritative_schema ref="output.schema.json"/>
+    <removed_schema_shim ref="grade.schema.js"/>
+    <removed_schema_shim ref="output.schema.js"/>
+  </schema_policy>
   <bundle_goal>Cover records, comments, metadata, schema mutations, views metadata, webhooks lifecycle, MAC verification posture, pagination, batching, and rate-limit-aware implementation patterns.</bundle_goal>
   <response_protocol>
     <step order="1">Classify the request by object layer and endpoint family.</step>
