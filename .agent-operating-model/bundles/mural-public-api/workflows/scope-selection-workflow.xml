@@ -1,0 +1,6 @@
+<workflow id="scope-selection-workflow">
+  <step order="1">Start from read-only scopes.</step>
+  <step order="2">Add write scopes only for create, update, delete, invitation, sharing, facilitation control, or widget mutation operations.</step>
+  <step order="3">Explain each scope in plain language and tie it to the exact operations it unlocks.</step>
+  <step order="4">Call out when identity:read is needed separately from users:read.</step>
+</workflow>

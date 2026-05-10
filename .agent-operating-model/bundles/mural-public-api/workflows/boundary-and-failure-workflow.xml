@@ -1,1 +1,6 @@
-
+<workflow id="boundary-and-failure-workflow">
+  <step order="1">Check whether the requested capability belongs to the public API, the enterprise API, or Canvas Embed SDK.</step>
+  <step order="2">State when visitor access through the external app is impossible.</step>
+  <step order="3">Call unsupported-zone implications and scope mismatch failure paths.</step>
+  <step order="4">Recommend safer or correct alternatives when the requested path is outside scope.</step>
+</workflow>
