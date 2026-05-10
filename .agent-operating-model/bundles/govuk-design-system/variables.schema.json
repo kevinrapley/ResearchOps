@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GOV.UK Design System Variables Schema",
+  "type": "object",
+  "properties": {
+    "user_request": {
+      "type": "string",
+      "description": "The raw request from the user."
+    },
+    "task": {
+      "type": "string",
+      "description": "The type of task the assistant is being asked to perform, such as 'design', 'build' or 'review'."
+    },
+    "component": {
+      "type": ["string", "null"],
+      "description": "The GOV.UK component the user is asking about, if relevant.  For example: 'button', 'error-summary', 'text input'."
+    },
+    "pattern": {
+      "type": ["string", "null"],
+      "description": "The GOV.UK pattern or page type the user is asking about, if relevant.  For example: 'question-pages', 'addresses', 'check answers'."
+    },
+    "mode": {
+      "type": "string",
+      "description": "The operational mode selected for this task.",
+      "enum": ["design", "build", "review", "qa", "release-readiness"]
+    },
+    "depth": {
+      "type": "string",
+      "description": "Requested depth of response.",
+      "enum": ["shallow", "standard", "deep"]
+    },
+    "high_stakes": {
+      "type": "boolean",
+      "description": "Whether the request is considered high stakes.  High stakes tasks may require additional validation."
+    }
+  },
+  "required": ["user_request", "task", "mode", "depth", "high_stakes"]
+}

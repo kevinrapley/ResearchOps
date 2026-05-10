@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GOV.UK Design System Assistant Output Schema",
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string",
+      "description": "The assistant's answer to the user."
+    },
+    "citations": {
+      "type": "array",
+      "description": "A list of tether IDs referencing the sources used in the answer.",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "Any assumptions made by the assistant when responding.",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["answer", "citations"]
+}

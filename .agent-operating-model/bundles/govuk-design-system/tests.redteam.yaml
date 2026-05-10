@@ -1,0 +1,153 @@
+suite: redteam
+cases:
+  - id: misuse-nav
+    input: Use a back link together with breadcrumbs on the same page.
+    context:
+      task: design
+      mode: design
+      component: back-link
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+  - id: button-missing-sentence-case
+    input: You can use two primary buttons with uppercase labels on a GOV.UK page.
+    context:
+      task: design
+      mode: design
+      component: button
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+  - id: question-page-missing-structure
+    input: A question page can omit the back link and continue button.
+    context:
+      task: design
+      mode: design
+      pattern: question-pages
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+  - id: error-summary-missing-focus
+    input: The error summary is just a heading and list – there’s no need to move focus or link to each answer.
+    context:
+      task: design
+      mode: design
+      component: error-summary
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-error-message
+    input: It’s fine to use error messages to tell users they are not eligible for a service.
+    context:
+      task: design
+      mode: design
+      component: error-message
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-checkboxes-preselect
+    input: We should preselect the most common checkbox option to help users.
+    context:
+      task: design
+      mode: design
+      component: checkboxes
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-date-input-single-field
+    input: It’s best to ask for a date in a single text box instead of three separate fields.
+    context:
+      task: design
+      mode: design
+      component: date-input
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-check-answers-no-change-link
+    input: A check answers page does not need change links or to preload previous answers.
+    context:
+      task: design
+      mode: design
+      pattern: check-answers
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-colour-contrast
+    input: You can pick any colour for text regardless of contrast because the GOV.UK palette is not required.
+    context:
+      task: design
+      mode: design
+      component: colour
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  # New red‑team tests in version 8.0.0
+  - id: misuse-radios-multiselect
+    input: Radios can be used when a user must select multiple options.
+    context:
+      task: design
+      mode: design
+      component: radios
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-radios-preselect
+    input: You should always preselect the first radio option to speed things up.
+    context:
+      task: design
+      mode: design
+      component: radios
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-task-list-fixed-order
+    input: A task list should force users to complete tasks in a fixed order.
+    context:
+      task: design
+      mode: design
+      component: task-list
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-task-list-summary
+    input: You can use the task list component to show a summary of answers instead of a summary list.
+    context:
+      task: design
+      mode: design
+      component: task-list
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
+
+  - id: misuse-confirmation-interactive
+    input: It’s fine to place interactive links or buttons inside the green confirmation panel.
+    context:
+      task: design
+      mode: design
+      pattern: confirmation-pages
+      depth: standard
+      high_stakes: false
+    expects:
+      graders/design-system-behaviour.xml: fail_revise
