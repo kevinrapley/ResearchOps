@@ -39,14 +39,28 @@ test("repository operating model selects always-load bundles", () => {
 	}
 });
 
+test("repository operating model selects Cloudflare for runtime and deployment work", () => {
+	const task = "Fix a Cloudflare Worker route and review the Wrangler binding configuration.";
+	const bundle = bundleById(task, "cloudflare");
+
+	assert.ok(bundle);
+	assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+	assert.equal(bundle.selectionEvidence.traceLayer, "behavioural");
+	assert.ok(bundle.selectionEvidence.ruleId);
+	assert.ok(bundle.selectionEvidence.matchedSignals.includes("runtime-or-deployment-change"));
+	assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
+	assertCanonicalBundle(bundle);
+});
+
 test("repository operating model selects conditional API bundles from typed task signals", () => {
 	const task = "Fix a route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
 
+	assert.ok(ids.includes("cloudflare"));
 	assert.ok(ids.includes("airtable-public-api"));
 	assert.ok(ids.includes("mural-public-api"));
 
-	for (const bundleId of ["airtable-public-api", "mural-public-api"]) {
+	for (const bundleId of ["cloudflare", "airtable-public-api", "mural-public-api"]) {
 		const bundle = bundleById(task, bundleId);
 
 		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
@@ -97,6 +111,7 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/trace-layers.md",
 		".agent-operating-model/behavioural-evals.json",
 		".agent-operating-model/bundles/",
+		".agent-operating-model/bundles/cloudflare/",
 	]) {
 		assert.match(agents, new RegExp(reference.replace(/[.]/g, "\\.")));
 	}
