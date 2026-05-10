@@ -1,0 +1,4 @@
+<pattern id="mural-sharing-and-export-pattern">
+  <use_when>Need to inspect access posture, update visitor settings, reset visitor links, or export mural content.</use_when>
+  <sequence>muralaccessinfo -> updatemuralvisitorsettings or resetvisitorlink -> exportmural -> exporturlmural</sequence>
+</pattern>

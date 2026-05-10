@@ -1,0 +1,26 @@
+<pattern id="membership-and-invitation-pattern">
+  <use_when>Need to inspect collaborators, send invitations, update permissions, or remove members from workspaces, rooms, or murals.</use_when>
+  <sequences>
+    <sequence id="room-membership-lifecycle">
+      getroommembers → inviteuserstoroom → updateroommemberpermissions (body: userId + permission) → removeroomusers (body: userIds[])
+    </sequence>
+    <sequence id="mural-membership-lifecycle">
+      getmuralusers → inviteuserstomural → updatemuralmemberpermissions (PATH: userId; body: permission only) → removemuralusers (body: userIds[])
+    </sequence>
+    <sequence id="workspace-invitation">
+      inviteuserstoworkspace (requires workspaces:write; caller must be workspace admin) → getroommembers or getmuralusers to verify provisioning downstream
+    </sequence>
+  </sequences>
+  <critical_asymmetry>
+    updatemuralmemberpermissions and updateroommemberpermissions are NOT symmetric.
+    - Mural variant: PATCH /murals/{muralId}/users/{userId}/permissions — userId is in the path; only permission in the body.
+    - Room variant: POST /rooms/{roomId}/users/permissions — userId and permission are both in the body.
+    Confusing these shapes is a common implementation defect.
+  </critical_asymmetry>
+  <scope_notes>
+    - rooms:write covers room invitation, permission update, and removal.
+    - murals:write covers mural invitation, permission update, and removal.
+    - workspaces:write covers workspace invitation only; no equivalent remove or update-permission endpoint exists at workspace level in the public API.
+    - users:read is needed alongside write scopes for pre-flight membership inspection.
+  </scope_notes>
+</pattern>
