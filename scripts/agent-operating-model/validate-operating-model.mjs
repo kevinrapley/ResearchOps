@@ -23,7 +23,6 @@ const REQUIRED_FILES = [
 	".agent-operating-model/task-signal-catalog.json",
 	".agent-operating-model/selection-rules.json",
 	".agent-operating-model/behavioural-evals.json",
-	"docs/devops/ResearchOps-Bundle-Setup.zip",
 	"scripts/agent-operating-model/load-operating-model.mjs",
 	"scripts/agent-operating-model/run-behavioural-evals.mjs",
 	"scripts/agent-operating-model/validate-bundle-registry.mjs",
@@ -38,17 +37,16 @@ const REQUIRED_AGENT_REFERENCES = [
 	".agent-operating-model/bootstrap-checklist.md",
 	".agent-operating-model/precedence-policy.md",
 	".agent-operating-model/trace-policy.md",
-	"docs/devops/ResearchOps-Bundle-Setup.zip",
+	".agent-operating-model/bundles/",
 ];
 
 const MANIFEST_BUNDLE_IDS = [
 	"github-diamond",
-	"researchops-developer",
-	"gov-product-assistant-gold-standard",
+	"researchops-developer-control",
+	"multi-functional-team",
 	"govuk-design-system",
-	"cloudflare-core-developer",
-	"airtable-public-api-developer",
-	"mural-public-api-developer",
+	"airtable-public-api",
+	"mural-public-api",
 ];
 
 const TRACE_LAYERS = ["operational", "behavioural", "mechanistic", "training"];
@@ -63,6 +61,14 @@ function requireFile(relativePath) {
 
 	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
 		fail(`missing required file: ${relativePath}`);
+	}
+}
+
+function requireDirectory(relativePath) {
+	const fullPath = path.join(ROOT_DIR, relativePath);
+
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isDirectory()) {
+		fail(`missing required directory: ${relativePath}`);
 	}
 }
 
@@ -82,9 +88,21 @@ function requireTraceLayers(text, label) {
 	}
 }
 
+function assertBundleHasCanonicalFiles(bundle) {
+	if (!bundle.canonicalPath) {
+		fail(`selected bundle missing canonicalPath: ${bundle.id}`);
+	}
+
+	requireDirectory(bundle.canonicalPath);
+	requireFile(path.join(bundle.canonicalPath, bundle.promptSpec || "prompt.spec.yaml"));
+	requireFile(path.join(bundle.canonicalPath, bundle.promptBody || "prompt.body.xml"));
+}
+
 for (const file of REQUIRED_FILES) {
 	requireFile(file);
 }
+
+requireDirectory(".agent-operating-model/bundles/");
 
 const agents = readText("AGENTS.md");
 
@@ -96,7 +114,7 @@ for (const reference of REQUIRED_AGENT_REFERENCES) {
 
 const orchestration = readText(".agent-operating-model/orchestration.xml");
 
-for (const expected of ["bundleOrchestration", "[reasoning]", ...MANIFEST_BUNDLE_IDS]) {
+for (const expected of ["bundleOrchestration", "canonicalSources", "[reasoning]", ...MANIFEST_BUNDLE_IDS]) {
 	if (!orchestration.includes(expected)) {
 		fail(`orchestration.xml must contain ${expected}`);
 	}
@@ -183,11 +201,10 @@ const selectedIds = model.selectedBundles.map((bundle) => bundle.id);
 
 for (const expectedId of [
 	"github-diamond",
-	"researchops-developer",
-	"gov-product-assistant-gold-standard",
-	"cloudflare-core-developer",
-	"airtable-public-api-developer",
-	"mural-public-api-developer",
+	"researchops-developer-control",
+	"multi-functional-team",
+	"airtable-public-api",
+	"mural-public-api",
 ]) {
 	if (!selectedIds.includes(expectedId)) {
 		fail(`loader did not select expected bundle: ${expectedId}`);
@@ -195,6 +212,8 @@ for (const expectedId of [
 }
 
 for (const bundle of model.selectedBundles) {
+	assertBundleHasCanonicalFiles(bundle);
+
 	if (!bundle.selectionEvidence?.ruleId) {
 		fail(`loader did not return selection evidence for ${bundle.id}`);
 	}
@@ -207,6 +226,10 @@ for (const bundle of model.selectedBundles) {
 	if (!hasSignalEvidence && !hasFallbackEvidence) {
 		fail(`loader did not return signal or fallback evidence for ${bundle.id}`);
 	}
+}
+
+if (Object.hasOwn(model, "bundlePackage")) {
+	fail("loader must not expose bundlePackage; canonical directories are authoritative");
 }
 
 console.log("agent:model:validate: operating model validation passed");

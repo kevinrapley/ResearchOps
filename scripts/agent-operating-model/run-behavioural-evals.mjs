@@ -87,6 +87,25 @@ function hasMatchedSignalEvidence(bundle) {
 	);
 }
 
+function hasCanonicalDirectory(bundle) {
+	if (!bundle.canonicalPath || !bundle.promptSpec || !bundle.promptBody) {
+		return false;
+	}
+
+	const bundleDirectory = path.join(ROOT_DIR, bundle.canonicalPath);
+	const specPath = path.join(bundleDirectory, bundle.promptSpec);
+	const bodyPath = path.join(bundleDirectory, bundle.promptBody);
+
+	return (
+		fs.existsSync(bundleDirectory) &&
+		fs.statSync(bundleDirectory).isDirectory() &&
+		fs.existsSync(specPath) &&
+		fs.statSync(specPath).isFile() &&
+		fs.existsSync(bodyPath) &&
+		fs.statSync(bodyPath).isFile()
+	);
+}
+
 function validateExpectedConditionalSignalEvidence(evaluation, model) {
 	const conditionalBundles = expectedConditionalBundles(evaluation, model);
 
@@ -104,10 +123,15 @@ function validateSelectionEvidence(evaluation, model) {
 		if (!hasAuditableSelectionEvidence(bundle)) {
 			fail(`${evaluation.id} selected ${bundle.id} without auditable selection evidence`);
 		}
+
+		if (!hasCanonicalDirectory(bundle)) {
+			fail(`${evaluation.id} selected ${bundle.id} without a resolvable canonical directory`);
+		}
 	}
 
 	const expectedEvidence = evaluation.expectedEvidence || [];
 	const evidenceChecks = {
+		"canonical-directory": () => model.selectedBundles.every((bundle) => hasCanonicalDirectory(bundle)),
 		"matched-condition": () => {
 			validateExpectedConditionalSignalEvidence(evaluation, model);
 
@@ -149,6 +173,8 @@ function validateForbiddenFailureModes(evaluation, model) {
 		explanation: () =>
 			evaluation.prompt.includes("[reasoning]") && model.traceOutputs.length === 0,
 		instruction: () => !selectedIds(model).includes("github-diamond"),
+		"missing-canonical-directory": () =>
+			model.selectedBundles.some((bundle) => !hasCanonicalDirectory(bundle)),
 		priority: () =>
 			model.instructionConflicts.length > 0 &&
 			!model.operatingModelSafeguards.includes("must-report-conflict"),

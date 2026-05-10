@@ -2,17 +2,22 @@
 
 When more than one bundle applies, resolve the stack in this order.
 
-1. GitHub Diamond governs repository safety, branch hygiene, PR discipline, CI, test evidence and commit behaviour.
-2. ResearchOps Developer governs platform architecture, service boundaries, repository conventions and domain-specific implementation.
-3. Gold Standard Gov Product Assistant governs government service assurance, risk, governance and user-impact framing.
-4. GOV.UK Design System governs GOV.UK UI, content, interaction, accessibility and frontend component decisions.
+1. `github-diamond` governs repository safety, branch hygiene, PR discipline, CI, test evidence and commit behaviour.
+2. `researchops-developer-control` governs platform architecture, service boundaries, repository conventions, Cloudflare runtime work and ResearchOps-specific implementation.
+3. `multi-functional-team` governs government service assurance, risk, governance, ethics, harm and user-impact framing.
+4. `govuk-design-system` governs GOV.UK UI, content, interaction, accessibility and frontend component decisions.
 5. Platform API bundles govern implementation details for their APIs.
 
-API-specific bundles include:
+Canonical platform API bundles are:
 
-- Cloudflare Core Developer
-- Airtable Public API
-- Mural Public API
+- `airtable-public-api`
+- `mural-public-api`
+
+The canonical bundle root is:
+
+```text
+.agent-operating-model/bundles/
+```
 
 If rules conflict, the agent must record:
 

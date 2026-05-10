@@ -4,7 +4,7 @@
 	"title": "ResearchOps Agent Bundle Registry",
 	"type": "object",
 	"additionalProperties": false,
-	"required": ["version", "updated", "bundlePackage", "defaultLoadOrder", "bundles"],
+	"required": ["version", "updated", "canonicalRoot", "defaultLoadOrder", "bundles"],
 	"properties": {
 		"version": {
 			"type": "string"
@@ -12,7 +12,7 @@
 		"updated": {
 			"type": "string"
 		},
-		"bundlePackage": {
+		"canonicalRoot": {
 			"type": "string"
 		},
 		"defaultLoadOrder": {
@@ -32,6 +32,9 @@
 					"role",
 					"precedence",
 					"load",
+					"canonicalPath",
+					"promptSpec",
+					"promptBody",
 					"keywords",
 					"mustRecordInTrace"
 				],
@@ -53,6 +56,15 @@
 					"load": {
 						"type": "string",
 						"enum": ["always", "conditional"]
+					},
+					"canonicalPath": {
+						"type": "string"
+					},
+					"promptSpec": {
+						"type": "string"
+					},
+					"promptBody": {
+						"type": "string"
 					},
 					"keywords": {
 						"type": "array",

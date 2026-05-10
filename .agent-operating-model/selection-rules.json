@@ -1,6 +1,6 @@
 {
-	"version": "1.0.0",
-	"purpose": "Provide auditable structured rules for selecting agent bundles from typed task signals before falling back to registry keyword evidence.",
+	"version": "1.1.0",
+	"purpose": "Provide auditable structured rules for selecting checked-in canonical agent bundles from typed task signals before falling back to registry keyword evidence.",
 	"rules": [
 		{
 			"id": "always-github-diamond",
@@ -10,15 +10,15 @@
 			"requiredSignals": ["repository-affecting-task"]
 		},
 		{
-			"id": "always-researchops-developer",
-			"bundleId": "researchops-developer",
+			"id": "always-researchops-developer-control",
+			"bundleId": "researchops-developer-control",
 			"traceLayer": "operational",
 			"type": "always",
 			"requiredSignals": ["repository-affecting-task"]
 		},
 		{
-			"id": "always-gov-product-assistant",
-			"bundleId": "gov-product-assistant-gold-standard",
+			"id": "always-multi-functional-team",
+			"bundleId": "multi-functional-team",
 			"traceLayer": "operational",
 			"type": "always",
 			"requiredSignals": ["government-product-assurance-default"]
@@ -31,22 +31,15 @@
 			"requiredSignals": ["ui-or-content-change"]
 		},
 		{
-			"id": "conditional-cloudflare-core",
-			"bundleId": "cloudflare-core-developer",
-			"traceLayer": "behavioural",
-			"type": "conditional",
-			"requiredSignals": ["runtime-or-deployment-change"]
-		},
-		{
-			"id": "conditional-airtable-api",
-			"bundleId": "airtable-public-api-developer",
+			"id": "conditional-airtable-public-api",
+			"bundleId": "airtable-public-api",
 			"traceLayer": "behavioural",
 			"type": "conditional",
 			"requiredSignals": ["external-api-or-data-change"]
 		},
 		{
-			"id": "conditional-mural-api",
-			"bundleId": "mural-public-api-developer",
+			"id": "conditional-mural-public-api",
+			"bundleId": "mural-public-api",
 			"traceLayer": "behavioural",
 			"type": "conditional",
 			"requiredSignals": ["external-api-or-collaboration-change"]

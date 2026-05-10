@@ -50,32 +50,35 @@ function requireArray(value, label) {
 	}
 }
 
-function validateZip(relativePath) {
+function requireDirectory(relativePath) {
 	const fullPath = path.join(ROOT_DIR, relativePath);
 
-	if (!fs.existsSync(fullPath)) {
-		fail(`missing bundle package: ${relativePath}`);
-	}
-
-	const stat = fs.statSync(fullPath);
-
-	if (!stat.isFile() || stat.size < 4) {
-		fail(`bundle package must be a non-empty file: ${relativePath}`);
-	}
-
-	const signature = fs.readFileSync(fullPath).subarray(0, 4).toString("hex");
-
-	if (signature !== "504b0304" && signature !== "504b0506") {
-		fail(`bundle package is not a ZIP file: ${relativePath}`);
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isDirectory()) {
+		fail(`missing canonical bundle directory: ${relativePath}`);
 	}
 }
 
-function validateBundle(bundle, ids) {
+function requireFile(relativePath) {
+	const fullPath = path.join(ROOT_DIR, relativePath);
+
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+		fail(`missing canonical bundle file: ${relativePath}`);
+	}
+}
+
+function normaliseDirectory(relativePath) {
+	return relativePath.endsWith("/") ? relativePath : `${relativePath}/`;
+}
+
+function validateBundle(bundle, ids, canonicalRoot) {
 	requireString(bundle.id, "bundle.id");
 	requireString(bundle.name, `${bundle.id}.name`);
 	requireString(bundle.role, `${bundle.id}.role`);
 	requireInteger(bundle.precedence, `${bundle.id}.precedence`);
 	requireBoolean(bundle.mustRecordInTrace, `${bundle.id}.mustRecordInTrace`);
+	requireString(bundle.canonicalPath, `${bundle.id}.canonicalPath`);
+	requireString(bundle.promptSpec, `${bundle.id}.promptSpec`);
+	requireString(bundle.promptBody, `${bundle.id}.promptBody`);
 	requireArray(bundle.keywords, `${bundle.id}.keywords`);
 
 	if (!/^[a-z0-9-]+$/.test(bundle.id)) {
@@ -92,6 +95,16 @@ function validateBundle(bundle, ids) {
 		fail(`${bundle.id}.load must be always or conditional`);
 	}
 
+	const canonicalPath = normaliseDirectory(bundle.canonicalPath);
+
+	if (!canonicalPath.startsWith(canonicalRoot)) {
+		fail(`${bundle.id}.canonicalPath must sit under ${canonicalRoot}`);
+	}
+
+	requireDirectory(canonicalPath);
+	requireFile(path.join(canonicalPath, bundle.promptSpec));
+	requireFile(path.join(canonicalPath, bundle.promptBody));
+
 	for (const keyword of bundle.keywords) {
 		requireString(keyword, `${bundle.id}.keywords[]`);
 	}
@@ -102,15 +115,17 @@ readJson(SCHEMA_PATH);
 
 requireString(registry.version, "version");
 requireString(registry.updated, "updated");
-requireString(registry.bundlePackage, "bundlePackage");
+requireString(registry.canonicalRoot, "canonicalRoot");
 requireArray(registry.defaultLoadOrder, "defaultLoadOrder");
 requireArray(registry.bundles, "bundles");
-validateZip(registry.bundlePackage);
+
+const canonicalRoot = normaliseDirectory(registry.canonicalRoot);
+requireDirectory(canonicalRoot);
 
 const ids = new Set();
 
 for (const bundle of registry.bundles) {
-	validateBundle(bundle, ids);
+	validateBundle(bundle, ids, canonicalRoot);
 }
 
 for (const bundleId of registry.defaultLoadOrder) {
@@ -119,4 +134,4 @@ for (const bundleId of registry.defaultLoadOrder) {
 	}
 }
 
-console.log(`agent:bundles:validate: validated ${registry.bundles.length} bundle(s)`);
+console.log(`agent:bundles:validate: validated ${registry.bundles.length} canonical bundle(s)`);

@@ -1,52 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bundleOrchestration
 	xmlns="urn:researchops:agent-operating-model:bundle-orchestration"
-	version="1.0.0">
+	version="1.1.0">
 	<purpose>
-		Define how repository-aware agents load, apply, layer and trace prompt bundles for the ResearchOps platform.
+		Define how repository-aware agents load, apply, layer and trace checked-in prompt bundles for the ResearchOps platform.
 	</purpose>
+
+	<canonicalSources>
+		<bundleDirectory path=".agent-operating-model/bundles/" status="authoritative" />
+		<rule id="canonical-001" priority="must">Use extracted bundle directories under .agent-operating-model/bundles/ as the canonical bundle source.</rule>
+		<rule id="canonical-002" priority="must">Use .agent-operating-model/bundle-registry.json to resolve bundle IDs to canonical directories, prompt specs and prompt bodies.</rule>
+		<rule id="canonical-003" priority="must">Do not use docs/devops/ResearchOps-Bundle-Setup.zip, uploaded bundle archives, chat memory or historical trace files as authoritative bundle sources.</rule>
+	</canonicalSources>
 
 	<bootstrap>
 		<rule id="bootstrap-001" priority="must">Before any repository-affecting response, read AGENTS.md, this orchestration file and the bundle registry.</rule>
-		<rule id="bootstrap-002" priority="must">Use docs/devops/ResearchOps-Bundle-Setup.zip as the authoritative bundle package.</rule>
-		<rule id="bootstrap-003" priority="must">Do not rely on chat memory, uploaded copies of bundles, or prior conversation state as the source of truth.</rule>
-		<rule id="bootstrap-004" priority="must">If the operating model cannot be loaded, stop repository-affecting work and report the missing source.</rule>
+		<rule id="bootstrap-002" priority="must">Resolve every selected bundle to its canonical directory under .agent-operating-model/bundles/.</rule>
+		<rule id="bootstrap-003" priority="must">Do not rely on chat memory, uploaded copies of bundles, archived ZIP files or prior conversation state as the source of truth.</rule>
+		<rule id="bootstrap-004" priority="must">If a selected bundle directory, prompt spec or prompt body cannot be loaded, stop repository-affecting work and report the missing source.</rule>
 	</bootstrap>
 
 	<loadPolicy>
 		<alwaysLoad>
-			<bundleRef id="github-diamond" />
-			<bundleRef id="researchops-developer" />
-			<bundleRef id="gov-product-assistant-gold-standard" />
+			<bundleRef id="github-diamond" canonicalPath=".agent-operating-model/bundles/github/" />
+			<bundleRef id="researchops-developer-control" canonicalPath=".agent-operating-model/bundles/researchops-developer-control/" />
+			<bundleRef id="multi-functional-team" canonicalPath=".agent-operating-model/bundles/multi-functional-team/" />
 		</alwaysLoad>
 
 		<conditionalLoad>
-			<bundleRef id="govuk-design-system">
+			<bundleRef id="govuk-design-system" canonicalPath=".agent-operating-model/bundles/govuk-design-system/">
 				<when>Frontend, HTML, CSS, accessibility, forms, components, content design or page design are in scope.</when>
 			</bundleRef>
-			<bundleRef id="cloudflare-core-developer">
-				<when>Cloudflare Workers, Pages, Wrangler, routes, bindings or deployment are in scope.</when>
+			<bundleRef id="airtable-public-api" canonicalPath=".agent-operating-model/bundles/airtable-public-api/">
+				<when>Airtable tables, records, linked records, formula filters, comments, schema operations, bases, webhooks or attachments are in scope.</when>
 			</bundleRef>
-			<bundleRef id="airtable-public-api-developer">
-				<when>Airtable tables, records, linked records, formula filters or attachments are in scope.</when>
-			</bundleRef>
-			<bundleRef id="mural-public-api-developer">
-				<when>Mural OAuth, workspaces, rooms, murals, widgets or sticky notes are in scope.</when>
+			<bundleRef id="mural-public-api" canonicalPath=".agent-operating-model/bundles/mural-public-api/">
+				<when>Mural OAuth, workspaces, rooms, murals, widgets, templates, tags, comments, exports, users, timers, voting or private mode are in scope.</when>
 			</bundleRef>
 		</conditionalLoad>
 	</loadPolicy>
 
 	<precedence>
 		<rule id="precedence-001">GitHub Diamond governs repository safety, commits, branches, pull requests and CI.</rule>
-		<rule id="precedence-002">ResearchOps Developer governs platform architecture and repository-specific implementation.</rule>
-		<rule id="precedence-003">GOV.UK Design System governs GOV.UK UI, accessibility, interaction patterns and content patterns.</rule>
-		<rule id="precedence-004">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
-		<rule id="precedence-005">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
+		<rule id="precedence-002">ResearchOps Developer Control governs platform architecture and repository-specific implementation.</rule>
+		<rule id="precedence-003">Multi-Functional Team governs government product, service, ethics and multidisciplinary assurance defaults.</rule>
+		<rule id="precedence-004">GOV.UK Design System governs GOV.UK UI, accessibility, interaction patterns and content patterns.</rule>
+		<rule id="precedence-005">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
+		<rule id="precedence-006">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
 	</precedence>
 
 	<traceability>
 		<rule id="trace-001" priority="must">When [reasoning] is present, create an auditable trace.</rule>
-		<rule id="trace-002" priority="must">The trace must record operating-model files loaded, bundles selected, bundles skipped, conflicts found and precedence decisions.</rule>
+		<rule id="trace-002" priority="must">The trace must record operating-model files loaded, canonical bundle directories selected, bundles skipped, conflicts found and precedence decisions.</rule>
 		<rule id="trace-003" priority="must">The trace must not expose private chain-of-thought.</rule>
 	</traceability>
 </bundleOrchestration>

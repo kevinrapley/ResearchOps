@@ -38,7 +38,7 @@ The user-readable trace must record:
 - original task summary
 - corrected branch behaviour if any branch was abandoned or recreated
 - operating-model files loaded
-- bundle package location
+- canonical bundle directories selected
 - bundles selected
 - bundles skipped
 - precedence decisions
