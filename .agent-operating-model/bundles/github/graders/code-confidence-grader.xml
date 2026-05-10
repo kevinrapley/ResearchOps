@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<grader id="accessibility-grader" version="2.9.1" xml_profile="native-semantic-xml/v1">
-  <title>Accessibility Grader</title>
+<grader id="code-confidence-grader" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Code Confidence Grader</title>
   <thresholds>
     <pass minimum_score="0.85" />
     <pass_with_gap minimum_score="0.70" />
@@ -12,11 +12,11 @@
     <item>Gaps and waivers are explicit when controls are incomplete.</item>
   </evidence_required>
   <scoring>
-    <criterion id="1" weight="0.25">Automated accessibility checks recorded</criterion>
-    <criterion id="2" weight="0.25">Manual keyboard and focus checks recorded</criterion>
-    <criterion id="3" weight="0.20">Screen reader or assistive technology evidence recorded where relevant</criterion>
-    <criterion id="4" weight="0.15">Accessibility gaps captured</criterion>
-    <criterion id="5" weight="0.15">Release decision recorded</criterion>
+    <criterion id="1" weight="0.20">Formatting and linting gates addressed</criterion>
+    <criterion id="2" weight="0.30">Tests or validation commands run</criterion>
+    <criterion id="3" weight="0.20">Docs or examples updated when behaviour changed</criterion>
+    <criterion id="4" weight="0.15">Gaps or waivers recorded</criterion>
+    <criterion id="5" weight="0.15">Evidence is structured</criterion>
   </scoring>
   <blocking_failures>
     <failure>Required evidence fabricated or missing.</failure>
