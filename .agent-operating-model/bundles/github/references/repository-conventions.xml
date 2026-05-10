@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="repository-conventions" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Conventions</title>
+  <description source="internal-doctrine">Repository Conventions for repository operation.</description>
+  <rules>
+    <rule id="repository-conventions-1" source="internal-doctrine">Classify repositories by archetype before scaffolding.</rule>
+    <rule id="repository-conventions-2" source="internal-doctrine">Use starter trees and archetype control profiles to select templates and workflows.</rule>
+    <rule id="repository-conventions-3" source="internal-doctrine">Use other/rationale where a repository does not fit known archetypes.</rule>
+  </rules>
+</reference>

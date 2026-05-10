@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="ci-selection-guidelines" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>CI Selection Guidelines</title>
+  <description>
+    Guidance for selecting the appropriate continuous‑integration (CI) workflow template based on the repository’s language, framework and purpose.  The agent should read the `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `pom.xml` or similar manifests to determine which workflow to use.  If multiple languages are present, multiple workflows may be combined in a single pipeline or executed as separate jobs.
+  </description>
+  <section id="language-detection">
+    <title>Detecting the language</title>
+    <content>
+      Inspect the root files of the repository to determine the primary language:
+      <list type="unordered">
+        <item>If a `package.json` or `pnpm-workspace.yaml` is present, use the Node workflow (`ci-node.yml`).</item>
+        <item>If a `pyproject.toml` or `requirements.txt` is present, use the Python workflow (`ci-python.yml`).</item>
+        <item>If a `Cargo.toml` exists, use the Rust workflow (`ci-rust.yml`).</item>
+        <item>If a `go.mod` file exists, use the Go workflow (`ci-go.yml`).</item>
+        <item>If a `pom.xml` or `build.gradle` is present, use the Java workflow (`ci-java.yml`).</item>
+        <item>If a `.csproj` or `global.json` is present, use the .NET workflow (`ci-dotnet.yml`).</item>
+        <item>If the repository contains only documentation (e.g., Markdown and no code manifests), use the docs quality workflow (`ci-docs-quality.yml`).</item>
+      </list>
+    </content>
+  </section>
+  <section id="specialized-tests">
+    <title>Specialized workflows</title>
+    <content>
+      In addition to language‑specific workflows, include specialised jobs when relevant:
+      <list type="unordered">
+        <item>**Accessibility testing** – For web front‑end repositories.  Use `ci-accessibility.yml` which runs tools like axe‑core or Pa11y as part of the CI pipeline.</item>
+        <item>**Documentation quality** – For repositories with extensive documentation.  Use `ci-docs-quality.yml` to run spell checks, link checks and doc builds.</item>
+        <item>**Performance confidence** – For performance‑sensitive services.  Use `ci-performance.yml` to run micro‑benchmarks or check bundle sizes.</item>
+        <item>**Conformance** – For APIs or CLI tools with formal contracts.  Use `ci-conformance.yml` to run contract tests and schema validation.</item>
+      </list>
+    </content>
+  </section>
+  <section id="combining-jobs">
+    <title>Combining workflows</title>
+    <content>
+      When multiple languages coexist (e.g., a JS front‑end with a Python back‑end), choose the appropriate workflow for each language and run them in parallel or sequential jobs.  Use matrices for variant tests (e.g., Node versions).  Ensure that environment secrets and caching are handled correctly across jobs.
+    </content>
+  </section>
+  <section id="updating-workflows">
+    <title>Updating CI workflows</title>
+    <content>
+      If the repository’s language or toolchain changes, update the CI workflow accordingly.  Remove obsolete workflows to avoid unnecessary CI time.  Always pin third‑party action versions by SHA to mitigate supply‑chain risk, and regularly review for security updates.
+    </content>
+  </section>
+</reference>

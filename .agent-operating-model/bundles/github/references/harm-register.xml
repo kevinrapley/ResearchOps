@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="harm-register" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Harm Register</title>
+  <description source="internal-doctrine">Operational harm controls for high-stakes repositories.</description>
+  <rules>
+    <rule id="harm-001" source="internal-doctrine">Create harm-register.yaml when ethics triggers are met.</rule>
+    <rule id="harm-002" source="internal-doctrine">Record harm, affected groups, likelihood, severity, mitigation, residual risk, owner, escalation route and release decision.</rule>
+    <rule id="harm-003" source="internal-doctrine">High or critical residual harms block release until escalated.</rule>
+  </rules>
+</reference>

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="documentation-quality-pack" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Documentation Quality Pack</title>
+  <description>
+    Guidelines for maintaining high‑quality documentation as part of the repository.  Documentation is as important as code; it must be correct, complete, easy to navigate and accessible.  This pack describes how to build, lint and validate documentation across languages.
+  </description>
+  <section id="minimum-files">
+    <title>Minimum documentation files</title>
+    <content>
+      Every repository should include a `README.md` explaining the purpose, setup, usage, contribution guidelines and licence.  Include a `CONTRIBUTING.md` to describe the development workflow, a `CODE_OF_CONDUCT.md` for community expectations, and a `SECURITY.md` with vulnerability disclosure instructions.  For specifications or policies, maintain an ADR directory and index.
+    </content>
+  </section>
+  <section id="build">
+    <title>Building documentation</title>
+    <content>
+      Use a documentation generator appropriate to the language:
+      <list type="unordered">
+        <item>**Python** – Sphinx or MkDocs with autodoc.  Configure `conf.py` to pull docstrings and type hints.</item>
+        <item>**JavaScript/TypeScript** – JSDoc, TypeDoc or Docusaurus for component libraries.  Use Storybook for UI components.</item>
+        <item>**Rust** – Rustdoc (`cargo doc`).</item>
+        <item>**Go** – `godoc` or `go doc`.</item>
+        <item>**Java** – Javadoc via Maven or Gradle.  Generate a site with Asciidoctor or Antora if needed.</item>
+        <item>**.NET** – DocFX or Sandcastle.</item>
+      </list>
+      Build docs in CI using the `ci-docs-quality.yml` workflow.  Fail the build if documentation generation fails.
+    </content>
+  </section>
+  <section id="lint">
+    <title>Linting and proofreading</title>
+    <content>
+      Use tools like markdownlint, vale, alex and cspell to check Markdown files for style, inclusive language and spelling errors.  Fix issues reported by these tools.  Use link checkers (e.g., `markdown-link-check`, `mkdocs build --strict`) to ensure that all cross‑references work.
+    </content>
+  </section>
+  <section id="keeping-docs-in-sync">
+    <title>Keeping documentation in sync with code</title>
+    <content>
+      When code changes affect APIs or behaviour, update the docs in the same pull request.  Use comments or annotations (e.g., Python’s docstrings or TypeScript’s JSDoc) as the single source of truth so that documentation generators remain accurate.  Add documentation tasks to the definition of done.
+    </content>
+  </section>
+</reference>

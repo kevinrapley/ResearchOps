@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="performance-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Performance Confidence Pack</title>
+  <description>
+    Guidelines for monitoring and enforcing performance characteristics of the software.  Performance matters for user experience and operational cost.  Agents should implement benchmarks and performance budgets suitable for the repository’s domain.
+  </description>
+  <section id="define-budgets">
+    <title>Define performance budgets</title>
+    <content>
+      Establish measurable budgets for latency, throughput, memory usage and binary size.  For web applications, use metrics like Largest Contentful Paint and Time to Interactive.  For services, define maximum response time and acceptable error rates.  Document budgets in the `PERFORMANCE.md` file and review them periodically.
+    </content>
+  </section>
+  <section id="benchmark-tools">
+    <title>Benchmark tools</title>
+    <content>
+      Choose benchmarking tools appropriate to the technology:
+      <list type="unordered">
+        <item>**Web front‑end** – Use Lighthouse CI to measure performance, accessibility and best practices.  Integrate with GitHub Actions to run on PRs.</item>
+        <item>**Node/JS back‑end** – Use `autocannon` or `wrk` for HTTP load testing.  Benchmark critical functions with `benchmark.js`.</item>
+        <item>**Python** – Use `pytest-benchmark` or `asv` to measure execution time.  Run under `pytest` in the CI pipeline.</item>
+        <item>**Rust** – Use `criterion` to write micro‑benchmarks.  Run them with `cargo bench`.</item>
+        <item>**Go** – Use Go’s built‑in benchmarking via `go test -bench ./...`.</item>
+        <item>**Java** – Use JMH.  Integrate via Maven or Gradle.</item>
+        <item>**.NET** – Use BenchmarkDotNet.</item>
+      </list>
+    </content>
+  </section>
+  <section id="alerting-and-regression">
+    <title>Alerting and regression detection</title>
+    <content>
+      Compare benchmark results against the defined budgets.  Fail the CI pipeline if performance degrades beyond an acceptable threshold (e.g., 5 % regression).  Use GitHub workflow artifacts to persist benchmark results and visualise trends.  When regressions occur, investigate their cause and either optimise or update budgets with justification.
+    </content>
+  </section>
+</reference>

@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="architecture-integrity-pack" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Architecture Integrity Pack</title>
+  <description>
+    Guidance for ensuring that the repository’s architecture remains coherent as it evolves.  Agents must respect existing layering and modularisation, avoid cyclic dependencies and enforce boundaries between domains.  This pack lists tools and practices to maintain structural integrity.
+  </description>
+  <section id="layering-and-boundaries">
+    <title>Layering and boundaries</title>
+    <content>
+      Maintain a clear separation between presentation, business logic, data access and infrastructure.  Avoid leaking implementation details across layers.  For domain‑driven design, enforce bounded contexts with explicit interfaces.
+    </content>
+  </section>
+  <section id="dependency-analysis">
+    <title>Dependency analysis</title>
+    <content>
+      Use static analysis tools to detect cyclical dependencies and forbidden imports:
+      <list type="unordered">
+        <item>**JavaScript/TypeScript** – Use `madge` or `depcruise` to generate dependency graphs and fail on cycles.</item>
+        <item>**Python** – Use `snakefood`, `pyan3` or `import-linter` to enforce import rules.</item>
+        <item>**Rust** – Cargo’s dependency graph rarely permits cycles; use `cargo tree` to inspect dependencies.</item>
+        <item>**Go** – Use `go list -json -deps` and `go mod graph` to detect cycles.</item>
+        <item>**Java** – Use ArchUnit to specify architectural constraints in tests.</item>
+        <item>**.NET** – Use NDepend or NetArchTest for architectural rules.</item>
+      </list>
+    </content>
+  </section>
+  <section id="component-ownership">
+    <title>Component ownership</title>
+    <content>
+      Maintain a map of components to responsible teams in `CODEOWNERS`.  When creating new modules or packages, assign ownership.  Avoid “orphan” modules with no clear owner.
+    </content>
+  </section>
+  <section id="documentation-of-architecture">
+    <title>Documenting architecture</title>
+    <content>
+      Document the system architecture using C4 diagrams or ADRs.  Keep diagrams up to date as the system evolves.  When major changes occur, write a new ADR and update the architecture docs accordingly.
+    </content>
+  </section>
+</reference>
