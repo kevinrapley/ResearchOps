@@ -31,7 +31,29 @@ function normalise(value) {
 	return String(value || "").toLowerCase();
 }
 
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasTokenBoundaryMatch(taskText, phrase) {
+	const text = normalise(taskText);
+	const token = normalise(phrase);
+	const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegExp(token)}([^a-z0-9]|$)`, "i");
+
+	return pattern.test(text);
+}
+
+function phraseRequiresTokenBoundary(phrase) {
+	const token = normalise(phrase);
+
+	return /^[a-z0-9]+$/.test(token) && token.length <= 3;
+}
+
 function phraseMatches(taskText, phrase) {
+	if (phraseRequiresTokenBoundary(phrase)) {
+		return hasTokenBoundaryMatch(taskText, phrase);
+	}
+
 	return normalise(taskText).includes(normalise(phrase));
 }
 
