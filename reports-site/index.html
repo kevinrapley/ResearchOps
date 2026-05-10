@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-09T23:59:06.715Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-10T00:04:56.322Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -2186,6 +2186,97 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&amp;sid=recVisualConsentStudy001</p>
 			
 			<figure class="capture__figure"><a href="screenshots/mobile/study__study-participant-consent__participant-selected.png"><img loading="lazy" src="screenshots/mobile/study__study-participant-consent__participant-selected.png" alt="Screenshot of Participant consent in the Participant selected for consent review state for Mobile." /></a><figcaption>Participant consent — Participant selected for consent review — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+		</div>
+	</article>
+		</section>
+		<section class="group" aria-labelledby="group-Team administration">
+			<h2 id="group-Team administration">Team administration</h2>
+			
+	<article class="page-card" id="team-role-assignments" data-review-group-id="" data-review-evidence-level="generated">
+		<div class="page-card__header">
+			<h3>Assign a role to a team member</h3>
+			<p class="meta">/pages/team/role-assignments/index.html</p>
+			<p>Team Admin role assignment page.</p>
+			
+		</div>
+		<div class="states">
+			
+	<article class="state" id="team-role-assignments-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Role assignment form with Team Admin scope</h4>
+			<p class="meta">captured · https://researchops.pages.dev/pages/team/role-assignments/</p>
+			<p>Role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Assign a role to a team member page
+
+  As a user researcher
+  I want to use the assign a role to a team member page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the assign a role to a team member page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports team Admin role assignment page
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Role assignment form with Team Admin scope&quot; in the ResearchOps journey
+    Given I am using the assign a role to a team member page
+    Then I should understand the research value of this part of the journey
+    And I should see that role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;You are assigning roles in&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>The role-assignment UI may make sensitive access changes feel routine without enough target-user certainty, permission visibility or audit-ready justification.</dd></div>
+			<div><dt>Impact</dt><dd>Team Admins could grant powerful roles to the wrong person or miss the consequences of Safeguarding Lead and Team Admin access.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review target identifier behaviour, sensitive-role confirmations, error recovery, visible permission codes and audit-reason copy with the seeded Team Admin context.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>Needs UCD review</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/team/role-assignments/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/team-administration__team-role-assignments__default.png"><img loading="lazy" src="screenshots/desktop/team-administration__team-role-assignments__default.png" alt="Screenshot of Assign a role to a team member in the Role assignment form with Team Admin scope state for Desktop." /></a><figcaption>Assign a role to a team member — Role assignment form with Team Admin scope — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/team/role-assignments/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/team-administration__team-role-assignments__default.png"><img loading="lazy" src="screenshots/mobile/team-administration__team-role-assignments__default.png" alt="Screenshot of Assign a role to a team member in the Role assignment form with Team Admin scope state for Mobile." /></a><figcaption>Assign a role to a team member — Role assignment form with Team Admin scope — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
