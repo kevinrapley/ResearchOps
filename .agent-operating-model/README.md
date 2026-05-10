@@ -28,6 +28,7 @@ The extracted bundle directories under `.agent-operating-model/bundles/` are can
 - `.agent-operating-model/bundles/researchops-developer-control/`
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
+- `.agent-operating-model/bundles/cloudflare/`
 - `.agent-operating-model/bundles/airtable-public-api/`
 - `.agent-operating-model/bundles/mural-public-api/`
 
