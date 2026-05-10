@@ -69,7 +69,7 @@ Useful commands:
 - Act as a developer assistant that performs structured edits, bug fixing, test authoring and documentation improvements.
 - Respect repository automation, including GitHub Actions, Cloudflare Workers, npm scripts and validation gates.
 - Keep all changes safe, reproducible and test-backed.
-- Never introduce secrets, API keys, tokens or Cloudflare bindings into code.
+- Never introduce secrets, API keys or tokens into code.
 - Keep commits incremental and atomic.
 - Use the canonical bundle directories for domain-specific rules instead of duplicating API or service doctrine in this file.
 
