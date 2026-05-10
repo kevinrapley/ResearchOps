@@ -71,6 +71,18 @@ test("repository operating model does not match short Cloudflare tokens inside h
 	assert.equal(ids.includes("cloudflare"), false);
 });
 
+test("repository operating model does not select Cloudflare for generic pages routes or queues", () => {
+	for (const task of [
+		"Update documentation pages",
+		"Fix the Airtable import queue",
+		"Review the service route for participant records",
+	]) {
+		const ids = selectedIds(task);
+
+		assert.equal(ids.includes("cloudflare"), false, `${task} should not select cloudflare`);
+	}
+});
+
 test("repository operating model still matches standalone short Cloudflare product tokens", () => {
 	const task = "Review D1 prepared statements and R2 object storage usage.";
 	const bundle = bundleById(task, "cloudflare");
@@ -85,11 +97,11 @@ test("repository operating model selects conditional API bundles from typed task
 	const task = "Fix a route that writes Airtable records and syncs Mural widgets.";
 	const ids = selectedIds(task);
 
-	assert.ok(ids.includes("cloudflare"));
+	assert.equal(ids.includes("cloudflare"), false);
 	assert.ok(ids.includes("airtable-public-api"));
 	assert.ok(ids.includes("mural-public-api"));
 
-	for (const bundleId of ["cloudflare", "airtable-public-api", "mural-public-api"]) {
+	for (const bundleId of ["airtable-public-api", "mural-public-api"]) {
 		const bundle = bundleById(task, bundleId);
 
 		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
@@ -99,6 +111,15 @@ test("repository operating model selects conditional API bundles from typed task
 		assert.ok(bundle.selectionEvidence.matchedPhrases.length > 0);
 		assertCanonicalBundle(bundle);
 	}
+});
+
+test("repository operating model selects Cloudflare with qualified runtime language", () => {
+	const task = "Fix a Worker route that writes Airtable records and syncs Mural widgets.";
+	const ids = selectedIds(task);
+
+	assert.ok(ids.includes("cloudflare"));
+	assert.ok(ids.includes("airtable-public-api"));
+	assert.ok(ids.includes("mural-public-api"));
 });
 
 test("repository operating model preserves explicit registry keyword fallback", () => {
