@@ -1,0 +1,16 @@
+id: researchops-developer-control
+version: 1.13.0
+name: ResearchOps Developer Control Prompt Bundle
+entrypoint: prompt.body.xml
+schemas:
+  output: output.schema.json
+  grade: grade.schema.json
+  variables: variables.schema.json
+required_references:
+  - references/core-rules.xml
+  - references/researchops-platform-context.xml
+  - references/researchops-repository-conventions.xml
+  - references/researchops-endpoint-catalog.xml
+  - references/researchops-route-availability-policy.xml
+  - references/quality-gates.xml
+  - references/researchops-performance-rules.xml

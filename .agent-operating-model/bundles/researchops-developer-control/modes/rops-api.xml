@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-api" version="1.13.0">
+  <purpose>Use for ResearchOps API, Worker, router and service-module work.</purpose>
+  <rules>
+    <rule>Inspect router and service modules before changing API routes.</rule>
+    <rule>Preserve response envelopes unless explicitly migrating them.</rule>
+    <rule>Update examples and route-shape fixtures when response shape changes.</rule>
+    <rule>Keep error responses structured and consistent.</rule>
+  </rules>
+</mode>

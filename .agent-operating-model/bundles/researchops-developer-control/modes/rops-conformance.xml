@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-conformance" version="1.13.0">
+  <purpose>Use for route-shape, fixture-index, repository-convention and CI conformance work.</purpose>
+  <rules>
+    <rule>Maintain a conformance matrix and gap register for known deviations.</rule>
+    <rule>Distinguish verified, conditionally verified, absent and future-extension routes.</rule>
+    <rule>Do not mark conformance as complete without evidence.</rule>
+  </rules>
+</mode>

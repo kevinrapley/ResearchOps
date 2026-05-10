@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-integration" version="1.13.0">
+  <purpose>Use for Airtable, Mural, Cloudflare and cross-service integration work.</purpose>
+  <rules>
+    <rule>Preserve adapter boundaries and environment-variable expectations.</rule>
+    <rule>Keep payload examples synthetic.</rule>
+    <rule>Document provider-specific status and error handling.</rule>
+  </rules>
+</mode>

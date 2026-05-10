@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-patterns" version="1.13.0">
+  <purpose>Use for ResearchOps design pattern and GOV.UK component work.</purpose>
+  <rules>
+    <rule>Use existing GOV.UK-inspired patterns before inventing local variants.</rule>
+    <rule>Preserve semantic headings, labels, hints, errors and focus management.</rule>
+    <rule>Update pattern documentation where a reusable pattern changes.</rule>
+  </rules>
+</mode>

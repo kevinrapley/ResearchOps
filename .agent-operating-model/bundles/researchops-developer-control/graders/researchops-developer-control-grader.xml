@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grader id="researchops-developer-control-grader" version="1.13.0">
+  <purpose>Grades whether an agent response follows the ResearchOps developer-control contract.</purpose>
+  <criteria>
+    <criterion id="repo-inspection" weight="0.15">The response inspects or uses current repository state before changing implementation.</criterion>
+    <criterion id="component-routing" weight="0.15">The response chooses the correct page, component, CSS, JavaScript, Worker, data-adapter or workflow layer.</criterion>
+    <criterion id="route-contracts" weight="0.15">The response preserves or updates route contracts and fixtures where route shape changes.</criterion>
+    <criterion id="visual-walkthrough" weight="0.10">The response updates visual walkthrough registration or explains why no update is required.</criterion>
+    <criterion id="accessibility" weight="0.10">The response preserves GOV.UK and accessibility expectations.</criterion>
+    <criterion id="ci-governance" weight="0.10">The response names validation and CI gates honestly.</criterion>
+    <criterion id="ethics" weight="0.10">The response considers ethics, provenance, safeguarding or harm where relevant.</criterion>
+    <criterion id="performance" weight="0.10">The response respects performance, caching, CSS ownership and initial-load audit rules.</criterion>
+    <criterion id="truthfulness" weight="0.05">The response does not claim deployment, CI or PR completion without evidence.</criterion>
+  </criteria>
+</grader>
