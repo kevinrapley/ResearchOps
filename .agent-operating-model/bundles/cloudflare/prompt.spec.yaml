@@ -22,6 +22,14 @@ assembly:
   - references/storage-and-state.xml
   - references/pages-and-deployment.xml
   - references/queues-workflows-ai.xml
+  - references/deployment-versions-and-triggers.xml
+  - references/testing-and-observability.xml
+  - references/compatibility-and-limits.xml
+  - references/service-bindings-and-edge-connectivity.xml
+  modes:
+  - modes/cloudflare-build.xml
+  - modes/cloudflare-review.xml
+  - modes/cloudflare-release.xml
   role_modules:
   - roles/cloudflare-developer.xml
   - roles/cloudflare-devops.xml
@@ -30,5 +38,14 @@ assembly:
   - templates/worker-route.xml
   - templates/wrangler-config-review.xml
   - templates/cloudflare-integration-risk.xml
+  contract_modules:
+  - contracts/wrangler-configuration-review.schema.json
+  - contracts/cloudflare-validation-evidence.schema.json
+  - contracts/cloudflare-gap-register.schema.json
+  examples:
+  - examples/wrangler-worker.example.toml
+  - examples/deployment-evidence.example.yaml
+  validation_scripts:
+  - scripts/validate-source-catalog.py
   grader_modules:
   - graders/cloudflare-behaviour.xml

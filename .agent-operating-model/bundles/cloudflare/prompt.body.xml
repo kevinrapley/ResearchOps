@@ -2,7 +2,7 @@
 <prompt_bundle id="cloudflare" version="1.0.0" default_mode="cloudflare-build" xml_profile="native-semantic-xml/v1">
   <bundle_identity>
     <name>Cloudflare Developer Platform Prompt Bundle</name>
-    <description>Canonical Cloudflare bundle for Workers, Pages, Wrangler, bindings, storage, queues, workflows, AI and deployment work, sourced only from developers.cloudflare.com.</description>
+    <description>Canonical Cloudflare bundle for Workers, Pages, Wrangler, bindings, storage, queues, workflows, AI, observability, testing, deployment and release work, sourced only from developers.cloudflare.com.</description>
     <status>canonical</status>
   </bundle_identity>
   <runtime_defaults>
@@ -11,6 +11,8 @@
     <do_not_invent_cloudflare_behaviour>true</do_not_invent_cloudflare_behaviour>
     <prefer_bindings_inside_workers>true</prefer_bindings_inside_workers>
     <require_secret_separation>true</require_secret_separation>
+    <require_deployment_evidence>true</require_deployment_evidence>
+    <require_limits_review>true</require_limits_review>
   </runtime_defaults>
   <assembly>
     <always_load>references/source-catalog.yaml</always_load>
@@ -21,7 +23,16 @@
     <always_load>references/storage-and-state.xml</always_load>
     <always_load>references/pages-and-deployment.xml</always_load>
     <always_load>references/queues-workflows-ai.xml</always_load>
+    <always_load>references/deployment-versions-and-triggers.xml</always_load>
+    <always_load>references/testing-and-observability.xml</always_load>
+    <always_load>references/compatibility-and-limits.xml</always_load>
+    <always_load>references/service-bindings-and-edge-connectivity.xml</always_load>
   </assembly>
+  <mode_registry>
+    <mode_ref id="cloudflare-build" file="modes/cloudflare-build.xml"/>
+    <mode_ref id="cloudflare-review" file="modes/cloudflare-review.xml"/>
+    <mode_ref id="cloudflare-release" file="modes/cloudflare-release.xml"/>
+  </mode_registry>
   <role_registry>
     <role_ref id="cloudflare-developer" file="roles/cloudflare-developer.xml"/>
     <role_ref id="cloudflare-devops" file="roles/cloudflare-devops.xml"/>
@@ -32,6 +43,11 @@
     <template_ref id="wrangler-config-review" file="templates/wrangler-config-review.xml"/>
     <template_ref id="cloudflare-integration-risk" file="templates/cloudflare-integration-risk.xml"/>
   </template_registry>
+  <contract_registry>
+    <contract_ref id="wrangler-configuration-review" file="contracts/wrangler-configuration-review.schema.json"/>
+    <contract_ref id="cloudflare-validation-evidence" file="contracts/cloudflare-validation-evidence.schema.json"/>
+    <contract_ref id="cloudflare-gap-register" file="contracts/cloudflare-gap-register.schema.json"/>
+  </contract_registry>
   <grader_registry>
     <grader_ref id="cloudflare-behaviour" file="graders/cloudflare-behaviour.xml"/>
   </grader_registry>
