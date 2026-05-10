@@ -1,0 +1,42 @@
+{
+  "type": "github-diamond-sbom-attestation",
+  "version": "2.9.1",
+  "attestation_mode": "trusted",
+  "created_at_unix": 1770000000,
+  "subject": ".",
+  "subject_file_count": 1,
+  "subject_hashes": [
+    {
+      "path": "README.md",
+      "sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    }
+  ],
+  "sbom": "sbom.json",
+  "sbom_sha256": "cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1",
+  "slsa": {
+    "enabled": true,
+    "predicate_type": "https://slsa.dev/provenance/v1",
+    "statement": {}
+  },
+  "github_artifact_attestation": {
+    "enabled": true,
+    "verification": "verified-fixture",
+    "status": "verified"
+  },
+  "sigstore": {
+    "enabled": true,
+    "bundle_uri": "sigstore-bundle.json",
+    "status": "verified"
+  },
+  "dsse": {
+    "payloadType": "application/vnd.in-toto+json",
+    "payload": "e30=",
+    "signatures": [
+      {
+        "keyid": "fixture",
+        "sig": "fixture"
+      }
+    ],
+    "signature_algorithm": "HMAC-SHA256-provided-key"
+  }
+}

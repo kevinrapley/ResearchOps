@@ -1,0 +1,10 @@
+measurements:
+  - metric: lighthouse_performance_score
+    value: 0.92
+    unit: ratio
+  - metric: lighthouse_accessibility_score
+    value: 0.98
+    unit: ratio
+  - metric: lcp_ms
+    value: 1800
+    unit: ms
