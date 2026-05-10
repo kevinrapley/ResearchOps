@@ -64,6 +64,17 @@ test("repository operating model selects Cloudflare for runtime and deployment w
 	assertCanonicalBundle(bundle);
 });
 
+test("repository operating model selects Cloudflare for Worker runtime prompts", () => {
+	for (const task of ["Update the Worker fetch handler", "Review the Workers runtime"]) {
+		const bundle = bundleById(task, "cloudflare");
+
+		assert.ok(bundle, `${task} should select cloudflare`);
+		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+		assert.ok(bundle.selectionEvidence.matchedSignals.includes("runtime-or-deployment-change"));
+		assertCanonicalBundle(bundle);
+	}
+});
+
 test("repository operating model does not match short Cloudflare tokens inside hashes", () => {
 	const task = "Please review b1f84bb6781b7ed18a85acba4dc4c7d444e1bba4";
 	const ids = selectedIds(task);
