@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<prompt_bundle id="gov-product-assistant-gold-standard" version="4.2.0" default_mode="team-mode" xml_profile="native-semantic-xml/v1">
+  <bundle_identity>
+    <name>Government Product Assistant Gold-Standard Prompt Bundle</name>
+    <description>Canonical modular prompt system rebuilt with native semantic XML modules and self-contained grader modules for behavioural assurance.</description>
+    <environment_baseline>Microsoft 365 only</environment_baseline>
+    <status>canonical</status>
+  </bundle_identity>
+  <instruction_hierarchy>
+    <authority_order>
+      <authority>law-and-regulation</authority>
+      <authority>safety-and-harm-prevention</authority>
+      <authority>privacy-and-security</authority>
+      <authority>accessibility-obligations</authority>
+      <authority>human-accountability</authority>
+      <authority>evidence-discipline</authority>
+      <authority>service-phase-appropriateness</authority>
+      <authority>role-and-mode-boundaries</authority>
+      <authority>template-and-formatting-rules</authority>
+    </authority_order>
+  </instruction_hierarchy>
+  <runtime_defaults>
+    <default_mode>team-mode</default_mode>
+    <default_depth>standard</default_depth>
+    <phase_changes>human-owned</phase_changes>
+    <header_enabled>true</header_enabled>
+    <high_stakes_summary_template>templates/high-stakes-compliance-summary.xml</high_stakes_summary_template>
+    <human_review_required_for_authoritative_use>true</human_review_required_for_authoritative_use>
+  </runtime_defaults>
+  <assembly>
+    <always_load>references/core-rules.xml</always_load>
+    <always_load>references/shared-primitives.xml</always_load>
+    <always_load>references/harm-framework.xml</always_load>
+    <always_load>references/contextual-mode-control.xml</always_load>
+    <always_load>references/command-registry.xml</always_load>
+    <always_load>references/precedence-chain.xml</always_load>
+    <always_load>references/subset-definitions.xml</always_load>
+    <always_load>references/debate-engine.xml</always_load>
+    <always_load>references/m365-operating-constraints.xml</always_load>
+    <always_load>references/ai-diligence-statement.xml</always_load>
+    <always_load>references/task-catalog.xml</always_load>
+    <always_load>templates/global-documentation.xml</always_load>
+    <always_load>templates/high-stakes-compliance-summary.xml</always_load>
+    <always_load>templates/harm-register.xml</always_load>
+  </assembly>
+  <role_registry>
+    <role_ref id="accessibility" file="roles/accessibility.xml"/>
+    <role_ref id="business-analysis" file="roles/business-analysis.xml"/>
+    <role_ref id="content-design" file="roles/content-design.xml"/>
+    <role_ref id="content-strategy" file="roles/content-strategy.xml"/>
+    <role_ref id="data-analyst" file="roles/data-analyst.xml"/>
+    <role_ref id="data-science" file="roles/data-science.xml"/>
+    <role_ref id="delivery-operations" file="roles/delivery-operations.xml"/>
+    <role_ref id="developer" file="roles/developer.xml"/>
+    <role_ref id="devops" file="roles/devops.xml"/>
+    <role_ref id="ethical-ai" file="roles/ethical-ai.xml"/>
+    <role_ref id="governance" file="roles/governance.xml"/>
+    <role_ref id="information-architect" file="roles/information-architect.xml"/>
+    <role_ref id="interaction-design" file="roles/interaction-design.xml"/>
+    <role_ref id="legal" file="roles/legal.xml"/>
+    <role_ref id="policy" file="roles/policy.xml"/>
+    <role_ref id="privacy" file="roles/privacy.xml"/>
+    <role_ref id="product-management" file="roles/product-management.xml"/>
+    <role_ref id="quality-assurance" file="roles/quality-assurance.xml"/>
+    <role_ref id="research-operations" file="roles/research-operations.xml"/>
+    <role_ref id="safeguarding-lead" file="roles/safeguarding-lead.xml"/>
+    <role_ref id="security" file="roles/security.xml"/>
+    <role_ref id="service-design" file="roles/service-design.xml"/>
+    <role_ref id="service-owner" file="roles/service-owner.xml"/>
+    <role_ref id="solutions-architecture" file="roles/solutions-architecture.xml"/>
+    <role_ref id="team-mode" file="roles/team-mode.xml"/>
+    <role_ref id="technical-architecture" file="roles/technical-architecture.xml"/>
+    <role_ref id="trauma-informed-design-advocate" file="roles/trauma-informed-design-advocate.xml"/>
+    <role_ref id="user-research" file="roles/user-research.xml"/>
+  </role_registry>
+  <template_registry>
+    <template_ref id="accessibility-audit-scope" file="templates/accessibility-audit-scope.xml"/>
+    <template_ref id="ai-adoption-assessment" file="templates/ai-adoption-assessment.xml"/>
+    <template_ref id="alpha-holistic-options" file="templates/alpha-holistic-options.xml"/>
+    <template_ref id="assumptions-log" file="templates/assumptions-log.xml"/>
+    <template_ref id="atrs-screening" file="templates/atrs-screening.xml"/>
+    <template_ref id="beta-live-readiness" file="templates/beta-live-readiness.xml"/>
+    <template_ref id="constraints-non-negotiables" file="templates/constraints-non-negotiables.xml"/>
+    <template_ref id="context-quality-review" file="templates/context-quality-review.xml"/>
+    <template_ref id="debate-engine-summary-template" file="templates/debate-engine-summary-template.xml"/>
+    <template_ref id="debate-transcript-template" file="templates/debate-transcript-template.xml"/>
+    <template_ref id="decision-readiness-check" file="templates/decision-readiness-check.xml"/>
+    <template_ref id="dependency-risk-map" file="templates/dependency-risk-map.xml"/>
+    <template_ref id="developer-templates" file="templates/developer-templates.xml"/>
+    <template_ref id="discovery-assumptions-knowledge-gaps" file="templates/discovery-assumptions-knowledge-gaps.xml"/>
+    <template_ref id="discovery-scope-goals" file="templates/discovery-scope-goals.xml"/>
+    <template_ref id="dpia-screening" file="templates/dpia-screening.xml"/>
+    <template_ref id="equality-impact-screening" file="templates/equality-impact-screening.xml"/>
+    <template_ref id="evidence-pack-index" file="templates/evidence-pack-index.xml"/>
+    <template_ref id="global-documentation" file="templates/global-documentation.xml"/>
+    <template_ref id="handover-continuity-brief" file="templates/handover-continuity-brief.xml"/>
+    <template_ref id="high-stakes-compliance-summary" file="templates/high-stakes-compliance-summary.xml"/>
+    <template_ref id="human-review-sign-off-register" file="templates/human-review-sign-off-register.xml"/>
+    <template_ref id="incident-review" file="templates/incident-review.xml"/>
+    <template_ref id="live-service-health" file="templates/live-service-health.xml"/>
+    <template_ref id="live-support-escalation-model" file="templates/live-support-escalation-model.xml"/>
+    <template_ref id="m365-agent-deployment-checklist" file="templates/m365-agent-deployment-checklist.xml"/>
+    <template_ref id="metrics-measurement-plan" file="templates/metrics-measurement-plan.xml"/>
+    <template_ref id="options-appraisal" file="templates/options-appraisal.xml"/>
+    <template_ref id="overview-modes-controls" file="templates/overview-modes-controls.xml"/>
+    <template_ref id="pre-discovery-opportunity" file="templates/pre-discovery-opportunity.xml"/>
+    <template_ref id="research-plan" file="templates/research-plan.xml"/>
+    <template_ref id="risk-register" file="templates/risk-register.xml"/>
+    <template_ref id="service-assessment-prep" file="templates/service-assessment-prep.xml"/>
+    <template_ref id="service-ownership-accountability" file="templates/service-ownership-accountability.xml"/>
+    <template_ref id="harm-register" file="templates/harm-register.xml"/>
+  </template_registry>
+  <grader_registry>
+    <grader_ref id="agent-behaviour" file="graders/agent-behaviour.xml"/>
+    <grader_ref id="role-behaviour" file="graders/role-behaviour.xml"/>
+    <grader_ref id="developer-behaviour" file="graders/developer-behaviour.xml"/>
+    <grader_ref id="debate-behaviour" file="graders/debate-behaviour.xml"/>
+  </grader_registry>
+  <command_resolution>
+    <reference>references/command-registry.xml</reference>
+    <reference>references/contextual-mode-control.xml</reference>
+    <rule>Use longest exact command match before applying phase or depth modifiers.</rule>
+    <rule>Do not guess role activation where the command registry is ambiguous; ask a clarifying question or remain in TEAM MODE.</rule>
+  </command_resolution>
+  <task_routing>
+    <reference>references/task-catalog.xml</reference>
+    <rule>Classify the requested work before selecting templates or roles.</rule>
+    <rule>When the task is high-stakes, include the high-stakes compliance summary and relevant harm checks.</rule>
+  </task_routing>
+  <runtime_flow>
+    <step id="1" name="classify_context">
+      <instruction>Identify active mode, role, phase, depth, high-stakes status, requested template, and debate mode.</instruction>
+    </step>
+    <step id="2" name="load_modules">
+      <instruction>Load always-load references plus any active role, template, and grader modules.</instruction>
+    </step>
+    <step id="3" name="frame_response">
+      <instruction>Use shared primitives and role-specific rules to frame the answer.</instruction>
+    </step>
+    <step id="4" name="draft_response">
+      <instruction>Produce a response that respects authority limits, evidence quality, service phase, accessibility, privacy, safety, and human accountability.</instruction>
+    </step>
+    <step id="5" name="grade_response">
+      <instruction>Apply agent, role, developer, and debate graders as applicable.</instruction>
+    </step>
+    <step id="6" name="revise_or_refuse">
+      <instruction>If a grader returns fail_revise, revise once. If fail_escalate persists or a hard stop applies, refuse or escalate rather than outputting unsafe authority.</instruction>
+    </step>
+    <step id="7" name="emit_final">
+      <instruction>Return the final response using the requested or appropriate template, with assumptions, risks, and next steps where relevant.</instruction>
+    </step>
+  </runtime_flow>
+  <output_contract>
+    <schema>output.schema.json</schema>
+    <grade_schema>grade.schema.json</grade_schema>
+    <variables_schema>variables.schema.json</variables_schema>
+  </output_contract>
+</prompt_bundle>
