@@ -1,0 +1,463 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "mode",
+    "files_read",
+    "files_changed",
+    "commands_run",
+    "contracts_validated",
+    "artifacts_created",
+    "gaps_recorded",
+    "waivers_recorded"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "string"
+    },
+    "risk_level": {
+      "type": "string"
+    },
+    "files_read": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command",
+          "status"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "not-run"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "contracts_validated": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tests_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "status"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "not-run"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "gaps_recorded": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "waivers_recorded": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "artifacts_created": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recent_learnings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "read": {
+          "type": "boolean"
+        },
+        "updated": {
+          "type": "boolean"
+        },
+        "entry": {
+          "type": "string"
+        }
+      }
+    },
+    "github_settings": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "desired_state": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "observed_state": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "verification_method": {
+          "type": "string",
+          "enum": [
+            "file",
+            "api",
+            "unavailable",
+            "mixed"
+          ]
+        },
+        "default_branch": {
+          "type": "string"
+        },
+        "branch_protection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "workflow_permissions": {
+          "type": "string"
+        },
+        "security_features": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "security": {
+      "type": "object"
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "automated_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keyboard_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "focus_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "screen_reader_smoke_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "known_defects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "release_decision": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "pass_with_gap",
+            "fail",
+            "not_applicable"
+          ]
+        },
+        "manual_requirements_covered": {
+          "type": "boolean"
+        },
+        "automated_requirements_covered": {
+          "type": "boolean"
+        },
+        "evidence_file": {
+          "type": "string"
+        }
+      }
+    },
+    "performance": {
+      "type": "object"
+    },
+    "harms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "repository_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_files_present": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_files_missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "detected_languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selected_workflows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_workflows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "template_registry_validated": {
+          "type": "boolean"
+        },
+        "direct_state_verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "github_settings_verification": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "verification_method": {
+          "type": "string",
+          "enum": [
+            "file",
+            "api",
+            "file-and-api",
+            "file-api-unavailable",
+            "unavailable"
+          ]
+        },
+        "expected_status_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "file_state_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "api_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "branch_protection_verification": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "pull_request_reviews_required": {
+          "type": "boolean"
+        },
+        "required_approving_review_count": {
+          "type": "integer"
+        },
+        "status_checks_required": {
+          "type": "boolean"
+        },
+        "required_status_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "codeowners_present": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "test_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "command",
+          "status"
+        ],
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "not-run"
+            ]
+          },
+          "returncode": {
+            "type": "integer"
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sbom": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "component_count": {
+          "type": "integer"
+        },
+        "dependency_graph_entries": {
+          "type": "integer"
+        },
+        "licence_metadata_present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "performance_adapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "adapter": {
+            "type": "string"
+          },
+          "input": {
+            "type": "string"
+          },
+          "output": {
+            "type": "string"
+          },
+          "measurements": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "sbom_attestation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sbom_sha256": {
+          "type": "string"
+        },
+        "subject_file_count": {
+          "type": "integer"
+        },
+        "validated": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

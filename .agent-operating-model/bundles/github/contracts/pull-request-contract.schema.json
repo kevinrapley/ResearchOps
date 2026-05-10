@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pull Request Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "validation",
+    "risks",
+    "rollback",
+    "gaps"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "risks": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rollback": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gaps": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

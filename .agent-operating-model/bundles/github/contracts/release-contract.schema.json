@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Release Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "changelog",
+    "tests",
+    "rollback"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changelog": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tests": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rollback": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

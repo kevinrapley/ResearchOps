@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitHub Settings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "default_branch",
+    "branch_protection",
+    "workflow_permissions",
+    "security_features"
+  ],
+  "properties": {
+    "default_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch_protection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_reviews",
+        "dismiss_stale_reviews",
+        "require_code_owner_reviews",
+        "required_status_checks"
+      ],
+      "properties": {
+        "required_reviews": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dismiss_stale_reviews": {
+          "type": "boolean"
+        },
+        "require_code_owner_reviews": {
+          "type": "boolean"
+        },
+        "required_status_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "linear_history": {
+          "type": "boolean"
+        },
+        "allow_force_pushes": {
+          "type": "boolean"
+        },
+        "allow_deletions": {
+          "type": "boolean"
+        },
+        "require_pull_request_reviews": {
+          "type": "boolean"
+        },
+        "require_status_checks": {
+          "type": "boolean"
+        },
+        "required_approving_review_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require_conversation_resolution": {
+          "type": "boolean"
+        },
+        "require_signed_commits": {
+          "type": "boolean"
+        }
+      }
+    },
+    "workflow_permissions": {
+      "type": "string",
+      "enum": [
+        "read",
+        "read-write",
+        "restricted"
+      ]
+    },
+    "security_features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependabot",
+        "secret_scanning",
+        "push_protection",
+        "code_scanning",
+        "dependency_review"
+      ],
+      "properties": {
+        "dependabot": {
+          "type": "boolean"
+        },
+        "secret_scanning": {
+          "type": "boolean"
+        },
+        "push_protection": {
+          "type": "boolean"
+        },
+        "code_scanning": {
+          "type": "boolean"
+        },
+        "dependency_review": {
+          "type": "boolean"
+        },
+        "sbom_on_release": {
+          "type": "boolean"
+        },
+        "dependabot_updates": {
+          "type": "boolean"
+        }
+      }
+    },
+    "actions_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_actions": {
+          "type": "string"
+        },
+        "sha_pinning_required": {
+          "type": "boolean"
+        },
+        "oidc_for_deployments": {
+          "type": "boolean"
+        },
+        "default_workflow_permissions": {
+          "type": "string"
+        }
+      }
+    },
+    "verification_method": {
+      "type": "string",
+      "enum": [
+        "file",
+        "api",
+        "file-and-api",
+        "file-api-unavailable",
+        "unavailable"
+      ]
+    },
+    "repository_rulesets": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "environments": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
