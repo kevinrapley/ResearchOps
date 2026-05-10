@@ -1,0 +1,1 @@
+<reference id="coverage-guarantee-reference"><rule>Every included public operation must have an entry in the coverage matrix and a corresponding endpoint contract file.</rule></reference>
