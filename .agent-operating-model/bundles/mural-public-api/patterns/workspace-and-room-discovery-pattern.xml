@@ -1,0 +1,4 @@
+<pattern id="workspace-and-room-discovery-pattern">
+  <use_when>Need to discover accessible workspaces, rooms, open rooms, or room-scoped murals before any targeted mutation flow.</use_when>
+  <sequence>getworkspaces -> getworkspace or getworkspacerooms -> getroominfobyid or getroommurals</sequence>
+</pattern>

@@ -1,0 +1,3 @@
+<grader id="boundary-integrity-grader">
+  <criterion>Enterprise API, Embed SDK substitution, and visitor-auth impossibilities are handled explicitly.</criterion>
+</grader>

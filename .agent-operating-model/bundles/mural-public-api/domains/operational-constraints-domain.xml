@@ -1,0 +1,11 @@
+<domain id="operational-constraints-domain">
+  <purpose>Cover rate limits, pagination, token refresh, and error posture.</purpose>
+  <covered_operations>
+
+  </covered_operations>
+  <rules>
+    <rule>Per-user and per-app limits run in parallel.</rule>
+    <rule>Use limit and next tokens for list and search endpoints.</rule>
+    <rule>Treat 4xx and 5xx classes differently in retries and surfacing.</rule>
+  </rules>
+</domain>

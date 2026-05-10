@@ -1,0 +1,4 @@
+<pattern id="facilitation-runtime-pattern">
+  <use_when>Need to control private mode, voting sessions, or timer behavior during live facilitation.</use_when>
+  <sequence>getprivatemode or getmuralvotingsessions or getmuraltimer -> start or update -> read state -> end or delete</sequence>
+</pattern>

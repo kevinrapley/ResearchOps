@@ -1,0 +1,12 @@
+<domain id="mural-export-assets-domain">
+  <purpose>Cover export jobs, export retrieval, and asset URL creation.</purpose>
+  <covered_operations>
+    <operation>exportmural</operation>
+    <operation>exporturlmural</operation>
+    <operation>createasset</operation>
+  </covered_operations>
+  <rules>
+    <rule>Export is asynchronous. Treat export URL retrieval as a follow-up step.</rule>
+    <rule>Asset URL creation is a staging step before creating file or image widgets.</rule>
+  </rules>
+</domain>

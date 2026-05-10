@@ -1,0 +1,11 @@
+<domain id="folders-domain">
+  <purpose>Cover room folder listing, creation, and deletion.</purpose>
+  <covered_operations>
+    <operation>getroomfolders</operation>
+    <operation>createroomfolder</operation>
+    <operation>deletefolderbyid</operation>
+  </covered_operations>
+  <rules>
+    <rule>Folders are room-scoped organizational containers, not top-level resources.</rule>
+  </rules>
+</domain>

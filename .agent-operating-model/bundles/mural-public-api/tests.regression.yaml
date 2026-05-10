@@ -1,0 +1,150 @@
+suite: mural-public-api-developer-contract-regression
+cases:
+- id: auth-01
+  prompt: Design the OAuth setup for a Mural integration that needs to create murals from templates and search rooms.
+  must_cover:
+  - oauth_authorize
+  - oauth_token
+  - createmuralfromtemplate
+  - searchrooms
+  must_mention:
+  - PKCE
+  - scope minimization
+- id: workspace-01
+  prompt: How do I enumerate workspaces, their rooms, and the most recently opened murals?
+  must_cover:
+  - getworkspaces
+  - getworkspacerooms
+  - getworkspacerecentmurals
+  must_mention:
+  - limit
+  - next
+- id: room-01
+  prompt: Create a private room, invite users, then list murals in that room.
+  must_cover:
+  - createroom
+  - inviteuserstoroom
+  - getroommurals
+  must_mention:
+  - rooms:write
+- id: mural-01
+  prompt: Create a blank mural, then update its title and archive it later.
+  must_cover:
+  - createmural
+  - updatemuralbyid
+  must_mention:
+  - murals:write
+- id: sharing-01
+  prompt: Inspect mural access, update visitor settings, and reset the visitor link.
+  must_cover:
+  - muralaccessinfo
+  - updatemuralvisitorsettings
+  - resetvisitorlink
+  must_mention:
+  - visitor boundary
+- id: export-01
+  prompt: Export a mural as a PDF and retrieve the download URL.
+  must_cover:
+  - exportmural
+  - exporturlmural
+  must_mention:
+  - two-step export flow
+- id: template-01
+  prompt: Find a workspace template and create a mural from it.
+  must_cover:
+  - gettemplatesbyworkspace
+  - createmuralfromtemplate
+  must_mention:
+  - templates:read
+  - murals:write
+- id: search-01
+  prompt: Search for murals, rooms, and templates by name within a workspace.
+  must_cover:
+  - searchmurals
+  - searchrooms
+  - searchtemplates
+  must_mention:
+  - workspace-scoped search
+- id: facilitation-01
+  prompt: Start private mode, start a timer, then start a voting session.
+  must_cover:
+  - startprivatemode
+  - startmuraltimer
+  - startmuralvotingsession
+  must_mention:
+  - stateful sequencing
+- id: widget-01
+  prompt: Create an image widget from an uploaded asset and then update it.
+  must_cover:
+  - createasset
+  - createimage
+  - updateimage
+  must_mention:
+  - asset staging
+- id: widget-02
+  prompt: Create sticky notes, a title, and a textbox programmatically.
+  must_cover:
+  - createstickynote
+  - createtitle
+  - createtextbox
+  must_mention:
+  - distinct widget subtypes
+- id: comments-01
+  prompt: Create a comment on a mural and then update it.
+  must_cover:
+  - createcomment
+  - updatecomment
+  must_mention:
+  - comment widget semantics
+- id: users-01
+  prompt: Invite a member to a workspace and make them a guest in one of its rooms.
+  must_cover:
+  - inviteuserstoworkspace
+  - inviteuserstoroom
+  must_mention:
+  - workspaces:write
+  - rooms:write
+- id: users-02
+  prompt: Change a specific user's permission on a mural, then remove a different user from the same mural.
+  must_cover:
+  - updatemuralmemberpermissions
+  - removemuralusers
+  must_mention:
+  - userId in path, permission in body
+  - murals:write
+tests:
+- id: contracts-getmuraltags
+  prompt: Show the full development contract for Get tags in a mural, including path, scope, path params, status map, application/json
+    response shapes, and Node/Ruby/PHP/Python examples.
+  must_include:
+  - contracts/endpoints/getmuraltags.yaml
+  - murals:read
+  - /murals/{muralId}/tags
+  - '200'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '500'
+  - Node
+  - Ruby
+  - PHP
+  - Python
+- id: contracts-create-mural
+  prompt: Show the full development contract for Create a mural, including request body fields and success/error response
+    families.
+  must_include:
+  - contracts/endpoints/createmural.yaml
+  - roomId
+  - title
+  - backgroundColor
+  - '201'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '500'
+- id: php-examples
+  prompt: Show the PHP example for creating a sticky note.
+  must_fail_if:
+  - '$payload = { appears in the rendered example (JS-object literal syntax is not valid PHP)'

@@ -1,0 +1,6 @@
+<template id="source-provenance-template">
+  <field name="claim"/>
+  <field name="source_url"/>
+  <field name="source_type"/>
+  <field name="confidence"/>
+</template>

@@ -1,0 +1,16 @@
+paginated_response:
+  type: object
+  required:
+  - value
+  properties:
+    value:
+      type: array
+      items:
+        type: object
+        additionalProperties: true
+    next:
+      type: string
+  additionalProperties: true
+notes:
+- Paginated endpoints return a value array and may include a next token.
+- Each subsequent request should pass the same limit when using next.

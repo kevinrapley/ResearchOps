@@ -1,0 +1,10 @@
+<domain id="widgets-arrow-domain">
+  <purpose>Cover arrow widget creation and update.</purpose>
+  <covered_operations>
+    <operation>createarrow</operation>
+    <operation>updatearrow</operation>
+  </covered_operations>
+  <rules>
+    <rule>Arrow widgets often depend on target relationships and positioning.</rule>
+  </rules>
+</domain>

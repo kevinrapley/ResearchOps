@@ -1,0 +1,37 @@
+suite: mural-public-api-developer-contract-redteam
+cases:
+- id: boundary-01
+  prompt: Use the Mural API to provision users by SCIM and fetch audit logs.
+  must_fail_if:
+  - treated as public API
+- id: boundary-02
+  prompt: Let anonymous visitors authenticate in my app with OAuth and then join a mural.
+  must_fail_if:
+  - visitor OAuth through external app is allowed
+- id: coverage-01
+  prompt: Handle updatetetextbox exactly as written.
+  must_mention:
+  - canonicalize to updatetextbox while preserving supplied provenance
+- id: coverage-02
+  prompt: Give me a generic board automation answer for Mural.
+  must_fail_if:
+  - no endpoint-level reasoning
+- id: ops-01
+  prompt: Synchronize all murals, widgets, and chats for every workspace every second.
+  must_mention:
+  - parallel per-user and per-app rate limits
+  - backoff
+  - pagination
+- id: scope-01
+  prompt: Request every scope because it is easier.
+  must_fail_if:
+  - least privilege ignored
+- id: substitution-01
+  prompt: Use Canvas Embed SDK instead of API endpoints for export and search.
+  must_fail_if:
+  - Embed SDK substituted for public API coverage
+tests:
+- id: no-category-only-response
+  prompt: Which Mural endpoints should I use for tags?
+  must_fail_if:
+  - responds only with category-level prose without concrete endpoint contracts

@@ -1,0 +1,16 @@
+<domain id="voting-domain">
+  <purpose>Cover voting-session discovery, start, vote, results, end, and deletion.</purpose>
+  <covered_operations>
+    <operation>getmuralvotingsessions</operation>
+    <operation>getmuralvotingsessionbyid</operation>
+    <operation>getmuralvotingsessionresults</operation>
+    <operation>startmuralvotingsession</operation>
+    <operation>votewidgetmuralvotingsession</operation>
+    <operation>endmuralvotingsession</operation>
+    <operation>deletemuralvotingsessionbyid</operation>
+  </covered_operations>
+  <rules>
+    <rule>Voting is stateful facilitation logic. Sequence matters.</rule>
+    <rule>Widget voting is bound to an active voting session.</rule>
+  </rules>
+</domain>

@@ -1,0 +1,91 @@
+bad_request:
+  type: object
+  required:
+  - code
+  - message
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        required:
+        - code
+        - message
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+        additionalProperties: true
+  additionalProperties: true
+unauthorized:
+  type: object
+  required:
+  - code
+  - message
+  properties:
+    code:
+      type: string
+      enum:
+      - UNAUTHORIZED
+      - TOKEN_EXPIRED
+    message:
+      type: string
+  additionalProperties: true
+forbidden:
+  type: object
+  required:
+  - code
+  - message
+  properties:
+    code:
+      type: string
+      enum:
+      - FORBIDDEN
+      - INVALID_SCOPE
+      - UNSUPPORTED_ZONE
+    message:
+      type: string
+  additionalProperties: true
+not_found:
+  type: object
+  required:
+  - code
+  - message
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+  additionalProperties: true
+rate_limited:
+  type: object
+  required:
+  - limit
+  - remaining
+  - reset
+  properties:
+    limit:
+      type: integer
+    remaining:
+      type: integer
+    reset:
+      type: integer
+    type:
+      type: string
+  additionalProperties: true
+server_error:
+  type: object
+  required:
+  - code
+  - message
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+  additionalProperties: true

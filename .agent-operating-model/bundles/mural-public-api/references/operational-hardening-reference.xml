@@ -1,0 +1,6 @@
+<reference id="operational-hardening-reference">
+  <rule>List and search flows should mention limit and next token handling.</rule>
+  <rule>Bulk, sync, or crawler-style workflows should mention per-user and per-app rate limits, backoff, and retry posture.</rule>
+  <rule>Mutation workflows should mention idempotency strategy, partial failure handling, and sequencing.</rule>
+  <rule>Token-dependent flows should mention OAuth refresh and scope mismatch handling.</rule>
+</reference>

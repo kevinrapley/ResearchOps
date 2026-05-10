@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/topology.schema.json",
+  "title": "Generated Prompt Bundle Topology Plan",
+  "description": "Validates the topology plan for a generated prompt bundle. The topology plan explains which internal folders and module families the meta-bundle selected, which are universal, which are conditional, and why any non-universal folders were created.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_id",
+    "bundle_version",
+    "target_bundle_class",
+    "topology_policy_version",
+    "universal_folders",
+    "allowed_conditional_folders",
+    "prohibited_folder_names",
+    "resolved_topology",
+    "folder_justifications",
+    "module_family_map"
+  ],
+  "properties": {
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Kebab-case identifier of the generated bundle."
+    },
+    "bundle_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the generated bundle."
+    },
+    "target_bundle_class": {
+      "type": "string",
+      "enum": [
+        "role-driven-assistant",
+        "persona-driven-bundle",
+        "workflow-bundle",
+        "agentic-bundle",
+        "tool-using-bundle",
+        "mode-driven-bundle",
+        "pattern-library-bundle",
+        "domain-bundle",
+        "policy-bundle",
+        "custom"
+      ],
+      "description": "High-level class used to select the internal topology."
+    },
+    "topology_policy_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the topology policy that governed folder creation."
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "low",
+        "moderate",
+        "high",
+        "critical"
+      ],
+      "description": "Risk level of the target bundle. May influence folders such as policies/."
+    },
+    "domain_specificity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "How domain-specific the target bundle is."
+    },
+    "requested_module_families": {
+      "type": "array",
+      "description": "Module families explicitly requested by the target bundle brief.",
+      "items": {
+        "$ref": "#/$defs/folderName"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "universal_folders": {
+      "type": "array",
+      "description": "Folders that must exist in every generated bundle.",
+      "items": {
+        "$ref": "#/$defs/folderName"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "allowed_conditional_folders": {
+      "type": "array",
+      "description": "Folders the meta-bundle is allowed to create if the topology policy is satisfied.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "folder",
+          "creation_conditions"
+        ],
+        "properties": {
+          "folder": {
+            "$ref": "#/$defs/folderName"
+          },
+          "creation_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "description": "Human-readable conditions under which this folder may be created."
+          }
+        }
+      },
+      "uniqueItems": false,
+      "minItems": 1
+    },
+    "prohibited_folder_names": {
+      "type": "array",
+      "description": "Folder names that must never appear in generated bundles.",
+      "items": {
+        "$ref": "#/$defs/folderName"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "resolved_topology": {
+      "type": "array",
+      "description": "The final set of folders selected for the generated bundle.",
+      "items": {
+        "$ref": "#/$defs/folderName"
+      },
+      "uniqueItems": true,
+      "minItems": 1,
+      "allOf": [
+        {
+          "contains": {
+            "const": "templates"
+          }
+        },
+        {
+          "contains": {
+            "const": "references"
+          }
+        },
+        {
+          "contains": {
+            "const": "graders"
+          }
+        }
+      ]
+    },
+    "folder_justifications": {
+      "type": "array",
+      "description": "Justifications for every non-universal folder that appears in the resolved topology.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "folder",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "folder": {
+            "$ref": "#/$defs/folderName"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "description": "Short statements showing which policy conditions or brief requirements justified the folder."
+          }
+        }
+      },
+      "uniqueItems": false
+    },
+    "module_family_map": {
+      "type": "object",
+      "description": "Maps each folder in the resolved topology to the module families expected inside it.",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/folderName"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "uniqueItems": true,
+        "minItems": 1
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional explanatory notes for human reviewers."
+    }
+  },
+  "$defs": {
+    "folderName": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Kebab-case folder name without a trailing slash."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Resolved topology may not contain prohibited names.",
+      "not": {
+        "properties": {
+          "resolved_topology": {
+            "contains": {
+              "enum": [
+                "misc",
+                "random",
+                "temp",
+                "stuff",
+                "old",
+                "archive"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

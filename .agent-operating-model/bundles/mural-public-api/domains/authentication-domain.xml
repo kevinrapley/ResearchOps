@@ -1,0 +1,13 @@
+<domain id="authentication-domain">
+  <purpose>Cover OAuth authorization, token exchange, app credentials, redirect URI posture, PKCE, scope allowlisting, and token refresh.</purpose>
+  <covered_operations>
+    <operation>oauth_authorize</operation>
+    <operation>oauth_token</operation>
+    <operation>getcurrentmember</operation>
+  </covered_operations>
+  <rules>
+    <rule>Use OAuth authorization code flow with PKCE.</rule>
+    <rule>Treat client secret as sensitive and store it securely.</rule>
+    <rule>Explain refresh-token posture when sessions outlive the default access token lifetime.</rule>
+  </rules>
+</domain>

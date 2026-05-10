@@ -1,0 +1,5 @@
+<workflow id="pagination-rate-limit-workflow">
+  <step order="1">For list and search operations, document limit and next token handling.</step>
+  <step order="2">For sync loops or crawlers, design around both per-user and per-app rate limits.</step>
+  <step order="3">Use retry and backoff for retryable failures, but surface permanent 4xx mismatches quickly.</step>
+</workflow>

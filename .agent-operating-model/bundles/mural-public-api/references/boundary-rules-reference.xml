@@ -1,0 +1,6 @@
+<reference id="boundary-rules-reference">
+  <boundary>Mural enterprise API administration is outside the public API scope.</boundary>
+  <boundary>Canvas Embed SDK is not a substitute for public API endpoint coverage.</boundary>
+  <boundary>Visitors cannot authenticate through an external app with OAuth 2.0.</boundary>
+  <boundary>Do not invent AI or agent capabilities that are not documented on the public API surface.</boundary>
+</reference>

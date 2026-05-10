@@ -1,0 +1,10 @@
+<template id="integration-blueprint-template">
+  <section name="goal"/>
+  <section name="object_layers"/>
+  <section name="endpoint_families"/>
+  <section name="scopes"/>
+  <section name="request_sequence"/>
+  <section name="error_and_retry_posture"/>
+  <section name="rate_limit_posture"/>
+  <section name="test_plan"/>
+</template>

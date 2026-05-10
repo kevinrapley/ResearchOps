@@ -1,0 +1,4 @@
+<pattern id="mural-provisioning-pattern">
+  <use_when>Need to create blank murals, duplicate existing murals, or mutate mural metadata and sharing defaults.</use_when>
+  <sequence>createmural or duplicatemural -> getmuralbyid -> updatemuralbyid as needed</sequence>
+</pattern>

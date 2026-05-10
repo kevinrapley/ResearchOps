@@ -1,0 +1,192 @@
+operation_id: updatemuralbyid
+summary: Update a mural.
+family: murals_core
+layer: mural
+method: PATCH
+url_template: https://app.mural.co/api/public/{version}/murals/{muralId}
+path_template: /murals/{muralId}
+reference:
+  source_url: https://developers.mural.co/public/reference/updatemuralbyid
+  source_status: official-reference-page
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: '{version}'
+  default_version: v1
+  versioning_note: Mural public API uses major-version path versioning.
+auth:
+  scheme: OAuth 2.0 Bearer
+  oauth_flow: authorization_code
+  pkce_supported: true
+authorization:
+  minimum_scopes:
+  - murals:write
+  scope_resolution_rule: Request the smallest set of scopes that satisfies the operation.
+parameters:
+  path:
+  - name: muralId
+    in: path
+    required: true
+    type: string
+  query: []
+request_body:
+  present: true
+  content_type: application/json
+  schema:
+    type: object
+    properties:
+      backgroundColor:
+        type: string
+      favorite:
+        type: boolean
+      folderId:
+        type: string
+      height:
+        type: integer
+      infinite:
+        type: boolean
+      width:
+        type: integer
+      title:
+        type: string
+      status:
+        type: string
+        enum:
+        - active
+        - archived
+      timerSoundTheme:
+        type: string
+        enum:
+        - airplane
+        - cello
+        - cuckoo
+      visitorAvatarTheme:
+        type: string
+        enum:
+        - animals
+        - music
+        - travel
+      visitorsPermission:
+        type: string
+        enum:
+        - read
+        - write
+        - none
+      workspaceMembersPermission:
+        type: string
+        enum:
+        - read
+        - write
+        - none
+    required: []
+responses:
+  '200':
+    description: Success
+    content_type: application/json
+    body_shape:
+      $ref: ../common/resource-models.yaml#/mural
+    body_shape_inline:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        roomId:
+          type:
+          - integer
+          - string
+        folderId:
+          type: string
+        width:
+          type: number
+        height:
+          type: number
+        infinite:
+          type: boolean
+        backgroundColor:
+          type: string
+        status:
+          type: string
+        favorite:
+          type: boolean
+        workspaceMembersPermission:
+          type: string
+        visitorsPermission:
+          type: string
+        timerSoundTheme:
+          type: string
+        visitorAvatarTheme:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        updatedOn:
+          type: string
+          format: date-time
+      additionalProperties: true
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: No authorization or token expired.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Access denied, invalid scope, or unsupported zone.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: The requested resource was not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '429':
+    description: Too Many Requests.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/rate_limited
+code_examples:
+  node: "const baseUrl = `https://app.mural.co/api/public/${process.env.MURAL_API_VERSION || 'v1'}`;\nconst accessToken = process.env.MURAL_ACCESS_TOKEN;\nconst muralId = process.env.MURAL_ID || 'YOUR_MURAL_ID';\nconst response = await fetch(`${baseUrl}/murals/${muralId}`, {\n  method: 'PATCH',\n  headers: {\n    Authorization: `Bearer ${accessToken}`,\n    Accept: 'application/json',\n    'Content-Type': 'application/json',\n  },\n  body: JSON.stringify({\n  \"backgroundColor\": \"#FAFAFAFF\",\n  \"favorite\": false,\n  \"folderId\": \"70b817c1-b5df-46e5-974e-1c87681b0581\",\n  \"height\": 300,\n  \"infinite\": true,\n  \"width\": 300,\n  \"title\": \"Example title\",\n  \"status\": \"active\",\n  \"timerSoundTheme\": \"airplane\",\n  \"visitorAvatarTheme\": \"animals\",\n  \"visitorsPermission\": \"read\",\n  \"workspaceMembersPermission\": \"write\"\n}),\n});\nconst data = response.status === 204 ? null : await response.json();\nconsole.log(response.status, data);"
+  ruby: "require 'net/http'\nrequire 'json'\nrequire 'uri'\n\nbase_url = \"https://app.mural.co/api/public/#{ENV.fetch('MURAL_API_VERSION', 'v1')}\"\nmural_id = ENV.fetch('MURAL_ID', 'YOUR_MURAL_ID')\nuri = URI(base_url + \"/murals/#{mural_id}\")\nrequest = Net::HTTP::Patch.new(uri)\nrequest.initialize_http_header({\n  'Authorization' => \"Bearer #{ENV.fetch('MURAL_ACCESS_TOKEN')}\",\n  'Accept' => 'application/json',\n  'Content-Type' => 'application/json',\n})\nrequest.body = <<~JSON\n{\n  \"backgroundColor\": \"#FAFAFAFF\",\n  \"favorite\": false,\n  \"folderId\": \"70b817c1-b5df-46e5-974e-1c87681b0581\",\n  \"height\": 300,\n  \"infinite\": true,\n  \"width\": 300,\n  \"title\": \"Example title\",\n  \"status\": \"active\",\n  \"timerSoundTheme\": \"airplane\",\n  \"visitorAvatarTheme\": \"animals\",\n  \"visitorsPermission\": \"read\",\n  \"workspaceMembersPermission\": \"write\"\n}\nJSON\n\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request)\
+    \ }\ndata = response.code == '204' ? nil : JSON.parse(response.body)\nputs [response.code, data].inspect"
+  php: "<?php\n$muralId = getenv('MURAL_ID') ?: 'YOUR_MURAL_ID';\n$baseUrl = 'https://app.mural.co/api/public/' . (getenv('MURAL_API_VERSION') ?: 'v1');\n$ch = curl_init($baseUrl . '/murals/' . $muralId );\n$options = [\n    CURLOPT_CUSTOMREQUEST => 'PATCH',\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_HTTPHEADER => [\n        \"Authorization: Bearer \" . getenv('MURAL_ACCESS_TOKEN'),\n        \"Accept: application/json\",\n        \"Content-Type: application/json\"\n    ],\n];\n$payload = [\n    \"backgroundColor\" => \"#FAFAFAFF\",\n    \"favorite\" => false,\n    \"folderId\" => \"70b817c1-b5df-46e5-974e-1c87681b0581\",\n    \"height\" => 300,\n    \"infinite\" => true,\n    \"width\" => 300,\n    \"title\" => \"Example title\",\n    \"status\" => \"active\",\n    \"timerSoundTheme\" => \"airplane\",\n    \"visitorAvatarTheme\" => \"animals\",\n    \"visitorsPermission\" => \"read\",\n    \"workspaceMembersPermission\" => \"write\"\n];\n$options[CURLOPT_POSTFIELDS] = json_encode($payload);\n\
+    curl_setopt_array($ch, $options);\n$body = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\n$data = $status === 204 ? null : json_decode($body, true);\nvar_dump($status, $data);"
+  python: "import os\nimport requests\n\nmuralId = os.environ.get('MURAL_ID', 'YOUR_MURAL_ID')\n\nbase_url = f\"https://app.mural.co/api/public/{os.getenv('MURAL_API_VERSION', 'v1')}\"\nheaders = {\n    'Authorization': f\"Bearer {os.environ['MURAL_ACCESS_TOKEN']}\",\n    'Accept': 'application/json',\n    'Content-Type': 'application/json',\n}\n\nresponse = requests.request(\n    'PATCH',\n    f\"{base_url}/murals/{muralId}\",\n    headers=headers,\n    json={\n    \"backgroundColor\": \"#FAFAFAFF\",\n    \"favorite\": false,\n    \"folderId\": \"70b817c1-b5df-46e5-974e-1c87681b0581\",\n    \"height\": 300,\n    \"infinite\": true,\n    \"width\": 300,\n    \"title\": \"Example title\",\n    \"status\": \"active\",\n    \"timerSoundTheme\": \"airplane\",\n    \"visitorAvatarTheme\": \"animals\",\n    \"visitorsPermission\": \"read\",\n    \"workspaceMembersPermission\": \"write\"\n},\n)\ndata = None if response.status_code == 204 else response.json()\nprint(response.status_code, data)"
+contract_strength:
+  method_and_path: reference-verified
+  status_codes: reference-verified
+  params: reference-verified
+  success_shape: 'endpoint-specific; inlined from documented resource model: mural'
+  error_shape: docs-verified for code/message, bundle-extended for optional details[]
+development_notes:
+- 'Use Accept: application/json on all API requests.'
+- 'Use Authorization: Bearer <access_token> for authenticated requests.'
+- Honor rate limiting and retry with backoff on 429 responses.
+- 'Partial update: omit fields you do not want to change. backgroundColor and title are the most commonly updated fields.'
+inline_error_envelope:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+contract_version: 3.4.0

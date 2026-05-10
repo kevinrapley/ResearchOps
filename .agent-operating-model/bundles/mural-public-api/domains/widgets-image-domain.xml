@@ -1,0 +1,10 @@
+<domain id="widgets-image-domain">
+  <purpose>Cover image widget creation and update.</purpose>
+  <covered_operations>
+    <operation>createimage</operation>
+    <operation>updateimage</operation>
+  </covered_operations>
+  <rules>
+    <rule>Image widgets commonly depend on prior asset URL creation.</rule>
+  </rules>
+</domain>

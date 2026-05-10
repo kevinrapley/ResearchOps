@@ -1,0 +1,204 @@
+operation_id: oauth_authorize
+summary: Start OAuth 2.0 authorization.
+family: authentication
+layer: auth
+method: GET
+url_template: https://app.mural.co/api/public/{version}/authorization/oauth2/
+path_template: /authorization/oauth2/
+reference:
+  source_url: https://developers.mural.co/public/docs/oauth
+  source_status: official-reference-page
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: '{version}'
+  default_version: v1
+  versioning_note: Mural public API uses major-version path versioning.
+auth:
+  scheme: OAuth 2.0 authorization redirect
+  oauth_flow: authorization_code
+  pkce_supported: true
+authorization:
+  minimum_scopes: []
+  scope_resolution_rule: Request the smallest set of scopes that satisfies the downstream API operations the client needs after token exchange.
+parameters:
+  path: []
+  query:
+  - name: client_id
+    in: query
+    required: true
+    type: string
+    description: OAuth client identifier issued by Mural.
+  - name: redirect_uri
+    in: query
+    required: true
+    type: string
+    format: uri
+    description: Registered callback URL that receives the authorization code.
+  - name: scope
+    in: query
+    required: true
+    type: string
+    description: Space-delimited Mural OAuth scopes requested by the client.
+  - name: response_type
+    in: query
+    required: true
+    type: string
+    enum:
+    - code
+    description: Must be code for the authorization-code flow.
+  - name: state
+    in: query
+    required: false
+    type: string
+    description: Opaque anti-CSRF value that should be validated on callback.
+  - name: code_challenge
+    in: query
+    required: false
+    type: string
+    description: PKCE code challenge for public clients.
+  - name: code_challenge_method
+    in: query
+    required: false
+    type: string
+    enum:
+    - S256
+    description: PKCE challenge method. Use S256 when PKCE is used.
+request_body:
+  present: false
+  content_type: null
+  schema: null
+responses:
+  '302':
+    description: Redirect the user to Mural authorization UI.
+    content_type: text/html
+    body_shape:
+      type: http_redirect
+      description: Browser redirect; no JSON response body is expected.
+    body_shape_inline:
+      type: http_redirect
+      description: Browser redirect; no JSON response body is expected.
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: No authorization or token expired.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Access denied, invalid scope, or unsupported zone.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: The requested resource was not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '500':
+    description: API error.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/server_error
+code_examples:
+  node: |-
+    const baseUrl = `https://app.mural.co/api/public/${process.env.MURAL_API_VERSION || 'v1'}`;
+    const params = new URLSearchParams({
+      client_id: process.env.MURAL_CLIENT_ID,
+      redirect_uri: process.env.MURAL_REDIRECT_URI,
+      scope: process.env.MURAL_SCOPES || 'murals:read',
+      response_type: 'code',
+      state: process.env.MURAL_OAUTH_STATE || crypto.randomUUID(),
+    });
+    if (process.env.MURAL_CODE_CHALLENGE) {
+      params.set('code_challenge', process.env.MURAL_CODE_CHALLENGE);
+      params.set('code_challenge_method', 'S256');
+    }
+    const authorizationUrl = `${baseUrl}/authorization/oauth2/?${params.toString()}`;
+    console.log(authorizationUrl);
+  ruby: |-
+    require 'securerandom'
+    require 'uri'
+    base_url = "https://app.mural.co/api/public/#{ENV.fetch('MURAL_API_VERSION', 'v1')}"
+    params = {
+      client_id: ENV.fetch('MURAL_CLIENT_ID'),
+      redirect_uri: ENV.fetch('MURAL_REDIRECT_URI'),
+      scope: ENV.fetch('MURAL_SCOPES', 'murals:read'),
+      response_type: 'code',
+      state: ENV.fetch('MURAL_OAUTH_STATE', SecureRandom.uuid),
+    }
+    if ENV['MURAL_CODE_CHALLENGE']
+      params[:code_challenge] = ENV['MURAL_CODE_CHALLENGE']
+      params[:code_challenge_method] = 'S256'
+    end
+    uri = URI(base_url + '/authorization/oauth2/')
+    uri.query = URI.encode_www_form(params)
+    puts uri.to_s
+  php: |-
+    <?php
+    $baseUrl = 'https://app.mural.co/api/public/' . (getenv('MURAL_API_VERSION') ?: 'v1');
+    $params = [
+        'client_id' => getenv('MURAL_CLIENT_ID'),
+        'redirect_uri' => getenv('MURAL_REDIRECT_URI'),
+        'scope' => getenv('MURAL_SCOPES') ?: 'murals:read',
+        'response_type' => 'code',
+        'state' => getenv('MURAL_OAUTH_STATE') ?: bin2hex(random_bytes(16)),
+    ];
+    if (getenv('MURAL_CODE_CHALLENGE')) {
+        $params['code_challenge'] = getenv('MURAL_CODE_CHALLENGE');
+        $params['code_challenge_method'] = 'S256';
+    }
+    $authorizationUrl = $baseUrl . '/authorization/oauth2/?' . http_build_query($params);
+    echo $authorizationUrl . PHP_EOL;
+  python: |-
+    import os
+    import secrets
+    from urllib.parse import urlencode
+    base_url = f"https://app.mural.co/api/public/{os.getenv('MURAL_API_VERSION', 'v1')}"
+    params = {
+        'client_id': os.environ['MURAL_CLIENT_ID'],
+        'redirect_uri': os.environ['MURAL_REDIRECT_URI'],
+        'scope': os.getenv('MURAL_SCOPES', 'murals:read'),
+        'response_type': 'code',
+        'state': os.getenv('MURAL_OAUTH_STATE', secrets.token_urlsafe(24)),
+    }
+    if os.getenv('MURAL_CODE_CHALLENGE'):
+        params['code_challenge'] = os.environ['MURAL_CODE_CHALLENGE']
+        params['code_challenge_method'] = 'S256'
+    authorization_url = f"{base_url}/authorization/oauth2/?{urlencode(params)}"
+    print(authorization_url)
+contract_strength:
+  method_and_path: reference-verified
+  status_codes: reference-verified
+  params: reference-verified
+  success_shape: endpoint-specific; HTTP redirect, no JSON body
+  error_shape: docs-verified for code/message, bundle-extended for optional details[]
+development_notes:
+- Build the authorization URL with client_id, redirect_uri, scope and response_type=code.
+- Include state and validate it on callback.
+- Use PKCE with code_challenge and code_challenge_method=S256 for public clients.
+- Do not send an access token or Authorization header to the authorization redirect URL.
+- The authorization code is single-use. Exchange it for a token immediately.
+inline_error_envelope:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+contract_version: 3.4.1

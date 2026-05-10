@@ -1,0 +1,146 @@
+operation_id: inviteuserstoworkspace
+summary: Invite users to a workspace.
+family: workspaces
+layer: workspace-membership
+method: POST
+url_template: https://app.mural.co/api/public/{version}/workspaces/{workspaceId}/users/invite
+path_template: /workspaces/{workspaceId}/users/invite
+reference:
+  source_url: https://developers.mural.co/public/reference/inviteuserstoworkspace
+  source_status: official-reference-page
+  provenance_notes:
+  - Method/path/scope confirmed on the Mural public API reference page for this operation.
+  - Method/path also appears in the Mural public API changelog entry dated 2022-08-29 that moved workspace/mural/room members endpoints out of preview.
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: '{version}'
+  default_version: v1
+  versioning_note: Mural public API uses major-version path versioning.
+auth:
+  scheme: OAuth 2.0 Bearer
+  oauth_flow: authorization_code
+  pkce_supported: true
+authorization:
+  minimum_scopes:
+  - workspaces:write
+  scope_resolution_rule: Request the smallest set of scopes that satisfies the operation.
+  scope_catalogue_note: workspaces:write is required by this endpoint per its Mural reference page. The Mural scopes overview page predates this endpoint and does not yet list it; the endpoint page is authoritative.
+parameters:
+  path:
+  - name: workspaceId
+    in: path
+    required: true
+    type: string
+  query: []
+request_body:
+  present: true
+  content_type: application/json
+  schema:
+    type: object
+    properties:
+      emails:
+        type: array
+        items:
+          type: string
+      permission:
+        type: string
+    required:
+    - emails
+responses:
+  '200':
+    description: Success
+    content_type: application/json
+    body_shape:
+      $ref: ../common/resource-models.yaml#/user
+    body_shape_inline:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        role:
+          type: string
+        type:
+          type: string
+        permission:
+          type: string
+      additionalProperties: true
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: No authorization or token expired.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Access denied, invalid scope, or unsupported zone. Caller must be a workspace admin.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: The requested resource was not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '429':
+    description: Too Many Requests.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/rate_limited
+  '500':
+    description: API error.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/server_error
+code_examples:
+  node: "const baseUrl = `https://app.mural.co/api/public/${process.env.MURAL_API_VERSION || 'v1'}`;\nconst accessToken = process.env.MURAL_ACCESS_TOKEN;\nconst workspaceId = process.env.WORKSPACE_ID || 'YOUR_WORKSPACE_ID';\nconst response = await fetch(`${baseUrl}/workspaces/${workspaceId}/users/invite`, {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${accessToken}`,\n    Accept: 'application/json',\n    'Content-Type': 'application/json',\n  },\n  body: JSON.stringify({\n    \"emails\": [\"person@example.com\"],\n    \"permission\": \"member\"\n  }),\n});\nconst data = response.status === 204 ? null : await response.json();\nconsole.log(response.status, data);"
+  ruby: "require 'net/http'\nrequire 'json'\nrequire 'uri'\n\nbase_url = \"https://app.mural.co/api/public/#{ENV.fetch('MURAL_API_VERSION', 'v1')}\"\nworkspace_id = ENV.fetch('WORKSPACE_ID', 'YOUR_WORKSPACE_ID')\nuri = URI(base_url + \"/workspaces/#{workspace_id}/users/invite\")\nrequest = Net::HTTP::Post.new(uri)\nrequest.initialize_http_header({\n  'Authorization' => \"Bearer #{ENV.fetch('MURAL_ACCESS_TOKEN')}\",\n  'Accept' => 'application/json',\n  'Content-Type' => 'application/json',\n})\nrequest.body = {\n  \"emails\" => [\"person@example.com\"],\n  \"permission\" => \"member\"\n}.to_json\n\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }\ndata = response.code == '204' ? nil : JSON.parse(response.body)\nputs [response.code, data].inspect"
+  php: "<?php\n$workspaceId = getenv('WORKSPACE_ID') ?: 'YOUR_WORKSPACE_ID';\n$baseUrl = 'https://app.mural.co/api/public/' . (getenv('MURAL_API_VERSION') ?: 'v1');\n$ch = curl_init($baseUrl . '/workspaces/' . $workspaceId . '/users/invite');\n$options = [\n    CURLOPT_CUSTOMREQUEST => 'POST',\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_HTTPHEADER => [\n        \"Authorization: Bearer \" . getenv('MURAL_ACCESS_TOKEN'),\n        \"Accept: application/json\",\n        \"Content-Type: application/json\"\n    ],\n];\n$payload = [\n    \"emails\" => [\"person@example.com\"],\n    \"permission\" => \"member\",\n];\n$options[CURLOPT_POSTFIELDS] = json_encode($payload);\ncurl_setopt_array($ch, $options);\n$body = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\n$data = $status === 204 ? null : json_decode($body, true);\nvar_dump($status, $data);"
+  python: "import os\nimport requests\n\nworkspaceId = os.environ.get('WORKSPACE_ID', 'YOUR_WORKSPACE_ID')\n\nbase_url = f\"https://app.mural.co/api/public/{os.getenv('MURAL_API_VERSION', 'v1')}\"\nheaders = {\n    'Authorization': f\"Bearer {os.environ['MURAL_ACCESS_TOKEN']}\",\n    'Accept': 'application/json',\n    'Content-Type': 'application/json',\n}\n\nresponse = requests.request(\n    'POST',\n    f\"{base_url}/workspaces/{{workspaceId}}/users/invite\",\n    headers=headers,\n    json={\n        \"emails\": [\"person@example.com\"],\n        \"permission\": \"member\",\n    },\n)\ndata = None if response.status_code == 204 else response.json()\nprint(response.status_code, data)"
+contract_strength:
+  method_and_path: reference-verified
+  status_codes: reference-verified
+  params: reference-verified
+  success_shape: 'endpoint-specific; inlined from documented resource model: user'
+  error_shape: docs-verified for code/message, bundle-extended for optional details[]
+development_notes:
+- 'Use Accept: application/json on all API requests.'
+- 'Use Authorization: Bearer <access_token> for authenticated requests.'
+- Caller must be a workspace admin. A 403 is returned for non-admin callers.
+- Permission value is typically 'member' or 'guest'. Validate against current Mural collaborator taxonomy.
+- Honor rate limiting and retry with backoff on 429 responses.
+- Caller must be a workspace admin. Non-admin callers receive a 403.
+- Workspace invitations grant general membership; room and mural access is managed separately.
+- workspaces:write is required. This scope is not listed on the Mural scopes overview page (which predates this endpoint) — the endpoint reference page is authoritative.
+inline_error_envelope:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+contract_version: 3.4.0

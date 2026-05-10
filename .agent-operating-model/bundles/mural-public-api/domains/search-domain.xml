@@ -1,0 +1,12 @@
+<domain id="search-domain">
+  <purpose>Cover workspace-scoped search across murals, rooms, and templates.</purpose>
+  <covered_operations>
+    <operation>searchmurals</operation>
+    <operation>searchrooms</operation>
+    <operation>searchtemplates</operation>
+  </covered_operations>
+  <rules>
+    <rule>Search requires q and is workspace-scoped.</rule>
+    <rule>Search results are not a substitute for exhaustive synchronization unless pagination and replay strategy are explicit.</rule>
+  </rules>
+</domain>

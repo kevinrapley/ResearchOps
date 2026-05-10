@@ -1,0 +1,12 @@
+<domain id="timer-domain">
+  <purpose>Cover timer retrieval, start, update, and stop.</purpose>
+  <covered_operations>
+    <operation>getmuraltimer</operation>
+    <operation>startmuraltimer</operation>
+    <operation>updatemuraltimer</operation>
+    <operation>stopmuraltimer</operation>
+  </covered_operations>
+  <rules>
+    <rule>Timer control is stateful and should be orchestrated carefully in facilitator flows.</rule>
+  </rules>
+</domain>

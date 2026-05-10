@@ -1,0 +1,7 @@
+<reference id="coverage-guarantee-reference">
+  <guarantee>Every endpoint on the Mural public API reference sidebar is inventoried in endpoint-coverage.matrix.yaml and has a contract file in contracts/endpoints/. As of v3.4.0 this covers 90 operations (87 standard public-API operations, 2 OAuth operations, and 1 legacy-or-unlisted operation).</guarantee>
+  <guarantee>Every endpoint family must have at least one domain or workflow rule that explains when to use it.</guarantee>
+  <guarantee>Every critical family must appear in regression or red-team tests.</guarantee>
+  <guarantee>The Users family has complete CRUD coverage: getcurrentmember, getroommembers, inviteuserstoroom, updateroommemberpermissions, removeroomusers, getmuralusers, inviteuserstomural, updatemuralmemberpermissions, removemuralusers, inviteuserstoworkspace. All 10 operations have first-class contracts.</guarantee>
+  <note>sendrequestaccesstomural is catalogued with source_status: legacy-or-unlisted. It is retained in the bundle for backward compatibility but should be re-verified against a live Mural request before use in production.</note>
+</reference>

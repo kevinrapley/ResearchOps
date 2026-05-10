@@ -1,0 +1,10 @@
+<domain id="widgets-textbox-domain">
+  <purpose>Cover textbox creation and update, including canonicalization of the supplied typo slug.</purpose>
+  <covered_operations>
+    <operation>createtextbox</operation>
+    <operation>updatetextbox</operation>
+  </covered_operations>
+  <rules>
+    <rule>Normalize the supplied updatetetextbox slug to the canonical updatetextbox operation name while preserving provenance.</rule>
+  </rules>
+</domain>
