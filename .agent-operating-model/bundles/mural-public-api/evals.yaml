@@ -1,0 +1,14 @@
+bundle: mural-public-api-developer-contract-bundle
+regression_suite: tests.regression.yaml
+redteam_suite: tests.redteam.yaml
+graders:
+- bundle-architecture-grader.xml
+- topology-fit-grader.xml
+- schema-contract-grader.xml
+- module-semantics-grader.xml
+- evaluation-coverage-grader.xml
+- portability-grader.xml
+- endpoint-coverage-grader.xml
+- scope-discipline-grader.xml
+- boundary-integrity-grader.xml
+- source-grounding-grader.xml

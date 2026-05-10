@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mural Platinum Agent Bundle Input",
+  "type": "object",
+  "required": [
+    "request_kind",
+    "use_case_summary"
+  ],
+  "properties": {
+    "request_kind": {
+      "type": "string",
+      "enum": [
+        "coverage-audit",
+        "endpoint-selection",
+        "integration-design",
+        "workflow-automation",
+        "migration-plan",
+        "risk-review",
+        "app-registration",
+        "debugging",
+        "spec-alignment"
+      ]
+    },
+    "use_case_summary": {
+      "type": "string",
+      "minLength": 10
+    },
+    "target_object_layers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_operations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "supplied_reference_urls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "desired_outcomes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deployment_context": {
+      "type": "string"
+    },
+    "security_posture": {
+      "type": "string"
+    },
+    "volume_profile": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
