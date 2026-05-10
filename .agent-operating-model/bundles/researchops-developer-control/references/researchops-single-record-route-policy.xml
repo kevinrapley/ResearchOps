@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="researchops-single-record-route-policy" version="1.13.0">
+  <purpose>Defines policy for single-record routes.</purpose>
+  <rules>
+    <rule>Do not imply a single-record route exists unless router and service code confirm it.</rule>
+    <rule>Where a route is absent, document expected absence or future-extension status.</rule>
+    <rule>Where a route is conditional, distinguish no data from route not implemented.</rule>
+  </rules>
+</reference>
