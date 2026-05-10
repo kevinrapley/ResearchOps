@@ -1,0 +1,146 @@
+operation_id: updatemuralmemberpermissions
+summary: Update a specific mural member's permission.
+family: murals_core
+layer: mural-membership
+method: PATCH
+url_template: https://app.mural.co/api/public/{version}/murals/{muralId}/users/{userId}/permissions
+path_template: /murals/{muralId}/users/{userId}/permissions
+reference:
+  source_url: https://developers.mural.co/public/reference/updatemuralmemberpermissions
+  source_status: official-reference-page
+  provenance_notes:
+  - Method/path/scope confirmed on the Mural public API reference page for this operation.
+  - Method/path also appears in the Mural public API changelog entry dated 2022-08-29 (promoted out of preview).
+  - IMPORTANT shape note — this is NOT symmetric with updateroommemberpermissions. The mural variant carries userId as a PATH parameter; the body contains only the permission value. The room variant carries userId AND permission both in the body.
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: '{version}'
+  default_version: v1
+  versioning_note: Mural public API uses major-version path versioning.
+auth:
+  scheme: OAuth 2.0 Bearer
+  oauth_flow: authorization_code
+  pkce_supported: true
+authorization:
+  minimum_scopes:
+  - murals:write
+  scope_resolution_rule: Request the smallest set of scopes that satisfies the operation.
+parameters:
+  path:
+  - name: muralId
+    in: path
+    required: true
+    type: string
+  - name: userId
+    in: path
+    required: true
+    type: string
+  query: []
+request_body:
+  present: true
+  content_type: application/json
+  schema:
+    type: object
+    properties:
+      permission:
+        type: string
+        description: The new permission level for the user on this mural.
+    required:
+    - permission
+responses:
+  '200':
+    description: Success
+    content_type: application/json
+    body_shape:
+      $ref: ../common/resource-models.yaml#/user
+    body_shape_inline:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        role:
+          type: string
+        type:
+          type: string
+        permission:
+          type: string
+      additionalProperties: true
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: No authorization or token expired.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Access denied, invalid scope, or unsupported zone. Caller must be a mural owner.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: The requested mural or user was not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '429':
+    description: Too Many Requests.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/rate_limited
+  '500':
+    description: API error.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/server_error
+code_examples:
+  node: "const baseUrl = `https://app.mural.co/api/public/${process.env.MURAL_API_VERSION || 'v1'}`;\nconst accessToken = process.env.MURAL_ACCESS_TOKEN;\nconst muralId = process.env.MURAL_ID || 'YOUR_MURAL_ID';\nconst userId = process.env.USER_ID || 'YOUR_USER_ID';\nconst response = await fetch(\n  `${baseUrl}/murals/${muralId}/users/${userId}/permissions`,\n  {\n    method: 'PATCH',\n    headers: {\n      Authorization: `Bearer ${accessToken}`,\n      Accept: 'application/json',\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({ \"permission\": \"write\" }),\n  }\n);\nconst data = response.status === 204 ? null : await response.json();\nconsole.log(response.status, data);"
+  ruby: "require 'net/http'\nrequire 'json'\nrequire 'uri'\n\nbase_url = \"https://app.mural.co/api/public/#{ENV.fetch('MURAL_API_VERSION', 'v1')}\"\nmural_id = ENV.fetch('MURAL_ID', 'YOUR_MURAL_ID')\nuser_id = ENV.fetch('USER_ID', 'YOUR_USER_ID')\nuri = URI(base_url + \"/murals/#{mural_id}/users/#{user_id}/permissions\")\nrequest = Net::HTTP::Patch.new(uri)\nrequest.initialize_http_header({\n  'Authorization' => \"Bearer #{ENV.fetch('MURAL_ACCESS_TOKEN')}\",\n  'Accept' => 'application/json',\n  'Content-Type' => 'application/json',\n})\nrequest.body = { \"permission\" => \"write\" }.to_json\n\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }\ndata = response.code == '204' ? nil : JSON.parse(response.body)\nputs [response.code, data].inspect"
+  php: "<?php\n$muralId = getenv('MURAL_ID') ?: 'YOUR_MURAL_ID';\n$userId = getenv('USER_ID') ?: 'YOUR_USER_ID';\n$baseUrl = 'https://app.mural.co/api/public/' . (getenv('MURAL_API_VERSION') ?: 'v1');\n$ch = curl_init($baseUrl . '/murals/' . $muralId . '/users/' . $userId . '/permissions');\n$options = [\n    CURLOPT_CUSTOMREQUEST => 'PATCH',\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_HTTPHEADER => [\n        \"Authorization: Bearer \" . getenv('MURAL_ACCESS_TOKEN'),\n        \"Accept: application/json\",\n        \"Content-Type: application/json\",\n    ],\n];\n$payload = [ \"permission\" => \"write\" ];\n$options[CURLOPT_POSTFIELDS] = json_encode($payload);\ncurl_setopt_array($ch, $options);\n$body = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\n$data = $status === 204 ? null : json_decode($body, true);\nvar_dump($status, $data);"
+  python: "import os\nimport requests\n\nmuralId = os.environ.get('MURAL_ID', 'YOUR_MURAL_ID')\nuserId = os.environ.get('USER_ID', 'YOUR_USER_ID')\n\nbase_url = f\"https://app.mural.co/api/public/{os.getenv('MURAL_API_VERSION', 'v1')}\"\nheaders = {\n    'Authorization': f\"Bearer {os.environ['MURAL_ACCESS_TOKEN']}\",\n    'Accept': 'application/json',\n    'Content-Type': 'application/json',\n}\n\nresponse = requests.request(\n    'PATCH',\n    f\"{base_url}/murals/{{muralId}}/users/{{userId}}/permissions\",\n    headers=headers,\n    json={ \"permission\": \"write\" },\n)\ndata = None if response.status_code == 204 else response.json()\nprint(response.status_code, data)"
+contract_strength:
+  method_and_path: reference-verified
+  status_codes: reference-verified
+  params: reference-verified
+  success_shape: 'endpoint-specific; inlined from documented resource model: user'
+  error_shape: docs-verified for code/message, bundle-extended for optional details[]
+development_notes:
+- 'Use Accept: application/json on all API requests.'
+- 'Use Authorization: Bearer <access_token> for authenticated requests.'
+- userId is in the path, not in the body. Do not copy the body shape from updateroommemberpermissions.
+- Caller must be a mural owner.
+- Honor rate limiting and retry with backoff on 429 responses.
+- userId is in the PATH, not the body. This is different from updateroommemberpermissions where userId is in the body.
+- Downgrading a mural owner requires the caller to be a workspace admin.
+inline_error_envelope:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+contract_version: 3.4.0

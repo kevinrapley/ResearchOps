@@ -1,0 +1,135 @@
+operation_id: createmuralfromtemplate
+summary: Create a mural from a template.
+family: templates
+layer: template
+method: POST
+url_template: https://app.mural.co/api/public/{version}/templates/{templateId}/murals
+path_template: /templates/{templateId}/murals
+reference:
+  source_url: https://developers.mural.co/public/reference/createmuralfromtemplate
+  source_status: official-reference-page
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: '{version}'
+  default_version: v1
+  versioning_note: Mural public API uses major-version path versioning.
+auth:
+  scheme: OAuth 2.0 Bearer
+  oauth_flow: authorization_code
+  pkce_supported: true
+authorization:
+  minimum_scopes:
+  - murals:write
+  - templates:read
+  scope_resolution_rule: Request the smallest set of scopes that satisfies the operation.
+parameters:
+  path:
+  - name: templateId
+    in: path
+    required: true
+    type: string
+  query: []
+request_body:
+  present: true
+  content_type: application/json
+  schema:
+    type: object
+    properties:
+      roomId:
+        type: integer
+      title:
+        type: string
+    required:
+    - roomId
+responses:
+  '201':
+    description: Success
+    content_type: application/json
+    body_shape:
+      $ref: ../common/resource-models.yaml#/template
+    body_shape_inline:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        workspaceId:
+          type: string
+        category:
+          type: string
+      additionalProperties: true
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: No authorization or token expired.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Access denied, invalid scope, or unsupported zone.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: The requested resource was not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '429':
+    description: Too Many Requests.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/rate_limited
+  '500':
+    description: API error.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/server_error
+code_examples:
+  node: "const baseUrl = `https://app.mural.co/api/public/${process.env.MURAL_API_VERSION || 'v1'}`;\nconst accessToken = process.env.MURAL_ACCESS_TOKEN;\nconst templateId = process.env.TEMPLATE_ID || 'YOUR_TEMPLATE_ID';\nconst response = await fetch(`${baseUrl}/templates/${templateId}/murals`, {\n  method: 'POST',\n  headers: {\n    Authorization: `Bearer ${accessToken}`,\n    Accept: 'application/json',\n    'Content-Type': 'application/json',\n  },\n  body: JSON.stringify({\n  \"roomId\": 1608152669000,\n  \"title\": \"Example title\"\n}),\n});\nconst data = response.status === 204 ? null : await response.json();\nconsole.log(response.status, data);"
+  ruby: "require 'net/http'\nrequire 'json'\nrequire 'uri'\n\nbase_url = \"https://app.mural.co/api/public/#{ENV.fetch('MURAL_API_VERSION', 'v1')}\"\ntemplate_id = ENV.fetch('TEMPLATE_ID', 'YOUR_TEMPLATE_ID')\nuri = URI(base_url + \"/templates/#{template_id}/murals\")\nrequest = Net::HTTP::Post.new(uri)\nrequest.initialize_http_header({\n  'Authorization' => \"Bearer #{ENV.fetch('MURAL_ACCESS_TOKEN')}\",\n  'Accept' => 'application/json',\n  'Content-Type' => 'application/json',\n})\nrequest.body = <<~JSON\n{\n  \"roomId\": 1608152669000,\n  \"title\": \"Example title\"\n}\nJSON\n\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }\ndata = response.code == '204' ? nil : JSON.parse(response.body)\nputs [response.code, data].inspect"
+  php: "<?php\n$templateId = getenv('TEMPLATE_ID') ?: 'YOUR_TEMPLATE_ID';\n$baseUrl = 'https://app.mural.co/api/public/' . (getenv('MURAL_API_VERSION') ?: 'v1');\n$ch = curl_init($baseUrl . '/templates/' . $templateId . '/murals');\n$options = [\n    CURLOPT_CUSTOMREQUEST => 'POST',\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_HTTPHEADER => [\n        \"Authorization: Bearer \" . getenv('MURAL_ACCESS_TOKEN'),\n        \"Accept: application/json\",\n        \"Content-Type: application/json\"\n    ],\n];\n$payload = [\n    \"roomId\" => 1608152669000,\n    \"title\" => \"Example title\"\n];\n$options[CURLOPT_POSTFIELDS] = json_encode($payload);\ncurl_setopt_array($ch, $options);\n$body = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\n$data = $status === 204 ? null : json_decode($body, true);\nvar_dump($status, $data);"
+  python: "import os\nimport requests\n\ntemplateId = os.environ.get('TEMPLATE_ID', 'YOUR_TEMPLATE_ID')\n\nbase_url = f\"https://app.mural.co/api/public/{os.getenv('MURAL_API_VERSION', 'v1')}\"\nheaders = {\n    'Authorization': f\"Bearer {os.environ['MURAL_ACCESS_TOKEN']}\",\n    'Accept': 'application/json',\n    'Content-Type': 'application/json',\n}\n\nresponse = requests.request(\n    'POST',\n    f\"{base_url}/templates/{templateId}/murals\",\n    headers=headers,\n    json={\n    \"roomId\": 1608152669000,\n    \"title\": \"Example title\"\n},\n)\ndata = None if response.status_code == 204 else response.json()\nprint(response.status_code, data)"
+contract_strength:
+  method_and_path: reference-verified
+  status_codes: reference-verified
+  params: reference-verified
+  success_shape: no-response-body
+  error_shape: docs-verified for code/message, bundle-extended for optional details[]
+development_notes:
+- 'Use Accept: application/json on all API requests.'
+- 'Use Authorization: Bearer <access_token> for authenticated requests.'
+- Honor rate limiting and retry with backoff on 429 responses.
+- The templateId must be a valid default, custom, or workspace template id from the templates endpoints.
+- Content and layout from the template are copied; the new mural is otherwise independent of the template.
+inline_error_envelope:
+  type: object
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    details:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+contract_version: 3.4.0
