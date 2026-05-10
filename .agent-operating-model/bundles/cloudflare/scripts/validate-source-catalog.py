@@ -8,6 +8,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 CATALOGUE = ROOT / "references" / "source-catalog.yaml"
 ALLOWED = "https://developers.cloudflare.com/"
+URL_PATTERN = re.compile(r"https://[^\s\"'<>]+")
 
 
 def fail(message: str) -> None:
@@ -15,12 +16,16 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+def extract_urls(text: str) -> list[str]:
+    return URL_PATTERN.findall(text)
+
+
 def main() -> None:
     if not CATALOGUE.exists():
         fail("missing references/source-catalog.yaml")
 
     text = CATALOGUE.read_text(encoding="utf-8")
-    urls = re.findall(r"https://[^\s\"']+", text)
+    urls = extract_urls(text)
 
     if not urls:
         fail("no URLs found in source catalogue")
@@ -31,7 +36,7 @@ def main() -> None:
 
     for xml_path in (ROOT / "references").glob("*.xml"):
         xml_text = xml_path.read_text(encoding="utf-8")
-        for url in re.findall(r"https://[^\s\"']+", xml_text):
+        for url in extract_urls(xml_text):
             if not url.startswith(ALLOWED):
                 fail(f"non-Cloudflare-developer-docs URL found in {xml_path.name}: {url}")
             if url not in text:
