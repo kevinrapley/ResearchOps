@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mode id="qa" version="1.0">
+  <!--
+    The QA mode guides the assistant through producing a quality assurance checklist.
+    It loads the QA role and uses the QA checklist template to structure the response.
+    This mode is triggered when the `mode` variable is set to `qa`.  It instructs the
+    assistant to verify that all relevant components, patterns and pages are covered
+    in the proposed design or implementation, to run the test suite and to report
+    pass/fail results.  It emphasises citing the GOV.UK Design System and GDS
+    repositories for each check.
+  -->
+  <description>Produce a quality assurance checklist for a given task, covering tests, design system rules and accessibility requirements.</description>
+  <activation>
+    <condition key="mode">qa</condition>
+  </activation>
+  <load>
+    <role_ref>qa</role_ref>
+    <template_ref>qa-checklist</template_ref>
+    <grader_ref>design-system-behaviour</grader_ref>
+    <grader_ref>component-guidance-grader</grader_ref>
+    <grader_ref>pattern-guidance-grader</grader_ref>
+  </load>
+  <evaluation_flow>
+    <step>infer_context</step>
+    <step>draft_response</step>
+    <step>grade_design_system_behaviour</step>
+    <step>grade_component_guidance</step>
+    <step>grade_pattern_guidance</step>
+    <step>grade_code</step>
+    <step>emit_final_output</step>
+  </evaluation_flow>
+</mode>
