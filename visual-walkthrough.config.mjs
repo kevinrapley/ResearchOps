@@ -457,6 +457,21 @@ export const visualWalkthroughConfig = {
 			states: participantConsentVisualStates,
 		},
 		{
+			id: 'team-role-assignments',
+			title: 'Assign a role to a team member',
+			group: 'Team administration',
+			path: '/pages/team/role-assignments/index.html',
+			description: 'Team Admin role assignment page.',
+			designRisk: operationalDesignRisks.teamRoleAssignments,
+			defaultState: operationalDefaultState({
+				title: 'Role assignment form with Team Admin scope',
+				description:
+					'Role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed.',
+				path: operationalPaths.teamRoleAssignments,
+				waitForText: 'You are assigning roles in',
+			}),
+		},
+		{
 			id: 'search',
 			title: 'Search',
 			group: 'Utilities',

@@ -8,6 +8,8 @@
 export const operationalProjectId = 'recVisualProject001';
 export const operationalStudyId = 'recVisualStudy001';
 export const operationalParticipantId = 'recVisualParticipant001';
+export const operationalAuthUserId = 'usr_visual_team_admin';
+export const operationalAuthTeamId = 'team_researchops_core';
 
 export const operationalPaths = {
 	projectDashboard: `/pages/project-dashboard/?id=${operationalProjectId}`,
@@ -21,6 +23,7 @@ export const operationalPaths = {
 	studyParticipants: `/pages/study/participants/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
+	teamRoleAssignments: '/pages/team/role-assignments/',
 };
 
 export const operationalProject = {
@@ -154,8 +157,68 @@ export const operationalSessions = [
 	},
 ];
 
+export const operationalAuthContext = {
+	ok: true,
+	authenticated: true,
+	provider: 'cloudflare_access',
+	user: {
+		id: operationalAuthUserId,
+		email: 'team.admin@example.gov.uk',
+		displayName: 'Team Admin',
+		accountStatus: 'active',
+	},
+	activeTeam: {
+		id: operationalAuthTeamId,
+		name: 'ResearchOps Core',
+	},
+	teams: [
+		{
+			id: operationalAuthTeamId,
+			name: 'ResearchOps Core',
+		},
+	],
+	roles: [
+		{
+			key: 'team_admin',
+			label: 'Team Admin',
+			description: 'Can manage team membership, roles and general audit oversight.',
+			sensitive: true,
+			scopeType: 'team',
+			scopeId: operationalAuthTeamId,
+		},
+	],
+	permissions: [
+		{
+			code: 'team.manage',
+			label: 'Manage team membership',
+			description: 'Can manage team members and team settings.',
+			sensitive: true,
+			reserved: false,
+		},
+		{
+			code: 'role.assign',
+			label: 'Assign roles',
+			description: 'Can assign or approve role access where policy permits.',
+			sensitive: true,
+			reserved: false,
+		},
+		{
+			code: 'audit.view',
+			label: 'View audit events',
+			description: 'Can view general audit events.',
+			sensitive: true,
+			reserved: false,
+		},
+	],
+};
+
 export function operationalMockRoutes() {
 	return [
+		{
+			url: /\/api\/me(?:\?.*)?$/,
+			method: 'GET',
+			body: operationalAuthContext,
+		},
 		{
 			url: /\/api\/projects(?:\?.*)?$/,
 			method: 'GET',
@@ -324,6 +387,11 @@ export const operationalDesignRisks = {
 		'Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.',
 		'Research may proceed without clear, current and reviewable consent evidence.',
 		'Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.'
+	),
+	teamRoleAssignments: risk(
+		'The role-assignment UI may make sensitive access changes feel routine without enough target-user certainty, permission visibility or audit-ready justification.',
+		'Team Admins could grant powerful roles to the wrong person or miss the consequences of Safeguarding Lead and Team Admin access.',
+		'Review target identifier behaviour, sensitive-role confirmations, error recovery, visible permission codes and audit-reason copy with the seeded Team Admin context.'
 	),
 	search: risk(
 		'Search may return visually plausible results without making scope, result type and relevance clear.',
