@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trusted Attestation Verification Evidence",
+  "type": "object",
+  "required": [
+    "type",
+    "artifact",
+    "repo",
+    "checks",
+    "passed",
+    "errors"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "type": {
+      "const": "trusted-attestation-command-report"
+    },
+    "artifact": {
+      "type": "string"
+    },
+    "repo": {
+      "type": "string"
+    },
+    "sigstore_bundle": {
+      "type": "string"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "command",
+          "passed"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "command": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "returncode": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "duration_seconds": {
+            "type": "number"
+          },
+          "stdout_tail": {
+            "type": "string"
+          },
+          "stderr_tail": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "tool_unavailable": {
+            "type": "boolean"
+          },
+          "dry_run": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

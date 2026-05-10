@@ -1,0 +1,25 @@
+profiles:
+  pytest-benchmark:
+    test_endpoint_mean_seconds: response_time_mean_seconds
+    test_endpoint_max_seconds: response_time_max_seconds
+  go-bench:
+    BenchmarkHandler-8_ns_per_op: handler_ns_per_op
+  lighthouse:
+    lighthouse_performance_score: lighthouse_performance_score
+    lighthouse_accessibility_score: lighthouse_accessibility_score
+    lcp_ms: lcp_ms
+  k6:
+    k6_http_req_duration_p95: response_time_p95_ms
+    k6_http_req_failed_rate: error_rate
+  autocannon:
+    autocannon_latency_p95_ms: response_time_p95_ms
+    autocannon_requests_average: throughput_rps
+  jmeter:
+    jmeter_elapsed_p95_ms: response_time_p95_ms
+    jmeter_elapsed_mean_ms: response_time_mean_ms
+  gatling:
+    gatling_p95_ms: response_time_p95_ms
+    gatling_mean_ms: response_time_mean_ms
+  artillery:
+    artillery_http_response_time_p95_ms: response_time_p95_ms
+    artillery_http_request_rate: throughput_rps

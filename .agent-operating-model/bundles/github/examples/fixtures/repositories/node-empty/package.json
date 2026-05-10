@@ -1,0 +1,7 @@
+{
+  "name": "node-empty",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "echo ok"
+  }
+}

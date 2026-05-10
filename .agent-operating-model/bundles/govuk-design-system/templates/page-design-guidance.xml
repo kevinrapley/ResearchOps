@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="page-design-guidance" version="3.0">
+  <title>GOV.UK Page Design Guidance Template</title>
+  <description>
+    Template for summarising guidance on designing a complete page type in the
+    GOV.UK Design System.  It instructs the assistant to consult the patterns
+    reference module and provide guidance on when to use the page, how to
+    structure it, which components to include and any important behaviours or
+    accessibility considerations.
+  </description>
+  <variables>
+    <variable name="pattern" type="string" />
+  </variables>
+  <body>
+    <instruction>Look up the pattern named "{{pattern}}" in the GOV.UK patterns reference.  Summarise the following points:</instruction>
+    <checklist ordered="false" purpose="page-design-guidance">
+      <entry level="0">When to use this page pattern</entry>
+      <entry level="0">How to structure the page, including essential components and their order</entry>
+      <entry level="0">Important behaviours such as preserving user input, providing feedback and handling errors</entry>
+      <entry level="0">Accessibility considerations including focus management, colour contrast and screen reader support</entry>
+    </checklist>
+    <instruction>Include citations from the patterns or components reference modules for each point.  If the pattern is not defined, state that guidance is not yet available.</instruction>
+  </body>
+</template_module>

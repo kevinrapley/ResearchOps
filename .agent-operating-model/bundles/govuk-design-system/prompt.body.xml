@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<prompt_bundle id="govuk-design-system-bundle" version="8.0.0" default_mode="design" xml_profile="native-semantic-xml/v1">
+  <bundle_identity>
+    <name>GOV.UK Design System Prompt Bundle</name>
+    <description>A comprehensive prompt bundle for designing, building, reviewing, testing and releasing services using the GOV.UK Design System and the supporting GDS code repositories.  Version 8.0.0 eliminates ambiguity by providing exhaustive guidance, citations and code examples for key components (checkboxes, date inputs, radios, task lists) and patterns (check answers, complete multiple tasks, confirmation pages, page‑not‑found and service‑unavailable).  It introduces specialised QA and release‑readiness modes and roles, expands graders to enforce new rules and WCAG contrast requirements, and extends tests to include code‑generation and negative‑behaviour scenarios.</description>
+    <environment_baseline>Unconstrained</environment_baseline>
+    <status>canonical</status>
+  </bundle_identity>
+  <instruction_hierarchy>
+    <authority_order>
+      <authority>law-and-regulation</authority>
+      <authority>safety-and-harm-prevention</authority>
+      <authority>accessibility-obligations</authority>
+      <authority>evidence-discipline</authority>
+      <authority>template-and-formatting-rules</authority>
+    </authority_order>
+  </instruction_hierarchy>
+  <runtime_defaults>
+    <default_mode>design</default_mode>
+    <default_depth>standard</default_depth>
+    <phase_changes>human-owned</phase_changes>
+    <header_enabled>false</header_enabled>
+    <human_review_required_for_authoritative_use>true</human_review_required_for_authoritative_use>
+  </runtime_defaults>
+  <assembly>
+    <always_load>references/govuk-design-system-reference.xml</always_load>
+    <always_load>references/govuk-components-reference.xml</always_load>
+    <always_load>references/govuk-patterns-reference.xml</always_load>
+    <always_load>references/gds-github-reference.xml</always_load>
+    <always_load>roles/designer.xml</always_load>
+    <always_load>roles/developer.xml</always_load>
+    <always_load>roles/content-designer.xml</always_load>
+    <always_load>roles/accessibility-specialist.xml</always_load>
+    <always_load>roles/qa.xml</always_load>
+    <always_load>roles/release-manager.xml</always_load>
+  </assembly>
+  <template_registry>
+    <template_ref id="component-guidance" file="templates/component-guidance.xml">
+      <title>Component Guidance Template</title>
+    </template_ref>
+    <template_ref id="question-page-guidance" file="templates/question-page-guidance.xml">
+      <title>Question Page Guidance Template</title>
+    </template_ref>
+    <template_ref id="page-design-guidance" file="templates/page-design-guidance.xml">
+      <title>Page Design Guidance Template</title>
+    </template_ref>
+    <template_ref id="component-code" file="templates/component-code.xml">
+      <title>Component Code Template</title>
+    </template_ref>
+    <template_ref id="pattern-code" file="templates/pattern-code.xml">
+      <title>Pattern Code Template</title>
+    </template_ref>
+    <template_ref id="conformance-review" file="templates/conformance-review.xml">
+      <title>Conformance Review Template</title>
+    </template_ref>
+    <template_ref id="qa-checklist" file="templates/qa-checklist.xml">
+      <title>QA Checklist Template</title>
+    </template_ref>
+    <template_ref id="release-readiness" file="templates/release-readiness.xml">
+      <title>Release Readiness Template</title>
+    </template_ref>
+  </template_registry>
+  <grader_registry>
+    <grader_ref id="design-system-behaviour" file="graders/design-system-behaviour.xml">
+      <title>Design System Behaviour Grader</title>
+    </grader_ref>
+    <grader_ref id="component-guidance-grader" file="graders/component-guidance-grader.xml">
+      <title>Component Guidance Grader</title>
+    </grader_ref>
+    <grader_ref id="pattern-guidance-grader" file="graders/pattern-guidance-grader.xml">
+      <title>Pattern Guidance Grader</title>
+    </grader_ref>
+    <grader_ref id="code-grader" file="graders/code-grader.xml">
+      <title>Code Grader</title>
+    </grader_ref>
+  </grader_registry>
+</prompt_bundle>

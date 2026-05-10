@@ -1,0 +1,6 @@
+# CODEOWNERS
+
+* @org/maintainers
+.github/ @org/devops
+security/ @org/security
+docs/ @org/docs

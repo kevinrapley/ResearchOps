@@ -1,0 +1,55 @@
+bundle:
+  id: govuk-design-system-bundle
+  name: GOV.UK Design System Prompt Bundle
+  version: 8.0.0
+  status: canonical
+  default_mode: design
+  environment_baseline: unconstrained
+  prompt_body: prompt.body.xml
+design:
+  prompt_markup: native semantic XML
+  assurance_markup: native semantic XML grader modules
+  output_contract: output.schema.json
+  grade_contract: grade.schema.json
+  variables_contract: variables.schema.json
+  principles:
+    - All prompt, reference and grader assets must be expressed as semantic XML.
+    - Guidance must be grounded in the official GOV.UK Design System and, where appropriate, the `govuk-frontend` code repository.
+    - Responses must include citations to sources used.
+assembly:
+  always_load:
+    - references/govuk-design-system-reference.xml
+    - references/govuk-components-reference.xml
+    - references/govuk-patterns-reference.xml
+    - references/gds-github-reference.xml
+    - roles/designer.xml
+    - roles/developer.xml
+    - roles/content-designer.xml
+    - roles/accessibility-specialist.xml
+    - roles/qa.xml
+    - roles/release-manager.xml
+  template_modules:
+    - templates/component-guidance.xml
+    - templates/question-page-guidance.xml
+    - templates/page-design-guidance.xml
+    - templates/component-code.xml
+    - templates/pattern-code.xml
+    - templates/conformance-review.xml
+    - templates/qa-checklist.xml
+    - templates/release-readiness.xml
+  grader_modules:
+    - graders/design-system-behaviour.xml
+    - graders/component-guidance-grader.xml
+    - graders/pattern-guidance-grader.xml
+    - graders/code-grader.xml
+evaluation_flow:
+  steps:
+    - infer_context
+    - draft_response
+    - grade_design_system_behaviour
+    - grade_component_guidance
+    - grade_pattern_guidance
+    - grade_code
+    - emit_final_output
+  blocking_labels:
+    - fail_revise

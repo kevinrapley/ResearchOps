@@ -1,0 +1,11 @@
+src/
+bin/
+tests/
+tests/snapshots/
+docs/
+examples/
+.github/
+README.md
+CONTRIBUTING.md
+SECURITY.md
+RECENT_LEARNINGS.md

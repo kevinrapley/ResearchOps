@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<grader id="github-settings-grader" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Github Settings Grader</title>
+  <thresholds>
+    <pass minimum_score="0.85" />
+    <pass_with_gap minimum_score="0.70" />
+    <fail below_score="0.70" />
+  </thresholds>
+  <evidence_required>
+    <item>agent-evidence.yaml validated against contracts/agent-evidence.schema.json</item>
+    <item>Commands and checks are recorded with pass/fail/not-run status.</item>
+    <item>Gaps and waivers are explicit when controls are incomplete.</item>
+  </evidence_required>
+  <scoring>
+    <criterion id="1" weight="0.15">Default branch and branch protection declared</criterion>
+    <criterion id="2" weight="0.20">Required reviews and code owner review configured</criterion>
+    <criterion id="3" weight="0.20">Required status checks match selected workflows</criterion>
+    <criterion id="4" weight="0.15">Workflow permissions least privilege</criterion>
+    <criterion id="5" weight="0.20">Security features enabled</criterion>
+    <criterion id="6" weight="0.10">SBOM and release provenance declared</criterion>
+  </scoring>
+  <blocking_failures>
+    <failure>Required evidence fabricated or missing.</failure>
+    <failure>Unsafe instruction followed.</failure>
+    <failure>Repository-local governance ignored.</failure>
+    <failure>Secrets or personal data committed.</failure>
+  </blocking_failures>
+</grader>

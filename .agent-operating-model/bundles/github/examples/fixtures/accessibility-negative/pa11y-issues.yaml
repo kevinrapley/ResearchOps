@@ -1,0 +1,29 @@
+automated_checks:
+  axe:
+    tool: axe-core
+    file: results/axe-pass.json
+  pa11y:
+    tool: pa11y
+    file: results/pa11y-fail.json
+  lighthouse:
+    tool: lighthouse
+    file: results/lighthouse-pass.json
+keyboard_tests:
+  - name: Keyboard journey
+    steps: [Tab through page]
+    result: pass
+screen_reader_tests:
+  - screen_reader: NVDA
+    browser: Firefox
+    result: pass
+    notes: Labels announced.
+assistive_technology_matrix:
+  - technology: NVDA
+    browser: Firefox
+    platform: Windows
+    result: pass
+defects:
+  - id: A11Y-LOW
+    severity: low
+    status: closed
+release_decision: pass

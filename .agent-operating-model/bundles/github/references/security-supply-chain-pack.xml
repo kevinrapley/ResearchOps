@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="security-supply-chain-pack" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Security Supply Chain Pack</title>
+  <description source="internal-doctrine">Security Supply Chain Pack for repository operation.</description>
+  <rules>
+    <rule id="security-supply-chain-pack-1" source="internal-doctrine">Enable Dependabot or equivalent dependency alerting.</rule>
+    <rule id="security-supply-chain-pack-2" source="internal-doctrine">Enable secret scanning and push protection where available.</rule>
+    <rule id="security-supply-chain-pack-3" source="internal-doctrine">Use CodeQL or equivalent for supported languages.</rule>
+    <rule id="security-supply-chain-pack-4" source="internal-doctrine">Run dependency review for pull requests.</rule>
+    <rule id="security-supply-chain-pack-5" source="internal-doctrine">Generate SBOM for releases where applicable.</rule>
+  </rules>
+</reference>

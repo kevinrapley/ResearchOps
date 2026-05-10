@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="qa-checklist" version="1.0">
+  <description>Generate a quality assurance checklist for a GOV.UK Design System task.</description>
+  <!--
+    This template is used by the QA role to prompt the assistant to
+    produce a structured list of checks that should be performed when
+    validating a design or implementation.  The checklist covers
+    adherence to design‑system rules, accessibility, code quality,
+    citation requirements and test coverage.
+  -->
+  <variables>
+    <variable name="task" type="string" description="The task or component being reviewed." />
+    <variable name="component" type="string" description="Optional name of the component under review." />
+    <variable name="pattern" type="string" description="Optional name of the pattern under review." />
+  </variables>
+  <prompt>
+    <![CDATA[
+You are acting in QA mode. Produce a checklist of quality assurance tasks for the following {{ task }}{{ component and ' component ' + component or '' }}{{ pattern and ' pattern ' + pattern or '' }}.  Each task should:
+
+* Cite relevant GOV.UK Design System rules or GDS repository guidance.
+* Explain what needs to be verified (for example, structural requirements, accessibility compliance, code correctness or citation presence).
+* Highlight common pitfalls or misuse and how to detect them.
+* Use clear, concise language and bullet points.
+
+If the task refers to code, remind the reader to run automated tests and ensure the code uses the appropriate `govuk-` classes and macros.  End with a note encouraging testers to document any issues they find and reference the appropriate guidance when raising them.
+    ]]>
+  </prompt>
+</template_module>

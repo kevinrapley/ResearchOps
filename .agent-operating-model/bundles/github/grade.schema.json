@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Grade Output Contract",
+  "type": "object",
+  "properties": {
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "feedback": { "type": "string" }
+  },
+  "required": ["score", "feedback"],
+  "additionalProperties": true
+}

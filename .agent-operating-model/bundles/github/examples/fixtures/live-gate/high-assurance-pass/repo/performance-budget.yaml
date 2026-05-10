@@ -1,0 +1,10 @@
+budgets:
+  - metric: lighthouse_performance_score
+    threshold: 0.8
+    comparator: min
+  - metric: lighthouse_accessibility_score
+    threshold: 0.9
+    comparator: min
+  - metric: lcp_ms
+    threshold: 2500
+    tolerance_percent: 10

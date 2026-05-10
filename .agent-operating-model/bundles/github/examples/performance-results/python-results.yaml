@@ -1,0 +1,3 @@
+measurements:
+  - metric: response_time_p95_ms
+    value: 180

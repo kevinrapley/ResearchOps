@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="sbom-and-attestation" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>SBOM and Attestation</title>
+  <description source="cyclonedx-spec">Controls for software bill of materials and release provenance.</description>
+  <rules>
+    <rule id="sbom-001" source="cyclonedx-spec">Release workflows should generate a dependency SBOM using CycloneDX JSON or SPDX JSON where possible.</rule>
+    <rule id="sbom-002" source="internal-doctrine">File inventories must be named as file inventories, not full dependency SBOMs.</rule>
+    <rule id="sbom-003" source="internal-doctrine">SBOM artefacts should be referenced from release provenance records.</rule>
+  </rules>
+</reference>

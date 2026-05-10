@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-fix" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Fix Mode</title>
+  <purpose>Diagnose and fix defects.</purpose>
+  <inputs>
+    <item>Failure report</item>
+    <item>Logs</item>
+  </inputs>
+  <actions>
+    <item>Reproduce or reason from logs.</item>
+    <item>Fix root cause.</item>
+    <item>Add regression test.</item>
+    <item>Update RECENT_LEARNINGS for non-obvious traps.</item>
+  </actions>
+  <outputs>
+    <item>Fix</item>
+    <item>Regression test</item>
+    <item>Learning</item>
+  </outputs>
+  <failure_states>
+    <item>Symptom hidden</item>
+    <item>Test disabled</item>
+  </failure_states>
+  <required_contracts>
+    <item>pull-request-contract.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>code-confidence-grader.xml</item>
+    <item>recent-learnings-grader.xml</item>
+  </required_graders>
+</mode>

@@ -1,0 +1,7 @@
+budgets:
+  - metric: response_time_p95_ms
+    threshold: 500
+    tolerance_percent: 10
+  - metric: response_time_mean_ms
+    threshold: 300
+    tolerance_percent: 10

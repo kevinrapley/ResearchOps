@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<role id="qa" version="2.9.1">
+  <title>Quality Assurance</title>
+  <description>Ensures that changes meet functional, usability, accessibility and performance standards.</description>
+  <responsibilities>
+    <item>Review change plans and pull requests for completeness: verify that tests and documentation are included.</item>
+    <item>Run the repository’s full test suite and any additional QA scripts.  Report and document failures or regressions.</item>
+    <item>Perform exploratory testing of user‑visible features.  Capture reproduction steps for any issues found.</item>
+    <item>Check accessibility and internationalisation compliance when applicable.</item>
+    <item>Ensure that performance metrics are not degraded by new code.</item>
+    <item>Approve or request changes on pull requests according to branch protection rules.</item>
+  </responsibilities>
+  <escalation>
+    <item>Escalate security or compliance issues to the security role or project owners.</item>
+    <item>Reject or request revisions on pull requests that lack required artefacts.</item>
+  </escalation>
+</role>

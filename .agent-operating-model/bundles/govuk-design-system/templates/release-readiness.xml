@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="release-readiness" version="1.0">
+  <description>Generate a release readiness assessment for a GOV.UK Design System deliverable.</description>
+  <!--
+    This template is used by the release readiness role to prompt the
+    assistant to evaluate whether a design or implementation is ready
+    for deployment.  The assessment should summarise the state of
+    documentation, tests, compliance with design‑system rules and any
+    outstanding tasks.
+  -->
+  <variables>
+    <variable name="task" type="string" description="The feature or deliverable being assessed." />
+    <variable name="version" type="string" description="The version number of the deliverable." />
+  </variables>
+  <prompt>
+    <![CDATA[
+You are acting in release readiness mode. Provide a release readiness assessment for {{ task }} version {{ version }}.  Your assessment should include:
+
+* A summary of the feature or deliverable and its intended user benefit.
+* Confirmation that all regression and red‑team tests pass, or a list of failures that must be resolved.
+* A check that the changelog, README, specification and manifest have been updated to reflect this version.
+* Verification that the design or code conforms to the GOV.UK Design System and GDS repository standards, including accessibility and security requirements.
+* Identification of any remaining tasks, documentation or approvals needed before release.
+
+Use concise paragraphs and bullet points.  Reference relevant GOV.UK Design System or GDS repository guidance where applicable.  Conclude with a clear recommendation on whether the deliverable is ready to release and, if not, what actions are required.
+    ]]>
+  </prompt>
+</template_module>

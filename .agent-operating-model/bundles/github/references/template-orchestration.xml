@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="template-orchestration" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Template Orchestration</title>
+  <description source="internal-doctrine">Rules for selecting templates through the registry.</description>
+  <rules>
+    <rule id="tpl-001" source="internal-doctrine">template-registry.yaml is the authoritative inventory of templates.</rule>
+    <rule id="tpl-002" source="internal-doctrine">Select templates by archetype, language detection, trigger conditions and required flags.</rule>
+    <rule id="tpl-003" source="internal-doctrine">Validate the registry before repository instantiation.</rule>
+    <rule id="tpl-004" source="internal-doctrine">Do not rely on prompt.spec.yaml for a complete template list.</rule>
+  </rules>
+</reference>

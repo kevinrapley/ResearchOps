@@ -1,0 +1,7 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "metadata": {"tools": [{"name": "fixture"}]},
+  "components": [{"type": "library", "name": "fixture", "bom-ref": "pkg:npm/fixture@1.0.0", "purl": "pkg:npm/fixture@1.0.0", "licenses": [{"license": {"id": "MIT"}}]}],
+  "dependencies": [{"ref": "root", "dependsOn": ["pkg:npm/fixture@1.0.0"]}]
+}

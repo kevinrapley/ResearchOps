@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Accessibility Evidence",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "automated_checks",
+    "keyboard_tests",
+    "screen_reader_tests",
+    "assistive_technology_matrix",
+    "defects",
+    "release_decision"
+  ],
+  "properties": {
+    "automated_checks": {
+      "type": "object",
+      "required": [
+        "axe",
+        "pa11y",
+        "lighthouse"
+      ],
+      "properties": {
+        "axe": {
+          "type": "object"
+        },
+        "pa11y": {
+          "type": "object"
+        },
+        "lighthouse": {
+          "type": "object"
+        }
+      }
+    },
+    "keyboard_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "steps",
+          "result"
+        ]
+      }
+    },
+    "screen_reader_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "screen_reader",
+          "browser",
+          "result",
+          "notes"
+        ]
+      }
+    },
+    "assistive_technology_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "technology",
+          "browser",
+          "platform",
+          "result"
+        ]
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "status"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          }
+        }
+      }
+    },
+    "release_decision": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "pass_with_gap",
+        "fail"
+      ]
+    }
+  }
+}

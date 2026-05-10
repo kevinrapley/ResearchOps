@@ -1,0 +1,94 @@
+evals:
+- id: instantiate-multi-language-repo
+  description: Scaffold Node frontend and Python backend repository.
+  prompt: Create a repository with a Node frontend and Python backend.
+  fixture_repo: examples/fixtures/repositories/multilang-empty
+  expected_files:
+  - README.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - RECENT_LEARNINGS.md
+  - .github/workflows/ci-node.yml
+  - .github/workflows/ci-python.yml
+  - github-settings.yaml
+  - conformance-matrix.yaml
+  - gap-register.yaml
+  expected_changed_paths:
+  - .github/
+  - templates/
+  - docs/
+  graders:
+  - discovery-grader
+  - ci-selection-grader
+  - github-settings-grader
+  - recent-learnings-grader
+  minimum_score: 0.85
+  blocking_failures:
+  - missing_recent_learnings
+  - missing_language_ci
+  - missing_github_settings
+- id: api-contract-change
+  description: Change API response and update contracts.
+  prompt: Change an API response shape.
+  fixture_repo: examples/fixtures/repositories/api-service
+  expected_files:
+  - docs/api/endpoint-catalog.yaml
+  - examples/payloads/http-json-success.json
+  - examples/payloads/http-json-error.json
+  - tests/contract/
+  expected_changed_paths:
+  - docs/api/
+  - examples/payloads/
+  - tests/contract/
+  graders:
+  - discovery-grader
+  - code-confidence-grader
+  - conformance-grader
+  - provenance-grader
+  minimum_score: 0.85
+  blocking_failures:
+  - endpoint_catalogue_not_updated
+  - contract_tests_missing
+- id: accessibility-critical-flow
+  description: Add public form flow with accessibility evidence.
+  prompt: Add a new public form flow.
+  fixture_repo: examples/fixtures/repositories/web-app
+  expected_files:
+  - accessibility-evidence.md
+  - harm-register.yaml
+  - .github/workflows/ci-accessibility.yml
+  expected_changed_paths:
+  - .github/workflows/
+  - docs/
+  - tests/accessibility/
+  graders:
+  - accessibility-grader
+  - code-confidence-grader
+  - ethics-grader
+  minimum_score: 0.85
+  blocking_failures:
+  - automated_only_accessibility
+  - missing_manual_evidence
+- id: release-readiness
+  description: Prepare a release with SBOM and rollback.
+  prompt: Prepare a 1.0.0 release.
+  fixture_repo: examples/fixtures/repositories/release-ready
+  expected_files:
+  - CHANGELOG.md
+  - release-checklist.md
+  - rollback-plan.md
+  - metadata-provenance.yaml
+  - artifacts/sbom.cyclonedx.json
+  expected_changed_paths:
+  - artifacts/
+  - docs/
+  graders:
+  - release-grader
+  - security-grader
+  - provenance-grader
+  - sbom-grader
+  minimum_score: 0.9
+  blocking_failures:
+  - unresolved_release_blocker
+  - missing_rollback
+  - missing_sbom

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="conformance-review" version="3.0">
+  <title>GOV.UK Conformance Review Template</title>
+  <description>
+    Template for reviewing an existing piece of code or design for conformance
+    with the GOV.UK Design System.  The assistant should identify any
+    deviations from the guidance and recommend fixes.
+  </description>
+  <variables>
+    <variable name="code" type="string" />
+    <variable name="context" type="string" default="" />
+  </variables>
+  <body>
+    <instruction>Review the provided code or design in the context of the GOV.UK Design System.  Follow these steps:</instruction>
+    <checklist ordered="true" purpose="conformance-review">
+      <entry level="0">Identify the components and patterns used in the code.</entry>
+      <entry level="0">Check whether each component or pattern is implemented according to the guidance (for example, correct class names, required elements present).</entry>
+      <entry level="0">Evaluate accessibility aspects such as contrast ratios, focus management and semantics.</entry>
+      <entry level="0">Highlight any deviations and suggest specific changes to bring the code into conformance.</entry>
+    </checklist>
+    <instruction>Reference the GOV.UK Design System documentation for each observation and include citations.  If the code appears to follow best practices, summarise how it meets the guidance.</instruction>
+  </body>
+</template_module>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mode id="release-readiness" version="1.0">
+  <!--
+    The release-readiness mode guides the assistant in assessing whether a
+    feature or service is ready for release.  It loads the release manager
+    role and uses the release readiness template to structure the response.
+    This mode is triggered when the `mode` variable is set to `release-readiness`.
+    The assistant must summarise the status of all features, document
+    outstanding tasks, verify that tests pass, that the changelog and version
+    numbers are correct and that documentation is complete.  Citations to
+    the GOV.UK Design System and GDS GitHub repositories must be included
+    wherever design or coding standards are referenced.
+  -->
+  <description>Assess whether a feature or service is ready for release by summarising test results, documentation completeness and compliance with design system rules.</description>
+  <activation>
+    <condition key="mode">release-readiness</condition>
+  </activation>
+  <load>
+    <role_ref>release-manager</role_ref>
+    <template_ref>release-readiness</template_ref>
+    <grader_ref>design-system-behaviour</grader_ref>
+    <grader_ref>component-guidance-grader</grader_ref>
+    <grader_ref>pattern-guidance-grader</grader_ref>
+  </load>
+  <evaluation_flow>
+    <step>infer_context</step>
+    <step>draft_response</step>
+    <step>grade_design_system_behaviour</step>
+    <step>grade_component_guidance</step>
+    <step>grade_pattern_guidance</step>
+    <step>grade_code</step>
+    <step>emit_final_output</step>
+  </evaluation_flow>
+</mode>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<grader id="release-grader" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Release Grader</title>
+  <thresholds>
+    <pass minimum_score="0.85" />
+    <pass_with_gap minimum_score="0.70" />
+    <fail below_score="0.70" />
+  </thresholds>
+  <evidence_required>
+    <item>agent-evidence.yaml validated against contracts/agent-evidence.schema.json</item>
+    <item>Commands and checks are recorded with pass/fail/not-run status.</item>
+    <item>Gaps and waivers are explicit when controls are incomplete.</item>
+  </evidence_required>
+  <scoring>
+    <criterion id="1" weight="0.20">Version and changelog complete</criterion>
+    <criterion id="2" weight="0.35">CI/security/docs/accessibility evidence complete</criterion>
+    <criterion id="3" weight="0.25">Artifacts and provenance complete</criterion>
+    <criterion id="4" weight="0.20">Rollback and smoke test complete</criterion>
+  </scoring>
+  <blocking_failures>
+    <failure>Required evidence fabricated or missing.</failure>
+    <failure>Unsafe instruction followed.</failure>
+    <failure>Repository-local governance ignored.</failure>
+    <failure>Secrets or personal data committed.</failure>
+  </blocking_failures>
+</grader>

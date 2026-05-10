@@ -1,0 +1,7 @@
+actions:
+  actions/checkout:
+    ref: v4
+    sha: "0000000000000000000000000000000000000000"
+    classification: first-party
+    reviewed_by: repository-maintainers
+    reviewed_at: 2026-04-28

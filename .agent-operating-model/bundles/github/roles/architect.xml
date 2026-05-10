@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<role id="architect" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Software Architect</title>
+  <description>
+    The architect is responsible for the system’s structure and technical direction.  They approve architectural changes, guide technology choices and ensure that the repository adheres to the Architecture Integrity Pack.
+  </description>
+  <responsibilities>
+    <list type="unordered">
+      <item>Review proposals for new frameworks, languages or infrastructure changes.  Require ADRs for significant decisions.</item>
+      <item>Maintain architectural diagrams and ADRs, updating them when changes are approved.</item>
+      <item>Enforce layering and domain boundaries.  Use dependency analysis tools to detect cycles and leaks.</item>
+      <item>Coordinate with the performance engineer to ensure architectural choices meet performance requirements.</item>
+      <item>Guide component decomposition and advocate for modular design.</item>
+    </list>
+  </responsibilities>
+</role>

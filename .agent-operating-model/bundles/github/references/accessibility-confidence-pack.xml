@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="accessibility-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Accessibility Confidence Pack</title>
+  <description>
+    A checklist and policy for ensuring that repositories meet accessibility requirements.  It complements the Code Confidence Pack by emphasising inclusive design and testing.  Government services must meet WCAG 2.2 AA standards and avoid discrimination.
+  </description>
+  <section id="design-and-content">
+    <title>Design and content</title>
+    <content>
+      <list type="unordered">
+        <item>Use the GOV.UK Design System or equivalent accessible design system to build UIs.</item>
+        <item>Follow semantic HTML principles.  Mark up pages with correct elements and attributes to aid assistive technologies.</item>
+        <item>Ensure content uses descriptive link text, meaningful alt text for images, unique page titles, sufficient colour contrast, and avoids directional language like “click the button on the left”.</item>
+      </list>
+    </content>
+  </section>
+  <section id="automated-testing">
+    <title>Automated accessibility testing</title>
+    <content>
+      Use axe‑core, Pa11y or equivalent tools in the CI pipeline.  The DWP accessibility manual explains that combining axe‑core and Pa11y finds about 35 % of issues.  Automated tests should be run on pages, components and storybook stories.  Include them in the `ci-accessibility.yml` workflow.
+    </content>
+  </section>
+  <section id="manual-testing">
+    <title>Manual and assistive‑technology testing</title>
+    <content>
+      Automated tools cannot catch all issues.  Perform manual accessibility audits at regular intervals, including keyboard navigation, screen reader testing, voice control and screen magnifier testing.  Use the service manual’s advice on testing with disabled users and running accessibility audits before public beta.
+    </content>
+  </section>
+  <section id="audit-and-compliance">
+    <title>Audit and compliance</title>
+    <content>
+      Document the results of automated and manual tests.  Track accessibility defects in issues labelled `accessibility`.  Prioritise fixing high‑impact barriers before release.  If the repository is a public sector service, plan for an independent WCAG audit and publish an accessibility statement.
+    </content>
+  </section>
+</reference>

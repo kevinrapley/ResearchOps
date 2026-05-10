@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<reference id="implementation-workflow" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Implementation Workflow</title>
+  <description source="internal-doctrine">Implementation Workflow for repository operation.</description>
+  <rules>
+    <rule id="implementation-workflow-1" source="internal-doctrine">Frame goal and constraints.</rule>
+    <rule id="implementation-workflow-2" source="internal-doctrine">Discover repository context.</rule>
+    <rule id="implementation-workflow-3" source="internal-doctrine">Design small reviewable change.</rule>
+    <rule id="implementation-workflow-4" source="internal-doctrine">Build with tests and docs.</rule>
+    <rule id="implementation-workflow-5" source="internal-doctrine">Validate gates.</rule>
+    <rule id="implementation-workflow-6" source="internal-doctrine">Submit PR evidence.</rule>
+  </rules>
+</reference>

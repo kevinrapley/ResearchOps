@@ -1,0 +1,109 @@
+suite: coverage
+cases:
+  - id: coverage-back-link
+    description: Test coverage for back link guidance.
+    input: Explain when to use the back link component.
+    context:
+      task: design
+      mode: design
+      component: back-link
+      depth: standard
+      high_stakes: false
+  - id: coverage-button
+    description: Test coverage for button guidance.
+    input: What should button text say and how many primary buttons should be on a page?
+    context:
+      task: design
+      mode: design
+      component: button
+      depth: standard
+      high_stakes: false
+  - id: coverage-question-pages
+    description: Test coverage for question pages pattern guidance.
+    input: How should a question page be structured?
+    context:
+      task: design
+      mode: design
+      pattern: question-pages
+      depth: standard
+      high_stakes: false
+  - id: coverage-error-summary
+    description: Test coverage for error summary guidance.
+    input: When should an error summary be used and what should it contain?
+    context:
+      task: design
+      mode: design
+      component: error-summary
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-breadcrumbs
+    description: Test coverage for breadcrumbs guidance.
+    input: Explain the purpose of breadcrumbs and when they should not be used.
+    context:
+      task: design
+      mode: design
+      component: breadcrumbs
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-build-button
+    description: Test coverage for building a button in code.
+    input: Provide HTML code for a standard GOV.UK button.
+    context:
+      task: build
+      mode: build
+      component: button
+      language: html
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-review-code
+    description: Test coverage for reviewing a piece of code for conformance.
+    input: Review this code for conformance with GOV.UK guidelines: <button class="govuk-button" type="submit">Save</button>
+    context:
+      task: review
+      mode: review
+      code: "<button class=\"govuk-button\" type=\"submit\">Save</button>"
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-checkboxes
+    description: Test coverage for checkboxes guidance.
+    input: When should I use checkboxes and how should they be structured?
+    context:
+      task: design
+      mode: design
+      component: checkboxes
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-date-input
+    description: Test coverage for date input guidance.
+    input: Explain how to ask users for a date using the date input component.
+    context:
+      task: design
+      mode: design
+      component: date-input
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-check-answers
+    description: Test coverage for check answers page guidance.
+    input: Describe how a check answers page should work.
+    context:
+      task: design
+      mode: design
+      pattern: check-answers
+      depth: standard
+      high_stakes: false
+
+  - id: coverage-colour
+    description: Test coverage for colour and accessibility guidance.
+    input: What are the colour contrast requirements under WCAG 2.2?
+    context:
+      task: design
+      mode: design
+      component: colour
+      depth: standard
+      high_stakes: false

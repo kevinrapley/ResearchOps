@@ -1,0 +1,22 @@
+archetype: web-app
+starter_tree: templates/starter-trees/web-app.txt
+quality_gates:
+- formatting
+- linting
+- typechecking
+- unit-tests
+- e2e-tests
+- accessibility
+- security
+- performance
+- docs-quality
+workflows:
+- language-ci
+- ci-accessibility.yml
+- ci-performance.yml
+- dependency-review.yml
+- codeql.yml
+contracts:
+- repository-contract.schema.json
+- workflow-contract.schema.json
+- harm-register.schema.json

@@ -1,0 +1,13 @@
+prompts/
+roles/
+references/
+templates/
+contracts/
+graders/
+evals/
+fixtures/
+tests.regression.yaml
+tests.redteam.yaml
+registry-manifest.yaml
+README.md
+RECENT_LEARNINGS.md

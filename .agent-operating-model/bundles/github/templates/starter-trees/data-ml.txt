@@ -1,0 +1,11 @@
+src/
+notebooks/
+data/README.md
+models/README.md
+tests/
+docs/
+.github/
+README.md
+CONTRIBUTING.md
+SECURITY.md
+RECENT_LEARNINGS.md

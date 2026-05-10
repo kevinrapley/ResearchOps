@@ -1,0 +1,814 @@
+templates:
+- id: recent-learnings-template-md
+  template_path: templates/RECENT_LEARNINGS-template.md
+  destination_path: RECENT_LEARNINGS.md
+  required_for:
+  - all
+  archetypes:
+  - all
+  trigger_conditions:
+  - all-repositories
+  associated_contract: null
+  associated_graders:
+  - graders/recent-learnings-grader.xml
+  copy_mode: copy
+  required: true
+- id: archetype-control-profiles-agent-system-yaml
+  template_path: templates/archetype-control-profiles/agent-system.yaml
+  destination_path: docs/archetype-control-profiles/agent-system.yaml
+  required_for: &id001
+  - agent-system
+  archetypes: *id001
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: archetype-control-profiles-api-service-yaml
+  template_path: templates/archetype-control-profiles/api-service.yaml
+  destination_path: docs/archetype-control-profiles/api-service.yaml
+  required_for: &id002
+  - api-service
+  archetypes: *id002
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: archetype-control-profiles-cli-yaml
+  template_path: templates/archetype-control-profiles/cli.yaml
+  destination_path: docs/archetype-control-profiles/cli.yaml
+  required_for: &id003
+  - cli
+  archetypes: *id003
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: archetype-control-profiles-data-ml-yaml
+  template_path: templates/archetype-control-profiles/data-ml.yaml
+  destination_path: docs/archetype-control-profiles/data-ml.yaml
+  required_for: &id004
+  - data-ml
+  archetypes: *id004
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: archetype-control-profiles-library-yaml
+  template_path: templates/archetype-control-profiles/library.yaml
+  destination_path: docs/archetype-control-profiles/library.yaml
+  required_for: &id005
+  - library
+  archetypes: *id005
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: archetype-control-profiles-web-app-yaml
+  template_path: templates/archetype-control-profiles/web-app.yaml
+  destination_path: docs/archetype-control-profiles/web-app.yaml
+  required_for: &id006
+  - web-app
+  archetypes: *id006
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: discussion-template-md
+  template_path: templates/discussion_template.md
+  destination_path: discussion_template.md
+  required_for: &id007
+  - all
+  archetypes: *id007
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: github-github-issue-template-bug-report-yml
+  template_path: templates/github/.github/ISSUE_TEMPLATE/bug_report.yml
+  destination_path: .github/ISSUE_TEMPLATE/bug_report.yml
+  required_for: &id008
+  - all
+  archetypes: *id008
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/issue-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: github-github-issue-template-feature-request-yml
+  template_path: templates/github/.github/ISSUE_TEMPLATE/feature_request.yml
+  destination_path: .github/ISSUE_TEMPLATE/feature_request.yml
+  required_for: &id009
+  - all
+  archetypes: *id009
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/issue-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: github-github-pull-request-template-default-md
+  template_path: templates/github/.github/PULL_REQUEST_TEMPLATE/default.md
+  destination_path: .github/PULL_REQUEST_TEMPLATE/default.md
+  required_for: &id010
+  - all
+  archetypes: *id010
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/pull-request-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: github-github-workflows-ci-accessibility-yml
+  template_path: templates/github/.github/workflows/ci-accessibility.yml
+  destination_path: .github/workflows/ci-accessibility.yml
+  required_for:
+  - web
+  archetypes:
+  - all
+  trigger_conditions:
+  - web-ui
+  - public-service
+  associated_contract: null
+  associated_graders:
+  - graders/accessibility-grader.xml
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Accessibility)
+- id: github-github-workflows-ci-conformance-yml
+  template_path: templates/github/.github/workflows/ci-conformance.yml
+  destination_path: .github/workflows/ci-conformance.yml
+  required_for:
+  - conformance
+  archetypes:
+  - all
+  trigger_conditions:
+  - all-repositories
+  associated_contract: contracts/conformance-record.schema.json
+  associated_graders:
+  - graders/conformance-grader.xml
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Conformance)
+- id: github-github-workflows-ci-data-ml-yml
+  template_path: templates/github/.github/workflows/ci-data-ml.yml
+  destination_path: .github/workflows/ci-data-ml.yml
+  required_for:
+  - data-ml
+  archetypes:
+  - data-ml
+  trigger_conditions:
+  - file_exists:*.ipynb
+  - dir_exists:notebooks
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Data/ML)
+- id: github-github-workflows-ci-docs-quality-yml
+  template_path: templates/github/.github/workflows/ci-docs-quality.yml
+  destination_path: .github/workflows/ci-docs-quality.yml
+  required_for:
+  - docs
+  archetypes:
+  - all
+  trigger_conditions:
+  - all-repositories
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Documentation Quality)
+- id: github-github-workflows-ci-dotnet-yml
+  template_path: templates/github/.github/workflows/ci-dotnet.yml
+  destination_path: .github/workflows/ci-dotnet.yml
+  required_for:
+  - dotnet
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:*.csproj
+  - file_exists:*.sln
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (.NET)
+- id: github-github-workflows-ci-go-yml
+  template_path: templates/github/.github/workflows/ci-go.yml
+  destination_path: .github/workflows/ci-go.yml
+  required_for:
+  - go
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:go.mod
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Go)
+- id: github-github-workflows-ci-java-yml
+  template_path: templates/github/.github/workflows/ci-java.yml
+  destination_path: .github/workflows/ci-java.yml
+  required_for:
+  - java
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:pom.xml
+  - file_exists:build.gradle
+  - file_exists:build.gradle.kts
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Java)
+- id: github-github-workflows-ci-node-yml
+  template_path: templates/github/.github/workflows/ci-node.yml
+  destination_path: .github/workflows/ci-node.yml
+  required_for:
+  - node
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:package.json
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Node)
+- id: github-github-workflows-ci-performance-yml
+  template_path: templates/github/.github/workflows/ci-performance.yml
+  destination_path: .github/workflows/ci-performance.yml
+  required_for:
+  - performance
+  archetypes:
+  - all
+  trigger_conditions:
+  - performance-sensitive
+  - file_exists:performance-budget.yaml
+  associated_contract: null
+  associated_graders:
+  - graders/performance-grader.xml
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Performance)
+- id: github-github-workflows-ci-php-yml
+  template_path: templates/github/.github/workflows/ci-php.yml
+  destination_path: .github/workflows/ci-php.yml
+  required_for:
+  - php
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:composer.json
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (PHP)
+- id: github-github-workflows-ci-python-yml
+  template_path: templates/github/.github/workflows/ci-python.yml
+  destination_path: .github/workflows/ci-python.yml
+  required_for:
+  - python
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:pyproject.toml
+  - file_exists:requirements.txt
+  - file_exists:requirements-dev.txt
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Python)
+- id: github-github-workflows-ci-ruby-yml
+  template_path: templates/github/.github/workflows/ci-ruby.yml
+  destination_path: .github/workflows/ci-ruby.yml
+  required_for:
+  - ruby
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:Gemfile
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Ruby)
+- id: github-github-workflows-ci-rust-yml
+  template_path: templates/github/.github/workflows/ci-rust.yml
+  destination_path: .github/workflows/ci-rust.yml
+  required_for:
+  - rust
+  archetypes:
+  - all
+  trigger_conditions:
+  - file_exists:Cargo.toml
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CI (Rust)
+- id: github-github-workflows-codeql-yml
+  template_path: templates/github/.github/workflows/codeql.yml
+  destination_path: .github/workflows/codeql.yml
+  required_for:
+  - security
+  archetypes:
+  - all
+  trigger_conditions:
+  - all-repositories
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CodeQL
+- id: github-github-workflows-dependency-review-yml
+  template_path: templates/github/.github/workflows/dependency-review.yml
+  destination_path: .github/workflows/dependency-review.yml
+  required_for:
+  - security
+  archetypes:
+  - all
+  trigger_conditions:
+  - all-repositories
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: Dependency Review
+- id: github-github-workflows-file-inventory-yml
+  template_path: templates/github/.github/workflows/file-inventory.yml
+  destination_path: .github/workflows/file-inventory.yml
+  required_for:
+  - release
+  archetypes:
+  - all
+  trigger_conditions:
+  - release
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: File Inventory
+- id: github-github-workflows-sbom-cyclonedx-yml
+  template_path: templates/github/.github/workflows/sbom-cyclonedx.yml
+  destination_path: .github/workflows/sbom-cyclonedx.yml
+  required_for:
+  - release
+  archetypes:
+  - all
+  trigger_conditions:
+  - release
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+  required_status_check: CycloneDX SBOM
+- id: issue-bug-report-yaml
+  template_path: templates/issue_bug_report.yaml
+  destination_path: issue_bug_report.yaml
+  required_for: &id011
+  - all
+  archetypes: *id011
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/issue-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: issue-feature-request-yaml
+  template_path: templates/issue_feature_request.yaml
+  destination_path: issue_feature_request.yaml
+  required_for: &id012
+  - all
+  archetypes: *id012
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/issue-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: pull-request-template-md
+  template_path: templates/pull_request_template.md
+  destination_path: pull_request_template.md
+  required_for: &id013
+  - all
+  archetypes: *id013
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/pull-request-contract.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-codeowners-template
+  template_path: templates/repository/CODEOWNERS-template
+  destination_path: CODEOWNERS
+  required_for:
+  - all
+  archetypes:
+  - all
+  trigger_conditions:
+  - new-repository
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: true
+- id: repository-contributing-template-md
+  template_path: templates/repository/CONTRIBUTING-template.md
+  destination_path: CONTRIBUTING.md
+  required_for:
+  - all
+  archetypes:
+  - all
+  trigger_conditions:
+  - new-repository
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: true
+- id: repository-readme-template-md
+  template_path: templates/repository/README-template.md
+  destination_path: README.md
+  required_for:
+  - all
+  archetypes:
+  - all
+  trigger_conditions:
+  - new-repository
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: true
+- id: repository-security-template-md
+  template_path: templates/repository/SECURITY-template.md
+  destination_path: SECURITY.md
+  required_for:
+  - all
+  archetypes:
+  - all
+  trigger_conditions:
+  - new-repository
+  associated_contract: null
+  associated_graders:
+  - graders/security-grader.xml
+  copy_mode: copy
+  required: true
+- id: repository-accessibility-evidence-template-md
+  template_path: templates/repository/accessibility-evidence-template.md
+  destination_path: accessibility-evidence.md
+  required_for: &id014
+  - all
+  archetypes: *id014
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders:
+  - graders/accessibility-grader.xml
+  copy_mode: copy
+  required: false
+- id: repository-agent-evidence-template-yaml
+  template_path: templates/repository/agent-evidence-template.yaml
+  destination_path: agent-evidence.yaml
+  required_for: &id015
+  - all
+  archetypes: *id015
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/agent-evidence.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-conformance-matrix-template-yaml
+  template_path: templates/repository/conformance-matrix-template.yaml
+  destination_path: conformance-matrix.yaml
+  required_for: &id016
+  - all
+  archetypes: *id016
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/conformance-record.schema.json
+  associated_graders:
+  - graders/conformance-grader.xml
+  copy_mode: copy
+  required: false
+- id: repository-endpoint-catalog-template-yaml
+  template_path: templates/repository/endpoint-catalog-template.yaml
+  destination_path: endpoint-catalog.yaml
+  required_for: &id017
+  - all
+  archetypes: *id017
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/endpoint-catalog.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-gap-register-template-yaml
+  template_path: templates/repository/gap-register-template.yaml
+  destination_path: gap-register.yaml
+  required_for: &id018
+  - all
+  archetypes: *id018
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/gap-register.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-github-settings-template-yaml
+  template_path: templates/repository/github-settings-template.yaml
+  destination_path: github-settings.yaml
+  required_for: &id019
+  - all
+  archetypes: *id019
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/github-settings.schema.json
+  associated_graders:
+  - graders/github-settings-grader.xml
+  copy_mode: copy
+  required: false
+- id: repository-harm-register-template-yaml
+  template_path: templates/repository/harm-register-template.yaml
+  destination_path: harm-register.yaml
+  required_for: &id020
+  - all
+  archetypes: *id020
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/harm-register.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-metadata-provenance-template-yaml
+  template_path: templates/repository/metadata-provenance-template.yaml
+  destination_path: metadata-provenance.yaml
+  required_for: &id021
+  - all
+  archetypes: *id021
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/provenance-record.schema.json
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: repository-performance-budget-template-yaml
+  template_path: templates/repository/performance-budget-template.yaml
+  destination_path: performance-budget.yaml
+  required_for: &id022
+  - all
+  archetypes: *id022
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/performance-budget.schema.json
+  associated_graders:
+  - graders/performance-grader.xml
+  copy_mode: copy
+  required: false
+- id: repository-release-checklist-template-md
+  template_path: templates/repository/release-checklist-template.md
+  destination_path: release-checklist.md
+  required_for: &id023
+  - all
+  archetypes: *id023
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders:
+  - graders/release-grader.xml
+  copy_mode: copy
+  required: false
+- id: security-md
+  template_path: templates/security.md
+  destination_path: security.md
+  required_for: &id024
+  - all
+  archetypes: *id024
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders:
+  - graders/security-grader.xml
+  copy_mode: copy
+  required: false
+- id: starter-trees-agent-system-txt
+  template_path: templates/starter-trees/agent-system.txt
+  destination_path: docs/starter-trees/agent-system.txt
+  required_for: &id025
+  - agent-system
+  archetypes: *id025
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: starter-trees-api-service-txt
+  template_path: templates/starter-trees/api-service.txt
+  destination_path: docs/starter-trees/api-service.txt
+  required_for: &id026
+  - api-service
+  archetypes: *id026
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: starter-trees-cli-txt
+  template_path: templates/starter-trees/cli.txt
+  destination_path: docs/starter-trees/cli.txt
+  required_for: &id027
+  - cli
+  archetypes: *id027
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: starter-trees-data-ml-txt
+  template_path: templates/starter-trees/data-ml.txt
+  destination_path: docs/starter-trees/data-ml.txt
+  required_for: &id028
+  - data-ml
+  archetypes: *id028
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: starter-trees-library-txt
+  template_path: templates/starter-trees/library.txt
+  destination_path: docs/starter-trees/library.txt
+  required_for: &id029
+  - library
+  archetypes: *id029
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: starter-trees-web-app-txt
+  template_path: templates/starter-trees/web-app.txt
+  destination_path: docs/starter-trees/web-app.txt
+  required_for: &id030
+  - web-app
+  archetypes: *id030
+  trigger_conditions:
+  - instantiate repository or when matching artefact is needed
+  associated_contract: null
+  associated_graders: []
+  copy_mode: copy
+  required: false
+- id: github-github-workflows-release-gate-yml
+  template_path: templates/github/.github/workflows/release-gate.yml
+  destination_path: .github/workflows/release-gate.yml
+  required_for:
+  - agent-system
+  archetypes:
+  - agent-system
+  trigger_conditions:
+  - bundle-release
+  associated_contract: contracts/workflow-contract.schema.json
+  associated_graders:
+  - graders/release-grader.xml
+  - graders/conformance-grader.xml
+  copy_mode: copy
+  required: false
+  required_status_check: Release Gate
+- id: github-codeowners
+  template_path: templates/github/.github/CODEOWNERS
+  destination_path: .github/CODEOWNERS
+  required_for:
+  - all
+  trigger_conditions:
+  - all-repositories
+  archetypes:
+  - all
+  required: true
+  associated_contract: contracts/github-settings.schema.json
+  associated_graders:
+  - graders/github-settings-grader.xml
+  copy_mode: copy
+- id: workflow-action-lock
+  template_path: templates/github/workflow-action-lock.example.yaml
+  destination_path: workflow-action-lock.yaml
+  copy_mode: copy
+  required_for:
+  - high-assurance
+  trigger_conditions:
+  - release
+  archetypes:
+  - all
+  required: false
+  associated_contract: contracts/workflow-contract.schema.json
+  associated_graders: []
+- id: performance-metric-profiles
+  template_path: templates/repository/performance-metric-profiles.yaml
+  destination_path: performance-metric-profiles.yaml
+  copy_mode: copy
+  required_for:
+  - performance-sensitive
+  trigger_conditions:
+  - performance-sensitive
+  archetypes:
+  - web-app
+  - api-service
+  required: false
+  associated_contract: contracts/performance-budget.schema.json
+  associated_graders:
+  - graders/performance-grader.xml
+- id: performance-budget-lighthouse
+  template_path: templates/repository/performance-budget-lighthouse.yaml
+  destination_path: performance-budget.yaml
+  copy_mode: copy
+  required_for:
+  - web-app
+  trigger_conditions:
+  - web-ui
+  archetypes:
+  - web-app
+  required: false
+  associated_contract: contracts/performance-budget.schema.json
+  associated_graders:
+  - graders/performance-grader.xml
+- id: accessibility-evidence-schema
+  template_path: contracts/accessibility-evidence.schema.json
+  destination_path: contracts/accessibility-evidence.schema.json
+  copy_mode: copy
+  required_for:
+  - web-app
+  - public-service
+  trigger_conditions:
+  - web-ui
+  - public-service
+  archetypes:
+  - web-app
+  required: false
+  associated_contract: contracts/accessibility-evidence.schema.json
+  associated_graders: []
+- id: live-release-policy
+  template_path: templates/repository/live-release-policy.yaml
+  destination_path: live-release-policy.yaml
+  copy_mode: copy
+  required_for:
+  - release
+  - high-assurance
+  - regulated
+  - public-service
+  trigger_conditions:
+  - release
+  archetypes:
+  - all
+  required: false
+  associated_contract: contracts/live-release-policy.schema.json
+  associated_graders: []
+- id: release-gate-report-schema
+  template_path: contracts/release-gate-report.schema.json
+  destination_path: contracts/release-gate-report.schema.json
+  copy_mode: copy
+  required_for:
+  - release
+  trigger_conditions:
+  - release
+  archetypes:
+  - all
+  required: false
+  associated_contract: contracts/release-gate-report.schema.json
+  associated_graders: []
+- id: trusted-attestation-verification-schema
+  template_path: contracts/trusted-attestation-verification.schema.json
+  destination_path: contracts/trusted-attestation-verification.schema.json
+  copy_mode: copy
+  required_for:
+  - high-assurance
+  - regulated
+  - public-service
+  trigger_conditions:
+  - release
+  archetypes:
+  - all
+  required: false
+  associated_contract: contracts/trusted-attestation-verification.schema.json
+  associated_graders: []

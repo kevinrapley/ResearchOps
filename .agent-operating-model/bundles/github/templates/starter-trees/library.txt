@@ -1,0 +1,10 @@
+src/
+tests/
+docs/
+examples/
+.github/
+README.md
+CONTRIBUTING.md
+SECURITY.md
+CODEOWNERS
+RECENT_LEARNINGS.md

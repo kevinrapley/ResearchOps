@@ -1,0 +1,52 @@
+version: 2.9.1
+profiles:
+  standard:
+    description: Standard live repository release verification.
+    required_controls:
+      github_api: true
+      workflow_lock: false
+      hardened_workflows: false
+      trusted_sbom_attestation: false
+      external_attestation_verification: false
+      accessibility_evidence: false
+      performance_evidence: false
+      evidence_to_repository_cross_check: false
+    optional_github_api_endpoints: []
+  high-assurance:
+    description: High-assurance release verification for sensitive or production repositories.
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints: []
+  regulated:
+    description: Regulated repository release verification.
+    inherits: high-assurance
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints: []
+  public-service:
+    description: Public-service repository release verification.
+    inherits: high-assurance
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints: []

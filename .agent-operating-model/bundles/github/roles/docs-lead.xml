@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<role id="docs-lead" xml_profile="native-semantic-xml/v1" version="2.9.1">
+  <title>Documentation Lead</title>
+  <description>
+    The documentation lead owns the accuracy, clarity and completeness of repository documentation.  They ensure that every change is accompanied by relevant documentation updates and that the docs build and linting succeed.
+  </description>
+  <responsibilities>
+    <list type="unordered">
+      <item>Maintain the `README`, `CONTRIBUTING`, `CODE_OF_CONDUCT`, ADR index and other top‑level docs.</item>
+      <item>Review pull requests for documentation impact and require updates where necessary.</item>
+      <item>Run documentation builds in CI and fix build failures or linting errors.</item>
+      <item>Ensure documentation is accessible, using inclusive language and descriptive alt text.</item>
+      <item>Coordinate with the architect to document architectural decisions and system diagrams.</item>
+    </list>
+  </responsibilities>
+</role>

@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Live Release Policy",
+  "type": "object",
+  "required": [
+    "version",
+    "profiles"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "profiles": {
+      "type": "object",
+      "required": [
+        "standard",
+        "high-assurance",
+        "regulated",
+        "public-service"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "required_controls"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "inherits": {
+            "type": "string"
+          },
+          "optional_github_api_endpoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required_controls": {
+            "type": "object",
+            "required": [
+              "github_api"
+            ],
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "properties": {
+              "github_api": {
+                "type": "boolean"
+              },
+              "workflow_lock": {
+                "type": "boolean"
+              },
+              "hardened_workflows": {
+                "type": "boolean"
+              },
+              "trusted_sbom_attestation": {
+                "type": "boolean"
+              },
+              "external_attestation_verification": {
+                "type": "boolean"
+              },
+              "accessibility_evidence": {
+                "type": "boolean"
+              },
+              "performance_evidence": {
+                "type": "boolean"
+              },
+              "evidence_to_repository_cross_check": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
