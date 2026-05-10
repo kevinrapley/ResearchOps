@@ -1,0 +1,14 @@
+<domain id="templates-domain">
+  <purpose>Cover template discovery, custom-template creation, mural creation from template, and template deletion.</purpose>
+  <covered_operations>
+    <operation>getdefaulttemplates</operation>
+    <operation>gettemplatesbyworkspace</operation>
+    <operation>getrecenttemplates</operation>
+    <operation>createcustomtemplate</operation>
+    <operation>createmuralfromtemplate</operation>
+    <operation>deletetemplatebyid</operation>
+  </covered_operations>
+  <rules>
+    <rule>Differentiate MURAL default templates from workspace custom templates.</rule>
+  </rules>
+</domain>

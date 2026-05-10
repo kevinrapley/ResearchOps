@@ -1,0 +1,11 @@
+<domain id="boundaries-domain">
+  <purpose>Cover public-versus-enterprise boundaries, visitor constraints, and non-substitutes such as Canvas Embed SDK.</purpose>
+  <covered_operations>
+
+  </covered_operations>
+  <rules>
+    <rule>Do not recommend enterprise administration endpoints for public-API requests.</rule>
+    <rule>Do not claim visitor OAuth into the external app.</rule>
+    <rule>Do not substitute Embed SDK coverage for API endpoint coverage.</rule>
+  </rules>
+</domain>

@@ -1,0 +1,10 @@
+<domain id="comments-domain">
+  <purpose>Cover comment widget creation and update.</purpose>
+  <covered_operations>
+    <operation>createcomment</operation>
+    <operation>updatecomment</operation>
+  </covered_operations>
+  <rules>
+    <rule>Comments are widget resources with discussion semantics, not general-purpose text blocks.</rule>
+  </rules>
+</domain>

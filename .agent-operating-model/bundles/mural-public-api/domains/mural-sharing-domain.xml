@@ -1,0 +1,11 @@
+<domain id="mural-sharing-domain">
+  <purpose>Cover visitor settings and visitor-link management.</purpose>
+  <covered_operations>
+    <operation>updatemuralvisitorsettings</operation>
+    <operation>resetvisitorlink</operation>
+  </covered_operations>
+  <rules>
+    <rule>Visitor settings are mural-level sharing controls.</rule>
+    <rule>Do not imply that anonymous visitors authenticate through the external app.</rule>
+  </rules>
+</domain>

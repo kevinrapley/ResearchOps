@@ -1,0 +1,10 @@
+<domain id="widgets-title-domain">
+  <purpose>Cover title widget creation and update.</purpose>
+  <covered_operations>
+    <operation>createtitle</operation>
+    <operation>updatetitle</operation>
+  </covered_operations>
+  <rules>
+    <rule>Titles are semantic heading widgets, not freeform textboxes.</rule>
+  </rules>
+</domain>
