@@ -1,0 +1,10 @@
+{
+  "aggregate": {
+    "summaries": {
+      "http.response_time": {"p95": 220}
+    },
+    "rates": {
+      "http.request_rate": 50
+    }
+  }
+}

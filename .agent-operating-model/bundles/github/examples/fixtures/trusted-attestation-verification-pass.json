@@ -1,0 +1,40 @@
+{
+  "type": "trusted-attestation-command-report",
+  "artifact": "artifact.zip",
+  "repo": "owner/repo",
+  "sigstore_bundle": "sigstore-bundle.json",
+  "checks": [
+    {
+      "command": [
+        "gh",
+        "attestation",
+        "verify",
+        "artifact.zip",
+        "--repo",
+        "owner/repo"
+      ],
+      "returncode": 0,
+      "duration_seconds": 0.1,
+      "stdout_tail": "Verified",
+      "stderr_tail": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "cosign",
+        "verify-blob",
+        "artifact.zip",
+        "--bundle",
+        "sigstore-bundle.json"
+      ],
+      "returncode": 0,
+      "duration_seconds": 0.1,
+      "stdout_tail": "Verified OK",
+      "stderr_tail": "",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "errors": [],
+  "created_at_unix": 1770000000
+}

@@ -1,0 +1,17 @@
+name: CI (Fixture)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
+      - name: Fixture
+        run: echo "release-mode workflow fixture"
