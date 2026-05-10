@@ -31,6 +31,7 @@ Canonical bundle directories currently include:
 - `.agent-operating-model/bundles/researchops-developer-control/`
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
+- `.agent-operating-model/bundles/cloudflare/`
 - `.agent-operating-model/bundles/airtable-public-api/`
 - `.agent-operating-model/bundles/mural-public-api/`
 
@@ -127,7 +128,8 @@ Before committing, run the relevant subset of:
 - Use Worker logging deliberately.
 - Secrets come from Wrangler environment configuration. Never hard-code them.
 - API access belongs in `infra/cloudflare/src/lib/`, `infra/cloudflare/src/core/` or `infra/cloudflare/src/service/`.
-- Use `.agent-operating-model/bundles/researchops-developer-control/` for ResearchOps-specific Worker, routing, service and deployment rules.
+- Use `.agent-operating-model/bundles/researchops-developer-control/` for ResearchOps-specific Worker, routing and service rules.
+- Use `.agent-operating-model/bundles/cloudflare/` for Cloudflare runtime, Wrangler, binding, storage, queue, workflow, Workers AI, Vectorize and deployment rules.
 
 ---
 
@@ -152,7 +154,7 @@ Before committing, run the relevant subset of:
 
 ## Canonical bundle ownership
 
-Do not duplicate the detailed Airtable, Mural, GOV.UK Design System, GitHub Diamond, ResearchOps Developer Control, or Multi-Functional Team bundle rules in this file.
+Do not duplicate the detailed Cloudflare, Airtable, Mural, GOV.UK Design System, GitHub Diamond, ResearchOps Developer Control, or Multi-Functional Team bundle rules in this file.
 
 Use these canonical bundle directories instead:
 
@@ -162,6 +164,7 @@ Use these canonical bundle directories instead:
 | ResearchOps platform development | `.agent-operating-model/bundles/researchops-developer-control/` |
 | Multidisciplinary government product assurance | `.agent-operating-model/bundles/multi-functional-team/` |
 | GOV.UK Design System | `.agent-operating-model/bundles/govuk-design-system/` |
+| Cloudflare Developer Platform | `.agent-operating-model/bundles/cloudflare/` |
 | Airtable Public API | `.agent-operating-model/bundles/airtable-public-api/` |
 | Mural Public API | `.agent-operating-model/bundles/mural-public-api/` |
 
