@@ -1,5 +1,5 @@
 {
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"updated": "2026-05-10",
 	"canonicalRoot": ".agent-operating-model/bundles/",
 	"defaultLoadOrder": [
@@ -91,6 +91,36 @@
 				"component",
 				"content design",
 				"page"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "cloudflare",
+			"name": "Cloudflare Developer Platform",
+			"role": "cloudflare-runtime-deployment-and-bindings-control",
+			"precedence": 70,
+			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
+			"keywords": [
+				"cloudflare",
+				"worker",
+				"workers",
+				"wrangler",
+				"deployment",
+				"pages",
+				"route",
+				"binding",
+				"bindings",
+				"d1",
+				"kv",
+				"r2",
+				"durable object",
+				"queues",
+				"workflows",
+				"workers ai",
+				"vectorize"
 			],
 			"mustRecordInTrace": true
 		},
