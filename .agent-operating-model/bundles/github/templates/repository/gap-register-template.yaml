@@ -1,0 +1,10 @@
+gaps:
+  - id: GAP-001
+    title: Example missing control
+    severity: medium
+    observed_state: Not configured
+    expected_state: Configured
+    risk: Reduced assurance
+    action: Add control
+    owner: maintainer
+    status: open

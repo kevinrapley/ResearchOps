@@ -1,0 +1,12 @@
+endpoints:
+  - method: GET
+    path: /health
+    purpose: Health check
+    auth: none
+    request_schema: none
+    response_schema: schemas/health-response.json
+    error_responses: []
+    examples: examples/payloads/health-success.json
+    tests: tests/contract/health.test
+    owner: platform
+    status: implemented-verified

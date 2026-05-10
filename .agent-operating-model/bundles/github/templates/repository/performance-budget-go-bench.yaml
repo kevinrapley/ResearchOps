@@ -1,0 +1,4 @@
+budgets:
+  - metric: handler_ns_per_op
+    threshold: 50000
+    tolerance_percent: 10

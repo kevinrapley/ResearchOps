@@ -1,0 +1,13 @@
+harms:
+  - id: HARM-001
+    harm: User cannot complete a high-stakes flow because of an inaccessible interaction.
+    affected_groups:
+      - Disabled users
+      - Users relying on assistive technology
+    likelihood: medium
+    severity: high
+    mitigation: Complete manual keyboard, focus and screen-reader checks before release.
+    residual_risk: medium
+    owner: accessibility-specialist
+    escalation_route: Product owner and ethics or safeguarding lead
+    release_decision: requires-escalation
