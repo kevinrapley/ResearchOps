@@ -1,0 +1,194 @@
+operation_id: listViews
+summary: List views in a base.
+family: metadata
+layer: views-read
+method: GET
+url_template: https://api.airtable.com/v0/meta/bases/{baseId}/views
+path_template: /meta/bases/{baseId}/views
+reference:
+  source_url: https://airtable.com/developers/web/api/list-views
+  source_status: official-reference-page-observed
+  languages_listed_by_docs:
+  - Node
+  - Ruby
+  - PHP
+  - Python
+versioning:
+  path_segment: v0
+  default_version: v0
+  versioning_note: Airtable Web API and metadata endpoints use the /v0 base path.
+auth:
+  scheme: Bearer token
+  token_types:
+  - personal_access_token
+  - oauth_access_token
+authorization:
+  minimum_scopes:
+  - schema.base:read
+  scope_resolution_rule: Request the smallest viable scope set that satisfies the operation.
+parameters:
+  path:
+  - name: baseId
+    in: path
+    required: true
+    type: string
+  query: []
+request_body:
+  present: false
+  content_type: null
+  schema: null
+responses:
+  '200':
+    description: Success
+    content_type: application/json
+    body_shape_inline:
+      type: object
+      required:
+      - views
+      properties:
+        views:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - name
+            - type
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              tableId:
+                type: string
+              personalForUserId:
+                type: string
+            additionalProperties: true
+      additionalProperties: true
+  '400':
+    description: Request invalid or malformed.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/bad_request
+  '401':
+    description: Missing token or token invalid.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/unauthorized
+  '403':
+    description: Scope or permission denied.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/forbidden
+  '404':
+    description: Resource not found.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/not_found
+  '429':
+    description: Rate limited.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/rate_limited
+  '500':
+    description: Server error.
+    content_type: application/json
+    body_shape:
+      $ref: ../common/error-responses.yaml#/server_error
+inline_error_envelope:
+  type: object
+  required:
+  - error
+  properties:
+    error:
+      type: object
+      required:
+      - type
+      - message
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
+        details:
+          type: array
+          items:
+            type: object
+            required:
+            - message
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              field:
+                type: string
+            additionalProperties: true
+      additionalProperties: true
+  additionalProperties: true
+code_examples:
+  node: |-
+    const baseUrl = 'https://api.airtable.com/v0';
+    const baseId = process.env.AIRTABLE_BASE_ID || 'YOUR_BASEID';
+    const response = await fetch(`${baseUrl}/meta/bases/${baseId}/views`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
+        Accept: 'application/json',
+      },
+    });
+    const data = response.status === 204 ? null : await response.json();
+    console.log(response.status, data);
+  ruby: |-
+    require 'net/http'
+    require 'json'
+    require 'uri'
+    baseId = ENV.fetch('AIRTABLE_BASE_ID', 'YOUR_BASEID')
+    uri = URI("https://api.airtable.com/v0/meta/bases/#{baseId}/views")
+    request = Net::HTTP::Get.new(uri)
+    request['Authorization'] = "Bearer #{ENV.fetch('AIRTABLE_TOKEN')}"
+    request['Accept'] = 'application/json'
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+    data = response.code == '204' ? nil : JSON.parse(response.body)
+    puts [response.code, data].inspect
+  php: |-
+    <?php
+    $baseId = getenv('AIRTABLE_BASE_ID') ?: 'YOUR_BASEID';
+    $ch = curl_init('https://api.airtable.com/v0/meta/bases/' . $baseId . '/views');
+    $headers = [
+        "Authorization: Bearer " . getenv("AIRTABLE_TOKEN"),
+        "Accept: application/json",
+    ];
+    $options = [
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $headers,
+    ];
+    curl_setopt_array($ch, $options);
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = $status === 204 ? null : json_decode($body, true);
+    var_dump($status, $data);
+  python: |-
+    import os
+    import requests
+    baseId = os.getenv('AIRTABLE_BASE_ID', 'YOUR_BASEID')
+    headers = {
+        'Authorization': f"Bearer {os.environ['AIRTABLE_TOKEN']}",
+        'Accept': 'application/json',
+    }
+    response = requests.request('GET', f'https://api.airtable.com/v0/meta/bases/{baseId}/views', headers=headers)
+    data = None if response.status_code == 204 else response.json()
+    print(response.status_code, data)
+contract_strength:
+  path_method: high-confidence
+  request_shape: n/a
+  response_shape: family-derived-and-publicly-consistent
+  source_basis: official-reference-page-observed
+notes:
+- Official page title was discoverable through public search results.
