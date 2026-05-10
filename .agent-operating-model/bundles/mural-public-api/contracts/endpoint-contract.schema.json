@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mural Endpoint Contract",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "summary",
+    "method",
+    "url_template",
+    "reference",
+    "auth",
+    "authorization",
+    "parameters",
+    "responses",
+    "code_examples"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "layer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "method": {
+      "type": "string"
+    },
+    "url_template": {
+      "type": "string"
+    },
+    "path_template": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "object"
+    },
+    "versioning": {
+      "type": "object"
+    },
+    "auth": {
+      "type": "object"
+    },
+    "authorization": {
+      "type": "object"
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "request_body": {
+      "type": "object"
+    },
+    "responses": {
+      "type": "object"
+    },
+    "code_examples": {
+      "type": "object"
+    },
+    "contract_strength": {
+      "type": "object"
+    },
+    "development_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Bundle version that last modified this contract."
+    }
+  },
+  "additionalProperties": true
+}
