@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-review" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Review Mode</title>
+  <purpose>Review PRs for correctness and risk.</purpose>
+  <inputs>
+    <item>PR diff</item>
+    <item>CI evidence</item>
+  </inputs>
+  <actions>
+    <item>Verify evidence.</item>
+    <item>Check tests, docs, security, accessibility and release impact.</item>
+    <item>Create harm register when ethics triggers are met.</item>
+    <item>Approve only if blockers clear.</item>
+  </actions>
+  <outputs>
+    <item>Review decision</item>
+    <item>Requested changes</item>
+  </outputs>
+  <failure_states>
+    <item>Approving without evidence</item>
+  </failure_states>
+  <required_contracts>
+    <item>pull-request-contract.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>pr-readiness-grader.xml</item>
+    <item>security-grader.xml</item>
+  </required_graders>
+</mode>

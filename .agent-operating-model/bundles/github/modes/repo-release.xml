@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-release" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Release Mode</title>
+  <purpose>Prepare and verify releases.</purpose>
+  <inputs>
+    <item>Release target</item>
+    <item>CI results</item>
+  </inputs>
+  <actions>
+    <item>Validate version, changelog and docs.</item>
+    <item>Run all gates.</item>
+    <item>Generate SBOM and provenance.</item>
+    <item>Check performance budgets.</item>
+    <item>Create harm register when ethics triggers are met.</item>
+    <item>Document rollback.</item>
+  </actions>
+  <outputs>
+    <item>Release notes</item>
+    <item>Artifacts</item>
+    <item>Rollback</item>
+    <item>Evidence</item>
+  </outputs>
+  <failure_states>
+    <item>Blocking gaps unresolved</item>
+  </failure_states>
+  <required_contracts>
+    <item>release-contract.schema.json</item>
+    <item>sbom-record.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>release-grader.xml</item>
+    <item>sbom-grader.xml</item>
+    <item>performance-grader.xml</item>
+  </required_graders>
+</mode>

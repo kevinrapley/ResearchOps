@@ -1,1 +1,27 @@
-
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-archive" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Archive Mode</title>
+  <purpose>Deprecate safely.</purpose>
+  <inputs>
+    <item>Archive request</item>
+  </inputs>
+  <actions>
+    <item>Assess consumers.</item>
+    <item>Publish deprecation notice.</item>
+    <item>Preserve licence and security reporting.</item>
+    <item>Update GitHub settings.</item>
+  </actions>
+  <outputs>
+    <item>Archive decision</item>
+    <item>Migration notes</item>
+  </outputs>
+  <failure_states>
+    <item>Archive without notice</item>
+  </failure_states>
+  <required_contracts>
+    <item>release-contract.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>release-grader.xml</item>
+  </required_graders>
+</mode>

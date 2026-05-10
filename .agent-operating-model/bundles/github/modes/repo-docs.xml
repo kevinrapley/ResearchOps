@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-docs" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Documentation Mode</title>
+  <purpose>Maintain documentation as a tested surface.</purpose>
+  <inputs>
+    <item>Docs task</item>
+  </inputs>
+  <actions>
+    <item>Update docs and examples.</item>
+    <item>Run docs checks.</item>
+    <item>Record provenance.</item>
+  </actions>
+  <outputs>
+    <item>Docs diff</item>
+    <item>Validation evidence</item>
+  </outputs>
+  <failure_states>
+    <item>Broken links</item>
+  </failure_states>
+  <required_contracts>
+    <item>provenance-record.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>provenance-grader.xml</item>
+  </required_graders>
+</mode>

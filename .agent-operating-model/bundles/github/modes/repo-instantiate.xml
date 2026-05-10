@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-instantiate" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Instantiation Mode</title>
+  <purpose>Create a governed repository foundation.</purpose>
+  <inputs>
+    <item>Purpose</item>
+    <item>Audience</item>
+    <item>Owner</item>
+    <item>Risk profile</item>
+    <item>Preferred stack</item>
+  </inputs>
+  <actions>
+    <item>Run intake questionnaire.</item>
+    <item>Select archetype and technology.</item>
+    <item>Use template-registry.yaml to select scaffolds.</item>
+    <item>Create repository contract, GitHub settings, conformance matrix, gap register and RECENT_LEARNINGS.</item>
+    <item>Select CI by manifests and risk.</item>
+    <item>Create harm register when ethics triggers are met.</item>
+  </actions>
+  <outputs>
+    <item>Initial repo tree</item>
+    <item>Contracts</item>
+    <item>CI workflows</item>
+    <item>Evidence</item>
+  </outputs>
+  <failure_states>
+    <item>No owner</item>
+    <item>No security policy</item>
+    <item>No RECENT_LEARNINGS</item>
+  </failure_states>
+  <required_contracts>
+    <item>repository-contract.schema.json</item>
+    <item>github-settings.schema.json</item>
+    <item>conformance-record.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>template-registry-grader.xml</item>
+    <item>ci-selection-grader.xml</item>
+    <item>github-settings-grader.xml</item>
+  </required_graders>
+</mode>

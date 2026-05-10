@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mode id="repo-build" version="2.9.1" xml_profile="native-semantic-xml/v1">
+  <title>Repository Build Mode</title>
+  <purpose>Implement small reviewable changes.</purpose>
+  <inputs>
+    <item>Issue/task</item>
+    <item>Discovery summary</item>
+  </inputs>
+  <actions>
+    <item>Plan with developer control contract.</item>
+    <item>Implement code, tests, docs and fixtures.</item>
+    <item>Validate contracts and quality gates.</item>
+    <item>Update conformance, gaps and recent learnings.</item>
+    <item>Create harm register when ethics triggers are met.</item>
+  </actions>
+  <outputs>
+    <item>Diff</item>
+    <item>Tests</item>
+    <item>Evidence</item>
+    <item>PR summary</item>
+  </outputs>
+  <failure_states>
+    <item>No tests</item>
+    <item>Docs stale</item>
+    <item>Fabricated evidence</item>
+  </failure_states>
+  <required_contracts>
+    <item>pull-request-contract.schema.json</item>
+    <item>agent-evidence.schema.json</item>
+  </required_contracts>
+  <required_graders>
+    <item>code-confidence-grader.xml</item>
+    <item>pr-readiness-grader.xml</item>
+  </required_graders>
+</mode>
