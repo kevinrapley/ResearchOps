@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="researchops-platform-context" version="1.13.0">
+  <purpose>Summarises ResearchOps platform context.</purpose>
+  <context>
+    <item>ResearchOps is a Cloudflare Workers and Pages platform for user research operations.</item>
+    <item>It supports projects, studies, participants, sessions, guides, consent, journals, analysis and synthesis.</item>
+    <item>It uses GOV.UK-style static pages, route-specific JavaScript and Worker API routes.</item>
+    <item>Evidence-to-insight-to-recommendation traceability is a core product concern.</item>
+  </context>
+</reference>

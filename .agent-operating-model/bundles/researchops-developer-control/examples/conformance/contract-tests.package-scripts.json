@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "test:contracts": "npm run validate:fixtures && npm run test:route-shapes && npm run test:route-availability && npm run test:proxy-worker-joined",
+    "test:contracts:ci": "npm run test:contracts && npm run validate",
+    "test:route-availability": "node tools/contracts/run-route-availability.mjs",
+    "test:proxy-worker-joined": "node tools/contracts/run-proxy-worker-joined.mjs",
+    "conformance:summary": "node ./tools/conformance/write-conformance-summary.mjs",
+    "validate:fixtures": "node tools/contracts/validate-fixture-index.mjs",
+    "test:route-shapes": "node tools/contracts/run-route-shape-contracts.mjs"
+  }
+}

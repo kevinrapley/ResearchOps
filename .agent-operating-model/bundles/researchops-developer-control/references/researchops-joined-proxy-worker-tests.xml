@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="researchops-joined-proxy-worker-tests" version="1.13.0">
+  <purpose>Defines joined Pages proxy to Worker route tests.</purpose>
+  <rules>
+    <rule>Joined tests should exercise the same `/api` boundary used by Pages clients.</rule>
+    <rule>Cover diagnostics, health, a list route and one mutate route where feasible.</rule>
+    <rule>Run joined tests before downstream browser E2E depends on API availability.</rule>
+  </rules>
+</reference>

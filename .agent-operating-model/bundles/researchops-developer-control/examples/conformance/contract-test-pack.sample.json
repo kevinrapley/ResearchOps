@@ -1,0 +1,10 @@
+{
+  "suite": "canonical-route-shape-contracts",
+  "script": "npm run test:contracts",
+  "fixture_map": "examples/conformance/contract-fixture-map.yaml",
+  "schema": "contracts/route-shape-fixture.schema.json",
+  "artifacts": [
+    "reports/contracts/contract-test-results.json",
+    "reports/contracts/contract-test-summary.md"
+  ]
+}

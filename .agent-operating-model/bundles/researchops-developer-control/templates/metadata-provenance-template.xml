@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="metadata-provenance-template" version="1.13.0">
+  <sections>artifact, source, creator, timestamp, related records, generated status</sections>
+</template>

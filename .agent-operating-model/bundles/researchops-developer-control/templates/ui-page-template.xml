@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="ui-page-template" version="1.13.0">
+  <sections>route, user need, markup, script, CSS, accessibility, empty states, errors, tests</sections>
+</template>

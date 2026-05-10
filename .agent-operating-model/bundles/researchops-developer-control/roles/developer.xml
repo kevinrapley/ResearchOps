@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<role id="developer" version="1.13.0">
+  <focus>ResearchOps implementation, repository inspection, architecture fit, tests and maintainability.</focus>
+</role>

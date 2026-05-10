@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-ui" version="1.13.0">
+  <purpose>Use for ResearchOps page, component, CSS and browser behaviour work.</purpose>
+  <rules>
+    <rule>Identify whether a change belongs in page markup, shared component, route script or stylesheet.</rule>
+    <rule>Do not duplicate component logic without justification.</rule>
+    <rule>Protect keyboard, pointer, focus and screen-reader behaviour.</rule>
+  </rules>
+</mode>

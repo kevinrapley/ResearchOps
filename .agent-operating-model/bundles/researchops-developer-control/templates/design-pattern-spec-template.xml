@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="design-pattern-spec-template" version="1.13.0">
+  <sections>pattern, user need, when to use, when not to use, markup, accessibility, tests</sections>
+</template>

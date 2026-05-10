@@ -1,0 +1,18 @@
+workflow: CI
+required_jobs:
+  - validate
+  - lint
+  - format
+  - unit-tests
+  - route-shape-contracts
+  - route-availability
+  - proxy-worker-joined
+artifacts:
+  - reports/contracts/contract-test-results.json
+  - reports/contracts/contract-test-summary.md
+  - reports/conformance/conformance-summary.json
+rules:
+  - CI must run validation before deployment.
+  - Route-shape contract tests must run before downstream E2E.
+  - Joined proxy-worker tests must validate the Pages to Worker boundary.
+  - Conformance summaries must report matrix coverage, gaps and repository conventions.

@@ -1,0 +1,38 @@
+bundle: researchops-developer-control
+version: 1.13.0
+root: .
+files:
+  - path: CHANGELOG.md
+  - path: README.md
+  - path: prompt.body.xml
+  - path: prompt.spec.yaml
+  - path: variables.schema.json
+  - path: output.schema.json
+  - path: grade.schema.json
+  - path: evals.yaml
+  - path: tests.regression.yaml
+  - path: tests.redteam.yaml
+  - path: contracts/api-contract.xml
+  - path: contracts/route-shape-fixture.schema.json
+  - path: graders/researchops-developer-control-grader.xml
+  - path: references/core-rules.xml
+  - path: references/researchops-platform-context.xml
+  - path: references/researchops-repository-conventions.xml
+  - path: references/researchops-endpoint-catalog.xml
+  - path: references/researchops-route-availability-policy.xml
+  - path: references/researchops-performance-rules.xml
+  - path: modes/rops-api.xml
+  - path: modes/rops-build.xml
+  - path: modes/rops-conformance.xml
+  - path: modes/rops-fix.xml
+  - path: modes/rops-integration.xml
+  - path: modes/rops-patterns.xml
+  - path: modes/rops-review.xml
+  - path: modes/rops-ui.xml
+  - path: roles/developer.xml
+  - path: roles/qa.xml
+  - path: roles/accessibility.xml
+  - path: roles/user-research.xml
+  - path: templates/pr-summary-template.xml
+  - path: templates/test-plan-template.xml
+  - path: templates/ui-page-template.xml

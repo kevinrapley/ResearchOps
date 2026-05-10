@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="researchops-gap-register" version="1.13.0">
+  <purpose>Defines gap-register requirements.</purpose>
+  <rules>
+    <rule>Known missing routes, tests, fixtures or documentation must be recorded as gaps.</rule>
+    <rule>Gaps need status, owner, target and evidence.</rule>
+    <rule>Do not hide gaps by overstating conformance.</rule>
+  </rules>
+</reference>

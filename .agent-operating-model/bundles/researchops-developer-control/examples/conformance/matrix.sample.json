@@ -1,0 +1,14 @@
+{
+  "matrix": [
+    {
+      "requirement": "Route shape fixtures exist for canonical routes",
+      "status": "covered",
+      "evidence": "examples/conformance/contract-fixture-map.yaml"
+    },
+    {
+      "requirement": "Joined proxy-worker tests are defined",
+      "status": "covered",
+      "evidence": "examples/conformance/proxy-worker-joined-tests.sample.json"
+    }
+  ]
+}

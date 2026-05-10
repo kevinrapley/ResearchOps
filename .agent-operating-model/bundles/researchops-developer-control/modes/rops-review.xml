@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-review" version="1.13.0">
+  <purpose>Use for reviewing ResearchOps changes.</purpose>
+  <rules>
+    <rule>Review architecture, user need, accessibility, route contracts and CI impact.</rule>
+    <rule>Separate blocking defects from advisory improvements.</rule>
+    <rule>Ground comments in file paths and observable behaviour.</rule>
+  </rules>
+</mode>

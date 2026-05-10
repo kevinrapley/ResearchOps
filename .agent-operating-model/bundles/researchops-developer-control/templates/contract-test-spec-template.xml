@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="contract-test-spec-template" version="1.13.0">
+  <sections>route, fixture, expected status, required fields, runner, CI artifact</sections>
+</template>

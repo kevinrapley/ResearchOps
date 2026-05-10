@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="implementation-plan-template" version="1.13.0">
+  <sections>goal, files, layer, steps, tests, risks, rollback</sections>
+</template>

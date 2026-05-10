@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "status": "implemented-conditional-verified",
+  "availability": "route-matched",
+  "notes": [
+    "200 or 404 means the route matched and the handler was reached",
+    "503 is reserved for bounded service-unavailable states on service-dependent routes"
+  ]
+}

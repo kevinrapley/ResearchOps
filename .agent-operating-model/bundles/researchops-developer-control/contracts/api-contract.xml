@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contract id="api-contract" version="1.13.0">
+  <purpose>Defines API contract expectations for ResearchOps Worker routes.</purpose>
+  <rules>
+    <rule>Do not invent endpoints when a route registry, router file or existing service module can be inspected.</rule>
+    <rule>Preserve response shape compatibility unless a migration is explicitly requested.</rule>
+    <rule>Document success, error and empty-state responses for changed API routes.</rule>
+    <rule>Keep CORS, authentication, method handling and JSON error responses consistent with existing router conventions.</rule>
+  </rules>
+</contract>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-build" version="1.13.0">
+  <purpose>Use for implementing ResearchOps features across UI, Worker and docs.</purpose>
+  <rules>
+    <rule>Start from repository inspection.</rule>
+    <rule>Plan the implementation layer before editing.</rule>
+    <rule>Make coherent commits or full-file rewrites where practical.</rule>
+    <rule>Record tests, risks and follow-ups.</rule>
+  </rules>
+</mode>

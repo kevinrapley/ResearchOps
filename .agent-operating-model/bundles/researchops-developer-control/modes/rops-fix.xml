@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mode id="rops-fix" version="1.13.0">
+  <purpose>Use for bug fixes and regressions.</purpose>
+  <rules>
+    <rule>Identify the failing behaviour and the layer that owns it.</rule>
+    <rule>Add or update a regression assertion where possible.</rule>
+    <rule>Do not use broad rewrites to hide a narrow defect.</rule>
+  </rules>
+</mode>

@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "session": {
+    "id": "sessionRec_001",
+    "studyId": "studyRec_207",
+    "participantId": "participantRec_001",
+    "startsAt": "2026-05-14T09:30:00.000Z",
+    "status": "Scheduled"
+  }
+}

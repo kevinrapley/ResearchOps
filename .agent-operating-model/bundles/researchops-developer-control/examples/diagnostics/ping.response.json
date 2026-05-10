@@ -1,0 +1,5 @@
+{
+  "ok": true,
+  "handler": "handleRequest",
+  "route": "/api/_diag/ping"
+}

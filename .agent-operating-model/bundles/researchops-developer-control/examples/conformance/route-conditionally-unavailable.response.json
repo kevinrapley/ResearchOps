@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "status": "implemented-conditional-verified",
+  "availability": "service-unavailable",
+  "error": "Service temporarily unavailable",
+  "notes": [
+    "Treat 503 here as conditional unavailability, not as route absence",
+    "Do not downgrade the route to extension-absent-verified on this basis alone"
+  ]
+}

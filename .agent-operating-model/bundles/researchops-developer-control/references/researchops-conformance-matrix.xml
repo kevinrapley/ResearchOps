@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="researchops-conformance-matrix" version="1.13.0">
+  <purpose>Defines how repository conformance is recorded.</purpose>
+  <fields>
+    <field>requirement</field>
+    <field>status</field>
+    <field>evidence</field>
+    <field>owner</field>
+    <field>gap</field>
+  </fields>
+</reference>

@@ -1,0 +1,7 @@
+{
+  "change": "Add participant consent export",
+  "affectedUsers": ["participants", "researchers"],
+  "risks": ["excess data exposure", "loss of consent context"],
+  "mitigations": ["minimise fields", "include consent status", "log export action"],
+  "decision": "needs review before release"
+}
