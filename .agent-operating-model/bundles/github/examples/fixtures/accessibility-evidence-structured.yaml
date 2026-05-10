@@ -1,0 +1,45 @@
+automated_checks:
+  axe:
+    tool: axe-core
+    version: fixture
+    violations: 0
+    file: examples/accessibility-results/axe.json
+  pa11y:
+    tool: pa11y
+    version: fixture
+    issues: 0
+    file: examples/accessibility-results/pa11y.json
+  lighthouse:
+    tool: lighthouse
+    version: fixture
+    accessibility_score: 1.0
+    file: examples/accessibility-results/lighthouse.json
+keyboard_tests:
+  - name: Complete primary journey using keyboard
+    steps:
+      - Tab through header navigation
+      - Complete form fields
+      - Submit form
+    result: pass
+focus_tests:
+  - name: Error summary receives focus
+    result: pass
+screen_reader_tests:
+  - screen_reader: NVDA
+    browser: Firefox
+    result: pass
+    notes: Headings, labels and errors announced.
+assistive_technology_matrix:
+  - technology: NVDA
+    browser: Firefox
+    platform: Windows
+    result: pass
+  - technology: VoiceOver
+    browser: Safari
+    platform: macOS
+    result: pass
+defects:
+  - id: AX-001
+    severity: low
+    status: closed
+release_decision: pass
