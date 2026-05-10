@@ -1,0 +1,9 @@
+<reference id="source-grounding-reference">
+  <rule>Use endpoint-source.catalog.yaml and endpoint-coverage.matrix.yaml before improvising any method-path pair.</rule>
+  <rule>Preserve user-supplied reference URLs as first-class provenance.</rule>
+  <rule>When a supplied page slug contains a clear typo, preserve the supplied slug and state the canonical operation name.</rule>
+  <rule>Prefer official docs pages for OAuth, scopes, rate limits, errors, hierarchy, and public-vs-enterprise boundaries.</rule>
+  <rule>When surfacing response body shape to a developer, prefer body_shape_inline from the contract's 200 response block — it is fully dereferenced and self-contained, requiring no $ref resolution. The $ref form (body_shape) is retained for machine consumers.</rule>
+  <rule>When surfacing error shape, use inline_error_envelope from the contract top level. It contains code, message, and details[] without a ref hop.</rule>
+  <rule>Code examples in each contract are near-runnable: path parameters are declared as env-var-backed variables at the top of each snippet. Present them as-is; do not strip the variable declarations.</rule>
+</reference>
