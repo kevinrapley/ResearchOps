@@ -18,6 +18,7 @@ inventory_summary:
   common_contract_assets: 5
   regression_case_count: 20
   redteam_case_count: 14
+  schema_contract: json-only
 schema_policy:
   authoritative_schemas:
   - grade.schema.json
@@ -25,29 +26,7 @@ schema_policy:
   removed_schema_shims:
   - grade.schema.js
   - output.schema.js
-asset_groups:
-- id: contracts
-  paths:
-  - contracts/common/*.yaml
-  - contracts/endpoints/*.yaml
-  - contracts/endpoint-contract.schema.json
-  - contracts/endpoint-contracts.index.yaml
-- id: domains
-  paths:
-  - domains/*.xml
-- id: workflows
-  paths:
-  - workflows/*.xml
-- id: patterns
-  paths:
-  - patterns/*.xml
-- id: references
-  paths:
-  - references/*.xml
-- id: graders
-  paths:
-  - graders/*.xml
-core_assets:
+asset_inventory:
 - path: CHANGELOG.md
 - path: README.md
 - path: prompt.body.xml
@@ -64,3 +43,66 @@ core_assets:
 - path: topology.plan.xml
 - path: topology.schema.json
 - path: generated-bundle-manifest.schema.json
+- path: contracts/common/auth-profile.yaml
+- path: contracts/common/code-example-conventions.yaml
+- path: contracts/common/error-responses.yaml
+- path: contracts/common/pagination-contract.yaml
+- path: contracts/common/resource-models.yaml
+- path: contracts/endpoint-contract.schema.json
+- path: contracts/endpoint-contracts.index.yaml
+- path: contracts/endpoints/createbase.yaml
+- path: contracts/endpoints/createcomment.yaml
+- path: contracts/endpoints/createfield.yaml
+- path: contracts/endpoints/createrecords.yaml
+- path: contracts/endpoints/createtable.yaml
+- path: contracts/endpoints/createwebhook.yaml
+- path: contracts/endpoints/deletecomment.yaml
+- path: contracts/endpoints/deletemultiplerecords.yaml
+- path: contracts/endpoints/deleterecord.yaml
+- path: contracts/endpoints/deletewebhook.yaml
+- path: contracts/endpoints/getbaseschema.yaml
+- path: contracts/endpoints/getrecord.yaml
+- path: contracts/endpoints/getwebhookpayloads.yaml
+- path: contracts/endpoints/listbases.yaml
+- path: contracts/endpoints/listcomments.yaml
+- path: contracts/endpoints/listrecords.yaml
+- path: contracts/endpoints/listviews.yaml
+- path: contracts/endpoints/listwebhooks.yaml
+- path: contracts/endpoints/refreshwebhook.yaml
+- path: contracts/endpoints/updatecomment.yaml
+- path: contracts/endpoints/updatefield.yaml
+- path: contracts/endpoints/updatemultiplerecords.yaml
+- path: contracts/endpoints/updaterecord.yaml
+- path: contracts/endpoints/updatetable.yaml
+- path: domains/auth-domain.xml
+- path: domains/boundaries-domain.xml
+- path: domains/comments-domain.xml
+- path: domains/operational-constraints-domain.xml
+- path: domains/records-domain.xml
+- path: domains/schema-domain.xml
+- path: domains/webhooks-domain.xml
+- path: workflows/boundary-and-failure-workflow.xml
+- path: workflows/endpoint-resolution-workflow.xml
+- path: workflows/pagination-rate-limit-workflow.xml
+- path: workflows/request-classification-workflow.xml
+- path: workflows/schema-write-safety-workflow.xml
+- path: workflows/webhook-verification-workflow.xml
+- path: patterns/comment-automation-pattern.xml
+- path: patterns/metadata-inventory-pattern.xml
+- path: patterns/record-sync-pattern.xml
+- path: patterns/schema-bootstrap-pattern.xml
+- path: patterns/webhook-consumer-pattern.xml
+- path: references/boundary-rules-reference.xml
+- path: references/contract-provenance-reference.xml
+- path: references/coverage-guarantee-reference.xml
+- path: references/operational-hardening-reference.xml
+- path: references/solution-authoring-reference.xml
+- path: references/source-grounding-reference.xml
+- path: graders/boundary-integrity-grader.xml
+- path: graders/bundle-architecture-grader.xml
+- path: graders/endpoint-coverage-grader.xml
+- path: graders/evaluation-coverage-grader.xml
+- path: graders/portability-grader.xml
+- path: graders/schema-contract-grader.xml
+- path: graders/source-grounding-grader.xml
+- path: graders/topology-fit-grader.xml
