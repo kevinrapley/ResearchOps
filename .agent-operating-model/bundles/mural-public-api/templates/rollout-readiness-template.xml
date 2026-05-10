@@ -1,0 +1,9 @@
+<template id="rollout-readiness-template">
+  <section name="auth_ready"/>
+  <section name="scope_ready"/>
+  <section name="endpoint_mapping_ready"/>
+  <section name="pagination_ready"/>
+  <section name="rate_limit_ready"/>
+  <section name="error_handling_ready"/>
+  <section name="boundary_checks_ready"/>
+</template>
