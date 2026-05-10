@@ -12,6 +12,7 @@ const BASE_OPERATING_MODEL_SAFEGUARDS = Object.freeze([
 	"must-load-agents-md",
 	"must-load-orchestration",
 	"must-load-bundle-registry",
+	"must-resolve-canonical-bundle-directories",
 	"must-apply-bundle-precedence",
 ]);
 const REASONING_TRACE_OUTPUTS = Object.freeze([
@@ -166,6 +167,20 @@ function selectBundles(registry, selectionRules, taskText, signals) {
 	};
 }
 
+function bundleRecord(bundle) {
+	return {
+		canonicalPath: bundle.canonicalPath,
+		id: bundle.id,
+		load: bundle.load,
+		name: bundle.name,
+		precedence: bundle.precedence,
+		promptBody: bundle.promptBody,
+		promptSpec: bundle.promptSpec,
+		role: bundle.role,
+		selectionEvidence: bundle.selectionEvidence,
+	};
+}
+
 /**
  * Load the repository operating model and select relevant bundles.
  * @param {object} [options] Load options.
@@ -182,24 +197,12 @@ export function loadOperatingModel(options = {}) {
 	const safeguards = inferOperatingModelSafeguards(taskText);
 
 	return {
-		bundlePackage: registry.bundlePackage,
+		canonicalRoot: registry.canonicalRoot,
 		instructionConflicts: safeguards.conflicts,
 		operatingModelSafeguards: safeguards.safeguards,
 		registryVersion: registry.version,
-		selectedBundles: selected.selectedBundles.map((bundle) => ({
-			id: bundle.id,
-			load: bundle.load,
-			name: bundle.name,
-			precedence: bundle.precedence,
-			role: bundle.role,
-			selectionEvidence: bundle.selectionEvidence,
-		})),
-		skippedBundles: selected.skippedBundles.map((bundle) => ({
-			id: bundle.id,
-			load: bundle.load,
-			name: bundle.name,
-			selectionEvidence: bundle.selectionEvidence,
-		})),
+		selectedBundles: selected.selectedBundles.map(bundleRecord),
+		skippedBundles: selected.skippedBundles.map(bundleRecord),
 		taskFacets: taskSignals,
 		taskSignals,
 		traceOutputs: traceOutputsFor(taskText),
