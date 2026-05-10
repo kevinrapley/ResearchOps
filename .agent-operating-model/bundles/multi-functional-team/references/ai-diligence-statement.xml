@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="ai-diligence-statement" version="1.0.0">
+  <title>AI diligence and assurance statement</title>
+  <reference_block name="ai-diligence-and-assurance-statement" title="AI diligence and assurance statement">
+    <statement>Product Assistant Agent</statement>
+  </reference_block>
+  <reference_block name="purpose" title="Purpose">
+    <statement>The Product Assistant Agent is an internal workplace support tool.</statement>
+    <statement>It helps UK Government digital teams apply product, service, delivery, accessibility and governance practice more consistently.</statement>
+    <statement>It supports thinking and structured work.</statement>
+    <statement>It does not replace professional judgement, decision‑making, or accountability.</statement>
+  </reference_block>
+  <reference_block name="how-the-agent-was-created" title="How the agent was created">
+    <statement>The agent was created using Microsoft 365 Copilot Agent Builder as part of a Home Office Copilot Agents micro‑experiment.</statement>
+    <statement>Agent Builder is used as the hosting and execution environment only.</statement>
+    <statement>The agent’s behaviour, modes and guardrails are defined in external Markdown rulesets stored in SharePoint.</statement>
+    <statement>These files are treated as binding by the agent and sit outside the single instruction window of Agent Builder.</statement>
+    <statement>The design deliberately separates:</statement>
+    <checklist ordered="false" purpose="the-design-deliberately-separates">
+      <entry level="0">always‑on safety and governance rules</entry>
+      <entry level="0">mode and service‑phase control</entry>
+      <entry level="0">discipline‑specific role behaviour</entry>
+      <entry level="0">output templates</entry>
+      <entry level="0">behavioural linting and enforcement</entry>
+    </checklist>
+    <statement>This structure was chosen to reduce drift, false confidence and inconsistent advice.</statement>
+  </reference_block>
+  <reference_block name="use-of-ai-during-development" title="Use of AI during development">
+    <statement>Microsoft Copilot was used as a development assistant, not as an autonomous designer.</statement>
+    <statement>Copilot supported:</statement>
+    <checklist ordered="false" purpose="copilot-supported">
+      <entry level="0">drafting and refining Markdown rules</entry>
+      <entry level="0">testing guardrails and mode behaviour</entry>
+      <entry level="0">synthesising publicly available guidance from GOV.UK, GDS and SFIA</entry>
+    </checklist>
+    <statement>All outputs were reviewed, edited and structured by the agent author before adoption.</statement>
+    <statement>No rules or constraints were accepted without human review.</statement>
+  </reference_block>
+  <reference_block name="guardrails-and-risk-controls" title="Guardrails and risk controls">
+    <statement>The agent operates under a strict rule‑precedence model.</statement>
+    <statement>Law, safety, accessibility, privacy and governance override all other behaviour.</statement>
+    <statement>The most protective rule always applies.</statement>
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">surfaces uncertainty rather than guessing</entry>
+      <entry level="0">distinguishes evidence from inference</entry>
+      <entry level="0">refuses requests that bypass governance or service‑phase controls</entry>
+      <entry level="0">avoids legal, operational or approval‑level decisions</entry>
+    </checklist>
+    <statement>Behavioural linting is used to block non‑compliant outputs, including inappropriate artefacts and incorrect mode usage.</statement>
+  </reference_block>
+  <reference_block name="data-and-information-handling" title="Data and information handling">
+    <statement>The agent does not train on Home Office data.</statement>
+    <statement>It can only access information explicitly provided through configured knowledge sources, such as approved SharePoint locations.</statement>
+    <statement>The agent is intended for use with information classified up to OFFICIAL and follows Home Office guidance on safe use of Copilot.</statement>
+  </reference_block>
+  <reference_block name="testing-and-oversight" title="Testing and oversight">
+    <statement>The agent has been tested through:</statement>
+    <checklist ordered="false" purpose="the-agent-has-been-tested-through">
+      <entry level="0">individual use by the creator</entry>
+      <entry level="0">shared testing with a small group of invited colleagues</entry>
+      <entry level="0">walkthroughs and critique during Agent Builder support sessions</entry>
+    </checklist>
+    <statement>Feedback has been used to refine rules, clarify limits and tighten guardrails. The agent is experimental and not positioned as a production system.</statement>
+  </reference_block>
+  <reference_block name="purpose-limitation-and-proportionality" title="Purpose limitation and proportionality">
+    <statement>The agent is a decision‑support tool.</statement>
+    <statement>It augments human judgement and operates within a clearly defined remit.</statement>
+    <statement>It does not act autonomously or replace accountability.</statement>
+  </reference_block>
+  <reference_block name="human-oversight-and-accountability" title="Human oversight and accountability">
+    <statement>A named owner designed, configured and tested the agent.</statement>
+    <statement>All rules, modes and constraints were authored and reviewed by a human.</statement>
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">responds only to explicit prompts</entry>
+      <entry level="0">makes its active mode and phase visible</entry>
+      <entry level="0">defers to users where judgement or escalation is required</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="transparency-and-auditability" title="Transparency and auditability">
+    <statement>The agent’s behaviour is defined in human‑readable Markdown files.</statement>
+    <statement>These are reviewable and auditable.</statement>
+    <statement>Limits, refusal conditions and escalation paths are explicit.</statement>
+  </reference_block>
+  <reference_block name="service-standard-1-understand-users-and-their-needs" title="Service Standard 1: Understand users and their needs">
+    <statement>The agent was designed around observed needs in delivery teams, including:</statement>
+    <checklist ordered="false" purpose="the-agent-was-designed-around-observed-needs-in-delivery-teams-including">
+      <entry level="0">inconsistent application of standards</entry>
+      <entry level="0">cognitive load across disciplines</entry>
+      <entry level="0">early solutioning before evidence</entry>
+    </checklist>
+    <statement>It supports users by structuring thinking, not by replacing it.</statement>
+  </reference_block>
+  <reference_block name="service-standard-2-solve-a-whole-problem" title="Service Standard 2: Solve a whole problem">
+    <statement>The agent defaults to a multidisciplinary team mode.</statement>
+    <statement>It considers product, service, delivery, accessibility, security and governance together.</statement>
+    <statement>This avoids single‑discipline optimisation and supports joined‑up decision‑making.</statement>
+  </reference_block>
+  <reference_block name="service-standard-4-make-the-service-simple-to-use" title="Service Standard 4: Make the service simple to use">
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">uses plain English</entry>
+      <entry level="0">exposes clear commands for modes and phases</entry>
+      <entry level="0">applies consistent output structure</entry>
+    </checklist>
+    <statement>Complexity is handled in rules, not pushed onto users.</statement>
+  </reference_block>
+  <reference_block name="service-standard-5-make-sure-everyone-can-use-the-service" title="Service Standard 5: Make sure everyone can use the service">
+    <statement>Accessibility is non‑negotiable.</statement>
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">uses accessible language and structure</entry>
+      <entry level="0">avoids inaccessible artefacts</entry>
+      <entry level="0">refuses outputs that breach accessibility requirements</entry>
+    </checklist>
+    <statement>Accessibility is treated as a legal and quality requirement.</statement>
+  </reference_block>
+  <reference_block name="service-standard-9-create-a-multidisciplinary-team" title="Service Standard 9: Create a multidisciplinary team">
+    <statement>The agent is explicitly modelled as a multidisciplinary team.</statement>
+    <statement>Specialist modes exist, but they sit within a shared reasoning framework.</statement>
+    <statement>This reinforces good practice rather than encouraging siloed working.</statement>
+  </reference_block>
+  <reference_block name="service-standard-10-be-ethical-and-transparent" title="Service Standard 10: Be ethical and transparent">
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">surfaces uncertainty</entry>
+      <entry level="0">distinguishes evidence from inference</entry>
+      <entry level="0">avoids false confidence</entry>
+    </checklist>
+    <statement>Users are expected to validate outputs and apply judgement.</statement>
+  </reference_block>
+  <reference_block name="use-ai-lawfully-fairly-and-responsibly" title="Use AI lawfully, fairly and responsibly">
+    <statement>The agent:</statement>
+    <checklist ordered="false" purpose="the-agent">
+      <entry level="0">operates within UK law and policy</entry>
+      <entry level="0">prioritises harm prevention and safety over usefulness</entry>
+      <entry level="0">avoids discriminatory or unsafe outputs</entry>
+    </checklist>
+    <statement>Rules explicitly prevent legal or operational decision‑making.</statement>
+  </reference_block>
+  <reference_block name="be-clear-about-the-role-of-ai" title="Be clear about the role of AI">
+    <statement>The Product Assistant Agent is positioned as:</statement>
+    <checklist ordered="false" purpose="the-product-assistant-agent-is-positioned-as">
+      <entry level="0">assistive</entry>
+      <entry level="0">advisory</entry>
+      <entry level="0">bounded</entry>
+    </checklist>
+    <statement>It is not positioned as authoritative, predictive, or autonomous.</statement>
+  </reference_block>
+  <reference_block name="manage-risk-across-the-lifecycle" title="Manage risk across the lifecycle">
+    <statement>Risk controls are embedded at design time through:</statement>
+    <checklist ordered="false" purpose="risk-controls-are-embedded-at-design-time-through">
+      <entry level="0">conservative defaults</entry>
+      <entry level="0">refusal paths</entry>
+      <entry level="0">mode and phase restrictions</entry>
+      <entry level="0">behavioural linting</entry>
+    </checklist>
+    <statement>The agent was iteratively tested and refined during the Copilot Agent Builder micro‑experiment, with feedback used to tighten guardrails.</statement>
+  </reference_block>
+  <reference_block name="enable-scrutiny-and-challenge" title="Enable scrutiny and challenge">
+    <statement>Markdown‑based rules make behaviour visible and challengeable.</statement>
+    <statement>Because the rules are written in Markdown:</statement>
+    <checklist ordered="false" purpose="because-the-rules-are-written-in-markdown">
+      <entry level="0">non‑engineers can read them</entry>
+      <entry level="0">behaviour can be challenged</entry>
+      <entry level="0">limits are visible</entry>
+    </checklist>
+    <statement>This supports scrutiny by delivery, assurance, and governance colleagues.</statement>
+  </reference_block>
+  <reference_block name="statement-of-limitations" title="Statement of limitations">
+    <statement>The Product Assistant Agent:</statement>
+    <checklist ordered="false" purpose="the-product-assistant-agent">
+      <entry level="0">may be incomplete or wrong</entry>
+      <entry level="0">cannot account for all context</entry>
+      <entry level="0">does not replace professional judgement</entry>
+    </checklist>
+    <statement>Responsibility for decisions remains with humans at all times.</statement>
+  </reference_block>
+  <reference_block name="status" title="Status">
+    <statement>This is an experimental, non‑production tool.</statement>
+    <statement>It is intended to support learning, consistency and good practice.</statement>
+    <statement>It should be used with appropriate care and oversight.</statement>
+  </reference_block>
+</reference_module>
