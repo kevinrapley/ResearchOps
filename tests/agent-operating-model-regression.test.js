@@ -33,7 +33,7 @@ function cloudflareFile(relativePath) {
 }
 
 function extractUrls(text) {
-	return Array.from(text.matchAll(/https:\/\/[^\s"']+/g)).map((match) => match[0]);
+	return Array.from(text.matchAll(/https:\/\/[^\s"'<>]+/g)).map((match) => match[0]);
 }
 
 test("repository operating model selects always-load bundles", () => {
