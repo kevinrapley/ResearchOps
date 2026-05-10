@@ -1,0 +1,84 @@
+suite: regression
+cases:
+- id: team-mode-synthesis
+  input: Summarise discovery findings and next steps for a GOV.UK-style service.
+  context:
+    active_mode: team-mode
+    active_phase: discovery
+    depth: standard
+    high_stakes: false
+    debate_mode: false
+  expects:
+    graders/agent-behaviour.xml: pass
+    graders/role-behaviour.xml: pass
+- id: developer-mode-boundaries
+  input: Write the implementation approach and testing plan for a small accessibility fix.
+  context:
+    active_mode: developer
+    active_role: developer
+    active_phase: beta
+    depth: standard
+    high_stakes: false
+    debate_mode: false
+  expects:
+    graders/developer-behaviour.xml: pass
+- id: high-stakes-summary-required
+  input: Draft a DPIA screening summary for a proposed AI-assisted decision support feature.
+  context:
+    active_mode: governance
+    active_phase: alpha
+    depth: standard
+    high_stakes: true
+    debate_mode: false
+  expects:
+    output.high_stakes_compliance_summary: required
+    graders/agent-behaviour.xml: pass
+- id: debate-engine-path
+  input: Run a consequential debate on whether safeguarding referrals should be AI-triaged before human review.
+  context:
+    active_mode: team-mode
+    active_phase: discovery
+    depth: deep
+    high_stakes: true
+    debate_mode: true
+  expects:
+    graders/debate-behaviour.xml: pass
+- id: harm-aware-research-plan
+  input: Create a research plan for testing a high-stakes government service with participants who may be distressed.
+  context:
+    active_mode: user-research
+    active_role: user-research
+    active_phase: discovery
+    depth: standard
+    high_stakes: true
+    debate_mode: false
+  expects:
+    output.harms: required
+    graders/agent-behaviour.xml: pass
+    graders/role-behaviour.xml: pass
+- id: high-stakes-harm-summary
+  input: Provide a high-stakes assessment summary for a proposed service change that could affect vulnerable users.
+  context:
+    active_mode: team-mode
+    active_phase: alpha
+    depth: standard
+    high_stakes: true
+    debate_mode: false
+  expects:
+    output.high_stakes_compliance_summary.material_harms: required
+    output.high_stakes_compliance_summary.affected_groups: required
+    graders/agent-behaviour.xml: pass
+    graders/role-behaviour.xml: pass
+- id: researchops-fieldwork-controls
+  input: Outline the operational setup for sensitive in-person fieldwork with lone-working, safeguarding, and participant privacy controls.
+  context:
+    active_mode: research-operations
+    active_role: research-operations
+    active_phase: alpha
+    depth: standard
+    high_stakes: true
+    debate_mode: false
+  expects:
+    output.harms: required
+    graders/agent-behaviour.xml: pass
+    graders/role-behaviour.xml: pass
