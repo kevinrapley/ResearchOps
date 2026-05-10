@@ -1,0 +1,55 @@
+cases:
+- id: records-sync-plan
+  prompt: Design an external product sync into Airtable with idempotent upsert behavior.
+  must_include:
+  - updateMultipleRecords
+  - performUpsert
+  - data.records:write
+  - batching
+  - '429'
+- id: record-read-pagination
+  prompt: How do I read all records from a table safely?
+  must_include:
+  - listRecords
+  - offset
+  - pageSize
+  - '100'
+- id: schema-first-ingest
+  prompt: Generate code to inspect table schema before writing imported records.
+  must_include:
+  - getBaseSchema
+  - schema.base:read
+- id: bootstrap-base
+  prompt: Create a new base with an Events table and External ID field.
+  must_include:
+  - createBase
+  - createTable
+  - createField
+  - schema.base:write
+- id: comment-posting
+  prompt: Post a completion comment onto a record after a sync finishes.
+  must_include:
+  - createComment
+- id: webhook-consumer
+  prompt: Implement Airtable webhook handling on a server.
+  must_include:
+  - createWebhook
+  - getWebhookPayloads
+  - MAC
+- id: delete-batch
+  prompt: Delete ten stale records at a time.
+  must_include:
+  - deleteMultipleRecords
+  - records[]
+- id: view-discovery
+  prompt: List all views in a base before mapping records to them.
+  must_include:
+  - listViews
+- id: field-rename
+  prompt: Rename a field and update its description.
+  must_include:
+  - updateField
+- id: table-rename
+  prompt: Rename a table for a migration.
+  must_include:
+  - updateTable

@@ -1,0 +1,2 @@
+regression: tests.regression.yaml
+redteam: tests.redteam.yaml
