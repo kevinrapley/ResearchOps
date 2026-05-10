@@ -1,0 +1,91 @@
+fixtures:
+- path: examples/payloads/http-json-success.json
+  purpose: Successful API response example
+  contract: endpoint-catalog.schema.json
+  synthetic_data: true
+  owner: api
+  contains_secrets: false
+- path: examples/payloads/http-json-error.json
+  purpose: Error API response example
+  contract: endpoint-catalog.schema.json
+  synthetic_data: true
+  owner: api
+  contains_secrets: false
+- path: examples/fixtures/repositories/multilang-empty/package.json
+  purpose: Node fixture manifest
+  contract: repository-contract.schema.json
+  synthetic_data: true
+  owner: evals
+  contains_secrets: false
+- path: examples/fixtures/repositories/multilang-empty/pyproject.toml
+  purpose: Python fixture manifest
+  contract: repository-contract.schema.json
+  synthetic_data: true
+  owner: evals
+  contains_secrets: false
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/CODEOWNERS
+  purpose: Positive eval CODEOWNERS fixture for branch protection verification
+  contract: github-settings.schema.json
+  synthetic_data: true
+  owner: evals
+  contains_secrets: false
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml
+  purpose: Positive eval test command fixture
+  contract: eval.schema.json
+  synthetic_data: true
+  owner: evals
+  contains_secrets: false
+- path: examples/fixtures/accessibility-evidence-pass.md
+  purpose: Positive accessibility evidence fixture covering automated and manual checks
+  contract: agent-evidence.schema.json
+  synthetic_data: true
+  owner: accessibility
+  contains_secrets: false
+- path: examples/performance-inputs/pytest-benchmark.json
+  purpose: Performance adapter fixture for pytest-benchmark JSON
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/go-bench.txt
+  purpose: Performance adapter fixture for Go benchmark text output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/lighthouse.json
+  purpose: Performance adapter fixture for Lighthouse JSON output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/k6-summary.json
+  purpose: Performance adapter fixture for k6 summary JSON
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/autocannon.json
+  purpose: Performance adapter fixture for autocannon JSON output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/jmeter.jtl
+  purpose: Performance adapter fixture for JMeter JTL CSV output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/gatling.json
+  purpose: Performance adapter fixture for Gatling stats JSON output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
+- path: examples/performance-inputs/artillery.json
+  purpose: Performance adapter fixture for Artillery aggregate JSON output
+  contract: performance-budget.schema.json
+  synthetic_data: true
+  owner: performance
+  contains_secrets: false
