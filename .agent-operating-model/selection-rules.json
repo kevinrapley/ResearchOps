@@ -1,5 +1,5 @@
 {
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"purpose": "Provide auditable structured rules for selecting checked-in canonical agent bundles from typed task signals before falling back to registry keyword evidence.",
 	"rules": [
 		{
@@ -29,6 +29,13 @@
 			"traceLayer": "behavioural",
 			"type": "conditional",
 			"requiredSignals": ["ui-or-content-change"]
+		},
+		{
+			"id": "conditional-cloudflare",
+			"bundleId": "cloudflare",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"requiredSignals": ["runtime-or-deployment-change"]
 		},
 		{
 			"id": "conditional-airtable-public-api",
