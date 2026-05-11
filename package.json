@@ -11,6 +11,7 @@
     "audit:performance": "bash ./scripts/performance-audit.sh",
     "audit:performance:write": "bash ./scripts/performance-audit.sh --write docs/performance/performance-inventory.md",
     "audit:security": "bash ./scripts/security-audit-policy.sh",
+    "reports:validate": "node scripts/validate-reports-site.mjs",
     "agent:model": "node scripts/agent-operating-model/load-operating-model.mjs",
     "agent:model:validate": "node scripts/agent-operating-model/validate-operating-model.mjs",
     "agent:bundles:validate": "node scripts/agent-operating-model/validate-bundle-registry.mjs",
