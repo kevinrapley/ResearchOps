@@ -11,6 +11,7 @@ function assertSignInPageUsesGovukAccountFrontDoor() {
 	assert.match(signInPage, /first Team Admin/);
 	assert.match(signInPage, /id="sign-in-status"/);
 	assert.match(signInPage, /data-auth-route="\/api\/me"/);
+	assert.match(signInPage, /data-access-login-route="\/pages\/account\/sign-in\/"/);
 	assert.match(signInPage, /data-team-admin-destination="\/pages\/team\/role-assignments\/"/);
 	assert.match(signInPage, /id="team-admin-link"/);
 	assert.match(signInPage, /href="\/pages\/team\/role-assignments\/"/);
@@ -23,6 +24,14 @@ function assertSignInPageDoesNotCreatePasswordAuth() {
 	assert.equal(signInScript.includes('password'), false);
 	assert.equal(signInScript.includes('localStorage'), false);
 	assert.equal(signInScript.includes('sessionStorage'), false);
+}
+
+function assertSignInActionDoesNotPointAtRawApi() {
+	assert.equal(signInPage.includes('id="sign-in-check-link" href="/api/me"'), false);
+	assert.match(signInPage, /id="sign-in-check-link" href="\/pages\/account\/sign-in\/"/);
+	assert.match(signInScript, /ACCESS_LOGIN_URL: window\.RESEARCHOPS_ACCESS_LOGIN_URL \|\| ""/);
+	assert.match(signInScript, /function accessLoginUrl\(\)/);
+	assert.match(signInScript, /function configureSignInAction\(\)/);
 }
 
 function assertSignInScriptChecksAuthenticatedContext() {
@@ -39,4 +48,5 @@ function assertSignInScriptChecksAuthenticatedContext() {
 
 assertSignInPageUsesGovukAccountFrontDoor();
 assertSignInPageDoesNotCreatePasswordAuth();
+assertSignInActionDoesNotPointAtRawApi();
 assertSignInScriptChecksAuthenticatedContext();
