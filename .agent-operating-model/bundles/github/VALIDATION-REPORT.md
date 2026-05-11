@@ -1,8 +1,34 @@
-# Validation Report — v2.9.1
+# Validation Report — GitHub Diamond Bundle v2.9.1
+
+Validation status: passed.
+
+Last checked: 2026-05-11.
 
 Version 2.9.1 moves the bundle from strong live repository assurance toward a fully auditable assurance regime.
 
-## Validation summary
+## Scope
+
+This bundle governs GitHub repository operation, branch hygiene, pull-request discipline, CI, release gates, evidence handling, attestation, repository settings, workflow hardening and live repository assurance.
+
+It is the highest-precedence repository governance bundle in the operating model.
+
+## Entrypoints checked
+
+Checked entrypoints:
+
+- `README.md`
+- `CHANGELOG.md`
+- `prompt.spec.yaml`
+- `prompt.body.xml`
+- `evals.yaml`
+- `tests.regression.yaml`
+- `tests.redteam.yaml`
+- `variables.schema.json`
+- `output.schema.json`
+- `grade.schema.json`
+- `registry-manifest.yaml`
+
+## Structural checks
 
 Validated before release:
 
@@ -42,38 +68,34 @@ Validated before release:
 - GitHub API strict-mode fixtures checked
 - direct final package validation checked
 
-## Offline and live assurance
+## Evaluation coverage
 
 Offline release-gate assurance validates the bundle and fixtures.
 
 Live repository assurance validates the actual GitHub repository, live API-observed state and evidence required by the selected profile.
 
-## Failure reports
-
-Release-gate reports are first-class artefacts.
-
-Both passing and failing release gates must produce schema-valid reports. Failed reports preserve command history, failed command, structured error, output tails and duration metadata.
-
-## Policy-driven profiles
+Release-gate reports are first-class artefacts. Both passing and failing release gates must produce schema-valid reports. Failed reports preserve command history, failed command, structured error, output tails and duration metadata.
 
 Live release profiles are defined in `templates/repository/live-release-policy.yaml`.
 
 High-assurance, regulated and public-service profiles require GitHub API verification, workflow lock validation, hardened workflow validation, trusted SBOM attestation, external attestation verification evidence, accessibility evidence, performance evidence and evidence-to-repository cross-checking.
 
-## Trusted attestation
-
 Trusted attestation requires both metadata validation and external verification evidence.
 
 The bundle validates SBOM attestation metadata and separately validates command evidence from `gh attestation verify` and `cosign verify-blob`.
 
-## Accessibility
-
-Accessibility validation now supports repository-root-relative paths, evidence-file-relative paths and bundle-root fallback for bundled fixtures.
+Accessibility validation supports repository-root-relative paths, evidence-file-relative paths and bundle-root fallback for bundled fixtures.
 
 Negative fixtures prove failures for open critical defects, low Lighthouse accessibility scores, axe violations and Pa11y issues.
 
+## Known gaps
+
+No known blocking gaps for current ResearchOps repository governance use.
+
+Future work can extend generated validation-report parity across all bundles so the GitHub report remains the mature baseline rather than the only high-assurance example.
+
 ## Result
 
-Validation status: passed.
+The GitHub Diamond bundle is suitable for current ResearchOps repository governance use.
 
 v2.9.1 preserves the v2.8.x and v2.9.0 control architecture while adding auditable failure reports, live policy profiles, stricter GitHub API edge-case handling, external attestation evidence validation and stronger fixture coverage.
