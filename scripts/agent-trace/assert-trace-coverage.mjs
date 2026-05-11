@@ -30,6 +30,7 @@
 
 import fs from "node:fs";
 import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const AGENT_PATH_RE =
   /^\.agent-operating-model\/(bundles\/|selection-rules\.json|task-signal-catalog\.json|behavioural-evals\.json)/;
@@ -93,16 +94,16 @@ function changedFiles() {
     }
   }
 
-  return null;
+  // All git commands failed — skip the check rather than block unrelated PRs.
+  console.warn("trace:coverage: git diff unavailable — skipping trace coverage check");
+  return [];
 }
 
-const date = parseDateArg();
-const files = changedFiles();
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 
-if (files === null) {
-  // All git commands failed — assume agent changes present (safe default)
-  console.warn("trace:coverage: git diff unavailable — assuming agent-significant changes");
-} else {
+if (isMain) {
+  const date = parseDateArg();
+  const files = changedFiles();
   const agentChanges = files.filter((f) => AGENT_PATH_RE.test(f));
 
   if (agentChanges.length === 0) {
@@ -111,19 +112,19 @@ if (files === null) {
   }
 
   console.log(`trace:coverage: ${agentChanges.length} agent-significant file(s) changed`);
-}
 
-const dir = traceDirForDate(date);
-const result = checkTraceDir(dir);
+  const dir = traceDirForDate(date);
+  const result = checkTraceDir(dir);
 
-if (!result.ok) {
-  if (result.reason === "missing-dir") {
-    console.error(`trace:coverage: no trace directory found: ${dir}`);
-  } else {
-    console.error(`trace:coverage: no .json trace files in ${dir}`);
+  if (!result.ok) {
+    if (result.reason === "missing-dir") {
+      console.error(`trace:coverage: no trace directory found: ${dir}`);
+    } else {
+      console.error(`trace:coverage: no .json trace files in ${dir}`);
+    }
+    console.error(`trace:coverage: create trace artefacts at ${dir}/ before merging`);
+    process.exit(1);
   }
-  console.error(`trace:coverage: create trace artefacts at ${dir}/ before merging`);
-  process.exit(1);
-}
 
-console.log(`trace:coverage: ${result.count} trace(s) in ${dir} — coverage confirmed`);
+  console.log(`trace:coverage: ${result.count} trace(s) in ${dir} — coverage confirmed`);
+}
