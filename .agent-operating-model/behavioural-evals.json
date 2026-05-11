@@ -29,11 +29,17 @@
 				"multi-functional-team",
 				"openai-platform"
 			],
+			"expectedEvidence": [
+				"matched-rule",
+				"matched-signal",
+				"selected-bundle",
+				"canonical-directory"
+			],
 			"forbiddenFailureModes": [
 				"instruction",
 				"tool",
 				"missing-canonical-directory",
-				"unvalidated-model-output"
+				"superficial-keyword-only"
 			]
 		},
 		{
