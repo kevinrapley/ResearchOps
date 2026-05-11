@@ -7,11 +7,13 @@ When more than one bundle applies, resolve the stack in this order.
 3. `multi-functional-team` governs government service assurance, risk, governance, ethics, harm and user-impact framing.
 4. `govuk-design-system` governs GOV.UK UI, content, interaction, accessibility and frontend component decisions.
 5. `cloudflare` governs Cloudflare runtime, Wrangler, bindings, storage, state, queues, workflows, Workers AI, Vectorize and deployment implementation details.
-6. Platform API bundles govern implementation details for their APIs.
+6. `openai-platform` governs OpenAI API, model, tool, retrieval, structured output, eval and AI-safety implementation details.
+7. Platform API bundles govern implementation details for their APIs.
 
 Canonical platform bundles are:
 
 - `cloudflare`
+- `openai-platform`
 - `airtable-public-api`
 - `mural-public-api`
 
