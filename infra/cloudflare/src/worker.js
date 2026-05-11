@@ -1,4 +1,5 @@
 import { handleMeRoute } from "./core/auth/access.js";
+import { handleAuthLoginRoute } from "./core/auth/login.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
@@ -165,7 +166,8 @@ export default {
 
 		try {
 			let result;
-			if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
+			if (method === "GET" && apiPath === "/api/auth/login") result = await handleAuthLoginRoute(request, env);
+			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
 			else if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
 			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
