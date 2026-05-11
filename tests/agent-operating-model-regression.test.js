@@ -40,6 +40,14 @@ function openaiFile(relativePath) {
 	return fs.readFileSync(openaiPath(relativePath), "utf8");
 }
 
+function mcpPath(relativePath) {
+	return `.agent-operating-model/bundles/mcp-agent-tooling/${relativePath}`;
+}
+
+function mcpFile(relativePath) {
+	return fs.readFileSync(mcpPath(relativePath), "utf8");
+}
+
 function extractUrls(text) {
 	return Array.from(text.matchAll(/https:\/\/[^\s"'<>]+/g)).map((match) => match[0]);
 }
@@ -95,6 +103,33 @@ test("repository operating model selects OpenAI for model integration work", () 
 		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
 		assert.ok(bundle.selectionEvidence.matchedSignals.includes("ai-model-or-openai-platform-change"));
 		assertCanonicalBundle(bundle);
+	}
+});
+
+test("repository operating model selects MCP for protocol and agent tooling work", () => {
+	for (const task of [
+		"Design an MCP tool contract with explicit tool consent",
+		"Review Model Context Protocol resource exposure for research evidence",
+		"Add MCP elicitation handling for accept decline and cancel paths",
+	]) {
+		const bundle = bundleById(task, "mcp-agent-tooling");
+
+		assert.ok(bundle, `${task} should select mcp-agent-tooling`);
+		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+		assert.ok(bundle.selectionEvidence.matchedSignals.includes("agent-tooling-or-mcp-change"));
+		assertCanonicalBundle(bundle);
+	}
+});
+
+test("repository operating model does not select MCP for generic tool resource or prompt wording", () => {
+	for (const task of [
+		"Update the toolbar resource labels",
+		"Review the prompt text on the start page",
+		"Fix a tool tip on the project dashboard",
+	]) {
+		const ids = selectedIds(task);
+
+		assert.equal(ids.includes("mcp-agent-tooling"), false, `${task} should not select mcp-agent-tooling`);
 	}
 });
 
@@ -215,6 +250,17 @@ test("OpenAI bundle manifest assets exist", () => {
 	}
 });
 
+test("MCP bundle manifest assets exist", () => {
+	const manifest = mcpFile("registry-manifest.yaml");
+	const assetPaths = Array.from(manifest.matchAll(/^- path: (.+)$/gm)).map((match) => match[1]);
+
+	assert.ok(assetPaths.length > 30);
+
+	for (const assetPath of assetPaths) {
+		assert.ok(fs.existsSync(mcpPath(assetPath)), `${assetPath} should exist`);
+	}
+});
+
 test("Cloudflare bundle source catalogue covers XML reference URLs", () => {
 	const catalogue = cloudflareFile("references/source-catalog.yaml");
 	const sourceUrls = extractUrls(catalogue);
@@ -279,6 +325,37 @@ test("OpenAI bundle source catalogue covers XML reference URLs", () => {
 	}
 });
 
+test("MCP bundle source catalogue covers XML reference URLs", () => {
+	const catalogue = mcpFile("references/source-catalog.yaml");
+	const sourceUrls = extractUrls(catalogue);
+
+	assert.ok(sourceUrls.length >= 10);
+
+	for (const sourceUrl of sourceUrls) {
+		assert.ok(
+			sourceUrl.startsWith("https://modelcontextprotocol.io/"),
+			`${sourceUrl} should use official MCP documentation`,
+		);
+	}
+
+	const referenceFiles = fs
+		.readdirSync(mcpPath("references"))
+		.filter((file) => file.endsWith(".xml"));
+
+	for (const referenceFile of referenceFiles) {
+		for (const sourceUrl of extractUrls(mcpFile(`references/${referenceFile}`))) {
+			assert.ok(
+				sourceUrl.startsWith("https://modelcontextprotocol.io/"),
+				`${sourceUrl} should use official MCP documentation`,
+			);
+			assert.ok(
+				catalogue.includes(sourceUrl),
+				`${sourceUrl} from ${referenceFile} should be listed in source-catalog.yaml`,
+			);
+		}
+	}
+});
+
 test("Cloudflare bundle entrypoints include expanded operational modules", () => {
 	const promptSpec = cloudflareFile("prompt.spec.yaml");
 	const promptBody = cloudflareFile("prompt.body.xml");
@@ -323,6 +400,28 @@ test("OpenAI bundle entrypoints include operational modules", () => {
 	}
 });
 
+test("MCP bundle entrypoints include operational modules", () => {
+	const promptSpec = mcpFile("prompt.spec.yaml");
+	const promptBody = mcpFile("prompt.body.xml");
+
+	for (const expected of [
+		"references/architecture-lifecycle.xml",
+		"references/resources-prompts-tools.xml",
+		"references/client-features.xml",
+		"references/utilities-and-errors.xml",
+		"references/authorization-security.xml",
+		"modes/mcp-build.xml",
+		"modes/mcp-review.xml",
+		"modes/mcp-release.xml",
+		"contracts/tool-invocation-review.schema.json",
+		"contracts/resource-exposure-review.schema.json",
+		"contracts/agent-tooling-validation-evidence.schema.json",
+	]) {
+		assert.ok(promptSpec.includes(expected), `${expected} should be in prompt.spec.yaml`);
+		assert.ok(promptBody.includes(expected), `${expected} should be in prompt.body.xml`);
+	}
+});
+
 test("repository operating model sources are referenced from AGENTS.md", () => {
 	const agents = fs.readFileSync("AGENTS.md", "utf8");
 
@@ -339,6 +438,7 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/bundles/",
 		".agent-operating-model/bundles/cloudflare/",
 		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
 	]) {
 		assert.match(agents, new RegExp(reference.replace(/[.]/g, "\\.")));
 	}
