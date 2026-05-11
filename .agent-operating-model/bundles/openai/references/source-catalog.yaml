@@ -1,0 +1,35 @@
+source_authority:
+- platform.openai.com/docs
+- developers.openai.com
+last_checked: 2026-05-10
+sources:
+- id: responses-api-reference
+  url: https://platform.openai.com/docs/api-reference/responses
+- id: tools-guide
+  url: https://platform.openai.com/docs/guides/tools
+- id: function-calling-guide
+  url: https://platform.openai.com/docs/guides/function-calling
+- id: structured-outputs-guide
+  url: https://platform.openai.com/docs/guides/structured-outputs
+- id: file-search-guide
+  url: https://platform.openai.com/docs/guides/tools-file-search
+- id: retrieval-guide
+  url: https://platform.openai.com/docs/guides/retrieval
+- id: vector-stores-reference
+  url: https://platform.openai.com/docs/api-reference/vector-stores
+- id: vector-store-files-reference
+  url: https://platform.openai.com/docs/api-reference/vector-stores-files
+- id: embeddings-guide
+  url: https://platform.openai.com/docs/guides/embeddings
+- id: batch-guide
+  url: https://platform.openai.com/docs/guides/batch
+- id: webhooks-guide
+  url: https://platform.openai.com/docs/webhooks
+- id: realtime-overview
+  url: https://platform.openai.com/docs/guides/realtime/overview
+- id: evals-api-reference
+  url: https://platform.openai.com/docs/api-reference/evals
+- id: rate-limits-guide
+  url: https://platform.openai.com/docs/guides/rate-limits
+- id: safety-best-practices
+  url: https://platform.openai.com/docs/guides/safety-best-practices

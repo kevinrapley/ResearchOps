@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<prompt_bundle id="openai-platform" version="1.0.0" default_mode="openai-build" xml_profile="native-semantic-xml/v1">
+  <bundle_identity>
+    <name>OpenAI Platform Prompt Bundle</name>
+    <description>Canonical OpenAI Platform bundle for Responses API, tools, Structured Outputs, retrieval, embeddings, Batch, webhooks, Realtime, Evals, rate limits and safety work, sourced only from official OpenAI documentation.</description>
+    <status>canonical</status>
+  </bundle_identity>
+  <runtime_defaults>
+    <default_mode>openai-build</default_mode>
+    <source_of_truth>https://platform.openai.com/docs/</source_of_truth>
+    <source_of_truth>https://developers.openai.com/</source_of_truth>
+    <do_not_invent_openai_behaviour>true</do_not_invent_openai_behaviour>
+    <prefer_responses_api_for_generation>true</prefer_responses_api_for_generation>
+    <require_structured_output_validation>true</require_structured_output_validation>
+    <require_tool_call_validation>true</require_tool_call_validation>
+    <require_safety_and_human_review_controls>true</require_safety_and_human_review_controls>
+  </runtime_defaults>
+  <assembly>
+    <always_load>references/source-catalog.yaml</always_load>
+    <always_load>references/openai-platform-context.xml</always_load>
+    <always_load>references/responses-api.xml</always_load>
+    <always_load>references/tools-function-calling-structured-outputs.xml</always_load>
+    <always_load>references/retrieval-files-vector-stores.xml</always_load>
+    <always_load>references/embeddings.xml</always_load>
+    <always_load>references/batch-webhooks-realtime.xml</always_load>
+    <always_load>references/evals-rate-limits-safety.xml</always_load>
+  </assembly>
+  <mode_registry>
+    <mode_ref id="openai-build" file="modes/openai-build.xml"/>
+    <mode_ref id="openai-review" file="modes/openai-review.xml"/>
+    <mode_ref id="openai-release" file="modes/openai-release.xml"/>
+  </mode_registry>
+  <role_registry>
+    <role_ref id="openai-developer" file="roles/openai-developer.xml"/>
+    <role_ref id="openai-safety" file="roles/openai-safety.xml"/>
+    <role_ref id="openai-qa" file="roles/openai-qa.xml"/>
+  </role_registry>
+  <template_registry>
+    <template_ref id="responses-integration" file="templates/responses-integration.xml"/>
+    <template_ref id="structured-output-contract" file="templates/structured-output-contract.xml"/>
+    <template_ref id="retrieval-pipeline" file="templates/retrieval-pipeline.xml"/>
+  </template_registry>
+  <contract_registry>
+    <contract_ref id="openai-integration-review" file="contracts/openai-integration-review.schema.json"/>
+    <contract_ref id="openai-validation-evidence" file="contracts/openai-validation-evidence.schema.json"/>
+    <contract_ref id="openai-gap-register" file="contracts/openai-gap-register.schema.json"/>
+  </contract_registry>
+  <grader_registry>
+    <grader_ref id="openai-behaviour" file="graders/openai-behaviour.xml"/>
+  </grader_registry>
+  <contracts>
+    <inputs ref="variables.schema.json"/>
+    <outputs ref="output.schema.json"/>
+    <grading ref="grade.schema.json"/>
+  </contracts>
+</prompt_bundle>
