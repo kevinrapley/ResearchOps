@@ -148,6 +148,17 @@ test('validateSourcebookLinks passes for existing template file', () => {
 	}
 });
 
+test('validateSourcebookLinks throws when href resolves to a directory', () => {
+	const tmp = makeTempDir();
+	try {
+		fs.mkdirSync(path.join(tmp, 'templates'));
+		writeHtml(tmp, 'index.html', '<a href="templates/">browse</a>');
+		assert.throws(() => validateSourcebookLinks({ sourcebookDir: tmp }), /broken link/);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
 test('live sourcebook passes link validation', () => {
 	const result = validateSourcebookLinks();
 	assert.ok(result.pages >= 9, `Expected at least 9 sourcebook pages, got ${result.pages}`);

@@ -108,7 +108,7 @@ export function validateSourcebookLinks({ sourcebookDir = SOURCEBOOK_DIR } = {})
       const [filePart, anchorPart] = href.split("#");
       const targetPath = path.join(sourcebookDir, filePart);
 
-      if (!fs.existsSync(targetPath)) {
+      if (!fs.existsSync(targetPath) || !fs.statSync(targetPath).isFile()) {
         broken.push({ file, href, reason: `file not found: ${filePart}` });
         continue;
       }
