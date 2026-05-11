@@ -1,5 +1,5 @@
 {
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"purpose": "Provide auditable structured rules for selecting checked-in canonical agent bundles from typed task signals before falling back to registry keyword evidence.",
 	"rules": [
 		{
@@ -43,6 +43,13 @@
 			"traceLayer": "behavioural",
 			"type": "conditional",
 			"requiredSignals": ["ai-model-or-openai-platform-change"]
+		},
+		{
+			"id": "conditional-mcp-agent-tooling",
+			"bundleId": "mcp-agent-tooling",
+			"traceLayer": "behavioural",
+			"type": "conditional",
+			"requiredSignals": ["agent-tooling-or-mcp-change"]
 		},
 		{
 			"id": "conditional-airtable-public-api",

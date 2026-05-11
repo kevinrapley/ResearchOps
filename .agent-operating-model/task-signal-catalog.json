@@ -1,5 +1,5 @@
 {
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"purpose": "Define typed task signals used by the operating-model loader before selecting bundles.",
 	"signals": [
 		{
@@ -19,111 +19,42 @@
 			"kind": "detected",
 			"traceLayer": "behavioural",
 			"description": "The task concerns frontend UI, service content, page composition, forms or accessibility.",
-			"phrases": [
-				"accessibility",
-				"component",
-				"content",
-				"css",
-				"form",
-				"gov.uk",
-				"govuk",
-				"html",
-				"page design"
-			]
+			"phrases": ["accessibility", "component", "content", "css", "form", "gov.uk", "govuk", "html", "page design"]
 		},
 		{
 			"id": "runtime-or-deployment-change",
 			"kind": "detected",
 			"traceLayer": "behavioural",
 			"description": "The task concerns Cloudflare runtime, deployment, routing, bindings, storage, state or infrastructure behaviour.",
-			"phrases": [
-				"cloudflare",
-				"cloudflare deployment",
-				"cloudflare d1",
-				"cloudflare kv",
-				"cloudflare pages",
-				"cloudflare queue",
-				"cloudflare queues",
-				"cloudflare r2",
-				"cloudflare route",
-				"cloudflare routes",
-				"cloudflare worker",
-				"cloudflare workers",
-				"cloudflare workflows",
-				"d1",
-				"durable object",
-				"durable objects",
-				"kv namespace",
-				"r2",
-				"vectorize",
-				"worker fetch",
-				"worker fetch handler",
-				"worker route",
-				"worker runtime",
-				"workers fetch",
-				"workers fetch handler",
-				"workers route",
-				"workers runtime",
-				"workers ai",
-				"wrangler",
-				"wrangler binding",
-				"wrangler bindings",
-				"wrangler deploy",
-				"wrangler deployment"
-			]
+			"phrases": ["cloudflare", "cloudflare deployment", "cloudflare d1", "cloudflare kv", "cloudflare pages", "cloudflare queue", "cloudflare queues", "cloudflare r2", "cloudflare route", "cloudflare routes", "cloudflare worker", "cloudflare workers", "cloudflare workflows", "d1", "durable object", "durable objects", "kv namespace", "r2", "vectorize", "worker fetch", "worker fetch handler", "worker route", "worker runtime", "workers fetch", "workers fetch handler", "workers route", "workers runtime", "workers ai", "wrangler", "wrangler binding", "wrangler bindings", "wrangler deploy", "wrangler deployment"]
 		},
 		{
 			"id": "ai-model-or-openai-platform-change",
 			"kind": "detected",
 			"traceLayer": "behavioural",
 			"description": "The task concerns OpenAI API, OpenAI Platform, model calls, tool calling, Structured Outputs, retrieval, embeddings, Batch, webhooks, Realtime or Evals.",
-			"phrases": [
-				"openai",
-				"openai api",
-				"openai platform",
-				"responses api",
-				"structured outputs",
-				"function calling",
-				"file search",
-				"vector store",
-				"vector stores",
-				"embeddings",
-				"batch api",
-				"openai webhook",
-				"openai webhooks",
-				"realtime api",
-				"evals api",
-				"openai evals"
-			]
+			"phrases": ["openai", "openai api", "openai platform", "responses api", "structured outputs", "function calling", "file search", "vector store", "vector stores", "embeddings", "batch api", "openai webhook", "openai webhooks", "realtime api", "evals api", "openai evals"]
+		},
+		{
+			"id": "agent-tooling-or-mcp-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns Model Context Protocol, MCP servers or clients, MCP tools, MCP resources, MCP prompts, sampling, roots, elicitation, tool consent, tool contracts or agent-tooling safety.",
+			"phrases": ["model context protocol", "mcp", "mcp server", "mcp client", "mcp tool", "mcp tools", "mcp resource", "mcp resources", "mcp prompt", "mcp prompts", "mcp sampling", "mcp roots", "mcp elicitation", "tool consent", "tool invocation", "tool contract", "agent tooling", "agent tool", "agent tools"]
 		},
 		{
 			"id": "external-api-or-data-change",
 			"kind": "detected",
 			"traceLayer": "behavioural",
 			"description": "The task concerns Airtable records, data, linked records, formula filters or attachments.",
-			"phrases": [
-				"airtable",
-				"attachment",
-				"filterbyformula",
-				"linked record",
-				"record",
-				"records"
-			]
+			"phrases": ["airtable", "attachment", "filterbyformula", "linked record", "record", "records"]
 		},
 		{
 			"id": "external-api-or-collaboration-change",
 			"kind": "detected",
 			"traceLayer": "behavioural",
 			"description": "The task concerns Mural collaboration, OAuth, rooms, boards, widgets or sticky notes.",
-			"phrases": [
-				"mural",
-				"mural board",
-				"oauth",
-				"room",
-				"sticky note",
-				"widget",
-				"workspace"
-			]
+			"phrases": ["mural", "mural board", "oauth", "room", "sticky note", "widget", "workspace"]
 		}
 	]
 }

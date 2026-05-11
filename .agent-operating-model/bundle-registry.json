@@ -1,6 +1,6 @@
 {
-	"version": "1.3.0",
-	"updated": "2026-05-10",
+	"version": "1.4.0",
+	"updated": "2026-05-11",
 	"canonicalRoot": ".agent-operating-model/bundles/",
 	"defaultLoadOrder": [
 		"github-diamond",
@@ -17,15 +17,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/github/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"repository",
-				"github",
-				"branch",
-				"pull request",
-				"pr",
-				"ci",
-				"commit"
-			],
+			"keywords": ["repository", "github", "branch", "pull request", "pr", "ci", "commit"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -37,18 +29,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"researchops",
-				"platform",
-				"worker",
-				"service",
-				"router",
-				"study",
-				"project",
-				"cloudflare",
-				"wrangler",
-				"deployment"
-			],
+			"keywords": ["researchops", "platform", "worker", "service", "router", "study", "project", "cloudflare", "wrangler", "deployment"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -60,16 +41,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"government",
-				"governance",
-				"assurance",
-				"service standard",
-				"risk",
-				"harm",
-				"ethics",
-				"product"
-			],
+			"keywords": ["government", "governance", "assurance", "service standard", "risk", "harm", "ethics", "product"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -81,17 +53,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"gov.uk",
-				"govuk",
-				"accessibility",
-				"html",
-				"css",
-				"form",
-				"component",
-				"content design",
-				"page"
-			],
+			"keywords": ["gov.uk", "govuk", "accessibility", "html", "css", "form", "component", "content design", "page"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -103,41 +65,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"cloudflare",
-				"cloudflare deployment",
-				"cloudflare d1",
-				"cloudflare kv",
-				"cloudflare pages",
-				"cloudflare queue",
-				"cloudflare queues",
-				"cloudflare r2",
-				"cloudflare route",
-				"cloudflare routes",
-				"cloudflare worker",
-				"cloudflare workers",
-				"cloudflare workflows",
-				"d1",
-				"durable object",
-				"durable objects",
-				"kv namespace",
-				"r2",
-				"vectorize",
-				"worker fetch",
-				"worker fetch handler",
-				"worker route",
-				"worker runtime",
-				"workers fetch",
-				"workers fetch handler",
-				"workers route",
-				"workers runtime",
-				"workers ai",
-				"wrangler",
-				"wrangler binding",
-				"wrangler bindings",
-				"wrangler deploy",
-				"wrangler deployment"
-			],
+			"keywords": ["cloudflare", "cloudflare deployment", "cloudflare d1", "cloudflare kv", "cloudflare pages", "cloudflare queue", "cloudflare queues", "cloudflare r2", "cloudflare route", "cloudflare routes", "cloudflare worker", "cloudflare workers", "cloudflare workflows", "d1", "durable object", "durable objects", "kv namespace", "r2", "vectorize", "worker fetch", "worker fetch handler", "worker route", "worker runtime", "workers fetch", "workers fetch handler", "workers route", "workers runtime", "workers ai", "wrangler", "wrangler binding", "wrangler bindings", "wrangler deploy", "wrangler deployment"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -149,24 +77,19 @@
 			"canonicalPath": ".agent-operating-model/bundles/openai/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"openai",
-				"openai api",
-				"openai platform",
-				"responses api",
-				"structured outputs",
-				"function calling",
-				"file search",
-				"vector store",
-				"vector stores",
-				"embeddings",
-				"batch api",
-				"openai webhook",
-				"openai webhooks",
-				"realtime api",
-				"evals api",
-				"openai evals"
-			],
+			"keywords": ["openai", "openai api", "openai platform", "responses api", "structured outputs", "function calling", "file search", "vector store", "vector stores", "embeddings", "batch api", "openai webhook", "openai webhooks", "realtime api", "evals api", "openai evals"],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"name": "MCP Agent Tooling",
+			"role": "mcp-protocol-tool-resource-and-agent-safety-control",
+			"precedence": 64,
+			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
+			"keywords": ["model context protocol", "mcp", "mcp server", "mcp client", "mcp tool", "mcp tools", "mcp resource", "mcp resources", "mcp prompt", "mcp prompts", "mcp sampling", "mcp roots", "mcp elicitation", "tool consent", "tool invocation", "tool contract", "agent tooling", "agent tool", "agent tools"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -178,17 +101,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"airtable",
-				"record",
-				"records",
-				"linked record",
-				"filterbyformula",
-				"attachment",
-				"comment",
-				"base schema",
-				"webhook"
-			],
+			"keywords": ["airtable", "record", "records", "linked record", "filterbyformula", "attachment", "comment", "base schema", "webhook"],
 			"mustRecordInTrace": true
 		},
 		{
@@ -200,17 +113,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": [
-				"mural",
-				"oauth",
-				"workspace",
-				"room",
-				"mural board",
-				"widget",
-				"sticky note",
-				"template",
-				"tag"
-			],
+			"keywords": ["mural", "oauth", "workspace", "room", "mural board", "widget", "sticky note", "template", "tag"],
 			"mustRecordInTrace": true
 		}
 	]
