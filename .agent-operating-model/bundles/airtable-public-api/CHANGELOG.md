@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1 - 2026-05-11
+
+- expanded `evals.yaml` from a suite pointer into a structured evaluation orchestration file
+- added endpoint-contract, operational-safety, schema and webhook evaluation pipelines
+- expanded regression coverage for reads, writes, comments, webhooks, schema operations, batching, pagination and formula filtering
+- expanded red-team coverage for over-scoping, destructive imports, missing pagination, missing batching, missing webhook payload retrieval, unsafe formula construction and schema writes without schema reads
+- consolidated schema posture to JSON schemas only
+- removed legacy CommonJS schema shim files: `grade.schema.js` and `output.schema.js`
+
 ## 1.0.0 - 2026-04-23
 
 - initial Airtable public API developer contract bundle

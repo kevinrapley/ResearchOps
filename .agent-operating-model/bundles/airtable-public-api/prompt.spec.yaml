@@ -1,5 +1,5 @@
 bundle_id: airtable-public-api-developer-contract-bundle
-bundle_version: 1.0.0
+bundle_version: 1.0.1
 bundle_kind: hybrid-agent-bundle
 title: Airtable Public API Developer Contract Bundle
 assembly:
@@ -31,6 +31,7 @@ assembly:
   - scopes.matrix.yaml
   - contracts/endpoint-contracts.index.yaml
 evaluation:
+  orchestration: evals.yaml
   regression_suite: tests.regression.yaml
   redteam_suite: tests.redteam.yaml
   graders:
@@ -42,6 +43,13 @@ evaluation:
   - schema-contract-grader.xml
   - source-grounding-grader.xml
   - topology-fit-grader.xml
+schema_policy:
+  authoritative_schemas:
+  - grade.schema.json
+  - output.schema.json
+  removed_schema_shims:
+  - grade.schema.js
+  - output.schema.js
 boundaries:
   explicit_out_of_scope:
   - Enterprise API detailed admin surface
