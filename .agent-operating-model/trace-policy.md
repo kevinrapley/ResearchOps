@@ -69,3 +69,22 @@ docs/agent-audit/reasoning/YYYY/MM/DD/
 Machine-readable summaries may be stored beside the Markdown report.
 
 Raw `.agent-traces/` JSONL files remain local unless deliberately promoted.
+
+## Promotion
+
+Validated raw traces can be promoted with:
+
+```text
+npm run trace:promote -- --input .agent-traces/raw/<trace>.jsonl --slug <slug> --date YYYY-MM-DD
+```
+
+Promotion writes:
+
+```text
+docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.md
+docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.json
+```
+
+The promotion tool validates the raw JSONL trace before writing audit artefacts. Invalid traces must not be promoted.
+
+Promotion reports must summarise event evidence. They must not expose private chain-of-thought.
