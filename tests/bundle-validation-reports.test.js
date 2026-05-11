@@ -47,7 +47,7 @@ test('validation reports use the standard section structure', () => {
 test('bundle validation report template defines the standard', () => {
 	const template = fs.readFileSync(
 		'.agent-operating-model/templates/bundle-validation-report-template.md',
-		'utf8',
+		'utf8'
 	);
 
 	for (const section of REQUIRED_REPORT_SECTIONS) {
