@@ -28,19 +28,28 @@ function readJson(filePath, rootDir) {
 	}
 }
 
+function isFailedStatus(status) {
+	return Boolean(status && status !== "captured");
+}
+
 function countFailures(manifest) {
+	if (Array.isArray(manifest.failures)) {
+		return manifest.failures.length;
+	}
+
 	let failures = 0;
 
 	for (const page of manifest.pages ?? []) {
 		for (const state of page.states ?? []) {
-			if (state.status && state.status !== "captured") {
-				failures += 1;
+			const failedCaptures = (state.captures ?? []).filter((capture) => isFailedStatus(capture.status));
+
+			if (failedCaptures.length > 0) {
+				failures += failedCaptures.length;
+				continue;
 			}
 
-			for (const capture of state.captures ?? []) {
-				if (capture.status && capture.status !== "captured") {
-					failures += 1;
-				}
+			if (isFailedStatus(state.status)) {
+				failures += 1;
 			}
 		}
 	}
@@ -134,7 +143,13 @@ function validateReportsSite({ rootDir = ROOT_DIR } = {}) {
 			fail(`capture has unknown profile for page ${page.id}, state ${state.id}`);
 		}
 
+		profileCaptureCounts.set(capture.profile, (profileCaptureCounts.get(capture.profile) ?? 0) + 1);
+
 		if (!capture.screenshot) {
+			if (isFailedStatus(capture.status)) {
+				continue;
+			}
+
 			fail(`capture is missing screenshot for page ${page.id}, state ${state.id}, profile ${capture.profile}`);
 		}
 
@@ -150,7 +165,6 @@ function validateReportsSite({ rootDir = ROOT_DIR } = {}) {
 		}
 
 		screenshotPaths.add(capture.screenshot);
-		profileCaptureCounts.set(capture.profile, (profileCaptureCounts.get(capture.profile) ?? 0) + 1);
 	}
 
 	for (const profileId of profileIds) {
