@@ -1,0 +1,26 @@
+source_authority:
+- modelcontextprotocol.io
+last_checked: 2026-05-11
+sources:
+- id: mcp-docs-root
+  url: https://modelcontextprotocol.io/
+- id: mcp-specification
+  url: https://modelcontextprotocol.io/specification/
+- id: mcp-architecture
+  url: https://modelcontextprotocol.io/docs/concepts/architecture
+- id: mcp-tools
+  url: https://modelcontextprotocol.io/docs/concepts/tools
+- id: mcp-resources
+  url: https://modelcontextprotocol.io/docs/concepts/resources
+- id: mcp-prompts
+  url: https://modelcontextprotocol.io/docs/concepts/prompts
+- id: mcp-sampling
+  url: https://modelcontextprotocol.io/docs/concepts/sampling
+- id: mcp-roots
+  url: https://modelcontextprotocol.io/docs/concepts/roots
+- id: mcp-elicitation
+  url: https://modelcontextprotocol.io/specification/draft/client/elicitation
+- id: mcp-authorization
+  url: https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization
+- id: mcp-security
+  url: https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices

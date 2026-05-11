@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCP Agent Tooling Bundle Output",
+  "type": "object",
+  "properties": {
+    "answer": { "type": "string" },
+    "mcp_sources": { "type": "array", "items": { "type": "string" } },
+    "features_in_scope": { "type": "array", "items": { "type": "string" } },
+    "consent_controls": { "type": "array", "items": { "type": "string" } },
+    "validation": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["answer"]
+}
