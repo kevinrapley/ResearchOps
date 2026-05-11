@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-05-11T23:07:43.243Z",
+  "startedAt": "2026-05-11T23:10:42.937Z",
   "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
@@ -77,9 +77,9 @@
       ]
     }
   ],
-  "pageCount": 22,
-  "stateCount": 39,
-  "captureCount": 78,
+  "pageCount": 23,
+  "stateCount": 40,
+  "captureCount": 80,
   "failureCount": 0,
   "pages": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1193,
+              "durationMs": 1148,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/",
-              "durationMs": 1521,
+              "durationMs": 1502,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -143,6 +143,61 @@
       ]
     },
     {
+      "id": "account-sign-in",
+      "title": "Sign in to ResearchOps",
+      "group": "Account",
+      "path": "/pages/account/sign-in/index.html",
+      "description": "First Team Admin sign-in and access status page.",
+      "states": [
+        {
+          "id": "default",
+          "title": "First Team Admin signed-in state",
+          "description": "Sign-in page captured with deterministic Team Admin context.",
+          "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 1438,
+              "screenshot": "screenshots/desktop/account__account-sign-in__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 1434,
+              "screenshot": "screenshots/mobile/account__account-sign-in__default.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "The sign-in page may make access look complete without explaining that identity, team membership and role permission are checked separately.",
+            "impact": "The first Team Admin may sign in successfully but not understand whether D1 role bootstrap, team membership or Cloudflare Access caused a blocked state.",
+            "recommendedChange": "Review the page for clear Cloudflare Access sign-in language, account-state recovery, active team context and a visible route to Team Admin tasks.",
+            "owner": "UCD team",
+            "status": "Needs UCD review"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/account__account-sign-in__default.png",
+          "acceptanceCriteria": "Feature: Use the Sign in to ResearchOps page\n\n  As a user researcher\n  I want to use the sign in to ResearchOps page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the sign in to ResearchOps page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports first Team Admin sign-in and access status page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"First Team Admin signed-in state\" in the ResearchOps journey\n    Given I am using the sign in to ResearchOps page\n    Then I should understand the research value of this part of the journey\n    And I should see that sign-in page captured with deterministic Team Admin context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"You are signed in as a Team Admin\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        }
+      ]
+    },
+    {
       "id": "start-overview",
       "title": "Start a research project",
       "group": "Core",
@@ -161,7 +216,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/overview/index.html",
-              "durationMs": 1138,
+              "durationMs": 1100,
               "screenshot": "screenshots/desktop/core__start-overview__default.png"
             },
             {
@@ -169,7 +224,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/overview/index.html",
-              "durationMs": 1234,
+              "durationMs": 1201,
               "screenshot": "screenshots/mobile/core__start-overview__default.png"
             }
           ],
@@ -216,7 +271,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1129,
+              "durationMs": 1088,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -224,7 +279,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1241,
+              "durationMs": 1279,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -254,8 +309,8 @@
         },
         {
           "id": "step-1-filled",
-          "title": "Step 1 completed with essential project definition",
-          "description": "Project name and description entered using believable discovery-stage dummy data, with phase and status set by default.",
+          "title": "Step 1 completed",
+          "description": "Project definition entered.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -264,7 +319,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1535,
+              "durationMs": 1551,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -272,7 +327,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1662,
+              "durationMs": 1630,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -303,7 +358,7 @@
         {
           "id": "step-2-default",
           "title": "Step 2 default state",
-          "description": "Second wizard step after a valid project name and description have been entered on step 1.",
+          "description": "Second wizard step.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -312,7 +367,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 1980,
+              "durationMs": 1977,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -320,7 +375,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2163,
+              "durationMs": 2134,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -350,8 +405,8 @@
         },
         {
           "id": "step-2-filled-no-ai",
-          "title": "Step 2 completed with researcher-authored context",
-          "description": "Stakeholders, objectives and user groups entered with realistic planning data before continuing to the next step.",
+          "title": "Step 2 completed",
+          "description": "Research context entered.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -360,7 +415,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2641,
+              "durationMs": 2677,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -368,7 +423,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 2901,
+              "durationMs": 2852,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
@@ -399,7 +454,7 @@
         {
           "id": "step-2-ai-rewrite-shown",
           "title": "Step 2 AI rewrite shown",
-          "description": "Objectives meet the AI assistance threshold and the objectives AI rewrite panel is shown using a deterministic mocked response.",
+          "description": "AI rewrite panel is shown using a deterministic mocked response.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -408,7 +463,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3329,
+              "durationMs": 3308,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -416,7 +471,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3617,
+              "durationMs": 3572,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -447,7 +502,7 @@
         {
           "id": "step-3-default",
           "title": "Step 3 default state",
-          "description": "Final data-entry step after the project definition, stakeholders, objectives and user groups have been entered.",
+          "description": "Final data-entry step.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -456,7 +511,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3045,
+              "durationMs": 3199,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -464,7 +519,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3160,
+              "durationMs": 3103,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -494,8 +549,8 @@
         },
         {
           "id": "step-3-filled",
-          "title": "Step 3 completed before check answers",
-          "description": "Lead researcher, email and project notes entered on the final data-entry step before the check-your-answers review.",
+          "title": "Step 3 completed",
+          "description": "Owner details entered.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -504,7 +559,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3646,
+              "durationMs": 3639,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -512,7 +567,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 3780,
+              "durationMs": 3738,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -542,8 +597,8 @@
         },
         {
           "id": "step-4-check-answers",
-          "title": "Step 4 check your answers before create project",
-          "description": "Check-your-answers step summarising the project definition, default phase and status, research framing, ownership and notes before project creation is submitted.",
+          "title": "Step 4 check your answers",
+          "description": "Check-your-answers step.",
           "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
@@ -552,7 +607,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4152,
+              "durationMs": 4036,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -560,7 +615,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/start/index.html",
-              "durationMs": 4369,
+              "durationMs": 4209,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
@@ -732,7 +787,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 1858,
+              "durationMs": 1792,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -740,7 +795,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/index.html",
-              "durationMs": 2540,
+              "durationMs": 2676,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -783,7 +838,7 @@
         {
           "id": "default",
           "title": "Project dashboard with operational project context",
-          "description": "Dashboard captured with a deterministic project ID, project metadata, linked stakeholders and study context.",
+          "description": "Dashboard captured with a deterministic project ID.",
           "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -792,7 +847,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 1869,
+              "durationMs": 1810,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -800,7 +855,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 1884,
+              "durationMs": 1898,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -819,7 +874,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard__default.png",
-          "acceptanceCriteria": "Feature: Review a research project dashboard\n\n  As a user researcher\n  I want to review the status, evidence and next actions for a research project\n  So that I can coordinate research activity across the team\n\n  Background:\n    Given I am a user researcher\n    When I visit the project dashboard\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project dashboard page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project dashboard with operational project context\" in the ResearchOps journey\n    Given I am using the project dashboard\n    Then I should understand the research value of this part of the journey\n    And I should see that dashboard captured with a deterministic project ID, project metadata, linked stakeholders and study context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted Digital Support Discovery\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review a research project dashboard\n\n  As a user researcher\n  I want to review the status, evidence and next actions for a research project\n  So that I can coordinate research activity across the team\n\n  Background:\n    Given I am a user researcher\n    When I visit the project dashboard\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports project dashboard page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project dashboard with operational project context\" in the ResearchOps journey\n    Given I am using the project dashboard\n    Then I should understand the research value of this part of the journey\n    And I should see that dashboard captured with a deterministic project ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted Digital Support Discovery\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -838,7 +893,7 @@
         {
           "id": "default",
           "title": "Add study with parent project context",
-          "description": "Add-study workflow captured with the parent project ID present in the URL so project relationship and return routes can be reviewed.",
+          "description": "Add-study workflow captured with the parent project ID present.",
           "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -847,7 +902,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1276,
+              "durationMs": 1322,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
@@ -855,7 +910,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1387,
+              "durationMs": 1348,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
@@ -874,7 +929,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png",
-          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add study with parent project context\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that add-study workflow captured with the parent project ID present in the URL so project relationship and return routes can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add study with parent project context\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that add-study workflow captured with the parent project ID present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -893,7 +948,7 @@
         {
           "id": "default",
           "title": "Add participant with parent project context",
-          "description": "Participant workflow captured with the project ID present so privacy copy, project ownership and study-linking context can be evaluated.",
+          "description": "Participant workflow captured with the project ID present.",
           "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -902,7 +957,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1301,
+              "durationMs": 1321,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
@@ -910,7 +965,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1361,
+              "durationMs": 1370,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
@@ -929,7 +984,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png",
-          "acceptanceCriteria": "Feature: Add a participant to a research project\n\n  As a user researcher\n  I want to add a participant from the correct project context\n  So that recruitment records are connected to the right research work\n\n  Background:\n    Given I am a user researcher\n    When I visit the add participant journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports add a study-linked participant from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add participant with parent project context\" in the ResearchOps journey\n    Given I am using the add participant journey\n    Then I should understand the research value of this part of the journey\n    And I should see that participant workflow captured with the project ID present so privacy copy, project ownership and study-linking context can be evaluated\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add participant\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Add a participant to a research project\n\n  As a user researcher\n  I want to add a participant from the correct project context\n  So that recruitment records are connected to the right research work\n\n  Background:\n    Given I am a user researcher\n    When I visit the add participant journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports add a study-linked participant from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add participant with parent project context\" in the ResearchOps journey\n    Given I am using the add participant journey\n    Then I should understand the research value of this part of the journey\n    And I should see that participant workflow captured with the project ID present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add participant\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -943,12 +998,12 @@
       "title": "Import participants",
       "group": "Projects",
       "path": "/pages/project-dashboard/participants/import/index.html",
-      "description": "Import study-linked participants from CSV from the project dashboard action workflow.",
+      "description": "Import study-linked participants from CSV.",
       "states": [
         {
           "id": "default",
           "title": "Import participants with parent project context",
-          "description": "CSV import workflow captured with the project ID present so file-upload guidance, privacy warnings and bulk-error recovery can be reviewed.",
+          "description": "CSV import workflow captured with the project ID present.",
           "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -957,7 +1012,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1269,
+              "durationMs": 1257,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
@@ -965,7 +1020,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1367,
+              "durationMs": 1397,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
@@ -984,7 +1039,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png",
-          "acceptanceCriteria": "Feature: Import participants for a research project\n\n  As a user researcher\n  I want to import participant records with clear project context and safe guidance\n  So that bulk participant setup does not weaken privacy, consent or traceability\n\n  Background:\n    Given I am a user researcher\n    When I visit the import participants journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports import study-linked participants from CSV from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Import participants with parent project context\" in the ResearchOps journey\n    Given I am using the import participants journey\n    Then I should understand the research value of this part of the journey\n    And I should see that cSV import workflow captured with the project ID present so file-upload guidance, privacy warnings and bulk-error recovery can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Import participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Import participants for a research project\n\n  As a user researcher\n  I want to import participant records with clear project context and safe guidance\n  So that bulk participant setup does not weaken privacy, consent or traceability\n\n  Background:\n    Given I am a user researcher\n    When I visit the import participants journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports import study-linked participants from CSV\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Import participants with parent project context\" in the ResearchOps journey\n    Given I am using the import participants journey\n    Then I should understand the research value of this part of the journey\n    And I should see that cSV import workflow captured with the project ID present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Import participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1003,7 +1058,7 @@
         {
           "id": "default",
           "title": "Project outcomes with project context",
-          "description": "Outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated.",
+          "description": "Outcomes page captured with a deterministic project ID.",
           "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -1012,7 +1067,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1357,
+              "durationMs": 1310,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -1020,7 +1075,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1503,
+              "durationMs": 1522,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -1039,7 +1094,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__outcomes__default.png",
-          "acceptanceCriteria": "Feature: Manage project outcomes\n\n  As a user researcher\n  I want to review findings, outputs and decisions for a project\n  So that I can keep research outcomes traceable to evidence and recommendations\n\n  Background:\n    Given I am a user researcher\n    When I visit the project outcomes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports outcomes page for project-level findings and outputs\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project outcomes with project context\" in the ResearchOps journey\n    Given I am using the project outcomes page\n    Then I should understand the research value of this part of the journey\n    And I should see that outcomes page captured with a deterministic project ID so traceability from evidence to recommendations can be evaluated\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Impact & ROI\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage project outcomes\n\n  As a user researcher\n  I want to review findings, outputs and decisions for a project\n  So that I can keep research outcomes traceable to evidence and recommendations\n\n  Background:\n    Given I am a user researcher\n    When I visit the project outcomes page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports outcomes page for project-level findings and outputs\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project outcomes with project context\" in the ResearchOps journey\n    Given I am using the project outcomes page\n    Then I should understand the research value of this part of the journey\n    And I should see that outcomes page captured with a deterministic project ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Impact & ROI\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1058,7 +1113,7 @@
         {
           "id": "default",
           "title": "Project journals with project context",
-          "description": "Reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work.",
+          "description": "Reflexive journal page captured with project context.",
           "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
           "status": "captured",
           "captures": [
@@ -1067,7 +1122,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 1679,
+              "durationMs": 2567,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -1075,7 +1130,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 1832,
+              "durationMs": 1641,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -1094,7 +1149,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__journals__default.png",
-          "acceptanceCriteria": "Feature: Capture reflexive journal entries\n\n  As a user researcher\n  I want to capture reflexive notes during a project\n  So that I can make assumptions, decisions and researcher influence visible\n\n  Background:\n    Given I am a user researcher\n    When I visit the project journals page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports reflexive journal page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project journals with project context\" in the ResearchOps journey\n    Given I am using the project journals page\n    Then I should understand the research value of this part of the journey\n    And I should see that reflexive journal page captured with project context so assumptions, decisions and researcher influence can be reviewed against project work\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Reflexive Journal & Analysis\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Capture reflexive journal entries\n\n  As a user researcher\n  I want to capture reflexive notes during a project\n  So that I can make assumptions, decisions and researcher influence visible\n\n  Background:\n    Given I am a user researcher\n    When I visit the project journals page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports reflexive journal page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Project journals with project context\" in the ResearchOps journey\n    Given I am using the project journals page\n    Then I should understand the research value of this part of the journey\n    And I should see that reflexive journal page captured with project context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Reflexive Journal & Analysis\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1113,7 +1168,7 @@
         {
           "id": "default",
           "title": "Study overview with readiness context",
-          "description": "Study overview captured with project and study IDs, participants, guides, consent forms and consent records present.",
+          "description": "Study overview captured with project and study IDs.",
           "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1122,7 +1177,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1430,
+              "durationMs": 1350,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -1130,7 +1185,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1573,
+              "durationMs": 1565,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -1149,7 +1204,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study__default.png",
-          "acceptanceCriteria": "Feature: Review study readiness\n\n  As a user researcher\n  I want to review a study and its readiness controls\n  So that I can prepare research activity before sessions begin\n\n  Background:\n    Given I am a user researcher\n    When I visit the study overview page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study overview and readiness controls\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study overview with readiness context\" in the ResearchOps journey\n    Given I am using the study overview page\n    Then I should understand the research value of this part of the journey\n    And I should see that study overview captured with project and study IDs, participants, guides, consent forms and consent records present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted digital support interview round 1\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Review study readiness\n\n  As a user researcher\n  I want to review a study and its readiness controls\n  So that I can prepare research activity before sessions begin\n\n  Background:\n    Given I am a user researcher\n    When I visit the study overview page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study overview and readiness controls\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study overview with readiness context\" in the ResearchOps journey\n    Given I am using the study overview page\n    Then I should understand the research value of this part of the journey\n    And I should see that study overview captured with project and study IDs\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted digital support interview round 1\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1168,7 +1223,7 @@
         {
           "id": "default",
           "title": "Discussion guides with study context",
-          "description": "Discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed.",
+          "description": "Discussion guides page captured with project and study IDs.",
           "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1177,7 +1232,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2250,
+              "durationMs": 2925,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -1185,7 +1240,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2459,
+              "durationMs": 2571,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -1204,7 +1259,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-guides__default.png",
-          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Discussion guides with study context\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that discussion guides page captured with project and study IDs so list, editor and publication context can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Guides for this study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Discussion guides with study context\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that discussion guides page captured with project and study IDs\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Guides for this study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1223,7 +1278,7 @@
         {
           "id": "default",
           "title": "Study participants with participant records",
-          "description": "Participants page captured with study-scoped participant records so recruitment, scheduling and consent readiness can be reviewed.",
+          "description": "Participants page captured with study-scoped participant records.",
           "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1232,7 +1287,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1374,
+              "durationMs": 1398,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -1240,7 +1295,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1498,
+              "durationMs": 1506,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -1259,7 +1314,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-participants__default.png",
-          "acceptanceCriteria": "Feature: Manage study participants\n\n  As a user researcher\n  I want to review and manage participants for a study\n  So that recruitment and session planning reflect the study needs\n\n  Background:\n    Given I am a user researcher\n    When I visit the participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports participants page for a study\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study participants with participant records\" in the ResearchOps journey\n    Given I am using the participants page\n    Then I should understand the research value of this part of the journey\n    And I should see that participants page captured with study-scoped participant records so recruitment, scheduling and consent readiness can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage study participants\n\n  As a user researcher\n  I want to review and manage participants for a study\n  So that recruitment and session planning reflect the study needs\n\n  Background:\n    Given I am a user researcher\n    When I visit the participants page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports participants page for a study\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study participants with participant records\" in the ResearchOps journey\n    Given I am using the participants page\n    Then I should understand the research value of this part of the journey\n    And I should see that participants page captured with study-scoped participant records\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Participants\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1278,7 +1333,7 @@
         {
           "id": "default",
           "title": "Study session with project and study context",
-          "description": "Session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed.",
+          "description": "Session workspace captured with project and study IDs.",
           "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1287,7 +1342,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1327,
+              "durationMs": 1271,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -1295,7 +1350,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1449,
+              "durationMs": 1456,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -1314,7 +1369,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-session__default.png",
-          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study session with project and study context\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session workspace captured with project and study IDs so participant, consent and note-capture readiness can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Begin a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study session with project and study context\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session workspace captured with project and study IDs\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Begin a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1333,7 +1388,7 @@
         {
           "id": "default",
           "title": "Study consent forms with study context",
-          "description": "Consent form configuration captured with project and study IDs so publishing state and consent wording can be reviewed.",
+          "description": "Consent form configuration captured with project and study IDs.",
           "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1342,7 +1397,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1352,
+              "durationMs": 1453,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -1350,7 +1405,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1584,
+              "durationMs": 1633,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -1369,7 +1424,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-consent-forms__default.png",
-          "acceptanceCriteria": "Feature: Configure study consent forms\n\n  As a user researcher\n  I want to configure the consent statements needed for a study\n  So that participants can give informed consent before research activity proceeds\n\n  Background:\n    Given I am a user researcher\n    When I visit the study consent forms page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-specific consent form configuration page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study consent forms with study context\" in the ResearchOps journey\n    Given I am using the study consent forms page\n    Then I should understand the research value of this part of the journey\n    And I should see that consent form configuration captured with project and study IDs so publishing state and consent wording can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Configure study consent forms\n\n  As a user researcher\n  I want to configure the consent statements needed for a study\n  So that participants can give informed consent before research activity proceeds\n\n  Background:\n    Given I am a user researcher\n    When I visit the study consent forms page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports study-specific consent form configuration page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study consent forms with study context\" in the ResearchOps journey\n    Given I am using the study consent forms page\n    Then I should understand the research value of this part of the journey\n    And I should see that consent form configuration captured with project and study IDs\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Consent forms\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1397,7 +1452,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1729,
+              "durationMs": 1719,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -1405,7 +1460,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1913,
+              "durationMs": 1948,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -1445,7 +1500,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1294,
+              "durationMs": 1451,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -1453,7 +1508,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
-              "durationMs": 1359,
+              "durationMs": 1436,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -1493,7 +1548,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1451,
+              "durationMs": 1463,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1501,7 +1556,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1565,
+              "durationMs": 1534,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -1541,7 +1596,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1489,
+              "durationMs": 1482,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -1549,7 +1604,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1566,
+              "durationMs": 1540,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -1589,7 +1644,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2067,
+              "durationMs": 2058,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -1597,7 +1652,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2480,
+              "durationMs": 2487,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -1721,7 +1776,7 @@
         {
           "id": "default",
           "title": "Role assignment form with Team Admin scope",
-          "description": "Role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed.",
+          "description": "Role assignment page captured with a deterministic Team Admin context.",
           "url": "https://researchops.pages.dev/pages/team/role-assignments/",
           "status": "captured",
           "captures": [
@@ -1730,7 +1785,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/team/role-assignments/",
-              "durationMs": 1342,
+              "durationMs": 1313,
               "screenshot": "screenshots/desktop/team-administration__team-role-assignments__default.png"
             },
             {
@@ -1738,7 +1793,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/team/role-assignments/",
-              "durationMs": 1513,
+              "durationMs": 1532,
               "screenshot": "screenshots/mobile/team-administration__team-role-assignments__default.png"
             }
           ],
@@ -1757,7 +1812,7 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/team-administration__team-role-assignments__default.png",
-          "acceptanceCriteria": "Feature: Use the Assign a role to a team member page\n\n  As a user researcher\n  I want to use the assign a role to a team member page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the assign a role to a team member page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports team Admin role assignment page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Role assignment form with Team Admin scope\" in the ResearchOps journey\n    Given I am using the assign a role to a team member page\n    Then I should understand the research value of this part of the journey\n    And I should see that role assignment page captured with a deterministic Team Admin context so team scope, role.assign gating, role radios, duration choices, sensitive-role copy and audit-reason fields can be reviewed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"You are assigning roles in\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Use the Assign a role to a team member page\n\n  As a user researcher\n  I want to use the assign a role to a team member page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the assign a role to a team member page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports team Admin role assignment page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Role assignment form with Team Admin scope\" in the ResearchOps journey\n    Given I am using the assign a role to a team member page\n    Then I should understand the research value of this part of the journey\n    And I should see that role assignment page captured with a deterministic Team Admin context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"You are assigning roles in\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1785,7 +1840,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1079,
+              "durationMs": 1054,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -1793,7 +1848,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/search/index.html",
-              "durationMs": 1154,
+              "durationMs": 1074,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -1840,7 +1895,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1109,
+              "durationMs": 1093,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -1848,7 +1903,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/notes/index.html",
-              "durationMs": 1198,
+              "durationMs": 1183,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -1895,7 +1950,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1095,
+              "durationMs": 1074,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -1903,7 +1958,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/consent/index.html",
-              "durationMs": 1172,
+              "durationMs": 1141,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -1950,7 +2005,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1120,
+              "durationMs": 1115,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -1958,7 +2013,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/sessions/index.html",
-              "durationMs": 1172,
+              "durationMs": 1148,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -2005,7 +2060,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1074,
+              "durationMs": 1063,
               "screenshot": "screenshots/desktop/analysis__synthesize__missing-sid-error.png"
             },
             {
@@ -2013,7 +2068,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/index.html",
-              "durationMs": 1200,
+              "durationMs": 1186,
               "screenshot": "screenshots/mobile/analysis__synthesize__missing-sid-error.png"
             }
           ],
@@ -2053,7 +2108,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1450,
+              "durationMs": 1468,
               "screenshot": "screenshots/desktop/analysis__synthesize__empty-evidence.png"
             },
             {
@@ -2061,7 +2116,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1590,
+              "durationMs": 1621,
               "screenshot": "screenshots/mobile/analysis__synthesize__empty-evidence.png"
             }
           ],
@@ -2101,7 +2156,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1266,
+              "durationMs": 1257,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-loaded.png"
             },
             {
@@ -2109,7 +2164,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1403,
+              "durationMs": 1416,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-loaded.png"
             }
           ],
@@ -2149,7 +2204,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2169,
+              "durationMs": 2157,
               "screenshot": "screenshots/desktop/analysis__synthesize__working-cluster-created.png"
             },
             {
@@ -2157,7 +2212,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2429,
+              "durationMs": 2473,
               "screenshot": "screenshots/mobile/analysis__synthesize__working-cluster-created.png"
             }
           ],
@@ -2197,7 +2252,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2267,
+              "durationMs": 2272,
               "screenshot": "screenshots/desktop/analysis__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -2205,7 +2260,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2530,
+              "durationMs": 2516,
               "screenshot": "screenshots/mobile/analysis__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -2245,7 +2300,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1556,
+              "durationMs": 1525,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -2253,7 +2308,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1792,
+              "durationMs": 1822,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -2293,7 +2348,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2451,
+              "durationMs": 2466,
               "screenshot": "screenshots/desktop/analysis__synthesize__theme-created.png"
             },
             {
@@ -2301,7 +2356,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://researchops.pages.dev/pages/synthesize/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2719,
+              "durationMs": 2778,
               "screenshot": "screenshots/mobile/analysis__synthesize__theme-created.png"
             }
           ],
