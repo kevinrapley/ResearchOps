@@ -41,8 +41,12 @@ function validTraceEvents() {
 	append('prompt.received', { summary: 'Promote a trace fixture' });
 	append('bundle.applied', { bundleId: 'github-diamond' });
 	append('decision.recorded', { decision: 'Write promotion artefacts' });
-	append('file.write.planned', { path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md' });
-	append('file.write.completed', { path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md' });
+	append('file.write.planned', {
+		path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md',
+	});
+	append('file.write.completed', {
+		path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md',
+	});
 	append('command.completed', { command: 'npm run validate', exitCode: 0 });
 	append('report.rendered', { path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md' });
 	append('run.completed', { status: 'success' });
@@ -51,7 +55,11 @@ function validTraceEvents() {
 }
 
 async function writeJsonl(filePath, events) {
-	await fs.writeFile(filePath, `${events.map((record) => JSON.stringify(record)).join('\n')}\n`, 'utf8');
+	await fs.writeFile(
+		filePath,
+		`${events.map((record) => JSON.stringify(record)).join('\n')}\n`,
+		'utf8'
+	);
 }
 
 test('promoteTrace writes Markdown and JSON audit artefacts from a valid raw trace', async () => {
