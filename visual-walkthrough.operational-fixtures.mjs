@@ -12,6 +12,7 @@ export const operationalAuthUserId = 'usr_visual_team_admin';
 export const operationalAuthTeamId = 'team_researchops_core';
 
 export const operationalPaths = {
+	accountSignIn: '/pages/account/sign-in/index.html',
 	projectDashboard: `/pages/project-dashboard/?id=${operationalProjectId}`,
 	addStudy: `/pages/study/new/?pid=${operationalProjectId}`,
 	addParticipant: `/pages/project-dashboard/participants/?id=${operationalProjectId}`,
@@ -317,6 +318,11 @@ export const operationalDesignRisks = {
 		'The landing page may look visually complete while failing to explain the safest route into research setup, evidence review or synthesis work.',
 		'User researchers could choose the wrong workflow, duplicate records or miss the intended evidence-to-insight traceability model.',
 		'Review the page against GOV.UK start-point conventions, link purpose, visible service identity and keyboard-accessible navigation.'
+	),
+	accountSignIn: risk(
+		'The sign-in page may make access look complete without explaining that identity, team membership and role permission are checked separately.',
+		'The first Team Admin may sign in successfully but not understand whether D1 role bootstrap, team membership or Cloudflare Access caused a blocked state.',
+		'Review the page for clear Cloudflare Access sign-in language, account-state recovery, active team context and a visible route to Team Admin tasks.'
 	),
 	start: risk(
 		'The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.',

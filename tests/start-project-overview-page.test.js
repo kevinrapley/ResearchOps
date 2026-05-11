@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 
 const overviewPage = fs.readFileSync('public/pages/start/overview/index.html', 'utf8');
-const visualWalkthroughConfig = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
 const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
 const projectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
@@ -48,6 +48,10 @@ function linkHref(source, linkText) {
 	return link ? link.href : '';
 }
 
+function pageById(id) {
+	return visualWalkthroughConfig.pages.find((page) => page.id === id);
+}
+
 assert.equal(headingText(overviewPage, 1).length, 1, 'Start overview page should have one h1');
 assert.equal(headingText(overviewPage, 1)[0], 'Start a research project');
 assert.equal(
@@ -71,23 +75,13 @@ assert.equal(overviewPage.includes('class="govuk-list govuk-list--bullet"'), tru
 assert.equal(overviewPage.includes('class="govuk-list govuk-list--number"'), true);
 
 assert.equal(
-	visualWalkthroughConfig.includes("id: 'start-overview'"),
-	true,
+	pageById('start-overview')?.path,
+	'/pages/start/overview/index.html',
 	'Visual walkthrough config should register the start overview page'
 );
 assert.equal(
-	visualWalkthroughConfig.includes("path: '/pages/start/overview/index.html'"),
-	true,
-	'Visual walkthrough config should capture the start overview route for the reporting site'
-);
-assert.equal(
-	visualWalkthroughConfig.includes("id: 'start',"),
-	true,
-	'Visual walkthrough config should continue capturing the existing start project form route'
-);
-assert.equal(
-	visualWalkthroughConfig.includes("path: '/pages/start/index.html'"),
-	true,
+	pageById('start')?.path,
+	'/pages/start/index.html',
 	'Visual walkthrough config should keep the existing four-step start route'
 );
 

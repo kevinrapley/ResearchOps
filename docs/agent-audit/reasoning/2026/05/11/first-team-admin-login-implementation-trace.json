@@ -1,0 +1,57 @@
+{
+	"trace_id": "atrace-20260511-first-team-admin-login",
+	"trace_layer": "operational",
+	"date": "2026-05-11",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/first-team-admin-login",
+	"trigger": "Continue authentication and role-setting workstream by enabling the first Team Admin to log in.",
+	"request_interpreted": [
+		"Keep Cloudflare Access as the authentication route.",
+		"Do not add custom password authentication or mock identity mode.",
+		"Use /api/me as the account, team, role and permission check.",
+		"Recognise Team Admin access through role.assign.",
+		"Route authorised Team Admin users to /pages/team/role-assignments/.",
+		"Keep identity, team membership and role assignment separate."
+	],
+	"files_checked": [
+		"infra/cloudflare/src/core/auth/access.js",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/migrations/0001_auth_foundation.sql",
+		"scripts/auth-runtime-bootstrap.mjs",
+		"public/pages/team/role-assignments/index.html",
+		"public/js/auth-role-assignment-page.js",
+		"tests/auth-foundation-route-state.test.js",
+		"docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md"
+	],
+	"findings": [
+		"/api/me already resolves Cloudflare Access identity and links seeded users by email.",
+		"The auth runtime bootstrap script already creates the initial active Team Admin user, team membership and role assignment.",
+		"The Team Admin role maps to role.assign.",
+		"The role-assignment UI already depends on /api/me and role.assign.",
+		"A user-facing sign-in/status route was missing."
+	],
+	"implementation": {
+		"page": "public/pages/account/sign-in/index.html",
+		"script": "public/js/auth-sign-in-page.js",
+		"test": "tests/auth-sign-in-route-state.test.js",
+		"product_note": "docs/product/26/05/11/first-team-admin-login-2026-05-11.md",
+		"visual_fixture_update": "visual-walkthrough.operational-fixtures.mjs"
+	},
+	"security_boundary": [
+		"Authentication remains Cloudflare Access.",
+		"Authorisation remains server-side through Worker and D1 permissions.",
+		"The sign-in page only renders account state and navigation.",
+		"No password fields, localStorage or sessionStorage are introduced."
+	],
+	"validation_encoded": [
+		"Sign-in page exists and uses Cloudflare Access language.",
+		"Sign-in page calls /api/me.",
+		"Team Admin continuation is /pages/team/role-assignments/.",
+		"Client checks role.assign before showing Team Admin continuation.",
+		"Password authentication is not introduced."
+	],
+	"status_at_trace_write": {
+		"pr_open": false,
+		"ci_needed_after_latest_commits": true
+	}
+}
