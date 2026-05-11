@@ -1,5 +1,5 @@
 {
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"traceLayer": "behavioural",
 	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and canonical bundle-directory precedence rules.",
 	"evals": [
@@ -17,6 +17,29 @@
 				"instruction",
 				"tool",
 				"missing-canonical-directory"
+			]
+		},
+		{
+			"id": "behaviour-openai-structured-output",
+			"question": "Given an OpenAI Responses API prompt, does the agent select the OpenAI Platform bundle?",
+			"prompt": "Build an OpenAI Responses API structured outputs integration for research summaries.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer-control",
+				"multi-functional-team",
+				"openai-platform"
+			],
+			"expectedEvidence": [
+				"matched-rule",
+				"matched-signal",
+				"selected-bundle",
+				"canonical-directory"
+			],
+			"forbiddenFailureModes": [
+				"instruction",
+				"tool",
+				"missing-canonical-directory",
+				"superficial-keyword-only"
 			]
 		},
 		{

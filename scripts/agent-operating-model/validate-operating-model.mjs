@@ -46,6 +46,7 @@ const MANIFEST_BUNDLE_IDS = [
 	"multi-functional-team",
 	"govuk-design-system",
 	"cloudflare",
+	"openai-platform",
 	"airtable-public-api",
 	"mural-public-api",
 ];
@@ -99,6 +100,49 @@ function assertBundleHasCanonicalFiles(bundle) {
 	requireFile(path.join(bundle.canonicalPath, bundle.promptBody || "prompt.body.xml"));
 }
 
+function assertSelectionEvidence(bundle) {
+	if (!bundle.selectionEvidence?.ruleId) {
+		fail(`loader did not return selection evidence for ${bundle.id}`);
+	}
+
+	const hasSignalEvidence = bundle.selectionEvidence.matchedSignals?.length > 0;
+	const hasFallbackEvidence =
+		bundle.selectionEvidence.selectionBasis === "registry-keyword-fallback" &&
+		bundle.selectionEvidence.matchedRegistryKeywords?.length > 0;
+
+	if (!hasSignalEvidence && !hasFallbackEvidence) {
+		fail(`loader did not return signal or fallback evidence for ${bundle.id}`);
+	}
+}
+
+function loadModelFor(taskText) {
+	const modelOutput = execFileSync(
+		"node",
+		["scripts/agent-operating-model/load-operating-model.mjs", taskText],
+		{ encoding: "utf8" },
+	);
+
+	return JSON.parse(modelOutput);
+}
+
+function assertSelectedBundles(taskText, expectedIds) {
+	const model = loadModelFor(taskText);
+	const selectedIds = model.selectedBundles.map((bundle) => bundle.id);
+
+	for (const expectedId of expectedIds) {
+		if (!selectedIds.includes(expectedId)) {
+			fail(`loader did not select expected bundle: ${expectedId}`);
+		}
+	}
+
+	for (const bundle of model.selectedBundles) {
+		assertBundleHasCanonicalFiles(bundle);
+		assertSelectionEvidence(bundle);
+	}
+
+	return model;
+}
+
 for (const file of REQUIRED_FILES) {
 	requireFile(file);
 }
@@ -130,8 +174,8 @@ if (behaviouralEvals.traceLayer !== "behavioural") {
 	fail("behavioural-evals.json must declare traceLayer behavioural");
 }
 
-if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 5) {
-	fail("behavioural-evals.json must contain at least five evals");
+if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 6) {
+	fail("behavioural-evals.json must contain at least six evals");
 }
 
 const signalCatalog = readJson(".agent-operating-model/task-signal-catalog.json");
@@ -142,6 +186,7 @@ for (const requiredSignal of [
 	"government-product-assurance-default",
 	"ui-or-content-change",
 	"runtime-or-deployment-change",
+	"ai-model-or-openai-platform-change",
 	"external-api-or-data-change",
 	"external-api-or-collaboration-change",
 ]) {
@@ -189,48 +234,26 @@ execFileSync("node", ["scripts/agent-operating-model/run-behavioural-evals.mjs"]
 	stdio: "inherit",
 });
 
-const modelOutput = execFileSync(
-	"node",
+const integrationModel = assertSelectedBundles(
+	"Cloudflare Worker route with Airtable and Mural widgets",
 	[
-		"scripts/agent-operating-model/load-operating-model.mjs",
-		"Cloudflare Worker route with Airtable and Mural widgets",
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"cloudflare",
+		"airtable-public-api",
+		"mural-public-api",
 	],
-	{ encoding: "utf8" },
 );
-const model = JSON.parse(modelOutput);
-const selectedIds = model.selectedBundles.map((bundle) => bundle.id);
 
-for (const expectedId of [
+assertSelectedBundles("Build an OpenAI Responses API structured outputs integration", [
 	"github-diamond",
 	"researchops-developer-control",
 	"multi-functional-team",
-	"cloudflare",
-	"airtable-public-api",
-	"mural-public-api",
-]) {
-	if (!selectedIds.includes(expectedId)) {
-		fail(`loader did not select expected bundle: ${expectedId}`);
-	}
-}
+	"openai-platform",
+]);
 
-for (const bundle of model.selectedBundles) {
-	assertBundleHasCanonicalFiles(bundle);
-
-	if (!bundle.selectionEvidence?.ruleId) {
-		fail(`loader did not return selection evidence for ${bundle.id}`);
-	}
-
-	const hasSignalEvidence = bundle.selectionEvidence.matchedSignals?.length > 0;
-	const hasFallbackEvidence =
-		bundle.selectionEvidence.selectionBasis === "registry-keyword-fallback" &&
-		bundle.selectionEvidence.matchedRegistryKeywords?.length > 0;
-
-	if (!hasSignalEvidence && !hasFallbackEvidence) {
-		fail(`loader did not return signal or fallback evidence for ${bundle.id}`);
-	}
-}
-
-if (Object.hasOwn(model, "bundlePackage")) {
+if (Object.hasOwn(integrationModel, "bundlePackage")) {
 	fail("loader must not expose bundlePackage; canonical directories are authoritative");
 }
 

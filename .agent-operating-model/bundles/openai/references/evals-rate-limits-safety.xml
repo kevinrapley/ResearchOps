@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="evals-rate-limits-safety" version="1.0.0">
+  <title>Evals, Rate Limits and Safety</title>
+  <source href="https://platform.openai.com/docs/api-reference/evals"/>
+  <source href="https://platform.openai.com/docs/guides/rate-limits"/>
+  <source href="https://platform.openai.com/docs/guides/safety-best-practices"/>
+  <reference_block name="evals" title="Evals">
+    <checklist ordered="false">
+      <entry level="0">Use Evals to test model or application behaviour against defined criteria and data sources.</entry>
+      <entry level="0">Keep eval data schemas, graders, run status and output-item review explicit.</entry>
+      <entry level="0">Do not treat one-off manual examples as sufficient release evidence for high-risk model changes.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="rate-limits" title="Rate limits">
+    <checklist ordered="false">
+      <entry level="0">Design for rate limits, transient failures, retries, backoff and idempotency.</entry>
+      <entry level="0">Do not claim current rate-limit values unless verified against the live project or official account settings.</entry>
+      <entry level="0">Use Batch API only where asynchronous processing fits the user and system need.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="safety" title="Safety best practices">
+    <checklist ordered="false">
+      <entry level="0">Use moderation, adversarial testing and human review where the use case requires them.</entry>
+      <entry level="0">Require human review for high-stakes outputs and code-generation outputs before practical use.</entry>
+      <entry level="0">Make original evidence available to reviewers where outputs summarise, classify or interpret research data.</entry>
+      <entry level="0">Record prompt-injection, data-exfiltration, over-reliance and hallucination mitigations.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

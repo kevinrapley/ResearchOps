@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="tools-function-calling-structured-outputs" version="1.0.0">
+  <title>Tools, Function Calling and Structured Outputs</title>
+  <source href="https://platform.openai.com/docs/guides/tools"/>
+  <source href="https://platform.openai.com/docs/guides/function-calling"/>
+  <source href="https://platform.openai.com/docs/guides/structured-outputs"/>
+  <reference_block name="tools" title="Tools">
+    <checklist ordered="false">
+      <entry level="0">Use built-in tools only when the product need and data-governance model justify them.</entry>
+      <entry level="0">Declare tool availability, tool inputs, tool outputs and failure handling explicitly.</entry>
+      <entry level="0">For external systems, use function calling or supported tool mechanisms rather than asking the model to fabricate side effects.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="function-calling" title="Function calling">
+    <checklist ordered="false">
+      <entry level="0">Treat function-call arguments as untrusted model output until schema validation and application validation pass.</entry>
+      <entry level="0">Do not execute destructive, payment, messaging, account-setting or irreversible tool calls without explicit human-controlled confirmation.</entry>
+      <entry level="0">Record idempotency, retry and partial-failure behaviour for tool calls.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="structured-outputs" title="Structured Outputs">
+    <checklist ordered="false">
+      <entry level="0">Use Structured Outputs where downstream code needs predictable JSON shape.</entry>
+      <entry level="0">Validate output against the declared JSON schema before using it.</entry>
+      <entry level="0">Design refusal, incomplete output and validation-failure paths.</entry>
+      <entry level="0">Do not treat schema conformance as truth, safety or correctness.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

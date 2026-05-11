@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="batch-webhooks-realtime" version="1.0.0">
+  <title>Batch, Webhooks and Realtime</title>
+  <source href="https://platform.openai.com/docs/guides/batch"/>
+  <source href="https://platform.openai.com/docs/webhooks"/>
+  <source href="https://platform.openai.com/docs/guides/realtime/overview"/>
+  <reference_block name="batch" title="Batch API">
+    <checklist ordered="false">
+      <entry level="0">Use Batch API for asynchronous workloads that do not require immediate responses.</entry>
+      <entry level="0">Prepare JSONL input with unique custom_id values so results can be matched back to source records.</entry>
+      <entry level="0">Record completion window, status handling, error file handling and retry rules.</entry>
+      <entry level="0">Do not use Batch API for interactive user journeys that require immediate response.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="webhooks" title="Webhooks">
+    <checklist ordered="false">
+      <entry level="0">Use webhooks only with signature verification, replay protection and idempotent processing.</entry>
+      <entry level="0">Do not trust webhook payloads until verification succeeds.</entry>
+      <entry level="0">Record retry, duplicate-event and dead-letter behaviour.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="realtime" title="Realtime API">
+    <checklist ordered="false">
+      <entry level="0">Use Realtime API for low-latency multimodal or speech interaction needs.</entry>
+      <entry level="0">Separate browser, server and ephemeral-token responsibilities.</entry>
+      <entry level="0">Record consent, recording, transcription, accessibility and safeguarding implications for voice or audio use.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

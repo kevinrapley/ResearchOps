@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenAI Bundle Output",
+  "type": "object",
+  "properties": {
+    "answer": { "type": "string" },
+    "openai_sources": { "type": "array", "items": { "type": "string" } },
+    "api_surface": { "type": "array", "items": { "type": "string" } },
+    "validation": { "type": "array", "items": { "type": "string" } },
+    "safety_controls": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["answer"]
+}

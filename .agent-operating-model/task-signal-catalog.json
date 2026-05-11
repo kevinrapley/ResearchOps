@@ -1,5 +1,5 @@
 {
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"purpose": "Define typed task signals used by the operating-model loader before selecting bundles.",
 	"signals": [
 		{
@@ -70,6 +70,30 @@
 				"wrangler bindings",
 				"wrangler deploy",
 				"wrangler deployment"
+			]
+		},
+		{
+			"id": "ai-model-or-openai-platform-change",
+			"kind": "detected",
+			"traceLayer": "behavioural",
+			"description": "The task concerns OpenAI API, OpenAI Platform, model calls, tool calling, Structured Outputs, retrieval, embeddings, Batch, webhooks, Realtime or Evals.",
+			"phrases": [
+				"openai",
+				"openai api",
+				"openai platform",
+				"responses api",
+				"structured outputs",
+				"function calling",
+				"file search",
+				"vector store",
+				"vector stores",
+				"embeddings",
+				"batch api",
+				"openai webhook",
+				"openai webhooks",
+				"realtime api",
+				"evals api",
+				"openai evals"
 			]
 		},
 		{

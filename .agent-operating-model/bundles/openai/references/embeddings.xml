@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="embeddings" version="1.0.0">
+  <title>Embeddings</title>
+  <source href="https://platform.openai.com/docs/guides/embeddings"/>
+  <reference_block name="embedding-use" title="Embedding use">
+    <checklist ordered="false">
+      <entry level="0">Use embeddings for semantic search, clustering, recommendations, classification support or similarity workflows where vector representations are appropriate.</entry>
+      <entry level="0">Keep embedding model, dimension, preprocessing and chunking strategy consistent between indexing and querying.</entry>
+      <entry level="0">Do not compare vectors from incompatible embedding models or incompatible preprocessing pipelines without explicit migration logic.</entry>
+      <entry level="0">Record privacy, retention and provenance controls for embedded content.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

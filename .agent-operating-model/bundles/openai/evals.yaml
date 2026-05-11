@@ -1,0 +1,7 @@
+evaluation_system:
+  name: openai-platform-bundle-evals
+  grade_schema: grade.schema.json
+  output_schema: output.schema.json
+suites:
+- tests.regression.yaml
+- tests.redteam.yaml
