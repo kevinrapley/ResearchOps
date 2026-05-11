@@ -83,6 +83,7 @@ require_file "scripts/agent-operating-model/run-behavioural-evals.mjs"
 require_file "scripts/agent-operating-model/validate-bundle-registry.mjs"
 require_file "scripts/agent-operating-model/validate-operating-model.mjs"
 require_file "scripts/agent-trace/validate-traces.mjs"
+require_file "scripts/validate-reports-site.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
@@ -146,6 +147,8 @@ require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
 require_file "docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md"
 require_file "docs/product/26/05/09/auth-role-assignment-api-2026-05-09.md"
 require_file "docs/product/26/05/09/auth-role-assignment-ui-2026-05-09.md"
+require_file "reports-site/index.html"
+require_file "reports-site/manifest.json"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.md"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-runtime-bootstrap-implementation-trace.json"
 require_file "docs/agent-audit/reasoning/2026/05/09/auth-role-assignment-api-implementation-trace.md"
@@ -160,7 +163,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'reports:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -187,6 +190,9 @@ node scripts/agent-operating-model/run-behavioural-evals.mjs >/dev/null
 
 info "checking agent traces"
 node scripts/agent-trace/validate-traces.mjs
+
+info "checking reports site integrity"
+node scripts/validate-reports-site.mjs
 
 info "checking Wrangler assets directory"
 node --input-type=module <<'NODE'

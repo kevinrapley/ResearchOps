@@ -1,0 +1,101 @@
+{
+	"trace_id": "atrace-20260511-airtable-bundle-evals-expansion",
+	"trace_layer": "operational",
+	"trace_source": "live-session",
+	"date": "2026-05-11",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "claude/fetch-parallel-updates-ZbDQQ",
+	"pull_request": {
+		"number": 236,
+		"state": "merged",
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/236"
+	},
+	"trigger": "agent-task",
+	"request_interpreted": [
+		"Expand the sparse airtable-public-api/evals.yaml from a pipeline-and-coverage structure into a full evaluation file with named behaviour evaluations.",
+		"Each behaviour eval must carry expectedEvidence and forbiddenFailureModes, matching the quality standard introduced in the openai-platform and mcp-agent-tooling bundles.",
+		"Fix stale coverage_expectations counts to match the committed test suite.",
+		"Address CI failures and Codex review comments on the resulting PR."
+	],
+	"operating_model_files_loaded": [
+		".agent-operating-model/bundles/airtable-public-api/evals.yaml",
+		".agent-operating-model/bundles/airtable-public-api/tests.regression.yaml",
+		".agent-operating-model/bundles/airtable-public-api/tests.redteam.yaml",
+		".agent-operating-model/bundles/airtable-public-api/registry-manifest.yaml",
+		".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+		".agent-operating-model/bundles/airtable-public-api/prompt.body.xml",
+		".agent-operating-model/bundles/airtable-public-api/CHANGELOG.md",
+		".agent-operating-model/bundles/airtable-public-api/grade.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/evals.yaml",
+		".agent-operating-model/behavioural-evals.json",
+		"tests/airtable-bundle-health.test.js"
+	],
+	"bundles_selected": [
+		"airtable-public-api",
+		"researchops-developer-control",
+		"github-diamond",
+		"multi-functional-team"
+	],
+	"files_modified": [
+		".agent-operating-model/bundles/airtable-public-api/evals.yaml",
+		".agent-operating-model/bundles/airtable-public-api/CHANGELOG.md",
+		".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+		".agent-operating-model/bundles/airtable-public-api/registry-manifest.yaml",
+		".agent-operating-model/bundles/airtable-public-api/prompt.body.xml",
+		"tests/airtable-bundle-health.test.js",
+		".gitignore"
+	],
+	"commits_recorded": [
+		"344cfa4",
+		"3a31def",
+		"6541c35"
+	],
+	"key_decisions": [
+		"Seven named behaviouralEvals added, one per required_behaviour in coverage_expectations: endpoint-resolution, narrowest-scope, pagination-batching, webhook-mac, schema-write-safety, enterprise-boundary, token-safety.",
+		"Each eval carries expectedEvidence [matched-rule, matched-signal, selected-bundle, canonical-directory] and typed forbiddenFailureModes.",
+		"Bundle version bumped from 1.0.1 to 1.1.0 across evals.yaml, prompt.spec.yaml, registry-manifest.yaml, and prompt.body.xml root element.",
+		"coverage_expectations corrected: minimum_regression_cases 18 to 20, minimum_redteam_cases 12 to 14.",
+		"tests/airtable-bundle-health.test.js assertions updated to match corrected minimums — fixing Node 20, Node 22 and Release gate CI failures.",
+		"artifacts/ added to .gitignore: CI-generated security audit outputs were untracked but should never be committed."
+	],
+	"ci_failures_resolved": [
+		{
+			"check": "Node 20",
+			"root_cause": "airtable-bundle-health.test.js asserted old minimums (18/12) after evals.yaml was bumped to 20/14",
+			"fix_commit": "3a31def"
+		},
+		{
+			"check": "Node 22",
+			"root_cause": "Same as Node 20",
+			"fix_commit": "3a31def"
+		},
+		{
+			"check": "Release gate",
+			"root_cause": "Downstream of Node test failures",
+			"fix_commit": "3a31def"
+		}
+	],
+	"codex_reviews_addressed": [
+		{
+			"priority": "P1",
+			"comment": "Keep Airtable bundle health tests aligned",
+			"action": "Updated all four assertions in tests/airtable-bundle-health.test.js",
+			"commit": "3a31def"
+		},
+		{
+			"priority": "P2",
+			"comment": "Bump the root prompt version too",
+			"action": "Updated prompt.body.xml root element from version=1.0.1 to version=1.1.0",
+			"commit": "3a31def"
+		}
+	],
+	"validation_recorded": [
+		"All 4 airtable-bundle-health tests pass locally after fix.",
+		"Cloudflare Pages deploy succeeded for PR #236.",
+		"PR merged with all CI checks green."
+	],
+	"status_at_trace_write": {
+		"pr_merged": true,
+		"merge_commit": "6541c35"
+	}
+}
