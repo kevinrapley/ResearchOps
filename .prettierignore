@@ -48,6 +48,9 @@ tests/*-contract.test.js
 tests/*-regression.test.js
 tests/*-route-state.test.js
 
+# Visual walkthrough registry is validated by tests/visual-walkthrough-registry.test.js.
+visual-walkthrough.config.mjs
+
 # Build / test artifacts
 .lighthouseci/
 build/
