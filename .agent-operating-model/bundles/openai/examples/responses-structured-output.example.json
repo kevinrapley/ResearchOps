@@ -1,0 +1,17 @@
+{
+  "scope": "Responses API structured output integration",
+  "api_surface": ["Responses API", "Structured Outputs"],
+  "model": "project-selected-model",
+  "input_validation": ["validate user-visible prompt inputs", "strip secrets", "record provenance"],
+  "output_contract": {
+    "type": "object",
+    "required": ["summary", "risks", "recommended_actions"],
+    "properties": {
+      "summary": { "type": "string" },
+      "risks": { "type": "array", "items": { "type": "string" } },
+      "recommended_actions": { "type": "array", "items": { "type": "string" } }
+    }
+  },
+  "validation": ["JSON schema validation", "application-level evidence check", "human review before publication"],
+  "limitations": ["schema conformance does not prove factual correctness"]
+}
