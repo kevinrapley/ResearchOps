@@ -4,13 +4,16 @@ This queue records the agreed sequence for operating-model hardening work.
 
 Only start the next item after the previous PR is merged into `main`.
 
-## Current item
+## Completed
 
 1. Airtable bundle eval hardening and schema consolidation.
 
-## Queue
+## Current item
 
 2. Bundle validation report standard.
+
+## Queue
+
 3. Trace promotion tool.
 4. Mural bundle incident backfill.
 5. Multi-functional-team red-team expansion.
