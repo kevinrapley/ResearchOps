@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="retrieval-files-vector-stores" version="1.0.0">
+  <title>File Search, Retrieval and Vector Stores</title>
+  <source href="https://platform.openai.com/docs/guides/tools-file-search"/>
+  <source href="https://platform.openai.com/docs/guides/retrieval"/>
+  <source href="https://platform.openai.com/docs/api-reference/vector-stores"/>
+  <source href="https://platform.openai.com/docs/api-reference/vector-stores-files"/>
+  <reference_block name="file-search" title="File search">
+    <checklist ordered="false">
+      <entry level="0">Use file search when model output needs grounded retrieval from uploaded or indexed files.</entry>
+      <entry level="0">Set up vector stores and upload files before exposing file search to a model response.</entry>
+      <entry level="0">Use include options when the application needs search results for audit, debugging or citation display.</entry>
+      <entry level="0">Record supported file formats, parsing constraints, metadata filters and freshness assumptions.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="vector-stores" title="Vector stores">
+    <checklist ordered="false">
+      <entry level="0">Treat vector stores as indexed retrieval infrastructure, not an authoritative database.</entry>
+      <entry level="0">Record file provenance, chunking assumptions, indexing status and update/delete behaviour.</entry>
+      <entry level="0">Do not expose restricted research material through retrieval unless permission and minimisation controls are satisfied.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>

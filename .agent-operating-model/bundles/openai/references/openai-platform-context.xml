@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="openai-platform-context" version="1.0.0">
+  <title>OpenAI Platform Context</title>
+  <source_authority>https://platform.openai.com/docs/</source_authority>
+  <source_authority>https://developers.openai.com/</source_authority>
+  <reference_block name="scope" title="Scope">
+    <statement>Use this bundle for OpenAI API integration, model response generation, retrieval, embeddings, batch jobs, webhooks, realtime interaction, evals and safety control work.</statement>
+    <statement>Do not use this bundle as a substitute for live account settings, model availability, pricing, usage limits, project permissions or secret inspection.</statement>
+  </reference_block>
+  <reference_block name="source-rule" title="Source rule">
+    <statement>Only treat official OpenAI documentation as authoritative for OpenAI API and platform claims in this bundle.</statement>
+    <statement>If a requested behaviour is not supported by the loaded OpenAI docs, state the evidence gap and avoid implementation claims.</statement>
+  </reference_block>
+</reference_module>
