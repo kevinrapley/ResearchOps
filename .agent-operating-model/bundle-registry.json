@@ -1,5 +1,5 @@
 {
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"updated": "2026-05-10",
 	"canonicalRoot": ".agent-operating-model/bundles/",
 	"defaultLoadOrder": [
@@ -137,6 +137,35 @@
 				"wrangler bindings",
 				"wrangler deploy",
 				"wrangler deployment"
+			],
+			"mustRecordInTrace": true
+		},
+		{
+			"id": "openai-platform",
+			"name": "OpenAI Platform",
+			"role": "openai-api-model-and-safety-control",
+			"precedence": 65,
+			"load": "conditional",
+			"canonicalPath": ".agent-operating-model/bundles/openai/",
+			"promptSpec": "prompt.spec.yaml",
+			"promptBody": "prompt.body.xml",
+			"keywords": [
+				"openai",
+				"openai api",
+				"openai platform",
+				"responses api",
+				"structured outputs",
+				"function calling",
+				"file search",
+				"vector store",
+				"vector stores",
+				"embeddings",
+				"batch api",
+				"openai webhook",
+				"openai webhooks",
+				"realtime api",
+				"evals api",
+				"openai evals"
 			],
 			"mustRecordInTrace": true
 		},
