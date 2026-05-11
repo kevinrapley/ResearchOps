@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 - 2026-05-11
+
+- added `behaviouralEvals` section to `evals.yaml` with 7 named evaluations covering all `required_behaviours`
+- each eval carries `expectedEvidence` (`matched-rule`, `matched-signal`, `selected-bundle`, `canonical-directory`) and typed `forbiddenFailureModes`, matching the quality standard introduced in the openai-platform and mcp-agent-tooling bundles
+- evals cover: endpoint resolution, narrowest scope selection, pagination and batching safety, webhook MAC verification, schema-write safety, enterprise boundary enforcement, and PAT token safety
+- corrected `coverage_expectations` counts to match committed test suite: `minimum_regression_cases` 18→20, `minimum_redteam_cases` 12→14
+
 ## 1.0.1 - 2026-05-11
 
 - expanded `evals.yaml` from a suite pointer into a structured evaluation orchestration file
