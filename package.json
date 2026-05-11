@@ -18,6 +18,7 @@
     "agent:evals": "node scripts/agent-operating-model/run-behavioural-evals.mjs",
     "trace:promote": "node scripts/agent-trace/promote-trace.mjs",
     "trace:validate": "node scripts/agent-trace/validate-traces.mjs",
+    "trace:coverage": "node scripts/agent-trace/assert-trace-coverage.mjs",
     "test": "node --test",
     "test:e2e": "playwright test",
     "qa:browsers": "playwright install chromium",

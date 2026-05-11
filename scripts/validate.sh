@@ -83,6 +83,7 @@ require_file "scripts/agent-operating-model/run-behavioural-evals.mjs"
 require_file "scripts/agent-operating-model/validate-bundle-registry.mjs"
 require_file "scripts/agent-operating-model/validate-operating-model.mjs"
 require_file "scripts/agent-trace/validate-traces.mjs"
+require_file "scripts/agent-trace/assert-trace-coverage.mjs"
 require_file "scripts/validate-reports-site.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
@@ -163,7 +164,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'reports:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -190,6 +191,9 @@ node scripts/agent-operating-model/run-behavioural-evals.mjs >/dev/null
 
 info "checking agent traces"
 node scripts/agent-trace/validate-traces.mjs
+
+info "checking trace coverage"
+node scripts/agent-trace/assert-trace-coverage.mjs
 
 info "checking reports site integrity"
 node scripts/validate-reports-site.mjs
