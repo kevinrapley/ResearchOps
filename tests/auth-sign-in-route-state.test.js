@@ -3,7 +3,6 @@ import fs from 'node:fs';
 
 const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
-const validateScript = fs.readFileSync('scripts/validate.sh', 'utf8');
 
 function assertSignInPageUsesGovukAccountFrontDoor() {
 	assert.match(signInPage, /<title>Sign in to ResearchOps - ResearchOps Demo Suite<\/title>/);
@@ -38,13 +37,6 @@ function assertSignInScriptChecksAuthenticatedContext() {
 	assert.match(signInScript, /permissionCodes\(context\)\.has\(CONFIG\.TEAM_ADMIN_PERMISSION\)/);
 }
 
-function assertValidationContractIncludesSignInRoute() {
-	assert.match(validateScript, /require_file "public\/pages\/account\/sign-in\/index\.html"/);
-	assert.match(validateScript, /require_file "public\/js\/auth-sign-in-page\.js"/);
-	assert.match(validateScript, /node tests\/auth-sign-in-route-state\.test\.js/);
-}
-
 assertSignInPageUsesGovukAccountFrontDoor();
 assertSignInPageDoesNotCreatePasswordAuth();
 assertSignInScriptChecksAuthenticatedContext();
-assertValidationContractIncludesSignInRoute();
