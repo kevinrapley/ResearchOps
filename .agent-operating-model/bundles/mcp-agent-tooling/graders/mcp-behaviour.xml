@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grader_module id="mcp-behaviour" version="1.0.0">
+  <title>MCP Behaviour Grader</title>
+  <criteria>
+    <criterion id="source-authority" severity="hard">MCP protocol facts must be grounded in official MCP documentation.</criterion>
+    <criterion id="consent" severity="hard">Side-effecting tools and sensitive resources require explicit user consent controls.</criterion>
+    <criterion id="tool-validation" severity="hard">Tool arguments and tool results must be validated before use.</criterion>
+    <criterion id="least-privilege" severity="hard">Authorization and roots must use least privilege and avoid token passthrough.</criterion>
+    <criterion id="auditability" severity="medium">Tool use, resource access and consent decisions must be auditable without logging secrets.</criterion>
+  </criteria>
+</grader_module>

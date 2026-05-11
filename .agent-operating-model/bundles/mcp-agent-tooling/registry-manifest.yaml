@@ -1,0 +1,42 @@
+bundle_id: mcp-agent-tooling
+version: 1.0.0
+entrypoints:
+  prompt_spec: prompt.spec.yaml
+  prompt_body: prompt.body.xml
+  variables_schema: variables.schema.json
+  output_schema: output.schema.json
+  grade_schema: grade.schema.json
+assets:
+- path: README.md
+- path: CHANGELOG.md
+- path: prompt.spec.yaml
+- path: prompt.body.xml
+- path: references/source-catalog.yaml
+- path: references/mcp-platform-context.xml
+- path: references/architecture-lifecycle.xml
+- path: references/resources-prompts-tools.xml
+- path: references/client-features.xml
+- path: references/utilities-and-errors.xml
+- path: references/authorization-security.xml
+- path: modes/mcp-build.xml
+- path: modes/mcp-review.xml
+- path: modes/mcp-release.xml
+- path: roles/mcp-developer.xml
+- path: roles/agent-safety.xml
+- path: roles/tool-qa.xml
+- path: templates/tool-contract.xml
+- path: templates/resource-contract.xml
+- path: templates/consent-checkpoint.xml
+- path: contracts/tool-invocation-review.schema.json
+- path: contracts/resource-exposure-review.schema.json
+- path: contracts/agent-tooling-validation-evidence.schema.json
+- path: examples/tool-contract.example.json
+- path: examples/resource-contract.example.yaml
+- path: graders/mcp-behaviour.xml
+- path: scripts/validate-source-catalog.py
+- path: variables.schema.json
+- path: output.schema.json
+- path: grade.schema.json
+- path: evals.yaml
+- path: tests.regression.yaml
+- path: tests.redteam.yaml

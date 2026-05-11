@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCP Tool Invocation Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool_name", "server", "side_effects", "argument_validation", "consent", "audit"],
+  "properties": {
+    "tool_name": { "type": "string" },
+    "server": { "type": "string" },
+    "side_effects": { "type": "boolean" },
+    "argument_validation": { "type": "array", "items": { "type": "string" } },
+    "result_validation": { "type": "array", "items": { "type": "string" } },
+    "consent": { "type": "array", "items": { "type": "string" } },
+    "audit": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } }
+  }
+}
