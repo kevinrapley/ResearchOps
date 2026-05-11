@@ -4,10 +4,12 @@ last_checked: 2026-05-11
 sources:
 - id: mcp-docs-root
   url: https://modelcontextprotocol.io/
-- id: mcp-specification
+- id: mcp-specification-root
   url: https://modelcontextprotocol.io/specification/
+- id: mcp-basic-overview
+  url: https://modelcontextprotocol.io/specification/2025-06-18/basic/index
 - id: mcp-architecture
-  url: https://modelcontextprotocol.io/docs/concepts/architecture
+  url: https://modelcontextprotocol.io/docs/learn/architecture
 - id: mcp-tools
   url: https://modelcontextprotocol.io/docs/concepts/tools
 - id: mcp-resources

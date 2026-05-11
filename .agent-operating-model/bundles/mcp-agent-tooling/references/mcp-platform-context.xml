@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="mcp-platform-context" version="1.0.0">
+  <title>MCP Platform Context</title>
+  <source_authority>https://modelcontextprotocol.io/</source_authority>
+  <reference_block name="scope" title="Scope">
+    <statement>Use this bundle for Model Context Protocol design, MCP server and client feature review, tool contracts, resource exposure, prompt workflows, consent checkpoints and agent-tooling safety.</statement>
+    <statement>Do not use this bundle as a substitute for provider-specific connector APIs, GitHub repository rules, OpenAI model behaviour, Cloudflare runtime behaviour, Airtable API rules or Mural API rules.</statement>
+  </reference_block>
+  <reference_block name="source-rule" title="Source rule">
+    <statement>Only treat official Model Context Protocol documentation as authoritative for MCP protocol claims in this bundle.</statement>
+    <statement>If a requested MCP behaviour is not supported by the loaded MCP docs, state the evidence gap and avoid implementation claims.</statement>
+  </reference_block>
+</reference_module>

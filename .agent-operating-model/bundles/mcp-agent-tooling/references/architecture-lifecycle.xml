@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="architecture-lifecycle" version="1.0.0">
+  <title>Architecture and Lifecycle</title>
+  <source href="https://modelcontextprotocol.io/docs/learn/architecture"/>
+  <source href="https://modelcontextprotocol.io/specification/2025-06-18/basic/index"/>
+  <reference_block name="architecture" title="Architecture">
+    <checklist ordered="false">
+      <entry level="0">Separate MCP host, client and server responsibilities.</entry>
+      <entry level="0">Treat MCP as a protocol layer for connecting applications to external context and tools, not as application business logic itself.</entry>
+      <entry level="0">Model server-provided features as resources, prompts and tools.</entry>
+      <entry level="0">Model client-provided features as sampling, roots and elicitation where supported.</entry>
+    </checklist>
+  </reference_block>
+  <reference_block name="protocol" title="Protocol and lifecycle">
+    <checklist ordered="false">
+      <entry level="0">Use JSON-RPC message discipline for protocol interactions.</entry>
+      <entry level="0">Respect lifecycle management, initialization and capability negotiation before using optional features.</entry>
+      <entry level="0">Record supported capabilities and unsupported feature paths.</entry>
+      <entry level="0">Do not assume tools, resources, prompts, sampling, roots or elicitation exist unless declared and negotiated.</entry>
+    </checklist>
+  </reference_block>
+</reference_module>
