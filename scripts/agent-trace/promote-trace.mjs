@@ -130,6 +130,10 @@ function renderList(items, emptyText = 'None recorded.') {
 	return items.map((item) => `- ${item}`).join('\n');
 }
 
+function eventTypeIn(eventTypes) {
+	return (event) => eventTypes.includes(event.eventType);
+}
+
 function buildSummary({ events, inputPath, markdownPath, jsonPath, title, warnings }) {
 	const bundles = unique(
 		events
@@ -137,7 +141,7 @@ function buildSummary({ events, inputPath, markdownPath, jsonPath, title, warnin
 			.map((event) => payloadValue(event, ['bundleId', 'id', 'name']))
 	);
 	const filesRead = unique(
-		events.filter((event) => event.eventType === 'file.read.completed').map(pathFromPayload)
+		events.filter(eventTypeIn(['file.read', 'file.read.completed'])).map(pathFromPayload)
 	);
 	const filesWritten = unique(
 		events.filter((event) => event.eventType === 'file.write.completed').map(pathFromPayload)

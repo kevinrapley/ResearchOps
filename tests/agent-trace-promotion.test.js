@@ -40,6 +40,7 @@ function validTraceEvents() {
 	append('run.started', { summary: 'Promote a trace fixture' });
 	append('prompt.received', { summary: 'Promote a trace fixture' });
 	append('bundle.applied', { bundleId: 'github-diamond' });
+	append('file.read', { path: '.agent-operating-model/orchestration.xml' });
 	append('decision.recorded', { decision: 'Write promotion artefacts' });
 	append('file.write.planned', {
 		path: 'docs/agent-audit/reasoning/2026/05/11/promote-fixture.md',
@@ -85,9 +86,11 @@ test('promoteTrace writes Markdown and JSON audit artefacts from a valid raw tra
 	assert.match(markdown, /# Promote fixture trace/);
 	assert.match(markdown, /Promotion status: promoted from validated raw trace/);
 	assert.match(markdown, /github-diamond/);
+	assert.match(markdown, /.agent-operating-model\/orchestration.xml/);
 	assert.equal(summary.schemaVersion, 'agent-trace-promotion/v1');
-	assert.equal(summary.eventCount, 9);
+	assert.equal(summary.eventCount, 10);
 	assert.deepEqual(summary.bundles, ['github-diamond']);
+	assert.deepEqual(summary.filesRead, ['.agent-operating-model/orchestration.xml']);
 	assert.deepEqual(summary.validations, ['npm run validate — exit 0']);
 });
 
