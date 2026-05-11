@@ -85,6 +85,7 @@ require_file "scripts/agent-operating-model/validate-operating-model.mjs"
 require_file "scripts/agent-trace/validate-traces.mjs"
 require_file "scripts/agent-trace/assert-trace-coverage.mjs"
 require_file "scripts/validate-reports-site.mjs"
+require_file "scripts/validate-sourcebook-links.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
@@ -164,7 +165,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'sourcebook:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -197,6 +198,9 @@ node scripts/agent-trace/assert-trace-coverage.mjs
 
 info "checking reports site integrity"
 node scripts/validate-reports-site.mjs
+
+info "checking sourcebook link integrity"
+node scripts/validate-sourcebook-links.mjs
 
 info "checking Wrangler assets directory"
 node --input-type=module <<'NODE'
