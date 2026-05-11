@@ -16,7 +16,7 @@
 </head>
 <body>
 	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
-	<x-include src="/partials/header.html" vars='{"active":"Account","subtitle":"Sign in and check access"}'></x-include>
+	<x-include src="/partials/header.html" vars='{"active":"Account","subtitle":"Sign in"}'></x-include>
 
 	<div class="govuk-width-container">
 		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
@@ -33,31 +33,27 @@
 				<div class="govuk-grid-column-two-thirds">
 					<span class="govuk-caption-l">ResearchOps account</span>
 					<h1 class="govuk-heading-xl">Sign in to ResearchOps</h1>
-					<p class="govuk-body-l">Use the account that has been set up as the first Team Admin.</p>
-					<p class="govuk-body">ResearchOps uses Cloudflare Access to confirm your identity. ResearchOps then checks your team, role and permissions in D1 before showing administrative controls.</p>
+					<p class="govuk-body-l">Use your work email address to continue.</p>
+					<p class="govuk-body">After you sign in, ResearchOps will check whether your account is ready and what you can do.</p>
 
-					<section class="govuk-inset-text" aria-label="First Team Admin setup">
-						<p class="govuk-body">The first Team Admin must already have been bootstrapped with an active account, active team membership and the Team Admin role.</p>
-					</section>
-
-					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-team-admin-destination="/pages/team/role-assignments/" data-access-login-route="/pages/account/sign-in/">
+					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-access-login-route="/api/auth/login?return=/pages/account/sign-in/" data-team-admin-destination="/pages/team/role-assignments/">
 						<div class="govuk-notification-banner__header">
-							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Checking sign-in status</h2>
+							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Checking your account</h2>
 						</div>
 						<div class="govuk-notification-banner__content" id="sign-in-status-body">
-							<p class="govuk-body">We are checking whether Cloudflare Access has already signed you in.</p>
+							<p class="govuk-body">We are checking whether you are already signed in.</p>
 						</div>
 					</section>
 
 					<div class="govuk-button-group" id="sign-in-actions">
-						<a class="govuk-button" id="sign-in-check-link" href="/pages/account/sign-in/" role="button" draggable="false">Sign in with Cloudflare Access</a>
-						<a class="govuk-button govuk-button--secondary" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false" hidden>Go to role assignments</a>
+						<a class="govuk-button" id="sign-in-check-link" href="/api/auth/login?return=/pages/account/sign-in/" role="button" draggable="false">Continue</a>
+						<a class="govuk-button" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false" hidden>Manage team roles</a>
 					</div>
 
 					<section aria-labelledby="cannot-sign-in-title">
 						<h2 class="govuk-heading-m" id="cannot-sign-in-title">If you cannot sign in</h2>
-						<p class="govuk-body">Check that you are using the same email address that was used for the auth runtime bootstrap.</p>
-						<p class="govuk-body">If your account exists but you cannot manage roles, ask someone with Team Admin access to check your team membership and role assignment.</p>
+						<p class="govuk-body">Use the same email address that was used when your ResearchOps account was set up.</p>
+						<p class="govuk-body">If you still cannot get access, ask a Team Admin to check your account and team role.</p>
 					</section>
 				</div>
 			</div>
