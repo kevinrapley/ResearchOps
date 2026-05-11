@@ -33,6 +33,7 @@ Canonical bundle directories currently include:
 - `.agent-operating-model/bundles/govuk-design-system/`
 - `.agent-operating-model/bundles/cloudflare/`
 - `.agent-operating-model/bundles/openai/`
+- `.agent-operating-model/bundles/mcp-agent-tooling/`
 - `.agent-operating-model/bundles/airtable-public-api/`
 - `.agent-operating-model/bundles/mural-public-api/`
 
@@ -87,7 +88,7 @@ Useful commands:
 | Testing | Playwright, Cucumber, Pa11y, Lighthouse, Lychee | Must pass in CI |
 | Lint / format | ESLint and Prettier | Required pre-merge |
 | Deployment | GitHub Actions and Cloudflare | CI then deploy |
-| API integrations | Airtable, GitHub CSV, Mural OAuth2 Public API, OpenAI Platform | Integration rules live in canonical bundles and `infra/cloudflare/src/lib/` |
+| API integrations | Airtable, GitHub CSV, Mural OAuth2 Public API, OpenAI Platform, MCP-style agent tooling | Integration rules live in canonical bundles and `infra/cloudflare/src/lib/` |
 
 ---
 
@@ -132,6 +133,7 @@ Before committing, run the relevant subset of:
 - Use `.agent-operating-model/bundles/researchops-developer-control/` for ResearchOps-specific Worker, routing and service rules.
 - Use `.agent-operating-model/bundles/cloudflare/` for Cloudflare runtime, Wrangler, binding, storage, queue, workflow, Workers AI, Vectorize and deployment rules.
 - Use `.agent-operating-model/bundles/openai/` for OpenAI API, model, tool, retrieval, structured output, eval and AI-safety rules.
+- Use `.agent-operating-model/bundles/mcp-agent-tooling/` for MCP protocol, agent tool contracts, resource exposure, prompt workflows, consent checkpoints and tool-use audit rules.
 
 ---
 
@@ -156,7 +158,7 @@ Before committing, run the relevant subset of:
 
 ## Canonical bundle ownership
 
-Do not duplicate the detailed Cloudflare, OpenAI, Airtable, Mural, GOV.UK Design System, GitHub Diamond, ResearchOps Developer Control, or Multi-Functional Team bundle rules in this file.
+Do not duplicate the detailed Cloudflare, OpenAI, MCP, Airtable, Mural, GOV.UK Design System, GitHub Diamond, ResearchOps Developer Control, or Multi-Functional Team bundle rules in this file.
 
 Use these canonical bundle directories instead:
 
@@ -168,6 +170,7 @@ Use these canonical bundle directories instead:
 | GOV.UK Design System | `.agent-operating-model/bundles/govuk-design-system/` |
 | Cloudflare Developer Platform | `.agent-operating-model/bundles/cloudflare/` |
 | OpenAI Platform | `.agent-operating-model/bundles/openai/` |
+| MCP Agent Tooling | `.agent-operating-model/bundles/mcp-agent-tooling/` |
 | Airtable Public API | `.agent-operating-model/bundles/airtable-public-api/` |
 | Mural Public API | `.agent-operating-model/bundles/mural-public-api/` |
 
