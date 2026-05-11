@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bundleOrchestration
 	xmlns="urn:researchops:agent-operating-model:bundle-orchestration"
-	version="1.3.0">
+	version="1.4.0">
 	<purpose>
 		Define how repository-aware agents load, apply, layer and trace checked-in prompt bundles for the ResearchOps platform.
 	</purpose>
@@ -37,6 +37,9 @@
 			<bundleRef id="openai-platform" canonicalPath=".agent-operating-model/bundles/openai/">
 				<when>OpenAI API, OpenAI Platform, Responses API, Structured Outputs, function calling, file search, vector stores, embeddings, Batch API, webhooks, Realtime API or Evals are in scope.</when>
 			</bundleRef>
+			<bundleRef id="mcp-agent-tooling" canonicalPath=".agent-operating-model/bundles/mcp-agent-tooling/">
+				<when>Model Context Protocol, MCP servers or clients, MCP tools, MCP resources, MCP prompts, sampling, roots, elicitation, tool consent, tool contracts or agent-tooling safety are in scope.</when>
+			</bundleRef>
 			<bundleRef id="airtable-public-api" canonicalPath=".agent-operating-model/bundles/airtable-public-api/">
 				<when>Airtable tables, records, linked records, formula filters, comments, schema operations, bases, webhooks or attachments are in scope.</when>
 			</bundleRef>
@@ -53,8 +56,9 @@
 		<rule id="precedence-004">GOV.UK Design System governs GOV.UK UI, accessibility, interaction patterns and content patterns.</rule>
 		<rule id="precedence-005">Cloudflare governs Cloudflare runtime, deployment, binding and platform-product implementation details.</rule>
 		<rule id="precedence-006">OpenAI Platform governs OpenAI API, model, tool, retrieval, structured output, eval and AI-safety implementation details.</rule>
-		<rule id="precedence-007">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
-		<rule id="precedence-008">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
+		<rule id="precedence-007">MCP Agent Tooling governs MCP protocol, tool, resource, prompt, consent and agent-tooling safety implementation details.</rule>
+		<rule id="precedence-008">Platform API bundles govern API-specific implementation details where their domain is in scope.</rule>
+		<rule id="precedence-009">When bundles conflict, record the conflict, apply the highest-precedence relevant rule and explain the impact.</rule>
 	</precedence>
 
 	<traceability>
