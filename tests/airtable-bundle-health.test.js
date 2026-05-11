@@ -44,8 +44,8 @@ test('Airtable eval orchestration declares pipelines and minimum coverage', () =
 		'operational-safety-pipeline',
 		'schema-and-webhook-pipeline',
 		'coverage_expectations:',
-		'minimum_regression_cases: 18',
-		'minimum_redteam_cases: 12',
+		'minimum_regression_cases: 20',
+		'minimum_redteam_cases: 14',
 		'schema_policy:',
 	]) {
 		assert.match(evals, escapedPattern(expected));
@@ -57,10 +57,10 @@ test('Airtable regression and red-team suites meet declared coverage minimums', 
 	const regressionCases = countCases(readBundleFile('tests.regression.yaml'));
 	const redteamCases = countCases(readBundleFile('tests.redteam.yaml'));
 
-	assert.match(evals, /minimum_regression_cases: 18/);
-	assert.match(evals, /minimum_redteam_cases: 12/);
-	assert.ok(regressionCases >= 18, `expected at least 18 regression cases, got ${regressionCases}`);
-	assert.ok(redteamCases >= 12, `expected at least 12 red-team cases, got ${redteamCases}`);
+	assert.match(evals, /minimum_regression_cases: 20/);
+	assert.match(evals, /minimum_redteam_cases: 14/);
+	assert.ok(regressionCases >= 20, `expected at least 20 regression cases, got ${regressionCases}`);
+	assert.ok(redteamCases >= 14, `expected at least 14 red-team cases, got ${redteamCases}`);
 });
 
 test('Airtable bundle records the operating-model hardening queue', () => {
