@@ -6,6 +6,7 @@
 
 const CONFIG = Object.freeze({
 	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "",
+	ACCESS_LOGIN_URL: window.RESEARCHOPS_ACCESS_LOGIN_URL || "",
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 	TEAM_ADMIN_PERMISSION: "role.assign",
@@ -30,6 +31,15 @@ function escapeHtml(value) {
 
 function endpoint(path) {
 	return `${CONFIG.API_BASE}${path}`;
+}
+
+function accessLoginUrl() {
+	return CONFIG.ACCESS_LOGIN_URL || dom.status?.dataset?.accessLoginRoute || window.location.pathname;
+}
+
+function configureSignInAction() {
+	if (!dom.signInLink) return;
+	dom.signInLink.setAttribute("href", accessLoginUrl());
 }
 
 function setBusy(isBusy) {
@@ -90,7 +100,7 @@ function showUnauthenticated(message) {
 		"Sign in required",
 		`
 <p class="govuk-body">${escapeHtml(message || "You need to sign in before ResearchOps can check your account.")}</p>
-<p class="govuk-body">Use the sign-in button. Cloudflare Access will ask you to prove your identity if you are not already signed in.</p>
+<p class="govuk-body">Use the sign-in button. Cloudflare Access will ask you to prove your identity if this route is protected by an Access policy.</p>
 `,
 	);
 	if (dom.signInLink) dom.signInLink.hidden = false;
@@ -189,6 +199,7 @@ async function refreshSignInStatus() {
 
 function init() {
 	if (!dom.status) return;
+	configureSignInAction();
 	refreshSignInStatus();
 }
 
@@ -196,6 +207,7 @@ init();
 
 window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
+	accessLoginUrl,
 	activeTeamLabel,
 	permissionCodes,
 	roleLabels,
