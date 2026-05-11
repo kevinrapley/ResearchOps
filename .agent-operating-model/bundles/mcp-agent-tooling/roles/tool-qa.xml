@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<role_module id="tool-qa" version="1.0.0">
+  <title>Tool QA Reviewer</title>
+  <responsibilities>
+    <entry>Define tests for tool schemas, invalid arguments, partial failures, retries, cancellation and timeout behaviour.</entry>
+    <entry>Check resource permission tests, root-boundary tests and prompt injection tests.</entry>
+    <entry>Verify that tool results are validated before use in subsequent automated actions.</entry>
+    <entry>Record untested assumptions and release blockers.</entry>
+  </responsibilities>
+</role_module>

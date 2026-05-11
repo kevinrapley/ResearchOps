@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<prompt_bundle id="mcp-agent-tooling" version="1.0.0" default_mode="mcp-build" xml_profile="native-semantic-xml/v1">
+  <bundle_identity>
+    <name>MCP Agent Tooling Prompt Bundle</name>
+    <description>Canonical ResearchOps bundle for Model Context Protocol, tool contracts, resource exposure, prompt workflows, consent checkpoints, client features, utilities, authorization and agent-tooling safety.</description>
+    <status>canonical</status>
+  </bundle_identity>
+  <runtime_defaults>
+    <default_mode>mcp-build</default_mode>
+    <source_of_truth>https://modelcontextprotocol.io/</source_of_truth>
+    <do_not_invent_mcp_behaviour>true</do_not_invent_mcp_behaviour>
+    <require_explicit_tool_consent>true</require_explicit_tool_consent>
+    <require_tool_argument_validation>true</require_tool_argument_validation>
+    <require_resource_permission_review>true</require_resource_permission_review>
+    <require_audit_trace_for_tool_use>true</require_audit_trace_for_tool_use>
+  </runtime_defaults>
+  <assembly>
+    <always_load>references/source-catalog.yaml</always_load>
+    <always_load>references/mcp-platform-context.xml</always_load>
+    <always_load>references/architecture-lifecycle.xml</always_load>
+    <always_load>references/resources-prompts-tools.xml</always_load>
+    <always_load>references/client-features.xml</always_load>
+    <always_load>references/utilities-and-errors.xml</always_load>
+    <always_load>references/authorization-security.xml</always_load>
+  </assembly>
+  <mode_registry>
+    <mode_ref id="mcp-build" file="modes/mcp-build.xml"/>
+    <mode_ref id="mcp-review" file="modes/mcp-review.xml"/>
+    <mode_ref id="mcp-release" file="modes/mcp-release.xml"/>
+  </mode_registry>
+  <role_registry>
+    <role_ref id="mcp-developer" file="roles/mcp-developer.xml"/>
+    <role_ref id="agent-safety" file="roles/agent-safety.xml"/>
+    <role_ref id="tool-qa" file="roles/tool-qa.xml"/>
+  </role_registry>
+  <template_registry>
+    <template_ref id="tool-contract" file="templates/tool-contract.xml"/>
+    <template_ref id="resource-contract" file="templates/resource-contract.xml"/>
+    <template_ref id="consent-checkpoint" file="templates/consent-checkpoint.xml"/>
+  </template_registry>
+  <contract_registry>
+    <contract_ref id="tool-invocation-review" file="contracts/tool-invocation-review.schema.json"/>
+    <contract_ref id="resource-exposure-review" file="contracts/resource-exposure-review.schema.json"/>
+    <contract_ref id="agent-tooling-validation-evidence" file="contracts/agent-tooling-validation-evidence.schema.json"/>
+  </contract_registry>
+  <grader_registry>
+    <grader_ref id="mcp-behaviour" file="graders/mcp-behaviour.xml"/>
+  </grader_registry>
+  <contracts>
+    <inputs ref="variables.schema.json"/>
+    <outputs ref="output.schema.json"/>
+    <grading ref="grade.schema.json"/>
+  </contracts>
+</prompt_bundle>

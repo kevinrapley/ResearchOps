@@ -30,6 +30,7 @@ The extracted bundle directories under `.agent-operating-model/bundles/` are can
 - `.agent-operating-model/bundles/govuk-design-system/`
 - `.agent-operating-model/bundles/cloudflare/`
 - `.agent-operating-model/bundles/openai/`
+- `.agent-operating-model/bundles/mcp-agent-tooling/`
 - `.agent-operating-model/bundles/airtable-public-api/`
 - `.agent-operating-model/bundles/mural-public-api/`
 

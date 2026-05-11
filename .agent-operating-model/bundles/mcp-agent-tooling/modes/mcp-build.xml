@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mode_module id="mcp-build" version="1.0.0">
+  <title>MCP Build Mode</title>
+  <purpose>Guide MCP server, client, tool, resource and prompt implementation for ResearchOps.</purpose>
+  <required_actions>
+    <action>Identify MCP features in scope: resources, prompts, tools, sampling, roots, elicitation, authorization or utilities.</action>
+    <action>Declare host, client and server responsibilities.</action>
+    <action>Declare negotiated capabilities and unsupported feature paths.</action>
+    <action>Define schemas for tool inputs, tool outputs, resource payloads and prompt arguments.</action>
+    <action>Define consent checkpoints for data exposure, tool invocation and local server execution.</action>
+    <action>Record logging, progress, cancellation, timeout and error behaviour.</action>
+  </required_actions>
+  <stop_conditions>
+    <condition>Requested MCP behaviour is not grounded in official MCP documentation.</condition>
+    <condition>Required tool permissions, data boundaries, local execution command or authorization context is unknown.</condition>
+  </stop_conditions>
+</mode_module>

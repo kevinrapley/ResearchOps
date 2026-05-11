@@ -1,0 +1,44 @@
+bundle:
+  id: mcp-agent-tooling
+  name: MCP Agent Tooling Prompt Bundle
+  version: 1.0.0
+  status: canonical
+  default_mode: mcp-build
+  source_authority:
+  - https://modelcontextprotocol.io/
+  prompt_body: prompt.body.xml
+design:
+  prompt_markup: native semantic XML
+  output_contract: output.schema.json
+  grade_contract: grade.schema.json
+  variables_contract: variables.schema.json
+  source_rule: MCP protocol facts must come from official Model Context Protocol documentation only.
+assembly:
+  always_load:
+  - references/source-catalog.yaml
+  - references/mcp-platform-context.xml
+  - references/architecture-lifecycle.xml
+  - references/resources-prompts-tools.xml
+  - references/client-features.xml
+  - references/utilities-and-errors.xml
+  - references/authorization-security.xml
+  modes:
+  - modes/mcp-build.xml
+  - modes/mcp-review.xml
+  - modes/mcp-release.xml
+  role_modules:
+  - roles/mcp-developer.xml
+  - roles/agent-safety.xml
+  - roles/tool-qa.xml
+  template_modules:
+  - templates/tool-contract.xml
+  - templates/resource-contract.xml
+  - templates/consent-checkpoint.xml
+  contract_modules:
+  - contracts/tool-invocation-review.schema.json
+  - contracts/resource-exposure-review.schema.json
+  - contracts/agent-tooling-validation-evidence.schema.json
+  validation_scripts:
+  - scripts/validate-source-catalog.py
+  grader_modules:
+  - graders/mcp-behaviour.xml

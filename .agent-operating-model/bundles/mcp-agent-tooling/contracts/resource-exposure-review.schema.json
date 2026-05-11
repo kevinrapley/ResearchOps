@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCP Resource Exposure Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["resource_uri", "server", "sensitivity", "access_control", "provenance"],
+  "properties": {
+    "resource_uri": { "type": "string" },
+    "server": { "type": "string" },
+    "mime_type": { "type": ["string", "null"] },
+    "sensitivity": { "type": "string", "enum": ["public", "internal", "restricted", "unknown"] },
+    "access_control": { "type": "array", "items": { "type": "string" } },
+    "provenance": { "type": "array", "items": { "type": "string" } },
+    "minimisation": { "type": "array", "items": { "type": "string" } },
+    "audit": { "type": "array", "items": { "type": "string" } }
+  }
+}

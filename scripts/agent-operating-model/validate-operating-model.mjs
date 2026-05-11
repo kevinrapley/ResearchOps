@@ -47,6 +47,7 @@ const MANIFEST_BUNDLE_IDS = [
 	"govuk-design-system",
 	"cloudflare",
 	"openai-platform",
+	"mcp-agent-tooling",
 	"airtable-public-api",
 	"mural-public-api",
 ];
@@ -174,8 +175,8 @@ if (behaviouralEvals.traceLayer !== "behavioural") {
 	fail("behavioural-evals.json must declare traceLayer behavioural");
 }
 
-if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 6) {
-	fail("behavioural-evals.json must contain at least six evals");
+if (!Array.isArray(behaviouralEvals.evals) || behaviouralEvals.evals.length < 7) {
+	fail("behavioural-evals.json must contain at least seven evals");
 }
 
 const signalCatalog = readJson(".agent-operating-model/task-signal-catalog.json");
@@ -187,6 +188,7 @@ for (const requiredSignal of [
 	"ui-or-content-change",
 	"runtime-or-deployment-change",
 	"ai-model-or-openai-platform-change",
+	"agent-tooling-or-mcp-change",
 	"external-api-or-data-change",
 	"external-api-or-collaboration-change",
 ]) {
@@ -251,6 +253,13 @@ assertSelectedBundles("Build an OpenAI Responses API structured outputs integrat
 	"researchops-developer-control",
 	"multi-functional-team",
 	"openai-platform",
+]);
+
+assertSelectedBundles("Design an MCP tool contract with explicit tool consent", [
+	"github-diamond",
+	"researchops-developer-control",
+	"multi-functional-team",
+	"mcp-agent-tooling",
 ]);
 
 if (Object.hasOwn(integrationModel, "bundlePackage")) {
