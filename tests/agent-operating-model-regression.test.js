@@ -32,6 +32,14 @@ function cloudflareFile(relativePath) {
 	return fs.readFileSync(cloudflarePath(relativePath), "utf8");
 }
 
+function openaiPath(relativePath) {
+	return `.agent-operating-model/bundles/openai/${relativePath}`;
+}
+
+function openaiFile(relativePath) {
+	return fs.readFileSync(openaiPath(relativePath), "utf8");
+}
+
 function extractUrls(text) {
 	return Array.from(text.matchAll(/https:\/\/[^\s"'<>]+/g)).map((match) => match[0]);
 }
@@ -72,6 +80,33 @@ test("repository operating model selects Cloudflare for Worker runtime prompts",
 		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
 		assert.ok(bundle.selectionEvidence.matchedSignals.includes("runtime-or-deployment-change"));
 		assertCanonicalBundle(bundle);
+	}
+});
+
+test("repository operating model selects OpenAI for model integration work", () => {
+	for (const task of [
+		"Build an OpenAI Responses API structured outputs integration",
+		"Add file search over research notes using vector stores",
+		"Review function calling validation for generated tool arguments",
+	]) {
+		const bundle = bundleById(task, "openai-platform");
+
+		assert.ok(bundle, `${task} should select openai-platform`);
+		assert.equal(bundle.selectionEvidence.selectionBasis, "required-task-signal");
+		assert.ok(bundle.selectionEvidence.matchedSignals.includes("ai-model-or-openai-platform-change"));
+		assertCanonicalBundle(bundle);
+	}
+});
+
+test("repository operating model does not select OpenAI for generic AI-free text", () => {
+	for (const task of [
+		"Update the research summary page content",
+		"Fix the service record import flow",
+		"Review participant consent copy",
+	]) {
+		const ids = selectedIds(task);
+
+		assert.equal(ids.includes("openai-platform"), false, `${task} should not select openai-platform`);
 	}
 });
 
@@ -169,6 +204,17 @@ test("Cloudflare bundle manifest assets exist", () => {
 	}
 });
 
+test("OpenAI bundle manifest assets exist", () => {
+	const manifest = openaiFile("registry-manifest.yaml");
+	const assetPaths = Array.from(manifest.matchAll(/^- path: (.+)$/gm)).map((match) => match[1]);
+
+	assert.ok(assetPaths.length > 30);
+
+	for (const assetPath of assetPaths) {
+		assert.ok(fs.existsSync(openaiPath(assetPath)), `${assetPath} should exist`);
+	}
+});
+
 test("Cloudflare bundle source catalogue covers XML reference URLs", () => {
 	const catalogue = cloudflareFile("references/source-catalog.yaml");
 	const sourceUrls = extractUrls(catalogue);
@@ -200,6 +246,39 @@ test("Cloudflare bundle source catalogue covers XML reference URLs", () => {
 	}
 });
 
+test("OpenAI bundle source catalogue covers XML reference URLs", () => {
+	const catalogue = openaiFile("references/source-catalog.yaml");
+	const sourceUrls = extractUrls(catalogue);
+
+	assert.ok(sourceUrls.length >= 10);
+
+	for (const sourceUrl of sourceUrls) {
+		assert.ok(
+			sourceUrl.startsWith("https://platform.openai.com/docs/") ||
+				sourceUrl.startsWith("https://developers.openai.com/"),
+			`${sourceUrl} should use official OpenAI documentation`,
+		);
+	}
+
+	const referenceFiles = fs
+		.readdirSync(openaiPath("references"))
+		.filter((file) => file.endsWith(".xml"));
+
+	for (const referenceFile of referenceFiles) {
+		for (const sourceUrl of extractUrls(openaiFile(`references/${referenceFile}`))) {
+			assert.ok(
+				sourceUrl.startsWith("https://platform.openai.com/docs/") ||
+					sourceUrl.startsWith("https://developers.openai.com/"),
+				`${sourceUrl} should use official OpenAI documentation`,
+			);
+			assert.ok(
+				catalogue.includes(sourceUrl),
+				`${sourceUrl} from ${referenceFile} should be listed in source-catalog.yaml`,
+			);
+		}
+	}
+});
+
 test("Cloudflare bundle entrypoints include expanded operational modules", () => {
 	const promptSpec = cloudflareFile("prompt.spec.yaml");
 	const promptBody = cloudflareFile("prompt.body.xml");
@@ -221,6 +300,29 @@ test("Cloudflare bundle entrypoints include expanded operational modules", () =>
 	}
 });
 
+test("OpenAI bundle entrypoints include operational modules", () => {
+	const promptSpec = openaiFile("prompt.spec.yaml");
+	const promptBody = openaiFile("prompt.body.xml");
+
+	for (const expected of [
+		"references/responses-api.xml",
+		"references/tools-function-calling-structured-outputs.xml",
+		"references/retrieval-files-vector-stores.xml",
+		"references/embeddings.xml",
+		"references/batch-webhooks-realtime.xml",
+		"references/evals-rate-limits-safety.xml",
+		"modes/openai-build.xml",
+		"modes/openai-review.xml",
+		"modes/openai-release.xml",
+		"contracts/openai-integration-review.schema.json",
+		"contracts/openai-validation-evidence.schema.json",
+		"contracts/openai-gap-register.schema.json",
+	]) {
+		assert.ok(promptSpec.includes(expected), `${expected} should be in prompt.spec.yaml`);
+		assert.ok(promptBody.includes(expected), `${expected} should be in prompt.body.xml`);
+	}
+});
+
 test("repository operating model sources are referenced from AGENTS.md", () => {
 	const agents = fs.readFileSync("AGENTS.md", "utf8");
 
@@ -236,6 +338,7 @@ test("repository operating model sources are referenced from AGENTS.md", () => {
 		".agent-operating-model/behavioural-evals.json",
 		".agent-operating-model/bundles/",
 		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/openai/",
 	]) {
 		assert.match(agents, new RegExp(reference.replace(/[.]/g, "\\.")));
 	}
