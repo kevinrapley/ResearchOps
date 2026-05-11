@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template_module id="responses-integration" version="1.0.0">
+  <title>Responses API Integration Template</title>
+  <template_block name="integration-summary" title="Integration summary">
+    <checklist ordered="false">
+      <entry level="0">User need and product context.</entry>
+      <entry level="0">OpenAI endpoint and model.</entry>
+      <entry level="0">Input types and validation.</entry>
+      <entry level="0">Instructions and prompt sources.</entry>
+      <entry level="0">Output contract and validation.</entry>
+      <entry level="0">Tools and side-effect boundaries.</entry>
+      <entry level="0">Safety, privacy, logging and human-review controls.</entry>
+      <entry level="0">Evals, regression tests and monitoring.</entry>
+    </checklist>
+  </template_block>
+</template_module>

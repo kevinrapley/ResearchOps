@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenAI Integration Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_surface", "model", "inputs", "outputs", "validation", "safety"],
+  "properties": {
+    "api_surface": { "type": "array", "items": { "type": "string" } },
+    "model": { "type": ["string", "null"] },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "tools": { "type": "array", "items": { "type": "string" } },
+    "validation": { "type": "array", "items": { "type": "string" } },
+    "safety": { "type": "array", "items": { "type": "string" } },
+    "human_review": { "type": "boolean" }
+  }
+}
