@@ -12,7 +12,7 @@ export const operationalAuthUserId = 'usr_visual_team_admin';
 export const operationalAuthTeamId = 'team_researchops_core';
 
 export const operationalPaths = {
-	accountSignIn: '/pages/account/sign-in/',
+	accountSignIn: '/pages/account/sign-in/index.html',
 	projectDashboard: `/pages/project-dashboard/?id=${operationalProjectId}`,
 	addStudy: `/pages/study/new/?pid=${operationalProjectId}`,
 	addParticipant: `/pages/project-dashboard/participants/?id=${operationalProjectId}`,
