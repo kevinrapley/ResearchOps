@@ -1,0 +1,89 @@
+{
+	"trace_id": "atrace-20260511-openai-platform-bundle",
+	"trace_layer": "operational",
+	"trace_source": "retrospective-commit-evidence",
+	"date": "2026-05-11",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "perf/include-openai-platform-bundle",
+	"pull_request": {
+		"number": 232,
+		"state": "merged",
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/232"
+	},
+	"trigger": "agent-task",
+	"note": "Retrospective trace created from commit evidence. No live [reasoning] session was captured for this PR.",
+	"request_interpreted": [
+		"Add the OpenAI Platform bundle as a new canonical bundle directory.",
+		"Register selection rules and signal phrases for OpenAI API, Responses API, Structured Outputs, embeddings, Batch, Realtime, and Evals.",
+		"Wire the bundle into the operating model: README, bundle-registry.json, orchestration docs, agent instructions.",
+		"Add a behavioural eval (behaviour-openai-structured-output) with expectedEvidence and forbiddenFailureModes.",
+		"Qualify trigger phrases to prevent superficial-keyword-only selection.",
+		"Validate operating model selection and require bundle files in repository validation."
+	],
+	"operating_model_files_loaded": [
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/task-signal-catalog.json"
+	],
+	"bundles_selected": [
+		"researchops-developer-control",
+		"github-diamond",
+		"multi-functional-team"
+	],
+	"bundles_created": [
+		"openai-platform"
+	],
+	"files_created": [
+		".agent-operating-model/bundles/openai-platform/prompt.body.xml",
+		".agent-operating-model/bundles/openai-platform/prompt.spec.yaml",
+		".agent-operating-model/bundles/openai-platform/registry-manifest.yaml",
+		".agent-operating-model/bundles/openai-platform/CHANGELOG.md",
+		".agent-operating-model/bundles/openai-platform/README.md",
+		".agent-operating-model/bundles/openai-platform/evals.yaml",
+		".agent-operating-model/bundles/openai-platform/grade.schema.json",
+		".agent-operating-model/bundles/openai-platform/output.schema.json",
+		".agent-operating-model/bundles/openai-platform/variables.schema.json",
+		".agent-operating-model/bundles/openai-platform/tests.redteam.yaml",
+		".agent-operating-model/bundles/openai-platform/tests.regression.yaml"
+	],
+	"files_modified": [
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/task-signal-catalog.json"
+	],
+	"commits_recorded": [
+		"f773122",
+		"fc54842",
+		"40374c7",
+		"35a79bd",
+		"f9f56f8",
+		"3fa856a",
+		"8a62612",
+		"548a1a0",
+		"0db7551",
+		"b823329",
+		"57a0a44",
+		"a60516d",
+		"56e8910",
+		"c8f85c2"
+	],
+	"key_decisions": [
+		"Trigger phrases qualified to prevent superficial-keyword-only bundle selection.",
+		"forbiddenFailureModes on behaviour-openai-structured-output includes superficial-keyword-only.",
+		"expectedEvidence array introduced: matched-rule, matched-signal, selected-bundle, canonical-directory.",
+		"OpenAI bundle assigned precedence 65, below cloudflare (70) and above airtable-public-api (60)."
+	],
+	"validation_recorded": [
+		"Operating model selection test added for OpenAI bundle.",
+		"Behavioural eval behaviour-openai-structured-output added to behavioural-evals.json.",
+		"Repository validation updated to require OpenAI bundle files."
+	],
+	"status_at_trace_write": {
+		"pr_merged": true,
+		"merge_commit": "c8f85c2"
+	}
+}

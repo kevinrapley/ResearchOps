@@ -1,0 +1,115 @@
+{
+	"trace_id": "atrace-20260511-mcp-agent-tooling-bundle",
+	"trace_layer": "operational",
+	"trace_source": "retrospective-commit-evidence",
+	"date": "2026-05-11",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "perf/include-mcp-agent-tooling-bundle",
+	"pull_request": {
+		"number": 233,
+		"state": "merged",
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/233"
+	},
+	"trigger": "agent-task",
+	"note": "Retrospective trace created from commit evidence. No live [reasoning] session was captured for this PR.",
+	"request_interpreted": [
+		"Add the MCP Agent Tooling bundle as a new canonical bundle directory.",
+		"Register selection rules and signal phrases for MCP protocol, servers, clients, tools, sampling, roots, elicitation, and tool consent.",
+		"Wire the bundle into the operating model: README, bundle-registry.json, orchestration docs, agent instructions.",
+		"Add a behavioural eval (behaviour-mcp-tool-consent) with expectedEvidence and forbiddenFailureModes.",
+		"Qualify trigger phrases to prevent OpenAI tool keywords from selecting the MCP bundle.",
+		"Add roles, modes, templates, and reference modules for MCP developer, agent-safety, and tool-qa."
+	],
+	"operating_model_files_loaded": [
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/task-signal-catalog.json"
+	],
+	"bundles_selected": [
+		"researchops-developer-control",
+		"github-diamond",
+		"multi-functional-team"
+	],
+	"bundles_created": [
+		"mcp-agent-tooling"
+	],
+	"files_created": [
+		".agent-operating-model/bundles/mcp-agent-tooling/prompt.body.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/prompt.spec.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/registry-manifest.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/CHANGELOG.md",
+		".agent-operating-model/bundles/mcp-agent-tooling/README.md",
+		".agent-operating-model/bundles/mcp-agent-tooling/evals.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/grade.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/output.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/variables.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/tests.redteam.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/tests.regression.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/roles/agent-safety.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/roles/mcp-developer.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/roles/tool-qa.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/modes/mcp-build.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/modes/mcp-release.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/modes/mcp-review.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/templates/consent-checkpoint.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/templates/resource-contract.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/templates/tool-contract.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/graders/mcp-behaviour.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/contracts/agent-tooling-validation-evidence.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/contracts/resource-exposure-review.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/contracts/tool-invocation-review.schema.json",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/architecture-lifecycle.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/authorization-security.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/client-features.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/mcp-platform-context.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/resources-prompts-tools.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/source-catalog.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/references/utilities-and-errors.xml",
+		".agent-operating-model/bundles/mcp-agent-tooling/scripts/validate-source-catalog.py",
+		".agent-operating-model/bundles/mcp-agent-tooling/examples/resource-contract.example.yaml",
+		".agent-operating-model/bundles/mcp-agent-tooling/examples/tool-contract.example.json"
+	],
+	"files_modified": [
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/task-signal-catalog.json"
+	],
+	"commits_recorded": [
+		"e95dd01",
+		"2530356",
+		"fda2e61",
+		"afcdc0d",
+		"2485d66",
+		"3e3df2f",
+		"9938a9d",
+		"9f6ab5b",
+		"14bf155",
+		"e71be87",
+		"1798278",
+		"371ae23",
+		"7d0a34e",
+		"ffdac67",
+		"16a38db"
+	],
+	"key_decisions": [
+		"MCP trigger phrases qualified to prevent selection by OpenAI tool-use keywords.",
+		"Test added confirming OpenAI tool wording does not select MCP bundle.",
+		"forbiddenFailureModes on behaviour-mcp-tool-consent includes superficial-keyword-only.",
+		"expectedEvidence array: matched-rule, matched-signal, selected-bundle, canonical-directory.",
+		"MCP bundle assigned precedence 64, one below openai-platform (65)."
+	],
+	"validation_recorded": [
+		"Operating model selection test added for MCP bundle.",
+		"Negative test added: OpenAI tool wording must not select MCP bundle.",
+		"Behavioural eval behaviour-mcp-tool-consent added to behavioural-evals.json.",
+		"Source catalog validation script added."
+	],
+	"status_at_trace_write": {
+		"pr_merged": true,
+		"merge_commit": "16a38db"
+	}
+}

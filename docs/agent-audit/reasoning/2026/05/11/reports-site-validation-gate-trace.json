@@ -1,0 +1,65 @@
+{
+	"trace_id": "atrace-20260511-reports-site-validation-gate",
+	"trace_layer": "operational",
+	"trace_source": "retrospective-commit-evidence",
+	"date": "2026-05-11",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "test/reports-site-validation-gate",
+	"pull_request": {
+		"number": 235,
+		"state": "merged",
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/235"
+	},
+	"trigger": "agent-task",
+	"note": "Retrospective trace created from commit evidence. No live [reasoning] session was captured for this PR.",
+	"request_interpreted": [
+		"Add an integrity validation gate for the committed reporting site artefacts.",
+		"Prove coherence between reports-site/index.html, reports-site/manifest.json, and screenshot files.",
+		"Wire the validator into npm test so it runs as part of the standard Node CI gate."
+	],
+	"operating_model_files_loaded": [
+		"package.json",
+		"reports-site/manifest.json",
+		"reports-site/index.html"
+	],
+	"bundles_selected": [
+		"researchops-developer-control",
+		"github-diamond",
+		"multi-functional-team"
+	],
+	"files_created": [
+		"scripts/validate-reports-site.mjs",
+		"tests/reports-site-validation.test.js"
+	],
+	"files_modified": [
+		"package.json"
+	],
+	"commits_recorded": [
+		"b2d781d",
+		"b54a5e0",
+		"a20b6f0",
+		"33fba47",
+		"df18efb",
+		"006c737"
+	],
+	"key_decisions": [
+		"Hard assertions set to match actual committed state: 22 pages, 39 states, 78 captures, 78 screenshots, profiles desktop + mobile.",
+		"Failed capture semantics: failed captures (no screenshot) are permitted; successful captures must reference a screenshot file.",
+		"Path traversal guard: screenshot paths must be relative and must not contain '..'.",
+		"Bidirectional manifest-to-HTML reference check included.",
+		"Profile capture count balance asserted when failureCount is 0.",
+		"Regression test for failed-capture semantics added (1 failed state, 1 failed capture, failureCount 1, no screenshot).",
+		"reports:validate wired to npm test via package.json; integration with scripts/validate.sh deferred."
+	],
+	"validation_recorded": [
+		"22 assertions pass covering page count, state count, capture count, screenshot count, profile balance, and failed-capture semantics.",
+		"All CI checks passed at merge: Format PR, Validate ResearchOps, qa-bdd, QA Broken links, Accessibility audit, CI, Worker CI, Release Gate."
+	],
+	"known_gaps": [
+		"reports:validate not yet wired into scripts/validate.sh — deferred to a follow-up PR."
+	],
+	"status_at_trace_write": {
+		"pr_merged": true,
+		"merge_commit": "006c737"
+	}
+}
