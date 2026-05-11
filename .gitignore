@@ -38,6 +38,9 @@ src/jobs/**
 playwright-report/
 test-results/
 
+# CI-generated release and security audit artifacts
+artifacts/
+
 # === Common outputs
 dist/
 build/
