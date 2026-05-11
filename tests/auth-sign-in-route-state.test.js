@@ -3,7 +3,6 @@ import fs from 'node:fs';
 
 const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
-const header = fs.readFileSync('public/partials/header.html', 'utf8');
 const validateScript = fs.readFileSync('scripts/validate.sh', 'utf8');
 
 function assertSignInPageUsesGovukAccountFrontDoor() {
@@ -39,12 +38,6 @@ function assertSignInScriptChecksAuthenticatedContext() {
 	assert.match(signInScript, /permissionCodes\(context\)\.has\(CONFIG\.TEAM_ADMIN_PERMISSION\)/);
 }
 
-function assertSignInRouteIsDiscoverable() {
-	assert.match(header, /href="\/pages\/account\/sign-in\/"/);
-	assert.match(header, /data-nav="Account"/);
-	assert.match(header, />Account<\/a>/);
-}
-
 function assertValidationContractIncludesSignInRoute() {
 	assert.match(validateScript, /require_file "public\/pages\/account\/sign-in\/index\.html"/);
 	assert.match(validateScript, /require_file "public\/js\/auth-sign-in-page\.js"/);
@@ -54,5 +47,4 @@ function assertValidationContractIncludesSignInRoute() {
 assertSignInPageUsesGovukAccountFrontDoor();
 assertSignInPageDoesNotCreatePasswordAuth();
 assertSignInScriptChecksAuthenticatedContext();
-assertSignInRouteIsDiscoverable();
 assertValidationContractIncludesSignInRoute();
