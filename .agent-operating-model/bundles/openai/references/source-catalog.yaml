@@ -3,6 +3,10 @@ source_authority:
 - developers.openai.com
 last_checked: 2026-05-10
 sources:
+- id: platform-docs-root
+  url: https://platform.openai.com/docs/
+- id: developers-root
+  url: https://developers.openai.com/
 - id: responses-api-reference
   url: https://platform.openai.com/docs/api-reference/responses
 - id: tools-guide
