@@ -34,7 +34,29 @@ function endpoint(path) {
 }
 
 function accessLoginUrl() {
-	return CONFIG.ACCESS_LOGIN_URL || dom.status?.dataset?.accessLoginRoute || window.location.pathname;
+	return CONFIG.ACCESS_LOGIN_URL || dom.status?.dataset?.accessLoginRoute || "/api/auth/login?return=/pages/account/sign-in/";
+}
+
+function setActionVisibility(element, visible) {
+	if (!element) return;
+	element.hidden = !visible;
+	element.setAttribute("aria-hidden", visible ? "false" : "true");
+	element.style.display = visible ? "" : "none";
+}
+
+function showSignInAction() {
+	setActionVisibility(dom.signInLink, true);
+	setActionVisibility(dom.teamAdminLink, false);
+}
+
+function showTeamAdminAction() {
+	setActionVisibility(dom.signInLink, false);
+	setActionVisibility(dom.teamAdminLink, true);
+}
+
+function showNoPrimaryAction() {
+	setActionVisibility(dom.signInLink, false);
+	setActionVisibility(dom.teamAdminLink, false);
 }
 
 function configureSignInAction() {
@@ -95,16 +117,35 @@ function activeTeamLabel(context) {
 	return context?.activeTeam?.name || context?.activeTeam?.id || "No active team";
 }
 
+function authQueryStatus() {
+	return new URLSearchParams(window.location.search).get("auth") || "";
+}
+
+function showAccessPolicyRequired() {
+	setStatus(
+		"Sign in is not set up yet",
+		`
+<p class="govuk-body">This sign-in route needs to be protected before users can sign in.</p>
+<p class="govuk-body">Ask the service team to protect <code>/api/auth/login</code> with the ResearchOps access policy.</p>
+`,
+	);
+	showSignInAction();
+}
+
 function showUnauthenticated(message) {
+	if (authQueryStatus() === "access-policy-required") {
+		showAccessPolicyRequired();
+		return;
+	}
+
 	setStatus(
 		"Sign in required",
 		`
 <p class="govuk-body">${escapeHtml(message || "You need to sign in before ResearchOps can check your account.")}</p>
-<p class="govuk-body">Use the sign-in button. Cloudflare Access will ask you to prove your identity if this route is protected by an Access policy.</p>
+<p class="govuk-body">Use your work email address to continue.</p>
 `,
 	);
-	if (dom.signInLink) dom.signInLink.hidden = false;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+	showSignInAction();
 }
 
 function showSignedInWithoutAdmin(context) {
@@ -113,52 +154,52 @@ function showSignedInWithoutAdmin(context) {
 		"You are signed in",
 		`
 <p class="govuk-body">Signed in as <strong>${escapeHtml(context.user?.displayName || context.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">Active team: <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
+<p class="govuk-body">Your active team is <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
 <p class="govuk-body">Current role${roles.length === 1 ? "" : "s"}: ${escapeHtml(roles.join(", ") || "No active role")}</p>
-<p class="govuk-body">This account does not currently have permission to assign roles.</p>
+<p class="govuk-body">You cannot manage team roles with this account.</p>
 `,
 		"govuk-notification-banner--success",
 	);
-	if (dom.signInLink) dom.signInLink.hidden = true;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+	showNoPrimaryAction();
 }
 
 function showSignedInTeamAdmin(context) {
 	const roles = roleLabels(context);
 	setStatus(
-		"You are signed in as a Team Admin",
+		"You are signed in",
 		`
 <p class="govuk-body">Signed in as <strong>${escapeHtml(context.user?.displayName || context.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">Active team: <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
+<p class="govuk-body">Your active team is <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
 <p class="govuk-body">Current role${roles.length === 1 ? "" : "s"}: ${escapeHtml(roles.join(", ") || "Team Admin")}</p>
-<p class="govuk-body">You can now manage role assignments for this team.</p>
+<p class="govuk-body">You can now manage team roles.</p>
 `,
 		"govuk-notification-banner--success",
 	);
-	if (dom.signInLink) dom.signInLink.hidden = true;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = false;
+	showTeamAdminAction();
 }
 
 function renderAuthenticatedContext(context) {
 	if (context?.user?.accountStatus && context.user.accountStatus !== "active") {
 		setStatus(
-			"Account is not active",
+			"Your account is not ready yet",
 			`
 <p class="govuk-body">Signed in as <strong>${escapeHtml(context.user.displayName || context.user.email)}</strong>.</p>
-<p class="govuk-body">This ResearchOps account is currently <strong>${escapeHtml(context.user.accountStatus)}</strong>.</p>
+<p class="govuk-body">Ask a Team Admin to activate your ResearchOps account.</p>
 `,
 		);
+		showNoPrimaryAction();
 		return;
 	}
 
 	if (!context?.activeTeam) {
 		setStatus(
-			"No active team found",
+			"Your account is not assigned to a team yet",
 			`
 <p class="govuk-body">Signed in as <strong>${escapeHtml(context?.user?.displayName || context?.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">This account does not currently have an active ResearchOps team membership.</p>
+<p class="govuk-body">Ask a Team Admin to add your account to a ResearchOps team.</p>
 `,
 		);
+		showNoPrimaryAction();
 		return;
 	}
 
@@ -187,11 +228,10 @@ async function refreshSignInStatus() {
 			"We cannot check your account right now",
 			`
 <p class="govuk-body">${escapeHtml(error?.message || error)}</p>
-<p class="govuk-body">Try again. If this continues, check the Cloudflare Access and D1 configuration.</p>
+<p class="govuk-body">Try again. If this continues, ask the service team to check the sign-in setup.</p>
 `,
 		);
-		if (dom.signInLink) dom.signInLink.hidden = false;
-		if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+		showSignInAction();
 	} finally {
 		setBusy(false);
 	}
@@ -200,6 +240,7 @@ async function refreshSignInStatus() {
 function init() {
 	if (!dom.status) return;
 	configureSignInAction();
+	showSignInAction();
 	refreshSignInStatus();
 }
 
@@ -210,6 +251,7 @@ window.__ropsAuthSignInPage = Object.freeze({
 	accessLoginUrl,
 	activeTeamLabel,
 	permissionCodes,
-	roleLabels,
 	renderAuthenticatedContext,
+	roleLabels,
+	setActionVisibility,
 });
