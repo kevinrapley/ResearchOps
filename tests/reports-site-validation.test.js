@@ -21,64 +21,60 @@ test('failed capture reports match visual walkthrough failure semantics', () => 
 	const screenshotsDir = path.join(reportsDir, 'screenshots', 'desktop');
 	const screenshotPath = path.join(screenshotsDir, 'home__default.png');
 	const relativeScreenshotPath = 'screenshots/desktop/home__default.png';
-
-	fs.mkdirSync(screenshotsDir, { recursive: true });
-	fs.writeFileSync(screenshotPath, 'fake screenshot bytes');
-	fs.writeFileSync(
-		path.join(reportsDir, 'index.html'),
-		`<!doctype html><title>ResearchOps application visual walkthrough</title><img src="${relativeScreenshotPath}" />`,
-	);
-	fs.writeFileSync(
-		path.join(reportsDir, 'manifest.json'),
-		JSON.stringify(
+	const indexHtml = [
+		'<!doctype html>',
+		'<title>ResearchOps application visual walkthrough</title>',
+		`<img src="${relativeScreenshotPath}" />`,
+	].join('');
+	const manifest = {
+		captureCount: 2,
+		failureCount: 1,
+		failures: [
 			{
-				captureCount: 2,
-				failureCount: 1,
-				failures: [
+				message: 'HTTP 500 for test route',
+				page: 'home',
+				profile: 'mobile',
+				state: 'default',
+			},
+		],
+		pageCount: 1,
+		pages: [
+			{
+				id: 'home',
+				states: [
 					{
-						message: 'HTTP 500 for test route',
-						page: 'home',
-						profile: 'mobile',
-						state: 'default',
-					},
-				],
-				pageCount: 1,
-				pages: [
-					{
-						id: 'home',
-						states: [
+						captures: [
 							{
-								captures: [
-									{
-										profile: 'desktop',
-										screenshot: relativeScreenshotPath,
-										status: 'captured',
-									},
-									{
-										profile: 'mobile',
-										status: 'failed',
-									},
-								],
-								id: 'default',
+								profile: 'desktop',
+								screenshot: relativeScreenshotPath,
+								status: 'captured',
+							},
+							{
+								profile: 'mobile',
 								status: 'failed',
 							},
 						],
+						id: 'default',
+						status: 'failed',
 					},
 				],
-				profiles: [
-					{
-						id: 'desktop',
-					},
-					{
-						id: 'mobile',
-					},
-				],
-				stateCount: 1,
 			},
-			null,
-			2,
-		),
-	);
+		],
+		profiles: [
+			{
+				id: 'desktop',
+			},
+			{
+				id: 'mobile',
+			},
+		],
+		stateCount: 1,
+	};
+
+	fs.mkdirSync(screenshotsDir, { recursive: true });
+	fs.writeFileSync(screenshotPath, 'fake screenshot bytes');
+	fs.writeFileSync(path.join(reportsDir, 'index.html'), indexHtml);
+	fs.writeFileSync(path.join(reportsDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
 	const result = validateReportsSite({ rootDir });
 
