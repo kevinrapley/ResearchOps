@@ -89,7 +89,7 @@
 			"canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
 			"promptSpec": "prompt.spec.yaml",
 			"promptBody": "prompt.body.xml",
-			"keywords": ["model context protocol", "mcp", "mcp server", "mcp client", "mcp tool", "mcp tools", "mcp resource", "mcp resources", "mcp prompt", "mcp prompts", "mcp sampling", "mcp roots", "mcp elicitation", "tool consent", "tool invocation", "tool contract", "agent tooling", "agent tool", "agent tools"],
+			"keywords": ["model context protocol", "mcp", "mcp server", "mcp client", "mcp tool", "mcp tools", "mcp resource", "mcp resources", "mcp prompt", "mcp prompts", "mcp sampling", "mcp roots", "mcp elicitation", "mcp tool consent", "mcp tool invocation", "mcp tool contract", "mcp agent tooling", "mcp agent tool", "mcp agent tools", "agent-tooling safety"],
 			"mustRecordInTrace": true
 		},
 		{
