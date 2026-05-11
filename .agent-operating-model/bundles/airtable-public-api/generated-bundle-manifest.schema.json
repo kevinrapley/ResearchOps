@@ -6,8 +6,7 @@
     "bundle_id",
     "bundle_version",
     "entrypoints",
-    "inventory_summary",
-    "hashes"
+    "inventory_summary"
   ],
   "properties": {
     "bundle_id": {
@@ -35,6 +34,39 @@
       "type": "object",
       "additionalProperties": true
     },
+    "schema_policy": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "authoritative_schemas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "removed_schema_shims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "asset_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "hashes": {
       "type": "array",
       "items": {
@@ -58,5 +90,17 @@
         "additionalProperties": false
       }
     }
-  }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "asset_inventory"
+      ]
+    },
+    {
+      "required": [
+        "hashes"
+      ]
+    }
+  ]
 }
