@@ -106,6 +106,16 @@ test("repository operating model selects OpenAI for model integration work", () 
 	}
 });
 
+test("repository operating model does not select MCP for OpenAI tool wording", () => {
+	const task = "Review OpenAI tool invocation validation";
+	const ids = selectedIds(task);
+	const bundle = bundleById(task, "openai-platform");
+
+	assert.ok(bundle, `${task} should select openai-platform`);
+	assert.equal(ids.includes("mcp-agent-tooling"), false, `${task} should not select mcp-agent-tooling`);
+	assertCanonicalBundle(bundle);
+});
+
 test("repository operating model selects MCP for protocol and agent tooling work", () => {
 	for (const task of [
 		"Design an MCP tool contract with explicit tool consent",
