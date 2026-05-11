@@ -40,7 +40,7 @@
 						<p class="govuk-body">The first Team Admin must already have been bootstrapped with an active account, active team membership and the Team Admin role.</p>
 					</section>
 
-					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-team-admin-destination="/pages/team/role-assignments/">
+					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-team-admin-destination="/pages/team/role-assignments/" data-access-login-route="/pages/account/sign-in/">
 						<div class="govuk-notification-banner__header">
 							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Checking sign-in status</h2>
 						</div>
@@ -50,7 +50,7 @@
 					</section>
 
 					<div class="govuk-button-group" id="sign-in-actions">
-						<a class="govuk-button" id="sign-in-check-link" href="/api/me" role="button" draggable="false">Sign in with Cloudflare Access</a>
+						<a class="govuk-button" id="sign-in-check-link" href="/pages/account/sign-in/" role="button" draggable="false">Sign in with Cloudflare Access</a>
 						<a class="govuk-button govuk-button--secondary" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false" hidden>Go to role assignments</a>
 					</div>
 
