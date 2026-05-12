@@ -92,7 +92,8 @@ function cookieValue(request) {
 
 function sessionCookie(request, token, maxAge = SESSION_TTL_SECONDS) {
 	const secure = new URL(request.url).protocol === 'https:' ? 'Secure; ' : '';
-	return `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; ${secure}SameSite=None; Max-Age=${maxAge}`;
+	const partitioned = secure ? 'Partitioned; ' : '';
+	return `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; ${secure}${partitioned}SameSite=None; Max-Age=${maxAge}`;
 }
 
 function webhookHeaders(env) {
