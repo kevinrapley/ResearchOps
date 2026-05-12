@@ -22,7 +22,9 @@ function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /data-start-route="\/api\/auth\/email\/start"/);
 	assert.match(signInPage, /data-verify-route="\/api\/auth\/email\/verify"/);
 	assert.match(signInPage, /data-auth-route="\/api\/me"/);
-	assert.match(signInPage, /data-team-admin-destination="\/pages\/team\/role-assignments\/"/);
+	assert.match(signInPage, /data-account-destination="\/pages\/account\/"/);
+	assert.equal(signInPage.includes('data-team-admin-destination'), false);
+	assert.equal(signInPage.includes('id="signed-in-actions"'), false);
 }
 
 function assertSignInPageDoesNotExposeCloudflareToUser() {
@@ -50,10 +52,19 @@ function assertSignInScriptStartsAndVerifiesEmailCode() {
 	assert.match(signInScript, /JSON\.stringify\(\{ email \}\)/);
 	assert.match(signInScript, /challengeId: dom\.challengeInput\?\.value/);
 	assert.match(signInScript, /code: dom\.codeInput\?\.value/);
-	assert.match(signInScript, /credentials: "include"/);
-	assert.match(signInScript, /fetchJson\("\/api\/me"\)/);
-	assert.match(signInScript, /TEAM_ADMIN_PERMISSION: "role\.assign"/);
-	assert.match(signInScript, /permissionCodes\(context\)\.has\(CONFIG\.TEAM_ADMIN_PERMISSION\)/);
+	assert.match(signInScript, /credentials: 'include'/);
+	assert.match(signInScript, /fetchJson\('\/api\/me'\)/);
+}
+
+function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {
+	assert.match(signInScript, /ACCOUNT_URL: '\/pages\/account\/'/);
+	assert.match(signInScript, /function redirectToAccount\(\)/);
+	assert.match(signInScript, /location\.assign\(CONFIG\.ACCOUNT_URL\)/);
+	assert.match(signInScript, /redirectAlreadySignedInUser/);
+	assert.match(signInScript, /response\.data\?\.authenticated/);
+	assert.match(signInScript, /redirectToAccount\(\);/);
+	assert.equal(signInScript.includes('showSignedInTeamAdmin'), false);
+	assert.equal(signInScript.includes('TEAM_ADMIN_PERMISSION'), false);
 }
 
 function assertWorkerRoutesPasswordlessEndpoints() {
@@ -94,6 +105,7 @@ assertSignInPageUsesResearchOpsPasswordlessJourney();
 assertSignInPageDoesNotExposeCloudflareToUser();
 assertSignInPageDoesNotCreatePasswordAuth();
 assertSignInScriptStartsAndVerifiesEmailCode();
+assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard();
 assertWorkerRoutesPasswordlessEndpoints();
 assertPasswordlessServerFlowExists();
 assertAuthResolverPrefersResearchOpsSession();
