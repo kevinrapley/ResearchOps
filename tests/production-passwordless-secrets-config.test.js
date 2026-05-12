@@ -18,5 +18,9 @@ test('production Worker declares required passwordless secrets', () => {
 	assert.match(passwordless, /Sign in is not configured yet\./);
 	assert.match(passwordless, /Sign-in email delivery is not configured yet\./);
 
-	assert.match(deployWorkflow, /wrangler@\$\{WRANGLER_VERSION\} deploy --config infra\/cloudflare\/wrangler\.toml/);
+	assert.match(deployWorkflow, /WRANGLER_VERSION: "4\.90\.0"/);
+	assert.match(
+		deployWorkflow,
+		/wrangler@\$\{WRANGLER_VERSION\} deploy --config infra\/cloudflare\/wrangler\.toml/,
+	);
 });
