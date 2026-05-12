@@ -93,6 +93,10 @@ require_file "public/css/govuk/govuk-tables.css"
 require_file "public/css/govuk/govuk-page-chrome.css"
 require_file "public/css/auth-role-assignments.css"
 require_file "public/js/auth-role-assignment-page.js"
+require_file "public/js/auth-sign-in-page.js"
+require_file "public/js/auth-account-page.js"
+require_file "public/pages/account/index.html"
+require_file "public/pages/account/sign-in/index.html"
 require_file "public/pages/team/role-assignments/index.html"
 require_file "docs/performance/initial-load-audit.md"
 require_file "docs/performance/performance-inventory-tooling.md"
@@ -109,8 +113,11 @@ require_file "infra/cloudflare/src/worker.js"
 require_file "infra/cloudflare/src/core/router.js"
 require_file "infra/cloudflare/src/core/service.js"
 require_file "infra/cloudflare/src/service/index.js"
+require_file "infra/cloudflare/src/core/auth/access.js"
+require_file "infra/cloudflare/src/core/auth/passwordless.js"
 require_file "infra/cloudflare/src/core/auth/role-assignments.js"
 require_file "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql"
+require_file "infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql"
 require_file ".github/workflows/apply-d1-auth-role-assignment-route.yml"
 require_file "tests/govuk-design-system-baseline-route-state.test.js"
 require_file "tests/govuk-forms-application-route-state.test.js"
@@ -144,6 +151,8 @@ require_file "tests/auth-route-permissions.test.js"
 require_file "tests/auth-runtime-bootstrap-route-state.test.js"
 require_file "tests/auth-role-assignment-api-route-state.test.js"
 require_file "tests/auth-role-assignment-ui-route-state.test.js"
+require_file "tests/auth-sign-in-route-state.test.js"
+require_file "tests/auth-account-dashboard-route-state.test.js"
 require_file "scripts/auth-runtime-bootstrap.mjs"
 require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
 require_file "docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md"
@@ -314,6 +323,12 @@ node tests/auth-role-assignment-api-route-state.test.js
 
 info "checking authentication role assignment UI contract"
 node tests/auth-role-assignment-ui-route-state.test.js
+
+info "checking authentication sign-in route-state contract"
+node tests/auth-sign-in-route-state.test.js
+
+info "checking authentication account dashboard route-state contract"
+node tests/auth-account-dashboard-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js

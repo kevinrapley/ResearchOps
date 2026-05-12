@@ -4,8 +4,18 @@
  * @summary Team Admin UI for assigning D1-backed ResearchOps roles.
  */
 
+function defaultApiOrigin() {
+	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
+		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
+	}
+	if (location.hostname.endsWith('pages.dev')) {
+		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
+	}
+	return location.origin;
+}
+
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "",
+	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 });
@@ -538,6 +548,7 @@ window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
 	ROLE_DETAILS,
 	DURATION_LABELS,
+	defaultApiOrigin,
 	validate,
 	requestBody,
 	expiresAtFor,

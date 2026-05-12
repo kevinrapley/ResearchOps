@@ -1,72 +1,100 @@
 /**
  * @file public/js/auth-sign-in-page.js
  * @module AuthSignInPage
- * @summary Sign-in status page for the first ResearchOps Team Admin.
+ * @summary ResearchOps-owned passwordless sign-in page.
  */
 
+function defaultApiOrigin() {
+	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
+		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
+	}
+	if (location.hostname.endsWith('pages.dev')) {
+		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
+	}
+	return location.origin;
+}
+
+const API_ORIGIN = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin();
+
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "",
-	ACCESS_LOGIN_URL: window.RESEARCHOPS_ACCESS_LOGIN_URL || "",
+	ACCOUNT_URL: '/pages/account/',
+	API_BASE: API_ORIGIN,
+	CACHE: 'no-store',
 	FETCH_TIMEOUT_MS: 12000,
-	CACHE: "no-store",
-	TEAM_ADMIN_PERMISSION: "role.assign",
 });
 
 const dom = {
-	status: document.getElementById("sign-in-status"),
-	statusTitle: document.getElementById("sign-in-status-title"),
-	statusBody: document.getElementById("sign-in-status-body"),
-	signInLink: document.getElementById("sign-in-check-link"),
-	teamAdminLink: document.getElementById("team-admin-link"),
+	status: document.getElementById('sign-in-status'),
+	statusTitle: document.getElementById('sign-in-status-title'),
+	statusBody: document.getElementById('sign-in-status-body'),
+	startForm: document.getElementById('email-code-start-form'),
+	verifyForm: document.getElementById('email-code-verify-form'),
+	emailInput: document.getElementById('sign-in-email'),
+	codeInput: document.getElementById('sign-in-code'),
+	challengeInput: document.getElementById('email-code-challenge-id'),
+	changeEmailButton: document.getElementById('email-code-change-email'),
 };
 
 function escapeHtml(value) {
-	return String(value ?? "")
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/\"/g, "&quot;")
-		.replace(/'/g, "&#39;");
+	return String(value ?? '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/\"/g, '&quot;')
+		.replace(/'/g, '&#39;');
 }
 
-function endpoint(path) {
-	return `${CONFIG.API_BASE}${path}`;
-}
-
-function accessLoginUrl() {
-	return CONFIG.ACCESS_LOGIN_URL || dom.status?.dataset?.accessLoginRoute || window.location.pathname;
-}
-
-function configureSignInAction() {
-	if (!dom.signInLink) return;
-	dom.signInLink.setAttribute("href", accessLoginUrl());
+function apiUrl(path) {
+	const value = String(path || '');
+	if (/^https?:\/\//i.test(value)) return value;
+	return `${CONFIG.API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
 function setBusy(isBusy) {
 	if (!dom.status) return;
-	dom.status.setAttribute("aria-busy", isBusy ? "true" : "false");
+	dom.status.setAttribute('aria-busy', isBusy ? 'true' : 'false');
 }
 
-function setStatus(title, bodyHtml, modifier = "") {
+function setVisible(element, visible) {
+	if (!element) return;
+	element.hidden = !visible;
+	element.setAttribute('aria-hidden', visible ? 'false' : 'true');
+	element.style.display = visible ? '' : 'none';
+}
+
+function setStatus(title, bodyHtml) {
 	if (dom.statusTitle) dom.statusTitle.textContent = title;
 	if (dom.statusBody) dom.statusBody.innerHTML = bodyHtml;
-	if (!dom.status) return;
-	dom.status.classList.remove("govuk-notification-banner--success");
-	if (modifier) dom.status.classList.add(modifier);
+}
+
+function apiErrorMessage(response, fallback) {
+	const data = response?.data || {};
+	return data.message || data.detail || data.error || (response?.status ? `Request failed with status ${response.status}.` : fallback);
+}
+
+function userFacingError(error) {
+	const message = String(error?.message || error || '');
+	if (['Load failed', 'Failed to fetch', 'NetworkError when attempting to fetch resource.'].includes(message)) {
+		return 'ResearchOps could not contact the sign-in service. The preview sign-in API may not be deployed yet, or this preview is not allowed to call it.';
+	}
+	if (message === 'timeout') {
+		return 'The sign-in service did not respond in time. Try again.';
+	}
+	return message || 'Something went wrong.';
 }
 
 async function fetchJson(path, options = {}) {
 	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
-
+	const timer = setTimeout(() => controller.abort('timeout'), CONFIG.FETCH_TIMEOUT_MS);
 	try {
-		const response = await fetch(endpoint(path), {
+		const response = await fetch(apiUrl(path), {
 			cache: CONFIG.CACHE,
-			credentials: "include",
+			credentials: 'include',
 			signal: controller.signal,
 			...options,
 			headers: {
-				accept: "application/json",
+				accept: 'application/json',
+				...(options.body ? { 'content-type': 'application/json' } : {}),
 				...(options.headers || {}),
 			},
 		});
@@ -75,7 +103,7 @@ async function fetchJson(path, options = {}) {
 		try {
 			data = text ? JSON.parse(text) : {};
 		} catch {
-			data = { ok: false, error: "invalid_json_response", message: text };
+			data = { ok: false, error: 'invalid_json_response', message: text };
 		}
 		return { data, ok: response.ok, status: response.status };
 	} finally {
@@ -83,133 +111,138 @@ async function fetchJson(path, options = {}) {
 	}
 }
 
-function permissionCodes(context) {
-	return new Set((context?.permissions || []).map((permission) => permission.code).filter(Boolean));
+function redirectToAccount() {
+	location.assign(CONFIG.ACCOUNT_URL);
 }
 
-function roleLabels(context) {
-	return (context?.roles || []).map((role) => role.label || role.key).filter(Boolean);
+function showEmailForm() {
+	setVisible(dom.startForm, true);
+	setVisible(dom.verifyForm, false);
+	dom.emailInput?.focus();
 }
 
-function activeTeamLabel(context) {
-	return context?.activeTeam?.name || context?.activeTeam?.id || "No active team";
-}
-
-function showUnauthenticated(message) {
+function showCodeForm(challengeId, email) {
+	if (dom.challengeInput) dom.challengeInput.value = challengeId;
 	setStatus(
-		"Sign in required",
+		'Check your email',
 		`
-<p class="govuk-body">${escapeHtml(message || "You need to sign in before ResearchOps can check your account.")}</p>
-<p class="govuk-body">Use the sign-in button. Cloudflare Access will ask you to prove your identity if this route is protected by an Access policy.</p>
+<p class="govuk-body">We sent a 6 digit code to <strong>${escapeHtml(email)}</strong>.</p>
+<p class="govuk-body">Enter the code to continue to your account dashboard.</p>
 `,
 	);
-	if (dom.signInLink) dom.signInLink.hidden = false;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+	setVisible(dom.startForm, false);
+	setVisible(dom.verifyForm, true);
+	dom.codeInput?.focus();
 }
 
-function showSignedInWithoutAdmin(context) {
-	const roles = roleLabels(context);
-	setStatus(
-		"You are signed in",
-		`
-<p class="govuk-body">Signed in as <strong>${escapeHtml(context.user?.displayName || context.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">Active team: <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
-<p class="govuk-body">Current role${roles.length === 1 ? "" : "s"}: ${escapeHtml(roles.join(", ") || "No active role")}</p>
-<p class="govuk-body">This account does not currently have permission to assign roles.</p>
-`,
-		"govuk-notification-banner--success",
-	);
-	if (dom.signInLink) dom.signInLink.hidden = true;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+function showSignedOut(message = 'Enter your email address to get a sign-in code.') {
+	setStatus('Sign in', `<p class="govuk-body">${escapeHtml(message)}</p>`);
+	showEmailForm();
 }
 
-function showSignedInTeamAdmin(context) {
-	const roles = roleLabels(context);
-	setStatus(
-		"You are signed in as a Team Admin",
-		`
-<p class="govuk-body">Signed in as <strong>${escapeHtml(context.user?.displayName || context.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">Active team: <strong>${escapeHtml(activeTeamLabel(context))}</strong>.</p>
-<p class="govuk-body">Current role${roles.length === 1 ? "" : "s"}: ${escapeHtml(roles.join(", ") || "Team Admin")}</p>
-<p class="govuk-body">You can now manage role assignments for this team.</p>
-`,
-		"govuk-notification-banner--success",
-	);
-	if (dom.signInLink) dom.signInLink.hidden = true;
-	if (dom.teamAdminLink) dom.teamAdminLink.hidden = false;
-}
-
-function renderAuthenticatedContext(context) {
-	if (context?.user?.accountStatus && context.user.accountStatus !== "active") {
-		setStatus(
-			"Account is not active",
-			`
-<p class="govuk-body">Signed in as <strong>${escapeHtml(context.user.displayName || context.user.email)}</strong>.</p>
-<p class="govuk-body">This ResearchOps account is currently <strong>${escapeHtml(context.user.accountStatus)}</strong>.</p>
-`,
-		);
-		return;
-	}
-
-	if (!context?.activeTeam) {
-		setStatus(
-			"No active team found",
-			`
-<p class="govuk-body">Signed in as <strong>${escapeHtml(context?.user?.displayName || context?.user?.email || "this user")}</strong>.</p>
-<p class="govuk-body">This account does not currently have an active ResearchOps team membership.</p>
-`,
-		);
-		return;
-	}
-
-	if (permissionCodes(context).has(CONFIG.TEAM_ADMIN_PERMISSION)) {
-		showSignedInTeamAdmin(context);
-		return;
-	}
-
-	showSignedInWithoutAdmin(context);
-}
-
-async function refreshSignInStatus() {
+async function refreshSignInStatusAfterVerification() {
 	setBusy(true);
 	try {
-		const response = await fetchJson("/api/me");
-		if (response.status === 401) {
-			showUnauthenticated(response.data?.message);
-			return;
-		}
+		const response = await fetchJson('/api/me');
 		if (!response.ok || !response.data?.ok) {
-			throw new Error(response.data?.message || `Could not check sign-in status (${response.status})`);
+			throw new Error(apiErrorMessage(response, 'We could not check your account after verifying the code.'));
 		}
-		renderAuthenticatedContext(response.data);
+		redirectToAccount();
 	} catch (error) {
 		setStatus(
-			"We cannot check your account right now",
+			'We could not finish signing you in',
 			`
-<p class="govuk-body">${escapeHtml(error?.message || error)}</p>
-<p class="govuk-body">Try again. If this continues, check the Cloudflare Access and D1 configuration.</p>
+<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>
+<p class="govuk-body">Your code may have been accepted, but ResearchOps could not load your account details.</p>
 `,
 		);
-		if (dom.signInLink) dom.signInLink.hidden = false;
-		if (dom.teamAdminLink) dom.teamAdminLink.hidden = true;
+		setVisible(dom.startForm, false);
+		setVisible(dom.verifyForm, true);
 	} finally {
 		setBusy(false);
 	}
 }
 
-function init() {
+async function submitStart(event) {
+	event.preventDefault();
+	const email = dom.emailInput?.value || '';
+	setBusy(true);
+	try {
+		const route = dom.status?.dataset?.startRoute || '/api/auth/email/start';
+		const response = await fetchJson(route, {
+			method: 'POST',
+			body: JSON.stringify({ email }),
+		});
+		if (!response.ok || !response.data?.ok) {
+			throw new Error(apiErrorMessage(response, 'We could not send a sign-in code.'));
+		}
+		showCodeForm(response.data.challengeId, email);
+	} catch (error) {
+		setStatus('There is a problem', `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
+		showEmailForm();
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function submitVerify(event) {
+	event.preventDefault();
+	setBusy(true);
+	try {
+		const route = dom.status?.dataset?.verifyRoute || '/api/auth/email/verify';
+		const response = await fetchJson(route, {
+			method: 'POST',
+			body: JSON.stringify({
+				challengeId: dom.challengeInput?.value || '',
+				code: dom.codeInput?.value || '',
+			}),
+		});
+		if (!response.ok || !response.data?.ok) {
+			throw new Error(apiErrorMessage(response, 'The code could not be verified.'));
+		}
+		await refreshSignInStatusAfterVerification();
+	} catch (error) {
+		setStatus('There is a problem', `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
+		setVisible(dom.startForm, false);
+		setVisible(dom.verifyForm, true);
+		dom.codeInput?.focus();
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function redirectAlreadySignedInUser() {
+	try {
+		const response = await fetchJson('/api/me');
+		if (response.ok && response.data?.ok && response.data?.authenticated) {
+			redirectToAccount();
+			return true;
+		}
+	} catch {
+		return false;
+	}
+	return false;
+}
+
+async function init() {
 	if (!dom.status) return;
-	configureSignInAction();
-	refreshSignInStatus();
+	dom.startForm?.addEventListener('submit', submitStart);
+	dom.verifyForm?.addEventListener('submit', submitVerify);
+	dom.changeEmailButton?.addEventListener('click', () => showSignedOut());
+	setStatus('Checking your account', '<p class="govuk-body">Checking whether you are already signed in.</p>');
+	setVisible(dom.startForm, false);
+	setVisible(dom.verifyForm, false);
+	if (!(await redirectAlreadySignedInUser())) showSignedOut();
 }
 
 init();
 
 window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
-	accessLoginUrl,
-	activeTeamLabel,
-	permissionCodes,
-	roleLabels,
-	renderAuthenticatedContext,
+	apiErrorMessage,
+	apiUrl,
+	defaultApiOrigin,
+	redirectAlreadySignedInUser,
+	redirectToAccount,
+	userFacingError,
 });

@@ -1,3 +1,4 @@
+import { resolvePasswordlessSessionContext } from './passwordless.js';
 import {
 	assertRoutePermission,
 	routePermissionErrorResponse,
@@ -329,6 +330,9 @@ async function listPermissions(db, userId, teamId) {
 }
 
 export async function resolveAuthenticatedContext(request, env) {
+	const passwordlessContext = await resolvePasswordlessSessionContext(request, env);
+	if (passwordlessContext) return passwordlessContext;
+
 	const accessPayload = await validateAccessToken(request, env);
 	const db = dbFor(env);
 	const user = await ensureUserForAccessPayload(db, accessPayload);

@@ -1,98 +1,173 @@
-# Agent trace: first Team Admin login route
+# Agent trace: first Team Admin passwordless sign-in route
 
 Date: 2026-05-11
 
-Branch: `feature/first-team-admin-login`
+Branch: `fix/team-admin-sign-in-journey`
 
 ## Trigger
 
-The user asked to pick up the authentication, account request and role-setting workstream, starting with the ability for the first Team Admin to log in to the ResearchOps platform.
+The user rejected the initial sign-in page and route because it exposed implementation mechanics, relied on a visible Cloudflare Access handoff and did not let the user sign in within the ResearchOps interface.
+
+The user clarified the product requirement:
+
+- the user enters their email address in ResearchOps
+- the user receives a one-time code by email
+- the user enters the code in ResearchOps
+- the user is not exposed to Cloudflare pages or routes
+- D1 remains the identity, team, role, permission and audit control plane
+- the Worker remains the authorisation boundary
+- Airtable is accessed only after Worker authorisation
 
 ## Request interpreted
 
-The implementation should add a practical first-login route for the already bootstrapped Team Admin.
+The implementation should replace the Cloudflare Access handoff stance with a ResearchOps-owned passwordless email-code flow.
 
 The required outcome was:
 
-- keep Cloudflare Access as the authentication route
-- do not introduce custom passwords or mock identity mode
-- use `/api/me` as the ResearchOps account and permission check
-- recognise a signed-in Team Admin through the `role.assign` permission
-- give the Team Admin a continuation route into `/pages/team/role-assignments/`
-- keep identity, team membership and role assignment separate
-- add tests and product documentation
+- remove visible Cloudflare sign-in language from the account page
+- collect email address in the ResearchOps UI
+- collect the one-time code in the ResearchOps UI
+- add Worker endpoints to start and verify email-code challenges
+- store challenge and session state in D1
+- create an HTTP-only ResearchOps session cookie after successful code verification
+- resolve `/api/me` from the ResearchOps session before falling back to Cloudflare Access
+- continue to use D1 roles and permissions for `role.assign`
+- show the Team Admin continuation route only after `/api/me` confirms permission
 
 ## Evidence checked
 
 Repository files checked:
 
-- `infra/cloudflare/src/core/auth/access.js`
-- `infra/cloudflare/src/worker.js`
-- `infra/cloudflare/migrations/0001_auth_foundation.sql`
-- `scripts/auth-runtime-bootstrap.mjs`
-- `public/pages/team/role-assignments/index.html`
-- `public/js/auth-role-assignment-page.js`
-- `tests/auth-foundation-route-state.test.js`
 - `docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md`
+- `docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md`
+- `docs/product/26/05/09/auth-role-assignment-api-2026-05-09.md`
+- `docs/product/26/05/09/auth-role-assignment-ui-2026-05-09.md`
+- `infra/cloudflare/migrations/0001_auth_foundation.sql`
+- `infra/cloudflare/migrations/0002_auth_role_assignment_route.sql`
+- `infra/cloudflare/src/core/auth/access.js`
+- `infra/cloudflare/src/core/auth/role-assignments.js`
+- `infra/cloudflare/src/worker.js`
+- `public/pages/account/sign-in/index.html`
+- `public/js/auth-sign-in-page.js`
+- `tests/auth-sign-in-route-state.test.js`
 
 ## Findings
 
-The backend already had the necessary foundation:
+The product requirements record three relevant methods:
 
-- `/api/me` resolves Cloudflare Access identity
-- existing seeded users are found by email and linked to the Access identity
-- D1 stores active account state, team membership, roles and permissions
-- `role_team_admin` maps to `team.manage`, `role.assign` and `audit.view`
-- the runtime bootstrap script can seed the first Team Admin as an active user with team membership and role assignment
-- the role-assignment UI already depends on `/api/me` and `role.assign`
+- Cloudflare Access plus D1 RBAC
+- passwordless email magic link or code plus D1 RBAC
+- hybrid Access or OIDC plus passwordless collaborator support
 
-The missing user-facing capability was a clear sign-in/status route that lets the first Team Admin enter the platform and continue to the existing Team Admin task.
+The initial PR #240 implemented only a sign-in/status page and assumed Cloudflare Access as the visible authentication route. That did not meet the clarified user requirement.
+
+The correct product stance for this follow-up is passwordless email-code authentication owned by ResearchOps.
+
+The existing auth foundation already had:
+
+- `auth_users`
+- `auth_identities`
+- `auth_teams`
+- `auth_team_memberships`
+- `auth_roles`
+- `auth_permissions`
+- `auth_role_permissions`
+- `auth_role_assignments`
+- `auth_events`
+- `auth_audit_events`
+- `auth_route_permissions`
+
+The missing control-plane pieces were:
+
+- one-time login challenges
+- ResearchOps session records
+- passwordless start and verify endpoints
+- UI forms for email and code entry
 
 ## Implementation applied
 
 Added:
 
 ```text
-public/pages/account/sign-in/index.html
-public/js/auth-sign-in-page.js
-tests/auth-sign-in-route-state.test.js
-docs/product/26/05/11/first-team-admin-login-2026-05-11.md
+infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql
+infra/cloudflare/src/core/auth/passwordless.js
 ```
 
 Updated:
 
 ```text
-visual-walkthrough.operational-fixtures.mjs
+infra/cloudflare/src/core/auth/access.js
+infra/cloudflare/src/worker.js
+public/pages/account/sign-in/index.html
+public/js/auth-sign-in-page.js
+tests/auth-sign-in-route-state.test.js
+scripts/validate.sh
+docs/product/26/05/11/first-team-admin-login-2026-05-11.md
 ```
 
-The page provides a GOV.UK-style account front door. It checks `/api/me` and distinguishes unauthenticated, inactive-account, no-team, non-admin and Team Admin states.
+Removed:
 
-The script shows the Team Admin continuation link only when the user has `role.assign`.
+```text
+infra/cloudflare/src/core/auth/login.js
+infra/cloudflare/src/core/auth/context.js
+```
+
+## Implemented flow
+
+The implemented ResearchOps passwordless flow is:
+
+```text
+POST /api/auth/email/start
+POST /api/auth/email/verify
+POST /api/auth/logout
+GET  /api/me
+```
+
+The UI journey is:
+
+1. User enters an email address in ResearchOps.
+2. Worker creates a challenge in D1.
+3. Worker sends a 6 digit code through configured email delivery.
+4. User enters the code in ResearchOps.
+5. Worker verifies the code.
+6. Worker creates a ResearchOps session.
+7. Worker sets an HTTP-only session cookie.
+8. `/api/me` resolves the session into user, team, role and permission context.
+9. The page shows “Manage team roles” only if `role.assign` is present.
 
 ## Security boundary
 
-The page does not authenticate the user itself.
+The page does not enforce authorisation.
 
-Authentication remains Cloudflare Access.
+The page only collects email and code and displays account state.
 
-Authorisation remains server-side in the Worker and D1 permission layer.
+The Worker validates the code, creates the session and resolves identity through D1.
 
-The page only presents the current account state and routes authorised users to the Team Admin UI.
+The Worker remains responsible for permission checks before protected operations.
+
+D1 remains the canonical store for users, identities, teams, roles, permissions, challenges, sessions and audit events.
+
+The implementation does not add passwords.
+
+The implementation does not expose Cloudflare-branded sign-in pages to the user.
 
 ## Validation encoded
 
 `tests/auth-sign-in-route-state.test.js` asserts:
 
-- the sign-in page exists and uses GOV.UK-style account language
-- Cloudflare Access is the sign-in mechanism
-- the page depends on `/api/me`
-- the page links Team Admins to `/pages/team/role-assignments/`
-- the client script checks for `role.assign`
-- the page does not introduce password fields
-- the script does not use `localStorage` or `sessionStorage`
+- the sign-in page collects email in ResearchOps
+- the sign-in page collects a 6 digit code in ResearchOps
+- the page does not expose Cloudflare sign-in language
+- the page uses `/api/auth/email/start`
+- the page uses `/api/auth/email/verify`
+- the page uses `/api/me` after verification
+- the Worker routes passwordless endpoints
+- the passwordless server module uses D1 challenge and session tables
+- the canonical auth resolver prefers ResearchOps sessions before Cloudflare Access fallback
+- the Team Admin continuation route remains `/pages/team/role-assignments/`
 
 ## Current status at trace write
 
-The branch had not yet been opened as a PR.
+The corrective branch had not yet been opened as a PR.
 
 CI still needed to run after the latest commits.

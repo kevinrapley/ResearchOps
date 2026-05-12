@@ -1,105 +1,120 @@
-/**
- * Cloudflare Pages Functions proxy for `/api/*` → Worker API.
- * Set UPSTREAM_API in Pages → Settings → Variables (e.g. https://rops-api….workers.dev)
- */
+const PREVIEW_API_ORIGIN = 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
+const PRODUCTION_API_ORIGIN = 'https://rops-api.digikev-kevin-rapley.workers.dev';
+const PRODUCTION_PAGES_HOST = 'researchops.pages.dev';
 
-/**
- * @param {import('@cloudflare/workers-types').Request} request
- * @param {{UPSTREAM_API?: string}} env
- * @param {{params: {path?: string[]}}} context
- */
-export async function onRequest({ request, env, params: _params }) {
-	if (!env.UPSTREAM_API) {
-		return new Response(JSON.stringify({ ok: false, error: 'UPSTREAM_API not configured' }), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	}
-
-	// CORS preflight (let Pages answer quickly)
-	if (request.method === 'OPTIONS') {
-		return new Response(null, {
-			status: 204,
-			headers: corsHeaders(request.headers.get('Origin')),
-		});
-	}
-
-	// Build upstream URL: <UPSTREAM_API>/api/<...path...>?<query>
-	const inReqUrl = new URL(request.url);
-	const upstreamBase = new URL(env.UPSTREAM_API);
-
-        // Everything after '/api' from the incoming request
-        const tailPath = inReqUrl.pathname.replace(/^\/api\/?/, ''); // e.g. 'studies'
-        const cleanBasePath = upstreamBase.pathname.replace(/\/+$/, ''); // no trailing slash
-        const tailSegment = tailPath ? `/${tailPath}` : '';
-        const normalizedBasePath = cleanBasePath.toLowerCase(); // safe to inspect without mutating case
-        let upstreamPath;
-        if (normalizedBasePath.endsWith('/api') || normalizedBasePath.includes('/api/')) {
-                upstreamPath = `${cleanBasePath}${tailSegment}`;
-        } else {
-                upstreamPath = `${cleanBasePath}/api${tailSegment}`;
-        }
-        if (!upstreamPath.startsWith('/')) {
-                upstreamPath = `/${upstreamPath.replace(/^\/+/, '')}`;
-        }
-        if (upstreamPath === '/' || upstreamPath === '') {
-                upstreamPath = '/api';
-        }
-
-        const outUrl = new URL(upstreamBase.origin + upstreamPath);
-	outUrl.search = inReqUrl.search; // preserve ?query
-
-	// Clone headers, but don’t forward Host; ensure we include browser Origin (for Worker CORS check)
-	const fwdHeaders = new Headers(request.headers);
-	fwdHeaders.delete('host');
-	const browserOrigin = request.headers.get('Origin');
-	if (browserOrigin) {
-		fwdHeaders.set('Origin', browserOrigin);
-	}
-
-	// Forward method & body (no body for GET/HEAD)
-	const init = {
-		method: request.method,
-		headers: fwdHeaders,
-	};
-	if (!['GET', 'HEAD'].includes(request.method.toUpperCase())) {
-		init.body = await request.arrayBuffer();
-	}
-
-	let upstreamResp;
-	try {
-		upstreamResp = await fetch(outUrl.toString(), init);
-	} catch (err) {
-		return new Response(
-			JSON.stringify({ ok: false, error: 'Upstream fetch failed', detail: String(err) }),
-			{
-				status: 502,
-				headers: { 'Content-Type': 'application/json', ...corsHeaders(browserOrigin) },
-			},
-		);
-	}
-
-	// Mirror upstream response with our CORS headers
-	const respHeaders = new Headers(upstreamResp.headers);
-	const cors = corsHeaders(browserOrigin);
-	for (const [k, v] of Object.entries(cors)) respHeaders.set(k, v);
-
-	return new Response(upstreamResp.body, {
-		status: upstreamResp.status,
-		headers: respHeaders,
-	});
+function isPagesPreviewHost(hostname) {
+	return hostname.endsWith('.researchops.pages.dev') && hostname !== PRODUCTION_PAGES_HOST;
 }
 
-/**
- * Build permissive CORS headers for the calling Origin.
- * @param {string|null} origin
- */
+function upstreamApiFor(request, env = {}) {
+	if (env.UPSTREAM_API) return env.UPSTREAM_API;
+	if (env.RESEARCHOPS_API_ORIGIN) return env.RESEARCHOPS_API_ORIGIN;
+
+	const hostname = new URL(request.url).hostname;
+	if (isPagesPreviewHost(hostname)) return PREVIEW_API_ORIGIN;
+	return PRODUCTION_API_ORIGIN;
+}
+
 function corsHeaders(origin) {
 	return {
 		'Access-Control-Allow-Origin': origin || '*',
 		'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-		'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+		'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-ResearchOps-Team-Id',
+		'Access-Control-Allow-Credentials': 'true',
 		Vary: 'Origin',
 		'Access-Control-Max-Age': '86400',
 	};
+}
+
+function buildUpstreamUrl(request, env) {
+	const inReqUrl = new URL(request.url);
+	const upstreamBase = new URL(upstreamApiFor(request, env));
+	const tailPath = inReqUrl.pathname.replace(/^\/api\/?/, '');
+	const cleanBasePath = upstreamBase.pathname.replace(/\/+$/, '');
+	const tailSegment = tailPath ? `/${tailPath}` : '';
+	const normalizedBasePath = cleanBasePath.toLowerCase();
+	let upstreamPath;
+
+	if (normalizedBasePath.endsWith('/api') || normalizedBasePath.includes('/api/')) {
+		upstreamPath = `${cleanBasePath}${tailSegment}`;
+	} else {
+		upstreamPath = `${cleanBasePath}/api${tailSegment}`;
+	}
+
+	if (!upstreamPath.startsWith('/')) {
+		upstreamPath = `/${upstreamPath.replace(/^\/+/, '')}`;
+	}
+
+	const outUrl = new URL(upstreamBase.origin + upstreamPath);
+	outUrl.search = inReqUrl.search;
+	return outUrl;
+}
+
+function forwardedHeaders(request) {
+	const headers = new Headers(request.headers);
+	headers.delete('host');
+	headers.delete('cf-connecting-ip');
+	headers.delete('cf-ipcountry');
+	headers.delete('cf-ray');
+	headers.delete('cf-visitor');
+	return headers;
+}
+
+function jsonResponse(body, status = 200, origin = null) {
+	return new Response(JSON.stringify(body), {
+		status,
+		headers: {
+			'content-type': 'application/json; charset=utf-8',
+			'cache-control': 'no-store',
+			'x-content-type-options': 'nosniff',
+			'x-researchops-api-proxy': 'pages-function',
+			...corsHeaders(origin),
+		},
+	});
+}
+
+export async function onRequest({ request, env }) {
+	const method = request.method.toUpperCase();
+	const origin = request.headers.get('Origin');
+
+	if (method === 'OPTIONS') {
+		return new Response(null, {
+			status: 204,
+			headers: corsHeaders(origin),
+		});
+	}
+
+	try {
+		const targetUrl = buildUpstreamUrl(request, env);
+		const response = await fetch(targetUrl.toString(), {
+			method,
+			headers: forwardedHeaders(request),
+			body: method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer(),
+			redirect: 'manual',
+		});
+
+		const headers = new Headers(response.headers);
+		headers.set('cache-control', 'no-store');
+		headers.set('x-content-type-options', 'nosniff');
+		headers.set('x-researchops-api-proxy', 'pages-function');
+		headers.set('x-researchops-api-upstream', targetUrl.origin);
+		for (const [key, value] of Object.entries(corsHeaders(origin))) headers.set(key, value);
+
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		});
+	} catch (error) {
+		return jsonResponse(
+			{
+				ok: false,
+				error: 'api_proxy_error',
+				message: 'ResearchOps could not contact the sign-in service.',
+				detail: String(error?.message || error),
+			},
+			502,
+			origin,
+		);
+	}
 }
