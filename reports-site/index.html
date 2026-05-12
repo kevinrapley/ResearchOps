@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-12T11:18:13.117Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-12T16:02:03.901Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -790,16 +790,16 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div class="page-card__header">
 			<h3>Sign in to ResearchOps</h3>
 			<p class="meta">/pages/account/sign-in/index.html</p>
-			<p>First Team Admin sign-in and access status page.</p>
+			<p>First Team Admin sign-in and one-time code request page.</p>
 			
 		</div>
 		<div class="states">
 			
 	<article class="state" id="account-sign-in-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>First Team Admin signed-in state</h4>
+			<h4>Passwordless sign-in code request</h4>
 			<p class="meta">captured · https://researchops.pages.dev/pages/account/sign-in/index.html</p>
-			<p>Sign-in page captured with deterministic Team Admin context.</p>
+			<p>Sign-in page captured before a one-time code is requested.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -823,18 +823,18 @@ h3, h4, h5 { margin: 0 0 6px; }
     When I visit the sign in to ResearchOps page
 
   Scenario: Understand the page purpose
-    Then I should see content that supports first Team Admin sign-in and access status page
+    Then I should see content that supports first Team Admin sign-in and one-time code request page
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;First Team Admin signed-in state&quot; in the ResearchOps journey
+  Scenario: Use &quot;Passwordless sign-in code request&quot; in the ResearchOps journey
     Given I am using the sign in to ResearchOps page
     Then I should understand the research value of this part of the journey
-    And I should see that sign-in page captured with deterministic Team Admin context
+    And I should see that sign-in page captured before a one-time code is requested
     And I should be given enough service context to decide what to do next
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;You are signed in as a Team Admin&quot;
+    Then I should see &quot;Use your work email address to continue&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -861,13 +861,100 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/account/sign-in/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/account__account-sign-in__default.png"><img loading="lazy" src="screenshots/desktop/account__account-sign-in__default.png" alt="Screenshot of Sign in to ResearchOps in the First Team Admin signed-in state state for Desktop." /></a><figcaption>Sign in to ResearchOps — First Team Admin signed-in state — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/account__account-sign-in__default.png"><img loading="lazy" src="screenshots/desktop/account__account-sign-in__default.png" alt="Screenshot of Sign in to ResearchOps in the Passwordless sign-in code request state for Desktop." /></a><figcaption>Sign in to ResearchOps — Passwordless sign-in code request — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/account/sign-in/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/account__account-sign-in__default.png"><img loading="lazy" src="screenshots/mobile/account__account-sign-in__default.png" alt="Screenshot of Sign in to ResearchOps in the First Team Admin signed-in state state for Mobile." /></a><figcaption>Sign in to ResearchOps — First Team Admin signed-in state — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/account__account-sign-in__default.png"><img loading="lazy" src="screenshots/mobile/account__account-sign-in__default.png" alt="Screenshot of Sign in to ResearchOps in the Passwordless sign-in code request state for Mobile." /></a><figcaption>Sign in to ResearchOps — Passwordless sign-in code request — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+		</div>
+	</article>
+	<article class="page-card" id="account-dashboard" data-review-group-id="" data-review-evidence-level="generated">
+		<div class="page-card__header">
+			<h3>Your ResearchOps account</h3>
+			<p class="meta">/pages/account/index.html</p>
+			<p>Signed-in account dashboard showing active team, roles, permissions and actions.</p>
+			
+		</div>
+		<div class="states">
+			
+	<article class="state" id="account-dashboard-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Signed-in account dashboard</h4>
+			<p class="meta">captured · https://researchops.pages.dev/pages/account/index.html</p>
+			<p>Account dashboard captured with deterministic Team Admin context.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Your ResearchOps account page
+
+  As a user researcher
+  I want to use the your ResearchOps account page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the your ResearchOps account page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports signed-in account dashboard showing active team, roles, permissions and actions
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Signed-in account dashboard&quot; in the ResearchOps journey
+    Given I am using the your ResearchOps account page
+    Then I should understand the research value of this part of the journey
+    And I should see that account dashboard captured with deterministic Team Admin context
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Welcome, Team Admin. Here is your account dashboard&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>The sign-in page may make access look complete without explaining that identity, team membership and role permission are checked separately.</dd></div>
+			<div><dt>Impact</dt><dd>The first Team Admin may sign in successfully but not understand whether D1 role bootstrap, team membership or Cloudflare Access caused a blocked state.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review the page for clear Cloudflare Access sign-in language, account-state recovery, active team context and a visible route to Team Admin tasks.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>Needs UCD review</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/account/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/account__account-dashboard__default.png"><img loading="lazy" src="screenshots/desktop/account__account-dashboard__default.png" alt="Screenshot of Your ResearchOps account in the Signed-in account dashboard state for Desktop." /></a><figcaption>Your ResearchOps account — Signed-in account dashboard — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/account/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/account__account-dashboard__default.png"><img loading="lazy" src="screenshots/mobile/account__account-dashboard__default.png" alt="Screenshot of Your ResearchOps account in the Signed-in account dashboard state for Mobile." /></a><figcaption>Your ResearchOps account — Signed-in account dashboard — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
