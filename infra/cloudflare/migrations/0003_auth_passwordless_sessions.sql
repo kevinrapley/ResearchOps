@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS auth_login_challenges (
   id TEXT PRIMARY KEY,
   email TEXT NOT NULL,
   code_hash TEXT NOT NULL,
-  challenge_status TEXT NOT NULL DEFAULT 'pending' CHECK (challenge_status IN ('pending', 'verified', 'expired', 'failed')),
+  challenge_status TEXT NOT NULL DEFAULT 'pending' CHECK (challenge_status IN ('pending', 'verified', 'expired', 'failed', 'locked')),
   delivery_status TEXT NOT NULL DEFAULT 'pending' CHECK (delivery_status IN ('pending', 'sent', 'failed')),
   attempts_remaining INTEGER NOT NULL DEFAULT 5,
   expires_at TEXT NOT NULL,
