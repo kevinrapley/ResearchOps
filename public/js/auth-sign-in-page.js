@@ -4,12 +4,17 @@
  * @summary ResearchOps-owned passwordless sign-in page.
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+function defaultApiOrigin() {
+	if (location.hostname === "fix-team-admin-sign-in-journ.researchops.pages.dev") {
+		return "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev";
+	}
+	if (location.hostname.endsWith("pages.dev")) {
+		return "https://rops-api.digikev-kevin-rapley.workers.dev";
+	}
+	return location.origin;
+}
+
+const API_ORIGIN = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin();
 
 const CONFIG = Object.freeze({
 	API_BASE: API_ORIGIN,
@@ -295,6 +300,7 @@ window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
 	apiUrl,
 	checkExistingSession,
+	defaultApiOrigin,
 	permissionCodes,
 	renderAuthenticatedContext,
 });
