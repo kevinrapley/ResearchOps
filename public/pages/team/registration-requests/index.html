@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Review account requests - ResearchOps Demo Suite</title>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-frontend-v6.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<script type="module" src="/components/layout.js" defer></script>
+</head>
+<body>
+	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
+	<x-include src="/partials/header.html" vars='{"active":"Team administration","subtitle":"Review account requests"}'></x-include>
+
+	<div class="govuk-width-container">
+		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+			<ol class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+				<li class="govuk-breadcrumbs__list-item">Team administration</li>
+			</ol>
+		</nav>
+	</div>
+
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<span class="govuk-caption-l">Team administration</span>
+					<h1 class="govuk-heading-xl">Review account requests</h1>
+					<p class="govuk-body-l">Review requests from people who have asked for a ResearchOps account.</p>
+					<p class="govuk-body">A requested role is only information for review. It does not assign a role or give access.</p>
+				</div>
+			</div>
+
+			<section id="registration-requests-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="registration-requests-status-title" data-registration-requests-route="/api/auth/registration-requests">
+				<div class="govuk-notification-banner__header">
+					<h2 class="govuk-notification-banner__title" id="registration-requests-status-title">Account requests</h2>
+				</div>
+				<div class="govuk-notification-banner__content" id="registration-requests-status-body">
+					<p class="govuk-body">Loading account requests.</p>
+				</div>
+			</section>
+
+			<section aria-labelledby="pending-registration-requests-title">
+				<h2 class="govuk-heading-l" id="pending-registration-requests-title">Pending requests</h2>
+				<div id="registration-requests-list"></div>
+			</section>
+		</div>
+	</main>
+
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<script type="module" src="/js/auth-registration-requests-page.js?v=registration-review-20260512"></script>
+</body>
+</html>
