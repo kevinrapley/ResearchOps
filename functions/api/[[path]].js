@@ -1,12 +1,17 @@
 const PREVIEW_API_ORIGIN = 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_API_ORIGIN = 'https://rops-api.digikev-kevin-rapley.workers.dev';
+const PRODUCTION_PAGES_HOST = 'researchops.pages.dev';
+
+function isPagesPreviewHost(hostname) {
+	return hostname.endsWith('.researchops.pages.dev') && hostname !== PRODUCTION_PAGES_HOST;
+}
 
 function upstreamApiFor(request, env = {}) {
 	if (env.UPSTREAM_API) return env.UPSTREAM_API;
 	if (env.RESEARCHOPS_API_ORIGIN) return env.RESEARCHOPS_API_ORIGIN;
 
 	const hostname = new URL(request.url).hostname;
-	if (hostname === 'fix-team-admin-sign-in-journ.researchops.pages.dev') return PREVIEW_API_ORIGIN;
+	if (isPagesPreviewHost(hostname)) return PREVIEW_API_ORIGIN;
 	return PRODUCTION_API_ORIGIN;
 }
 
@@ -62,6 +67,7 @@ function jsonResponse(body, status = 200, origin = null) {
 			'content-type': 'application/json; charset=utf-8',
 			'cache-control': 'no-store',
 			'x-content-type-options': 'nosniff',
+			'x-researchops-api-proxy': 'pages-function',
 			...corsHeaders(origin),
 		},
 	});
@@ -79,7 +85,8 @@ export async function onRequest({ request, env }) {
 	}
 
 	try {
-		const response = await fetch(buildUpstreamUrl(request, env).toString(), {
+		const targetUrl = buildUpstreamUrl(request, env);
+		const response = await fetch(targetUrl.toString(), {
 			method,
 			headers: forwardedHeaders(request),
 			body: method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer(),
@@ -87,8 +94,10 @@ export async function onRequest({ request, env }) {
 		});
 
 		const headers = new Headers(response.headers);
-	headers.set('cache-control', 'no-store');
-	headers.set('x-content-type-options', 'nosniff');
+		headers.set('cache-control', 'no-store');
+		headers.set('x-content-type-options', 'nosniff');
+		headers.set('x-researchops-api-proxy', 'pages-function');
+		headers.set('x-researchops-api-upstream', targetUrl.origin);
 		for (const [key, value] of Object.entries(corsHeaders(origin))) headers.set(key, value);
 
 		return new Response(response.body, {
