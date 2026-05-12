@@ -14,6 +14,14 @@ directory = "../../docs/devops/sourcebook"
 [ai]
 binding = "AI"
 
+# Required Worker secrets
+[secrets]
+required = [
+	"RESEARCHOPS_AUTH_SECRET",
+	"RESEND_API_KEY",
+	"RESEARCHOPS_EMAIL_FROM",
+]
+
 # Vars
 [vars]
 MODEL = "@cf/meta/llama-3.1-8b-instruct"
