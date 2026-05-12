@@ -8,15 +8,15 @@ const JSON_HEADERS = {
 };
 
 const REQUESTED_ROLES = Object.freeze({
-	user_researcher: 'User researcher',
-	research_lead: 'Research lead',
-	note_taker: 'Note-taker',
-	session_observer: 'Session observer',
-	service_designer: 'Service designer',
-	content_designer: 'Content designer',
-	interaction_designer: 'Interaction designer',
-	team_admin: 'Team admin',
-	other: 'Another role',
+	user_researcher: 'Plan, run or analyse user research',
+	research_lead: 'Plan, run or analyse user research',
+	note_taker: 'Take notes in research sessions',
+	session_observer: 'Observe research sessions',
+	service_designer: 'Use research evidence to design or improve a service',
+	content_designer: 'Use research evidence to design or improve a service',
+	interaction_designer: 'Use research evidence to design or improve a service',
+	team_admin: 'Manage team access',
+	other: 'Something else',
 });
 
 class RegistrationRequestError extends Error {
