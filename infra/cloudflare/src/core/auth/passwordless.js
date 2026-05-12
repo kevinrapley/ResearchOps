@@ -95,23 +95,38 @@ function sessionCookie(request, token, maxAge = SESSION_TTL_SECONDS) {
 	return `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; ${secure}SameSite=None; Max-Age=${maxAge}`;
 }
 
+function webhookHeaders(env) {
+	return {
+		'content-type': 'application/json',
+		...(env.RESEARCHOPS_EMAIL_WEBHOOK_TOKEN ? { authorization: `Bearer ${env.RESEARCHOPS_EMAIL_WEBHOOK_TOKEN}` } : {}),
+	};
+}
+
 async function sendCode(env, email, code) {
-	if (env.RESEARCHOPS_AUTH_DEBUG_CODE === 'true') return;
 	if (env.RESEARCHOPS_EMAIL_WEBHOOK_URL) {
 		const response = await fetch(env.RESEARCHOPS_EMAIL_WEBHOOK_URL, {
 			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ to: email, subject: 'Your ResearchOps sign-in code', text: `Your code is ${code}. It expires in 10 minutes.` }),
+			headers: webhookHeaders(env),
+			body: JSON.stringify({
+				to: email,
+				subject: 'Your ResearchOps sign-in code',
+				text: `Your code is ${code}. It expires in 10 minutes.`,
+			}),
 		});
-		if (response.ok) return;
+		if (response.ok) return 'webhook';
 	}
 	if (env.RESEND_API_KEY && env.RESEARCHOPS_EMAIL_FROM) {
 		const response = await fetch('https://api.resend.com/emails', {
 			method: 'POST',
 			headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-			body: JSON.stringify({ from: env.RESEARCHOPS_EMAIL_FROM, to: [email], subject: 'Your ResearchOps sign-in code', text: `Your code is ${code}. It expires in 10 minutes.` }),
+			body: JSON.stringify({
+				from: env.RESEARCHOPS_EMAIL_FROM,
+				to: [email],
+				subject: 'Your ResearchOps sign-in code',
+				text: `Your code is ${code}. It expires in 10 minutes.`,
+			}),
 		});
-		if (response.ok) return;
+		if (response.ok) return 'resend';
 	}
 	throw new AuthFlowError(503, 'email_delivery_missing', 'Sign-in email delivery is not configured yet.');
 }
@@ -133,10 +148,10 @@ async function start(request, env) {
 		INSERT INTO auth_login_challenges (id, email, code_hash, attempts_remaining, expires_at)
 		VALUES (?, ?, ?, 5, ?)
 	`).bind(challengeId, email, await hash(env, 'code', challengeId, email, code), after(CODE_TTL_SECONDS)).run();
-	await sendCode(env, email, code);
+	const deliveryProvider = await sendCode(env, email, code);
 	await db.prepare("UPDATE auth_login_challenges SET delivery_status = 'sent' WHERE id = ?").bind(challengeId).run();
-	await authEvent(db, request, 'auth.email_code.requested', { email, challengeId });
-	return json({ ok: true, challengeId, expiresInSeconds: CODE_TTL_SECONDS, ...(env.RESEARCHOPS_AUTH_DEBUG_CODE === 'true' ? { debugCode: code } : {}) });
+	await authEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
+	return json({ ok: true, challengeId, expiresInSeconds: CODE_TTL_SECONDS, deliveryProvider });
 }
 
 async function userForEmail(db, email) {
