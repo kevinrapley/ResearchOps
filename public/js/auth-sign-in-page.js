@@ -72,6 +72,11 @@ function setStatus(title, bodyHtml, modifier = "") {
 	if (modifier) dom.status.classList.add(modifier);
 }
 
+function apiErrorMessage(response, fallback) {
+	const data = response?.data || {};
+	return data.message || data.detail || data.error || (response?.status ? `Request failed with status ${response.status}.` : fallback);
+}
+
 function userFacingError(error) {
 	const message = String(error?.message || error || "");
 	if (["Load failed", "Failed to fetch", "NetworkError when attempting to fetch resource."].includes(message)) {
@@ -218,7 +223,7 @@ async function refreshSignInStatusAfterVerification() {
 	try {
 		const response = await fetchJson("/api/me");
 		if (!response.ok || !response.data?.ok) {
-			throw new Error(response.data?.message || "We could not check your account after verifying the code.");
+			throw new Error(apiErrorMessage(response, "We could not check your account after verifying the code."));
 		}
 		renderAuthenticatedContext(response.data);
 	} catch (error) {
@@ -248,7 +253,7 @@ async function submitStart(event) {
 			body: JSON.stringify({ email }),
 		});
 		if (!response.ok || !response.data?.ok) {
-			throw new Error(response.data?.message || "We could not send a sign-in code.");
+			throw new Error(apiErrorMessage(response, "We could not send a sign-in code."));
 		}
 		showCodeForm(response.data.challengeId, email);
 	} catch (error) {
@@ -272,7 +277,7 @@ async function submitVerify(event) {
 			}),
 		});
 		if (!response.ok || !response.data?.ok) {
-			throw new Error(response.data?.message || "The code could not be verified.");
+			throw new Error(apiErrorMessage(response, "The code could not be verified."));
 		}
 		await refreshSignInStatusAfterVerification();
 	} catch (error) {
@@ -298,6 +303,7 @@ init();
 
 window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
+	apiErrorMessage,
 	apiUrl,
 	defaultApiOrigin,
 	permissionCodes,
