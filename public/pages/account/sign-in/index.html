@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-frontend-v6.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<script type="module" src="/components/layout.js" defer></script>
@@ -34,25 +33,46 @@
 					<span class="govuk-caption-l">ResearchOps account</span>
 					<h1 class="govuk-heading-xl">Sign in to ResearchOps</h1>
 					<p class="govuk-body-l">Use your work email address to continue.</p>
-					<p class="govuk-body">After you sign in, ResearchOps will check whether your account is ready and what you can do.</p>
+					<p class="govuk-body">We will send you a 6 digit code. After you enter the code, ResearchOps will check whether your account is ready and what you can do.</p>
 
-					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-access-login-route="/api/auth/login?return=/pages/account/sign-in/" data-team-admin-destination="/pages/team/role-assignments/">
+					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="false" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-start-route="/api/auth/email/start" data-verify-route="/api/auth/email/verify" data-team-admin-destination="/pages/team/role-assignments/">
 						<div class="govuk-notification-banner__header">
-							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Checking your account</h2>
+							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Sign in</h2>
 						</div>
 						<div class="govuk-notification-banner__content" id="sign-in-status-body">
-							<p class="govuk-body">We are checking whether you are already signed in.</p>
+							<p class="govuk-body">Enter your email address to get a sign-in code.</p>
 						</div>
 					</section>
 
-					<div class="govuk-button-group" id="sign-in-actions">
-						<a class="govuk-button" id="sign-in-check-link" href="/api/auth/login?return=/pages/account/sign-in/" role="button" draggable="false">Continue</a>
-						<a class="govuk-button" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false" hidden>Manage team roles</a>
+					<form id="email-code-start-form" novalidate>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--m" for="sign-in-email">Email address</label>
+							<div id="sign-in-email-hint" class="govuk-hint">Use the email address your ResearchOps account was set up with.</div>
+							<input class="govuk-input" id="sign-in-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="sign-in-email-hint" />
+						</div>
+						<button class="govuk-button" type="submit">Send code</button>
+					</form>
+
+					<form id="email-code-verify-form" novalidate hidden>
+						<input type="hidden" id="email-code-challenge-id" name="challengeId" />
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--m" for="sign-in-code">Security code</label>
+							<div id="sign-in-code-hint" class="govuk-hint">Enter the 6 digit code we sent to your email address.</div>
+							<input class="govuk-input govuk-input--width-10" id="sign-in-code" name="code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-describedby="sign-in-code-hint" />
+						</div>
+						<div class="govuk-button-group">
+							<button class="govuk-button" type="submit">Continue</button>
+							<button class="govuk-button govuk-button--secondary" id="email-code-change-email" type="button">Use a different email address</button>
+						</div>
+					</form>
+
+					<div class="govuk-button-group" id="signed-in-actions" hidden>
+						<a class="govuk-button" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false">Manage team roles</a>
 					</div>
 
 					<section aria-labelledby="cannot-sign-in-title">
 						<h2 class="govuk-heading-m" id="cannot-sign-in-title">If you cannot sign in</h2>
-						<p class="govuk-body">Use the same email address that was used when your ResearchOps account was set up.</p>
+						<p class="govuk-body">Check that you are using the same email address that was used when your ResearchOps account was set up.</p>
 						<p class="govuk-body">If you still cannot get access, ask a Team Admin to check your account and team role.</p>
 					</section>
 				</div>
