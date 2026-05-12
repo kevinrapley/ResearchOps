@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import test from 'node:test';
 
 test('production Worker declares required passwordless secrets', () => {
 	const wrangler = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
