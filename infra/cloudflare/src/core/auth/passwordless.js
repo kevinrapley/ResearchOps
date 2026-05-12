@@ -198,9 +198,7 @@ async function verify(request, env) {
 	return json({ ok: true, authenticated: true }, 200, { 'set-cookie': sessionCookie(request, token) });
 }
 
-async function sessionUser(db, env, request) {
-	const token = cookieValue(request);
-	if (!token) return null;
+async function sessionUser(db, env, token) {
 	return db.prepare(`
 		SELECT s.id AS session_id, u.id, u.email, u.display_name, u.account_status
 		FROM auth_sessions s INNER JOIN auth_users u ON u.id = s.user_id
@@ -240,8 +238,10 @@ async function permissions(db, userId, teamId) {
 }
 
 export async function resolvePasswordlessSessionContext(request, env) {
+	const token = cookieValue(request);
+	if (!token) return null;
 	const db = dbFor(env);
-	const user = await sessionUser(db, env, request);
+	const user = await sessionUser(db, env, token);
 	if (!user) return null;
 	const userTeams = await teams(db, user.id);
 	const activeTeam = userTeams[0] || null;
