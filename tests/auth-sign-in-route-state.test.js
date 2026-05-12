@@ -86,6 +86,21 @@ function assertPasswordlessServerFlowExists() {
 	assert.match(passwordless, /provider: PROVIDER/);
 }
 
+function assertPasswordlessCodeAttemptLimitExists() {
+	assert.match(passwordless, /function assertChallengeCanBeAttempted\(challenge\)/);
+	assert.match(passwordless, /code_attempts_exceeded/);
+	assert.match(passwordless, /Too many incorrect codes/);
+	assert.match(passwordless, /function recordFailedAttempt\(db, request, challenge\)/);
+	assert.match(passwordless, /challenge_status = 'locked'/);
+	assert.match(passwordless, /auth\.email_code\.locked/);
+	assert.match(passwordless, /attempts_remaining = \?/);
+}
+
+function assertPasswordlessRoleExpiryFiltersExist() {
+	assert.match(passwordless, /ra\.expires_at IS NULL OR ra\.expires_at > strftime/);
+	assert.equal((passwordless.match(/ra\.expires_at IS NULL OR ra\.expires_at > strftime/g) || []).length, 2);
+}
+
 function assertAuthResolverPrefersResearchOpsSession() {
 	assert.match(access, /resolvePasswordlessSessionContext/);
 	assert.match(access, /const passwordlessContext = await resolvePasswordlessSessionContext\(request, env\);/);
@@ -108,5 +123,7 @@ assertSignInScriptStartsAndVerifiesEmailCode();
 assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard();
 assertWorkerRoutesPasswordlessEndpoints();
 assertPasswordlessServerFlowExists();
+assertPasswordlessCodeAttemptLimitExists();
+assertPasswordlessRoleExpiryFiltersExist();
 assertAuthResolverPrefersResearchOpsSession();
 assertPasswordlessMigrationExists();
