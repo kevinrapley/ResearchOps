@@ -41,19 +41,16 @@
 					<span class="govuk-caption-l">ResearchOps account</span>
 					<h1 class="govuk-heading-xl">Request a ResearchOps account</h1>
 					<p class="govuk-body-l">Use this form if you need access to ResearchOps for user research work.</p>
-					<p class="govuk-body">A Team Admin will review your request before any team access or role is added to your account.</p>
+					<p class="govuk-body">A team admin will review your request before any team access or role is added to your account.</p>
+					<p class="govuk-body">Before you start, you will need your work email address and the name of the team or service you need access for.</p>
 
 					<div class="govuk-inset-text">
-						Selecting a role here does not give you that role. It helps the reviewer understand what you are likely to need.
+						Your answer about what you need to do does not give you access. It helps a team admin decide what access you may need.
 					</div>
 
-					<section id="registration-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="false" aria-labelledby="registration-status-title" data-registration-route="/api/auth/registration-requests">
-						<div class="govuk-notification-banner__header">
-							<h2 class="govuk-notification-banner__title" id="registration-status-title">Before you start</h2>
-						</div>
-						<div class="govuk-notification-banner__content" id="registration-status-body">
-							<p class="govuk-body">You will need your work email address and the name of the team or service you need access for.</p>
-						</div>
+					<section id="registration-status" class="govuk-inset-text" role="status" aria-live="polite" aria-busy="false" data-registration-route="/api/auth/registration-requests" tabindex="-1" hidden>
+						<h2 class="govuk-heading-m" id="registration-status-title">Request status</h2>
+						<div id="registration-status-body"></div>
 					</section>
 
 					<form id="registration-request-form" novalidate>
@@ -78,59 +75,44 @@
 						</div>
 
 						<fieldset class="govuk-fieldset" id="requested-role-group" aria-describedby="requested-role-hint">
-							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">What will you mainly do in ResearchOps?</legend>
-							<div id="requested-role-hint" class="govuk-hint">Choose the option that best describes why you need access. A Team Admin will decide which role, if any, to assign.</div>
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">What do you need to use ResearchOps for?</legend>
+							<div id="requested-role-hint" class="govuk-hint">Choose the option that best describes why you need access. A team admin will review your request and decide what access you need.</div>
 							<p class="govuk-error-message" id="requested-role-error" hidden></p>
 							<div class="govuk-radios" data-module="govuk-radios">
 								<div class="govuk-radios__item">
 									<input class="govuk-radios__input" id="requested-role-user-researcher" name="requestedRoleKey" type="radio" value="user_researcher" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-user-researcher">User researcher</label>
-									<div class="govuk-hint govuk-radios__hint">I need to plan, run or analyse user research.</div>
-								</div>
-								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" id="requested-role-research-lead" name="requestedRoleKey" type="radio" value="research_lead" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-research-lead">Research lead</label>
-									<div class="govuk-hint govuk-radios__hint">I need to lead research activity or review research work.</div>
+									<label class="govuk-label govuk-radios__label" for="requested-role-user-researcher">Plan, run or analyse user research</label>
+									<div class="govuk-hint govuk-radios__hint">For example, as a user researcher or research lead.</div>
 								</div>
 								<div class="govuk-radios__item">
 									<input class="govuk-radios__input" id="requested-role-note-taker" name="requestedRoleKey" type="radio" value="note_taker" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-note-taker">Note-taker</label>
-									<div class="govuk-hint govuk-radios__hint">I need to support sessions by taking notes.</div>
+									<label class="govuk-label govuk-radios__label" for="requested-role-note-taker">Take notes in research sessions</label>
+									<div class="govuk-hint govuk-radios__hint">For people supporting sessions by taking notes.</div>
 								</div>
 								<div class="govuk-radios__item">
 									<input class="govuk-radios__input" id="requested-role-session-observer" name="requestedRoleKey" type="radio" value="session_observer" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-session-observer">Session observer</label>
-									<div class="govuk-hint govuk-radios__hint">I need to observe research sessions or review session outputs.</div>
+									<label class="govuk-label govuk-radios__label" for="requested-role-session-observer">Observe research sessions</label>
+									<div class="govuk-hint govuk-radios__hint">For people who need to observe sessions or review session outputs.</div>
 								</div>
 								<div class="govuk-radios__item">
 									<input class="govuk-radios__input" id="requested-role-service-designer" name="requestedRoleKey" type="radio" value="service_designer" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-service-designer">Service designer</label>
-									<div class="govuk-hint govuk-radios__hint">I need to use research evidence to understand or improve a service.</div>
-								</div>
-								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" id="requested-role-content-designer" name="requestedRoleKey" type="radio" value="content_designer" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-content-designer">Content designer</label>
-									<div class="govuk-hint govuk-radios__hint">I need to use research evidence to write or improve content.</div>
-								</div>
-								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" id="requested-role-interaction-designer" name="requestedRoleKey" type="radio" value="interaction_designer" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-interaction-designer">Interaction designer</label>
-									<div class="govuk-hint govuk-radios__hint">I need to use research evidence to design or improve an interaction.</div>
+									<label class="govuk-label govuk-radios__label" for="requested-role-service-designer">Use research evidence to design or improve a service</label>
+									<div class="govuk-hint govuk-radios__hint">For example, as a service designer, content designer or interaction designer.</div>
 								</div>
 								<div class="govuk-radios__item">
 									<input class="govuk-radios__input" id="requested-role-team-admin" name="requestedRoleKey" type="radio" value="team_admin" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-team-admin">Team admin</label>
-									<div class="govuk-hint govuk-radios__hint">I need to help manage team membership or access requests.</div>
+									<label class="govuk-label govuk-radios__label" for="requested-role-team-admin">Manage team access</label>
+									<div class="govuk-hint govuk-radios__hint">For people who need to help manage team membership or access requests.</div>
 								</div>
 								<div class="govuk-radios__item">
-									<input class="govuk-radios__input" id="requested-role-other" name="requestedRoleKey" type="radio" value="other" />
-									<label class="govuk-label govuk-radios__label" for="requested-role-other">Another role</label>
+									<input class="govuk-radios__input" id="requested-role-other" name="requestedRoleKey" type="radio" value="other" aria-controls="other-role-group" aria-expanded="false" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-other">Something else</label>
 								</div>
 							</div>
 						</fieldset>
 
 						<div class="govuk-form-group" id="other-role-group" hidden>
-							<label class="govuk-label govuk-label--m" for="other-role">What is your role?</label>
+							<label class="govuk-label govuk-label--m" for="other-role">What do you need to use ResearchOps for?</label>
 							<p class="govuk-error-message" id="other-role-error" hidden></p>
 							<input class="govuk-input" id="other-role" name="otherRole" type="text" />
 						</div>
@@ -143,16 +125,25 @@
 						</div>
 
 						<div class="govuk-button-group">
-							<button class="govuk-button" type="submit">Send request</button>
+							<button class="govuk-button" type="submit">Continue</button>
 							<a class="govuk-link" href="/pages/account/sign-in/">I already have an account</a>
 						</div>
 					</form>
+
+					<section id="registration-check-answers" aria-labelledby="registration-check-answers-title" tabindex="-1" hidden>
+						<h2 class="govuk-heading-l" id="registration-check-answers-title">Check your answers before sending your request</h2>
+						<div id="registration-check-answers-body"></div>
+						<div class="govuk-button-group">
+							<button class="govuk-button" type="button" id="confirm-registration-request">Send request</button>
+							<button class="govuk-button govuk-button--secondary" type="button" id="change-registration-request">Change answers</button>
+						</div>
+					</section>
 				</div>
 			</div>
 		</div>
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-registration-page.js?v=registration-review-20260512"></script>
+	<script type="module" src="/js/auth-registration-page.js?v=registration-check-answers-20260512"></script>
 </body>
 </html>
