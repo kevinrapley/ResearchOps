@@ -91,13 +91,13 @@ function requestedReasonFor(value) {
 
 function requestedRoleFor(body) {
 	const key = cleanText(body.requestedRoleKey);
-	if (!key) throw new RegistrationRequestError(400, 'requested_role_required', 'Select the role that best describes what you will do.');
-	if (!REQUESTED_ROLES[key]) throw new RegistrationRequestError(400, 'requested_role_invalid', 'Select the role that best describes what you will do.');
+	if (!key) throw new RegistrationRequestError(400, 'requested_role_required', 'Select what you need to use ResearchOps for.');
+	if (!REQUESTED_ROLES[key]) throw new RegistrationRequestError(400, 'requested_role_invalid', 'Select what you need to use ResearchOps for.');
 
 	if (key !== 'other') return { key, label: REQUESTED_ROLES[key] };
 
 	const otherRole = cleanText(body.otherRole);
-	if (!otherRole) throw new RegistrationRequestError(400, 'other_role_required', 'Enter the role that best describes what you will do.');
+	if (!otherRole) throw new RegistrationRequestError(400, 'other_role_required', 'Enter what you need to use ResearchOps for.');
 	if (otherRole.length > 120) throw new RegistrationRequestError(400, 'other_role_too_long', 'Role name must be 120 characters or fewer.');
 	return { key, label: otherRole };
 }
@@ -291,9 +291,9 @@ export async function handleRegistrationRequestsRoute(request, env, apiPath) {
 					ok: true,
 					created: result.created,
 					requestId: result.requestId,
-					message: 'Your request has been sent for review.',
+					message: result.created ? 'Your request has been sent for review.' : 'Your request has already been sent for review.',
 				},
-				201,
+				result.created ? 201 : 200,
 			);
 		}
 
