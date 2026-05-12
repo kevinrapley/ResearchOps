@@ -122,7 +122,7 @@ function renderRequest(request) {
 				<dd class="govuk-summary-list__value">${escapeHtml(request.email)}</dd>
 			</div>
 			<div class="govuk-summary-list__row">
-				<dt class="govuk-summary-list__key">Requested role</dt>
+				<dt class="govuk-summary-list__key">What they need to use ResearchOps for</dt>
 				<dd class="govuk-summary-list__value">${escapeHtml(request.requestedRole?.label || 'Not recorded')}</dd>
 			</div>
 			<div class="govuk-summary-list__row">
