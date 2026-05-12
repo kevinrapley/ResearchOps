@@ -10,9 +10,11 @@ on:
 jobs:
   lychee:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 1
 
       - name: Check links in repo
         uses: lycheeverse/lychee-action@v1
@@ -20,7 +22,7 @@ jobs:
           args: >
             --accept 200,204,206,429
             --exclude-mail
-            --max-concurrency 6
+            --max-concurrency 4
             --retry-wait-time 2
             --timeout 20
             --no-progress
