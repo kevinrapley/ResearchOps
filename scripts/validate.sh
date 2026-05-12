@@ -94,6 +94,8 @@ require_file "public/css/govuk/govuk-page-chrome.css"
 require_file "public/css/auth-role-assignments.css"
 require_file "public/js/auth-role-assignment-page.js"
 require_file "public/js/auth-sign-in-page.js"
+require_file "public/js/auth-account-page.js"
+require_file "public/pages/account/index.html"
 require_file "public/pages/account/sign-in/index.html"
 require_file "public/pages/team/role-assignments/index.html"
 require_file "docs/performance/initial-load-audit.md"
@@ -150,6 +152,7 @@ require_file "tests/auth-runtime-bootstrap-route-state.test.js"
 require_file "tests/auth-role-assignment-api-route-state.test.js"
 require_file "tests/auth-role-assignment-ui-route-state.test.js"
 require_file "tests/auth-sign-in-route-state.test.js"
+require_file "tests/auth-account-dashboard-route-state.test.js"
 require_file "scripts/auth-runtime-bootstrap.mjs"
 require_file ".github/workflows/bootstrap-d1-auth-runtime.yml"
 require_file "docs/product/26/05/09/auth-runtime-bootstrap-2026-05-09.md"
@@ -323,6 +326,9 @@ node tests/auth-role-assignment-ui-route-state.test.js
 
 info "checking authentication sign-in route-state contract"
 node tests/auth-sign-in-route-state.test.js
+
+info "checking authentication account dashboard route-state contract"
+node tests/auth-account-dashboard-route-state.test.js
 
 info "checking Projects API route contract"
 node tests/projects-route-contract.test.js
