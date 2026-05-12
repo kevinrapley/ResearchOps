@@ -202,16 +202,6 @@ function renderAuthenticatedContext(context) {
 	showSignedInWithoutAdmin(context);
 }
 
-async function checkExistingSession() {
-	try {
-		const response = await fetchJson("/api/me");
-		if (!response.ok || !response.data?.ok) return;
-		renderAuthenticatedContext(response.data);
-	} catch {
-		// The first screen is email entry. Background session-check failures must not interrupt it.
-	}
-}
-
 async function refreshSignInStatusAfterVerification() {
 	setBusy(true);
 	try {
@@ -291,7 +281,6 @@ function init() {
 	dom.verifyForm?.addEventListener("submit", submitVerify);
 	dom.changeEmailButton?.addEventListener("click", () => showSignedOut());
 	showSignedOut();
-	checkExistingSession();
 }
 
 init();
@@ -299,7 +288,6 @@ init();
 window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
 	apiUrl,
-	checkExistingSession,
 	defaultApiOrigin,
 	permissionCodes,
 	renderAuthenticatedContext,
