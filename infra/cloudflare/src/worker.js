@@ -1,4 +1,4 @@
-import { handleMeRoute } from "./core/auth/context.js";
+import { handleMeRoute } from "./core/auth/access.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments.js";
 import { handleRequest } from "./core/router.js";
