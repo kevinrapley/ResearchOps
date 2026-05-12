@@ -197,27 +197,35 @@ function renderAuthenticatedContext(context) {
 	showSignedInWithoutAdmin(context);
 }
 
-async function refreshSignInStatus() {
+async function checkExistingSession() {
+	try {
+		const response = await fetchJson("/api/me");
+		if (!response.ok || !response.data?.ok) return;
+		renderAuthenticatedContext(response.data);
+	} catch {
+		// The first screen is email entry. Background session-check failures must not interrupt it.
+	}
+}
+
+async function refreshSignInStatusAfterVerification() {
 	setBusy(true);
 	try {
 		const response = await fetchJson("/api/me");
-		if (response.status === 401) {
-			showSignedOut(response.data?.message || "Enter your email address to get a sign-in code.");
-			return;
-		}
 		if (!response.ok || !response.data?.ok) {
-			throw new Error(response.data?.message || `Could not check sign-in status (${response.status})`);
+			throw new Error(response.data?.message || "We could not check your account after verifying the code.");
 		}
 		renderAuthenticatedContext(response.data);
 	} catch (error) {
 		setStatus(
-			"We cannot check your account right now",
+			"We could not finish signing you in",
 			`
 <p class="govuk-body">${escapeHtml(error?.message || error)}</p>
-<p class="govuk-body">Try again. If this continues, ask the service team to check the sign-in setup.</p>
+<p class="govuk-body">Your code may have been accepted, but ResearchOps could not load your account details.</p>
 `,
 		);
-		showEmailForm();
+		setVisible(dom.startForm, false);
+		setVisible(dom.verifyForm, true);
+		setVisible(dom.signedInActions, false);
 	} finally {
 		setBusy(false);
 	}
@@ -260,7 +268,7 @@ async function submitVerify(event) {
 		if (!response.ok || !response.data?.ok) {
 			throw new Error(response.data?.message || "The code could not be verified.");
 		}
-		await refreshSignInStatus();
+		await refreshSignInStatusAfterVerification();
 	} catch (error) {
 		setStatus("There is a problem", `<p class="govuk-body">${escapeHtml(error?.message || error)}</p>`);
 		setVisible(dom.startForm, false);
@@ -278,7 +286,7 @@ function init() {
 	dom.verifyForm?.addEventListener("submit", submitVerify);
 	dom.changeEmailButton?.addEventListener("click", () => showSignedOut());
 	showSignedOut();
-	refreshSignInStatus();
+	checkExistingSession();
 }
 
 init();
@@ -286,6 +294,7 @@ init();
 window.__ropsAuthSignInPage = Object.freeze({
 	CONFIG,
 	apiUrl,
+	checkExistingSession,
 	permissionCodes,
 	renderAuthenticatedContext,
 });
