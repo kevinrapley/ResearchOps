@@ -1,14 +1,17 @@
 const PREVIEW_API_ORIGIN = 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_API_ORIGIN = 'https://rops-api.digikev-kevin-rapley.workers.dev';
+const PRODUCTION_PAGES_HOST = 'researchops.pages.dev';
+
+function isPagesPreviewHost(hostname) {
+	return hostname.endsWith('.researchops.pages.dev') && hostname !== PRODUCTION_PAGES_HOST;
+}
 
 function apiOriginFor(request, env = {}) {
 	if (env.RESEARCHOPS_API_ORIGIN) return env.RESEARCHOPS_API_ORIGIN;
 	if (env.UPSTREAM_API) return env.UPSTREAM_API;
 
 	const hostname = new URL(request.url).hostname;
-	if (hostname === 'fix-team-admin-sign-in-journ.researchops.pages.dev') {
-		return PREVIEW_API_ORIGIN;
-	}
+	if (isPagesPreviewHost(hostname)) return PREVIEW_API_ORIGIN;
 
 	return PRODUCTION_API_ORIGIN;
 }
@@ -33,7 +36,7 @@ function requestHeaders(request) {
 	return headers;
 }
 
-function proxiedResponseHeaders(response) {
+function proxiedResponseHeaders(response, targetUrl) {
 	const headers = new Headers(response.headers);
 	headers.delete('access-control-allow-origin');
 	headers.delete('access-control-allow-credentials');
@@ -42,6 +45,8 @@ function proxiedResponseHeaders(response) {
 	headers.delete('vary');
 	headers.set('cache-control', 'no-store');
 	headers.set('x-content-type-options', 'nosniff');
+	headers.set('x-researchops-api-proxy', 'pages-advanced-worker');
+	headers.set('x-researchops-api-upstream', new URL(targetUrl).origin);
 	return headers;
 }
 
@@ -52,13 +57,15 @@ function jsonResponse(body, status = 200) {
 			'content-type': 'application/json; charset=utf-8',
 			'cache-control': 'no-store',
 			'x-content-type-options': 'nosniff',
+			'x-researchops-api-proxy': 'pages-advanced-worker',
 		},
 	});
 }
 
 async function proxyApiRequest(request, env) {
 	const method = request.method.toUpperCase();
-	const response = await fetch(apiTargetUrl(request, env), {
+	const targetUrl = apiTargetUrl(request, env);
+	const response = await fetch(targetUrl, {
 		method,
 		headers: requestHeaders(request),
 		body: method === 'GET' || method === 'HEAD' ? undefined : request.body,
@@ -68,7 +75,7 @@ async function proxyApiRequest(request, env) {
 	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
-		headers: proxiedResponseHeaders(response),
+		headers: proxiedResponseHeaders(response, targetUrl),
 	});
 }
 
