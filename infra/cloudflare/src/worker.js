@@ -1,5 +1,6 @@
 import { handleMeRoute } from "./core/auth/access.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
+import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
@@ -166,7 +167,8 @@ export default {
 
 		try {
 			let result;
-			if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
+			if ((method === "GET" || method === "POST") && apiPath === "/api/auth/registration-requests") result = await handleRegistrationRequestsRoute(request, env, apiPath);
+			else if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
