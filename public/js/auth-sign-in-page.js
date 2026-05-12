@@ -72,6 +72,17 @@ function setStatus(title, bodyHtml, modifier = "") {
 	if (modifier) dom.status.classList.add(modifier);
 }
 
+function userFacingError(error) {
+	const message = String(error?.message || error || "");
+	if (["Load failed", "Failed to fetch", "NetworkError when attempting to fetch resource."].includes(message)) {
+		return "ResearchOps could not contact the sign-in service. The preview sign-in API may not be deployed yet, or this preview is not allowed to call it.";
+	}
+	if (message === "timeout") {
+		return "The sign-in service did not respond in time. Try again.";
+	}
+	return message || "Something went wrong.";
+}
+
 async function fetchJson(path, options = {}) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
@@ -214,7 +225,7 @@ async function refreshSignInStatusAfterVerification() {
 		setStatus(
 			"We could not finish signing you in",
 			`
-<p class="govuk-body">${escapeHtml(error?.message || error)}</p>
+<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>
 <p class="govuk-body">Your code may have been accepted, but ResearchOps could not load your account details.</p>
 `,
 		);
@@ -241,7 +252,7 @@ async function submitStart(event) {
 		}
 		showCodeForm(response.data.challengeId, email);
 	} catch (error) {
-		setStatus("There is a problem", `<p class="govuk-body">${escapeHtml(error?.message || error)}</p>`);
+		setStatus("There is a problem", `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
 		showEmailForm();
 	} finally {
 		setBusy(false);
@@ -265,7 +276,7 @@ async function submitVerify(event) {
 		}
 		await refreshSignInStatusAfterVerification();
 	} catch (error) {
-		setStatus("There is a problem", `<p class="govuk-body">${escapeHtml(error?.message || error)}</p>`);
+		setStatus("There is a problem", `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
 		setVisible(dom.startForm, false);
 		setVisible(dom.verifyForm, true);
 		setVisible(dom.signedInActions, false);
@@ -291,4 +302,5 @@ window.__ropsAuthSignInPage = Object.freeze({
 	defaultApiOrigin,
 	permissionCodes,
 	renderAuthenticatedContext,
+	userFacingError,
 });
