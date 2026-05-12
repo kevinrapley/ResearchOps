@@ -21,6 +21,6 @@ test('production Worker declares required passwordless secrets', () => {
 	assert.match(deployWorkflow, /WRANGLER_VERSION: "4\.90\.0"/);
 	assert.match(
 		deployWorkflow,
-		/wrangler@\$\{WRANGLER_VERSION\} deploy --config infra\/cloudflare\/wrangler\.toml/,
+		/wrangler@\$\{WRANGLER_VERSION\} deploy --config infra\/cloudflare\/wrangler\.toml/
 	);
 });
