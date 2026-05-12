@@ -8,11 +8,11 @@ import { validateReportsSite } from '../scripts/validate-reports-site.mjs';
 test('committed reporting site manifest and screenshots are coherent', () => {
 	const result = validateReportsSite();
 
-	assert.equal(result.pages, 22);
-	assert.equal(result.states, 39);
-	assert.equal(result.captures, 78);
+	assert.equal(result.pages, 23);
+	assert.equal(result.states, 40);
+	assert.equal(result.captures, 80);
 	assert.deepEqual(result.profiles.sort(), ['desktop', 'mobile']);
-	assert.equal(result.screenshots, 78);
+	assert.equal(result.screenshots, 80);
 });
 
 test('failed capture reports match visual walkthrough failure semantics', () => {
