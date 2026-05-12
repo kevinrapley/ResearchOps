@@ -198,6 +198,32 @@ async function ensureIdentity(db, user, email) {
 	`).bind(id('idn'), user.id, PROVIDER, email, email).run();
 }
 
+async function lockChallenge(db, challengeId) {
+	await db.prepare("UPDATE auth_login_challenges SET attempts_remaining = 0, challenge_status = 'locked' WHERE id = ?").bind(challengeId).run();
+}
+
+async function recordFailedAttempt(db, request, challenge) {
+	const remaining = Math.max(Number(challenge.attempts_remaining || 0) - 1, 0);
+	if (remaining === 0) {
+		await lockChallenge(db, challenge.id);
+		await recordAuthEvent(db, request, 'auth.email_code.locked', { email: challenge.email, challengeId: challenge.id });
+		return;
+	}
+
+	await db.prepare('UPDATE auth_login_challenges SET attempts_remaining = ? WHERE id = ?').bind(remaining, challenge.id).run();
+	await recordAuthEvent(db, request, 'auth.email_code.failed', { email: challenge.email, challengeId: challenge.id, attemptsRemaining: remaining });
+}
+
+function assertChallengeCanBeAttempted(challenge) {
+	if (!challenge || challenge.challenge_status !== 'pending' || Date.parse(challenge.expires_at) <= Date.now()) {
+		throw new AuthFlowError(400, 'code_expired', 'The code is no longer valid.');
+	}
+
+	if (Number(challenge.attempts_remaining || 0) <= 0) {
+		throw new AuthFlowError(429, 'code_attempts_exceeded', 'Too many incorrect codes. Request a new sign-in code.');
+	}
+}
+
 async function verify(request, env) {
 	const db = dbFor(env);
 	const body = await readBody(request);
@@ -207,13 +233,10 @@ async function verify(request, env) {
 		SELECT id, email, code_hash, challenge_status, attempts_remaining, expires_at
 		FROM auth_login_challenges WHERE id = ? LIMIT 1
 	`).bind(challengeId).first();
-	if (!challenge || challenge.challenge_status !== 'pending' || Date.parse(challenge.expires_at) <= Date.now()) {
-		throw new AuthFlowError(400, 'code_expired', 'The code is no longer valid.');
-	}
+	assertChallengeCanBeAttempted(challenge);
 	const codeHash = await hash(env, 'code', challenge.id, challenge.email, code);
 	if (codeHash !== challenge.code_hash) {
-		await db.prepare('UPDATE auth_login_challenges SET attempts_remaining = attempts_remaining - 1 WHERE id = ?').bind(challenge.id).run();
-		await recordAuthEvent(db, request, 'auth.email_code.failed', { email: challenge.email, challengeId });
+		await recordFailedAttempt(db, request, challenge);
 		throw new AuthFlowError(400, 'code_invalid', 'The code is not valid.');
 	}
 	const user = await userForEmail(db, challenge.email);
@@ -251,6 +274,7 @@ async function roles(db, userId, teamId) {
 		SELECT r.role_key, r.label, r.description, r.is_sensitive, ra.scope_type, ra.scope_id, ra.expires_at
 		FROM auth_role_assignments ra INNER JOIN auth_roles r ON r.id = ra.role_id
 		WHERE ra.user_id = ? AND ra.scope_type = 'team' AND ra.scope_id = ? AND ra.assignment_status = 'active'
+		AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 		ORDER BY r.label ASC
 	`).bind(userId, teamId).all();
 	return result.results || [];
@@ -262,6 +286,7 @@ async function permissions(db, userId, teamId) {
 		SELECT DISTINCT p.code, p.label, p.description, p.is_sensitive, p.is_reserved
 		FROM auth_role_assignments ra INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id INNER JOIN auth_permissions p ON p.code = rp.permission_code
 		WHERE ra.user_id = ? AND ra.scope_type = 'team' AND ra.scope_id = ? AND ra.assignment_status = 'active'
+		AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 		ORDER BY p.code ASC
 	`).bind(userId, teamId).all();
 	return result.results || [];
