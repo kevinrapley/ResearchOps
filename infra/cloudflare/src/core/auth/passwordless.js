@@ -102,7 +102,20 @@ function webhookHeaders(env) {
 	};
 }
 
+async function responseErrorText(response) {
+	const text = await response.text();
+	if (!text) return `${response.status} ${response.statusText}`.trim();
+	try {
+		const body = JSON.parse(text);
+		return body.message || body.error || text;
+	} catch {
+		return text;
+	}
+}
+
 async function sendCode(env, email, code) {
+	const deliveryErrors = [];
+
 	if (env.RESEARCHOPS_EMAIL_WEBHOOK_URL) {
 		const response = await fetch(env.RESEARCHOPS_EMAIL_WEBHOOK_URL, {
 			method: 'POST',
@@ -114,7 +127,9 @@ async function sendCode(env, email, code) {
 			}),
 		});
 		if (response.ok) return 'webhook';
+		deliveryErrors.push(`Email webhook returned ${response.status}: ${await responseErrorText(response)}`);
 	}
+
 	if (env.RESEND_API_KEY && env.RESEARCHOPS_EMAIL_FROM) {
 		const response = await fetch('https://api.resend.com/emails', {
 			method: 'POST',
@@ -127,7 +142,13 @@ async function sendCode(env, email, code) {
 			}),
 		});
 		if (response.ok) return 'resend';
+		deliveryErrors.push(`Resend returned ${response.status}: ${await responseErrorText(response)}`);
 	}
+
+	if (deliveryErrors.length) {
+		throw new AuthFlowError(502, 'email_delivery_failed', `The sign-in email provider could not send the code. ${deliveryErrors.join(' ')}`);
+	}
+
 	throw new AuthFlowError(503, 'email_delivery_missing', 'Sign-in email delivery is not configured yet.');
 }
 
@@ -136,6 +157,14 @@ async function authEvent(db, request, type, metadata = {}) {
 		INSERT INTO auth_events (id, event_type, actor_user_id, provider, route_path, metadata_json)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`).bind(id('evt'), type, metadata.userId || null, PROVIDER, new URL(request.url).pathname, JSON.stringify(metadata)).run();
+}
+
+async function recordAuthEvent(db, request, type, metadata = {}) {
+	try {
+		await authEvent(db, request, type, metadata);
+	} catch {
+		// Auth audit write failure must not block a sign-in code after successful email delivery.
+	}
 }
 
 async function start(request, env) {
@@ -150,7 +179,7 @@ async function start(request, env) {
 	`).bind(challengeId, email, await hash(env, 'code', challengeId, email, code), after(CODE_TTL_SECONDS)).run();
 	const deliveryProvider = await sendCode(env, email, code);
 	await db.prepare("UPDATE auth_login_challenges SET delivery_status = 'sent' WHERE id = ?").bind(challengeId).run();
-	await authEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
+	await recordAuthEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
 	return json({ ok: true, challengeId, expiresInSeconds: CODE_TTL_SECONDS, deliveryProvider });
 }
 
@@ -183,7 +212,7 @@ async function verify(request, env) {
 	const codeHash = await hash(env, 'code', challenge.id, challenge.email, code);
 	if (codeHash !== challenge.code_hash) {
 		await db.prepare('UPDATE auth_login_challenges SET attempts_remaining = attempts_remaining - 1 WHERE id = ?').bind(challenge.id).run();
-		await authEvent(db, request, 'auth.email_code.failed', { email: challenge.email, challengeId });
+		await recordAuthEvent(db, request, 'auth.email_code.failed', { email: challenge.email, challengeId });
 		throw new AuthFlowError(400, 'code_invalid', 'The code is not valid.');
 	}
 	const user = await userForEmail(db, challenge.email);
@@ -194,7 +223,7 @@ async function verify(request, env) {
 		INSERT INTO auth_sessions (id, user_id, session_token_hash, expires_at, last_seen_at)
 		VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 	`).bind(id('ses'), user.id, await hash(env, 'session', token), after(SESSION_TTL_SECONDS)).run();
-	await authEvent(db, request, 'auth.sign_in.succeeded', { userId: user.id, email: challenge.email, challengeId });
+	await recordAuthEvent(db, request, 'auth.sign_in.succeeded', { userId: user.id, email: challenge.email, challengeId });
 	return json({ ok: true, authenticated: true }, 200, { 'set-cookie': sessionCookie(request, token) });
 }
 
