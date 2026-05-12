@@ -52,6 +52,32 @@ const checkAnswersActions = [
 	{ type: 'waitForSelector', selector: '#step4', state: 'visible' },
 ];
 
+const accountSignInDefaultState = {
+	id: 'default',
+	title: 'Passwordless sign-in code request',
+	description: 'Sign-in page captured before a one-time code is requested.',
+	path: operationalPaths.accountSignIn,
+	mockRoutes: [
+		{
+			url: /\/api\/me(?:\?.*)?$/,
+			method: 'GET',
+			status: 401,
+			body: {
+				ok: false,
+				authenticated: false,
+				error: 'not_authenticated',
+				message: 'Sign in required.',
+			},
+		},
+	],
+	actions: [
+		{
+			type: 'waitForText',
+			text: 'Use your work email address to continue',
+		},
+	],
+};
+
 function page({ id, title, group, path, description, designRisk, defaultState, states }) {
 	return {
 		id,
@@ -123,17 +149,14 @@ export const visualWalkthroughConfig = {
 	],
 	pages: [
 		registeredPage('home', 'Home', 'Core', '/', 'ResearchOps landing page.', operationalDesignRisks.home),
-		operationalPage({
+		page({
 			id: 'account-sign-in',
 			title: 'Sign in to ResearchOps',
 			group: 'Account',
 			path: '/pages/account/sign-in/index.html',
 			description: 'First Team Admin sign-in and one-time code request page.',
 			designRisk: operationalDesignRisks.accountSignIn,
-			stateTitle: 'Passwordless sign-in code request',
-			stateDescription: 'Sign-in page captured before a one-time code is requested.',
-			statePath: operationalPaths.accountSignIn,
-			waitForText: 'Use your work email address to continue',
+			defaultState: accountSignInDefaultState,
 		}),
 		operationalPage({
 			id: 'account-dashboard',
