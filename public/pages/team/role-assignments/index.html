@@ -107,7 +107,7 @@
 											<label class="govuk-label govuk-radios__label" for="role-key-approver">Approver</label>
 											<div class="govuk-hint govuk-radios__hint">Can review and approve governed research records.</div>
 										</div>
-										<div class="govuk-radios__item">
+					答				<div class="govuk-radios__item">
 											<input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" />
 											<label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead</label>
 											<div class="govuk-hint govuk-radios__hint">Can view, record, resolve and audit safeguarding concerns.</div>
@@ -196,6 +196,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-role-assignment-page.js"></script>
+	<script type="module" src="/js/auth-role-assignment-page.js?v=passwordless-direct-preview-worker"></script>
 </body>
 </html>
