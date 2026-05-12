@@ -22,28 +22,33 @@ function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
 	assert.match(migrationSource, /requested_role_label TEXT NOT NULL/);
 	assert.match(migrationSource, /request_status TEXT NOT NULL DEFAULT 'pending_review'/);
 	assert.match(migrationSource, /idx_auth_registration_requests_email_pending/);
-	assert.match(migrationSource, /'POST', '\/api\/auth\/registration-requests', '\[\]', 0, 'implemented'/);
-	assert.match(migrationSource, /'GET', '\/api\/auth\/registration-requests', '\["role\.assign"\]', 1, 'implemented'/);
+	assert.ok(migrationSource.includes("'POST', '/api/auth/registration-requests', '[]', 0, 'implemented'"));
+	assert.ok(migrationSource.includes("'GET', '/api/auth/registration-requests', '[\"role.assign\"]', 1, 'implemented'"));
 	assert.doesNotMatch(migrationSource, /INSERT INTO auth_role_assignments/);
 }
 
-function assertRouteCapturesRequestedRoleOnly() {
+function assertRouteCapturesRequestedPurposeOnly() {
 	assert.match(routeSource, /requestedRoleKey/);
 	assert.match(routeSource, /requested_role_key/);
 	assert.match(routeSource, /requested_role_label/);
 	assert.match(routeSource, /pending_review/);
 	assert.match(routeSource, /auth\.registration_request\.created/);
+	assert.match(routeSource, /result\.created \? 201 : 200/);
 	assert.doesNotMatch(routeSource, /INSERT INTO auth_role_assignments/);
 	assert.doesNotMatch(routeSource, /UPDATE auth_role_assignments/);
 	assert.doesNotMatch(routeSource, /assignment_status = 'active'/);
 }
 
 function assertRegistrationPageUsesReviewLanguage() {
-	assert.match(registrationPageSource, /Request a ResearchOps account/);
-	assert.match(registrationPageSource, /A Team Admin will review your request before any team access or role is added/);
-	assert.match(registrationPageSource, /Selecting a role here does not give you that role/);
-	assert.match(registrationPageSource, /A Team Admin will decide which role, if any, to assign/);
-	assert.match(registrationPageSource, /Send request/);
+	assert.ok(registrationPageSource.includes('Request a ResearchOps account'));
+	assert.ok(registrationPageSource.includes('A team admin will review your request before any team access or role is added'));
+	assert.ok(registrationPageSource.includes('Your answer about what you need to do does not give you access'));
+	assert.ok(registrationPageSource.includes('What do you need to use ResearchOps for?'));
+	assert.ok(registrationPageSource.includes('A team admin will review your request and decide what access you need'));
+	assert.ok(registrationPageSource.includes('Check your answers before sending your request'));
+	assert.ok(registrationPageSource.includes('Continue'));
+	assert.ok(registrationPageSource.includes('Send request'));
+	assert.doesNotMatch(registrationPageSource, /govuk-notification-banner/);
 }
 
 function assertRegistrationErrorsAreUserFacing() {
@@ -52,16 +57,16 @@ function assertRegistrationErrorsAreUserFacing() {
 		'Enter your email address.',
 		'Enter an email address in the correct format, like name@example.com.',
 		'Enter the team or service you need access for.',
-		'Select the role that best describes what you will do.',
+		'Select what you need to use ResearchOps for.',
+		'Enter what you need to use ResearchOps for.',
 		'Enter why you need access.',
 		'Tell us a little more about why you need access.',
 	]) {
-		assert.match(registrationPageScript, new RegExp(message.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+		assert.ok(registrationPageScript.includes(message));
 	}
 
 	for (const exposedTerm of [
 		'Request body must be valid JSON',
-		'roleKey',
 		'targetUserId',
 		'auth_role_assignments',
 	]) {
@@ -69,12 +74,21 @@ function assertRegistrationErrorsAreUserFacing() {
 	}
 }
 
+function assertCheckAnswersBehaviourExists() {
+	assert.match(registrationPageScript, /function renderCheckAnswers/);
+	assert.match(registrationPageScript, /function showCheckAnswers/);
+	assert.match(registrationPageScript, /function sendRegistrationRequest/);
+	assert.match(registrationPageScript, /Sending this request will not give you access/);
+	assert.match(registrationPageScript, /A team admin will review it and decide what access you need/);
+}
+
 function assertTeamAdminCanReviewRequestsButMustAssignSeparately() {
-	assert.match(reviewPageSource, /Review account requests/);
-	assert.match(reviewPageSource, /A requested role is only information for review/);
+	assert.ok(reviewPageSource.includes('Review account requests'));
+	assert.ok(reviewPageSource.includes('The information they give about what they need to do is for review only'));
+	assert.ok(reviewPageScript.includes('What they need to use ResearchOps for'));
 	assert.match(reviewPageScript, /Assign a role to a team member/);
 	assert.match(reviewPageScript, /\/pages\/team\/role-assignments\//);
-	assert.doesNotMatch(reviewPageScript, /POST/);
+	assert.doesNotMatch(reviewPageScript, /method:\s*['"]POST['"]/);
 	assert.doesNotMatch(reviewPageScript, /auth\/role-assignments/);
 }
 
@@ -86,8 +100,9 @@ function assertSignInLinksToRegistrationRequest() {
 
 assertWorkerRoutesRegistrationRequests();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
-assertRouteCapturesRequestedRoleOnly();
+assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();
 assertRegistrationErrorsAreUserFacing();
+assertCheckAnswersBehaviourExists();
 assertTeamAdminCanReviewRequestsButMustAssignSeparately();
 assertSignInLinksToRegistrationRequest();
