@@ -83,7 +83,8 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           wranglerVersion: ${{ env.WRANGLER_VERSION }}
-          command: deploy --config infra/cloudflare/wrangler.toml
+          workingDirectory: infra/cloudflare
+          command: deploy --config wrangler.toml
           secrets: |
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
