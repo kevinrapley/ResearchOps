@@ -5,12 +5,6 @@
  */
 
 function defaultApiOrigin() {
-	if (location.hostname === "fix-team-admin-sign-in-journ.researchops.pages.dev") {
-		return "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev";
-	}
-	if (location.hostname.endsWith("pages.dev")) {
-		return "https://rops-api.digikev-kevin-rapley.workers.dev";
-	}
 	return location.origin;
 }
 
