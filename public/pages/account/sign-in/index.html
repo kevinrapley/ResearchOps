@@ -35,7 +35,7 @@
 					<p class="govuk-body-l">Use your work email address to continue.</p>
 					<p class="govuk-body">We will send you a 6 digit code. After you enter the code, ResearchOps will check whether your account is ready and what you can do.</p>
 
-					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="false" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-start-route="/api/auth/email/start" data-verify-route="/api/auth/email/verify" data-team-admin-destination="/pages/team/role-assignments/">
+					<section id="sign-in-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="false" aria-labelledby="sign-in-status-title" data-auth-route="/api/me" data-start-route="/api/auth/email/start" data-verify-route="/api/auth/email/verify" data-account-destination="/pages/account/">
 						<div class="govuk-notification-banner__header">
 							<h2 class="govuk-notification-banner__title" id="sign-in-status-title">Sign in</h2>
 						</div>
@@ -66,10 +66,6 @@
 						</div>
 					</form>
 
-					<div class="govuk-button-group" id="signed-in-actions" hidden>
-						<a class="govuk-button" id="team-admin-link" href="/pages/team/role-assignments/" role="button" draggable="false">Manage team roles</a>
-					</div>
-
 					<section aria-labelledby="cannot-sign-in-title">
 						<h2 class="govuk-heading-m" id="cannot-sign-in-title">If you cannot sign in</h2>
 						<p class="govuk-body">Check that you are using the same email address that was used when your ResearchOps account was set up.</p>
@@ -81,6 +77,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-sign-in-page.js?v=passwordless-direct-preview-worker"></script>
+	<script type="module" src="/js/auth-sign-in-page.js?v=account-dashboard-redirect-20260512"></script>
 </body>
 </html>
