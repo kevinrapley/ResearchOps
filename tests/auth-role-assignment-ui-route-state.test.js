@@ -126,8 +126,9 @@ function assertDurationModelUsesGovernedPresets() {
 }
 
 function assertClientUsesAuthAndAssignmentEndpoints() {
-	assert.match(scriptSource, /API_BASE: document\.documentElement\?\.dataset\?\.apiOrigin \|\| window\.API_ORIGIN \|\| ""/);
-	assert.doesNotMatch(scriptSource, /https:\/\/rops-api\.digikev-kevin-rapley\.workers\.dev/);
+	assert.match(scriptSource, /function defaultApiOrigin\(\)/);
+	assert.match(scriptSource, /rops-api-passwordless-preview/);
+	assert.match(scriptSource, /API_BASE: document\.documentElement\?\.dataset\?\.apiOrigin \|\| window\.API_ORIGIN \|\| defaultApiOrigin\(\)/);
 	assert.match(scriptSource, /credentials: "include"/);
 	assert.match(scriptSource, /fetchJson\("\/api\/me"\)/);
 	assert.match(scriptSource, /fetchJson\("\/api\/auth\/role-assignments"/);
