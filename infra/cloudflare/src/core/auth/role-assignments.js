@@ -7,6 +7,8 @@ const JSON_HEADERS = {
 	"x-content-type-options": "nosniff",
 };
 
+const CREATE_TEAM_ACTION = "create";
+
 class RoleAssignmentError extends Error {
 	constructor(status, code, message) {
 		super(message);
@@ -60,6 +62,10 @@ function normaliseEmail(email) {
 
 function cleanText(value) {
 	return String(value || "").trim();
+}
+
+function cleanSingleLine(value) {
+	return cleanText(value).replace(/\s+/g, " ");
 }
 
 async function readJson(request) {
@@ -122,6 +128,25 @@ function requestedTeamIdFor(body, context) {
 	return teamId;
 }
 
+function requestedNewTeamNameFor(body) {
+	const name = cleanSingleLine(body.newTeamName);
+	if (name.length < 3) {
+		throw new RoleAssignmentError(400, "new_team_name_required", "Provide a team name of at least 3 characters.");
+	}
+	if (name.length > 80) {
+		throw new RoleAssignmentError(400, "new_team_name_too_long", "Team names must be 80 characters or fewer.");
+	}
+	return name;
+}
+
+function newTeamReasonFor(body) {
+	return cleanText(body.newTeamReason);
+}
+
+function isCreateTeamRequest(body) {
+	return cleanText(body.teamAction) === CREATE_TEAM_ACTION;
+}
+
 function expiresAtFor(body) {
 	const expiresAt = cleanText(body.expiresAt);
 	if (!expiresAt) return null;
@@ -138,14 +163,21 @@ function expiresAtFor(body) {
 	return new Date(parsed).toISOString();
 }
 
+function permissionCodes(context) {
+	return new Set((context.permissions || []).map((permission) => permission.code).filter(Boolean));
+}
+
+function assertCanCreateTeam(context) {
+	const permissions = permissionCodes(context);
+	if (!permissions.has("team.manage") || !permissions.has("role.assign")) {
+		throw new RoleAssignmentError(403, "team_creation_forbidden", "You do not have permission to create teams.");
+	}
+}
+
 function assertTeamAvailableToAssigner(context, teamId) {
 	const team = (context.teams || []).find((candidate) => candidate.id === teamId);
 	if (!team) {
-		throw new RoleAssignmentError(
-			403,
-			"team_not_available",
-			"You cannot assign roles in that team."
-		);
+		throw new RoleAssignmentError(403, "team_not_available", "You cannot assign roles in that team.");
 	}
 	return team;
 }
@@ -170,7 +202,119 @@ async function canAssignRolesInTeam(db, userId, teamId) {
 	return Boolean(row);
 }
 
-async function resolveAssignmentTeam(db, context, body) {
+async function readActiveTeamByName(db, teamName) {
+	return db
+		.prepare(`
+			SELECT id, name
+			FROM auth_teams
+			WHERE lower(name) = lower(?) AND team_status = 'active'
+			LIMIT 1
+		`)
+		.bind(teamName)
+		.first();
+}
+
+async function readTeamAdminRole(db) {
+	return db
+		.prepare(`
+			SELECT id, role_key, label
+			FROM auth_roles
+			WHERE role_key = 'team_admin'
+			LIMIT 1
+		`)
+		.first();
+}
+
+function prepareCreateTeamStatement(db, team) {
+	return db
+		.prepare(`
+			INSERT INTO auth_teams (id, name, team_status)
+			VALUES (?, ?, 'active')
+		`)
+		.bind(team.id, team.name);
+}
+
+function prepareAdminMembershipStatement(db, context, team) {
+	return db
+		.prepare(`
+			INSERT INTO auth_team_memberships (id, user_id, team_id, membership_status)
+			VALUES (?, ?, ?, 'active')
+			ON CONFLICT(user_id, team_id) DO UPDATE SET
+				membership_status = 'active',
+				removed_at = NULL
+		`)
+		.bind(stableMembershipId(context.user.id, team.id), context.user.id, team.id);
+}
+
+function prepareAdminRoleAssignmentStatement(db, context, team, teamAdminRole, requestedReason) {
+	return db
+		.prepare(`
+			INSERT INTO auth_role_assignments
+				(id, user_id, role_id, scope_type, scope_id, assignment_status, requested_reason, approved_by_user_id, approved_at, expires_at)
+			VALUES (?, ?, ?, 'team', ?, 'active', ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), NULL)
+			ON CONFLICT(user_id, role_id, scope_type, scope_id) DO UPDATE SET
+				assignment_status = 'active',
+				requested_reason = excluded.requested_reason,
+				approved_by_user_id = excluded.approved_by_user_id,
+				approved_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+				updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+		`)
+		.bind(
+			stableAssignmentId(context.user.id, teamAdminRole.id, team.id),
+			context.user.id,
+			teamAdminRole.id,
+			team.id,
+			requestedReason,
+			context.user.id
+		);
+}
+
+function prepareTeamCreationAuditStatement(db, request, context, team, reason) {
+	const url = new URL(request.url);
+	return db
+		.prepare(`
+			INSERT INTO auth_audit_events
+				(id, event_type, actor_user_id, team_id, target_type, target_id, permission_code, route_path, outcome, is_safeguarding, metadata_json)
+			VALUES (?, 'auth.team.created', ?, ?, 'auth_team', ?, 'team.manage', ?, 'succeeded', 0, json_object(
+				'team_name', ?,
+				'reason', ?
+			))
+		`)
+		.bind(makeId("audit"), context.user.id, team.id, team.id, url.pathname, team.name, reason || null);
+}
+
+async function buildNewAssignmentTeam(db, request, context, body) {
+	assertCanCreateTeam(context);
+	const teamName = requestedNewTeamNameFor(body);
+	const existingTeam = await readActiveTeamByName(db, teamName);
+	if (existingTeam) {
+		throw new RoleAssignmentError(409, "team_name_already_exists", "A team with this name already exists.");
+	}
+
+	const teamAdminRole = await readTeamAdminRole(db);
+	if (!teamAdminRole) {
+		throw new RoleAssignmentError(503, "team_admin_role_unavailable", "ResearchOps cannot create a team right now.");
+	}
+
+	const team = {
+		id: makeId("team"),
+		name: teamName,
+		created: true,
+	};
+	const reason = newTeamReasonFor(body);
+	const adminReason = reason || `Created team ${teamName}`;
+
+	team.preAssignmentStatements = [
+		prepareCreateTeamStatement(db, team),
+		prepareAdminMembershipStatement(db, context, team),
+		prepareAdminRoleAssignmentStatement(db, context, team, teamAdminRole, adminReason),
+		prepareTeamCreationAuditStatement(db, request, context, team, reason),
+	];
+
+	return team;
+}
+
+async function resolveExistingAssignmentTeam(db, context, body) {
 	const teamId = requestedTeamIdFor(body, context);
 	const team = assertTeamAvailableToAssigner(context, teamId);
 	const allowed = await canAssignRolesInTeam(db, context.user.id, team.id);
@@ -181,7 +325,14 @@ async function resolveAssignmentTeam(db, context, body) {
 			"You do not have permission to assign roles in that team."
 		);
 	}
-	return team;
+	return { ...team, created: false, preAssignmentStatements: [] };
+}
+
+async function resolveAssignmentTeam(db, request, context, body) {
+	if (isCreateTeamRequest(body)) {
+		return buildNewAssignmentTeam(db, request, context, body);
+	}
+	return resolveExistingAssignmentTeam(db, context, body);
 }
 
 function assertSensitiveRoleConfirmation(role, body) {
@@ -337,7 +488,8 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 				'requested_reason', ?,
 				'assignment_status', 'active',
 				'team_membership_activated', ?,
-				'account_activated', ?
+				'account_activated', ?,
+				'team_created', ?
 			))
 		`)
 		.bind(
@@ -351,7 +503,8 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 			targetUser.id,
 			requestedReason,
 			membershipActivated ? 1 : 0,
-			accountActivated ? 1 : 0
+			accountActivated ? 1 : 0,
+			team.created ? 1 : 0
 		);
 }
 
@@ -364,11 +517,11 @@ async function writeAssignmentWithAudit(db, request, context, targetUser, role, 
 		);
 	}
 
-	const existingAssignment = await readAssignment(db, targetUser.id, role.id, team.id);
+	const existingAssignment = team.created ? null : await readAssignment(db, targetUser.id, role.id, team.id);
 	const assignmentId = existingAssignment?.id || stableAssignmentId(targetUser.id, role.id, team.id);
 	const accountActivated = targetUser.account_status === "pending";
 	const membershipActivated = !membership || membership.membership_status !== "active";
-	const statements = [];
+	const statements = [...(team.preAssignmentStatements || [])];
 
 	if (accountActivated) statements.push(prepareActivateUserStatement(db, targetUser));
 	if (membershipActivated) statements.push(prepareMembershipStatement(db, targetUser, team));
@@ -399,7 +552,7 @@ async function writeAssignmentWithAudit(db, request, context, targetUser, role, 
 
 async function assignRole(request, env, context, body) {
 	const db = dbFor(env);
-	const team = await resolveAssignmentTeam(db, context, body);
+	const team = await resolveAssignmentTeam(db, request, context, body);
 	const { targetUserId, targetEmail } = targetSelectorFor(body);
 	const roleKey = requestedRoleKeyFor(body);
 	const requestedReason = requestedReasonFor(body);
@@ -421,7 +574,7 @@ async function assignRole(request, env, context, body) {
 		throw new RoleAssignmentError(409, "target_user_inactive", "The target user cannot receive roles.");
 	}
 
-	const membership = await readTeamMembership(db, targetUser.id, team.id);
+	const membership = team.created ? null : await readTeamMembership(db, targetUser.id, team.id);
 	const assignmentResult = await writeAssignmentWithAudit(
 		db,
 		request,
@@ -481,6 +634,7 @@ export async function handleRoleAssignmentsRoute(request, env) {
 				team: {
 					id: result.team.id,
 					name: result.team.name,
+					created: result.team.created === true,
 				},
 				targetUser: {
 					id: result.targetUser.id,
