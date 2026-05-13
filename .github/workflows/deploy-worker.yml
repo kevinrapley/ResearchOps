@@ -28,6 +28,7 @@ env:
   PASSWORDLESS_MIGRATION: "infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql"
   PASSWORDLESS_LOCKED_MIGRATION: "infra/cloudflare/migrations/0004_auth_login_challenges_locked_status.sql"
   REGISTRATION_REQUESTS_MIGRATION: "infra/cloudflare/migrations/0005_auth_registration_requests.sql"
+  PREVIEW_FIRST_TEAM_ADMIN_SEED: "infra/cloudflare/migrations/preview/0001_seed_first_team_admin.sql"
   # Keep this workflow path-sensitive so feature-branch Worker state can be refreshed when backend review fixes need redeploying.
 
 jobs:
@@ -311,6 +312,10 @@ jobs:
             --remote \
             --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${REGISTRATION_REQUESTS_MIGRATION}"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
+            --file "${PREVIEW_FIRST_TEAM_ADMIN_SEED}"
 
       - name: Deploy preview Worker with passwordless secrets
         uses: cloudflare/wrangler-action@v3
