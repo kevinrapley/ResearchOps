@@ -4,20 +4,22 @@
  * @summary Account registration request form behaviour.
  */
 
-function defaultApiOrigin() {
-	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
-		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
-	}
-	if (location.hostname.endsWith('pages.dev')) {
-		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
-	}
-	return location.origin;
+const FALLBACK_API_ORIGINS = Object.freeze([
+	'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev',
+	'https://rops-api.digikev-kevin-rapley.workers.dev',
+]);
+
+function configuredApiOrigin() {
+	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || '';
+	return String(value || '').replace(/\/$/, '');
 }
 
-const API_ORIGIN = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin();
+function defaultApiOrigin() {
+	return configuredApiOrigin();
+}
 
 const CONFIG = Object.freeze({
-	API_BASE: API_ORIGIN,
+	API_BASE: defaultApiOrigin(),
 	CACHE: 'no-store',
 	FETCH_TIMEOUT_MS: 12000,
 });
@@ -114,10 +116,21 @@ function escapeHtml(value) {
 		.replace(/'/g, '&#39;');
 }
 
-function apiUrl(path) {
+function shouldUseFallbackApiOrigin() {
+	return !CONFIG.API_BASE && location.hostname.endsWith('pages.dev');
+}
+
+function apiBaseCandidates() {
+	const candidates = [CONFIG.API_BASE];
+	if (shouldUseFallbackApiOrigin()) candidates.push(...FALLBACK_API_ORIGINS);
+	return [...new Set(candidates.map((value) => String(value || '').replace(/\/$/, '')))];
+}
+
+function apiUrl(path, base = CONFIG.API_BASE) {
 	const value = String(path || '');
 	if (/^https?:\/\//i.test(value)) return value;
-	return `${CONFIG.API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
+	if (!base) return value.startsWith('/') ? value : `/${value}`;
+	return `${base}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
 function resetStatusPresentation() {
@@ -276,11 +289,17 @@ function userFacingServiceError(error) {
 	return message || 'Registration request could not be completed.';
 }
 
-async function fetchJson(path, options = {}) {
+function shouldTryNextApiBase(response, data, attemptIndex, totalAttempts) {
+	if (attemptIndex >= totalAttempts - 1) return false;
+	if (data?.error === 'invalid_response') return true;
+	return [404, 405, 502, 503, 504].includes(response.status);
+}
+
+async function fetchJsonFromBase(path, base, options = {}) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort('timeout'), CONFIG.FETCH_TIMEOUT_MS);
 	try {
-		const response = await fetch(apiUrl(path), {
+		const response = await fetch(apiUrl(path, base), {
 			cache: CONFIG.CACHE,
 			credentials: 'include',
 			signal: controller.signal,
@@ -296,12 +315,28 @@ async function fetchJson(path, options = {}) {
 		try {
 			data = text ? JSON.parse(text) : {};
 		} catch {
-			data = { ok: false, error: 'invalid_response', message: text };
+			data = { ok: false, error: 'invalid_response', message: 'ResearchOps did not receive a valid response from the registration service.' };
 		}
-		return { data, ok: response.ok, status: response.status };
+		return { data, ok: response.ok && data?.error !== 'invalid_response', status: response.status };
 	} finally {
 		clearTimeout(timer);
 	}
+}
+
+async function fetchJson(path, options = {}) {
+	const bases = apiBaseCandidates();
+	let lastError;
+	for (let index = 0; index < bases.length; index += 1) {
+		try {
+			const response = await fetchJsonFromBase(path, bases[index], options);
+			if (shouldTryNextApiBase(response, response.data, index, bases.length)) continue;
+			return response;
+		} catch (error) {
+			lastError = error;
+			if (index >= bases.length - 1) throw error;
+		}
+	}
+	throw lastError || new Error('Registration request could not be completed.');
 }
 
 function buildPayload() {
@@ -320,7 +355,7 @@ function summaryRow(key, value, target) {
 <div class="govuk-summary-list__row">
 	<dt class="govuk-summary-list__key">${escapeHtml(key)}</dt>
 	<dd class="govuk-summary-list__value">${escapeHtml(value)}</dd>
-	<dd class="govuk-summary-list__actions"><a class="govuk-link" href="#${escapeHtml(target)}">Change<span class="govuk-visually-hidden"> ${escapeHtml(key.toLowerCase())}</span></a></dd>
+	<dd class="govuk-summary-list__actions"><a class="govuk-link" href="#${escapeHtml(target)}" data-change-target="${escapeHtml(target)}">Change<span class="govuk-visually-hidden"> ${escapeHtml(key.toLowerCase())}</span></a></dd>
 </div>
 `;
 }
@@ -339,11 +374,18 @@ function renderCheckAnswers(payload) {
 `;
 }
 
-function showForm() {
+function focusFormTarget(targetId) {
+	const target = targetId ? document.getElementById(targetId) : null;
+	const focusTarget = target || dom.form?.querySelector('input, textarea, button');
+	if (!focusTarget) return;
+	focusTarget.focus();
+}
+
+function showForm(targetId = '') {
 	clearStatus();
 	if (dom.form) dom.form.hidden = false;
 	if (dom.checkAnswers) dom.checkAnswers.hidden = true;
-	dom.form?.querySelector('input, textarea, button')?.focus();
+	focusFormTarget(targetId);
 }
 
 function showCheckAnswers() {
@@ -357,7 +399,7 @@ function showCheckAnswers() {
 	renderCheckAnswers(buildPayload());
 	if (dom.form) dom.form.hidden = true;
 	if (dom.checkAnswers) dom.checkAnswers.hidden = false;
-	document.getElementById('registration-check-answers-title')?.focus?.();
+	dom.checkAnswers?.scrollIntoView({ block: 'start' });
 }
 
 function showSuccess(message) {
@@ -380,7 +422,7 @@ function showSuccess(message) {
 <p class="govuk-body"><a class="govuk-link" href="/pages/account/sign-in/">Go to sign in</a></p>
 `;
 	}
-	dom.status?.focus?.();
+	dom.status?.scrollIntoView({ block: 'start' });
 }
 
 async function sendRegistrationRequest() {
@@ -413,11 +455,19 @@ function submitRegistrationRequest(event) {
 	showCheckAnswers();
 }
 
+function handleCheckAnswerChange(event) {
+	const link = event.target.closest?.('[data-change-target]');
+	if (!link) return;
+	event.preventDefault();
+	showForm(link.dataset.changeTarget || '');
+}
+
 function init() {
 	if (!dom.form) return;
 	dom.form.addEventListener('submit', submitRegistrationRequest);
 	dom.confirmButton?.addEventListener('click', sendRegistrationRequest);
-	dom.changeButton?.addEventListener('click', showForm);
+	dom.changeButton?.addEventListener('click', () => showForm());
+	dom.checkAnswersBody?.addEventListener('click', handleCheckAnswerChange);
 	dom.form.querySelectorAll('input[name="requestedRoleKey"]').forEach((input) => {
 		input.addEventListener('change', setOtherRoleVisibility);
 	});
@@ -431,9 +481,13 @@ window.__ropsAuthRegistrationPage = Object.freeze({
 	CONFIG,
 	ERROR_MESSAGES,
 	ROLE_LABELS,
+	apiBaseCandidates,
 	apiUrl,
 	buildPayload,
 	collectClientErrors,
+	configuredApiOrigin,
 	defaultApiOrigin,
+	focusFormTarget,
 	selectedRoleKey,
+	shouldUseFallbackApiOrigin,
 });
