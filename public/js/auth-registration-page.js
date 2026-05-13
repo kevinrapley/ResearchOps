@@ -120,6 +120,14 @@ function apiUrl(path) {
 	return `${CONFIG.API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
+function resetStatusPresentation() {
+	if (!dom.status || !dom.statusTitle) return;
+	dom.status.classList.remove('govuk-panel', 'govuk-panel--confirmation');
+	dom.status.classList.add('account-registration-status');
+	dom.statusTitle.classList.remove('govuk-panel__title');
+	dom.statusTitle.classList.add('govuk-heading-m');
+}
+
 function setBusy(isBusy) {
 	if (dom.status) dom.status.setAttribute('aria-busy', isBusy ? 'true' : 'false');
 	const submitButton = dom.form?.querySelector('button[type="submit"]');
@@ -128,6 +136,7 @@ function setBusy(isBusy) {
 }
 
 function setStatus(title, bodyHtml) {
+	resetStatusPresentation();
 	if (dom.status) dom.status.hidden = false;
 	if (dom.statusTitle) dom.statusTitle.textContent = title;
 	if (dom.statusBody) dom.statusBody.innerHTML = bodyHtml;
@@ -135,6 +144,7 @@ function setStatus(title, bodyHtml) {
 
 function clearStatus() {
 	if (!dom.status) return;
+	resetStatusPresentation();
 	dom.status.hidden = true;
 	if (dom.statusTitle) dom.statusTitle.textContent = 'Request status';
 	if (dom.statusBody) dom.statusBody.innerHTML = '';
@@ -182,6 +192,7 @@ function clearErrors() {
 		const errorElement = document.getElementById(ERROR_ELEMENT_MAP[inputId]);
 		const input = document.getElementById(inputId);
 		group?.classList.remove('govuk-form-group--error');
+		input?.classList.remove('govuk-input--error');
 		if (errorElement) {
 			errorElement.hidden = true;
 			errorElement.textContent = '';
@@ -195,6 +206,7 @@ function showFieldError(fieldId, message) {
 	const errorElement = document.getElementById(ERROR_ELEMENT_MAP[fieldId]);
 	const input = document.getElementById(fieldId);
 	group?.classList.add('govuk-form-group--error');
+	input?.classList.add('govuk-input--error');
 	if (errorElement) {
 		errorElement.hidden = false;
 		errorElement.innerHTML = `<span class="govuk-visually-hidden">Error:</span> ${escapeHtml(message)}`;
@@ -352,14 +364,22 @@ function showSuccess(message) {
 	clearErrors();
 	if (dom.form) dom.form.hidden = true;
 	if (dom.checkAnswers) dom.checkAnswers.hidden = true;
-	setStatus(
-		'Request sent',
-		`
+	if (dom.status) {
+		dom.status.hidden = false;
+		dom.status.classList.add('govuk-panel', 'govuk-panel--confirmation');
+	}
+	if (dom.statusTitle) {
+		dom.statusTitle.classList.remove('govuk-heading-m');
+		dom.statusTitle.classList.add('govuk-panel__title');
+		dom.statusTitle.textContent = 'Request sent';
+	}
+	if (dom.statusBody) {
+		dom.statusBody.innerHTML = `
 <p class="govuk-body">${escapeHtml(message || 'Your request has been sent to a team admin for review.')}</p>
 <p class="govuk-body">You will not be given any ResearchOps access until a team admin has reviewed and approved your request.</p>
 <p class="govuk-body"><a class="govuk-link" href="/pages/account/sign-in/">Go to sign in</a></p>
-`,
-	);
+`;
+	}
 	dom.status?.focus?.();
 }
 
