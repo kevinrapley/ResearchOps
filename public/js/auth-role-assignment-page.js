@@ -71,6 +71,22 @@ const DURATION_LABELS = Object.freeze({
 	custom: "Until a specific date",
 });
 
+const ROLE_ASSIGNMENT_SERVER_MESSAGES = Object.freeze({
+	active_team_required: "Choose an active team before assigning a role.",
+	invalid_expiry: "Enter a real expiry date.",
+	role_assignment_reason_required: "Enter why you are assigning this role.",
+	role_assignment_store_unavailable: "ResearchOps cannot assign roles right now. Try again later.",
+	role_assignment_transaction_unavailable: "ResearchOps cannot safely assign this role right now. Try again later.",
+	role_not_found: "Select a role that exists in ResearchOps.",
+	safeguarding_role_confirmation_required: "Confirm Safeguarding Lead access is required.",
+	sensitive_role_confirmation_required: "Confirm this sensitive role assignment is intentional.",
+	target_identifier_conflict: "Check the email address and user ID belong to the same person.",
+	target_not_team_member: "ResearchOps could not add this person to the team before assigning the role. Try again later.",
+	target_required: "Enter a team member's email address or user ID.",
+	target_user_inactive: "This person cannot be assigned a role. Contact a team admin.",
+	target_user_not_found: "ResearchOps could not find an account for this person. Check their email address or ask them to request an account.",
+});
+
 const state = {
 	context: null,
 	reviewValues: null,
@@ -510,14 +526,23 @@ ${membership.createdOrReactivated ? '<p class="govuk-body">They were also added 
 	dom.result.focus?.();
 }
 
+function roleAssignmentServerMessage(data, status) {
+	const mappedMessage = ROLE_ASSIGNMENT_SERVER_MESSAGES[data?.error];
+	if (mappedMessage) return mappedMessage;
+	if (status === 401 || status === 403) return "You do not have permission to assign this role.";
+	if (status === 404) return "ResearchOps could not find the account or role. Check the details and try again.";
+	if (status === 409) return "This role could not be assigned because the account cannot receive roles right now.";
+	if (status >= 500) return "ResearchOps cannot assign roles right now. Try again later.";
+	return "ResearchOps could not assign this role. Check the details and try again.";
+}
+
 function showServerError(data, status) {
 	if (!dom.result) return;
 	dom.result.hidden = false;
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--error";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role was not assigned</h2>
-<p class="govuk-body">${escapeHtml(data?.message || `Request failed with status ${status}`)}</p>
-${data?.error ? `<p class="govuk-body">Error code: <code>${escapeHtml(data.error)}</code></p>` : ""}
+<p class="govuk-body">${escapeHtml(roleAssignmentServerMessage(data, status))}</p>
 `;
 }
 
@@ -558,8 +583,8 @@ async function submitAssignment() {
 		renderRoleSummary();
 		renderDurationControls();
 		hideReview();
-	} catch (error) {
-		showServerError({ message: error?.message || error }, 0);
+	} catch {
+		showServerError({}, 0);
 	} finally {
 		setDisabled(false);
 	}
@@ -609,11 +634,13 @@ window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
 	ROLE_DETAILS,
 	DURATION_LABELS,
+	ROLE_ASSIGNMENT_SERVER_MESSAGES,
 	apiBaseCandidates,
 	applyQueryPrefill,
 	configuredApiOrigin,
 	defaultApiOrigin,
 	endpoint,
+	roleAssignmentServerMessage,
 	validate,
 	requestBody,
 	expiresAtFor,
