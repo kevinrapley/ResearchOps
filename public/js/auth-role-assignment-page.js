@@ -4,18 +4,22 @@
  * @summary Team Admin UI for assigning D1-backed ResearchOps roles.
  */
 
+const FALLBACK_API_ORIGINS = Object.freeze([
+	"https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev",
+	"https://rops-api.digikev-kevin-rapley.workers.dev",
+]);
+
+function configuredApiOrigin() {
+	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(value || "").replace(/\/$/, "");
+}
+
 function defaultApiOrigin() {
-	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
-		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
-	}
-	if (location.hostname.endsWith('pages.dev')) {
-		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
-	}
-	return location.origin;
+	return configuredApiOrigin();
 }
 
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin(),
+	API_BASE: defaultApiOrigin(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 });
@@ -100,6 +104,22 @@ function escapeHtml(value) {
 		.replace(/'/g, "&#39;");
 }
 
+function shouldUseFallbackApiOrigin() {
+	return !CONFIG.API_BASE && location.hostname.endsWith("pages.dev");
+}
+
+function apiBaseCandidates() {
+	const candidates = [CONFIG.API_BASE];
+	if (shouldUseFallbackApiOrigin()) candidates.push(...FALLBACK_API_ORIGINS);
+	return [...new Set(candidates.map((value) => String(value || "").replace(/\/$/, "")))];
+}
+
+function endpoint(path, base = CONFIG.API_BASE) {
+	if (/^https?:\/\//i.test(path)) return path;
+	if (!base) return path.startsWith("/") ? path : `/${path}`;
+	return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 function setBusy(element, isBusy) {
 	if (!element) return;
 	element.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -110,16 +130,18 @@ function setDisabled(isDisabled) {
 	if (dom.confirm) dom.confirm.disabled = isDisabled;
 }
 
-function endpoint(path) {
-	return `${CONFIG.API_BASE}${path}`;
+function shouldTryNextApiBase(response, data, attemptIndex, totalAttempts) {
+	if (attemptIndex >= totalAttempts - 1) return false;
+	if (data?.error === "invalid_json_response") return true;
+	return [404, 405, 502, 503, 504].includes(response.status);
 }
 
-async function fetchJson(path, options = {}) {
+async function fetchJsonFromBase(path, base, options = {}) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
 
 	try {
-		const response = await fetch(endpoint(path), {
+		const response = await fetch(endpoint(path, base), {
 			cache: CONFIG.CACHE,
 			credentials: "include",
 			signal: controller.signal,
@@ -136,10 +158,26 @@ async function fetchJson(path, options = {}) {
 		} catch {
 			data = { ok: false, error: "invalid_json_response", message: text };
 		}
-		return { ok: response.ok, status: response.status, data };
+		return { ok: response.ok && data?.error !== "invalid_json_response", status: response.status, data };
 	} finally {
 		clearTimeout(timer);
 	}
+}
+
+async function fetchJson(path, options = {}) {
+	const bases = apiBaseCandidates();
+	let lastError;
+	for (let index = 0; index < bases.length; index += 1) {
+		try {
+			const response = await fetchJsonFromBase(path, bases[index], options);
+			if (shouldTryNextApiBase(response, response.data, index, bases.length)) continue;
+			return response;
+		} catch (error) {
+			lastError = error;
+			if (index >= bases.length - 1) throw error;
+		}
+	}
+	throw lastError || new Error("Request could not be completed.");
 }
 
 function permissionCodes(permissions) {
@@ -293,6 +331,26 @@ function formValues() {
 	};
 }
 
+function applyQueryPrefill() {
+	if (!dom.form) return;
+	const params = new URLSearchParams(location.search);
+	const prefill = {
+		targetEmail: params.get("targetEmail") || "",
+		targetUserId: params.get("targetUserId") || "",
+		requestedReason: params.get("requestedReason") || "",
+		roleKey: params.get("roleKey") || "",
+	};
+
+	if (prefill.targetEmail) document.getElementById("target-email").value = prefill.targetEmail;
+	if (prefill.targetUserId) document.getElementById("target-user-id").value = prefill.targetUserId;
+	if (prefill.requestedReason) document.getElementById("requested-reason").value = prefill.requestedReason;
+	if (prefill.roleKey) {
+		document.querySelectorAll('input[name="roleKey"]').forEach((input) => {
+			if (input.value === prefill.roleKey) input.checked = true;
+		});
+	}
+}
+
 function customDateParts(values) {
 	const day = Number(values.expiryDay);
 	const month = Number(values.expiryMonth);
@@ -438,12 +496,14 @@ function showResult(data) {
 	const role = data.role || {};
 	const targetUser = data.targetUser || {};
 	const assignment = data.assignment || {};
+	const membership = data.teamMembership || {};
 
 	dom.result.hidden = false;
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--success";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role assigned</h2>
 <p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)}.</p>
+${membership.createdOrReactivated ? '<p class="govuk-body">They were also added as an active member of this team.</p>' : ""}
 <p class="govuk-body">Assignment ID: <code>${escapeHtml(assignment.id)}</code></p>
 <p class="govuk-body">Scope: <code>${escapeHtml(assignment.scopeId)}</code></p>
 `;
@@ -523,6 +583,7 @@ async function initAuthContext() {
 
 function init() {
 	if (!dom.form) return;
+	applyQueryPrefill();
 	document.querySelectorAll('input[name="roleKey"]').forEach((input) => input.addEventListener("change", renderRoleSummary));
 	document
 		.querySelectorAll('input[name="durationPreset"]')
@@ -548,7 +609,11 @@ window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
 	ROLE_DETAILS,
 	DURATION_LABELS,
+	apiBaseCandidates,
+	applyQueryPrefill,
+	configuredApiOrigin,
 	defaultApiOrigin,
+	endpoint,
 	validate,
 	requestBody,
 	expiresAtFor,
