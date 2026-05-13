@@ -99,6 +99,27 @@ async function listTeamsManagedByUser(db, userId) {
 	return result.results || [];
 }
 
+async function listMembershipTeams(db, userId) {
+	if (!db || !userId) return [];
+	const result = await db
+		.prepare(`
+			SELECT
+				t.id,
+				t.name,
+				m.membership_status AS membershipStatus,
+				m.created_at AS membershipCreatedAt
+			FROM auth_team_memberships m
+			INNER JOIN auth_teams t ON t.id = m.team_id
+			WHERE m.user_id = ?
+				AND m.membership_status = 'active'
+				AND t.team_status = 'active'
+			ORDER BY t.name ASC
+		`)
+		.bind(userId)
+		.all();
+	return result.results || [];
+}
+
 async function listRolesForTeam(db, userId, teamId) {
 	if (!db || !userId || !teamId) return [];
 	const result = await db
@@ -147,24 +168,33 @@ async function listPermissionsForTeam(db, userId, teamId) {
 	return (result.results || []).map(mapPermission);
 }
 
-async function buildMemberTeams(db, userId, teams) {
-	if (!db || !userId) return teams || [];
-	const uniqueTeams = [];
-	const seen = new Set();
-
-	for (const team of teams || []) {
-		if (!team?.id || seen.has(team.id)) continue;
-		seen.add(team.id);
-		uniqueTeams.push(team);
-	}
-
+async function buildMemberTeams(db, userId) {
+	if (!db || !userId) return [];
+	const teams = await listMembershipTeams(db, userId);
 	const enrichedTeams = [];
-	for (const team of uniqueTeams) {
+
+	for (const team of teams) {
 		const roles = await listRolesForTeam(db, userId, team.id);
 		const permissions = await listPermissionsForTeam(db, userId, team.id);
 		enrichedTeams.push({ ...team, roles, permissions });
 	}
+
 	return enrichedTeams;
+}
+
+function selectActiveTeamFromMemberships(baseActiveTeam, memberTeams) {
+	if (baseActiveTeam?.id && memberTeams.some((team) => team.id === baseActiveTeam.id)) return baseActiveTeam;
+	return memberTeams[0] ? { id: memberTeams[0].id, name: memberTeams[0].name } : null;
+}
+
+function rolesForActiveTeam(baseRoles, activeTeam, memberTeams) {
+	const team = activeTeam?.id ? memberTeams.find((candidate) => candidate.id === activeTeam.id) : null;
+	return team?.roles || baseRoles || [];
+}
+
+function permissionsForActiveTeam(basePermissions, activeTeam, memberTeams) {
+	const team = activeTeam?.id ? memberTeams.find((candidate) => candidate.id === activeTeam.id) : null;
+	return team?.permissions || basePermissions || [];
 }
 
 function globalTeamAdminPermissions(permissions) {
@@ -207,19 +237,24 @@ function globalTeamAdminPermissions(permissions) {
 export async function resolveAuthenticatedContext(request, env) {
 	const baseContext = await resolveBaseAuthenticatedContext(request, env);
 	const db = dbFor(env);
+	const memberTeams = await buildMemberTeams(db, baseContext?.user?.id);
+	const activeTeam = selectActiveTeamFromMemberships(baseContext.activeTeam, memberTeams);
 	const isCoreTeamAdmin = await isResearchOpsCoreTeamAdmin(db, baseContext?.user?.id);
-	const memberTeams = await buildMemberTeams(db, baseContext?.user?.id, baseContext.teams || []);
 	const manageableTeams = isCoreTeamAdmin ? await listAllActiveTeams(db) : await listTeamsManagedByUser(db, baseContext?.user?.id);
+	const activeTeamRoles = rolesForActiveTeam(baseContext.roles, activeTeam, memberTeams);
+	const activeTeamPermissions = permissionsForActiveTeam(baseContext.permissions, activeTeam, memberTeams);
 
 	return {
 		...baseContext,
+		activeTeam,
+		roles: activeTeamRoles,
+		permissions: isCoreTeamAdmin ? globalTeamAdminPermissions(activeTeamPermissions) : activeTeamPermissions,
 		isResearchOpsCoreTeamAdmin: isCoreTeamAdmin,
 		memberTeams,
 		teamMemberships: memberTeams,
 		manageableTeams,
 		roleAssignableTeams: manageableTeams,
 		teams: manageableTeams,
-		permissions: isCoreTeamAdmin ? globalTeamAdminPermissions(baseContext.permissions) : baseContext.permissions,
 	};
 }
 
