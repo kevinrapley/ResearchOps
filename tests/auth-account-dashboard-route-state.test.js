@@ -13,8 +13,11 @@ function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /<h1 class="govuk-heading-xl" id="account-dashboard-title">Welcome\. Here is your account dashboard<\/h1>/);
 	assert.match(accountPage, /id="account-dashboard"/);
 	assert.match(accountPage, /id="account-user-value"/);
-	assert.match(accountPage, /id="account-team-value"/);
-	assert.match(accountPage, /id="account-roles-value"/);
+	assert.match(accountPage, /id="account-team-memberships"/);
+	assert.match(accountPage, /Teams and roles/);
+	assert.match(accountPage, /Your roles are scoped by team/);
+	assert.doesNotMatch(accountPage, /id="account-team-value"/);
+	assert.doesNotMatch(accountPage, /id="account-roles-value"/);
 	assert.match(accountPage, /id="account-actions"/);
 	assert.match(accountPage, /id="account-permissions"/);
 	assert.match(accountPage, /id="account-logout"/);
@@ -27,7 +30,7 @@ function assertAccountPageDoesNotUseSuccessMessagePattern() {
 }
 
 function assertAccountPageLoadsDashboardScript() {
-	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260512/);
+	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260513-teams/);
 }
 
 function assertDashboardUsesPasswordlessApiAndAuthContext() {
@@ -39,15 +42,18 @@ function assertDashboardUsesPasswordlessApiAndAuthContext() {
 	assert.match(accountScript, /SIGN_IN_URL: '\/pages\/account\/sign-in\/'/);
 }
 
-function assertDashboardRendersTeamRolesAndPermissions() {
-	assert.match(accountScript, /activeTeamLabel\(context\)/);
-	assert.match(accountScript, /roleLabels\(context\)/);
-	assert.match(accountScript, /permissionCodes\(context\)/);
-	assert.match(accountScript, /permissionLabels\(context\)/);
+function assertDashboardRendersTeamMembershipsRolesAndPermissions() {
+	assert.match(accountScript, /teamMemberships\(context\)/);
+	assert.match(accountScript, /renderTeamMemberships\(context\)/);
+	assert.match(accountScript, /context\?\.teamMemberships \|\| context\?\.memberTeams/);
+	assert.match(accountScript, /Team membership and role access/);
+	assert.match(accountScript, /Role or roles/);
+	assert.match(accountScript, /No active role/);
+	assert.match(accountScript, /No active permissions/);
 	assert.match(accountScript, /Welcome, \$\{name\}\. Here is your account dashboard/);
-	assert.match(accountScript, /context\?\.activeTeam\?\.name/);
-	assert.match(accountScript, /context\?\.roles/);
 	assert.match(accountScript, /context\?\.permissions/);
+	assert.doesNotMatch(accountScript, /activeTeamLabel\(context\)/);
+	assert.doesNotMatch(accountScript, /roleLabels\(context\)/);
 }
 
 function assertDashboardActionsArePermissionBased() {
@@ -78,7 +84,7 @@ assertAccountPageExistsAsDashboard();
 assertAccountPageDoesNotUseSuccessMessagePattern();
 assertAccountPageLoadsDashboardScript();
 assertDashboardUsesPasswordlessApiAndAuthContext();
-assertDashboardRendersTeamRolesAndPermissions();
+assertDashboardRendersTeamMembershipsRolesAndPermissions();
 assertDashboardActionsArePermissionBased();
 assertDashboardSupportsLogout();
 assertProductRequirementsSupportPermissionBasedDashboard();
