@@ -17,13 +17,25 @@ function coerceResponse(res) {
 	return new Response(JSON.stringify(res), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+function isResearchOpsPagesOrigin(origin) {
+	try {
+		const { hostname, protocol } = new URL(origin);
+		if (protocol !== "https:") return false;
+		return hostname === "researchops.pages.dev" || hostname.endsWith(".researchops.pages.dev");
+	} catch {
+		return false;
+	}
+}
+
 function resolveAllowedOrigin(env, request) {
 	try {
 		const origin = request.headers.get("Origin") || "";
 		const raw = env.ALLOWED_ORIGINS;
 		const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
 		if (!origin) return "*";
-		return list.includes(origin) ? origin : "null";
+		if (list.includes(origin)) return origin;
+		if (isResearchOpsPagesOrigin(origin)) return origin;
+		return "null";
 	} catch {
 		return "*";
 	}
