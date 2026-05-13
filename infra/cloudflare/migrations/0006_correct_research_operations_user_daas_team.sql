@@ -7,19 +7,21 @@
 
 PRAGMA foreign_keys = ON;
 
-INSERT INTO auth_teams (id, name, team_status, created_at, updated_at)
-SELECT
+INSERT OR IGNORE INTO auth_teams (id, name, team_status, created_at, updated_at)
+VALUES (
 	'team_daas',
 	'DaaS',
 	'active',
 	strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
 	strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE NOT EXISTS (
-	SELECT 1
-	FROM auth_teams
-	WHERE lower(name) = lower('DaaS')
-		AND team_status = 'active'
 );
+
+UPDATE auth_teams
+SET
+	name = 'DaaS',
+	team_status = 'active',
+	updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+WHERE id = 'team_daas';
 
 INSERT INTO auth_team_memberships (id, user_id, team_id, membership_status, created_at, removed_at)
 SELECT
@@ -30,7 +32,7 @@ SELECT
 		FROM auth_teams
 		WHERE lower(name) = lower('DaaS')
 			AND team_status = 'active'
-		ORDER BY created_at ASC
+		ORDER BY CASE WHEN id = 'team_daas' THEN 0 ELSE 1 END, created_at ASC
 		LIMIT 1
 	),
 	'active',
@@ -66,7 +68,7 @@ SELECT
 		FROM auth_teams
 		WHERE lower(name) = lower('DaaS')
 			AND team_status = 'active'
-		ORDER BY created_at ASC
+		ORDER BY CASE WHEN id = 'team_daas' THEN 0 ELSE 1 END, created_at ASC
 		LIMIT 1
 	),
 	'active',
@@ -149,7 +151,7 @@ SELECT
 		FROM auth_teams
 		WHERE lower(name) = lower('DaaS')
 			AND team_status = 'active'
-		ORDER BY created_at ASC
+		ORDER BY CASE WHEN id = 'team_daas' THEN 0 ELSE 1 END, created_at ASC
 		LIMIT 1
 	),
 	'user',
