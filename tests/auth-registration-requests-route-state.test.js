@@ -38,7 +38,7 @@ function assertWorkerAllowsResearchOpsPreviewOrigins() {
 }
 
 function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction() {
-	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*" \]/);
+	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*", "fix\/\*\*" \]/);
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
 	assert.match(deployWorkerSource, /deploy-production:/);
 	assert.match(deployWorkerSource, /deploy-preview:/);
