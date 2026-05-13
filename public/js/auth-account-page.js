@@ -54,8 +54,9 @@ const dom = {
 	title: document.getElementById('account-dashboard-title'),
 	user: document.getElementById('account-user-value'),
 	teamMemberships: document.getElementById('account-team-memberships'),
+	actionsSection: document.getElementById('account-actions-section'),
 	actions: document.getElementById('account-actions'),
-	noActions: document.getElementById('account-no-actions'),
+	permissionsDetails: document.getElementById('account-permissions-details'),
 	permissions: document.getElementById('account-permissions'),
 	logout: document.getElementById('account-logout'),
 };
@@ -198,8 +199,13 @@ function isResearchOpsCoreTeamAdmin(team) {
 	return isResearchOpsCoreTeam(team) && hasRole(team, 'team_admin');
 }
 
-function currentTag(team) {
-	return team?.current ? '<strong class="govuk-tag govuk-tag--blue">Current</strong>' : '';
+function hasResearchOpsCoreTeamAdmin(memberships) {
+	return (memberships || []).some(isResearchOpsCoreTeamAdmin);
+}
+
+function currentTag(team, membershipCount) {
+	if (!team?.current || membershipCount <= 1) return '';
+	return '<strong class="govuk-tag govuk-tag--blue">Current</strong>';
 }
 
 function roleLabels(team) {
@@ -217,56 +223,41 @@ function renderCoreAdminInset(team) {
 
 function renderSingleTeamMembership(team) {
 	return `
-		<div class="govuk-summary-card">
-			<div class="govuk-summary-card__title-wrapper">
-				<h3 class="govuk-summary-card__title">Your team</h3>
+		<h3 class="govuk-heading-s">Your team</h3>
+		<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Team</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(team.name || team.id || 'Unnamed team')}</dd>
 			</div>
-			<div class="govuk-summary-card__content">
-				<dl class="govuk-summary-list govuk-!-margin-bottom-0">
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Team</dt>
-						<dd class="govuk-summary-list__value">
-							${escapeHtml(team.name || team.id || 'Unnamed team')}
-							${currentTag(team)}
-						</dd>
-					</div>
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Role or roles</dt>
-						<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
-					</div>
-				</dl>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Role or roles</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
 			</div>
-		</div>
+		</dl>
 		${renderCoreAdminInset(team)}
 	`;
 }
 
 function renderMultipleTeamMemberships(memberships) {
 	return `
-		<div class="govuk-summary-card">
-			<div class="govuk-summary-card__title-wrapper">
-				<h3 class="govuk-summary-card__title">Your teams</h3>
-			</div>
-			<div class="govuk-summary-card__content">
-				<p class="govuk-body">You have different access in each team.</p>
-				<ul class="govuk-list govuk-list--spaced">
-					${memberships
-						.map(
-							(team) => `
-								<li>
-									<h4 class="govuk-heading-s govuk-!-margin-bottom-1">
-										${escapeHtml(team.name || team.id || 'Unnamed team')}
-										${currentTag(team)}
-									</h4>
-									<p class="govuk-body govuk-!-margin-bottom-0">${escapeHtml(roleLabels(team))}</p>
-									${renderCoreAdminInset(team)}
-								</li>
-							`,
-						)
-						.join('')}
-				</ul>
-			</div>
-		</div>
+		<h3 class="govuk-heading-s">Your teams</h3>
+		<p class="govuk-body">You have different access in each team.</p>
+		<ul class="govuk-list govuk-list--spaced">
+			${memberships
+				.map(
+					(team) => `
+						<li>
+							<h4 class="govuk-heading-s govuk-!-margin-bottom-1">
+								${escapeHtml(team.name || team.id || 'Unnamed team')}
+								${currentTag(team, memberships.length)}
+							</h4>
+							<p class="govuk-body govuk-!-margin-bottom-0">${escapeHtml(roleLabels(team))}</p>
+							${renderCoreAdminInset(team)}
+						</li>
+					`,
+				)
+				.join('')}
+		</ul>
 	`;
 }
 
@@ -283,32 +274,38 @@ function renderTeamMemberships(context) {
 		memberships.length === 1 ? renderSingleTeamMembership(memberships[0]) : renderMultipleTeamMemberships(memberships);
 }
 
-function renderActions(context) {
+function allowedActions(context) {
 	const codes = permissionCodes(context);
-	const allowedActions = ACTIONS.filter((action) => codes.has(action.permission));
-	if (!dom.actions || !dom.noActions) return;
-
-	dom.actions.innerHTML = allowedActions
-		.map((action) => `<a class="govuk-button" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`)
-		.join('');
-	setVisible(dom.noActions, allowedActions.length === 0);
+	return ACTIONS.filter((action) => codes.has(action.permission));
 }
 
-function renderPermissions(context) {
-	if (!dom.permissions) return;
+function renderActions(context) {
+	const actions = allowedActions(context);
+	if (!dom.actions || !dom.actionsSection) return;
+
+	dom.actions.innerHTML = actions
+		.map((action) => `<a class="govuk-button" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`)
+		.join('');
+	setVisible(dom.actionsSection, actions.length > 0);
+}
+
+function renderPermissions(context, memberships) {
+	if (!dom.permissions || !dom.permissionsDetails) return;
 	const labels = permissionLabels(context);
-	dom.permissions.innerHTML = labels.length
-		? labels.map((label) => `<li>${escapeHtml(label)}</li>`).join('')
-		: '<li>No active permissions for the current team context</li>';
+	const showPermissionDetails = hasResearchOpsCoreTeamAdmin(memberships) && labels.length > 0;
+
+	dom.permissions.innerHTML = labels.map((label) => `<li>${escapeHtml(label)}</li>`).join('');
+	setVisible(dom.permissionsDetails, showPermissionDetails);
 }
 
 function renderDashboard(context) {
 	const name = displayName(context);
-	if (dom.title) dom.title.textContent = `Welcome, ${name}. Here is your account dashboard`;
+	const memberships = teamMemberships(context);
+	if (dom.title) dom.title.textContent = 'Your ResearchOps account';
 	if (dom.user) dom.user.textContent = context?.user?.displayName || context?.user?.email || 'Not available';
 	renderTeamMemberships(context);
 	renderActions(context);
-	renderPermissions(context);
+	renderPermissions(context, memberships);
 	setVisible(dom.status, false);
 	setVisible(dom.dashboard, true);
 }
@@ -361,6 +358,7 @@ init();
 window.__ropsAuthAccountPage = Object.freeze({
 	ACTIONS,
 	CONFIG,
+	allowedActions,
 	defaultApiOrigin,
 	displayName,
 	fallbackActiveTeamMembership,
