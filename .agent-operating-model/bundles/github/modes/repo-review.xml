@@ -5,19 +5,25 @@
   <inputs>
     <item>PR diff</item>
     <item>CI evidence</item>
+    <item>Inline review comments and review threads, including Codex comments when present</item>
   </inputs>
   <actions>
     <item>Verify evidence.</item>
     <item>Check tests, docs, security, accessibility and release impact.</item>
     <item>Create harm register when ethics triggers are met.</item>
+    <item>Classify Codex and automated review comments as legitimate, false positive, superseded or blocked.</item>
+    <item>When a Codex or automated review comment is legitimate, require the implementing agent to add a thumbs-up reaction to the original comment, reply with how the issue was overcome and resolve the review thread only after the fix and evidence are complete.</item>
     <item>Approve only if blockers clear.</item>
   </actions>
   <outputs>
     <item>Review decision</item>
     <item>Requested changes</item>
+    <item>Automated review comment disposition for each Codex or automated reviewer thread</item>
   </outputs>
   <failure_states>
     <item>Approving without evidence</item>
+    <item>Resolving a legitimate Codex or automated review thread before the issue has been overcome</item>
+    <item>Failing to acknowledge a legitimate Codex or automated review comment with a thumbs-up reaction and explanatory reply</item>
   </failure_states>
   <required_contracts>
     <item>pull-request-contract.schema.json</item>
