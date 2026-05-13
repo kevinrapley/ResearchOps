@@ -2,6 +2,22 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-13 — GOV.UK form fields need explicit affordance and rhythm decisions
+
+Context: The account registration form initially used full-width text inputs for full name, work email address and team or service. The page also needed clearer vertical rhythm between introductory content and the first form field.
+
+Learning: GOV.UK-style forms should not default every input to full width. Field widths are part of the affordance. The expected answer length and page layout should determine whether an input is fixed width, fluid-width or full width. Introductory content, inset text and the first form group also need deliberate spacing using the GOV.UK spacing scale.
+
+Action: For every GOV.UK form page, explicitly review text input, textarea and select widths. Use sensible fluid widths such as `govuk-!-width-two-thirds` for common fields like names, email addresses and team names unless a stronger field-specific reason exists. Add page-level CSS or component classes to preserve spacing between intro content and form controls.
+
+## 2026-05-13 — Update RECENT_LEARNINGS.md when a bundle misses a reusable rule
+
+Context: A reviewer identified that the active GOV.UK bundle should have caught the full-width input and vertical-rhythm issue during design review. The root recent learnings file had not been updated for around two weeks.
+
+Learning: When an agent or reviewer discovers a repeatable repository-specific lesson, the lesson should be recorded immediately. Bundle changes alone are not enough because `RECENT_LEARNINGS.md` is the quick operational memory for future repository work.
+
+Action: When a repeat mistake, CI issue, accessibility concern, design-system gap or implementation convention should change future agent behaviour, update `RECENT_LEARNINGS.md` with context, learning and action. Do not use it as a changelog.
+
 ## 2026-04-30 — Prettier must be executed, not inferred
 
 Context: A new visual walkthrough registry test failed `prettier -c .` even though the code broadly followed the repository indentation rules. The remaining failure came from Prettier's wrapping decisions for chained calls and long assertions, not from JavaScript semantics.
