@@ -43,7 +43,7 @@
 						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign a role to a team member</h1>
 						<p class="lede">Use this page to give someone access to a role in a ResearchOps team you manage.</p>
 						<p class="govuk-body">If the person is not already an active member of the team, ResearchOps will add them when you assign the role.</p>
-						<p class="govuk-body">Only assign the lowest role they need to do their work. Role changes are recorded in the audit log.</p>
+						<p class="govuk-body">Only assign the lowest role they need to do their work. Role changes and team creation are recorded in the audit log.</p>
 					</div>
 				</div>
 			</header>
@@ -83,14 +83,47 @@
 
 							<section class="auth-role-assignment-section" aria-labelledby="team-choice-section-title">
 								<h3 class="govuk-heading-m" id="team-choice-section-title">2. Team</h3>
-								<fieldset class="govuk-fieldset" id="team-id-group">
+								<fieldset class="govuk-fieldset" id="team-action-group">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Which team should this role be in?</legend>
-									<div class="govuk-hint" id="team-id-hint">The person will be added to this team if they are not already a member.</div>
-									<p class="govuk-error-message" id="team-id-error" hidden></p>
-									<div class="govuk-radios auth-role-assignment-radios" id="team-id-options" data-module="govuk-radios" aria-describedby="team-id-hint">
-										<p class="govuk-body">Loading teams you can manage.</p>
+									<div class="govuk-hint" id="team-action-hint">Choose an existing team, or create a new team before assigning this role.</div>
+									<p class="govuk-error-message" id="team-action-error" hidden></p>
+									<div class="govuk-radios auth-role-assignment-radios" data-module="govuk-radios" aria-describedby="team-action-hint">
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="team-action-existing" name="teamAction" type="radio" value="existing" checked />
+											<label class="govuk-label govuk-radios__label" for="team-action-existing">Use an existing team</label>
+										</div>
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="team-action-create" name="teamAction" type="radio" value="create" />
+											<label class="govuk-label govuk-radios__label" for="team-action-create">Create a new team</label>
+											<div class="govuk-hint govuk-radios__hint">You will become Team Admin for the new team.</div>
+										</div>
 									</div>
 								</fieldset>
+
+								<div class="auth-role-assignment-team-panel" id="existing-team-panel">
+									<fieldset class="govuk-fieldset" id="team-id-group">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Select a team</legend>
+										<div class="govuk-hint" id="team-id-hint">The person will be added to this team if they are not already a member.</div>
+										<p class="govuk-error-message" id="team-id-error" hidden></p>
+										<div class="govuk-radios auth-role-assignment-radios" id="team-id-options" data-module="govuk-radios" aria-describedby="team-id-hint">
+											<p class="govuk-body">Loading teams you can manage.</p>
+										</div>
+									</fieldset>
+								</div>
+
+								<div class="auth-role-assignment-team-panel" id="new-team-panel" hidden>
+									<div class="govuk-form-group" id="new-team-name-group">
+										<label class="govuk-label govuk-label--s" for="new-team-name">New team name</label>
+										<div class="govuk-hint" id="new-team-name-hint">Use a short, recognisable name. For example, "Assisted digital research team".</div>
+										<p class="govuk-error-message" id="new-team-name-error" hidden></p>
+										<input class="govuk-input govuk-!-width-two-thirds" id="new-team-name" name="newTeamName" type="text" maxlength="80" aria-describedby="new-team-name-hint" />
+									</div>
+									<div class="govuk-form-group" id="new-team-reason-group">
+										<label class="govuk-label govuk-label--s" for="new-team-reason">Why are you creating this team?</label>
+										<div class="govuk-hint" id="new-team-reason-hint">Optional. This will be stored in the audit log with the team creation event.</div>
+										<textarea class="govuk-textarea govuk-!-width-two-thirds" id="new-team-reason" name="newTeamReason" rows="3" aria-describedby="new-team-reason-hint"></textarea>
+									</div>
+								</div>
 							</section>
 
 							<section class="auth-role-assignment-section" aria-labelledby="role-section-title">
@@ -196,7 +229,7 @@
 
 						<section id="role-assignment-review" class="auth-role-assignment-review" aria-labelledby="role-assignment-review-title" tabindex="-1" hidden>
 							<h2 class="govuk-heading-l" id="role-assignment-review-title">Check and confirm</h2>
-							<p class="govuk-body">ResearchOps will confirm the person exists. If they are not already an active member of the selected team, ResearchOps will add them when the role is assigned.</p>
+							<p class="govuk-body">ResearchOps will confirm the person exists. If you create a new team, ResearchOps will make you Team Admin for that team before assigning the selected role.</p>
 							<div id="role-assignment-review-body"></div>
 							<div class="govuk-button-group"><button class="govuk-button" type="button" id="confirm-role-assignment">Confirm and assign role</button><button class="govuk-button govuk-button--secondary" type="button" id="change-role-assignment">Change details</button></div>
 						</section>
@@ -209,6 +242,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-role-assignment-page.js?v=explicit-team-selection-20260513"></script>
+	<script type="module" src="/js/auth-role-assignment-page.js?v=inline-team-creation-20260513"></script>
 </body>
 </html>
