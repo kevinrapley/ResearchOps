@@ -42,7 +42,14 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
 	assert.match(deployWorkerSource, /deploy-production:/);
 	assert.match(deployWorkerSource, /deploy-preview:/);
-	assert.match(deployWorkerSource, /--name rops-api-passwordless-preview/);
+	assert.match(deployWorkerSource, /WRANGLER_PREVIEW_CONFIG: "infra\/cloudflare\/wrangler\.preview\.toml"/);
+	assert.match(deployWorkerSource, /D1_PREVIEW_DATABASE_NAME: "researchops-d1-preview"/);
+	assert.match(deployWorkerSource, /CF_PREVIEW_D1_DATABASE_ID/);
+	assert.match(deployWorkerSource, /database_name = \"researchops-d1-preview\"/);
+	assert.match(deployWorkerSource, /CF_PREVIEW_D1_DATABASE_ID/);
+	assert.match(deployWorkerSource, /d1 execute "\$\{D1_PREVIEW_DATABASE_NAME\}"/);
+	assert.match(deployWorkerSource, /deploy --config wrangler\.preview\.toml/);
+	assert.doesNotMatch(deployWorkerSource, /deploy-preview:[\s\S]*d1 execute "\$\{D1_DATABASE_NAME\}"[\s\S]*--remote/);
 }
 
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
@@ -142,10 +149,15 @@ function assertRegistrationUsesPreviewSafeApiRouting() {
 	assert.match(reviewPageScript, /rops-api-passwordless-preview/);
 }
 
-function assertTeamAdminCanReviewRequestsButMustAssignSeparately() {
+function assertTeamAdminCanReviewRequestsBeforeAssigningRole() {
 	assert.ok(reviewPageSource.includes('Review account requests'));
 	assert.ok(reviewPageSource.includes('The information they give about what they need to do is for review only'));
 	assert.ok(reviewPageScript.includes('What they need to use ResearchOps for'));
+	assert.match(reviewPageScript, /function roleAssignmentHref/);
+	assert.match(reviewPageScript, /targetEmail/);
+	assert.match(reviewPageScript, /requestedReason/);
+	assert.match(reviewPageScript, /Account request:/);
+	assert.match(reviewPageScript, /ResearchOps will add them when you assign the role/);
 	assert.match(reviewPageScript, /Assign a role to a team member/);
 	assert.match(reviewPageScript, /\/pages\/team\/role-assignments\//);
 	assert.doesNotMatch(reviewPageScript, /method:\s*['"]POST['"]/);
@@ -168,5 +180,5 @@ assertRegistrationPageUsesSensibleFormWidthsAndRhythm();
 assertRegistrationErrorsAreUserFacing();
 assertCheckAnswersBehaviourExists();
 assertRegistrationUsesPreviewSafeApiRouting();
-assertTeamAdminCanReviewRequestsButMustAssignSeparately();
+assertTeamAdminCanReviewRequestsBeforeAssigningRole();
 assertSignInLinksToRegistrationRequest();
