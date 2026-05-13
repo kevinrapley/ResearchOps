@@ -53,8 +53,7 @@ const dom = {
 	dashboard: document.getElementById('account-dashboard'),
 	title: document.getElementById('account-dashboard-title'),
 	user: document.getElementById('account-user-value'),
-	team: document.getElementById('account-team-value'),
-	roles: document.getElementById('account-roles-value'),
+	teamMemberships: document.getElementById('account-team-memberships'),
 	actions: document.getElementById('account-actions'),
 	noActions: document.getElementById('account-no-actions'),
 	permissions: document.getElementById('account-permissions'),
@@ -134,12 +133,21 @@ function displayName(context) {
 	return String(rawName).includes('@') ? String(rawName).split('@')[0] : rawName;
 }
 
-function activeTeamLabel(context) {
-	return context?.activeTeam?.name || context?.activeTeam?.id || 'No active team';
+function labelList(items, emptyLabel) {
+	const labels = (items || [])
+		.map((item) => item.label || item.name || item.code || item.key)
+		.filter(Boolean)
+		.sort((first, second) => first.localeCompare(second));
+	return labels.length ? labels.join(', ') : emptyLabel;
 }
 
-function roleLabels(context) {
-	return (context?.roles || []).map((role) => role.label || role.key).filter(Boolean);
+function teamMemberships(context) {
+	const memberships = context?.teamMemberships || context?.memberTeams || [];
+	const activeTeamId = context?.activeTeam?.id;
+	return memberships.map((team) => ({
+		...team,
+		current: Boolean(activeTeamId && team.id === activeTeamId),
+	}));
 }
 
 function permissionCodes(context) {
@@ -151,6 +159,45 @@ function permissionLabels(context) {
 		.map((permission) => permission.label || permission.code)
 		.filter(Boolean)
 		.sort((first, second) => first.localeCompare(second));
+}
+
+function renderTeamMemberships(context) {
+	if (!dom.teamMemberships) return;
+	const memberships = teamMemberships(context);
+
+	if (memberships.length === 0) {
+		dom.teamMemberships.innerHTML = '<p class="govuk-body">You are not currently a member of any team.</p>';
+		return;
+	}
+
+	dom.teamMemberships.innerHTML = `
+		<table class="govuk-table">
+			<caption class="govuk-table__caption govuk-table__caption--s">Team membership and role access</caption>
+			<thead class="govuk-table__head">
+				<tr class="govuk-table__row">
+					<th scope="col" class="govuk-table__header">Team</th>
+					<th scope="col" class="govuk-table__header">Role or roles</th>
+					<th scope="col" class="govuk-table__header">Permissions</th>
+				</tr>
+			</thead>
+			<tbody class="govuk-table__body">
+				${memberships
+					.map(
+						(team) => `
+							<tr class="govuk-table__row">
+								<th scope="row" class="govuk-table__header">
+									${escapeHtml(team.name || team.id || 'Unnamed team')}
+									${team.current ? '<strong class="govuk-tag govuk-tag--blue">Current</strong>' : ''}
+								</th>
+								<td class="govuk-table__cell">${escapeHtml(labelList(team.roles, 'No active role'))}</td>
+								<td class="govuk-table__cell">${escapeHtml(labelList(team.permissions, 'No active permissions'))}</td>
+							</tr>
+						`,
+					)
+					.join('')}
+			</tbody>
+		</table>
+	`;
 }
 
 function renderActions(context) {
@@ -169,15 +216,14 @@ function renderPermissions(context) {
 	const labels = permissionLabels(context);
 	dom.permissions.innerHTML = labels.length
 		? labels.map((label) => `<li>${escapeHtml(label)}</li>`).join('')
-		: '<li>No active permissions for this team</li>';
+		: '<li>No active permissions for the current team context</li>';
 }
 
 function renderDashboard(context) {
 	const name = displayName(context);
 	if (dom.title) dom.title.textContent = `Welcome, ${name}. Here is your account dashboard`;
 	if (dom.user) dom.user.textContent = context?.user?.displayName || context?.user?.email || 'Not available';
-	if (dom.team) dom.team.textContent = activeTeamLabel(context);
-	if (dom.roles) dom.roles.textContent = roleLabels(context).join(', ') || 'No active role';
+	renderTeamMemberships(context);
 	renderActions(context);
 	renderPermissions(context);
 	setVisible(dom.status, false);
@@ -236,4 +282,5 @@ window.__ropsAuthAccountPage = Object.freeze({
 	displayName,
 	permissionCodes,
 	renderDashboard,
+	teamMemberships,
 });
