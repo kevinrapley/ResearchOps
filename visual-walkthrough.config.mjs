@@ -394,7 +394,7 @@ export const visualWalkthroughConfig = {
 			stateTitle: 'Role assignment form with Team Admin scope',
 			stateDescription: 'Role assignment page captured with a deterministic Team Admin context.',
 			statePath: operationalPaths.teamRoleAssignments,
-			waitForText: 'You are assigning roles in',
+			waitForText: 'You can assign roles in teams you manage',
 		}),
 		registeredPage('search', 'Search', 'Utilities', '/pages/search/index.html', 'Search page.', operationalDesignRisks.search),
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.', operationalDesignRisks.notes),
