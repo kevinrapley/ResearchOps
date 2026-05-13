@@ -190,38 +190,34 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@${WRANGLER_VERSION} d1 create "${D1_PREVIEW_DATABASE_NAME}" --json > d1-created.json
+          npx --yes wrangler@${WRANGLER_VERSION} d1 create "${D1_PREVIEW_DATABASE_NAME}"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 list --json > d1-databases-created.json
           python - <<'PY'
           import json
           import os
           import sys
           from pathlib import Path
 
-          data = json.loads(Path("d1-created.json").read_text())
+          target_name = os.environ["D1_PREVIEW_DATABASE_NAME"]
+          data = json.loads(Path("d1-databases-created.json").read_text())
+          databases = (data.get("result") or data.get("databases") or []) if isinstance(data, dict) else data
 
-          def walk(value):
-              if isinstance(value, dict):
-                  yield value
-                  for child in value.values():
-                      yield from walk(child)
-              elif isinstance(value, list):
-                  for item in value:
-                      yield from walk(item)
+          def database_id(record):
+              return record.get("uuid") or record.get("id") or record.get("database_id")
 
-          database_id = None
-          for record in walk(data):
-              database_id = record.get("uuid") or record.get("id") or record.get("database_id")
-              if database_id:
-                  break
+          preview_matches = [
+              record for record in databases
+              if record.get("name") == target_name and database_id(record)
+          ]
 
-          if not database_id:
+          if not preview_matches:
               print("Could not resolve the ID for the newly created preview D1 database.")
               sys.exit(1)
 
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-              env_file.write(f"PREVIEW_D1_DATABASE_ID={database_id}\n")
+              env_file.write(f"PREVIEW_D1_DATABASE_ID={database_id(preview_matches[0])}\n")
 
-          print("Created preview D1 database and resolved its binding ID.")
+          print("Created preview D1 database and resolved its binding ID from d1 list output.")
           PY
 
       - name: Verify preview D1 database binding
