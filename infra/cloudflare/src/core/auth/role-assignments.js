@@ -48,6 +48,10 @@ function stableAssignmentId(userId, roleId, teamId) {
 	return `asn_${stableHash(`${userId}:${roleId}:${teamId}`)}`;
 }
 
+function stableMembershipId(userId, teamId) {
+	return `mem_${stableHash(`${userId}:${teamId}`)}`;
+}
+
 function normaliseEmail(email) {
 	return String(email || "")
 		.trim()
@@ -211,12 +215,12 @@ async function readTargetUser(db, targetUserId, targetEmail) {
 	return userById || userByEmail;
 }
 
-async function readActiveMembership(db, targetUserId, teamId) {
+async function readTeamMembership(db, targetUserId, teamId) {
 	return db
 		.prepare(`
 			SELECT id, membership_status
 			FROM auth_team_memberships
-			WHERE user_id = ? AND team_id = ? AND membership_status = 'active'
+			WHERE user_id = ? AND team_id = ?
 			LIMIT 1
 		`)
 		.bind(targetUserId, teamId)
@@ -233,6 +237,28 @@ async function readAssignment(db, targetUserId, roleId, teamId) {
 		`)
 		.bind(targetUserId, roleId, teamId)
 		.first();
+}
+
+function prepareActivateUserStatement(db, targetUser) {
+	return db
+		.prepare(`
+			UPDATE auth_users
+			SET account_status = 'active', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+			WHERE id = ? AND account_status = 'pending'
+		`)
+		.bind(targetUser.id);
+}
+
+function prepareMembershipStatement(db, targetUser, team) {
+	return db
+		.prepare(`
+			INSERT INTO auth_team_memberships (id, user_id, team_id, membership_status)
+			VALUES (?, ?, ?, 'active')
+			ON CONFLICT(user_id, team_id) DO UPDATE SET
+				membership_status = 'active',
+				removed_at = NULL
+		`)
+		.bind(stableMembershipId(targetUser.id, team.id), targetUser.id, team.id);
 }
 
 function prepareAssignmentStatement(db, assignmentId, context, targetUser, role, team, requestedReason, expiresAt) {
@@ -252,7 +278,7 @@ function prepareAssignmentStatement(db, assignmentId, context, targetUser, role,
 		.bind(assignmentId, targetUser.id, role.id, team.id, requestedReason, context.user.id, expiresAt);
 }
 
-function prepareAuditStatement(db, request, context, targetUser, role, team, requestedReason, assignmentId) {
+function prepareAuditStatement(db, request, context, targetUser, role, team, requestedReason, assignmentId, membershipActivated, accountActivated) {
 	const url = new URL(request.url);
 	return db
 		.prepare(`
@@ -262,7 +288,9 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 				'role_key', ?,
 				'target_user_id', ?,
 				'requested_reason', ?,
-				'assignment_status', 'active'
+				'assignment_status', 'active',
+				'team_membership_activated', ?,
+				'account_activated', ?
 			))
 		`)
 		.bind(
@@ -274,11 +302,13 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 			role.role_key === "safeguarding_lead" ? 1 : 0,
 			role.role_key,
 			targetUser.id,
-			requestedReason
+			requestedReason,
+			membershipActivated ? 1 : 0,
+			accountActivated ? 1 : 0
 		);
 }
 
-async function writeAssignmentWithAudit(db, request, context, targetUser, role, team, requestedReason, expiresAt) {
+async function writeAssignmentWithAudit(db, request, context, targetUser, role, team, requestedReason, expiresAt, membership) {
 	if (typeof db.batch !== "function") {
 		throw new RoleAssignmentError(
 			503,
@@ -289,29 +319,35 @@ async function writeAssignmentWithAudit(db, request, context, targetUser, role, 
 
 	const existingAssignment = await readAssignment(db, targetUser.id, role.id, team.id);
 	const assignmentId = existingAssignment?.id || stableAssignmentId(targetUser.id, role.id, team.id);
-	const assignmentStatement = prepareAssignmentStatement(
-		db,
-		assignmentId,
-		context,
-		targetUser,
-		role,
-		team,
-		requestedReason,
-		expiresAt
-	);
-	const auditStatement = prepareAuditStatement(
-		db,
-		request,
-		context,
-		targetUser,
-		role,
-		team,
-		requestedReason,
-		assignmentId
+	const accountActivated = targetUser.account_status === "pending";
+	const membershipActivated = !membership || membership.membership_status !== "active";
+	const statements = [];
+
+	if (accountActivated) statements.push(prepareActivateUserStatement(db, targetUser));
+	if (membershipActivated) statements.push(prepareMembershipStatement(db, targetUser, team));
+
+	statements.push(
+		prepareAssignmentStatement(db, assignmentId, context, targetUser, role, team, requestedReason, expiresAt),
+		prepareAuditStatement(
+			db,
+			request,
+			context,
+			targetUser,
+			role,
+			team,
+			requestedReason,
+			assignmentId,
+			membershipActivated,
+			accountActivated
+		)
 	);
 
-	await db.batch([assignmentStatement, auditStatement]);
-	return readAssignment(db, targetUser.id, role.id, team.id);
+	await db.batch(statements);
+	return {
+		assignment: await readAssignment(db, targetUser.id, role.id, team.id),
+		accountActivated,
+		membershipActivated
+	};
 }
 
 async function assignRole(request, env, context, body) {
@@ -338,16 +374,8 @@ async function assignRole(request, env, context, body) {
 		throw new RoleAssignmentError(409, "target_user_inactive", "The target user cannot receive roles.");
 	}
 
-	const membership = await readActiveMembership(db, targetUser.id, team.id);
-	if (!membership) {
-		throw new RoleAssignmentError(
-			400,
-			"target_not_team_member",
-			"The target user must be an active member of the active team before a role can be assigned."
-		);
-	}
-
-	const assignment = await writeAssignmentWithAudit(
+	const membership = await readTeamMembership(db, targetUser.id, team.id);
+	const assignmentResult = await writeAssignmentWithAudit(
 		db,
 		request,
 		context,
@@ -355,13 +383,19 @@ async function assignRole(request, env, context, body) {
 		role,
 		team,
 		requestedReason,
-		expiresAt
+		expiresAt,
+		membership
 	);
 
 	return {
-		assignment,
+		assignment: assignmentResult.assignment,
+		accountActivated: assignmentResult.accountActivated,
+		membershipActivated: assignmentResult.membershipActivated,
 		role,
-		targetUser,
+		targetUser: {
+			...targetUser,
+			account_status: assignmentResult.accountActivated ? "active" : targetUser.account_status
+		},
 		team
 	};
 }
@@ -387,6 +421,10 @@ export async function handleRoleAssignmentsRoute(request, env) {
 					scopeType: "team",
 					scopeId: result.team.id,
 					expiresAt: result.assignment.expires_at
+				},
+				teamMembership: {
+					status: "active",
+					createdOrReactivated: result.membershipActivated
 				},
 				role: {
 					key: result.role.role_key,
