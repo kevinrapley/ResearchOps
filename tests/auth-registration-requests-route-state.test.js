@@ -11,6 +11,19 @@ const reviewPageSource = fs.readFileSync('public/pages/team/registration-request
 const reviewPageScript = fs.readFileSync('public/js/auth-registration-requests-page.js', 'utf8');
 const signInPageSource = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 
+function elementForId(source, fieldId) {
+	const match = source.match(new RegExp(`<[^>]+id=["']${fieldId}["'][^>]*>`));
+	assert.ok(match, `Expected element with id ${fieldId}`);
+	return match[0];
+}
+
+function assertElementHasClasses(source, fieldId, classes) {
+	const element = elementForId(source, fieldId);
+	for (const className of classes) {
+		assert.ok(element.includes(className), `Expected ${fieldId} to include ${className}`);
+	}
+}
+
 function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /import \{ handleRegistrationRequestsRoute \} from ['"]\.\/core\/auth\/registration-requests\.js['"];/);
 	assert.match(workerSource, /apiPath === ['"]\/api\/auth\/registration-requests['"]/);
@@ -57,10 +70,9 @@ function assertRegistrationPageUsesSensibleFormWidthsAndRhythm() {
 	assert.ok(registrationPageSource.includes('account-registration-page__intro'));
 	assert.ok(registrationPageSource.includes('account-registration-form'));
 	for (const fieldId of ['display-name', 'registration-email', 'team-or-service', 'other-role']) {
-		assert.match(registrationPageSource, new RegExp(`id=["']${fieldId}["'][^>]*govuk-!-width-two-thirds`));
-		assert.match(registrationPageSource, new RegExp(`id=["']${fieldId}["'][^>]*account-registration-input`));
+		assertElementHasClasses(registrationPageSource, fieldId, ['govuk-!-width-two-thirds', 'account-registration-input']);
 	}
-	assert.match(registrationPageSource, /id=["']requested-reason["'][^>]*govuk-!-width-two-thirds/);
+	assertElementHasClasses(registrationPageSource, 'requested-reason', ['govuk-!-width-two-thirds']);
 	assert.match(registrationPageCss, /account-registration-page__intro[\s\S]*margin-bottom:\s*30px/);
 	assert.match(registrationPageCss, /account-registration-form[\s\S]*margin-top:\s*30px/);
 	assert.match(registrationPageCss, /govuk-inset-text[\s\S]*border-left:\s*10px solid #b1b4b6/);
