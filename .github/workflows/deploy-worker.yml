@@ -2,7 +2,7 @@ name: Deploy ResearchOps Worker
 
 on:
   push:
-    branches: [ main, "feature/**" ]
+    branches: [ main, "feature/**", "fix/**" ]
     paths:
       - "infra/cloudflare/**"
       - "!infra/cloudflare/agent-gateway/**"
@@ -29,7 +29,7 @@ env:
   PASSWORDLESS_LOCKED_MIGRATION: "infra/cloudflare/migrations/0004_auth_login_challenges_locked_status.sql"
   REGISTRATION_REQUESTS_MIGRATION: "infra/cloudflare/migrations/0005_auth_registration_requests.sql"
   PREVIEW_FIRST_TEAM_ADMIN_SEED: "infra/cloudflare/migrations/preview/0001_seed_first_team_admin.sql"
-  # Keep this workflow path-sensitive so feature-branch Worker state can be refreshed when backend review fixes need redeploying.
+  # Keep this workflow path-sensitive so branch Worker state can be refreshed when backend review fixes need redeploying.
 
 jobs:
   deploy-production:
