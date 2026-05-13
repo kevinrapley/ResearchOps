@@ -23,6 +23,8 @@ env:
   WRANGLER_PREVIEW_CONFIG: "infra/cloudflare/wrangler.preview.toml"
   D1_DATABASE_NAME: "researchops-d1"
   D1_PREVIEW_DATABASE_NAME: "researchops-d1-preview"
+  AUTH_FOUNDATION_MIGRATION: "infra/cloudflare/migrations/0001_auth_foundation.sql"
+  ROLE_ASSIGNMENT_ROUTE_MIGRATION: "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql"
   PASSWORDLESS_MIGRATION: "infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql"
   PASSWORDLESS_LOCKED_MIGRATION: "infra/cloudflare/migrations/0004_auth_login_challenges_locked_status.sql"
   REGISTRATION_REQUESTS_MIGRATION: "infra/cloudflare/migrations/0005_auth_registration_requests.sql"
@@ -289,6 +291,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
+            --file "${AUTH_FOUNDATION_MIGRATION}"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
+            --file "${ROLE_ASSIGNMENT_ROUTE_MIGRATION}"
           npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
             --remote \
             --config "${WRANGLER_PREVIEW_CONFIG}" \
