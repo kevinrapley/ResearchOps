@@ -143,7 +143,7 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve or create preview D1 database binding
+      - name: Resolve existing preview D1 database binding
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -151,6 +151,7 @@ jobs:
         run: |
           if [ -n "${CF_PREVIEW_D1_DATABASE_ID}" ]; then
             echo "PREVIEW_D1_DATABASE_ID=${CF_PREVIEW_D1_DATABASE_ID}" >> "${GITHUB_ENV}"
+            echo "NEED_CREATE_PREVIEW_D1=false" >> "${GITHUB_ENV}"
             echo "Using preview D1 database ID from repository secret."
             exit 0
           fi
@@ -163,59 +164,71 @@ jobs:
 
           target_name = os.environ["D1_PREVIEW_DATABASE_NAME"]
           data = json.loads(Path("d1-databases.json").read_text())
-          databases = data.get("result") or data.get("databases") or [] if isinstance(data, dict) else data
+          databases = (data.get("result") or data.get("databases") or []) if isinstance(data, dict) else data
 
           def database_id(record):
               return record.get("uuid") or record.get("id") or record.get("database_id")
 
-          preview_matches = [record for record in databases if record.get("name") == target_name and database_id(record)]
-          if preview_matches:
-              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+          preview_matches = [
+              record for record in databases
+              if record.get("name") == target_name and database_id(record)
+          ]
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              if preview_matches:
                   env_file.write(f"PREVIEW_D1_DATABASE_ID={database_id(preview_matches[0])}\n")
-                  env_file.write("PREVIEW_D1_DATABASE_CREATED=false\n")
-              print(f"Resolved preview D1 database binding for {target_name}.")
-          else:
-              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-                  env_file.write("PREVIEW_D1_DATABASE_CREATED=true\n")
-              print(f"Preview D1 database {target_name} does not exist yet. It will be created.")
+                  env_file.write("NEED_CREATE_PREVIEW_D1=false\n")
+                  print(f"Resolved preview D1 database binding for {target_name}.")
+              else:
+                  env_file.write("NEED_CREATE_PREVIEW_D1=true\n")
+                  print(f"Preview D1 database {target_name} does not exist yet. It will be created.")
           PY
 
-          if [ "${PREVIEW_D1_DATABASE_CREATED}" = "true" ]; then
-            npx --yes wrangler@${WRANGLER_VERSION} d1 create "${D1_PREVIEW_DATABASE_NAME}" --json > d1-created.json
-            python - <<'PY'
-            import json
-            import os
-            import sys
-            from pathlib import Path
+      - name: Create preview D1 database
+        if: env.NEED_CREATE_PREVIEW_D1 == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 create "${D1_PREVIEW_DATABASE_NAME}" --json > d1-created.json
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
 
-            data = json.loads(Path("d1-created.json").read_text())
+          data = json.loads(Path("d1-created.json").read_text())
 
-            def walk(value):
-                if isinstance(value, dict):
-                    yield value
-                    for child in value.values():
-                        yield from walk(child)
-                elif isinstance(value, list):
-                    for item in value:
-                        yield from walk(item)
+          def walk(value):
+              if isinstance(value, dict):
+                  yield value
+                  for child in value.values():
+                      yield from walk(child)
+              elif isinstance(value, list):
+                  for item in value:
+                      yield from walk(item)
 
-            database_id = None
-            for record in walk(data):
-                database_id = record.get("uuid") or record.get("id") or record.get("database_id")
-                if database_id:
-                    break
+          database_id = None
+          for record in walk(data):
+              database_id = record.get("uuid") or record.get("id") or record.get("database_id")
+              if database_id:
+                  break
 
-            if not database_id:
-                print("Could not resolve the ID for the newly created preview D1 database.")
-                sys.exit(1)
+          if not database_id:
+              print("Could not resolve the ID for the newly created preview D1 database.")
+              sys.exit(1)
 
-            with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-                env_file.write(f"PREVIEW_D1_DATABASE_ID={database_id}\n")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"PREVIEW_D1_DATABASE_ID={database_id}\n")
 
-            print("Created preview D1 database and resolved its binding ID.")
-            PY
-          fi
+          print("Created preview D1 database and resolved its binding ID.")
+          PY
 
+      - name: Verify preview D1 database binding
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
           npx --yes wrangler@${WRANGLER_VERSION} d1 list --json > d1-databases-after.json
           python - <<'PY'
           import json
@@ -224,12 +237,16 @@ jobs:
           from pathlib import Path
 
           production_name = os.environ["D1_DATABASE_NAME"]
-          preview_id = os.environ["PREVIEW_D1_DATABASE_ID"]
+          preview_id = os.environ.get("PREVIEW_D1_DATABASE_ID")
           data = json.loads(Path("d1-databases-after.json").read_text())
-          databases = data.get("result") or data.get("databases") or [] if isinstance(data, dict) else data
+          databases = (data.get("result") or data.get("databases") or []) if isinstance(data, dict) else data
 
           def database_id(record):
               return record.get("uuid") or record.get("id") or record.get("database_id")
+
+          if not preview_id:
+              print("Preview D1 database ID was not resolved.")
+              sys.exit(1)
 
           production_ids = {
               database_id(record)
