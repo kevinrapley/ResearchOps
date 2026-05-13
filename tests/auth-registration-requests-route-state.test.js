@@ -37,6 +37,14 @@ function workflowSection(source, startMarker, endMarker) {
 	return end === -1 ? rest : rest.slice(0, end);
 }
 
+function sqlSection(source, startMarker, endMarker) {
+	const start = source.indexOf(startMarker);
+	assert.notEqual(start, -1, `Expected SQL section ${startMarker}`);
+	const rest = source.slice(start);
+	const end = endMarker ? rest.indexOf(endMarker) : -1;
+	return end === -1 ? rest : rest.slice(0, end);
+}
+
 function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /import \{ handleRegistrationRequestsRoute \} from ['"]\.\/core\/auth\/registration-requests\.js['"];/);
 	assert.match(workerSource, /apiPath === ['"]\/api\/auth\/registration-requests['"]/);
@@ -71,6 +79,8 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 }
 
 function assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped() {
+	const revokeRoleBlock = sqlSection(previewDaaSCorrectionSource, 'UPDATE auth_role_assignments', 'UPDATE auth_team_memberships');
+
 	assert.match(previewDaaSCorrectionSource, /Preview-only data correction/);
 	assert.match(previewDaaSCorrectionSource, /kevin\.rapley@research-operations\.com/);
 	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_teams/);
@@ -78,10 +88,11 @@ function assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped() {
 	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_team_memberships/);
 	assert.match(previewDaaSCorrectionSource, /assignment_kevin_research_operations_observer_daas/);
 	assert.match(previewDaaSCorrectionSource, /'role_observer'/);
-	assert.match(previewDaaSCorrectionSource, /assignment_status = 'revoked'/);
-	assert.match(previewDaaSCorrectionSource, /scope_id = 'team_researchops_core'/);
+	assert.match(revokeRoleBlock, /assignment_status = 'revoked'/);
+	assert.match(revokeRoleBlock, /scope_id = 'team_researchops_core'/);
+	assert.match(revokeRoleBlock, /kevin\.rapley@research-operations\.com/);
+	assert.doesNotMatch(revokeRoleBlock, /digikev\.kevin\.rapley@gmail\.com/);
 	assert.match(previewDaaSCorrectionSource, /auth\.preview_data\.corrected/);
-	assert.doesNotMatch(previewDaaSCorrectionSource, /digikev\.kevin\.rapley@gmail\.com'\)[\s\S]*assignment_status = 'revoked'/);
 }
 
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
