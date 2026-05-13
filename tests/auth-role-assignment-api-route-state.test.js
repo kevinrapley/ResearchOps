@@ -22,8 +22,21 @@ function assertHandlerScopesAssignmentsToActiveTeam() {
 	assert.match(handlerSource, /assertActiveTeam\(context\)/);
 	assert.match(handlerSource, /scope_type = 'team'/);
 	assert.match(handlerSource, /scope_id = \?/);
-	assert.match(handlerSource, /readActiveMembership/);
-	assert.match(handlerSource, /target_not_team_member/);
+	assert.match(handlerSource, /readTeamMembership/);
+	assert.match(handlerSource, /prepareMembershipStatement/);
+	assert.match(handlerSource, /INSERT INTO auth_team_memberships/);
+	assert.match(handlerSource, /ON CONFLICT\(user_id, team_id\) DO UPDATE SET/);
+	assert.match(handlerSource, /membership_status = 'active'/);
+	assert.match(handlerSource, /removed_at = NULL/);
+	assert.doesNotMatch(handlerSource, /target_not_team_member/);
+}
+
+function assertHandlerActivatesPendingUserWhenAssigningRole() {
+	assert.match(handlerSource, /prepareActivateUserStatement/);
+	assert.match(handlerSource, /UPDATE auth_users/);
+	assert.match(handlerSource, /SET account_status = 'active'/);
+	assert.match(handlerSource, /WHERE id = \? AND account_status = 'pending'/);
+	assert.match(handlerSource, /accountActivated/);
 }
 
 function assertHandlerRequiresTargetRoleAndReason() {
@@ -54,19 +67,22 @@ function assertHandlerRequiresSensitiveRoleConfirmation() {
 	assert.match(handlerSource, /safeguarding_role_confirmation_required/);
 }
 
-function assertHandlerWritesAssignmentAndAuditEventAtomically() {
+function assertHandlerWritesMembershipAssignmentAndAuditEventAtomically() {
+	assert.match(handlerSource, /function prepareMembershipStatement/);
 	assert.match(handlerSource, /function prepareAssignmentStatement/);
 	assert.match(handlerSource, /function prepareAuditStatement/);
 	assert.match(handlerSource, /async function writeAssignmentWithAudit/);
 	assert.match(handlerSource, /typeof db\.batch !== "function"/);
 	assert.match(handlerSource, /role_assignment_transaction_unavailable/);
-	assert.match(handlerSource, /await db\.batch\(\[assignmentStatement, auditStatement\]\);/);
+	assert.match(handlerSource, /await db\.batch\(statements\);/);
+	assert.match(handlerSource, /INSERT INTO auth_team_memberships/);
 	assert.match(handlerSource, /INSERT INTO auth_role_assignments/);
 	assert.match(handlerSource, /ON CONFLICT\(user_id, role_id, scope_type, scope_id\) DO UPDATE/);
 	assert.match(handlerSource, /INSERT INTO auth_audit_events/);
 	assert.match(handlerSource, /auth\.role_assignment\.created/);
 	assert.match(handlerSource, /permission_code/);
 	assert.match(handlerSource, /role\.assign/);
+	assert.match(handlerSource, /team_membership_activated/);
 }
 
 function assertRouteStatusMigrationExists() {
@@ -80,8 +96,9 @@ function assertRouteStatusMigrationExists() {
 assertWorkerWiresRoleAssignmentRoute();
 assertHandlerUsesAuthenticationAndRoutePermission();
 assertHandlerScopesAssignmentsToActiveTeam();
+assertHandlerActivatesPendingUserWhenAssigningRole();
 assertHandlerRequiresTargetRoleAndReason();
 assertHandlerRejectsConflictingTargetIdentifiers();
 assertHandlerRequiresSensitiveRoleConfirmation();
-assertHandlerWritesAssignmentAndAuditEventAtomically();
+assertHandlerWritesMembershipAssignmentAndAuditEventAtomically();
 assertRouteStatusMigrationExists();
