@@ -55,6 +55,28 @@ async function listAllActiveTeams(db) {
 	return result.results || [];
 }
 
+async function listTeamsManagedByUser(db, userId) {
+	if (!db || !userId) return [];
+	const result = await db
+		.prepare(`
+			SELECT DISTINCT t.id, t.name
+			FROM auth_role_assignments ra
+			INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
+			INNER JOIN auth_permissions p ON p.code = rp.permission_code
+			INNER JOIN auth_teams t ON t.id = ra.scope_id
+			WHERE ra.user_id = ?
+				AND ra.scope_type = 'team'
+				AND ra.assignment_status = 'active'
+				AND t.team_status = 'active'
+				AND p.code = 'role.assign'
+				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+			ORDER BY t.name ASC
+		`)
+		.bind(userId)
+		.all();
+	return result.results || [];
+}
+
 function globalTeamAdminPermissions(permissions) {
 	const next = [...(permissions || [])];
 	for (const permission of [
@@ -96,14 +118,15 @@ export async function resolveAuthenticatedContext(request, env) {
 	const baseContext = await resolveBaseAuthenticatedContext(request, env);
 	const db = dbFor(env);
 	const isCoreTeamAdmin = await isResearchOpsCoreTeamAdmin(db, baseContext?.user?.id);
-	const manageableTeams = isCoreTeamAdmin ? await listAllActiveTeams(db) : baseContext.teams || [];
+	const memberTeams = baseContext.teams || [];
+	const manageableTeams = isCoreTeamAdmin ? await listAllActiveTeams(db) : await listTeamsManagedByUser(db, baseContext?.user?.id);
 
 	return {
 		...baseContext,
 		isResearchOpsCoreTeamAdmin: isCoreTeamAdmin,
-		memberTeams: baseContext.teams || [],
+		memberTeams,
 		manageableTeams,
-		teams: manageableTeams,
+		teams: memberTeams,
 		permissions: isCoreTeamAdmin ? globalTeamAdminPermissions(baseContext.permissions) : baseContext.permissions,
 	};
 }
