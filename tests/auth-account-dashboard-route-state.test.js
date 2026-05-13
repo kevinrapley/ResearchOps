@@ -10,12 +10,22 @@ const productRequirements = fs.readFileSync(
 
 function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /<title>Your ResearchOps account - ResearchOps Demo Suite<\/title>/);
-	assert.match(accountPage, /<h1 class="govuk-heading-xl" id="account-dashboard-title">Welcome\. Here is your account dashboard<\/h1>/);
+	assert.match(accountPage, /<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account<\/h1>/);
+	assert.match(accountPage, /Check your teams, roles and available actions\./);
 	assert.match(accountPage, /id="account-dashboard"/);
 	assert.match(accountPage, /id="account-user-value"/);
-	assert.match(accountPage, /id="account-team-value"/);
-	assert.match(accountPage, /id="account-roles-value"/);
+	assert.match(accountPage, /aria-label="Account summary"/);
+	assert.match(accountPage, /id="account-team-memberships"/);
+	assert.match(accountPage, /Teams and roles/);
+	assert.match(accountPage, /Your roles are scoped by team/);
+	assert.doesNotMatch(accountPage, /id="account-team-value"/);
+	assert.doesNotMatch(accountPage, /id="account-roles-value"/);
+	assert.doesNotMatch(accountPage, /<h2 class="govuk-heading-m" id="account-summary-title">Account summary<\/h2>/);
+	assert.match(accountPage, /id="account-actions-section" hidden/);
 	assert.match(accountPage, /id="account-actions"/);
+	assert.doesNotMatch(accountPage, /id="account-no-actions"/);
+	assert.match(accountPage, /id="account-permissions-details" hidden/);
+	assert.match(accountPage, /View permission details/);
 	assert.match(accountPage, /id="account-permissions"/);
 	assert.match(accountPage, /id="account-logout"/);
 }
@@ -27,7 +37,7 @@ function assertAccountPageDoesNotUseSuccessMessagePattern() {
 }
 
 function assertAccountPageLoadsDashboardScript() {
-	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260512/);
+	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260513-teams-v3/);
 }
 
 function assertDashboardUsesPasswordlessApiAndAuthContext() {
@@ -39,23 +49,61 @@ function assertDashboardUsesPasswordlessApiAndAuthContext() {
 	assert.match(accountScript, /SIGN_IN_URL: '\/pages\/account\/sign-in\/'/);
 }
 
-function assertDashboardRendersTeamRolesAndPermissions() {
-	assert.match(accountScript, /activeTeamLabel\(context\)/);
-	assert.match(accountScript, /roleLabels\(context\)/);
-	assert.match(accountScript, /permissionCodes\(context\)/);
-	assert.match(accountScript, /permissionLabels\(context\)/);
-	assert.match(accountScript, /Welcome, \$\{name\}\. Here is your account dashboard/);
-	assert.match(accountScript, /context\?\.activeTeam\?\.name/);
-	assert.match(accountScript, /context\?\.roles/);
+function assertDashboardRendersAdaptiveTeamMembershipPresentation() {
+	assert.match(accountScript, /teamMemberships\(context\)/);
+	assert.match(accountScript, /renderTeamMemberships\(context\)/);
+	assert.match(accountScript, /context\?\.teamMemberships \|\| context\?\.memberTeams/);
+	assert.match(accountScript, /fallbackActiveTeamMembership\(context\)/);
+	assert.match(accountScript, /context\?\.activeTeam\?\.id/);
+	assert.match(accountScript, /roles: context\.roles \|\| \[\]/);
+	assert.match(accountScript, /permissions: context\.permissions \|\| \[\]/);
+	assert.match(accountScript, /function renderSingleTeamMembership\(team\)/);
+	assert.match(accountScript, /function renderMultipleTeamMemberships\(memberships\)/);
+	assert.match(accountScript, /Your team/);
+	assert.match(accountScript, /Your teams/);
+	assert.match(accountScript, /You have different access in each team/);
+	assert.match(accountScript, /Role or roles/);
+	assert.match(accountScript, /No active role/);
+	assert.match(accountScript, /dom\.title\) dom\.title\.textContent = 'Your ResearchOps account'/);
 	assert.match(accountScript, /context\?\.permissions/);
+	assert.match(accountScript, /currentTag\(team, memberships\.length\)/);
+	assert.match(accountScript, /membershipCount <= 1/);
+	assert.doesNotMatch(accountScript, /Team membership and role access/);
+	assert.doesNotMatch(accountScript, /<table class="govuk-table">/);
+	assert.doesNotMatch(accountScript, /<th scope="col" class="govuk-table__header">Permissions<\/th>/);
+	assert.doesNotMatch(accountScript, /govuk-summary-card/);
+	assert.doesNotMatch(accountScript, /activeTeamLabel\(context\)/);
 }
 
-function assertDashboardActionsArePermissionBased() {
+function assertDashboardSeparatesRolesFromCapabilities() {
+	assert.match(accountScript, /function roleLabels\(team\)/);
+	assert.match(accountScript, /labelList\(team\?\.roles, 'No active role'\)/);
+	assert.match(accountScript, /renderPermissions\(context, memberships\)/);
+	assert.match(accountScript, /const showPermissionDetails = hasResearchOpsCoreTeamAdmin\(memberships\) && labels\.length > 0/);
+	assert.match(accountScript, /setVisible\(dom\.permissionsDetails, showPermissionDetails\)/);
+	assert.doesNotMatch(accountScript, /labelList\(team\.permissions, 'No active permissions'\)/);
+	assert.doesNotMatch(accountScript, /No active permissions for the current team context/);
+}
+
+function assertDashboardExplainsResearchOpsCoreTeamAdmin() {
+	assert.match(accountScript, /function isResearchOpsCoreTeam\(team\)/);
+	assert.match(accountScript, /team\?\.id === 'team_researchops_core'/);
+	assert.match(accountScript, /team\?\.name === 'ResearchOps Core Team'/);
+	assert.match(accountScript, /function isResearchOpsCoreTeamAdmin\(team\)/);
+	assert.match(accountScript, /hasRole\(team, 'team_admin'\)/);
+	assert.match(accountScript, /function hasResearchOpsCoreTeamAdmin\(memberships\)/);
+	assert.match(accountScript, /You are a Team Admin in ResearchOps Core Team/);
+	assert.match(accountScript, /manage roles across teams and create new teams/);
+}
+
+function assertDashboardActionsArePermissionBasedAndHiddenWhenUnavailable() {
 	assert.match(accountScript, /permission: 'role\.assign'/);
 	assert.match(accountScript, /permission: 'governed\.approve'/);
 	assert.match(accountScript, /permission: 'safeguarding\.view'/);
 	assert.match(accountScript, /permission: 'audit\.view'/);
+	assert.match(accountScript, /function allowedActions\(context\)/);
 	assert.match(accountScript, /ACTIONS\.filter\(\(action\) => codes\.has\(action\.permission\)\)/);
+	assert.match(accountScript, /setVisible\(dom\.actionsSection, actions\.length > 0\)/);
 	assert.equal(accountScript.includes("role.label === 'Team Admin'"), false);
 	assert.equal(accountScript.includes("role.key === 'team_admin'"), false);
 }
@@ -78,7 +126,9 @@ assertAccountPageExistsAsDashboard();
 assertAccountPageDoesNotUseSuccessMessagePattern();
 assertAccountPageLoadsDashboardScript();
 assertDashboardUsesPasswordlessApiAndAuthContext();
-assertDashboardRendersTeamRolesAndPermissions();
-assertDashboardActionsArePermissionBased();
+assertDashboardRendersAdaptiveTeamMembershipPresentation();
+assertDashboardSeparatesRolesFromCapabilities();
+assertDashboardExplainsResearchOpsCoreTeamAdmin();
+assertDashboardActionsArePermissionBasedAndHiddenWhenUnavailable();
 assertDashboardSupportsLogout();
 assertProductRequirementsSupportPermissionBasedDashboard();

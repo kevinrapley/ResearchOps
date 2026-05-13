@@ -2,30 +2,77 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
-const handlerSource = fs.readFileSync('infra/cloudflare/src/core/auth/role-assignments.js', 'utf8');
+const handlerSource = fs.readFileSync('infra/cloudflare/src/core/auth/role-assignments-scoped.js', 'utf8');
+const accessScopedSource = fs.readFileSync('infra/cloudflare/src/core/auth/access-scoped.js', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0002_auth_role_assignment_route.sql', 'utf8');
 
-function assertWorkerWiresRoleAssignmentRoute() {
+function assertWorkerWiresScopedRoleAssignmentRoute() {
 	assert.match(workerSource, /handleRoleAssignmentsRoute/);
-	assert.match(workerSource, /\.\/core\/auth\/role-assignments\.js/);
+	assert.match(workerSource, /\.\/core\/auth\/role-assignments-scoped\.js/);
+	assert.doesNotMatch(workerSource, /\.\/core\/auth\/role-assignments\.js/);
 	assert.match(workerSource, /method === "POST" && apiPath === "\/api\/auth\/role-assignments"/);
 }
 
-function assertHandlerUsesAuthenticationAndRoutePermission() {
+function assertHandlerUsesScopedAuthenticationAndRoutePermission() {
+	assert.match(handlerSource, /\.\/access-scoped\.js/);
 	assert.match(handlerSource, /resolveAuthenticatedContext/);
 	assert.match(handlerSource, /assertRoutePermission/);
 	assert.match(handlerSource, /routePermissionErrorResponse/);
 	assert.match(handlerSource, /readJson\(request\)/);
 }
 
+function assertAccessContextSeparatesMembershipFromAdministration() {
+	assert.match(accessScopedSource, /memberTeams/);
+	assert.match(accessScopedSource, /teamMemberships/);
+	assert.match(accessScopedSource, /manageableTeams/);
+	assert.match(accessScopedSource, /roleAssignableTeams/);
+	assert.match(accessScopedSource, /teams: manageableTeams/);
+	assert.match(accessScopedSource, /async function listMembershipTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /FROM auth_team_memberships m/);
+	assert.match(accessScopedSource, /m\.membership_status = 'active'/);
+	assert.match(accessScopedSource, /t\.team_status = 'active'/);
+	assert.match(accessScopedSource, /async function listRoleAssignmentTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /FROM auth_role_assignments ra/);
+	assert.match(accessScopedSource, /'role_assignment' AS membershipSource/);
+	assert.match(accessScopedSource, /function combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
+	assert.match(accessScopedSource, /const roleAssignmentTeams = await listRoleAssignmentTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /const teams = combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
+	assert.match(accessScopedSource, /async function buildMemberTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /const memberTeams = await buildMemberTeams\(db, baseContext\?\.user\?\.id\)/);
+	assert.doesNotMatch(accessScopedSource, /buildMemberTeams\(db, baseContext\?\.user\?\.id, baseContext\.teams/);
+	assert.match(accessScopedSource, /async function listTeamsManagedByUser\(db, userId\)/);
+	assert.match(accessScopedSource, /p\.code = 'role\.assign'/);
+	assert.match(accessScopedSource, /async function isResearchOpsCoreTeamAdmin\(db, userId\)/);
+	assert.match(accessScopedSource, /ResearchOps Core Team/);
+	assert.match(accessScopedSource, /async function listAllActiveTeams\(db\)/);
+}
+
+function assertResearchOpsCoreTeamAdminIsTheOnlyGlobalAdministrationException() {
+	assert.match(accessScopedSource, /r\.role_key = 'team_admin'/);
+	assert.match(accessScopedSource, /t\.name = 'ResearchOps Core Team'/);
+	assert.match(accessScopedSource, /const isCoreTeamAdmin = await isResearchOpsCoreTeamAdmin\(db, baseContext\?\.user\?\.id\)/);
+	assert.match(accessScopedSource, /const manageableTeams = isCoreTeamAdmin \? await listAllActiveTeams\(db\) : await listTeamsManagedByUser\(db, baseContext\?\.user\?\.id\)/);
+	assert.doesNotMatch(accessScopedSource, /user_researcher/);
+	assert.doesNotMatch(accessScopedSource, /note_taker/);
+}
+
+function assertNoScenarioSpecificRoleCatalogueIsRequired() {
+	assert.doesNotMatch(workerSource, /TEAM_SCOPED_ROLE_CATALOGUE_MIGRATION/);
+	assert.doesNotMatch(handlerSource, /user_researcher/);
+	assert.doesNotMatch(handlerSource, /note_taker/);
+	assert.doesNotMatch(accessScopedSource, /user_researcher/);
+	assert.doesNotMatch(accessScopedSource, /note_taker/);
+}
+
 function assertHandlerRequiresExplicitAssignableTeam() {
 	assert.match(handlerSource, /function requestedTeamIdFor\(body, context\)/);
 	assert.match(handlerSource, /body\.teamId/);
 	assert.match(handlerSource, /active_team_required/);
-	assert.match(handlerSource, /function assertTeamAvailableToAssigner\(context, teamId\)/);
-	assert.match(handlerSource, /context\.teams/);
+	assert.match(handlerSource, /function manageableTeamsFor\(context\)/);
+	assert.match(handlerSource, /context\.manageableTeams/);
 	assert.match(handlerSource, /team_not_available/);
-	assert.match(handlerSource, /async function canAssignRolesInTeam\(db, userId, teamId\)/);
+	assert.match(handlerSource, /async function canAssignRolesInTeam\(db, context, teamId\)/);
+	assert.match(handlerSource, /context\.isResearchOpsCoreTeamAdmin/);
 	assert.match(handlerSource, /p\.code = 'role\.assign'/);
 	assert.match(handlerSource, /selected_team_role_assignment_forbidden/);
 	assert.match(handlerSource, /async function resolveExistingAssignmentTeam\(db, context, body\)/);
@@ -34,14 +81,13 @@ function assertHandlerRequiresExplicitAssignableTeam() {
 }
 
 function assertHandlerSupportsInlineTeamCreation() {
-	assert.match(handlerSource, /const CREATE_TEAM_ACTION = "create"/);
-	assert.match(handlerSource, /function isCreateTeamRequest\(body\)/);
-	assert.match(handlerSource, /function requestedNewTeamNameFor\(body\)/);
+	assert.match(handlerSource, /const CREATE_TEAM_ACTION = 'create'/);
+	assert.match(handlerSource, /requestedNewTeamNameFor/);
 	assert.match(handlerSource, /new_team_name_required/);
 	assert.match(handlerSource, /new_team_name_too_long/);
 	assert.match(handlerSource, /function assertCanCreateTeam\(context\)/);
-	assert.match(handlerSource, /permissions\.has\("team\.manage"\)/);
-	assert.match(handlerSource, /permissions\.has\("role\.assign"\)/);
+	assert.match(handlerSource, /permissions\.has\('team\.manage'\)/);
+	assert.match(handlerSource, /permissions\.has\('role\.assign'\)/);
 	assert.match(handlerSource, /team_creation_forbidden/);
 	assert.match(handlerSource, /async function readActiveTeamByName\(db, teamName\)/);
 	assert.match(handlerSource, /team_name_already_exists/);
@@ -49,11 +95,8 @@ function assertHandlerSupportsInlineTeamCreation() {
 	assert.match(handlerSource, /team_admin_role_unavailable/);
 	assert.match(handlerSource, /function prepareCreateTeamStatement\(db, team\)/);
 	assert.match(handlerSource, /INSERT INTO auth_teams/);
-	assert.match(handlerSource, /function prepareAdminMembershipStatement\(db, context, team\)/);
-	assert.match(handlerSource, /function prepareAdminRoleAssignmentStatement\(db, context, team, teamAdminRole, requestedReason\)/);
-	assert.match(handlerSource, /function prepareTeamCreationAuditStatement\(db, request, context, team, reason\)/);
+	assert.match(handlerSource, /prepareTeamCreationAuditStatement/);
 	assert.match(handlerSource, /auth\.team\.created/);
-	assert.match(handlerSource, /team_created/);
 }
 
 function assertHandlerScopesAssignmentsToSelectedTeam() {
@@ -109,10 +152,10 @@ function assertHandlerRequiresSensitiveRoleConfirmation() {
 
 function assertHandlerWritesMembershipAssignmentAndAuditEventAtomically() {
 	assert.match(handlerSource, /function prepareMembershipStatement/);
-	assert.match(handlerSource, /function prepareAssignmentStatement/);
+	assert.match(handlerSource, /function prepareRoleAssignmentStatement/);
 	assert.match(handlerSource, /function prepareAuditStatement/);
 	assert.match(handlerSource, /async function writeAssignmentWithAudit/);
-	assert.match(handlerSource, /typeof db\.batch !== "function"/);
+	assert.match(handlerSource, /typeof db\.batch !== 'function'/);
 	assert.match(handlerSource, /role_assignment_transaction_unavailable/);
 	assert.match(handlerSource, /await db\.batch\(statements\);/);
 	assert.match(handlerSource, /team\.preAssignmentStatements/);
@@ -127,10 +170,7 @@ function assertHandlerWritesMembershipAssignmentAndAuditEventAtomically() {
 }
 
 function assertHandlerReturnsSelectedTeam() {
-	assert.match(handlerSource, /team: \{/);
-	assert.match(handlerSource, /id: result\.team\.id/);
-	assert.match(handlerSource, /name: result\.team\.name/);
-	assert.match(handlerSource, /created: result\.team\.created === true/);
+	assert.match(handlerSource, /team: \{ id: result\.team\.id, name: result\.team\.name, created: result\.team\.created === true \}/);
 	assert.match(handlerSource, /scopeId: result\.team\.id/);
 }
 
@@ -142,8 +182,11 @@ function assertRouteStatusMigrationExists() {
 	assert.match(migrationSource, /required_permissions_json = '\["role.assign"\]'/);
 }
 
-assertWorkerWiresRoleAssignmentRoute();
-assertHandlerUsesAuthenticationAndRoutePermission();
+assertWorkerWiresScopedRoleAssignmentRoute();
+assertHandlerUsesScopedAuthenticationAndRoutePermission();
+assertAccessContextSeparatesMembershipFromAdministration();
+assertResearchOpsCoreTeamAdminIsTheOnlyGlobalAdministrationException();
+assertNoScenarioSpecificRoleCatalogueIsRequired();
 assertHandlerRequiresExplicitAssignableTeam();
 assertHandlerSupportsInlineTeamCreation();
 assertHandlerScopesAssignmentsToSelectedTeam();

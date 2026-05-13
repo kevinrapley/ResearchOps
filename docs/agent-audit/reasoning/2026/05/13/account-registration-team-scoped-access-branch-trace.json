@@ -1,0 +1,197 @@
+{
+	"schemaVersion": "researchops-agent-trace-summary/v1",
+	"traceType": "backfilled-operational-audit",
+	"date": "2026-05-13",
+	"branch": "fix/account-auth-redirect-and-team-selection",
+	"pullRequest": 250,
+	"scope": [
+		"account-registration",
+		"signed-in-registration-redirect",
+		"role-assignment",
+		"team-creation",
+		"team-scoped-access",
+		"account-dashboard",
+		"preview-worker-deployment"
+	],
+	"evidenceBoundary": {
+		"privateChainOfThoughtExposed": false,
+		"summary": "This trace records observable repository work, files affected, implementation decisions, pivots, validation evidence and residual risks."
+	},
+	"operatingModel": {
+		"filesLoaded": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/trace-policy.md",
+			".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+			".agent-operating-model/bundles/govuk-design-system/references/govuk-components-reference.xml",
+			".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+			".agent-operating-model/bundles/multi-functional-team/roles/interaction-design.xml",
+			".agent-operating-model/bundles/multi-functional-team/roles/content-design.xml",
+			".agent-operating-model/bundles/multi-functional-team/roles/information-architect.xml"
+		],
+		"bundlesSelected": [
+			"github-diamond",
+			"researchops-developer-control",
+			"multi-functional-team",
+			"govuk-design-system",
+			"cloudflare"
+		],
+		"bundlesSkipped": [
+			"airtable-public-api",
+			"mural-public-api",
+			"openai-platform",
+			"mcp-agent-tooling"
+		],
+		"precedenceDecisions": [
+			"GitHub bundle governed branch, PR, CI and repository safety.",
+			"ResearchOps Developer Control governed platform architecture and route-state tests.",
+			"GOV.UK Design System governed UI, content, accessibility and component choice.",
+			"Multi-Functional Team roles informed interaction design, content design, IA and service-design decisions.",
+			"Cloudflare governed Worker, D1 and preview deployment behaviour."
+		]
+	},
+	"workSummary": {
+		"originalTask": "Create account registration so users can request an account without assigning themselves a role.",
+		"expandedScopeReason": "Registration, role assignment, account display and preview deployment shared the same account context and access-control model.",
+		"finalModel": "Users can belong to multiple teams and hold team-scoped roles. Team Admin in ResearchOps Core Team is the global administration exception."
+	},
+	"majorDecisions": [
+		{
+			"id": "registration-request-not-role-assignment",
+			"decision": "Registration creates a pending request for Team Admin review and does not assign roles directly.",
+			"reason": "Users should not self-grant access. The request only informs the reviewer."
+		},
+		{
+			"id": "govuk-language-and-validation",
+			"decision": "Use GOV.UK-style request, review and check-answers language with user-facing validation errors.",
+			"reason": "Avoid exposing implementation details and avoid implying access has been granted."
+		},
+		{
+			"id": "signed-in-registration-redirect",
+			"decision": "Redirect signed-in users from account registration to the account dashboard.",
+			"reason": "The registration journey is for users who do not already have a signed-in ResearchOps account."
+		},
+		{
+			"id": "explicit-team-selection-for-role-assignment",
+			"decision": "Role assignment requires a selected team or an explicitly created new team.",
+			"reason": "Assignments must not silently default to ResearchOps Core Team."
+		},
+		{
+			"id": "generic-team-scoped-role-model",
+			"decision": "Do not add scenario-specific role catalogue entries for example roles such as User Researcher or Note-taker.",
+			"reason": "The requested model was team-scoped roles and privileges, not hard-coded scenario examples."
+		},
+		{
+			"id": "api-me-membership-enrichment",
+			"decision": "Expose memberTeams and teamMemberships from /api/me.",
+			"reason": "The account dashboard must show all team memberships and roles, not only a single active-team summary."
+		},
+		{
+			"id": "membership-recovery-from-role-assignments",
+			"decision": "Recover display memberships from active team-scoped role assignments where membership rows are missing.",
+			"reason": "Preview data contained active permissions but the membership display was empty."
+		},
+		{
+			"id": "deploy-worker-fix-branches",
+			"decision": "Deploy preview Workers for fix/** branches.",
+			"reason": "Backend fixes were passing CI but not deploying from the PR branch class."
+		},
+		{
+			"id": "adaptive-account-dashboard-ui",
+			"decision": "Replace the team-role-permissions table with adaptive summary-card and list presentation.",
+			"reason": "Single-team, multi-team and ResearchOps Core Team Admin accounts need different levels of UI complexity."
+		}
+	],
+	"filesAffected": {
+		"frontend": [
+			"public/pages/account/register/index.html",
+			"public/js/auth-registration-page.js",
+			"public/css/auth-registration.css",
+			"public/pages/account/index.html",
+			"public/js/auth-account-page.js",
+			"public/pages/team/role-assignments/index.html",
+			"public/js/auth-role-assignment-page.js"
+		],
+		"worker": [
+			"infra/cloudflare/src/core/auth/access.js",
+			"infra/cloudflare/src/core/auth/access-scoped.js",
+			"infra/cloudflare/src/core/auth/role-assignments-scoped.js",
+			"infra/cloudflare/src/core/auth/registration-requests.js",
+			"infra/cloudflare/src/worker.js"
+		],
+		"workflow": [
+			".github/workflows/deploy-worker.yml"
+		],
+		"tests": [
+			"tests/auth-registration-requests-route-state.test.js",
+			"tests/auth-registration-signed-in-redirect-route-state.test.js",
+			"tests/auth-role-assignment-api-route-state.test.js",
+			"tests/auth-role-assignment-ui-route-state.test.js",
+			"tests/auth-account-dashboard-route-state.test.js"
+		],
+		"documentation": [
+			"docs/product/26/05/13/team-scoped-account-dashboard.md",
+			"docs/product/26/05/13/account-dashboard-adaptive-team-role-presentation.md",
+			"docs/product/26/05/13/account-registration-team-scoped-access-iteration-log.md",
+			"RECENT_LEARNINGS.md",
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-team-scoped-access-branch-trace.md",
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-team-scoped-access-branch-trace.json"
+		]
+	},
+	"validation": {
+		"attempted": [
+			"CI",
+			"Worker CI",
+			"Release Gate",
+			"Validate ResearchOps",
+			"qa-bdd",
+			"Accessibility audit",
+			"Broken links",
+			"Format pull request"
+		],
+		"knownFailuresAddressed": [
+			"Registration send request failed in preview because API routing was incomplete.",
+			"Check answers change links did not allow answer changes.",
+			"Check answers container received inappropriate focus styling.",
+			"Preview Worker deployment did not run on fix/** branches.",
+			"Route-state test expected only main and feature/** deploy branches after fix/** was added.",
+			"Account dashboard showed no memberships when preview data had active role assignments but missing membership rows.",
+			"Account dashboard used an unsuitable table design once membership data appeared."
+		],
+		"notRunLocally": [
+			"Full local npm test suite was not run through this chat tool path.",
+			"Direct preview D1 SQL inspection was not available through the connected tools in this chat."
+		]
+	},
+	"issuesAndPivots": [
+		{
+			"issue": "Backend changes were not visible in preview.",
+			"pivot": "Identified Worker deploy workflow branch filters and added fix/**."
+		},
+		{
+			"issue": "Account dashboard had active permissions but no visible team memberships.",
+			"pivot": "Recovered membership display from active team-scoped role assignments as well as membership rows."
+		},
+		{
+			"issue": "Table-based dashboard was visually poor after data was fixed.",
+			"pivot": "Changed presentation to adaptive summary-card and list patterns."
+		},
+		{
+			"issue": "Product notes and trace records lagged behind implementation.",
+			"pivot": "Backfilled product decision files, RECENT_LEARNINGS.md and agent audit trace artefacts."
+		}
+	],
+	"residualRisks": [
+		"Current permissions may still be too detailed for ordinary users and may need further content design review.",
+		"The dashboard does not yet provide a first-class team-switching interaction for multi-team users.",
+		"Membership recovery improves display resilience but database writes should still be monitored for integrity.",
+		"The latest adaptive dashboard should be reviewed visually in preview after the cache-bust asset deploys."
+	],
+	"followUpRecommendations": [
+		"Test the dashboard with one ordinary team, multiple ordinary teams and ResearchOps Core Team Admin states.",
+		"Consider hiding or simplifying Current permissions for non-admin users.",
+		"Add a team-context selection journey if multi-team users need to switch working context.",
+		"Keep product notes and traces updated continuously on future long-running branches."
+	]
+}

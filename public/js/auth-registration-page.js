@@ -19,6 +19,7 @@ function defaultApiOrigin() {
 }
 
 const CONFIG = Object.freeze({
+	ACCOUNT_URL: '/pages/account/',
 	API_BASE: defaultApiOrigin(),
 	CACHE: 'no-store',
 	FETCH_TIMEOUT_MS: 12000,
@@ -131,6 +132,10 @@ function apiUrl(path, base = CONFIG.API_BASE) {
 	if (/^https?:\/\//i.test(value)) return value;
 	if (!base) return value.startsWith('/') ? value : `/${value}`;
 	return `${base}${value.startsWith('/') ? value : `/${value}`}`;
+}
+
+function redirectToAccount() {
+	location.assign(CONFIG.ACCOUNT_URL);
 }
 
 function resetStatusPresentation() {
@@ -462,7 +467,20 @@ function handleCheckAnswerChange(event) {
 	showForm(link.dataset.changeTarget || '');
 }
 
-function init() {
+async function redirectAlreadySignedInUser() {
+	try {
+		const response = await fetchJson('/api/me');
+		if (response.ok && response.data?.ok && response.data?.authenticated) {
+			redirectToAccount();
+			return true;
+		}
+	} catch {
+		return false;
+	}
+	return false;
+}
+
+async function init() {
 	if (!dom.form) return;
 	dom.form.addEventListener('submit', submitRegistrationRequest);
 	dom.confirmButton?.addEventListener('click', sendRegistrationRequest);
@@ -472,7 +490,10 @@ function init() {
 		input.addEventListener('change', setOtherRoleVisibility);
 	});
 	setOtherRoleVisibility();
-	clearStatus();
+	setStatus('Checking your account', '<p class="govuk-body">Checking whether you are already signed in.</p>');
+	if (dom.form) dom.form.hidden = true;
+	if (dom.checkAnswers) dom.checkAnswers.hidden = true;
+	if (!(await redirectAlreadySignedInUser())) showForm();
 }
 
 init();
@@ -488,6 +509,8 @@ window.__ropsAuthRegistrationPage = Object.freeze({
 	configuredApiOrigin,
 	defaultApiOrigin,
 	focusFormTarget,
+	redirectAlreadySignedInUser,
+	redirectToAccount,
 	selectedRoleKey,
 	shouldUseFallbackApiOrigin,
 });

@@ -53,10 +53,10 @@ const dom = {
 	dashboard: document.getElementById('account-dashboard'),
 	title: document.getElementById('account-dashboard-title'),
 	user: document.getElementById('account-user-value'),
-	team: document.getElementById('account-team-value'),
-	roles: document.getElementById('account-roles-value'),
+	teamMemberships: document.getElementById('account-team-memberships'),
+	actionsSection: document.getElementById('account-actions-section'),
 	actions: document.getElementById('account-actions'),
-	noActions: document.getElementById('account-no-actions'),
+	permissionsDetails: document.getElementById('account-permissions-details'),
 	permissions: document.getElementById('account-permissions'),
 	logout: document.getElementById('account-logout'),
 };
@@ -134,12 +134,46 @@ function displayName(context) {
 	return String(rawName).includes('@') ? String(rawName).split('@')[0] : rawName;
 }
 
-function activeTeamLabel(context) {
-	return context?.activeTeam?.name || context?.activeTeam?.id || 'No active team';
+function labelList(items, emptyLabel) {
+	const labels = (items || [])
+		.map((item) => item.label || item.name || item.code || item.key)
+		.filter(Boolean)
+		.sort((first, second) => first.localeCompare(second));
+	return labels.length ? labels.join(', ') : emptyLabel;
 }
 
-function roleLabels(context) {
-	return (context?.roles || []).map((role) => role.label || role.key).filter(Boolean);
+function fallbackActiveTeamMembership(context) {
+	if (!context?.activeTeam?.id) return [];
+	return [
+		{
+			...context.activeTeam,
+			roles: context.roles || [],
+			permissions: context.permissions || [],
+			current: true,
+			fallbackFromActiveTeam: true,
+		},
+	];
+}
+
+function teamMemberships(context) {
+	const explicitMemberships = context?.teamMemberships || context?.memberTeams || [];
+	const memberships = explicitMemberships.length ? explicitMemberships : fallbackActiveTeamMembership(context);
+	const activeTeamId = context?.activeTeam?.id;
+	const seen = new Set();
+	const normalised = [];
+
+	for (const team of memberships) {
+		if (!team?.id || seen.has(team.id)) continue;
+		seen.add(team.id);
+		normalised.push({
+			...team,
+			roles: team.roles || [],
+			permissions: team.permissions || [],
+			current: Boolean(team.current || (activeTeamId && team.id === activeTeamId)),
+		});
+	}
+
+	return normalised;
 }
 
 function permissionCodes(context) {
@@ -153,33 +187,124 @@ function permissionLabels(context) {
 		.sort((first, second) => first.localeCompare(second));
 }
 
-function renderActions(context) {
-	const codes = permissionCodes(context);
-	const allowedActions = ACTIONS.filter((action) => codes.has(action.permission));
-	if (!dom.actions || !dom.noActions) return;
-
-	dom.actions.innerHTML = allowedActions
-		.map((action) => `<a class="govuk-button" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`)
-		.join('');
-	setVisible(dom.noActions, allowedActions.length === 0);
+function hasRole(team, roleKey) {
+	return (team?.roles || []).some((role) => role.key === roleKey || role.roleKey === roleKey);
 }
 
-function renderPermissions(context) {
-	if (!dom.permissions) return;
+function isResearchOpsCoreTeam(team) {
+	return team?.id === 'team_researchops_core' || team?.name === 'ResearchOps Core Team';
+}
+
+function isResearchOpsCoreTeamAdmin(team) {
+	return isResearchOpsCoreTeam(team) && hasRole(team, 'team_admin');
+}
+
+function hasResearchOpsCoreTeamAdmin(memberships) {
+	return (memberships || []).some(isResearchOpsCoreTeamAdmin);
+}
+
+function currentTag(team, membershipCount) {
+	if (!team?.current || membershipCount <= 1) return '';
+	return '<strong class="govuk-tag govuk-tag--blue">Current</strong>';
+}
+
+function roleLabels(team) {
+	return labelList(team?.roles, 'No active role');
+}
+
+function renderCoreAdminInset(team) {
+	if (!isResearchOpsCoreTeamAdmin(team)) return '';
+	return `
+		<div class="govuk-inset-text">
+			You are a Team Admin in ResearchOps Core Team. You can manage roles across teams and create new teams.
+		</div>
+	`;
+}
+
+function renderSingleTeamMembership(team) {
+	return `
+		<h3 class="govuk-heading-s">Your team</h3>
+		<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Team</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(team.name || team.id || 'Unnamed team')}</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Role or roles</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
+			</div>
+		</dl>
+		${renderCoreAdminInset(team)}
+	`;
+}
+
+function renderMultipleTeamMemberships(memberships) {
+	return `
+		<h3 class="govuk-heading-s">Your teams</h3>
+		<p class="govuk-body">You have different access in each team.</p>
+		<ul class="govuk-list govuk-list--spaced">
+			${memberships
+				.map(
+					(team) => `
+						<li>
+							<h4 class="govuk-heading-s govuk-!-margin-bottom-1">
+								${escapeHtml(team.name || team.id || 'Unnamed team')}
+								${currentTag(team, memberships.length)}
+							</h4>
+							<p class="govuk-body govuk-!-margin-bottom-0">${escapeHtml(roleLabels(team))}</p>
+							${renderCoreAdminInset(team)}
+						</li>
+					`,
+				)
+				.join('')}
+		</ul>
+	`;
+}
+
+function renderTeamMemberships(context) {
+	if (!dom.teamMemberships) return;
+	const memberships = teamMemberships(context);
+
+	if (memberships.length === 0) {
+		dom.teamMemberships.innerHTML = '<p class="govuk-body">You are not currently a member of any team.</p>';
+		return;
+	}
+
+	dom.teamMemberships.innerHTML =
+		memberships.length === 1 ? renderSingleTeamMembership(memberships[0]) : renderMultipleTeamMemberships(memberships);
+}
+
+function allowedActions(context) {
+	const codes = permissionCodes(context);
+	return ACTIONS.filter((action) => codes.has(action.permission));
+}
+
+function renderActions(context) {
+	const actions = allowedActions(context);
+	if (!dom.actions || !dom.actionsSection) return;
+
+	dom.actions.innerHTML = actions
+		.map((action) => `<a class="govuk-button" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`)
+		.join('');
+	setVisible(dom.actionsSection, actions.length > 0);
+}
+
+function renderPermissions(context, memberships) {
+	if (!dom.permissions || !dom.permissionsDetails) return;
 	const labels = permissionLabels(context);
-	dom.permissions.innerHTML = labels.length
-		? labels.map((label) => `<li>${escapeHtml(label)}</li>`).join('')
-		: '<li>No active permissions for this team</li>';
+	const showPermissionDetails = hasResearchOpsCoreTeamAdmin(memberships) && labels.length > 0;
+
+	dom.permissions.innerHTML = labels.map((label) => `<li>${escapeHtml(label)}</li>`).join('');
+	setVisible(dom.permissionsDetails, showPermissionDetails);
 }
 
 function renderDashboard(context) {
-	const name = displayName(context);
-	if (dom.title) dom.title.textContent = `Welcome, ${name}. Here is your account dashboard`;
+	const memberships = teamMemberships(context);
+	if (dom.title) dom.title.textContent = 'Your ResearchOps account';
 	if (dom.user) dom.user.textContent = context?.user?.displayName || context?.user?.email || 'Not available';
-	if (dom.team) dom.team.textContent = activeTeamLabel(context);
-	if (dom.roles) dom.roles.textContent = roleLabels(context).join(', ') || 'No active role';
+	renderTeamMemberships(context);
 	renderActions(context);
-	renderPermissions(context);
+	renderPermissions(context, memberships);
 	setVisible(dom.status, false);
 	setVisible(dom.dashboard, true);
 }
@@ -232,8 +357,11 @@ init();
 window.__ropsAuthAccountPage = Object.freeze({
 	ACTIONS,
 	CONFIG,
+	allowedActions,
 	defaultApiOrigin,
 	displayName,
+	fallbackActiveTeamMembership,
 	permissionCodes,
 	renderDashboard,
+	teamMemberships,
 });

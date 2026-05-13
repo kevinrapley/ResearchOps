@@ -2,6 +2,46 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-13 — Account dashboards must adapt to the user's access shape
+
+Context: The account dashboard correctly retrieved team and role data, but the first successful design presented all team, role and permission data in a table. That was visually heavy and made a single-team account look as complex as a multi-team account.
+
+Learning: Correct data is not the same as a usable presentation. A user with one team needs a simple account summary. A user with multiple teams needs to compare team memberships. A ResearchOps Core Team Admin needs an explanation of their wider administrative capability. These are different UI states.
+
+Action: Account dashboards should branch their presentation by membership shape. Use a summary-card and summary-list for a single team, a spaced list for multiple teams, and a short explanatory inset for ResearchOps Core Team Admin capability. Do not use a table unless the user genuinely needs row-and-column comparison.
+
+## 2026-05-13 — Do not mix role membership with detailed capability labels
+
+Context: The account dashboard table showed roles and permissions in the same team-membership display. The result was noisy and made it harder to understand the basic question: which team am I in and what role do I have there?
+
+Learning: Role membership and current capabilities are related but different information types. Role membership belongs in the team-membership section. Effective permissions belong near actions and controls, where they explain why actions are available.
+
+Action: In account UI, show team names and role labels in the membership display. Keep permission labels in a separate `Current permissions` section or behind contextual help. Avoid exposing permission-code-like concepts as the primary account summary.
+
+## 2026-05-13 — Preview Worker deploy triggers must include the branch classes used for PR work
+
+Context: Backend fixes to `/api/me` passed CI but were not visible in preview because the Worker deployment workflow only ran on `main` and `feature/**`. The PR branch was `fix/account-auth-redirect-and-team-selection`.
+
+Learning: A preview Pages branch can appear up to date while the preview Worker is stale if workflow branch filters omit the branch class in use. This creates misleading UI debugging because front-end assets and API behaviour are from different commits.
+
+Action: When a PR changes Worker code, confirm the deploy workflow runs for that branch naming pattern. Keep `.github/workflows/deploy-worker.yml` branch filters aligned with real branch conventions such as `feature/**` and `fix/**`.
+
+## 2026-05-13 — Account membership recovery can hide data drift but must not replace correct writes
+
+Context: Preview data had active role assignments and permissions, but the account dashboard showed no team memberships. The backend was made more robust by recovering membership display data from active team-scoped role assignments as well as `auth_team_memberships`.
+
+Learning: Recovery logic improves resilience, but it is not a substitute for writing consistent records. Role assignment should continue to create or reactivate the relevant `auth_team_memberships` row.
+
+Action: Keep the role-assignment write path atomic: create/reactivate membership, create/update role assignment, and write audit evidence together. Use recovery logic only to make account views tolerant of historical or preview-state inconsistencies.
+
+## 2026-05-13 — Long-running access-control branches need continuous product notes and traces
+
+Context: The account registration work expanded into signed-in redirects, role assignment, team creation, team-scoped permissions, preview Worker deployment and dashboard design. Several implementation pivots happened before product notes and trace records were backfilled.
+
+Learning: When a branch changes scope or crosses product, design, backend and deployment concerns, documentation must be kept current as the work evolves. Backfilling is possible, but it risks losing the sequence of decisions and the reasons for pivots.
+
+Action: For long-running repository-affecting work, update `docs/product/` and `docs/agent-audit/reasoning/` when a meaningful decision or pivot happens. Do not wait until the branch is nearly finished. Use `RECENT_LEARNINGS.md` for reusable process lessons, not as a changelog.
+
 ## 2026-05-13 — New branch features must work end to end in preview and production
 
 Context: The account registration page reached the check-answers step in a Pages branch preview, but `Send request` failed because the frontend assumed a Worker origin that was not guaranteed to work for that preview environment. The journey needed to work in both preview and production, not only in static page rendering.

@@ -265,11 +265,22 @@ async function updateLastSeen(db, subject) {
 async function listTeams(db, userId) {
 	const result = await db
 		.prepare(`
-			SELECT t.id, t.name
+			SELECT
+				t.id,
+				t.name,
+				MAX(ra.approved_at) AS most_recent_role_approved_at,
+				MAX(ra.created_at) AS most_recent_role_created_at,
+				m.created_at AS membership_created_at
 			FROM auth_team_memberships m
 			INNER JOIN auth_teams t ON t.id = m.team_id
+			LEFT JOIN auth_role_assignments ra ON ra.user_id = m.user_id
+				AND ra.scope_type = 'team'
+				AND ra.scope_id = t.id
+				AND ra.assignment_status = 'active'
+				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 			WHERE m.user_id = ? AND m.membership_status = 'active' AND t.team_status = 'active'
-			ORDER BY t.name ASC
+			GROUP BY t.id, t.name, m.created_at
+			ORDER BY COALESCE(most_recent_role_approved_at, most_recent_role_created_at, membership_created_at) DESC, t.name ASC
 		`)
 		.bind(userId)
 		.all();

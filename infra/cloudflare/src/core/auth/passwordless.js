@@ -86,7 +86,10 @@ async function readBody(request) {
 
 function cookieValue(request) {
 	const cookie = request.headers.get('cookie') || '';
-	const found = cookie.split(';').map((part) => part.trim()).find((part) => part.startsWith(`${COOKIE_NAME}=`));
+	const found = cookie
+		.split(';')
+		.map((part) => part.trim())
+		.find((part) => part.startsWith(`${COOKIE_NAME}=`));
 	return found ? decodeURIComponent(found.slice(COOKIE_NAME.length + 1)) : '';
 }
 
@@ -147,17 +150,24 @@ async function sendCode(env, email, code) {
 	}
 
 	if (deliveryErrors.length) {
-		throw new AuthFlowError(502, 'email_delivery_failed', `The sign-in email provider could not send the code. ${deliveryErrors.join(' ')}`);
+		throw new AuthFlowError(
+			502,
+			'email_delivery_failed',
+			`The sign-in email provider could not send the code. ${deliveryErrors.join(' ')}`,
+		);
 	}
 
 	throw new AuthFlowError(503, 'email_delivery_missing', 'Sign-in email delivery is not configured yet.');
 }
 
 async function authEvent(db, request, type, metadata = {}) {
-	await db.prepare(`
+	await db
+		.prepare(`
 		INSERT INTO auth_events (id, event_type, actor_user_id, provider, route_path, metadata_json)
 		VALUES (?, ?, ?, ?, ?, ?)
-	`).bind(id('evt'), type, metadata.userId || null, PROVIDER, new URL(request.url).pathname, JSON.stringify(metadata)).run();
+	`)
+		.bind(id('evt'), type, metadata.userId || null, PROVIDER, new URL(request.url).pathname, JSON.stringify(metadata))
+		.run();
 }
 
 async function recordAuthEvent(db, request, type, metadata = {}) {
@@ -174,10 +184,13 @@ async function start(request, env) {
 	const email = emailOf(body.email);
 	const code = makeCode();
 	const challengeId = id('chl');
-	await db.prepare(`
+	await db
+		.prepare(`
 		INSERT INTO auth_login_challenges (id, email, code_hash, attempts_remaining, expires_at)
 		VALUES (?, ?, ?, 5, ?)
-	`).bind(challengeId, email, await hash(env, 'code', challengeId, email, code), after(CODE_TTL_SECONDS)).run();
+	`)
+		.bind(challengeId, email, await hash(env, 'code', challengeId, email, code), after(CODE_TTL_SECONDS))
+		.run();
 	const deliveryProvider = await sendCode(env, email, code);
 	await db.prepare("UPDATE auth_login_challenges SET delivery_status = 'sent' WHERE id = ?").bind(challengeId).run();
 	await recordAuthEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
@@ -185,17 +198,29 @@ async function start(request, env) {
 }
 
 async function userForEmail(db, email) {
-	let user = await db.prepare('SELECT id, email, display_name, account_status FROM auth_users WHERE lower(email) = lower(?) LIMIT 1').bind(email).first();
+	let user = await db
+		.prepare('SELECT id, email, display_name, account_status FROM auth_users WHERE lower(email) = lower(?) LIMIT 1')
+		.bind(email)
+		.first();
 	if (user) return user;
-	await db.prepare("INSERT INTO auth_users (id, email, display_name, account_status) VALUES (?, ?, ?, 'pending')").bind(id('usr'), email, email).run();
-	return db.prepare('SELECT id, email, display_name, account_status FROM auth_users WHERE lower(email) = lower(?) LIMIT 1').bind(email).first();
+	await db
+		.prepare("INSERT INTO auth_users (id, email, display_name, account_status) VALUES (?, ?, ?, 'pending')")
+		.bind(id('usr'), email, email)
+		.run();
+	return db
+		.prepare('SELECT id, email, display_name, account_status FROM auth_users WHERE lower(email) = lower(?) LIMIT 1')
+		.bind(email)
+		.first();
 }
 
 async function ensureIdentity(db, user, email) {
-	await db.prepare(`
+	await db
+		.prepare(`
 		INSERT OR IGNORE INTO auth_identities (id, user_id, provider, provider_subject, email, email_verified, mfa_claim, last_seen_at)
 		VALUES (?, ?, ?, ?, ?, 1, 'email_code', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-	`).bind(id('idn'), user.id, PROVIDER, email, email).run();
+	`)
+		.bind(id('idn'), user.id, PROVIDER, email, email)
+		.run();
 }
 
 async function lockChallenge(db, challengeId) {
@@ -211,7 +236,11 @@ async function recordFailedAttempt(db, request, challenge) {
 	}
 
 	await db.prepare('UPDATE auth_login_challenges SET attempts_remaining = ? WHERE id = ?').bind(remaining, challenge.id).run();
-	await recordAuthEvent(db, request, 'auth.email_code.failed', { email: challenge.email, challengeId: challenge.id, attemptsRemaining: remaining });
+	await recordAuthEvent(db, request, 'auth.email_code.failed', {
+		email: challenge.email,
+		challengeId: challenge.id,
+		attemptsRemaining: remaining,
+	});
 }
 
 function assertChallengeCanBeAttempted(challenge) {
@@ -229,10 +258,13 @@ async function verify(request, env) {
 	const body = await readBody(request);
 	const challengeId = String(body.challengeId || '').trim();
 	const code = codeOf(body.code);
-	const challenge = await db.prepare(`
+	const challenge = await db
+		.prepare(`
 		SELECT id, email, code_hash, challenge_status, attempts_remaining, expires_at
 		FROM auth_login_challenges WHERE id = ? LIMIT 1
-	`).bind(challengeId).first();
+	`)
+		.bind(challengeId)
+		.first();
 	assertChallengeCanBeAttempted(challenge);
 	const codeHash = await hash(env, 'code', challenge.id, challenge.email, code);
 	if (codeHash !== challenge.code_hash) {
@@ -241,54 +273,91 @@ async function verify(request, env) {
 	}
 	const user = await userForEmail(db, challenge.email);
 	await ensureIdentity(db, user, challenge.email);
-	await db.prepare("UPDATE auth_login_challenges SET challenge_status = 'verified', verified_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?").bind(challenge.id).run();
+	await db
+		.prepare("UPDATE auth_login_challenges SET challenge_status = 'verified', verified_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?")
+		.bind(challenge.id)
+		.run();
 	const token = makeToken();
-	await db.prepare(`
+	await db
+		.prepare(`
 		INSERT INTO auth_sessions (id, user_id, session_token_hash, expires_at, last_seen_at)
 		VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-	`).bind(id('ses'), user.id, await hash(env, 'session', token), after(SESSION_TTL_SECONDS)).run();
+	`)
+		.bind(id('ses'), user.id, await hash(env, 'session', token), after(SESSION_TTL_SECONDS))
+		.run();
 	await recordAuthEvent(db, request, 'auth.sign_in.succeeded', { userId: user.id, email: challenge.email, challengeId });
 	return json({ ok: true, authenticated: true }, 200, { 'set-cookie': sessionCookie(request, token) });
 }
 
 async function sessionUser(db, env, token) {
-	return db.prepare(`
+	return db
+		.prepare(`
 		SELECT s.id AS session_id, u.id, u.email, u.display_name, u.account_status
 		FROM auth_sessions s INNER JOIN auth_users u ON u.id = s.user_id
 		WHERE s.session_token_hash = ? AND s.session_status = 'active' AND s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 		LIMIT 1
-	`).bind(await hash(env, 'session', token)).first();
+	`)
+		.bind(await hash(env, 'session', token))
+		.first();
 }
 
 async function teams(db, userId) {
-	const result = await db.prepare(`
-		SELECT t.id, t.name FROM auth_team_memberships m INNER JOIN auth_teams t ON t.id = m.team_id
-		WHERE m.user_id = ? AND m.membership_status = 'active' AND t.team_status = 'active' ORDER BY t.name ASC
-	`).bind(userId).all();
+	const result = await db
+		.prepare(`
+		SELECT
+			t.id,
+			t.name,
+			MAX(ra.approved_at) AS most_recent_role_approved_at,
+			MAX(ra.created_at) AS most_recent_role_created_at,
+			m.created_at AS membership_created_at
+		FROM auth_team_memberships m
+		INNER JOIN auth_teams t ON t.id = m.team_id
+		LEFT JOIN auth_role_assignments ra ON ra.user_id = m.user_id
+			AND ra.scope_type = 'team'
+			AND ra.scope_id = t.id
+			AND ra.assignment_status = 'active'
+			AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+		WHERE m.user_id = ? AND m.membership_status = 'active' AND t.team_status = 'active'
+		GROUP BY t.id, t.name, m.created_at
+		ORDER BY COALESCE(most_recent_role_approved_at, most_recent_role_created_at, membership_created_at) DESC, t.name ASC
+	`)
+		.bind(userId)
+		.all();
 	return result.results || [];
+}
+
+function selectActiveTeam(request, userTeams) {
+	const requestedTeamId = request.headers.get('X-ResearchOps-Team-Id');
+	return userTeams.find((team) => team.id === requestedTeamId) || userTeams[0] || null;
 }
 
 async function roles(db, userId, teamId) {
 	if (!teamId) return [];
-	const result = await db.prepare(`
+	const result = await db
+		.prepare(`
 		SELECT r.role_key, r.label, r.description, r.is_sensitive, ra.scope_type, ra.scope_id, ra.expires_at
 		FROM auth_role_assignments ra INNER JOIN auth_roles r ON r.id = ra.role_id
 		WHERE ra.user_id = ? AND ra.scope_type = 'team' AND ra.scope_id = ? AND ra.assignment_status = 'active'
 		AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 		ORDER BY r.label ASC
-	`).bind(userId, teamId).all();
+	`)
+		.bind(userId, teamId)
+		.all();
 	return result.results || [];
 }
 
 async function permissions(db, userId, teamId) {
 	if (!teamId) return [];
-	const result = await db.prepare(`
+	const result = await db
+		.prepare(`
 		SELECT DISTINCT p.code, p.label, p.description, p.is_sensitive, p.is_reserved
 		FROM auth_role_assignments ra INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id INNER JOIN auth_permissions p ON p.code = rp.permission_code
 		WHERE ra.user_id = ? AND ra.scope_type = 'team' AND ra.scope_id = ? AND ra.assignment_status = 'active'
 		AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 		ORDER BY p.code ASC
-	`).bind(userId, teamId).all();
+	`)
+		.bind(userId, teamId)
+		.all();
 	return result.results || [];
 }
 
@@ -299,7 +368,7 @@ export async function resolvePasswordlessSessionContext(request, env) {
 	const user = await sessionUser(db, env, token);
 	if (!user) return null;
 	const userTeams = await teams(db, user.id);
-	const activeTeam = userTeams[0] || null;
+	const activeTeam = selectActiveTeam(request, userTeams);
 	const userRoles = await roles(db, user.id, activeTeam?.id);
 	const userPermissions = await permissions(db, user.id, activeTeam?.id);
 	return {
@@ -308,14 +377,33 @@ export async function resolvePasswordlessSessionContext(request, env) {
 		user: { id: user.id, email: user.email, displayName: user.display_name, accountStatus: user.account_status },
 		activeTeam,
 		teams: userTeams,
-		roles: userRoles.map((role) => ({ key: role.role_key, label: role.label, description: role.description, sensitive: role.is_sensitive === 1, scopeType: role.scope_type, scopeId: role.scope_id, expiresAt: role.expires_at })),
-		permissions: userPermissions.map((permission) => ({ code: permission.code, label: permission.label, description: permission.description, sensitive: permission.is_sensitive === 1, reserved: permission.is_reserved === 1 })),
+		roles: userRoles.map((role) => ({
+			key: role.role_key,
+			label: role.label,
+			description: role.description,
+			sensitive: role.is_sensitive === 1,
+			scopeType: role.scope_type,
+			scopeId: role.scope_id,
+			expiresAt: role.expires_at,
+		})),
+		permissions: userPermissions.map((permission) => ({
+			code: permission.code,
+			label: permission.label,
+			description: permission.description,
+			sensitive: permission.is_sensitive === 1,
+			reserved: permission.is_reserved === 1,
+		})),
 	};
 }
 
 async function logout(request, env) {
 	const token = cookieValue(request);
-	if (token) await dbFor(env).prepare("UPDATE auth_sessions SET session_status = 'revoked', revoked_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE session_token_hash = ?").bind(await hash(env, 'session', token)).run();
+	if (token) {
+		await dbFor(env)
+			.prepare("UPDATE auth_sessions SET session_status = 'revoked', revoked_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE session_token_hash = ?")
+			.bind(await hash(env, 'session', token))
+			.run();
+	}
 	return json({ ok: true }, 200, { 'set-cookie': sessionCookie(request, '', 0) });
 }
 
