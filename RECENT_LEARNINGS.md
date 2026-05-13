@@ -2,6 +2,30 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-13 — New branch features must work end to end in preview and production
+
+Context: The account registration page reached the check-answers step in a Pages branch preview, but `Send request` failed because the frontend assumed a Worker origin that was not guaranteed to work for that preview environment. The journey needed to work in both preview and production, not only in static page rendering.
+
+Learning: A feature is not end-to-end complete when the page renders. Branch previews must be able to call the required API routes, either through same-origin `/api/*` routing or through an explicit, CORS-allowed fallback. Production must continue to use the same route contract.
+
+Action: For new frontend journeys, test or guard the full action path: form input, check answers, API submit, success state and error state. Prefer relative `/api/*` routes first. If an external Worker fallback is needed, update Worker CORS to allow ResearchOps Pages preview origins and add route-state tests that check the preview-safe routing contract.
+
+## 2026-05-13 — Check answers change links must change answers, not just anchor
+
+Context: The account registration check-answers page rendered `Change` links, but the links only pointed to anchors while the form was hidden. This did not follow the GOV.UK pattern because users could not actually change the answer from the check-answers state.
+
+Learning: A check-answers `Change` link must take the user back to the relevant question or field with the current answer preserved and focus moved to the control they need to change. It must not just update the URL hash.
+
+Action: When implementing check answers in a single-page flow, attach an explicit handler to each change link, reveal the form, hide the check-answers section and focus the target field. Add a route-state or UI test asserting the existence of the change-link handler.
+
+## 2026-05-13 — Do not put focus rings on non-control containers
+
+Context: The registration check-answers section had `tabindex="-1"`, and the script focused the heading/container. This caused a yellow focus ring around the whole check-answers area. That looked like an interactive control and was not appropriate.
+
+Learning: Yellow GOV.UK focus styling should appear on specific controls and links, not arbitrary content containers. Programmatic focus can be valid for error summaries, but it should not make passive sections look interactive.
+
+Action: Do not add `tabindex` to passive check-answers containers. On transition to check answers, scroll the section into view rather than focusing the whole container. Keep focus styling for the `Change`, `Send request` and `Change answers` controls.
+
 ## 2026-05-13 — GOV.UK form fields need explicit affordance and rhythm decisions
 
 Context: The account registration form initially used full-width text inputs for full name, work email address and team or service. The page also needed clearer vertical rhythm between introductory content and the first form field.
