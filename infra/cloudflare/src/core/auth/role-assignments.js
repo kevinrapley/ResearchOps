@@ -4,7 +4,7 @@ import { assertRoutePermission, routePermissionErrorResponse } from "./route-per
 const JSON_HEADERS = {
 	"content-type": "application/json; charset=utf-8",
 	"cache-control": "no-store",
-	"x-content-type-options": "nosniff"
+	"x-content-type-options": "nosniff",
 };
 
 class RoleAssignmentError extends Error {
@@ -110,6 +110,18 @@ function requestedReasonFor(body) {
 	return requestedReason;
 }
 
+function requestedTeamIdFor(body, context) {
+	const teamId = cleanText(body.teamId || context.activeTeam?.id);
+	if (!teamId) {
+		throw new RoleAssignmentError(
+			403,
+			"active_team_required",
+			"Choose an active team before assigning roles."
+		);
+	}
+	return teamId;
+}
+
 function expiresAtFor(body) {
 	const expiresAt = cleanText(body.expiresAt);
 	if (!expiresAt) return null;
@@ -126,15 +138,50 @@ function expiresAtFor(body) {
 	return new Date(parsed).toISOString();
 }
 
-function assertActiveTeam(context) {
-	if (!context.activeTeam?.id) {
+function assertTeamAvailableToAssigner(context, teamId) {
+	const team = (context.teams || []).find((candidate) => candidate.id === teamId);
+	if (!team) {
 		throw new RoleAssignmentError(
 			403,
-			"active_team_required",
-			"Choose an active team before assigning roles."
+			"team_not_available",
+			"You cannot assign roles in that team."
 		);
 	}
-	return context.activeTeam;
+	return team;
+}
+
+async function canAssignRolesInTeam(db, userId, teamId) {
+	const row = await db
+		.prepare(`
+			SELECT p.code
+			FROM auth_role_assignments ra
+			INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
+			INNER JOIN auth_permissions p ON p.code = rp.permission_code
+			WHERE ra.user_id = ?
+				AND ra.scope_type = 'team'
+				AND ra.scope_id = ?
+				AND ra.assignment_status = 'active'
+				AND p.code = 'role.assign'
+				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+			LIMIT 1
+		`)
+		.bind(userId, teamId)
+		.first();
+	return Boolean(row);
+}
+
+async function resolveAssignmentTeam(db, context, body) {
+	const teamId = requestedTeamIdFor(body, context);
+	const team = assertTeamAvailableToAssigner(context, teamId);
+	const allowed = await canAssignRolesInTeam(db, context.user.id, team.id);
+	if (!allowed) {
+		throw new RoleAssignmentError(
+			403,
+			"selected_team_role_assignment_forbidden",
+			"You do not have permission to assign roles in that team."
+		);
+	}
+	return team;
 }
 
 function assertSensitiveRoleConfirmation(role, body) {
@@ -346,13 +393,13 @@ async function writeAssignmentWithAudit(db, request, context, targetUser, role, 
 	return {
 		assignment: await readAssignment(db, targetUser.id, role.id, team.id),
 		accountActivated,
-		membershipActivated
+		membershipActivated,
 	};
 }
 
 async function assignRole(request, env, context, body) {
 	const db = dbFor(env);
-	const team = assertActiveTeam(context);
+	const team = await resolveAssignmentTeam(db, context, body);
 	const { targetUserId, targetEmail } = targetSelectorFor(body);
 	const roleKey = requestedRoleKeyFor(body);
 	const requestedReason = requestedReasonFor(body);
@@ -394,9 +441,9 @@ async function assignRole(request, env, context, body) {
 		role,
 		targetUser: {
 			...targetUser,
-			account_status: assignmentResult.accountActivated ? "active" : targetUser.account_status
+			account_status: assignmentResult.accountActivated ? "active" : targetUser.account_status,
 		},
-		team
+		team,
 	};
 }
 
@@ -420,23 +467,27 @@ export async function handleRoleAssignmentsRoute(request, env) {
 					status: result.assignment.assignment_status,
 					scopeType: "team",
 					scopeId: result.team.id,
-					expiresAt: result.assignment.expires_at
+					expiresAt: result.assignment.expires_at,
 				},
 				teamMembership: {
 					status: "active",
-					createdOrReactivated: result.membershipActivated
+					createdOrReactivated: result.membershipActivated,
 				},
 				role: {
 					key: result.role.role_key,
 					label: result.role.label,
-					sensitive: result.role.is_sensitive === 1
+					sensitive: result.role.is_sensitive === 1,
+				},
+				team: {
+					id: result.team.id,
+					name: result.team.name,
 				},
 				targetUser: {
 					id: result.targetUser.id,
 					email: result.targetUser.email,
 					displayName: result.targetUser.display_name,
-					accountStatus: result.targetUser.account_status
-				}
+					accountStatus: result.targetUser.account_status,
+				},
 			},
 			201
 		);
@@ -457,7 +508,7 @@ export async function handleRoleAssignmentsRoute(request, env) {
 			{
 				ok: false,
 				error: "role_assignment_error",
-				message: "Role assignment could not be completed."
+				message: "Role assignment could not be completed.",
 			},
 			500
 		);
