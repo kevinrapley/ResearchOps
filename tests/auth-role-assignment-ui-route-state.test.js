@@ -16,6 +16,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="target-email"/);
 	assert.match(pageSource, /id="target-user-id-details"/);
 	assert.match(pageSource, /id="target-user-id"/);
+	assert.match(pageSource, /id="team-id-options"/);
 	assert.match(pageSource, /id="role-key-observer"/);
 	assert.match(pageSource, /id="duration-30"/);
 	assert.match(pageSource, /id="duration-custom"/);
@@ -28,7 +29,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="confirm-role-assignment"/);
 	assert.match(pageSource, /Confirm and assign role/);
 	assert.match(pageSource, /id="role-assignment-result"/);
-	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js/);
+	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=explicit-team-selection-20260513/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
@@ -51,15 +52,30 @@ function assertTopLevelAdminInformationArchitecture() {
 function assertCurrentAccessPanelIsReducedToTeamScope() {
 	assert.doesNotMatch(pageSource, /Your current access/);
 	assert.match(pageSource, /Team scope/);
-	assert.match(scriptSource, /You are assigning roles in/);
+	assert.match(scriptSource, /You can assign roles in teams you manage/);
+	assert.match(scriptSource, /Your current team is/);
 	assert.match(scriptSource, /You cannot assign roles/);
 	assert.doesNotMatch(scriptSource, /Current roles:/);
 }
 
+function assertExplicitTeamChoiceExists() {
+	assert.match(pageSource, /Which team should this role be in\?/);
+	assert.match(pageSource, /The person will be added to this team if they are not already a member/);
+	assert.match(scriptSource, /teamOptions: document\.getElementById\("team-id-options"\)/);
+	assert.match(scriptSource, /function selectedTeamId\(\)/);
+	assert.match(scriptSource, /input\[name="teamId"\]:checked/);
+	assert.match(scriptSource, /function selectedTeam\(context = state\.context\)/);
+	assert.match(scriptSource, /function renderTeamOptions\(context\)/);
+	assert.match(scriptSource, /name="teamId"/);
+	assert.match(scriptSource, /teamId: selectedTeamId\(\)/);
+	assert.match(scriptSource, /teamId: values\.teamId/);
+	assert.match(scriptSource, /Select which team this role should be in/);
+}
+
 function assertMembershipCreationCopyExists() {
-	assert.match(pageSource, /give someone access to a role in your active ResearchOps team/);
+	assert.match(pageSource, /give someone access to a role in a ResearchOps team you manage/);
 	assert.match(pageSource, /ResearchOps will add them when you assign the role/);
-	assert.match(pageSource, /If they are not already an active member of this team/);
+	assert.match(pageSource, /If they are not already an active member of the selected team/);
 	assert.match(scriptSource, /They were also added as an active member of this team/);
 	assert.match(scriptSource, /teamMembership/);
 	assert.match(scriptSource, /createdOrReactivated/);
@@ -161,6 +177,7 @@ function assertClientSupportsPrefillFromRegistrationRequest() {
 function assertClientBuildsCorrectRequestContract() {
 	assert.match(scriptSource, /targetEmail/);
 	assert.match(scriptSource, /targetUserId/);
+	assert.match(scriptSource, /teamId/);
 	assert.match(scriptSource, /roleKey/);
 	assert.match(scriptSource, /requestedReason/);
 	assert.match(scriptSource, /expiresAt/);
@@ -173,6 +190,7 @@ function assertClientBuildsCorrectRequestContract() {
 function assertClientValidatesBeforeReview() {
 	assert.match(scriptSource, /function validate\(values\)/);
 	assert.match(scriptSource, /Enter a team member's email address or user ID/);
+	assert.match(scriptSource, /Select which team this role should be in/);
 	assert.match(scriptSource, /Select the role they need/);
 	assert.match(scriptSource, /Select how long this role should last/);
 	assert.match(scriptSource, /Enter a real expiry date/);
@@ -235,6 +253,7 @@ function assertStylesExist() {
 assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
+assertExplicitTeamChoiceExists();
 assertMembershipCreationCopyExists();
 assertUserIdUsesDetailsWithoutExample();
 assertRoleOptionsUseGOVUKRadios();
