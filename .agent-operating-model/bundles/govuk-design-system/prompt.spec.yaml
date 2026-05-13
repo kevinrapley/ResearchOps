@@ -1,7 +1,7 @@
 bundle:
   id: govuk-design-system-bundle
   name: GOV.UK Design System Prompt Bundle
-  version: 8.0.0
+  version: 8.0.1
   status: canonical
   default_mode: design
   environment_baseline: unconstrained
@@ -16,11 +16,13 @@ design:
     - All prompt, reference and grader assets must be expressed as semantic XML.
     - Guidance must be grounded in the official GOV.UK Design System and, where appropriate, the `govuk-frontend` code repository.
     - Responses must include citations to sources used.
+    - Form pages must include explicit input-width and vertical-rhythm decisions rather than relying on full-width defaults.
 assembly:
   always_load:
     - references/govuk-design-system-reference.xml
     - references/govuk-components-reference.xml
     - references/govuk-patterns-reference.xml
+    - references/govuk-form-affordance-reference.xml
     - references/gds-github-reference.xml
     - roles/designer.xml
     - roles/developer.xml
