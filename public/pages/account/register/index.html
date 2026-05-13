@@ -11,6 +11,7 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-frontend-v6.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/auth-registration.css" media="screen" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
 <body>
@@ -38,40 +39,42 @@
 
 			<div class="govuk-grid-row">
 				<div class="govuk-grid-column-two-thirds">
-					<span class="govuk-caption-l">ResearchOps account</span>
-					<h1 class="govuk-heading-xl">Request a ResearchOps account</h1>
-					<p class="govuk-body-l">Use this form if you need access to ResearchOps for user research work.</p>
-					<p class="govuk-body">A team admin will review your request before any team access or role is added to your account.</p>
-					<p class="govuk-body">Before you start, you will need your work email address and the name of the team or service you need access for.</p>
+					<header class="account-registration-page__intro">
+						<span class="govuk-caption-l">ResearchOps account</span>
+						<h1 class="govuk-heading-xl">Request a ResearchOps account</h1>
+						<p class="govuk-body-l">Use this form if you need access to ResearchOps for research, design, observation or team administration.</p>
+						<p class="govuk-body">A team admin will review your request before any team access or role is added to your account.</p>
+						<p class="govuk-body">Before you start, you will need your work email address and the name of the team or service you need access for.</p>
 
-					<div class="govuk-inset-text">
-						Your answer about what you need to do does not give you access. It helps a team admin decide what access you may need.
-					</div>
+						<div class="govuk-inset-text">
+							<p class="govuk-body">Your answer about what you need to do does not give you access. It helps a team admin decide what access you may need.</p>
+						</div>
+					</header>
 
-					<section id="registration-status" class="govuk-inset-text" role="status" aria-live="polite" aria-busy="false" data-registration-route="/api/auth/registration-requests" tabindex="-1" hidden>
+					<section id="registration-status" class="account-registration-status" role="status" aria-live="polite" aria-busy="false" data-registration-route="/api/auth/registration-requests" tabindex="-1" hidden>
 						<h2 class="govuk-heading-m" id="registration-status-title">Request status</h2>
 						<div id="registration-status-body"></div>
 					</section>
 
-					<form id="registration-request-form" novalidate>
+					<form id="registration-request-form" class="account-registration-form" novalidate>
 						<div class="govuk-form-group" id="display-name-group">
 							<label class="govuk-label govuk-label--m" for="display-name">Full name</label>
 							<p class="govuk-error-message" id="display-name-error" hidden></p>
-							<input class="govuk-input" id="display-name" name="displayName" type="text" autocomplete="name" />
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="display-name" name="displayName" type="text" autocomplete="name" />
 						</div>
 
 						<div class="govuk-form-group" id="registration-email-group">
 							<label class="govuk-label govuk-label--m" for="registration-email">Work email address</label>
 							<div id="registration-email-hint" class="govuk-hint">Use the email address you will use to sign in to ResearchOps.</div>
 							<p class="govuk-error-message" id="registration-email-error" hidden></p>
-							<input class="govuk-input" id="registration-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="registration-email-hint" />
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="registration-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="registration-email-hint" />
 						</div>
 
 						<div class="govuk-form-group" id="team-or-service-group">
 							<label class="govuk-label govuk-label--m" for="team-or-service">Team or service</label>
-							<div id="team-or-service-hint" class="govuk-hint">For example, Biometrics, Asylum Support or Service Transformation.</div>
+							<div id="team-or-service-hint" class="govuk-hint">For example, Biometrics, Asylum Support, or the service you are working on.</div>
 							<p class="govuk-error-message" id="team-or-service-error" hidden></p>
-							<input class="govuk-input" id="team-or-service" name="teamOrService" type="text" aria-describedby="team-or-service-hint" />
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="team-or-service" name="teamOrService" type="text" aria-describedby="team-or-service-hint" />
 						</div>
 
 						<fieldset class="govuk-fieldset" id="requested-role-group" aria-describedby="requested-role-hint">
@@ -114,14 +117,14 @@
 						<div class="govuk-form-group" id="other-role-group" hidden>
 							<label class="govuk-label govuk-label--m" for="other-role">What do you need to use ResearchOps for?</label>
 							<p class="govuk-error-message" id="other-role-error" hidden></p>
-							<input class="govuk-input" id="other-role" name="otherRole" type="text" />
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="other-role" name="otherRole" type="text" />
 						</div>
 
 						<div class="govuk-form-group" id="requested-reason-group">
 							<label class="govuk-label govuk-label--m" for="requested-reason">Why do you need access?</label>
 							<div id="requested-reason-hint" class="govuk-hint">Include the work, project or study you need ResearchOps for.</div>
 							<p class="govuk-error-message" id="requested-reason-error" hidden></p>
-							<textarea class="govuk-textarea" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
+							<textarea class="govuk-textarea govuk-!-width-two-thirds" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
 						</div>
 
 						<div class="govuk-button-group">
