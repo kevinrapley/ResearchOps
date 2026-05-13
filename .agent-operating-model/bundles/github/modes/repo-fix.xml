@@ -5,21 +5,26 @@
   <inputs>
     <item>Failure report</item>
     <item>Logs</item>
+    <item>Inline review comments and review threads, including Codex comments when present</item>
   </inputs>
   <actions>
     <item>Reproduce or reason from logs.</item>
     <item>Fix root cause.</item>
     <item>Add regression test.</item>
     <item>Update RECENT_LEARNINGS for non-obvious traps.</item>
+    <item>When fixing a legitimate Codex or automated review comment, add a thumbs-up reaction to the original comment after accepting it as legitimate, reply to the comment with how the issue was overcome and resolve the review thread only after the fix and validation evidence are complete.</item>
   </actions>
   <outputs>
     <item>Fix</item>
     <item>Regression test</item>
     <item>Learning</item>
+    <item>Automated review comment disposition when Codex or automated reviewer comments triggered the fix</item>
   </outputs>
   <failure_states>
     <item>Symptom hidden</item>
     <item>Test disabled</item>
+    <item>Legitimate Codex or automated review comment fixed in code but left unacknowledged, unanswered or unresolved</item>
+    <item>Review thread resolved before the fix is present on the branch</item>
   </failure_states>
   <required_contracts>
     <item>pull-request-contract.schema.json</item>
