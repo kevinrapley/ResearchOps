@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-05-13T17:25:01.464Z · Base URL: https://researchops.pages.dev/</p>
+			<p class="meta">Run started: 2026-05-13T17:51:07.458Z · Base URL: https://researchops.pages.dev/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -868,6 +868,93 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/account/sign-in/index.html</p>
 			
 			<figure class="capture__figure"><a href="screenshots/mobile/account__account-sign-in__default.png"><img loading="lazy" src="screenshots/mobile/account__account-sign-in__default.png" alt="Screenshot of Sign in to ResearchOps in the Passwordless sign-in code request state for Mobile." /></a><figcaption>Sign in to ResearchOps — Passwordless sign-in code request — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+		</div>
+	</article>
+	<article class="page-card" id="account-registration" data-review-group-id="" data-review-evidence-level="generated">
+		<div class="page-card__header">
+			<h3>Request a ResearchOps account</h3>
+			<p class="meta">/pages/account/register/index.html</p>
+			<p>Public account request page for people who need ResearchOps access.</p>
+			
+		</div>
+		<div class="states">
+			
+	<article class="state" id="account-registration-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Account request form</h4>
+			<p class="meta">captured · https://researchops.pages.dev/pages/account/register/index.html</p>
+			<p>Registration request page captured before answers are entered.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Request a ResearchOps account page
+
+  As a user researcher
+  I want to use the request a ResearchOps account page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the request a ResearchOps account page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports public account request page for people who need ResearchOps access
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Account request form&quot; in the ResearchOps journey
+    Given I am using the request a ResearchOps account page
+    Then I should understand the research value of this part of the journey
+    And I should see that registration request page captured before answers are entered
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Request a ResearchOps account&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>The account request page may look like a self-service role selection route rather than a reviewed access request.</dd></div>
+			<div><dt>Impact</dt><dd>Requesters could believe that choosing an activity grants access, while team admins may receive weak evidence for an access decision.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review the page for purpose-of-use language, check-answers behaviour, field affordance and clear confirmation that no access is granted until review.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>Needs UCD review</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/account/register/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/account__account-registration__default.png"><img loading="lazy" src="screenshots/desktop/account__account-registration__default.png" alt="Screenshot of Request a ResearchOps account in the Account request form state for Desktop." /></a><figcaption>Request a ResearchOps account — Account request form — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/account/register/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/account__account-registration__default.png"><img loading="lazy" src="screenshots/mobile/account__account-registration__default.png" alt="Screenshot of Request a ResearchOps account in the Account request form state for Mobile." /></a><figcaption>Request a ResearchOps account — Account request form — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -2373,6 +2460,93 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<section class="group" aria-labelledby="group-Team administration">
 			<h2 id="group-Team administration">Team administration</h2>
 			
+	<article class="page-card" id="team-registration-requests" data-review-group-id="" data-review-evidence-level="generated">
+		<div class="page-card__header">
+			<h3>Review account requests</h3>
+			<p class="meta">/pages/team/registration-requests/index.html</p>
+			<p>Team Admin review page for pending account registration requests.</p>
+			
+		</div>
+		<div class="states">
+			
+	<article class="state" id="team-registration-requests-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Pending account requests</h4>
+			<p class="meta">captured · https://researchops.pages.dev/pages/team/registration-requests/</p>
+			<p>Registration request review page captured with a deterministic pending request.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Review account requests page
+
+  As a user researcher
+  I want to use the review account requests page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the review account requests page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports team Admin review page for pending account registration requests
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Pending account requests&quot; in the ResearchOps journey
+    Given I am using the review account requests page
+    Then I should understand the research value of this part of the journey
+    And I should see that registration request review page captured with a deterministic pending request
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Pending account requests&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>The account request review page may show pending requests without making the distinction between review evidence and access assignment clear enough.</dd></div>
+			<div><dt>Impact</dt><dd>Team admins could treat requested use as an approved role or fail to understand the next step required to add the person to the active team.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review the page for read-only request evidence, clear assignment handoff and safe handling of pending account requests.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>Needs UCD review</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://researchops.pages.dev/pages/team/registration-requests/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/team-administration__team-registration-requests__default.png"><img loading="lazy" src="screenshots/desktop/team-administration__team-registration-requests__default.png" alt="Screenshot of Review account requests in the Pending account requests state for Desktop." /></a><figcaption>Review account requests — Pending account requests — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://researchops.pages.dev/pages/team/registration-requests/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/team-administration__team-registration-requests__default.png"><img loading="lazy" src="screenshots/mobile/team-administration__team-registration-requests__default.png" alt="Screenshot of Review account requests in the Pending account requests state for Mobile." /></a><figcaption>Review account requests — Pending account requests — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+		</div>
+	</article>
 	<article class="page-card" id="team-role-assignments" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Assign a role to a team member</h3>
@@ -2421,7 +2595,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;You are assigning roles in&quot;
+    Then I should see &quot;You can assign roles in teams you manage&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
