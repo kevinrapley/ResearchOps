@@ -138,6 +138,13 @@ async function fetchJson(path, options = {}) {
 	throw lastError || new Error('Account requests could not be loaded.');
 }
 
+function roleAssignmentHref(request) {
+	const params = new URLSearchParams();
+	if (request.email) params.set('targetEmail', request.email);
+	if (request.requestedReason) params.set('requestedReason', `Account request: ${request.requestedReason}`);
+	return `/pages/team/role-assignments/${params.toString() ? `?${params.toString()}` : ''}`;
+}
+
 function renderEmptyState() {
 	if (!dom.list) return;
 	dom.list.innerHTML = '<p class="govuk-body">There are no pending account requests.</p>';
@@ -173,7 +180,7 @@ function renderRequest(request) {
 				<dd class="govuk-summary-list__value">${escapeHtml(formatDate(request.submittedAt))}</dd>
 			</div>
 		</dl>
-		<p class="govuk-body">Use <a class="govuk-link" href="/pages/team/role-assignments/">Assign a role to a team member</a> after you have checked that this person should have access.</p>
+		<p class="govuk-body">Use <a class="govuk-link" href="${escapeHtml(roleAssignmentHref(request))}">Assign a role to a team member</a> after you have checked that this person should have access. If they are not already an active member of your team, ResearchOps will add them when you assign the role.</p>
 	</div>
 </div>
 `;
@@ -218,5 +225,6 @@ window.__ropsAuthRegistrationRequestsPage = Object.freeze({
 	configuredApiOrigin,
 	defaultApiOrigin,
 	formatDate,
+	roleAssignmentHref,
 	shouldUseFallbackApiOrigin,
 });
