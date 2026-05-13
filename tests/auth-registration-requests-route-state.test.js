@@ -6,6 +6,7 @@ const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0004_auth_r
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
+const registrationPageCss = fs.readFileSync('public/css/auth-registration.css', 'utf8');
 const reviewPageSource = fs.readFileSync('public/pages/team/registration-requests/index.html', 'utf8');
 const reviewPageScript = fs.readFileSync('public/js/auth-registration-requests-page.js', 'utf8');
 const signInPageSource = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
@@ -51,6 +52,20 @@ function assertRegistrationPageUsesReviewLanguage() {
 	assert.doesNotMatch(registrationPageSource, /govuk-notification-banner/);
 }
 
+function assertRegistrationPageUsesSensibleFormWidthsAndRhythm() {
+	assert.ok(registrationPageSource.includes('/css/auth-registration.css'));
+	assert.ok(registrationPageSource.includes('account-registration-page__intro'));
+	assert.ok(registrationPageSource.includes('account-registration-form'));
+	for (const fieldId of ['display-name', 'registration-email', 'team-or-service', 'other-role']) {
+		assert.match(registrationPageSource, new RegExp(`id=["']${fieldId}["'][^>]*govuk-!-width-two-thirds`));
+		assert.match(registrationPageSource, new RegExp(`id=["']${fieldId}["'][^>]*account-registration-input`));
+	}
+	assert.match(registrationPageSource, /id=["']requested-reason["'][^>]*govuk-!-width-two-thirds/);
+	assert.match(registrationPageCss, /account-registration-page__intro[\s\S]*margin-bottom:\s*30px/);
+	assert.match(registrationPageCss, /account-registration-form[\s\S]*margin-top:\s*30px/);
+	assert.match(registrationPageCss, /govuk-inset-text[\s\S]*border-left:\s*10px solid #b1b4b6/);
+}
+
 function assertRegistrationErrorsAreUserFacing() {
 	for (const message of [
 		'Enter your full name.',
@@ -80,6 +95,7 @@ function assertCheckAnswersBehaviourExists() {
 	assert.match(registrationPageScript, /function sendRegistrationRequest/);
 	assert.match(registrationPageScript, /Sending this request will not give you access/);
 	assert.match(registrationPageScript, /A team admin will review it and decide what access you need/);
+	assert.match(registrationPageScript, /govuk-panel--confirmation/);
 }
 
 function assertTeamAdminCanReviewRequestsButMustAssignSeparately() {
@@ -102,6 +118,7 @@ assertWorkerRoutesRegistrationRequests();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
 assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();
+assertRegistrationPageUsesSensibleFormWidthsAndRhythm();
 assertRegistrationErrorsAreUserFacing();
 assertCheckAnswersBehaviourExists();
 assertTeamAdminCanReviewRequestsButMustAssignSeparately();
