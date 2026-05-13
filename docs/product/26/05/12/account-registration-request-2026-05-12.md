@@ -31,6 +31,8 @@ This slice includes:
 - GOV.UK spacing-scale vertical rhythm between intro content and form controls
 - sensible text-input and textarea widths for the expected answer length
 - check-answers step before sending the request
+- check-answers `Change` links that reveal the form and focus the relevant field
+- preview-safe API routing for Pages previews and production
 - unauthenticated `POST /api/auth/registration-requests`
 - protected `GET /api/auth/registration-requests`
 - D1 review-queue table for pending requests
@@ -66,9 +68,10 @@ The implementation must not write to `auth_role_assignments` during registration
 2. User enters full name, work email address, team or service, purpose of use and reason for access.
 3. User selects `Continue`.
 4. User checks their answers.
-5. User selects `Send request`.
-6. Request is sent to the review queue.
-7. User is told that access is not granted until a team admin reviews and approves the request.
+5. User can select a `Change` link to return to the relevant field with their answers preserved.
+6. User selects `Send request`.
+7. Request is sent to the review queue.
+8. User is told that access is not granted until a team admin reviews and approves the request.
 
 ## Team admin journey
 
@@ -110,6 +113,27 @@ The text inputs are no longer left at full width. These controls use `govuk-!-wi
 - something else
 
 The free-text reason textarea also uses `govuk-!-width-two-thirds` so it remains visually aligned with the preceding fields.
+
+## Check answers behaviour
+
+The check-answers section is not focusable. It does not use `tabindex`.
+
+When the user selects `Continue`, the section scrolls into view rather than moving keyboard focus to a passive container.
+
+Each `Change` link has a `data-change-target` value. Selecting it hides the check-answers section, reveals the form and focuses the relevant field.
+
+## API routing and preview support
+
+The frontend now treats relative `/api/*` routes as the first option. This allows production and any Pages deployment with an API route to work without cross-origin requests.
+
+For Pages branch previews that do not proxy `/api/*`, the registration page and Team Admin review page fall back to:
+
+```text
+https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev
+https://rops-api.digikev-kevin-rapley.workers.dev
+```
+
+The Worker CORS policy now allows `https://researchops.pages.dev` and `https://*.researchops.pages.dev` origins, so branch previews can call the auth API fallback.
 
 ## Data model
 
@@ -157,12 +181,16 @@ Examples:
 `tests/auth-registration-requests-route-state.test.js` asserts:
 
 - the worker routes registration requests
+- the Worker allows ResearchOps Pages preview origins for auth API fallback
 - registration creates a review queue, not a role assignment
 - the route captures requested purpose information only
 - the registration page uses review language
 - the page uses explicit form spacing and input affordance classes
 - errors are user-facing
 - check-answers behaviour exists
+- the check-answers container is not focusable
+- change links have a handler and target fields
+- registration and review pages use preview-safe API routing
 - team admin review is separate from role assignment
 - sign-in links to account registration
 
@@ -179,7 +207,7 @@ The GOV.UK bundle now loads a form-affordance reference module that requires age
 
 The root `.agent-operating-model/README.md` now describes when agents should update `RECENT_LEARNINGS.md`.
 
-`RECENT_LEARNINGS.md` now records that GOV.UK form fields need explicit affordance and rhythm decisions, and that repeatable bundle misses should be recorded as recent learnings.
+`RECENT_LEARNINGS.md` now records that GOV.UK form fields need explicit affordance and rhythm decisions, branch features must work end to end in preview and production, check-answers change links must actually reveal the relevant answer, and passive content containers must not receive GOV.UK focus rings.
 
 ## Risks and follow-up work
 
