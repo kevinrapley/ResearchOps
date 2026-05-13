@@ -299,7 +299,6 @@ function renderPermissions(context, memberships) {
 }
 
 function renderDashboard(context) {
-	const name = displayName(context);
 	const memberships = teamMemberships(context);
 	if (dom.title) dom.title.textContent = 'Your ResearchOps account';
 	if (dom.user) dom.user.textContent = context?.user?.displayName || context?.user?.email || 'Not available';
