@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reference_module id="govuk-form-affordance-reference" version="1.0">
+  <purpose>Defines mandatory checks for GOV.UK form spacing, vertical rhythm and input-width affordance when agents design, build or review forms.</purpose>
+  <authoritative_sources>
+    <source id="govuk-spacing" url="https://design-system.service.gov.uk/styles/spacing/">GOV.UK Design System spacing scale and spacing helpers.</source>
+    <source id="govuk-text-input" url="https://design-system.service.gov.uk/components/text-input/">GOV.UK Design System text input component, including fixed and fluid input-width guidance.</source>
+  </authoritative_sources>
+  <rules>
+    <rule id="form-vertical-rhythm">
+      <requirement>Before a form starts, ensure introductory content, inset text and the first form group are separated using GOV.UK spacing scale values. Do not let the final paragraph or inset text visually collide with the first label.</requirement>
+      <implementation>Use spacing equivalent to GOV.UK spacing unit 6 between an intro block and the form on large screens, reducing only where the responsive scale requires it on small screens.</implementation>
+      <source_ref>govuk-spacing</source_ref>
+    </rule>
+    <rule id="form-input-affordance-width">
+      <requirement>Do not leave text inputs full width by default without checking whether the expected answer length makes a narrower input more helpful.</requirement>
+      <implementation>Use fixed width classes such as <code>govuk-input--width-20</code> when the expected answer has a known character length. Use fluid width classes such as <code>govuk-!-width-two-thirds</code>, <code>govuk-!-width-one-half</code> or <code>govuk-!-width-one-third</code> when the input should remain responsive but should not span the whole container.</implementation>
+      <source_ref>govuk-text-input</source_ref>
+    </rule>
+    <rule id="form-width-review-required">
+      <requirement>For every text input, textarea and select generated or reviewed by the agent, record a width decision: full width, fixed character width or fluid proportion width.</requirement>
+      <implementation>Use full width only for long free text, wide identifiers, URLs or fields where user research supports full width. For common fields such as name, email address and team or service, prefer a sensible fluid width such as two-thirds unless the page layout already constrains the field more tightly.</implementation>
+      <source_ref>govuk-text-input</source_ref>
+    </rule>
+    <rule id="form-affordance-regression">
+      <requirement>When a form-affordance issue is found during review, add a durable test, documentation note or recent learning so future agents do not repeat the mistake.</requirement>
+      <implementation>Use route-state tests for static page contracts, runtime tests for behaviour and <code>RECENT_LEARNINGS.md</code> for repository-specific repeatable agent lessons.</implementation>
+      <source_ref>govuk-spacing</source_ref>
+    </rule>
+  </rules>
+</reference_module>
