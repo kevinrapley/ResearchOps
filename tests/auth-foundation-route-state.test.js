@@ -38,12 +38,12 @@ async function assertPermissionsRouteFailsClosedWithoutAccessToken() {
   assert.equal(payload.error, "authentication_required");
 }
 
-function assertWorkerRoutesAuthThroughAccessResolver() {
+function assertWorkerRoutesAuthThroughScopedAccessResolver() {
   const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 
   assert.match(
     workerSource,
-    /import \{ handleMeRoute \} from "\.\/core\/auth\/access\.js";/,
+    /import \{ handleMeRoute \} from "\.\/core\/auth\/access-scoped\.js";/,
   );
   assert.match(workerSource, /apiPath === "\/api\/me"/);
   assert.match(workerSource, /apiPath === "\/api\/me\/permissions"/);
@@ -51,7 +51,7 @@ function assertWorkerRoutesAuthThroughAccessResolver() {
 
 function assertIdentityRoutesUseRoutePermissions() {
   const authSource = fs.readFileSync(
-    "infra/cloudflare/src/core/auth/access.js",
+    "infra/cloudflare/src/core/auth/access-scoped.js",
     "utf8",
   );
 
@@ -106,7 +106,7 @@ function assertMigrationContainsRequiredControlPlaneTables() {
 
 await assertMeRouteFailsClosedWithoutAccessToken();
 await assertPermissionsRouteFailsClosedWithoutAccessToken();
-assertWorkerRoutesAuthThroughAccessResolver();
+assertWorkerRoutesAuthThroughScopedAccessResolver();
 assertIdentityRoutesUseRoutePermissions();
 assertNoMockIdentityModeExists();
 assertMigrationContainsRequiredControlPlaneTables();
