@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<reference id="integration-contracts" version="1.13.0">
+<reference id="integration-contracts" version="1.14.0">
   <purpose>Defines integration contract expectations.</purpose>
   <contracts>
     <contract id="airtable">Use configured base, table and field mappings; handle linked fields and API failures.</contract>
     <contract id="mural">Keep board, room, folder and sticky-note sync behaviour explicit.</contract>
     <contract id="cloudflare">Preserve Worker, Pages and environment boundaries.</contract>
+    <contract id="preview-and-production-end-to-end">
+      <requirement>Any new user journey built on a branch must work end to end in both branch preview and production environments. Rendering the static page is not sufficient evidence.</requirement>
+      <implementation>For frontend-to-backend calls, prefer relative <code>/api/*</code> routes first so Pages and production deployments use the same route contract. If a Pages preview cannot proxy the API route, provide a documented Worker fallback and ensure the Worker CORS policy allows <code>https://researchops.pages.dev</code> and <code>https://*.researchops.pages.dev</code> origins where the route is intended for preview testing.</implementation>
+      <test_expectation>Add route-state or runtime tests that assert preview-safe API routing, production route compatibility and any required CORS allowance for branch previews.</test_expectation>
+    </contract>
   </contracts>
 </reference>
