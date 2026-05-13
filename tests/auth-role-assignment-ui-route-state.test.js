@@ -56,6 +56,15 @@ function assertCurrentAccessPanelIsReducedToTeamScope() {
 	assert.doesNotMatch(scriptSource, /Current roles:/);
 }
 
+function assertMembershipCreationCopyExists() {
+	assert.match(pageSource, /give someone access to a role in your active ResearchOps team/);
+	assert.match(pageSource, /ResearchOps will add them when you assign the role/);
+	assert.match(pageSource, /If they are not already an active member of this team/);
+	assert.match(scriptSource, /They were also added as an active member of this team/);
+	assert.match(scriptSource, /teamMembership/);
+	assert.match(scriptSource, /createdOrReactivated/);
+}
+
 function assertUserIdUsesDetailsWithoutExample() {
 	assert.match(pageSource, /govuk-details__summary-text/);
 	assert.match(pageSource, /Use a user ID instead/);
@@ -127,13 +136,26 @@ function assertDurationModelUsesGovernedPresets() {
 
 function assertClientUsesAuthAndAssignmentEndpoints() {
 	assert.match(scriptSource, /function defaultApiOrigin\(\)/);
+	assert.match(scriptSource, /configuredApiOrigin/);
+	assert.match(scriptSource, /function apiBaseCandidates\(\)/);
+	assert.match(scriptSource, /shouldUseFallbackApiOrigin/);
 	assert.match(scriptSource, /rops-api-passwordless-preview/);
-	assert.match(scriptSource, /API_BASE: document\.documentElement\?\.dataset\?\.apiOrigin \|\| window\.API_ORIGIN \|\| defaultApiOrigin\(\)/);
 	assert.match(scriptSource, /credentials: "include"/);
 	assert.match(scriptSource, /fetchJson\("\/api\/me"\)/);
 	assert.match(scriptSource, /fetchJson\("\/api\/auth\/role-assignments"/);
 	assert.match(scriptSource, /permissions\.has\("role\.assign"\)/);
 	assert.match(scriptSource, /setDisabled\(!canAssignRoles\)/);
+}
+
+function assertClientSupportsPrefillFromRegistrationRequest() {
+	assert.match(scriptSource, /function applyQueryPrefill\(\)/);
+	assert.match(scriptSource, /params\.get\("targetEmail"\)/);
+	assert.match(scriptSource, /params\.get\("targetUserId"\)/);
+	assert.match(scriptSource, /params\.get\("requestedReason"\)/);
+	assert.match(scriptSource, /params\.get\("roleKey"\)/);
+	assert.match(scriptSource, /document\.getElementById\("target-email"\)\.value = prefill\.targetEmail/);
+	assert.match(scriptSource, /document\.getElementById\("requested-reason"\)\.value = prefill\.requestedReason/);
+	assert.match(scriptSource, /applyQueryPrefill\(\)/);
 }
 
 function assertClientBuildsCorrectRequestContract() {
@@ -213,6 +235,7 @@ function assertStylesExist() {
 assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
+assertMembershipCreationCopyExists();
 assertUserIdUsesDetailsWithoutExample();
 assertRoleOptionsUseGOVUKRadios();
 assertRoleRadioHintsAreUsefulAndClickable();
@@ -220,6 +243,7 @@ assertSelectedRoleSummaryUsesAbilityListOnly();
 assertPageStylesDoNotRecreateGOVUKRadioInternals();
 assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
+assertClientSupportsPrefillFromRegistrationRequest();
 assertClientBuildsCorrectRequestContract();
 assertClientValidatesBeforeReview();
 assertNoPostBeforeConfirm();
