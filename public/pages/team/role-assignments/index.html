@@ -41,7 +41,7 @@
 					<div class="govuk-grid-column-two-thirds">
 						<span class="govuk-caption-l">Team administration</span>
 						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign a role to a team member</h1>
-						<p class="lede">Use this page to give someone access to a role in your active ResearchOps team.</p>
+						<p class="lede">Use this page to give someone access to a role in a ResearchOps team you manage.</p>
 						<p class="govuk-body">If the person is not already an active member of the team, ResearchOps will add them when you assign the role.</p>
 						<p class="govuk-body">Only assign the lowest role they need to do their work. Role changes are recorded in the audit log.</p>
 					</div>
@@ -81,8 +81,20 @@
 								</details>
 							</section>
 
+							<section class="auth-role-assignment-section" aria-labelledby="team-choice-section-title">
+								<h3 class="govuk-heading-m" id="team-choice-section-title">2. Team</h3>
+								<fieldset class="govuk-fieldset" id="team-id-group">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Which team should this role be in?</legend>
+									<div class="govuk-hint" id="team-id-hint">The person will be added to this team if they are not already a member.</div>
+									<p class="govuk-error-message" id="team-id-error" hidden></p>
+									<div class="govuk-radios auth-role-assignment-radios" id="team-id-options" data-module="govuk-radios" aria-describedby="team-id-hint">
+										<p class="govuk-body">Loading teams you can manage.</p>
+									</div>
+								</fieldset>
+							</section>
+
 							<section class="auth-role-assignment-section" aria-labelledby="role-section-title">
-								<h3 class="govuk-heading-m" id="role-section-title">2. Role</h3>
+								<h3 class="govuk-heading-m" id="role-section-title">3. Role</h3>
 								<fieldset class="govuk-fieldset" id="role-key-group">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What role do they need?</legend>
 									<div class="govuk-hint" id="role-key-hint">Start with the lowest role that gives the person what they need.</div>
@@ -124,7 +136,7 @@
 							</section>
 
 							<section class="auth-role-assignment-section" aria-labelledby="duration-section-title">
-								<h3 class="govuk-heading-m" id="duration-section-title">3. Access duration</h3>
+								<h3 class="govuk-heading-m" id="duration-section-title">4. Access duration</h3>
 								<fieldset class="govuk-fieldset" id="role-duration-group">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">How long should this role last?</legend>
 									<div class="govuk-hint" id="role-duration-hint">Choose a governed access period. The standard maximum is 180 days.</div>
@@ -152,7 +164,7 @@
 							</section>
 
 							<section class="auth-role-assignment-section" aria-labelledby="reason-section-title">
-								<h3 class="govuk-heading-m" id="reason-section-title">4. Reason</h3>
+								<h3 class="govuk-heading-m" id="reason-section-title">5. Reason</h3>
 								<div class="govuk-form-group" id="requested-reason-group">
 									<label class="govuk-label govuk-label--s" for="requested-reason">Why are you assigning this role?</label>
 									<div class="govuk-hint" id="requested-reason-hint">This will be stored in the audit log. Include the work they need the role for. For example, "Joining the research team for the May assisted digital study".</div>
@@ -184,7 +196,7 @@
 
 						<section id="role-assignment-review" class="auth-role-assignment-review" aria-labelledby="role-assignment-review-title" tabindex="-1" hidden>
 							<h2 class="govuk-heading-l" id="role-assignment-review-title">Check and confirm</h2>
-							<p class="govuk-body">ResearchOps will confirm the person exists. If they are not already an active member of this team, ResearchOps will add them when the role is assigned.</p>
+							<p class="govuk-body">ResearchOps will confirm the person exists. If they are not already an active member of the selected team, ResearchOps will add them when the role is assigned.</p>
 							<div id="role-assignment-review-body"></div>
 							<div class="govuk-button-group"><button class="govuk-button" type="button" id="confirm-role-assignment">Confirm and assign role</button><button class="govuk-button govuk-button--secondary" type="button" id="change-role-assignment">Change details</button></div>
 						</section>
@@ -197,6 +209,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-role-assignment-page.js?v=membership-activation-errors-20260513"></script>
+	<script type="module" src="/js/auth-role-assignment-page.js?v=explicit-team-selection-20260513"></script>
 </body>
 </html>
