@@ -141,13 +141,38 @@ function labelList(items, emptyLabel) {
 	return labels.length ? labels.join(', ') : emptyLabel;
 }
 
+function fallbackActiveTeamMembership(context) {
+	if (!context?.activeTeam?.id) return [];
+	return [
+		{
+			...context.activeTeam,
+			roles: context.roles || [],
+			permissions: context.permissions || [],
+			current: true,
+			fallbackFromActiveTeam: true,
+		},
+	];
+}
+
 function teamMemberships(context) {
-	const memberships = context?.teamMemberships || context?.memberTeams || [];
+	const explicitMemberships = context?.teamMemberships || context?.memberTeams || [];
+	const memberships = explicitMemberships.length ? explicitMemberships : fallbackActiveTeamMembership(context);
 	const activeTeamId = context?.activeTeam?.id;
-	return memberships.map((team) => ({
-		...team,
-		current: Boolean(activeTeamId && team.id === activeTeamId),
-	}));
+	const seen = new Set();
+	const normalised = [];
+
+	for (const team of memberships) {
+		if (!team?.id || seen.has(team.id)) continue;
+		seen.add(team.id);
+		normalised.push({
+			...team,
+			roles: team.roles || [],
+			permissions: team.permissions || [],
+			current: Boolean(team.current || (activeTeamId && team.id === activeTeamId)),
+		});
+	}
+
+	return normalised;
 }
 
 function permissionCodes(context) {
@@ -280,6 +305,7 @@ window.__ropsAuthAccountPage = Object.freeze({
 	CONFIG,
 	defaultApiOrigin,
 	displayName,
+	fallbackActiveTeamMembership,
 	permissionCodes,
 	renderDashboard,
 	teamMemberships,
