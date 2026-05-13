@@ -186,7 +186,7 @@ export const operationalAuthContext = {
 			label: 'Team Admin',
 			description: 'Can manage team membership, roles and general audit oversight.',
 			sensitive: true,
-		scopeType: 'team',
+			scopeType: 'team',
 			scopeId: operationalAuthTeamId,
 		},
 	],
