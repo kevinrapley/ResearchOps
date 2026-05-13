@@ -7,6 +7,8 @@
 const PREVIEW_API_ORIGIN = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev";
 const PRODUCTION_API_ORIGIN = "https://rops-api.digikev-kevin-rapley.workers.dev";
 const FALLBACK_API_ORIGINS = Object.freeze([PREVIEW_API_ORIGIN, PRODUCTION_API_ORIGIN]);
+const CREATE_TEAM_ACTION = "create";
+const EXISTING_TEAM_ACTION = "existing";
 
 function configuredApiOrigin() {
 	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
@@ -73,6 +75,8 @@ const DURATION_LABELS = Object.freeze({
 const ROLE_ASSIGNMENT_SERVER_MESSAGES = Object.freeze({
 	active_team_required: "Choose a team before assigning a role.",
 	invalid_expiry: "Enter a real expiry date.",
+	new_team_name_required: "Enter the new team's name.",
+	new_team_name_too_long: "Team names must be 80 characters or fewer.",
 	role_assignment_reason_required: "Enter why you are assigning this role.",
 	role_assignment_store_unavailable: "ResearchOps cannot assign roles right now. Try again later.",
 	role_assignment_transaction_unavailable: "ResearchOps cannot safely assign this role right now. Try again later.",
@@ -85,6 +89,9 @@ const ROLE_ASSIGNMENT_SERVER_MESSAGES = Object.freeze({
 	target_required: "Enter a team member's email address or user ID.",
 	target_user_inactive: "This person cannot be assigned a role. Contact a team admin.",
 	target_user_not_found: "ResearchOps could not find an account for this person. Check their email address or ask them to request an account.",
+	team_admin_role_unavailable: "ResearchOps cannot create a team right now. Try again later.",
+	team_creation_forbidden: "You do not have permission to create teams.",
+	team_name_already_exists: "A team with this name already exists. Select the existing team or choose a different name.",
 	team_not_available: "You cannot assign roles in that team.",
 });
 
@@ -103,6 +110,8 @@ const dom = {
 	result: document.getElementById("role-assignment-result"),
 	roleSummary: document.getElementById("role-summary"),
 	teamOptions: document.getElementById("team-id-options"),
+	existingTeamPanel: document.getElementById("existing-team-panel"),
+	newTeamPanel: document.getElementById("new-team-panel"),
 	sensitiveFieldset: document.getElementById("sensitive-role-fieldset"),
 	safeguardingFieldset: document.getElementById("safeguarding-fieldset"),
 	customExpiryDateGroup: document.getElementById("custom-expiry-date-group"),
@@ -212,6 +221,14 @@ function permissionCodes(permissions) {
 	return new Set((permissions || []).map((permission) => permission.code).filter(Boolean));
 }
 
+function selectedTeamAction() {
+	return document.querySelector('input[name="teamAction"]:checked')?.value || EXISTING_TEAM_ACTION;
+}
+
+function isCreatingTeam() {
+	return selectedTeamAction() === CREATE_TEAM_ACTION;
+}
+
 function selectedTeamId() {
 	return document.querySelector('input[name="teamId"]:checked')?.value || "";
 }
@@ -225,11 +242,21 @@ function teamLabel(team) {
 	return team?.name || team?.id || "No team selected";
 }
 
+function newTeamNameLabel(values) {
+	return values.newTeamName || "New team name not provided";
+}
+
+function renderTeamActionControls() {
+	const create = isCreatingTeam();
+	if (dom.existingTeamPanel) dom.existingTeamPanel.hidden = create;
+	if (dom.newTeamPanel) dom.newTeamPanel.hidden = !create;
+}
+
 function renderTeamOptions(context) {
 	if (!dom.teamOptions) return;
 	const teams = context?.teams || [];
 	if (!teams.length) {
-		dom.teamOptions.innerHTML = '<p class="govuk-body">You do not have any teams available for role assignment.</p>';
+		dom.teamOptions.innerHTML = '<p class="govuk-body">You do not have any existing teams available for role assignment.</p>';
 		return;
 	}
 
@@ -252,18 +279,21 @@ function renderAuthContext(data) {
 	state.context = data;
 	const permissions = permissionCodes(data.permissions);
 	const canAssignRoles = permissions.has("role.assign");
+	const canCreateTeams = permissions.has("team.manage") && permissions.has("role.assign");
 	const activeTeam = data.activeTeam || {};
 
 	dom.context.classList.toggle("auth-role-assignment-scope__panel--blocked", !canAssignRoles);
 	dom.context.innerHTML = canAssignRoles
 		? `
 <p class="govuk-body">You can assign roles in teams you manage. Your current team is <strong>${escapeHtml(activeTeam.name || activeTeam.id || "not set")}</strong>.</p>
+${canCreateTeams ? '<p class="govuk-body">You can also create a new team as part of this role assignment.</p>' : ""}
 `
 		: `
 <p class="govuk-body"><strong>You cannot assign roles.</strong></p>
 <p class="govuk-body">You do not have permission to assign roles for ${escapeHtml(activeTeam.name || activeTeam.id || "this team")}.</p>
 `;
 	renderTeamOptions(data);
+	renderTeamActionControls();
 	setDisabled(!canAssignRoles);
 	if (dom.form) dom.form.hidden = !canAssignRoles;
 	if (dom.review) dom.review.hidden = true;
@@ -380,7 +410,10 @@ function formValues() {
 	return {
 		targetEmail: String(data.get("targetEmail") || "").trim(),
 		targetUserId: String(data.get("targetUserId") || "").trim(),
+		teamAction: selectedTeamAction(),
 		teamId: selectedTeamId(),
+		newTeamName: String(data.get("newTeamName") || "").trim().replace(/\s+/g, " "),
+		newTeamReason: String(data.get("newTeamReason") || "").trim(),
 		roleKey: selectedRoleKey(),
 		requestedReason: String(data.get("requestedReason") || "").trim(),
 		durationPreset: selectedDurationPreset(),
@@ -456,8 +489,20 @@ function validate(values) {
 		addError(errors, "target-email", "Enter a team member's email address or user ID.", "#target-email");
 	}
 
-	if (!values.teamId) {
+	if (!values.teamAction) {
+		addError(errors, "team-action", "Select whether to use an existing team or create a new team.", "#team-action-existing");
+	}
+
+	if (values.teamAction === EXISTING_TEAM_ACTION && !values.teamId) {
 		addError(errors, "team-id", "Select which team this role should be in.", "#team-id-1");
+	}
+
+	if (values.teamAction === CREATE_TEAM_ACTION && values.newTeamName.length < 3) {
+		addError(errors, "new-team-name", "Enter the new team's name.", "#new-team-name");
+	}
+
+	if (values.teamAction === CREATE_TEAM_ACTION && values.newTeamName.length > 80) {
+		addError(errors, "new-team-name", "Team names must be 80 characters or fewer.", "#new-team-name");
 	}
 
 	if (!values.roleKey) {
@@ -490,10 +535,17 @@ function validate(values) {
 function requestBody(values) {
 	const expiry = expiresAtFor(values);
 	const body = {
-		teamId: values.teamId,
+		teamAction: values.teamAction,
 		roleKey: values.roleKey,
 		requestedReason: values.requestedReason,
 	};
+
+	if (values.teamAction === CREATE_TEAM_ACTION) {
+		body.newTeamName = values.newTeamName;
+		if (values.newTeamReason) body.newTeamReason = values.newTeamReason;
+	} else {
+		body.teamId = values.teamId;
+	}
 
 	if (values.targetEmail) body.targetEmail = values.targetEmail;
 	if (values.targetUserId) body.targetUserId = values.targetUserId;
@@ -504,12 +556,27 @@ function requestBody(values) {
 	return body;
 }
 
+function teamSummaryRows(values) {
+	if (values.teamAction === CREATE_TEAM_ACTION) {
+		return [
+			["Team action", "Create a new team", "#team-action-create"],
+			["New team name", newTeamNameLabel(values), "#new-team-name"],
+			["Team creation reason", values.newTeamReason || "Not provided", "#new-team-reason"],
+		];
+	}
+
+	return [
+		["Team action", "Use an existing team", "#team-action-existing"],
+		["Team", teamLabel(selectedTeam()), "#team-id-1"],
+	];
+}
+
 function reviewSummaryRows(values) {
 	const detail = roleDetail(values.roleKey) || {};
 	return [
 		["Team member email", values.targetEmail || "Not provided", "#target-email"],
 		["User ID", values.targetUserId || "Not provided", "#target-user-id"],
-		["Team", teamLabel(selectedTeam()), "#team-id-1"],
+		...teamSummaryRows(values),
 		["Role", detail.label || values.roleKey, "#role-key-observer"],
 		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set", "#duration-30"],
 		["Expiry date", expiryLabelFor(values), values.durationPreset === "custom" ? "#expiry-day" : "#duration-custom"],
@@ -569,6 +636,7 @@ function showResult(data) {
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--success";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role assigned</h2>
+${team.created ? `<p class="govuk-body">The team <strong>${escapeHtml(teamLabel(team))}</strong> was created.</p>` : ""}
 <p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)} in ${escapeHtml(teamLabel(team))}.</p>
 ${membership.createdOrReactivated ? '<p class="govuk-body">They were also added as an active member of this team.</p>' : ""}
 <p class="govuk-body">Assignment ID: <code>${escapeHtml(assignment.id)}</code></p>
@@ -632,6 +700,7 @@ async function submitAssignment() {
 		showResult(response.data);
 		dom.form.reset();
 		renderTeamOptions(state.context);
+		renderTeamActionControls();
 		renderRoleSummary();
 		renderDurationControls();
 		hideReview();
@@ -665,6 +734,9 @@ function init() {
 	document
 		.querySelectorAll('input[name="durationPreset"]')
 		.forEach((input) => input.addEventListener("change", renderDurationControls));
+	document
+		.querySelectorAll('input[name="teamAction"]')
+		.forEach((input) => input.addEventListener("change", renderTeamActionControls));
 	document.querySelectorAll(".auth-role-assignment-radios .govuk-radios__hint").forEach((hint) => {
 		hint.dataset.clicksRadio = "true";
 	});
@@ -675,6 +747,7 @@ function init() {
 		hideReview();
 		dom.form.focus?.();
 	});
+	renderTeamActionControls();
 	renderRoleSummary();
 	renderDurationControls();
 	initAuthContext();
@@ -684,23 +757,25 @@ init();
 
 window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
-	ROLE_DETAILS,
+	CREATE_TEAM_ACTION,
 	DURATION_LABELS,
-	ROLE_ASSIGNMENT_SERVER_MESSAGES,
+	EXISTING_TEAM_ACTION,
 	FALLBACK_API_ORIGINS,
 	PREVIEW_API_ORIGIN,
 	PRODUCTION_API_ORIGIN,
+	ROLE_ASSIGNMENT_SERVER_MESSAGES,
+	ROLE_DETAILS,
 	apiBaseCandidates,
 	applyQueryPrefill,
 	configuredApiOrigin,
 	defaultApiOrigin,
 	endpoint,
+	expiresAtFor,
 	isProductionPagesHost,
 	isResearchOpsBranchPreviewHost,
+	requestBody,
 	roleAssignmentServerMessage,
 	selectedTeam,
 	teamLabel,
 	validate,
-	requestBody,
-	expiresAtFor,
 });
