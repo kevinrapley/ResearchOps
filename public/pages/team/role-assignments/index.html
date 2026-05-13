@@ -41,7 +41,8 @@
 					<div class="govuk-grid-column-two-thirds">
 						<span class="govuk-caption-l">Team administration</span>
 						<h1 class="govuk-heading-xl" id="role-assignment-title">Assign a role to a team member</h1>
-						<p class="lede">Use this page to give an existing team member access to a role in ResearchOps.</p>
+						<p class="lede">Use this page to give someone access to a role in your active ResearchOps team.</p>
+						<p class="govuk-body">If the person is not already an active member of the team, ResearchOps will add them when you assign the role.</p>
 						<p class="govuk-body">Only assign the lowest role they need to do their work. Role changes are recorded in the audit log.</p>
 					</div>
 				</div>
@@ -183,7 +184,7 @@
 
 						<section id="role-assignment-review" class="auth-role-assignment-review" aria-labelledby="role-assignment-review-title" tabindex="-1" hidden>
 							<h2 class="govuk-heading-l" id="role-assignment-review-title">Check and confirm</h2>
-							<p class="govuk-body">The system will confirm the person exists and is an active member of this team when you assign the role.</p>
+							<p class="govuk-body">ResearchOps will confirm the person exists. If they are not already an active member of this team, ResearchOps will add them when the role is assigned.</p>
 							<div id="role-assignment-review-body"></div>
 							<div class="govuk-button-group"><button class="govuk-button" type="button" id="confirm-role-assignment">Confirm and assign role</button><button class="govuk-button govuk-button--secondary" type="button" id="change-role-assignment">Change details</button></div>
 						</section>
@@ -196,6 +197,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-role-assignment-page.js?v=preview-worker-api-origin-20260512"></script>
+	<script type="module" src="/js/auth-role-assignment-page.js?v=membership-activation-20260513"></script>
 </body>
 </html>
