@@ -1,0 +1,197 @@
+{
+	"trace_id": "atrace-20260513-account-registration-request-branch",
+	"trace_layer": "operational",
+	"date": "2026-05-13",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/user-registration-review",
+	"pull_request": {
+		"number": 248,
+		"title": "Add account registration request journey",
+		"state": "open"
+	},
+	"slice": {
+		"name": "account-registration-request",
+		"scope": "Public account registration request, Team Admin review queue, GOV.UK form behaviour, preview/prod API delivery and operating-model learnings"
+	},
+	"purpose": "Record the branch-level agent activity for the account registration request work, replacing an overly narrow CI-fix trace with an audit of the full implementation and correction path.",
+	"status": {
+		"branch_created": true,
+		"pull_request_opened": true,
+		"release_ready": false,
+		"requires_full_ci_rerun": true
+	},
+	"initial_user_request": {
+		"summary": "Build registration, not login, so users can request an account without receiving a role, and give Team Admins enough information to review the request.",
+		"constraints": [
+			"No role is applied during registration.",
+			"Requested role or work type is review information only.",
+			"Use good GOV.UK language.",
+			"Do not expose programmatic wording in errors.",
+			"Start a branch and do not open a PR until asked."
+		]
+	},
+	"operating_model": {
+		"roles_used": [
+			"GOV.UK developer",
+			"GOV.UK accessibility specialist",
+			"GOV.UK content designer",
+			"GOV.UK designer",
+			"GOV.UK QA",
+			"GOV.UK release manager",
+			"interaction designer",
+			"service designer",
+			"content designer",
+			"operations",
+			"developer",
+			"information architect",
+			"product lead",
+			"quality lead",
+			"security specialist",
+			"service owner"
+		],
+		"dominant_rules": [
+			"Keep account registration separate from role assignment.",
+			"Use GOV.UK-style content, validation and interaction patterns.",
+			"Make branch work end to end in preview and production, not only as static page rendering.",
+			"Capture durable lessons in RECENT_LEARNINGS.md and relevant bundles when the review reveals reusable mistakes."
+		]
+	},
+	"decision_path": [
+		{
+			"stage": "initial implementation",
+			"interpretation": "Registration is an access request, not a role assignment transaction.",
+			"changes": [
+				"Created public account request page.",
+				"Created Team Admin read-only review page.",
+				"Added auth registration request route.",
+				"Added D1 review queue table.",
+				"Linked sign-in page to registration.",
+				"Added route-state test to assert no role assignment during registration."
+			]
+		},
+		{
+			"stage": "multidisciplinary review correction",
+			"interpretation": "The model was right, but the journey still sounded too role-selection-led and needed stronger GOV.UK pattern fidelity.",
+			"changes": [
+				"Changed the main question to what the user needs to use ResearchOps for.",
+				"Changed radio labels to activity-based labels.",
+				"Removed the public-page notification banner.",
+				"Added check-answers step.",
+				"Changed duplicate pending request handling to HTTP 200 with created:false.",
+				"Added runtime tests using a fake D1 store."
+			]
+		},
+		{
+			"stage": "form design correction",
+			"interpretation": "Full-width fields and cramped intro-to-form rhythm were GOV.UK form-affordance issues that should persist as bundle learning.",
+			"changes": [
+				"Added public/css/auth-registration.css.",
+				"Applied two-thirds widths to common fields and textarea.",
+				"Added vertical-rhythm spacing between intro content and the form.",
+				"Added govuk-form-affordance-reference.xml.",
+				"Updated GOV.UK bundle metadata and changelog.",
+				"Updated RECENT_LEARNINGS.md and .agent-operating-model/README.md."
+			]
+		},
+		{
+			"stage": "preview and production correction",
+			"interpretation": "The branch preview rendered the page but did not guarantee the API route existed or accepted the preview origin.",
+			"changes": [
+				"Changed registration frontend to try relative /api first.",
+				"Added preview and production Worker fallbacks.",
+				"Applied the same API routing model to the Team Admin review page.",
+				"Updated Worker CORS to allow researchops.pages.dev and *.researchops.pages.dev.",
+				"Added preview Worker deployment for feature branches.",
+				"Renumbered registration migration from 0004 to 0005 to avoid conflict with main.",
+				"Updated tests to assert preview-safe API routing and migration deployment."
+			]
+		},
+		{
+			"stage": "check-answers correction",
+			"interpretation": "Change links must reveal the relevant answer field, and passive containers should not receive yellow focus rings.",
+			"changes": [
+				"Removed tabindex from the check-answers section.",
+				"Changed transition to scroll the section into view instead of focusing the container.",
+				"Added data-change-target to each Change link.",
+				"Added a click handler that reveals the form and focuses the relevant field.",
+				"Added route-state assertions for change-link behaviour and absence of passive-container focus."
+			]
+		},
+		{
+			"stage": "trace correction",
+			"interpretation": "A trace that only described the CI trace-coverage fix was too narrow and did not satisfy the purpose of agent audit traces.",
+			"changes": [
+				"Deleted account-registration-request-pr-fix-trace.md.",
+				"Deleted account-registration-request-pr-fix-trace.json.",
+				"Created account-registration-request-branch-trace.md.",
+				"Created account-registration-request-branch-trace.json."
+			]
+		}
+	],
+	"files_added_or_changed_by_category": {
+		"frontend_pages": [
+			"public/pages/account/register/index.html",
+			"public/pages/team/registration-requests/index.html",
+			"public/pages/account/sign-in/index.html"
+		],
+		"frontend_scripts": [
+			"public/js/auth-registration-page.js",
+			"public/js/auth-registration-requests-page.js"
+		],
+		"styles": [
+			"public/css/auth-registration.css"
+		],
+		"worker_and_data": [
+			"infra/cloudflare/src/core/auth/registration-requests.js",
+			"infra/cloudflare/src/worker.js",
+			"infra/cloudflare/migrations/0005_auth_registration_requests.sql"
+		],
+		"deployment": [
+			".github/workflows/deploy-worker.yml"
+		],
+		"tests": [
+			"tests/auth-registration-requests-route-state.test.js",
+			"tests/auth-registration-requests-runtime.test.js"
+		],
+		"product_docs": [
+			"docs/product/26/05/12/account-registration-request-2026-05-12.md"
+		],
+		"operating_model": [
+			"RECENT_LEARNINGS.md",
+			".agent-operating-model/README.md",
+			".agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml",
+			".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+			".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+			".agent-operating-model/bundles/govuk-design-system/registry-manifest.yaml",
+			".agent-operating-model/bundles/govuk-design-system/CHANGELOG.md",
+			".agent-operating-model/bundles/researchops-developer-control/references/integration-contracts.xml"
+		],
+		"agent_traces": [
+			"docs/agent-audit/reasoning/2026/05/12/account-registration-request-trace.md",
+			"docs/agent-audit/reasoning/2026/05/12/account-registration-request-trace.json",
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-request-branch-trace.md",
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-request-branch-trace.json"
+		]
+	},
+	"validation_added": [
+		"Route-state assertions for role-assignment separation.",
+		"Route-state assertions for GOV.UK content and form affordance.",
+		"Route-state assertions for preview-safe API routing and branch-preview CORS.",
+		"Route-state assertions for preview Worker deployment and migration path.",
+		"Route-state assertions for check-answers change-link behaviour.",
+		"Runtime tests for valid request, duplicate request and invalid email handling.",
+		"Runtime assertion that the registration route does not prepare SQL touching auth_role_assignments."
+	],
+	"known_limitations": [
+		"No approval workflow yet.",
+		"No rejection workflow yet.",
+		"No request-more-information workflow yet.",
+		"No mark-as-reviewed behaviour yet.",
+		"Role assignment is not yet linked back to request resolution.",
+		"No email notifications yet.",
+		"No rate limiting or abuse controls yet.",
+		"Team or service remains free text.",
+		"Visual walkthrough registry and report regeneration remain outstanding."
+	],
+	"trace_boundary": "This file records task interpretation, decisions, implementation stages, pivots and validation evidence. It does not expose private chain-of-thought."
+}
