@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
-const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0004_auth_registration_requests.sql', 'utf8');
+const deployWorkerSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
+const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_registration_requests.sql', 'utf8');
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
@@ -34,6 +35,14 @@ function assertWorkerAllowsResearchOpsPreviewOrigins() {
 	assert.match(workerSource, /function isResearchOpsPagesOrigin/);
 	assert.match(workerSource, /hostname === "researchops\.pages\.dev" \|\| hostname\.endsWith\("\.researchops\.pages\.dev"\)/);
 	assert.match(workerSource, /if \(isResearchOpsPagesOrigin\(origin\)\) return origin/);
+}
+
+function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction() {
+	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*" \]/);
+	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
+	assert.match(deployWorkerSource, /deploy-production:/);
+	assert.match(deployWorkerSource, /deploy-preview:/);
+	assert.match(deployWorkerSource, /--name rops-api-passwordless-preview/);
 }
 
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
@@ -151,6 +160,7 @@ function assertSignInLinksToRegistrationRequest() {
 
 assertWorkerRoutesRegistrationRequests();
 assertWorkerAllowsResearchOpsPreviewOrigins();
+assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
 assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();
