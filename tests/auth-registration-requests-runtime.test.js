@@ -45,9 +45,17 @@ class FakeD1 {
 			return this.users.find((user) => user.email.toLowerCase() === email) || null;
 		}
 
-		if (sql.includes('FROM auth_registration_requests') && sql.includes("request_status = 'pending_review'")) {
+		if (
+			sql.includes('FROM auth_registration_requests') &&
+			sql.includes("request_status = 'pending_review'")
+		) {
 			const email = String(values[0] || '').toLowerCase();
-			return this.registrationRequests.find((request) => request.normalised_email === email && request.request_status === 'pending_review') || null;
+			return (
+				this.registrationRequests.find(
+					(request) =>
+						request.normalised_email === email && request.request_status === 'pending_review'
+				) || null
+			);
 		}
 
 		throw new Error(`Unhandled first statement: ${sql}`);
@@ -66,7 +74,17 @@ class FakeD1 {
 		}
 
 		if (sql.includes('INSERT INTO auth_registration_requests')) {
-			const [id, userId, email, normalisedEmail, displayName, requestedRoleKey, requestedRoleLabel, teamOrService, requestedReason] = values;
+			const [
+				id,
+				userId,
+				email,
+				normalisedEmail,
+				displayName,
+				requestedRoleKey,
+				requestedRoleLabel,
+				teamOrService,
+				requestedReason,
+			] = values;
 			this.registrationRequests.push({
 				id,
 				user_id: userId,
@@ -99,7 +117,10 @@ class FakeD1 {
 	}
 
 	async all(sql) {
-		if (sql.includes('FROM auth_registration_requests') && sql.includes("WHERE request_status = 'pending_review'")) {
+		if (
+			sql.includes('FROM auth_registration_requests') &&
+			sql.includes("WHERE request_status = 'pending_review'")
+		) {
 			return {
 				results: this.registrationRequests
 					.filter((request) => request.request_status === 'pending_review')
@@ -144,16 +165,25 @@ async function assertValidRequestCreatesPendingUserAndRequest() {
 			requestedReason: 'Planning and analysing the assisted digital support study.',
 		}),
 		{ RESEARCHOPS_D1: db },
-		'/api/auth/registration-requests',
+		'/api/auth/registration-requests'
 	);
 
 	assert.equal(response.status, 201);
 	assert.equal(db.users.length, 1);
 	assert.equal(db.registrationRequests.length, 1);
 	assert.equal(db.registrationRequests[0].email, 'alex.morgan@example.gov.uk');
-	assert.equal(db.registrationRequests[0].requested_role_label, 'Plan, run or analyse user research');
-	assert.equal(db.authEvents.some((event) => event.event_type === 'auth.registration_request.created'), true);
-	assert.equal(db.statements.some((statement) => statement.includes('auth_role_assignments')), false);
+	assert.equal(
+		db.registrationRequests[0].requested_role_label,
+		'Plan, run or analyse user research'
+	);
+	assert.equal(
+		db.authEvents.some((event) => event.event_type === 'auth.registration_request.created'),
+		true
+	);
+	assert.equal(
+		db.statements.some((statement) => statement.includes('auth_role_assignments')),
+		false
+	);
 
 	const payload = await json(response);
 	assert.equal(payload.ok, true);
@@ -170,13 +200,26 @@ async function assertDuplicatePendingRequestReturnsExistingRequest() {
 		requestedReason: 'Taking notes for moderated research sessions.',
 	};
 
-	const firstResponse = await handleRegistrationRequestsRoute(registrationRequest(body), { RESEARCHOPS_D1: db }, '/api/auth/registration-requests');
-	const secondResponse = await handleRegistrationRequestsRoute(registrationRequest(body), { RESEARCHOPS_D1: db }, '/api/auth/registration-requests');
+	const firstResponse = await handleRegistrationRequestsRoute(
+		registrationRequest(body),
+		{ RESEARCHOPS_D1: db },
+		'/api/auth/registration-requests'
+	);
+	const secondResponse = await handleRegistrationRequestsRoute(
+		registrationRequest(body),
+		{ RESEARCHOPS_D1: db },
+		'/api/auth/registration-requests'
+	);
 
 	assert.equal(firstResponse.status, 201);
 	assert.equal(secondResponse.status, 200);
 	assert.equal(db.registrationRequests.length, 1);
-	assert.equal(db.authEvents.some((event) => event.event_type === 'auth.registration_request.duplicate_pending'), true);
+	assert.equal(
+		db.authEvents.some(
+			(event) => event.event_type === 'auth.registration_request.duplicate_pending'
+		),
+		true
+	);
 
 	const payload = await json(secondResponse);
 	assert.equal(payload.ok, true);
@@ -195,7 +238,7 @@ async function assertInvalidEmailReturnsUserFacingError() {
 			requestedReason: 'Planning and analysing the assisted digital support study.',
 		}),
 		{ RESEARCHOPS_D1: db },
-		'/api/auth/registration-requests',
+		'/api/auth/registration-requests'
 	);
 
 	assert.equal(response.status, 400);
@@ -203,7 +246,10 @@ async function assertInvalidEmailReturnsUserFacingError() {
 
 	const payload = await json(response);
 	assert.equal(payload.error, 'email_invalid');
-	assert.equal(payload.message, 'Enter an email address in the correct format, like name@example.com.');
+	assert.equal(
+		payload.message,
+		'Enter an email address in the correct format, like name@example.com.'
+	);
 }
 
 await assertValidRequestCreatesPendingUserAndRequest();
