@@ -1,7 +1,7 @@
-import { handleMeRoute } from "./core/auth/access.js";
+import { handleMeRoute } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
-import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments.js";
+import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
 
