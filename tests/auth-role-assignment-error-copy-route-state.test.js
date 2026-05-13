@@ -30,7 +30,7 @@ function assertRoleAssignmentErrorsDoNotExposeProgrammaticTerms() {
 }
 
 function assertRoleAssignmentScriptCacheKeyWasRefreshed() {
-	assert.match(pageSource, /auth-role-assignment-page\.js\?v=membership-activation-errors-20260513/);
+	assert.match(pageSource, /auth-role-assignment-page\.js\?v=explicit-team-selection-20260513/);
 }
 
 assertRoleAssignmentErrorsAreUserFacing();
