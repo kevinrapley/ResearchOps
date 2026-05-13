@@ -30,6 +30,12 @@ function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /method === ['"]GET['"] \|\| method === ['"]POST['"]/);
 }
 
+function assertWorkerAllowsResearchOpsPreviewOrigins() {
+	assert.match(workerSource, /function isResearchOpsPagesOrigin/);
+	assert.match(workerSource, /hostname === "researchops\.pages\.dev" \|\| hostname\.endsWith\("\.researchops\.pages\.dev"\)/);
+	assert.match(workerSource, /if \(isResearchOpsPagesOrigin\(origin\)\) return origin/);
+}
+
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
 	assert.match(migrationSource, /CREATE TABLE IF NOT EXISTS auth_registration_requests/);
 	assert.match(migrationSource, /requested_role_key TEXT NOT NULL/);
@@ -105,9 +111,26 @@ function assertCheckAnswersBehaviourExists() {
 	assert.match(registrationPageScript, /function renderCheckAnswers/);
 	assert.match(registrationPageScript, /function showCheckAnswers/);
 	assert.match(registrationPageScript, /function sendRegistrationRequest/);
+	assert.match(registrationPageScript, /function handleCheckAnswerChange/);
+	assert.match(registrationPageScript, /data-change-target/);
+	assert.match(registrationPageScript, /showForm\(link\.dataset\.changeTarget \|\| ''\)/);
 	assert.match(registrationPageScript, /Sending this request will not give you access/);
 	assert.match(registrationPageScript, /A team admin will review it and decide what access you need/);
 	assert.match(registrationPageScript, /govuk-panel--confirmation/);
+	assert.doesNotMatch(elementForId(registrationPageSource, 'registration-check-answers'), /tabindex=/);
+	assert.doesNotMatch(registrationPageScript, /registration-check-answers-title'\)\?\.focus/);
+}
+
+function assertRegistrationUsesPreviewSafeApiRouting() {
+	assert.match(registrationPageScript, /const FALLBACK_API_ORIGINS/);
+	assert.match(registrationPageScript, /function apiBaseCandidates/);
+	assert.match(registrationPageScript, /shouldUseFallbackApiOrigin/);
+	assert.match(registrationPageScript, /location\.hostname\.endsWith\('pages\.dev'\)/);
+	assert.match(registrationPageScript, /rops-api-passwordless-preview/);
+	assert.match(registrationPageScript, /rops-api\.digikev-kevin-rapley\.workers\.dev/);
+	assert.match(reviewPageScript, /function apiBaseCandidates/);
+	assert.match(reviewPageScript, /shouldUseFallbackApiOrigin/);
+	assert.match(reviewPageScript, /rops-api-passwordless-preview/);
 }
 
 function assertTeamAdminCanReviewRequestsButMustAssignSeparately() {
@@ -127,11 +150,13 @@ function assertSignInLinksToRegistrationRequest() {
 }
 
 assertWorkerRoutesRegistrationRequests();
+assertWorkerAllowsResearchOpsPreviewOrigins();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
 assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();
 assertRegistrationPageUsesSensibleFormWidthsAndRhythm();
 assertRegistrationErrorsAreUserFacing();
 assertCheckAnswersBehaviourExists();
+assertRegistrationUsesPreviewSafeApiRouting();
 assertTeamAdminCanReviewRequestsButMustAssignSeparately();
 assertSignInLinksToRegistrationRequest();
