@@ -28,6 +28,8 @@ This slice includes:
 
 - public account request page
 - client-side validation with GOV.UK-style error messages
+- GOV.UK spacing-scale vertical rhythm between intro content and form controls
+- sensible text-input and textarea widths for the expected answer length
 - check-answers step before sending the request
 - unauthenticated `POST /api/auth/registration-requests`
 - protected `GET /api/auth/registration-requests`
@@ -90,6 +92,25 @@ The public page uses these core messages:
 
 The form avoids exposing implementation terms such as `roleKey`, `targetUserId`, JSON body names or table names.
 
+## Form layout and affordance
+
+The registration page now has a dedicated stylesheet:
+
+```text
+public/css/auth-registration.css
+```
+
+The stylesheet applies spacing equivalent to GOV.UK spacing unit 6 between the introductory content and the form area on large screens, with reduced spacing on small screens.
+
+The text inputs are no longer left at full width. These controls use `govuk-!-width-two-thirds` and the page-level `account-registration-input` affordance class:
+
+- full name
+- work email address
+- team or service
+- something else
+
+The free-text reason textarea also uses `govuk-!-width-two-thirds` so it remains visually aligned with the preceding fields.
+
 ## Data model
 
 Migration `0004_auth_registration_requests.sql` creates `auth_registration_requests`.
@@ -139,6 +160,7 @@ Examples:
 - registration creates a review queue, not a role assignment
 - the route captures requested purpose information only
 - the registration page uses review language
+- the page uses explicit form spacing and input affordance classes
 - errors are user-facing
 - check-answers behaviour exists
 - team admin review is separate from role assignment
@@ -150,6 +172,14 @@ Examples:
 - duplicate pending requests return the existing request with status `200`
 - invalid email returns a user-facing error
 - the registration request route does not touch `auth_role_assignments`
+
+## Operating model updates
+
+The GOV.UK bundle now loads a form-affordance reference module that requires agents to make width and vertical-rhythm decisions for form work.
+
+The root `.agent-operating-model/README.md` now describes when agents should update `RECENT_LEARNINGS.md`.
+
+`RECENT_LEARNINGS.md` now records that GOV.UK form fields need explicit affordance and rhythm decisions, and that repeatable bundle misses should be recorded as recent learnings.
 
 ## Risks and follow-up work
 
