@@ -21,6 +21,11 @@
 	margin-bottom: 30px;
 	}
 
+.account-registration-form .govuk-input,
+.account-registration-form .govuk-textarea {
+	margin-bottom: 0;
+	}
+
 .account-registration-form .govuk-radios {
 	margin-top: 5px;
 	}
