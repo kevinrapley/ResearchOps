@@ -4,20 +4,22 @@
  * @summary Team Admin view of pending account registration requests.
  */
 
-function defaultApiOrigin() {
-	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
-		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
-	}
-	if (location.hostname.endsWith('pages.dev')) {
-		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
-	}
-	return location.origin;
+const FALLBACK_API_ORIGINS = Object.freeze([
+	'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev',
+	'https://rops-api.digikev-kevin-rapley.workers.dev',
+]);
+
+function configuredApiOrigin() {
+	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || '';
+	return String(value || '').replace(/\/$/, '');
 }
 
-const API_ORIGIN = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin();
+function defaultApiOrigin() {
+	return configuredApiOrigin();
+}
 
 const CONFIG = Object.freeze({
-	API_BASE: API_ORIGIN,
+	API_BASE: defaultApiOrigin(),
 	CACHE: 'no-store',
 	FETCH_TIMEOUT_MS: 12000,
 });
@@ -38,10 +40,21 @@ function escapeHtml(value) {
 		.replace(/'/g, '&#39;');
 }
 
-function apiUrl(path) {
+function shouldUseFallbackApiOrigin() {
+	return !CONFIG.API_BASE && location.hostname.endsWith('pages.dev');
+}
+
+function apiBaseCandidates() {
+	const candidates = [CONFIG.API_BASE];
+	if (shouldUseFallbackApiOrigin()) candidates.push(...FALLBACK_API_ORIGINS);
+	return [...new Set(candidates.map((value) => String(value || '').replace(/\/$/, '')))];
+}
+
+function apiUrl(path, base = CONFIG.API_BASE) {
 	const value = String(path || '');
 	if (/^https?:\/\//i.test(value)) return value;
-	return `${CONFIG.API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
+	if (!base) return value.startsWith('/') ? value : `/${value}`;
+	return `${base}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
 function setBusy(isBusy) {
@@ -75,11 +88,17 @@ function userFacingServiceError(error) {
 	return message || 'Account requests could not be loaded.';
 }
 
-async function fetchJson(path, options = {}) {
+function shouldTryNextApiBase(response, data, attemptIndex, totalAttempts) {
+	if (attemptIndex >= totalAttempts - 1) return false;
+	if (data?.error === 'invalid_response') return true;
+	return [404, 405, 502, 503, 504].includes(response.status);
+}
+
+async function fetchJsonFromBase(path, base, options = {}) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort('timeout'), CONFIG.FETCH_TIMEOUT_MS);
 	try {
-		const response = await fetch(apiUrl(path), {
+		const response = await fetch(apiUrl(path, base), {
 			cache: CONFIG.CACHE,
 			credentials: 'include',
 			signal: controller.signal,
@@ -95,12 +114,28 @@ async function fetchJson(path, options = {}) {
 		try {
 			data = text ? JSON.parse(text) : {};
 		} catch {
-			data = { ok: false, error: 'invalid_response', message: text };
+			data = { ok: false, error: 'invalid_response', message: 'ResearchOps did not receive a valid response from the account request service.' };
 		}
-		return { data, ok: response.ok, status: response.status };
+		return { data, ok: response.ok && data?.error !== 'invalid_response', status: response.status };
 	} finally {
 		clearTimeout(timer);
 	}
+}
+
+async function fetchJson(path, options = {}) {
+	const bases = apiBaseCandidates();
+	let lastError;
+	for (let index = 0; index < bases.length; index += 1) {
+		try {
+			const response = await fetchJsonFromBase(path, bases[index], options);
+			if (shouldTryNextApiBase(response, response.data, index, bases.length)) continue;
+			return response;
+		} catch (error) {
+			lastError = error;
+			if (index >= bases.length - 1) throw error;
+		}
+	}
+	throw lastError || new Error('Account requests could not be loaded.');
 }
 
 function renderEmptyState() {
@@ -178,7 +213,10 @@ loadRegistrationRequests();
 
 window.__ropsAuthRegistrationRequestsPage = Object.freeze({
 	CONFIG,
+	apiBaseCandidates,
 	apiUrl,
+	configuredApiOrigin,
 	defaultApiOrigin,
 	formatDate,
+	shouldUseFallbackApiOrigin,
 });
