@@ -149,6 +149,10 @@ export async function handleMeRoute(request, env, apiPath) {
 
 		return jsonResponse({ ok: true, ...context });
 	} catch (error) {
+		if (error?.status && error?.code) {
+			return jsonResponse({ ok: false, error: error.code, message: error.message }, error.status);
+		}
+
 		try {
 			return routePermissionErrorResponse(error);
 		} catch {
