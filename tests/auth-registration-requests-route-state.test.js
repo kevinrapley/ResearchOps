@@ -4,6 +4,10 @@ import fs from 'node:fs';
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const deployWorkerSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_registration_requests.sql', 'utf8');
+const previewDaaSCorrectionSource = fs.readFileSync(
+	'infra/cloudflare/migrations/preview/0002_correct_research_operations_user_daas_team.sql',
+	'utf8',
+);
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
@@ -40,6 +44,7 @@ function assertWorkerAllowsResearchOpsPreviewOrigins() {
 function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction() {
 	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*", "fix\/\*\*" \]/);
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
+	assert.match(deployWorkerSource, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION: "infra\/cloudflare\/migrations\/preview\/0002_correct_research_operations_user_daas_team\.sql"/);
 	assert.match(deployWorkerSource, /deploy-production:/);
 	assert.match(deployWorkerSource, /deploy-preview:/);
 	assert.match(deployWorkerSource, /WRANGLER_PREVIEW_CONFIG: "infra\/cloudflare\/wrangler\.preview\.toml"/);
@@ -48,8 +53,24 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 	assert.match(deployWorkerSource, /database_name = \"researchops-d1-preview\"/);
 	assert.match(deployWorkerSource, /CF_PREVIEW_D1_DATABASE_ID/);
 	assert.match(deployWorkerSource, /d1 execute "\$\{D1_PREVIEW_DATABASE_NAME\}"/);
+	assert.match(deployWorkerSource, /--file "\$\{PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION\}"/);
 	assert.match(deployWorkerSource, /deploy --config wrangler\.preview\.toml/);
+	assert.doesNotMatch(deployWorkerSource, /deploy-production:[\s\S]*PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
 	assert.doesNotMatch(deployWorkerSource, /deploy-preview:[\s\S]*d1 execute "\$\{D1_DATABASE_NAME\}"[\s\S]*--remote/);
+}
+
+function assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped() {
+	assert.match(previewDaaSCorrectionSource, /Preview-only data correction/);
+	assert.match(previewDaaSCorrectionSource, /kevin\.rapley@research-operations\.com/);
+	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_teams/);
+	assert.match(previewDaaSCorrectionSource, /'DaaS'/);
+	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_team_memberships/);
+	assert.match(previewDaaSCorrectionSource, /assignment_kevin_research_operations_observer_daas/);
+	assert.match(previewDaaSCorrectionSource, /'role_observer'/);
+	assert.match(previewDaaSCorrectionSource, /assignment_status = 'revoked'/);
+	assert.match(previewDaaSCorrectionSource, /scope_id = 'team_researchops_core'/);
+	assert.match(previewDaaSCorrectionSource, /auth\.preview_data\.corrected/);
+	assert.doesNotMatch(previewDaaSCorrectionSource, /digikev\.kevin\.rapley@gmail\.com'\)[\s\S]*assignment_status = 'revoked'/);
 }
 
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
@@ -173,6 +194,7 @@ function assertSignInLinksToRegistrationRequest() {
 assertWorkerRoutesRegistrationRequests();
 assertWorkerAllowsResearchOpsPreviewOrigins();
 assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction();
+assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
 assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();
