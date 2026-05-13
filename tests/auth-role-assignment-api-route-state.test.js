@@ -5,7 +5,6 @@ const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const handlerSource = fs.readFileSync('infra/cloudflare/src/core/auth/role-assignments-scoped.js', 'utf8');
 const accessScopedSource = fs.readFileSync('infra/cloudflare/src/core/auth/access-scoped.js', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0002_auth_role_assignment_route.sql', 'utf8');
-const roleCatalogueMigrationSource = fs.readFileSync('infra/cloudflare/migrations/0006_team_scoped_role_catalogue.sql', 'utf8');
 
 function assertWorkerWiresScopedRoleAssignmentRoute() {
 	assert.match(workerSource, /handleRoleAssignmentsRoute/);
@@ -32,8 +31,22 @@ function assertAccessContextSeparatesMembershipFromAdministration() {
 	assert.match(accessScopedSource, /async function isResearchOpsCoreTeamAdmin\(db, userId\)/);
 	assert.match(accessScopedSource, /ResearchOps Core Team/);
 	assert.match(accessScopedSource, /async function listAllActiveTeams\(db\)/);
-	assert.match(accessScopedSource, /team\.manage\.global/);
-	assert.match(accessScopedSource, /role\.assign\.global/);
+}
+
+function assertResearchOpsCoreTeamAdminIsTheOnlyGlobalAdministrationException() {
+	assert.match(accessScopedSource, /r\.role_key = 'team_admin'/);
+	assert.match(accessScopedSource, /t\.name = 'ResearchOps Core Team'/);
+	assert.match(accessScopedSource, /isResearchOpsCoreTeamAdmin \? await listAllActiveTeams\(db\) : await listTeamsManagedByUser/);
+	assert.doesNotMatch(accessScopedSource, /user_researcher/);
+	assert.doesNotMatch(accessScopedSource, /note_taker/);
+}
+
+function assertNoScenarioSpecificRoleCatalogueIsRequired() {
+	assert.doesNotMatch(workerSource, /TEAM_SCOPED_ROLE_CATALOGUE_MIGRATION/);
+	assert.doesNotMatch(handlerSource, /user_researcher/);
+	assert.doesNotMatch(handlerSource, /note_taker/);
+	assert.doesNotMatch(accessScopedSource, /user_researcher/);
+	assert.doesNotMatch(accessScopedSource, /note_taker/);
 }
 
 function assertHandlerRequiresExplicitAssignableTeam() {
@@ -154,21 +167,11 @@ function assertRouteStatusMigrationExists() {
 	assert.match(migrationSource, /required_permissions_json = '\["role.assign"\]'/);
 }
 
-function assertTeamScopedRoleCatalogueExists() {
-	assert.match(roleCatalogueMigrationSource, /role_user_researcher/);
-	assert.match(roleCatalogueMigrationSource, /user_researcher/);
-	assert.match(roleCatalogueMigrationSource, /role_note_taker/);
-	assert.match(roleCatalogueMigrationSource, /note_taker/);
-	assert.match(roleCatalogueMigrationSource, /research\.project\.create/);
-	assert.match(roleCatalogueMigrationSource, /research\.session\.manage/);
-	assert.match(roleCatalogueMigrationSource, /research\.session\.note\.create/);
-	assert.match(roleCatalogueMigrationSource, /team\.manage\.global/);
-	assert.match(roleCatalogueMigrationSource, /role\.assign\.global/);
-}
-
 assertWorkerWiresScopedRoleAssignmentRoute();
 assertHandlerUsesScopedAuthenticationAndRoutePermission();
 assertAccessContextSeparatesMembershipFromAdministration();
+assertResearchOpsCoreTeamAdminIsTheOnlyGlobalAdministrationException();
+assertNoScenarioSpecificRoleCatalogueIsRequired();
 assertHandlerRequiresExplicitAssignableTeam();
 assertHandlerSupportsInlineTeamCreation();
 assertHandlerScopesAssignmentsToSelectedTeam();
@@ -179,4 +182,3 @@ assertHandlerRequiresSensitiveRoleConfirmation();
 assertHandlerWritesMembershipAssignmentAndAuditEventAtomically();
 assertHandlerReturnsSelectedTeam();
 assertRouteStatusMigrationExists();
-assertTeamScopedRoleCatalogueExists();
