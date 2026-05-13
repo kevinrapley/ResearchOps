@@ -107,12 +107,38 @@ async function listMembershipTeams(db, userId) {
 				t.id,
 				t.name,
 				m.membership_status AS membershipStatus,
-				m.created_at AS membershipCreatedAt
+				m.created_at AS membershipCreatedAt,
+				'membership' AS membershipSource
 			FROM auth_team_memberships m
 			INNER JOIN auth_teams t ON t.id = m.team_id
 			WHERE m.user_id = ?
 				AND m.membership_status = 'active'
 				AND t.team_status = 'active'
+			ORDER BY t.name ASC
+		`)
+		.bind(userId)
+		.all();
+	return result.results || [];
+}
+
+async function listRoleAssignmentTeams(db, userId) {
+	if (!db || !userId) return [];
+	const result = await db
+		.prepare(`
+			SELECT DISTINCT
+				t.id,
+				t.name,
+				'active' AS membershipStatus,
+				MIN(ra.created_at) AS membershipCreatedAt,
+				'role_assignment' AS membershipSource
+			FROM auth_role_assignments ra
+			INNER JOIN auth_teams t ON t.id = ra.scope_id
+			WHERE ra.user_id = ?
+				AND ra.scope_type = 'team'
+				AND ra.assignment_status = 'active'
+				AND t.team_status = 'active'
+				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+			GROUP BY t.id, t.name
 			ORDER BY t.name ASC
 		`)
 		.bind(userId)
@@ -168,9 +194,22 @@ async function listPermissionsForTeam(db, userId, teamId) {
 	return (result.results || []).map(mapPermission);
 }
 
+function combineTeamSources(membershipTeams, roleAssignmentTeams) {
+	const byId = new Map();
+	for (const team of roleAssignmentTeams || []) {
+		if (team?.id) byId.set(team.id, team);
+	}
+	for (const team of membershipTeams || []) {
+		if (team?.id) byId.set(team.id, team);
+	}
+	return [...byId.values()].sort((first, second) => String(first.name || '').localeCompare(String(second.name || '')));
+}
+
 async function buildMemberTeams(db, userId) {
 	if (!db || !userId) return [];
-	const teams = await listMembershipTeams(db, userId);
+	const membershipTeams = await listMembershipTeams(db, userId);
+	const roleAssignmentTeams = await listRoleAssignmentTeams(db, userId);
+	const teams = combineTeamSources(membershipTeams, roleAssignmentTeams);
 	const enrichedTeams = [];
 
 	for (const team of teams) {
