@@ -29,6 +29,14 @@ function assertElementHasClasses(source, fieldId, classes) {
 	}
 }
 
+function workflowSection(source, startMarker, endMarker) {
+	const start = source.indexOf(startMarker);
+	assert.notEqual(start, -1, `Expected workflow section ${startMarker}`);
+	const rest = source.slice(start);
+	const end = endMarker ? rest.indexOf(endMarker) : -1;
+	return end === -1 ? rest : rest.slice(0, end);
+}
+
 function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /import \{ handleRegistrationRequestsRoute \} from ['"]\.\/core\/auth\/registration-requests\.js['"];/);
 	assert.match(workerSource, /apiPath === ['"]\/api\/auth\/registration-requests['"]/);
@@ -42,6 +50,9 @@ function assertWorkerAllowsResearchOpsPreviewOrigins() {
 }
 
 function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction() {
+	const productionJob = workflowSection(deployWorkerSource, '  deploy-production:', '  deploy-preview:');
+	const previewJob = workflowSection(deployWorkerSource, '  deploy-preview:', null);
+
 	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*", "fix\/\*\*" \]/);
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
 	assert.match(deployWorkerSource, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION: "infra\/cloudflare\/migrations\/preview\/0002_correct_research_operations_user_daas_team\.sql"/);
@@ -55,8 +66,8 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 	assert.match(deployWorkerSource, /d1 execute "\$\{D1_PREVIEW_DATABASE_NAME\}"/);
 	assert.match(deployWorkerSource, /--file "\$\{PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION\}"/);
 	assert.match(deployWorkerSource, /deploy --config wrangler\.preview\.toml/);
-	assert.doesNotMatch(deployWorkerSource, /deploy-production:[\s\S]*PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
-	assert.doesNotMatch(deployWorkerSource, /deploy-preview:[\s\S]*d1 execute "\$\{D1_DATABASE_NAME\}"[\s\S]*--remote/);
+	assert.doesNotMatch(productionJob, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
+	assert.doesNotMatch(previewJob, /d1 execute "\$\{D1_DATABASE_NAME\}"[\s\S]*--remote/);
 }
 
 function assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped() {
