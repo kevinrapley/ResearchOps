@@ -41,20 +41,17 @@
 				<div class="govuk-grid-row">
 					<div class="govuk-grid-column-two-thirds">
 						<span class="govuk-caption-l">ResearchOps account</span>
-						<h1 class="govuk-heading-xl" id="account-dashboard-title">Welcome. Here is your account dashboard</h1>
-						<p class="govuk-body-l">Use this page to check your teams, roles and available actions.</p>
+						<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
+						<p class="govuk-body-l">Check your teams, roles and available actions.</p>
 					</div>
 				</div>
 
-				<section aria-labelledby="account-summary-title">
-					<h2 class="govuk-heading-m" id="account-summary-title">Account summary</h2>
-					<dl class="govuk-summary-list">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Signed in as</dt>
-							<dd class="govuk-summary-list__value" id="account-user-value">Not loaded</dd>
-						</div>
-					</dl>
-				</section>
+				<dl class="govuk-summary-list govuk-!-margin-bottom-6" aria-label="Account summary">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Signed in as</dt>
+						<dd class="govuk-summary-list__value" id="account-user-value">Not loaded</dd>
+					</div>
+				</dl>
 
 				<section aria-labelledby="account-teams-title">
 					<h2 class="govuk-heading-m" id="account-teams-title">Teams and roles</h2>
@@ -62,20 +59,21 @@
 					<div id="account-team-memberships"></div>
 				</section>
 
-				<section aria-labelledby="account-actions-title">
+				<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
 					<h2 class="govuk-heading-m" id="account-actions-title">Actions you can take</h2>
-					<p class="govuk-body">These actions are based on your current ResearchOps permissions, not only your role labels.</p>
+					<p class="govuk-body">These actions are based on your current ResearchOps permissions.</p>
 					<div id="account-actions" class="govuk-button-group"></div>
-					<div id="account-no-actions" class="govuk-inset-text" hidden>
-						You do not currently have any account actions available for the current team context.
-					</div>
 				</section>
 
-				<section aria-labelledby="account-permissions-title">
-					<h2 class="govuk-heading-m" id="account-permissions-title">Current permissions</h2>
-					<p class="govuk-body">ResearchOps uses these permissions to decide what controls and records you can use in the current team context.</p>
-					<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
-				</section>
+				<details class="govuk-details" id="account-permissions-details" hidden>
+					<summary class="govuk-details__summary">
+						<span class="govuk-details__summary-text">View permission details</span>
+					</summary>
+					<div class="govuk-details__text">
+						<p class="govuk-body">ResearchOps uses these permissions to decide what controls and records you can use in the current team context.</p>
+						<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
+					</div>
+				</details>
 
 				<section aria-labelledby="account-sign-out-title">
 					<h2 class="govuk-heading-m" id="account-sign-out-title">Sign out</h2>
@@ -87,6 +85,6 @@
 	</main>
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-	<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v2"></script>
+	<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
 </body>
 </html>
