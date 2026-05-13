@@ -97,8 +97,12 @@ function assertPasswordlessCodeAttemptLimitExists() {
 }
 
 function assertPasswordlessRoleExpiryFiltersExist() {
+	const roleExpiryFilters = passwordless.match(/ra\.expires_at IS NULL OR ra\.expires_at > strftime/g) || [];
+
 	assert.match(passwordless, /ra\.expires_at IS NULL OR ra\.expires_at > strftime/);
-	assert.equal((passwordless.match(/ra\.expires_at IS NULL OR ra\.expires_at > strftime/g) || []).length, 2);
+	assert.ok(roleExpiryFilters.length >= 2);
+	assert.match(passwordless, /MAX\(ra\.approved_at\) AS most_recent_role_approved_at/);
+	assert.match(passwordless, /COALESCE\(most_recent_role_approved_at, most_recent_role_created_at, membership_created_at\) DESC/);
 }
 
 function assertAuthResolverPrefersResearchOpsSession() {
