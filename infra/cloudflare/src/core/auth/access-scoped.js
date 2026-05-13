@@ -126,7 +126,8 @@ export async function resolveAuthenticatedContext(request, env) {
 		isResearchOpsCoreTeamAdmin: isCoreTeamAdmin,
 		memberTeams,
 		manageableTeams,
-		teams: memberTeams,
+		roleAssignableTeams: manageableTeams,
+		teams: manageableTeams,
 		permissions: isCoreTeamAdmin ? globalTeamAdminPermissions(baseContext.permissions) : baseContext.permissions,
 	};
 }
