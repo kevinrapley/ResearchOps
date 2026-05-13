@@ -79,8 +79,8 @@ function assertDashboardSeparatesRolesFromCapabilities() {
 	assert.match(accountScript, /function roleLabels\(team\)/);
 	assert.match(accountScript, /labelList\(team\?\.roles, 'No active role'\)/);
 	assert.match(accountScript, /renderPermissions\(context, memberships\)/);
-	assert.match(accountScript, /id="account-permissions-details" hidden/);
 	assert.match(accountScript, /const showPermissionDetails = hasResearchOpsCoreTeamAdmin\(memberships\) && labels\.length > 0/);
+	assert.match(accountScript, /setVisible\(dom\.permissionsDetails, showPermissionDetails\)/);
 	assert.doesNotMatch(accountScript, /labelList\(team\.permissions, 'No active permissions'\)/);
 	assert.doesNotMatch(accountScript, /No active permissions for the current team context/);
 }
