@@ -31,6 +31,12 @@ function assertAccessContextSeparatesMembershipFromAdministration() {
 	assert.match(accessScopedSource, /FROM auth_team_memberships m/);
 	assert.match(accessScopedSource, /m\.membership_status = 'active'/);
 	assert.match(accessScopedSource, /t\.team_status = 'active'/);
+	assert.match(accessScopedSource, /async function listRoleAssignmentTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /FROM auth_role_assignments ra/);
+	assert.match(accessScopedSource, /'role_assignment' AS membershipSource/);
+	assert.match(accessScopedSource, /function combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
+	assert.match(accessScopedSource, /const roleAssignmentTeams = await listRoleAssignmentTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /const teams = combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
 	assert.match(accessScopedSource, /async function buildMemberTeams\(db, userId\)/);
 	assert.match(accessScopedSource, /const memberTeams = await buildMemberTeams\(db, baseContext\?\.user\?\.id\)/);
 	assert.doesNotMatch(accessScopedSource, /buildMemberTeams\(db, baseContext\?\.user\?\.id, baseContext\.teams/);
