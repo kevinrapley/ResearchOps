@@ -71,19 +71,21 @@ const DURATION_LABELS = Object.freeze({
 });
 
 const ROLE_ASSIGNMENT_SERVER_MESSAGES = Object.freeze({
-	active_team_required: "Choose an active team before assigning a role.",
+	active_team_required: "Choose a team before assigning a role.",
 	invalid_expiry: "Enter a real expiry date.",
 	role_assignment_reason_required: "Enter why you are assigning this role.",
 	role_assignment_store_unavailable: "ResearchOps cannot assign roles right now. Try again later.",
 	role_assignment_transaction_unavailable: "ResearchOps cannot safely assign this role right now. Try again later.",
 	role_not_found: "Select a role that exists in ResearchOps.",
 	safeguarding_role_confirmation_required: "Confirm Safeguarding Lead access is required.",
+	selected_team_role_assignment_forbidden: "You do not have permission to assign roles in that team.",
 	sensitive_role_confirmation_required: "Confirm this sensitive role assignment is intentional.",
 	target_identifier_conflict: "Check the email address and user ID belong to the same person.",
 	target_not_team_member: "ResearchOps could not add this person to the team before assigning the role. Try again later.",
 	target_required: "Enter a team member's email address or user ID.",
 	target_user_inactive: "This person cannot be assigned a role. Contact a team admin.",
 	target_user_not_found: "ResearchOps could not find an account for this person. Check their email address or ask them to request an account.",
+	team_not_available: "You cannot assign roles in that team.",
 });
 
 const state = {
@@ -100,6 +102,7 @@ const dom = {
 	errorList: document.getElementById("role-assignment-error-list"),
 	result: document.getElementById("role-assignment-result"),
 	roleSummary: document.getElementById("role-summary"),
+	teamOptions: document.getElementById("team-id-options"),
 	sensitiveFieldset: document.getElementById("sensitive-role-fieldset"),
 	safeguardingFieldset: document.getElementById("safeguarding-fieldset"),
 	customExpiryDateGroup: document.getElementById("custom-expiry-date-group"),
@@ -209,8 +212,39 @@ function permissionCodes(permissions) {
 	return new Set((permissions || []).map((permission) => permission.code).filter(Boolean));
 }
 
-function activeTeamLabel(context) {
-	return context?.activeTeam?.name || context?.activeTeam?.id || "No active team";
+function selectedTeamId() {
+	return document.querySelector('input[name="teamId"]:checked')?.value || "";
+}
+
+function selectedTeam(context = state.context) {
+	const teamId = selectedTeamId();
+	return (context?.teams || []).find((team) => team.id === teamId) || null;
+}
+
+function teamLabel(team) {
+	return team?.name || team?.id || "No team selected";
+}
+
+function renderTeamOptions(context) {
+	if (!dom.teamOptions) return;
+	const teams = context?.teams || [];
+	if (!teams.length) {
+		dom.teamOptions.innerHTML = '<p class="govuk-body">You do not have any teams available for role assignment.</p>';
+		return;
+	}
+
+	dom.teamOptions.innerHTML = teams
+		.map((team, index) => {
+			const id = `team-id-${index + 1}`;
+			const checked = team.id === context.activeTeam?.id || (!context.activeTeam?.id && index === 0);
+			return `
+<div class="govuk-radios__item">
+	<input class="govuk-radios__input" id="${escapeHtml(id)}" name="teamId" type="radio" value="${escapeHtml(team.id)}" ${checked ? "checked" : ""} />
+	<label class="govuk-label govuk-radios__label" for="${escapeHtml(id)}">${escapeHtml(teamLabel(team))}</label>
+</div>
+`;
+		})
+		.join("");
 }
 
 function renderAuthContext(data) {
@@ -223,12 +257,13 @@ function renderAuthContext(data) {
 	dom.context.classList.toggle("auth-role-assignment-scope__panel--blocked", !canAssignRoles);
 	dom.context.innerHTML = canAssignRoles
 		? `
-<p class="govuk-body">You are assigning roles in <strong>${escapeHtml(activeTeam.name || activeTeam.id || "your active team")}</strong>.</p>
+<p class="govuk-body">You can assign roles in teams you manage. Your current team is <strong>${escapeHtml(activeTeam.name || activeTeam.id || "not set")}</strong>.</p>
 `
 		: `
 <p class="govuk-body"><strong>You cannot assign roles.</strong></p>
 <p class="govuk-body">You do not have permission to assign roles for ${escapeHtml(activeTeam.name || activeTeam.id || "this team")}.</p>
 `;
+	renderTeamOptions(data);
 	setDisabled(!canAssignRoles);
 	if (dom.form) dom.form.hidden = !canAssignRoles;
 	if (dom.review) dom.review.hidden = true;
@@ -345,6 +380,7 @@ function formValues() {
 	return {
 		targetEmail: String(data.get("targetEmail") || "").trim(),
 		targetUserId: String(data.get("targetUserId") || "").trim(),
+		teamId: selectedTeamId(),
 		roleKey: selectedRoleKey(),
 		requestedReason: String(data.get("requestedReason") || "").trim(),
 		durationPreset: selectedDurationPreset(),
@@ -420,6 +456,10 @@ function validate(values) {
 		addError(errors, "target-email", "Enter a team member's email address or user ID.", "#target-email");
 	}
 
+	if (!values.teamId) {
+		addError(errors, "team-id", "Select which team this role should be in.", "#team-id-1");
+	}
+
 	if (!values.roleKey) {
 		addError(errors, "role-key", "Select the role they need.", "#role-key-observer");
 	}
@@ -450,6 +490,7 @@ function validate(values) {
 function requestBody(values) {
 	const expiry = expiresAtFor(values);
 	const body = {
+		teamId: values.teamId,
 		roleKey: values.roleKey,
 		requestedReason: values.requestedReason,
 	};
@@ -468,7 +509,7 @@ function reviewSummaryRows(values) {
 	return [
 		["Team member email", values.targetEmail || "Not provided", "#target-email"],
 		["User ID", values.targetUserId || "Not provided", "#target-user-id"],
-		["Team", activeTeamLabel(state.context), ""],
+		["Team", teamLabel(selectedTeam()), "#team-id-1"],
 		["Role", detail.label || values.roleKey, "#role-key-observer"],
 		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set", "#duration-30"],
 		["Expiry date", expiryLabelFor(values), values.durationPreset === "custom" ? "#expiry-day" : "#duration-custom"],
@@ -522,12 +563,13 @@ function showResult(data) {
 	const targetUser = data.targetUser || {};
 	const assignment = data.assignment || {};
 	const membership = data.teamMembership || {};
+	const team = data.team || {};
 
 	dom.result.hidden = false;
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--success";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role assigned</h2>
-<p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)}.</p>
+<p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)} in ${escapeHtml(teamLabel(team))}.</p>
 ${membership.createdOrReactivated ? '<p class="govuk-body">They were also added as an active member of this team.</p>' : ""}
 <p class="govuk-body">Assignment ID: <code>${escapeHtml(assignment.id)}</code></p>
 <p class="govuk-body">Scope: <code>${escapeHtml(assignment.scopeId)}</code></p>
@@ -589,6 +631,7 @@ async function submitAssignment() {
 
 		showResult(response.data);
 		dom.form.reset();
+		renderTeamOptions(state.context);
 		renderRoleSummary();
 		renderDurationControls();
 		hideReview();
@@ -655,6 +698,8 @@ window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	isProductionPagesHost,
 	isResearchOpsBranchPreviewHost,
 	roleAssignmentServerMessage,
+	selectedTeam,
+	teamLabel,
 	validate,
 	requestBody,
 	expiresAtFor,
