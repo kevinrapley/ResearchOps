@@ -23,9 +23,17 @@ function assertHandlerUsesScopedAuthenticationAndRoutePermission() {
 
 function assertAccessContextSeparatesMembershipFromAdministration() {
 	assert.match(accessScopedSource, /memberTeams/);
+	assert.match(accessScopedSource, /teamMemberships/);
 	assert.match(accessScopedSource, /manageableTeams/);
 	assert.match(accessScopedSource, /roleAssignableTeams/);
 	assert.match(accessScopedSource, /teams: manageableTeams/);
+	assert.match(accessScopedSource, /async function listMembershipTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /FROM auth_team_memberships m/);
+	assert.match(accessScopedSource, /m\.membership_status = 'active'/);
+	assert.match(accessScopedSource, /t\.team_status = 'active'/);
+	assert.match(accessScopedSource, /async function buildMemberTeams\(db, userId\)/);
+	assert.match(accessScopedSource, /const memberTeams = await buildMemberTeams\(db, baseContext\?\.user\?\.id\)/);
+	assert.doesNotMatch(accessScopedSource, /buildMemberTeams\(db, baseContext\?\.user\?\.id, baseContext\.teams/);
 	assert.match(accessScopedSource, /async function listTeamsManagedByUser\(db, userId\)/);
 	assert.match(accessScopedSource, /p\.code = 'role\.assign'/);
 	assert.match(accessScopedSource, /async function isResearchOpsCoreTeamAdmin\(db, userId\)/);
