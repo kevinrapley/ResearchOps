@@ -186,6 +186,90 @@ function permissionLabels(context) {
 		.sort((first, second) => first.localeCompare(second));
 }
 
+function hasRole(team, roleKey) {
+	return (team?.roles || []).some((role) => role.key === roleKey || role.roleKey === roleKey);
+}
+
+function isResearchOpsCoreTeam(team) {
+	return team?.id === 'team_researchops_core' || team?.name === 'ResearchOps Core Team';
+}
+
+function isResearchOpsCoreTeamAdmin(team) {
+	return isResearchOpsCoreTeam(team) && hasRole(team, 'team_admin');
+}
+
+function currentTag(team) {
+	return team?.current ? '<strong class="govuk-tag govuk-tag--blue">Current</strong>' : '';
+}
+
+function roleLabels(team) {
+	return labelList(team?.roles, 'No active role');
+}
+
+function renderCoreAdminInset(team) {
+	if (!isResearchOpsCoreTeamAdmin(team)) return '';
+	return `
+		<div class="govuk-inset-text">
+			You are a Team Admin in ResearchOps Core Team. You can manage roles across teams and create new teams.
+		</div>
+	`;
+}
+
+function renderSingleTeamMembership(team) {
+	return `
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">Your team</h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<dl class="govuk-summary-list govuk-!-margin-bottom-0">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Team</dt>
+						<dd class="govuk-summary-list__value">
+							${escapeHtml(team.name || team.id || 'Unnamed team')}
+							${currentTag(team)}
+						</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Role or roles</dt>
+						<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
+					</div>
+				</dl>
+			</div>
+		</div>
+		${renderCoreAdminInset(team)}
+	`;
+}
+
+function renderMultipleTeamMemberships(memberships) {
+	return `
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">Your teams</h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<p class="govuk-body">You have different access in each team.</p>
+				<ul class="govuk-list govuk-list--spaced">
+					${memberships
+						.map(
+							(team) => `
+								<li>
+									<h4 class="govuk-heading-s govuk-!-margin-bottom-1">
+										${escapeHtml(team.name || team.id || 'Unnamed team')}
+										${currentTag(team)}
+									</h4>
+									<p class="govuk-body govuk-!-margin-bottom-0">${escapeHtml(roleLabels(team))}</p>
+									${renderCoreAdminInset(team)}
+								</li>
+							`,
+						)
+						.join('')}
+				</ul>
+			</div>
+		</div>
+	`;
+}
+
 function renderTeamMemberships(context) {
 	if (!dom.teamMemberships) return;
 	const memberships = teamMemberships(context);
@@ -195,34 +279,8 @@ function renderTeamMemberships(context) {
 		return;
 	}
 
-	dom.teamMemberships.innerHTML = `
-		<table class="govuk-table">
-			<caption class="govuk-table__caption govuk-table__caption--s">Team membership and role access</caption>
-			<thead class="govuk-table__head">
-				<tr class="govuk-table__row">
-					<th scope="col" class="govuk-table__header">Team</th>
-					<th scope="col" class="govuk-table__header">Role or roles</th>
-					<th scope="col" class="govuk-table__header">Permissions</th>
-				</tr>
-			</thead>
-			<tbody class="govuk-table__body">
-				${memberships
-					.map(
-						(team) => `
-							<tr class="govuk-table__row">
-								<th scope="row" class="govuk-table__header">
-									${escapeHtml(team.name || team.id || 'Unnamed team')}
-									${team.current ? '<strong class="govuk-tag govuk-tag--blue">Current</strong>' : ''}
-								</th>
-								<td class="govuk-table__cell">${escapeHtml(labelList(team.roles, 'No active role'))}</td>
-								<td class="govuk-table__cell">${escapeHtml(labelList(team.permissions, 'No active permissions'))}</td>
-							</tr>
-						`,
-					)
-					.join('')}
-			</tbody>
-		</table>
-	`;
+	dom.teamMemberships.innerHTML =
+		memberships.length === 1 ? renderSingleTeamMembership(memberships[0]) : renderMultipleTeamMemberships(memberships);
 }
 
 function renderActions(context) {
