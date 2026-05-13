@@ -1,5 +1,5 @@
 bundle_id: govuk-design-system-bundle
-version: 8.0.0
+version: 8.0.1
 entrypoints:
   prompt_spec: prompt.spec.yaml
   prompt_body: prompt.body.xml
@@ -29,6 +29,8 @@ assets:
   - path: references/govuk-components-reference.xml
     sha256: auto
   - path: references/govuk-patterns-reference.xml
+    sha256: auto
+  - path: references/govuk-form-affordance-reference.xml
     sha256: auto
   - path: references/gds-github-reference.xml
     sha256: auto
