@@ -36,7 +36,8 @@ function assertAccessContextSeparatesMembershipFromAdministration() {
 function assertResearchOpsCoreTeamAdminIsTheOnlyGlobalAdministrationException() {
 	assert.match(accessScopedSource, /r\.role_key = 'team_admin'/);
 	assert.match(accessScopedSource, /t\.name = 'ResearchOps Core Team'/);
-	assert.match(accessScopedSource, /isResearchOpsCoreTeamAdmin \? await listAllActiveTeams\(db\) : await listTeamsManagedByUser/);
+	assert.match(accessScopedSource, /const isCoreTeamAdmin = await isResearchOpsCoreTeamAdmin\(db, baseContext\?\.user\?\.id\)/);
+	assert.match(accessScopedSource, /const manageableTeams = isCoreTeamAdmin \? await listAllActiveTeams\(db\) : await listTeamsManagedByUser\(db, baseContext\?\.user\?\.id\)/);
 	assert.doesNotMatch(accessScopedSource, /user_researcher/);
 	assert.doesNotMatch(accessScopedSource, /note_taker/);
 }
