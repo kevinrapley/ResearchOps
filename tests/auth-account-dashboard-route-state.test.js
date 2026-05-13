@@ -46,6 +46,10 @@ function assertDashboardRendersTeamMembershipsRolesAndPermissions() {
 	assert.match(accountScript, /teamMemberships\(context\)/);
 	assert.match(accountScript, /renderTeamMemberships\(context\)/);
 	assert.match(accountScript, /context\?\.teamMemberships \|\| context\?\.memberTeams/);
+	assert.match(accountScript, /fallbackActiveTeamMembership\(context\)/);
+	assert.match(accountScript, /context\?\.activeTeam\?\.id/);
+	assert.match(accountScript, /roles: context\.roles \|\| \[\]/);
+	assert.match(accountScript, /permissions: context\.permissions \|\| \[\]/);
 	assert.match(accountScript, /Team membership and role access/);
 	assert.match(accountScript, /Role or roles/);
 	assert.match(accountScript, /No active role/);
