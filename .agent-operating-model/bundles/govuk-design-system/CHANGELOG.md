@@ -1,6 +1,13 @@
+## 8.0.1 – Form affordance and vertical-rhythm controls
+
+* Added `references/govuk-form-affordance-reference.xml` and loaded it by default from `prompt.body.xml` and `prompt.spec.yaml`.
+* Added explicit GOV.UK form rules requiring agents to make width decisions for text inputs, textareas and selects rather than relying on full-width defaults.
+* Added vertical-rhythm rules requiring agents to separate introductory content, inset text and the first form group using the GOV.UK spacing scale.
+* Clarified that common text inputs such as full name, email address and team or service should normally use a sensible fluid width such as `govuk-!-width-two-thirds` unless the context supports a different width.
+
 ## 2.0.0 – Expanded guidance and gold‑standard improvements
 
-* Added new reference modules for components (`govuk-components-reference.xml`) and patterns (`govuk-patterns-reference.xml`), covering error summaries, buttons and question pages with detailed rules and citations.
+* Added new reference modules for components (`govuk-components-reference.xml`) and patterns (`govuk-patterns-reference.xml`), covering error summaries, buttons and date inputs with detailed rules and citations.
 * Added a designer role module (`roles/designer.xml`) to provide context‑aware responsibilities and output behaviours for design tasks.
 * Added a new template for question page guidance (`templates/question-page-guidance.xml`) and updated the component guidance template to version 2.0.
 * Updated `prompt.spec.yaml` to load the new reference and template modules by default and to register the designer role.
@@ -86,7 +93,7 @@
   `prompt.body.xml` to version 4.0.0.  The specification now loads the
   new reference modules by default and exposes a `mode` variable allowing
   callers to switch between design, build and review flows.
-* **Additional tests:** Added new regression and coverage tests for the
+* **Additional tests:** Added new regression tests (and updated red‑team tests) for the
   confirmation page pattern, page not found pattern and service unavailable
   pattern.  These tests verify that guidance mentions mandatory elements and
   cites the appropriate design system sources.
