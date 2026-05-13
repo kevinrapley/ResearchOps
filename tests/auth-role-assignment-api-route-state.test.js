@@ -18,8 +18,22 @@ function assertHandlerUsesAuthenticationAndRoutePermission() {
 	assert.match(handlerSource, /readJson\(request\)/);
 }
 
-function assertHandlerScopesAssignmentsToActiveTeam() {
-	assert.match(handlerSource, /assertActiveTeam\(context\)/);
+function assertHandlerRequiresExplicitAssignableTeam() {
+	assert.match(handlerSource, /function requestedTeamIdFor\(body, context\)/);
+	assert.match(handlerSource, /body\.teamId/);
+	assert.match(handlerSource, /active_team_required/);
+	assert.match(handlerSource, /function assertTeamAvailableToAssigner\(context, teamId\)/);
+	assert.match(handlerSource, /context\.teams/);
+	assert.match(handlerSource, /team_not_available/);
+	assert.match(handlerSource, /async function canAssignRolesInTeam\(db, userId, teamId\)/);
+	assert.match(handlerSource, /p\.code = 'role\.assign'/);
+	assert.match(handlerSource, /selected_team_role_assignment_forbidden/);
+	assert.match(handlerSource, /async function resolveAssignmentTeam\(db, context, body\)/);
+	assert.doesNotMatch(handlerSource, /function assertActiveTeam\(context\)/);
+}
+
+function assertHandlerScopesAssignmentsToSelectedTeam() {
+	assert.match(handlerSource, /const team = await resolveAssignmentTeam\(db, context, body\);/);
 	assert.match(handlerSource, /scope_type = 'team'/);
 	assert.match(handlerSource, /scope_id = \?/);
 	assert.match(handlerSource, /readTeamMembership/);
@@ -39,9 +53,10 @@ function assertHandlerActivatesPendingUserWhenAssigningRole() {
 	assert.match(handlerSource, /accountActivated/);
 }
 
-function assertHandlerRequiresTargetRoleAndReason() {
+function assertHandlerRequiresTargetRoleTeamAndReason() {
 	assert.match(handlerSource, /targetUserId/);
 	assert.match(handlerSource, /targetEmail/);
+	assert.match(handlerSource, /teamId/);
 	assert.match(handlerSource, /roleKey/);
 	assert.match(handlerSource, /requestedReason/);
 	assert.match(handlerSource, /role_assignment_reason_required/);
@@ -85,6 +100,13 @@ function assertHandlerWritesMembershipAssignmentAndAuditEventAtomically() {
 	assert.match(handlerSource, /team_membership_activated/);
 }
 
+function assertHandlerReturnsSelectedTeam() {
+	assert.match(handlerSource, /team: \{/);
+	assert.match(handlerSource, /id: result\.team\.id/);
+	assert.match(handlerSource, /name: result\.team\.name/);
+	assert.match(handlerSource, /scopeId: result\.team\.id/);
+}
+
 function assertRouteStatusMigrationExists() {
 	assert.match(migrationSource, /UPDATE auth_route_permissions/);
 	assert.match(migrationSource, /implementation_status = 'implemented'/);
@@ -95,10 +117,12 @@ function assertRouteStatusMigrationExists() {
 
 assertWorkerWiresRoleAssignmentRoute();
 assertHandlerUsesAuthenticationAndRoutePermission();
-assertHandlerScopesAssignmentsToActiveTeam();
+assertHandlerRequiresExplicitAssignableTeam();
+assertHandlerScopesAssignmentsToSelectedTeam();
 assertHandlerActivatesPendingUserWhenAssigningRole();
-assertHandlerRequiresTargetRoleAndReason();
+assertHandlerRequiresTargetRoleTeamAndReason();
 assertHandlerRejectsConflictingTargetIdentifiers();
 assertHandlerRequiresSensitiveRoleConfirmation();
 assertHandlerWritesMembershipAssignmentAndAuditEventAtomically();
+assertHandlerReturnsSelectedTeam();
 assertRouteStatusMigrationExists();
