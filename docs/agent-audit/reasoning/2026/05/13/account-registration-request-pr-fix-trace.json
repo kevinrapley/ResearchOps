@@ -1,0 +1,52 @@
+{
+	"trace_id": "atrace-20260513-account-registration-request-pr-fix",
+	"trace_layer": "operational",
+	"date": "2026-05-13",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "feature/user-registration-review",
+	"pull_request": {
+		"number": 248,
+		"url": "https://github.com/kevinrapley/ResearchOps/pull/248",
+		"state": "open"
+	},
+	"slice": {
+		"name": "account-registration-request-pr-fix",
+		"previous_slice": "account registration request journey",
+		"previous_slice_status": "implemented on PR #248 with failing validation logs supplied by the user"
+	},
+	"status": {
+		"implemented": true,
+		"pull_request_opened": true,
+		"validation_failure_addressed": true,
+		"workflow_rerun_observed": false
+	},
+	"failure": {
+		"workflow": "Validate Cloudflare Workers",
+		"step": "Run validation contract",
+		"command": "npm run validate",
+		"exit_code": 1,
+		"visible_error": "trace:coverage: no trace directory found: docs/agent-audit/reasoning/2026/05/13",
+		"cause": "The branch contains agent-significant operating-model and bundle changes, but did not contain a JSON trace artefact for the current validation date."
+	},
+	"fix": {
+		"summary": "Added 2026-05-13 trace artefacts for the PR fix and branch operating-model changes.",
+		"files_added": [
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-request-pr-fix-trace.md",
+			"docs/agent-audit/reasoning/2026/05/13/account-registration-request-pr-fix-trace.json"
+		]
+	},
+	"related_branch_changes": [
+		"Preview-safe API routing for account registration submission.",
+		"Preview-safe API routing for Team Admin registration request review.",
+		"Worker CORS support for ResearchOps Pages production and branch preview origins.",
+		"Preview Worker deployment for feature branches.",
+		"Registration request migration renumbered to 0005_auth_registration_requests.sql.",
+		"Check-answers Change links reveal the form and focus the relevant field.",
+		"The passive check-answers container is no longer focusable.",
+		"Route-state tests cover preview API routing, CORS, deployment and check-answers behaviours."
+	],
+	"validation_expectation": [
+		"The next validate run should pass trace coverage because a JSON trace now exists under docs/agent-audit/reasoning/2026/05/13/.",
+		"Additional workflow failures remain possible because the supplied log stopped at trace coverage."
+	]
+}
