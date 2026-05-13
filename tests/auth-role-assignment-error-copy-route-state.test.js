@@ -12,6 +12,7 @@ function assertRoleAssignmentErrorsAreUserFacing() {
 	assert.match(scriptSource, /ResearchOps could not find an account for this person\. Check their email address or ask them to request an account\./);
 	assert.match(scriptSource, /You do not have permission to assign this role\./);
 	assert.match(scriptSource, /ResearchOps could not assign this role\. Check the details and try again\./);
+	assert.match(scriptSource, /A team with this name already exists\. Select the existing team or choose a different name\./);
 }
 
 function assertRoleAssignmentErrorsDoNotExposeProgrammaticTerms() {
@@ -30,7 +31,7 @@ function assertRoleAssignmentErrorsDoNotExposeProgrammaticTerms() {
 }
 
 function assertRoleAssignmentScriptCacheKeyWasRefreshed() {
-	assert.match(pageSource, /auth-role-assignment-page\.js\?v=explicit-team-selection-20260513/);
+	assert.match(pageSource, /auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
 }
 
 assertRoleAssignmentErrorsAreUserFacing();
