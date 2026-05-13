@@ -129,6 +129,18 @@
 	cursor: pointer;
 	}
 
+.auth-role-assignment-team-panel {
+	max-width: 760px;
+	margin-top: 20px;
+	padding: 20px;
+	border-left: 5px solid #b1b4b6;
+	background: #f3f2f1;
+	}
+
+.auth-role-assignment-team-panel .govuk-form-group:last-child {
+	margin-bottom: 0;
+	}
+
 .auth-role-assignment-summary {
 	max-width: 760px;
 	margin-top: 20px;

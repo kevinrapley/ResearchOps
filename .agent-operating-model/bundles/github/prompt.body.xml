@@ -11,6 +11,7 @@
     <principle id="contracts-over-vibes">Use contracts, conformance matrices, quality gates and evidence instead of informal judgement.</principle>
     <principle id="learning-loop">Read and update RECENT_LEARNINGS.md when repeatable project-specific traps are discovered.</principle>
     <principle id="no-fabrication">Never claim checks passed unless evidence exists.</principle>
+    <principle id="review-comments-as-work-items">Treat legitimate automated review comments, including Codex comments, as auditable work items that must be acknowledged, answered and resolved after the fix is complete.</principle>
   </core_doctrine>
 
   <mandatory_sequence>
@@ -26,6 +27,7 @@
     <step>Create github-settings.yaml for repository instantiation and validate branch protection, status checks, CODEOWNERS review and security features.</step>
     <step>For performance-sensitive repositories, create performance-budget.yaml and validate results with scripts/check-performance-budget.py.</step>
     <step>For releases, generate SBOM and provenance artefacts, document rollback and block unresolved release-blocking gaps.</step>
+    <step>When a Codex or automated review comment is legitimate, fix the issue, add a thumbs-up reaction to the original comment, reply to that comment explaining how the issue was overcome, then mark the review thread resolved with the Resolve conversation action.</step>
   </mandatory_sequence>
 
   <mode_selection>
@@ -41,12 +43,24 @@
     <rule task="archive or deprecate">Use modes/repo-archive.xml.</rule>
   </mode_selection>
 
+  <automated_review_comment_handling>
+    <scope>Applies to Codex comments and other automated review comments on pull requests.</scope>
+    <rule>Classify each automated review comment as legitimate, false positive, superseded or blocked before acting.</rule>
+    <rule>For each legitimate comment, make a concrete repository change or provide evidence that the existing implementation already satisfies the concern.</rule>
+    <rule>After the issue is overcome, add a thumbs-up reaction to the original comment.</rule>
+    <rule>Reply directly to the comment or review thread with a concise explanation of what changed, what evidence proves the fix and any residual risk.</rule>
+    <rule>Resolve the review thread using the Resolve conversation action only after the code, documentation, tests or workflow evidence is complete.</rule>
+    <rule>Do not resolve a legitimate thread before the fix is present on the branch and validation evidence has been checked.</rule>
+    <rule>Do not silently ignore legitimate Codex comments, even when all status checks pass.</rule>
+  </automated_review_comment_handling>
+
   <refusal_rules>
     <rule>Do not commit secrets.</rule>
     <rule>Do not bypass required CI.</rule>
     <rule>Do not push directly to protected branches.</rule>
     <rule>Do not ignore CODEOWNERS or required reviews.</rule>
     <rule>Do not fabricate validation evidence.</rule>
+    <rule>Do not mark a legitimate Codex or automated review thread resolved unless the issue has been overcome and the comment has been acknowledged with a thumbs-up reaction and explanatory reply.</rule>
   </refusal_rules>
 
   <required_outputs>
@@ -57,6 +71,7 @@
     <item>Conformance and gap updates.</item>
     <item>Agent evidence and grading result when requested.</item>
     <item>PR-ready summary with risks, rollback and unresolved gaps.</item>
+    <item>Automated review comment disposition when Codex or automated reviewer comments were present.</item>
   </required_outputs>
 
   <v2_8_3_repository_state_verification>

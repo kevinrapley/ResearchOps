@@ -58,6 +58,29 @@ The loader must:
 5. use registry keyword fallback only when explicitly labelled as fallback evidence
 6. report the rule ID, selection basis, matched signals, fallback keywords and canonical path in the selection evidence
 
+## Recent learnings
+
+`RECENT_LEARNINGS.md` is the root repository memory for repeatable, recently discovered lessons that should change how future agents work.
+
+Agents must consider writing to `RECENT_LEARNINGS.md` when any of the following happens:
+
+1. a reviewer identifies a repeat mistake that the active bundles should have prevented
+2. a CI, formatter, accessibility or release-gate failure reveals a reusable repository-specific rule
+3. a design-system, content, security, QA or release lesson should change future implementation defaults
+4. a workaround, repo convention or product decision is likely to be needed again within future branches
+5. the file has not been updated recently and the current task produces a material learning
+
+Do not use `RECENT_LEARNINGS.md` as a changelog. Use it only for lessons that are reusable beyond the current branch.
+
+Each entry should include:
+
+- date and short title
+- context
+- learning
+- action for future agents
+
+When the lesson changes a bundle rule, update both the relevant bundle and `RECENT_LEARNINGS.md`.
+
 ## Trace rule
 
 When the user includes `[reasoning]`, the agent must create a user-readable audit trace and a machine-readable summary. The trace must record operating model loading, task signals, bundle selection, canonical bundle directories, implementation activity, validation evidence, issues and pivots.

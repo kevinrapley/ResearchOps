@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Request a ResearchOps account - ResearchOps Demo Suite</title>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-frontend-v6.css" media="screen" />
+	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/auth-registration.css" media="screen" />
+	<script type="module" src="/components/layout.js" defer></script>
+</head>
+<body>
+	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
+	<x-include src="/partials/header.html" vars='{"active":"Account","subtitle":"Request an account"}'></x-include>
+
+	<div class="govuk-width-container">
+		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+			<ol class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/account/sign-in/">Account</a></li>
+				<li class="govuk-breadcrumbs__list-item">Request an account</li>
+			</ol>
+		</nav>
+	</div>
+
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<div id="registration-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" hidden>
+				<h2 class="govuk-error-summary__title">There is a problem</h2>
+				<div class="govuk-error-summary__body">
+					<ul class="govuk-list govuk-error-summary__list" id="registration-error-list"></ul>
+				</div>
+			</div>
+
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<header class="account-registration-page__intro">
+						<span class="govuk-caption-l">ResearchOps account</span>
+						<h1 class="govuk-heading-xl">Request a ResearchOps account</h1>
+						<p class="govuk-body-l">Use this form if you need access to ResearchOps for research, design, observation or team administration.</p>
+						<p class="govuk-body">A team admin will review your request before any team access or role is added to your account.</p>
+						<p class="govuk-body">Before you start, you will need your work email address and the name of the team or service you need access for.</p>
+
+						<div class="govuk-inset-text">
+							<p class="govuk-body">Your answer about what you need to do does not give you access. It helps a team admin decide what access you may need.</p>
+						</div>
+					</header>
+
+					<section id="registration-status" class="account-registration-status" role="status" aria-live="polite" aria-busy="false" data-registration-route="/api/auth/registration-requests" hidden>
+						<h2 class="govuk-heading-m" id="registration-status-title">Request status</h2>
+						<div id="registration-status-body"></div>
+					</section>
+
+					<form id="registration-request-form" class="account-registration-form" novalidate>
+						<div class="govuk-form-group" id="display-name-group">
+							<label class="govuk-label govuk-label--m" for="display-name">Full name</label>
+							<p class="govuk-error-message" id="display-name-error" hidden></p>
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="display-name" name="displayName" type="text" autocomplete="name" />
+						</div>
+
+						<div class="govuk-form-group" id="registration-email-group">
+							<label class="govuk-label govuk-label--m" for="registration-email">Work email address</label>
+							<div id="registration-email-hint" class="govuk-hint">Use the email address you will use to sign in to ResearchOps.</div>
+							<p class="govuk-error-message" id="registration-email-error" hidden></p>
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="registration-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="registration-email-hint" />
+						</div>
+
+						<div class="govuk-form-group" id="team-or-service-group">
+							<label class="govuk-label govuk-label--m" for="team-or-service">Team or service</label>
+							<div id="team-or-service-hint" class="govuk-hint">For example, Biometrics, Asylum Support, or the service you are working on.</div>
+							<p class="govuk-error-message" id="team-or-service-error" hidden></p>
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="team-or-service" name="teamOrService" type="text" aria-describedby="team-or-service-hint" />
+						</div>
+
+						<fieldset class="govuk-fieldset" id="requested-role-group" aria-describedby="requested-role-hint">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">What do you need to use ResearchOps for?</legend>
+							<div id="requested-role-hint" class="govuk-hint">Choose the option that best describes why you need access. A team admin will review your request and decide what access you need.</div>
+							<p class="govuk-error-message" id="requested-role-error" hidden></p>
+							<div class="govuk-radios" data-module="govuk-radios">
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-user-researcher" name="requestedRoleKey" type="radio" value="user_researcher" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-user-researcher">Plan, run or analyse user research</label>
+									<div class="govuk-hint govuk-radios__hint">For example, as a user researcher or research lead.</div>
+								</div>
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-note-taker" name="requestedRoleKey" type="radio" value="note_taker" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-note-taker">Take notes in research sessions</label>
+									<div class="govuk-hint govuk-radios__hint">For people supporting sessions by taking notes.</div>
+								</div>
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-session-observer" name="requestedRoleKey" type="radio" value="session_observer" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-session-observer">Observe research sessions</label>
+									<div class="govuk-hint govuk-radios__hint">For people who need to observe sessions or review session outputs.</div>
+								</div>
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-service-designer" name="requestedRoleKey" type="radio" value="service_designer" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-service-designer">Use research evidence to design or improve a service</label>
+									<div class="govuk-hint govuk-radios__hint">For example, as a service designer, content designer or interaction designer.</div>
+								</div>
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-team-admin" name="requestedRoleKey" type="radio" value="team_admin" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-team-admin">Manage team access</label>
+									<div class="govuk-hint govuk-radios__hint">For people who need to help manage team membership or access requests.</div>
+								</div>
+								<div class="govuk-radios__item">
+									<input class="govuk-radios__input" id="requested-role-other" name="requestedRoleKey" type="radio" value="other" aria-controls="other-role-group" aria-expanded="false" />
+									<label class="govuk-label govuk-radios__label" for="requested-role-other">Something else</label>
+								</div>
+							</div>
+						</fieldset>
+
+						<div class="govuk-form-group" id="other-role-group" hidden>
+							<label class="govuk-label govuk-label--m" for="other-role">What do you need to use ResearchOps for?</label>
+							<p class="govuk-error-message" id="other-role-error" hidden></p>
+							<input class="govuk-input govuk-!-width-two-thirds account-registration-input" id="other-role" name="otherRole" type="text" />
+						</div>
+
+						<div class="govuk-form-group" id="requested-reason-group">
+							<label class="govuk-label govuk-label--m" for="requested-reason">Why do you need access?</label>
+							<div id="requested-reason-hint" class="govuk-hint">Include the work, project or study you need ResearchOps for.</div>
+							<p class="govuk-error-message" id="requested-reason-error" hidden></p>
+							<textarea class="govuk-textarea govuk-!-width-two-thirds" id="requested-reason" name="requestedReason" rows="5" aria-describedby="requested-reason-hint"></textarea>
+						</div>
+
+						<div class="govuk-button-group">
+							<button class="govuk-button" type="submit">Continue</button>
+							<a class="govuk-link" href="/pages/account/sign-in/">I already have an account</a>
+						</div>
+					</form>
+
+					<section id="registration-check-answers" aria-labelledby="registration-check-answers-title" hidden>
+						<h2 class="govuk-heading-l" id="registration-check-answers-title">Check your answers before sending your request</h2>
+						<div id="registration-check-answers-body"></div>
+						<div class="govuk-button-group">
+							<button class="govuk-button" type="button" id="confirm-registration-request">Send request</button>
+							<button class="govuk-button govuk-button--secondary" type="button" id="change-registration-request">Change answers</button>
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<script type="module" src="/js/auth-registration-page.js?v=registration-api-proxy-20260513"></script>
+</body>
+</html>

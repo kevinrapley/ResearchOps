@@ -14,6 +14,19 @@ Version 2.9.1 moves the bundle closer to a fully auditable assurance regime.
 
 It adds schema-valid release-gate reports for both pass and fail states, policy-driven live release profiles, stricter GitHub API observability handling, trusted attestation verification evidence, stronger accessibility fixtures, and high-assurance live gate fixtures.
 
+## Automated review comment handling
+
+Codex and other automated review comments must be treated as review work items, not as background noise.
+
+When an automated review comment is legitimate, the agent must:
+
+1. Fix the issue or provide evidence that the implementation already satisfies the concern.
+2. Add a thumbs-up reaction to the original comment.
+3. Reply directly to the comment or thread explaining how the issue was overcome.
+4. Mark the thread resolved with the Resolve conversation action only after the fix and validation evidence are complete.
+
+False positives or superseded comments must still be answered with a clear disposition. Legitimate comments must not be silently ignored, even when status checks are green.
+
 ## Offline bundle release gate
 
 Offline bundle validation is different from live repository assurance.
@@ -146,3 +159,5 @@ python scripts/validate-live-gate-fixtures.py
 - Do not treat automated accessibility testing as complete accessibility assurance.
 - Do not release with unresolved release-blocking gaps.
 - Do not publish a bundle if the release gate fails.
+- Do not silently ignore legitimate Codex or automated review comments.
+- Do not resolve a legitimate automated review thread until the issue has been overcome, the original comment has a thumbs-up reaction and the thread has an explanatory reply.

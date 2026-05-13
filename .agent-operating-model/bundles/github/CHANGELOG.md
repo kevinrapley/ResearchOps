@@ -6,6 +6,20 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.1+researchops.2026-05-13] - 2026-05-13
+
+### Added
+
+- Documented the expected handling of legitimate Codex and automated review comments.
+- Added explicit requirements to add a thumbs-up reaction, reply with how the issue was overcome and resolve the review thread only after the fix and validation evidence are complete.
+- Added regression coverage for the Codex comment-handling rule in the ResearchOps repository test suite.
+
+### Changed
+
+- Updated `prompt.body.xml`, `modes/repo-review.xml`, `modes/repo-fix.xml` and `README.md` so the expectation is present in both bundle-level doctrine and mode-level runbooks.
+
+---
+
 ## [2.9.1] - 2026-04-28
 
 ### Added
@@ -156,7 +170,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.7` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.7` across prompt specification, prompt body and XML modules.
 - Strengthened GitHub settings verification so file-only, file-and-API and API-unavailable states are explicitly reported.
 - Updated direct repository-state verification to accept GitHub API checks and to treat API verification as blocking when `--require-github-api` is used.
 - Updated the eval harness to cross-check agent evidence against repository state and GitHub settings.
@@ -191,7 +205,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.6` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.6` across prompt specification, prompt body and XML modules.
 - Extended `verify-repository-state.py` to validate semantic GitHub settings, expected status checks and CODEOWNERS support.
 - Extended `run-eval-harness.py` to run tests, inspect GitHub settings and report test results.
 - Updated `validate-workflow-hardening.py` to distinguish action provenance instead of treating all `uses:` references equally.
@@ -223,7 +237,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.5` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.5` across prompt specification, prompt body and XML modules.
 - Rebuilt README content to remove duplicated 2.8.x current-release sections.
 - Updated CI template selection and repository-state verification to use shared trigger logic.
 - Updated release-gate coverage to include changelog validation, documentation consistency validation and non-empty SBOM validation.
@@ -249,7 +263,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.4` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.4` across prompt specification, prompt body and XML modules.
 - Updated `requirements.txt` to include `jsonschema>=4.0`.
 - Updated `validate-bundle.py` so generated artefacts do not destabilise manifest validation.
 - Updated `release-gate.py` to remove generated Python artefacts during release validation.
@@ -278,7 +292,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.3` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.3` across prompt specification, prompt body and XML modules.
 - Updated `select-ci-templates.py` to read from `template-registry.yaml` instead of a hard-coded language table.
 - Updated `verify-repository-state.py` to check all selected workflows, not only language CI workflows.
 - Updated `run-eval-harness.py` to compare generated output against fixture baselines.
@@ -309,7 +323,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.2` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.2` across prompt specification, prompt body and XML modules.
 - Fixed the template registry destination for `templates/RECENT_LEARNINGS-template.md` so it scaffolds to `RECENT_LEARNINGS.md`.
 - Strengthened `agent-evidence.schema.json` with explicit repository-state and accessibility-evidence fields.
 - Reworked `grade-output.py` so GitHub settings are graded from exact nested fields.

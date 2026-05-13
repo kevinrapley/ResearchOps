@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<prompt_bundle id="govuk-design-system-bundle" version="8.0.0" default_mode="design" xml_profile="native-semantic-xml/v1">
+<prompt_bundle id="govuk-design-system-bundle" version="8.0.1" default_mode="design" xml_profile="native-semantic-xml/v1">
   <bundle_identity>
     <name>GOV.UK Design System Prompt Bundle</name>
-    <description>A comprehensive prompt bundle for designing, building, reviewing, testing and releasing services using the GOV.UK Design System and the supporting GDS code repositories.  Version 8.0.0 eliminates ambiguity by providing exhaustive guidance, citations and code examples for key components (checkboxes, date inputs, radios, task lists) and patterns (check answers, complete multiple tasks, confirmation pages, page‑not‑found and service‑unavailable).  It introduces specialised QA and release‑readiness modes and roles, expands graders to enforce new rules and WCAG contrast requirements, and extends tests to include code‑generation and negative‑behaviour scenarios.</description>
+    <description>A comprehensive prompt bundle for designing, building, reviewing, testing and releasing services using the GOV.UK Design System and the supporting GDS code repositories. Version 8.0.1 adds explicit form-affordance rules for input widths and vertical rhythm so generated GOV.UK forms do not default to full-width inputs or cramped transitions from intro content into form controls.</description>
     <environment_baseline>Unconstrained</environment_baseline>
     <status>canonical</status>
   </bundle_identity>
@@ -26,6 +26,7 @@
     <always_load>references/govuk-design-system-reference.xml</always_load>
     <always_load>references/govuk-components-reference.xml</always_load>
     <always_load>references/govuk-patterns-reference.xml</always_load>
+    <always_load>references/govuk-form-affordance-reference.xml</always_load>
     <always_load>references/gds-github-reference.xml</always_load>
     <always_load>roles/designer.xml</always_load>
     <always_load>roles/developer.xml</always_load>

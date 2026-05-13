@@ -1,0 +1,120 @@
+/* ===========================================================================
+   ResearchOps account registration
+   Service: Home Office Biometrics — ResearchOps
+   Scope: Account request page spacing, confirmation and input affordance
+   =========================================================================== */
+
+.account-registration-page__intro {
+	margin-bottom: 30px;
+	}
+
+.account-registration-page__intro .govuk-body:last-of-type {
+	margin-bottom: 20px;
+	}
+
+.account-registration-form {
+	margin-top: 30px;
+	}
+
+.account-registration-form .govuk-form-group,
+.account-registration-form .govuk-fieldset {
+	margin-bottom: 30px;
+	}
+
+.account-registration-form .govuk-input,
+.account-registration-form .govuk-textarea {
+	margin-bottom: 0;
+	}
+
+.account-registration-form .govuk-radios {
+	margin-top: 5px;
+	}
+
+.account-registration-form .govuk-radios__item:last-child {
+	margin-bottom: 0;
+	}
+
+.account-registration-form .account-registration-input,
+.account-registration-form .govuk-\!-width-two-thirds {
+	width: 100%;
+	max-width: 66.66%;
+	}
+
+.account-registration-status {
+	margin-top: 30px;
+	margin-bottom: 30px;
+	}
+
+.account-registration-status .govuk-heading-m,
+.account-registration-status .govuk-panel__title {
+	margin-top: 0;
+	}
+
+.govuk-inset-text {
+	margin-top: 20px;
+	margin-bottom: 30px;
+	padding: 15px;
+	border-left: 10px solid #b1b4b6;
+	clear: both;
+	}
+
+.govuk-inset-text > :first-child {
+	margin-top: 0;
+	}
+
+.govuk-inset-text > :last-child {
+	margin-bottom: 0;
+	}
+
+.govuk-panel {
+	box-sizing: border-box;
+	margin-bottom: 30px;
+	padding: 35px;
+	border: 5px solid transparent;
+	background-color: #00703c;
+	color: #ffffff;
+	text-align: center;
+	}
+
+.govuk-panel--confirmation {
+	background-color: #00703c;
+	}
+
+.govuk-panel__title {
+	margin-bottom: 30px;
+	color: #ffffff;
+	font-size: 36px;
+	font-weight: 700;
+	line-height: 1.11111;
+	}
+
+.govuk-panel .govuk-body,
+.govuk-panel .govuk-link {
+	color: #ffffff;
+	}
+
+@media (max-width: 640px) {
+	.account-registration-page__intro {
+		margin-bottom: 20px;
+		}
+
+	.account-registration-form {
+		margin-top: 20px;
+		}
+
+	.account-registration-form .account-registration-input,
+	.account-registration-form .govuk-\!-width-two-thirds {
+		max-width: 100%;
+		}
+
+	.govuk-panel {
+		padding: 25px;
+		}
+
+	.govuk-panel__title {
+		font-size: 27px;
+		line-height: 1.11111;
+		}
+	}
+
+/* transparency begins in the cascade */

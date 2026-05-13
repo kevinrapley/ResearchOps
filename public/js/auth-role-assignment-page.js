@@ -4,18 +4,23 @@
  * @summary Team Admin UI for assigning D1-backed ResearchOps roles.
  */
 
+const PREVIEW_API_ORIGIN = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev";
+const PRODUCTION_API_ORIGIN = "https://rops-api.digikev-kevin-rapley.workers.dev";
+const FALLBACK_API_ORIGINS = Object.freeze([PREVIEW_API_ORIGIN, PRODUCTION_API_ORIGIN]);
+const CREATE_TEAM_ACTION = "create";
+const EXISTING_TEAM_ACTION = "existing";
+
+function configuredApiOrigin() {
+	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(value || "").replace(/\/$/, "");
+}
+
 function defaultApiOrigin() {
-	if (location.hostname.endsWith('.researchops.pages.dev') && location.hostname !== 'researchops.pages.dev') {
-		return 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
-	}
-	if (location.hostname.endsWith('pages.dev')) {
-		return 'https://rops-api.digikev-kevin-rapley.workers.dev';
-	}
-	return location.origin;
+	return configuredApiOrigin();
 }
 
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || defaultApiOrigin(),
+	API_BASE: defaultApiOrigin(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 });
@@ -67,6 +72,29 @@ const DURATION_LABELS = Object.freeze({
 	custom: "Until a specific date",
 });
 
+const ROLE_ASSIGNMENT_SERVER_MESSAGES = Object.freeze({
+	active_team_required: "Choose a team before assigning a role.",
+	invalid_expiry: "Enter a real expiry date.",
+	new_team_name_required: "Enter the new team's name.",
+	new_team_name_too_long: "Team names must be 80 characters or fewer.",
+	role_assignment_reason_required: "Enter why you are assigning this role.",
+	role_assignment_store_unavailable: "ResearchOps cannot assign roles right now. Try again later.",
+	role_assignment_transaction_unavailable: "ResearchOps cannot safely assign this role right now. Try again later.",
+	role_not_found: "Select a role that exists in ResearchOps.",
+	safeguarding_role_confirmation_required: "Confirm Safeguarding Lead access is required.",
+	selected_team_role_assignment_forbidden: "You do not have permission to assign roles in that team.",
+	sensitive_role_confirmation_required: "Confirm this sensitive role assignment is intentional.",
+	target_identifier_conflict: "Check the email address and user ID belong to the same person.",
+	target_not_team_member: "ResearchOps could not add this person to the team before assigning the role. Try again later.",
+	target_required: "Enter a team member's email address or user ID.",
+	target_user_inactive: "This person cannot be assigned a role. Contact a team admin.",
+	target_user_not_found: "ResearchOps could not find an account for this person. Check their email address or ask them to request an account.",
+	team_admin_role_unavailable: "ResearchOps cannot create a team right now. Try again later.",
+	team_creation_forbidden: "You do not have permission to create teams.",
+	team_name_already_exists: "A team with this name already exists. Select the existing team or choose a different name.",
+	team_not_available: "You cannot assign roles in that team.",
+});
+
 const state = {
 	context: null,
 	reviewValues: null,
@@ -81,6 +109,9 @@ const dom = {
 	errorList: document.getElementById("role-assignment-error-list"),
 	result: document.getElementById("role-assignment-result"),
 	roleSummary: document.getElementById("role-summary"),
+	teamOptions: document.getElementById("team-id-options"),
+	existingTeamPanel: document.getElementById("existing-team-panel"),
+	newTeamPanel: document.getElementById("new-team-panel"),
 	sensitiveFieldset: document.getElementById("sensitive-role-fieldset"),
 	safeguardingFieldset: document.getElementById("safeguarding-fieldset"),
 	customExpiryDateGroup: document.getElementById("custom-expiry-date-group"),
@@ -100,6 +131,32 @@ function escapeHtml(value) {
 		.replace(/'/g, "&#39;");
 }
 
+function isProductionPagesHost(hostname = location.hostname) {
+	return hostname === "researchops.pages.dev";
+}
+
+function isResearchOpsBranchPreviewHost(hostname = location.hostname) {
+	return hostname.endsWith(".researchops.pages.dev") && !isProductionPagesHost(hostname);
+}
+
+function shouldUseFallbackApiOrigin() {
+	return !CONFIG.API_BASE && location.hostname.endsWith("pages.dev");
+}
+
+function apiBaseCandidates() {
+	if (CONFIG.API_BASE) return [CONFIG.API_BASE];
+	if (isProductionPagesHost()) return [PRODUCTION_API_ORIGIN];
+	if (isResearchOpsBranchPreviewHost()) return [PREVIEW_API_ORIGIN];
+	if (shouldUseFallbackApiOrigin()) return [PRODUCTION_API_ORIGIN];
+	return [""];
+}
+
+function endpoint(path, base = CONFIG.API_BASE) {
+	if (/^https?:\/\//i.test(path)) return path;
+	if (!base) return path.startsWith("/") ? path : `/${path}`;
+	return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 function setBusy(element, isBusy) {
 	if (!element) return;
 	element.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -110,16 +167,18 @@ function setDisabled(isDisabled) {
 	if (dom.confirm) dom.confirm.disabled = isDisabled;
 }
 
-function endpoint(path) {
-	return `${CONFIG.API_BASE}${path}`;
+function shouldTryNextApiBase(response, data, attemptIndex, totalAttempts) {
+	if (attemptIndex >= totalAttempts - 1) return false;
+	if (data?.error === "invalid_json_response") return true;
+	return [404, 405, 502, 503, 504].includes(response.status);
 }
 
-async function fetchJson(path, options = {}) {
+async function fetchJsonFromBase(path, base, options = {}) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
 
 	try {
-		const response = await fetch(endpoint(path), {
+		const response = await fetch(endpoint(path, base), {
 			cache: CONFIG.CACHE,
 			credentials: "include",
 			signal: controller.signal,
@@ -136,18 +195,83 @@ async function fetchJson(path, options = {}) {
 		} catch {
 			data = { ok: false, error: "invalid_json_response", message: text };
 		}
-		return { ok: response.ok, status: response.status, data };
+		return { ok: response.ok && data?.error !== "invalid_json_response", status: response.status, data };
 	} finally {
 		clearTimeout(timer);
 	}
+}
+
+async function fetchJson(path, options = {}) {
+	const bases = apiBaseCandidates();
+	let lastError;
+	for (let index = 0; index < bases.length; index += 1) {
+		try {
+			const response = await fetchJsonFromBase(path, bases[index], options);
+			if (shouldTryNextApiBase(response, response.data, index, bases.length)) continue;
+			return response;
+		} catch (error) {
+			lastError = error;
+			if (index >= bases.length - 1) throw error;
+		}
+	}
+	throw lastError || new Error("Request could not be completed.");
 }
 
 function permissionCodes(permissions) {
 	return new Set((permissions || []).map((permission) => permission.code).filter(Boolean));
 }
 
-function activeTeamLabel(context) {
-	return context?.activeTeam?.name || context?.activeTeam?.id || "No active team";
+function selectedTeamAction() {
+	return document.querySelector('input[name="teamAction"]:checked')?.value || EXISTING_TEAM_ACTION;
+}
+
+function isCreatingTeam() {
+	return selectedTeamAction() === CREATE_TEAM_ACTION;
+}
+
+function selectedTeamId() {
+	return document.querySelector('input[name="teamId"]:checked')?.value || "";
+}
+
+function selectedTeam(context = state.context) {
+	const teamId = selectedTeamId();
+	return (context?.teams || []).find((team) => team.id === teamId) || null;
+}
+
+function teamLabel(team) {
+	return team?.name || team?.id || "No team selected";
+}
+
+function newTeamNameLabel(values) {
+	return values.newTeamName || "New team name not provided";
+}
+
+function renderTeamActionControls() {
+	const create = isCreatingTeam();
+	if (dom.existingTeamPanel) dom.existingTeamPanel.hidden = create;
+	if (dom.newTeamPanel) dom.newTeamPanel.hidden = !create;
+}
+
+function renderTeamOptions(context) {
+	if (!dom.teamOptions) return;
+	const teams = context?.teams || [];
+	if (!teams.length) {
+		dom.teamOptions.innerHTML = '<p class="govuk-body">You do not have any existing teams available for role assignment.</p>';
+		return;
+	}
+
+	dom.teamOptions.innerHTML = teams
+		.map((team, index) => {
+			const id = `team-id-${index + 1}`;
+			const checked = team.id === context.activeTeam?.id || (!context.activeTeam?.id && index === 0);
+			return `
+<div class="govuk-radios__item">
+	<input class="govuk-radios__input" id="${escapeHtml(id)}" name="teamId" type="radio" value="${escapeHtml(team.id)}" ${checked ? "checked" : ""} />
+	<label class="govuk-label govuk-radios__label" for="${escapeHtml(id)}">${escapeHtml(teamLabel(team))}</label>
+</div>
+`;
+		})
+		.join("");
 }
 
 function renderAuthContext(data) {
@@ -155,17 +279,21 @@ function renderAuthContext(data) {
 	state.context = data;
 	const permissions = permissionCodes(data.permissions);
 	const canAssignRoles = permissions.has("role.assign");
+	const canCreateTeams = permissions.has("team.manage") && permissions.has("role.assign");
 	const activeTeam = data.activeTeam || {};
 
 	dom.context.classList.toggle("auth-role-assignment-scope__panel--blocked", !canAssignRoles);
 	dom.context.innerHTML = canAssignRoles
 		? `
-<p class="govuk-body">You are assigning roles in <strong>${escapeHtml(activeTeam.name || activeTeam.id || "your active team")}</strong>.</p>
+<p class="govuk-body">You can assign roles in teams you manage. Your current team is <strong>${escapeHtml(activeTeam.name || activeTeam.id || "not set")}</strong>.</p>
+${canCreateTeams ? '<p class="govuk-body">You can also create a new team as part of this role assignment.</p>' : ""}
 `
 		: `
 <p class="govuk-body"><strong>You cannot assign roles.</strong></p>
 <p class="govuk-body">You do not have permission to assign roles for ${escapeHtml(activeTeam.name || activeTeam.id || "this team")}.</p>
 `;
+	renderTeamOptions(data);
+	renderTeamActionControls();
 	setDisabled(!canAssignRoles);
 	if (dom.form) dom.form.hidden = !canAssignRoles;
 	if (dom.review) dom.review.hidden = true;
@@ -282,6 +410,10 @@ function formValues() {
 	return {
 		targetEmail: String(data.get("targetEmail") || "").trim(),
 		targetUserId: String(data.get("targetUserId") || "").trim(),
+		teamAction: selectedTeamAction(),
+		teamId: selectedTeamId(),
+		newTeamName: String(data.get("newTeamName") || "").trim().replace(/\s+/g, " "),
+		newTeamReason: String(data.get("newTeamReason") || "").trim(),
 		roleKey: selectedRoleKey(),
 		requestedReason: String(data.get("requestedReason") || "").trim(),
 		durationPreset: selectedDurationPreset(),
@@ -291,6 +423,26 @@ function formValues() {
 		sensitiveRoleConfirmation: data.get("sensitiveRoleConfirmation") || "",
 		safeguardingConfirmation: data.get("safeguardingConfirmation") || "",
 	};
+}
+
+function applyQueryPrefill() {
+	if (!dom.form) return;
+	const params = new URLSearchParams(location.search);
+	const prefill = {
+		targetEmail: params.get("targetEmail") || "",
+		targetUserId: params.get("targetUserId") || "",
+		requestedReason: params.get("requestedReason") || "",
+		roleKey: params.get("roleKey") || "",
+	};
+
+	if (prefill.targetEmail) document.getElementById("target-email").value = prefill.targetEmail;
+	if (prefill.targetUserId) document.getElementById("target-user-id").value = prefill.targetUserId;
+	if (prefill.requestedReason) document.getElementById("requested-reason").value = prefill.requestedReason;
+	if (prefill.roleKey) {
+		document.querySelectorAll('input[name="roleKey"]').forEach((input) => {
+			if (input.value === prefill.roleKey) input.checked = true;
+		});
+	}
 }
 
 function customDateParts(values) {
@@ -337,6 +489,22 @@ function validate(values) {
 		addError(errors, "target-email", "Enter a team member's email address or user ID.", "#target-email");
 	}
 
+	if (!values.teamAction) {
+		addError(errors, "team-action", "Select whether to use an existing team or create a new team.", "#team-action-existing");
+	}
+
+	if (values.teamAction === EXISTING_TEAM_ACTION && !values.teamId) {
+		addError(errors, "team-id", "Select which team this role should be in.", "#team-id-1");
+	}
+
+	if (values.teamAction === CREATE_TEAM_ACTION && values.newTeamName.length < 3) {
+		addError(errors, "new-team-name", "Enter the new team's name.", "#new-team-name");
+	}
+
+	if (values.teamAction === CREATE_TEAM_ACTION && values.newTeamName.length > 80) {
+		addError(errors, "new-team-name", "Team names must be 80 characters or fewer.", "#new-team-name");
+	}
+
 	if (!values.roleKey) {
 		addError(errors, "role-key", "Select the role they need.", "#role-key-observer");
 	}
@@ -367,9 +535,17 @@ function validate(values) {
 function requestBody(values) {
 	const expiry = expiresAtFor(values);
 	const body = {
+		teamAction: values.teamAction,
 		roleKey: values.roleKey,
 		requestedReason: values.requestedReason,
 	};
+
+	if (values.teamAction === CREATE_TEAM_ACTION) {
+		body.newTeamName = values.newTeamName;
+		if (values.newTeamReason) body.newTeamReason = values.newTeamReason;
+	} else {
+		body.teamId = values.teamId;
+	}
 
 	if (values.targetEmail) body.targetEmail = values.targetEmail;
 	if (values.targetUserId) body.targetUserId = values.targetUserId;
@@ -380,12 +556,27 @@ function requestBody(values) {
 	return body;
 }
 
+function teamSummaryRows(values) {
+	if (values.teamAction === CREATE_TEAM_ACTION) {
+		return [
+			["Team action", "Create a new team", "#team-action-create"],
+			["New team name", newTeamNameLabel(values), "#new-team-name"],
+			["Team creation reason", values.newTeamReason || "Not provided", "#new-team-reason"],
+		];
+	}
+
+	return [
+		["Team action", "Use an existing team", "#team-action-existing"],
+		["Team", teamLabel(selectedTeam()), "#team-id-1"],
+	];
+}
+
 function reviewSummaryRows(values) {
 	const detail = roleDetail(values.roleKey) || {};
 	return [
 		["Team member email", values.targetEmail || "Not provided", "#target-email"],
 		["User ID", values.targetUserId || "Not provided", "#target-user-id"],
-		["Team", activeTeamLabel(state.context), ""],
+		...teamSummaryRows(values),
 		["Role", detail.label || values.roleKey, "#role-key-observer"],
 		["Access duration", DURATION_LABELS[values.durationPreset] || "Not set", "#duration-30"],
 		["Expiry date", expiryLabelFor(values), values.durationPreset === "custom" ? "#expiry-day" : "#duration-custom"],
@@ -438,16 +629,30 @@ function showResult(data) {
 	const role = data.role || {};
 	const targetUser = data.targetUser || {};
 	const assignment = data.assignment || {};
+	const membership = data.teamMembership || {};
+	const team = data.team || {};
 
 	dom.result.hidden = false;
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--success";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role assigned</h2>
-<p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)}.</p>
+${team.created ? `<p class="govuk-body">The team <strong>${escapeHtml(teamLabel(team))}</strong> was created.</p>` : ""}
+<p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)} in ${escapeHtml(teamLabel(team))}.</p>
+${membership.createdOrReactivated ? '<p class="govuk-body">They were also added as an active member of this team.</p>' : ""}
 <p class="govuk-body">Assignment ID: <code>${escapeHtml(assignment.id)}</code></p>
 <p class="govuk-body">Scope: <code>${escapeHtml(assignment.scopeId)}</code></p>
 `;
 	dom.result.focus?.();
+}
+
+function roleAssignmentServerMessage(data, status) {
+	const mappedMessage = ROLE_ASSIGNMENT_SERVER_MESSAGES[data?.error];
+	if (mappedMessage) return mappedMessage;
+	if (status === 401 || status === 403) return "You do not have permission to assign this role.";
+	if (status === 404) return "ResearchOps could not find the account or role. Check the details and try again.";
+	if (status === 409) return "This role could not be assigned because the account cannot receive roles right now.";
+	if (status >= 500) return "ResearchOps cannot assign roles right now. Try again later.";
+	return "ResearchOps could not assign this role. Check the details and try again.";
 }
 
 function showServerError(data, status) {
@@ -456,8 +661,7 @@ function showServerError(data, status) {
 	dom.result.className = "auth-role-assignment-result auth-role-assignment-result--error";
 	dom.result.innerHTML = `
 <h2 class="govuk-heading-m">Role was not assigned</h2>
-<p class="govuk-body">${escapeHtml(data?.message || `Request failed with status ${status}`)}</p>
-${data?.error ? `<p class="govuk-body">Error code: <code>${escapeHtml(data.error)}</code></p>` : ""}
+<p class="govuk-body">${escapeHtml(roleAssignmentServerMessage(data, status))}</p>
 `;
 }
 
@@ -495,11 +699,13 @@ async function submitAssignment() {
 
 		showResult(response.data);
 		dom.form.reset();
+		renderTeamOptions(state.context);
+		renderTeamActionControls();
 		renderRoleSummary();
 		renderDurationControls();
 		hideReview();
-	} catch (error) {
-		showServerError({ message: error?.message || error }, 0);
+	} catch {
+		showServerError({}, 0);
 	} finally {
 		setDisabled(false);
 	}
@@ -523,10 +729,14 @@ async function initAuthContext() {
 
 function init() {
 	if (!dom.form) return;
+	applyQueryPrefill();
 	document.querySelectorAll('input[name="roleKey"]').forEach((input) => input.addEventListener("change", renderRoleSummary));
 	document
 		.querySelectorAll('input[name="durationPreset"]')
 		.forEach((input) => input.addEventListener("change", renderDurationControls));
+	document
+		.querySelectorAll('input[name="teamAction"]')
+		.forEach((input) => input.addEventListener("change", renderTeamActionControls));
 	document.querySelectorAll(".auth-role-assignment-radios .govuk-radios__hint").forEach((hint) => {
 		hint.dataset.clicksRadio = "true";
 	});
@@ -537,6 +747,7 @@ function init() {
 		hideReview();
 		dom.form.focus?.();
 	});
+	renderTeamActionControls();
 	renderRoleSummary();
 	renderDurationControls();
 	initAuthContext();
@@ -546,10 +757,25 @@ init();
 
 window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	CONFIG,
-	ROLE_DETAILS,
+	CREATE_TEAM_ACTION,
 	DURATION_LABELS,
+	EXISTING_TEAM_ACTION,
+	FALLBACK_API_ORIGINS,
+	PREVIEW_API_ORIGIN,
+	PRODUCTION_API_ORIGIN,
+	ROLE_ASSIGNMENT_SERVER_MESSAGES,
+	ROLE_DETAILS,
+	apiBaseCandidates,
+	applyQueryPrefill,
+	configuredApiOrigin,
 	defaultApiOrigin,
-	validate,
-	requestBody,
+	endpoint,
 	expiresAtFor,
+	isProductionPagesHost,
+	isResearchOpsBranchPreviewHost,
+	requestBody,
+	roleAssignmentServerMessage,
+	selectedTeam,
+	teamLabel,
+	validate,
 });

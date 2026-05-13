@@ -1,5 +1,6 @@
 import { handleMeRoute } from "./core/auth/access.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
+import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
@@ -16,13 +17,25 @@ function coerceResponse(res) {
 	return new Response(JSON.stringify(res), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+function isResearchOpsPagesOrigin(origin) {
+	try {
+		const { hostname, protocol } = new URL(origin);
+		if (protocol !== "https:") return false;
+		return hostname === "researchops.pages.dev" || hostname.endsWith(".researchops.pages.dev");
+	} catch {
+		return false;
+	}
+}
+
 function resolveAllowedOrigin(env, request) {
 	try {
 		const origin = request.headers.get("Origin") || "";
 		const raw = env.ALLOWED_ORIGINS;
 		const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
 		if (!origin) return "*";
-		return list.includes(origin) ? origin : "null";
+		if (list.includes(origin)) return origin;
+		if (isResearchOpsPagesOrigin(origin)) return origin;
+		return "null";
 	} catch {
 		return "*";
 	}
@@ -166,7 +179,8 @@ export default {
 
 		try {
 			let result;
-			if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
+			if ((method === "GET" || method === "POST") && apiPath === "/api/auth/registration-requests") result = await handleRegistrationRequestsRoute(request, env, apiPath);
+			else if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);

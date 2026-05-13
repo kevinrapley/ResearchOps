@@ -13,6 +13,7 @@ export const operationalAuthTeamId = 'team_researchops_core';
 
 export const operationalPaths = {
 	accountSignIn: '/pages/account/sign-in/index.html',
+	accountRegistration: '/pages/account/register/index.html',
 	projectDashboard: `/pages/project-dashboard/?id=${operationalProjectId}`,
 	addStudy: `/pages/study/new/?pid=${operationalProjectId}`,
 	addParticipant: `/pages/project-dashboard/participants/?id=${operationalProjectId}`,
@@ -24,6 +25,7 @@ export const operationalPaths = {
 	studyParticipants: `/pages/study/participants/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
+	teamRegistrationRequests: '/pages/team/registration-requests/',
 	teamRoleAssignments: '/pages/team/role-assignments/',
 };
 
@@ -213,12 +215,36 @@ export const operationalAuthContext = {
 	],
 };
 
+export const operationalRegistrationRequests = [
+	{
+		id: 'reg_visual_001',
+		email: 'alex.morgan@example.gov.uk',
+		displayName: 'Alex Morgan',
+		requestedRole: {
+			key: 'user_researcher',
+			label: 'Plan, run or analyse user research',
+		},
+		teamOrService: 'ResearchOps Core',
+		requestedReason: 'Planning and analysing the assisted digital support study.',
+		status: 'pending_review',
+		submittedAt: '2026-05-13T09:00:00.000Z',
+	},
+];
+
 export function operationalMockRoutes() {
 	return [
 		{
 			url: /\/api\/me(?:\?.*)?$/,
 			method: 'GET',
 			body: operationalAuthContext,
+		},
+		{
+			url: /\/api\/auth\/registration-requests(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				requests: operationalRegistrationRequests,
+			},
 		},
 		{
 			url: /\/api\/projects(?:\?.*)?$/,
@@ -324,6 +350,11 @@ export const operationalDesignRisks = {
 		'The first Team Admin may sign in successfully but not understand whether D1 role bootstrap, team membership or Cloudflare Access caused a blocked state.',
 		'Review the page for clear Cloudflare Access sign-in language, account-state recovery, active team context and a visible route to Team Admin tasks.'
 	),
+	accountRegistration: risk(
+		'The account request page may look like a self-service role selection route rather than a reviewed access request.',
+		'Requesters could believe that choosing an activity grants access, while team admins may receive weak evidence for an access decision.',
+		'Review the page for purpose-of-use language, check-answers behaviour, field affordance and clear confirmation that no access is granted until review.'
+	),
 	start: risk(
 		'The guided project setup could collect plausible project metadata without making privacy boundaries, required fields and AI-assistance disclosure clear enough.',
 		'Poor framing at project creation can create weak objectives, unsafe notes or project records that are difficult to use later.',
@@ -393,6 +424,11 @@ export const operationalDesignRisks = {
 		'Participant consent screens may not separate setup blockers, participant selection and auditable consent recording clearly enough.',
 		'Research may proceed without clear, current and reviewable consent evidence.',
 		'Capture both blocker and ready states with deterministic study fixtures and review accessible status messaging.'
+	),
+	teamRegistrationRequests: risk(
+		'The account request review page may show pending requests without making the distinction between review evidence and access assignment clear enough.',
+		'Team admins could treat requested use as an approved role or fail to understand the next step required to add the person to the active team.',
+		'Review the page for read-only request evidence, clear assignment handoff and safe handling of pending account requests.'
 	),
 	teamRoleAssignments: risk(
 		'The role-assignment UI may make sensitive access changes feel routine without enough target-user certainty, permission visibility or audit-ready justification.',

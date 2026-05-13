@@ -16,6 +16,11 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="target-email"/);
 	assert.match(pageSource, /id="target-user-id-details"/);
 	assert.match(pageSource, /id="target-user-id"/);
+	assert.match(pageSource, /id="team-action-existing"/);
+	assert.match(pageSource, /id="team-action-create"/);
+	assert.match(pageSource, /id="team-id-options"/);
+	assert.match(pageSource, /id="new-team-name"/);
+	assert.match(pageSource, /id="new-team-reason"/);
 	assert.match(pageSource, /id="role-key-observer"/);
 	assert.match(pageSource, /id="duration-30"/);
 	assert.match(pageSource, /id="duration-custom"/);
@@ -28,7 +33,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="confirm-role-assignment"/);
 	assert.match(pageSource, /Confirm and assign role/);
 	assert.match(pageSource, /id="role-assignment-result"/);
-	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js/);
+	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
@@ -51,9 +56,44 @@ function assertTopLevelAdminInformationArchitecture() {
 function assertCurrentAccessPanelIsReducedToTeamScope() {
 	assert.doesNotMatch(pageSource, /Your current access/);
 	assert.match(pageSource, /Team scope/);
-	assert.match(scriptSource, /You are assigning roles in/);
+	assert.match(scriptSource, /You can assign roles in teams you manage/);
+	assert.match(scriptSource, /Your current team is/);
+	assert.match(scriptSource, /You can also create a new team as part of this role assignment/);
 	assert.match(scriptSource, /You cannot assign roles/);
 	assert.doesNotMatch(scriptSource, /Current roles:/);
+}
+
+function assertExplicitTeamChoiceExists() {
+	assert.match(pageSource, /Which team should this role be in\?/);
+	assert.match(pageSource, /Use an existing team/);
+	assert.match(pageSource, /Create a new team/);
+	assert.match(pageSource, /You will become Team Admin for the new team/);
+	assert.match(pageSource, /The person will be added to this team if they are not already a member/);
+	assert.match(scriptSource, /teamOptions: document\.getElementById\("team-id-options"\)/);
+	assert.match(scriptSource, /existingTeamPanel: document\.getElementById\("existing-team-panel"\)/);
+	assert.match(scriptSource, /newTeamPanel: document\.getElementById\("new-team-panel"\)/);
+	assert.match(scriptSource, /function selectedTeamAction\(\)/);
+	assert.match(scriptSource, /function isCreatingTeam\(\)/);
+	assert.match(scriptSource, /function selectedTeamId\(\)/);
+	assert.match(scriptSource, /input\[name="teamId"\]:checked/);
+	assert.match(scriptSource, /function selectedTeam\(context = state\.context\)/);
+	assert.match(scriptSource, /function renderTeamActionControls\(\)/);
+	assert.match(scriptSource, /function renderTeamOptions\(context\)/);
+	assert.match(scriptSource, /teamAction: selectedTeamAction\(\)/);
+	assert.match(scriptSource, /teamId: selectedTeamId\(\)/);
+	assert.match(scriptSource, /newTeamName/);
+	assert.match(scriptSource, /newTeamReason/);
+	assert.match(scriptSource, /Select which team this role should be in/);
+	assert.match(scriptSource, /Enter the new team's name/);
+}
+
+function assertMembershipCreationCopyExists() {
+	assert.match(pageSource, /give someone access to a role in a ResearchOps team you manage/);
+	assert.match(pageSource, /ResearchOps will add them when you assign the role/);
+	assert.match(pageSource, /If you create a new team, ResearchOps will make you Team Admin for that team/);
+	assert.match(scriptSource, /They were also added as an active member of this team/);
+	assert.match(scriptSource, /teamMembership/);
+	assert.match(scriptSource, /createdOrReactivated/);
 }
 
 function assertUserIdUsesDetailsWithoutExample() {
@@ -127,8 +167,10 @@ function assertDurationModelUsesGovernedPresets() {
 
 function assertClientUsesAuthAndAssignmentEndpoints() {
 	assert.match(scriptSource, /function defaultApiOrigin\(\)/);
+	assert.match(scriptSource, /configuredApiOrigin/);
+	assert.match(scriptSource, /function apiBaseCandidates\(\)/);
+	assert.match(scriptSource, /shouldUseFallbackApiOrigin/);
 	assert.match(scriptSource, /rops-api-passwordless-preview/);
-	assert.match(scriptSource, /API_BASE: document\.documentElement\?\.dataset\?\.apiOrigin \|\| window\.API_ORIGIN \|\| defaultApiOrigin\(\)/);
 	assert.match(scriptSource, /credentials: "include"/);
 	assert.match(scriptSource, /fetchJson\("\/api\/me"\)/);
 	assert.match(scriptSource, /fetchJson\("\/api\/auth\/role-assignments"/);
@@ -136,9 +178,24 @@ function assertClientUsesAuthAndAssignmentEndpoints() {
 	assert.match(scriptSource, /setDisabled\(!canAssignRoles\)/);
 }
 
+function assertClientSupportsPrefillFromRegistrationRequest() {
+	assert.match(scriptSource, /function applyQueryPrefill\(\)/);
+	assert.match(scriptSource, /params\.get\("targetEmail"\)/);
+	assert.match(scriptSource, /params\.get\("targetUserId"\)/);
+	assert.match(scriptSource, /params\.get\("requestedReason"\)/);
+	assert.match(scriptSource, /params\.get\("roleKey"\)/);
+	assert.match(scriptSource, /document\.getElementById\("target-email"\)\.value = prefill\.targetEmail/);
+	assert.match(scriptSource, /document\.getElementById\("requested-reason"\)\.value = prefill\.requestedReason/);
+	assert.match(scriptSource, /applyQueryPrefill\(\)/);
+}
+
 function assertClientBuildsCorrectRequestContract() {
 	assert.match(scriptSource, /targetEmail/);
 	assert.match(scriptSource, /targetUserId/);
+	assert.match(scriptSource, /teamAction/);
+	assert.match(scriptSource, /teamId/);
+	assert.match(scriptSource, /newTeamName/);
+	assert.match(scriptSource, /newTeamReason/);
 	assert.match(scriptSource, /roleKey/);
 	assert.match(scriptSource, /requestedReason/);
 	assert.match(scriptSource, /expiresAt/);
@@ -151,6 +208,9 @@ function assertClientBuildsCorrectRequestContract() {
 function assertClientValidatesBeforeReview() {
 	assert.match(scriptSource, /function validate\(values\)/);
 	assert.match(scriptSource, /Enter a team member's email address or user ID/);
+	assert.match(scriptSource, /Select whether to use an existing team or create a new team/);
+	assert.match(scriptSource, /Select which team this role should be in/);
+	assert.match(scriptSource, /Enter the new team's name/);
 	assert.match(scriptSource, /Select the role they need/);
 	assert.match(scriptSource, /Select how long this role should last/);
 	assert.match(scriptSource, /Enter a real expiry date/);
@@ -183,7 +243,6 @@ function assertRoleAbilitiesArePlainLanguage() {
 	assert.doesNotMatch(scriptSource, /recommendation\.own/);
 	assert.doesNotMatch(scriptSource, /safeguarding\.view/);
 	assert.doesNotMatch(scriptSource, /safeguarding\.audit\.view/);
-	assert.doesNotMatch(scriptSource, /team\.manage/);
 	assert.doesNotMatch(pageSource, /governed\.create/);
 	assert.doesNotMatch(pageSource, /safeguarding\.view/);
 }
@@ -202,6 +261,7 @@ function assertStylesExist() {
 	assert.match(styleSource, /width-one-half/);
 	assert.match(styleSource, /govuk-details__summary::before/);
 	assert.match(styleSource, /\.auth-role-assignment-radios/);
+	assert.match(styleSource, /\.auth-role-assignment-team-panel/);
 	assert.match(styleSource, /\.auth-role-assignment-custom-date/);
 	assert.match(styleSource, /govuk-warning-text/);
 	assert.match(styleSource, /govuk-summary-list/);
@@ -213,6 +273,8 @@ function assertStylesExist() {
 assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
 assertCurrentAccessPanelIsReducedToTeamScope();
+assertExplicitTeamChoiceExists();
+assertMembershipCreationCopyExists();
 assertUserIdUsesDetailsWithoutExample();
 assertRoleOptionsUseGOVUKRadios();
 assertRoleRadioHintsAreUsefulAndClickable();
@@ -220,6 +282,7 @@ assertSelectedRoleSummaryUsesAbilityListOnly();
 assertPageStylesDoNotRecreateGOVUKRadioInternals();
 assertDurationModelUsesGovernedPresets();
 assertClientUsesAuthAndAssignmentEndpoints();
+assertClientSupportsPrefillFromRegistrationRequest();
 assertClientBuildsCorrectRequestContract();
 assertClientValidatesBeforeReview();
 assertNoPostBeforeConfirm();
