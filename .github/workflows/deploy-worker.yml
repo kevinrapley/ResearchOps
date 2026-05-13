@@ -20,7 +20,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   WRANGLER_VERSION: "4.90.0"
   WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
+  WRANGLER_PREVIEW_CONFIG: "infra/cloudflare/wrangler.preview.toml"
   D1_DATABASE_NAME: "researchops-d1"
+  D1_PREVIEW_DATABASE_NAME: "researchops-d1-preview"
   PASSWORDLESS_MIGRATION: "infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql"
   PASSWORDLESS_LOCKED_MIGRATION: "infra/cloudflare/migrations/0004_auth_login_challenges_locked_status.sql"
   REGISTRATION_REQUESTS_MIGRATION: "infra/cloudflare/migrations/0005_auth_registration_requests.sql"
@@ -121,20 +123,47 @@ jobs:
       - name: Run validation contract
         run: npm run validate
 
-      - name: Check preview passwordless secrets are available
+      - name: Check preview secrets and D1 binding are available
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          CF_PREVIEW_D1_DATABASE_ID: ${{ secrets.CF_PREVIEW_D1_DATABASE_ID }}
         run: |
           missing=""
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
           if [ -z "${RESEND_API_KEY}" ]; then missing="${missing} RESEND_API_KEY"; fi
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
+          if [ -z "${CF_PREVIEW_D1_DATABASE_ID}" ]; then missing="${missing} CF_PREVIEW_D1_DATABASE_ID"; fi
           if [ -n "${missing}" ]; then
-            echo "Missing required preview passwordless secrets:${missing}"
+            echo "Missing required preview secrets:${missing}"
             exit 1
           fi
+
+      - name: Create preview Worker config
+        env:
+          CF_PREVIEW_D1_DATABASE_ID: ${{ secrets.CF_PREVIEW_D1_DATABASE_ID }}
+        run: |
+          cp "${WRANGLER_CONFIG}" "${WRANGLER_PREVIEW_CONFIG}"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["WRANGLER_PREVIEW_CONFIG"])
+          content = path.read_text()
+          content = content.replace('name                = "rops-api"', 'name                = "rops-api-passwordless-preview"')
+          content = content.replace('database_name = "researchops-d1"', 'database_name = "researchops-d1-preview"')
+          content = content.replace('database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"', f'database_id = "{os.environ["CF_PREVIEW_D1_DATABASE_ID"]}"')
+          content = content.replace(
+              'https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev',
+              'https://researchops.pages.dev,https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev'
+          )
+          content = content.replace(
+              'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"',
+              'MURAL_REDIRECT_URI = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/mural/callback"'
+          )
+          path.write_text(content)
+          PY
 
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
@@ -144,17 +173,17 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
             --remote \
-            --config "${WRANGLER_CONFIG}" \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${PASSWORDLESS_MIGRATION}"
-          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
             --remote \
-            --config "${WRANGLER_CONFIG}" \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${PASSWORDLESS_LOCKED_MIGRATION}"
-          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
             --remote \
-            --config "${WRANGLER_CONFIG}" \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${REGISTRATION_REQUESTS_MIGRATION}"
 
       - name: Deploy preview Worker with passwordless secrets
@@ -164,7 +193,7 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           wranglerVersion: ${{ env.WRANGLER_VERSION }}
           workingDirectory: infra/cloudflare
-          command: deploy --config wrangler.toml --name rops-api-passwordless-preview
+          command: deploy --config wrangler.preview.toml
           secrets: |
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
