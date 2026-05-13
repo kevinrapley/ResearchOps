@@ -4,10 +4,9 @@
  * @summary Team Admin UI for assigning D1-backed ResearchOps roles.
  */
 
-const FALLBACK_API_ORIGINS = Object.freeze([
-	"https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev",
-	"https://rops-api.digikev-kevin-rapley.workers.dev",
-]);
+const PREVIEW_API_ORIGIN = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev";
+const PRODUCTION_API_ORIGIN = "https://rops-api.digikev-kevin-rapley.workers.dev";
+const FALLBACK_API_ORIGINS = Object.freeze([PREVIEW_API_ORIGIN, PRODUCTION_API_ORIGIN]);
 
 function configuredApiOrigin() {
 	const value = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
@@ -120,14 +119,24 @@ function escapeHtml(value) {
 		.replace(/'/g, "&#39;");
 }
 
+function isProductionPagesHost(hostname = location.hostname) {
+	return hostname === "researchops.pages.dev";
+}
+
+function isResearchOpsBranchPreviewHost(hostname = location.hostname) {
+	return hostname.endsWith(".researchops.pages.dev") && !isProductionPagesHost(hostname);
+}
+
 function shouldUseFallbackApiOrigin() {
 	return !CONFIG.API_BASE && location.hostname.endsWith("pages.dev");
 }
 
 function apiBaseCandidates() {
-	const candidates = [CONFIG.API_BASE];
-	if (shouldUseFallbackApiOrigin()) candidates.push(...FALLBACK_API_ORIGINS);
-	return [...new Set(candidates.map((value) => String(value || "").replace(/\/$/, "")))];
+	if (CONFIG.API_BASE) return [CONFIG.API_BASE];
+	if (isProductionPagesHost()) return [PRODUCTION_API_ORIGIN];
+	if (isResearchOpsBranchPreviewHost()) return [PREVIEW_API_ORIGIN];
+	if (shouldUseFallbackApiOrigin()) return [PRODUCTION_API_ORIGIN];
+	return [""];
 }
 
 function endpoint(path, base = CONFIG.API_BASE) {
@@ -635,11 +644,16 @@ window.__ropsAuthRoleAssignmentPage = Object.freeze({
 	ROLE_DETAILS,
 	DURATION_LABELS,
 	ROLE_ASSIGNMENT_SERVER_MESSAGES,
+	FALLBACK_API_ORIGINS,
+	PREVIEW_API_ORIGIN,
+	PRODUCTION_API_ORIGIN,
 	apiBaseCandidates,
 	applyQueryPrefill,
 	configuredApiOrigin,
 	defaultApiOrigin,
 	endpoint,
+	isProductionPagesHost,
+	isResearchOpsBranchPreviewHost,
 	roleAssignmentServerMessage,
 	validate,
 	requestBody,
