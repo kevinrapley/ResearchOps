@@ -51,6 +51,7 @@ includes(pageSource, "id=\"list\" class=\"projects-list\"", "Projects page");
 includes(pageSource, "aria-busy=\"true\"", "Projects page");
 includes(pageSource, "aria-labelledby=\"projects-list-title\"", "Projects page");
 includes(pageSource, "Project records need JavaScript to load", "Projects page");
+includes(pageSource, "class=\"projects-page-actions\" hidden", "Projects page");
 includes(pageSource, "href=\"/pages/start/overview/\"", "Projects page");
 excludes(pageSource, "href=\"/pages/start/\"", "Projects page");
 excludes(pageSource, "href=\"./pages/start/\"", "Projects page");
