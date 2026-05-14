@@ -4,32 +4,37 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/projects/index.html", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/projects.css", "utf8");
 const controllerSource = fs.readFileSync("public/js/projects-page.js", "utf8");
+const dashboardSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const startProjectSource = fs.readFileSync("public/pages/start/start-new-project.js", "utf8");
+const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
+const projectServiceSource = fs.readFileSync("infra/cloudflare/src/service/projects.js", "utf8");
+const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "Projects page");
 includes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "Projects page");
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "Projects page");
 includes(
-  pageSource,
-  "href=\"/css/projects.css?v=projects-dashboard-action-20260501\"",
-  "Projects page"
+	pageSource,
+	"href=\"/css/projects.css?v=projects-dashboard-action-20260501\"",
+	"Projects page"
 );
 includes(
-  pageSource,
-  "rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-  "Projects page"
+	pageSource,
+	"rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
+	"Projects page"
 );
 includes(
-  pageSource,
-  "src=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-  "Projects page"
+	pageSource,
+	"src=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
+	"Projects page"
 );
 includes(pageSource, "src=\"/components/layout.js\" defer", "Projects page");
 includes(pageSource, "class=\"govuk-skip-link\" href=\"#main-content\"", "Projects page");
@@ -105,5 +110,52 @@ includes(controllerSource, "No projects yet", "Projects controller");
 includes(controllerSource, "href=\"/pages/start/overview/\"", "Projects controller");
 includes(controllerSource, "renderErrorState", "Projects controller");
 includes(controllerSource, "Could not load projects", "Projects controller");
+includes(controllerSource, "credentials: \"include\"", "Projects controller");
+includes(controllerSource, "setStartProjectVisible", "Projects controller");
+includes(controllerSource, "canStartProject", "Projects controller");
+includes(controllerSource, "projectTeamLabel", "Projects controller");
+includes(controllerSource, "Unassigned team", "Projects controller");
+includes(controllerSource, "looksLikeIdentityFragment", "Projects controller");
+includes(controllerSource, "Team: ", "Projects controller");
 excludes(controllerSource, "href=\"/pages/start/\"", "Projects controller");
 excludes(controllerSource, "href=\"./pages/start/\"", "Projects controller");
+excludes(controllerSource, "Home Office Biometrics", "Projects controller");
+
+includes(dashboardSource, "async function loadProject(projectId)", "Project dashboard controller");
+includes(dashboardSource, "/api/projects/${encodeURIComponent(projectId)}", "Project dashboard controller");
+includes(dashboardSource, "credentials: \"include\"", "Project dashboard controller");
+includes(dashboardSource, "Missing project id param", "Project dashboard controller");
+includes(dashboardSource, "looksLikeIdentityFragment", "Project dashboard controller");
+includes(dashboardSource, "Enter a valid user group label.", "Project dashboard controller");
+excludes(dashboardSource, "async function loadProjects", "Project dashboard controller");
+excludes(dashboardSource, "Home Office Biometrics", "Project dashboard controller");
+
+includes(startProjectSource, "const API_ORIGIN", "Start project controller");
+includes(startProjectSource, "function apiUrl", "Start project controller");
+includes(startProjectSource, "credentials: \"include\"", "Start project controller");
+includes(startProjectSource, "apiPost(\"/api/projects\"", "Start project controller");
+excludes(startProjectSource, "org: \"Home Office Biometrics\"", "Start project controller");
+excludes(startProjectSource, "Home Office Biometrics", "Start project controller");
+
+includes(workerSource, "resolveAuthenticatedContext", "Worker");
+includes(workerSource, "async function authContextFor", "Worker");
+includes(workerSource, "createProjectInAirtable", "Worker");
+includes(workerSource, "(method === \"GET\" || method === \"POST\") && apiPath === \"/api/projects\"", "Worker");
+includes(workerSource, "service.getProjectById(origin, projectId, authContext)", "Worker");
+includes(workerSource, "service.updateProjectFraming(request, origin, projectId, authContext)", "Worker");
+
+includes(serviceIndexSource, "createProjectInAirtable", "Service index");
+includes(serviceIndexSource, "listProjectsFromAirtable(this, origin, url, authContext)", "Service index");
+includes(serviceIndexSource, "getProjectById(this, origin, projectId, authContext)", "Service index");
+includes(serviceIndexSource, "updateProjectFraming(this, req, origin, projectId, authContext)", "Service index");
+
+includes(projectServiceSource, "function userCanSeeProject", "Project service");
+includes(projectServiceSource, "function canStartProject", "Project service");
+includes(projectServiceSource, "function isResearchOpsCoreMember", "Project service");
+includes(projectServiceSource, "looksLikeIdentityFragment", "Project service");
+includes(projectServiceSource, "project_team_fields_missing", "Project service");
+includes(projectServiceSource, "Team Name", "Project service");
+includes(projectServiceSource, "Team ID", "Project service");
+includes(projectServiceSource, "canStartProject: canStartProject(authContext)", "Project service");
+includes(projectServiceSource, "filter(project => userCanSeeProject(project, authContext))", "Project service");
+includes(projectServiceSource, "Project not found", "Project service");
