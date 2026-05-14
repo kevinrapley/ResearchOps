@@ -133,6 +133,7 @@ includes(dashboardSource, "credentials: \"include\"", "Project dashboard control
 includes(dashboardSource, "Missing project id param", "Project dashboard controller");
 includes(dashboardSource, "looksLikeIdentityFragment", "Project dashboard controller");
 includes(dashboardSource, "Enter a valid user group label.", "Project dashboard controller");
+includes(dashboardSource, "projectAirtableId", "Project dashboard controller");
 excludes(dashboardSource, "async function loadProjects", "Project dashboard controller");
 excludes(dashboardSource, "Home Office Biometrics", "Project dashboard controller");
 
@@ -158,11 +159,16 @@ includes(serviceIndexSource, "updateProjectFraming(this, req, origin, projectId,
 includes(projectServiceSource, "function userCanSeeProject", "Project service");
 includes(projectServiceSource, "function canStartProject", "Project service");
 includes(projectServiceSource, "function isResearchOpsCoreMember", "Project service");
+includes(projectServiceSource, "function publicProjectId", "Project service");
+includes(projectServiceSource, "function findProjectRecord", "Project service");
+includes(projectServiceSource, "function isRenderableProject", "Project service");
+includes(projectServiceSource, "airtableId", "Project service");
 includes(projectServiceSource, "looksLikeIdentityFragment", "Project service");
 includes(projectServiceSource, "project_team_fields_missing", "Project service");
 includes(projectServiceSource, "Team Name", "Project service");
 includes(projectServiceSource, "Team ID", "Project service");
 includes(projectServiceSource, "key === \"user_researcher\"", "Project service");
 includes(projectServiceSource, "canStartProject: canStartProject(authContext)", "Project service");
-includes(projectServiceSource, "filter(project => userCanSeeProject(project, authContext))", "Project service");
+includes(projectServiceSource, "filter(isRenderableProject)", "Project service");
+includes(projectServiceSource, "filter((project) => userCanSeeProject(project, authContext))", "Project service");
 includes(projectServiceSource, "Project not found", "Project service");
