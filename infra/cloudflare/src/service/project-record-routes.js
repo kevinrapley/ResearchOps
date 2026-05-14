@@ -1,7 +1,7 @@
 /**
  * @file src/service/project-record-routes.js
  * @module service/project-record-routes
- * @summary Airtable Projects read routes using Airtable record IDs as canonical project IDs.
+ * @summary Airtable Projects read and create routes using Airtable record IDs as canonical project IDs.
  */
 
 import { toMs } from "../core/utils.js";
@@ -9,6 +9,7 @@ import { toMs } from "../core/utils.js";
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const AIRTABLE_MAX_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 20;
+const MAX_JSON_BODY_BYTES = 1024 * 1024;
 
 function json(body, status = 200, headers = {}) {
 	return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...headers } });
@@ -141,6 +142,11 @@ function canStartProject(authContext = {}) {
 	return (authContext.roles || []).some((role) => ["researcher", "user_researcher", "research_lead"].includes(role.key || role.roleKey));
 }
 
+function activeTeamForCreate(authContext = {}) {
+	if (authContext.activeTeam?.id || authContext.activeTeam?.name || authContext.activeTeam?.teamName) return authContext.activeTeam;
+	return authContext.teamMemberships?.[0] || authContext.memberTeams?.[0] || authContext.teams?.[0] || null;
+}
+
 function hasProjectShape(record = {}) {
 	const fields = record.fields || {};
 	return Boolean(fields.Name || fields["Project Name"] || fields.Title) && Boolean(fields.Phase || fields["Service Phase"] || fields.Status || fields["Project Status"] || fields.Description || fields.Summary);
@@ -178,8 +184,50 @@ function isRenderable(project = {}) {
 	return Boolean(isAirtableRecordId(project.id) && project.name);
 }
 
-async function airtableJson(env, url) {
-	const response = await fetch(url, { headers: { Authorization: `Bearer ${env.AIRTABLE_API_KEY}`, Accept: "application/json" } });
+function isUnknownFieldError(error) {
+	const text = `${error?.message || ""} ${error?.body || ""}`;
+	return /unknown field|unknown_field|unknown_field_name|invalid field|field name/i.test(text);
+}
+
+function buildProjectFields(payload = {}, authContext = {}, env = {}) {
+	const team = activeTeamForCreate(authContext);
+	const fields = {
+		Name: displayText(payload.name || payload.Name || ""),
+		Description: displayText(payload.description || payload.Description || ""),
+		Phase: displayText(payload.phase || payload.Phase || "Discovery"),
+		Status: displayText(payload.status || payload.Status || "Planning research"),
+		Objectives: splitList(payload.objectives || payload.Objectives || "", /\r?\n|[|]/).join("\n"),
+		UserGroups: splitList(payload.user_groups || payload.UserGroups || payload["User Groups"] || "", /\r?\n|[|,]/).join(", "),
+		Stakeholders: JSON.stringify(parseStakeholders(payload.stakeholders || payload.Stakeholders || [])),
+	};
+
+	const teamName = displayText(team?.name || team?.teamName || team?.team_name || payload.teamName || payload.team_name || payload.org || "");
+	const teamId = displayText(team?.id || team?.teamId || team?.team_id || payload.teamId || payload.team_id || "");
+	const teamNameField = env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name";
+	const teamIdField = env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID";
+	if (teamName) fields[teamNameField] = teamName;
+	if (teamId) fields[teamIdField] = teamId;
+	return fields;
+}
+
+function buildProjectDetailFields(payload = {}, projectRecordId) {
+	const fields = {
+		Project: [projectRecordId],
+	};
+	const leadResearcher = displayText(payload.lead_researcher || payload["Lead Researcher"] || "");
+	const leadEmail = displayText(payload.lead_researcher_email || payload["Lead Researcher Email"] || "");
+	const notes = displayText(payload.notes || payload.Notes || "");
+	if (leadResearcher) fields["Lead Researcher"] = leadResearcher;
+	if (leadEmail) fields["Lead Researcher Email"] = leadEmail;
+	if (notes) fields.Notes = notes;
+	return Object.keys(fields).length > 1 ? fields : null;
+}
+
+async function airtableJson(env, url, options = {}) {
+	const headers = new Headers(options.headers || {});
+	if (!headers.has("Authorization")) headers.set("Authorization", `Bearer ${env.AIRTABLE_API_KEY}`);
+	if (!headers.has("Accept")) headers.set("Accept", "application/json");
+	const response = await fetch(url, { ...options, headers });
 	const text = await response.text();
 	let data = {};
 	try {
@@ -187,7 +235,7 @@ async function airtableJson(env, url) {
 	} catch {
 		data = {};
 	}
-	if (!response.ok) throw Object.assign(new Error(data?.error?.message || data?.error?.type || `airtable_http_${response.status}`), { status: response.status });
+	if (!response.ok) throw Object.assign(new Error(data?.error?.message || data?.error?.type || `airtable_http_${response.status}`), { status: response.status, body: text });
 	return data;
 }
 
@@ -208,6 +256,19 @@ async function airtableRecords(env, tableName, searchParams = new URLSearchParam
 	} while (offset && page < MAX_AIRTABLE_PAGES);
 
 	return records;
+}
+
+async function createProjectDetails(env, payload = {}, projectRecordId) {
+	if (!env.AIRTABLE_TABLE_DETAILS) return null;
+	const fields = buildProjectDetailFields(payload, projectRecordId);
+	if (!fields) return null;
+	const table = encodeURIComponent(env.AIRTABLE_TABLE_DETAILS);
+	const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ records: [{ fields }] }),
+	});
+	return data.records?.[0] || null;
 }
 
 async function joinDetails(env, projects = []) {
@@ -258,6 +319,63 @@ async function syncActiveProjectsToD1(env, projects = []) {
 		}
 	} catch {
 		/* Cache sync must not block the authoritative Airtable response. */
+	}
+}
+
+export async function createProjectRecord(request, env, authContext = {}) {
+	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
+	if (!canStartProject(authContext)) return json({ ok: false, error: "forbidden", detail: "You do not have permission to start a research project." }, 403);
+
+	const body = await request.arrayBuffer();
+	if (body.byteLength > MAX_JSON_BODY_BYTES) return json({ ok: false, error: "Payload too large" }, 413);
+
+	let payload = {};
+	try {
+		payload = JSON.parse(new TextDecoder().decode(body));
+	} catch {
+		return json({ ok: false, error: "Invalid JSON" }, 400);
+	}
+
+	const fields = buildProjectFields(payload, authContext, env);
+	if (!fields.Name) return json({ ok: false, error: "Project name is required" }, 400);
+
+	try {
+		const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
+		const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ records: [{ fields }] }),
+		});
+		const record = data.records?.[0];
+		if (!record?.id) return json({ ok: false, error: "Project create failed" }, 502);
+
+		let detailRecord = null;
+		let detailWarning = null;
+		try {
+			detailRecord = await createProjectDetails(env, payload, record.id);
+		} catch (error) {
+			detailWarning = isUnknownFieldError(error) ? "project_detail_fields_missing" : "project_detail_create_failed";
+		}
+
+		const project = mapProject(record);
+		const detailFields = detailRecord?.fields || {};
+		return json(
+			{
+				ok: true,
+				project: {
+					...project,
+					lead_researcher: displayText(detailFields["Lead Researcher"] || payload.lead_researcher || payload["Lead Researcher"] || ""),
+					lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
+					notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
+				},
+				detailWarning,
+			},
+			201,
+			{ "x-rops-source": "airtable" },
+		);
+	} catch (error) {
+		if (isUnknownFieldError(error)) return json({ ok: false, error: "project_team_fields_missing", detail: "Airtable rejected the configured project team fields." }, 500);
+		return json({ ok: false, error: `Airtable ${error?.status || 500}`, detail: displayText(error?.message || error) }, error?.status || 500);
 	}
 }
 
