@@ -71,13 +71,26 @@ Local parser check performed before commit:
 node --check /mnt/data/project-dashboard.js
 ```
 
-### Start project client change prepared
+### Start project client
+
+Committed `public/pages/start/start-new-project.js` to:
+
+- stop sending hard-coded `org: Home Office Biometrics`
+- submit to the configured API origin rather than assuming the same origin
+- include credentials so the Worker can attach the active team context server-side
+
+Local parser check performed before commit:
+
+```bash
+node --check /mnt/data/start-new-project.js
+```
+
+### Next implementation unit
 
 Next implementation unit:
 
-- update `public/pages/start/start-new-project.js` to stop sending hard-coded `org: Home Office Biometrics`
-- submit to the configured API origin rather than assuming the same origin
-- include credentials so the Worker can attach the active team context server-side
+- update route-state tests to capture the new project visibility, direct-read and credentialed-fetch contracts
+- update `visual-walkthrough.operational-fixtures.mjs` so mock projects include team fields and direct project reads
 
 Expected validation later:
 
