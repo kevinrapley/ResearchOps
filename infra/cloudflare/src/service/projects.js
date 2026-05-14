@@ -13,11 +13,13 @@ import { fetchWithTimeout, toMs, safeText } from "../core/utils.js";
 /* ───────────────────────── CSV fallback helpers ───────────────────────── */
 
 function parseCsv(text) {
-	const lines = String(text || "").split(/\r?\n/).filter(l => l.trim().length);
+	const lines = String(text || "")
+		.split(/\r?\n/)
+		.filter((line) => line.trim().length);
 	if (!lines.length) return [];
-	const headers = lines[0].split(",").map(h => h.trim());
-	return lines.slice(1).map(line => {
-		const cols = line.split(",").map(c => c.trim());
+	const headers = lines[0].split(",").map((header) => header.trim());
+	return lines.slice(1).map((line) => {
+		const cols = line.split(",").map((col) => col.trim());
 		const obj = {};
 		for (let i = 0; i < headers.length; i++) obj[headers[i]] = cols[i] ?? "";
 		return obj;
@@ -39,45 +41,55 @@ async function fetchProjectsCsvFromGitHub(env) {
 	if (!res.ok) {
 		throw Object.assign(new Error("github_csv_fetch_failed"), {
 			status: res.status,
-			body: safeText(body)
+			body: safeText(body),
 		});
 	}
 	return parseCsv(body);
 }
 
 function coerceCsvRowToProject(r = {}) {
-	const id = r.id || r.ID || r.Id || r.LocalId || r.localId || "";
+	const airtableId = displayText(r.AirtableId || r.airtableId || r.RecordId || r.recordId || "");
+	const id = publicProjectId(r, { id: airtableId });
 	let stakeholders = [];
-	try { stakeholders = r.Stakeholders ? JSON.parse(r.Stakeholders) : []; } catch { /* noop */ }
+	try {
+		stakeholders = r.Stakeholders ? JSON.parse(r.Stakeholders) : [];
+	} catch {
+		/* noop */
+	}
 
 	const teamNames = normaliseTeamNames(r);
 	const teamIds = normaliseTeamIds(r);
 	const teamName = teamNames[0] || "";
 
 	return {
-		id: String(id),
-		name: r.Name || "",
-		description: r.Description || "",
-		"rops:servicePhase": r.Phase || "",
-		"rops:projectStatus": r.Status || "",
-		objectives: normaliseLines(r.Objectives || ""),
+		id,
+		pid: id,
+		localId: id,
+		LocalId: id,
+		airtableId,
+		recordId: airtableId,
+		name: displayText(r.Name || r["Project Name"] || r.Title || ""),
+		description: displayText(r.Description || r.Summary || ""),
+		"rops:servicePhase": displayText(r.Phase || r["Service Phase"] || ""),
+		"rops:projectStatus": displayText(r.Status || r["Project Status"] || ""),
+		objectives: normaliseLines(r.Objectives || r["Research Objectives"] || ""),
 		user_groups: normaliseUserGroups(r.UserGroups || r["User Groups"] || ""),
-		stakeholders,
-		createdAt: r.CreatedAt || r.createdTime || "",
+		stakeholders: normaliseStakeholders(stakeholders),
+		createdAt: displayText(r.CreatedAt || r.createdTime || ""),
 		team_ids: teamIds,
 		teamIds,
 		teamNames,
 		teamName,
 		team_name: teamName,
 		team: teamName,
-		org: teamName || r.Org || r.org || ""
+		org: teamName || displayText(r.Org || r.org || ""),
 	};
 }
 
 /* ───────────────────────── Shared helpers ───────────────────────── */
 
 function requireEnv(ctx, keys) {
-	const miss = keys.filter(k => !ctx?.env?.[k]);
+	const miss = keys.filter((key) => !ctx?.env?.[key]);
 	if (miss.length) throw new Error(`Missing env: ${miss.join(", ")}`);
 }
 
@@ -85,14 +97,14 @@ function jsonHeaders(ctx, origin, extra = {}) {
 	return {
 		...ctx.corsHeaders(origin),
 		"content-type": "application/json; charset=utf-8",
-		...extra
+		...extra,
 	};
 }
 
 function airtableHeaders(ctx) {
 	return {
-		"Authorization": `Bearer ${ctx.env.AIRTABLE_API_KEY}`,
-		"Accept": "application/json"
+		Authorization: `Bearer ${ctx.env.AIRTABLE_API_KEY}`,
+		Accept: "application/json",
 	};
 }
 
@@ -136,9 +148,25 @@ function tryJson(value) {
 	}
 }
 
-function normaliseLines(value) {
-	if (Array.isArray(value)) return unique(value);
-	return unique(String(value || "").split(/\r?\n|[|]/));
+function looksLikeStructuredValue(value) {
+	const text = String(value || "").trim();
+	if (!text) return false;
+	return (
+		/^_?\s*[{[]/.test(text) ||
+		/"{1,3}email"{1,3}\s*:/i.test(text) ||
+		/"{1,3}role"{1,3}\s*:/i.test(text) ||
+		/"{1,3}name"{1,3}\s*:/i.test(text) ||
+		/^[}\]]+$/.test(text)
+	);
+}
+
+function displayText(value) {
+	if (Array.isArray(value) || (value && typeof value === "object")) return "";
+	const text = String(value || "")
+		.trim()
+		.replace(/^_+(?=\s*[{[])/, "");
+	if (!text || looksLikeStructuredValue(text)) return "";
+	return text;
 }
 
 function labelFromObject(item = {}) {
@@ -152,36 +180,65 @@ function labelFromObject(item = {}) {
 		item.text,
 		item.Text,
 		item.value,
-		item.Value
+		item.Value,
 	);
+}
+
+function labelFromContentObject(item = {}) {
+	return firstPresent(item.label, item.Label, item.title, item.Title, item.text, item.Text, item.value, item.Value);
 }
 
 function looksLikeIdentityFragment(value) {
 	const text = String(value || "").trim();
 	if (!text) return false;
-	return /"?EMAIL"?\s*:/i.test(text) ||
+	return (
+		/"?EMAIL"?\s*:/i.test(text) ||
 		/"?email"?\s*:/i.test(text) ||
+		/"?role"?\s*:/i.test(text) ||
+		/"{1,3}EMAIL"{1,3}\s*:/i.test(text) ||
+		/"{1,3}email"{1,3}\s*:/i.test(text) ||
+		/"{1,3}role"{1,3}\s*:/i.test(text) ||
 		/^[}\]]+$/.test(text) ||
 		/^[{[]/.test(text) ||
-		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text))
+	);
+}
+
+function normaliseLines(value) {
+	const parsed = tryJson(value);
+	if (parsed) return normaliseLines(parsed);
+
+	if (Array.isArray(value)) return unique(value.flatMap((item) => normaliseLines(item)));
+
+	if (value && typeof value === "object") {
+		const label = displayText(labelFromContentObject(value));
+		return label ? [label] : [];
+	}
+
+	return unique(
+		String(value || "")
+			.split(/\r?\n|[|]/)
+			.map((item) => displayText(item))
+			.filter((item) => item && !looksLikeIdentityFragment(item)),
+	);
 }
 
 function normaliseLabelList(value) {
 	const parsed = tryJson(value);
 	if (parsed) return normaliseLabelList(parsed);
 
-	if (Array.isArray(value)) return unique(value.flatMap(item => normaliseLabelList(item)));
+	if (Array.isArray(value)) return unique(value.flatMap((item) => normaliseLabelList(item)));
 
 	if (value && typeof value === "object") {
-		const label = labelFromObject(value);
+		const label = displayText(labelFromContentObject(value) || labelFromObject(value));
 		return label && !looksLikeIdentityFragment(label) ? [label] : [];
 	}
 
 	return unique(
 		String(value || "")
 			.split(/\r?\n|[|,]/)
-			.map(item => item.trim())
-			.filter(item => item && !looksLikeIdentityFragment(item))
+			.map((item) => displayText(item))
+			.filter((item) => item && !looksLikeIdentityFragment(item)),
 	);
 }
 
@@ -195,11 +252,13 @@ function normaliseStakeholders(value) {
 
 	if (!Array.isArray(list)) return [];
 
-	return list.map(item => ({
-		name: String(item?.name || item?.Name || "").trim(),
-		role: String(item?.role || item?.Role || "").trim(),
-		email: String(item?.email || item?.Email || item?.EMAIL || "").trim()
-	})).filter(item => item.name || item.role || item.email);
+	return list
+		.map((item) => ({
+			name: displayText(item?.name || item?.Name || ""),
+			role: displayText(item?.role || item?.Role || ""),
+			email: String(item?.email || item?.Email || item?.EMAIL || "").trim(),
+		}))
+		.filter((item) => item.name || item.role || item.email);
 }
 
 function valuesFromFieldValue(value) {
@@ -207,16 +266,16 @@ function valuesFromFieldValue(value) {
 	if (parsed) return valuesFromFieldValue(parsed);
 	if (Array.isArray(value)) return value.flatMap(valuesFromFieldValue);
 	if (value && typeof value === "object") {
-		const id = firstPresent(value.id, value.ID);
-		const label = labelFromObject(value);
+		const id = displayText(firstPresent(value.id, value.ID));
+		const label = displayText(labelFromObject(value));
 		return [id, label].filter(Boolean);
 	}
-	const text = String(value || "").trim();
+	const text = displayText(value);
 	return text ? [text] : [];
 }
 
 function valuesFromFields(fields = {}, names = []) {
-	return names.flatMap(name => valuesFromFieldValue(fields[name]));
+	return names.flatMap((name) => valuesFromFieldValue(fields[name]));
 }
 
 function isAirtableRecordId(value) {
@@ -224,20 +283,22 @@ function isAirtableRecordId(value) {
 }
 
 function normaliseTeamIds(fields = {}) {
-	return unique(valuesFromFields(fields, [
-		"Team ID",
-		"Team IDs",
-		"TeamId",
-		"TeamIds",
-		"team_id",
-		"team_ids",
-		"Team",
-		"Teams",
-		"Project Team",
-		"Project Teams",
-		"Owning Team",
-		"Owning Teams"
-	]).filter(value => normaliseKey(value).startsWith("team-") || isAirtableRecordId(value)));
+	return unique(
+		valuesFromFields(fields, [
+			"Team ID",
+			"Team IDs",
+			"TeamId",
+			"TeamIds",
+			"team_id",
+			"team_ids",
+			"Team",
+			"Teams",
+			"Project Team",
+			"Project Teams",
+			"Owning Team",
+			"Owning Teams",
+		]).filter((value) => normaliseKey(value).startsWith("team-") || isAirtableRecordId(value)),
+	);
 }
 
 function normaliseTeamNames(fields = {}) {
@@ -257,28 +318,42 @@ function normaliseTeamNames(fields = {}) {
 		"Project Team Name",
 		"Project Team Names",
 		"Owning Team Name",
-		"Owning Team Names"
+		"Owning Team Names",
 	]);
 
-	const linkedNames = valuesFromFields(fields, [
-		"Team",
-		"Teams",
-		"Project Team",
-		"Project Teams",
-		"Owning Team",
-		"Owning Teams"
-	]).filter(value => !isAirtableRecordId(value) && !normaliseKey(value).startsWith("team-"));
+	const linkedNames = valuesFromFields(fields, ["Team", "Teams", "Project Team", "Project Teams", "Owning Team", "Owning Teams"]).filter(
+		(value) => !isAirtableRecordId(value) && !normaliseKey(value).startsWith("team-"),
+	);
 
-	return unique([...explicitNames, ...linkedNames]);
+	return unique([...explicitNames, ...linkedNames]).filter((value) => !looksLikeIdentityFragment(value));
+}
+
+function publicProjectId(fields = {}, record = {}) {
+	return displayText(
+		firstPresent(
+			fields.PID,
+			fields.Pid,
+			fields.pid,
+			fields["Project ID"],
+			fields.ProjectID,
+			fields.projectId,
+			fields.LocalId,
+			fields.localId,
+			record.localId,
+			record.LocalId,
+			record.id,
+		),
+	);
+}
+
+function isRenderableProject(project = {}) {
+	return Boolean(project.id && project.name && !looksLikeStructuredValue(project.name));
 }
 
 function teamsForAuthContext(authContext = {}) {
-	return [
-		...(authContext.teamMemberships || []),
-		...(authContext.memberTeams || []),
-		...(authContext.teams || []),
-		authContext.activeTeam
-	].filter(Boolean);
+	return [...(authContext.teamMemberships || []), ...(authContext.memberTeams || []), ...(authContext.teams || []), authContext.activeTeam].filter(
+		Boolean,
+	);
 }
 
 function isResearchOpsCoreTeam(team = {}) {
@@ -292,27 +367,19 @@ function isResearchOpsCoreMember(authContext = {}) {
 }
 
 function authTeamKeys(authContext = {}) {
-	return new Set(teamsForAuthContext(authContext).flatMap(team => [
-		team.id,
-		team.teamId,
-		team.team_id,
-		team.name,
-		team.teamName,
-		team.team_name,
-		team.label
-	].map(normaliseKey).filter(Boolean)));
+	return new Set(
+		teamsForAuthContext(authContext)
+			.flatMap((team) => [team.id, team.teamId, team.team_id, team.name, team.teamName, team.team_name, team.label].map(normaliseKey))
+			.filter(Boolean),
+	);
 }
 
 function projectTeamKeys(project = {}) {
-	return new Set([
-		...(project.team_ids || []),
-		...(project.teamIds || []),
-		...(project.teamNames || []),
-		project.teamName,
-		project.team_name,
-		project.team,
-		project.org
-	].map(normaliseKey).filter(Boolean));
+	return new Set(
+		[...(project.team_ids || []), ...(project.teamIds || []), ...(project.teamNames || []), project.teamName, project.team_name, project.team, project.org]
+			.map(normaliseKey)
+			.filter(Boolean),
+	);
 }
 
 function userCanSeeProject(project = {}, authContext = {}) {
@@ -329,14 +396,14 @@ function userCanSeeProject(project = {}, authContext = {}) {
 }
 
 function permissionsForAuthContext(authContext = {}) {
-	return new Set((authContext.permissions || []).map(permission => permission.code).filter(Boolean));
+	return new Set((authContext.permissions || []).map((permission) => permission.code).filter(Boolean));
 }
 
 function canStartProject(authContext = {}) {
 	if (isResearchOpsCoreMember(authContext)) return true;
 	if (permissionsForAuthContext(authContext).has("governed.create")) return true;
 
-	return (authContext.roles || []).some(role => {
+	return (authContext.roles || []).some((role) => {
 		const key = role.key || role.roleKey;
 		return key === "researcher" || key === "user_researcher" || key === "research_lead";
 	});
@@ -349,27 +416,34 @@ function activeTeamForCreate(authContext = {}) {
 
 function mapProject(r) {
 	const f = r?.fields || {};
+	const airtableId = displayText(r?.id || "");
+	const id = publicProjectId(f, { id: airtableId });
 	const teamNames = normaliseTeamNames(f);
 	const teamIds = normaliseTeamIds(f);
 	const teamName = teamNames[0] || "";
 
 	return {
-		id: r.id,
-		name: f.Name || "",
-		description: f.Description || "",
-		"rops:servicePhase": f.Phase || "",
-		"rops:projectStatus": f.Status || "",
-		objectives: normaliseLines(f.Objectives || ""),
+		id,
+		pid: id,
+		localId: id,
+		LocalId: id,
+		airtableId,
+		recordId: airtableId,
+		name: displayText(f.Name || f["Project Name"] || f.Title || ""),
+		description: displayText(f.Description || f.Summary || ""),
+		"rops:servicePhase": displayText(f.Phase || f["Service Phase"] || ""),
+		"rops:projectStatus": displayText(f.Status || f["Project Status"] || ""),
+		objectives: normaliseLines(f.Objectives || f["Research Objectives"] || ""),
 		user_groups: normaliseUserGroups(f.UserGroups || f["User Groups"] || ""),
 		stakeholders: normaliseStakeholders(f.Stakeholders || []),
-		createdAt: r.createdTime || f.CreatedAt || "",
+		createdAt: displayText(r.createdTime || f.CreatedAt || f["Created At"] || ""),
 		team_ids: teamIds,
 		teamIds,
 		teamNames,
 		teamName,
 		team_name: teamName,
 		team: teamName,
-		org: teamName || f.Org || f.org || ""
+		org: teamName || displayText(f.Org || f.org || ""),
 	};
 }
 
@@ -384,8 +458,8 @@ function compareProjects(a = {}, b = {}) {
 	if (an < bn) return -1;
 	if (an > bn) return 1;
 
-	const ai = String(a.id || a.LocalId || "");
-	const bi = String(b.id || b.LocalId || "");
+	const ai = String(a.id || a.LocalId || a.airtableId || "");
+	const bi = String(b.id || b.LocalId || b.airtableId || "");
 	return ai.localeCompare(bi);
 }
 
@@ -393,15 +467,59 @@ async function readAirtableJson(ctx, url, options = {}) {
 	const res = await fetchWithTimeout(url, options, ctx.cfg.TIMEOUT_MS);
 	const text = await res.text();
 	let data;
-	try { data = JSON.parse(text); } catch { data = {}; }
+	try {
+		data = JSON.parse(text);
+	} catch {
+		data = {};
+	}
 
 	if (!res.ok) {
 		throw Object.assign(new Error(data?.error?.message || data?.error?.type || `airtable_http_${res.status}`), {
 			status: res.status,
-			body: text
+			body: text,
 		});
 	}
 	return data;
+}
+
+async function readProjectRecords(ctx, limit = 100, view) {
+	requireEnv(ctx, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
+	const base = ctx.env.AIRTABLE_BASE_ID;
+	const tProjects = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
+	let atUrl = `https://api.airtable.com/v0/${base}/${tProjects}?pageSize=${limit}`;
+	if (view) atUrl += `&view=${encodeURIComponent(view)}`;
+	const pData = await readAirtableJson(ctx, atUrl, {
+		headers: airtableHeaders(ctx),
+		signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS),
+	});
+	return Array.isArray(pData.records) ? pData.records : [];
+}
+
+async function findProjectRecord(ctx, projectId) {
+	const id = displayText(projectId);
+	if (!id) {
+		throw Object.assign(new Error("missing_project_id"), { status: 400 });
+	}
+
+	if (isAirtableRecordId(id)) {
+		const base = ctx.env.AIRTABLE_BASE_ID;
+		const tProjects = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
+		return readAirtableJson(ctx, `https://api.airtable.com/v0/${base}/${tProjects}/${encodeURIComponent(id)}`, {
+			headers: airtableHeaders(ctx),
+			signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS),
+		});
+	}
+
+	const records = await readProjectRecords(ctx, 100);
+	const found = records.find((record) => {
+		const project = mapProject(record);
+		return [project.id, project.pid, project.localId, project.LocalId, project.airtableId, project.recordId].filter(Boolean).includes(id);
+	});
+
+	if (!found) {
+		throw Object.assign(new Error("project_not_found"), { status: 404 });
+	}
+	return found;
 }
 
 async function joinLatestProjectDetails(ctx, projects = []) {
@@ -411,33 +529,33 @@ async function joinLatestProjectDetails(ctx, projects = []) {
 		const dUrl = `https://api.airtable.com/v0/${base}/${tDetails}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
 		const dData = await readAirtableJson(ctx, dUrl, {
 			headers: airtableHeaders(ctx),
-			signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
+			signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS),
 		});
 
 		const detailsByProject = new Map();
-		for (const r of (dData.records || [])) {
+		for (const r of dData.records || []) {
 			const f = r.fields || {};
 			const linked = Array.isArray(f.Project) && f.Project[0];
 			if (!linked) continue;
 			const existing = detailsByProject.get(linked);
 			if (!existing || toMs(r.createdTime) > toMs(existing._createdAt)) {
 				detailsByProject.set(linked, {
-					lead_researcher: f["Lead Researcher"] || "",
-					lead_researcher_email: f["Lead Researcher Email"] || "",
-					notes: f.Notes || "",
-					_createdAt: r.createdTime || ""
+					lead_researcher: displayText(f["Lead Researcher"] || ""),
+					lead_researcher_email: displayText(f["Lead Researcher Email"] || ""),
+					notes: displayText(f.Notes || ""),
+					_createdAt: r.createdTime || "",
 				});
 			}
 		}
 
-		return projects.map(project => {
-			const details = detailsByProject.get(project.id);
+		return projects.map((project) => {
+			const details = detailsByProject.get(project.airtableId || project.recordId || project.id);
 			return details ? { ...project, ...details } : project;
 		});
 	} catch (error) {
 		ctx.log.warn("airtable.details.join.fail", {
 			status: error?.status || 0,
-			detail: String(error?.message || error).slice(0, 160)
+			detail: String(error?.message || error).slice(0, 160),
 		});
 		return projects;
 	}
@@ -446,17 +564,17 @@ async function joinLatestProjectDetails(ctx, projects = []) {
 function createProjectFields(payload = {}, authContext = {}, ctx = {}) {
 	const team = activeTeamForCreate(authContext);
 	const fields = {
-		Name: String(payload.name || payload.Name || "").trim(),
-		Description: String(payload.description || payload.Description || "").trim(),
-		Phase: String(payload.phase || payload.Phase || "Discovery").trim(),
-		Status: String(payload.status || payload.Status || "Planning research").trim(),
+		Name: displayText(payload.name || payload.Name || ""),
+		Description: displayText(payload.description || payload.Description || ""),
+		Phase: displayText(payload.phase || payload.Phase || "Discovery"),
+		Status: displayText(payload.status || payload.Status || "Planning research"),
 		Objectives: normaliseLines(payload.objectives || payload.Objectives || "").join("\n"),
 		UserGroups: normaliseUserGroups(payload.user_groups || payload.UserGroups || payload["User Groups"] || "").join(", "),
-		Stakeholders: JSON.stringify(normaliseStakeholders(payload.stakeholders || payload.Stakeholders || []))
+		Stakeholders: JSON.stringify(normaliseStakeholders(payload.stakeholders || payload.Stakeholders || [])),
 	};
 
-	const teamName = String(team?.name || team?.teamName || payload.teamName || payload.team_name || payload.org || "").trim();
-	const teamId = String(team?.id || team?.teamId || payload.teamId || payload.team_id || "").trim();
+	const teamName = displayText(team?.name || team?.teamName || payload.teamName || payload.team_name || payload.org || "");
+	const teamId = displayText(team?.id || team?.teamId || payload.teamId || payload.team_id || "");
 	const teamNameField = ctx.env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name";
 	const teamIdField = ctx.env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID";
 
@@ -480,20 +598,9 @@ export async function listProjectsFromAirtable(ctx, origin, url, authContext = {
 	const attemptAirtable = async () => {
 		requireEnv(ctx, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_TABLE_DETAILS", "AIRTABLE_API_KEY"]);
 
-		const base = ctx.env.AIRTABLE_BASE_ID;
-		const tProjects = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
-
-		let atUrl = `https://api.airtable.com/v0/${base}/${tProjects}?pageSize=${limit}`;
-		if (view) atUrl += `&view=${encodeURIComponent(view)}`;
-
-		const pData = await readAirtableJson(ctx, atUrl, {
-			headers: airtableHeaders(ctx),
-			signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
-		});
-
-		let projects = (Array.isArray(pData.records) ? pData.records : []).map(mapProject);
-		projects = await joinLatestProjectDetails(ctx, projects);
-		projects = projects.filter(project => userCanSeeProject(project, authContext));
+		let projects = readProjectRecords(ctx, limit, view).then((records) => records.map(mapProject).filter(isRenderableProject));
+		projects = await joinLatestProjectDetails(ctx, await projects);
+		projects = projects.filter((project) => userCanSeeProject(project, authContext));
 		projects.sort(compareProjects);
 
 		return { projects, source: "airtable" };
@@ -505,14 +612,12 @@ export async function listProjectsFromAirtable(ctx, origin, url, authContext = {
 	} catch (airErr) {
 		ctx.log.warn("airtable.list.failed_fallback_to_csv", {
 			status: airErr?.status ?? 0,
-			detail: String(airErr?.message || airErr).slice(0, 200)
+			detail: String(airErr?.message || airErr).slice(0, 200),
 		});
 
 		try {
 			const rows = await fetchProjectsCsvFromGitHub(ctx.env);
-			let projects = rows
-				.map(coerceCsvRowToProject)
-				.filter(project => userCanSeeProject(project, authContext));
+			let projects = rows.map(coerceCsvRowToProject).filter(isRenderableProject).filter((project) => userCanSeeProject(project, authContext));
 			if (projects.length > limit) projects = projects.slice(0, limit);
 			projects.sort(compareProjects);
 			payload = { projects, source: "csv" };
@@ -524,11 +629,11 @@ export async function listProjectsFromAirtable(ctx, origin, url, authContext = {
 					detail: "Airtable and CSV fallback both failed",
 					upstream: {
 						github_status: csvErr?.status ?? 0,
-						github_detail: safeText(csvErr?.body || csvErr?.message || String(csvErr)).slice(0, 200)
-					}
+						github_detail: safeText(csvErr?.body || csvErr?.message || String(csvErr)).slice(0, 200),
+					},
 				},
 				500,
-				jsonHeaders(ctx, origin, { "x-rops-source": "none" })
+				jsonHeaders(ctx, origin, { "x-rops-source": "none" }),
 			);
 		}
 	}
@@ -537,10 +642,10 @@ export async function listProjectsFromAirtable(ctx, origin, url, authContext = {
 		{
 			ok: true,
 			projects: payload.projects,
-			canStartProject: canStartProject(authContext)
+			canStartProject: canStartProject(authContext),
 		},
 		200,
-		jsonHeaders(ctx, origin, { "x-rops-source": payload.source })
+		jsonHeaders(ctx, origin, { "x-rops-source": payload.source }),
 	);
 }
 
@@ -552,10 +657,10 @@ export async function createProjectInAirtable(ctx, request, origin, authContext 
 			{
 				ok: false,
 				error: "forbidden",
-				detail: "You do not have permission to start a research project."
+				detail: "You do not have permission to start a research project.",
 			},
 			403,
-			jsonHeaders(ctx, origin)
+			jsonHeaders(ctx, origin),
 		);
 	}
 
@@ -589,18 +694,18 @@ export async function createProjectInAirtable(ctx, request, origin, authContext 
 			method: "POST",
 			headers: {
 				...airtableHeaders(ctx),
-				"Content-Type": "application/json"
+				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ records: [{ fields }] })
+			body: JSON.stringify({ records: [{ fields }] }),
 		});
 
 		return ctx.json(
 			{
 				ok: true,
-				project: mapProject(data.records?.[0])
+				project: mapProject(data.records?.[0]),
 			},
 			201,
-			jsonHeaders(ctx, origin, { "x-rops-source": "airtable" })
+			jsonHeaders(ctx, origin, { "x-rops-source": "airtable" }),
 		);
 	} catch (error) {
 		if (isUnknownFieldError(error)) {
@@ -608,26 +713,26 @@ export async function createProjectInAirtable(ctx, request, origin, authContext 
 				{
 					ok: false,
 					error: "project_team_fields_missing",
-					detail: "Airtable rejected the configured project team fields."
+					detail: "Airtable rejected the configured project team fields.",
 				},
 				500,
-				jsonHeaders(ctx, origin)
+				jsonHeaders(ctx, origin),
 			);
 		}
 
 		ctx.log.error("airtable.project.create.fail", {
 			status: error?.status || 500,
-			detail: String(error?.message || error).slice(0, 160)
+			detail: String(error?.message || error).slice(0, 160),
 		});
 
 		return ctx.json(
 			{
 				ok: false,
 				error: `Airtable ${error?.status || 500}`,
-				detail: safeText(error?.message || error)
+				detail: safeText(error?.message || error),
 			},
 			error?.status || 500,
-			jsonHeaders(ctx, origin)
+			jsonHeaders(ctx, origin),
 		);
 	}
 }
@@ -645,19 +750,10 @@ export async function getProjectById(ctx, origin, projectId, authContext = {}) {
 		return ctx.json({ ok: false, error: String(e?.message || e) }, 500, jsonHeaders(ctx, origin));
 	}
 
-	const base = ctx.env.AIRTABLE_BASE_ID;
-	const tProjects = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
-
-	const pUrl = `https://api.airtable.com/v0/${base}/${tProjects}/${encodeURIComponent(projectId)}`;
-
 	try {
-		const rec = await readAirtableJson(ctx, pUrl, {
-			headers: airtableHeaders(ctx),
-			signal: AbortSignal.timeout(ctx.cfg.TIMEOUT_MS)
-		});
-
+		const rec = await findProjectRecord(ctx, projectId);
 		let project = mapProject(rec);
-		if (!userCanSeeProject(project, authContext)) {
+		if (!isRenderableProject(project) || !userCanSeeProject(project, authContext)) {
 			return ctx.json({ ok: false, error: "Project not found" }, 404, jsonHeaders(ctx, origin));
 		}
 
@@ -669,17 +765,17 @@ export async function getProjectById(ctx, origin, projectId, authContext = {}) {
 		if (status !== 404) {
 			ctx.log.error("airtable.project.read.fail", {
 				status,
-				detail: String(error?.message || error).slice(0, 160)
+				detail: String(error?.message || error).slice(0, 160),
 			});
 		}
 		return ctx.json(
 			{
 				ok: false,
 				error: status === 404 ? "Project not found" : `Airtable ${status}`,
-				detail: status === 404 ? undefined : safeText(error?.message || error)
+				detail: status === 404 ? undefined : safeText(error?.message || error),
 			},
 			status,
-			jsonHeaders(ctx, origin)
+			jsonHeaders(ctx, origin),
 		);
 	}
 }
@@ -697,8 +793,26 @@ export async function updateProjectFraming(ctx, request, origin, projectId, auth
 		return ctx.json({ ok: false, error: String(e?.message || e) }, 500, jsonHeaders(ctx, origin));
 	}
 
-	const readable = await getProjectById(ctx, origin, projectId, authContext);
-	if (readable.status === 404) return readable;
+	let record;
+	let existingProject;
+	try {
+		record = await findProjectRecord(ctx, projectId);
+		existingProject = mapProject(record);
+	} catch (error) {
+		const status = error?.status === 404 ? 404 : error?.status || 500;
+		return ctx.json(
+			{
+				ok: false,
+				error: status === 404 ? "Project not found" : `Airtable ${status}`,
+			},
+			status,
+			jsonHeaders(ctx, origin),
+		);
+	}
+
+	if (!isRenderableProject(existingProject) || !userCanSeeProject(existingProject, authContext)) {
+		return ctx.json({ ok: false, error: "Project not found" }, 404, jsonHeaders(ctx, origin));
+	}
 
 	const body = await request.arrayBuffer();
 	if (body.byteLength > ctx.cfg.MAX_BODY_BYTES) {
@@ -724,29 +838,38 @@ export async function updateProjectFraming(ctx, request, origin, projectId, auth
 	const base = ctx.env.AIRTABLE_BASE_ID;
 	const table = encodeURIComponent(ctx.env.AIRTABLE_TABLE_PROJECTS);
 	const atUrl = `https://api.airtable.com/v0/${base}/${table}`;
+	const recordId = record.id;
 
-	const res = await fetchWithTimeout(atUrl, {
-		method: "PATCH",
-		headers: {
-			...airtableHeaders(ctx),
-			"Content-Type": "application/json"
+	const res = await fetchWithTimeout(
+		atUrl,
+		{
+			method: "PATCH",
+			headers: {
+				...airtableHeaders(ctx),
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ records: [{ id: recordId, fields }] }),
 		},
-		body: JSON.stringify({ records: [{ id: projectId, fields }] })
-	}, ctx.cfg.TIMEOUT_MS);
+		ctx.cfg.TIMEOUT_MS,
+	);
 
 	const text = await res.text();
 	if (!res.ok) {
 		ctx.log.error("airtable.project.update.fail", {
 			status: res.status,
-			detail: safeText(text).slice(0, 160)
+			detail: safeText(text).slice(0, 160),
 		});
 		return ctx.json({ ok: false, error: `Airtable ${res.status}`, detail: safeText(text) }, res.status, jsonHeaders(ctx, origin));
 	}
 
 	let data;
-	try { data = JSON.parse(text); } catch { data = { records: [] }; }
-	const project = mapProject(data.records?.[0] || { id: projectId, fields });
+	try {
+		data = JSON.parse(text);
+	} catch {
+		data = { records: [] };
+	}
+	const project = mapProject(data.records?.[0] || { id: recordId, fields: { ...(record.fields || {}), ...fields } });
 
-	if (ctx.env.AUDIT === "true") ctx.log.info("project.framing.updated", { projectId, fields: Object.keys(fields) });
+	if (ctx.env.AUDIT === "true") ctx.log.info("project.framing.updated", { projectId: project.id, airtableId: recordId, fields: Object.keys(fields) });
 	return ctx.json({ ok: true, project }, 200, jsonHeaders(ctx, origin, { "x-rops-source": "airtable" }));
 }
