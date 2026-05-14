@@ -4,8 +4,18 @@
  * @summary Projects list UI with team-scoped API data.
  */
 
+function resolveApiBase() {
+	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
+
+function apiUrl(path) {
+	const cleanPath = path.startsWith("/") ? path : `/${path}`;
+	return `${CONFIG.API_BASE}${cleanPath}`;
+}
+
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || (location.hostname.endsWith("pages.dev") ? "https://rops-api.digikev-kevin-rapley.workers.dev" : location.origin),
+	API_BASE: resolveApiBase(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 	SHOW_SOURCE_NOTE: false
@@ -136,7 +146,7 @@ function normaliseProject(p) {
 }
 
 async function listProjects() {
-	const { ok, status, data } = await fetchWithTimeout(`${CONFIG.API_BASE}/api/projects`);
+	const { ok, status, data } = await fetchWithTimeout(apiUrl("/api/projects"));
 	if (!ok || !data?.ok) throw new Error(`Project list failed (${status})`);
 
 	return {
