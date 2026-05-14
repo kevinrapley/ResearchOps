@@ -11,12 +11,17 @@
 }
 
 /* ───────── Config: single source of truth for API origin ───────── */
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+function resolveApiBase() {
+	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
+
+function apiUrl(path) {
+	const cleanPath = path.startsWith("/") ? path : `/${path}`;
+	return `${API_ORIGIN}${cleanPath}`;
+}
+
+const API_ORIGIN = resolveApiBase();
 
 /**
  * @typedef {Object} UIProject
@@ -127,7 +132,7 @@ function normaliseStakeholders(value) {
 }
 
 function normaliseProject(p = {}) {
-	const publicId = firstPresent(p.id, p.pid, p.PID, p.LocalId, p.localId);
+	const publicId = firstPresent(p.id, p.airtableId, p.recordId);
 	const teamName = firstPresent(
 		p.teamName,
 		p.team_name,
@@ -140,7 +145,7 @@ function normaliseProject(p = {}) {
 	return {
 		id: publicId,
 		localId: firstPresent(p.localId, p.LocalId, publicId),
-		airtableId: firstPresent(p.airtableId, p.recordId),
+		airtableId: firstPresent(p.airtableId, p.recordId, publicId),
 		name: p.name || p.Name || "",
 		description: p.description || p.Description || "",
 		org: teamName || "Unassigned team",
@@ -156,7 +161,7 @@ function normaliseProject(p = {}) {
 }
 
 async function loadProject(projectId) {
-	const url = `${API_ORIGIN}/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`;
+	const url = apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`);
 	const res = await fetch(url, {
 		cache: "no-store",
 		credentials: "include",
@@ -182,7 +187,7 @@ async function loadProject(projectId) {
 }
 
 async function loadStudies(projectId) {
-	const url = `${API_ORIGIN}/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`;
+	const url = apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`);
 	const res = await fetch(url, {
 		cache: "no-store",
 		credentials: "include",
@@ -394,7 +399,7 @@ function setStatus(id, message, isError = false) {
 async function saveProjectPatch(payload) {
 	if (!currentProject?.id) throw new Error("Missing project id");
 
-	const res = await fetch(`${API_ORIGIN}/api/projects/${encodeURIComponent(currentProject.id)}`, {
+	const res = await fetch(apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`), {
 		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		credentials: "include",
