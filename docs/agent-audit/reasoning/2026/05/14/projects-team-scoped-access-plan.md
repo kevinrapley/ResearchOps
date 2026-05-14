@@ -68,6 +68,14 @@ Skipped bundles:
 - `.agent-operating-model/bundles/mcp-agent-tooling/`
 - `.agent-operating-model/bundles/mural-public-api/`
 
+## Role consultation checkpoint
+
+A structured role consultation transcript has been created at:
+
+`docs/agent-audit/reasoning/2026/05/14/projects-team-scoped-access-role-consultation.md`
+
+This checkpoint was added because the plan must show the consultation, not only state that role files were read.
+
 ## Bundle and role input applied
 
 GitHub Diamond requires discovery before change, approved branch prefixes, trace capture on `fix/`, small commits, and no fabricated validation evidence.
@@ -85,6 +93,19 @@ Multi-functional team roles add the following concerns:
 - QA: make behaviour testable and validation evidence explicit.
 - Governance: maintain auditable access-control decisions.
 - Privacy: avoid logging or rendering unnecessary personal data.
+
+## Plan adjustments from role consultation
+
+The role transcript changed the controlling plan in these ways:
+
+1. Server-side access enforcement must happen before card display repair.
+2. The card label should use user-facing `Team` language, not implementation labels such as `Org`, `team_id` or Airtable field names.
+3. Projects without a resolvable team should be visible only to ResearchOps Core.
+4. Malformed `UserGroups` values must be treated as privacy-sensitive and filtered without logging raw values.
+5. The Start research project action must be gated both in the UI and in `POST /api/projects`.
+6. The dashboard must fetch `/api/projects/:id` directly rather than load all visible projects and search client-side.
+7. Route-state validation must cover access routing, credentialed fetches, unsafe fallbacks, malformed user-group rendering and dashboard direct reads.
+8. Rollback remains non-destructive, with no D1 or Airtable schema migration in this fix.
 
 ## Initial files inspected
 
@@ -122,9 +143,9 @@ The visual walkthrough fixture mocks project reads. It does not create live Airt
 
 ## Change plan
 
-### Commit 1 — Trace plan
+### Commit 1 — Trace plan and role consultation
 
-Create this trace markdown file and the matching machine-readable JSON file before code changes.
+Create this trace markdown file, the matching machine-readable JSON file, and the explicit role-consultation transcript before code changes.
 
 ### Commit 2 — Server-side project access contract
 
@@ -218,6 +239,12 @@ Created the branch after operating-model bootstrap.
 Created initial audit trace plan before code changes.
 
 Created matching machine-readable JSON trace.
+
+### 2026-05-14 — Role consultation added
+
+Created `projects-team-scoped-access-role-consultation.md` as an explicit transcript-style consultation with GOV.UK Design System and multi-functional team roles.
+
+Updated this trace so the role discussion visibly adjusts the plan.
 
 ### 2026-05-14 — Server routing change prepared
 
