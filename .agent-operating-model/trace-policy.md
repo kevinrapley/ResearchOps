@@ -36,13 +36,13 @@ Always record reasoning traces for repository-affecting work on branches that st
 - `fix/`
 - `perf/`
 
-Do not require reasoning traces for branches that start with:
+Do not record reasoning traces for branches that start with:
 
 - `hotfix/`
 
 A `hotfix/` branch is reserved for urgent operational repair where trace generation could slow a time-critical fix. The absence of a trace on a `hotfix/` branch must not be used to broaden the scope of that branch.
 
-The legacy `[reasoning]` prompt token remains allowed as an explicit trace request, but it is no longer the only trigger. If the branch prefix requires traces, traces are required even when the user does not type `[reasoning]`.
+The legacy `[reasoning]` prompt token remains allowed as an explicit trace request for trace-eligible branches, but it is no longer the only trigger. If the branch prefix requires traces, traces are required even when the user does not type `[reasoning]`.
 
 ## Trace layers
 
