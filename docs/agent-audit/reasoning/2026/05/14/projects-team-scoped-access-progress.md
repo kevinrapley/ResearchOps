@@ -134,7 +134,7 @@ Committed `RECENT_LEARNINGS.md` entries for:
 
 Local parser checks were performed on generated replacement files in the tool environment as listed above.
 
-Full repository validation was not executed in this chat tool path.
+Full repository validation was not executed in this chat tool path before opening the draft PR.
 
 Mapped validation commands for CI or local checkout:
 
@@ -149,4 +149,50 @@ npm test -- --ci
 npm run validate
 ```
 
-The PR should remain draft until CI validates formatting, linting, route-state tests and the wider repository suite.
+### 2026-05-14 — PR check repair pass
+
+Observed failing checks on draft PR #252 after the initial PR creation:
+
+- CI
+- Worker CI
+- Validate ResearchOps
+- Release Gate
+
+Initial unit-test failures were traced to:
+
+- `tests/auth-foundation-route-state.test.js`
+- `tests/project-dashboard-route-state.test.js`
+- `tests/projects-route-contract.test.js`
+
+Implemented repair commits for:
+
+- explicit scoped project authentication error responses in `infra/cloudflare/src/worker.js`
+- the existing auth-foundation route-state import expectation by splitting the `access-scoped` imports
+- stale project dashboard route-state expectations after the dashboard moved to direct `/api/projects/:id` reads
+- authenticated `/api/projects` route contract fixtures after the project list became protected by scoped auth context
+- D1 mock support for both `.bind().all()` and direct `.all()` calls used by the scoped auth resolver
+
+Observed validation state on head `28dae214d14392946eeabee47d034bfe344885fc` before the trace-sync commit:
+
+- CI: success
+- Worker CI: success
+- Validate ResearchOps: success
+- Release Gate: success
+- Format pull request: success
+- QA broken links: success
+- Accessibility audit: success
+- BDD: success
+
+### 2026-05-14 — Trace JSON sync
+
+The machine-readable trace JSON had fallen behind the markdown plan and this progress log.
+
+Updated `projects-team-scoped-access-plan.json` so it records:
+
+- completed implementation units
+- the browser-side CSV fallback access-control pivot
+- product documentation and recent learning updates
+- the PR check repair pass
+- the observed green validation state for head `28dae214d14392946eeabee47d034bfe344885fc`
+
+This trace-sync commit creates a newer PR head, so CI must be checked again after the commit lands.
