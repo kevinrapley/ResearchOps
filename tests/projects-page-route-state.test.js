@@ -21,21 +21,9 @@ function excludes(source, text, label) {
 includes(pageSource, "href=\"/css/screen.css\"", "Projects page");
 includes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "Projects page");
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "Projects page");
-includes(
-	pageSource,
-	"href=\"/css/projects.css?v=projects-dashboard-action-20260501\"",
-	"Projects page"
-);
-includes(
-	pageSource,
-	"rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-	"Projects page"
-);
-includes(
-	pageSource,
-	"src=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-	"Projects page"
-);
+includes(pageSource, "href=\"/css/projects.css?v=projects-pid-data-20260514\"", "Projects page");
+includes(pageSource, "rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-pid-data-20260514\"", "Projects page");
+includes(pageSource, "src=\"/js/projects-page.js?v=projects-pid-data-20260514\"", "Projects page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "Projects page");
 includes(pageSource, "class=\"govuk-skip-link\" href=\"#main-content\"", "Projects page");
 includes(pageSource, "class=\"govuk-service-navigation\"", "Projects page");
