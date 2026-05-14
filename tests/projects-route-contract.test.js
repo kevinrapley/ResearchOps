@@ -102,66 +102,77 @@ function membershipTeamRows() {
 	];
 }
 
+function allRowsForSql(sql) {
+	if (sql.includes("FROM auth_team_memberships m") && sql.includes("membershipSource")) {
+		return membershipTeamRows();
+	}
+
+	if (sql.includes("FROM auth_team_memberships m") && sql.includes("most_recent_role_approved_at")) {
+		return membershipTeamRows();
+	}
+
+	if (sql.includes("'role_assignment' AS membershipSource")) {
+		return [];
+	}
+
+	if (sql.includes("SELECT id, name") && sql.includes("FROM auth_teams")) {
+		return [{ id: TEST_TEAM_ID, name: TEST_TEAM_NAME }];
+	}
+
+	if (sql.includes("SELECT DISTINCT t.id, t.name") && sql.includes("p.code = 'role.assign'")) {
+		return [{ id: TEST_TEAM_ID, name: TEST_TEAM_NAME }];
+	}
+
+	if (sql.includes("SELECT r.role_key")) {
+		return roleRows();
+	}
+
+	if (sql.includes("SELECT DISTINCT p.code")) {
+		return permissionRows();
+	}
+
+	return [];
+}
+
+function firstRowForSql(sql) {
+	if (sql.includes("FROM auth_sessions s INNER JOIN auth_users u")) {
+		return {
+			session_id: "ses_project_contract",
+			id: TEST_USER_ID,
+			email: "researcher@example.test",
+			display_name: "Researcher Example",
+			account_status: "active",
+		};
+	}
+
+	if (sql.includes("SELECT ra.id") && sql.includes("ResearchOps Core Team")) {
+		return { id: "ra_core_admin" };
+	}
+
+	return null;
+}
+
+function createMockStatement(sql, args = []) {
+	return {
+		bind(...nextArgs) {
+			return createMockStatement(sql, nextArgs);
+		},
+		async first() {
+			return firstRowForSql(sql);
+		},
+		async all() {
+			return { results: allRowsForSql(sql) };
+		},
+		async run() {
+			return { success: true, meta: { changes: 1 }, args };
+		},
+	};
+}
+
 function createMockD1() {
 	return {
 		prepare(sql) {
-			return {
-				bind(...args) {
-					return {
-						async first() {
-							if (sql.includes("FROM auth_sessions s INNER JOIN auth_users u")) {
-								return {
-									session_id: "ses_project_contract",
-									id: TEST_USER_ID,
-									email: "researcher@example.test",
-									display_name: "Researcher Example",
-									account_status: "active",
-								};
-							}
-
-							if (sql.includes("SELECT ra.id") && sql.includes("ResearchOps Core Team")) {
-								return { id: "ra_core_admin" };
-							}
-
-							return null;
-						},
-						async all() {
-							if (sql.includes("FROM auth_team_memberships m") && sql.includes("membershipSource")) {
-								return { results: membershipTeamRows() };
-							}
-
-							if (sql.includes("FROM auth_team_memberships m") && sql.includes("most_recent_role_approved_at")) {
-								return { results: membershipTeamRows() };
-							}
-
-							if (sql.includes("'role_assignment' AS membershipSource")) {
-								return { results: [] };
-							}
-
-							if (sql.includes("SELECT id, name") && sql.includes("FROM auth_teams")) {
-								return { results: [{ id: TEST_TEAM_ID, name: TEST_TEAM_NAME }] };
-							}
-
-							if (sql.includes("SELECT DISTINCT t.id, t.name") && sql.includes("p.code = 'role.assign'")) {
-								return { results: [{ id: TEST_TEAM_ID, name: TEST_TEAM_NAME }] };
-							}
-
-							if (sql.includes("SELECT r.role_key")) {
-								return { results: roleRows() };
-							}
-
-							if (sql.includes("SELECT DISTINCT p.code")) {
-								return { results: permissionRows() };
-							}
-
-							return { results: [] };
-						},
-						async run() {
-							return { success: true, meta: { changes: 1 }, args };
-						},
-					};
-				},
-			};
+			return createMockStatement(sql);
 		},
 	};
 }
