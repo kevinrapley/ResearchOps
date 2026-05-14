@@ -1,7 +1,7 @@
 /**
  * @file public/js/projects-page.js
  * @module ProjectsPage
- * @summary Projects list UI with Airtable-first read and team-scoped API data.
+ * @summary Projects list UI with team-scoped API data.
  */
 
 const CONFIG = Object.freeze({
@@ -47,49 +47,6 @@ function safeJsonArray(value) {
 	}
 }
 
-function parseCSV(text) {
-	const rows = [];
-	let row = [];
-	let field = "";
-	let inQuotes = false;
-
-	for (let i = 0; i < text.length; i++) {
-		const c = text[i];
-		const n = text[i + 1];
-		if (inQuotes) {
-			if (c === '"' && n === '"') {
-				field += '"';
-				i++;
-			} else if (c === '"') {
-				inQuotes = false;
-			} else {
-				field += c;
-			}
-		} else if (c === '"') {
-			inQuotes = true;
-		} else if (c === ',') {
-			row.push(field);
-			field = "";
-		} else if (c === "\r") {
-			continue;
-		} else if (c === "\n") {
-			row.push(field);
-			rows.push(row);
-			row = [];
-			field = "";
-		} else {
-			field += c;
-		}
-	}
-
-	if (field.length || row.length) {
-		row.push(field);
-		rows.push(row);
-	}
-
-	return rows;
-}
-
 function looksLikeIdentityFragment(value) {
 	const text = String(value || "").trim();
 	if (!text) return false;
@@ -118,39 +75,6 @@ function firstPresent(...values) {
 		if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
 	}
 	return "";
-}
-
-function mapProjectRow(header, row) {
-	const idx = name => header.indexOf(name);
-	const get = name => {
-		const i = idx(name);
-		return i >= 0 ? (row[i] ?? "") : "";
-	};
-
-	let stakeholders = [];
-	try {
-		stakeholders = JSON.parse(get("Stakeholders") || "[]");
-	} catch {
-		stakeholders = [];
-	}
-
-	const teamName = firstPresent(get("Team Name"), get("Project Team"), get("Owning Team"), get("Org"));
-
-	return {
-		id: get("LocalId") || undefined,
-		name: get("Name"),
-		description: get("Description"),
-		stakeholders,
-		objectives: normaliseList(get("Objectives") || "", /\r?\n|[|]/),
-		user_groups: normaliseList(get("UserGroups") || "", /\r?\n|[|,]/),
-		createdAt: get("CreatedAt") || "",
-		"rops:servicePhase": get("Phase") || "Discovery",
-		"rops:projectStatus": get("Status") || "Planning research",
-		teamName,
-		team_name: teamName,
-		team: teamName,
-		org: teamName
-	};
 }
 
 async function fetchWithTimeout(url) {
@@ -209,38 +133,15 @@ function normaliseProject(p) {
 	};
 }
 
-async function listFromAirtable() {
+async function listProjects() {
 	const { ok, status, data } = await fetchWithTimeout(`${CONFIG.API_BASE}/api/projects`);
-	if (!ok || !data?.ok) throw new Error(`Airtable list failed (${status})`);
+	if (!ok || !data?.ok) throw new Error(`Project list failed (${status})`);
+
 	return {
+		source: "api",
 		projects: (data.projects || []).map(normaliseProject),
 		canStartProject: Boolean(data.canStartProject)
 	};
-}
-
-async function listFromCsv() {
-	const response = await fetch(`${CONFIG.API_BASE}/api/projects.csv`, {
-		cache: CONFIG.CACHE,
-		credentials: "include"
-	});
-	if (!response.ok) throw new Error(`CSV fetch failed (${response.status})`);
-	const rows = parseCSV(await response.text());
-	if (!rows.length) return [];
-	const [headerRow, ...dataRows] = rows;
-	const header = headerRow.map(h => (h || "").trim());
-	return dataRows
-		.filter(r => r && r.some(cell => (cell || "").trim().length))
-		.map(r => mapProjectRow(header, r));
-}
-
-async function listProjects() {
-	try {
-		const { projects, canStartProject } = await listFromAirtable();
-		return { source: "airtable", projects, canStartProject };
-	} catch (error) {
-		console.warn("[ProjectsPage] Falling back to CSV", error);
-		return { source: "csv", projects: await listFromCsv(), canStartProject: false };
-	}
 }
 
 function projectDashboardHref(projectId) {
@@ -347,6 +248,5 @@ function render(projects, source, canStartProject = false) {
 
 window.__rops = Object.freeze({
 	CONFIG,
-	parseCSV,
 	toMs
 });
