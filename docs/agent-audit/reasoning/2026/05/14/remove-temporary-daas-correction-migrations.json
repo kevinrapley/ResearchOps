@@ -1,0 +1,66 @@
+{
+	"schemaVersion": "researchops-agent-trace-summary/v1",
+	"traceType": "operational-audit",
+	"date": "2026-05-14",
+	"branch": "fix/remove-temporary-daas-correction-migration",
+	"pullRequest": 251,
+	"scope": [
+		"temporary-migration-cleanup",
+		"worker-deploy-workflow-cleanup",
+		"route-state-test-cleanup"
+	],
+	"evidenceBoundary": {
+		"privateChainOfThoughtExposed": false,
+		"summary": "This trace records the observable cleanup work after the DaaS account correction had already been applied to preview and production D1."
+	},
+	"trigger": {
+		"summary": "PR #250 corrected the DaaS account data in both preview and production. The repository still contained temporary SQL migrations and deploy workflow hooks that should not become permanent fixtures.",
+		"observedIssues": [
+			"The auth data correction migration remained under infra/cloudflare/migrations.",
+			"The preview-only data correction migration remained under infra/cloudflare/migrations/preview.",
+			"The deploy workflow still referenced and applied those temporary correction files.",
+			"Route-state tests still asserted that the temporary correction files existed."
+		]
+	},
+	"changes": [
+		{
+			"area": "deploy-workflow",
+			"path": ".github/workflows/deploy-worker.yml",
+			"changes": [
+				"Removed AUTH_DATA_CORRECTION_MIGRATION from workflow environment variables.",
+				"Removed PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION from workflow environment variables.",
+				"Removed the production D1 execute step for the temporary auth correction migration.",
+				"Removed the preview D1 execute step for the temporary preview correction migration."
+			]
+		},
+		{
+			"area": "migrations",
+			"paths": [
+				"infra/cloudflare/migrations/0006_correct_research_operations_user_daas_team.sql",
+				"infra/cloudflare/migrations/preview/0002_correct_research_operations_user_daas_team.sql"
+			],
+			"changes": [
+				"Deleted the one-off production/auth correction migration.",
+				"Deleted the one-off preview correction migration."
+			]
+		},
+		{
+			"area": "tests",
+			"path": "tests/auth-registration-requests-route-state.test.js",
+			"changes": [
+				"Removed file reads for the deleted correction migrations.",
+				"Removed assertions requiring deploy workflow correction variables.",
+				"Removed assertions requiring the deleted SQL files and their audit event names."
+			]
+		}
+	],
+	"validation": {
+		"initialFailure": "CI and Release Gate failed because the 2026-05-14 trace directory was missing.",
+		"fix": "Added this JSON trace under docs/agent-audit/reasoning/2026/05/14.",
+		"expectedResult": "The agent trace coverage test should find today's trace directory and at least one JSON trace artefact."
+	},
+	"residualRisks": [
+		"This cleanup does not change D1 data. It only removes the temporary mechanism that applied the already-completed correction.",
+		"If the DaaS account data is ever lost again, it should be corrected through a deliberate operational data fix rather than by reintroducing these temporary migrations."
+	]
+}
