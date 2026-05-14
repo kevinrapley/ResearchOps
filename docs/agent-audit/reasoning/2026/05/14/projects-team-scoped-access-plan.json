@@ -13,7 +13,6 @@
 		"route-state-validation"
 	],
 	"evidenceBoundary": {
-		"privateChainOfThoughtExposed": false,
 		"summary": "This trace records observable repository work, files read or changed, implementation decisions, validation evidence, pivots and residual risks."
 	},
 	"correctiveBranchBehaviour": {
@@ -52,14 +51,33 @@
 			"openai",
 			"mcp-agent-tooling",
 			"mural-public-api"
+		]
+	},
+	"roleConsultation": {
+		"transcriptPath": "docs/agent-audit/reasoning/2026/05/14/projects-team-scoped-access-role-consultation.md",
+		"rolesConsulted": [
+			"govuk-design-system/designer",
+			"govuk-design-system/developer",
+			"govuk-design-system/content-designer",
+			"govuk-design-system/accessibility-specialist",
+			"govuk-design-system/qa",
+			"multi-functional-team/product-management",
+			"multi-functional-team/user-research",
+			"multi-functional-team/research-operations",
+			"multi-functional-team/developer",
+			"multi-functional-team/quality-assurance",
+			"multi-functional-team/governance",
+			"multi-functional-team/privacy"
 		],
-		"precedence": [
-			"GitHub governs branch hygiene, PR discipline, validation evidence and trace capture.",
-			"ResearchOps Developer Control governs platform architecture and route-state tests.",
-			"Multi-Functional Team governs public-sector service assurance and role input.",
-			"GOV.UK Design System governs UI, content, link behaviour and accessibility.",
-			"Cloudflare governs Worker routing and runtime behaviour.",
-			"Airtable Public API governs record-shape and schema-write safety."
+		"planAdjustments": [
+			"Server-side access enforcement happens before card display repair.",
+			"The card label uses user-facing Team language, not implementation labels.",
+			"Projects without a resolvable team are visible only to ResearchOps Core.",
+			"Malformed UserGroups values are treated as privacy-sensitive and filtered without logging raw values.",
+			"Start research project is gated in both the UI and POST /api/projects.",
+			"The dashboard fetches /api/projects/:id directly rather than searching all listed projects.",
+			"Route-state tests cover access routing, credentialed fetches, unsafe fallbacks, malformed user groups and direct dashboard reads.",
+			"Rollback remains non-destructive with no D1 or Airtable migration in this fix."
 		]
 	},
 	"initialFindings": [
@@ -74,7 +92,7 @@
 	"plannedCommits": [
 		{
 			"id": 1,
-			"summary": "Create trace Markdown and JSON before code changes."
+			"summary": "Create trace Markdown, trace JSON and role consultation transcript before code changes."
 		},
 		{
 			"id": 2,
@@ -135,6 +153,10 @@
 		{
 			"date": "2026-05-14",
 			"event": "Initial plan created before code changes."
+		},
+		{
+			"date": "2026-05-14",
+			"event": "Role consultation transcript created and linked into the controlling plan before implementation resumes."
 		}
 	]
 }
