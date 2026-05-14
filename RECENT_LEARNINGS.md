@@ -2,6 +2,22 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-14 — Access-control filtering must stay server-side
+
+Context: The projects page needed to show only projects within a user's team memberships, while ResearchOps Core needed oversight across all teams. An early client-side fallback path could have read `/api/projects.csv` directly if `/api/projects` failed.
+
+Learning: Project visibility is an access-control rule, not a rendering preference. Client-side fallbacks that bypass the scoped API can leak unfiltered data even when the main API route is correct.
+
+Action: Keep access-controlled lists behind server routes that receive authenticated context. If a fallback source exists, apply it inside the server-side service layer after resolving user context. Do not add browser-side fallbacks to raw CSV or static data for access-controlled records.
+
+## 2026-05-14 — Role consultation must be visible when requested
+
+Context: The projects team-scoped access branch consulted GOV.UK Design System and multi-functional team role files, but the first pass only summarised the effect of that consultation. The user expected a transcript-style role discussion that visibly informed the plan and was captured in documentation.
+
+Learning: When a task explicitly asks for input from operating-model roles, reading role files is not enough. The branch needs an auditable role-consultation artefact that records the question, role perspectives, disagreements or trade-offs, and the changes made to the implementation plan.
+
+Action: Create a role consultation transcript under `docs/agent-audit/reasoning/` before implementation resumes. Link it from the main trace plan. Carry the resulting plan adjustments into product notes and validation criteria.
+
 ## 2026-05-14 — Trace capture must be branch-driven, not prompt-token-driven
 
 Context: Agent traces were previously treated as something the user had to trigger by adding `[reasoning]` to a prompt. This created avoidable gaps because repository-affecting branch work could proceed without an auditable trace unless the user remembered the token.
