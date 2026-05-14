@@ -43,6 +43,7 @@ npm run agent:model -- "<task text>"
 npm run agent:evals
 npm run agent:bundles:validate
 npm run agent:model:validate
+npm run trace:coverage
 ```
 
 ## Selection model
@@ -81,6 +82,31 @@ Each entry should include:
 
 When the lesson changes a bundle rule, update both the relevant bundle and `RECENT_LEARNINGS.md`.
 
-## Trace rule
+## Branch and trace rule
 
-When the user includes `[reasoning]`, the agent must create a user-readable audit trace and a machine-readable summary. The trace must record operating model loading, task signals, bundle selection, canonical bundle directories, implementation activity, validation evidence, issues and pivots.
+Repository work branches must start with one of:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+- `hotfix/`
+
+Do not use unapproved prefixes such as `claude/`, `codex/`, `bugfix/` or `experiment/`.
+
+The mainline branches `main` and `master` are exempt from work-branch prefix checks.
+
+Always create user-readable and machine-readable audit traces for repository-affecting work on branches starting with:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+
+Do not require traces on `hotfix/` branches.
+
+The legacy `[reasoning]` token remains allowed as an explicit trace request, but branch prefix is now the primary trigger. The user does not need to type `[reasoning]` for traces to be required on trace-required branch prefixes.
+
+The trace must record operating model loading, task signals, bundle selection, canonical bundle directories, implementation activity, validation evidence, issues and pivots.

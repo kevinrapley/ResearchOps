@@ -1,8 +1,48 @@
 # Operating model trace policy
 
-When a user prompt includes `[reasoning]`, the agent must create an auditable trace for the repository-affecting work.
+Agents must create auditable traces for repository-affecting work based on branch posture, not only when the prompt includes `[reasoning]`.
 
 The trace must be a structured audit record. It must not expose private chain-of-thought.
+
+## Branch naming policy
+
+Repository work branches must start with exactly one of these prefixes:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+- `hotfix/`
+
+Do not use any other work-branch prefix.
+
+For example, do not create or continue branches such as:
+
+- `claude/...`
+- `codex/...`
+- `bugfix/...`
+- `experiment/...`
+
+The mainline branches `main` and `master` are exempt from work-branch prefix checks.
+
+## Trace trigger policy
+
+Always record reasoning traces for repository-affecting work on branches that start with:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+
+Do not record reasoning traces for branches that start with:
+
+- `hotfix/`
+
+A `hotfix/` branch is reserved for urgent operational repair where trace generation could slow a time-critical fix. The absence of a trace on a `hotfix/` branch must not be used to broaden the scope of that branch.
+
+The legacy `[reasoning]` prompt token remains allowed as an explicit trace request for trace-eligible branches, but it is no longer the only trigger. If the branch prefix requires traces, traces are required even when the user does not type `[reasoning]`.
 
 ## Trace layers
 
@@ -36,6 +76,7 @@ The user-readable trace must record:
 
 - run metadata
 - original task summary
+- branch name and branch-prefix trace decision
 - corrected branch behaviour if any branch was abandoned or recreated
 - operating-model files loaded
 - canonical bundle directories selected
@@ -88,3 +129,13 @@ docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.json
 The promotion tool validates the raw JSONL trace before writing audit artefacts. Invalid traces must not be promoted.
 
 Promotion reports must summarise event evidence. They must not expose private chain-of-thought.
+
+## Enforcement
+
+`npm run trace:coverage` enforces the branch-prefix policy.
+
+The coverage check must fail when a work branch uses an unapproved prefix.
+
+The coverage check must require a promoted `.json` trace for branches starting with `feature/`, `chore/`, `test/`, `fix/` or `perf/`.
+
+The coverage check must skip trace coverage for `hotfix/` branches while still allowing the branch name.

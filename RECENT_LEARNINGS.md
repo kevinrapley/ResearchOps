@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-14 — Trace capture must be branch-driven, not prompt-token-driven
+
+Context: Agent traces were previously treated as something the user had to trigger by adding `[reasoning]` to a prompt. This created avoidable gaps because repository-affecting branch work could proceed without an auditable trace unless the user remembered the token.
+
+Learning: Trace capture is part of repository governance. It should be determined by branch posture, not by user memory. Normal development branch classes need traces by default. Urgent `hotfix/` branches are the only approved branch class that does not require trace capture.
+
+Action: Work branches must start with `feature/`, `chore/`, `test/`, `fix/`, `perf/` or `hotfix/`. Always record traces on `feature/`, `chore/`, `test/`, `fix/` and `perf/`. Do not require traces on `hotfix/`. Do not create or continue unapproved branch prefixes such as `claude/`, `codex/`, `bugfix/` or `experiment/`.
+
 ## 2026-05-13 — Account dashboards must adapt to the user's access shape
 
 Context: The account dashboard correctly retrieved team and role data, but the first successful design presented all team, role and permission data in a table. That was visually heavy and made a single-team account look as complex as a multi-team account.

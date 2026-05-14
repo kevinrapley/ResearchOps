@@ -1,39 +1,63 @@
 /**
  * @file assert-trace-coverage.mjs
  * @module AssertTraceCoverage
- * @summary Asserts that at least one promoted trace .json file exists for
- * the given date when agent-significant operating-model changes are present.
+ * @summary Enforces ResearchOps branch-prefix governance and trace coverage.
  *
  * Usage:
  *   node scripts/agent-trace/assert-trace-coverage.mjs [--date YYYY-MM-DD]
  *
  * If --date is omitted the check uses today (UTC).
  *
- * Agent-significant paths are changes under:
- *   .agent-operating-model/bundles/
- *   .agent-operating-model/selection-rules.json
- *   .agent-operating-model/task-signal-catalog.json
- *   .agent-operating-model/behavioural-evals.json
+ * Work branches must use one of these prefixes:
+ *   feature/
+ *   chore/
+ *   test/
+ *   fix/
+ *   perf/
+ *   hotfix/
  *
- * When no agent-significant changes are detected the check exits 0 without
- * requiring traces. When agent-significant changes are detected and no trace
- * .json files exist for the target date the check exits 1.
+ * Trace coverage is required for:
+ *   feature/
+ *   chore/
+ *   test/
+ *   fix/
+ *   perf/
  *
- * Git diff strategy (first successful result wins):
- *   1. git diff origin/<GITHUB_BASE_REF>...HEAD  (PR context, GitHub Actions)
- *   2. git diff origin/main...HEAD               (local / push-to-main context)
- *   3. git diff HEAD~1 HEAD                      (last-resort fallback)
+ * Trace coverage is not required for:
+ *   hotfix/
  *
- * If all git commands fail the check assumes agent-significant changes are
- * present (safe default — fail open rather than silently skip).
+ * Mainline branch names are exempt from work-branch prefix checks:
+ *   main
+ *   master
+ *
+ * The legacy [reasoning] token is not required for trace coverage. Branch
+ * posture determines whether an auditable trace is required.
  */
 
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+export const ALLOWED_WORK_BRANCH_PREFIXES = Object.freeze([
+  "feature/",
+  "chore/",
+  "test/",
+  "fix/",
+  "perf/",
+  "hotfix/",
+]);
+
+export const TRACE_REQUIRED_BRANCH_PREFIXES = Object.freeze([
+  "feature/",
+  "chore/",
+  "test/",
+  "fix/",
+  "perf/",
+]);
+
+const MAINLINE_BRANCHES = new Set(["main", "master"]);
 const AGENT_PATH_RE =
-  /^\.agent-operating-model\/(bundles\/|selection-rules\.json|task-signal-catalog\.json|behavioural-evals\.json)/;
+  /^\.agent-operating-model\/(bundles\/|selection-rules\.json|task-signal-catalog\.json|behavioural-evals\.json|trace-policy\.md|README\.md)/;
 
 function todayUTC() {
   return new Date().toISOString().slice(0, 10);
@@ -42,6 +66,101 @@ function todayUTC() {
 function parseDateArg() {
   const idx = process.argv.indexOf("--date");
   return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : todayUTC();
+}
+
+function stripPrefix(value, prefix) {
+  return value.startsWith(prefix) ? value.slice(prefix.length) : value;
+}
+
+/**
+ * Normalise branch references from GitHub Actions and local Git output.
+ * @param {string | undefined | null} input Raw branch reference.
+ * @returns {string}
+ */
+export function normaliseBranchName(input) {
+  if (!input) return "";
+
+  let branch = String(input).trim();
+  branch = stripPrefix(branch, "refs/heads/");
+  branch = stripPrefix(branch, "origin/");
+
+  return branch;
+}
+
+/**
+ * Return the branch name from the current environment.
+ * @returns {string}
+ */
+export function currentBranchName() {
+  const envBranch =
+    process.env.GITHUB_HEAD_REF ||
+    process.env.GITHUB_REF_NAME ||
+    process.env.BRANCH_NAME ||
+    process.env.CI_COMMIT_REF_NAME;
+
+  if (envBranch) return normaliseBranchName(envBranch);
+
+  try {
+    return normaliseBranchName(
+      execSync("git branch --show-current", {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      }).trim(),
+    );
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Derive trace policy from the current branch name.
+ * @param {string} branchName Branch name or ref.
+ * @returns {{ branch: string, allowed: boolean, requiresTrace: boolean, reason: string, prefix?: string, allowedPrefixes?: string[] }}
+ */
+export function branchTracePolicy(branchName) {
+  const branch = normaliseBranchName(branchName);
+
+  if (!branch) {
+    return {
+      branch,
+      allowed: true,
+      requiresTrace: false,
+      reason: "unknown-branch",
+    };
+  }
+
+  if (MAINLINE_BRANCHES.has(branch)) {
+    return {
+      branch,
+      allowed: true,
+      requiresTrace: false,
+      reason: "mainline-branch",
+    };
+  }
+
+  const prefix = ALLOWED_WORK_BRANCH_PREFIXES.find((candidate) =>
+    branch.startsWith(candidate),
+  );
+
+  if (!prefix) {
+    return {
+      branch,
+      allowed: false,
+      requiresTrace: false,
+      reason: "invalid-prefix",
+      allowedPrefixes: [...ALLOWED_WORK_BRANCH_PREFIXES],
+    };
+  }
+
+  const requiresTrace = TRACE_REQUIRED_BRANCH_PREFIXES.includes(prefix);
+
+  return {
+    branch,
+    allowed: true,
+    prefix,
+    requiresTrace,
+    reason: requiresTrace ? "trace-required-prefix" : "hotfix-no-trace",
+  };
 }
 
 /**
@@ -94,25 +213,11 @@ function changedFiles() {
     }
   }
 
-  // All git commands failed — skip the check rather than block unrelated PRs.
-  console.warn("trace:coverage: git diff unavailable — skipping trace coverage check");
+  console.warn("trace:coverage: git diff unavailable — falling back to branch policy only");
   return [];
 }
 
-const isMain = process.argv[1] === fileURLToPath(import.meta.url);
-
-if (isMain) {
-  const date = parseDateArg();
-  const files = changedFiles();
-  const agentChanges = files.filter((f) => AGENT_PATH_RE.test(f));
-
-  if (agentChanges.length === 0) {
-    console.log("trace:coverage: no agent-significant changes — trace coverage check skipped");
-    process.exit(0);
-  }
-
-  console.log(`trace:coverage: ${agentChanges.length} agent-significant file(s) changed`);
-
+function assertTraceExists(date) {
   const dir = traceDirForDate(date);
   const result = checkTraceDir(dir);
 
@@ -127,4 +232,42 @@ if (isMain) {
   }
 
   console.log(`trace:coverage: ${result.count} trace(s) in ${dir} — coverage confirmed`);
+}
+
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isMain) {
+  const date = parseDateArg();
+  const branch = currentBranchName();
+  const policy = branchTracePolicy(branch);
+
+  if (!policy.allowed) {
+    console.error(`trace:coverage: invalid branch prefix for ${policy.branch}`);
+    console.error(`trace:coverage: allowed prefixes: ${policy.allowedPrefixes.join(", ")}`);
+    process.exit(1);
+  }
+
+  if (policy.requiresTrace) {
+    console.log(
+      `trace:coverage: branch ${policy.branch} uses ${policy.prefix} and requires an audit trace`,
+    );
+    assertTraceExists(date);
+    process.exit(0);
+  }
+
+  if (policy.reason === "hotfix-no-trace") {
+    console.log(`trace:coverage: branch ${policy.branch} is hotfix/ — trace coverage skipped`);
+    process.exit(0);
+  }
+
+  const files = changedFiles();
+  const agentChanges = files.filter((f) => AGENT_PATH_RE.test(f));
+
+  if (agentChanges.length === 0) {
+    console.log("trace:coverage: no trace-required branch or agent-significant changes — trace coverage check skipped");
+    process.exit(0);
+  }
+
+  console.log(`trace:coverage: ${agentChanges.length} agent-significant file(s) changed`);
+  assertTraceExists(date);
 }

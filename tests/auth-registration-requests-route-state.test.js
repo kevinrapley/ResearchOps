@@ -4,14 +4,6 @@ import fs from 'node:fs';
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const deployWorkerSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_registration_requests.sql', 'utf8');
-const authDaaSCorrectionSource = fs.readFileSync(
-	'infra/cloudflare/migrations/0006_correct_research_operations_user_daas_team.sql',
-	'utf8',
-);
-const previewDaaSCorrectionSource = fs.readFileSync(
-	'infra/cloudflare/migrations/preview/0002_correct_research_operations_user_daas_team.sql',
-	'utf8',
-);
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
@@ -41,14 +33,6 @@ function workflowSection(source, startMarker, endMarker) {
 	return end === -1 ? rest : rest.slice(0, end);
 }
 
-function sqlSection(source, startMarker, endMarker) {
-	const start = source.indexOf(startMarker);
-	assert.notEqual(start, -1, `Expected SQL section ${startMarker}`);
-	const rest = source.slice(start);
-	const end = endMarker ? rest.indexOf(endMarker) : -1;
-	return end === -1 ? rest : rest.slice(0, end);
-}
-
 function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /import \{ handleRegistrationRequestsRoute \} from ['"]\.\/core\/auth\/registration-requests\.js['"];/);
 	assert.match(workerSource, /apiPath === ['"]\/api\/auth\/registration-requests['"]/);
@@ -67,61 +51,23 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 
 	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*", "fix\/\*\*" \]/);
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
-	assert.match(deployWorkerSource, /AUTH_DATA_CORRECTION_MIGRATION: "infra\/cloudflare\/migrations\/0006_correct_research_operations_user_daas_team\.sql"/);
-	assert.match(deployWorkerSource, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION: "infra\/cloudflare\/migrations\/preview\/0002_correct_research_operations_user_daas_team\.sql"/);
+	assert.doesNotMatch(deployWorkerSource, /AUTH_DATA_CORRECTION_MIGRATION/);
+	assert.doesNotMatch(deployWorkerSource, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
+	assert.doesNotMatch(deployWorkerSource, /0006_correct_research_operations_user_daas_team\.sql/);
+	assert.doesNotMatch(deployWorkerSource, /preview\/0002_correct_research_operations_user_daas_team\.sql/);
 	assert.match(deployWorkerSource, /deploy-production:/);
 	assert.match(deployWorkerSource, /deploy-preview:/);
 	assert.match(deployWorkerSource, /WRANGLER_PREVIEW_CONFIG: "infra\/cloudflare\/wrangler\.preview\.toml"/);
 	assert.match(deployWorkerSource, /D1_PREVIEW_DATABASE_NAME: "researchops-d1-preview"/);
 	assert.match(deployWorkerSource, /CF_PREVIEW_D1_DATABASE_ID/);
 	assert.match(deployWorkerSource, /database_name = \"researchops-d1-preview\"/);
-	assert.match(deployWorkerSource, /CF_PREVIEW_D1_DATABASE_ID/);
 	assert.match(productionJob, /d1 execute "\$\{D1_DATABASE_NAME\}"/);
-	assert.match(productionJob, /--file "\$\{AUTH_DATA_CORRECTION_MIGRATION\}"/);
+	assert.match(productionJob, /--file "\$\{REGISTRATION_REQUESTS_MIGRATION\}"/);
 	assert.match(previewJob, /d1 execute "\$\{D1_PREVIEW_DATABASE_NAME\}"/);
-	assert.match(previewJob, /--file "\$\{AUTH_DATA_CORRECTION_MIGRATION\}"/);
-	assert.match(previewJob, /--file "\$\{PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION\}"/);
+	assert.match(previewJob, /--file "\$\{REGISTRATION_REQUESTS_MIGRATION\}"/);
+	assert.match(previewJob, /--file "\$\{PREVIEW_FIRST_TEAM_ADMIN_SEED\}"/);
 	assert.match(deployWorkerSource, /deploy --config wrangler\.preview\.toml/);
-	assert.doesNotMatch(productionJob, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
 	assert.doesNotMatch(previewJob, /d1 execute "\$\{D1_DATABASE_NAME\}"[\s\S]*--remote/);
-}
-
-function assertAuthDaaSCorrectionIsScopedAndIdempotent() {
-	const revokeRoleBlock = sqlSection(authDaaSCorrectionSource, 'UPDATE auth_role_assignments', 'UPDATE auth_team_memberships');
-
-	assert.match(authDaaSCorrectionSource, /Authentication data correction/);
-	assert.match(authDaaSCorrectionSource, /INSERT OR IGNORE INTO auth_teams/);
-	assert.match(authDaaSCorrectionSource, /'team_daas'/);
-	assert.match(authDaaSCorrectionSource, /'DaaS'/);
-	assert.match(authDaaSCorrectionSource, /UPDATE auth_teams/);
-	assert.match(authDaaSCorrectionSource, /INSERT INTO auth_team_memberships/);
-	assert.match(authDaaSCorrectionSource, /kevin\.rapley@research-operations\.com/);
-	assert.match(authDaaSCorrectionSource, /assignment_kevin_research_operations_observer_daas/);
-	assert.match(authDaaSCorrectionSource, /'role_observer'/);
-	assert.match(authDaaSCorrectionSource, /ON CONFLICT\(user_id, team_id\) DO UPDATE SET/);
-	assert.match(authDaaSCorrectionSource, /ON CONFLICT\(user_id, role_id, scope_type, scope_id\) DO UPDATE SET/);
-	assert.match(revokeRoleBlock, /assignment_status = 'revoked'/);
-	assert.match(revokeRoleBlock, /scope_id = 'team_researchops_core'/);
-	assert.match(revokeRoleBlock, /kevin\.rapley@research-operations\.com/);
-	assert.doesNotMatch(revokeRoleBlock, /digikev\.kevin\.rapley@gmail\.com/);
-	assert.match(authDaaSCorrectionSource, /auth\.account_data\.corrected/);
-}
-
-function assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped() {
-	const revokeRoleBlock = sqlSection(previewDaaSCorrectionSource, 'UPDATE auth_role_assignments', 'UPDATE auth_team_memberships');
-
-	assert.match(previewDaaSCorrectionSource, /Preview-only data correction/);
-	assert.match(previewDaaSCorrectionSource, /kevin\.rapley@research-operations\.com/);
-	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_teams/);
-	assert.match(previewDaaSCorrectionSource, /'DaaS'/);
-	assert.match(previewDaaSCorrectionSource, /INSERT INTO auth_team_memberships/);
-	assert.match(previewDaaSCorrectionSource, /assignment_kevin_research_operations_observer_daas/);
-	assert.match(previewDaaSCorrectionSource, /'role_observer'/);
-	assert.match(revokeRoleBlock, /assignment_status = 'revoked'/);
-	assert.match(revokeRoleBlock, /scope_id = 'team_researchops_core'/);
-	assert.match(revokeRoleBlock, /kevin\.rapley@research-operations\.com/);
-	assert.doesNotMatch(revokeRoleBlock, /digikev\.kevin\.rapley@gmail\.com/);
-	assert.match(previewDaaSCorrectionSource, /auth\.preview_data\.corrected/);
 }
 
 function assertMigrationCreatesReviewQueueWithoutRoleAssignment() {
@@ -245,8 +191,6 @@ function assertSignInLinksToRegistrationRequest() {
 assertWorkerRoutesRegistrationRequests();
 assertWorkerAllowsResearchOpsPreviewOrigins();
 assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction();
-assertAuthDaaSCorrectionIsScopedAndIdempotent();
-assertPreviewDaaSCorrectionIsPreviewOnlyAndScoped();
 assertMigrationCreatesReviewQueueWithoutRoleAssignment();
 assertRouteCapturesRequestedPurposeOnly();
 assertRegistrationPageUsesReviewLanguage();

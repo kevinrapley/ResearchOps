@@ -12,10 +12,15 @@
     <principle id="learning-loop">Read and update RECENT_LEARNINGS.md when repeatable project-specific traps are discovered.</principle>
     <principle id="no-fabrication">Never claim checks passed unless evidence exists.</principle>
     <principle id="review-comments-as-work-items">Treat legitimate automated review comments, including Codex comments, as auditable work items that must be acknowledged, answered and resolved after the fix is complete.</principle>
+    <principle id="branch-governance">Only use approved work-branch prefixes and treat branch prefix as the primary trace trigger.</principle>
   </core_doctrine>
 
   <mandatory_sequence>
     <step>Read repository-local instructions, including README, CONTRIBUTING, SECURITY, CODEOWNERS, AGENTS and RECENT_LEARNINGS when present.</step>
+    <step>Before creating or continuing a work branch, verify that the branch starts with feature/, chore/, test/, fix/, perf/ or hotfix/.</step>
+    <step>Do not create or continue work on branches with unapproved prefixes such as claude/, codex/, bugfix/ or experiment/.</step>
+    <step>For repository-affecting work on feature/, chore/, test/, fix/ or perf/ branches, create an auditable reasoning trace without requiring the user to include the [reasoning] token.</step>
+    <step>Do not require an auditable reasoning trace for hotfix/ branches, because hotfix/ is reserved for urgent operational repair.</step>
     <step>Select the correct mode from the mode modules.</step>
     <step>Load the relevant contracts, graders and reference packs.</step>
     <step>Use template-registry.yaml as the authoritative template inventory.</step>
@@ -29,6 +34,35 @@
     <step>For releases, generate SBOM and provenance artefacts, document rollback and block unresolved release-blocking gaps.</step>
     <step>When a Codex or automated review comment is legitimate, fix the issue, add a thumbs-up reaction to the original comment, reply to that comment explaining how the issue was overcome, then mark the review thread resolved with the Resolve conversation action.</step>
   </mandatory_sequence>
+
+  <branch_governance>
+    <allowed_work_branch_prefixes>
+      <prefix>feature/</prefix>
+      <prefix>chore/</prefix>
+      <prefix>test/</prefix>
+      <prefix>fix/</prefix>
+      <prefix>perf/</prefix>
+      <prefix>hotfix/</prefix>
+    </allowed_work_branch_prefixes>
+    <trace_required_prefixes>
+      <prefix>feature/</prefix>
+      <prefix>chore/</prefix>
+      <prefix>test/</prefix>
+      <prefix>fix/</prefix>
+      <prefix>perf/</prefix>
+    </trace_required_prefixes>
+    <trace_exempt_prefixes>
+      <prefix>hotfix/</prefix>
+    </trace_exempt_prefixes>
+    <prohibited_examples>
+      <prefix>claude/</prefix>
+      <prefix>codex/</prefix>
+      <prefix>bugfix/</prefix>
+      <prefix>experiment/</prefix>
+    </prohibited_examples>
+    <rule>The mainline branches main and master are exempt from work-branch prefix checks.</rule>
+    <rule>The legacy [reasoning] token remains allowed as an explicit trace request, but it is not required on trace-required branch prefixes.</rule>
+  </branch_governance>
 
   <mode_selection>
     <rule task="new repository">Use modes/repo-instantiate.xml.</rule>
@@ -60,6 +94,7 @@
     <rule>Do not push directly to protected branches.</rule>
     <rule>Do not ignore CODEOWNERS or required reviews.</rule>
     <rule>Do not fabricate validation evidence.</rule>
+    <rule>Do not create or continue repository work on branches that do not use an approved prefix.</rule>
     <rule>Do not mark a legitimate Codex or automated review thread resolved unless the issue has been overcome and the comment has been acknowledged with a thumbs-up reaction and explanatory reply.</rule>
   </refusal_rules>
 
@@ -67,6 +102,7 @@
     <item>Repository classification and assumptions.</item>
     <item>Selected mode, controls and templates.</item>
     <item>Implementation or review plan.</item>
+    <item>Branch-prefix decision and trace requirement.</item>
     <item>Validation commands and results.</item>
     <item>Conformance and gap updates.</item>
     <item>Agent evidence and grading result when requested.</item>
