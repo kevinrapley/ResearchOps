@@ -22,6 +22,7 @@ const API_ORIGIN =
  * @typedef {Object} UIProject
  * @property {string} id
  * @property {string} localId
+ * @property {string} airtableId
  * @property {string} name
  * @property {string} description
  * @property {string} org
@@ -72,6 +73,7 @@ function looksLikeIdentityFragment(value) {
 	if (!text) return false;
 	return /"?EMAIL"?\s*:/i.test(text) ||
 		/"?email"?\s*:/i.test(text) ||
+		/"?role"?\s*:/i.test(text) ||
 		/^[}\]]+$/.test(text) ||
 		/^[{[]/.test(text) ||
 		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
@@ -79,12 +81,12 @@ function looksLikeIdentityFragment(value) {
 
 function normaliseLineList(value) {
 	if (Array.isArray(value)) {
-		return value.map((item) => String(item || "").trim()).filter(Boolean);
+		return value.map((item) => String(item || "").trim()).filter((item) => item && !looksLikeIdentityFragment(item));
 	}
 	return String(value || "")
 		.split(/\r?\n|[|]/)
 		.map((item) => item.trim())
-		.filter(Boolean);
+		.filter((item) => item && !looksLikeIdentityFragment(item));
 }
 
 function normaliseCommaList(value) {
@@ -125,6 +127,7 @@ function normaliseStakeholders(value) {
 }
 
 function normaliseProject(p = {}) {
+	const publicId = firstPresent(p.id, p.pid, p.PID, p.LocalId, p.localId);
 	const teamName = firstPresent(
 		p.teamName,
 		p.team_name,
@@ -135,8 +138,9 @@ function normaliseProject(p = {}) {
 	);
 
 	return {
-		id: p.id || p.LocalId || p.localId || "",
-		localId: p.LocalId || p.localId || "",
+		id: publicId,
+		localId: firstPresent(p.localId, p.LocalId, publicId),
+		airtableId: firstPresent(p.airtableId, p.recordId),
 		name: p.name || p.Name || "",
 		description: p.description || p.Description || "",
 		org: teamName || "Unassigned team",
@@ -206,7 +210,7 @@ function computeStudyTitle({ description = "", method = "", createdAt = "" } = {
 }
 
 function projectIdFromUrl(project) {
-	return new URLSearchParams(location.search).get("id") || project?.id || "";
+	return new URLSearchParams(location.search).get("id") || project?.id || project?.localId || "";
 }
 
 function setLinkHref(id, href) {
@@ -231,11 +235,9 @@ function renderProject(project) {
 
 	const main = document.querySelector("main");
 	if (main) {
-		if (!main.getAttribute("data-project-id")) {
-			main.setAttribute("data-project-id", project.id || "");
-		}
+		main.setAttribute("data-project-id", projectId || project.id || "");
 		main.dataset.projectName = project.name || "";
-		main.dataset.projectAirtableId = project.id || "";
+		main.dataset.projectAirtableId = project.airtableId || "";
 	}
 
 	const metaProject = document.querySelector('meta[name="project:name"]');
