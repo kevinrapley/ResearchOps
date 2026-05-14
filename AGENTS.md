@@ -50,10 +50,33 @@ For each repository-affecting task, the agent must:
 9. Identify typed task signals.
 10. Identify conditional bundles relevant to the task from signal-based rules.
 11. Apply precedence from `.agent-operating-model/precedence-policy.md`.
-12. Record selected bundles and canonical paths if trace mode is active.
+12. Record selected bundles and canonical paths when the branch trace rule requires a trace or the user explicitly asks for one.
 13. Stop and report the missing source if the operating model or a selected bundle directory cannot be loaded.
 
-When the user includes `[reasoning]`, the agent must produce an auditable trace according to `.agent-operating-model/trace-policy.md` and the trace tooling under `scripts/agent-trace/`.
+Trace recording is governed by branch prefix. The user does not need to type `[reasoning]` for traces to be required on trace-required branches.
+
+Work branches must start with one of:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+- `hotfix/`
+
+Do not use unapproved work-branch prefixes such as `claude/`, `codex/`, `bugfix/` or `experiment/`.
+
+Always create an auditable trace for repository-affecting work on branches starting with:
+
+- `feature/`
+- `chore/`
+- `test/`
+- `fix/`
+- `perf/`
+
+Do not require an auditable trace for `hotfix/` branches.
+
+The legacy `[reasoning]` token remains an allowed explicit trace request, but it is no longer the only trigger.
 
 Useful commands:
 
@@ -63,6 +86,7 @@ Useful commands:
 | Run behavioural operating-model evals | `npm run agent:evals` |
 | Validate operating model files | `npm run agent:model:validate` |
 | Validate bundle registry | `npm run agent:bundles:validate` |
+| Validate branch trace coverage | `npm run trace:coverage` |
 
 ---
 
