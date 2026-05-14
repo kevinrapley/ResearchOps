@@ -10,6 +10,7 @@ export const operationalStudyId = 'recVisualStudy001';
 export const operationalParticipantId = 'recVisualParticipant001';
 export const operationalAuthUserId = 'usr_visual_team_admin';
 export const operationalAuthTeamId = 'team_researchops_core';
+export const operationalAuthTeamName = 'ResearchOps Core';
 
 export const operationalPaths = {
 	accountSignIn: '/pages/account/sign-in/index.html',
@@ -39,8 +40,14 @@ export const operationalProject = {
 		'This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance.',
 	Description:
 		'This discovery examines how caseworkers and support staff help people who cannot complete a digital application without assistance.',
-	Org: 'Home Office Biometrics',
-	org: 'Home Office Biometrics',
+	Org: operationalAuthTeamName,
+	org: operationalAuthTeamName,
+	teamName: operationalAuthTeamName,
+	team_name: operationalAuthTeamName,
+	team: operationalAuthTeamName,
+	teamNames: [operationalAuthTeamName],
+	teamIds: [operationalAuthTeamId],
+	team_ids: [operationalAuthTeamId],
 	Phase: 'Discovery',
 	Status: 'Planning research',
 	'rops:servicePhase': 'Discovery',
@@ -164,6 +171,7 @@ export const operationalAuthContext = {
 	ok: true,
 	authenticated: true,
 	provider: 'cloudflare_access',
+	isResearchOpsCoreTeamAdmin: true,
 	user: {
 		id: operationalAuthUserId,
 		email: 'team.admin@example.gov.uk',
@@ -172,12 +180,30 @@ export const operationalAuthContext = {
 	},
 	activeTeam: {
 		id: operationalAuthTeamId,
-		name: 'ResearchOps Core',
+		name: operationalAuthTeamName,
 	},
 	teams: [
 		{
 			id: operationalAuthTeamId,
-			name: 'ResearchOps Core',
+			name: operationalAuthTeamName,
+		},
+	],
+	memberTeams: [
+		{
+			id: operationalAuthTeamId,
+			name: operationalAuthTeamName,
+		},
+	],
+	teamMemberships: [
+		{
+			teamId: operationalAuthTeamId,
+			teamName: operationalAuthTeamName,
+			roles: [
+				{
+					key: 'team_admin',
+					label: 'Team Admin',
+				},
+			],
 		},
 	],
 	roles: [
@@ -224,7 +250,7 @@ export const operationalRegistrationRequests = [
 			key: 'user_researcher',
 			label: 'Plan, run or analyse user research',
 		},
-		teamOrService: 'ResearchOps Core',
+		teamOrService: operationalAuthTeamName,
 		requestedReason: 'Planning and analysing the assisted digital support study.',
 		status: 'pending_review',
 		submittedAt: '2026-05-13T09:00:00.000Z',
@@ -250,7 +276,9 @@ export function operationalMockRoutes() {
 			url: /\/api\/projects(?:\?.*)?$/,
 			method: 'GET',
 			body: {
+				ok: true,
 				projects: [operationalProject],
+				canStartProject: true,
 			},
 		},
 		{
