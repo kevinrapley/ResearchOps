@@ -14,6 +14,8 @@ The same area also showed malformed `User groups` pills where identity-like fiel
 
 The project dashboard links were fragile because the dashboard loaded all visible projects, then searched client-side for the selected project ID.
 
+A branch-preview screenshot later showed that the page was still rendering data that did not belong to the Airtable `Projects` table. The tests were passing, but they were proving an invented `PID` contract rather than the real Airtable record contract.
+
 ## Decision
 
 Project visibility is an access-control rule and must be enforced server-side.
@@ -26,13 +28,33 @@ Members of other teams can see only projects whose team identifiers match one of
 
 Projects without a resolvable team are treated as visible only to ResearchOps Core.
 
+## Source-of-truth decision
+
+The Airtable `Projects` table is the authoritative source for project cards.
+
+`Project Details` can enrich a valid project after that project has been read from the `Projects` table, but it must never create a project card.
+
+The canonical project identifier is the Airtable `Record ID` value, which is the Airtable `rec...` record id.
+
+The current Airtable project IDs observed from the Airtable screenshot are:
+
+- `recMtdmBbaFilF2Tm`
+- `recpZe8mLEiASXfRd`
+- `recgdpwEI5hFO7bUZ`
+- `recIFoFmpDIGBP726`
+- `recUUeazIqBMfsZL4`
+
+The Projects UI and project dashboard routes use these `rec...` identifiers. `PID` and `LocalId` are not the routing contract for project cards or dashboards.
+
 ## Project card data decision
 
 Project cards should show the team associated with the project.
 
 The card should not hard-code `Home Office Biometrics` as a fallback.
 
-The card uses user-facing team language. It avoids exposing implementation labels such as `team_id`, Airtable record IDs or permission codes.
+The card uses user-facing team language. It does not expose permission codes as user-facing card content.
+
+The Airtable `rec...` record id is allowed in URLs because it is the canonical route identifier for a project. It should not be shown as a visible label unless the interface specifically needs to expose the technical project reference.
 
 If a project reaches the client without a team label, the defensive UI fallback is `Unassigned team`.
 
@@ -64,9 +86,25 @@ The Worker attaches project team context from the authenticated user context.
 
 The project dashboard now reads the selected project directly from `/api/projects/:id`.
 
-It no longer loads all projects and searches for the selected record in the browser.
+The `:id` value is the Airtable `rec...` record id from the `Projects` table.
+
+The dashboard no longer loads all projects and searches for the selected record in the browser.
 
 This gives clearer access semantics and avoids failures caused by list filtering or client-side selection.
+
+## D1 cache decision
+
+D1 mirrors the active Airtable `Projects` set by Airtable `rec...` record id.
+
+When the Airtable project list succeeds, the Worker updates `rops_projects_cache` as a non-destructive cache:
+
+- existing Airtable-source cached projects are marked `active = 0`
+- current Airtable Projects records are upserted with `active = 1`
+- stale cache rows are retained rather than deleted
+
+Airtable remains the source of truth. D1 cache sync is best effort and must not block the authoritative Airtable response.
+
+No D1 migration file is included in this branch. The table is created lazily by the Worker if the D1 binding exists.
 
 ## Airtable field decision
 
@@ -104,11 +142,13 @@ The transcript is recorded at:
 
 ## Validation notes
 
-The branch adds route-state coverage for:
+The branch adds and updates coverage for:
 
 - scoped project routing
 - credentialed project fetches
-- direct project dashboard reads
+- direct project dashboard reads by Airtable `rec...` id
+- rejection of non-record project identifiers such as `PID-*`
+- the five current Airtable `Projects` records from the screenshot
 - removal of the hard-coded project-card organisation fallback
 - permission-driven Start project behaviour
 - identity-fragment filtering in user group handling
@@ -117,7 +157,7 @@ The full validation status is recorded in the agent trace progress file for this
 
 ## Rollback notes
 
-No D1 migration is included.
+No D1 migration file is included.
 
 No Airtable schema migration is included.
 
