@@ -87,6 +87,13 @@ function firstPresent(...values) {
 	return "";
 }
 
+function normaliseTeamName(value) {
+	const text = String(value || "").trim();
+	if (!text) return "";
+	if (text.toLowerCase() === "home office biometrics") return "";
+	return text;
+}
+
 async function fetchWithTimeout(url) {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort("timeout"), CONFIG.FETCH_TIMEOUT_MS);
@@ -117,14 +124,12 @@ function normaliseProject(p) {
 
 	const objectivesRaw = p.Objectives ?? p.objectives ?? "";
 	const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
-	const teamName = firstPresent(
+	const teamName = normaliseTeamName(firstPresent(
 		p.teamName,
 		p.team_name,
 		p.team,
-		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
-		p.Org,
-		p.org
-	);
+		Array.isArray(p.teamNames) ? p.teamNames[0] : ""
+	));
 
 	return {
 		id: firstPresent(p.id, p.airtableId, p.recordId),
@@ -141,7 +146,7 @@ function normaliseProject(p) {
 		teamName,
 		team_name: teamName,
 		team: teamName,
-		org: teamName
+		org: p.Org ?? p.org ?? ""
 	};
 }
 
@@ -165,7 +170,7 @@ function projectDashboardLabel(project) {
 }
 
 function projectTeamLabel(project) {
-	return project.teamName || project.team_name || project.team || project.org || "Unassigned team";
+	return project.teamName || project.team_name || project.team || "Unassigned team";
 }
 
 function projectCard(project) {
