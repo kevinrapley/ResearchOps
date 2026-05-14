@@ -103,6 +103,19 @@ excludes(dashboardCssSource, "\n.dashboard-section__grid {", "project dashboard 
 excludes(dashboardCssSource, "\n.dropzone {", "project dashboard stylesheet");
 
 /*
+ * Replace the legacy alert() with a visible, structured error region so the
+ * actual upstream failure (HTTP status, error code, requested project id) is
+ * legible on the dashboard rather than masked behind a generic "Could not load
+ * project." alert. The console keeps a structured log for triage.
+ */
+includes(controllerSource, "function renderProjectLoadError", "project dashboard controller");
+includes(controllerSource, "container.id = \"project-load-error\"", "project dashboard controller");
+includes(controllerSource, "container.setAttribute(\"role\", \"alert\")", "project dashboard controller");
+includes(controllerSource, "err.upstreamStatus = res.status", "project dashboard controller");
+includes(controllerSource, "[project-dashboard] load failed", "project dashboard controller");
+excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
+
+/*
  * Pin the preview Worker deploy trigger to the approved branch prefixes so
  * Pages-preview traffic to /api/projects/:id is served by a Worker on the
  * same branch as the Pages preview. A drift back to a single hardcoded

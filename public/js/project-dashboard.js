@@ -169,18 +169,25 @@ async function loadProject(projectId) {
 	const ctype = (res.headers.get("content-type") || "").toLowerCase();
 	if (!ctype.includes("application/json")) {
 		const preview = await res.text().catch(() => "");
-		throw new Error(`Project non-JSON (${res.status}) ${preview.slice(0, 120)}`);
+		const err = new Error(`Project non-JSON (${res.status}) ${preview.slice(0, 120)}`);
+		err.upstreamStatus = res.status;
+		throw err;
 	}
 
 	let data;
 	try {
 		data = await res.json();
 	} catch {
-		throw new Error(`Project JSON parse failed (${res.status})`);
+		const err = new Error(`Project JSON parse failed (${res.status})`);
+		err.upstreamStatus = res.status;
+		throw err;
 	}
 
 	if (!res.ok || data?.ok === false) {
-		throw new Error(data?.error || data?.detail || `Project load failed (${res.status})`);
+		const err = new Error(data?.error || data?.detail || `Project load failed (${res.status})`);
+		err.upstreamStatus = res.status;
+		err.upstreamBody = data;
+		throw err;
 	}
 
 	return normaliseProject(data);
@@ -524,9 +531,47 @@ function initProjectActions() {
 	initUserGroupForm();
 }
 
+function renderProjectLoadError(err, requestedProjectId) {
+	const main = document.querySelector("main");
+	if (!main) return;
+
+	const reason = String(err?.message || err || "Unknown error").trim() || "Unknown error";
+	const safeReason = escapeHtml(reason);
+	const safeRequestedId = escapeHtml(requestedProjectId || "");
+	const upstream = err?.upstreamStatus ? ` (HTTP ${escapeHtml(String(err.upstreamStatus))})` : "";
+
+	const container = document.createElement("section");
+	container.id = "project-load-error";
+	container.className = "dashboard-action-panel";
+	container.setAttribute("role", "alert");
+	container.setAttribute("aria-live", "assertive");
+	container.innerHTML = `
+		<h2 class="govuk-heading-m">Could not load project</h2>
+		<p class="govuk-body">The project record at this URL could not be loaded.${upstream}</p>
+		<p class="govuk-body"><strong>Technical detail:</strong> <code>${safeReason}</code></p>
+		${
+			safeRequestedId
+				? `<p class="govuk-body"><strong>Requested project id:</strong> <code>${safeRequestedId}</code></p>`
+				: '<p class="govuk-body">No <code>id</code> parameter was present in the URL.</p>'
+		}
+		<p class="govuk-body">
+			<a class="govuk-link" href="/pages/projects/">Back to projects</a>
+		</p>`;
+
+	const widthContainer = main.querySelector(".govuk-width-container");
+	const heroAnchor =
+		widthContainer?.querySelector(".dashboard-hero") || widthContainer?.firstElementChild;
+	if (widthContainer && heroAnchor) {
+		widthContainer.insertBefore(container, heroAnchor.nextSibling || null);
+	} else {
+		main.appendChild(container);
+	}
+}
+
 (async function bootstrap() {
+	const requestedProjectId = new URLSearchParams(location.search).get("id") || "";
+
 	try {
-		const requestedProjectId = new URLSearchParams(location.search).get("id") || "";
 		if (!requestedProjectId) throw new Error("Missing project id param");
 
 		const project = await loadProject(requestedProjectId);
@@ -538,7 +583,11 @@ function initProjectActions() {
 
 		initProjectActions();
 	} catch (err) {
-		console.error(err);
-		alert("Could not load project.");
+		console.error("[project-dashboard] load failed", {
+			requestedProjectId,
+			message: String(err?.message || err),
+			error: err,
+		});
+		renderProjectLoadError(err, requestedProjectId);
 	}
 })();
