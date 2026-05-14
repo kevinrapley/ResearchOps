@@ -55,12 +55,29 @@ Local parser check performed before commit:
 node --check /mnt/data/projects-page.js
 ```
 
-### Next client changes prepared
+### Project dashboard client
+
+Committed `public/js/project-dashboard.js` to:
+
+- fetch `/api/projects/:id` directly with credentials
+- stop loading all visible projects before selecting one by URL id
+- use team ownership fields instead of a hard-coded organisation fallback
+- include credentials on project patch requests
+- block identity-like user group labels in the dashboard add-user-group form
+
+Local parser check performed before commit:
+
+```bash
+node --check /mnt/data/project-dashboard.js
+```
+
+### Start project client change prepared
 
 Next implementation unit:
 
-- update `public/js/project-dashboard.js` to fetch `/api/projects/:id` directly with credentials
-- update `public/pages/start/start-new-project.js` to stop sending hard-coded `org: Home Office Biometrics` and to submit credentials
+- update `public/pages/start/start-new-project.js` to stop sending hard-coded `org: Home Office Biometrics`
+- submit to the configured API origin rather than assuming the same origin
+- include credentials so the Worker can attach the active team context server-side
 
 Expected validation later:
 
