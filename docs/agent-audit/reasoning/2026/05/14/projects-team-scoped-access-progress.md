@@ -49,10 +49,11 @@ Committed `public/js/projects-page.js` to:
 - render team ownership from returned project team fields
 - suppress identity-like user group fragments client-side as a defence in depth
 
-Local parser check performed before commit:
+Local parser checks performed before commit and after the access-control pivot:
 
 ```bash
 node --check /mnt/data/projects-page.js
+node --check /mnt/data/projects-page-no-csv.js
 ```
 
 ### Project dashboard client
@@ -89,20 +90,63 @@ node --check /mnt/data/start-new-project.js
 
 Identified that the browser-side fallback from `/api/projects` to `/api/projects.csv` would bypass the server-side project visibility rule if the CSV endpoint is not itself team-scoped.
 
-Decision before further implementation: remove the browser-side CSV fallback from `public/js/projects-page.js`. CSV fallback remains only inside the server-side project service, where project visibility filtering has access to the authenticated context.
+Decision: remove the browser-side CSV fallback from `public/js/projects-page.js`. CSV fallback remains only inside the server-side project service, where project visibility filtering has access to the authenticated context.
 
-### Next implementation unit
+### Route-state tests and visual fixtures
 
-Next implementation unit:
+Committed `tests/projects-page-route-state.test.js` to cover:
 
-- remove browser-side project CSV fallback
-- update route-state tests to capture the new project visibility, direct-read and credentialed-fetch contracts
-- update `visual-walkthrough.operational-fixtures.mjs` so mock projects include team fields and direct project reads
+- scoped Worker project routing
+- credentialed project fetches
+- direct dashboard project reads
+- removal of hard-coded `Home Office Biometrics` card fallback
+- removal of browser-side project CSV fallback
+- capability-hidden Start project action
+- `user_researcher` project-start capability recognition
+- identity-fragment filtering in user group handling
 
-Expected validation later:
+Parser check performed before the route-state test update:
 
 ```bash
+node --check /mnt/data/projects-page-route-state.test.js
+```
+
+Committed `visual-walkthrough.operational-fixtures.mjs` so visual walkthrough project mocks include team fields and `/api/projects` returns the scoped API shape:
+
+```json
+{
+	"ok": true,
+	"projects": ["operationalProject"],
+	"canStartProject": true
+}
+```
+
+### Product documentation and recent learnings
+
+Committed `docs/product/26/05/14/projects-team-scoped-access.md` to document the product decision, access-control model, card data decision, start-project rule, Airtable field expectations and rollback notes.
+
+Committed `RECENT_LEARNINGS.md` entries for:
+
+- access-control filtering must stay server-side
+- role consultation must be visible when requested
+
+### Validation status before PR
+
+Local parser checks were performed on generated replacement files in the tool environment as listed above.
+
+Full repository validation was not executed in this chat tool path.
+
+Mapped validation commands for CI or local checkout:
+
+```bash
+npm run agent:model:validate
+npm run agent:bundles:validate
+npm run trace:coverage
+npm run format:check
+npm run lint
 node --test tests/projects-page-route-state.test.js
 npm test -- --ci
 npm run validate
 ```
+
+The PR should remain draft until CI validates formatting, linting, route-state tests and the wider repository suite.
