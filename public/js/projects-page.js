@@ -117,7 +117,9 @@ function normaliseProject(p) {
 	);
 
 	return {
-		id: p.LocalId || p.id,
+		id: firstPresent(p.id, p.airtableId, p.recordId),
+		airtableId: firstPresent(p.airtableId, p.id, p.recordId),
+		recordId: firstPresent(p.recordId, p.id, p.airtableId),
 		name: p.Name ?? p.name ?? "",
 		description: p.Description ?? p.description ?? "",
 		stakeholders,
