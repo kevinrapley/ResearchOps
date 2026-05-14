@@ -69,6 +69,8 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {any}    ASSETS
  * @property {string} [MODEL]
  * @property {string} [AIRTABLE_TABLE_AI_LOG]
+ * @property {string} [AIRTABLE_PROJECT_TEAM_NAME_FIELD]
+ * @property {string} [AIRTABLE_PROJECT_TEAM_ID_FIELD]
  * @property {any}    AI
  * @property {KVNamespace} SESSION_KV
  * @property {string} [MURAL_CLIENT_ID]
@@ -135,9 +137,10 @@ export class ResearchOpsService {
 	}
 
 	/* ─────────────── Projects ─────────────── */
-	listProjectsFromAirtable = (origin, url) => Projects.listProjectsFromAirtable(this, origin, url);
-	getProjectById = (origin, projectId) => Projects.getProjectById(this, origin, projectId);
-	updateProjectFraming = (req, origin, projectId) => Projects.updateProjectFraming(this, req, origin, projectId);
+	listProjectsFromAirtable = (origin, url, authContext) => Projects.listProjectsFromAirtable(this, origin, url, authContext);
+	createProjectInAirtable = (req, origin, authContext) => Projects.createProjectInAirtable(this, req, origin, authContext);
+	getProjectById = (origin, projectId, authContext) => Projects.getProjectById(this, origin, projectId, authContext);
+	updateProjectFraming = (req, origin, projectId, authContext) => Projects.updateProjectFraming(this, req, origin, projectId, authContext);
 
 	/* ─────────────── Journal Entries ─────────────── */
 	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
