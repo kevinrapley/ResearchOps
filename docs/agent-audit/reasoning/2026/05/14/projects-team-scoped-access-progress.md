@@ -85,10 +85,17 @@ Local parser check performed before commit:
 node --check /mnt/data/start-new-project.js
 ```
 
+### Client CSV fallback access-control pivot
+
+Identified that the browser-side fallback from `/api/projects` to `/api/projects.csv` would bypass the server-side project visibility rule if the CSV endpoint is not itself team-scoped.
+
+Decision before further implementation: remove the browser-side CSV fallback from `public/js/projects-page.js`. CSV fallback remains only inside the server-side project service, where project visibility filtering has access to the authenticated context.
+
 ### Next implementation unit
 
 Next implementation unit:
 
+- remove browser-side project CSV fallback
 - update route-state tests to capture the new project visibility, direct-read and credentialed-fetch contracts
 - update `visual-walkthrough.operational-fixtures.mjs` so mock projects include team fields and direct project reads
 
