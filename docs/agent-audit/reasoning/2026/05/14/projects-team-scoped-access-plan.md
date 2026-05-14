@@ -261,3 +261,11 @@ Updated `infra/cloudflare/src/service/index.js` so project list, create, read an
 Updated `infra/cloudflare/src/worker.js` so project list, create, read and patch routes resolve scoped auth context and pass it to the service layer.
 
 No visibility filtering logic has been changed yet. Next implementation unit is `infra/cloudflare/src/service/projects.js` project normalisation, visibility and create-permission enforcement.
+
+### 2026-05-14 — Project service implementation landed
+
+Updated `infra/cloudflare/src/service/projects.js` to normalise project team fields, filter project visibility server-side, return `canStartProject`, enforce `POST /api/projects` permissions, and suppress identity-like `UserGroups` fragments during normalisation.
+
+Performed a local parser check against the replacement `projects.js` using `node --check` before committing the service file.
+
+Next implementation unit is the client layer: `public/js/projects-page.js`, `public/js/project-dashboard.js`, and `public/pages/start/start-new-project.js`.
