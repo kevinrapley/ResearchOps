@@ -82,7 +82,12 @@ test('mainline branches are exempt from work-branch prefix policy', () => {
 });
 
 test('unapproved branch prefixes are blocked', () => {
-	for (const branch of ['claude/update-login', 'codex/fix-ci', 'bugfix/example', 'experiment/example']) {
+	for (const branch of [
+		'claude/update-login',
+		'codex/fix-ci',
+		'bugfix/example',
+		'experiment/example',
+	]) {
 		const result = branchTracePolicy(branch);
 
 		assert.equal(result.allowed, false);
