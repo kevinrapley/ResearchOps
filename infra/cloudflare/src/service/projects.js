@@ -338,7 +338,7 @@ function canStartProject(authContext = {}) {
 
 	return (authContext.roles || []).some(role => {
 		const key = role.key || role.roleKey;
-		return key === "researcher" || key === "research_lead";
+		return key === "researcher" || key === "user_researcher" || key === "research_lead";
 	});
 }
 
