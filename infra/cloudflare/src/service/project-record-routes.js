@@ -7,6 +7,8 @@
 import { toMs } from "../core/utils.js";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
+const AIRTABLE_MAX_PAGE_SIZE = 100;
+const MAX_AIRTABLE_PAGES = 20;
 
 function json(body, status = 200, headers = {}) {
 	return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...headers } });
@@ -139,6 +141,11 @@ function canStartProject(authContext = {}) {
 	return (authContext.roles || []).some((role) => ["researcher", "user_researcher", "research_lead"].includes(role.key || role.roleKey));
 }
 
+function hasProjectShape(record = {}) {
+	const fields = record.fields || {};
+	return Boolean(fields.Name || fields["Project Name"] || fields.Title) && Boolean(fields.Phase || fields["Service Phase"] || fields.Status || fields["Project Status"] || fields.Description || fields.Summary);
+}
+
 function mapProject(record = {}) {
 	const fields = record.fields || {};
 	const id = isAirtableRecordId(record.id) ? record.id : "";
@@ -184,14 +191,35 @@ async function airtableJson(env, url) {
 	return data;
 }
 
+async function airtableRecords(env, tableName, searchParams = new URLSearchParams()) {
+	const table = encodeURIComponent(tableName);
+	const records = [];
+	let offset = "";
+	let page = 0;
+
+	do {
+		const params = new URLSearchParams(searchParams);
+		params.set("pageSize", String(AIRTABLE_MAX_PAGE_SIZE));
+		if (offset) params.set("offset", offset);
+		const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}?${params.toString()}`);
+		records.push(...(Array.isArray(data.records) ? data.records : []));
+		offset = data.offset || "";
+		page += 1;
+	} while (offset && page < MAX_AIRTABLE_PAGES);
+
+	return records;
+}
+
 async function joinDetails(env, projects = []) {
 	if (!env.AIRTABLE_TABLE_DETAILS) return projects;
 	try {
-		const table = encodeURIComponent(env.AIRTABLE_TABLE_DETAILS);
-		const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}?pageSize=100&fields%5B%5D=Project&fields%5B%5D=Lead%20Researcher&fields%5B%5D=Lead%20Researcher%20Email&fields%5B%5D=Notes`;
-		const data = await airtableJson(env, url);
+		const params = new URLSearchParams();
+		for (const field of ["Project", "Lead Researcher", "Lead Researcher Email", "Notes"]) {
+			params.append("fields[]", field);
+		}
+		const records = await airtableRecords(env, env.AIRTABLE_TABLE_DETAILS, params);
 		const details = new Map();
-		for (const record of data.records || []) {
+		for (const record of records) {
 			const fields = record.fields || {};
 			const linked = Array.isArray(fields.Project) && fields.Project[0];
 			if (!isAirtableRecordId(linked)) continue;
@@ -236,14 +264,19 @@ async function syncActiveProjectsToD1(env, projects = []) {
 export async function listProjectRecords(request, env, authContext = {}) {
 	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	const url = new URL(request.url);
-	const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
-	const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-	const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}?pageSize=${limit}`);
-	let projects = (data.records || []).map(mapProject).filter(isRenderable);
+	const displayLimit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
+	const view = url.searchParams.get("view") || "";
+	const params = new URLSearchParams();
+	if (view) params.set("view", view);
+
+	let projects = (await airtableRecords(env, env.AIRTABLE_TABLE_PROJECTS, params))
+		.filter(hasProjectShape)
+		.map(mapProject)
+		.filter(isRenderable);
 	projects = await joinDetails(env, projects);
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	await syncActiveProjectsToD1(env, projects);
-	projects = projects.filter((project) => userCanSee(project, authContext));
+	projects = projects.filter((project) => userCanSee(project, authContext)).slice(0, displayLimit);
 	return json({ ok: true, projects, canStartProject: canStartProject(authContext) }, 200, { "x-rops-source": "airtable" });
 }
 
@@ -251,7 +284,9 @@ export async function getProjectRecord(_request, env, projectId, authContext = {
 	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	if (!isAirtableRecordId(projectId)) return json({ ok: false, error: "Project not found" }, 404);
 	const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-	const project = mapProject(await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}/${encodeURIComponent(projectId)}`));
+	const projectRecord = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}/${encodeURIComponent(projectId)}`);
+	if (!hasProjectShape(projectRecord)) return json({ ok: false, error: "Project not found" }, 404);
+	const project = mapProject(projectRecord);
 	if (!isRenderable(project) || !userCanSee(project, authContext)) return json({ ok: false, error: "Project not found" }, 404);
 	const joined = await joinDetails(env, [project]);
 	return json(joined[0], 200, { "x-rops-source": "airtable" });
