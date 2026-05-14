@@ -7,6 +7,14 @@ const TEST_TEAM_NAME = "ResearchOps Core";
 const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
 
+const PROJECT_RECORD_IDS = [
+	"recMtdmBbaFilF2Tm",
+	"recpZe8mLEiASXfRd",
+	"recgdpwEI5hFO7bUZ",
+	"recIFoFmpDIGBP726",
+	"recUUeazIqBMfsZL4",
+];
+
 const env = {
 	AIRTABLE_BASE_ID: "appTest",
 	AIRTABLE_API_KEY: "patTest",
@@ -177,8 +185,10 @@ function createMockD1() {
 	};
 }
 
-function projectFields(fields) {
+function projectFields(recordId, fields) {
 	return {
+		"Record ID": recordId,
+		Org: "Home Office Biometrics",
 		"Team ID": TEST_TEAM_ID,
 		"Team Name": TEST_TEAM_NAME,
 		...fields,
@@ -188,57 +198,67 @@ function projectFields(fields) {
 function projectRecords() {
 	return [
 		{
-			id: "recBeta",
-			createdTime: "2025-01-01T10:00:00.000Z",
-			fields: projectFields({
-				PID: "PID-BETA",
-				Name: "Beta project",
-				Description: "Beta description",
+			id: PROJECT_RECORD_IDS[0],
+			createdTime: "2025-02-05T10:00:00.000Z",
+			fields: projectFields(PROJECT_RECORD_IDS[0], {
+				Name: "New Project",
+				Description: "Project description",
 				Phase: "Discovery",
 				Status: "Planning research",
-				Objectives: "Beta objective",
-				UserGroups: "Analyst",
+				Objectives: "Understand the new project",
+				UserGroups: "Caseworkers",
 				Stakeholders: "[]",
 			}),
 		},
 		{
-			id: "recAlpha",
-			createdTime: "2025-01-01T10:00:00.000Z",
-			fields: projectFields({
-				PID: "PID-ALPHA",
-				Name: "Alpha project",
-				Description: "Alpha description",
+			id: PROJECT_RECORD_IDS[1],
+			createdTime: "2025-02-04T10:00:00.000Z",
+			fields: projectFields(PROJECT_RECORD_IDS[1], {
+				Name: "My Project",
+				Description: "This is my project",
 				Phase: "Discovery",
-				Status: "Planning research",
-				Objectives: "Alpha objective",
-				UserGroups: "Researcher",
+				Status: "Goal setting & problem defining",
+				Objectives: "Confirm the problem",
+				UserGroups: "Researchers",
 				Stakeholders: "[]",
 			}),
 		},
 		{
-			id: "recMalformed",
-			createdTime: "2025-01-05T10:00:00.000Z",
-			fields: projectFields({
-				PID: "PID-MALFORMED",
-				Name: '_[{"name":"Kevin Rapley","email":"kevin.rapley@homeoffice.gov.uk"}]',
-				Description: "Should not render as a project",
-				Phase: '"email":"kevin.rapley@homeoffice.gov.uk"',
-				Status: '"Objective 1"',
-				Objectives: '"role":"Senior User Researcher"',
+			id: PROJECT_RECORD_IDS[2],
+			createdTime: "2025-02-03T10:00:00.000Z",
+			fields: projectFields(PROJECT_RECORD_IDS[2], {
+				Name: "Test Project 1",
+				Description: "Test Project Description",
+				Phase: "Discovery",
+				Status: "Goal setting & problem defining",
+				Objectives: "Test objective",
+				UserGroups: "Participants",
 				Stakeholders: "[]",
 			}),
 		},
 		{
-			id: "recNewest",
+			id: PROJECT_RECORD_IDS[3],
+			createdTime: "2025-02-02T10:00:00.000Z",
+			fields: projectFields(PROJECT_RECORD_IDS[3], {
+				Name: "Testing with AI",
+				Description: "Problem statement",
+				Phase: "Pre-Discovery",
+				Status: "Goal setting & problem defining",
+				Objectives: "Test AI support",
+				UserGroups: "Researchers",
+				Stakeholders: "[]",
+			}),
+		},
+		{
+			id: PROJECT_RECORD_IDS[4],
 			createdTime: "2025-02-01T10:00:00.000Z",
-			fields: projectFields({
-				PID: "PID-NEWEST",
-				Name: "Newest project",
-				Description: "Newest description",
-				Phase: "Alpha",
-				Status: "Conducting research",
-				Objectives: "Newest objective",
-				UserGroups: "Citizen",
+			fields: projectFields(PROJECT_RECORD_IDS[4], {
+				Name: "Project Name",
+				Description: "Problem statement",
+				Phase: "Pre-Discovery",
+				Status: "Goal setting & problem defining",
+				Objectives: "Define the project",
+				UserGroups: "Researchers",
 				Stakeholders: "[]",
 			}),
 		},
@@ -265,12 +285,12 @@ function createMockFetch(calls) {
 			return jsonResponse({
 				records: [
 					{
-						id: "detailAlpha",
-						createdTime: "2025-01-02T10:00:00.000Z",
+						id: "detailTestProject",
+						createdTime: "2025-02-03T12:00:00.000Z",
 						fields: {
-							Project: ["recAlpha"],
-							"Lead Researcher": "Lead Alpha",
-							"Lead Researcher Email": "lead.alpha@example.test",
+							Project: [PROJECT_RECORD_IDS[2]],
+							"Lead Researcher": "Lead Test",
+							"Lead Researcher Email": "lead.test@example.test",
 							Notes: "Joined detail notes",
 						},
 					},
@@ -279,7 +299,7 @@ function createMockFetch(calls) {
 		}
 
 		if (url.includes("raw.githubusercontent.com")) {
-			return csvResponse("LocalId,Name,CreatedAt\nPID-CSV,Csv project,2025-01-01T00:00:00.000Z\n");
+			return csvResponse(`LocalId,Name,CreatedAt\n${PROJECT_RECORD_IDS[0]},Csv project,2025-01-01T00:00:00.000Z\n`);
 		}
 
 		throw new Error(`Unexpected fetch URL: ${url}`);
@@ -295,7 +315,7 @@ async function assertProjectsRouteFailsClosedWithoutSession() {
 	assert.equal(payload.error, "authentication_required");
 }
 
-async function assertProjectsRouteUsesComposedService() {
+async function assertProjectsRouteUsesAirtableProjectsTable() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = createMockFetch(calls);
@@ -308,30 +328,35 @@ async function assertProjectsRouteUsesComposedService() {
 		assert.equal(payload.ok, true);
 		assert.equal(payload.canStartProject, true);
 		assert.equal(Array.isArray(payload.projects), true);
+		assert.equal(payload.projects.length, 5);
 		assert.deepEqual(
 			payload.projects.map((project) => project.id),
-			["PID-NEWEST", "PID-ALPHA", "PID-BETA"],
+			PROJECT_RECORD_IDS,
 		);
 		assert.equal(
-			payload.projects.some((project) => project.id === "PID-MALFORMED"),
+			payload.projects.some((project) => String(project.name).includes("Kevin Rapley")),
+			false,
+		);
+		assert.equal(
+			payload.projects.some((project) => String(project.id).startsWith("PID-")),
 			false,
 		);
 
-		const newest = payload.projects[0];
-		assert.equal(newest.name, "Newest project");
-		assert.equal(newest.airtableId, "recNewest");
-		assert.equal(newest["rops:servicePhase"], "Alpha");
-		assert.equal(newest["rops:projectStatus"], "Conducting research");
-		assert.equal(newest.createdAt, "2025-02-01T10:00:00.000Z");
-		assert.equal(newest.teamName, TEST_TEAM_NAME);
-		assert.equal(Object.hasOwn(newest, "Name"), false);
-		assert.equal(Object.hasOwn(newest, "Phase"), false);
+		const firstProject = payload.projects[0];
+		assert.equal(firstProject.id, PROJECT_RECORD_IDS[0]);
+		assert.equal(firstProject.airtableId, PROJECT_RECORD_IDS[0]);
+		assert.equal(firstProject.recordId, PROJECT_RECORD_IDS[0]);
+		assert.equal(firstProject.name, "New Project");
+		assert.equal(firstProject["rops:servicePhase"], "Discovery");
+		assert.equal(firstProject["rops:projectStatus"], "Planning research");
+		assert.equal(firstProject.teamName, TEST_TEAM_NAME);
+		assert.equal(Object.hasOwn(firstProject, "Name"), false);
+		assert.equal(Object.hasOwn(firstProject, "Phase"), false);
 
-		const alpha = payload.projects[1];
-		assert.equal(alpha.airtableId, "recAlpha");
-		assert.equal(alpha.lead_researcher, "Lead Alpha");
-		assert.equal(alpha.lead_researcher_email, "lead.alpha@example.test");
-		assert.equal(alpha.notes, "Joined detail notes");
+		const testProject = payload.projects.find((project) => project.id === PROJECT_RECORD_IDS[2]);
+		assert.equal(testProject.lead_researcher, "Lead Test");
+		assert.equal(testProject.lead_researcher_email, "lead.test@example.test");
+		assert.equal(testProject.notes, "Joined detail notes");
 
 		assert.equal(
 			calls.some((url) => url.includes("/Projects?")),
@@ -346,24 +371,45 @@ async function assertProjectsRouteUsesComposedService() {
 	}
 }
 
-async function assertProjectReadResolvesPublicPid() {
+async function assertProjectReadResolvesAirtableRecordId() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = createMockFetch(calls);
 
 	try {
-		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects/PID-ALPHA"), env, {});
+		const response = await worker.fetch(authenticatedRequest(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`), env, {});
 		assert.equal(response.status, 200);
 
 		const project = await response.json();
-		assert.equal(project.id, "PID-ALPHA");
-		assert.equal(project.airtableId, "recAlpha");
-		assert.equal(project.name, "Alpha project");
-		assert.equal(project.lead_researcher, "Lead Alpha");
+		assert.equal(project.id, PROJECT_RECORD_IDS[2]);
+		assert.equal(project.airtableId, PROJECT_RECORD_IDS[2]);
+		assert.equal(project.recordId, PROJECT_RECORD_IDS[2]);
+		assert.equal(project.name, "Test Project 1");
+		assert.equal(project.lead_researcher, "Lead Test");
 		assert.equal(
-			calls.some((url) => url.includes("/Projects?")),
+			calls.some((url) => url.includes(`/Projects/${PROJECT_RECORD_IDS[2]}`)),
 			true,
 		);
+		assert.equal(
+			calls.some((url) => url.includes("/Projects?") && !url.includes("/Project%20Details?")),
+			false,
+		);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function assertNonRecordProjectIdIsNotFound() {
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = createMockFetch([]);
+
+	try {
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects/PID-ALPHA"), env, {});
+		assert.equal(response.status, 404);
+
+		const payload = await response.json();
+		assert.equal(payload.ok, false);
+		assert.equal(payload.error, "Project not found");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -397,7 +443,8 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 }
 
 await assertProjectsRouteFailsClosedWithoutSession();
-await assertProjectsRouteUsesComposedService();
-await assertProjectReadResolvesPublicPid();
+await assertProjectsRouteUsesAirtableProjectsTable();
+await assertProjectReadResolvesAirtableRecordId();
+await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
 assertLegacyProjectsDirectHandlerIsAbsent();
