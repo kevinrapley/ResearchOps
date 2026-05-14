@@ -6,6 +6,22 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.1+researchops.2026-05-14] - 2026-05-14
+
+### Added
+
+- Added branch-prefix governance for ResearchOps work branches.
+- Added the approved branch prefixes: `feature/`, `chore/`, `test/`, `fix/`, `perf/` and `hotfix/`.
+- Added explicit prohibition of unapproved prefixes such as `claude/`, `codex/`, `bugfix/` and `experiment/`.
+- Added branch-driven trace posture so `feature/`, `chore/`, `test/`, `fix/` and `perf/` branches always require auditable traces without requiring the user to include `[reasoning]`.
+- Added `hotfix/` as the only approved work-branch prefix that does not require an auditable trace.
+
+### Changed
+
+- Reframed `[reasoning]` as an allowed explicit trace request rather than the sole trigger for trace creation.
+
+---
+
 ## [2.9.1+researchops.2026-05-13] - 2026-05-13
 
 ### Added
@@ -102,7 +118,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.9` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.9` across prompt specification, prompt body and XML modules.
 - Updated `release-gate.py` to emit clean timeout and command-failure summaries.
 - Updated offline release-gate workflow validation to use hardened template mode.
 - Updated live release gate to require API-observed repository state.
@@ -138,7 +154,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.8` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.8` across prompt specification, prompt body and XML modules.
 - Updated release-gate execution to call scripts through subprocesses rather than `runpy`, reducing hangs and making exit codes explicit.
 - Updated performance adapters to apply metric profiles and emit canonical metric names.
 - Updated performance-budget checks to support canonical metrics and minimum-threshold comparators.
@@ -353,7 +369,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.1` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.8.1` across prompt specification, prompt body and XML modules.
 - Rewrote `prompt.body.xml` to orchestrate registry, evidence, conformance, gaps, harm register, GitHub settings, performance budgets and graders.
 - Converted `evals.yaml` to executable eval format.
 - Aligned `template-registry.yaml` with `contracts/template-registry.schema.json`.
@@ -417,7 +433,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.7.0` across prompt specification, prompt body and XML modules.
+- Updated the bundle version to `2.7.0` across prompt specification and prompt body.
 - Updated `prompt.spec.yaml` to reference the template registry rather than a partial template list.
 - Shifted grading toward structured evidence rather than arbitrary prose.
 - Wired performance-budget checking into `ci-performance.yml`.
