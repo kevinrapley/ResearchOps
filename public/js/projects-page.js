@@ -1,7 +1,7 @@
 /**
  * @file public/js/projects-page.js
  * @module ProjectsPage
- * @summary Projects list UI with Airtable-first read and CSV fallback.
+ * @summary Projects list UI with Airtable-first read and team-scoped API data.
  */
 
 const CONFIG = Object.freeze({
@@ -12,10 +12,16 @@ const CONFIG = Object.freeze({
 });
 
 const container = document.getElementById("list");
+const startProjectAction = document.querySelector(".projects-page-actions");
 
 function setListBusy(isBusy) {
 	if (!container) return;
 	container.setAttribute("aria-busy", isBusy ? "true" : "false");
+}
+
+function setStartProjectVisible(isVisible) {
+	if (!startProjectAction) return;
+	startProjectAction.hidden = !isVisible;
 }
 
 function escapeHtml(value) {
@@ -84,6 +90,36 @@ function parseCSV(text) {
 	return rows;
 }
 
+function looksLikeIdentityFragment(value) {
+	const text = String(value || "").trim();
+	if (!text) return false;
+	return /"?EMAIL"?\s*:/i.test(text) ||
+		/"?email"?\s*:/i.test(text) ||
+		/^[}\]]+$/.test(text) ||
+		/^[{[]/.test(text) ||
+		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+}
+
+function normaliseList(value, splitPattern = /[\n|,]/) {
+	if (Array.isArray(value)) {
+		return value
+			.map((item) => String(item || "").trim())
+			.filter((item) => item && !looksLikeIdentityFragment(item));
+	}
+
+	return String(value || "")
+		.split(splitPattern)
+		.map((item) => item.trim())
+		.filter((item) => item && !looksLikeIdentityFragment(item));
+}
+
+function firstPresent(...values) {
+	for (const value of values) {
+		if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
+	}
+	return "";
+}
+
 function mapProjectRow(header, row) {
 	const idx = name => header.indexOf(name);
 	const get = name => {
@@ -98,16 +134,22 @@ function mapProjectRow(header, row) {
 		stakeholders = [];
 	}
 
+	const teamName = firstPresent(get("Team Name"), get("Project Team"), get("Owning Team"), get("Org"));
+
 	return {
 		id: get("LocalId") || undefined,
 		name: get("Name"),
 		description: get("Description"),
 		stakeholders,
-		objectives: (get("Objectives") || "").split("|").map(s => s.trim()).filter(Boolean),
-		user_groups: (get("UserGroups") || "").split("|").map(s => s.trim()).filter(Boolean),
+		objectives: normaliseList(get("Objectives") || "", /\r?\n|[|]/),
+		user_groups: normaliseList(get("UserGroups") || "", /\r?\n|[|,]/),
 		createdAt: get("CreatedAt") || "",
 		"rops:servicePhase": get("Phase") || "Discovery",
-		"rops:projectStatus": get("Status") || "Planning research"
+		"rops:projectStatus": get("Status") || "Planning research",
+		teamName,
+		team_name: teamName,
+		team: teamName,
+		org: teamName
 	};
 }
 
@@ -117,7 +159,7 @@ async function fetchWithTimeout(url) {
 	try {
 		const response = await fetch(url, {
 			signal: controller.signal,
-			credentials: "omit",
+			credentials: "include",
 			cache: CONFIG.CACHE
 		});
 		const text = await response.text();
@@ -141,28 +183,46 @@ function normaliseProject(p) {
 
 	const objectivesRaw = p.Objectives ?? p.objectives ?? "";
 	const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
+	const teamName = firstPresent(
+		p.teamName,
+		p.team_name,
+		p.team,
+		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
+		p.Org,
+		p.org
+	);
 
 	return {
 		id: p.LocalId || p.id,
 		name: p.Name ?? p.name ?? "",
 		description: p.Description ?? p.description ?? "",
 		stakeholders,
-		objectives: Array.isArray(objectivesRaw) ? objectivesRaw : String(objectivesRaw).split("\n").map(s => s.trim()).filter(Boolean),
-		user_groups: Array.isArray(groupsRaw) ? groupsRaw : String(groupsRaw).split(",").map(s => s.trim()).filter(Boolean),
+		objectives: normaliseList(objectivesRaw, /\r?\n|[|]/),
+		user_groups: normaliseList(groupsRaw, /\r?\n|[|,]/),
 		createdAt: p.CreatedAt ?? p.createdAt ?? p.createdTime ?? "",
 		"rops:servicePhase": p.Phase ?? p["rops:servicePhase"] ?? "",
-		"rops:projectStatus": p.Status ?? p["rops:projectStatus"] ?? ""
+		"rops:projectStatus": p.Status ?? p["rops:projectStatus"] ?? "",
+		teamName,
+		team_name: teamName,
+		team: teamName,
+		org: teamName
 	};
 }
 
 async function listFromAirtable() {
 	const { ok, status, data } = await fetchWithTimeout(`${CONFIG.API_BASE}/api/projects`);
 	if (!ok || !data?.ok) throw new Error(`Airtable list failed (${status})`);
-	return (data.projects || []).map(normaliseProject);
+	return {
+		projects: (data.projects || []).map(normaliseProject),
+		canStartProject: Boolean(data.canStartProject)
+	};
 }
 
 async function listFromCsv() {
-	const response = await fetch(`${CONFIG.API_BASE}/api/projects.csv`, { cache: CONFIG.CACHE });
+	const response = await fetch(`${CONFIG.API_BASE}/api/projects.csv`, {
+		cache: CONFIG.CACHE,
+		credentials: "include"
+	});
 	if (!response.ok) throw new Error(`CSV fetch failed (${response.status})`);
 	const rows = parseCSV(await response.text());
 	if (!rows.length) return [];
@@ -175,10 +235,11 @@ async function listFromCsv() {
 
 async function listProjects() {
 	try {
-		return { source: "airtable", projects: await listFromAirtable() };
+		const { projects, canStartProject } = await listFromAirtable();
+		return { source: "airtable", projects, canStartProject };
 	} catch (error) {
 		console.warn("[ProjectsPage] Falling back to CSV", error);
-		return { source: "csv", projects: await listFromCsv() };
+		return { source: "csv", projects: await listFromCsv(), canStartProject: false };
 	}
 }
 
@@ -188,6 +249,10 @@ function projectDashboardHref(projectId) {
 
 function projectDashboardLabel(project) {
 	return `View dashboard for ${project.name || "this project"}`;
+}
+
+function projectTeamLabel(project) {
+	return project.teamName || project.team_name || project.team || project.org || "Unassigned team";
 }
 
 function projectCard(project) {
@@ -209,7 +274,7 @@ function projectCard(project) {
 
 	return `
 <article class="card" aria-labelledby="project-title-${projectId}">
-	<p class="project-org">${escapeHtml(project.org || project.Org || "Home Office Biometrics")}</p>
+	<p class="project-org"><span class="govuk-visually-hidden">Team: </span>${escapeHtml(projectTeamLabel(project))}</p>
 	<h3 id="project-title-${projectId}" class="project-title govuk-heading-m">
 		<a class="govuk-link" href="${dashboardHref}" rel="bookmark">${escapeHtml(project.name)}</a>
 	</h3>
@@ -231,12 +296,12 @@ function projectCard(project) {
 </article>`;
 }
 
-function renderEmptyState() {
+function renderEmptyState(canStartProject = false) {
 	container.innerHTML = `
 <div class="projects-empty-state" role="status">
 	<h3 class="govuk-heading-m">No projects yet</h3>
 	<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
+	${canStartProject ? '<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>' : ""}
 </div>`;
 }
 
@@ -244,16 +309,16 @@ function renderErrorState(error) {
 	container.innerHTML = `
 <div class="projects-error-state" role="alert">
 	<h3 class="govuk-heading-m">Could not load projects</h3>
-	<p class="govuk-body">Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.</p>
+	<p class="govuk-body">Project records could not be loaded. Try again later.</p>
 	<p class="govuk-body">Technical detail: ${escapeHtml(error?.message || error)}</p>
-	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
 </div>`;
 }
 
-function render(projects, source) {
+function render(projects, source, canStartProject = false) {
+	setStartProjectVisible(canStartProject);
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	if (!projects.length) {
-		renderEmptyState();
+		renderEmptyState(canStartProject);
 		return;
 	}
 	container.innerHTML = projects.map(projectCard).join("");
@@ -267,11 +332,13 @@ function render(projects, source) {
 
 (async () => {
 	if (!container) return;
+	setStartProjectVisible(false);
 	setListBusy(true);
 	try {
-		const { source, projects } = await listProjects();
-		render(projects, source);
+		const { source, projects, canStartProject } = await listProjects();
+		render(projects, source, canStartProject);
 	} catch (error) {
+		setStartProjectVisible(false);
 		renderErrorState(error);
 	} finally {
 		setListBusy(false);
