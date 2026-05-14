@@ -7,11 +7,11 @@ const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
@@ -47,8 +47,8 @@ excludes(pageSource, "data-api-origin=\"https://rops-api.digikev-kevin-rapley.wo
 
 includes(controllerSource, "const API_ORIGIN", "project dashboard controller");
 includes(controllerSource, "window.API_ORIGIN", "project dashboard controller");
-includes(controllerSource, "function pickProject", "project dashboard controller");
-includes(controllerSource, "async function loadProjects", "project dashboard controller");
+includes(controllerSource, "async function loadProject(projectId)", "project dashboard controller");
+includes(controllerSource, "/api/projects/${encodeURIComponent(projectId)}", "project dashboard controller");
 includes(controllerSource, "async function loadStudies", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
@@ -58,9 +58,12 @@ includes(controllerSource, "function initObjectiveForm", "project dashboard cont
 includes(controllerSource, "function initUserGroupForm", "project dashboard controller");
 includes(controllerSource, "function initProjectActions", "project dashboard controller");
 includes(controllerSource, "data-project-id", "project dashboard controller");
+includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
 includes(controllerSource, "/api/projects", "project dashboard controller");
 includes(controllerSource, "/api/studies", "project dashboard controller");
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
+excludes(controllerSource, "function pickProject", "project dashboard controller");
+excludes(controllerSource, "async function loadProjects", "project dashboard controller");
 excludes(controllerSource, "function initStudyModal", "project dashboard controller");
 
 includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
