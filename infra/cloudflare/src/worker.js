@@ -1,4 +1,4 @@
-import { handleMeRoute } from "./core/auth/access-scoped.js";
+import { handleMeRoute, resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
@@ -94,15 +94,29 @@ function serviceFor(env) {
 	return new ResearchOpsService(envCompat(env));
 }
 
+async function authContextFor(request, env) {
+	return resolveAuthenticatedContext(request, env);
+}
+
 async function handleProjects(request, env) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
-	return serviceFor(env).listProjectsFromAirtable(origin, url);
+	const authContext = await authContextFor(request, env);
+	const service = serviceFor(env);
+
+	if (request.method === "GET") return service.listProjectsFromAirtable(origin, url, authContext);
+	if (request.method === "POST") return service.createProjectInAirtable(request, origin, authContext);
+
+	return new Response(JSON.stringify({ error: "Method not allowed" }), {
+		status: 405,
+		headers: { "content-type": "application/json; charset=utf-8" }
+	});
 }
 
 async function handleProjectRecord(request, env, apiPath) {
 	const origin = request.headers.get("Origin") || "";
 	const service = serviceFor(env);
+	const authContext = await authContextFor(request, env);
 	const match = apiPath.match(/^\/api\/projects\/([^/]+)$/);
 
 	if (!match) {
@@ -113,8 +127,8 @@ async function handleProjectRecord(request, env, apiPath) {
 	}
 
 	const projectId = decodeURIComponent(match[1]);
-	if (request.method === "GET") return service.getProjectById(origin, projectId);
-	if (request.method === "PATCH") return service.updateProjectFraming(request, origin, projectId);
+	if (request.method === "GET") return service.getProjectById(origin, projectId, authContext);
+	if (request.method === "PATCH") return service.updateProjectFraming(request, origin, projectId, authContext);
 
 	return new Response(JSON.stringify({ error: "Method not allowed" }), {
 		status: 405,
@@ -184,7 +198,7 @@ export default {
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
-			else if (method === "GET" && apiPath === "/api/projects") result = await handleProjects(request, env);
+			else if ((method === "GET" || method === "POST") && apiPath === "/api/projects") result = await handleProjects(request, env);
 			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
