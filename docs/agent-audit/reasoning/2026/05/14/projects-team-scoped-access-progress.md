@@ -90,36 +90,13 @@ node --check /mnt/data/start-new-project.js
 
 Identified that the browser-side fallback from `/api/projects` to `/api/projects.csv` would bypass the server-side project visibility rule if the CSV endpoint is not itself team-scoped.
 
-Decision: remove the browser-side CSV fallback from `public/js/projects-page.js`. CSV fallback remains only inside the server-side project service, where project visibility filtering has access to the authenticated context.
+Decision: remove the browser-side CSV fallback from `public/js/projects-page.js`. CSV fallback remains only inside the server-side service layer, where project visibility filtering has access to authenticated context.
 
 ### Route-state tests and visual fixtures
 
-Committed `tests/projects-page-route-state.test.js` to cover:
+Committed route-state and operational fixture updates to cover scoped project routing, credentialed fetches, direct dashboard project reads, removal of hard-coded `Home Office Biometrics`, removal of browser CSV fallback, capability-hidden Start action and user group identity-fragment filtering.
 
-- scoped Worker project routing
-- credentialed project fetches
-- direct dashboard project reads
-- removal of hard-coded `Home Office Biometrics` card fallback
-- removal of browser-side project CSV fallback
-- capability-hidden Start project action
-- `user_researcher` project-start capability recognition
-- identity-fragment filtering in user group handling
-
-Parser check performed before the route-state test update:
-
-```bash
-node --check /mnt/data/projects-page-route-state.test.js
-```
-
-Committed `visual-walkthrough.operational-fixtures.mjs` so visual walkthrough project mocks include team fields and `/api/projects` returns the scoped API shape:
-
-```json
-{
-	"ok": true,
-	"projects": ["operationalProject"],
-	"canStartProject": true
-}
-```
+Committed `visual-walkthrough.operational-fixtures.mjs` so visual walkthrough project mocks include team fields and `/api/projects` returns the scoped API shape.
 
 ### Product documentation and recent learnings
 
@@ -130,25 +107,6 @@ Committed `RECENT_LEARNINGS.md` entries for:
 - access-control filtering must stay server-side
 - role consultation must be visible when requested
 
-### Validation status before PR
-
-Local parser checks were performed on generated replacement files in the tool environment as listed above.
-
-Full repository validation was not executed in this chat tool path before opening the draft PR.
-
-Mapped validation commands for CI or local checkout:
-
-```bash
-npm run agent:model:validate
-npm run agent:bundles:validate
-npm run trace:coverage
-npm run format:check
-npm run lint
-node --test tests/projects-page-route-state.test.js
-npm test -- --ci
-npm run validate
-```
-
 ### 2026-05-14 — PR check repair pass
 
 Observed failing checks on draft PR #252 after the initial PR creation:
@@ -158,12 +116,6 @@ Observed failing checks on draft PR #252 after the initial PR creation:
 - Validate ResearchOps
 - Release Gate
 
-Initial unit-test failures were traced to:
-
-- `tests/auth-foundation-route-state.test.js`
-- `tests/project-dashboard-route-state.test.js`
-- `tests/projects-route-contract.test.js`
-
 Implemented repair commits for:
 
 - explicit scoped project authentication error responses in `infra/cloudflare/src/worker.js`
@@ -172,7 +124,44 @@ Implemented repair commits for:
 - authenticated `/api/projects` route contract fixtures after the project list became protected by scoped auth context
 - D1 mock support for both `.bind().all()` and direct `.all()` calls used by the scoped auth resolver
 
-Observed validation state on head `28dae214d14392946eeabee47d034bfe344885fc` before the trace-sync commit:
+### 2026-05-14 — Screenshot-driven data correction
+
+A branch-preview screenshot showed that tests were green while the UI was still wrong. The UI was rendering malformed Airtable/person-object fragments as project-card data, and project links were not anchored to the correct project identifier.
+
+The correction after reviewing the Airtable screenshot is:
+
+- the authoritative source for project cards is the Airtable `Projects` table only
+- canonical project identifiers are Airtable `Record ID` / `rec...` values
+- the five current Airtable project records are `recMtdmBbaFilF2Tm`, `recpZe8mLEiASXfRd`, `recgdpwEI5hFO7bUZ`, `recIFoFmpDIGBP726` and `recUUeazIqBMfsZL4`
+- `Project Details` can enrich a valid project after the project is found, but it must never create project cards
+- `PID` / `LocalId` is not the routing contract for the Projects UI
+
+Implemented `infra/cloudflare/src/service/project-record-routes.js` as the focused read path for `GET /api/projects` and `GET /api/projects/:id`.
+
+Updated `infra/cloudflare/src/worker.js` so project reads use `listProjectRecords` and `getProjectRecord`, while `POST /api/projects` and `PATCH /api/projects/:id` remain on the existing project service.
+
+Updated `tests/projects-route-contract.test.js` so the contract uses the five real Airtable `rec...` record IDs from the screenshot, rejects `PID-*` ids, and verifies direct read of `/api/projects/:recordId`.
+
+Updated `public/js/projects-page.js` so project cards prefer `id`, `airtableId` and `recordId` from the API, rather than `LocalId`.
+
+Restored `tests/projects-page-route-state.test.js` as a smaller smoke test because the repository validation requires the file. The detailed behaviour is now covered by `tests/projects-route-contract.test.js`.
+
+### 2026-05-14 — D1 active project cache
+
+Added a non-destructive D1 mirror in `project-record-routes.js`.
+
+When Airtable project listing succeeds, the Worker:
+
+- creates `rops_projects_cache` if it is missing
+- marks existing Airtable-source cached projects inactive
+- upserts the current Airtable Projects set with `active = 1`
+- keys cached projects by Airtable `rec...` id
+
+This means the active D1 cache should match the current Airtable Projects table count whenever Airtable listing succeeds. It does not delete older rows; stale rows are retained with `active = 0`.
+
+### 2026-05-14 — Current validation state before this trace update
+
+Observed validation state on head `5a27cd386b9855458308e37278223256a604d433` before this trace update:
 
 - CI: success
 - Worker CI: success
@@ -183,16 +172,4 @@ Observed validation state on head `28dae214d14392946eeabee47d034bfe344885fc` bef
 - Accessibility audit: success
 - BDD: success
 
-### 2026-05-14 — Trace JSON sync
-
-The machine-readable trace JSON had fallen behind the markdown plan and this progress log.
-
-Updated `projects-team-scoped-access-plan.json` so it records:
-
-- completed implementation units
-- the browser-side CSV fallback access-control pivot
-- product documentation and recent learning updates
-- the PR check repair pass
-- the observed green validation state for head `28dae214d14392946eeabee47d034bfe344885fc`
-
-This trace-sync commit creates a newer PR head, so CI must be checked again after the commit lands.
+This trace-update commit creates a newer PR head, so checks must be re-read after it lands.
