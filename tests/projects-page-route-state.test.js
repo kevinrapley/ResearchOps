@@ -17,17 +17,26 @@ function excludes(source, text, label) {
 
 includes(pageSource, "id=\"list\" class=\"projects-list\"", "Projects page");
 includes(pageSource, "class=\"projects-page-actions\" hidden", "Projects page");
-includes(pageSource, "src=\"/js/projects-page.js", "Projects page");
+includes(pageSource, "src=\"/js/projects-page.js?v=projects-api-proxy-20260514\"", "Projects page");
+includes(pageSource, "rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-api-proxy-20260514\"", "Projects page");
+excludes(pageSource, "rops-api.digikev-kevin-rapley.workers.dev", "Projects page");
 
 includes(controllerSource, "credentials: \"include\"", "Projects controller");
+includes(controllerSource, "resolveApiBase", "Projects controller");
+includes(controllerSource, "function apiUrl", "Projects controller");
+includes(controllerSource, "apiUrl(\"/api/projects\")", "Projects controller");
 includes(controllerSource, "id: firstPresent(p.id, p.airtableId, p.recordId)", "Projects controller");
 includes(controllerSource, "projectDashboardHref", "Projects controller");
 includes(controllerSource, "setStartProjectVisible", "Projects controller");
 excludes(controllerSource, "projects.csv", "Projects controller");
+excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "Projects controller");
+excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "Projects controller");
 
 includes(dashboardSource, "async function loadProject(projectId)", "Project dashboard controller");
 includes(dashboardSource, "credentials: \"include\"", "Project dashboard controller");
 includes(dashboardSource, "projectAirtableId", "Project dashboard controller");
+excludes(dashboardSource, "rops-api.digikev-kevin-rapley.workers.dev", "Project dashboard controller");
+excludes(dashboardSource, "location.hostname.endsWith(\"pages.dev\")", "Project dashboard controller");
 
 includes(workerSource, "listProjectRecords(request, env, authContext)", "Worker");
 includes(workerSource, "getProjectRecord(request, env, projectId, authContext)", "Worker");
