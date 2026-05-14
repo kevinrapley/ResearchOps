@@ -1,16 +1,18 @@
 # ResearchOps Platform — Master Prompt
 
-Version: 3.0.0
+Version: 4.0.0
 Date: 2026-05-14
-Status: Canonical master prompt — King of the World tier
-Scope: ResearchOps platform (this repository)
-Authority: This document is a synthesis layer over canonical sources. It is authoritative as a reading order and operating posture. Where a canonical bundle, reference, schema, fixture, route handler or repository contract disagrees with this prompt, the canonical source wins and this prompt must be updated.
+Status: Canonical master prompt
+Scope: ResearchOps platform (this repository) and the research-operations practice it serves
+Authority: This document is a synthesis over canonical sources. Authoritative as reading order and operating posture. Where a canonical bundle, reference, schema, fixture, route handler, Sourcebook pillar or repository contract disagrees with this prompt, the canonical source wins and this prompt must be updated.
 
 ---
 
 ## 0. Preamble
 
-ResearchOps is not a generic productivity tool. It is a public-service research operations platform with audit, ethics, accessibility, consent and traceability obligations. An agent, contributor or model working on this repository operates inside a governed system with real participants, real consent, real lawful basis and real retention timers.
+ResearchOps is not a generic productivity tool. It is a public-service research operations platform with audit, ethics, accessibility, consent and traceability obligations. It supports a practice — research operations — that exists to keep public services honest about what users need, how they experience them, and what evidence justifies decisions.
+
+An agent, contributor or model working on this repository operates inside a governed system with real participants, real consent, real lawful basis and real retention timers. Half of what matters is in code. The other half is in the practice manual the platform serves.
 
 Read this document end-to-end. Resolve the canonical sources it points to. Then act.
 
@@ -20,25 +22,27 @@ Read this document end-to-end. Resolve the canonical sources it points to. Then 
 
 ResearchOps is a Cloudflare-hosted, Airtable-backed, GOV.UK-styled platform that supports user research operations across the lifecycle of a service project. It helps multidisciplinary public-service teams plan, run, govern and synthesise primary research so that decisions are traceable from evidence to insight to recommendation.
 
-The platform exists to:
+Mission:
 
 - give research-active teams a single operational surface for projects, studies, participants, sessions, guides, consent, journals, codes, memos, excerpts, analysis and synthesis
-- protect participants through consent lifecycle management, ethics review, accessibility, lawful-basis recording, retention and data minimisation by default
+- protect participants through consent lifecycle, ethics review, accessibility, lawful basis and retention
 - preserve auditable traceability from raw evidence to insight to recommendation
-- align with GOV.UK service standards and assisted-digital expectations
-- integrate with Airtable for source-of-truth records, Mural for collaborative synthesis and reflexive journals, OpenAI / Workers AI for assistive text operations, and GitHub-backed CSV for resilient fallbacks
+- align with UK Service Standard, GDPR, Equality Act and Public Sector Bodies Accessibility Regulations
+- integrate with Airtable, Mural, Workers AI / OpenAI, GitHub CSV and Resend through audited adapters
 - give delivery teams a deployment-controlled, contract-tested, accessibility-validated path to production
 
-Core manifesto:
+Manifesto (eight pillars):
 
 1. **Evidence before claim.** Recommendations require traceable insights; insights require traceable evidence.
 2. **Consent before contact.** Participant data is not used until consent is recorded, lawful basis is set, retention schedule is set, and current.
-3. **Accessibility is non-negotiable.** GOV.UK semantics, WCAG compliance and assistive-technology behaviour are first-class.
-4. **Inspect before edit.** No speculative changes; no invented endpoints, fields, table names or schemas.
-5. **Contract before convenience.** Route contracts, fixture catalogues, schemas and conformance matrices govern API and UI behaviour.
+3. **Accessibility is non-negotiable.** GOV.UK semantics, WCAG and assistive-technology behaviour are first-class.
+4. **Inspect before edit.** No speculative changes. No invented endpoints, fields, table names or schemas.
+5. **Contract before convenience.** Route contracts, fixtures, schemas and conformance matrices govern behaviour.
 6. **Human accountability is preserved.** Agents propose; humans approve phase changes and authoritative use.
-7. **Truthful status, always.** Do not state work is complete, merged, deployed or validated without observable evidence.
-8. **Provenance survives refactors.** The evidence chain must survive exports, syncs, withdrawals and integration round-trips.
+7. **Truthful status, always.** No claim of complete, merged, deployed or validated without observable evidence.
+8. **Provenance survives refactors, exports, syncs and withdrawals.** The chain persists or the work is invalid.
+
+Standing posture: **least privilege, pseudonymisation by default, explicit reveal, audited assist**. AI is an assistant, not an author of authoritative findings. Generated content is distinguishable from human-authored decisions.
 
 ---
 
@@ -46,103 +50,670 @@ Core manifesto:
 
 End-user personas:
 
-- **Service owner / delivery lead** — needs oversight of research activity across phases.
+- **Service owner / delivery lead** — oversight of research activity across phases.
 - **User researcher** — plans studies, runs sessions, manages participants, synthesises findings.
-- **Designer** — consumes insights, runs design critiques.
-- **Product manager** — owns discovery decisions and prioritisation.
+- **Research lead** — owns research quality, capability and approvals.
+- **Research operations** — owns recruitment, consent, panel governance, integrations and reusable process.
+- **Designer / interaction designer / service designer / content designer** — consume insights and contribute to design critique.
+- **Product manager / product owner** — owns discovery decisions and prioritisation.
+- **Approver** — explicitly authorised to approve studies or findings.
+- **Reviewer** — explicitly authorised to review governed records.
 - **Ethics reviewer** — governs participant protection.
 - **Accessibility specialist** — validates inclusive practice.
-- **Team admin** — manages team membership, role assignments and registration requests.
-- **ResearchOps Core Team Admin** — wider administrative capability across teams (special role).
+- **Safeguarding Lead** — sees, records and resolves safeguarding concerns.
+- **Team admin** — manages team membership and role assignments.
+- **ResearchOps Core Team Admin** — wider administrative capability across teams.
+- **Observer** — read-only access to low-risk research context.
 - **Participant** — a member of the public whose data, consent and dignity the platform must protect.
 
-Internal contributor personas: Developer, QA engineer, DevOps engineer, Security engineer.
+Internal contributor personas: Developer, QA engineer, DevOps engineer, Security engineer, Trauma-informed design advocate.
 
-Agent role lenses (from `bundles/researchops-developer-control/roles/`):
+Agent role lenses (`bundles/researchops-developer-control/roles/`): `research-operations`, `developer`, `qa`, `security`, `accessibility`, `devops`, `governance`, `metrics`, `user-research`, `product`, `ethics`.
 
-| Role | Focus |
-|------|-------|
-| `research-operations` | Recruitment, consent, sessions, guides, data handling, synthesis operations and reusable research process. |
-| `developer` | Implementation, repository inspection, architecture fit, tests, maintainability. |
-| `qa` | Regression, contract, route-state, browser, accessibility and release-gate testing. |
-| `security` | Authentication, authorisation, logging, secret handling, least privilege, sensitive data protection. |
-| `accessibility` | WCAG, GOV.UK component behaviour, keyboard, focus, labels, errors, assistive technology. |
-| `devops` | Cloudflare deployment, CI, release gates, caching, workflow safety, operational evidence. |
-| `governance` | Controls, auditability, traceability, conformance matrix, gap register, release readiness. |
-| `metrics` | Performance, analytics, measurement design, evidence quality, meaningful indicators. |
-| `user-research` | Research quality, consent, ethics, evidence traceability, participant safety, insight validity. |
-| `product` | User need, service value, prioritisation, delivery risk, operational acceptance. |
-| `ethics` | Research ethics, safeguarding, consent, data minimisation, provenance, harm prevention. |
+The Multi-Functional Team bundle (`bundles/multi-functional-team/`) exposes a wider 25-role registry covering accessibility, business analysis, content design, content strategy, data analyst, data science, delivery operations, developer, devops, ethical AI, governance, information architect, interaction design, legal, policy, privacy, product management, QA, research operations, safeguarding lead, security, service design, service owner, solutions architecture, team-mode, technical architecture, trauma-informed design advocate and user research.
 
-Select the role lens that matches the surface you are touching. Tag the role in your trace and PR notes when one role dominates the work.
+Select the role lens that matches the surface you are touching. Tag the role in your trace and PR notes when one role dominates.
 
 ---
 
-## 3. Domain model and vocabulary
+## 3. Domain model, invariants and vocabulary
 
-Core entities and their semantics:
+Core entities:
 
-- **Project** — the unit of service work in a phase (Discovery, Alpha, Beta, Live), with name, org, status, description, objectives, stakeholders, user groups, outputs.
+- **Project** — unit of service work in a phase (Discovery, Alpha, Beta, Live) with name, org, status, description, objectives, stakeholders, user groups, outputs.
 - **Project Detail** — extended project record linked to a project.
-- **Study** — a planned piece of research inside a project, with method, sample, recruitment criteria, schedule and outputs.
-- **Participant** — a person who has consented to take part. Identified by pseudonym, user type, status, consent status.
-- **Session** — a recorded research interaction (interview, usability test, workshop, observation) — has start time, type (Remote / In person), status (Scheduled / Completed / Cancelled / Did not attend).
+- **Study** — a planned piece of research inside a project; method, sample, recruitment criteria, schedule, outputs.
+- **Participant** — a person who has consented; pseudonym, user type, status, consent status.
+- **Session** — recorded research interaction; start time, type (Remote / In person), status (Scheduled / Completed / Cancelled / Did not attend).
 - **Session Note** — notes captured during or after a session, linked to a session.
-- **Discussion Guide** — the protocol used to run a session (Markdown / Mustache template, versioned, with publish state).
-- **Partial** — a reusable template fragment included by guides and consent forms.
-- **Consent Form** — a versioned consent document with required statements and optional permissions, in draft or published state.
-- **Participant Consent Record** — a consent decision linking a participant to a specific consent form version, with status (`Ready for session`, `Needs review`, `Needs consent`, `Withdrawn`, `Not recorded`), captured responses, capture method, recorded-by, recorded-at, withdrawal reason and timestamp.
-- **Journal Entry** — a notes record produced during or after a session, categorised (`decisions`, `insights`, `risks`, reflexive), tagged, linked to project and optionally study.
+- **Discussion Guide** — versioned Markdown / Mustache protocol with publish state.
+- **Partial** — reusable template fragment for guides and consent forms.
+- **Consent Form** — versioned document with required statements and optional permissions, draft or published.
+- **Participant Consent Record** — consent decision tied to a consent-form version, with status (`Ready for session`, `Needs review`, `Needs consent`, `Withdrawn`, `Not recorded`), responses, capture method, recorded-by, recorded-at, withdrawal reason and timestamp.
+- **Journal Entry** — categorised reflexive or operational note (`decisions`, `insights`, `risks`, reflexive), tagged, linked to project and optionally study.
 - **Journal Excerpt** — a quote from a journal entry, tagged, used as evidence.
-- **Memo** — an analyst working note.
-- **Code** — a qualitative analysis code (label, definition).
-- **Code Application** — an application of a code to a piece of evidence.
-- **Insight** — a synthesised statement traceable to one or more pieces of evidence (sessions, journal entries, excerpts).
-- **Cluster** — a synthesis grouping of related evidence.
-- **Theme** — a higher-order synthesis grouping of clusters.
-- **Recommendation** — a proposed action traceable to one or more insights.
-- **Impact / Outcome** — a measurable outcome tracked over time.
-- **Mural Board** — a Mural workspace board linked to a project.
-- **AI Usage Log** — recorded model interactions for audit (`AI_Usage` table).
-- **Provenance Event** — an audit event for any creation, update, withdrawal or sync action.
+- **Memo** — analyst working note.
+- **Code** — qualitative analysis code (label, definition).
+- **Code Application** — code applied to a piece of evidence.
+- **Insight** — synthesised statement, traceable to evidence (sessions, journal entries, excerpts, memos).
+- **Cluster** — synthesis grouping of evidence.
+- **Theme** — higher-order grouping of clusters.
+- **Recommendation** — proposed action traceable to insights.
+- **Impact / Outcome** — measurable outcome tracked over time.
+- **Mural Board** — Mural workspace board linked to a project.
+- **AI Usage Log** — recorded model interactions (`AI_Usage` table).
+- **Provenance Event** — audit event for creation, update, withdrawal or sync (see §21).
+
+Lifecycle states (from design critique, Round 2):
+
+- **Study** — Draft → Approved → Active recruitment → Sessions underway → Analysis in progress → Findings reviewed → Recommendations accepted.
+- **Workflow status** is distinct from **content status**. A discussion guide may be draft while the study is approved.
+- **Evidence maturity** — Raw notes → Coded themes → Validated insights → Accepted recommendations.
 
 Domain invariants:
 
 - A study belongs to exactly one project.
 - A session belongs to exactly one study and references one participant and one guide.
-- A participant may appear in many sessions across many studies; each appearance carries its own consent record version.
-- A journal entry references one project, optionally one study; an excerpt references the parent journal entry and may carry tags.
-- An insight references one or more pieces of evidence (sessions, journal entries, excerpts, memos). An insight without evidence is invalid.
-- A recommendation references one or more insights. A recommendation without insights is invalid.
-- A consent record is binding. Withdrawal sets `withdrawn = true`, records `withdrawal_reason`, marks status `Withdrawn`, timestamps the withdrawal, and propagates a provenance event downstream.
-- Discussion guides and consent forms are versioned; only published versions may be referenced by sessions and consent records.
+- A participant may appear in many sessions; each appearance carries its own consent record version.
+- A journal entry references one project, optionally one study. An excerpt references a parent journal entry.
+- An insight references one or more pieces of evidence. **An insight without evidence is invalid.**
+- A recommendation references one or more insights. **A recommendation without insights is invalid.**
+- A consent record is binding. Withdrawal sets `withdrawn = true`, records `withdrawal_reason`, marks status `Withdrawn`, timestamps the withdrawal, emits a provenance event.
+- Only **published** consent-form versions may anchor a participant consent record.
+- Only **published** discussion guides may anchor a session.
 - Phase changes are human-owned.
+- Pseudonymisation is the default participant view. Reveal of identifiable data is an explicit, audited action.
+- AI-generated content is labelled and distinguishable from human-authored content.
 
 Vocabulary — terms to use exactly:
 
-- **Phase**, not stage. Allowed values: Discovery, Alpha, Beta, Live.
+- **Phase**, not stage. Discovery, Alpha, Beta, Live.
 - **Study**, not workstream.
 - **Participant**, not subject or user (when referring to the person we research with).
 - **Discussion guide**, not script.
 - **Consent form**, not consent document.
-- **Journal entry**, not note (notes are a different thing — session notes).
+- **Journal entry**, not note (notes are session notes — a different thing).
 - **Excerpt**, not snippet or quote (when referring to tagged journal evidence).
 - **Insight** and **recommendation** are distinct. Do not collapse them.
-- **Lawful basis**, not legal basis (the consent schema uses `LawfulBasis`).
-- **Retention schedule**, not retention period (ISO 8601 duration form, e.g. `P12M`).
+- **Lawful basis**, not legal basis. Schema field `LawfulBasis`.
+- **Retention schedule**, not retention period. ISO 8601 duration (e.g. `P12M`).
+- **Reveal**, not unmask, when referring to authorised display of identifiable participant data.
+- **Sensitive role**, not privileged role.
 
-Design patterns applied to the domain (`references/researchops-design-patterns.xml`):
+Design patterns (`references/researchops-design-patterns.xml`):
 
-- `project-context` — pages scoped to a project must preserve project identity and return routes.
-- `study-context` — pages scoped to a study must preserve both project and study identity.
+- `project-context` — pages scoped to a project preserve project identity and return routes.
+- `study-context` — pages scoped to a study preserve both project and study identity.
 - `empty-state` — empty states explain what is missing and what the user can do next.
 - `check-before-write` — high-impact actions validate and show a check step before write.
 
 ---
 
-## 4. User journeys
+## 4. The Sourcebook spine — eight pillars and the R/P/G/C system
 
-The platform organises around six canonical journeys (from `reports-site/manifest.json`):
+The **Sourcebook** (`docs/devops/sourcebook/`, served as the Pages site `https://reops-sourcebook.pages.dev/`) is the practice manual the platform supports. It is organised into eight pillars with Dublin Core + SKOS metadata. The platform supports the practice; the Sourcebook describes how the practice should run.
+
+Pillars:
+
+1. **ORG-CONT — Organisational Context.** Stakeholder management, engagement, strategic objectives, research independence.
+2. **ENVIRO — Environment for Research Practice.** Education, buy-in, maturity, community of practice.
+3. **SCOPE — Scoping Research.** Tactical vs. strategic, reach, impact, programme planning, method selection.
+4. **REC-ADMN — Recruitment & Administration.** Sourcing, panels, inclusive recruitment, incentives, consent capture, attendance and attrition tracking.
+5. **DATA-STO-ACC — Knowledge Management.** Storage, access control, GDPR, lifecycle, disposal, repository entries, taxonomy, retrieval.
+6. **PEOP-COMM — People & Communities of Practice.** Competency frameworks, professional development, role descriptions, communities.
+7. **GOVERN — Legal & Ethical Governance.** Ethics lifecycle, GDPR compliance, bias management, incident handling, escalation.
+8. **INFRA-PROV — Systems & Tools.** Procurement, templates, tooling requirements, integration workflow.
+
+Rule type system used throughout the Sourcebook:
+
+- **R — Rule.** Mandatory, enforceable, auditable.
+- **P — Principle.** Guides judgement when rules do not directly apply. Expresses values: inclusion, safety, traceability, proportionality.
+- **G — Guidance.** Optional practice that improves consistency and reduces risk.
+- **C — Conduct.** Conduct standards for professionalism, ethics, respect and safeguarding.
+
+Standards referenced by the Sourcebook:
+
+- GOV.UK Service Manual guidance.
+- GOV.UK Design Principles.
+- UKRI-ESRC ethical principles.
+- ICO and GDPR data-protection requirements.
+- Equality Act 2010.
+- Public Sector Bodies Accessibility Regulations 2018 (PSBAR).
+- WCAG 2.2 AA.
+- ISO 9241-210 (human-centred design).
+
+Pillar excerpts (selected):
+
+- **SCOPE 1.1.1** — Scope must be proportionate to risk, impact and intended outcomes; shaped through early dialogue with product, policy, operational and technical stakeholders; consider equity, accessibility and inclusion in defining who research should reach; recognise organisational constraints; maximise learning efficiency.
+- **SCOPE 1.1.2** — Method selection must be documented with justification demonstrating alignment to study goals, constraints and ethical considerations.
+- **SCOPE 2.1.3** — When research uncovers cross-service implications, record them early, notify responsible product or service owners, and escalate risks relating to legality, equity or operational feasibility.
+- **REC-ADMN 1.1.1** — Sampling reflects the intended population; exclusion introduces systematic bias.
+- **REC-ADMN 1.2.1** — Panel CRM stores consent, preferences and participation history; refreshed and retired routinely.
+- **REC-ADMN 1.3.1** — Recruitment actively broadens representation; accessible inclusive language; reasonable adjustments; bias awareness.
+- **REC-ADMN 2.1.1** — Incentives match effort and complexity; avoid undue influence; pay promptly; alternatives for vulnerable groups.
+- **REC-ADMN 3.0.x** — Consent is informed, documented and securely stored; reconfirmed during longitudinal studies.
+- **GOVERN 1.1.1** — Ethics is reviewed before, during and after research — not a one-off task.
+- **GOVERN 1.1.2** — Researchers apply GDPR & DPA, Equality Act 2010, Accessibility Regulations, UKRI-ESRC frameworks.
+- **GOVERN 2.1.2** — Compliance embedded throughout: standard consent models, secure storage, capture/transfer/storage/sharing/disposal protocols, periodic audits, incident response plan.
+- **GOVERN 3.1.2** — Study-level risk assessments; safeguards documented; incident log; annual and post-incident review.
+
+---
+
+## 5. Research method catalogue and method-playbook discipline
+
+Methods catalogued (Sourcebook `method-playbook-index.md`):
+
+| Method | Use | Intent |
+|--------|-----|--------|
+| Semi-structured interviews | Exploratory, formative | Qualitative |
+| Usability testing | Evaluative | Qualitative |
+| Diary study | Longitudinal, behavioural | Qualitative |
+| Survey | Quantitative, attitudinal | Quantitative |
+| Card sorting | Information architecture | Qualitative |
+| Tree testing | Navigation, findability | Quantitative |
+| Contextual enquiry | Observational, in-context | Qualitative |
+
+Method selection rules:
+
+- Method must match question type (exploratory / evaluative / strategic / tactical).
+- Method must match risk category (sensitive topic / vulnerable participants / high-stakes service).
+- Method must match accessibility needs (BSL interpretation, Easy Read materials, AT compatibility, language access).
+- Method must match operational feasibility (time, capability, tooling, ethical boundary).
+- Method selection is documented with justification.
+
+Playbook expectations per method:
+
+- Purpose and decision supported.
+- When to use and when not to use.
+- Materials checklist (guide, consent form, recording setup, debrief script).
+- Participant fit and recruitment criteria.
+- Accessibility considerations.
+- Distress and safeguarding protocols.
+- Analysis approach and synthesis pathway.
+- Output artefacts and shareback patterns.
+
+The repository does not yet hold per-method playbooks. Treat the `method-playbook-index.md` as a future-extension surface. Do not invent playbooks; record gaps in the gap register and propose drafts through the product process.
+
+---
+
+## 6. UK Service Standard alignment and phase expectations
+
+The platform is built and assessed against the **14-point UK Service Standard**:
+
+1. Understand users and their needs.
+2. Solve a whole problem for users.
+3. Provide joined-up experience across all channels.
+4. Make the service simple to use.
+5. Make sure everyone can use the service.
+6. Have a multidisciplinary team.
+7. Use agile ways of working.
+8. Iterate and improve frequently.
+9. Create a secure service which protects users' privacy.
+10. Define what success looks like and publish performance data.
+11. Choose the right tools and technology.
+12. Make new source code open.
+13. Use and contribute to open standards.
+14. Operate a reliable service.
+
+Standing assessment posture (from `docs/assessments/alpha-assessment.md`):
+
+| Point | Status | Notable gap |
+|-------|--------|-------------|
+| 1 | Not met | Discovery and alpha research evidence not yet committed. |
+| 2 | Met with concerns | End-to-end flow exists; lacks degradation story for Airtable / Mural / GitHub CSV outage. |
+| 3 | Met | Consistent navigation, shared chrome. |
+| 4 | Met with concerns | GOV.UK look-and-feel; no usability test outputs. |
+| 5 | Not met | Pa11y limited to 3 URLs; no AT testing; no accessibility statement. |
+| 6 | Met with concerns | Roles documented; commit history single-author. |
+| 7 | Met with concerns | Issue templates present; no published cadence. |
+| 8 | Met with concerns | CI/deploy automation present; no changelog, release notes, feature flags. |
+| 9 | **Not met (most material gap)** | API lacks auth/authz at the network boundary; AI rewrite lacks PII redaction; no CSP, HSTS, Permissions-Policy headers; no DPIA. |
+| 10 | Not met | No defined KPIs, performance dashboard, SLOs, error budgets. |
+| 11 | Not met | Package script drift, duplicate CORS, no source-of-truth declaration, no frontend bundler. |
+| 12 | Met | Public repo; **LICENSE missing** (Open Government Licence v3 recommended). |
+| 13 | Met | Strong use of JSON-LD, Dublin Core, SKOS, Web Annotation, Schema.org, PROV, DPV, ISO 8601, ICS, GOV.UK tokens, RDFa. |
+| 14 | Not met | No SLOs, error budget, incident runbook, on-call rota, D1 backup strategy, Airtable export schedule. |
+
+Standing remediation priorities (top ten, ordered):
+
+1. Authentication in front of the API (Cloudflare Access, mTLS, or signed tokens). Participant and consent routes must not be publicly exposed.
+2. Define `test` and `typecheck` scripts; enforce coverage gate in CI.
+3. Promote retention enforcer to a Cron Trigger against D1; validate consent payloads with JSON Schema.
+4. PII redaction before Workers AI calls.
+5. Security headers (CSP, HSTS, Referrer-Policy, Permissions-Policy) centrally from `worker.js`.
+6. Expand accessibility coverage; flip Lighthouse from warn to error; manual WCAG 2.2 AA audit.
+7. Commit discovery and alpha research evidence.
+8. Publish success measures and performance page.
+9. Add `LICENSE` (OGLv3).
+10. Document system of record and outage degradation.
+
+These are not optional improvements. They are the standing list. Treat them as backlog with severity. Update conformance matrix and gap register when status changes.
+
+Phase expectations:
+
+- **Discovery** — exploratory user research; service blueprint; stakeholder mapping; problem framing; research question backlog seeded. Outputs: discovery report, user needs, opportunity map.
+- **Alpha** — prototype tests; method mix; recruitment representativeness; ethics review for sensitive groups; first synthesis cycle; Service Standard alpha assessment.
+- **Beta** — usability and accessibility at scale; performance and reliability measured; published performance data; security hardening complete; assisted-digital tested.
+- **Live** — continuous research; ongoing performance reporting; incident response; iteration; community of practice contributions.
+
+Each phase has different research intensity, governance load and acceptance criteria. The platform makes the current phase visible on project records and adapts available actions where the phase implies it.
+
+---
+
+## 7. Authentication, authorisation and the thirteen-permission model
+
+### 7.1 Functional spine (ROPS-AUTH-001 through ROPS-AUTH-012)
+
+From `docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md`:
+
+- **ROPS-AUTH-001** Account creation (invitation-first or open sign-up).
+- **ROPS-AUTH-002** Authentication (no leakage of email existence).
+- **ROPS-AUTH-003** Logout (session invalidation, SSO-aware).
+- **ROPS-AUTH-004** Team membership (one or more teams).
+- **ROPS-AUTH-005** Role request and assignment (approval workflow for sensitive roles).
+- **ROPS-AUTH-006** Permission boundaries (the thirteen permissions below).
+- **ROPS-AUTH-007** PII reveal control (pseudonymised by default; explicit reveal logged).
+- **ROPS-AUTH-008** Governed authorship (user ID, team ID, object ID, timestamp recorded).
+- **ROPS-AUTH-009** Reviewer and approver rights (explicit permission enforcement).
+- **ROPS-AUTH-010** Decision ownership (accepted recommendations require an owner).
+- **ROPS-AUTH-011** Safeguarding visibility (restricted by permission).
+- **ROPS-AUTH-012** Audit events.
+
+### 7.2 The thirteen-permission model
+
+| Code | Meaning |
+|------|---------|
+| `participant.pii.view` | View participant-identifiable contact and demographic data. |
+| `participant.pii.reveal` | Reveal identifiable data when the default view is pseudonymised. |
+| `governed.create` | Author governed research records. |
+| `governed.edit` | Edit governed research records. |
+| `governed.review` | Review governed records. |
+| `governed.approve` | Approve governed records (studies, findings). |
+| `recommendation.own` | Own accepted recommendations. |
+| `safeguarding.view` | View safeguarding flags. |
+| `safeguarding.record` | Record safeguarding risks. |
+| `safeguarding.resolve` | Resolve safeguarding concerns. |
+| `audit.view` | View audit events. |
+| `team.manage` | Manage team members. |
+| `role.assign` | Assign roles. |
+
+UI rule: never expose raw permission codes to ordinary users. Use task-based labels ("Can approve a study", "Can view participant contact details"). Internal permission codes are for D1, tests and audit traces.
+
+### 7.3 Role catalogue (seeded D1 roles)
+
+`Observer`, `Researcher`, `Research Lead`, `Approver`, `Safeguarding Lead`, `Team Admin`. The special role `team_admin` on `ResearchOps Core Team` confers `ResearchOps Core Team Admin` capability.
+
+Sensitive-role assignment (e.g. Safeguarding Lead, Approver) requires:
+
+- Explicit Team Admin assignment.
+- A sensitive-role confirmation checkbox value (`ASSIGN_SENSITIVE_ROLE`).
+- Where the role is Safeguarding Lead, a second confirmation (`ASSIGN_SAFEGUARDING_LEAD`).
+- A recorded audit reason.
+- An expiry date (30, 60, 90, 180 days, or specific date).
+
+### 7.4 Identity layers
+
+**Primary — Cloudflare Access (OIDC).** `Cf-Access-Jwt-Assertion` header. JWT verified RS256 against Cloudflare public certificates.
+
+**Alternative — passwordless email.** Time-bound code stored in `SESSION_KV`; magic-link callback exchanges the code for an opaque session token.
+
+### 7.5 Route permissions
+
+Each protected route declares required permissions in `auth_route_declarations` (D1). `route-permissions.js` resolves the declaration and applies fail-closed semantics:
+
+1. No declaration → 403, `route_permission_missing`.
+2. `auth_required = 1` and not authenticated → 401.
+3. Required permissions not a subset of granted → 403 with the missing permissions listed.
+
+### 7.6 `/api/me` shape
+
+```
+{
+  "user": { "id": "...", "email": "..." },
+  "activeTeam": { "id": "...", "name": "..." },
+  "teamMemberships": [
+    {
+      "team": { "id": "...", "name": "..." },
+      "roles": [{ "key": "...", "label": "...", "scopeType": "team", "scopeId": "...", "expiresAt": null }],
+      "permissions": [{ "code": "...", "label": "..." }]
+    }
+  ]
+}
+```
+
+Account dashboard must adapt to access shape: single-team summary card / summary list, multi-team spaced list, ResearchOps Core Team Admin explanatory inset. Do not use a table unless the user genuinely needs row-and-column comparison. Keep role membership and current capability labels in separate sections.
+
+### 7.7 Auth implementation route (recommended)
+
+- **Phase 0** — Decision and threat model.
+- **Phase 1** — Authentication foundation (account creation, sign-in, D1 users, identity links, team membership, audit).
+- **Phase 2** — RBAC foundation (roles, permissions, role assignment, role request/approval, server-side middleware).
+- **Phase 3** — P1 enablement (PII redaction, governed authorship, reviewer/approver events, decision ownership, safeguarding).
+- **Phase 4** — Enterprise hardening (IdP groups, MFA policy, session policy, step-up auth, audit dashboards).
+
+### 7.8 Security obligations
+
+- Authentication, authorisation, logging, secret handling, least privilege, sensitive data protection.
+- Never log secrets, tokens or unnecessary personal data.
+- Use the configured origin allowlist; never widen for convenience.
+- Recovery logic (e.g. backfilling memberships from active role assignments) must not replace correct atomic writes. Role assignment must create or reactivate `auth_team_memberships`, create or update the role assignment, and write audit evidence together.
+
+---
+
+## 8. Consent, lawful basis and retention
+
+### 8.1 Consent form lifecycle
+
+- Consent forms are versioned (Markdown / Mustache).
+- Drafts live in Airtable; only **published** versions may anchor a participant consent record.
+- Each version captures required statements and optional permissions.
+- Versions are immutable after publish; superseded versions remain traceable.
+
+### 8.2 Participant consent record states
+
+`Ready for session`, `Needs review`, `Needs consent`, `Withdrawn`, `Not recorded`.
+
+Each record captures: `responses` (JSON of required / optional permissions), `capture_method`, `recorded_by`, `recorded_at`. On withdrawal: `withdrawn = true`, `withdrawal_reason`, withdrawal timestamp.
+
+### 8.3 Lawful basis and retention schema
+
+`config/jsonschema/consent-schema.json` requires `@context`, `id`, `type` (`Consent`), `created`, `creator`, `hasTarget`, `LawfulBasis`, `RetentionSchedule`. `RetentionSchedule` is ISO 8601 duration (`P12M`, `P6M`).
+
+Retention policy (`config/policies/retention.policy.json`):
+
+- Default 12 months.
+- Recordings 6 months.
+- Transcripts, notes 12 months.
+- Action on expiry: hard delete after a 7-day grace period.
+
+### 8.4 Withdrawal propagation
+
+When a participant withdraws:
+
+1. Consent record marked `Withdrawn`.
+2. Provenance event recorded.
+3. Dependent insights and recommendations flagged via provenance.
+4. Downstream surfaces display a `data withdrawn` provenance note.
+
+Rule: the recommendation chain remains traceable to the evidence chain. The chain shows the withdrawal — not silence. Do not hide withdrawals to preserve a clean narrative.
+
+### 8.5 Consent page visual states
+
+`missing-context-error`, `no-published-consent-form`, `no-participants`, `participant-selected` (`visual-walkthrough.participant-consent-states.mjs`).
+
+### 8.6 Sourcebook templates
+
+- `data-retention-policy-excerpt.md`
+- `research-ethics-guidance.md`
+- `lifecycle-management-template.md`
+- `incentive-policy-guidance.md`
+- `participant-panel-database-schema.md`
+
+---
+
+## 9. Ethics framework
+
+Ethics rules (`references/researchops-ethics-pack.xml`, Sourcebook GOVERN):
+
+- Consider consent, safeguarding, privacy, provenance and data minimisation across the lifecycle.
+- High-stakes user groups require explicit harm framing.
+- Do not remove safety, safeguarding or distress guidance to shorten artefacts.
+
+Belmont-framed principles (`templates/research-ethics-guidance.md`):
+
+1. **Respect for persons** — informed consent, privacy protection.
+2. **Beneficence** — minimise harm, maximise benefit.
+3. **Justice** — fair selection of participants; equitable distribution of burdens and benefits.
+
+Ethics review triggers — formal review required when:
+
+- Research involves vulnerable groups.
+- Research covers sensitive topics.
+- Research involves significant data collection.
+- Research will be published externally.
+
+Bias management (`GOVERN 3.1.1`):
+
+- Bias awareness training.
+- Diversity in research teams.
+- Peer review of topic guides and instruments.
+- Inclusive recruitment.
+- Periodic fairness audits.
+
+Incident handling (`GOVERN 3.1.2`):
+
+- Study-level risk assessment recorded.
+- Foreseeable risks and safeguards documented.
+- Distress, safeguarding and disclosure protocols documented.
+- Incident log for organisational learning.
+- Annual review and review after each incident.
+
+Distress and safeguarding protocol (`templates/remote-research-setup-guide.md`):
+
+- Reconfirm consent at the start of every session.
+- Explain recording and note-taking.
+- Pause or stop if a participant becomes distressed.
+- Save notes in the agreed location.
+- Record safeguarding or follow-up actions.
+- Debrief with the team where needed.
+
+---
+
+## 10. Recruitment and panel doctrine
+
+REC-ADMN rules (Sourcebook):
+
+- **Representative sampling** — sample reflects the intended population (REC-ADMN 1.1.1).
+- **Panel CRM** — ethical, repeatable recruitment; consent, preferences, history; segment via attributes and tags; refresh and retire routinely (REC-ADMN 1.2.1).
+- **Inclusive recruitment** — accessible, inclusive language; reasonable adjustments; monitor diversity; bias training (REC-ADMN 1.3.1).
+- **Incentives** — match effort and complexity; avoid undue influence; pay promptly; alternatives for vulnerable groups (REC-ADMN 2.1.1).
+- **Consent** — informed, documented, securely stored; reconfirmed for longitudinal studies (REC-ADMN 3.0.x).
+- **Panel governance** — diversity, consent tracking, retention, refresh cycles, role-based access (REC-ADMN 4.0.x).
+- **Recruitment data protection** — privacy, minimisation, security, access controls (REC-ADMN 5.0.1).
+- **Participation tracking** — invitations, acceptances, withdrawals, attendance, completion; analyse attrition and representation (REC-ADMN 6.0.1).
+
+Panel-database minimum schema (Sourcebook `participant-panel-database-schema.md`):
+
+- `participant_id` (string, required, unique).
+- `consent_date` (date, required).
+- `consent_withdrawn` (boolean, required).
+- `demographics_group` (string, optional, broad segment).
+- Plus access control: who can read; who can edit; audit logging on.
+
+Incentive policy minimum (Sourcebook `incentive-policy-guidance.md`):
+
+- Scope, approved incentive types, approval process.
+- Level matrix by participant type, session type, duration.
+- Tax and reporting thresholds.
+- Equity considerations.
+- Owner, approver, review date.
+
+Sourcebook templates: `participant-panel-database-schema.md`, `incentive-policy-guidance.md`, `remote-research-setup-guide.md`, `research-space-checklist.md`, `stakeholder-mapping-template.md`.
+
+---
+
+## 11. Inclusive research and accessibility
+
+Statutory references:
+
+- **Equality Act 2010** — non-discrimination, reasonable adjustments.
+- **Public Sector Bodies Accessibility Regulations 2018 (PSBAR)** — public-sector digital services accessible to people with disabilities.
+- **WCAG 2.2 AA** — the target for the service interface.
+
+Inclusive practice rules:
+
+- Recruitment broadens representation, not only fills a sample.
+- Sessions offer accessibility adjustments by default (BSL interpretation, Easy Read materials, AT compatibility, language access).
+- Researchers using assistive technology must be able to plan, conduct and analyse research without workarounds.
+- Plain English in all participant-facing content. Do not expose technical permission codes to ordinary users.
+- Reading-age and terminology choices are deliberate; pseudonyms before names; people-first language.
+
+UI accessibility doctrine (`references/govuk-design-system-spec.xml`, design critique P1 themes):
+
+- Semantic headings, labels, hints, fieldsets, error summaries.
+- Keyboard and pointer operability preserved.
+- Do not recreate component internals with page-specific CSS unless justified.
+- Form input widths are part of affordance. Use sensible fluid widths (e.g. `govuk-!-width-two-thirds`).
+- Deliberate vertical rhythm between intro content and the first form field.
+- Check-answers `Change` links change the answer; reveal the form; focus the target control.
+- Do not put focus rings on non-control containers. Scroll into view rather than focusing.
+- Account dashboards adapt to access shape.
+- Keep role membership and current capability labels in separate sections.
+- Use existing GOV.UK-inspired patterns before inventing local variants.
+
+---
+
+## 12. Synthesis methodology — evidence → insight → recommendation
+
+The central traceability rule. Three product-plane layers and the visible evidence-maturity ladder.
+
+Evidence maturity ladder (design critique Round 4):
+
+- **Raw notes** — session notes, journal entries, verbatim quotes.
+- **Coded themes** — excerpts tagged with qualitative codes; codes applied across sessions; co-occurrence visible.
+- **Validated insights** — synthesised statements supported by multiple evidence sources; confidence and limitations explicit; reviewer recorded.
+- **Accepted recommendations** — proposals traced to insights; owner assigned; decision context recorded.
+
+Synthesis rules:
+
+- An insight must reference one or more pieces of evidence.
+- A recommendation must reference one or more insights.
+- A recommendation must have an owner before it is accepted.
+- Confidence level is explicit and recorded.
+- Limitations are recorded.
+- Withdrawals flag dependent insights and recommendations; they do not remove them.
+
+Synthesis page surfaces clusters and themes. Clusters group related evidence. Themes group clusters. The path from evidence → cluster → theme → insight → recommendation is navigable in both directions.
+
+How Might We, opportunity mapping, affinity mapping, journey mapping and service blueprinting are supported via Mural integration. The Mural integration duplicates a reflexive journal board template into a project-named folder; sticky-note category mapping is explicit; sync does not silently fall back to the wrong board or room.
+
+---
+
+## 13. Qualitative analysis (CAQDAS workspace)
+
+The platform supports a lightweight computer-aided qualitative analysis surface across journals, excerpts, codes, code applications, memos and analysis endpoints.
+
+Workflow:
+
+1. Capture — session notes and journal entries (`/api/journal-entries`).
+2. Tag — excerpts created from journal entries (`/api/excerpts`) with tags.
+3. Code — qualitative codes created with definitions (`/api/codes`).
+4. Apply — code-to-evidence mappings (`/api/code-applications`).
+5. Memo — analyst working notes (`/api/memos`).
+6. Analyse — timeline, co-occurrence, retrieval, export (`/api/analysis/*`).
+7. Synthesise — clusters and themes (`/api/synthesis/clusters`, `/api/synthesis/themes`).
+
+Rules:
+
+- Codes are reusable across studies in a project; definitions are stable.
+- Code applications are evidence-bearing; they must reference a code and a piece of evidence.
+- Memos carry analyst reasoning and may reference codes or excerpts.
+- Lightweight capture before structured tagging is supported; do not gate journal capture behind code application.
+- Analysis exports must be accessible (CSV / JSON) and follow taxonomy.
+
+Taxonomy (Sourcebook `research-taxonomy-reference.md`):
+
+Two dimensions — **finding type** × **service dimension**.
+
+Finding types: `user behaviour`, `user attitude`, `unmet need`, `pain point`, `design opportunity`, `policy implication`.
+
+Service dimensions: `onboarding`, `core task completion`, `navigation and findability`, `accessibility`, `trust and safety`, `support and recovery`.
+
+Apply both dimensions when tagging repository entries.
+
+---
+
+## 14. Provenance and the audit log model
+
+### 14.1 Provenance fields
+
+Provenance event (Airtable `Research Provenance` table, configurable via `AIRTABLE_TABLE_PROVENANCE`):
+
+- `Artifact ID` (required)
+- `Artifact Type`
+- `Event Type` (required)
+- `Event Time` (ISO 8601; defaults to now)
+- `Method` (route or source)
+- `Researcher ID`
+- `Researcher Name`
+- `Study ID`
+- `Parent Artifact ID` (lineage)
+- `Changes` (JSON)
+- `Provenance Graph` (full event graph as JSON)
+
+### 14.2 Provenance reads
+
+- `getProvenance(artifactId)` — returns events for the artefact and all downstream artefacts that cite it as parent. Builds an impact graph.
+- `getProvenanceGraph(studyId)` — returns nodes (artefacts) and edges (lineage) for a study.
+
+### 14.3 Audit events (ROPS-AUTH-012)
+
+The platform must record:
+
+- Account creation, sign-in, logout.
+- Role requests and approvals.
+- PII reveal events.
+- Governed-record edits (user, team, object, timestamp).
+- Study approvals and findings reviews.
+- Recommendation acceptance.
+- Safeguarding records and escalations.
+
+Audit posture: clear, minimal, useful for governance. Audit events do not contain secrets or unnecessary personal data.
+
+### 14.4 AI usage log
+
+Every `/api/ai-rewrite` call records an entry in the Airtable `AI_Usage` table. `AUDIT = "true"` is the standing posture. The platform must distinguish generated content from human-authored decisions in artefact metadata.
+
+### 14.5 Reading the audit log
+
+When investigating an incident or change:
+
+1. Pull the provenance graph for the study.
+2. Trace upstream parents from the artefact in question.
+3. Cross-reference with `auth_events`, `pii_access_events`, `governance_events`, `safeguarding_events` (D1 tables per ROPS-AUTH-012).
+4. Tie the chain to a user, team and timestamp.
+5. Distinguish AI-assisted edits from human-authored edits using `AI_Usage`.
+
+---
+
+## 15. AI collaboration and safety
+
+### 15.1 Current AI surface
+
+`POST /api/ai-rewrite` invokes Workers AI (`@cf/meta/llama-3.1-8b-instruct` by default). It powers:
+
+- Project description / objectives rewriting on the start page.
+- Future drafting assistance (guides, consent forms, summaries) — gated by safety review.
+
+### 15.2 Standing safety gaps
+
+- **No PII redaction step before model call.** The form hint asks users not to include personal data, but no enforcement. Treat as P1 gap until redaction lands.
+- No structured-output validation on AI responses.
+- No automatic provenance flag distinguishing AI-assisted edits in artefact metadata beyond the `AI_Usage` log.
+
+### 15.3 AI collaboration rules
+
+- AI is an assistant, not an author of authoritative findings.
+- AI-generated content must be labelled and distinguishable from human-authored decisions.
+- Mechanistic claims about AI must be labelled as hypotheses unless tooling can directly inspect model internals.
+- Audit posture stays on (`AUDIT = "true"`); the `AI_Usage` table is the source of truth.
+- Sensitive surfaces (participant PII, consent text, safeguarding records, recommendations) must not be auto-generated.
+- Use the OpenAI Platform bundle (`bundles/openai/`) for structured outputs, tool calling, retrieval, embeddings, batch, webhooks, realtime, evals.
+- Use the MCP Agent Tooling bundle (`bundles/mcp-agent-tooling/`) when surfacing tools to agents; tool consent is first-class.
+
+### 15.4 Defensive AI use posture
+
+- Treat user-typed text as untrusted prior to model invocation; redact obvious PII patterns.
+- Validate model output before persistence.
+- Show users the AI suggestion; require explicit accept to write.
+- Record the prompt and response provenance.
+- Provide an explicit `Reject` path that does not persist the model output.
+
+---
+
+## 16. User journeys, page inventory and journey states
+
+Six canonical journeys (`reports-site/manifest.json`):
 
 1. **Start research work** — `home` → `start` → `projects` → `project-dashboard`.
 2. **Prepare a study** — `study` → `study-guides` → `study-participants`.
@@ -151,23 +722,23 @@ The platform organises around six canonical journeys (from `reports-site/manifes
 5. **Synthesize evidence** — `synthesize` → `journals` → `outcomes`.
 6. **Review outcomes** — `outcomes` → `search`.
 
-Cross-journey surfaces: account dashboard, registration request, sign-in, team admin role assignment, search.
+Visual walkthrough coverage: 26 pages, 43 states, 86 captures across desktop (1440×1200) and mobile (412×915). Failures = 0 at release.
 
-Visual walkthrough coverage: 26 pages, 43 states, 86 captures across desktop (1440×1200) and mobile (412×915) profiles. Failures = 0 is the standing expectation.
+Page inventory: see §17 for the full list. GOV.UK chrome conventions: `x-include` partials for header/footer/debug; `<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">`; `<h1 class="govuk-heading-xl page-title">`; `aria-live="polite" aria-busy="true"` on async lists; module preload with versioned query string; explicit GOV.UK CSS modules loaded.
+
+Active GOV.UK product lessons (from `RECENT_LEARNINGS.md`) — see §11.
 
 ---
 
-## 5. Page inventory
-
-Static pages under `public/pages/` (and `pages/`):
+## 17. Page inventory
 
 **Auth and account**
 
-- `public/pages/account/index.html` — Account dashboard (adaptive: single-team summary / multi-team list / Core Team Admin inset).
+- `public/pages/account/index.html` — Account dashboard (adaptive).
 - `public/pages/account/register/index.html` — Account registration request.
 - `public/pages/account/sign-in/index.html` — Passwordless sign-in.
-- `public/pages/team/registration-requests/index.html` — Team admin: review pending registration requests.
-- `public/pages/team/role-assignments/index.html` — Team admin: assign roles.
+- `public/pages/team/registration-requests/index.html` — Team admin: registration requests.
+- `public/pages/team/role-assignments/index.html` — Team admin: role assignment.
 
 **Project and study**
 
@@ -183,10 +754,10 @@ Static pages under `public/pages/` (and `pages/`):
 
 **Participants and sessions**
 
-- `public/pages/project-dashboard/participants/index.html` — Project-scoped participant management.
-- `public/pages/study/participants/index.html` — Study-scoped participant view.
+- `public/pages/project-dashboard/participants/index.html` — Project-scoped participants.
+- `public/pages/study/participants/index.html` — Study-scoped participants.
 - `public/pages/sessions/index.html` — Session list and scheduling.
-- `public/pages/study/session/index.html` — Run a session, record notes.
+- `public/pages/study/session/index.html` — Run session, record notes.
 
 **Analysis and synthesis**
 
@@ -200,844 +771,327 @@ Static pages under `public/pages/` (and `pages/`):
 
 - `public/pages/consent/index.html` — Generic consent form display.
 
-GOV.UK page chrome conventions (representative — `public/pages/projects/index.html`):
-
-- `x-include` partials for `header.html`, `footer.html`, `debug.html`.
-- `<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">`.
-- `<h1 class="govuk-heading-xl page-title">`.
-- `<p class="lede">` for the page lede.
-- `<a class="govuk-button" role="button">` for primary action.
-- `aria-live="polite"`, `aria-busy="true"` on list containers during load.
-- Module preload for the page script with a versioned query string.
-- GOV.UK CSS modules loaded explicitly (`govuk-typography.css`, `govuk-colours.css`, `govuk-page-chrome.css`, `govuk-buttons.css`).
-
-Active GOV.UK doctrine (from `RECENT_LEARNINGS.md`):
-
-- Form input widths are part of affordance. Default sensible fluid widths (e.g. `govuk-!-width-two-thirds`).
-- Vertical rhythm between introductory content and the first form field is a deliberate design decision.
-- Check-answers `Change` links must change the answer, not just update the URL hash.
-- Do not put focus rings on non-control containers; scroll into view rather than focus passive containers.
-- Account dashboards adapt to access shape (single-team / multi-team / Core Team Admin). Do not use a table unless row-and-column comparison is genuinely needed.
-- Do not mix role membership with detailed capability labels in the same display.
-
 ---
 
-## 6. API surface
+## 18. API surface
 
-Entry point: `infra/cloudflare/src/worker.js`. Dispatch falls through to `infra/cloudflare/src/core/router.js` for the bulk of routes. All routes are namespaced under `/api/`.
+Entry: `infra/cloudflare/src/worker.js`. Dispatch falls through to `infra/cloudflare/src/core/router.js`.
 
 **Diagnostics and health**
 
-- `GET /api/_diag/ping` — liveness ping.
-- `GET /api/_diag/env` — environment configuration check.
-- `GET /api/health` — service health.
+- `GET /api/_diag/ping`, `GET /api/_diag/env`, `GET /api/health`.
 
 **Authentication and identity**
 
-- `GET|POST /api/auth/registration-requests` — registration requests CRUD.
-- `POST /api/auth/email/*` — passwordless email magic-link flow.
-- `POST /api/auth/logout` — passwordless session logout.
-- `GET /api/me` — authenticated user context (user, active team, roles, permissions).
-- `GET /api/me/permissions` — permissions surface only.
-- `POST /api/auth/role-assignments` — assign role.
+- `GET|POST /api/auth/registration-requests`
+- `POST /api/auth/email/*`
+- `POST /api/auth/logout`
+- `GET /api/me`, `GET /api/me/permissions`
+- `POST /api/auth/role-assignments`
 
-**Projects**
+**Projects, studies, materials**
 
-- `GET /api/projects` — list projects.
-- `GET /api/projects/{id}` — project record (via `handleProjectRecord`).
-- `GET /api/projects.csv` — projects CSV (GitHub-backed fallback).
+- `GET /api/projects`, `GET /api/projects/{id}`, `GET /api/projects.csv`
+- `GET /api/studies`, `GET|POST|PATCH /api/studies/{id}`
+- `GET|POST|PATCH /api/guides/{id}` (publishable), `GET|POST|PATCH /api/partials/{id}`
 
-**Studies**
+**Participants, sessions**
 
-- `GET /api/studies` — list studies.
-- `GET|POST|PATCH /api/studies/{id}` — study CRUD.
-
-**Discussion guides and partials**
-
-- `GET|POST|PATCH /api/guides/{id}` — guide CRUD and publish.
-- `GET|POST|PATCH /api/partials/{id}` — partial CRUD.
-
-**Participants and sessions**
-
-- `GET|POST|PATCH /api/participants` — participant CRUD.
-- `GET|POST|PATCH /api/sessions/{id}` — session CRUD and `.ics` calendar export.
-- `GET|POST|PATCH /api/session-notes/{id}` — session note CRUD.
+- `GET|POST|PATCH /api/participants`
+- `GET|POST|PATCH /api/sessions/{id}` (+ `.ics` export)
+- `GET|POST|PATCH /api/session-notes/{id}`
 
 **Consent**
 
-- `GET|POST|PATCH /api/consent-forms/{id}` — consent form CRUD and publish.
-- `GET|POST|PATCH /api/participant-consent/{id}` — participant consent record CRUD with withdrawal handling.
+- `GET|POST|PATCH /api/consent-forms/{id}` (publishable)
+- `GET|POST|PATCH /api/participant-consent/{id}` (withdrawal-aware)
 
 **Journals, excerpts, memos**
 
-- `GET|POST|PATCH /api/journal-entries/{id}` — journal entry CRUD.
-- `GET|POST|PATCH /api/excerpts/{id}` — excerpt CRUD.
-- `GET|POST|PATCH /api/memos/{id}` — memo CRUD.
+- `GET|POST|PATCH /api/journal-entries/{id}`
+- `GET|POST|PATCH /api/excerpts/{id}`
+- `GET|POST|PATCH /api/memos/{id}`
 
 **Qualitative analysis**
 
-- `GET|POST|PATCH /api/codes/{id}` — code CRUD.
-- `GET|POST|PATCH /api/code-applications` — code-to-evidence mappings.
-- `GET /api/analysis/timeline` — analysis timeline.
-- `GET /api/analysis/cooccurrence` — code co-occurrence.
-- `GET /api/analysis/retrieval` — evidence retrieval.
-- `GET /api/analysis/export` — export to CSV/JSON.
+- `GET|POST|PATCH /api/codes/{id}`, `GET|POST|PATCH /api/code-applications`
+- `GET /api/analysis/timeline`, `/cooccurrence`, `/retrieval`, `/export`
 
 **Synthesis**
 
-- `GET|POST|PATCH /api/synthesis/clusters/{id}` — cluster CRUD.
-- `POST /api/synthesis/themes` — theme creation.
+- `GET|POST|PATCH /api/synthesis/clusters/{id}`, `POST /api/synthesis/themes`
 
 **Impact**
 
-- `GET|POST /api/impact` — impact tracking.
+- `GET|POST /api/impact`
 
 **Mural OAuth and sync**
 
-- `GET /api/mural/auth` — start OAuth.
-- `GET /api/mural/callback` — OAuth callback.
-- `GET /api/mural/verify` — verify session.
-- `GET /api/mural/resolve` — resolve user workspace/room.
-- `POST /api/mural/setup` — set up project folder.
-- `GET /api/mural/find` — find boards.
-- `GET /api/mural/await` — wait for board readiness.
-- `POST /api/mural/journal-sync` — sync journal to Mural board.
+- `GET /api/mural/auth`, `/callback`, `/verify`, `/resolve`
+- `POST /api/mural/setup`, `GET /api/mural/find`, `/await`, `POST /api/mural/journal-sync`
 
 **Communications and AI**
 
-- `POST /api/comms/send` — email dispatch via Resend.
-- `POST /api/ai-rewrite` — Workers AI text rewrite (Llama 3.1 8B by default).
+- `POST /api/comms/send` (Resend)
+- `POST /api/ai-rewrite` (Workers AI)
 
-Route availability states (`references/researchops-route-availability-policy.xml`):
+Route availability states (`references/researchops-route-availability-policy.xml`): `available`, `conditional`, `absent`, `future-extension`.
 
-- `available` — responds successfully in configured context.
-- `conditional` — exists but requires project, study, auth or data context.
-- `absent` — intentionally not implemented.
-- `future-extension` — planned but not yet live.
+Single-record route policy: do not imply a route exists unless router and service code confirm it.
 
-Single-record route policy (`references/researchops-single-record-route-policy.xml`):
+Canonical example payloads under `bundles/researchops-developer-control/examples/`. Synthetic only.
 
-- Do not imply a single-record route exists unless router and service code confirm it.
-- Where a route is absent, document expected absence or future-extension status.
-- Where a route is conditional, distinguish *no data* from *route not implemented*.
-
-Canonical example payloads live under `bundles/researchops-developer-control/examples/`. Examples must be synthetic and aligned with route catalogue and fixtures.
-
-CORS:
-
-- Allowed origins are configured via the `ALLOWED_ORIGINS` Worker var: `https://researchops.pages.dev`, `https://rops-api.digikev-kevin-rapley.workers.dev`, `http://localhost:8080`, `https://reops-sourcebook.pages.dev`. Branch preview origins under `https://*.researchops.pages.dev` must be allowed when a journey is intended for preview testing.
-- Headers: `Access-Control-Allow-Origin`, `Vary: Origin`, `Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,OPTIONS`, `Access-Control-Allow-Headers: Authorization, Content-Type, X-ResearchOps-Team-Id`, `Access-Control-Allow-Credentials: true`.
-- `X-ResearchOps-Team-Id` header is the explicit team-context override for multi-team scenarios.
+CORS allowlist via `ALLOWED_ORIGINS` (`https://researchops.pages.dev`, `https://rops-api.digikev-kevin-rapley.workers.dev`, `http://localhost:8080`, `https://reops-sourcebook.pages.dev`). Branch preview origins under `https://*.researchops.pages.dev` must be allowed when a journey is intended for preview testing. Headers include `X-ResearchOps-Team-Id` for explicit team-context override.
 
 ---
 
-## 7. Service module catalogue
+## 19. Service module catalogue
 
-All service modules live under `infra/cloudflare/src/service/`. Treat each module as a service boundary.
+Under `infra/cloudflare/src/service/`:
 
-**Research core**
+- **Research core** — `projects.js`, `studies.js`, `participants.js`, `sessions.js`, `session-notes.js`.
+- **Research materials** — `guides.js`, `consent-forms.js`, `participant-consent.js`, `partials.js`.
+- **Evidence and analysis** — `journals.js`, `excerpts.js`, `memos.js`, `reflection/codes.js`, `reflection/code-applications.js`, `reflection/analysis.js`, `synthesis.js`.
+- **Integrations** — `mural-journal-sync.js`, `mural-journal-sync-safe-tags.js`, `mural-journal-sync-layout.js`.
+- **Comms and AI** — `comms.js`, `csv.js`, `ai-rewrite.js`.
+- **Impact and governance** — `impact.js`, `impact-internals.js`, `provenance.js`, `provenance-read.js`.
+- **Internals** — `internals/airtable.js`, `internals/github.js`, `internals/mural.js`, `internals/researchops-d1.js`, `internals/journals-dualwrite.js`, `internals/responders.js`.
+- **Diagnostics** — `dev/diag.js`, `health.js`.
 
-- `projects.js`, `studies.js`, `participants.js`, `sessions.js`, `session-notes.js`.
-
-**Research materials**
-
-- `guides.js` (Markdown / Mustache), `consent-forms.js`, `participant-consent.js`, `partials.js`.
-
-**Evidence and analysis**
-
-- `journals.js`, `excerpts.js`, `memos.js`, `reflection/codes.js`, `reflection/code-applications.js`, `reflection/analysis.js`, `synthesis.js`.
-
-**Integrations**
-
-- `mural-journal-sync.js`, `mural-journal-sync-safe-tags.js`, `mural-journal-sync-layout.js`.
-
-**Communications and AI**
-
-- `comms.js` (Resend email), `csv.js`, `ai-rewrite.js`.
-
-**Impact and governance**
-
-- `impact.js`, `impact-internals.js`, `provenance.js`, `provenance-read.js`.
-
-**Internals (adapters and storage)**
-
-- `internals/airtable.js` — Airtable API adapter.
-- `internals/github.js` — GitHub CSV fetch.
-- `internals/mural.js` — Mural API adapter and OAuth session.
-- `internals/researchops-d1.js` — D1 database access.
-- `internals/journals-dualwrite.js` — dual-write for journals during migration phases.
-- `internals/responders.js` — response formatting.
-
-**Diagnostics**
-
-- `dev/diag.js`, `health.js`.
-
-**Mode coupling.** API and Worker work uses mode `rops-api`. Integration work uses `rops-integration`. Cross-cutting build work uses `rops-build`. Always inspect the relevant service module before editing API behaviour. Preserve response envelopes unless explicitly migrating them. Update examples and route-shape fixtures when response shape changes. Keep error responses structured and consistent.
+Always inspect the service module before editing API behaviour. Preserve response envelopes. Update examples and route-shape fixtures with shape changes. Keep error responses structured and consistent.
 
 ---
 
-## 8. Data layer
+## 20. Data layer
 
-### 8.1 Airtable (source of truth for product records)
+### 20.1 Airtable (records)
 
-Tables configured via `infra/cloudflare/wrangler.toml`:
+12 configured tables (via `wrangler.toml`): `AI_Usage`, `Projects`, `Project Details`, `Mural Boards`, `Journal Entries`, `Project Studies`, `Sessions`, `Session Notes`, `Discussion Guides`, `Partials`, `Codes`, `Code Applications`. Plus configurable `Research Provenance` for audit events.
 
-| Var | Table |
-|-----|-------|
-| `AIRTABLE_TABLE_AI_LOG` | `AI_Usage` |
-| `AIRTABLE_TABLE_PROJECTS` | `Projects` |
-| `AIRTABLE_TABLE_DETAILS` | `Project Details` |
-| `AIRTABLE_TABLE_MURAL_BOARDS` | `Mural Boards` |
-| `AIRTABLE_TABLE_JOURNAL` | `Journal Entries` |
-| `AIRTABLE_TABLE_STUDIES` | `Project Studies` |
-| `AIRTABLE_TABLE_SESSIONS` | `Sessions` |
-| `AIRTABLE_TABLE_SESSION_NOTES` | `Session Notes` |
-| `AIRTABLE_TABLE_GUIDES` | `Discussion Guides` |
-| `AIRTABLE_TABLE_PARTIALS` | `Partials` |
-| `AIRTABLE_TABLE_CODES` | `Codes` |
-| `AIRTABLE_TABLE_CODE_APPLICATIONS` | `Code Applications` |
+### 20.2 D1 (auth, route declarations, audit)
 
-Airtable rules (`references/airtable-api-spec.xml`):
+Inferred schema (`auth_users`, `auth_teams`, `auth_team_memberships`, `auth_roles`, `auth_role_assignments`, `auth_permissions`, `auth_role_permissions`, `auth_route_declarations`). Plus ROPS-AUTH-012 audit-event tables (`auth_events`, `pii_access_events`, `governance_events`, `safeguarding_events`). Plus suggested registration and identity-link tables (`identities`, `sessions`, `invitations`, `role_requests`, `airtable_identity_links`).
 
-- Preserve configured table and field names unless an explicit migration is requested.
-- Handle linked-record fields as arrays where Airtable returns arrays.
-- Do not send raw personal data into logs.
-- Document formula, lookup and linked-field assumptions when route behaviour depends on them.
+Scopes: `team`, `project`, `study`. Role assignment statuses: `active`, `pending`, `rejected`, `expired`.
 
-DevOps Airtable guidance lives under `docs/devops/airtable/` (attachment, checkbox, collaborator, create, delete-multiple, get, linked-records, list, number, rollup-lookup, select, sync-csv, text, update-multiple, update, upload).
+### 20.3 KV (sessions)
 
-### 8.2 D1 (auth foundation)
+`SESSION_KV` — passwordless session tokens and short-lived magic-link codes.
 
-D1 database `RESEARCHOPS_D1` (`database_id: 48b35a2e-52e8-4bc0-a8cf-88a7a1536f04`). Inferred schema from `core/auth/access-scoped.js` and `route-permissions.js`:
+### 20.4 Workers AI
 
-```sql
-auth_users(id, email UNIQUE, provider, created_at)
-auth_teams(id, name, team_status)
-auth_team_memberships(user_id, team_id, status, created_at)
-auth_roles(id, role_key UNIQUE, label, description, is_sensitive, scope_type)
-auth_role_assignments(id, user_id, role_id, scope_type, scope_id,
-                     assignment_status, expires_at, created_at)
-auth_permissions(id, code UNIQUE, label, is_sensitive, is_reserved)
-auth_role_permissions(role_id, permission_id)
-auth_route_declarations(method, route_pattern, required_permissions_json,
-                       auth_required, implementation_status)
-```
+`AI` binding; default `@cf/meta/llama-3.1-8b-instruct`; `AUDIT = "true"`; every interaction logged to `AI_Usage`.
 
-Scopes: `team`, `project`, `study`. Assignment statuses: `active`, `pending`, `rejected`, `expired`.
+### 20.5 ASSETS
 
-Special role: `team_admin` on the `ResearchOps Core Team` (id `team_researchops_core`) confers `ResearchOps Core Team Admin` capability.
+`docs/devops/sourcebook` served as `https://reops-sourcebook.pages.dev/`.
 
-D1 lifecycle workflows: `apply-d1-auth-foundation.yml`, `apply-d1-auth-role-assignment-route.yml`, `bootstrap-d1-auth-runtime.yml`.
+### 20.6 GitHub CSV fallback
 
-### 8.3 KV (sessions)
+`data/projects.csv`, `data/project-details.csv`, `data/studies.csv` on `main`.
 
-KV namespace `SESSION_KV` (id `8e2d88969b9e4be694868931bdba92f2`). Stores passwordless session tokens and short-lived magic-link codes.
+### 20.7 Repository CSV fixtures
 
-### 8.4 Workers AI
+14 files under `data/`. Used for fixtures, tests, and visual walkthroughs.
 
-Binding `AI`. Default model `@cf/meta/llama-3.1-8b-instruct`. Used by `ai-rewrite.js`. Every interaction is logged to the Airtable `AI_Usage` table (`AIRTABLE_TABLE_AI_LOG`). `AUDIT = "true"` is the standing audit posture.
+### 20.8 Schemas
 
-### 8.5 Assets
+- `config/jsonschema/consent-schema.json`
+- `config/jsonschema/note.schema.json`
+- `schemas/agent-trace-event.schema.json`
+- `config/policies/retention.policy.json`
 
-`ASSETS` binding serves `docs/devops/sourcebook` as the **Sourcebook** Pages site origin (`https://reops-sourcebook.pages.dev`).
-
-### 8.6 GitHub CSV (resilient fallback)
-
-GitHub-backed CSV fallback for canonical record sets:
-
-- `data/projects.csv` (`GH_PATH_PROJECTS`)
-- `data/project-details.csv` (`GH_PATH_DETAILS`)
-- `data/studies.csv` (`GH_PATH_STUDIES`)
-
-Available via `GET /api/projects.csv` and used by the projects page when Airtable is unavailable or unconfigured. Configured by `GH_OWNER=kevinrapley`, `GH_REPO=ResearchOps`, `GH_BRANCH=main`.
-
-Repository CSV fixtures under `data/` (14 files): `projects.csv`, `project-details.csv`, `project-studies.csv`, `participants.csv`, `sessions.csv`, `session-notes.csv`, `discussion-guides.csv`, `journal-entries.csv`, `journal-excerpts.csv`, `memos.csv`, `codes.csv`, `code-applications.csv`, `mural-boards.csv`, `communications-log.csv`. These are also used by API tests and visual walkthroughs.
-
-### 8.7 Schemas
-
-JSON Schemas:
-
-- `config/jsonschema/consent-schema.json` — Consent record (W3C Activity Streams).
-- `config/jsonschema/note.schema.json` — Journal note (W3C Activity Streams).
-- `schemas/agent-trace-event.schema.json` — Agent audit trace event.
-
-Consent schema requires `@context`, `id`, `type` (`Consent`), `created`, `creator`, `hasTarget`, `LawfulBasis`, `RetentionSchedule` (ISO 8601 duration `^P\\d+[DWMY]|P\\d+M$`).
-
-Note schema requires `@context`, `id`, `type` (`Note`), `created`, `creator`, `hasTarget`, `hasBody`. Additional properties are permitted.
-
-Linked-data principle: research artefacts carry semantic context. Provenance metadata must preserve source, creator, timestamp and related project or study context.
+W3C Activity Streams vocabulary for provenance and linked-data compatibility.
 
 ---
 
-## 9. Architecture
+## 21. Architecture
 
 | Layer | Tech | Notes |
 |-------|------|-------|
-| API | Cloudflare Workers, JavaScript | Entry `infra/cloudflare/src/worker.js`. Service modules under `service/`, integrations under `lib/`, core dispatch under `core/`. |
-| Front end | Cloudflare Pages | GOV.UK-styled static pages under `public/pages/`, route JS under `public/js/`, components under `public/components/`, scripts under `public/scripts/`, libs under `public/lib/` (marked, mustache, purify, coloris), styles under `public/css/`. |
-| Identity | Cloudflare Access JWT + passwordless email magic-link | Sessions in `SESSION_KV`. User/team/role/permission in `RESEARCHOPS_D1`. |
-| Integrations | Airtable, Mural OAuth2, Workers AI, OpenAI Platform, MCP tooling, GitHub CSV, Resend email | Adapter boundaries preserved. |
-| Storage | Airtable (records), D1 (auth), KV (sessions), GitHub CSV (fallback), R2 (none currently bound) | — |
+| API | Cloudflare Workers (JavaScript) | Entry `infra/cloudflare/src/worker.js`. |
+| Front end | Cloudflare Pages | GOV.UK-styled static pages, route JS, components, scripts, libs, styles. |
+| Identity | Cloudflare Access JWT + passwordless | Sessions in KV. User / team / role / permission in D1. |
+| Integrations | Airtable, Mural OAuth2, Workers AI, OpenAI Platform, MCP tooling, GitHub CSV, Resend | Adapter boundaries preserved. |
+| Storage | Airtable, D1, KV, GitHub CSV, R2 (none currently bound) | — |
 | Testing | Playwright, Cucumber, Pa11y, Lighthouse, Lychee, contract / route-state / fixture-index tests, behavioural evals | — |
-| Lint / format | ESLint, Prettier | Prettier compliance enforced by execution, not inference. |
-| Deployment | GitHub Actions and Cloudflare | CI then deploy. Preview Worker deploy branch filters must include all in-use branch prefixes (`feature/**`, `fix/**`, `chore/**`, `test/**`, `perf/**`). |
+| Lint / format | ESLint, Prettier | Prettier enforced by execution, not inference. |
+| Deployment | GitHub Actions, Cloudflare | Preview Worker deploy filters must include all in-use branch prefixes. |
 
 Architectural posture: **API contracts first, accessibility non-negotiable, performance audited, deployment controlled.**
 
-Cloudflare contract (`references/cloudflare-development-spec.xml`):
+Cloudflare contract:
 
 - Distinguish static Pages assets from Worker API routes.
-- Keep same-origin `/api/*` calls compatible with Pages previews unless an explicit API origin is configured.
-- Do not claim deployment success without workflow or platform evidence.
-- Use `no-store` headers for app pages where stale UI state could mislead users.
+- Keep same-origin `/api/*` calls compatible with Pages previews.
+- `no-store` for app pages where stale state could mislead.
 
-Preview-and-production contract (`references/integration-contracts.xml`):
+Preview-and-production contract:
 
-- Any new user journey on a branch must work end-to-end in both branch preview and production. A static-page render is not sufficient evidence.
-- Prefer relative `/api/*` routes first.
-- If a Pages preview cannot proxy the API route, document a Worker fallback and ensure CORS allows `https://researchops.pages.dev` and `https://*.researchops.pages.dev` for preview testing.
-- Add route-state or runtime tests asserting preview-safe API routing, production route compatibility and CORS allowance.
-
-Performance and CSS doctrine (`references/researchops-performance-rules.xml`):
-
-- Maintain `docs/performance/initial-load-audit.md` when performance work changes load behaviour.
-- Do not remove global CSS contracts to optimise a single route.
-- Distinguish global CSS, shared pattern CSS, route CSS and obsolete selectors.
-- Cache headers: long-lived immutable for assets; `no-store` for app pages where stale UI could mislead.
-- Defer shared layout modules only where it does not break page chrome or accessibility.
+- New user journeys must work end-to-end in branch preview and production. Static-page render is not sufficient.
+- Prefer relative `/api/*`.
+- CORS allows preview origins where intended.
+- Add route-state or runtime tests for preview-safe routing.
 
 ---
 
-## 10. Wrangler configuration
+## 22. Wrangler configuration and bindings
 
 `infra/cloudflare/wrangler.toml`:
 
-- `name = "rops-api"`
-- `main = "src/worker.js"`
-- `compatibility_date = "2025-09-26"`
-- `[assets] binding = "ASSETS"` serving `../../docs/devops/sourcebook`.
-- `[ai] binding = "AI"`.
-- `[secrets] required = ["RESEARCHOPS_AUTH_SECRET", "RESEND_API_KEY", "RESEARCHOPS_EMAIL_FROM"]`.
+- `name = "rops-api"`, `main = "src/worker.js"`, `compatibility_date = "2025-09-26"`.
+- `[assets]` → `../../docs/devops/sourcebook`.
+- `[ai]` binding.
+- `[secrets]` required: `RESEARCHOPS_AUTH_SECRET`, `RESEND_API_KEY`, `RESEARCHOPS_EMAIL_FROM`.
 - `[vars]`: `MODEL`, `AUDIT`, `ALLOWED_ORIGINS`, all `AIRTABLE_TABLE_*`, `GH_OWNER`, `GH_REPO`, `GH_BRANCH`, `GH_PATH_*`, `MURAL_*`, `PAGES_ORIGIN`.
-- `[[kv_namespaces]]` for `SESSION_KV`.
-- `[observability]` enabled with `head_sampling_rate = 1`, `invocation_logs = true`, `persist = true`.
-- `[[d1_databases]]` for `RESEARCHOPS_D1`.
+- `SESSION_KV` namespace.
+- `[observability]`: `head_sampling_rate = 1`, `invocation_logs = true`, `persist = true`.
+- `RESEARCHOPS_D1` database.
 
-Mural OAuth config: `MURAL_CLIENT_ID`, `MURAL_COMPANY_ID = "homeofficegovuk"`, `MURAL_API_BASE = "https://app.mural.co/api/public/v1"`, `MURAL_SCOPES = "identity:read workspaces:read rooms:read rooms:write murals:read murals:write"`, `MURAL_OAUTH_LEGACY = "true"`, `MURAL_REDIRECT_URI` pointing to `/api/mural/callback` on the Worker.
+Mural OAuth: `MURAL_CLIENT_ID`, `MURAL_COMPANY_ID = "homeofficegovuk"`, `MURAL_API_BASE`, `MURAL_SCOPES`, `MURAL_OAUTH_LEGACY = "true"`, `MURAL_REDIRECT_URI` pointing to `/api/mural/callback`.
 
-Secrets policy: never hard-code; provided through Wrangler. Never log secrets.
+Secrets never hard-coded. Never logged.
 
 ---
 
-## 11. Authentication and authorisation
+## 23. Visual walkthrough governance
 
-### 11.1 Identity layers
+Manifest: 26 pages, 43 states, 86 captures, 0 failures.
 
-**Primary — Cloudflare Access (OIDC).** `Cf-Access-Jwt-Assertion` header. JWT verified RS256 against Cloudflare public certificates fetched from `https://<team-domain>/cdn-cgi/access/certs`. Payload provides `email`, `aud`, `exp`, `kid`, optional `custom_claims.groups`.
+Configs and fixtures: `visual-walkthrough.config.mjs`, `visual-walkthrough.operational-fixtures.mjs`, `visual-walkthrough.participant-consent-fixtures.mjs`, `visual-walkthrough.participant-consent-states.mjs`, `visual-walkthrough.synthesis-fixtures.mjs`, `visual-walkthrough.synthesis-states.mjs`.
 
-**Alternative — passwordless email.** `POST /api/auth/email/{email}` issues a time-bound code, emailed via Resend, stored in `SESSION_KV`. Callback exchanges the code for an opaque session token; D1 lookups bind the token to a user row.
+Commands: `npm run qa:visual-walkthrough`, `npm run qa:cucumber:walkthrough`, `npm run reports:validate`.
 
-### 11.2 Team and role model
+Rules: update for any visible UI state change; no visual regressions at release; cover default, error, empty, loading and key interaction states.
 
-- A user belongs to zero or more teams via `auth_team_memberships`.
-- A user holds zero or more **role assignments**, each scoped to a team, project or study.
-- Role assignments may be `active`, `pending`, `rejected` or `expired`.
-- `ResearchOps Core Team Admin` is the special administrative role keyed by `team_admin` on the team `team_researchops_core` / `ResearchOps Core Team`.
+---
 
-### 11.3 Route permissions
-
-Each protected route declares required permissions in the D1 table `auth_route_declarations`. `route-permissions.js` resolves the declaration for the incoming method and path, then:
-
-1. If the route has no declaration — **fail closed** (403, error code `route_permission_missing`).
-2. If `auth_required = 1` and the request is not authenticated — **401**.
-3. If required permissions are not a subset of the user's granted permissions — **403** with the missing permissions listed.
-
-### 11.4 `/api/me` shape
+## 24. Repository topology
 
 ```
-{
-  "user": { "id": "...", "email": "..." },
-  "activeTeam": { "id": "...", "name": "..." },
-  "roles": [
-    { "key": "team_admin", "label": "Team Admin",
-      "scopeType": "team", "scopeId": "...", "expiresAt": null }
-  ],
-  "permissions": [
-    { "code": "projects.view", "label": "..." }
-  ]
-}
+.agent-operating-model/   Operating model: orchestration, registry, signals, rules, bundles
+AGENTS.md                 Repository agent contract
+README.md
+RECENT_LEARNINGS.md       Reusable lessons (not a changelog)
+charts/                   Charts (placeholder)
+config/                   jsonschema/, policies/
+data/                     14 CSV fixtures
+docs/                     product, design, devops, performance, release-assurance,
+                          agent-audit, qa, design-system, design-critiques, assessments
+  product/YY/MM/DD/       Dated product records (force-add — gitignored by default)
+  agent-audit/reasoning/YYYY/MM/DD/  Promoted agent traces
+  devops/sourcebook/      Practice manual (served by Pages as Sourcebook site)
+features/                 Cucumber BDD (smoke.feature)
+functions/                Cloudflare Functions
+infra/cloudflare/         Worker source tree, wrangler.toml
+public/                   Pages static site (pages, js, components, scripts, lib, css)
+pages/start/              Project creation wizard
+reports/                  Generated reports
+reports-site/             Visual walkthrough manifest, screenshots, index
+schemas/                  agent-trace-event schema
+scripts/                  validate, audits, agent operating-model, agent-trace, walkthrough
+src/                      Top-level source
+tests/                    70+ tests
+test-results/             Playwright artefacts (gitignored)
+visual-walkthrough.*.mjs  Walkthrough configs, fixtures and state declarations
+.github/workflows/        CI and deploy workflows (20+)
+conformance-matrix.yaml   Assurance state
+gap-register.yaml         Gap register
+release-evidence.yaml     Release evidence
+... and other release-assurance artefacts
 ```
 
-### 11.5 Security obligations (`role: security`)
-
-- Authentication, authorisation, logging, secret handling, least privilege, sensitive data protection.
-- Never log secrets, tokens or unnecessary personal data.
-- Use the configured allowlist for origins; never widen for convenience.
-- Recovery logic (e.g. backfilling membership from active role assignments) must not replace correct atomic writes. Role assignment must create or reactivate `auth_team_memberships`, create or update the role assignment, and write audit evidence together.
-
-### 11.6 Active product lessons (from `RECENT_LEARNINGS.md`)
-
-- Preview Worker deploy filters must include the in-use branch prefixes. A Pages preview can look fresh while the Worker is stale.
-- Account dashboards must adapt to access shape (single-team summary / multi-team list / Core Team Admin inset). Do not use a table unless row-and-column comparison is genuinely needed.
-- Keep role membership and current capability labels in separate sections.
+`docs/**` is gitignored. Tracked product records and traces are force-added (`git add -f`).
 
 ---
 
-## 12. Consent lifecycle, lawful basis and retention
+## 25. Branch and trace policy
 
-### 12.1 Consent form lifecycle
+Approved work-branch prefixes: `feature/`, `chore/`, `test/`, `fix/`, `perf/`, `hotfix/`. Unapproved: `claude/`, `codex/`, `bugfix/`, `experiment/`. Mainline `main`/`master` exempt from prefix checks.
 
-- Consent forms are versioned (Markdown / Mustache).
-- Drafts live in Airtable.
-- A consent form must be **published** before participant consent can be recorded against it.
-- Each consent form version captures required statements and optional permissions.
+Trace required on `feature/`, `chore/`, `test/`, `fix/`, `perf/`. Exempt on `hotfix/`. Legacy `[reasoning]` remains an allowed explicit trigger.
 
-### 12.2 Participant consent record
+Trace content (`trace-policy.md`):
 
-States:
-
-- `Ready for session` — consent recorded, lawful for upcoming session.
-- `Needs review` — recorded but flagged.
-- `Needs consent` — required but not yet captured.
-- `Withdrawn` — participant has withdrawn.
-- `Not recorded` — default.
-
-Each record captures `responses` (JSON of required / optional permissions), `capture_method`, `recorded_by`, `recorded_at`, and on withdrawal `withdrawn = true`, `withdrawal_reason`, withdrawal timestamp.
-
-### 12.3 Lawful basis and retention
-
-Consent schema (`config/jsonschema/consent-schema.json`) requires `LawfulBasis` and `RetentionSchedule`. Retention is ISO 8601 duration.
-
-Retention policy (`config/policies/retention.policy.json`):
-
-```
-default: P12M
-overrides:
-  recordings: P6M
-  transcripts: P12M
-  notes: P12M
-actions:
-  on_expiry: delete
-  grace_period_days: 7
-```
-
-Defaults are 12 months. Recordings are 6 months. Action on expiry is hard delete after a 7-day grace period.
-
-### 12.4 Withdrawal propagation
-
-When a participant withdraws consent:
-
-1. Consent record marked `Withdrawn`.
-2. Provenance event recorded.
-3. Dependent insights and recommendations flagged via provenance.
-4. Downstream analysis surfaces display a `data withdrawn` provenance note.
-
-Operating rule: **a recommendation must remain traceable to its evidence chain even after a withdrawal**; the chain shows the withdrawal, not silence. Do not hide withdrawals to preserve a clean narrative.
-
-### 12.5 Page states for consent
-
-Visual walkthrough `participant-consent` states (`visual-walkthrough.participant-consent-states.mjs`):
-
-- `missing-context-error` — page opened without project / study context. Blocks with `Open this page from a study`.
-- `no-published-consent-form` — routes the researcher to publish a consent form first.
-- `no-participants` — routes the researcher to schedule participants first.
-- `participant-selected` — shows required statements, optional permissions, and withdrawal controls.
-
-### 12.6 Templates and guidance
-
-Under `docs/devops/sourcebook/templates/`:
-
-- `data-retention-policy-excerpt.md`
-- `gdpr-compliance-checklist-research` (where present)
-- `consent-form-template`
-- `consent-log-template`
-- `research-ethics-guidance.md`
-- `lifecycle-management-template.md`
-- `incentive-policy-guidance.md`
-
-Ethics rules (`references/researchops-ethics-pack.xml`):
-
-- Consider consent, safeguarding, privacy, provenance and data minimisation for research workflows.
-- High-stakes user groups require explicit harm framing.
-- Do not remove safety, safeguarding or distress guidance to shorten research artefacts.
-
----
-
-## 13. Visual walkthrough governance
-
-`reports-site/manifest.json` is the standing evidence:
-
-- `pageCount: 26`
-- `stateCount: 43`
-- `captureCount: 86`
-- `failureCount: 0`
-- Profiles: `desktop` (1440×1200), `mobile` (412×915, touch enabled)
-- Journeys: six (see §4).
-- Base URL: `https://researchops.pages.dev/`.
-
-Walkthrough configs and fixtures at repository root:
-
-- `visual-walkthrough.config.mjs`
-- `visual-walkthrough.operational-fixtures.mjs`
-- `visual-walkthrough.participant-consent-fixtures.mjs`
-- `visual-walkthrough.participant-consent-states.mjs`
-- `visual-walkthrough.synthesis-fixtures.mjs`
-- `visual-walkthrough.synthesis-states.mjs`
-
-Commands:
-
-- `npm run qa:visual-walkthrough` — generate captures.
-- `npm run qa:cucumber:walkthrough` — Cucumber with screenshot capture.
-- `npm run reports:validate` — validate reports site shape.
-
-Rules:
-
-- Update walkthrough coverage for any visible UI state change.
-- Do not introduce visual regressions; failures must be 0 at release.
-- Walkthrough states should cover default, error, empty, loading and key interaction states.
-
----
-
-## 14. Integration contracts
-
-### 14.1 Airtable
-
-Tables and field mappings configured in `wrangler.toml`. Linked-record fields handled as arrays. Personal data never logged. Formula, lookup and linked-field assumptions documented when route behaviour depends on them. Devops sourcebook covers attachment, checkbox, collaborator, create, delete-multiple, get, linked-records, list, number, rollup-lookup, select, sync-csv, text, update-multiple, update, upload.
-
-### 14.2 Mural (`references/mural-api-spec.xml`)
-
-- Duplicate the reflexive journal board from the configured template when required.
-- Create or use a project-named folder in the user's private room where the integration requires it.
-- Keep sticky-note category mapping explicit.
-- Do not silently fall back to the wrong room or board.
-
-OAuth scopes: `identity:read workspaces:read rooms:read rooms:write murals:read murals:write`. Sync orchestrated through `service/mural-journal-sync.js` with layout and tag-safety helpers.
-
-### 14.3 Workers AI / OpenAI
-
-- Default model `@cf/meta/llama-3.1-8b-instruct` via Workers AI binding.
-- Every interaction logged to the `AI_Usage` table.
-- `AUDIT = "true"` is the standing posture.
-- Structured outputs, function calling, file search, vector stores, embeddings, batch, webhooks, realtime and evals — when used, governed by the `openai-platform` bundle.
-
-### 14.4 MCP agent tooling
-
-When using Model Context Protocol — servers, clients, tools, resources, prompts, sampling, roots, elicitation, consent — load the `mcp-agent-tooling` bundle. Treat tool consent as first-class.
-
-### 14.5 GitHub CSV
-
-GitHub-backed CSV is a resilient fallback for projects, project-details, studies. Branch is `main`. Path policy in `wrangler.toml`. Do not rely on CSV for write paths.
-
-### 14.6 Resend (email)
-
-`POST /api/comms/send` dispatches via Resend. Secret `RESEND_API_KEY`. Sender `RESEARCHOPS_EMAIL_FROM`. Audit recorded in `data/communications-log.csv` and via provenance events.
-
-### 14.7 Cross-integration safety
-
-- Preserve adapter boundaries and environment-variable expectations.
-- Keep payload examples synthetic.
-- Document provider-specific status and error handling.
-- Never silently fall back to the wrong provider, room, board, base or table.
-
----
-
-## 15. Repository topology
-
-```text
-.agent-operating-model/           Operating model: orchestration, registry, signals, rules, bundles
-AGENTS.md                         Repository-level agent contract
-README.md                         Public-facing repository readme
-RECENT_LEARNINGS.md               Reusable repository-specific lessons (not a changelog)
-charts/                           Charts and dashboards (placeholder)
-config/                           Configuration: jsonschema/, policies/ (retention.policy.json)
-data/                             CSV fixtures (14 files — see §8.6)
-docs/                             Product, design, devops, performance, release-assurance, agent-audit, qa, design-system, design-critiques, assessments
-  product/YY/MM/DD/               Dated product records (force-add — gitignore policy)
-  agent-audit/reasoning/YYYY/MM/DD/  Promoted agent reasoning traces
-  devops/sourcebook/              Sourcebook templates and guidance (served by Pages)
-features/                         Cucumber BDD features (smoke.feature)
-functions/                        Cloudflare Functions
-infra/cloudflare/                 Worker source tree
-  src/worker.js                   Dispatch entry
-  src/core/                       router.js, service.js, logger.js, auth/, constants, fields, utils
-  src/lib/                        Airtable, Mural, provenance libraries
-  src/service/                    60+ service modules (see §7)
-  wrangler.toml                   Bindings, vars, secrets, KV, D1, AI, assets
-public/                           Pages static site
-  pages/                          Static page templates (see §5)
-  js/                             Route-specific page JavaScript
-  components/                     Shared web components (layout, session-controller, etc.)
-  scripts/                        Shared utility scripts
-  lib/                            Vendor libs (marked, mustache, purify, coloris)
-  css/                            GOV.UK-inspired styles
-pages/start/                      Project creation wizard
-reports/                          Generated test and audit reports
-reports-site/                     Reports site (visual walkthrough manifest, screenshots, index)
-schemas/                          JSON schemas (agent-trace-event)
-scripts/                          validate.sh, performance-audit.sh, security-audit-policy.sh,
-                                  agent-operating-model/*, agent-trace/*, visual-walkthrough.mjs
-src/                              Top-level source modules
-tests/                            70+ tests (route-state, contract, runtime, regression, audit, permissions)
-test-results/                     Playwright artefacts (gitignored)
-visual-walkthrough.*.mjs          Visual walkthrough configs, fixtures and state declarations
-.github/workflows/                CI and deploy workflows (20+ — see §17)
-conformance-matrix.yaml           Assurance state record
-gap-register.yaml                 Gap register
-release-evidence.yaml             Release evidence
-release-provenance-policy.yaml    Release provenance policy
-branch-protection-evidence.yaml   Branch protection record
-configuration-evidence.yaml       Configuration record
-security-audit-policy.json        Security audit policy
-security-audit-triage.yaml        Security audit triage
-deployment-toolchain.yaml         Deployment toolchain record
-```
-
-Repository convention hard rules:
-
-- Static pages live under `public/pages/`.
-- Page JavaScript lives under `public/js/`.
-- Route-specific CSS must not override GOV.UK component internals unnecessarily.
-- Worker route logic lives under the Cloudflare source tree.
-- Product records live under `docs/product/YY/MM/DD/`. No flat records at the root. No `README.md` inside dated folders. Two-digit `YY`, `MM`, `DD`.
-- `docs/**` is gitignored. Tracked product records and agent traces are force-added.
-- Work branches must use approved prefixes (§19).
-- Never introduce secrets, API keys or tokens into code. Secrets come from Wrangler environment configuration only.
-- Do not duplicate canonical bundle rules in `AGENTS.md` or product docs — link to the canonical bundle.
-
-Soft rules:
-
-- Prefer `const`. Use JSDoc on exports. Avoid console noise outside deliberate Worker logs.
-- Commits atomic. PRs self-contained. Never rewrite branch history without the repository owner's explicit approval.
-
----
-
-## 16. Testing topology
-
-Test directory `tests/` contains 70+ tests across layers:
-
-**Route-state** — UI / data-state assertions for pages: `start-page-route-state`, `project-dashboard-route-state`, `study-page-route-state`, `participant-consent-route-state`, `consent-forms-route-state`, `journal-tabs-filter-state-route-state`, `auth-sign-in-route-state`, `auth-account-dashboard-route-state`, `auth-role-assignment-ui-route-state`, `auth-active-team-selection-route-state`, `govuk-page-chrome-navigation-route-state`, `studies-route-state`, etc.
-
-**Contract** — API payload shape: `projects-route-contract`, `journals-project-route-contract`.
-
-**Runtime / integration** — `auth-registration-requests-runtime`, `auth-role-assignment-api-route-state`, `auth-runtime-bootstrap-route-state`.
-
-**Regression** — `agent-operating-model-regression`, `reporting-review-repetition-pass`, `agent-trace-control-regression`.
-
-**Bundle and operating-model** — `bundle-validation-reports`, `airtable-bundle-health`, `github-bundle-codex-comment-handling`, `reports-site-validation`.
-
-**Permission / auth** — `auth-route-permissions`, `auth-active-team-selection-route-state`.
-
-Commands:
-
-- `npm test` — Node test runner (unit and contract).
-- `npm run test:e2e` — Playwright E2E.
-- `npm run qa:cucumber` — Cucumber BDD.
-- `npm run qa:cucumber:walkthrough` — Cucumber with screenshots.
-- `npm run qa:visual-walkthrough` — Visual walkthrough generation.
-
-BDD coverage is intentionally minimal smoke (`features/smoke.feature`). Acceptance coverage runs through visual walkthrough states and route-state tests.
-
-Joined Pages-to-Worker tests (`references/researchops-joined-proxy-worker-tests.xml`) exercise the same `/api` boundary used by Pages clients; cover diagnostics, health, a list route and one mutate route before downstream browser E2E.
-
-Contract test pack rules:
-
-- Canonical route fixtures must be present for documented route families.
-- Fixture paths referenced by route catalogues must exist.
-- Route shape changes require fixture and test updates.
-- Conditional or absent routes recorded explicitly.
-
-Fixture index validation:
-
-- Every fixture referenced by a catalogue or manifest must exist.
-- Every route example fixture should be indexed or discoverable.
-- Validation reports missing, unindexed and unreachable fixtures separately.
-
-Example payload rules:
-
-- Synthetic only. No real participant data.
-- Aligned with route catalogue and fixtures.
-- Updated when route shape changes.
-
----
-
-## 17. CI/CD workflows
-
-`.github/workflows/` contains 20+ workflows:
-
-**Quality**
-
-- `ci.yml` — lint, format, test.
-- `worker-ci.yml` — Worker-specific CI.
-- `validate.yml` — schemas, bundle, links.
-- `format-pr.yml`, `format-branch.yml` — Prettier and lint enforcement.
-
-**Testing and audits**
-
-- `qa-bdd.yml` — Cucumber.
-- `qa-e2e.yml` — Playwright.
-- `qa-lighthouse.yml` — Lighthouse.
-- `qa-links.yml` — Lychee.
-- `accessibility.yml` — Pa11y.
-- `security.yml` — security scanning.
-
-**Release and deployment**
-
-- `release-gate.yml` — pre-release blocking quality gate (matrix of checks logged to NDJSON: per-check id, title, command, blocking flag, exit code, status, stdout/stderr tail).
-- `deploy-worker.yml` — production Worker.
-- `deploy-agent-gateway.yml` — agent gateway Worker.
-- `deploy-passwordless-preview-worker.yml` — auth Worker preview.
-- `deploy-sourcebook.yml` — Sourcebook Pages site.
-
-**Database / infrastructure**
-
-- `apply-d1-auth-foundation.yml` — apply auth schema.
-- `apply-d1-auth-role-assignment-route.yml` — apply route permission table.
-- `bootstrap-d1-auth-runtime.yml` — bootstrap runtime (first team admin, user seed).
-
-CI governance (`references/researchops-ci-governance-pack.xml`):
-
-- CI validates syntax, format, route contracts and release gates where configured.
-- Broken fixture, route-state or contract tests must not be bypassed silently.
-- Prettier exclusions for generated or static contract fixtures must be narrow and documented.
-
-Prettier reality:
-
-- Formatter compliance cannot be inferred from rules, memory, house style or visual inspection.
-- Prettier is executable. API-based file writes must pre-wrap chained calls and assertions in Prettier's shape, then verify via `npm run format:check` or CI.
-
-Release readiness: never claim release readiness without green CI or an explicit caveat (`references/quality-gates.xml`).
-
----
-
-## 18. Documentation, evidence and product records
-
-Product records — dated convention (`docs/product/README.md`):
-
-- Path pattern `docs/product/YY/MM/DD/`.
-- Use the date the record was created or approved.
-- `YY`, `MM`, `DD` are two-digit values.
-- No `README.md` inside individual `DD` folders.
-- No root-level product documents except the top `README.md`.
-- Treat dated copies as canonical when legacy flat copies remain.
-
-`docs/**` is in `.gitignore`. Tracked product records and agent traces are force-added (`git add -f`). Use `-f` when the document belongs in version control.
-
-Agent reasoning traces:
-
-- Path pattern `docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.md` and `<slug>.json`.
-- Generated by `npm run trace:promote`.
-- Coverage enforced by `npm run trace:coverage`.
-
-Other evidence surfaces:
-
-- `RECENT_LEARNINGS.md` — quick operational memory. Reusable lessons only. Not a changelog. Update immediately when a reusable lesson is identified.
-- `conformance-matrix.yaml` — `requirement`, `status`, `evidence`, `owner`, `gap`.
-- `gap-register.yaml` — `id`, `title`, `status`, `severity`, `owner`, `context`, `mitigation`, `evidence`.
-- `release-evidence.yaml`, `branch-protection-evidence.yaml`, `configuration-evidence.yaml`, `release-provenance-policy.yaml`, `security-audit-policy.json`, `security-audit-triage.yaml`, `deployment-toolchain.yaml` — release-assurance evidence.
-- `visual-walkthrough.*.mjs` and `reports-site/` — visual walkthrough governance.
-
-Conformance summary rules (`references/researchops-conformance-summary-pack.xml`):
-
-- Summaries include coverage, gaps and failed checks.
-- Distinguish blocked, skipped, failed and passed checks.
-
-Gap register rules (`references/researchops-gap-register.xml`):
-
-- Known missing routes, tests, fixtures or documentation recorded as gaps.
-- Gaps need status, owner, target and evidence.
-- Do not hide gaps by overstating conformance.
-
-Other doc surfaces:
-
-- `docs/devops/` — Airtable guides, reporting review model, secrets setup, Sourcebook templates.
-- `docs/qa/visual-walkthrough.md` — walkthrough strategy.
-- `docs/design-system/` — GOV.UK frontend migration, compliance audit, component inventory.
-- `docs/design-critiques/26/05/07/` — platform design critique.
-- `docs/performance/initial-load-audit.md`, `docs/performance/performance-inventory-tooling.md`.
-- `docs/release-assurance/release-provenance.md`, `docs/release-assurance/branch-protection-verification.md`.
-- `docs/assessments/alpha-assessment.md` — UK Service Standard alpha assessment.
-- `docs/agent-audit/reasoning/YYYY/MM/DD/` — promoted traces.
-
----
-
-## 19. Branch policy and trace policy
-
-Approved work-branch prefixes:
-
-- `feature/`, `chore/`, `test/`, `fix/`, `perf/`, `hotfix/`.
-
-Do not use `claude/`, `codex/`, `bugfix/`, `experiment/` or any other prefix. The mainline branches `main` and `master` are exempt from work-branch prefix checks.
-
-Trace requirements:
-
-- Always record reasoning traces for repository-affecting work on `feature/`, `chore/`, `test/`, `fix/` and `perf/` branches.
-- `hotfix/` is exempt. Exemption must not be used to broaden scope.
-- Legacy `[reasoning]` token remains allowed as an explicit trigger.
-
-Required trace content (`trace-policy.md`):
-
-- Run metadata.
-- Original task summary.
-- Branch name and branch-prefix trace decision.
-- Corrected branch behaviour if any branch was abandoned or recreated.
+- Run metadata, original task summary, branch name and trace decision.
+- Corrected branch behaviour if a branch was abandoned or recreated.
 - Operating-model files loaded.
-- Canonical bundle directories selected.
-- Bundles selected.
-- Bundles skipped.
+- Canonical bundle directories selected; bundles skipped.
 - Precedence decisions.
-- Files read.
-- Files created or modified.
-- Validation attempted.
-- Validation not run and why.
-- Issues, pivots and residual risks.
+- Files read; files created or modified.
+- Validation attempted; validation not run and why.
+- Issues, pivots, residual risks.
 
-Evidence boundary in traces — distinguish:
-
-- evidence from repository files
-- implementation decisions
-- assumptions
-- tool limitations
-- validation results
+Evidence boundary: distinguish evidence from repository files, implementation decisions, assumptions, tool limitations, validation results.
 
 Promotion:
 
-```text
+```
 npm run trace:promote -- --input .agent-traces/raw/<trace>.jsonl --slug <slug> --date YYYY-MM-DD
 ```
 
 writes:
 
-```text
+```
 docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.md
 docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.json
 ```
 
-Invalid traces must not be promoted. Promotion reports must summarise event evidence, not expose private chain-of-thought.
+Invalid traces must not be promoted. Reports summarise event evidence; never expose private chain-of-thought.
 
-Enforcement: `npm run trace:coverage` fails when a work branch uses an unapproved prefix and requires a promoted `.json` trace for `feature/`, `chore/`, `test/`, `fix/` and `perf/` branches. Trace coverage is skipped for `hotfix/`.
+Enforcement: `npm run trace:coverage`.
 
-Trace layers (`trace-layers.md`): `operational`, `behavioural`, `mechanistic`, `training`. Mechanistic claims must be labelled as hypotheses unless tooling can directly inspect model internals. Traces must never expose private chain-of-thought.
+Trace layers (`trace-layers.md`): `operational`, `behavioural`, `mechanistic`, `training`. Mechanistic claims labelled as hypotheses unless model-internal tooling exists.
 
 Drift categories: `instruction`, `context`, `priority`, `tool`, `explanation`, `mechanistic`.
 
+Example trace shape (from `docs/agent-audit/reasoning/2026/05/07/`):
+
+```
+{
+  "traceId": "...",
+  "createdAt": "...",
+  "branch": "feature/...",
+  "trigger": "[reasoning]",
+  "traceLayer": "operational",
+  "task": { "summary": "...", "constraint": "..." },
+  "operatingModelSourcesLoaded": [...],
+  "selectedBundles": [{ "id": "...", "reason": "..." }],
+  "skippedBundles": [{ "id": "...", "reason": "..." }],
+  "precedenceDecisions": [...],
+  "nonActionBoundary": [...],
+  "validationDesigned": [...],
+  "residualRisks": [...]
+}
+```
+
 ---
 
-## 20. PR and logging governance
+## 26. PR and logging governance
 
-PR governance (`references/researchops-pr-and-logging-governance-pack.xml`):
+PR governance:
 
-- PRs state what changed, why, validation evidence and known risks.
-- Do not log secrets, tokens or unnecessary personal data.
-- Audit events should be clear, minimal and useful for governance.
-- Keep PRs self-contained.
-- Do not rewrite branch history without explicit approval.
+- State what changed, why, validation evidence, known risks.
+- Self-contained PRs.
+- No history rewrite without owner approval.
 - Do not create a pull request unless explicitly requested.
 
-PR template provided under `.github/pull_request_template.md`.
+Review-comment handling (GitHub Diamond doctrine):
+
+- Classify each Codex comment as legitimate, false positive, superseded or blocked.
+- For legitimate comments: make the concrete change or provide evidence the existing implementation satisfies the concern.
+- After the issue is overcome: add 👍 reaction to the original comment; reply with a concise explanation of what changed, what evidence proves the fix, and residual risk.
+- Resolve the review thread only after code / documentation / tests / workflow evidence is complete.
+- Do not silently ignore legitimate comments.
+
+Logging:
+
+- Do not log secrets, tokens, or unnecessary personal data.
+- Audit events are clear, minimal, governance-useful.
 
 ---
 
-## 21. Quality gates
+## 27. Quality gates
 
 Required pre-merge sequence:
 
@@ -1048,89 +1102,75 @@ Required pre-merge sequence:
 5. `npm test -- --ci`
 6. `npm run validate`
 
-Contextual gates depending on change surface:
+Contextual gates:
 
-- Accessibility: Pa11y (`.pa11yci.json`).
-- Performance: Lighthouse (`lighthouserc.json`) and `npm run audit:performance`.
-- Links: Lychee (`lychee.toml`).
-- BDD: `npm run qa:cucumber`.
-- E2E: `npm run test:e2e`.
-- Visual walkthrough: `npm run qa:visual-walkthrough`; `npm run reports:validate`.
+- Pa11y (`.pa11yci.json`).
+- Lighthouse (`lighthouserc.json`) and `npm run audit:performance`.
+- Lychee (`lychee.toml`).
+- Cucumber: `npm run qa:cucumber`.
+- Playwright: `npm run test:e2e`.
+- Visual walkthrough: `npm run qa:visual-walkthrough`, `npm run reports:validate`.
 - Security: `npm run audit:security`; `security-audit-policy.json`, `security-audit-triage.yaml`.
 - Operating model: `npm run agent:model:validate`, `npm run agent:bundles:validate`, `npm run agent:evals`.
 - Trace coverage: `npm run trace:coverage`.
 
-Gate rules (`references/quality-gates.xml`):
+Gate rules:
 
 - Run or preserve `npm run validate`.
 - Preserve lint and formatting standards.
 - Run or update route contract tests for API changes.
 - Update walkthrough coverage for visible UI states.
 - Preserve WCAG and GOV.UK component expectations.
-- Do not claim release readiness without green CI or explicit caveat.
+- No release-readiness claim without green CI or explicit caveat.
 
-Tests must be idempotent and CI-safe.
+Idempotent and CI-safe tests only.
 
----
-
-## 22. Accessibility and GOV.UK doctrine
-
-GOV.UK rules (`references/govuk-design-system-spec.xml`):
-
-- Semantic headings, labels, hints, fieldsets and error summaries.
-- Preserve keyboard and pointer operability.
-- Do not recreate component internals with page-specific CSS unless justified.
-- Use plain English; do not expose technical permission codes to ordinary users.
-
-Active product lessons (from `RECENT_LEARNINGS.md`):
-
-- Input widths are part of affordance. Use sensible fluid widths (e.g. `govuk-!-width-two-thirds`).
-- Deliberate vertical rhythm between intro content and first form field.
-- Check-answers `Change` links must change the answer (reveal form, focus the target control).
-- Do not put focus rings on non-control containers. Scroll into view rather than focus passive containers.
-- Account dashboards adapt to access shape.
-- Keep role membership and current capability labels in separate sections.
-- Use existing GOV.UK-inspired patterns before inventing local variants.
-- Protect keyboard, pointer, focus, screen-reader behaviour.
-
-UI mode (`rops-ui`) requires identifying the right layer (page markup, shared component, route script, stylesheet) before editing.
+Prettier reality: executable formatter. API-based writes must pre-wrap chained calls and assertions in Prettier's shape; verify via `npm run format:check` or CI.
 
 ---
 
-## 23. Ethics, provenance and the traceability covenant
+## 28. CI/CD workflows
 
-The platform's central rule is the **evidence → insight → recommendation** chain. The chain must survive refactors, exports, withdrawals and integration syncs.
+`.github/workflows/`:
 
-Provenance rules (`references/researchops-metadata-provenance-pack.xml`):
+- **Quality:** `ci.yml`, `worker-ci.yml`, `validate.yml`, `format-pr.yml`, `format-branch.yml`.
+- **Testing and audits:** `qa-bdd.yml`, `qa-e2e.yml`, `qa-lighthouse.yml`, `qa-links.yml`, `accessibility.yml`, `security.yml`.
+- **Release and deployment:** `release-gate.yml`, `deploy-worker.yml`, `deploy-agent-gateway.yml`, `deploy-passwordless-preview-worker.yml`, `deploy-sourcebook.yml`.
+- **D1 lifecycle:** `apply-d1-auth-foundation.yml`, `apply-d1-auth-role-assignment-route.yml`, `bootstrap-d1-auth-runtime.yml`.
 
-- Research artefacts preserve source, creator, timestamp and related project or study context.
-- Evidence, insight and recommendation relationships stay traceable.
-- Generated artefacts must distinguish generated content from human-authored decisions.
+Release gate is an NDJSON-logged matrix: per-check id, title, command, blocking flag, exit code, status, stdout/stderr tail, started_at, ended_at.
 
-Ethics rules:
-
-- Consent, safeguarding, privacy, provenance, data minimisation.
-- High-stakes user groups require explicit harm framing.
-- Do not remove safety, safeguarding or distress guidance to shorten artefacts.
-
-Operating defaults:
-
-- Phase changes are human-owned.
-- Authoritative use of platform output requires human review.
-- Do not invent identifiers. Do not expose internal field names to end users.
-- Do not remove evidence, audit trace, accessibility support, GOV.UK semantics, route guards or operational fixtures unless explicitly requested and justified.
-
-Three planes of traceability:
-
-- **Product plane** — evidence → insight → recommendation. Every recommendation traces through one or more insights to one or more evidence sources. The chain survives withdrawal as a flagged provenance event.
-- **Repository plane** — request → branch → trace → PR → CI → release evidence. Branch prefix drives trace requirement.
-- **Operating plane** — operational, behavioural, mechanistic, training trace layers.
+CI governance: validates syntax, format, route contracts and release gates. Broken fixture / route-state / contract tests must not be bypassed silently. Prettier exclusions for generated content must be narrow and documented.
 
 ---
 
-## 24. Authority hierarchy
+## 29. Component inventory and GOV.UK migration
 
-When in conflict, resolve in this order (`prompt.body.xml` / `instruction_hierarchy`):
+From `docs/design-system/researchops-component-inventory.md` and `govuk-compliance-audit.md`:
+
+Classification model: **GOV.UK global**, **ResearchOps global**, **Route-specific**, **Legacy temporary**, **Obsolete**, **Uncertain**.
+
+Hard rule:
+
+> Do not move or duplicate a shared component into route CSS merely because a page uses it. If a class is reused across routes, it should remain global or be formally replaced by a GOV.UK component through a planned global migration.
+
+Migration sequence:
+
+1. Establish baseline and component inventory.
+2. Add validation to protect baseline.
+3. Migrate buttons globally.
+4. Migrate form structures route by route.
+5. Migrate header and navigation.
+6. Migrate tabs, tags, task lists, summary lists and tables.
+7. Retire obsolete custom CSS only after browser validation.
+
+PR expectations: route-state tests where markup / loading contracts change; `npm run validate`; `npm run lint`; manual browser inspection; audit note linking from the document.
+
+---
+
+## 30. Authority hierarchy
+
+When in conflict:
 
 1. Law, regulation and platform safety.
 2. Privacy, security and data minimisation.
@@ -1147,11 +1187,11 @@ When in conflict, resolve in this order (`prompt.body.xml` / `instruction_hierar
 Bundle precedence (`precedence-policy.md`):
 
 1. `github-diamond` — repository safety, branch hygiene, PR discipline, CI, test evidence, commit behaviour.
-2. `researchops-developer-control` — platform architecture, service boundaries, repository conventions, ResearchOps-specific implementation.
+2. `researchops-developer-control` — platform architecture, service boundaries, repository conventions.
 3. `multi-functional-team` — government service assurance, risk, governance, ethics, harm, user-impact framing.
-4. `govuk-design-system` — GOV.UK UI, content, interaction, accessibility, frontend component decisions.
-5. `cloudflare` — runtime, Wrangler, bindings, storage, state, queues, workflows, Workers AI, Vectorize, deployment.
-6. `openai-platform` — OpenAI API, model, tool, retrieval, structured output, eval, AI-safety.
+4. `govuk-design-system` — GOV.UK UI, content, interaction, accessibility, frontend components.
+5. `cloudflare` — runtime, Wrangler, bindings, storage, state, queues, workflows, Workers AI, Vectorize.
+6. `openai-platform` — OpenAI API, model, tool, retrieval, structured output, eval, AI safety.
 7. `mcp-agent-tooling` — MCP protocol, tool, resource, prompt, consent, agent-tooling safety.
 8. `airtable-public-api`, `mural-public-api` — implementation details for their APIs.
 
@@ -1159,124 +1199,76 @@ Conflicts must be recorded: bundles involved, conflicting rule, precedence decis
 
 ---
 
-## 25. Bundle topology, task signals and selection
+## 31. Bundle topology, task signals and behavioural evals
 
-Operating model files (`AGENTS.md`):
-
-- `.agent-operating-model/orchestration.xml`
-- `.agent-operating-model/bundle-registry.json`
-- `.agent-operating-model/task-signal-catalog.json`
-- `.agent-operating-model/selection-rules.json`
-- `.agent-operating-model/bootstrap-checklist.md`
-- `.agent-operating-model/precedence-policy.md`
-- `.agent-operating-model/trace-policy.md`
-- `.agent-operating-model/trace-layers.md`
-- `.agent-operating-model/behavioural-evals.json`
-- `.agent-operating-model/bundles/`
-
-Always-load bundles (any repository-affecting task): `github-diamond`, `researchops-developer-control`, `multi-functional-team`.
+Always-load bundles: `github-diamond`, `researchops-developer-control`, `multi-functional-team`.
 
 Conditional bundles loaded by signal:
 
-| Signal | Triggers | Loads |
-|--------|----------|-------|
-| `ui-or-content-change` | accessibility, component, content, css, form, gov.uk, govuk, html, page design | `govuk-design-system` |
-| `runtime-or-deployment-change` | cloudflare/d1/kv/r2/queues/durable objects/vectorize/wrangler/workers/workflows | `cloudflare` |
-| `ai-model-or-openai-platform-change` | openai, responses api, structured outputs, function calling, file search, vector stores, embeddings, batch, webhooks, realtime, evals | `openai-platform` |
-| `agent-tooling-or-mcp-change` | model context protocol, mcp servers/clients/tools/resources/prompts/sampling/roots/elicitation/consent | `mcp-agent-tooling` |
-| `external-api-or-data-change` | airtable, attachment, filterByFormula, linked record, records | `airtable-public-api` |
-| `external-api-or-collaboration-change` | mural, board, oauth, room, sticky note, widget, workspace | `mural-public-api` |
+| Signal | Loads |
+|--------|-------|
+| `ui-or-content-change` | `govuk-design-system` |
+| `runtime-or-deployment-change` | `cloudflare` |
+| `ai-model-or-openai-platform-change` | `openai-platform` |
+| `agent-tooling-or-mcp-change` | `mcp-agent-tooling` |
+| `external-api-or-data-change` | `airtable-public-api` |
+| `external-api-or-collaboration-change` | `mural-public-api` |
 
-Commands:
+Behavioural evals (`.agent-operating-model/behavioural-evals.json`) — seven evals:
 
-| Task | Command |
-|------|---------|
-| Show selected operating model bundles | `npm run agent:model -- "<task text>"` |
-| Run behavioural operating-model evals | `npm run agent:evals` |
-| Validate operating model files | `npm run agent:model:validate` |
-| Validate bundle registry | `npm run agent:bundles:validate` |
-| Validate trace coverage | `npm run trace:coverage` |
+1. `behaviour-runtime-routing` — Cloudflare routing prompt selects always-load bundles plus `cloudflare`.
+2. `behaviour-openai-structured-output` — OpenAI prompt selects always-load plus `openai-platform`.
+3. `behaviour-mcp-tool-consent` — MCP prompt selects always-load plus `mcp-agent-tooling`.
+4. `behaviour-govuk-page-design` — GOV.UK page-design prompt selects always-load plus `govuk-design-system`.
+5. `behaviour-reasoning-trace-required` — `[reasoning]` prompt requires raw JSONL, user-readable trace, bundle-application record.
+6. `behaviour-latest-prompt-vs-repo-rule` — repository rule precedence preserved over latest prompt; AGENTS.md and orchestration loaded; conflict reported; canonical bundle directories resolved.
+7. `behaviour-structured-rule-application` — typed task signals drive selection (not keywords only). Worker route syncing records and sticky notes selects always-load plus `cloudflare`, `airtable-public-api`, `mural-public-api`.
 
----
-
-## 26. Modes
-
-Pick one mode before editing (`bundles/researchops-developer-control/modes/`):
-
-- **`rops-build`** (default) — implementing features across UI, Worker and docs. Inspect first, plan the layer, coherent commits, record tests, risks, follow-ups.
-- **`rops-api`** — API, Worker, router, service-module work. Preserve response envelopes. Update examples and route-shape fixtures with shape changes. Keep error responses structured and consistent.
-- **`rops-ui`** — page, component, CSS, browser behaviour. Identify the right layer. Do not duplicate component logic. Protect keyboard, pointer, focus, screen-reader behaviour.
-- **`rops-patterns`** — design pattern and GOV.UK component work. Use existing GOV.UK patterns first. Preserve semantics. Update pattern documentation when a reusable pattern changes.
-- **`rops-integration`** — Airtable, Mural, Cloudflare and cross-service integration. Preserve adapter boundaries and env-var expectations. Keep payload examples synthetic. Document provider-specific status and error handling.
-- **`rops-fix`** — bug fixes and regressions. Identify failing behaviour and owning layer. Add or update regression assertions. Do not use broad rewrites to hide a narrow defect.
-- **`rops-review`** — reviewing changes. Architecture, user need, accessibility, route contracts, CI impact. Separate blocking defects from advisory improvements. Ground comments in file paths and observable behaviour.
-- **`rops-conformance`** — route-shape, fixture-index, repository-convention, CI conformance. Maintain conformance matrix and gap register. Distinguish verified, conditionally verified, absent and future-extension routes. Do not mark conformance complete without evidence.
+Each eval declares `expectedBundles`, `expectedEvidence`, `forbiddenFailureModes` (e.g. `instruction`, `tool`, `missing-canonical-directory`, `superficial-keyword-only`).
 
 ---
 
-## 27. Templates
+## 32. Modes and templates
 
-Under `bundles/researchops-developer-control/templates/`:
+### 32.1 Modes
 
-- `task-brief-template.xml`
-- `implementation-plan-template.xml`
-- `api-endpoint-template.xml`
-- `ui-page-template.xml`
-- `adapter-contract-template.xml`
-- `service-module-contract-template.xml`
-- `repository-convention-template.xml`
-- `design-pattern-spec-template.xml`
-- `test-plan-template.xml`
-- `adr-template.xml`
-- `pr-summary-template.xml`
-- `endpoint-example-template.xml`
-- `conformance-matrix-template.xml`
-- `gap-register-template.xml`
-- `contract-test-spec-template.xml`
-- `ci-governance-template.xml`
-- `conformance-summary-template.xml`
-- `metadata-provenance-template.xml`
-- `ethics-impact-template.xml`
-- `route-css-split-template.xml`
-- `performance-audit-update-template.xml`
+`rops-build` (default), `rops-api`, `rops-ui`, `rops-patterns`, `rops-integration`, `rops-fix`, `rops-review`, `rops-conformance`. See `bundles/researchops-developer-control/modes/`.
 
-Prefer the template to ad-hoc structure. The schema is the contract.
+### 32.2 Developer-control templates
 
----
+Twenty-one platform templates under `bundles/researchops-developer-control/templates/`: task-brief, implementation-plan, api-endpoint, ui-page, adapter-contract, service-module-contract, repository-convention, design-pattern-spec, test-plan, adr, pr-summary, endpoint-example, conformance-matrix, gap-register, contract-test-spec, ci-governance, conformance-summary, metadata-provenance, ethics-impact, route-css-split, performance-audit-update.
 
-## 28. The Sourcebook
+### 32.3 Sourcebook templates (practice)
 
-`docs/devops/sourcebook/` is the research operations knowledge base served through Cloudflare Pages as `https://reops-sourcebook.pages.dev/`. Bound to the Worker via `ASSETS`. It contains templates and reference material for the research operations practice itself, not just the platform.
+Twenty-one practice templates under `docs/devops/sourcebook/templates/`:
 
-Sourcebook templates (`docs/devops/sourcebook/templates/`):
+- `research-ethics-guidance.md` — Belmont-framed; ethics review triggers.
+- `research-governance-roles-raci.md` — RACI across planning, ethics, recruitment, data handling, insight approval, escalation.
+- `research-maturity-self-assessment.md` — six maturity dimensions: capability, governance, recruitment & consent, data management, insight use, accessibility & inclusion.
+- `incentive-policy-guidance.md` — policy scope, levels, tax, equity, review.
+- `lifecycle-management-template.md` — artefact lifecycle stages (Created → Active use → Under review → Archived → Disposed) with retention and disposal approval.
+- `method-playbook-index.md` — methods × intent × duration × guidance link.
+- `participant-panel-database-schema.md` — panel schema centred on consent lifecycle.
+- `remote-research-setup-guide.md` — pre-session / setup / in-session / post-session.
+- `research-shareback-patterns.md` — purpose / format / messages / actions; need / evidence / risk / recommendation / decision-required.
+- `research-space-checklist.md` — access & inclusion / operational setup.
+- `stakeholder-mapping-template.md` — stakeholders × interest × influence × decision rights × engagement need; explicit research-independence risk.
+- `tool-evaluation-matrix.md` — weighted-sum; accessibility and data-security weighted high.
+- `research-role-descriptions.md` — Director, Lead, Senior, Researcher, Junior, ResearchOps Manager, Coordinator.
+- `research-roadmap-template.md` — research question × method × decision supported × dependencies × status; recruitment / access / policy / ethics constraints.
+- `research-taxonomy-reference.md` — finding type × service dimension.
+- `research-backlog-board-guidance.md` — Inbox → Backlog → Discovery → Analysis → Reporting → Done.
+- `decision-log-template.md` — decision × evidence × alignment-with-findings; `diverges-from-findings` is explicit.
+- `community-of-practice-charter.md` — purpose / membership / governance / activities / success measures.
+- `integration-workflow-template.md` — source / target / data flow / auth / error handling / recovery.
+- `repository-entry-template.md` — research repository entry metadata.
+- `data-retention-policy-excerpt.md` — retention table with basis and disposal method.
 
-- `data-retention-policy-excerpt.md`
-- `research-ethics-guidance.md`
-- `research-governance-roles-raci.md`
-- `research-maturity-self-assessment.md`
-- `incentive-policy-guidance.md`
-- `lifecycle-management-template.md`
-- `method-playbook-index.md`
-- `participant-panel-database-schema.md`
-- `remote-research-setup-guide.md`
-- `research-shareback-patterns.md`
-- `research-space-checklist.md`
-- `stakeholder-mapping-template.md`
-- `tool-evaluation-matrix.md`
-- `research-role-descriptions.md`
-- `research-roadmap-template.md`
-- `research-taxonomy-reference.md`
-- `research-backlog-board-guidance.md`
-- `decision-log-template.md`
-- `community-of-practice-charter.md`
-- `integration-workflow-template.md`
-- `repository-entry-template.md`
-
-The Sourcebook is the **practice manual**. The platform supports the practice; the Sourcebook describes how the practice should run. Edits to Sourcebook content must respect ethics, accessibility and plain-English rules.
+Prefer template to ad-hoc structure. The schema is the contract.
 
 ---
 
-## 29. Operating contract for agents
+## 33. Operating contract for agents
 
 Bootstrap (required, every repository-affecting task):
 
@@ -1290,73 +1282,289 @@ Bootstrap (required, every repository-affecting task):
 8. Identify always-load bundles.
 9. Identify typed task signals.
 10. Identify conditional bundles relevant to the task.
-11. Apply `.agent-operating-model/precedence-policy.md`.
+11. Apply `precedence-policy.md`.
 12. Record selected bundles and canonical paths if the branch trace rule requires a trace.
 13. Stop and report the missing source if the operating model or a selected bundle directory cannot be loaded.
 
-Implementation workflow (`references/implementation-workflow.xml`):
+Implementation workflow:
 
-1. **Understand** — clarify the requested outcome and constraints.
+1. **Understand** — clarify outcome and constraints.
 2. **Inspect** — read relevant repository files.
 3. **Route** — choose the correct implementation layer.
 4. **Change** — apply focused changes.
 5. **Validate** — run or encode validation.
-6. **Document** — update docs, fixtures or trace where required.
-7. **Report** — report observable state and remaining risk.
+6. **Document** — update docs, fixtures or trace.
+7. **Report** — observable state and remaining risk.
 
-Core rules (`references/core-rules.xml`):
+Core rules:
 
-- `inspect-first` — inspect existing files, routes, fixtures and conventions before implementing.
-- `do-not-invent` — do not invent endpoint shape, table names, field names or runtime guarantees.
-- `component-layer` — identify the correct implementation layer before editing.
-- `truthful-status` — do not state work is complete, merged, deployed or validated without observable evidence.
-- `batch-visible-work` — keep branch and PR state visible. Avoid hidden work claims.
+- `inspect-first`, `do-not-invent`, `component-layer`, `truthful-status`, `batch-visible-work`.
 
-Developer-control obligations (`references/developer-control-contract.xml`):
+Developer-control obligations:
 
-- Read the existing implementation before changing it.
-- Prefer full coherent files when the user requests full rewrites.
+- Read existing implementation before changing it.
+- Prefer full coherent files when full rewrites are requested.
 - Use narrow commits when repository tooling requires smaller writes.
-- Explain risks, validation and follow-up work honestly.
+- Explain risks, validation and follow-up honestly.
 
-Runtime defaults (from `prompt.body.xml`):
-
-- `default_mode: rops-build`
-- `default_depth: standard`
-- `phase_changes: human-owned`
-- `human_review_required_for_authoritative_use: true`
-- `do_not_invent_identifiers: true`
-- `do_not_expose_internal_field_names_to_end_users: true`
-- `repository_grounding_required: true`
+Runtime defaults: `default_mode: rops-build`, `default_depth: standard`, `phase_changes: human-owned`, `human_review_required_for_authoritative_use: true`, `do_not_invent_identifiers: true`, `do_not_expose_internal_field_names_to_end_users: true`, `repository_grounding_required: true`.
 
 ---
 
-## 30. Output contract
+## 34. Operating playbooks
+
+Recipes for the most common tasks. Each is a thin checklist on top of the operating contract.
+
+### 34.1 Start a new study
+
+1. Confirm project context. Ensure project is in an appropriate phase.
+2. Confirm method choice. Document justification (SCOPE 1.1.2).
+3. Create study via `POST /api/studies` with `projectId`, `title`, `method`, `status: Planning`.
+4. Author and publish a discussion guide (`/api/guides`).
+5. Author and publish a consent form (`/api/consent-forms`).
+6. Run study setup task list: define questions, complete ethics check, prepare guide, add participants, confirm consent, schedule sessions.
+7. Capture stakeholder map and risk assessment.
+8. Open the readiness checklist on the study page.
+
+### 34.2 Recruit participants for a study
+
+1. Define recruitment criteria from the study sample plan.
+2. Confirm inclusive recruitment (REC-ADMN 1.3.1) — accessible language, reasonable adjustments, diversity monitoring.
+3. Confirm incentive level under policy (REC-ADMN 2.1.1).
+4. Add participants via `POST /api/participants` with pseudonyms.
+5. Track invitation, acceptance, withdrawal and attendance (REC-ADMN 6.0.1).
+6. Pseudonymise by default. Reveal only when authorised.
+
+### 34.3 Record participant consent
+
+1. Confirm a **published** consent form exists. If not, route to publish before recording.
+2. Confirm participants exist. If not, route to schedule before recording.
+3. Capture consent via `POST /api/participant-consent` with `responses`, `capture_method`, `recorded_by`, `recorded_at`.
+4. Set `LawfulBasis` and `RetentionSchedule` (ISO 8601).
+5. Confirm status: `Ready for session`.
+
+### 34.4 Run a session
+
+1. Pre-session: confirm participant has joining details; offer accessibility adjustments; provide plain-English instructions; researcher tests audio / video / screenshare / recording; backup contact ready; discussion guide and consent record accessible; observers briefed on conduct.
+2. In session: reconfirm consent; explain recording and note-taking; check comfort and understanding; pause or stop if participant becomes distressed.
+3. Capture session notes (`/api/session-notes`) and journal entries (`/api/journal-entries`).
+4. Post-session: save notes; record safeguarding or follow-up; debrief with the team where needed.
+
+### 34.5 Handle a consent withdrawal
+
+1. Receive withdrawal request.
+2. Update participant consent record via `PATCH /api/participant-consent/{id}` with `withdrawn = true`, `withdrawal_reason`, timestamp.
+3. Provenance event recorded.
+4. Downstream insights and recommendations flagged via provenance.
+5. Surface a `data withdrawn` provenance note on dependent surfaces.
+6. Do not delete the record. Do not silently remove dependent insights.
+
+### 34.6 Synthesise evidence
+
+1. Tag excerpts from journal entries (`/api/excerpts`).
+2. Apply codes (`/api/code-applications`); reuse codes across studies in a project.
+3. Cluster evidence (`/api/synthesis/clusters`).
+4. Group clusters into themes (`/api/synthesis/themes`).
+5. Promote synthesis into insights with explicit confidence and limitations.
+6. Tag findings using the taxonomy: finding type × service dimension.
+
+### 34.7 Publish a recommendation
+
+1. Confirm linked insights exist. Insight must reference evidence.
+2. Confirm an owner has accepted the recommendation (ROPS-AUTH-010).
+3. Record decision context in the decision log (`templates/decision-log-template.md`).
+4. Where the decision diverges from findings, record the reason and residual risk.
+5. Tag with `recommendation.own` audit event.
+
+### 34.8 Assign a sensitive role
+
+1. Confirm caller has `role.assign` permission.
+2. Open `/pages/team/role-assignments/`.
+3. Identify the team member by email (or user ID).
+4. Choose the role (Observer, Researcher, Research Lead, Approver, Safeguarding Lead, Team Admin).
+5. Choose duration (30 / 60 / 90 / 180 days or specific date).
+6. Record an audit reason.
+7. Confirm sensitive-role checkbox (`ASSIGN_SENSITIVE_ROLE`).
+8. For Safeguarding Lead, confirm `ASSIGN_SAFEGUARDING_LEAD`.
+9. Submit; review check-and-confirm; write via `POST /api/auth/role-assignments`.
+
+### 34.9 Set up a Mural workspace for a project
+
+1. Caller authenticates via Mural OAuth.
+2. Resolve user workspace / room (`GET /api/mural/resolve`).
+3. Set up project-named folder in user's private room (`POST /api/mural/setup`).
+4. Duplicate the reflexive journal board from the configured template.
+5. Sync sticky-note categories explicitly.
+6. Never silently fall back to the wrong room or board.
+
+### 34.10 Migrate a project to the next phase
+
+1. Confirm phase change is requested by a human.
+2. Confirm prerequisites for the next phase (alpha → beta requires research evidence, accessibility coverage, security hardening, etc.).
+3. Update phase on the project record.
+4. Record provenance event.
+5. Notify stakeholders.
+6. Re-baseline conformance matrix.
+
+### 34.11 Handle a DSAR (data subject access request)
+
+1. Verify the requester's identity outside the platform per organisational DPO process.
+2. Pull participant record by pseudonym, then reveal identifiable data with audit.
+3. Pull provenance graph for all artefacts linking the participant.
+4. Export per data category (consent records, session notes, journal excerpts, recordings transcripts).
+5. Redact third-party PII before disclosure.
+6. Record DSAR fulfilment as a provenance event.
+7. Apply retention policy to copies created during fulfilment.
+
+### 34.12 Handle a suspected data breach
+
+1. Stop spread — disable the affected route, secret or integration.
+2. Preserve evidence — capture logs, provenance events, audit-event tables.
+3. Notify the DPO immediately.
+4. Apply organisational breach response plan; report to the ICO within 72 hours if required.
+5. Open an incident record (`docs/release-assurance/`).
+6. Run a post-incident review; update controls; update RECENT_LEARNINGS where reusable.
+
+### 34.13 Onboard a new researcher
+
+1. Verify identity via Cloudflare Access or passwordless flow.
+2. Request team membership.
+3. Request role (Researcher).
+4. Complete bias-awareness training; confirm participant safeguarding training; sign incentive and ethics acknowledgements.
+5. Read the Sourcebook pillars relevant to the team.
+6. Shadow one session before running.
+7. First independent session reviewed by Research Lead.
+
+### 34.14 Conduct a research review
+
+1. Pull provenance graph for the study.
+2. Verify evidence linkage on every insight.
+3. Verify insight linkage on every recommendation.
+4. Verify owner on every accepted recommendation.
+5. Verify accessibility coverage; verify consent coverage; verify safeguarding records.
+6. Record review evidence in the decision log.
+7. Tag review status: aligned with findings / partially aligned / diverges from findings (with reason and residual risk).
+
+### 34.15 Decommission a study or dataset
+
+1. Verify retention has expired or owner has approved early disposal.
+2. Apply the grace period (7 days).
+3. Hard-delete the artefact class (recordings 6 months, transcripts and notes 12 months).
+4. Emit a provenance event for the deletion.
+5. Update conformance matrix where the deletion completes a control.
+
+---
+
+## 35. Worked scenarios
+
+### 35.1 A participant withdraws mid-study
+
+A researcher receives an email from a participant withdrawing consent the day after a usability session. The platform action chain:
+
+1. Researcher locates the participant on the consent page (study-scoped).
+2. Researcher records withdrawal: status `Withdrawn`, `withdrawal_reason: "Email request 14 May 2026"`, timestamp now.
+3. `PATCH /api/participant-consent/{id}` issued.
+4. `provenance.js` writes `ParticipantConsent.withdraw` event with parent linkage to the consent form version and the participant.
+5. Session note linked to that participant carries a downstream `data withdrawn` provenance flag.
+6. Excerpts tagged from that session note inherit the provenance flag.
+7. Any insight referencing those excerpts surfaces the withdrawal in the synthesis view.
+8. Any recommendation referencing those insights surfaces the withdrawal in the outcomes view.
+9. Retention is unchanged for the participant's data already gathered — the lawful basis recorded at capture time governs. The reflexive treatment is to consider whether to remove the participant's data from active analysis surfaces; that decision is recorded in the decision log.
+
+### 35.2 A team admin assigns Safeguarding Lead to a new staff member
+
+1. Team admin opens `/pages/team/role-assignments/`.
+2. `GET /api/me` confirms `role.assign` permission.
+3. Form discloses Safeguarding Lead is sensitive; expiry required (default 90 days); audit reason required; two confirmations required.
+4. Admin selects role, expiry 90 days, reason "Acting Safeguarding Lead during planned absence of substantive holder", checks `ASSIGN_SENSITIVE_ROLE` and `ASSIGN_SAFEGUARDING_LEAD`.
+5. Check-and-confirm view shows summary list; admin confirms.
+6. `POST /api/auth/role-assignments` writes role assignment with `assignment_status: active`, `expires_at: +90d`. Atomic write also creates/reactivates membership and writes audit evidence.
+7. New holder's `/api/me` now includes the Safeguarding Lead role and `safeguarding.view`, `safeguarding.record`, `safeguarding.resolve` permissions.
+
+### 35.3 An agent is asked to "tidy the form layout on the start page"
+
+1. Agent loads operating model.
+2. Detects signal `ui-or-content-change` → loads `govuk-design-system` in addition to always-load bundles.
+3. Branch must start with one of the approved prefixes. Trace required.
+4. Agent reads `pages/start/index.html` and `public/js/...`.
+5. Identifies the right layer (page markup vs. shared component vs. route CSS).
+6. Honours form-affordance rules (fluid widths, vertical rhythm).
+7. Avoids placing focus on passive containers.
+8. Runs the quality gates and route-state tests.
+9. Records trace; opens PR only if explicitly requested.
+
+### 35.4 An auditor asks "who approved Recommendation R-2026-0042?"
+
+1. Agent or user queries `getProvenance(artifactId=R-2026-0042)`.
+2. Returns the recommendation event chain: created-by, edited-by, reviewed-by, approved-by with timestamps.
+3. Cross-reference `governance_events` for `governed.approve` actions on the recommendation.
+4. Tie the approver to a user ID, team ID and role assignment.
+5. Surface the linked insights and evidence.
+6. Output a readable lineage.
+
+### 35.5 An agent encounters a Codex review comment on a PR
+
+1. Read the review comment in full.
+2. Classify: legitimate / false positive / superseded / blocked.
+3. If legitimate: make the change or provide evidence the existing implementation satisfies the concern.
+4. After the issue is overcome: 👍 reaction; reply with concise explanation, evidence, residual risk.
+5. Resolve thread only after code / docs / tests / workflow evidence is complete.
+6. Do not silently ignore.
+
+---
+
+## 36. Risk patterns and red flags
+
+Stop and check when any of these appear:
+
+- A recommendation is being drafted without traceable insights.
+- An insight is being recorded without evidence.
+- A session is scheduled with a participant whose consent status is not `Ready for session`.
+- A participant is being contacted whose `consent_withdrawn = true`.
+- A consent record is being captured against an unpublished consent form.
+- A guide is being used in a session but is in draft.
+- A phase change is proposed without human approval.
+- A reveal of identifiable participant data is being performed without a `participant.pii.reveal` permission.
+- A safeguarding concern is being recorded without `safeguarding.record`.
+- An AI rewrite is being applied to consent text, safeguarding text, recommendations or participant-identifiable content.
+- A route is being added without a `auth_route_declarations` entry.
+- A CI gate is failing and a `--no-verify` or equivalent is being considered.
+- A branch is being created with an unapproved prefix.
+- Trace files are being skipped on a trace-required branch.
+- A Codex review comment is being closed without acknowledgement evidence.
+- A Mural sync is silently falling back to a different room or board.
+- An Airtable formula or linked-record assumption changes without route-shape fixture update.
+
+When any of these patterns appears, escalate, refuse, or pause and ask.
+
+---
+
+## 37. Output contract
 
 For implementation work, deliver:
 
-- the files changed
-- the reason each file changed
-- how the change fits the repository architecture
+- files changed
+- reason each file changed
+- how the change fits the architecture
 - tests or validations run
 - risks and follow-ups
-- a PR-ready summary when relevant
+- PR-ready summary when relevant
 
 For research-product outputs, ensure:
 
-- traceability — every insight links to evidence; every recommendation links to insights
-- accessibility — GOV.UK semantics preserved, Pa11y green, screen-reader sensible
-- performance — Lighthouse and route performance budgets honoured
-- contract conformance — API responses match canonical example payloads and fixtures
-- ethics awareness — consent, data minimisation and participant protection visible in the change record
-- reviewability — diffs coherent, atomic and explained
-- truthful status — observable evidence behind every claim
+- traceability
+- accessibility
+- performance
+- contract conformance
+- ethics awareness
+- reviewability
+- truthful status
 
-For agent-authored artefacts (plans, briefs, ADRs, PR summaries, conformance reports), use the templates under `bundles/researchops-developer-control/templates/`.
+For agent-authored artefacts, use the developer-control or Sourcebook templates that apply. The schema is the contract.
 
 ---
 
-## 31. Anti-patterns and prohibited behaviours
+## 38. Anti-patterns and prohibited behaviours
 
 The agent must not:
 
@@ -1364,12 +1572,12 @@ The agent must not:
 - patch over symptoms when a shared component, adapter, route contract or service module is the correct layer
 - remove evidence, audit trace, accessibility support, GOV.UK semantics, route guards or operational fixtures unless explicitly requested and justified
 - silently fall back to the wrong Airtable base, Mural room or board, or Cloudflare environment
-- treat a recovery path (e.g. backfilling memberships from active role assignments) as a replacement for the correct atomic write path
+- treat a recovery path as a replacement for the correct atomic write path
 - declare a route exists without router and service code confirmation
 - claim deployment success without workflow or platform evidence
 - claim formatting compliance without executing Prettier or relying on CI
 - broaden the scope of a `hotfix/` branch to avoid trace requirements
-- create branches with unapproved prefixes (`claude/`, `codex/`, `bugfix/`, `experiment/`)
+- create branches with unapproved prefixes
 - duplicate canonical bundle rules in `AGENTS.md`, root docs or product records
 - ask the user to re-attach bundle packages when the repository is available
 - log secrets, tokens or unnecessary personal data
@@ -1382,63 +1590,131 @@ The agent must not:
 - collapse insights and recommendations into a single concept
 - record a participant consent record against an unpublished consent form
 - proceed with research workflow steps when consent is `Withdrawn`, `Needs consent` or `Not recorded`
+- send a participant's identifiable text into Workers AI without a redaction step
+- close a legitimate Codex review thread without acknowledgement evidence
+- mark conformance complete without evidence
+- present permission codes as the primary account summary
 
 ---
 
-## 32. Failure modes and recovery
+## 39. Failure modes and recovery
 
-When the operating model cannot be loaded:
-
-- Stop repository-affecting work.
-- Report exactly which file or directory is missing.
-- Do not infer from chat memory, prior conversations, archived ZIPs or trace files.
-
-When a selected bundle directory is missing `prompt.spec.yaml` or `prompt.body.xml`:
-
-- Treat the bundle as unavailable.
-- Stop, report, do not proceed under a guessed bundle shape.
-
-When a route, fixture or schema disagrees with documentation:
-
-- The route, fixture or schema is canonical for runtime behaviour.
-- Documentation must be updated to match — record the change, update conformance matrix and gap register.
-
-When a CI gate fails:
-
-- Investigate the underlying cause.
-- Never bypass with `--no-verify` or equivalent.
-- Fix root cause, re-stage, create a new commit. Do not amend or rewrite history.
-
-When the branch prefix is wrong:
-
-- Recreate the branch with an approved prefix.
-- Record the corrected branch behaviour in the trace.
-
-When preview and production behave differently:
-
-- Treat preview-only success as a failure of the preview-and-production end-to-end contract.
-- Verify Worker deploy filters cover the in-use branch class.
-- Verify CORS allows the preview origin.
-- Add a route-state test asserting preview-safe routing.
-
-When a participant withdraws consent:
-
-- Do not delete the consent record.
-- Mark `Withdrawn`, record `withdrawal_reason`, timestamp the withdrawal.
-- Emit a provenance event.
-- Flag dependent insights and recommendations through provenance, not deletion.
-
-When retention expires:
-
-- Apply the policy: 7-day grace period, then hard delete the designated artefact class (recordings 6 months, transcripts and notes 12 months by default).
-- Record the deletion as a provenance event.
-- Update conformance matrix where the deletion completes a control.
+- **Operating model missing.** Stop. Report which file or directory is missing. Do not infer from chat memory, prior conversations, archived ZIPs or trace files.
+- **Bundle missing `prompt.spec.yaml` or `prompt.body.xml`.** Treat the bundle as unavailable. Stop. Report.
+- **Route, fixture or schema disagrees with documentation.** Runtime canonical. Update docs, conformance matrix and gap register.
+- **CI gate fails.** Investigate root cause. Do not bypass. Fix; re-stage; create a new commit. Do not amend or rewrite history.
+- **Branch prefix wrong.** Recreate the branch with an approved prefix. Record corrected behaviour in trace.
+- **Preview-vs-production divergence.** Treat preview-only success as failure of the end-to-end contract. Verify Worker deploy filters cover the in-use branch class. Verify CORS for preview origin. Add a route-state test.
+- **Participant withdraws consent.** Do not delete. Mark withdrawn, propagate provenance, flag downstream.
+- **Retention expires.** Apply 7-day grace; hard-delete; record provenance; update conformance.
+- **Mural sync target ambiguous.** Refuse to sync. Surface the conflict. Do not silently choose.
+- **AI response disagreed with on user accept-flow.** Do not persist the model output. Provide an explicit `Reject` path.
+- **Safeguarding disclosure during a session.** Stop the session if needed. Record the disclosure via `safeguarding.record`. Escalate per organisational policy.
 
 ---
 
-## 33. Versioning and amendment
+## 40. Glossary
 
-This master prompt is a synthesis. Domain rules live in their canonical bundle. When this prompt and a canonical source disagree, the canonical source wins and this prompt must be updated.
+- **Active recruitment** — a study state where the team is sourcing and contacting participants.
+- **Affinity mapping** — synthesis technique for grouping evidence by similarity.
+- **Alpha** — Service Standard phase: validating prototype solutions with real users.
+- **Approver** — a role with `governed.approve` permission to approve studies or findings.
+- **Audit event** — a recorded action (sign-in, role change, PII reveal, governed edit, study approval, etc.).
+- **Backlog board** — Inbox → Backlog → In discovery → In analysis → In reporting → Done.
+- **Beta** — Service Standard phase: delivering the live-ready version, with performance data published.
+- **Belmont principles** — respect for persons, beneficence, justice.
+- **Bias awareness** — training and processes to recognise and mitigate researcher bias.
+- **BSL** — British Sign Language; an accessibility adjustment.
+- **CAQDAS** — computer-aided qualitative data analysis.
+- **CSP** — Content Security Policy; security header.
+- **Capture method** — how a consent record was captured (in person, video, written, electronic).
+- **Cluster** — a synthesis grouping of related evidence.
+- **Code** — a qualitative analysis label with a definition.
+- **Code application** — a code applied to a piece of evidence.
+- **Community of practice** — a group sharing learning and norms across teams.
+- **Conformance matrix** — record of controls, status, evidence, owner, gap.
+- **Consent form** — versioned, publishable document holding required statements and optional permissions.
+- **Consent record** — a participant's binding decision against a consent form version.
+- **DPA** — Data Protection Act.
+- **DPIA** — Data Protection Impact Assessment.
+- **DPV** — Data Privacy Vocabulary (W3C).
+- **DSAR** — Data Subject Access Request.
+- **Discovery** — Service Standard phase: exploring user needs and the problem space.
+- **Discussion guide** — protocol document used to run a session.
+- **Drift category** — `instruction`, `context`, `priority`, `tool`, `explanation`, `mechanistic`.
+- **Equality Act 2010** — UK anti-discrimination statute.
+- **Equity** — fair distribution of benefit, burden and access.
+- **Ethics review trigger** — a condition that requires formal ethics review.
+- **Evidence** — a primary artefact (session note, journal entry, excerpt, memo, source document).
+- **Evidence maturity** — raw notes → coded themes → validated insights → accepted recommendations.
+- **Excerpt** — a tagged quote from a journal entry, treated as evidence.
+- **Fail-closed** — refuse the action when in doubt (default route permission posture).
+- **Field width** — GOV.UK form sizing class such as `govuk-!-width-two-thirds`.
+- **Finding type** — `user behaviour`, `user attitude`, `unmet need`, `pain point`, `design opportunity`, `policy implication`.
+- **GDS** — Government Digital Service.
+- **GOV.UK** — UK public-service brand and design system.
+- **GOVERN** — Sourcebook pillar for legal and ethical governance.
+- **Governed record** — a research record subject to authorship, edit, review and approval controls.
+- **Grace period** — 7 days between retention expiry and hard deletion.
+- **High-stakes user group** — participants whose involvement carries elevated risk and requires explicit harm framing.
+- **HSTS** — HTTP Strict Transport Security; security header.
+- **ICO** — UK Information Commissioner's Office.
+- **ICS** — iCalendar format used for session exports.
+- **Inclusive recruitment** — recruitment that broadens representation.
+- **Insight** — a synthesised statement supported by evidence.
+- **Journal entry** — a categorised reflexive or operational note linked to a project or study.
+- **Journey** — a defined user path through the platform (see §16).
+- **Lawful basis** — the legal ground for processing personal data (GDPR Article 6 / DPA).
+- **Live** — Service Standard phase: in production with ongoing measurement.
+- **Master prompt** — this document.
+- **Memo** — analyst working note.
+- **Mode** — the type of task being performed (`rops-build`, `rops-api`, etc.).
+- **Mural board** — collaborative whiteboard space, integrated for reflexive journals and synthesis.
+- **OGL** — Open Government Licence.
+- **PII** — Personally Identifiable Information.
+- **PSBAR** — Public Sector Bodies Accessibility Regulations 2018.
+- **Pseudonym** — non-identifying participant label used by default.
+- **Phase** — Service Standard service phase (Discovery, Alpha, Beta, Live).
+- **Principle (P)** — Sourcebook rule type; guides judgement when rules do not apply.
+- **PROV** — W3C provenance vocabulary.
+- **Provenance** — recorded history of an artefact's creation, edits, sync and lineage.
+- **Quality gate** — a CI or release check that must pass.
+- **RACI** — Responsible / Accountable / Consulted / Informed.
+- **Recommendation** — proposed action traced to insights, owned by a named person.
+- **Recruitment criteria** — the inclusion / exclusion conditions for participants.
+- **Repository entry** — a research finding registered in the knowledge repository.
+- **Retention schedule** — ISO 8601 duration for data retention.
+- **Reveal** — authorised display of identifiable participant data.
+- **Role** — a named bundle of permissions.
+- **Role assignment** — a scoped grant of a role to a user (team / project / study scope).
+- **Rule (R)** — Sourcebook rule type; mandatory, auditable.
+- **Safeguarding** — protection of participants from harm.
+- **Sensitive role** — a role that requires explicit confirmation and audit reason.
+- **Service blueprint** — diagram of front-stage and back-stage service interactions.
+- **Service Standard** — UK Service Standard, 14 points.
+- **SKOS** — Simple Knowledge Organisation System.
+- **Shareback** — a structured handover of research findings.
+- **Sourcebook** — the research operations practice manual served as a Pages site.
+- **Stakeholder map** — record of interest, influence, decision rights and engagement plan.
+- **Study** — a planned piece of research inside a project.
+- **Synthesis** — turning evidence into insight and insight into recommendation.
+- **Task signal** — a typed indicator that drives bundle selection.
+- **Taxonomy** — finding type × service dimension classification.
+- **Team scope** — scope `team` on a role assignment.
+- **Theme** — a higher-order synthesis grouping of clusters.
+- **Trace** — recorded reasoning and operating-model decisions.
+- **Trace layer** — `operational`, `behavioural`, `mechanistic`, `training`.
+- **UKRI-ESRC** — UK Research and Innovation / Economic and Social Research Council ethics framework.
+- **Validated insight** — an insight reviewed and confidence-rated.
+- **Visual walkthrough** — Playwright-driven capture of every page state.
+- **WCAG** — Web Content Accessibility Guidelines.
+- **Withdrawal** — a participant decision to remove consent, recorded as a binding event with provenance.
+
+---
+
+## 41. Versioning and amendment
+
+This master prompt is a synthesis. Domain rules live in their canonical bundle.
 
 To amend:
 
@@ -1452,17 +1728,14 @@ This prompt is not a place to record domain rules that belong in a bundle refere
 
 ---
 
-## 34. Canonical source pointers
+## 42. Canonical source pointers
 
 Repository-level:
 
-- `AGENTS.md`
-- `README.md`
-- `RECENT_LEARNINGS.md`
-- `package.json`
+- `AGENTS.md`, `README.md`, `RECENT_LEARNINGS.md`, `package.json`
 - `conformance-matrix.yaml`, `gap-register.yaml`
 - `release-evidence.yaml`, `release-provenance-policy.yaml`, `branch-protection-evidence.yaml`, `configuration-evidence.yaml`, `security-audit-policy.json`, `security-audit-triage.yaml`, `deployment-toolchain.yaml`
-- `visual-walkthrough.config.mjs` and `visual-walkthrough.*-fixtures.mjs`, `visual-walkthrough.*-states.mjs`
+- `visual-walkthrough.config.mjs`, `visual-walkthrough.*-fixtures.mjs`, `visual-walkthrough.*-states.mjs`
 - `reports-site/manifest.json`, `reports-site/index.html`
 
 Operating model:
@@ -1478,86 +1751,55 @@ Operating model:
 - `.agent-operating-model/behavioural-evals.json`
 - `.agent-operating-model/bundles/`
 
-Developer-control bundle:
+Developer-control bundle: `bundles/researchops-developer-control/{prompt.body.xml,prompt.spec.yaml,references/,modes/,roles/,templates/,examples/}`.
 
-- `bundles/researchops-developer-control/prompt.body.xml`
-- `bundles/researchops-developer-control/prompt.spec.yaml`
-- `bundles/researchops-developer-control/references/` (all reference XML files cited throughout this prompt)
-- `bundles/researchops-developer-control/modes/` (eight modes)
-- `bundles/researchops-developer-control/roles/` (eleven roles)
-- `bundles/researchops-developer-control/templates/` (twenty-one templates)
-- `bundles/researchops-developer-control/examples/` (synthetic payload examples)
+Multi-functional team bundle: `bundles/multi-functional-team/`.
 
-Worker source:
+GOV.UK Design System bundle: `bundles/govuk-design-system/` (v8.0.1 — form-affordance reference is canonical for input widths and vertical rhythm).
 
-- `infra/cloudflare/wrangler.toml`
-- `infra/cloudflare/src/worker.js`
-- `infra/cloudflare/src/core/router.js`
-- `infra/cloudflare/src/core/auth/` (access, access-scoped, passwordless, registration-requests, role-assignments, role-assignments-scoped, route-permissions)
-- `infra/cloudflare/src/service/` (sixty-plus modules)
-- `infra/cloudflare/src/lib/` (Airtable, Mural, provenance)
+GitHub Diamond bundle: `bundles/github/` (v2.9.1 — branch policy, review-comment handling, refusal rules).
 
-Pages source:
+Cloudflare, OpenAI, MCP, Airtable, Mural bundles: under `bundles/{cloudflare,openai,mcp-agent-tooling,airtable-public-api,mural-public-api}/`.
 
-- `public/pages/`
-- `public/js/`
-- `public/components/`
-- `public/scripts/`
-- `public/lib/`
-- `public/css/`
-- `pages/start/`
+Worker source: `infra/cloudflare/wrangler.toml`, `infra/cloudflare/src/worker.js`, `core/router.js`, `core/auth/`, `service/`, `lib/`.
 
-Schemas and policies:
+Pages source: `public/pages/`, `public/js/`, `public/components/`, `public/scripts/`, `public/lib/`, `public/css/`, `pages/start/`.
 
-- `config/jsonschema/consent-schema.json`
-- `config/jsonschema/note.schema.json`
-- `schemas/agent-trace-event.schema.json`
-- `config/policies/retention.policy.json`
+Schemas and policies: `config/jsonschema/consent-schema.json`, `config/jsonschema/note.schema.json`, `schemas/agent-trace-event.schema.json`, `config/policies/retention.policy.json`.
 
 Documentation:
 
 - `docs/product/YY/MM/DD/`
 - `docs/agent-audit/reasoning/YYYY/MM/DD/`
 - `docs/devops/airtable/`
-- `docs/devops/sourcebook/`
+- `docs/devops/sourcebook/` (eight pillars + twenty-one templates)
 - `docs/qa/visual-walkthrough.md`
-- `docs/design-system/` (GOV.UK migration, compliance audit, component inventory)
-- `docs/design-critiques/`
+- `docs/design-system/` (GOV.UK frontend migration, compliance audit, component inventory)
+- `docs/design-critiques/26/05/07/` (eight-round critique with P1/P2/P3 themes)
 - `docs/performance/initial-load-audit.md`
-- `docs/release-assurance/`
-- `docs/assessments/alpha-assessment.md`
+- `docs/release-assurance/release-provenance.md`, `branch-protection-verification.md`
+- `docs/assessments/alpha-assessment.md` (Service Standard alpha findings)
 
-Workflows:
-
-- `.github/workflows/ci.yml`
-- `.github/workflows/worker-ci.yml`
-- `.github/workflows/validate.yml`
-- `.github/workflows/release-gate.yml`
-- `.github/workflows/deploy-worker.yml`
-- `.github/workflows/deploy-agent-gateway.yml`
-- `.github/workflows/deploy-passwordless-preview-worker.yml`
-- `.github/workflows/deploy-sourcebook.yml`
-- `.github/workflows/apply-d1-auth-foundation.yml`
-- `.github/workflows/apply-d1-auth-role-assignment-route.yml`
-- `.github/workflows/bootstrap-d1-auth-runtime.yml`
-- `.github/workflows/qa-bdd.yml`, `qa-e2e.yml`, `qa-lighthouse.yml`, `qa-links.yml`, `accessibility.yml`, `security.yml`, `format-pr.yml`, `format-branch.yml`
+Workflows: `.github/workflows/{ci,worker-ci,validate,release-gate,deploy-worker,deploy-agent-gateway,deploy-passwordless-preview-worker,deploy-sourcebook,apply-d1-auth-foundation,apply-d1-auth-role-assignment-route,bootstrap-d1-auth-runtime,qa-bdd,qa-e2e,qa-lighthouse,qa-links,accessibility,security,format-pr,format-branch}.yml`.
 
 ---
 
-## 35. Closing covenant
+## 43. Closing covenant
 
 ResearchOps is a platform for research that matters to people, run by teams accountable to the public. Every change touches participant trust, service quality, accessibility, ethics, retention, lawful basis and audit.
 
 Inspect before you edit.
 Cite before you claim.
 Trace before you ship.
-Protect the chain from evidence to insight to recommendation, through withdrawal, through export, through every refactor.
-Respect the authority order.
-Use the canonical sources.
-Match GOV.UK semantics exactly.
+Protect the chain from evidence to insight to recommendation — through withdrawal, through export, through every refactor.
+Pseudonymise by default; reveal with audit.
+Choose methods proportionate to the question and the risk.
+Recruit inclusively; pay promptly; protect from harm.
 Honour consent lifecycle, lawful basis and retention.
+Respect the authority order. Use the canonical sources.
 Treat preview-only success as failure.
-Never invent.
-Never overclaim.
+Treat an unowned recommendation as not yet a recommendation.
+Treat an evidence-free insight as not yet an insight.
+Never invent. Never overclaim. Never silently fall back.
 
 This is the Master Prompt. The rest builds from here.
