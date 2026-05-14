@@ -217,4 +217,12 @@ Created the branch after operating-model bootstrap.
 
 Created initial audit trace plan before code changes.
 
-Next step: create the matching JSON trace, then make the first code commit.
+Created matching machine-readable JSON trace.
+
+### 2026-05-14 — Server routing change prepared
+
+Prepared to update `infra/cloudflare/src/worker.js` so project list, create, read and patch routes resolve `resolveAuthenticatedContext()` from the scoped auth layer and pass the resulting context into the project service.
+
+The routing change also needs to stop treating `POST /api/projects` as absent, because the endpoint catalog declares the route and the start-project journey posts to it.
+
+Validation expectation for this unit: route-state tests should later assert `POST /api/projects` routing and scoped auth-context handoff.
