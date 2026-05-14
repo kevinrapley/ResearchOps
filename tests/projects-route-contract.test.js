@@ -185,55 +185,80 @@ function projectFields(fields) {
 	};
 }
 
+function projectRecords() {
+	return [
+		{
+			id: "recBeta",
+			createdTime: "2025-01-01T10:00:00.000Z",
+			fields: projectFields({
+				PID: "PID-BETA",
+				Name: "Beta project",
+				Description: "Beta description",
+				Phase: "Discovery",
+				Status: "Planning research",
+				Objectives: "Beta objective",
+				UserGroups: "Analyst",
+				Stakeholders: "[]",
+			}),
+		},
+		{
+			id: "recAlpha",
+			createdTime: "2025-01-01T10:00:00.000Z",
+			fields: projectFields({
+				PID: "PID-ALPHA",
+				Name: "Alpha project",
+				Description: "Alpha description",
+				Phase: "Discovery",
+				Status: "Planning research",
+				Objectives: "Alpha objective",
+				UserGroups: "Researcher",
+				Stakeholders: "[]",
+			}),
+		},
+		{
+			id: "recMalformed",
+			createdTime: "2025-01-05T10:00:00.000Z",
+			fields: projectFields({
+				PID: "PID-MALFORMED",
+				Name: '_[{"name":"Kevin Rapley","email":"kevin.rapley@homeoffice.gov.uk"}]',
+				Description: "Should not render as a project",
+				Phase: '"email":"kevin.rapley@homeoffice.gov.uk"',
+				Status: '"Objective 1"',
+				Objectives: '"role":"Senior User Researcher"',
+				Stakeholders: "[]",
+			}),
+		},
+		{
+			id: "recNewest",
+			createdTime: "2025-02-01T10:00:00.000Z",
+			fields: projectFields({
+				PID: "PID-NEWEST",
+				Name: "Newest project",
+				Description: "Newest description",
+				Phase: "Alpha",
+				Status: "Conducting research",
+				Objectives: "Newest objective",
+				UserGroups: "Citizen",
+				Stakeholders: "[]",
+			}),
+		},
+	];
+}
+
 function createMockFetch(calls) {
 	return async (resource) => {
 		const url = String(resource);
 		calls.push(url);
 
+		if (url.includes("/Projects/rec")) {
+			const recordId = decodeURIComponent(url.split("/Projects/")[1].split("?")[0]);
+			const record = projectRecords().find((candidate) => candidate.id === recordId);
+			if (!record) return jsonResponse({ error: { type: "NOT_FOUND" } }, { status: 404 });
+			return jsonResponse(record);
+		}
+
 		if (url.includes("/Projects?")) {
-			return jsonResponse({
-				records: [
-					{
-						id: "recBeta",
-						createdTime: "2025-01-01T10:00:00.000Z",
-						fields: projectFields({
-							Name: "Beta project",
-							Description: "Beta description",
-							Phase: "Discovery",
-							Status: "Planning research",
-							Objectives: "Beta objective",
-							UserGroups: "Analyst",
-							Stakeholders: "[]",
-						}),
-					},
-					{
-						id: "recAlpha",
-						createdTime: "2025-01-01T10:00:00.000Z",
-						fields: projectFields({
-							Name: "Alpha project",
-							Description: "Alpha description",
-							Phase: "Discovery",
-							Status: "Planning research",
-							Objectives: "Alpha objective",
-							UserGroups: "Researcher",
-							Stakeholders: "[]",
-						}),
-					},
-					{
-						id: "recNewest",
-						createdTime: "2025-02-01T10:00:00.000Z",
-						fields: projectFields({
-							Name: "Newest project",
-							Description: "Newest description",
-							Phase: "Alpha",
-							Status: "Conducting research",
-							Objectives: "Newest objective",
-							UserGroups: "Citizen",
-							Stakeholders: "[]",
-						}),
-					},
-				],
-			});
+			return jsonResponse({ records: projectRecords() });
 		}
 
 		if (url.includes("/Project%20Details?")) {
@@ -254,7 +279,7 @@ function createMockFetch(calls) {
 		}
 
 		if (url.includes("raw.githubusercontent.com")) {
-			return csvResponse("LocalId,Name,CreatedAt\nrecCsv,Csv project,2025-01-01T00:00:00.000Z\n");
+			return csvResponse("LocalId,Name,CreatedAt\nPID-CSV,Csv project,2025-01-01T00:00:00.000Z\n");
 		}
 
 		throw new Error(`Unexpected fetch URL: ${url}`);
@@ -285,11 +310,16 @@ async function assertProjectsRouteUsesComposedService() {
 		assert.equal(Array.isArray(payload.projects), true);
 		assert.deepEqual(
 			payload.projects.map((project) => project.id),
-			["recNewest", "recAlpha", "recBeta"],
+			["PID-NEWEST", "PID-ALPHA", "PID-BETA"],
+		);
+		assert.equal(
+			payload.projects.some((project) => project.id === "PID-MALFORMED"),
+			false,
 		);
 
 		const newest = payload.projects[0];
 		assert.equal(newest.name, "Newest project");
+		assert.equal(newest.airtableId, "recNewest");
 		assert.equal(newest["rops:servicePhase"], "Alpha");
 		assert.equal(newest["rops:projectStatus"], "Conducting research");
 		assert.equal(newest.createdAt, "2025-02-01T10:00:00.000Z");
@@ -298,6 +328,7 @@ async function assertProjectsRouteUsesComposedService() {
 		assert.equal(Object.hasOwn(newest, "Phase"), false);
 
 		const alpha = payload.projects[1];
+		assert.equal(alpha.airtableId, "recAlpha");
 		assert.equal(alpha.lead_researcher, "Lead Alpha");
 		assert.equal(alpha.lead_researcher_email, "lead.alpha@example.test");
 		assert.equal(alpha.notes, "Joined detail notes");
@@ -308,6 +339,29 @@ async function assertProjectsRouteUsesComposedService() {
 		);
 		assert.equal(
 			calls.some((url) => url.includes("/Project%20Details?")),
+			true,
+		);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function assertProjectReadResolvesPublicPid() {
+	const calls = [];
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = createMockFetch(calls);
+
+	try {
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects/PID-ALPHA"), env, {});
+		assert.equal(response.status, 200);
+
+		const project = await response.json();
+		assert.equal(project.id, "PID-ALPHA");
+		assert.equal(project.airtableId, "recAlpha");
+		assert.equal(project.name, "Alpha project");
+		assert.equal(project.lead_researcher, "Lead Alpha");
+		assert.equal(
+			calls.some((url) => url.includes("/Projects?")),
 			true,
 		);
 	} finally {
@@ -344,5 +398,6 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesComposedService();
+await assertProjectReadResolvesPublicPid();
 await assertProjectsCsvRouteStillWorks();
 assertLegacyProjectsDirectHandlerIsAbsent();
