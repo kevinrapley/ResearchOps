@@ -1,0 +1,123 @@
+{
+	"traceId": "atrace-20260514-projects-team-scoped-acc-preview-worker-trigger",
+	"createdAt": "2026-05-14T15:10:00+01:00",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/projects-team-scoped-access",
+	"trigger": "branch-prefix",
+	"traceLayer": "operational",
+	"task": {
+		"summary": "Pages preview of /pages/project-dashboard/ on fix/projects-team-scoped-access alerts 'Could not load project.' and renders empty key information. Continue work on PR #252 to find a solution.",
+		"constraint": "Continue work on PR #252 and its branch."
+	},
+	"operatingModelSourcesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md"
+	],
+	"selectedBundles": [
+		{ "id": "github-diamond", "reason": "Repository-affecting branch and PR work." },
+		{ "id": "researchops-developer-control", "reason": "ResearchOps platform implementation surface (Worker deploy workflow + dashboard route-state)." },
+		{ "id": "multi-functional-team", "reason": "Government product assurance default." },
+		{ "id": "cloudflare", "reason": "Cloudflare Worker deployment workflow change." }
+	],
+	"skippedBundles": [
+		{ "id": "govuk-design-system", "reason": "No UI / content / accessibility surface changed." },
+		{ "id": "openai-platform", "reason": "No AI surface in scope." },
+		{ "id": "mcp-agent-tooling", "reason": "No agent tooling change." },
+		{ "id": "airtable-public-api", "reason": "No Airtable schema or formula change." },
+		{ "id": "mural-public-api", "reason": "No Mural OAuth / workspace / board change." }
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governs branch hygiene and CI/deploy workflow change. The branch trigger fix is workflow code under .github/workflows/.",
+		"ResearchOps Developer Control governs the platform's deployment surface, including the preview Worker that the Pages function proxy at functions/api/[[path]].js depends on.",
+		"Cloudflare governs the Wrangler deploy contract used by the preview Worker. The fix preserves the existing wrangler.passwordless-preview.toml; only the GitHub Actions trigger changes."
+	],
+	"investigation": {
+		"hypothesisAndEvidence": [
+			{
+				"hypothesis": "Pages preview is fresh but the preview Worker behind functions/api/[[path]].js is stale.",
+				"evidence": [
+					"functions/api/[[path]].js routes *.researchops.pages.dev preview hosts to https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev.",
+					".github/workflows/deploy-passwordless-preview-worker.yml had push.branches hardcoded to [ fix/team-admin-sign-in-journey ].",
+					"PR #252 is on fix/projects-team-scoped-access, so the preview Worker deploy never fires.",
+					"PR check_runs show Cloudflare Pages: researchops succeeded for cc17524 but no preview Worker deploy check is reported.",
+					"RECENT_LEARNINGS 2026-05-13 records the same class of regression for deploy-worker.yml and prescribes feature/** and fix/** branch filters."
+				]
+			}
+		],
+		"alternativesConsidered": [
+			"AIRTABLE_TABLE_DETAILS missing — ruled out: wrangler.passwordless-preview.toml declares the table.",
+			"CORS allow-list narrow — ruled out: worker.js applies isResearchOpsPagesOrigin fallback for *.researchops.pages.dev.",
+			"Client-side id mismatch — ruled out: listProjectRecords returns id = airtable record id and getProjectRecord accepts it (tested by tests/projects-route-contract.test.js)."
+		]
+	},
+	"filesRead": [
+		"public/js/projects-page.js",
+		"public/js/project-dashboard.js",
+		"public/pages/project-dashboard/index.html",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/src/service/project-record-routes.js",
+		"infra/cloudflare/src/service/projects.js (current branch and origin/main)",
+		"infra/cloudflare/src/service/index.js",
+		"infra/cloudflare/src/core/router.js",
+		"infra/cloudflare/src/core/auth/access-scoped.js",
+		"functions/api/[[path]].js",
+		"infra/cloudflare/wrangler.passwordless-preview.toml",
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		".github/workflows/deploy-worker.yml",
+		"tests/projects-route-contract.test.js",
+		"tests/projects-page-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js",
+		"tests/auth-registration-requests-route-state.test.js",
+		"RECENT_LEARNINGS.md"
+	],
+	"filesChanged": [
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		"RECENT_LEARNINGS.md",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"changeSummary": [
+		"Broadened push.branches for deploy-passwordless-preview-worker.yml to cover the approved work-branch prefixes (main, feature/**, chore/**, test/**, fix/**, perf/**, hotfix/**) so the preview Worker tracks the same branch class as the Pages preview.",
+		"Added a route-state pin in tests/project-dashboard-route-state.test.js asserting the workflow's branches list contains each approved prefix and no longer contains the single-branch hardcode. This is a guard against the filter silently drifting back.",
+		"Recorded a RECENT_LEARNINGS entry generalising the 2026-05-13 lesson: every preview Worker workflow that backs a *.researchops.pages.dev host must accept the approved branch prefixes, not only deploy-worker.yml."
+	],
+	"validationRun": [
+		"node --test tests/project-dashboard-route-state.test.js tests/projects-page-route-state.test.js tests/projects-route-contract.test.js — all pass",
+		"npm test — 148 / 148 pass",
+		"npm run validate — passed",
+		"npx prettier -c on changed files — clean"
+	],
+	"validationNotRun": [
+		"npm run lint — eslint dependency 'globals' unavailable in the sandbox; CI prettier and lint jobs cover this. Prettier already passes locally for the changed files."
+	],
+	"residualRisks": [
+		"Cloudflare Pages preview deployments are queued via Cloudflare's own pipeline. After this commit lands on the PR branch, the deploy-passwordless-preview-worker workflow will fire and update the preview Worker; the user must refresh the preview tab once both Pages and Worker deploys are green.",
+		"There is only one preview Worker (rops-api-passwordless-preview). If multiple PRs push concurrently they will race; the next push wins. The same constraint applies to deploy-worker.yml already.",
+		"This fix does not change the underlying API or auth contract for /api/projects/:id. The PR's existing contract tests already pin that surface."
+	],
+	"evidenceBoundary": {
+		"repositoryEvidence": [
+			"deploy-passwordless-preview-worker.yml branch filter was [ fix/team-admin-sign-in-journey ].",
+			"functions/api/[[path]].js routes preview Pages to rops-api-passwordless-preview.",
+			"RECENT_LEARNINGS records the 2026-05-13 regression and prescribes feature/** and fix/** filters.",
+			"PR #252 check_runs list shows no preview Worker deploy check."
+		],
+		"implementationDecisions": [
+			"Use the approved-prefix set verbatim from .agent-operating-model/trace-policy.md to keep deploy-passwordless-preview-worker.yml in lockstep with the operating model.",
+			"Pin the trigger with a route-state-style test on tests/project-dashboard-route-state.test.js so the dashboard's preview contract is co-pinned with the workflow."
+		],
+		"assumptions": [
+			"The Cloudflare-side wrangler.passwordless-preview.toml is the correct config for the preview Worker the Pages function proxies to. (Confirmed by name = rops-api-passwordless-preview.)"
+		],
+		"toolLimitations": [
+			"Could not probe the live preview Worker from the sandbox host (host_not_allowed). Diagnosis is structural rather than live-traced."
+		],
+		"validationResults": [
+			"All targeted Node tests pass. Validate passes. Prettier passes for changed files."
+		]
+	}
+}

@@ -5,6 +5,10 @@ const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", 
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
+const passwordlessPreviewWorkflowSource = fs.readFileSync(
+	".github/workflows/deploy-passwordless-preview-worker.yml",
+	"utf8",
+);
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -97,3 +101,23 @@ excludes(dashboardCssSource, "\n.dashboard-section__header {", "project dashboar
 excludes(dashboardCssSource, "\n.dashboard-section__body {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.dashboard-section__grid {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.dropzone {", "project dashboard stylesheet");
+
+/*
+ * Pin the preview Worker deploy trigger to the approved branch prefixes so
+ * Pages-preview traffic to /api/projects/:id is served by a Worker on the
+ * same branch as the Pages preview. A drift back to a single hardcoded
+ * branch reproduces the 2026-05-14 "Could not load project." regression on
+ * any branch other than the one named in the filter.
+ */
+includes(passwordlessPreviewWorkflowSource, "- main", "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "feature/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "chore/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "test/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "fix/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "perf/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "hotfix/**"', "preview Worker workflow");
+excludes(
+	passwordlessPreviewWorkflowSource,
+	"branches: [ fix/team-admin-sign-in-journey ]",
+	"preview Worker workflow",
+);
