@@ -5,7 +5,7 @@ import { handleRegistrationRequestsRoute } from "./core/auth/registration-reques
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
-import { getProjectRecord, listProjectRecords } from "./service/project-record-routes.js";
+import { createProjectRecord, getProjectRecord, listProjectRecords } from "./service/project-record-routes.js";
 
 function coerceResponse(res) {
 	if (res instanceof Response) return res;
@@ -108,13 +108,10 @@ async function authContextFor(request, env) {
 }
 
 async function handleProjects(request, env) {
-	const url = new URL(request.url);
-	const origin = request.headers.get("Origin") || "";
 	const authContext = await authContextFor(request, env);
-	const service = serviceFor(env);
 
 	if (request.method === "GET") return listProjectRecords(request, env, authContext);
-	if (request.method === "POST") return service.createProjectInAirtable(request, origin, authContext);
+	if (request.method === "POST") return createProjectRecord(request, env, authContext);
 
 	return new Response(JSON.stringify({ error: "Method not allowed" }), {
 		status: 405,
