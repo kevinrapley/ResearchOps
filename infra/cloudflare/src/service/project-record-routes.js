@@ -211,6 +211,28 @@ async function joinDetails(env, projects = []) {
 	}
 }
 
+async function syncActiveProjectsToD1(env, projects = []) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) return;
+	const currentProjects = projects.filter((project) => isAirtableRecordId(project.id));
+	if (!currentProjects.length) return;
+
+	try {
+		await db.prepare("CREATE TABLE IF NOT EXISTS rops_projects_cache (id TEXT PRIMARY KEY, name TEXT NOT NULL, org TEXT, phase TEXT, status TEXT, active INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL DEFAULT 'airtable', updated_at TEXT NOT NULL)").run();
+		await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source = 'airtable'").run();
+
+		const updatedAt = new Date().toISOString();
+		for (const project of currentProjects) {
+			await db
+				.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at) VALUES (?, ?, ?, ?, ?, 1, 'airtable', ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at")
+				.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", updatedAt)
+				.run();
+		}
+	} catch {
+		/* Cache sync must not block the authoritative Airtable response. */
+	}
+}
+
 export async function listProjectRecords(request, env, authContext = {}) {
 	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	const url = new URL(request.url);
@@ -219,8 +241,9 @@ export async function listProjectRecords(request, env, authContext = {}) {
 	const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}?pageSize=${limit}`);
 	let projects = (data.records || []).map(mapProject).filter(isRenderable);
 	projects = await joinDetails(env, projects);
-	projects = projects.filter((project) => userCanSee(project, authContext));
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+	await syncActiveProjectsToD1(env, projects);
+	projects = projects.filter((project) => userCanSee(project, authContext));
 	return json({ ok: true, projects, canStartProject: canStartProject(authContext) }, 200, { "x-rops-source": "airtable" });
 }
 
