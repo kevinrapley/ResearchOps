@@ -1,6 +1,6 @@
 # ResearchOps Platform — Master Prompt
 
-Version: 4.0.0
+Version: 5.0.0
 Date: 2026-05-14
 Status: Canonical master prompt
 Scope: ResearchOps platform (this repository) and the research-operations practice it serves
@@ -1784,7 +1784,1097 @@ Workflows: `.github/workflows/{ci,worker-ci,validate,release-gate,deploy-worker,
 
 ---
 
-## 43. Closing covenant
+## 43. Implementation contracts — response envelope and error model
+
+### 43.1 Response envelope
+
+Every JSON response uses a small, predictable shape. Helpers in `infra/cloudflare/src/service/internals/responders.js`:
+
+```js
+export function json(body, status = 200, headers = {}) {
+  const hdrs = Object.assign({ "Content-Type": "application/json" }, headers || {});
+  return new Response(JSON.stringify(body), { status, headers: hdrs });
+}
+```
+
+The envelope:
+
+- Success — `{ ok: true, ...payload }`. The payload key is route-specific (`projects`, `studies`, `participants`, `events`, `clusters`, etc.).
+- Failure — `{ ok: false, error: <message>, [code, source, status, detail, note, ...] }`.
+- Health and diag — `{ ok: true, time: <ISO>, [service: "ResearchOps API"] }`.
+
+Headers always include `Content-Type: application/json; charset=utf-8`, `cache-control: no-store` for sensitive responses, and `x-content-type-options: nosniff` for auth flows. CORS headers come from the worker's `corsHeaders(origin)`.
+
+### 43.2 HTTP status mapping
+
+| Status | Meaning | Where used |
+|--------|---------|------------|
+| 200 | Success. | Reads, successful writes. |
+| 201 | Created. | Where the route returns `Location`. |
+| 204 | No content. | Preflight `OPTIONS`. |
+| 400 | Bad request. | Missing fields, invalid JSON, invalid email/code format. |
+| 401 | Authentication required. | Missing `Cf-Access-Jwt-Assertion` or invalid passwordless session. |
+| 403 | Forbidden. | Route permission missing or insufficient. |
+| 404 | Not found. | Unknown API route, record not found in Airtable. |
+| 409 | Conflict. | Concurrency / idempotency conflicts. |
+| 429 | Rate limited. | Upstream rate limit (e.g. Mural). |
+| 500 | Internal error. | Unhandled exception. |
+| 502 | Upstream failure. | Airtable / Mural / GitHub upstream error. |
+| 503 | Service unavailable. | Configuration missing, integration unconfigured, recovery window. |
+
+### 43.3 Error code catalogue
+
+Stable error codes used by auth, route permissions and adapters:
+
+- `authentication_required` — no session presented.
+- `unsupported_access_token_algorithm` — JWT alg is not RS256.
+- `access_configuration_missing` — Cloudflare Access certs URL unconfigured.
+- `route_permission_missing` — no `auth_route_permissions` declaration for the route.
+- `route_permission_invalid` — `required_permissions_json` malformed.
+- `route_permission_store_unavailable` — D1 unavailable for permission lookup.
+- `permission_denied` — caller lacks one or more required permissions (the response lists `missing`).
+- `email_invalid` — passwordless input failed format validation.
+- `code_invalid` — passwordless OTP not six digits.
+- `json_invalid` — request body not valid JSON.
+- `d1_missing` — D1 binding unavailable.
+- `auth_secret_missing` — `RESEARCHOPS_AUTH_SECRET` unset.
+- `airtable_not_configured` — base or token missing (provenance writes skip with this).
+- `service_temporarily_unavailable` — service module load failed; lightweight routes still answer.
+
+### 43.4 Representative responses
+
+Project list success (router shape):
+
+```
+{ "ok": true, "projects": [ ... ] }
+```
+
+Service load failure with safe-fallback note:
+
+```
+{
+  "ok": false,
+  "error": "Service temporarily unavailable",
+  "detail": "...",
+  "note": "Project CSV and Studies APIs are still available"
+}
+```
+
+Airtable upstream failure:
+
+```
+{ "ok": false, "source": "airtable", "status": 500, "error": "..." }
+```
+
+Permission denied with specifics:
+
+```
+{
+  "ok": false,
+  "error": "permission_denied",
+  "code": "permission_denied",
+  "missing": ["governed.approve"]
+}
+```
+
+Provenance write skipped:
+
+```
+{ "ok": false, "skipped": true, "reason": "airtable_not_configured" }
+```
+
+Unknown route:
+
+```
+{ "error": "Not found", "path": "/api/unknown" }
+```
+
+Health:
+
+```
+{ "ok": true, "service": "ResearchOps API", "time": "2026-05-14T12:00:00.000Z" }
+```
+
+Rules:
+
+- Never expose stack traces or internal field names in error responses.
+- Long upstream payloads are truncated via `safeSlice(raw, 2000)`.
+- On `500/502/503`, include enough information to triage but no secrets.
+
+### 43.5 Constants and limits
+
+`infra/cloudflare/src/core/constants.js`:
+
+- `TIMEOUT_MS = 10_000` — Airtable, GitHub and other upstream fetches time out at 10 seconds.
+- `CSV_CACHE_CONTROL = "no-store"` — streamed CSV is never cached.
+- `GH_API_VERSION = "2022-11-28"` — GitHub API version pinned.
+- `LOG_BATCH_SIZE = 20` — `BatchLogger` flushes every 20 entries.
+- `MAX_BODY_BYTES = 512 * 1024` — request bodies must be ≤512 KB.
+
+Standing rule: do not change these values without recording the change in `RECENT_LEARNINGS.md` and updating contract tests.
+
+### 43.6 Field mappings reference
+
+Canonical Airtable field-name candidates live in `infra/cloudflare/src/core/fields.js`. Field lookups use **candidate arrays** so schema evolution (e.g. `Study` vs `Studies` vs `Project Study`) does not break routes. Treat this file as the truth for field naming. Notable candidate sets:
+
+- `GUIDE_LINK_FIELD_CANDIDATES` — `Study ↔`, `Study`, `Project Study`, `Study Link`, `Study Record`, `Studies`.
+- `GUIDE_FIELD_NAMES` — `title`, `status`, `version`, `source`, `variables`.
+- `CONSENT_FORM_LINK_FIELD_CANDIDATES` — `Study`, `Project Study`, `Study Link`, `Study Record`, `Studies`, `Project Studies`.
+- `CONSENT_FORM_FIELD_NAMES` — `title`, `formType`, `status`, `version`, `source`, `variables`, `consentItems`, `summary`, `accessibilityNotes`, `reviewNotes`, `owner`, `publishedAt`, `createdAt`, `updatedAt`.
+- `PARTICIPANT_CONSENT_FIELDS` — `study_link`, `participant_link`, `consent_form_link`, `consent_form_version`, `responses`, `status`, `capture_method`, `withdrawn`, `withdrawal_reason`, `recorded_by`, `recorded_at`, `updated_at`.
+- `PARTICIPANT_FIELDS` — `display_name`, `email`, `phone`, `timezone`, `channel_pref`, `access_needs`, `recruitment_source`, `consent_status`, `consent_record_id`, `privacy_notice_url`, `status`, `study_link`.
+- `SESSION_FIELDS` — `study_link`, `participant_link`, `starts_at`, `duration_min`, `type`, `location_or_link`, `backup_contact`, `researchers`, `status`, `incentive_type`, `incentive_amount`, `incentive_status`, `safeguarding_flag`, `notes`.
+
+Do not reorder candidate arrays without inspecting how callers resolve fields. The first present field wins.
+
+### 43.7 Logging contract
+
+`infra/cloudflare/src/core/logger.js`:
+
+```js
+log(level, msg, meta) { ... if (this._buf.length >= this._batchSize) this.flush(); }
+flush() { console.log("audit.batch", this._buf); }
+```
+
+- Three levels: `info`, `warn`, `error`.
+- Batched by 20 entries; flushed as `audit.batch`.
+- Each entry: `{ t: <ms>, level, msg, meta }`.
+- `msg` follows a dotted vocabulary: `airtable.sessions.list.fail`, `csv.not_found`, `provenance.write.skipped`, `comms.log.fail`, etc.
+- Meta carries structured detail (status, text, ids). Never include secrets, tokens or unnecessary personal data.
+
+---
+
+## 44. Identity and integration flows
+
+### 44.1 Cloudflare Access JWT verification
+
+```
+Browser                Worker                          Cloudflare
+   |                     |                                  |
+   |---- request --->|                                  |
+   |  (Cf-Access-Jwt-Assertion header)                     |
+   |                     |--- fetch certs URL ----------->|
+   |                     |<-- JWKS -------------------|
+   |                     |  verify RS256 / aud / exp        |
+   |                     |  decode email and claims         |
+   |                     |  resolve user/team/permissions  |
+   |<--- response ---|                                  |
+```
+
+Configuration via `CLOUDFLARE_ACCESS_AUD` (or `CF_ACCESS_AUD`, `CF_ACCESS_AUD_TAG`) and `CLOUDFLARE_ACCESS_CERTS_URL` (or `CF_ACCESS_CERTS_URL`, or derived from `CLOUDFLARE_ACCESS_TEAM_DOMAIN`).
+
+Failure shapes:
+
+- 401 `authentication_required` — header missing.
+- 401 `unsupported_access_token_algorithm` — alg is not RS256.
+- 503 `access_configuration_missing` — certs URL not set.
+
+### 44.2 Passwordless email magic-link
+
+```
+User             Browser            Worker            D1               KV / cookie
+ |  email --->|                    |                |                  |
+ |             |--- POST /api/auth/email/{email} -->|                  |
+ |             |                    | validate email format            |
+ |             |                    | generate 6-digit code            |
+ |             |                    | digest(secret + email + code)    |
+ |             |                    |--- store hashed code ----->|     |
+ |             |                    |   ttl 600s (10 minutes)         |
+ |             |<-- 200 ok ------|                |                  |
+ |  email link with code            |                |                  |
+ |--- click ->|                    |                |                  |
+ |             |--- POST /api/auth/email/{email}/verify (code) ---->|  |
+ |             |                    | validate code 6 digits           |
+ |             |                    | verify hash                      |
+ |             |                    | issue token                      |
+ |             |                    |    32-byte hex                   |
+ |             |                    |    ttl 43200s (12 hours)         |
+ |             |                    |--- write session ------->|       |
+ |             |<-- 200, Set-Cookie: rops_session=...         |       |
+```
+
+Constants: `CODE_TTL_SECONDS = 600`, `SESSION_TTL_SECONDS = 43200`, `COOKIE_NAME = 'rops_session'`. The cookie is `Secure`, `HttpOnly`, `SameSite=Lax`. Hashing uses `digest([secret, ...parts].join(':'))` over SHA-256.
+
+### 44.3 Route permission assertion
+
+```
+incoming request -> normalisePath
+                 -> readDeclaration(method, pathname) from auth_route_permissions
+                 -> if no row: 403 route_permission_missing
+                 -> if auth_required and not authenticated: 401
+                 -> required = parsePermissions(required_permissions_json)
+                 -> missing = required - granted
+                 -> if missing.length: 403 permission_denied { missing }
+                 -> else proceed
+```
+
+Path normalisation collapses `//`, removes trailing slash for `/api/...` (except `/api/`).
+
+### 44.4 Mural OAuth and viewer-link extraction
+
+```
+User -> /api/mural/auth -> redirect to Mural consent screen (with state)
+Mural -> /api/mural/callback?code=... -> exchangeAuthCode -> store token
+Browser -> /api/mural/verify -> verifyHomeOfficeByCompany (company id)
+Browser -> /api/mural/resolve -> ensureUserRoom -> ensureProjectFolder
+Browser -> /api/mural/setup -> duplicateMural (template) -> save board mapping
+Browser -> /api/mural/find -> listBoards (Airtable) | D1 fallback
+Browser -> /api/mural/await -> poll for board readiness
+Browser -> /api/mural/journal-sync -> getMuralLinks -> createSticky / updateSticky -> applyTagsToSticky
+```
+
+Viewer URLs are extracted defensively via BFS over the response payload. Recognised forms include `app.mural.co/t/{team}/m/{mural}`, `/invitation/mural/...`, `/viewer/...`, `/share/{team}/mural/...`.
+
+Sync rules: never silently fall back to the wrong room or board; tag mapping is explicit; sticky-note category mapping is recorded.
+
+### 44.5 Resilience patterns
+
+- **Airtable timeout / 429** — fall through to D1 read where the route is read-only and a D1 mirror exists. Return 502 on hard upstream failure with a structured body.
+- **Mural sync during Airtable outage** — `listBoards` falls back to D1 mappings; sync continues.
+- **D1 write while Airtable write fails** — D1 still accepts the row using a `pending-<uuid>` local id; reconciliation is a separate, traceable operation.
+- **GitHub CSV fallback** — `/api/projects.csv` reads from `data/projects.csv` on `main`; useful when Airtable is unavailable. Cache header is `no-store`.
+- **Service load failure** — return 503 for APIs while keeping `/api/projects.csv` and `/api/studies` direct paths available. Pages fall back to SPA.
+- **AI rewrite** — bounded by `TIMEOUT_MS`. On failure, do not persist; surface a friendly retry and never overwrite user-typed input.
+
+---
+
+## 45. State machines
+
+### 45.1 Study lifecycle
+
+```
+[Draft]
+  │  approve
+  ▼
+[Approved]
+  │  start recruitment
+  ▼
+[Active recruitment]
+  │  schedule sessions
+  ▼
+[Sessions underway]
+  │  capture analysis
+  ▼
+[Analysis in progress]
+  │  review findings
+  ▼
+[Findings reviewed]
+  │  accept recommendations
+  ▼
+[Recommendations accepted]
+
+Side transitions:
+  any -> [Paused]   (governance hold)
+  any -> [Withdrawn] (study halted; provenance event)
+```
+
+### 45.2 Participant consent record
+
+```
+[Not recorded]
+  │  capture
+  ▼
+[Needs review]
+  │  reviewed
+  ▼
+[Ready for session]
+  │  participant withdraws
+  ▼
+[Withdrawn]
+   ─ propagate provenance to dependent insights/recommendations
+```
+
+A consent record can move to `Needs consent` if the consent form version is superseded. Withdrawal is terminal for this record; a new record may be created against a new form version.
+
+### 45.3 Role assignment
+
+```
+[Pending]  ── Team Admin reviews
+   │  approve
+   ▼
+[Active]
+   │  expires_at reached
+   ▼
+[Expired]
+
+   │  Team Admin revokes
+   ▼
+[Rejected]
+```
+
+Sensitive roles (Approver, Safeguarding Lead) require explicit confirmation values (`ASSIGN_SENSITIVE_ROLE`, `ASSIGN_SAFEGUARDING_LEAD`) and an audit reason. Atomic write covers role assignment, team membership and audit event.
+
+### 45.4 Registration request
+
+```
+[Submitted]
+  │  Team Admin reviews
+  ▼
+[Approved]   →  user created, default role assigned
+  │
+[Rejected]   →  rejection reason recorded
+  │
+[Expired]    →  no review within window
+```
+
+### 45.5 Discussion guide
+
+```
+[Draft]  ── author edits ─→ [Draft]
+  │  publish
+  ▼
+[Published]   ← only published guides may anchor sessions
+  │  supersede with new version
+  ▼
+[Superseded]  ← retained for traceability
+```
+
+### 45.6 Consent form
+
+Mirrors the discussion guide states: `Draft → Published → Superseded`. Only `Published` versions may anchor a participant consent record.
+
+### 45.7 Branch trace lifecycle
+
+```
+[Branch created]
+  │  prefix in {feature, chore, test, fix, perf}
+  ▼
+[Trace required]
+  │  raw .agent-traces/raw/<slug>.jsonl appended
+  ▼
+[Validated]   npm run trace:validate
+  │  promote
+  ▼
+[Promoted]    docs/agent-audit/reasoning/YYYY/MM/DD/<slug>.{md,json}
+  │  PR opened
+  ▼
+[PR review]   npm run trace:coverage gate
+  │  merge
+  ▼
+[Recorded]
+```
+
+`hotfix/` branches skip the Trace required state.
+
+---
+
+## 46. Sequence diagrams
+
+### 46.1 Sign-in (Cloudflare Access)
+
+```
+User -> Cloudflare Access (IdP login) -> JWT issued (Cf-Access-Jwt-Assertion)
+User -> Worker /api/me with JWT
+Worker -> verify JWT (RS256, aud, exp)
+Worker -> D1 lookup user by access subject; if missing, link by email (bootstrap)
+Worker -> D1 fetch teamMemberships, roles, permissions
+Worker -> respond { user, activeTeam, teamMemberships }
+```
+
+### 46.2 Record participant consent
+
+```
+Researcher -> open /pages/study/participant-consent/
+Browser -> /api/me; /api/consent-forms?study={sid}; /api/participants?study={sid}
+Browser -> /api/participant-consent?study={sid}
+User -> select participant, complete form (required + optional permissions)
+Browser -> POST /api/participant-consent
+Worker -> validate study, participant, consent form (must be Published)
+Worker -> Airtable create record { responses, capture_method, recorded_by, recorded_at, status }
+Worker -> Airtable Research Provenance event { ParticipantConsent.create }
+Worker -> respond { ok: true, record }
+```
+
+### 46.3 Withdraw consent
+
+```
+Researcher -> select participant, choose "Record withdrawal"
+Browser -> PATCH /api/participant-consent/{id} { withdrawn: true, withdrawal_reason }
+Worker -> Airtable update { withdrawn, withdrawal_reason, status: "Withdrawn", withdrawn_at }
+Worker -> Provenance event { ParticipantConsent.withdraw, parent: consent form version }
+Worker -> walk dependent surfaces; emit provenance flags on derived insights/recommendations
+Worker -> respond { ok: true }
+```
+
+### 46.4 Assign a sensitive role
+
+```
+Team Admin -> /pages/team/role-assignments/
+Browser -> /api/me (must include role.assign)
+User -> select role, expiry, reason; check ASSIGN_SENSITIVE_ROLE; (Safeguarding) ASSIGN_SAFEGUARDING_LEAD
+Browser -> POST /api/auth/role-assignments
+Worker -> assert role.assign; verify confirmations
+Worker -> D1 atomic batch:
+  - upsert auth_team_memberships
+  - insert/update auth_role_assignments (active, expires_at)
+  - insert auth_audit_events
+Worker -> respond { ok: true, assignment }
+```
+
+### 46.5 AI rewrite
+
+```
+User -> select text; choose Rewrite
+Browser -> POST /api/ai-rewrite { text, instruction?, system?, model? }
+Worker -> bounded fetch to Workers AI
+Worker -> validate output present; return { ok: true, output, model }
+Worker -> Airtable AI_Usage append
+Browser -> show suggestion; require explicit Accept to write back
+On Accept: Browser -> PATCH original record; provenance flag "ai-assisted: true"
+On Reject: do not persist
+```
+
+### 46.6 Mural journal sync
+
+```
+Researcher -> /pages/projects/journals/ -> click "Sync to Mural"
+Browser -> /api/mural/verify, /api/mural/find?project=...
+Worker -> Airtable Mural Boards lookup; D1 fallback if Airtable unavailable
+Worker -> getMuralLinks for board id
+Browser -> /api/mural/journal-sync
+Worker -> for each journal entry: createSticky / updateSticky; applyTagsToSticky
+Worker -> Provenance event { JournalEntry.sync, method: "mural-sync" }
+Worker -> respond with viewer URL
+```
+
+---
+
+## 47. Observability and operations
+
+### 47.1 Observability posture
+
+- `wrangler.toml` enables `observability.logs` with `head_sampling_rate = 1`, `invocation_logs = true`, `persist = true`.
+- Worker logs are batched (`BatchLogger`) and emitted as `audit.batch`.
+- Every AI call writes an `AI_Usage` Airtable row (`AUDIT = "true"`).
+- Provenance events record artefact lifecycle.
+- D1 `auth_audit_events` records auth-related actions.
+
+### 47.2 Targets and budgets
+
+- API timeout — 10 seconds (TIMEOUT_MS). Hard cap.
+- Request body — ≤512 KB.
+- Lighthouse (warn-only today; promote to blocking before beta):
+  - `performance ≥ 0.8`
+  - `accessibility ≥ 0.9`
+  - `best-practices ≥ 0.9`
+  - `seo ≥ 0.85`
+- Pa11y — WCAG 2.2 AA on every page (currently three URLs; standing gap to expand).
+- Visual walkthrough — 0 failures at release.
+
+Standing remediation (UK Service Standard alpha findings — see §6):
+
+- Define and publish SLOs and error budgets.
+- Document D1 backup strategy.
+- Schedule Airtable export.
+- Define on-call rota.
+- Add `LICENSE` (OGLv3).
+
+### 47.3 Backup and disaster recovery
+
+Standing posture (gaps and remediations):
+
+- **D1** — no documented backup strategy yet. Remediation: enable scheduled D1 export to R2 with daily snapshots; document restore procedure; rehearse quarterly.
+- **Airtable** — no scheduled export documented. Remediation: nightly export via API or Airtable's built-in export; retention 30 days minimum; restore procedure documented.
+- **KV** — sessions are recreatable; OTP and session tokens have short TTLs; loss is acceptable.
+- **Mural** — relies on Mural retention; sticky-note IDs and board mappings persisted in Airtable / D1 — restore from those mappings if a board is recreated.
+- **GitHub CSV fallback** — versioned in repository; recoverable from any clone.
+
+### 47.4 Incident classification
+
+Severity matrix (proposed; confirm with organisational policy):
+
+| Severity | Definition | Response |
+|----------|------------|----------|
+| SEV1 | Participant data exposed; consent or safeguarding integrity compromised; live service down. | Stop spread immediately; notify DPO; report to ICO within 72 hours where required; open incident; post-incident review within 14 days. |
+| SEV2 | Auth or route-permission bypass; data integrity loss without exposure; AI output disclosed PII. | Disable affected route; preserve evidence; notify within 4 hours; resolve within 24 hours. |
+| SEV3 | Degraded performance; partial outage; failed sync. | Triage within business hours; resolve within 5 days. |
+| SEV4 | Cosmetic; documentation drift; non-blocking finding. | Backlog with severity. |
+
+### 47.5 Incident response steps
+
+1. Stop spread — disable the affected route, secret or integration.
+2. Preserve evidence — capture logs, provenance events, audit-event tables.
+3. Classify severity.
+4. Notify DPO and Service Owner.
+5. Apply organisational breach response plan.
+6. Open an incident record under `docs/release-assurance/`.
+7. Post-incident review; update controls; update `RECENT_LEARNINGS.md`; update conformance and gap register.
+
+---
+
+## 48. Security posture and audit triage
+
+### 48.1 Standing security audit policy
+
+`security-audit-policy.json`:
+
+- **Runtime dependencies** — `high` and `critical` block release.
+- **Unknown-scope dependencies** — `high` and `critical` block release until classified.
+- **Development-only dependencies** — `critical` blocks release; `high`, `moderate`, `low` are advisory.
+
+`security-audit-triage.yaml` (current snapshot — refresh on every release):
+
+- Total findings: 13 (1 low, 9 moderate, 3 high, 0 critical).
+- Production scope: 1 dependency. Development scope: 349 dependencies.
+- Decision: not release-blocking; findings are dev/QA tooling and are advisory.
+- Known findings include `flatted` (high), `glob` (high), `minimatch` (high), `ajv` (moderate), `@cucumber/cucumber` (moderate). All advisory.
+
+Remediation discipline:
+
+- Treat any future high/critical runtime finding as blocking.
+- Treat unknown-scope high/critical as blocking until classified.
+- Re-run `npm run audit:security` and refresh triage before tagged releases.
+- Confirm BDD and Playwright suites compatibility before major dev-tooling upgrades.
+
+### 48.2 Repository tooling configs
+
+- `.pa11yci.json` — WCAG2AA, 30 s timeout, 500 ms wait, Chromium sandboxed, includes warnings, `level: error`. Three URLs covered today (gap).
+- `lighthouserc.json` — desktop preset, 1 run, warn thresholds (perf 0.8, a11y 0.9, best-practices 0.9, SEO 0.85). Promote to error before beta.
+- `lychee.toml` — concurrency 6, timeout 20 s, 2 retries, accept `[200, 204, 206, 301, 302, 401, 403, 405, 429, 999]`, exclude localhost, dev hosts and build artefacts. Email links not flagged.
+- `eslint.config.js` — ES2024+, modules, browser + Node globals. `no-unused-vars` warn (ignore `_`-prefixed). `no-console` warn. `no-empty` error (allow empty catch).
+- `.prettierrc.json` — tabs (width 2), `printWidth: 100`, `singleQuote: true`, `trailingComma: "es5"`, `arrowParens: "always"`, `endOfLine: "lf"`. CSS and YAML override to double quotes.
+- `.prettierignore` — vendor libs, minified, lockfiles, generated outputs.
+- `.editorconfig` — UTF-8, LF, tabs (2), final newline, trim trailing whitespace; markdown excepted.
+
+### 48.3 GitHub repository settings (`github-settings.yaml`)
+
+- Default branch `main`.
+- Pull requests required; ≥1 review; dismiss stale; require Code Owners.
+- Required status checks: `CI`, `Validate ResearchOps`, `Release Gate`, `Accessibility audit (pa11y-ci)`.
+- Conversation resolution required.
+- Linear history; no force pushes; no deletions.
+- Workflow permissions: `read`. Default workflow permissions: `read`.
+- Dependabot, secret scanning, push protection, code scanning, dependency review enabled.
+- CODEOWNERS — `* @kevinrapley`.
+
+### 48.4 Branch protection contract (`branch-protection-evidence.yaml`)
+
+Standing posture is `pending-live-verification`. The expected configuration is:
+
+- Required reviews: 1.
+- Code Owners review required.
+- Required status checks: as above.
+- Conversation resolution required.
+- Linear history required.
+- Force pushes disallowed.
+- Deletions disallowed.
+
+Verification is performed against live GitHub state; record `verified_at`, `verified_by`, evidence references.
+
+### 48.5 Release provenance contract (`release-provenance-policy.yaml`)
+
+- Workflow `.github/workflows/release-provenance.yml` runs on `v*` tags or manual dispatch.
+- Generates `release-provenance-manifest.json`, `slsa-provenance.json`, `dsse-envelope.json`, `researchops-release-provenance.tgz`.
+- Required before tagged release: Release Gate green; Accessibility audit clean; security audit clean; deployment toolchain evidence current; release evidence commit references match.
+- Trusted attestation via GitHub `actions/attest@v4` with `id-token: write`, `attestations: write`.
+- Verification: `gh attestation verify artifacts/researchops-release-provenance.tgz --repo kevinrapley/ResearchOps`.
+
+### 48.6 Deployment toolchain (`deployment-toolchain.yaml`)
+
+- Cloudflare Worker — Wrangler 4.34.0, pinned. No floating `latest`.
+- Agent gateway — Wrangler 4.34.0, pinned, manual `workflow_dispatch` until reviewed.
+- Validation before deploy: `npm ci`, `npm run validate`, `npm run lint`, `npm test`, `wrangler --version`. Worker deploy adds dry-run for the agent gateway.
+- Rollback: revert Wrangler version in `deployment-toolchain.yaml` and the corresponding workflow.
+
+### 48.7 Conformance matrix and gap register schemas
+
+Conformance matrix records (`conformance-matrix.yaml`):
+
+```
+- id: <stable-id>
+  control: <one-sentence control statement>
+  evidence: [<file>, <file>, <PR ref>]
+  status: proposed | implemented
+  risk: low | medium | high
+  owner: <person or group>
+```
+
+Gap register entries (`gap-register.yaml`):
+
+```
+- id: <stable-id>
+  title: <short title>
+  status: open | in-progress | implemented
+  severity: low | medium | high
+  owner: <person or group>
+  context: <one paragraph>
+  mitigation: <one paragraph>
+  evidence: [<file>, <PR ref>]
+```
+
+Standing rules:
+
+- Do not mark a control implemented without observable evidence.
+- Do not hide a gap by overstating conformance.
+- Update both files when a control or a gap changes status.
+
+### 48.8 Reporting review model
+
+`docs/devops/reporting-review-model.md`:
+
+- **Group-level review evidence** — full journey acceptance criteria and design-risk notes, shared across the journey's states.
+- **State-level review evidence** — what is specific to that screenshot (e.g. a participant selected, a validation error shown).
+- Status values — `draft`, `needs-review`, `approved`, `rejected`, `superseded`.
+- Source of truth — `config/reporting-review-overrides.json`. Generated reports are not editable.
+- Utility — `scripts/reporting-review-model.mjs` merges generated base + overrides.
+- Duplication rule — flag if group-level acceptance criteria or design-risk notes are copied into state-level records.
+
+---
+
+## 49. Storage internals and stateful surfaces
+
+### 49.1 Synthesis state
+
+Synthesis state per study lives in Worker KV with key `rops:synthesis:study:<study-id>:state`. Shape:
+
+```
+{
+  "clusters": [ { "id", "label", "description", "evidence": [...], "created_at" } ],
+  "themes":   [ { "id", "label", "insights": [...], "evidence": [...], "created_at" } ],
+  "evidence": [ /* references to journal entries / excerpts / codes */ ]
+}
+```
+
+KV is suitable here because synthesis is per-study, recomputable from journals/excerpts/codes if lost, and read-heavy.
+
+### 49.2 Sessions list semantics
+
+`GET /api/sessions?study=<id>[&participant=<id>][&status=<status>]`:
+
+- Lists Airtable `Sessions` table, paginated (page size 100).
+- Filters by `study_link` (must contain study), optional `participant_link`, optional `status` (case-insensitive among `scheduled`, `rescheduled`, `cancelled`, `completed`).
+- Returns DTO: `{ id, studyId, participantId, startsAt, durationMin, type, locationOrLink, ... }`.
+- Sorted by `starts_at`, earliest first.
+- ICS export at `GET /api/sessions/{id}/ics` — calendar entry with title, start/end, location.
+
+### 49.3 Consent form defaults (`consent-forms.js`)
+
+Default consent items:
+
+1. **Participation** — required.
+2. **Voluntary withdrawal** — required.
+3. **Data use** — required.
+4. **Recording** — optional.
+
+Default template variables: `studyTitle`, `organisation`, `researcherName`, `researcherEmail`, `sessionFormat`, `recordingSummary`, `withdrawalPeriod`.
+
+Source format: Markdown with Mustache. Drafts editable; only `Published` versions anchor consent records.
+
+### 49.4 Participant consent record DTO (`participant-consent.js`)
+
+```
+{
+  id, studyId, participantId,
+  consentFormId, consentFormVersion,
+  responses: { <itemId>: true | false | null },
+  status: "ready for session" | "needs review" | "needs consent" | "withdrawn" | "not recorded",
+  captureMethod, withdrawn, withdrawalReason,
+  recordedBy, recordedAt, updatedAt
+}
+```
+
+Statuses are normalised on read; never expose raw Airtable status text to clients.
+
+### 49.5 Comms service (`comms.js`)
+
+`POST /api/comms/send`:
+
+- Body `{ participant_id, template_id, channel, session_id?, substitutions? }`.
+- Returns `{ ok: true, message_id }`.
+- Logs to Airtable `Communications Log` table best-effort; failures logged at `warn` level under `comms.log.fail`.
+- Stub for real provider integration (Resend / SMS).
+
+### 49.6 CSV service (`csv.js`)
+
+- `githubCsvAppend(svc, { path, header, row })` — read current file from GitHub raw API; if 404 create with header; append row; write back with commit message; uses `b64Encode/b64Decode`.
+- `streamCsv(svc, origin, path)` — stream CSV with `Content-Type: text/csv`, `Cache-Control: no-store`, `Content-Disposition: attachment`.
+
+Both use `${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}` pattern.
+
+### 49.7 Provenance event vocabulary (extended)
+
+`Event Type` values used across the platform:
+
+- `created`, `updated`, `deleted`, `published`, `archived`.
+- `linked` — record linkage created (e.g. excerpt to journal, code applied to evidence).
+- `annotated` — text annotation added.
+- `synthesized` — cluster or theme created.
+- `coded` — code applied or removed.
+- `withdraw` — consent withdrawn.
+- `reveal` — identifiable participant data revealed.
+- `approve` — governed-record approved.
+- `accept` — recommendation accepted.
+- `assign`, `reassign`, `revoke`, `expire` — role-assignment events.
+- `sync` — integration sync (e.g. Mural).
+- `restore`, `dispose` — lifecycle events for retention.
+
+`Method` records the route or source (e.g. `POST /api/journal-entries`, `mural-sync`, `ai-rewrite`, `retention-cron`).
+
+---
+
+## 50. Plain-English content design
+
+Content rules:
+
+- Use plain English. Reading age 9–11 is the target for participant-facing content; reading age 11–14 is acceptable for staff-facing content.
+- Use task-based labels: "Can approve a study", not `governed.approve`.
+- Use concrete verbs: "Send request", not "Submit".
+- Avoid jargon and acronyms in user-facing text. Where unavoidable, define on first use.
+- Use **person** language: "people who use the service" rather than "users".
+- Sentence case for headings and buttons (GOV.UK convention).
+- Service voice: brief, direct, helpful. No marketing language. No exclamation marks.
+- Numbers as digits (`3` not `three`) outside formal sentences.
+- Dates as `14 May 2026`. Times as `09:30`. Time zones as `(BST)` where ambiguous.
+
+Error message patterns:
+
+- Specific cause + concrete next step.
+- Plain language; no error codes in the user-facing message.
+- Examples:
+  - "Enter an email address in the correct format."
+  - "Enter the 6-digit code from your email."
+  - "Sign in is required to use this part of ResearchOps."
+  - "Sign in is not available right now."
+  - "Open this page from a study."
+  - "Create and publish a consent form before recording participant consent."
+  - "Add participants before recording consent."
+
+Accessibility patterns for content:
+
+- Error summaries at the top of forms; in-context error messages on each field.
+- Hints for fields where format is non-obvious.
+- Field widths matched to expected answer length (`govuk-!-width-two-thirds` is a sensible default for names, emails, team names).
+- Focus rings only on actual controls.
+
+---
+
+## 51. Inclusive research deep-cuts
+
+### 51.1 Vulnerable participants protocol
+
+A participant is considered vulnerable when:
+
+- they are a child or young person under 18
+- they have reduced capacity to consent (cognitive impairment, distress, intoxication)
+- they are in a coercive or dependent relationship with the service (e.g. detention, asylum determination, benefit assessment)
+- the topic itself causes distress (bereavement, trauma, abuse, severe illness)
+
+Protocol additions:
+
+- Ethics review is **mandatory** for high-stakes user groups.
+- A safeguarding plan is recorded on the study.
+- A trauma-informed researcher leads the session.
+- Sessions are shorter, with explicit pauses.
+- Distress responses are recorded; a stop is normalised, not signalled as failure.
+- Aftercare contacts are provided.
+- Incentives use alternatives that do not create dependency or undue influence.
+
+### 51.2 Children and young people
+
+- Consent is from a parent or guardian; assent is from the child.
+- Materials are in age-appropriate language.
+- Sessions are shorter; an appropriate adult is present.
+- DBS / safeguarding clearances are recorded for researchers.
+- Photographs and recordings of children require explicit, separate consent.
+- Data minimisation is heightened.
+
+### 51.3 Translation and language access
+
+- Offer translated materials and interpreter support proactively, not on request.
+- Use professional, qualified interpreters; record interpreter language and accreditation.
+- Discussion guides translated and back-translated for fidelity.
+- Consent forms in the participant's preferred language; bilingual where helpful.
+- BSL interpretation is offered as standard; other sign languages where feasible.
+- Easy Read versions for cognitive accessibility.
+- Avoid idioms in the source guide that translate poorly.
+
+### 51.4 Co-design and co-production
+
+- Distinguish co-design (designing with users), co-production (sharing power and decision-making) and consultation (asking).
+- For co-production: equal voice, shared agenda, paid participation, ongoing relationship.
+- Make decision rights explicit at the outset.
+- Record where the team's agenda differs from the participants' agenda.
+- Outputs co-owned where appropriate; attribution and consent for attribution recorded.
+
+### 51.5 Longitudinal studies
+
+- Reconfirm consent at each contact.
+- Support continued voluntary withdrawal at any point.
+- Keep contact data refreshed; verify still valid at each cycle.
+- Build participant-facing summaries and reciprocity at each cycle.
+- Risk of attrition tracked; representativeness of remaining sample recorded.
+- Retention schedule reflects the longest legitimate cycle.
+
+### 51.6 Mixed methods
+
+- Combine qualitative depth with quantitative scale where the question warrants.
+- Triangulate, don't average; quantitative and qualitative tell different things.
+- State sequencing explicitly: convergent / explanatory sequential / exploratory sequential.
+- Where survey data drives qualitative recruitment, document the sampling logic.
+
+---
+
+## 52. Definition of done
+
+A change is **done** when all of the following are true:
+
+- Repository contract honoured (file layout, branch prefix, trace).
+- All required pre-merge gates green (`npm ci`, lint, format, typecheck where applicable, test, validate).
+- Contextual gates green where the change demands them (Pa11y, Lighthouse, Lychee, Cucumber, Playwright, visual walkthrough).
+- Route-state and contract tests added or updated for API changes.
+- Visual walkthrough updated for visible UI changes; failures = 0.
+- Conformance matrix and gap register updated where status changes.
+- `RECENT_LEARNINGS.md` updated where a reusable lesson is identified.
+- PR summary states what changed, why, validation evidence, known risks.
+- For UI changes: works end-to-end in branch preview and production; CORS allows the preview origin where intended.
+- For API changes: examples and route-shape fixtures updated; error contract preserved.
+- For auth or permission changes: `auth_route_permissions` declaration in place; tests assert fail-closed semantics.
+- For consent or participant changes: lawful basis and retention schedule preserved; provenance event emitted.
+- For AI-touching changes: PII redaction considered and recorded; AI usage logged.
+- Trace promoted on trace-required branches.
+- No claim of release readiness without green CI or explicit caveat.
+
+---
+
+## 53. Pre-flight and post-flight checklists
+
+### 53.1 Pre-flight (before opening a PR)
+
+- [ ] Branch prefix is approved.
+- [ ] Operating model loaded; selected bundles recorded.
+- [ ] Implementation layer chosen deliberately.
+- [ ] Local quality gates run (`lint`, `format -c`, `test -- --ci`, `validate`).
+- [ ] Contextual gates considered (Pa11y, Lighthouse, Lychee, walkthrough, security, evals, trace coverage).
+- [ ] Examples / fixtures updated where shape changed.
+- [ ] Provenance considered.
+- [ ] Trace recorded and promoted.
+- [ ] PR summary drafted.
+
+### 53.2 Post-flight (after merge)
+
+- [ ] CI green on `main`.
+- [ ] Preview deployment confirms behaviour.
+- [ ] Production deployment confirms behaviour where applicable.
+- [ ] Conformance matrix and gap register updated.
+- [ ] `RECENT_LEARNINGS.md` updated where applicable.
+- [ ] Stakeholders notified where the change is visible to them.
+- [ ] Follow-up items captured as issues.
+
+---
+
+## 54. The agent behavioural envelope
+
+### 54.1 Autonomy by class of action
+
+| Class | Autonomy | Notes |
+|-------|----------|-------|
+| Read repository files | Autonomous | Inspect first is the rule. |
+| Local code edits | Autonomous within the operating contract | Use templates; record trace where required. |
+| Run tests and validation | Autonomous | Idempotent and CI-safe only. |
+| Open a pull request | Requires explicit user request | Never autonomous. |
+| Push to protected branches | Refused | No exceptions. |
+| Force push or rewrite history | Requires explicit user approval | And only with operating-model rationale. |
+| Skip CI hooks | Refused | Investigate the cause; fix; re-stage. |
+| Reveal participant identifiable data | Refused without `participant.pii.reveal` and audit | Even in playbooks. |
+| Approve studies or findings | Refused | Approver permission and human action. |
+| Accept recommendations | Refused | Recommendation owner is a human. |
+| Change project phase | Refused | Phase changes are human-owned. |
+| Sync to Mural without confirmed mapping | Refused | Surface the conflict. |
+| Send Workers AI an unredacted PII payload | Refused | PII redaction first; current standing gap. |
+| Close a Codex review thread | Requires acknowledgement evidence | 👍 + reply + evidence + resolution. |
+
+### 54.2 Refusal patterns
+
+When an instruction collides with the operating model, refuse with a structured response:
+
+- State the rule that applies (with file path and section).
+- State the conflicting instruction.
+- State the precedence decision.
+- Offer the next compliant step.
+
+Example refusal:
+
+> I cannot open a PR autonomously. Repository governance (`AGENTS.md` §PRs and `bundles/github/prompt.body.xml` precedence rule 7) requires explicit user request for PR creation. The change is staged on the branch; please review and ask me to open the PR if you want one.
+
+Example refusal for AI safety:
+
+> I cannot send the participant excerpt to Workers AI as drafted. The standing security gap in `docs/assessments/alpha-assessment.md` §9 prohibits unredacted PII into the AI rewrite path. I can: (a) apply a manual redaction pass on the obvious PII patterns; (b) ask the user to confirm the text contains no PII; (c) skip AI assistance for this surface. Which would you like?
+
+### 54.3 Escalation
+
+Escalate (do not act) when:
+
+- The operating model or a selected bundle directory cannot be loaded.
+- A canonical source disagrees with itself (route handler vs schema vs documentation).
+- A change touches consent, safeguarding, retention or PII reveal in a non-trivial way.
+- A user request would broaden the scope of a `hotfix/` branch.
+- A user request would require a domain rule change that should live in a bundle reference.
+
+---
+
+## 55. DPIA template (proposed)
+
+A Data Protection Impact Assessment for any new processing activity or material change. Recommended structure:
+
+```
+# Data Protection Impact Assessment — <activity>
+
+## 1. Description of processing
+- Purpose
+- Categories of personal data
+- Categories of data subjects
+- Recipients
+- Cross-border transfers
+- Retention schedule
+- Lawful basis (Art. 6 / DPA Schedule)
+- Special category lawful basis if applicable (Art. 9 / DPA Schedule)
+
+## 2. Necessity and proportionality
+- Why is this processing necessary?
+- Could the same outcome be achieved with less data?
+- How is data minimised?
+- How is purpose limited?
+- How is storage limited?
+- How is accuracy maintained?
+- How is integrity / confidentiality protected?
+
+## 3. Risk identification
+- Likelihood × severity matrix per risk.
+- Risks to rights and freedoms of data subjects.
+- Risks to vulnerable groups.
+- Risks of bias or discrimination.
+- Risks of inadequate consent.
+- Risks of unauthorised access.
+
+## 4. Mitigations
+- Per-risk mitigations with owners and dates.
+- Residual risk after mitigation.
+
+## 5. Stakeholder consultation
+- Data subjects consulted (or rationale for not).
+- DPO consulted.
+- Legal advice taken.
+
+## 6. Decision and sign-off
+- Decision (proceed / proceed with conditions / do not proceed).
+- Conditions and review date.
+- Signed: DPO, Service Owner, SRO.
+```
+
+DPIA triggers (any of):
+
+- New use of personal data.
+- Material change to lawful basis or retention.
+- Use of special-category data.
+- Use of data about vulnerable groups.
+- Automated decision-making affecting individuals.
+- Combining datasets that reveal new information.
+
+Store DPIAs under `docs/release-assurance/dpia/` (force-add per the docs gitignore policy).
+
+---
+
+## 56. Scripts catalogue
+
+`scripts/` (40+ files) exposes operational utilities. Frequently used:
+
+- `validate.sh` — repository contract verification (called by `npm run validate`).
+- `agent-operating-model/load-operating-model.mjs` — show selected bundles for a task text.
+- `agent-operating-model/validate-operating-model.mjs` — validate operating model files and bundle directories.
+- `agent-operating-model/validate-bundle-registry.mjs` — validate the bundle registry against its schema.
+- `agent-operating-model/run-behavioural-evals.mjs` — run the seven behavioural evals.
+- `agent-trace/validate-traces.mjs` — validate raw JSONL traces.
+- `agent-trace/promote-trace.mjs` — promote a validated trace into checked-in audit artefacts.
+- `agent-trace/assert-trace-coverage.mjs` — enforce branch-prefix trace coverage.
+- `validate-reports-site.mjs` — validate visual walkthrough artefacts.
+- `validate-sourcebook-links.mjs` — validate Sourcebook hyperlink integrity.
+- `performance-audit.sh` — run the performance audit; can write the inventory under `docs/performance/`.
+- `security-audit-policy.sh` and `.mjs` — apply the npm audit policy.
+- `release-provenance.mjs` — generate release provenance manifest.
+- `auth-runtime-bootstrap.mjs` — generate D1 bootstrap SQL for first team admin.
+- `merge-cucumber-report.mjs` — merge Cucumber JSON / HTML.
+- `visual-walkthrough.mjs` — drive the Playwright walkthrough.
+- `reporting-review-model.mjs` — merge generated review base + repo overrides.
+- `render-reporting-review-site.mjs` — render the reporting review site.
+- `sync-report-acceptance-criteria.mjs`, `apply-reporting-review-repetition-pass.mjs`, `finalise-reporting-review-repetition-pass.mjs` — reporting review utilities.
+- `restructure-pages.njs` — pages restructure helper.
+
+---
+
+## 57. Performance audits and recommendations
+
+`docs/performance/initial-load-audit.md` records the current performance posture. Standing recommendations applied:
+
+- Inline scripts extracted to module files with `rel="modulepreload"`.
+- API origin removed from HTML; lives in JS config.
+- Cloudflare Pages cache headers: HTML `no-store`, assets short edge/browser cache with stale revalidation.
+- `/components/layout.js` uses `force-cache` for normal partials, `no-store` for debug.
+- Shared layout module entry points deferred.
+- Discussion Guides context, Project Dashboard and route modules extracted with module preload.
+
+`docs/performance/performance-inventory-tooling.md`:
+
+- `npm run audit:performance` — print Markdown report.
+- `npm run audit:performance:write` — write to `docs/performance/performance-inventory.md`.
+- `npm run audit:performance -- --json` — JSON output.
+- Threshold overrides via `--max-asset-kb`, `--max-html-kb`, `--max-inline-script-kb`.
+
+Reports cover largest public files, total directory size, gzip estimates, sizes by extension, inline script counts, and possible unused CSS selectors (advisory; not a deletion list).
+
+---
+
+## 58. The design backlog (P1, P2, P3)
+
+From the eight-round design critique under `docs/design-critiques/26/05/07/`. Treat these as the standing backlog until status changes.
+
+### 58.1 P1 (eight)
+
+1. Add mandatory evidence linkage for insights and recommendations.
+2. Introduce lifecycle states for core research objects.
+3. Make pseudonymised participant views the default.
+4. Add accessibility acceptance criteria for core workflows.
+5. Add role-based governance and decision ownership.
+6. Label trace evidence by layer.
+7. Add safeguarding prompts and escalation routes.
+8. Add a task-based start page and study setup task list.
+
+### 58.2 P2 (eight)
+
+9. Add object headers with parent, state and next action.
+10. Add recruitment, session and incentive dashboards.
+11. Rename actions around user tasks.
+12. Support lightweight capture before structured tagging.
+13. Design trace summaries with expandable evidence.
+14. Use GOV.UK task list and summary list patterns.
+15. Explain integration boundaries.
+16. Add evidence maturity labels.
+
+### 58.3 P3 (eight)
+
+17. Define metrics for traceability and research quality.
+18. Create accessible export templates.
+19. Add role-sensitive views.
+20. Add onboarding prompts and example studies.
+21. Improve evidence search and filtering.
+22. Summarise audit logs into readable histories.
+23. Add GOV.UK and WCAG checks to release readiness.
+24. Capture feedback after studies and synthesis.
+
+These are critique outputs, not an approved roadmap. Implement only after separate review and prioritisation.
+
+---
+
+## 59. Cross-team and ResearchOps Core Team Admin patterns
+
+- Local Team Admin manages roles within their team scope only.
+- ResearchOps Core Team Admin can act across teams where the platform itself is the operational subject.
+- Use ResearchOps Core Team Admin sparingly; record every cross-team action in the audit log.
+- Sensitive roles (Approver, Safeguarding Lead) are not implicitly inherited across teams.
+- Where a researcher belongs to multiple teams, the active team context is explicit; the `X-ResearchOps-Team-Id` header is the override surface.
+
+---
+
+## 60. Closing covenant
 
 ResearchOps is a platform for research that matters to people, run by teams accountable to the public. Every change touches participant trust, service quality, accessibility, ethics, retention, lawful basis and audit.
 
