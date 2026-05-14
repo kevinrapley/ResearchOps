@@ -17,8 +17,8 @@ function excludes(source, text, label) {
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
-includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
-includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js\"", "project dashboard page");
+includes(pageSource, "/js/project-dashboard.js?v=projects-api-proxy-20260514", "project dashboard page");
+includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js?v=projects-api-proxy-20260514\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"journal-link\"", "project dashboard page");
 includes(pageSource, "id=\"outcomes-link\"", "project dashboard page");
@@ -46,13 +46,17 @@ excludes(pageSource, "<script type=\"module\">", "project dashboard page");
 excludes(pageSource, "data-api-origin=\"https://rops-api.digikev-kevin-rapley.workers.dev\"", "project dashboard page");
 
 includes(controllerSource, "const API_ORIGIN", "project dashboard controller");
+includes(controllerSource, "resolveApiBase", "project dashboard controller");
 includes(controllerSource, "window.API_ORIGIN", "project dashboard controller");
+includes(controllerSource, "function apiUrl", "project dashboard controller");
 includes(controllerSource, "async function loadProject(projectId)", "project dashboard controller");
-includes(controllerSource, "/api/projects/${encodeURIComponent(projectId)}", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`)", "project dashboard controller");
 includes(controllerSource, "async function loadStudies", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`)", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
 includes(controllerSource, "async function saveProjectPatch", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`)", "project dashboard controller");
 includes(controllerSource, "function initStakeholderForm", "project dashboard controller");
 includes(controllerSource, "function initObjectiveForm", "project dashboard controller");
 includes(controllerSource, "function initUserGroupForm", "project dashboard controller");
@@ -62,6 +66,8 @@ includes(controllerSource, "credentials: \"include\"", "project dashboard contro
 includes(controllerSource, "/api/projects", "project dashboard controller");
 includes(controllerSource, "/api/studies", "project dashboard controller");
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
+excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
+excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "project dashboard controller");
 excludes(controllerSource, "function pickProject", "project dashboard controller");
 excludes(controllerSource, "async function loadProjects", "project dashboard controller");
 excludes(controllerSource, "function initStudyModal", "project dashboard controller");
