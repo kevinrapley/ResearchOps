@@ -253,3 +253,11 @@ Prepared to update `infra/cloudflare/src/worker.js` so project list, create, rea
 The routing change also needs to stop treating `POST /api/projects` as absent, because the endpoint catalog declares the route and the start-project journey posts to it.
 
 Validation expectation for this unit: route-state tests should later assert `POST /api/projects` routing and scoped auth-context handoff.
+
+### 2026-05-14 — Server route and service signature commits landed
+
+Updated `infra/cloudflare/src/service/index.js` so project list, create, read and patch service methods can accept scoped auth context.
+
+Updated `infra/cloudflare/src/worker.js` so project list, create, read and patch routes resolve scoped auth context and pass it to the service layer.
+
+No visibility filtering logic has been changed yet. Next implementation unit is `infra/cloudflare/src/service/projects.js` project normalisation, visibility and create-permission enforcement.
