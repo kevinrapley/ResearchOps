@@ -1,4 +1,5 @@
-import { handleMeRoute, resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
+import { handleMeRoute } from "./core/auth/access-scoped.js";
+import { resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
@@ -15,6 +16,13 @@ function coerceResponse(res) {
 	}
 	if (typeof res === "string" || res instanceof ArrayBuffer || res instanceof Uint8Array) return new Response(res);
 	return new Response(JSON.stringify(res), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
+function authErrorResponse(error) {
+	return new Response(JSON.stringify({ ok: false, error: error.code, message: error.message }), {
+		status: error.status,
+		headers: { "content-type": "application/json; charset=utf-8" }
+	});
 }
 
 function isResearchOpsPagesOrigin(origin) {
@@ -206,6 +214,7 @@ export default {
 			else result = await handleRequest(request, env, ctx);
 			return withCORS(env, request, coerceResponse(result));
 		} catch (e) {
+			if (e?.status && e?.code) return withCORS(env, request, authErrorResponse(e));
 			return withCORS(env, request, new Response(JSON.stringify({ error: "Internal error", detail: String(e?.message || e) }), {
 				status: 500,
 				headers: { "content-type": "application/json; charset=utf-8" }
