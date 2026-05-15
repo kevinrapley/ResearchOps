@@ -154,10 +154,44 @@ async function listProjects() {
 	const { ok, status, data } = await fetchWithTimeout(apiUrl("/api/projects"));
 	if (!ok || !data?.ok) throw new Error(`Project list failed (${status})`);
 
+	const rawProjects = Array.isArray(data.projects) ? data.projects : [];
+	const projects = rawProjects.map(normaliseProject);
+
+	const malformed = [];
+	projects.forEach((project, index) => {
+		if (!project.id) {
+			malformed.push({
+				index,
+				rawKeys: Object.keys(rawProjects[index] || {}),
+				rawIdLikeValues: {
+					id: rawProjects[index]?.id,
+					airtableId: rawProjects[index]?.airtableId,
+					recordId: rawProjects[index]?.recordId,
+					Id: rawProjects[index]?.Id,
+					ID: rawProjects[index]?.ID,
+					localId: rawProjects[index]?.localId,
+					LocalId: rawProjects[index]?.LocalId,
+					pid: rawProjects[index]?.pid,
+					PID: rawProjects[index]?.PID,
+					"Record ID": rawProjects[index]?.["Record ID"],
+				},
+				name: project.name,
+			});
+		}
+	});
+
+	if (malformed.length) {
+		console.error("[projects-page] /api/projects returned projects without an Airtable record id", {
+			malformed,
+			sampleRawProject: rawProjects[malformed[0].index],
+		});
+	}
+
 	return {
 		source: "api",
-		projects: (data.projects || []).map(normaliseProject),
-		canStartProject: Boolean(data.canStartProject)
+		projects,
+		canStartProject: Boolean(data.canStartProject),
+		malformed,
 	};
 }
 
@@ -173,9 +207,29 @@ function projectTeamLabel(project) {
 	return project.teamName || project.team_name || project.team || "Unassigned team";
 }
 
+function unrenderableProjectCard(project) {
+	const safeName = escapeHtml(project.name || "Project record missing");
+	const debugSnippet = escapeHtml(
+		JSON.stringify({
+			id: project.id,
+			airtableId: project.airtableId,
+			recordId: project.recordId,
+		}),
+	);
+	return `
+<article class="card" aria-label="Unlinked project record">
+	<p class="project-org"><span class="govuk-visually-hidden">Team: </span>${escapeHtml(projectTeamLabel(project))}</p>
+	<h3 class="project-title govuk-heading-m">${safeName}</h3>
+	<p class="govuk-body">This project record came back from <code>/api/projects</code> without an Airtable record id, so the dashboard link cannot be built. The card is shown so the team can spot the data shape problem rather than hiding it.</p>
+	<p class="govuk-body"><strong>Resolved id fields:</strong> <code>${debugSnippet}</code></p>
+</article>`;
+}
+
 function projectCard(project) {
-	const projectId = encodeURIComponent(project.id || "");
-	const dashboardHref = projectDashboardHref(project.id || "");
+	if (!project.id) return unrenderableProjectCard(project);
+
+	const projectId = encodeURIComponent(project.id);
+	const dashboardHref = projectDashboardHref(project.id);
 	const dashboardLabel = escapeHtml(projectDashboardLabel(project));
 	const groups = (project.user_groups || [])
 		.map(group => `<li><span class="tag">${escapeHtml(group)}</span></li>`)
@@ -232,14 +286,22 @@ function renderErrorState(error) {
 </div>`;
 }
 
-function render(projects, source, canStartProject = false) {
+function malformedBanner(malformed) {
+	if (!malformed?.length) return "";
+	return `
+<div class="projects-malformed-banner" role="status" aria-live="polite">
+	<p class="govuk-body"><strong>${malformed.length}</strong> project record${malformed.length === 1 ? "" : "s"} came back from <code>/api/projects</code> without an Airtable record id. Those records are shown below as unlinked cards. Open the browser console for the resolved id fields.</p>
+</div>`;
+}
+
+function render(projects, source, canStartProject = false, malformed = []) {
 	setStartProjectVisible(canStartProject);
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	if (!projects.length) {
 		renderEmptyState(canStartProject);
 		return;
 	}
-	container.innerHTML = projects.map(projectCard).join("");
+	container.innerHTML = malformedBanner(malformed) + projects.map(projectCard).join("");
 	if (CONFIG.SHOW_SOURCE_NOTE) {
 		const sourceNote = document.createElement("p");
 		sourceNote.className = "lede";
@@ -253,8 +315,8 @@ function render(projects, source, canStartProject = false) {
 	setStartProjectVisible(false);
 	setListBusy(true);
 	try {
-		const { source, projects, canStartProject } = await listProjects();
-		render(projects, source, canStartProject);
+		const { source, projects, canStartProject, malformed } = await listProjects();
+		render(projects, source, canStartProject, malformed);
 	} catch (error) {
 		setStartProjectVisible(false);
 		renderErrorState(error);
