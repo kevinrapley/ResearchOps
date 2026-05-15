@@ -1,0 +1,122 @@
+{
+	"traceId": "atrace-20260515-projects-team-scoped-acc-preview-followup",
+	"createdAt": "2026-05-15T07:20:00Z",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/projects-team-scoped-access",
+	"trigger": "branch-prefix",
+	"traceLayer": "operational",
+	"task": {
+		"summary": "After the 2026-05-14 trigger broadening, the preview project dashboard on fix-projects-team-scoped-acc.researchops.pages.dev still surfaced 'Could not load project.' with empty key information. Continue PR #252 to (a) confirm the workflow trigger is correct, (b) make the actual upstream failure visible in the UI, and (c) restore trace coverage for 2026-05-15 so the deploy workflow's validate step passes.",
+		"constraint": "Continue PR #252 only."
+	},
+	"operatingModelSourcesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md"
+	],
+	"selectedBundles": [
+		{ "id": "github-diamond", "reason": "Repository / CI workflow continuation on PR #252." },
+		{ "id": "researchops-developer-control", "reason": "Platform implementation surface — dashboard error UI and Worker deploy workflow." },
+		{ "id": "multi-functional-team", "reason": "Government product assurance default." },
+		{ "id": "cloudflare", "reason": "Cloudflare Worker deployment workflow change." },
+		{ "id": "govuk-design-system", "reason": "Dashboard error region uses GOV.UK markup (govuk-heading-m, govuk-body, govuk-link, role=alert, aria-live)." }
+	],
+	"skippedBundles": [
+		{ "id": "openai-platform", "reason": "No AI surface in scope." },
+		{ "id": "mcp-agent-tooling", "reason": "No agent-tooling change." },
+		{ "id": "airtable-public-api", "reason": "No Airtable schema or formula change." },
+		{ "id": "mural-public-api", "reason": "No Mural OAuth / workspace / board change." }
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governs branch hygiene and the CI workflow change; the trigger fix and Show deploy source step land under .github/workflows/.",
+		"ResearchOps Developer Control governs the dashboard error surface; the new region replaces a window.alert() with a visible, accessible error region in keeping with the platform's accessibility and content-design rules.",
+		"GOV.UK Design System governs the error region markup; the region uses govuk-heading-m, govuk-body, govuk-link, role=\"alert\" and aria-live=\"assertive\".",
+		"Cloudflare governs the Wrangler deploy contract for rops-api-passwordless-preview; only the GitHub Actions trigger and log step changed."
+	],
+	"changeSummary": [
+		"ecce6697 — Added a Show deploy source step at the top of .github/workflows/deploy-passwordless-preview-worker.yml that prints github.ref, github.sha, github.event_name, github.actor and target Worker name, plus a reminder that workflow_dispatch defaults to the dropdown branch. Re-triggered the auto-deploy from this branch so the preview Worker tracks the PR HEAD again.",
+		"d34d626d — Replaced public/js/project-dashboard.js's window.alert(\"Could not load project.\") with renderProjectLoadError(), a visible role=\"alert\" region that shows the technical detail, upstream HTTP status and requested project id, plus a Back to projects link. Errors thrown by loadProject() now attach upstreamStatus and upstreamBody. Console log is a single structured entry. Pinned in tests/project-dashboard-route-state.test.js with includes/excludes assertions and added a project-load-error route-state check.",
+		"Today (this trace) — Adding the docs/agent-audit/reasoning/2026/05/15/ trace artefacts so trace:coverage passes for work landing on this branch on 2026-05-15. Without this, npm run validate fails on assert-trace-coverage and the Deploy passwordless preview Worker workflow stops before the deploy step. The 2026-05-14 trace (preview-worker-trigger.{md,json}) remains the record for yesterday's investigation; this trace records today's continuation."
+	],
+	"investigation": {
+		"hypothesis": "The first push fixed the workflow trigger and the preview Worker is now updating from this branch. The visible symptom on the live preview still alerts 'Could not load project.' because the dashboard masks every failure path behind that single alert. Without the actual upstream error (HTTP status, error code, requested id) it is not possible from outside the browser to tell which class of failure remains.",
+		"evidence": [
+			"GitHub PR check_runs for cc17524, 360b0367 and ecce6697 all show 'Deploy passwordless preview Worker' completed with conclusion success.",
+			"Today's workflow_dispatch from refs/heads/fix/projects-team-scoped-access (commit d34d626d) is confirmed by the Show deploy source step output: ref refs/heads/fix/projects-team-scoped-access, sha d34d626d99103591d6c3216fe1c4e77ca4956788, event workflow_dispatch, actor kevinrapley.",
+			"The deploy step failed before reaching wrangler deploy because npm run validate failed at assert-trace-coverage with 'no trace directory found: docs/agent-audit/reasoning/2026/05/15'. The validate step is gated on trace coverage for the current UTC date.",
+			"The dashboard JS originally caught every failure with a generic window.alert; renderProjectLoadError now writes the technical detail, upstream HTTP status and requested project id into the page."
+		],
+		"nextStep": "Once trace:coverage passes and the workflow's deploy step lands the preview Worker for d34d626d (or later), reload /pages/project-dashboard/?id=... and read the visible error region. The Technical detail and Requested project id pin the remaining cause to one of: Missing project id param; Project non-JSON (HTTP status); Project JSON parse failed; Project not found (404); authentication_required (401); permission_denied (403); Internal error (500)."
+	},
+	"filesRead": [
+		"public/js/projects-page.js",
+		"public/js/project-dashboard.js",
+		"public/pages/project-dashboard/index.html",
+		"public/pages/projects/index.html",
+		"public/_worker.js",
+		"public/_headers",
+		"functions/api/[[path]].js",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/src/service/project-record-routes.js",
+		"infra/cloudflare/src/service/projects.js (current branch and origin/main)",
+		"infra/cloudflare/src/core/router.js",
+		"infra/cloudflare/src/core/auth/access.js",
+		"infra/cloudflare/src/core/auth/access-scoped.js",
+		"infra/cloudflare/wrangler.passwordless-preview.toml",
+		"infra/cloudflare/wrangler.toml",
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		".github/workflows/deploy-worker.yml",
+		"scripts/agent-trace/assert-trace-coverage.mjs",
+		"tests/projects-route-contract.test.js",
+		"tests/projects-page-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js",
+		"visual-walkthrough.operational-fixtures.mjs",
+		"RECENT_LEARNINGS.md"
+	],
+	"filesChanged": [
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		"public/js/project-dashboard.js",
+		"tests/project-dashboard-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/15/projects-team-scoped-access-preview-followup.json",
+		"docs/agent-audit/reasoning/2026/05/15/projects-team-scoped-access-preview-followup.md"
+	],
+	"validationRun": [
+		"node --test tests/project-dashboard-route-state.test.js tests/projects-page-route-state.test.js tests/projects-route-contract.test.js — pass",
+		"npm test — 148 / 148 pass",
+		"npm run validate — passed locally before today's date rolled (UTC); CI on 2026-05-15 requires this trace to pass",
+		"npx prettier -c on changed files — clean"
+	],
+	"validationNotRun": [
+		"npm run lint — eslint dependency 'globals' unavailable in the sandbox; CI prettier and lint jobs cover this."
+	],
+	"residualRisks": [
+		"The remaining live preview failure is masked behind the previous alert. The d34d626d UI change is the diagnostic mechanism — the next preview load surfaces the technical detail.",
+		"trace:coverage is sensitive to UTC date rollover. Long-running PRs that span days need a trace for each day they touch the branch. This is a known property of the coverage script, not a defect of this PR.",
+		"Only one preview Worker exists. Concurrent PRs that touch infra/cloudflare/** will race; the last push wins."
+	],
+	"evidenceBoundary": {
+		"repositoryEvidence": [
+			"scripts/agent-trace/assert-trace-coverage.mjs requires a .json file in docs/agent-audit/reasoning/YYYY/MM/DD/ for today's UTC date when the branch prefix requires trace coverage.",
+			"The deploy log for today shows trace:coverage failed with 'no trace directory found: docs/agent-audit/reasoning/2026/05/15'.",
+			"The workflow's Show deploy source step output confirms ref/sha/actor.",
+			"PR check_runs confirm the preview Worker deploy succeeded on prior PR commits."
+		],
+		"implementationDecisions": [
+			"Add today's trace under 2026/05/15 rather than backdating yesterday's trace so each day's work has its own audit record.",
+			"Keep the 2026-05-14 trace artefact (yesterday's investigation) and add a separate 2026-05-15 trace artefact (today's continuation: log step, error region, trace folder)."
+		],
+		"assumptions": [
+			"The dashboard error region landing on d34d626d (or a later commit that includes it) will surface the actual upstream failure when the user next loads the preview. If it does not, the failure is in fetch/network layer outside the dashboard JS and we will need browser network panel evidence."
+		],
+		"toolLimitations": [
+			"Sandbox cannot reach the live preview (Cloudflare Access denies host_not_allowed); diagnosis remains structural."
+		],
+		"validationResults": [
+			"All targeted Node tests, full test suite, validate (yesterday) and Prettier are clean. The trace:coverage failure on 2026-05-15 is exactly the artefact this trace is being committed to remedy."
+		]
+	}
+}
