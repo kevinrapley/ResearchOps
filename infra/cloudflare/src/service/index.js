@@ -9,6 +9,7 @@ import { BatchLogger } from "../core/logger.js";
 import { json as jsonHelper } from "./internals/responders.js";
 
 import * as Projects from "./projects.js";
+import { listProjectsFromD1OrAirtable } from "./project-list-d1-airtable.js";
 import * as Studies from "./studies.js";
 import * as Guides from "./guides.js";
 import * as ConsentForms from "./consent-forms.js";
@@ -73,6 +74,7 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} [AIRTABLE_PROJECT_TEAM_ID_FIELD]
  * @property {any}    AI
  * @property {KVNamespace} SESSION_KV
+ * @property {D1Database} RESEARCHOPS_D1
  * @property {string} [MURAL_CLIENT_ID]
  * @property {string} [MURAL_CLIENT_SECRET]
  * @property {string} [MURAL_REDIRECT_URI]
@@ -137,7 +139,7 @@ export class ResearchOpsService {
 	}
 
 	/* ─────────────── Projects ─────────────── */
-	listProjectsFromAirtable = (origin, url, authContext) => Projects.listProjectsFromAirtable(this, origin, url, authContext);
+	listProjectsFromAirtable = (origin, url, authContext) => listProjectsFromD1OrAirtable(this, origin, url, authContext);
 	createProjectInAirtable = (req, origin, authContext) => Projects.createProjectInAirtable(this, req, origin, authContext);
 	getProjectById = (origin, projectId, authContext) => Projects.getProjectById(this, origin, projectId, authContext);
 	updateProjectFraming = (req, origin, projectId, authContext) => Projects.updateProjectFraming(this, req, origin, projectId, authContext);
