@@ -15,6 +15,7 @@ function resolveApiTarget(request, env = {}) {
 			origin: PREVIEW_API_ORIGIN,
 			source: 'preview-host',
 			hostname,
+			stripAccessHeaders: true,
 		};
 	}
 
@@ -23,6 +24,7 @@ function resolveApiTarget(request, env = {}) {
 			origin: env.RESEARCHOPS_API_ORIGIN,
 			source: 'env:RESEARCHOPS_API_ORIGIN',
 			hostname,
+			stripAccessHeaders: false,
 		};
 	}
 
@@ -31,6 +33,7 @@ function resolveApiTarget(request, env = {}) {
 			origin: env.UPSTREAM_API,
 			source: 'env:UPSTREAM_API',
 			hostname,
+			stripAccessHeaders: false,
 		};
 	}
 
@@ -38,6 +41,7 @@ function resolveApiTarget(request, env = {}) {
 		origin: PRODUCTION_API_ORIGIN,
 		source: 'production-host',
 		hostname,
+		stripAccessHeaders: false,
 	};
 }
 
@@ -53,16 +57,24 @@ function apiTargetUrl(request, env) {
 		origin: base.origin,
 		source: target.source,
 		hostname: target.hostname,
+		stripAccessHeaders: target.stripAccessHeaders,
 	};
 }
 
-function requestHeaders(request) {
+function requestHeaders(request, target) {
 	const headers = new Headers(request.headers);
 	headers.delete('host');
 	headers.delete('cf-connecting-ip');
 	headers.delete('cf-ipcountry');
 	headers.delete('cf-ray');
 	headers.delete('cf-visitor');
+
+	if (target.stripAccessHeaders) {
+		headers.delete('cf-access-jwt-assertion');
+		headers.delete('cf-access-authenticated-user-email');
+		headers.delete('cf-access-user-email');
+	}
+
 	return headers;
 }
 
@@ -73,6 +85,7 @@ function addDiagnosticHeaders(headers, target) {
 	headers.set('x-researchops-api-upstream', target.origin);
 	headers.set('x-researchops-api-origin-source', target.source);
 	headers.set('x-researchops-pages-host', target.hostname);
+	headers.set('x-researchops-access-headers-forwarded', target.stripAccessHeaders ? 'false' : 'true');
 	return headers;
 }
 
@@ -147,7 +160,7 @@ async function proxyApiRequest(request, env) {
 	const target = apiTargetUrl(request, env);
 	const response = await fetch(target.url, {
 		method,
-		headers: requestHeaders(request),
+		headers: requestHeaders(request, target),
 		body: method === 'GET' || method === 'HEAD' ? undefined : request.body,
 		redirect: 'manual',
 	});
