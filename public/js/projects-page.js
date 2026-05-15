@@ -24,6 +24,8 @@ const CONFIG = Object.freeze({
 const container = document.getElementById("list");
 const startProjectAction = document.querySelector(".projects-page-actions");
 
+const VALID_PROJECT_PHASES = new Set(["pre-discovery", "discovery", "alpha", "beta", "live"]);
+
 function setListBusy(isBusy) {
 	if (!container) return;
 	container.setAttribute("aria-busy", isBusy ? "true" : "false");
@@ -57,14 +59,23 @@ function safeJsonArray(value) {
 	}
 }
 
+function isAirtableRecordId(value) {
+	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
+}
+
 function looksLikeIdentityFragment(value) {
 	const text = String(value || "").trim();
 	if (!text) return false;
 	return /"?EMAIL"?\s*:/i.test(text) ||
 		/"?email"?\s*:/i.test(text) ||
+		/"?role"?\s*:/i.test(text) ||
 		/^[}\]]+$/.test(text) ||
 		/^[{[]/.test(text) ||
 		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+}
+
+function looksLikeUuid(value) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || "").trim());
 }
 
 function normaliseList(value, splitPattern = /[\n|,]/) {
@@ -92,6 +103,20 @@ function normaliseTeamName(value) {
 	if (!text) return "";
 	if (text.toLowerCase() === "home office biometrics") return "";
 	return text;
+}
+
+function hasValidProjectPhase(project) {
+	const phase = String(project?.["rops:servicePhase"] || "").trim().toLowerCase();
+	return VALID_PROJECT_PHASES.has(phase);
+}
+
+function isRenderableProject(project) {
+	if (!isAirtableRecordId(project?.id)) return false;
+	if (!String(project?.name || "").trim()) return false;
+	if (looksLikeIdentityFragment(project.name)) return false;
+	if (!hasValidProjectPhase(project)) return false;
+	if (looksLikeIdentityFragment(project["rops:projectStatus"]) || looksLikeUuid(project["rops:projectStatus"])) return false;
+	return true;
 }
 
 async function fetchWithTimeout(url) {
@@ -159,7 +184,7 @@ async function listProjects() {
 
 	const malformed = [];
 	projects.forEach((project, index) => {
-		if (!project.id) {
+		if (!isRenderableProject(project)) {
 			malformed.push({
 				index,
 				rawKeys: Object.keys(rawProjects[index] || {}),
@@ -176,12 +201,14 @@ async function listProjects() {
 					"Record ID": rawProjects[index]?.["Record ID"],
 				},
 				name: project.name,
+				phase: project["rops:servicePhase"],
+				status: project["rops:projectStatus"],
 			});
 		}
 	});
 
 	if (malformed.length) {
-		console.error("[projects-page] /api/projects returned projects without an Airtable record id", {
+		console.error("[projects-page] /api/projects returned project records that cannot be rendered safely", {
 			malformed,
 			sampleRawProject: rawProjects[malformed[0].index],
 		});
@@ -189,7 +216,7 @@ async function listProjects() {
 
 	return {
 		source: "api",
-		projects,
+		projects: projects.filter(isRenderableProject),
 		canStartProject: Boolean(data.canStartProject),
 		malformed,
 	};
@@ -208,13 +235,6 @@ function projectTeamLabel(project) {
 }
 
 function projectCard(project) {
-	// Drop records that came back from /api/projects without an Airtable
-	// record id. The dashboard link cannot be built for those and rendering
-	// a broken link is worse than skipping the card. The list-level banner
-	// summarises how many were dropped; the browser console keeps the
-	// structured detail.
-	if (!project.id) return "";
-
 	const projectId = encodeURIComponent(project.id);
 	const dashboardHref = projectDashboardHref(project.id);
 	const dashboardLabel = escapeHtml(projectDashboardLabel(project));
@@ -279,7 +299,7 @@ function malformedBanner(malformed) {
 	const noun = count === 1 ? "project record" : "project records";
 	return `
 <div class="projects-malformed-banner" role="status" aria-live="polite">
-	<p class="govuk-body"><strong>${count}</strong> ${noun} could not be linked because the API response did not include an Airtable record id. ${count === 1 ? "It has" : "They have"} been hidden from this list. See the browser console for technical detail.</p>
+	<p class="govuk-body"><strong>${count}</strong> ${noun} could not be linked because the API response did not match the project-card contract. ${count === 1 ? "It has" : "They have"} been hidden from this list. See the browser console for technical detail.</p>
 </div>`;
 }
 
@@ -288,6 +308,7 @@ function render(projects, source, canStartProject = false, malformed = []) {
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	if (!projects.length) {
 		renderEmptyState(canStartProject);
+		if (malformed?.length) container.innerHTML = malformedBanner(malformed) + container.innerHTML;
 		return;
 	}
 	container.innerHTML = malformedBanner(malformed) + projects.map(projectCard).join("");
