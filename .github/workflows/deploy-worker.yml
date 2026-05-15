@@ -53,18 +53,22 @@ jobs:
       - name: Run validation contract
         run: npm run validate
 
-      - name: Check production passwordless secrets are available
+      - name: Check production Worker secrets are available
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
         run: |
           missing=""
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
           if [ -z "${RESEND_API_KEY}" ]; then missing="${missing} RESEND_API_KEY"; fi
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
+          if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
+          if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
           if [ -n "${missing}" ]; then
-            echo "Missing required production passwordless secrets:${missing}"
+            echo "Missing required production Worker secrets:${missing}"
             exit 1
           fi
 
@@ -89,7 +93,7 @@ jobs:
             --config "${WRANGLER_CONFIG}" \
             --file "${REGISTRATION_REQUESTS_MIGRATION}"
 
-      - name: Deploy Worker with production passwordless secrets
+      - name: Deploy Worker with production secrets
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
@@ -101,10 +105,14 @@ jobs:
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
             RESEARCHOPS_EMAIL_FROM
+            AIRTABLE_BASE_ID
+            AIRTABLE_API_KEY
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
 
   deploy-preview:
     name: Deploy preview Cloudflare Worker
@@ -127,11 +135,13 @@ jobs:
       - name: Run validation contract
         run: npm run validate
 
-      - name: Check preview secrets are available
+      - name: Check preview Worker secrets are available
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
@@ -139,10 +149,12 @@ jobs:
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
           if [ -z "${RESEND_API_KEY}" ]; then missing="${missing} RESEND_API_KEY"; fi
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
+          if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
+          if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then missing="${missing} CF_API_TOKEN"; fi
           if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then missing="${missing} CF_ACCOUNT_ID"; fi
           if [ -n "${missing}" ]; then
-            echo "Missing required preview secrets:${missing}"
+            echo "Missing required preview Worker secrets:${missing}"
             exit 1
           fi
 
@@ -317,7 +329,7 @@ jobs:
             --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${PREVIEW_FIRST_TEAM_ADMIN_SEED}"
 
-      - name: Deploy preview Worker with passwordless secrets
+      - name: Deploy preview Worker with secrets
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
@@ -329,7 +341,11 @@ jobs:
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
             RESEARCHOPS_EMAIL_FROM
+            AIRTABLE_BASE_ID
+            AIRTABLE_API_KEY
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
