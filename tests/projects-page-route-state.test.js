@@ -32,6 +32,19 @@ excludes(controllerSource, "projects.csv", "Projects controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "Projects controller");
 excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "Projects controller");
 
+// Records without an Airtable record id must be hidden from the rendered
+// list rather than emitting a broken /pages/project-dashboard/?id= link.
+// The controller still surfaces the count via a non-alarming banner and
+// keeps the structured detail in the browser console.
+includes(controllerSource, "if (!project.id) return \"\"", "Projects controller");
+includes(controllerSource, "function malformedBanner", "Projects controller");
+includes(
+	controllerSource,
+	"[projects-page] /api/projects returned projects without an Airtable record id",
+	"Projects controller",
+);
+excludes(controllerSource, "function unrenderableProjectCard", "Projects controller");
+
 includes(dashboardSource, "async function loadProject(projectId)", "Project dashboard controller");
 includes(dashboardSource, "credentials: \"include\"", "Project dashboard controller");
 includes(dashboardSource, "projectAirtableId", "Project dashboard controller");

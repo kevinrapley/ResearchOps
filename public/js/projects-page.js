@@ -207,26 +207,13 @@ function projectTeamLabel(project) {
 	return project.teamName || project.team_name || project.team || "Unassigned team";
 }
 
-function unrenderableProjectCard(project) {
-	const safeName = escapeHtml(project.name || "Project record missing");
-	const debugSnippet = escapeHtml(
-		JSON.stringify({
-			id: project.id,
-			airtableId: project.airtableId,
-			recordId: project.recordId,
-		}),
-	);
-	return `
-<article class="card" aria-label="Unlinked project record">
-	<p class="project-org"><span class="govuk-visually-hidden">Team: </span>${escapeHtml(projectTeamLabel(project))}</p>
-	<h3 class="project-title govuk-heading-m">${safeName}</h3>
-	<p class="govuk-body">This project record came back from <code>/api/projects</code> without an Airtable record id, so the dashboard link cannot be built. The card is shown so the team can spot the data shape problem rather than hiding it.</p>
-	<p class="govuk-body"><strong>Resolved id fields:</strong> <code>${debugSnippet}</code></p>
-</article>`;
-}
-
 function projectCard(project) {
-	if (!project.id) return unrenderableProjectCard(project);
+	// Drop records that came back from /api/projects without an Airtable
+	// record id. The dashboard link cannot be built for those and rendering
+	// a broken link is worse than skipping the card. The list-level banner
+	// summarises how many were dropped; the browser console keeps the
+	// structured detail.
+	if (!project.id) return "";
 
 	const projectId = encodeURIComponent(project.id);
 	const dashboardHref = projectDashboardHref(project.id);
@@ -288,9 +275,11 @@ function renderErrorState(error) {
 
 function malformedBanner(malformed) {
 	if (!malformed?.length) return "";
+	const count = malformed.length;
+	const noun = count === 1 ? "project record" : "project records";
 	return `
 <div class="projects-malformed-banner" role="status" aria-live="polite">
-	<p class="govuk-body"><strong>${malformed.length}</strong> project record${malformed.length === 1 ? "" : "s"} came back from <code>/api/projects</code> without an Airtable record id. Those records are shown below as unlinked cards. Open the browser console for the resolved id fields.</p>
+	<p class="govuk-body"><strong>${count}</strong> ${noun} could not be linked because the API response did not include an Airtable record id. ${count === 1 ? "It has" : "They have"} been hidden from this list. See the browser console for technical detail.</p>
 </div>`;
 }
 
