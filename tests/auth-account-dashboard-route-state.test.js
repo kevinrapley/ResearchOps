@@ -40,13 +40,16 @@ function assertAccountPageLoadsDashboardScript() {
 	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260513-teams-v3/);
 }
 
-function assertDashboardUsesPasswordlessApiAndAuthContext() {
+function assertDashboardUsesSameOriginApiAndAuthContext() {
 	assert.match(accountScript, /function defaultApiOrigin\(\)/);
-	assert.match(accountScript, /rops-api-passwordless-preview/);
+	assert.match(accountScript, /return location\.origin/);
+	assert.match(accountScript, /const API_ORIGIN = document\.documentElement\?\.dataset\?\.apiOrigin \|\| window\.API_ORIGIN \|\| defaultApiOrigin\(\)/);
 	assert.match(accountScript, /fetchJson\('\/api\/me'\)/);
 	assert.match(accountScript, /credentials: 'include'/);
 	assert.match(accountScript, /location\.assign\(CONFIG\.SIGN_IN_URL\)/);
 	assert.match(accountScript, /SIGN_IN_URL: '\/pages\/account\/sign-in\/'/);
+	assert.doesNotMatch(accountScript, /rops-api-passwordless-preview/);
+	assert.doesNotMatch(accountScript, /rops-api\.digikev-kevin-rapley\.workers\.dev/);
 }
 
 function assertDashboardRendersAdaptiveTeamMembershipPresentation() {
@@ -125,7 +128,7 @@ function assertProductRequirementsSupportPermissionBasedDashboard() {
 assertAccountPageExistsAsDashboard();
 assertAccountPageDoesNotUseSuccessMessagePattern();
 assertAccountPageLoadsDashboardScript();
-assertDashboardUsesPasswordlessApiAndAuthContext();
+assertDashboardUsesSameOriginApiAndAuthContext();
 assertDashboardRendersAdaptiveTeamMembershipPresentation();
 assertDashboardSeparatesRolesFromCapabilities();
 assertDashboardExplainsResearchOpsCoreTeamAdmin();
