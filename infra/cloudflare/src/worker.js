@@ -81,6 +81,8 @@ function withCORS(env, request, response) {
 		}
 		if (!headers.has("Cache-Control")) headers.set("Cache-Control", assetCacheControl(url.pathname));
 		if (!headers.has("X-Content-Type-Options")) headers.set("X-Content-Type-Options", "nosniff");
+		if (!headers.has("X-ResearchOps-Worker-SHA")) headers.set("X-ResearchOps-Worker-SHA", env.RESEARCHOPS_BUILD_SHA || "unknown");
+		if (!headers.has("X-ResearchOps-Worker-Branch")) headers.set("X-ResearchOps-Worker-Branch", env.RESEARCHOPS_BUILD_BRANCH || "unknown");
 		return new Response(response.body, { status: response.status, headers });
 	} catch {
 		return response;
@@ -105,6 +107,134 @@ function serviceFor(env) {
 
 async function authContextFor(request, env) {
 	return resolveAuthenticatedContext(request, env);
+}
+
+function workerBuild(env) {
+	return {
+		sha: env.RESEARCHOPS_BUILD_SHA || "unknown",
+		branch: env.RESEARCHOPS_BUILD_BRANCH || "unknown"
+	};
+}
+
+function isAirtableRecordId(value) {
+	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
+}
+
+function missingEnv(env, keys) {
+	return keys.filter((key) => !env?.[key]);
+}
+
+async function probeAirtableProjects(env) {
+	const missing = missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
+	const table = env.AIRTABLE_TABLE_PROJECTS || "Projects";
+	const base = {
+		configured: missing.length === 0,
+		baseIdPresent: Boolean(env.AIRTABLE_BASE_ID),
+		apiKeyPresent: Boolean(env.AIRTABLE_API_KEY),
+		table,
+		missing
+	};
+
+	if (missing.length) return { ...base, status: "not_configured", recordCount: 0 };
+
+	const params = new URLSearchParams({ pageSize: "1", maxRecords: "1" });
+	const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${encodeURIComponent(table)}?${params.toString()}`;
+	const response = await fetch(url, {
+		headers: {
+			Accept: "application/json",
+			Authorization: `Bearer ${env.AIRTABLE_API_KEY}`
+		}
+	});
+	const text = await response.text();
+	let data = {};
+	try {
+		data = text ? JSON.parse(text) : {};
+	} catch {
+		data = {};
+	}
+
+	if (!response.ok) {
+		return {
+			...base,
+			status: response.status,
+			message: data?.error?.message || data?.error?.type || `airtable_http_${response.status}`,
+			recordCount: 0
+		};
+	}
+
+	const records = Array.isArray(data.records) ? data.records : [];
+	const first = records[0] || null;
+	const firstRecordId = first?.id || "";
+	return {
+		...base,
+		status: response.status,
+		recordCount: records.length,
+		firstRecordId,
+		firstRecordIdValid: isAirtableRecordId(firstRecordId),
+		fieldNames: Object.keys(first?.fields || {}).sort()
+	};
+}
+
+async function probeProjectCache(env) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) {
+		return {
+			bindingPresent: false,
+			cacheTablePresent: false,
+			activeProjectCount: 0,
+			validProjectCount: 0,
+			invalidProjectCount: 0
+		};
+	}
+
+	try {
+		const response = await db.prepare("SELECT id, name, payload_json FROM rops_projects_cache WHERE active = 1").all();
+		const rows = response?.results || [];
+		const validProjectCount = rows.filter((row) => isAirtableRecordId(row.id) && (row.name || row.payload_json)).length;
+		return {
+			bindingPresent: true,
+			cacheTablePresent: true,
+			activeProjectCount: rows.length,
+			validProjectCount,
+			invalidProjectCount: Math.max(rows.length - validProjectCount, 0)
+		};
+	} catch (error) {
+		return {
+			bindingPresent: true,
+			cacheTablePresent: false,
+			activeProjectCount: 0,
+			validProjectCount: 0,
+			invalidProjectCount: 0,
+			message: String(error?.message || error)
+		};
+	}
+}
+
+async function handleProjectSourceDiagnostics(request, env) {
+	const authContext = await authContextFor(request, env);
+	const [airtable, d1] = await Promise.all([probeAirtableProjects(env), probeProjectCache(env)]);
+	const airtableUsable = airtable.status === 200 && airtable.firstRecordIdValid === true;
+	const d1Usable = d1.bindingPresent === true && d1.cacheTablePresent === true && d1.validProjectCount > 0;
+	return new Response(JSON.stringify({
+		ok: airtableUsable || d1Usable,
+		route: "/api/_diag/projects-source",
+		build: workerBuild(env),
+		auth: {
+			authenticated: true,
+			userIdPresent: Boolean(authContext?.user?.id || authContext?.userId),
+			teamCount: [
+				...(authContext?.teamMemberships || []),
+				...(authContext?.memberTeams || []),
+				...(authContext?.teams || [])
+			].length,
+			activeTeamPresent: Boolean(authContext?.activeTeam)
+		},
+		airtable,
+		d1
+	}), {
+		status: 200,
+		headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+	});
 }
 
 async function handleProjects(request, env) {
@@ -204,6 +334,7 @@ export default {
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
+			else if (method === "GET" && apiPath === "/api/_diag/projects-source") result = await handleProjectSourceDiagnostics(request, env);
 			else if ((method === "GET" || method === "POST") && apiPath === "/api/projects") result = await handleProjects(request, env);
 			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
