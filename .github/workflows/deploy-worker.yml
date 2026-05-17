@@ -29,6 +29,7 @@ env:
   PASSWORDLESS_LOCKED_MIGRATION: "infra/cloudflare/migrations/0004_auth_login_challenges_locked_status.sql"
   REGISTRATION_REQUESTS_MIGRATION: "infra/cloudflare/migrations/0005_auth_registration_requests.sql"
   PREVIEW_FIRST_TEAM_ADMIN_SEED: "infra/cloudflare/migrations/preview/0001_seed_first_team_admin.sql"
+  PREVIEW_PROJECT_CACHE_SEED: "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql"
   # Keep this workflow path-sensitive so branch Worker state can be refreshed when backend review fixes need redeploying.
 
 jobs:
@@ -77,10 +78,16 @@ jobs:
 
       - name: Stamp production Worker build metadata
         run: |
-          cat >> "${WRANGLER_CONFIG}" <<EOF
-          RESEARCHOPS_BUILD_SHA = "${GITHUB_SHA}"
-          RESEARCHOPS_BUILD_BRANCH = "${GITHUB_REF_NAME}"
-          EOF
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["WRANGLER_CONFIG"])
+          content = path.read_text()
+          content = content.replace('RESEARCHOPS_BUILD_SHA = "local"', f'RESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"')
+          content = content.replace('RESEARCHOPS_BUILD_BRANCH = "local"', f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"')
+          path.write_text(content)
+          PY
 
       - name: Apply auth migrations to production D1
         env:
@@ -292,6 +299,8 @@ jobs:
           content = content.replace('name                = "rops-api"', 'name                = "rops-api-passwordless-preview"')
           content = content.replace('database_name = "researchops-d1"', 'database_name = "researchops-d1-preview"')
           content = content.replace('database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"', f'database_id = "{preview_database_id}"')
+          content = content.replace('RESEARCHOPS_BUILD_SHA = "local"', f'RESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"')
+          content = content.replace('RESEARCHOPS_BUILD_BRANCH = "local"', f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"')
           content = content.replace(
               'https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev',
               'https://researchops.pages.dev,https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev'
@@ -300,8 +309,6 @@ jobs:
               'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"',
               'MURAL_REDIRECT_URI = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/mural/callback"'
           )
-          content += f'\nRESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"\n'
-          content += f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"\n'
           path.write_text(content)
           PY
 
@@ -337,6 +344,10 @@ jobs:
             --remote \
             --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${PREVIEW_FIRST_TEAM_ADMIN_SEED}"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_PREVIEW_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_PREVIEW_CONFIG}" \
+            --file "${PREVIEW_PROJECT_CACHE_SEED}"
 
       - name: Deploy preview Worker with secrets
         uses: cloudflare/wrangler-action@v3
