@@ -124,6 +124,37 @@ function missingEnv(env, keys) {
 	return keys.filter((key) => !env?.[key]);
 }
 
+function safeAirtableHeaders(response) {
+	const retryAfter = response.headers.get("retry-after") || "";
+	const limit = response.headers.get("x-ratelimit-limit") || "";
+	const remaining = response.headers.get("x-ratelimit-remaining") || "";
+	const reset = response.headers.get("x-ratelimit-reset") || "";
+	return {
+		...(retryAfter ? { retryAfter } : {}),
+		...(limit ? { rateLimit: limit } : {}),
+		...(remaining ? { rateLimitRemaining: remaining } : {}),
+		...(reset ? { rateLimitReset: reset } : {})
+	};
+}
+
+function projectsTableProbe(table, requestAttempted, status, firstRecordIdValid = false) {
+	let verificationStatus = "not_attempted";
+	if (requestAttempted && status === 200 && firstRecordIdValid) verificationStatus = "verified";
+	else if (requestAttempted && status === 200) verificationStatus = "records_missing_or_unverified";
+	else if (requestAttempted && status === 429) verificationStatus = "blocked_by_rate_limit";
+	else if (requestAttempted && status === 401) verificationStatus = "blocked_by_authentication";
+	else if (requestAttempted && status === 403) verificationStatus = "blocked_by_permission";
+	else if (requestAttempted && status === 404) verificationStatus = "table_or_base_not_found";
+	else if (requestAttempted) verificationStatus = "blocked_by_upstream_error";
+
+	return {
+		configuredTableName: table,
+		requestAttempted,
+		verificationStatus,
+		...(requestAttempted ? { httpStatus: status } : {})
+	};
+}
+
 async function probeAirtableProjects(env) {
 	const missing = missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	const table = env.AIRTABLE_TABLE_PROJECTS || "Projects";
@@ -135,7 +166,14 @@ async function probeAirtableProjects(env) {
 		missing
 	};
 
-	if (missing.length) return { ...base, status: "not_configured", recordCount: 0 };
+	if (missing.length) {
+		return {
+			...base,
+			status: "not_configured",
+			recordCount: 0,
+			projectsTable: projectsTableProbe(table, false, "not_configured")
+		};
+	}
 
 	const params = new URLSearchParams({ pageSize: "1", maxRecords: "1" });
 	const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${encodeURIComponent(table)}?${params.toString()}`;
@@ -157,21 +195,28 @@ async function probeAirtableProjects(env) {
 		return {
 			...base,
 			status: response.status,
+			errorType: data?.error?.type || "",
+			errorMessage: data?.error?.message || "",
 			message: data?.error?.message || data?.error?.type || `airtable_http_${response.status}`,
-			recordCount: 0
+			headers: safeAirtableHeaders(response),
+			recordCount: 0,
+			projectsTable: projectsTableProbe(table, true, response.status)
 		};
 	}
 
 	const records = Array.isArray(data.records) ? data.records : [];
 	const first = records[0] || null;
 	const firstRecordId = first?.id || "";
+	const firstRecordIdValid = isAirtableRecordId(firstRecordId);
 	return {
 		...base,
 		status: response.status,
+		headers: safeAirtableHeaders(response),
 		recordCount: records.length,
 		firstRecordId,
-		firstRecordIdValid: isAirtableRecordId(firstRecordId),
-		fieldNames: Object.keys(first?.fields || {}).sort()
+		firstRecordIdValid,
+		fieldNames: Object.keys(first?.fields || {}).sort(),
+		projectsTable: projectsTableProbe(table, true, response.status, firstRecordIdValid)
 	};
 }
 
