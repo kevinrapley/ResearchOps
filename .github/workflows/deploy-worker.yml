@@ -75,6 +75,13 @@ jobs:
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
+      - name: Stamp production Worker build metadata
+        run: |
+          cat >> "${WRANGLER_CONFIG}" <<EOF
+          RESEARCHOPS_BUILD_SHA = "${GITHUB_SHA}"
+          RESEARCHOPS_BUILD_BRANCH = "${GITHUB_REF_NAME}"
+          EOF
+
       - name: Apply auth migrations to production D1
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -293,6 +300,8 @@ jobs:
               'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"',
               'MURAL_REDIRECT_URI = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/mural/callback"'
           )
+          content += f'\nRESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"\n'
+          content += f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"\n'
           path.write_text(content)
           PY
 
