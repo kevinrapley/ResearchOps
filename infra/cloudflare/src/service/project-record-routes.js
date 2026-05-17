@@ -10,6 +10,7 @@ const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const AIRTABLE_MAX_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 20;
 const MAX_JSON_BODY_BYTES = 1024 * 1024;
+const PROJECT_CACHE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS rops_projects_cache (id TEXT PRIMARY KEY, name TEXT NOT NULL, org TEXT, phase TEXT, status TEXT, active INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL DEFAULT 'airtable', updated_at TEXT NOT NULL, payload_json TEXT)";
 
 function json(body, status = 200, headers = {}) {
 	return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...headers } });
@@ -184,7 +185,29 @@ function mapProject(record = {}) {
 	};
 }
 
+function parsePayloadJson(value) {
+	if (!value) return null;
+	try {
+		const parsed = JSON.parse(String(value));
+		return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
 function mapD1Project(row = {}) {
+	const cached = parsePayloadJson(row.payload_json || row.payloadJson);
+	if (cached) {
+		const id = displayText(row.id || cached.id || cached.airtableId || cached.recordId || "");
+		const project = {
+			...cached,
+			id,
+			airtableId: id,
+			recordId: id,
+		};
+		return project;
+	}
+
 	const id = displayText(row.id || row.airtableId || row.recordId || "");
 	const teamName = displayText(row.team_name || row.teamName || row.org || "");
 	return {
@@ -329,6 +352,15 @@ async function joinDetails(env, projects = []) {
 	}
 }
 
+async function ensureProjectCache(db) {
+	await db.prepare(PROJECT_CACHE_TABLE_SQL).run();
+	try {
+		await db.prepare("ALTER TABLE rops_projects_cache ADD COLUMN payload_json TEXT").run();
+	} catch {
+		/* Existing preview and production caches may already have this column. */
+	}
+}
+
 async function syncActiveProjectsToD1(env, projects = []) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) return;
@@ -336,14 +368,14 @@ async function syncActiveProjectsToD1(env, projects = []) {
 	if (!currentProjects.length) return;
 
 	try {
-		await db.prepare("CREATE TABLE IF NOT EXISTS rops_projects_cache (id TEXT PRIMARY KEY, name TEXT NOT NULL, org TEXT, phase TEXT, status TEXT, active INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL DEFAULT 'airtable', updated_at TEXT NOT NULL)").run();
+		await ensureProjectCache(db);
 		await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source = 'airtable'").run();
 
 		const updatedAt = new Date().toISOString();
 		for (const project of currentProjects) {
 			await db
-				.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at) VALUES (?, ?, ?, ?, ?, 1, 'airtable', ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at")
-				.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", updatedAt)
+				.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at, payload_json) VALUES (?, ?, ?, ?, ?, 1, 'airtable', ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at, payload_json = excluded.payload_json")
+				.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", updatedAt, JSON.stringify(project))
 				.run();
 		}
 	} catch {
@@ -351,12 +383,51 @@ async function syncActiveProjectsToD1(env, projects = []) {
 	}
 }
 
-async function listD1ProjectRecords(env) {
+async function readD1ProjectCache(env) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
-	await db.prepare("CREATE TABLE IF NOT EXISTS rops_projects_cache (id TEXT PRIMARY KEY, name TEXT NOT NULL, org TEXT, phase TEXT, status TEXT, active INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL DEFAULT 'airtable', updated_at TEXT NOT NULL)").run();
+	await ensureProjectCache(db);
 	const response = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 ORDER BY updated_at DESC").all();
-	return (response?.results || []).map(mapD1Project).filter(isRenderable);
+	const rows = response?.results || [];
+	const projects = rows.map(mapD1Project).filter(isRenderable);
+	return {
+		projects,
+		activeProjectCount: rows.length,
+		invalidProjectCount: Math.max(rows.length - projects.length, 0),
+	};
+}
+
+async function getD1ProjectRecord(env, projectId) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
+	await ensureProjectCache(db);
+	const row = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND id = ? LIMIT 1").bind(projectId).first();
+	const project = mapD1Project(row || {});
+	return isRenderable(project) ? project : null;
+}
+
+function d1EmptyDiagnostic(snapshot) {
+	return {
+		source: "d1",
+		message: "Project cache is empty",
+		activeProjectCount: snapshot?.activeProjectCount || 0,
+		invalidProjectCount: snapshot?.invalidProjectCount || 0,
+	};
+}
+
+function visibleProjects(projects, authContext, displayLimit) {
+	return projects
+		.slice()
+		.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt))
+		.filter((project) => userCanSee(project, authContext))
+		.slice(0, displayLimit);
+}
+
+function sourceHeaders(source, warning = null) {
+	return {
+		"x-rops-source": source,
+		...(warning ? { "x-rops-upstream-warning": warning } : {}),
+	};
 }
 
 export async function createProjectRecord(request, env, authContext = {}) {
@@ -408,7 +479,7 @@ export async function createProjectRecord(request, env, authContext = {}) {
 				detailWarning,
 			},
 			201,
-			{ "x-rops-source": "airtable" },
+			sourceHeaders("airtable"),
 		);
 	} catch (error) {
 		if (isUnknownFieldError(error)) return json({ ok: false, error: "project_team_fields_missing", detail: "Airtable rejected the configured project team fields." }, 500);
@@ -420,65 +491,119 @@ export async function listProjectRecords(request, env, authContext = {}) {
 	const url = new URL(request.url);
 	const displayLimit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "50", 10), 1), 200);
 	const view = url.searchParams.get("view") || "";
+	const refresh = url.searchParams.get("refresh") === "1";
 	const params = new URLSearchParams();
 	const errors = [];
-	let source = "none";
-	let projects = [];
+	let d1Snapshot = null;
 	if (view) params.set("view", view);
+
+	if (!refresh) {
+		try {
+			d1Snapshot = await readD1ProjectCache(env);
+			if (d1Snapshot.projects.length) {
+				return json(
+					{ ok: true, projects: visibleProjects(d1Snapshot.projects, authContext, displayLimit), canStartProject: canStartProject(authContext) },
+					200,
+					sourceHeaders("d1"),
+				);
+			}
+		} catch (error) {
+			errors.push({ source: "d1", message: String(error?.message || error) });
+		}
+	}
 
 	const airtableMissing = missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	if (airtableMissing.length) {
 		errors.push({ source: "airtable", message: `Missing env: ${airtableMissing.join(", ")}`, missing: airtableMissing });
 	} else {
 		try {
-			projects = (await airtableRecords(env, env.AIRTABLE_TABLE_PROJECTS, params))
+			const projects = (await airtableRecords(env, env.AIRTABLE_TABLE_PROJECTS, params))
 				.filter(hasProjectShape)
 				.map(mapProject)
 				.filter(isRenderable);
-			projects = await joinDetails(env, projects);
 			await syncActiveProjectsToD1(env, projects);
-			source = "airtable";
+			return json(
+				{ ok: true, projects: visibleProjects(projects, authContext, displayLimit), canStartProject: canStartProject(authContext) },
+				200,
+				sourceHeaders("airtable"),
+			);
 		} catch (error) {
 			errors.push({ source: "airtable", message: String(error?.message || error), status: error?.status || 0 });
-			projects = [];
 		}
 	}
 
-	if (!projects.length) {
+	if (refresh || !d1Snapshot) {
 		try {
-			projects = await listD1ProjectRecords(env);
-			if (projects.length) source = "d1";
+			d1Snapshot = await readD1ProjectCache(env);
+			if (d1Snapshot.projects.length) {
+				return json(
+					{ ok: true, projects: visibleProjects(d1Snapshot.projects, authContext, displayLimit), canStartProject: canStartProject(authContext) },
+					200,
+					sourceHeaders("d1", errors.find((entry) => entry.source === "airtable")?.message || null),
+				);
+			}
 		} catch (error) {
 			errors.push({ source: "d1", message: String(error?.message || error) });
 		}
 	}
 
-	if (!projects.length) {
-		return json(
-			{
-				ok: false,
-				error: "projects_unavailable",
-				detail: "No Airtable or D1 project source is available for /api/projects. CSV fallback is intentionally disabled.",
-				sources: errors,
-			},
-			503,
-			{ "x-rops-source": "none" },
-		);
+	if (d1Snapshot && !d1Snapshot.projects.length && !errors.some((entry) => entry.source === "d1")) {
+		errors.push(d1EmptyDiagnostic(d1Snapshot));
 	}
 
-	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-	projects = projects.filter((project) => userCanSee(project, authContext)).slice(0, displayLimit);
-	return json({ ok: true, projects, canStartProject: canStartProject(authContext) }, 200, { "x-rops-source": source });
+	return json(
+		{
+			ok: false,
+			error: "projects_unavailable",
+			detail: "No Airtable or D1 project source is available for /api/projects. CSV fallback is intentionally disabled.",
+			sources: errors,
+		},
+		503,
+		sourceHeaders("none"),
+	);
 }
 
 export async function getProjectRecord(_request, env, projectId, authContext = {}) {
-	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	if (!isAirtableRecordId(projectId)) return json({ ok: false, error: "Project not found" }, 404);
-	const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-	const projectRecord = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}/${encodeURIComponent(projectId)}`);
-	if (!hasProjectShape(projectRecord)) return json({ ok: false, error: "Project not found" }, 404);
-	const project = mapProject(projectRecord);
-	if (!isRenderable(project) || !userCanSee(project, authContext)) return json({ ok: false, error: "Project not found" }, 404);
-	const joined = await joinDetails(env, [project]);
-	return json(joined[0], 200, { "x-rops-source": "airtable" });
+	const errors = [];
+	const airtableMissing = missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
+
+	if (airtableMissing.length) {
+		errors.push({ source: "airtable", message: `Missing env: ${airtableMissing.join(", ")}`, missing: airtableMissing });
+	} else {
+		try {
+			const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
+			const projectRecord = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}/${encodeURIComponent(projectId)}`);
+			if (!hasProjectShape(projectRecord)) return json({ ok: false, error: "Project not found" }, 404);
+			const project = mapProject(projectRecord);
+			if (!isRenderable(project) || !userCanSee(project, authContext)) return json({ ok: false, error: "Project not found" }, 404);
+			await syncActiveProjectsToD1(env, [project]);
+			const joined = await joinDetails(env, [project]);
+			return json(joined[0], 200, sourceHeaders("airtable"));
+		} catch (error) {
+			if (error?.status === 404) return json({ ok: false, error: "Project not found" }, 404);
+			errors.push({ source: "airtable", message: String(error?.message || error), status: error?.status || 0 });
+		}
+	}
+
+	try {
+		const project = await getD1ProjectRecord(env, projectId);
+		if (project && userCanSee(project, authContext)) {
+			return json(project, 200, sourceHeaders("d1", errors.find((entry) => entry.source === "airtable")?.message || null));
+		}
+		errors.push({ source: "d1", message: "Project cache record not found", id: projectId });
+	} catch (error) {
+		errors.push({ source: "d1", message: String(error?.message || error) });
+	}
+
+	return json(
+		{
+			ok: false,
+			error: "projects_unavailable",
+			detail: "The project could not be read from Airtable or D1. CSV fallback is intentionally disabled.",
+			sources: errors,
+		},
+		503,
+		sourceHeaders("none"),
+	);
 }
