@@ -354,9 +354,9 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 		assert.equal(Object.hasOwn(firstProject, "Phase"), false);
 
 		const testProject = payload.projects.find((project) => project.id === PROJECT_RECORD_IDS[2]);
-		assert.equal(testProject.lead_researcher, "Lead Test");
-		assert.equal(testProject.lead_researcher_email, "lead.test@example.test");
-		assert.equal(testProject.notes, "Joined detail notes");
+		assert.equal(Object.hasOwn(testProject, "lead_researcher"), false);
+		assert.equal(Object.hasOwn(testProject, "lead_researcher_email"), false);
+		assert.equal(Object.hasOwn(testProject, "notes"), false);
 
 		assert.equal(
 			calls.some((url) => url.includes("/Projects?")),
@@ -364,7 +364,7 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 		);
 		assert.equal(
 			calls.some((url) => url.includes("/Project%20Details?")),
-			true,
+			false,
 		);
 	} finally {
 		globalThis.fetch = originalFetch;
