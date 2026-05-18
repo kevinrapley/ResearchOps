@@ -14,9 +14,12 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/participants.css" media="screen" />
 
+	<link rel="modulepreload" href="/js/study-route-context.js" />
+	<link rel="modulepreload" href="/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518" />
+	<script type="module" src="/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518"></script>
 	<script type="module" src="/components/layout.js"></script>
-	<script type="module" src="/components/participants/participants-page.js" defer></script>
-	<script type="module" src="/pages/study/participants/scheduler.js" defer></script>
+	<script type="module" src="/components/participants/participants-page.js?v=study-record-id-routing-20260518" defer></script>
+	<script type="module" src="/pages/study/participants/scheduler.js?v=study-record-id-routing-20260518" defer></script>
 </head>
 
 <body>
@@ -268,7 +271,7 @@
 					}
 					const bcStudy = $("#breadcrumb-study");
 					if (bcStudy) {
-						bcStudy.setAttribute("href", `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`);
+						bcStudy.setAttribute("href", `/pages/study/?id=${encodeURIComponent(sid)}`);
 						bcStudy.textContent = pickTitle(study);
 					}
 
