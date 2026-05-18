@@ -3,113 +3,70 @@ import fs from "node:fs";
 
 const studyPageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
 const studyControllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
-const consentPageSource = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
-const consentControllerSource = fs.readFileSync("public/js/consent-forms-page.js", "utf8");
-const legacyConsentPageSource = fs.readFileSync("public/pages/consent/index.html", "utf8");
-const legacyConsentControllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
-const consentCssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");
-const legacyConsentCssSource = fs.readFileSync("public/css/consent.css", "utf8");
-const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
+const pageSource = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
+const loaderSource = fs.readFileSync("public/js/consent-forms-route-loader.js", "utf8");
+const controllerSource = fs.readFileSync("public/js/consent-forms-page.js", "utf8");
+const cssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-forms.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const fieldsSource = fs.readFileSync("infra/cloudflare/src/core/fields.js", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(studyPageSource, "id=\"link-consent-forms\"", "study page");
 includes(studyPageSource, "Create consent forms", "study page");
-includes(studyPageSource, "Markdown and Mustache", "study page");
 includes(studyControllerSource, "#link-consent-forms", "study page controller");
-includes(studyControllerSource, "route(\"/pages/study/consent-forms/\", params)", "study page controller");
+includes(studyControllerSource, "const studyParams = { id: studyId }", "study page controller");
+includes(studyControllerSource, "route(\"/pages/study/consent-forms/\", studyParams)", "study page controller");
+excludes(studyControllerSource, "route(\"/pages/study/consent-forms/\", params)", "study page controller");
 
-includes(consentPageSource, "/js/consent-forms-page.js", "consent forms page");
-includes(consentPageSource, "/css/govuk/govuk-buttons.css", "consent forms page");
-includes(consentPageSource, "/css/govuk/govuk-forms.css", "consent forms page");
-includes(consentPageSource, "/css/consent-forms.css", "consent forms page");
-includes(consentPageSource, "class=\"govuk-button\"", "consent forms page");
-includes(consentPageSource, "class=\"govuk-button govuk-button--secondary\"", "consent forms page");
-includes(consentPageSource, "class=\"govuk-form-group\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-error\"", "consent forms page");
-includes(consentPageSource, "role=\"alert\"", "consent forms page");
-includes(consentPageSource, "id=\"new-consent-form\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-form-list\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-form-editor\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-source\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-preview\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-variables\"", "consent forms page");
-includes(consentPageSource, "id=\"consent-items\"", "consent forms page");
-includes(consentPageSource, "aria-describedby=\"consent-variables-error\"", "consent forms page");
-includes(consentPageSource, "aria-describedby=\"consent-items-error\"", "consent forms page");
-includes(consentPageSource, "Participant consent responses are managed separately", "consent forms page");
-excludes(consentPageSource, "class=\"btn", "consent forms page");
+includes(pageSource, "<html lang=\"en-GB\">", "consent forms page");
+includes(pageSource, "/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518", "consent forms page");
+includes(pageSource, "/css/govuk/govuk-buttons.css", "consent forms page");
+includes(pageSource, "/css/govuk/govuk-forms.css", "consent forms page");
+includes(pageSource, "/css/consent-forms.css", "consent forms page");
+includes(pageSource, "class=\"govuk-button\"", "consent forms page");
+includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "consent forms page");
+includes(pageSource, "class=\"govuk-form-group\"", "consent forms page");
+includes(pageSource, "id=\"consent-error\"", "consent forms page");
+includes(pageSource, "role=\"alert\"", "consent forms page");
+includes(pageSource, "id=\"new-consent-form\"", "consent forms page");
+includes(pageSource, "id=\"consent-form-list\"", "consent forms page");
+includes(pageSource, "id=\"consent-form-editor\"", "consent forms page");
+includes(pageSource, "id=\"consent-source\"", "consent forms page");
+includes(pageSource, "id=\"consent-preview\"", "consent forms page");
+includes(pageSource, "id=\"consent-variables\"", "consent forms page");
+includes(pageSource, "id=\"consent-items\"", "consent forms page");
+excludes(pageSource, "src=\"/js/consent-forms-page.js\"", "consent forms page");
+excludes(pageSource, "class=\"btn", "consent forms page");
 
-includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
-includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
-includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
+includes(loaderSource, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", "route loader");
+includes(loaderSource, "await import('/components/layout.js')", "route loader");
+includes(loaderSource, "await import('/js/consent-forms-page.js?v=study-record-id-routing-20260518')", "route loader");
 
-includes(consentControllerSource, "const API_ORIGIN", "consent forms controller");
-includes(consentControllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "consent forms controller");
-includes(consentControllerSource, "function renderMustache", "consent forms controller");
-includes(consentControllerSource, "function renderMarkdown", "consent forms controller");
-includes(consentControllerSource, "consentItems", "consent forms controller");
-includes(consentControllerSource, "study_airtable_id", "consent forms controller");
-includes(consentControllerSource, "apiUrl(\"/api/consent-forms\")", "consent forms controller");
-includes(consentControllerSource, "/api/consent-forms/${encodeURIComponent(id)}/publish", "consent forms controller");
-includes(consentControllerSource, "Enter valid JSON", "consent forms controller");
-excludes(consentControllerSource, "alert(", "consent forms controller");
+includes(controllerSource, "resolveStudyContextFromUrl", "controller");
+includes(controllerSource, "function renderMustache", "controller");
+includes(controllerSource, "function renderMarkdown", "controller");
+includes(controllerSource, "consentItems", "controller");
+includes(controllerSource, "study_airtable_id: state.sid", "controller");
+includes(controllerSource, "apiUrl(\"/api/consent-forms\")", "controller");
+includes(controllerSource, "/api/consent-forms/${encodeURIComponent(id)}/publish", "controller");
+includes(controllerSource, "Enter valid JSON", "controller");
+includes(controllerSource, "Missing Study record ID in URL", "controller");
+excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "controller");
+excludes(controllerSource, "alert(", "controller");
 
-includes(legacyConsentPageSource, "rel=\"modulepreload\" href=\"/js/consent-page.js\"", "legacy consent page");
-includes(legacyConsentPageSource, "src=\"/js/consent-page.js\"", "legacy consent page");
-includes(legacyConsentPageSource, "src=\"/components/layout.js\" defer", "legacy consent page");
-includes(legacyConsentPageSource, "href=\"/css/screen.css\"", "legacy consent page");
-includes(legacyConsentPageSource, "href=\"/css/govuk/govuk-buttons.css\"", "legacy consent page");
-includes(legacyConsentPageSource, "href=\"/css/govuk/govuk-forms.css\"", "legacy consent page");
-includes(legacyConsentPageSource, "href=\"/css/consent.css\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"card consent-panel\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"consent-form\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"govuk-form-group consent-field\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"govuk-hint consent-status\"", "legacy consent page");
-includes(legacyConsentPageSource, "class=\"govuk-body consent-records\"", "legacy consent page");
-includes(legacyConsentPageSource, "aria-describedby=\"ret-hint\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"session\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"basis\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"ret\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"notes\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"link\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"status\"", "legacy consent page");
-includes(legacyConsentPageSource, "id=\"consents\"", "legacy consent page");
-excludes(legacyConsentPageSource, "class=\"govuk-body consent-field\"", "legacy consent page");
-excludes(legacyConsentPageSource, "<script type=\"module\">", "legacy consent page");
-excludes(legacyConsentPageSource, "../src/sdk/researchops_sdk_v1.0.0.js", "legacy consent page");
-excludes(legacyConsentPageSource, "./scripts/shared.js", "legacy consent page");
-
-includes(legacyConsentControllerSource, "function readStoredEntities", "legacy consent controller");
-includes(legacyConsentControllerSource, "function searchEntities", "legacy consent controller");
-includes(legacyConsentControllerSource, "function linkConsent", "legacy consent controller");
-includes(legacyConsentControllerSource, "async function populateSessions", "legacy consent controller");
-includes(legacyConsentControllerSource, "async function loadConsents", "legacy consent controller");
-includes(legacyConsentControllerSource, "async function saveConsent", "legacy consent controller");
-includes(legacyConsentControllerSource, "localStorage", "legacy consent controller");
-includes(legacyConsentControllerSource, "window.__ropsConsent", "legacy consent controller");
-
-includes(consentCssSource, ".consent-layout", "consent forms css");
-includes(consentCssSource, ".consent-form-list__button", "consent forms css");
-includes(consentCssSource, ".consent-preview", "consent forms css");
-includes(consentCssSource, "/* transparency begins in the cascade */", "consent forms css");
-
-includes(legacyConsentCssSource, ".consent-panel", "legacy consent css");
-includes(legacyConsentCssSource, ".consent-form", "legacy consent css");
-includes(legacyConsentCssSource, ".consent-field", "legacy consent css");
-includes(legacyConsentCssSource, ".consent-status", "legacy consent css");
-includes(legacyConsentCssSource, ".consent-records", "legacy consent css");
-includes(legacyConsentCssSource, "/* transparency begins in the cascade */", "legacy consent css");
+includes(cssSource, ".consent-layout", "css");
+includes(cssSource, ".consent-form-list__button", "css");
+includes(cssSource, ".consent-preview", "css");
+includes(cssSource, "/* transparency begins in the cascade */", "css");
 
 includes(workerSource, "handleConsentForms", "worker");
 includes(workerSource, "/api/consent-forms", "worker");
@@ -117,14 +74,12 @@ includes(workerSource, "service.listConsentForms", "worker");
 includes(workerSource, "service.createConsentForm", "worker");
 includes(workerSource, "service.publishConsentForm", "worker");
 
-includes(serviceSource, "export async function listConsentForms", "consent forms service");
-includes(serviceSource, "export async function createConsentForm", "consent forms service");
-includes(serviceSource, "export async function readConsentForm", "consent forms service");
-includes(serviceSource, "export async function updateConsentForm", "consent forms service");
-includes(serviceSource, "export async function publishConsentForm", "consent forms service");
-includes(serviceSource, "AIRTABLE_TABLE_CONSENT_FORMS", "consent forms service");
-includes(serviceSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "consent forms service");
-includes(serviceSource, "CONSENT_FORM_FIELD_NAMES", "consent forms service");
+includes(serviceSource, "export async function listConsentForms", "service");
+includes(serviceSource, "export async function createConsentForm", "service");
+includes(serviceSource, "export async function publishConsentForm", "service");
+includes(serviceSource, "AIRTABLE_TABLE_CONSENT_FORMS", "service");
+includes(serviceSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "service");
+includes(serviceSource, "CONSENT_FORM_FIELD_NAMES", "service");
 
 includes(serviceIndexSource, "./consent-forms.js", "service index");
 includes(serviceIndexSource, "listConsentForms", "service index");
