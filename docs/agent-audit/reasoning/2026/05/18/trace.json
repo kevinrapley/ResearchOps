@@ -7,70 +7,104 @@
     "number": 252,
     "state": "open"
   },
-  "summary": "Corrected project team label rendering and tightened project linkage to Airtable record ids.",
+  "summary": "Corrected project team labels, tightened project linkage to Airtable record ids, and moved study reads into the existing studies service with D1 cache fallback.",
   "task": {
-    "request": "Proceed with fixes for project card team labels and dependent project linkage. Record progress in the repository trace files.",
+    "request": "Fix linked Project dashboard records, especially Studies, using the existing studies service rather than adding another service file.",
     "scope": [
-      "projects page",
-      "project team label rendering",
-      "Airtable project record id linkage",
-      "Impact or Insights linkage",
+      "project dashboard",
+      "studies route",
+      "Airtable linked-record handling",
+      "D1 studies cache",
+      "diagnostics",
       "trace documentation"
     ]
   },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare",
+    "airtable-public-api"
+  ],
   "filesRead": [
-    "public/js/projects-page.js",
-    "infra/cloudflare/src/service/internals/airtable.js",
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.body.xml",
+    ".agent-operating-model/bundles/airtable-public-api/domains/records-domain.xml",
+    ".agent-operating-model/bundles/airtable-public-api/contracts/endpoints/listrecords.yaml",
+    "public/js/project-dashboard.js",
     "infra/cloudflare/src/service/studies.js",
     "infra/cloudflare/src/service/participants.js",
     "infra/cloudflare/src/service/impact-internals.js",
-    "infra/cloudflare/src/service/impact.js",
-    "tests/projects-page-route-state.test.js"
+    "infra/cloudflare/src/core/router.js",
+    "infra/cloudflare/src/worker.js"
   ],
   "filesModified": [
     "public/js/projects-page.js",
+    "public/js/project-dashboard.js",
     "infra/cloudflare/src/service/impact-internals.js",
     "infra/cloudflare/src/service/impact.js",
+    "infra/cloudflare/src/service/studies.js",
+    "infra/cloudflare/src/worker.js",
     "tests/projects-page-route-state.test.js",
+    "tests/studies-route-contract.test.js",
     "docs/agent-audit/reasoning/2026/05/18/trace.json"
   ],
   "decisions": [
     {
-      "decision": "Use Airtable record ids beginning rec as the canonical project identifiers.",
-      "reason": "The live API and Airtable record evidence showed the correct project identifiers are Airtable record ids, not PID-style local identifiers."
+      "decision": "Use Airtable record ids beginning rec as canonical project identifiers.",
+      "reason": "The live API, D1 project cache and Airtable evidence showed that Project dashboard traversal must use Airtable record ids, not PID-style local identifiers."
     },
     {
-      "decision": "Render the team value from the API payload rather than suppressing Home Office Biometrics.",
-      "reason": "The API returned teamName and related team fields, while the page still showed Unassigned team because client code suppressed the known team label."
+      "decision": "Keep study logic in infra/cloudflare/src/service/studies.js.",
+      "reason": "The repository already has a bounded studies service. A separate study-record-routes file would duplicate responsibility and muddy the service catalogue."
     },
     {
-      "decision": "Default Impact or Insights project writes to linked Airtable project fields.",
-      "reason": "Project linkage should preserve referential integrity. A deliberate text-field mode remains available where the table schema requires it."
+      "decision": "Bypass the router's legacy direct GET /api/studies handler from the Worker entrypoint.",
+      "reason": "The direct handler was Airtable-only, checked too few linked-project field candidates, hid pagination weaknesses and could not fall back to D1."
+    },
+    {
+      "decision": "Expose study-load failure on the dashboard instead of rendering No studies yet.",
+      "reason": "No studies yet must mean a successful empty response. It must not mask a 429, 503, bad link field or empty cache."
     }
   ],
   "changes": [
-    "Removed the client-side suppression of Home Office Biometrics in the Projects page team-name normaliser.",
-    "Added Org and org fallbacks to project team normalisation.",
-    "Updated the project team label fallback so project.org is used before Unassigned team.",
-    "Updated impact persistence so project writes use a linked Project field by default and reject non-Airtable project ids.",
-    "Updated impact create route error handling so validation errors return their intended status instead of always 500.",
-    "Updated route-state coverage for the project-card team label contract."
+    "Project cards now render the API team label rather than suppressing Home Office Biometrics.",
+    "Impact writes now default to a linked Project field and reject non-Airtable project ids.",
+    "studies.js now validates project ids, paginates Airtable list records, tolerates multiple linked-project field names, syncs successful Airtable reads into rops_studies_cache, and reads D1 before Airtable unless refresh=1 is used.",
+    "worker.js now routes /api/studies through the service layer before the legacy core router can use its direct handler.",
+    "worker.js now exposes /api/_diag/project-linked-records?project=rec... for project-linked study diagnostics.",
+    "project-dashboard.js now renders a clear studies error region when linked studies cannot be loaded."
   ],
   "validation": {
-    "latestKnownGreenHead": "4e7123366c346b00a3d4c19782ef12daf772b142",
-    "checks": [
+    "latestKnownGreenHeadBeforeStudiesWork": "8431fe91578917bdc24cd0cd59b23f01fba62ea1",
+    "observedChecksBeforeTraceUpdate": [
       "CI success",
-      "Worker CI success",
       "Validate ResearchOps success",
       "Release Gate success",
       "Format pull request success",
       "QA Broken links success",
       "Accessibility audit success",
-      "qa-bdd success"
+      "qa-bdd success",
+      "Worker CI still running at observation time"
     ]
   },
   "risks": [
-    "Live preview browser verification is still required after deployment.",
-    "Impact or Insights linkage depends on the actual Airtable field shape. The default is linked Project; text mode must be configured deliberately if needed."
+    "Airtable is still rate-limited in preview. If D1 has no studies cached for the project, the dashboard will now show a study-load error rather than a false empty state.",
+    "Actual study records cannot be seeded safely without inspecting the Airtable Project Studies record ids and linked Project field values.",
+    "The legacy direct studies handler still exists inside core/router.js for fallback contexts, but Worker entrypoint now intercepts /api/studies before it is reached."
+  ],
+  "nextValidationTargets": [
+    "Confirm all checks on the new trace head.",
+    "Call /api/_diag/project-linked-records?project=recgdpwEI5hFO7bUZ on the branch preview.",
+    "Call /api/studies?project=recgdpwEI5hFO7bUZ on the branch preview.",
+    "Confirm the dashboard either renders real linked studies or shows a study-load error with status and source details."
   ]
 }
