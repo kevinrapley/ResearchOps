@@ -9,14 +9,26 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="modulepreload" href="/js/study-route-context.js" />
+	<script type="module" src="/components/layout.js" defer></script>
 </head>
 
 <body>
+	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+	<x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Study synthesis"}'>
+	</x-include>
+
 	<main id="main-content" class="container govuk-body" role="main" tabindex="-1">
 		<h1 class="govuk-heading-l">Redirecting to study synthesis</h1>
 		<p class="govuk-body">The synthesis workspace has moved to the study area.</p>
-		<p class="govuk-body"><a id="synthesis-redirect-link" class="govuk-link" href="/pages/study/synthesis/">Continue to study synthesis</a></p>
+		<p class="govuk-body">
+			<a id="synthesis-redirect-link" class="govuk-link" href="/pages/study/synthesis/">Continue to study synthesis</a>
+		</p>
 	</main>
+
+	<x-include src="/partials/footer.html"></x-include>
 
 	<script type="module">
 		import { resolveStudyContextFromUrl, route } from '/js/study-route-context.js';
