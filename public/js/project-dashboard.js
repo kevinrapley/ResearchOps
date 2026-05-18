@@ -280,7 +280,7 @@ function renderStudies(project, studies) {
 	};
 	list.innerHTML = studies.map((s) => {
 		const title = s.title?.trim() || s.Title?.trim() || s.method?.trim() || computeStudyTitle(s);
-		const href = `/pages/study/?pid=${encodeURIComponent(project.id)}&sid=${encodeURIComponent(s.id)}`;
+		const href = `/pages/study/?id=${encodeURIComponent(s.id)}`;
 		const status = (s.status || "").trim();
 		const meta = status ? ` — <em>${escapeHtml(status)}</em>` : "";
 		const full = s.description || "";
