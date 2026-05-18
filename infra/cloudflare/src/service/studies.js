@@ -103,11 +103,24 @@ async function readCache(svc, projectId) {
 	return { studies, activeCount: rows.length, invalidCount: Math.max(rows.length - studies.length, 0) };
 }
 
-async function writeCache(svc, projectId, studies) {
+async function readCacheByStudyId(svc, studyId) {
+	const db = svc.env.RESEARCHOPS_D1;
+	if (!db?.prepare) throw new Error("RESEARCHOPS_D1 binding not available");
+	await ensureCache(db);
+	const row = await db.prepare("SELECT * FROM rops_studies_cache WHERE active = 1 AND id = ? LIMIT 1").bind(studyId).first();
+	if (!row) return { study: null, invalid: false };
+	const study = studyFromRow(row);
+	return { study: renderable(study) ? study : null, invalid: !renderable(study) };
+}
+
+async function writeCache(svc, projectId, studies, options = {}) {
+	const { replaceProject = true } = options;
 	const db = svc.env.RESEARCHOPS_D1;
 	if (!db?.prepare || !isRec(projectId)) return;
 	await ensureCache(db);
-	await db.prepare("UPDATE rops_studies_cache SET active = 0 WHERE project_id = ? AND source = 'airtable'").bind(projectId).run();
+	if (replaceProject) {
+		await db.prepare("UPDATE rops_studies_cache SET active = 0 WHERE project_id = ? AND source = 'airtable'").bind(projectId).run();
+	}
 	const updatedAt = new Date().toISOString();
 	for (const study of studies.filter(renderable)) {
 		await db.prepare("INSERT INTO rops_studies_cache (id, project_id, study_id, title, method, status, description, created_at, active, source, updated_at, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 'airtable', ?, ?) ON CONFLICT(id) DO UPDATE SET project_id = excluded.project_id, study_id = excluded.study_id, title = excluded.title, method = excluded.method, status = excluded.status, description = excluded.description, created_at = excluded.created_at, active = 1, source = excluded.source, updated_at = excluded.updated_at, payload_json = excluded.payload_json")
@@ -154,6 +167,27 @@ async function airtableRecords(svc) {
 	return records;
 }
 
+async function airtableRecord(svc, studyId) {
+	const table = encodeURIComponent(svc.env.AIRTABLE_TABLE_STUDIES);
+	const response = await fetchWithTimeout(`https://api.airtable.com/v0/${svc.env.AIRTABLE_BASE_ID}/${table}/${encodeURIComponent(studyId)}`, { headers: { Authorization: `Bearer ${svc.env.AIRTABLE_API_KEY}`, Accept: "application/json" } }, svc.cfg.TIMEOUT_MS);
+	const body = await response.text();
+	let json = {};
+	try {
+		json = body ? JSON.parse(body) : {};
+	} catch {
+		json = {};
+	}
+	if (!response.ok) {
+		throw Object.assign(new Error(json?.error?.message || json?.error?.type || `airtable_http_${response.status}`), {
+			status: response.status,
+			errorType: json?.error?.type || "",
+			errorMessage: json?.error?.message || "",
+			headers: safeHeaders(response),
+		});
+	}
+	return json;
+}
+
 function airtableSource(error) {
 	return { source: "airtable", message: String(error?.message || error), status: error?.status || 0, errorType: error?.errorType || "", errorMessage: error?.errorMessage || "", headers: error?.headers || {} };
 }
@@ -187,7 +221,7 @@ export async function createStudy(svc, request, origin) {
 	const record = json.records?.[0];
 	const studyId = record?.id;
 	if (!studyId) return svc.json({ error: "Airtable response missing study id" }, 502, svc.corsHeaders(origin));
-	await writeCache(svc, payload.project_airtable_id, [studyFromRecord(record, payload.project_airtable_id)]).catch(() => {});
+	await writeCache(svc, payload.project_airtable_id, [studyFromRecord(record, payload.project_airtable_id)], { replaceProject: false }).catch(() => {});
 	return svc.json({ ok: true, study_id: studyId, csv_ok: false, csv_error: "CSV mirror disabled for study writes on this route" }, 200, svc.corsHeaders(origin));
 }
 
@@ -224,6 +258,42 @@ export async function listStudies(svc, origin, url) {
 		sources.push({ source: "d1", message: String(error?.message || error) });
 	}
 	return svc.json({ ok: false, error: "studies_unavailable", detail: "No Airtable or D1 study source is available for this project. CSV fallback is intentionally disabled.", projectId, sources }, 503, { ...svc.corsHeaders(origin), ...sourceHeaders("none") });
+}
+
+export async function readStudy(svc, origin, studyId) {
+	const sources = [];
+	if (!studyId) return svc.json({ ok: false, error: "Missing study id" }, 400, { ...svc.corsHeaders(origin), ...sourceHeaders("none") });
+	if (!isStudyIdentifier(studyId)) {
+		return svc.json({ ok: false, error: "invalid_study_id", detail: "Study must be a record identifier beginning rec." }, 400, { ...svc.corsHeaders(origin), ...sourceHeaders("none") });
+	}
+
+	try {
+		const cached = await readCacheByStudyId(svc, studyId);
+		if (cached.study) return svc.json({ ok: true, study: cached.study }, 200, { ...svc.corsHeaders(origin), ...sourceHeaders("d1") });
+		sources.push({ source: "d1", message: cached.invalid ? "Study cache record is invalid" : "Study cache record not found" });
+	} catch (error) {
+		sources.push({ source: "d1", message: String(error?.message || error) });
+	}
+
+	try {
+		const missing = ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_STUDIES", "AIRTABLE_API_KEY"].filter((key) => !svc.env[key]);
+		if (missing.length) throw Object.assign(new Error(`Missing env: ${missing.join(", ")}`), { missing });
+		const record = await airtableRecord(svc, studyId);
+		const study = studyFromRecord(record);
+		if (!renderable(study)) {
+			return svc.json({ ok: false, error: "study_link_invalid", detail: "The study record does not have a valid linked Project record ID.", studyId }, 502, { ...svc.corsHeaders(origin), ...sourceHeaders("airtable") });
+		}
+		await writeCache(svc, study.projectId, [study], { replaceProject: false }).catch((error) => svc.log.warn("d1.studies.cache.single.sync.fail", { err: String(error?.message || error) }));
+		return svc.json({ ok: true, study }, 200, { ...svc.corsHeaders(origin), ...sourceHeaders("airtable") });
+	} catch (error) {
+		const airtable = airtableSource(error);
+		sources.push(airtable);
+		if (airtable.status === 404) {
+			return svc.json({ ok: false, error: "study_not_found", detail: "The requested study could not be found.", studyId, sources }, 404, { ...svc.corsHeaders(origin), ...sourceHeaders("none") });
+		}
+	}
+
+	return svc.json({ ok: false, error: "studies_unavailable", detail: "No Airtable or D1 study source is available for this study. CSV fallback is intentionally disabled.", studyId, sources }, 503, { ...svc.corsHeaders(origin), ...sourceHeaders("none") });
 }
 
 export async function diagnoseProjectLinkedRecords(svc, origin, url, authContext = {}) {
