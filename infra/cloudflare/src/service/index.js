@@ -184,6 +184,7 @@ export class ResearchOpsService {
 	/* ─────────────── Studies ─────────────── */
 	createStudy = (req, origin) => Studies.createStudy(this, req, origin);
 	listStudies = (origin, url) => Studies.listStudies(this, origin, url);
+	readStudy = (origin, studyId) => Studies.readStudy(this, origin, studyId);
 	updateStudy = (req, origin, studyId) => Studies.updateStudy(this, req, origin, studyId);
 
 	/* ─────────────── Study synthesis ─────────────── */
