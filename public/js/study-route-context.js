@@ -10,10 +10,7 @@ function resolveApiBase() {
 		window.API_ORIGIN ||
 		window.RESEARCHOPS_API_ORIGIN ||
 		"";
-	const fallback = location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin;
-	return String(explicit || fallback).trim().replace(/\/+$/, "");
+	return String(explicit || "").trim().replace(/\/+$/, "");
 }
 
 export const API_ORIGIN = resolveApiBase();
