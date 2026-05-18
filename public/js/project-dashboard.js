@@ -220,7 +220,7 @@ function renderProject(project) {
 	setLinkHref("outcomes-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?id=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-study-link", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
 	renderProjectLists(project);
 }
