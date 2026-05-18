@@ -99,10 +99,7 @@ function firstPresent(...values) {
 }
 
 function normaliseTeamName(value) {
-	const text = String(value || "").trim();
-	if (!text) return "";
-	if (text.toLowerCase() === "home office biometrics") return "";
-	return text;
+	return String(value || "").trim();
 }
 
 function hasValidProjectPhase(project) {
@@ -153,7 +150,9 @@ function normaliseProject(p) {
 		p.teamName,
 		p.team_name,
 		p.team,
-		Array.isArray(p.teamNames) ? p.teamNames[0] : ""
+		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
+		p.Org,
+		p.org
 	));
 
 	return {
@@ -171,7 +170,7 @@ function normaliseProject(p) {
 		teamName,
 		team_name: teamName,
 		team: teamName,
-		org: p.Org ?? p.org ?? ""
+		org: teamName || p.Org || p.org || ""
 	};
 }
 
@@ -231,7 +230,7 @@ function projectDashboardLabel(project) {
 }
 
 function projectTeamLabel(project) {
-	return project.teamName || project.team_name || project.team || "Unassigned team";
+	return project.teamName || project.team_name || project.team || project.org || "Unassigned team";
 }
 
 function projectCard(project) {
