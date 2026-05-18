@@ -1,29 +1,70 @@
 <!doctype html>
 <html lang="en-GB">
+
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Discussion guides — Study</title>
+	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
+	<link rel="modulepreload" href="/js/study-route-context.js" />
 	<link rel="modulepreload" href="/js/study-guides-context.js" />
 	<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-record-id-routing-20260518" />
 	<!-- /components/guides/guides-page.js -->
 	<script type="module" src="/components/layout.js" defer></script>
 	<script type="module" src="/js/guides-route-loader.js?v=study-record-id-routing-20260518"></script>
 </head>
+
 <body>
+	<x-include src="/partials/debug.html"></x-include>
+	<x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Study — Discussion Guides"}'></x-include>
+
 	<main id="main" class="container govuk-body" role="main">
-		<h1>Discussion guides</h1>
+		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+			<ol class="govuk-breadcrumbs__list">
+				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="#">Project</a></li>
+				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-study" class="govuk-breadcrumbs__link" href="#">Study</a></li>
+				<li class="govuk-breadcrumbs__list-item" aria-current="page">Guides</li>
+			</ol>
+		</nav>
+
+		<h1 class="govuk-heading-l">Discussion guides</h1>
 		<a id="back-to-study" class="govuk-button govuk-button--secondary" href="#">Back to Study</a>
 		<button class="govuk-button">New guide</button>
-		<section id="guides-list-section"><table class="govuk-table"><tbody id="guides-tbody"></tbody></table></section>
-		<section id="editor-section" class="editor"><div class="govuk-form-group editor__title-field"><label class="govuk-label" for="guide-title">Guide title</label><input id="guide-title" class="govuk-input" /></div><label class="govuk-label" for="pattern-search">Search patterns</label><input id="pattern-search" /></section>
+
+		<section id="guides-list-section">
+			<table class="govuk-table">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th class="govuk-table__header" scope="col">Title</th>
+						<th class="govuk-table__header" scope="col">Status</th>
+					</tr>
+				</thead>
+				<tbody id="guides-tbody" class="govuk-table__body"></tbody>
+			</table>
+		</section>
+
+		<section id="editor-section" class="editor">
+			<div class="govuk-form-group editor__title-field">
+				<label class="govuk-label" for="guide-title">Guide title</label>
+				<input id="guide-title" class="govuk-input" />
+			</div>
+			<label class="govuk-label" for="pattern-search">Search patterns</label>
+			<input id="pattern-search" />
+		</section>
+
 		<aside id="drawer-patterns" class="drawer"></aside>
 		<aside id="drawer-variables" class="drawer"></aside>
 		<div class="govuk-button-group actions-row"></div>
 	</main>
+
+	<x-include src="/partials/footer.html"></x-include>
 </body>
+
 </html>
