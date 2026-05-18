@@ -9,10 +9,6 @@ import { resolveStudyContextFromUrl, route, studyTitle } from './study-route-con
 const params = new URLSearchParams(window.location.search);
 const canonicalStudyId = params.get('id') || '';
 
-if (window.location.hostname.endsWith('pages.dev') && !window.API_ORIGIN) {
-	window.API_ORIGIN = window.location.origin;
-}
-
 function canonicaliseStudyUrl(url, context) {
 	if (!context?.studyId) return url;
 	const next = new URL(url, window.location.origin);
