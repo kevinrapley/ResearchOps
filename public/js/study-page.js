@@ -47,6 +47,18 @@ function studyTitle(study = {}) {
 	return (study.title || study.Title || "").trim() || fallbackTitle(study);
 }
 
+function linkedProjectIdForStudy(study = {}) {
+	return (
+		study.projectId ||
+		study.project_id ||
+		study.projectRecordId ||
+		study.project_record_id ||
+		(Array.isArray(study.projectIds) ? study.projectIds[0] : "") ||
+		(Array.isArray(study.project_ids) ? study.project_ids[0] : "") ||
+		""
+	);
+}
+
 function showError(message) {
 	const summary = $("#study-error");
 	const messageEl = $("#study-error-message");
@@ -81,6 +93,7 @@ async function jsonFetch(url) {
 
 async function loadProject(projectId) {
 	try {
+		// Project read route uses apiUrl("/api/projects") with a canonical Airtable record id path.
 		const body = await jsonFetch(apiUrl(`/api/projects/${encodeURIComponent(projectId)}`));
 		return body?.project || body;
 	} catch (error) {
@@ -106,16 +119,18 @@ async function resolveStudyContext(params) {
 
 	if (studyId) {
 		const study = await loadStudy(studyId);
-		if (!study.projectId) throw new Error("The study record does not include a linked project.");
-		return { projectId: study.projectId, studyId: study.id, study, routeMode: "canonical" };
+		const projectId = linkedProjectIdForStudy(study);
+		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
+		return { projectId, studyId: study.id || studyId, study, routeMode: "canonical" };
 	}
 
 	if (legacyProjectId && legacyStudyId) {
 		const study = await loadStudy(legacyStudyId);
-		if (!study.projectId || study.projectId !== legacyProjectId) {
+		const projectId = linkedProjectIdForStudy(study);
+		if (!projectId || projectId !== legacyProjectId) {
 			throw new Error("The legacy project and study URL does not match the linked records.");
 		}
-		return { projectId: study.projectId, studyId: study.id, study, routeMode: "legacy-resolved" };
+		return { projectId, studyId: study.id || legacyStudyId, study, routeMode: "legacy-resolved" };
 	}
 
 	throw new Error("The study page needs a Study record ID in the URL.");
@@ -280,20 +295,21 @@ function renderReadiness(study, context, sessionHref) {
 }
 
 function renderRoutes(projectId, studyId) {
-	const params = { pid: projectId, sid: studyId };
+	const legacySessionParams = { pid: projectId, sid: studyId };
+	const studyParams = { id: studyId };
 	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
-	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", params));
-	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", params));
-	enableLink("#link-guides", route("/pages/study/guides/", params));
-	enableLink("#link-participants", route("/pages/study/participants/", params));
-	enableLink("#link-synthesis", route("/pages/synthesize/", params));
+	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", studyParams));
+	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", studyParams));
+	enableLink("#link-guides", route("/pages/study/guides/", studyParams));
+	enableLink("#link-participants", route("/pages/study/participants/", studyParams));
+	enableLink("#link-synthesis", route("/pages/study/synthesis/", studyParams));
 
 	const editStudy = $("#edit-study");
 	if (editStudy) editStudy.href = `${route("/pages/study/", { id: studyId })}#edit`;
 
 	return {
-		sessionHref: route("/pages/study/session/", params)
+		sessionHref: route("/pages/study/session/", legacySessionParams)
 	};
 }
 
