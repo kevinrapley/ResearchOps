@@ -83,7 +83,8 @@ export async function loadStudyById(studyId) {
 	const url = new URL(apiUrl("/api/studies"), window.location.origin);
 	url.searchParams.set("id", studyId);
 	const body = await jsonFetch(url.toString());
-	const study = body?.study || null;
+	const studies = Array.isArray(body?.studies) ? body.studies : [];
+	const study = body?.study || studies.find(item => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId) || null;
 	if (!study?.id) throw new Error("Could not load the Study record.");
 	return study;
 }
