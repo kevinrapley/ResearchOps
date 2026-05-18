@@ -8,3 +8,5 @@ await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-202605
 await import('/components/layout.js');
 await import('/js/study-guides-context.js?v=study-record-id-routing-20260518');
 await import('/components/guides/guides-page.js?v=study-record-id-routing-20260518');
+
+export const guideRouteLoaderReady = true;
