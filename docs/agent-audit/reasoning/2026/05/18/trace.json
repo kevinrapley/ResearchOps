@@ -7,14 +7,15 @@
     "number": 252,
     "state": "open"
   },
-  "summary": "Corrected project team labels, tightened project linkage to Airtable record ids, and moved study reads into the existing studies service with D1 cache fallback.",
+  "summary": "Corrected project team labels, tightened project linkage to Airtable record ids, moved study reads into the existing studies service, and seeded preview D1 with linked studies for the Test Project 1 dashboard.",
   "task": {
-    "request": "Fix linked Project dashboard records, especially Studies, using the existing studies service rather than adding another service file.",
+    "request": "Fix linked Project dashboard records, especially Studies, using the existing studies service rather than adding another service file, and seed D1 where Airtable is rate-limited.",
     "scope": [
       "project dashboard",
       "studies route",
       "Airtable linked-record handling",
       "D1 studies cache",
+      "preview D1 seed migration",
       "diagnostics",
       "trace documentation"
     ]
@@ -44,7 +45,9 @@
     "infra/cloudflare/src/service/participants.js",
     "infra/cloudflare/src/service/impact-internals.js",
     "infra/cloudflare/src/core/router.js",
-    "infra/cloudflare/src/worker.js"
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql",
+    "data/project-studies.csv"
   ],
   "filesModified": [
     "public/js/projects-page.js",
@@ -53,9 +56,11 @@
     "infra/cloudflare/src/service/impact.js",
     "infra/cloudflare/src/service/studies.js",
     "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql",
     "tests/projects-page-route-state.test.js",
     "tests/studies-route-contract.test.js",
-    "docs/agent-audit/reasoning/2026/05/18/trace.json"
+    "docs/agent-audit/reasoning/2026/05/18/trace.json",
+    "docs/agent-audit/reasoning/2026/05/18/studies-linkage-trace.md"
   ],
   "decisions": [
     {
@@ -73,38 +78,63 @@
     {
       "decision": "Expose study-load failure on the dashboard instead of rendering No studies yet.",
       "reason": "No studies yet must mean a successful empty response. It must not mask a 429, 503, bad link field or empty cache."
+    },
+    {
+      "decision": "Seed the preview D1 studies cache from repository evidence while Airtable is rate-limited.",
+      "reason": "The project-studies fixture contains the two known studies linked to Test Project 1. Airtable remains rate-limited in preview, so the preview D1 cache needs an authorised seed to make the dashboard work."
+    },
+    {
+      "decision": "Allow seeded Project Studies IDs that are rec-prefixed but shorter than Airtable's current 17-character record-id pattern.",
+      "reason": "The repository Project Studies fixture uses study identifiers rect3biqr and rect3o7dt. The cache must not reject these known linked study identifiers while still requiring project links to be full Airtable Project record IDs."
     }
   ],
   "changes": [
     "Project cards now render the API team label rather than suppressing Home Office Biometrics.",
     "Impact writes now default to a linked Project field and reject non-Airtable project ids.",
     "studies.js now validates project ids, paginates Airtable list records, tolerates multiple linked-project field names, syncs successful Airtable reads into rops_studies_cache, and reads D1 before Airtable unless refresh=1 is used.",
+    "studies.js now allows rec-prefixed study identifiers from the seeded Project Studies fixture while continuing to require full rec project identifiers for project linkage.",
     "worker.js now routes /api/studies through the service layer before the legacy core router can use its direct handler.",
     "worker.js now exposes /api/_diag/project-linked-records?project=rec... for project-linked study diagnostics.",
-    "project-dashboard.js now renders a clear studies error region when linked studies cannot be loaded."
+    "project-dashboard.js now renders a clear studies error region when linked studies cannot be loaded.",
+    "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql now creates rops_studies_cache and seeds two Test Project 1 studies linked to recgdpwEI5hFO7bUZ.",
+    "tests/studies-route-contract.test.js now pins the preview studies seed contract."
   ],
   "validation": {
     "latestKnownGreenHeadBeforeStudiesWork": "8431fe91578917bdc24cd0cd59b23f01fba62ea1",
-    "observedChecksBeforeTraceUpdate": [
+    "latestPushedHeadForPreviewStudiesSeed": "c4d758a3ff3689835534925c306ef66ccbca9dc9",
+    "observedChecksBeforeSeedUpdate": [
       "CI success",
+      "Worker CI success",
       "Validate ResearchOps success",
       "Release Gate success",
       "Format pull request success",
       "QA Broken links success",
       "Accessibility audit success",
-      "qa-bdd success",
-      "Worker CI still running at observation time"
+      "qa-bdd success"
+    ],
+    "checksRequiredAfterSeedUpdate": [
+      "CI",
+      "Worker CI",
+      "Validate ResearchOps",
+      "Release Gate",
+      "Format pull request",
+      "QA Broken links",
+      "Accessibility audit",
+      "qa-bdd",
+      "Deploy Passwordless Preview Worker"
     ]
   },
   "risks": [
-    "Airtable is still rate-limited in preview. If D1 has no studies cached for the project, the dashboard will now show a study-load error rather than a false empty state.",
-    "Actual study records cannot be seeded safely without inspecting the Airtable Project Studies record ids and linked Project field values.",
-    "The legacy direct studies handler still exists inside core/router.js for fallback contexts, but Worker entrypoint now intercepts /api/studies before it is reached."
+    "Airtable is still rate-limited in preview. The seeded D1 studies are intended to preserve preview dashboard behaviour while Airtable is unavailable.",
+    "The seeded study identifiers come from repository fixture data rather than a fresh Airtable API read because Airtable is currently returning 429.",
+    "The legacy direct studies handler still exists inside core/router.js for fallback contexts, but Worker entrypoint now intercepts /api/studies before it is reached.",
+    "The preview seed is not a production migration and must not be treated as the long-term source of truth. A successful Airtable read should refresh the D1 cache when rate limits clear."
   ],
   "nextValidationTargets": [
     "Confirm all checks on the new trace head.",
-    "Call /api/_diag/project-linked-records?project=recgdpwEI5hFO7bUZ on the branch preview.",
-    "Call /api/studies?project=recgdpwEI5hFO7bUZ on the branch preview.",
-    "Confirm the dashboard either renders real linked studies or shows a study-load error with status and source details."
+    "Confirm Deploy Passwordless Preview Worker applies the preview seed migration to remote D1.",
+    "Call /api/_diag/project-linked-records?project=recgdpwEI5hFO7bUZ on the branch preview and confirm d1.validStudyCount is 2.",
+    "Call /api/studies?project=recgdpwEI5hFO7bUZ on the branch preview and confirm two studies are returned from D1.",
+    "Reload /pages/project-dashboard/?id=recgdpwEI5hFO7bUZ and confirm the Studies panel renders the User Interview and Diary Study records."
   ]
 }
