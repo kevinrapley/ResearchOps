@@ -226,6 +226,9 @@ export async function createStudy(svc, request, origin) {
 }
 
 export async function listStudies(svc, origin, url) {
+	const studyId = url.searchParams.get("study") || url.searchParams.get("id") || "";
+	if (studyId) return readStudy(svc, origin, studyId);
+
 	const projectId = url.searchParams.get("project") || "";
 	const refresh = url.searchParams.get("refresh") === "1";
 	const sources = [];
