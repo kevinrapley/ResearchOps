@@ -7,6 +7,10 @@ function isRec(value) {
 	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
 }
 
+function isStudyIdentifier(value) {
+	return /^rec[a-zA-Z0-9]{6,}$/.test(String(value || "").trim());
+}
+
 function text(value) {
 	if (Array.isArray(value)) return value.map(text).filter(Boolean).join(", ");
 	if (value && typeof value === "object") return text(value.name || value.Name || value.label || value.value || value.id || "");
@@ -77,7 +81,7 @@ function studyFromRow(row = {}) {
 }
 
 function renderable(study) {
-	return isRec(study?.id) && isRec(study?.projectId);
+	return isStudyIdentifier(study?.id) && isRec(study?.projectId);
 }
 
 async function ensureCache(db) {
