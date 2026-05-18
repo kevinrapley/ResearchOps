@@ -1,1 +1,76 @@
-{"traceId":"trace-2026-05-18","createdAt":"2026-05-18T10:50:00.000Z","branch":"fix/projects-team-scoped-access","pr":252,"summary":"continued PR work and CI is green"}
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-18",
+  "branch": "fix/projects-team-scoped-access",
+  "pullRequest": {
+    "number": 252,
+    "state": "open"
+  },
+  "summary": "Corrected project team label rendering and tightened project linkage to Airtable record ids.",
+  "task": {
+    "request": "Proceed with fixes for project card team labels and dependent project linkage. Record progress in the repository trace files.",
+    "scope": [
+      "projects page",
+      "project team label rendering",
+      "Airtable project record id linkage",
+      "Impact or Insights linkage",
+      "trace documentation"
+    ]
+  },
+  "filesRead": [
+    "public/js/projects-page.js",
+    "infra/cloudflare/src/service/internals/airtable.js",
+    "infra/cloudflare/src/service/studies.js",
+    "infra/cloudflare/src/service/participants.js",
+    "infra/cloudflare/src/service/impact-internals.js",
+    "infra/cloudflare/src/service/impact.js",
+    "tests/projects-page-route-state.test.js"
+  ],
+  "filesModified": [
+    "public/js/projects-page.js",
+    "infra/cloudflare/src/service/impact-internals.js",
+    "infra/cloudflare/src/service/impact.js",
+    "tests/projects-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/18/trace.json"
+  ],
+  "decisions": [
+    {
+      "decision": "Use Airtable record ids beginning rec as the canonical project identifiers.",
+      "reason": "The live API and Airtable record evidence showed the correct project identifiers are Airtable record ids, not PID-style local identifiers."
+    },
+    {
+      "decision": "Render the team value from the API payload rather than suppressing Home Office Biometrics.",
+      "reason": "The API returned teamName and related team fields, while the page still showed Unassigned team because client code suppressed the known team label."
+    },
+    {
+      "decision": "Default Impact or Insights project writes to linked Airtable project fields.",
+      "reason": "Project linkage should preserve referential integrity. A deliberate text-field mode remains available where the table schema requires it."
+    }
+  ],
+  "changes": [
+    "Removed the client-side suppression of Home Office Biometrics in the Projects page team-name normaliser.",
+    "Added Org and org fallbacks to project team normalisation.",
+    "Updated the project team label fallback so project.org is used before Unassigned team.",
+    "Updated impact persistence so project writes use a linked Project field by default and reject non-Airtable project ids.",
+    "Updated impact create route error handling so validation errors return their intended status instead of always 500.",
+    "Updated route-state coverage for the project-card team label contract."
+  ],
+  "validation": {
+    "latestKnownGreenHead": "4e7123366c346b00a3d4c19782ef12daf772b142",
+    "checks": [
+      "CI success",
+      "Worker CI success",
+      "Validate ResearchOps success",
+      "Release Gate success",
+      "Format pull request success",
+      "QA Broken links success",
+      "Accessibility audit success",
+      "qa-bdd success"
+    ]
+  },
+  "risks": [
+    "Live preview browser verification is still required after deployment.",
+    "Impact or Insights linkage depends on the actual Airtable field shape. The default is linked Project; text mode must be configured deliberately if needed."
+  ]
+}
