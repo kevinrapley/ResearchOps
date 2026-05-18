@@ -4,13 +4,12 @@
  * @summary Study consent form authoring with Markdown, Mustache-style variables and Airtable-backed persistence.
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	window.RESEARCHOPS_API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+import {
+	apiUrl,
+	resolveStudyContextFromUrl,
+	route,
+	studyTitle
+} from './study-route-context.js';
 
 const DEFAULT_VARIABLES = {
 	studyTitle: "Study title",
@@ -81,24 +80,13 @@ If you have questions, contact {{researcherName}} at {{researcherEmail}}.
 const state = {
 	pid: "",
 	sid: "",
+	project: null,
+	study: null,
 	forms: [],
 	selectedId: ""
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
-
-function apiUrl(path) {
-	const p = String(path || "");
-	return `${API_ORIGIN}${p.startsWith("/") ? p : "/" + p}`;
-}
-
-function route(path, params) {
-	const url = new URL(path, window.location.origin);
-	for (const [key, value] of Object.entries(params)) {
-		if (value) url.searchParams.set(key, value);
-	}
-	return `${url.pathname}${url.search}`;
-}
 
 function setText(selector, value) {
 	const el = $(selector);
@@ -143,6 +131,7 @@ function showInlineError(selector, message) {
 async function jsonFetch(url, options = {}) {
 	const response = await fetch(url, {
 		cache: "no-store",
+		credentials: "include",
 		...options,
 		headers: {
 			"content-type": "application/json",
@@ -355,16 +344,27 @@ async function loadConsentForms() {
 	setEditor(state.forms[0] || defaultDraft());
 }
 
-async function loadStudyContext() {
-	try {
-		const studiesUrl = new URL(apiUrl("/api/studies"));
-		studiesUrl.searchParams.set("project", state.pid);
-		const body = await jsonFetch(studiesUrl.toString());
-		const study = (body.studies || []).find(item => item.id === state.sid);
-		setText("#breadcrumb-study", study?.title || study?.method || "Study");
-	} catch (error) {
-		console.warn("[consent-forms] study context lookup failed", error);
+function bindStudyContext() {
+	const studyHref = route("/pages/study/", { id: state.sid });
+	const projectHref = route("/pages/project-dashboard/", { id: state.pid });
+	const title = studyTitle(state.study || {});
+	const projectName = state.project?.name || "Project";
+
+	const breadcrumbProject = $("#breadcrumb-project");
+	if (breadcrumbProject) {
+		breadcrumbProject.href = projectHref;
+		breadcrumbProject.textContent = projectName;
 	}
+	const breadcrumbStudy = $("#breadcrumb-study");
+	if (breadcrumbStudy) {
+		breadcrumbStudy.href = studyHref;
+		breadcrumbStudy.textContent = title;
+	}
+	const backToStudy = $("#back-to-study");
+	if (backToStudy) backToStudy.href = studyHref;
+
+	const variables = { ...DEFAULT_VARIABLES, studyTitle: title };
+	DEFAULT_VARIABLES.studyTitle = variables.studyTitle;
 }
 
 async function saveForm(event) {
@@ -420,23 +420,19 @@ function bindEvents() {
 async function init() {
 	hideError();
 	const params = new URLSearchParams(window.location.search);
-	state.pid = params.get("pid") || "";
-	state.sid = params.get("sid") || "";
-	if (!state.pid || !state.sid) {
-		showError("The consent forms page needs a project ID and study ID in the URL.");
-		return;
-	}
-
-	$("#back-to-study").href = route("/pages/study/", { pid: state.pid, sid: state.sid });
-	$("#breadcrumb-project").href = route("/pages/project-dashboard/", { id: state.pid });
-	$("#breadcrumb-study").href = route("/pages/study/", { pid: state.pid, sid: state.sid });
-	bindEvents();
-
 	try {
-		await Promise.all([loadStudyContext(), loadConsentForms()]);
+		const context = window.__studyRouteContext || await resolveStudyContextFromUrl(params);
+		state.pid = context.projectId || "";
+		state.sid = context.studyId || "";
+		state.project = context.project || null;
+		state.study = context.study || null;
+		if (!state.pid || !state.sid) throw new Error("Missing Study record ID in URL");
+		bindStudyContext();
+		bindEvents();
+		await loadConsentForms();
 	} catch (error) {
 		console.error("[consent-forms] init failed", error);
-		showError("Could not load consent forms. Check the study link and try again.");
+		showError("Could not load consent forms. Check the Study record link and try again.");
 	}
 }
 
