@@ -210,6 +210,10 @@ export async function resolveProjectRecordId(env, { projectId, projectName }, lo
 	const safeId = typeof projectId === "string" ? projectId.trim() : "";
 	const safeName = typeof projectName === "string" ? projectName.trim() : "";
 	if (!safeId && !safeName) return null;
+	if (looksLikeAirtableId(safeId)) {
+		log?.debug?.("airtable.projects.lookup.record_id_passthrough", { projectId: safeId });
+		return safeId;
+	}
 
 	const clauses = new Set();
 	if (safeId) {
@@ -297,10 +301,8 @@ export async function listBoards(env, { projectId, uid, purpose, active = true, 
 	return records.filter(r => {
 		const f = r?.fields || {};
 
-		// NEW: Prefer text field "Project ID"
 		if (String(f["Project ID"] || "").trim() === pidRaw) return true;
 
-		// Back-compat: linked arrays under Project / Projects
 		const candidates = [];
 		if (Array.isArray(f.Project)) candidates.push(f.Project);
 		if (Array.isArray(f.Projects)) candidates.push(f.Projects);
@@ -314,20 +316,14 @@ export async function listBoards(env, { projectId, uid, purpose, active = true, 
 			if (arr.some(v => typeof v === "string" && String(v).trim() === pidRaw)) return true;
 		}
 
-		// Fallback: plain text value in {Project} or {Projects}
 		const textVal = String(f.Project || f.Projects || "").trim();
 		return textVal && textVal === pidRaw;
 	});
 }
 
-/**
- * Create a Mural Boards row using the text field "Project ID".
- * We still accept an optional linked record id for future compatibility, but
- * the authoritative value is "Project ID" (single line text).
- */
 export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
 	const {
-		projectIdText = "", // ← recXXXX from <main data-project-id="…">
+		projectIdText = "",
 			uid,
 			purpose,
 			muralId,
@@ -339,7 +335,7 @@ export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEF
 
 	const url = makeTableUrl(env, boardsTableName(env));
 	const baseFields = {
-		"Project ID": String(projectIdText || ""), // ← critical
+		"Project ID": String(projectIdText || ""),
 		UID: String(uid ?? ""),
 		Purpose: String(purpose ?? ""),
 		"Mural ID": String(muralId ?? ""),
