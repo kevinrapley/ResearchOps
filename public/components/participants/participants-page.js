@@ -3,22 +3,24 @@
  * @summary Renders the participants list and emits Safari-safe events.
  */
 
+import { apiUrl } from '/js/study-route-context.js';
+
 const $ = (s, r = document) => r.querySelector(s);
 
 /** Read pid/sid from querystring. */
 function readIds() {
 	const usp = new URLSearchParams(location.search);
 	return {
-		pid: usp.get("pid") || "",
-		sid: usp.get("sid") || ""
+		pid: usp.get("pid") || window.__studyRouteContext?.projectId || "",
+		sid: usp.get("sid") || window.__studyRouteContext?.studyId || ""
 	};
 }
 
 /** Fetch participants for a study. */
 async function fetchParticipants(studyId) {
-	const url = `/api/participants?study=${encodeURIComponent(studyId)}`;
+	const url = apiUrl(`/api/participants?study=${encodeURIComponent(studyId)}`);
 	console.info("[participants] GET", url);
-	const res = await fetch(url, { cache: "no-store" });
+	const res = await fetch(url, { cache: "no-store", credentials: "include" });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok || js?.ok !== true || !Array.isArray(js.participants)) {
 		throw new Error(js?.error || `Participants fetch failed (${res.status})`);
@@ -102,7 +104,7 @@ window.renderParticipantsTable = renderParticipantsTable;
 (async function boot() {
 	try {
 		const { sid } = readIds();
-		if (!sid) throw new Error("Missing sid");
+		if (!sid) throw new Error("Missing Study record ID in URL");
 		const participants = await fetchParticipants(sid);
 		renderParticipantsTable(participants);
 	} catch (err) {
