@@ -1,10 +1,10 @@
-# Validation Report — GitHub Diamond Bundle v2.9.1
+# Validation Report — GitHub Diamond Bundle v2.9.2
 
 Validation status: passed.
 
 Last checked: 2026-05-11.
 
-Version 2.9.1 moves the bundle from strong live repository assurance toward a fully auditable assurance regime.
+Version 2.9.2 moves the bundle from strong live repository assurance toward a fully auditable assurance regime.
 
 ## Scope
 
@@ -35,7 +35,7 @@ Validated before release:
 - ZIP source extracted cleanly from v2.9.0
 - generated Python artefacts removed
 - XML, JSON and YAML parsed successfully
-- all XML roots declare `version="2.9.1"`
+- all XML roots declare `version="2.9.2"`
 - manifest hashes checked
 - manifest coverage checked
 - transient citation markers checked
@@ -98,4 +98,4 @@ Future work can extend generated validation-report parity across all bundles so 
 
 The GitHub Diamond bundle is suitable for current ResearchOps repository governance use.
 
-v2.9.1 preserves the v2.8.x and v2.9.0 control architecture while adding auditable failure reports, live policy profiles, stricter GitHub API edge-case handling, external attestation evidence validation and stronger fixture coverage.
+v2.9.2 preserves the v2.8.x and v2.9.0 control architecture while adding auditable failure reports, live policy profiles, stricter GitHub API edge-case handling, external attestation evidence validation and stronger fixture coverage.
