@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<mode id="repo-conformance" version="2.9.1" xml_profile="native-semantic-xml/v1">
+<mode id="repo-conformance" version="2.9.2" xml_profile="native-semantic-xml/v1">
   <title>Repository Conformance Mode</title>
   <purpose>Audit repository against bundle controls.</purpose>
   <inputs>
