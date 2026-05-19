@@ -1,0 +1,37 @@
+{
+  "traceId": "mobile-govuk-premium-ui-consultation",
+  "date": "2026-05-19",
+  "branch": "fix/mobile-govuk-premium-ui",
+  "task": "Improve ResearchOps mobile account UI against GOV.UK mobile reference quality.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "consultedRoles": [
+    "GOV.UK specialist",
+    "Interaction designer",
+    "Graphic designer"
+  ],
+  "changes": [
+    "Added account-page scoped mobile refinement stylesheet.",
+    "Added account page class hooks without changing account semantics.",
+    "Reduced mobile header brand scale.",
+    "Made mobile header, navigation and footer edge-to-edge for the account page.",
+    "Improved mobile content rhythm and summary-list alignment.",
+    "Made account action buttons full-width on mobile.",
+    "Extended account route-state tests to assert the premium mobile assets."
+  ],
+  "filesChanged": [
+    "public/pages/account/index.html",
+    "public/css/account-mobile-premium.css",
+    "tests/auth-account-dashboard-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/19/mobile-govuk-premium-ui-consultation.md",
+    "docs/agent-audit/reasoning/2026/05/19/mobile-govuk-premium-ui-consultation.json"
+  ],
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}
