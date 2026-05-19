@@ -1,0 +1,29 @@
+{
+  "traceId": "github-tooling-mutation-policy",
+  "date": "2026-05-19",
+  "branch": "fix/github-tooling-mutation-policy",
+  "task": "Fix operating model rules for GitHub repository mutation tooling.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "changes": [
+    "Added root GitHub mutation policy for smallest safe repository edits.",
+    "Added GitHub bundle XML reference for mutation policy.",
+    "Updated AGENTS bootstrap to require the mutation policy before GitHub file changes.",
+    "Updated orchestration and bundle registry versions to 1.4.1.",
+    "Updated GitHub bundle prompt spec and body to 2.9.2.",
+    "Recorded the repeatable lesson in RECENT_LEARNINGS.md."
+  ],
+  "antiPatternsBlocked": [
+    "Repeated blocked full-file update_file retries",
+    "Full-file repository replacement for small surgical edits",
+    "Creating normal edit trees from scratch",
+    "Reporting known-bad PRs as ready for testing"
+  ],
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}

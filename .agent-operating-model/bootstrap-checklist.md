@@ -5,6 +5,7 @@ Before any repository-affecting response, complete this checklist.
 - [ ] Read `AGENTS.md`.
 - [ ] Read `.agent-operating-model/orchestration.xml`.
 - [ ] Read `.agent-operating-model/bundle-registry.json`.
+- [ ] Read `.agent-operating-model/github-mutation-policy.md` before changing files through GitHub tooling.
 - [ ] Verify `.agent-operating-model/bundles/` exists.
 - [ ] Verify selected bundle directories contain their registered `prompt.spec.yaml` and `prompt.body.xml`.
 - [ ] Identify always-load bundles.

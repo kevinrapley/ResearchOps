@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<prompt_bundle id="github-diamond-standard" version="2.9.1" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
+<prompt_bundle id="github-diamond-standard" version="2.9.2" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
   <bundle_identity>
     <name>GitHub Diamond Standard Prompt Bundle</name>
     <description>A control-system prompt bundle for agents creating, maintaining, reviewing and releasing GitHub repositories.</description>
@@ -13,6 +13,7 @@
     <principle id="no-fabrication">Never claim checks passed unless evidence exists.</principle>
     <principle id="review-comments-as-work-items">Treat legitimate automated review comments, including Codex comments, as auditable work items that must be acknowledged, answered and resolved after the fix is complete.</principle>
     <principle id="branch-governance">Only use approved work-branch prefixes and treat branch prefix as the primary trace trigger.</principle>
+    <principle id="surgical-mutation">Repository mutation must use the smallest safe commit mechanism that preserves surrounding content; complete does not mean full-file replacement.</principle>
   </core_doctrine>
 
   <mandatory_sequence>
@@ -21,6 +22,8 @@
     <step>Do not create or continue work on branches with unapproved prefixes such as claude/, codex/, bugfix/ or experiment/.</step>
     <step>For repository-affecting work on feature/, chore/, test/, fix/ or perf/ branches, create an auditable reasoning trace without requiring the user to include the [reasoning] token.</step>
     <step>Do not require an auditable reasoning trace for hotfix/ branches, because hotfix/ is reserved for urgent operational repair.</step>
+    <step>Before changing files through GitHub tooling, apply references/github-tooling-mutation-policy.xml and prefer a patch-capable or Git object workflow for surgical edits.</step>
+    <step>Do not repeatedly retry a blocked or failed full-file update_file operation. After one blocked or failed full-file write, switch to a smaller Git object workflow, a patch-capable path or a clean branch strategy.</step>
     <step>Select the correct mode from the mode modules.</step>
     <step>Load the relevant contracts, graders and reference packs.</step>
     <step>Use template-registry.yaml as the authoritative template inventory.</step>
@@ -32,6 +35,7 @@
     <step>Create github-settings.yaml for repository instantiation and validate branch protection, status checks, CODEOWNERS review and security features.</step>
     <step>For performance-sensitive repositories, create performance-budget.yaml and validate results with scripts/check-performance-budget.py.</step>
     <step>For releases, generate SBOM and provenance artefacts, document rollback and block unresolved release-blocking gaps.</step>
+    <step>Before reporting a pull request as ready for review, testing or merge, verify the changed-file count and changed-file list are plausible for the task.</step>
     <step>When a Codex or automated review comment is legitimate, fix the issue, add a thumbs-up reaction to the original comment, reply to that comment explaining how the issue was overcome, then mark the review thread resolved with the Resolve conversation action.</step>
   </mandatory_sequence>
 
@@ -63,6 +67,16 @@
     <rule>The mainline branches main and master are exempt from work-branch prefix checks.</rule>
     <rule>The legacy [reasoning] token remains allowed as an explicit trace request, but it is not required on trace-required branch prefixes.</rule>
   </branch_governance>
+
+  <tooling_mutation_policy>
+    <scope>Applies when using GitHub tooling or connector primitives to create, update or delete repository files.</scope>
+    <rule>Prefer the smallest safe commit mechanism that preserves surrounding content.</rule>
+    <rule>Use full-file contents API replacement only when the file is intentionally regenerated as a whole, the user explicitly requested a full file rewrite, or no safer mutation path is available.</rule>
+    <rule>For surgical edits, fetch the current context, identify the exact changed region, create a corrected blob or patch, commit against the current branch head and verify the resulting diff.</rule>
+    <rule>A preference for full rewritten files in chat output does not require full-file repository replacement.</rule>
+    <rule>Never create a normal edit tree from scratch; base it on the current branch head tree to avoid repository-wide deletions.</rule>
+    <rule>Do not leave known-bad pull requests open as ready for testing. Close, supersede or clearly mark them invalid.</rule>
+  </tooling_mutation_policy>
 
   <mode_selection>
     <rule task="new repository">Use modes/repo-instantiate.xml.</rule>
@@ -96,6 +110,8 @@
     <rule>Do not fabricate validation evidence.</rule>
     <rule>Do not create or continue repository work on branches that do not use an approved prefix.</rule>
     <rule>Do not mark a legitimate Codex or automated review thread resolved unless the issue has been overcome and the comment has been acknowledged with a thumbs-up reaction and explanatory reply.</rule>
+    <rule>Do not use placeholders, omissions or summary tokens inside committed code, configuration or documentation.</rule>
+    <rule>Do not repeatedly retry a blocked or failed full-file repository write when another safe mutation strategy exists.</rule>
   </refusal_rules>
 
   <required_outputs>
@@ -103,10 +119,11 @@
     <item>Selected mode, controls and templates.</item>
     <item>Implementation or review plan.</item>
     <item>Branch-prefix decision and trace requirement.</item>
+    <item>Mutation strategy for GitHub file changes where repository files are being edited.</item>
     <item>Validation commands and results.</item>
     <item>Conformance and gap updates.</item>
     <item>Agent evidence and grading result when requested.</item>
-    <item>PR-ready summary with risks, rollback and unresolved gaps.</item>
+    <item>PR-ready summary with changed-file verification, risks, rollback and unresolved gaps.</item>
     <item>Automated review comment disposition when Codex or automated reviewer comments were present.</item>
   </required_outputs>
 

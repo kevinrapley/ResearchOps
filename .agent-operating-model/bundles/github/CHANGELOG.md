@@ -6,6 +6,28 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.2+researchops.2026-05-19] - 2026-05-19
+
+### Added
+
+- Added `references/github-tooling-mutation-policy.xml` to require smallest-safe repository mutation mechanics.
+- Added explicit surgical-edit rules for GitHub tooling, including patch-capable or Git object workflows for small edits.
+- Added PR-readiness checks requiring changed-file count and changed-file list verification before reporting readiness.
+
+### Changed
+
+- Clarified that complete, auditable work does not require full-file repository replacement.
+- Clarified that user preference for full rewritten files applies to chat output, not direct GitHub mutation mechanics.
+- Updated `prompt.spec.yaml` and `prompt.body.xml` to version `2.9.2`.
+
+### Fixed
+
+- Prevented repeated blocked full-file `update_file` retries from becoming the default response to a small code change.
+- Prevented normal edit trees from being created from scratch without the current branch head tree.
+- Prevented known-bad PRs from being reported as ready for testing.
+
+---
+
 ## [2.9.1+researchops.2026-05-14] - 2026-05-14
 
 ### Added
@@ -87,7 +109,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.9.0` across prompt specification, prompt body, XML modules and manifest.
+- Updated the bundle version to `2.9.0` across prompt specification, prompt body and XML modules.
 - Updated GitHub API verification so critical 403/404 responses are blocking under `--require-api`.
 - Updated offline release-gate execution to avoid repeated subprocess startup overhead.
 - Updated live repository gate to enforce assurance profiles.
@@ -339,7 +361,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ### Changed
 
-- Updated the bundle version to `2.8.2` across prompt specification, prompt body and XML modules.
+- Updated the bundle version to `2.8.2` across prompt specification and prompt body.
 - Fixed the template registry destination for `templates/RECENT_LEARNINGS-template.md` so it scaffolds to `RECENT_LEARNINGS.md`.
 - Strengthened `agent-evidence.schema.json` with explicit repository-state and accessibility-evidence fields.
 - Reworked `grade-output.py` so GitHub settings are graded from exact nested fields.

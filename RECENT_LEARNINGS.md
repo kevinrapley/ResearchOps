@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-19 — GitHub tooling must use surgical mutation paths for small edits
+
+Context: A role-assignment fix was delayed because the agent repeatedly tried to use full-file `update_file` operations for a small JavaScript change. A later low-level Git object attempt created a partial tree and opened a pull request with a repository-wide deletion diff before the work was recovered through a clean branch.
+
+Learning: Tool convenience is not repository governance. Full-file contents API replacement is not the default edit strategy for a small change. Complete and auditable means specific, verified and traceable. It does not mean rewriting the whole file. A user preference for full rewritten files in chat output must not be interpreted as permission to perform full-file repository replacement.
+
+Action: For small repository edits, apply `.agent-operating-model/github-mutation-policy.md`. Prefer a patch-capable or Git object workflow that preserves surrounding content. After one blocked or failed full-file write, switch strategy. Never create a normal edit tree from scratch. Before reporting a PR as ready, verify the changed-file count and changed-file list are plausible.
+
 ## 2026-05-14 — Branch-trigger lesson must apply to every preview Worker workflow, not just deploy-worker.yml
 
 Context: The projects team-scoped access branch shipped new `/api/projects` and `/api/projects/:id` contracts via `infra/cloudflare/src/service/project-record-routes.js`. The Pages preview at `fix-projects-team-scoped-acc.researchops.pages.dev` deployed cleanly, but the preview project dashboard rendered "Could not load project." and empty key information. The Pages function proxy at `functions/api/[[path]].js` routes branch-preview traffic to the `rops-api-passwordless-preview` Worker, which is deployed only by `.github/workflows/deploy-passwordless-preview-worker.yml`. That workflow's `push.branches` filter was hardcoded to `fix/team-admin-sign-in-journey`, so `fix/projects-team-scoped-access` did not trigger a preview Worker deploy. Pages JavaScript moved forward; the preview Worker stayed on a stale contract; the dashboard JS could not resolve a real Airtable record id against the older route handler.

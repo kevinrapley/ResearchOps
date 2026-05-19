@@ -1,6 +1,6 @@
 # GitHub Diamond Standard Prompt Bundle
 
-Version: 2.9.1
+Version: 2.9.2
 
 ## Purpose
 
@@ -10,7 +10,7 @@ It guides repository instantiation, maintenance, review, release and conformance
 
 ## Current release
 
-Version 2.9.1 moves the bundle closer to a fully auditable assurance regime.
+Version 2.9.2 moves the bundle closer to a fully auditable assurance regime.
 
 It adds schema-valid release-gate reports for both pass and fail states, policy-driven live release profiles, stricter GitHub API observability handling, trusted attestation verification evidence, stronger accessibility fixtures, and high-assurance live gate fixtures.
 

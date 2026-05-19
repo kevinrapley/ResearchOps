@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<githubToolingMutationPolicy
+	xmlns="urn:researchops:agent-operating-model:github-tooling-mutation-policy"
+	version="1.0.0">
+	<purpose>
+		Prevent agents from using full-file GitHub contents API replacement as the default for small repository edits.
+	</purpose>
+
+	<coreRules>
+		<rule id="mutation-001" priority="must">When changing an existing file through GitHub tooling, prefer the smallest safe commit mechanism that preserves surrounding content.</rule>
+		<rule id="mutation-002" priority="must">Complete and auditable means specific, verified and traceable. It does not mean rewriting the whole file.</rule>
+		<rule id="mutation-003" priority="must">A user preference for full rewritten files applies to code shown in chat. It does not require full-file repository replacement for a small direct GitHub edit.</rule>
+	</coreRules>
+
+	<surgicalEdits>
+		<rule id="surgical-001" priority="must">For small changes inside an existing file, prefer a patch-capable or Git object workflow over contents-API full-file replacement.</rule>
+		<rule id="surgical-002" priority="must">Fetch the current file, blob or relevant line range before changing it.</rule>
+		<rule id="surgical-003" priority="must">Identify the exact changed region before selecting a write tool.</rule>
+		<rule id="surgical-004" priority="must">If using Git object primitives, create a corrected blob, create a tree based on the current branch head tree, create a commit with the current branch head as parent and update the branch ref with force=false.</rule>
+		<rule id="surgical-005" priority="must">Verify the resulting PR diff before reporting readiness.</rule>
+	</surgicalEdits>
+
+	<contentsApiReplacement>
+		<rule id="contents-api-001" priority="must">Do not use contents-API full-file replacement for large or complex source files unless the user explicitly requested a full file rewrite or the file is intentionally regenerated as a whole.</rule>
+		<rule id="contents-api-002" priority="must">Only use contents-API full-file replacement when the file is short enough to review completely, the complete replacement has been generated and checked without placeholders and no patch-capable or Git object workflow is available.</rule>
+		<rule id="contents-api-003" priority="must">If a full-file replacement is used, verify the changed-file list and file diff before saying the work is ready.</rule>
+	</contentsApiReplacement>
+
+	<antiPatterns>
+		<rule id="anti-pattern-001" priority="must-not">Do not repeatedly retry a blocked or failed full-file update_file operation.</rule>
+		<rule id="anti-pattern-002" priority="must-not">After one blocked or failed full-file write, switch to a smaller Git object workflow, a patch-capable path or a clean branch strategy.</rule>
+		<rule id="anti-pattern-003" priority="must-not">Do not create a tree from scratch for a normal repository edit unless intentionally creating a repository snapshot.</rule>
+		<rule id="anti-pattern-004" priority="must-not">Do not use placeholders, omissions or summary tokens inside committed code, configuration or documentation.</rule>
+		<rule id="anti-pattern-005" priority="must-not">Do not leave a known-bad PR open as ready for testing.</rule>
+	</antiPatterns>
+
+	<readinessGate>
+		<rule id="readiness-001" priority="must">Before reporting a PR as ready for review, testing or merge, verify the PR is open.</rule>
+		<rule id="readiness-002" priority="must">Verify the changed-file count is plausible for the task.</rule>
+		<rule id="readiness-003" priority="must">Verify the changed-file list contains only expected paths, or explain any extra paths.</rule>
+		<rule id="readiness-004" priority="must">Verify required trace files are linked when trace is required.</rule>
+		<rule id="readiness-005" priority="must">Close, supersede or clearly mark any known-bad predecessor PR as invalid.</rule>
+	</readinessGate>
+</githubToolingMutationPolicy>
