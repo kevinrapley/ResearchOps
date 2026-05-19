@@ -23,6 +23,7 @@ The source files are:
 - `.agent-operating-model/trace-policy.md`
 - `.agent-operating-model/trace-layers.md`
 - `.agent-operating-model/behavioural-evals.json`
+- `.agent-operating-model/github-mutation-policy.md`
 - `.agent-operating-model/bundles/`
 
 Canonical bundle directories currently include:
@@ -44,14 +45,15 @@ For each repository-affecting task, the agent must:
 3. Read `.agent-operating-model/bundle-registry.json`.
 4. Read `.agent-operating-model/task-signal-catalog.json`.
 5. Read `.agent-operating-model/selection-rules.json`.
-6. Resolve selected bundles to their canonical directories under `.agent-operating-model/bundles/`.
-7. Verify each selected bundle has its registered `prompt.spec.yaml` and `prompt.body.xml`.
-8. Identify always-load bundles.
-9. Identify typed task signals.
-10. Identify conditional bundles relevant to the task from signal-based rules.
-11. Apply precedence from `.agent-operating-model/precedence-policy.md`.
-12. Record selected bundles and canonical paths when the branch trace rule requires a trace or the user explicitly asks for one.
-13. Stop and report the missing source if the operating model or a selected bundle directory cannot be loaded.
+6. Read `.agent-operating-model/github-mutation-policy.md` before changing files through GitHub tooling.
+7. Resolve selected bundles to their canonical directories under `.agent-operating-model/bundles/`.
+8. Verify each selected bundle has its registered `prompt.spec.yaml` and `prompt.body.xml`.
+9. Identify always-load bundles.
+10. Identify typed task signals.
+11. Identify conditional bundles relevant to the task from signal-based rules.
+12. Apply precedence from `.agent-operating-model/precedence-policy.md`.
+13. Record selected bundles and canonical paths when the branch trace rule requires a trace or the user explicitly asks for one.
+14. Stop and report the missing source if the operating model or a selected bundle directory cannot be loaded.
 
 Trace recording is governed by branch prefix. The user does not need to type `[reasoning]` for traces to be required on trace-required branches.
 
@@ -144,6 +146,17 @@ Before committing, run the relevant subset of:
 - Include a testing or validation summary.
 - Keep PRs self-contained.
 - Do not rewrite branch history unless explicitly approved by the repository owner.
+- Before reporting a PR as ready for review, testing or merge, verify the changed-file count and changed-file list are plausible for the task.
+
+---
+
+## GitHub file mutation guidance
+
+When changing files through GitHub tooling, apply `.agent-operating-model/github-mutation-policy.md`.
+
+Prefer the smallest safe change mechanism that preserves surrounding content. Do not treat full-file contents API replacement as the default for small edits.
+
+A user preference for full rewritten files applies to code shown in chat. It does not require full-file repository replacement for a small direct GitHub edit.
 
 ---
 
