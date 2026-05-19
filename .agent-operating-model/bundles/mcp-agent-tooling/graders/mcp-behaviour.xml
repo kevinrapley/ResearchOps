@@ -7,5 +7,7 @@
     <criterion id="tool-validation" severity="hard">Tool arguments and tool results must be validated before use.</criterion>
     <criterion id="least-privilege" severity="hard">Authorization and roots must use least privilege and avoid token passthrough.</criterion>
     <criterion id="auditability" severity="medium">Tool use, resource access and consent decisions must be auditable without logging secrets.</criterion>
+    <criterion id="gating-semantics" severity="hard">Consent and permission controls must be represented as invocation-gating states, not as blanket tool-disabled states.</criterion>
+    <criterion id="trust-tier-classification" severity="hard">Tool invocations must be classified into tier-1, tier-2 or tier-3 with gating behaviour aligned to the selected tier.</criterion>
   </criteria>
 </grader_module>

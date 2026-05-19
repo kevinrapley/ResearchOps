@@ -28,4 +28,15 @@
       <entry level="0">Record tool name, schema, side effects, idempotency, retry behaviour and failure handling.</entry>
     </checklist>
   </reference_block>
+
+  <reference_block name="invocation-trust-tiers" title="Invocation trust tiers">
+    <checklist ordered="false">
+      <entry level="0">Classify every tool invocation into tier-1 (auto-allow read-only), tier-2 (explicit invocation consent required) or tier-3 (elevated approval required).</entry>
+      <entry level="0">Tier-1 examples: repository listing, file reads, schema introspection and other low-risk read-only inspection paths.</entry>
+      <entry level="0">Tier-2 examples: file writes, commits, pull-request changes, external API mutations and chargeable model operations.</entry>
+      <entry level="0">Tier-3 examples: permission model changes, secrets operations, destructive production actions or broad data export.</entry>
+      <entry level="0">When blocked, return policy statuses and remediation steps rather than claiming tools are disabled.</entry>
+    </checklist>
+  </reference_block>
+
 </reference_module>

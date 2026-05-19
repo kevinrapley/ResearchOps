@@ -13,7 +13,41 @@
     <require_tool_argument_validation>true</require_tool_argument_validation>
     <require_resource_permission_review>true</require_resource_permission_review>
     <require_audit_trace_for_tool_use>true</require_audit_trace_for_tool_use>
+    <tool_access_default_state>available_pending_consent</tool_access_default_state>
+    <tool_unavailable_only_for>transport_or_configuration_or_runtime_failure</tool_unavailable_only_for>
+    <tool_invocation_block_statuses>blocked_pending_consent, blocked_pending_permission_scope, blocked_policy_denied</tool_invocation_block_statuses>
+    <tool_invocation_ready_status>ready_to_invoke</tool_invocation_ready_status>
   </runtime_defaults>
+
+  <policy_interpretation>
+    <rule id="consent-gating-001">require_explicit_tool_consent means tool invocation is gated; it does not mean tools are disabled.</rule>
+    <rule id="consent-gating-002">Tools and resources should remain discoverable to the user and agent unless unavailable for transport, configuration or runtime reasons.</rule>
+    <rule id="consent-gating-003">When consent or permission is missing, return a blocked status and remediation instructions instead of reporting tools as disabled.</rule>
+    <rule id="consent-gating-004">Use tool_unavailable only for genuine availability faults, not for consent or permission gating outcomes.</rule>
+  </policy_interpretation>
+
+  <tool_trust_tiers>
+    <tier id="tier-1" name="auto-allow-read-only">
+      <definition>Read-only, low-risk operations may be invoked without per-call consent when they do not change state, expose sensitive data or create chargeable side effects.</definition>
+      <default_invocation_status>ready_to_invoke</default_invocation_status>
+    </tier>
+    <tier id="tier-2" name="explicit-invocation-consent-required">
+      <definition>Write or mutate actions, sensitive-data access and cost-bearing operations require explicit user consent before invocation.</definition>
+      <default_invocation_status>blocked_pending_consent</default_invocation_status>
+    </tier>
+    <tier id="tier-3" name="elevated-approval-required">
+      <definition>High-impact, irreversible, privilege-changing or broad-scope operations require elevated approval in addition to standard invocation consent.</definition>
+      <default_invocation_status>blocked_pending_permission_scope</default_invocation_status>
+    </tier>
+  </tool_trust_tiers>
+
+  <recommended_invocation_policy>
+    <rule id="invocation-policy-001">Keep tools discoverable by default and gate invocation using trust tiers and consent state.</rule>
+    <rule id="invocation-policy-002">Allow tier-1 operations under least privilege with audit logging.</rule>
+    <rule id="invocation-policy-003">Gate tier-2 operations on explicit user approval at invocation time.</rule>
+    <rule id="invocation-policy-004">Gate tier-3 operations on elevated approval controls and deny execution until satisfied.</rule>
+    <rule id="invocation-policy-005">Use explicit statuses: ready_to_invoke, blocked_pending_consent, blocked_pending_permission_scope, blocked_policy_denied, tool_unavailable.</rule>
+  </recommended_invocation_policy>
   <assembly>
     <always_load>references/source-catalog.yaml</always_load>
     <always_load>references/mcp-platform-context.xml</always_load>
