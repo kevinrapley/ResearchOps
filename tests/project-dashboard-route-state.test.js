@@ -5,20 +5,24 @@ const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", 
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
+const passwordlessPreviewWorkflowSource = fs.readFileSync(
+	".github/workflows/deploy-passwordless-preview-worker.yml",
+	"utf8",
+);
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");
 includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
-includes(pageSource, "/js/project-dashboard.js", "project dashboard page");
-includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js\"", "project dashboard page");
+includes(pageSource, "/js/project-dashboard.js?v=projects-api-proxy-20260514", "project dashboard page");
+includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js?v=projects-api-proxy-20260514\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"journal-link\"", "project dashboard page");
 includes(pageSource, "id=\"outcomes-link\"", "project dashboard page");
@@ -46,21 +50,30 @@ excludes(pageSource, "<script type=\"module\">", "project dashboard page");
 excludes(pageSource, "data-api-origin=\"https://rops-api.digikev-kevin-rapley.workers.dev\"", "project dashboard page");
 
 includes(controllerSource, "const API_ORIGIN", "project dashboard controller");
+includes(controllerSource, "resolveApiBase", "project dashboard controller");
 includes(controllerSource, "window.API_ORIGIN", "project dashboard controller");
-includes(controllerSource, "function pickProject", "project dashboard controller");
-includes(controllerSource, "async function loadProjects", "project dashboard controller");
+includes(controllerSource, "function apiUrl", "project dashboard controller");
+includes(controllerSource, "async function loadProject(projectId)", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`)", "project dashboard controller");
 includes(controllerSource, "async function loadStudies", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`)", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
 includes(controllerSource, "async function saveProjectPatch", "project dashboard controller");
+includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`)", "project dashboard controller");
 includes(controllerSource, "function initStakeholderForm", "project dashboard controller");
 includes(controllerSource, "function initObjectiveForm", "project dashboard controller");
 includes(controllerSource, "function initUserGroupForm", "project dashboard controller");
 includes(controllerSource, "function initProjectActions", "project dashboard controller");
 includes(controllerSource, "data-project-id", "project dashboard controller");
+includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
 includes(controllerSource, "/api/projects", "project dashboard controller");
 includes(controllerSource, "/api/studies", "project dashboard controller");
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
+excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
+excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "project dashboard controller");
+excludes(controllerSource, "function pickProject", "project dashboard controller");
+excludes(controllerSource, "async function loadProjects", "project dashboard controller");
 excludes(controllerSource, "function initStudyModal", "project dashboard controller");
 
 includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
@@ -88,3 +101,36 @@ excludes(dashboardCssSource, "\n.dashboard-section__header {", "project dashboar
 excludes(dashboardCssSource, "\n.dashboard-section__body {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.dashboard-section__grid {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.dropzone {", "project dashboard stylesheet");
+
+/*
+ * Replace the legacy alert() with a visible, structured error region so the
+ * actual upstream failure (HTTP status, error code, requested project id) is
+ * legible on the dashboard rather than masked behind a generic "Could not load
+ * project." alert. The console keeps a structured log for triage.
+ */
+includes(controllerSource, "function renderProjectLoadError", "project dashboard controller");
+includes(controllerSource, "container.id = \"project-load-error\"", "project dashboard controller");
+includes(controllerSource, "container.setAttribute(\"role\", \"alert\")", "project dashboard controller");
+includes(controllerSource, "err.upstreamStatus = res.status", "project dashboard controller");
+includes(controllerSource, "[project-dashboard] load failed", "project dashboard controller");
+excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
+
+/*
+ * Pin the preview Worker deploy trigger to the approved branch prefixes so
+ * Pages-preview traffic to /api/projects/:id is served by a Worker on the
+ * same branch as the Pages preview. A drift back to a single hardcoded
+ * branch reproduces the 2026-05-14 "Could not load project." regression on
+ * any branch other than the one named in the filter.
+ */
+includes(passwordlessPreviewWorkflowSource, "- main", "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "feature/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "chore/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "test/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "fix/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "perf/**"', "preview Worker workflow");
+includes(passwordlessPreviewWorkflowSource, '- "hotfix/**"', "preview Worker workflow");
+excludes(
+	passwordlessPreviewWorkflowSource,
+	"branches: [ fix/team-admin-sign-in-journey ]",
+	"preview Worker workflow",
+);

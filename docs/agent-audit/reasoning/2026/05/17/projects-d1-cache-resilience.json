@@ -1,0 +1,80 @@
+{
+  "traceId": "projects-d1-cache-resilience-2026-05-17",
+  "createdAt": "2026-05-17T22:45:00.000Z",
+  "branch": "fix/projects-team-scoped-access",
+  "pr": 252,
+  "mode": "rops-fix",
+  "task": {
+    "summary": "Continue fixing /api/projects after Airtable returned 429 and D1 cache was empty.",
+    "constraint": "CSV fallback must remain disabled for project cards."
+  },
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "reason": "Branch, trace, PR and CI governance."
+    },
+    {
+      "id": "researchops-developer-control",
+      "reason": "ResearchOps Worker route and service contract."
+    },
+    {
+      "id": "multi-functional-team",
+      "reason": "Operational risk and public-service service assurance."
+    },
+    {
+      "id": "cloudflare",
+      "reason": "Cloudflare Worker, Pages preview and D1 resilience behaviour."
+    },
+    {
+      "id": "airtable-public-api",
+      "reason": "Airtable rate-limit handling and authoritative record-source contract."
+    }
+  ],
+  "filesRead": [
+    "infra/cloudflare/src/service/project-record-routes.js",
+    ".github/workflows/deploy-worker.yml",
+    "tests/projects-route-contract.test.js",
+    "scripts/agent-trace/assert-trace-coverage.mjs"
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/project-record-routes.js",
+    "docs/agent-audit/reasoning/2026/05/17/projects-d1-cache-resilience.md",
+    "docs/agent-audit/reasoning/2026/05/17/projects-d1-cache-resilience.json"
+  ],
+  "evidence": [
+    {
+      "type": "runtime-response",
+      "summary": "/api/projects returned 503 projects_unavailable with sources[0].status 429 and message airtable_http_429."
+    },
+    {
+      "type": "repository-code",
+      "summary": "project-record-routes.js previously only populated D1 after successful Airtable reads and did not report an empty D1 cache as a source diagnostic."
+    }
+  ],
+  "implementation": [
+    "Added payload_json support to rops_projects_cache.",
+    "Read D1 project cache first unless refresh=1 is requested.",
+    "Sync full Airtable project payloads into D1 after successful Airtable reads.",
+    "Return D1 projects with x-rops-source: d1 when cache is populated.",
+    "Expose Airtable failures as x-rops-upstream-warning when serving D1 fallback.",
+    "Return D1 empty-cache diagnostics when neither source can serve projects.",
+    "Allow /api/projects/:id to fall back to D1 when Airtable is unavailable or rate-limited."
+  ],
+  "validation": [
+    {
+      "check": "Worker CI",
+      "status": "failed-before-trace-update",
+      "detail": "npm run validate failed because trace coverage expected docs/agent-audit/reasoning/2026/05/17/."
+    },
+    {
+      "check": "Trace coverage",
+      "status": "addressed-by-this-trace",
+      "detail": "Added 2026/05/17 trace markdown and JSON files."
+    }
+  ],
+  "residualRisks": [
+    "If D1 is empty and Airtable remains rate-limited, the endpoint will still return 503 until Airtable succeeds or D1 is intentionally seeded from authoritative rec... records.",
+    "Further CI checks may reveal formatter, contract or unit-test expectations that need repair.",
+    "End-to-end browser proof is still required before claiming the Projects page is fixed."
+  ]
+}

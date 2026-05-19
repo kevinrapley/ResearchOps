@@ -4,6 +4,13 @@
  * @summary Start → 4-step flow controller (navigation + validation + review + submit).
  */
 
+const API_ORIGIN =
+	document.documentElement?.dataset?.apiOrigin ||
+	window.API_ORIGIN ||
+	(location.hostname.endsWith("pages.dev") ?
+		"https://rops-api.digikev-kevin-rapley.workers.dev" :
+		location.origin);
+
 function esc(value) {
 	return String(value ?? "").replace(/[&<>"']/g, c => ({
 		"&": "&amp;",
@@ -181,7 +188,6 @@ function buildPayload() {
 		return { name: parts[0] || "", role: parts[1] || "", email: parts[2] || "" };
 	});
 	return {
-		org: "Home Office Biometrics",
 		name: valueOf(p_name),
 		description: valueOf(p_desc),
 		phase: DEFAULT_PROJECT_PHASE,
@@ -223,16 +229,22 @@ function renderCheckAnswers() {
 		</div>`).join("");
 }
 
+function apiUrl(path) {
+	if (/^https?:\/\//i.test(path)) return path;
+	return `${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function apiPost(url, body, opts = {}) {
 	const controller = new AbortController();
 	const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : 15000;
 	const id = setTimeout(() => controller.abort(new Error("timeout")), timeoutMs);
 	try {
-		const res = await fetch(url, {
+		const res = await fetch(apiUrl(url), {
 			method: "POST",
 			headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
 			body: JSON.stringify(body),
-			signal: controller.signal
+			signal: controller.signal,
+			credentials: "include"
 		});
 		const contentType = res.headers.get("content-type") || "";
 		const payload = contentType.includes("application/json") ? await res.json().catch(() => null) : await res.text().catch(() => "");

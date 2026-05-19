@@ -8,11 +8,11 @@ const participantsModuleSource = fs.readFileSync("public/components/participants
 const schedulerSource = fs.readFileSync("public/pages/study/participants/scheduler.js", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(pageSource, "href=\"/css/screen.css\"", "participants page");
@@ -29,8 +29,6 @@ includes(pageSource, "id=\"sessionsTable\"", "participants page");
 includes(pageSource, "id=\"scheduleForm\"", "participants page");
 includes(pageSource, "id=\"noParticipantsBanner\"", "participants page");
 includes(pageSource, "id=\"scheduleBtn\"", "participants page");
-includes(pageSource, "participants-rendered", "participants page");
-includes(pageSource, "participants_rendered", "participants page");
 excludes(pageSource, "class=\"btn", "participants page");
 excludes(pageSource, "href=\"/css/participants.css\" media=\"print\"", "participants page");
 

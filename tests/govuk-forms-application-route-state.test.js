@@ -7,7 +7,7 @@ const formRoutes = [
   "public/pages/notes/index.html",
   "public/pages/consent/index.html",
   "public/pages/sessions/index.html",
-  "public/pages/synthesize/index.html",
+  "public/pages/study/synthesis/index.html",
   "public/pages/project-dashboard/index.html",
   "public/pages/project-dashboard/participants/index.html",
   "public/pages/project-dashboard/participants/import/index.html",
@@ -73,7 +73,7 @@ includes(sessionsPage, "<label class=\"govuk-label\" for=\"when\">When</label>",
 includes(sessionsPage, "aria-describedby=\"when-hint\"", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
 
-const synthesizePage = read("public/pages/synthesize/index.html");
+const synthesizePage = read("public/pages/study/synthesis/index.html");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"tag-filter\">Filter by tag</label>", "Synthesize route");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"target-cluster\">Add selected evidence to</label>", "Synthesize route");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"cluster-label\">Cluster grouping name</label>", "Synthesize route");

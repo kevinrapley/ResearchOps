@@ -7,7 +7,7 @@
 
 export const synthesisProjectId = 'recVisualProject001';
 export const synthesisStudyId = 'recVisualStudy001';
-export const synthesisPath = `/pages/synthesize/?pid=${synthesisProjectId}&sid=${synthesisStudyId}`;
+export const synthesisPath = `/pages/study/synthesis/?id=${synthesisStudyId}`;
 
 const synthesisEvidenceRoute = /\/api\/synthesis\/evidence(?:\?.*)?$/;
 const synthesisSummaryRoute = /\/api\/synthesis(?:\?.*)?$/;

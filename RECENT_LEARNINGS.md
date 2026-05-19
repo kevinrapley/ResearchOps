@@ -2,6 +2,30 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-14 — Branch-trigger lesson must apply to every preview Worker workflow, not just deploy-worker.yml
+
+Context: The projects team-scoped access branch shipped new `/api/projects` and `/api/projects/:id` contracts via `infra/cloudflare/src/service/project-record-routes.js`. The Pages preview at `fix-projects-team-scoped-acc.researchops.pages.dev` deployed cleanly, but the preview project dashboard rendered "Could not load project." and empty key information. The Pages function proxy at `functions/api/[[path]].js` routes branch-preview traffic to the `rops-api-passwordless-preview` Worker, which is deployed only by `.github/workflows/deploy-passwordless-preview-worker.yml`. That workflow's `push.branches` filter was hardcoded to `fix/team-admin-sign-in-journey`, so `fix/projects-team-scoped-access` did not trigger a preview Worker deploy. Pages JavaScript moved forward; the preview Worker stayed on a stale contract; the dashboard JS could not resolve a real Airtable record id against the older route handler.
+
+Learning: The 2026-05-13 lesson about preview Worker deploy filters applies to every workflow that deploys an environment the branch-preview Pages site depends on, not only `deploy-worker.yml`. A single hardcoded branch filter in any preview-Worker workflow recreates the same misleading split between fresh Pages assets and stale Worker behaviour. If `functions/api/[[path]].js` routes preview Pages traffic to a Worker, the workflow that deploys that Worker must accept the approved branch prefixes used for repository work.
+
+Action: When adding a workflow that deploys a Worker behind any branch-preview Pages host, set `push.branches` to the approved prefixes: `main`, `feature/**`, `chore/**`, `test/**`, `fix/**`, `perf/**` and `hotfix/**`. Cover the prefixes the operating model already enforces for trace coverage. Add a route-state assertion that pins the workflow's branch list so the filter cannot silently drift back to a single branch. Treat any new branch-preview-dependent Worker workflow as part of the preview surface, not an isolated sign-in workflow.
+
+## 2026-05-14 — Access-control filtering must stay server-side
+
+Context: The projects page needed to show only projects within a user's team memberships, while ResearchOps Core needed oversight across all teams. An early client-side fallback path could have read `/api/projects.csv` directly if `/api/projects` failed.
+
+Learning: Project visibility is an access-control rule, not a rendering preference. Client-side fallbacks that bypass the scoped API can leak unfiltered data even when the main API route is correct.
+
+Action: Keep access-controlled lists behind server routes that receive authenticated context. If a fallback source exists, apply it inside the server-side service layer after resolving user context. Do not add browser-side fallbacks to raw CSV or static data for access-controlled records.
+
+## 2026-05-14 — Role consultation must be visible when requested
+
+Context: The projects team-scoped access branch consulted GOV.UK Design System and multi-functional team role files, but the first pass only summarised the effect of that consultation. The user expected a transcript-style role discussion that visibly informed the plan and was captured in documentation.
+
+Learning: When a task explicitly asks for input from operating-model roles, reading role files is not enough. The branch needs an auditable role-consultation artefact that records the question, role perspectives, disagreements or trade-offs, and the changes made to the implementation plan.
+
+Action: Create a role consultation transcript under `docs/agent-audit/reasoning/` before implementation resumes. Link it from the main trace plan. Carry the resulting plan adjustments into product notes and validation criteria.
+
 ## 2026-05-14 — Trace capture must be branch-driven, not prompt-token-driven
 
 Context: Agent traces were previously treated as something the user had to trigger by adding `[reasoning]` to a prompt. This created avoidable gaps because repository-affecting branch work could proceed without an auditable trace unless the user remembered the token.

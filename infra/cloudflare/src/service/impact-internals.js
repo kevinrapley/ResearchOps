@@ -8,6 +8,9 @@
 
 import { createRecords, listAll } from "./internals/airtable.js";
 
+const PROJECT_LINK_MODE_TEXT = "text";
+const PROJECT_LINK_MODE_LINKED_RECORD = "linked-record";
+
 function impactTableName(env) {
 	const configured = env?.AIRTABLE_TABLE_IMPACT || env?.AIRTABLE_TABLE_IMPACT_RECORDS || "";
 	return String(configured || "Impact").trim();
@@ -15,6 +18,10 @@ function impactTableName(env) {
 
 function hasAirtable(env) {
 	return !!((env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) && (env?.AIRTABLE_API_KEY || env?.AIRTABLE_PAT));
+}
+
+function isAirtableRecordId(value) {
+	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
 }
 
 function firstValue(fields, names, fallback = "") {
@@ -25,25 +32,32 @@ function firstValue(fields, names, fallback = "") {
 	return fallback;
 }
 
+function normaliseLinkedValue(value) {
+	if (Array.isArray(value)) return value.map((item) => String(item || "").trim()).filter(Boolean);
+	if (value && typeof value === "object") return [String(value.id || value.name || "").trim()].filter(Boolean);
+	return [String(value || "").trim()].filter(Boolean);
+}
+
 function arrayIncludesValue(value, expected) {
 	const needle = String(expected || "").trim();
 	if (!needle) return true;
-	if (Array.isArray(value)) {
-		return value.some(item => {
-			if (typeof item === "string") return item.trim() === needle;
-			if (item && typeof item === "object") return String(item.id || item.name || "").trim() === needle;
-			return false;
-		});
-	}
-	return String(value || "").trim() === needle;
+	return normaliseLinkedValue(value).some((item) => item === needle);
+}
+
+function canonicalProjectId(fields) {
+	return firstValue(fields, ["Project", "Projects", "Project ID", "ProjectId", "projectId"]);
+}
+
+function canonicalStudyId(fields) {
+	return firstValue(fields, ["Study", "Studies", "Study ID", "StudyId", "studyId"], null);
 }
 
 function normaliseImpactRecord(record) {
 	const fields = record?.fields || {};
 	return {
 		id: record?.id || "",
-		projectId: firstValue(fields, ["Project ID", "ProjectId", "projectId", "Project", "Projects"]),
-		studyId: firstValue(fields, ["Study ID", "StudyId", "studyId", "Study", "Studies"], null),
+		projectId: canonicalProjectId(fields),
+		studyId: canonicalStudyId(fields),
 		metricName: firstValue(fields, ["Metric Name", "Metric", "metricName", "Name"]),
 		metricValue: firstValue(fields, ["Metric Value", "Value", "metricValue"], null),
 		evidence: firstValue(fields, ["Evidence", "Evidence URL", "Source", "Notes"], ""),
@@ -54,8 +68,8 @@ function normaliseImpactRecord(record) {
 
 function matchesContext(record, { projectId, studyId }) {
 	const fields = record?.fields || {};
-	const projectValue = firstValue(fields, ["Project ID", "ProjectId", "projectId", "Project", "Projects"], "");
-	const studyValue = firstValue(fields, ["Study ID", "StudyId", "studyId", "Study", "Studies"], "");
+	const projectValue = canonicalProjectId(fields);
+	const studyValue = canonicalStudyId(fields);
 
 	if (!arrayIncludesValue(projectValue, projectId)) return false;
 	if (studyId && !arrayIncludesValue(studyValue, studyId)) return false;
@@ -67,9 +81,44 @@ function compactFields(fields) {
 	for (const [key, value] of Object.entries(fields)) {
 		if (value === undefined || value === null) continue;
 		if (typeof value === "string" && value.trim() === "") continue;
+		if (Array.isArray(value) && value.length === 0) continue;
 		out[key] = value;
 	}
 	return out;
+}
+
+function impactProjectLinkMode(env) {
+	const configured = String(env?.AIRTABLE_IMPACT_PROJECT_LINK_MODE || "").trim().toLowerCase();
+	if ([PROJECT_LINK_MODE_TEXT, "project-id", "text-field"].includes(configured)) return PROJECT_LINK_MODE_TEXT;
+	return PROJECT_LINK_MODE_LINKED_RECORD;
+}
+
+function impactProjectFieldName(env) {
+	const configured = String(env?.AIRTABLE_IMPACT_PROJECT_FIELD || "").trim();
+	return configured || (impactProjectLinkMode(env) === PROJECT_LINK_MODE_TEXT ? "Project ID" : "Project");
+}
+
+function impactStudyFieldName(env) {
+	return String(env?.AIRTABLE_IMPACT_STUDY_FIELD || "").trim() || "Study";
+}
+
+function projectLinkField(env, projectId) {
+	if (!isAirtableRecordId(projectId)) {
+		const error = new Error("Impact records must be linked to a project using an Airtable record ID.");
+		error.status = 400;
+		throw error;
+	}
+
+	const fieldName = impactProjectFieldName(env);
+	if (impactProjectLinkMode(env) === PROJECT_LINK_MODE_TEXT) return { [fieldName]: projectId };
+	return { [fieldName]: [projectId] };
+}
+
+function studyLinkField(env, studyId) {
+	if (!studyId) return {};
+	const fieldName = impactStudyFieldName(env);
+	if (isAirtableRecordId(studyId)) return { [fieldName]: [studyId] };
+	return { "Study ID": studyId };
 }
 
 export async function listImpactRecords(env, { projectId, studyId = null } = {}) {
@@ -94,8 +143,8 @@ export async function createImpactRecord(env, payload = {}) {
 
 	const tableName = impactTableName(env);
 	const fields = compactFields({
-		"Project ID": payload.projectId,
-		"Study ID": payload.studyId,
+		...projectLinkField(env, payload.projectId),
+		...studyLinkField(env, payload.studyId),
 		"Metric Name": payload.metricName,
 		"Metric Value": payload.metricValue,
 		Evidence: payload.evidence,

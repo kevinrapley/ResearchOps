@@ -4,13 +4,12 @@
  * @summary Study-scoped participant consent management controller.
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	window.RESEARCHOPS_API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+import {
+	apiUrl,
+	resolveStudyContextFromUrl,
+	route,
+	studyTitle
+} from './study-route-context.js';
 
 const DEFAULT_CONSENT_ITEMS = [
 	{
@@ -71,32 +70,6 @@ function safeToken(value) {
 	return String(value || "item").replace(/[^a-zA-Z0-9_-]/g, "-");
 }
 
-function apiUrl(path) {
-	const p = String(path || "");
-	return `${API_ORIGIN}${p.startsWith("/") ? p : "/" + p}`;
-}
-
-function route(path, params) {
-	const url = new URL(path, window.location.origin);
-	for (const [key, value] of Object.entries(params)) {
-		if (value) url.searchParams.set(key, value);
-	}
-	return `${url.pathname}${url.search}`;
-}
-
-function fallbackTitle(study = {}) {
-	const method = (study.method || "Study").trim();
-	const d = study.createdAt ? new Date(study.createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return `${method} — ${yyyy}-${mm}-${dd}`;
-}
-
-function studyTitle(study = {}) {
-	return (study.title || study.Title || "").trim() || fallbackTitle(study);
-}
-
 function setHidden(selector, hidden) {
 	const el = $(selector);
 	if (!el) return;
@@ -135,29 +108,11 @@ function showErrors(messages) {
 }
 
 async function jsonFetch(url, options = {}) {
-	const response = await fetch(url, { cache: "no-store", ...options });
+	const response = await fetch(url, { cache: "no-store", credentials: "include", ...options });
 	const text = await response.text();
 	const body = text ? JSON.parse(text) : {};
-	if (!response.ok) throw new Error(body?.error || `Request failed (${response.status})`);
+	if (!response.ok || body?.ok === false) throw new Error(body?.detail || body?.error || `Request failed (${response.status})`);
 	return body;
-}
-
-async function loadProject(projectId) {
-	try {
-		const body = await jsonFetch(apiUrl("/api/projects"));
-		const projects = Array.isArray(body?.projects) ? body.projects : [];
-		return projects.find(project => project.id === projectId) || null;
-	} catch (error) {
-		console.warn("[participant-consent] project lookup failed", error);
-		return null;
-	}
-}
-
-async function loadStudies(projectId) {
-	const url = new URL(apiUrl("/api/studies"));
-	url.searchParams.set("project", projectId);
-	const body = await jsonFetch(url.toString());
-	return Array.isArray(body?.studies) ? body.studies : [];
 }
 
 async function loadStudyCollection(path, studyId, key) {
@@ -219,11 +174,10 @@ function permissionTags(record, form = latestPublishedForm()) {
 }
 
 function updateRoutes() {
-	const params = { pid: state.projectId, sid: state.studyId };
 	const projectHref = route("/pages/project-dashboard/", { id: state.projectId });
-	const studyHref = route("/pages/study/", params);
-	const consentFormsHref = route("/pages/study/consent-forms/", params);
-	const participantsHref = route("/pages/study/participants/", params);
+	const studyHref = route("/pages/study/", { id: state.studyId });
+	const consentFormsHref = route("/pages/study/consent-forms/", { id: state.studyId });
+	const participantsHref = route("/pages/study/participants/", { id: state.studyId });
 	const currentStudyTitle = studyTitle(state.study || {});
 
 	const breadcrumbProject = $("#breadcrumb-project");
@@ -456,8 +410,11 @@ async function init() {
 	clearErrors();
 	wireEvents();
 	const params = new URLSearchParams(window.location.search);
-	state.projectId = params.get("pid") || "";
-	state.studyId = params.get("sid") || "";
+	const context = window.__studyRouteContext || await resolveStudyContextFromUrl(params);
+	state.projectId = context.projectId || "";
+	state.studyId = context.studyId || "";
+	state.project = context.project || null;
+	state.study = context.study || null;
 
 	if (!state.projectId || !state.studyId) {
 		renderPageState();
@@ -465,15 +422,11 @@ async function init() {
 	}
 
 	try {
-		const [project, studies, participants, consentForms, participantConsentRecords] = await Promise.all([
-			loadProject(state.projectId),
-			loadStudies(state.projectId),
+		const [participants, consentForms, participantConsentRecords] = await Promise.all([
 			loadStudyCollection("/api/participants", state.studyId, "participants"),
 			loadStudyCollection("/api/consent-forms", state.studyId, "consentForms"),
 			loadStudyCollection("/api/participant-consent", state.studyId, "participantConsentRecords")
 		]);
-		state.project = project;
-		state.study = studies.find(item => item.id === state.studyId) || null;
 		state.participants = participants;
 		state.consentForms = consentForms;
 		state.participantConsentRecords = participantConsentRecords;
@@ -484,7 +437,7 @@ async function init() {
 		renderParticipantTable();
 	} catch (error) {
 		console.error("[participant-consent] init failed", error);
-		showErrors(["Could not load participant consent. Check the project and study links, then try again."]);
+		showErrors(["Could not load participant consent. Check the Study record link, then try again."]);
 	}
 }
 

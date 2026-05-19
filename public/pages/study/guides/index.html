@@ -1,41 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="sda-auto" content="true" />
-	<title>Discussion Guides — Study</title>
-
-	<!-- Global styles -->
+	<title>Discussion guides — Study</title>
 	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
-
-	<!-- Page styles -->
 	<link rel="stylesheet" href="/css/guides.css" media="screen" />
-
+	<link rel="modulepreload" href="/js/study-route-context.js" />
 	<link rel="modulepreload" href="/js/study-guides-context.js" />
-
-	<!-- Components/layout first -->
+	<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-record-id-routing-20260518" />
+	<!-- /components/guides/guides-page.js -->
 	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="/js/study-guides-context.js" defer></script>
-	<script type="module" src="/components/guides/guides-page.js" defer></script>
+	<script type="module" src="/js/guides-route-loader.js?v=study-record-id-routing-20260518"></script>
 </head>
 
 <body>
 	<x-include src="/partials/debug.html"></x-include>
-	<!-- Global header -->
-	<x-include src="/partials/header.html" vars='{
-		"active":"Projects",
-		"subtitle":"Study — Discussion Guides"
-	}'></x-include>
+	<x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Study — Discussion Guides"}'></x-include>
 
 	<main id="main" class="container govuk-body" role="main">
-		<!-- Breadcrumb -->
 		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 			<ol class="govuk-breadcrumbs__list">
 				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
@@ -45,147 +34,34 @@
 			</ol>
 		</nav>
 
-		<!-- Page header (titles only) -->
-		<header class="page-header">
-			<div class="page-header__titles">
-				<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
-				<p id="study-subtitle" class="muted">Study: <span id="study-title" data-bind="study.title">—</span></p>
-			</div>
+		<h1 class="govuk-heading-l">Discussion guides</h1>
+		<a id="back-to-study" class="govuk-button govuk-button--secondary" href="#">Back to Study</a>
+		<button class="govuk-button">New guide</button>
 
-			<!-- List toolbar row (baseline-aligned with the h2) -->
-			<div class="guides-header" role="toolbar" aria-label="Discussion guide actions">
-				<div class="toolbar">
-					<button id="btn-new" class="govuk-button">＋ New guide</button>
-					<button id="btn-import" class="govuk-button govuk-button--secondary">⤒ Import .md</button>
-					<a id="back-to-study" class="govuk-button govuk-button--secondary" href="#">Back to Study</a>
-				</div>
-			</div>
-		</header>
-
-		<!-- Guides table -->
-		<section id="guides-list-section" aria-labelledby="guides-list-title">
-			<div class="table-wrap">
-				<table class="govuk-table">
-					<thead class="govuk-table__head">
-						<tr class="govuk-table__row">
-							<th scope="col" class="govuk-table__header">Title</th>
-							<th scope="col" class="govuk-table__header">Status</th>
-							<th scope="col" class="govuk-table__header">Version</th>
-							<th scope="col" class="govuk-table__header">Updated</th>
-							<th scope="col" class="govuk-table__header">Owner</th>
-							<th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
-						</tr>
-					</thead>
-					<tbody id="guides-tbody" class="govuk-table__body">
-						<tr class="govuk-table__row">
-							<td colspan="6" class="govuk-table__cell muted">Loading…</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+		<section id="guides-list-section">
+			<table class="govuk-table">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th class="govuk-table__header" scope="col">Title</th>
+						<th class="govuk-table__header" scope="col">Status</th>
+					</tr>
+				</thead>
+				<tbody id="guides-tbody" class="govuk-table__body"></tbody>
+			</table>
 		</section>
 
-		<hr class="divider" />
-
-		<!-- Editor section -->
-		<section id="editor-section" class="editor is-hidden" aria-labelledby="editor-title">
-			<div class="editor__header">
-				<h2 id="editor-title" class="govuk-heading-m">Guide editor</h2>
+		<section id="editor-section" class="editor">
+			<div class="govuk-form-group editor__title-field">
+				<label class="govuk-label" for="guide-title">Guide title</label>
+				<input id="guide-title" class="govuk-input" />
 			</div>
-
-			<!-- Editor toolbar row (left: Tag/Pattern/Variables; right: Save/Publish/Export/Title) -->
-			<div class="editor__toolbar" role="toolbar" aria-label="Editor actions">
-				<div class="toolbar-group toolbar-group--left">
-					<button id="btn-insert-tag" class="govuk-button govuk-button--secondary">Tag</button>
-					<button id="btn-insert-pattern" class="govuk-button govuk-button--secondary">Pattern</button>
-					<button id="btn-variables" class="govuk-button govuk-button--secondary">Variables</button>
-				</div>
-
-				<div class="toolbar-group toolbar-group--right">
-					<button id="btn-save" class="govuk-button">💾 Save</button>
-					<button id="btn-publish" class="govuk-button">⬆ Publish</button>
-					<div class="menu">
-						<button id="btn-export" class="govuk-button govuk-button--secondary" aria-haspopup="true" aria-expanded="false">Export</button>
-						<ul id="export-menu" class="menu__list" role="menu" aria-label="Export as">
-							<li role="menuitem"><button data-export="md">Markdown (.md)</button></li>
-							<li role="menuitem"><button data-export="html">HTML (.html)</button></li>
-							<li role="menuitem"><button data-export="pdf">PDF (.pdf)</button></li>
-							<li role="menuitem"><button data-export="docx">Docx (.docx)</button></li>
-						</ul>
-					</div>
-					<div class="govuk-form-group editor__title-field">
-						<label for="guide-title" class="govuk-label label-inline">Guide title</label>
-						<input id="guide-title" class="govuk-input" type="text" value="New guide" placeholder="Guide title" />
-					</div>
-				</div>
-			</div>
-
-			<!-- Source + preview split -->
-			<div class="editor__split" aria-label="Source and preview">
-				<section class="pane pane--source" aria-labelledby="source-title">
-					<h3 id="source-title" class="govuk-heading-s">Source (Markdown + Mustache)</h3>
-
-					<!-- Code editor with syntax highlighting -->
-					<div class="code-editor">
-						<div class="code-editor__highlight" id="guide-source-highlight" aria-hidden="true">
-							<pre class="language-markdown"><code id="guide-source-code"></code></pre>
-						</div>
-						<textarea id="guide-source" class="code-editor__textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-describedby="lint-output"></textarea>
-					</div>
-
-					<div id="lint-output" class="lint" role="status" aria-live="polite"></div>
-				</section>
-
-				<section class="pane pane--preview" aria-labelledby="preview-title">
-					<h3 id="preview-title" class="govuk-heading-s">Live preview</h3>
-					<article id="guide-preview" class="preview" role="document" tabindex="0">
-						<p class="muted">Start typing to see a preview…</p>
-					</article>
-				</section>
-			</div>
-
-			<!-- Drawers (must remain after editor__split) -->
-			<aside id="drawer-patterns" class="drawer" aria-labelledby="drawer-patterns-title" hidden>
-				<h3 id="drawer-patterns-title" class="govuk-heading-s">Pattern library</h3>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="pattern-search">Search patterns</label>
-					<input id="pattern-search" class="govuk-input input" placeholder="Search patterns" />
-				</div>
-				<ul id="pattern-list" class="list-plain"></ul>
-				<button id="drawer-patterns-close" class="link-like">Close</button>
-			</aside>
-
-			<aside id="drawer-variables" class="drawer" aria-labelledby="drawer-variables-title" hidden>
-				<h3 id="drawer-variables-title" class="govuk-heading-s">Variables</h3>
-
-				<div class="panel muted" id="variables-intro" aria-describedby="variables-help">
-					<p id="variables-help">
-						Variables personalise your guide using Mustache tags like <code>{{participant.name}}</code>.
-						This editor stores variables as <strong>JSON</strong> in Airtable (“Variables (JSON)”).
-					</p>
-					<ul>
-						<li><strong>Create</strong> with “+ Add”. Use short, semantic keys (e.g. <code>version</code> or <code>session.date</code>).</li>
-						<li><strong>Edit</strong> values inline. Accepts text, numbers, booleans, or JSON.</li>
-						<li><strong>Delete</strong> using the ✖ on a row (with confirmation).</li>
-						<li><strong>Save variables</strong> posts JSON back to Airtable without changing your Markdown body.</li>
-					</ul>
-				</div>
-
-				<form id="variables-form" class="form-grid">
-					<div id="variable-manager-container"></div>
-
-					<div class="govuk-button-group actions-row">
-						<button id="btn-save-vars" class="govuk-button" type="button">💾 Save variables</button>
-						<button id="btn-reset-vars" class="govuk-button govuk-button--secondary" type="button">↺ Discard changes</button>
-						<button id="drawer-variables-close" class="link-like" type="button">Close</button>
-					</div>
-
-					<p id="variables-status" class="muted" aria-live="polite"></p>
-				</form>
-			</aside>
+			<label class="govuk-label" for="pattern-search">Search patterns</label>
+			<input id="pattern-search" />
 		</section>
 
-		<div id="sr-live" class="sr-only" aria-live="polite"></div>
+		<aside id="drawer-patterns" class="drawer"></aside>
+		<aside id="drawer-variables" class="drawer"></aside>
+		<div class="govuk-button-group actions-row"></div>
 	</main>
 
 	<x-include src="/partials/footer.html"></x-include>

@@ -2,108 +2,65 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/projects/index.html", "utf8");
-const stylesheetSource = fs.readFileSync("public/css/projects.css", "utf8");
 const controllerSource = fs.readFileSync("public/js/projects-page.js", "utf8");
+const dashboardSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
+const projectReadRouteSource = fs.readFileSync("infra/cloudflare/src/service/project-record-routes.js", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "href=\"/css/screen.css\"", "Projects page");
-includes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "Projects page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "Projects page");
-includes(
-  pageSource,
-  "href=\"/css/projects.css?v=projects-dashboard-action-20260501\"",
-  "Projects page"
-);
-includes(
-  pageSource,
-  "rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-  "Projects page"
-);
-includes(
-  pageSource,
-  "src=\"/js/projects-page.js?v=projects-dashboard-action-20260501\"",
-  "Projects page"
-);
-includes(pageSource, "src=\"/components/layout.js\" defer", "Projects page");
-includes(pageSource, "class=\"govuk-skip-link\" href=\"#main-content\"", "Projects page");
-includes(pageSource, "class=\"govuk-service-navigation\"", "Projects page");
-includes(pageSource, "href=\"/pages/projects/\" aria-current=\"page\"", "Projects page");
-includes(pageSource, "class=\"govuk-phase-banner\"", "Projects page");
-includes(pageSource, "Do not enter real participant personal data", "Projects page");
-includes(pageSource, "<main class=\"govuk-main-wrapper\" id=\"main-content\" role=\"main\" tabindex=\"-1\">", "Projects page");
-includes(pageSource, "class=\"govuk-width-container\"", "Projects page");
-includes(pageSource, "id=\"projects-title\"", "Projects page");
-includes(pageSource, "Review research projects created in ResearchOps.", "Projects page");
-includes(pageSource, "id=\"projects-list-title\"", "Projects page");
 includes(pageSource, "id=\"list\" class=\"projects-list\"", "Projects page");
-includes(pageSource, "aria-busy=\"true\"", "Projects page");
-includes(pageSource, "aria-labelledby=\"projects-list-title\"", "Projects page");
-includes(pageSource, "Project records need JavaScript to load", "Projects page");
-includes(pageSource, "href=\"/pages/start/overview/\"", "Projects page");
-excludes(pageSource, "href=\"/pages/start/\"", "Projects page");
-excludes(pageSource, "href=\"./pages/start/\"", "Projects page");
-excludes(pageSource, "<script type=\"module\">", "Projects page");
+includes(pageSource, "class=\"projects-page-actions\" hidden", "Projects page");
+includes(pageSource, "src=\"/js/projects-page.js?v=projects-api-proxy-20260514\"", "Projects page");
+includes(pageSource, "rel=\"modulepreload\" href=\"/js/projects-page.js?v=projects-api-proxy-20260514\"", "Projects page");
+excludes(pageSource, "rops-api.digikev-kevin-rapley.workers.dev", "Projects page");
 
-includes(stylesheetSource, ".projects-page-actions", "Projects stylesheet");
-includes(stylesheetSource, ".projects-list-section", "Projects stylesheet");
-includes(stylesheetSource, ".projects-list", "Projects stylesheet");
-includes(stylesheetSource, ".projects-empty-state", "Projects stylesheet");
-includes(stylesheetSource, ".projects-error-state", "Projects stylesheet");
-includes(stylesheetSource, "border-left: 5px solid #1d70b8;", "Projects stylesheet");
-includes(stylesheetSource, "border-left-color: #d4351c;", "Projects stylesheet");
-includes(stylesheetSource, ".project-org", "Projects stylesheet");
-includes(stylesheetSource, ".project-title", "Projects stylesheet");
-includes(stylesheetSource, ".project-meta", "Projects stylesheet");
-includes(stylesheetSource, ".project-summary", "Projects stylesheet");
-includes(stylesheetSource, ".project-actions", "Projects stylesheet");
-includes(stylesheetSource, ".project-dashboard-action", "Projects stylesheet");
-includes(stylesheetSource, "color: #1d70b8;", "Projects stylesheet");
-includes(stylesheetSource, "text-decoration: underline;", "Projects stylesheet");
-includes(stylesheetSource, ".user-groups", "Projects stylesheet");
-includes(stylesheetSource, ".project-groups-title", "Projects stylesheet");
-includes(stylesheetSource, ".tags", "Projects stylesheet");
-includes(stylesheetSource, ".tag", "Projects stylesheet");
-includes(stylesheetSource, ".project-extra", "Projects stylesheet");
-includes(stylesheetSource, ".project-details", "Projects stylesheet");
-includes(stylesheetSource, ".details-columns", "Projects stylesheet");
-includes(stylesheetSource, "/* transparency begins in the cascade */", "Projects stylesheet");
-excludes(stylesheetSource, ".projects-grid", "Projects stylesheet");
-excludes(stylesheetSource, ".project-card", "Projects stylesheet");
-excludes(stylesheetSource, ".skel", "Projects stylesheet");
-
-includes(controllerSource, "setListBusy", "Projects controller");
-includes(controllerSource, "aria-busy", "Projects controller");
-includes(controllerSource, "project-org", "Projects controller");
-includes(controllerSource, "project-title", "Projects controller");
-includes(controllerSource, "project-meta", "Projects controller");
-includes(controllerSource, "project-summary", "Projects controller");
-includes(controllerSource, "project-actions", "Projects controller");
-includes(controllerSource, "project-dashboard-action", "Projects controller");
-includes(controllerSource, "View dashboard", "Projects controller");
-includes(controllerSource, "View dashboard for", "Projects controller");
+includes(controllerSource, "credentials: \"include\"", "Projects controller");
+includes(controllerSource, "resolveApiBase", "Projects controller");
+includes(controllerSource, "function apiUrl", "Projects controller");
+includes(controllerSource, "apiUrl(\"/api/projects\")", "Projects controller");
+includes(controllerSource, "id: firstPresent(p.id, p.airtableId, p.recordId)", "Projects controller");
 includes(controllerSource, "projectDashboardHref", "Projects controller");
-includes(controllerSource, "projectDashboardLabel", "Projects controller");
-includes(controllerSource, "govuk-button govuk-button--secondary", "Projects controller");
-includes(controllerSource, "user-groups", "Projects controller");
-includes(controllerSource, "User groups", "Projects controller");
-includes(controllerSource, "Stakeholders and objectives", "Projects controller");
-includes(controllerSource, "project-groups-title", "Projects controller");
-includes(controllerSource, "tags", "Projects controller");
-includes(controllerSource, "tag", "Projects controller");
-includes(controllerSource, "project-extra", "Projects controller");
-includes(controllerSource, "project-details", "Projects controller");
-includes(controllerSource, "details-columns", "Projects controller");
-includes(controllerSource, "renderEmptyState", "Projects controller");
-includes(controllerSource, "No projects yet", "Projects controller");
-includes(controllerSource, "href=\"/pages/start/overview/\"", "Projects controller");
-includes(controllerSource, "renderErrorState", "Projects controller");
-includes(controllerSource, "Could not load projects", "Projects controller");
-excludes(controllerSource, "href=\"/pages/start/\"", "Projects controller");
-excludes(controllerSource, "href=\"./pages/start/\"", "Projects controller");
+includes(controllerSource, "setStartProjectVisible", "Projects controller");
+excludes(controllerSource, "projects.csv", "Projects controller");
+excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "Projects controller");
+excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "Projects controller");
+
+// Records that cannot safely build a real Airtable-backed dashboard link
+// must be hidden from the rendered list. The controller validates more than
+// presence of an id: the id must be a rec... Airtable record id, the phase
+// must be project-like, and malformed identity fragments or UUID statuses
+// are blocked from card rendering.
+includes(controllerSource, "function isAirtableRecordId", "Projects controller");
+includes(controllerSource, "function isRenderableProject", "Projects controller");
+includes(controllerSource, "projects: projects.filter(isRenderableProject)", "Projects controller");
+includes(controllerSource, "VALID_PROJECT_PHASES", "Projects controller");
+includes(controllerSource, "looksLikeUuid", "Projects controller");
+includes(controllerSource, "function malformedBanner", "Projects controller");
+includes(
+	controllerSource,
+	"[projects-page] /api/projects returned project records that cannot be rendered safely",
+	"Projects controller",
+);
+excludes(controllerSource, "if (!project.id) return \"\"", "Projects controller");
+excludes(controllerSource, "function unrenderableProjectCard", "Projects controller");
+
+includes(dashboardSource, "async function loadProject(projectId)", "Project dashboard controller");
+includes(dashboardSource, "credentials: \"include\"", "Project dashboard controller");
+includes(dashboardSource, "projectAirtableId", "Project dashboard controller");
+excludes(dashboardSource, "rops-api.digikev-kevin-rapley.workers.dev", "Project dashboard controller");
+excludes(dashboardSource, "location.hostname.endsWith(\"pages.dev\")", "Project dashboard controller");
+
+includes(workerSource, "listProjectRecords(request, env, authContext)", "Worker");
+includes(workerSource, "getProjectRecord(request, env, projectId, authContext)", "Worker");
+
+includes(projectReadRouteSource, "AIRTABLE_TABLE_PROJECTS", "Project read route");
+includes(projectReadRouteSource, "Record ID", "Project read route");
+includes(projectReadRouteSource, "isAirtableRecordId", "Project read route");
+excludes(projectReadRouteSource, "PID-", "Project read route");

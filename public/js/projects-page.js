@@ -1,21 +1,39 @@
 /**
  * @file public/js/projects-page.js
  * @module ProjectsPage
- * @summary Projects list UI with Airtable-first read and CSV fallback.
+ * @summary Projects list UI with team-scoped API data.
  */
 
+function resolveApiBase() {
+	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
+
+function apiUrl(path) {
+	const cleanPath = path.startsWith("/") ? path : `/${path}`;
+	return `${CONFIG.API_BASE}${cleanPath}`;
+}
+
 const CONFIG = Object.freeze({
-	API_BASE: document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || (location.hostname.endsWith("pages.dev") ? "https://rops-api.digikev-kevin-rapley.workers.dev" : location.origin),
+	API_BASE: resolveApiBase(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
 	SHOW_SOURCE_NOTE: false
 });
 
 const container = document.getElementById("list");
+const startProjectAction = document.querySelector(".projects-page-actions");
+
+const VALID_PROJECT_PHASES = new Set(["pre-discovery", "discovery", "alpha", "beta", "live"]);
 
 function setListBusy(isBusy) {
 	if (!container) return;
 	container.setAttribute("aria-busy", isBusy ? "true" : "false");
+}
+
+function setStartProjectVisible(isVisible) {
+	if (!startProjectAction) return;
+	startProjectAction.hidden = !isVisible;
 }
 
 function escapeHtml(value) {
@@ -41,74 +59,61 @@ function safeJsonArray(value) {
 	}
 }
 
-function parseCSV(text) {
-	const rows = [];
-	let row = [];
-	let field = "";
-	let inQuotes = false;
-
-	for (let i = 0; i < text.length; i++) {
-		const c = text[i];
-		const n = text[i + 1];
-		if (inQuotes) {
-			if (c === '"' && n === '"') {
-				field += '"';
-				i++;
-			} else if (c === '"') {
-				inQuotes = false;
-			} else {
-				field += c;
-			}
-		} else if (c === '"') {
-			inQuotes = true;
-		} else if (c === ',') {
-			row.push(field);
-			field = "";
-		} else if (c === "\r") {
-			continue;
-		} else if (c === "\n") {
-			row.push(field);
-			rows.push(row);
-			row = [];
-			field = "";
-		} else {
-			field += c;
-		}
-	}
-
-	if (field.length || row.length) {
-		row.push(field);
-		rows.push(row);
-	}
-
-	return rows;
+function isAirtableRecordId(value) {
+	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
 }
 
-function mapProjectRow(header, row) {
-	const idx = name => header.indexOf(name);
-	const get = name => {
-		const i = idx(name);
-		return i >= 0 ? (row[i] ?? "") : "";
-	};
+function looksLikeIdentityFragment(value) {
+	const text = String(value || "").trim();
+	if (!text) return false;
+	return /"?EMAIL"?\s*:/i.test(text) ||
+		/"?email"?\s*:/i.test(text) ||
+		/"?role"?\s*:/i.test(text) ||
+		/^[}\]]+$/.test(text) ||
+		/^[{[]/.test(text) ||
+		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+}
 
-	let stakeholders = [];
-	try {
-		stakeholders = JSON.parse(get("Stakeholders") || "[]");
-	} catch {
-		stakeholders = [];
+function looksLikeUuid(value) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || "").trim());
+}
+
+function normaliseList(value, splitPattern = /[\n|,]/) {
+	if (Array.isArray(value)) {
+		return value
+			.map((item) => String(item || "").trim())
+			.filter((item) => item && !looksLikeIdentityFragment(item));
 	}
 
-	return {
-		id: get("LocalId") || undefined,
-		name: get("Name"),
-		description: get("Description"),
-		stakeholders,
-		objectives: (get("Objectives") || "").split("|").map(s => s.trim()).filter(Boolean),
-		user_groups: (get("UserGroups") || "").split("|").map(s => s.trim()).filter(Boolean),
-		createdAt: get("CreatedAt") || "",
-		"rops:servicePhase": get("Phase") || "Discovery",
-		"rops:projectStatus": get("Status") || "Planning research"
-	};
+	return String(value || "")
+		.split(splitPattern)
+		.map((item) => item.trim())
+		.filter((item) => item && !looksLikeIdentityFragment(item));
+}
+
+function firstPresent(...values) {
+	for (const value of values) {
+		if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
+	}
+	return "";
+}
+
+function normaliseTeamName(value) {
+	return String(value || "").trim();
+}
+
+function hasValidProjectPhase(project) {
+	const phase = String(project?.["rops:servicePhase"] || "").trim().toLowerCase();
+	return VALID_PROJECT_PHASES.has(phase);
+}
+
+function isRenderableProject(project) {
+	if (!isAirtableRecordId(project?.id)) return false;
+	if (!String(project?.name || "").trim()) return false;
+	if (looksLikeIdentityFragment(project.name)) return false;
+	if (!hasValidProjectPhase(project)) return false;
+	if (looksLikeIdentityFragment(project["rops:projectStatus"]) || looksLikeUuid(project["rops:projectStatus"])) return false;
+	return true;
 }
 
 async function fetchWithTimeout(url) {
@@ -117,7 +122,7 @@ async function fetchWithTimeout(url) {
 	try {
 		const response = await fetch(url, {
 			signal: controller.signal,
-			credentials: "omit",
+			credentials: "include",
 			cache: CONFIG.CACHE
 		});
 		const text = await response.text();
@@ -141,45 +146,79 @@ function normaliseProject(p) {
 
 	const objectivesRaw = p.Objectives ?? p.objectives ?? "";
 	const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
+	const teamName = normaliseTeamName(firstPresent(
+		p.teamName,
+		p.team_name,
+		p.team,
+		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
+		p.Org,
+		p.org
+	));
 
 	return {
-		id: p.LocalId || p.id,
+		id: firstPresent(p.id, p.airtableId, p.recordId),
+		airtableId: firstPresent(p.airtableId, p.id, p.recordId),
+		recordId: firstPresent(p.recordId, p.id, p.airtableId),
 		name: p.Name ?? p.name ?? "",
 		description: p.Description ?? p.description ?? "",
 		stakeholders,
-		objectives: Array.isArray(objectivesRaw) ? objectivesRaw : String(objectivesRaw).split("\n").map(s => s.trim()).filter(Boolean),
-		user_groups: Array.isArray(groupsRaw) ? groupsRaw : String(groupsRaw).split(",").map(s => s.trim()).filter(Boolean),
+		objectives: normaliseList(objectivesRaw, /\r?\n|[|]/),
+		user_groups: normaliseList(groupsRaw, /\r?\n|[|,]/),
 		createdAt: p.CreatedAt ?? p.createdAt ?? p.createdTime ?? "",
 		"rops:servicePhase": p.Phase ?? p["rops:servicePhase"] ?? "",
-		"rops:projectStatus": p.Status ?? p["rops:projectStatus"] ?? ""
+		"rops:projectStatus": p.Status ?? p["rops:projectStatus"] ?? "",
+		teamName,
+		team_name: teamName,
+		team: teamName,
+		org: teamName || p.Org || p.org || ""
 	};
 }
 
-async function listFromAirtable() {
-	const { ok, status, data } = await fetchWithTimeout(`${CONFIG.API_BASE}/api/projects`);
-	if (!ok || !data?.ok) throw new Error(`Airtable list failed (${status})`);
-	return (data.projects || []).map(normaliseProject);
-}
-
-async function listFromCsv() {
-	const response = await fetch(`${CONFIG.API_BASE}/api/projects.csv`, { cache: CONFIG.CACHE });
-	if (!response.ok) throw new Error(`CSV fetch failed (${response.status})`);
-	const rows = parseCSV(await response.text());
-	if (!rows.length) return [];
-	const [headerRow, ...dataRows] = rows;
-	const header = headerRow.map(h => (h || "").trim());
-	return dataRows
-		.filter(r => r && r.some(cell => (cell || "").trim().length))
-		.map(r => mapProjectRow(header, r));
-}
-
 async function listProjects() {
-	try {
-		return { source: "airtable", projects: await listFromAirtable() };
-	} catch (error) {
-		console.warn("[ProjectsPage] Falling back to CSV", error);
-		return { source: "csv", projects: await listFromCsv() };
+	const { ok, status, data } = await fetchWithTimeout(apiUrl("/api/projects"));
+	if (!ok || !data?.ok) throw new Error(`Project list failed (${status})`);
+
+	const rawProjects = Array.isArray(data.projects) ? data.projects : [];
+	const projects = rawProjects.map(normaliseProject);
+
+	const malformed = [];
+	projects.forEach((project, index) => {
+		if (!isRenderableProject(project)) {
+			malformed.push({
+				index,
+				rawKeys: Object.keys(rawProjects[index] || {}),
+				rawIdLikeValues: {
+					id: rawProjects[index]?.id,
+					airtableId: rawProjects[index]?.airtableId,
+					recordId: rawProjects[index]?.recordId,
+					Id: rawProjects[index]?.Id,
+					ID: rawProjects[index]?.ID,
+					localId: rawProjects[index]?.localId,
+					LocalId: rawProjects[index]?.LocalId,
+					pid: rawProjects[index]?.pid,
+					PID: rawProjects[index]?.PID,
+					"Record ID": rawProjects[index]?.["Record ID"],
+				},
+				name: project.name,
+				phase: project["rops:servicePhase"],
+				status: project["rops:projectStatus"],
+			});
+		}
+	});
+
+	if (malformed.length) {
+		console.error("[projects-page] /api/projects returned project records that cannot be rendered safely", {
+			malformed,
+			sampleRawProject: rawProjects[malformed[0].index],
+		});
 	}
+
+	return {
+		source: "api",
+		projects: projects.filter(isRenderableProject),
+		canStartProject: Boolean(data.canStartProject),
+		malformed,
+	};
 }
 
 function projectDashboardHref(projectId) {
@@ -190,9 +229,13 @@ function projectDashboardLabel(project) {
 	return `View dashboard for ${project.name || "this project"}`;
 }
 
+function projectTeamLabel(project) {
+	return project.teamName || project.team_name || project.team || project.org || "Unassigned team";
+}
+
 function projectCard(project) {
-	const projectId = encodeURIComponent(project.id || "");
-	const dashboardHref = projectDashboardHref(project.id || "");
+	const projectId = encodeURIComponent(project.id);
+	const dashboardHref = projectDashboardHref(project.id);
 	const dashboardLabel = escapeHtml(projectDashboardLabel(project));
 	const groups = (project.user_groups || [])
 		.map(group => `<li><span class="tag">${escapeHtml(group)}</span></li>`)
@@ -209,7 +252,7 @@ function projectCard(project) {
 
 	return `
 <article class="card" aria-labelledby="project-title-${projectId}">
-	<p class="project-org">${escapeHtml(project.org || project.Org || "Home Office Biometrics")}</p>
+	<p class="project-org"><span class="govuk-visually-hidden">Team: </span>${escapeHtml(projectTeamLabel(project))}</p>
 	<h3 id="project-title-${projectId}" class="project-title govuk-heading-m">
 		<a class="govuk-link" href="${dashboardHref}" rel="bookmark">${escapeHtml(project.name)}</a>
 	</h3>
@@ -231,12 +274,12 @@ function projectCard(project) {
 </article>`;
 }
 
-function renderEmptyState() {
+function renderEmptyState(canStartProject = false) {
 	container.innerHTML = `
 <div class="projects-empty-state" role="status">
 	<h3 class="govuk-heading-m">No projects yet</h3>
 	<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
+	${canStartProject ? '<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>' : ""}
 </div>`;
 }
 
@@ -244,19 +287,30 @@ function renderErrorState(error) {
 	container.innerHTML = `
 <div class="projects-error-state" role="alert">
 	<h3 class="govuk-heading-m">Could not load projects</h3>
-	<p class="govuk-body">Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.</p>
+	<p class="govuk-body">Project records could not be loaded. Try again later.</p>
 	<p class="govuk-body">Technical detail: ${escapeHtml(error?.message || error)}</p>
-	<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
 </div>`;
 }
 
-function render(projects, source) {
+function malformedBanner(malformed) {
+	if (!malformed?.length) return "";
+	const count = malformed.length;
+	const noun = count === 1 ? "project record" : "project records";
+	return `
+<div class="projects-malformed-banner" role="status" aria-live="polite">
+	<p class="govuk-body"><strong>${count}</strong> ${noun} could not be linked because the API response did not match the project-card contract. ${count === 1 ? "It has" : "They have"} been hidden from this list. See the browser console for technical detail.</p>
+</div>`;
+}
+
+function render(projects, source, canStartProject = false, malformed = []) {
+	setStartProjectVisible(canStartProject);
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 	if (!projects.length) {
-		renderEmptyState();
+		renderEmptyState(canStartProject);
+		if (malformed?.length) container.innerHTML = malformedBanner(malformed) + container.innerHTML;
 		return;
 	}
-	container.innerHTML = projects.map(projectCard).join("");
+	container.innerHTML = malformedBanner(malformed) + projects.map(projectCard).join("");
 	if (CONFIG.SHOW_SOURCE_NOTE) {
 		const sourceNote = document.createElement("p");
 		sourceNote.className = "lede";
@@ -267,11 +321,13 @@ function render(projects, source) {
 
 (async () => {
 	if (!container) return;
+	setStartProjectVisible(false);
 	setListBusy(true);
 	try {
-		const { source, projects } = await listProjects();
-		render(projects, source);
+		const { source, projects, canStartProject, malformed } = await listProjects();
+		render(projects, source, canStartProject, malformed);
 	} catch (error) {
+		setStartProjectVisible(false);
 		renderErrorState(error);
 	} finally {
 		setListBusy(false);
@@ -280,6 +336,5 @@ function render(projects, source) {
 
 window.__rops = Object.freeze({
 	CONFIG,
-	parseCSV,
 	toMs
 });

@@ -47,7 +47,7 @@ includes(contextSource, "async function loadStudies", "study guides context modu
 includes(contextSource, "async function loadProject", "study guides context module");
 includes(contextSource, "function bindContext", "study guides context module");
 includes(contextSource, "window.__guideCtx", "study guides context module");
-includes(contextSource, "Missing pid or sid in URL", "study guides context module");
+includes(contextSource, "Missing Study record ID in URL", "study guides context module");
 includes(contextSource, "export { fallbackTitle, pickTitle };", "study guides context module");
 
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");

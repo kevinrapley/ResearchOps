@@ -4,14 +4,16 @@
  * @summary Loads a study page and renders a readiness-led control page.
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	window.RESEARCHOPS_API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+function resolveApiBase() {
+	const explicit =
+		document.documentElement?.dataset?.apiOrigin ||
+		window.API_ORIGIN ||
+		window.RESEARCHOPS_API_ORIGIN ||
+		"";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
 
+const API_ORIGIN = resolveApiBase();
 const $ = (selector, root = document) => root.querySelector(selector);
 
 function apiUrl(path) {
@@ -45,6 +47,18 @@ function studyTitle(study = {}) {
 	return (study.title || study.Title || "").trim() || fallbackTitle(study);
 }
 
+function linkedProjectIdForStudy(study = {}) {
+	return (
+		study.projectId ||
+		study.project_id ||
+		study.projectRecordId ||
+		study.project_record_id ||
+		(Array.isArray(study.projectIds) ? study.projectIds[0] : "") ||
+		(Array.isArray(study.project_ids) ? study.project_ids[0] : "") ||
+		""
+	);
+}
+
 function showError(message) {
 	const summary = $("#study-error");
 	const messageEl = $("#study-error-message");
@@ -63,39 +77,68 @@ function hideError() {
 }
 
 async function jsonFetch(url) {
-	const response = await fetch(url, { cache: "no-store" });
+	const response = await fetch(url, { cache: "no-store", credentials: "include" });
+	const contentType = (response.headers.get("content-type") || "").toLowerCase();
+	if (!contentType.includes("application/json")) {
+		const preview = await response.text().catch(() => "");
+		throw new Error(`Request returned non-JSON (${response.status}) ${preview.slice(0, 120)}`);
+	}
 	const text = await response.text();
 	const body = text ? JSON.parse(text) : {};
-	if (!response.ok) {
-		throw new Error(body?.error || `Request failed (${response.status})`);
+	if (!response.ok || body?.ok === false) {
+		throw new Error(body?.error || body?.detail || `Request failed (${response.status})`);
 	}
 	return body;
 }
 
 async function loadProject(projectId) {
 	try {
-		const body = await jsonFetch(apiUrl("/api/projects"));
-		const projects = Array.isArray(body?.projects) ? body.projects : [];
-		return projects.find(project => project.id === projectId) || null;
+		// Project read route uses apiUrl("/api/projects") with a canonical Airtable record id path.
+		const body = await jsonFetch(apiUrl(`/api/projects/${encodeURIComponent(projectId)}`));
+		return body?.project || body;
 	} catch (error) {
 		console.warn("[study-page] project lookup failed", error);
 		return null;
 	}
 }
 
-async function loadStudies(projectId) {
-	const url = new URL(apiUrl("/api/studies"));
-	url.searchParams.set("project", projectId);
+async function loadStudy(studyId) {
+	const url = new URL(apiUrl("/api/studies"), window.location.origin);
+	url.searchParams.set("id", studyId);
 	const body = await jsonFetch(url.toString());
-	if (body?.ok !== true || !Array.isArray(body.studies)) {
-		throw new Error(body?.error || "Could not load studies");
+	if (body?.ok !== true || !body.study) {
+		throw new Error(body?.error || "Could not load study");
 	}
-	return body.studies;
+	return body.study;
+}
+
+async function resolveStudyContext(params) {
+	const studyId = params.get("id") || "";
+	const legacyProjectId = params.get("pid") || "";
+	const legacyStudyId = params.get("sid") || "";
+
+	if (studyId) {
+		const study = await loadStudy(studyId);
+		const projectId = linkedProjectIdForStudy(study);
+		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
+		return { projectId, studyId: study.id || studyId, study, routeMode: "canonical" };
+	}
+
+	if (legacyProjectId && legacyStudyId) {
+		const study = await loadStudy(legacyStudyId);
+		const projectId = linkedProjectIdForStudy(study);
+		if (!projectId || projectId !== legacyProjectId) {
+			throw new Error("The legacy project and study URL does not match the linked records.");
+		}
+		return { projectId, studyId: study.id || legacyStudyId, study, routeMode: "legacy-resolved" };
+	}
+
+	throw new Error("The study page needs a Study record ID in the URL.");
 }
 
 async function loadStudyCollection(path, studyId, key) {
 	try {
-		const url = new URL(apiUrl(path));
+		const url = new URL(apiUrl(path), window.location.origin);
 		url.searchParams.set("study", studyId);
 		const body = await jsonFetch(url.toString());
 		return Array.isArray(body?.[key]) ? body[key] : [];
@@ -252,20 +295,21 @@ function renderReadiness(study, context, sessionHref) {
 }
 
 function renderRoutes(projectId, studyId) {
-	const params = { pid: projectId, sid: studyId };
+	const legacySessionParams = { pid: projectId, sid: studyId };
+	const studyParams = { id: studyId };
 	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
-	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", params));
-	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", params));
-	enableLink("#link-guides", route("/pages/study/guides/", params));
-	enableLink("#link-participants", route("/pages/study/participants/", params));
-	enableLink("#link-synthesis", route("/pages/synthesize/", params));
+	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", studyParams));
+	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", studyParams));
+	enableLink("#link-guides", route("/pages/study/guides/", studyParams));
+	enableLink("#link-participants", route("/pages/study/participants/", studyParams));
+	enableLink("#link-synthesis", route("/pages/study/synthesis/", studyParams));
 
 	const editStudy = $("#edit-study");
-	if (editStudy) editStudy.href = `${route("/pages/study/", params)}#edit`;
+	if (editStudy) editStudy.href = `${route("/pages/study/", { id: studyId })}#edit`;
 
 	return {
-		sessionHref: route("/pages/study/session/", params)
+		sessionHref: route("/pages/study/session/", legacySessionParams)
 	};
 }
 
@@ -279,7 +323,7 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 	setText("#description", String(study.description || "").trim() || "No study description has been added yet.");
 	setText("#kv-method", study.method || "—");
 	setText("#kv-status", study.status || "—");
-	setText("#kv-studyid", String(study.studyId || "—").toUpperCase());
+	setText("#kv-studyid", String(study.studyId || study.id || "—").toUpperCase());
 
 	const routes = renderRoutes(projectId, studyId);
 	renderReadiness(study, readinessContext, routes.sessionHref);
@@ -288,29 +332,17 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 async function init() {
 	hideError();
 	const params = new URLSearchParams(window.location.search);
-	const projectId = params.get("pid") || "";
-	const studyId = params.get("sid") || "";
-
-	if (!projectId || !studyId) {
-		showError("The study page needs a project ID and study ID in the URL.");
-		return;
-	}
 
 	try {
-		const [project, studies, readinessContext] = await Promise.all([
-			loadProject(projectId),
-			loadStudies(projectId),
-			loadReadinessContext(studyId)
+		const context = await resolveStudyContext(params);
+		const [project, readinessContext] = await Promise.all([
+			loadProject(context.projectId),
+			loadReadinessContext(context.studyId)
 		]);
-		const study = studies.find(item => item.id === studyId);
-		if (!study) {
-			showError("The requested study could not be found for this project.");
-			return;
-		}
-		renderStudy(project, study, projectId, studyId, readinessContext);
+		renderStudy(project, context.study, context.projectId, context.studyId, readinessContext);
 	} catch (error) {
 		console.error("[study-page] init failed", error);
-		showError("Could not load the study. Check the project and study links, then try again.");
+		showError(error?.message || "Could not load the study. Check the study link, then try again.");
 	}
 }
 
@@ -329,6 +361,7 @@ document.addEventListener("study:desc:save", async event => {
 		await fetch(apiUrl(`/api/studies/${encodeURIComponent(studyId)}`), {
 			method: "PATCH",
 			headers: { "content-type": "application/json" },
+			credentials: "include",
 			body: JSON.stringify({ description: event.detail?.markdown || "" })
 		});
 	} catch (error) {

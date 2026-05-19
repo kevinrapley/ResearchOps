@@ -2,88 +2,18 @@
  * @file /pages/study/participants/scheduler.js
  * @module ParticipantsScheduler
  * @summary Controller for Participants and Sessions on a Study: loads data, renders tables/empty states, gates scheduling.
- * @description
- * - Renders two paired areas:
- *   1) Participants table (or empty state) + “Add participant” form
- *   2) Sessions table (or empty state) + “Schedule session” form
- * - Schedules are only enabled when at least one participant exists.
- * - Uses the Worker API endpoints:
- *   - GET  /api/participants?study=<StudyAirtableId>
- *   - POST /api/participants
- *   - GET  /api/sessions?study=<StudyAirtableId>
- *   - POST /api/sessions
- *   - GET  /api/sessions/:id/ics
- *
- * Implementation notes:
- * - Zero external dependencies; uses `fetch` with `cache:"no-store"` to avoid stale lists.
  */
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Tiny DOM helpers                                                          */
-/* ────────────────────────────────────────────────────────────────────────── */
+import { apiUrl, route, studyTitle } from '/js/study-route-context.js';
 
-/**
- * Query a single element.
- * @template {Element} T
- * @param {string} sel - CSS selector (first match returned).
- * @param {ParentNode} [root=document] - Optional root to scope the query.
- * @returns {T|null} The first matching element or `null`.
- */
-const $ = (sel, root = document) => /** @type {any} */ (root.querySelector(sel));
+const $ = (sel, root = document) => root.querySelector(sel);
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Data types                                                                */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/**
- * @typedef {Object} Participant
- * @property {string} id
- * @property {string} [display_name]
- * @property {string} [email]
- * @property {string} [phone]
- * @property {string} [channel_pref]
- * @property {string} [access_needs]
- * @property {string} [status]
- * @property {string} [createdAt]
- */
-
-/**
- * @typedef {Object} Session
- * @property {string} id
- * @property {string} participant_id
- * @property {string} starts_at
- * @property {number} duration_min
- * @property {string} [type]
- * @property {string} [location_or_link]
- * @property {string} [backup_contact]
- * @property {string} [researchers]
- * @property {string} [status]
- * @property {boolean} [safeguarding_flag]
- * @property {string} [notes]
- * @property {string} [createdAt]
- */
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Formatting helpers                                                        */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Escape HTML text content.
- * @param {unknown} value
- * @returns {string}
- */
 function escapeHtml(value) {
 	const d = document.createElement("div");
 	d.textContent = String(value ?? "");
 	return d.innerHTML;
 }
 
-/**
- * Human-readable “when” text for a session (local time).
- * @param {string} isoStart - ISO start timestamp.
- * @param {number} mins - Duration in minutes.
- * @returns {string} Formatted time range, localised.
- */
 function fmtWhen(isoStart, mins) {
 	const start = new Date(isoStart);
 	const end = new Date(start.getTime() + (Number(mins || 60) * 60000));
@@ -93,11 +23,6 @@ function fmtWhen(isoStart, mins) {
 	return sameDay ? `${d} – ${e}` : `${d} → ${end.toLocaleString()}`;
 }
 
-/**
- * Build the “Contact” cell contents for a participant.
- * @param {Participant} p
- * @returns {string} HTML string (safe, minimal).
- */
 function contactCell(p) {
 	const bits = [];
 	if (p.email) bits.push(`<a href="mailto:${encodeURIComponent(p.email)}">${escapeHtml(p.email)}</a>`);
@@ -105,52 +30,46 @@ function contactCell(p) {
 	return bits.join("<br/>") || "—";
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* API loaders                                                               */
-/* ────────────────────────────────────────────────────────────────────────── */
+function readStudyRouteContext() {
+	const usp = new URLSearchParams(location.search);
+	return {
+		projectId: usp.get("pid") || window.__studyRouteContext?.projectId || "",
+		studyId: usp.get("sid") || window.__studyRouteContext?.studyId || "",
+		project: window.__studyRouteContext?.project || null,
+		study: window.__studyRouteContext?.study || null
+	};
+}
 
-/**
- * Fetch all participants for a study.
- * @param {string} studyId - Airtable record id for the Study.
- * @returns {Promise<Participant[]>}
- * @throws If the network request fails or the API returns an error.
- */
+async function jsonFetch(path, options = {}) {
+	const res = await fetch(apiUrl(path), {
+		cache: "no-store",
+		credentials: "include",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...(options.headers || {})
+		}
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok || js?.ok === false) throw new Error(js?.detail || js?.error || `HTTP ${res.status}`);
+	return js;
+}
+
 async function loadParticipants(studyId) {
-	const res = await fetch(`/api/participants?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
-	/** @type {{ ok:boolean, participants?: Participant[], error?:string }} */
-	const js = await res.json().catch(() => /** @type {any} */ ({}));
-	if (!res.ok || js?.ok !== true) throw new Error(js?.error || `Participants ${res.status}`);
-	return js.participants || [];
+	const js = await jsonFetch(`/api/participants?study=${encodeURIComponent(studyId)}`);
+	return Array.isArray(js.participants) ? js.participants : [];
 }
 
-/**
- * Fetch all sessions for a study.
- * @param {string} studyId - Airtable record id for the Study.
- * @returns {Promise<Session[]>}
- * @throws If the network request fails or the API returns an error.
- */
 async function loadSessions(studyId) {
-	const res = await fetch(`/api/sessions?study=${encodeURIComponent(studyId)}`, { cache: "no-store" });
-	/** @type {{ ok:boolean, sessions?: Session[], error?:string }} */
-	const js = await res.json().catch(() => /** @type {any} */ ({}));
-	if (!res.ok || js?.ok !== true) throw new Error(js?.error || `Sessions ${res.status}`);
-	return js.sessions || [];
+	const js = await jsonFetch(`/api/sessions?study=${encodeURIComponent(studyId)}`);
+	return Array.isArray(js.sessions) ? js.sessions : [];
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Renderers                                                                 */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Render the Participants area (table or empty state).
- * @param {Participant[]} list
- * @returns {void}
- */
 function renderParticipants(list) {
-	const table = /** @type {HTMLTableElement|null} */ ($("#participantsTable"));
-	const wrap = /** @type {HTMLElement|null} */ ($("#participantsTableWrap"));
-	const body = /** @type {HTMLTableSectionElement|null} */ ($("#participants-tbody"));
-	const empty = /** @type {HTMLDivElement|null} */ ($("#participantsEmpty"));
+	const table = $("#participantsTable");
+	const wrap = $("#participantsTableWrap");
+	const body = $("#participants-tbody");
+	const empty = $("#participantsEmpty");
 
 	if (!table || !body || !empty) return;
 
@@ -172,7 +91,7 @@ function renderParticipants(list) {
 		row.className = "govuk-table__row";
 		row.dataset.participantRow = "true";
 		row.innerHTML = `
-			<td class="govuk-table__cell">${escapeHtml(p.display_name || "—")}</td>
+			<td class="govuk-table__cell">${escapeHtml(p.display_name || p.name || "—")}</td>
 			<td class="govuk-table__cell">${contactCell(p)}</td>
 			<td class="govuk-table__cell">${escapeHtml(p.status || "—")}</td>
 			<td class="govuk-table__cell">
@@ -183,17 +102,11 @@ function renderParticipants(list) {
 	}
 }
 
-/**
- * Render the Sessions area (table or empty state).
- * @param {Session[]} list
- * @param {Map<string, Participant>} participantsById - Lookup map for participant names.
- * @returns {void}
- */
 function renderSessions(list, participantsById) {
-	const table = /** @type {HTMLTableElement|null} */ ($("#sessionsTable"));
-	const wrap = /** @type {HTMLElement|null} */ ($("#sessionsTableWrap"));
-	const body = /** @type {HTMLTableSectionElement|null} */ ($("#sessions-tbody"));
-	const empty = /** @type {HTMLDivElement|null} */ ($("#sessionsEmpty"));
+	const table = $("#sessionsTable");
+	const wrap = $("#sessionsTableWrap");
+	const body = $("#sessions-tbody");
+	const empty = $("#sessionsEmpty");
 
 	if (!table || !body || !empty) return;
 
@@ -213,36 +126,26 @@ function renderSessions(list, participantsById) {
 	for (const s of list) {
 		const row = document.createElement("tr");
 		row.className = "govuk-table__row";
-		const pname = participantsById.get(s.participant_id)?.display_name || "—";
+		const pname = participantsById.get(s.participant_id)?.display_name || participantsById.get(s.participantId)?.display_name || "—";
 
 		row.innerHTML = `
-			<td class="govuk-table__cell">${escapeHtml(fmtWhen(s.starts_at, s.duration_min))}</td>
+			<td class="govuk-table__cell">${escapeHtml(fmtWhen(s.starts_at || s.startsAt, s.duration_min || s.durationMin))}</td>
 			<td class="govuk-table__cell">${escapeHtml(pname)}</td>
 			<td class="govuk-table__cell">${escapeHtml(s.status || "scheduled")}</td>
 			<td class="govuk-table__cell">
-				<a class="govuk-button govuk-button--secondary" href="/api/sessions/${encodeURIComponent(s.id)}/ics">Download .ics</a>
+				<a class="govuk-button govuk-button--secondary" href="${apiUrl(`/api/sessions/${encodeURIComponent(s.id)}/ics`)}">Download .ics</a>
 			</td>
 		`;
 		body.appendChild(row);
 	}
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Form gating & handlers                                                    */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Enable/disable the Schedule Session form depending on participants availability.
- * @param {boolean} enabled - Whether to enable the form.
- * @param {Participant[]} participants - Participants to populate the select.
- * @returns {void}
- */
 function setScheduleEnabled(enabled, participants) {
-	const form = /** @type {HTMLFormElement} */ ($("#scheduleForm"));
-	const btn = /** @type {HTMLButtonElement} */ ($("#scheduleBtn"));
-	const select = /** @type {HTMLSelectElement} */ ($("#s_participant"));
-	const banner = /** @type {HTMLDivElement} */ ($("#noParticipantsBanner"));
-	const cta = /** @type {HTMLAnchorElement} */ ($("#scheduleCta"));
+	const form = $("#scheduleForm");
+	const btn = $("#scheduleBtn");
+	const select = $("#s_participant");
+	const banner = $("#noParticipantsBanner");
+	const cta = $("#scheduleCta");
 
 	if (!form || !btn || !select || !banner) return;
 
@@ -267,31 +170,23 @@ function setScheduleEnabled(enabled, participants) {
 	cta?.classList.remove("link--disabled");
 }
 
-/**
- * Handle the “Add participant” form submit.
- * @param {SubmitEvent} e
- * @param {string} studyId
- * @param {() => Promise<void>} refresh - Function to refresh lists after success.
- * @returns {Promise<void>}
- */
 async function handleAddParticipant(e, studyId, refresh) {
 	e.preventDefault();
-	const form = /** @type {HTMLFormElement} */ (e.target);
-	const msg = /** @type {HTMLElement} */ ($("#addParticipantMsg"));
+	const form = e.target;
+	const msg = $("#addParticipantMsg");
 	if (msg) msg.textContent = "";
 
-	const display = /** @type {HTMLInputElement} */ ($("#p_display"))?.value.trim() || "";
-	const email = /** @type {HTMLInputElement} */ ($("#p_email"))?.value.trim() || "";
-	const phone = /** @type {HTMLInputElement} */ ($("#p_phone"))?.value.trim() || "";
-	const channel = /** @type {HTMLSelectElement} */ ($("#p_channel"))?.value || "email";
-	const access = /** @type {HTMLTextAreaElement} */ ($("#p_access"))?.value.trim() || "";
+	const display = $("#p_display")?.value.trim() || "";
+	const email = $("#p_email")?.value.trim() || "";
+	const phone = $("#p_phone")?.value.trim() || "";
+	const channel = $("#p_channel")?.value || "email";
+	const access = $("#p_access")?.value.trim() || "";
 
 	if (!display) {
 		if (msg) msg.textContent = "Display name is required.";
 		return;
 	}
 
-	/** @type {Record<string, any>} */
 	const payload = {
 		study_airtable_id: studyId,
 		display_name: display,
@@ -301,52 +196,42 @@ async function handleAddParticipant(e, studyId, refresh) {
 		access_needs: access || undefined
 	};
 
-	const res = await fetch("/api/participants", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload)
-	});
-	const js = await res.json().catch(() => /** @type {any} */ ({}));
-	if (!res.ok || js?.ok !== true) {
-		if (msg) msg.textContent = js?.error || "Failed to create participant.";
-		return;
+	try {
+		await jsonFetch("/api/participants", {
+			method: "POST",
+			body: JSON.stringify(payload)
+		});
+		form.reset();
+		if (msg) msg.textContent = "Participant created.";
+		await refresh();
+	} catch (error) {
+		if (msg) msg.textContent = error?.message || "Failed to create participant.";
 	}
-
-	form.reset();
-	if (msg) msg.textContent = "Participant created.";
-	await refresh();
 }
 
-/**
- * Handle the “Schedule session” form submit.
- * @param {SubmitEvent} e
- * @param {string} studyId
- * @returns {Promise<void>}
- */
 async function handleCreateSession(e, studyId) {
 	e.preventDefault();
-	const form = /** @type {HTMLFormElement} */ (e.target);
-	const msg = /** @type {HTMLElement} */ ($("#scheduleMsg"));
+	const form = e.target;
+	const msg = $("#scheduleMsg");
 	if (msg) msg.textContent = "";
 
-	const pid = /** @type {HTMLSelectElement} */ ($("#s_participant"))?.value || "";
-	const type = /** @type {HTMLSelectElement} */ ($("#s_type"))?.value || "remote";
-	const starts = /** @type {HTMLInputElement} */ ($("#s_datetime"))?.value || "";
-	const dur = /** @type {HTMLInputElement} */ ($("#s_duration"))?.value || "";
-	const loc = /** @type {HTMLInputElement} */ ($("#s_location"))?.value.trim() || "";
-	const backup = /** @type {HTMLInputElement} */ ($("#s_backup"))?.value.trim() || "";
-	const researchers = /** @type {HTMLInputElement} */ ($("#s_researchers"))?.value.trim() || "";
-	const notes = /** @type {HTMLTextAreaElement} */ ($("#s_notes"))?.value.trim() || "";
+	const participantId = $("#s_participant")?.value || "";
+	const type = $("#s_type")?.value || "remote";
+	const starts = $("#s_datetime")?.value || "";
+	const dur = $("#s_duration")?.value || "";
+	const loc = $("#s_location")?.value.trim() || "";
+	const backup = $("#s_backup")?.value.trim() || "";
+	const researchers = $("#s_researchers")?.value.trim() || "";
+	const notes = $("#s_notes")?.value.trim() || "";
 
-	if (!pid || !starts || !dur || !loc) {
+	if (!participantId || !starts || !dur || !loc) {
 		if (msg) msg.textContent = "Participant, start time, duration, and location are required.";
 		return;
 	}
 
-	/** @type {Record<string, any>} */
 	const payload = {
 		study_airtable_id: studyId,
-		participant_airtable_id: pid,
+		participant_airtable_id: participantId,
 		starts_at: new Date(starts).toISOString(),
 		duration_min: Number(dur),
 		type,
@@ -356,53 +241,19 @@ async function handleCreateSession(e, studyId) {
 		notes: notes || undefined
 	};
 
-	const res = await fetch("/api/sessions", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload)
-	});
-	const js = await res.json().catch(() => /** @type {any} */ ({}));
-	if (!res.ok || js?.ok !== true) {
-		if (msg) msg.textContent = js?.error || "Failed to create session.";
-		return;
+	try {
+		await jsonFetch("/api/sessions", {
+			method: "POST",
+			body: JSON.stringify(payload)
+		});
+		form.reset();
+		if (msg) msg.textContent = "Session created. You can download the .ics from the Sessions table.";
+		await refreshSessions(studyId);
+	} catch (error) {
+		if (msg) msg.textContent = error?.message || "Failed to create session.";
 	}
-
-	form.reset();
-	if (msg) msg.textContent = "Session created. You can download the .ics from the Sessions table.";
-	await refreshSessions(studyId);
 }
 
-/**
- * Load participants for a study.
- * @async
- * @function fetchParticipants
- * @param {string} sid Airtable Study record id
- * @returns {Promise<Array<Object>>} Array of participant objects
- * @throws {Error} When response not ok or invalid
- */
-async function fetchParticipants(sid) {
-	const url = `/api/participants?study=${encodeURIComponent(sid)}`;
-	console.info("[participants] GET", url);
-	const res = await fetch(url, { cache: "no-store" });
-
-	let js = null;
-	try { js = await res.json(); } catch {}
-	if (!res.ok || js?.ok !== true) {
-		const detail = js?.detail || js?.error || `HTTP ${res.status}`;
-		throw new Error(`Participants fetch failed: ${detail}`);
-	}
-	return Array.isArray(js.participants) ? js.participants : [];
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Orchestrators                                                             */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Refresh both participants and sessions; gate the schedule form accordingly.
- * @param {string} studyId
- * @returns {Promise<void>}
- */
 async function refreshAll(studyId) {
 	const [participants, sessions] = await Promise.all([
 		loadParticipants(studyId),
@@ -416,11 +267,6 @@ async function refreshAll(studyId) {
 	renderSessions(sessions, pMap);
 }
 
-/**
- * Refresh just the sessions table (re-reads participants to label names).
- * @param {string} studyId
- * @returns {Promise<void>}
- */
 async function refreshSessions(studyId) {
 	const [participants, sessions] = await Promise.all([
 		loadParticipants(studyId),
@@ -430,66 +276,53 @@ async function refreshSessions(studyId) {
 	renderSessions(sessions, pMap);
 }
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Bootstrap                                                                 */
-/* ────────────────────────────────────────────────────────────────────────── */
+function bindRouteChrome(context) {
+	const projectHref = route("/pages/project-dashboard/", { id: context.projectId });
+	const studyHref = route("/pages/study/", { id: context.studyId });
+	const title = studyTitle(context.study || {});
+
+	const bcProj = $("#breadcrumb-project");
+	if (bcProj) {
+		bcProj.href = projectHref;
+		bcProj.textContent = context.project?.name || "Project";
+	}
+	const bcStudy = $("#breadcrumb-study");
+	if (bcStudy) {
+		bcStudy.href = studyHref;
+		bcStudy.textContent = title;
+	}
+
+	const badge = $("#studyBadge");
+	if (badge) badge.textContent = `Study: ${title}`;
+}
 
 (async function init() {
 	try {
-		const usp = new URLSearchParams(location.search);
-		const pid = usp.get("pid") || "";
-		const sid = usp.get("sid") || "";
-		if (!pid || !sid) throw new Error("Missing pid or sid in URL");
+		const context = readStudyRouteContext();
+		if (!context.studyId) throw new Error("Missing Study record ID in URL");
 
-		const participants = await fetchParticipants(sid);
+		bindRouteChrome(context);
 
-		console.log(`[participants] loaded ${participants.length}`);
-		renderParticipantsTable(participants);
+		const addForm = $("#addParticipantForm");
+		const schedForm = $("#scheduleForm");
+		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, context.studyId, () => refreshAll(context.studyId)));
+		if (schedForm) schedForm.addEventListener("submit", (e) => handleCreateSession(e, context.studyId));
 
-		try {
-			const res = await fetch(`/api/projects`, { cache: "no-store" });
-			const js = await res.json().catch(() => /** @type {any} */ ({}));
-			/** @type {{id:string,name?:string}[]} */
-			const projects = Array.isArray(js?.projects) ? js.projects : [];
-			const project = projects.find(p => p.id === pid);
-			const bcProj = /** @type {HTMLAnchorElement} */ ($("#breadcrumb-project"));
-			if (bcProj) {
-				bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-				bcProj.textContent = project?.name || "Project";
-			}
-			const bcStudy = /** @type {HTMLAnchorElement} */ ($("#breadcrumb-study"));
-			if (bcStudy) {
-				bcStudy.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
-			}
-		} catch {
-			/* non-fatal */
-		}
+		await refreshAll(context.studyId);
 
-		const badge = /** @type {HTMLElement} */ ($("#studyBadge"));
-		if (badge) badge.textContent = `Study: ${sid}`;
-
-		const addForm = /** @type {HTMLFormElement} */ ($("#addParticipantForm"));
-		const schedForm = /** @type {HTMLFormElement} */ ($("#scheduleForm"));
-		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, sid, () => refreshAll(sid)));
-		if (schedForm) schedForm.addEventListener("submit", (e) => handleCreateSession(e, sid));
-
-		await refreshAll(sid);
-
-		const pTable = /** @type {HTMLElement} */ ($("#participantsTable"));
+		const pTable = $("#participantsTable");
 		if (pTable) {
 			pTable.addEventListener("click", (e) => {
-				const target = /** @type {HTMLElement|null} */ (e.target instanceof HTMLElement ? e.target : null);
-				const btn = target?.closest("[data-act='schedule']");
+				const target = e.target instanceof HTMLElement ? e.target : null;
+				const btn = target?.closest("[data-act='schedule'], [data-action='schedule']");
 				if (!btn) return;
-				const pidSel = /** @type {HTMLSelectElement} */ ($("#s_participant"));
-				const pidVal = btn.getAttribute("data-part");
-				if (pidSel && pidVal) {
-					pidSel.value = pidVal;
-					/** @type {HTMLInputElement} */
-					($("#s_datetime"))?.focus();
+				const participantSelect = $("#s_participant");
+				const participantId = btn.getAttribute("data-part") || btn.getAttribute("data-id");
+				if (participantSelect && participantId) {
+					participantSelect.value = participantId;
+					$("#s_datetime")?.focus();
 				}
-				/** @type {HTMLElement} */
-				($("#scheduleForm"))?.scrollIntoView({ behavior: "smooth", block: "start" });
+				$("#scheduleForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
 			});
 		}
 	} catch (err) {
