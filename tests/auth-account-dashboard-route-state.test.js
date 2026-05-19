@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
 const accountScript = fs.readFileSync('public/js/auth-account-page.js', 'utf8');
+const accountMobileStyles = fs.readFileSync('public/css/account-mobile-premium.css', 'utf8');
 const productRequirements = fs.readFileSync(
 	'docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md',
 	'utf8',
@@ -37,7 +38,21 @@ function assertAccountPageDoesNotUseSuccessMessagePattern() {
 }
 
 function assertAccountPageLoadsDashboardScript() {
-	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260513-teams-v3/);
+	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-dashboard-20260519-mobile-premium/);
+}
+
+function assertAccountPageLoadsPremiumMobileStyles() {
+	assert.match(accountPage, /\/css\/account-mobile-premium\.css/);
+	assert.match(accountPage, /<body class="rops-account-page">/);
+	assert.match(accountPage, /class="govuk-width-container account-width-container"/);
+	assert.match(accountPage, /class="govuk-grid-row account-hero"/);
+	assert.match(accountPage, /class="account-section account-actions-section"/);
+	assert.match(accountPage, /class="govuk-button-group account-actions"/);
+	assert.match(accountMobileStyles, /body\.rops-account-page/);
+	assert.match(accountMobileStyles, /govuk-header__product-name/);
+	assert.match(accountMobileStyles, /govuk-service-navigation__toggle/);
+	assert.match(accountMobileStyles, /account-actions \.govuk-button/);
+	assert.match(accountMobileStyles, /transparency begins in the cascade/);
 }
 
 function assertDashboardUsesSameOriginApiAndAuthContext() {
@@ -128,6 +143,7 @@ function assertProductRequirementsSupportPermissionBasedDashboard() {
 assertAccountPageExistsAsDashboard();
 assertAccountPageDoesNotUseSuccessMessagePattern();
 assertAccountPageLoadsDashboardScript();
+assertAccountPageLoadsPremiumMobileStyles();
 assertDashboardUsesSameOriginApiAndAuthContext();
 assertDashboardRendersAdaptiveTeamMembershipPresentation();
 assertDashboardSeparatesRolesFromCapabilities();
