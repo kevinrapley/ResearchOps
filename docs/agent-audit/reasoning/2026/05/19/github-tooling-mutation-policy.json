@@ -13,7 +13,7 @@
     "Added GitHub bundle XML reference for mutation policy.",
     "Updated AGENTS bootstrap to require the mutation policy before GitHub file changes.",
     "Updated orchestration and bundle registry versions to 1.4.1.",
-    "Updated GitHub bundle prompt spec, body and manifest to 2.9.2.",
+    "Updated GitHub bundle prompt spec and body to 2.9.2.",
     "Recorded the repeatable lesson in RECENT_LEARNINGS.md."
   ],
   "antiPatternsBlocked": [
