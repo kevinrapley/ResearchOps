@@ -4,11 +4,18 @@ import {
 	operationalDefaultState,
 	operationalDesignRisks,
 	operationalPaths,
+	operationalProjectId,
+	operationalStudyId,
 } from './visual-walkthrough.operational-fixtures.mjs';
 import {
 	participantConsentDefaultState,
 	participantConsentVisualStates,
 } from './visual-walkthrough.participant-consent-states.mjs';
+import {
+	synthesisDefaultState,
+	synthesisVisualStates,
+} from './visual-walkthrough.synthesis-states.mjs';
+import { synthesisPath } from './visual-walkthrough.synthesis-fixtures.mjs';
 
 /**
  * @file visual-walkthrough.config.mjs
@@ -51,6 +58,16 @@ const checkAnswersActions = [
 	{ type: 'click', selector: '#next4' },
 	{ type: 'waitForSelector', selector: '#step4', state: 'visible' },
 ];
+
+const canonicalStudyPaths = {
+	study: `/pages/study/?id=${operationalStudyId}`,
+	studyGuides: `/pages/study/guides/?id=${operationalStudyId}`,
+	studyParticipants: `/pages/study/participants/?id=${operationalStudyId}`,
+	studySession: `/pages/study/session/?id=${operationalStudyId}`,
+	studyConsentForms: `/pages/study/consent-forms/?id=${operationalStudyId}`,
+	studyParticipantConsent: `/pages/study/participant-consent/?id=${operationalStudyId}`,
+	studySynthesis: synthesisPath,
+};
 
 const accountSignInDefaultState = {
 	id: 'default',
@@ -95,7 +112,18 @@ function registeredPage(id, title, group, path, description, designRisk) {
 	return page({ id, title, group, path, description, designRisk });
 }
 
-function operationalPage({ id, title, group, path, description, designRisk, stateTitle, stateDescription, statePath, waitForText }) {
+function operationalPage({
+	id,
+	title,
+	group,
+	path,
+	description,
+	designRisk,
+	stateTitle,
+	stateDescription,
+	statePath,
+	waitForText,
+}) {
 	return page({
 		id,
 		title,
@@ -198,9 +226,24 @@ export const visualWalkthroughConfig = {
 			description: 'Start page for creating or beginning research project work.',
 			designRisk: operationalDesignRisks.start,
 			states: [
-				{ id: 'step-1-filled', title: 'Step 1 completed', description: 'Project definition entered.', actions: projectDefinitionActions },
-				{ id: 'step-2-default', title: 'Step 2 default state', description: 'Second wizard step.', actions: stepTwoActions },
-				{ id: 'step-2-filled-no-ai', title: 'Step 2 completed', description: 'Research context entered.', actions: stepTwoFilledActions },
+				{
+					id: 'step-1-filled',
+					title: 'Step 1 completed',
+					description: 'Project definition entered.',
+					actions: projectDefinitionActions,
+				},
+				{
+					id: 'step-2-default',
+					title: 'Step 2 default state',
+					description: 'Second wizard step.',
+					actions: stepTwoActions,
+				},
+				{
+					id: 'step-2-filled-no-ai',
+					title: 'Step 2 completed',
+					description: 'Research context entered.',
+					actions: stepTwoFilledActions,
+				},
 				{
 					id: 'step-2-ai-rewrite-shown',
 					title: 'Step 2 AI rewrite shown',
@@ -224,12 +267,34 @@ export const visualWalkthroughConfig = {
 						{ type: 'waitForText', text: 'Concise rewrite (optional):' },
 					],
 				},
-				{ id: 'step-3-default', title: 'Step 3 default state', description: 'Final data-entry step.', actions: stepThreeActions },
-				{ id: 'step-3-filled', title: 'Step 3 completed', description: 'Owner details entered.', actions: stepThreeFilledActions },
-				{ id: 'step-4-check-answers', title: 'Step 4 check your answers', description: 'Check-your-answers step.', actions: checkAnswersActions },
+				{
+					id: 'step-3-default',
+					title: 'Step 3 default state',
+					description: 'Final data-entry step.',
+					actions: stepThreeActions,
+				},
+				{
+					id: 'step-3-filled',
+					title: 'Step 3 completed',
+					description: 'Owner details entered.',
+					actions: stepThreeFilledActions,
+				},
+				{
+					id: 'step-4-check-answers',
+					title: 'Step 4 check your answers',
+					description: 'Check-your-answers step.',
+					actions: checkAnswersActions,
+				},
 			],
 		}),
-		registeredPage('projects', 'Projects', 'Projects', '/pages/projects/index.html', 'Project list page.', operationalDesignRisks.projects),
+		registeredPage(
+			'projects',
+			'Projects',
+			'Projects',
+			'/pages/projects/index.html',
+			'Project list page.',
+			operationalDesignRisks.projects
+		),
 		operationalPage({
 			id: 'project-dashboard',
 			title: 'Project dashboard',
@@ -250,8 +315,8 @@ export const visualWalkthroughConfig = {
 			description: 'Create a study from the project dashboard action workflow.',
 			designRisk: operationalDesignRisks.addStudy,
 			stateTitle: 'Add study with parent project context',
-			stateDescription: 'Add-study workflow captured with the parent project ID present.',
-			statePath: operationalPaths.addStudy,
+			stateDescription: 'Add-study workflow captured with the parent project record ID present.',
+			statePath: `/pages/study/new/?id=${operationalProjectId}`,
 			waitForText: 'Add study',
 		}),
 		operationalPage({
@@ -310,8 +375,8 @@ export const visualWalkthroughConfig = {
 			description: 'Study overview and readiness controls.',
 			designRisk: operationalDesignRisks.study,
 			stateTitle: 'Study overview with readiness context',
-			stateDescription: 'Study overview captured with project and study IDs.',
-			statePath: operationalPaths.study,
+			stateDescription: 'Study overview captured with the canonical Study record ID.',
+			statePath: canonicalStudyPaths.study,
 			waitForText: 'Assisted digital support interview round 1',
 		}),
 		operationalPage({
@@ -322,8 +387,8 @@ export const visualWalkthroughConfig = {
 			description: 'Discussion guide list and editor page.',
 			designRisk: operationalDesignRisks.studyGuides,
 			stateTitle: 'Discussion guides with study context',
-			stateDescription: 'Discussion guides page captured with project and study IDs.',
-			statePath: operationalPaths.studyGuides,
+			stateDescription: 'Discussion guides page captured with the canonical Study record ID.',
+			statePath: canonicalStudyPaths.studyGuides,
 			waitForText: 'Guides for this study',
 		}),
 		operationalPage({
@@ -335,7 +400,7 @@ export const visualWalkthroughConfig = {
 			designRisk: operationalDesignRisks.studyParticipants,
 			stateTitle: 'Study participants with participant records',
 			stateDescription: 'Participants page captured with study-scoped participant records.',
-			statePath: operationalPaths.studyParticipants,
+			statePath: canonicalStudyPaths.studyParticipants,
 			waitForText: 'Participants',
 		}),
 		operationalPage({
@@ -345,9 +410,9 @@ export const visualWalkthroughConfig = {
 			path: '/pages/study/session/index.html',
 			description: 'Session running and note capture page.',
 			designRisk: operationalDesignRisks.studySession,
-			stateTitle: 'Study session with project and study context',
-			stateDescription: 'Session workspace captured with project and study IDs.',
-			statePath: operationalPaths.studySession,
+			stateTitle: 'Study session with study context',
+			stateDescription: 'Session workspace captured with the canonical Study record ID.',
+			statePath: canonicalStudyPaths.studySession,
 			waitForText: 'Begin a session',
 		}),
 		operationalPage({
@@ -358,8 +423,8 @@ export const visualWalkthroughConfig = {
 			description: 'Study-specific consent form configuration page.',
 			designRisk: operationalDesignRisks.studyConsentForms,
 			stateTitle: 'Study consent forms with study context',
-			stateDescription: 'Consent form configuration captured with project and study IDs.',
-			statePath: operationalPaths.studyConsentForms,
+			stateDescription: 'Consent form configuration captured with the canonical Study record ID.',
+			statePath: canonicalStudyPaths.studyConsentForms,
 			waitForText: 'Consent forms',
 		}),
 		page({
@@ -371,6 +436,16 @@ export const visualWalkthroughConfig = {
 			designRisk: operationalDesignRisks.participantConsent,
 			defaultState: participantConsentDefaultState,
 			states: participantConsentVisualStates,
+		}),
+		page({
+			id: 'study-synthesis',
+			title: 'Study synthesis',
+			group: 'Study',
+			path: '/pages/study/synthesis/index.html',
+			description: 'Study-scoped synthesis page for grouping evidence into clusters and themes.',
+			designRisk: operationalDesignRisks.synthesize,
+			defaultState: synthesisDefaultState,
+			states: synthesisVisualStates,
 		}),
 		operationalPage({
 			id: 'team-registration-requests',
@@ -400,7 +475,14 @@ export const visualWalkthroughConfig = {
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.', operationalDesignRisks.notes),
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.', operationalDesignRisks.consent),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.', operationalDesignRisks.sessions),
-		registeredPage('synthesize', 'Synthesize', 'Analysis', '/pages/synthesize/index.html', 'Synthesis page.', operationalDesignRisks.synthesize),
+		registeredPage(
+			'synthesize',
+			'Legacy synthesis redirect',
+			'Analysis',
+			'/pages/synthesize/index.html',
+			'Legacy synthesis route that redirects to the study synthesis page.',
+			operationalDesignRisks.synthesize
+		),
 	],
 };
 
