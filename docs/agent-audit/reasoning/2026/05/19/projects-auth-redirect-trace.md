@@ -1,6 +1,6 @@
 # Projects auth redirect trace
 
-- Branch: `fix/projects-auth-redirect-pr-unified`
+- Branch: `fix/projects-auth-redirect-pr254-remediation`
 - Task: Redirect logged out user from `/pages/projects/` to `/pages/account/sign-in/`.
 - Signals: authentication, route-behaviour, frontend-page-logic.
 - Selected bundles: github, researchops-developer-control, cloudflare, multi-functional-team, govuk-design-system.

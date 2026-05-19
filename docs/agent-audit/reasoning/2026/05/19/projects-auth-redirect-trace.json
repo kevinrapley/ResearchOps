@@ -1,7 +1,7 @@
 {
   "traceId": "projects-auth-redirect-trace",
   "date": "2026-05-19",
-  "branch": "fix/projects-auth-redirect-pr-unified",
+  "branch": "fix/projects-auth-redirect-pr254-remediation",
   "task": "Redirect logged out user from /pages/projects/ to /pages/account/sign-in/.",
   "signals": [
     "authentication",
