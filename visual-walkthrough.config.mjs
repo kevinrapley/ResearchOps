@@ -4,6 +4,7 @@ import {
 	operationalDefaultState,
 	operationalDesignRisks,
 	operationalPaths,
+	operationalStudyId,
 } from './visual-walkthrough.operational-fixtures.mjs';
 import {
 	participantConsentDefaultState,
@@ -51,6 +52,8 @@ const checkAnswersActions = [
 	{ type: 'click', selector: '#next4' },
 	{ type: 'waitForSelector', selector: '#step4', state: 'visible' },
 ];
+
+const studyRecordPath = (route) => `${route}?id=${operationalStudyId}`;
 
 const accountSignInDefaultState = {
 	id: 'default',
@@ -112,6 +115,87 @@ function operationalPage({ id, title, group, path, description, designRisk, stat
 	});
 }
 
+const studyPages = [
+	operationalPage({
+		id: 'study',
+		title: 'Study overview',
+		group: 'Study',
+		path: '/pages/study/index.html',
+		description: 'Study overview and readiness controls.',
+		designRisk: operationalDesignRisks.study,
+		stateTitle: 'Study overview with readiness context',
+		stateDescription: 'Study overview captured with the canonical Study record ID.',
+		statePath: studyRecordPath('/pages/study/'),
+		waitForText: 'Assisted digital support interview round 1',
+	}),
+	operationalPage({
+		id: 'study-guides',
+		title: 'Discussion guides',
+		group: 'Study',
+		path: '/pages/study/guides/index.html',
+		description: 'Discussion guide list and editor page.',
+		designRisk: operationalDesignRisks.studyGuides,
+		stateTitle: 'Discussion guides with study context',
+		stateDescription: 'Discussion guides page captured with the canonical Study record ID.',
+		statePath: studyRecordPath('/pages/study/guides/'),
+		waitForText: 'Guides for this study',
+	}),
+	operationalPage({
+		id: 'study-participants',
+		title: 'Participants',
+		group: 'Study',
+		path: '/pages/study/participants/index.html',
+		description: 'Participants page for a study.',
+		designRisk: operationalDesignRisks.studyParticipants,
+		stateTitle: 'Study participants with participant records',
+		stateDescription: 'Participants page captured with the canonical Study record ID.',
+		statePath: studyRecordPath('/pages/study/participants/'),
+		waitForText: 'Participants',
+	}),
+	operationalPage({
+		id: 'study-session',
+		title: 'Study session',
+		group: 'Study',
+		path: '/pages/study/session/index.html',
+		description: 'Session running and note capture page.',
+		designRisk: operationalDesignRisks.studySession,
+		stateTitle: 'Study session with study context',
+		stateDescription: 'Session workspace captured with the canonical Study record ID.',
+		statePath: studyRecordPath('/pages/study/session/'),
+		waitForText: 'Begin a session',
+	}),
+	operationalPage({
+		id: 'study-consent-forms',
+		title: 'Study consent forms',
+		group: 'Study',
+		path: '/pages/study/consent-forms/index.html',
+		description: 'Study-specific consent form configuration page.',
+		designRisk: operationalDesignRisks.studyConsentForms,
+		stateTitle: 'Study consent forms with study context',
+		stateDescription: 'Consent form configuration captured with the canonical Study record ID.',
+		statePath: studyRecordPath('/pages/study/consent-forms/'),
+		waitForText: 'Consent forms',
+	}),
+	page({
+		id: 'study-participant-consent',
+		title: 'Participant consent',
+		group: 'Study',
+		path: '/pages/study/participant-consent/index.html',
+		description: 'Study-scoped participant consent recording and review page.',
+		designRisk: operationalDesignRisks.participantConsent,
+		defaultState: participantConsentDefaultState,
+		states: participantConsentVisualStates,
+	}),
+	registeredPage(
+		'synthesize',
+		'Study synthesis',
+		'Study',
+		'/pages/study/synthesis/index.html',
+		'Study-scoped evidence grouping and theme creation page.',
+		operationalDesignRisks.synthesize
+	),
+];
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description:
@@ -140,6 +224,7 @@ export const visualWalkthroughConfig = {
 	],
 	excludedRoutes: [
 		'/clear.html',
+		'/pages/synthesize/index.html',
 		'/partials/debug-boot.html',
 		'/partials/debug.html',
 		'/partials/footer.html',
@@ -147,6 +232,16 @@ export const visualWalkthroughConfig = {
 		'/partials/html-head.html',
 		'/partials/project-tabs.html',
 	],
+	excludedRouteReasons: {
+		'/clear.html': 'Utility page used for local storage/session reset; not a user-facing ResearchOps route.',
+		'/pages/synthesize/index.html': 'Legacy synthesis redirect route. Canonical visual coverage is /pages/study/synthesis/index.html.',
+		'/partials/debug-boot.html': 'Partial include only; rendered inside host pages when debugging is enabled.',
+		'/partials/debug.html': 'Partial include only; not a standalone route.',
+		'/partials/footer.html': 'Partial include only; not a standalone route.',
+		'/partials/header.html': 'Partial include only; not a standalone route.',
+		'/partials/html-head.html': 'Partial include only; not a standalone route.',
+		'/partials/project-tabs.html': 'Partial include only; not a standalone route.',
+	},
 	pages: [
 		registeredPage('home', 'Home', 'Core', '/', 'ResearchOps landing page.', operationalDesignRisks.home),
 		page({
@@ -182,14 +277,7 @@ export const visualWalkthroughConfig = {
 			statePath: '/pages/account/index.html',
 			waitForText: 'Welcome, Team Admin. Here is your account dashboard',
 		}),
-		registeredPage(
-			'start-overview',
-			'Start a research project',
-			'Core',
-			'/pages/start/overview/index.html',
-			'Overview page for creating a research project.',
-			operationalDesignRisks.start
-		),
+		registeredPage('start-overview', 'Start a research project', 'Core', '/pages/start/overview/index.html', 'Overview page for creating a research project.', operationalDesignRisks.start),
 		page({
 			id: 'start',
 			title: 'Start research project',
@@ -201,29 +289,6 @@ export const visualWalkthroughConfig = {
 				{ id: 'step-1-filled', title: 'Step 1 completed', description: 'Project definition entered.', actions: projectDefinitionActions },
 				{ id: 'step-2-default', title: 'Step 2 default state', description: 'Second wizard step.', actions: stepTwoActions },
 				{ id: 'step-2-filled-no-ai', title: 'Step 2 completed', description: 'Research context entered.', actions: stepTwoFilledActions },
-				{
-					id: 'step-2-ai-rewrite-shown',
-					title: 'Step 2 AI rewrite shown',
-					description: 'AI rewrite panel is shown using a deterministic mocked response.',
-					mockRoutes: [
-						{
-							url: '**/api/ai-rewrite**',
-							method: 'POST',
-							body: {
-								summary: 'The objective can be made clearer.',
-								suggestions: [],
-								rewrite: 'Check whether the access journey is clear.',
-								flags: { possible_personal_data: false },
-							},
-						},
-					],
-					actions: [
-						...stepTwoFilledActions,
-						{ type: 'waitForSelector', selector: '#ai-objectives-tools:not(.hidden)' },
-						{ type: 'click', selector: '#btn-obj-ai-rewrite' },
-						{ type: 'waitForText', text: 'Concise rewrite (optional):' },
-					],
-				},
 				{ id: 'step-3-default', title: 'Step 3 default state', description: 'Final data-entry step.', actions: stepThreeActions },
 				{ id: 'step-3-filled', title: 'Step 3 completed', description: 'Owner details entered.', actions: stepThreeFilledActions },
 				{ id: 'step-4-check-answers', title: 'Step 4 check your answers', description: 'Check-your-answers step.', actions: checkAnswersActions },
@@ -302,76 +367,7 @@ export const visualWalkthroughConfig = {
 			statePath: operationalPaths.journals,
 			waitForText: 'Reflexive Journal & Analysis',
 		}),
-		operationalPage({
-			id: 'study',
-			title: 'Study overview',
-			group: 'Study',
-			path: '/pages/study/index.html',
-			description: 'Study overview and readiness controls.',
-			designRisk: operationalDesignRisks.study,
-			stateTitle: 'Study overview with readiness context',
-			stateDescription: 'Study overview captured with project and study IDs.',
-			statePath: operationalPaths.study,
-			waitForText: 'Assisted digital support interview round 1',
-		}),
-		operationalPage({
-			id: 'study-guides',
-			title: 'Discussion guides',
-			group: 'Study',
-			path: '/pages/study/guides/index.html',
-			description: 'Discussion guide list and editor page.',
-			designRisk: operationalDesignRisks.studyGuides,
-			stateTitle: 'Discussion guides with study context',
-			stateDescription: 'Discussion guides page captured with project and study IDs.',
-			statePath: operationalPaths.studyGuides,
-			waitForText: 'Guides for this study',
-		}),
-		operationalPage({
-			id: 'study-participants',
-			title: 'Participants',
-			group: 'Study',
-			path: '/pages/study/participants/index.html',
-			description: 'Participants page for a study.',
-			designRisk: operationalDesignRisks.studyParticipants,
-			stateTitle: 'Study participants with participant records',
-			stateDescription: 'Participants page captured with study-scoped participant records.',
-			statePath: operationalPaths.studyParticipants,
-			waitForText: 'Participants',
-		}),
-		operationalPage({
-			id: 'study-session',
-			title: 'Study session',
-			group: 'Study',
-			path: '/pages/study/session/index.html',
-			description: 'Session running and note capture page.',
-			designRisk: operationalDesignRisks.studySession,
-			stateTitle: 'Study session with project and study context',
-			stateDescription: 'Session workspace captured with project and study IDs.',
-			statePath: operationalPaths.studySession,
-			waitForText: 'Begin a session',
-		}),
-		operationalPage({
-			id: 'study-consent-forms',
-			title: 'Study consent forms',
-			group: 'Study',
-			path: '/pages/study/consent-forms/index.html',
-			description: 'Study-specific consent form configuration page.',
-			designRisk: operationalDesignRisks.studyConsentForms,
-			stateTitle: 'Study consent forms with study context',
-			stateDescription: 'Consent form configuration captured with project and study IDs.',
-			statePath: operationalPaths.studyConsentForms,
-			waitForText: 'Consent forms',
-		}),
-		page({
-			id: 'study-participant-consent',
-			title: 'Participant consent',
-			group: 'Study',
-			path: '/pages/study/participant-consent/index.html',
-			description: 'Study-scoped participant consent recording and review page.',
-			designRisk: operationalDesignRisks.participantConsent,
-			defaultState: participantConsentDefaultState,
-			states: participantConsentVisualStates,
-		}),
+		...studyPages,
 		operationalPage({
 			id: 'team-registration-requests',
 			title: 'Review account requests',
@@ -400,7 +396,6 @@ export const visualWalkthroughConfig = {
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.', operationalDesignRisks.notes),
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.', operationalDesignRisks.consent),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.', operationalDesignRisks.sessions),
-		registeredPage('synthesize', 'Synthesize', 'Analysis', '/pages/synthesize/index.html', 'Synthesis page.', operationalDesignRisks.synthesize),
 	],
 };
 
