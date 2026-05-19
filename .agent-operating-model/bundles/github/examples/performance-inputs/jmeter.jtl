@@ -1,4 +1,0 @@
-timeStamp,elapsed,label,responseCode,success
-1710000000000,120,GET /,200,true
-1710000000100,180,GET /,200,true
-1710000000200,240,GET /,200,true

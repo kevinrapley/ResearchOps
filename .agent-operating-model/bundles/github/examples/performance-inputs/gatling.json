@@ -1,6 +1,0 @@
-{
-  "stats": {
-    "meanResponseTime": {"total": 120},
-    "percentiles3": {"total": 250}
-  }
-}

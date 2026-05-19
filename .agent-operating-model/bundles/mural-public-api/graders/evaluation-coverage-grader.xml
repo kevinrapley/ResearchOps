@@ -1,5 +1,0 @@
-<grader id="evaluation-coverage-grader">
-  <criterion>Regression and red-team suites cover auth, hierarchy, murals, sharing, exports, templates, search, collaboration runtime, and widgets.</criterion>
-  <criterion>The Users family regression tests cover both symmetric cases (room membership lifecycle) and the asymmetric case (updatemuralmemberpermissions uses userId in path, not body).</criterion>
-  <criterion>A PHP-example regression test is present to guard against reintroduction of the $payload = {...} syntax defect.</criterion>
-</grader>

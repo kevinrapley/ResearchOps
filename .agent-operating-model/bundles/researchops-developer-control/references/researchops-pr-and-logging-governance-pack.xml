@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-pr-and-logging-governance-pack" version="1.13.0">
-  <purpose>Defines PR and logging governance expectations.</purpose>
-  <rules>
-    <rule>PRs should state what changed, why, validation evidence and known risks.</rule>
-    <rule>Do not log secrets, tokens or unnecessary personal data.</rule>
-    <rule>Audit events should be clear, minimal and useful for governance.</rule>
-  </rules>
-</reference>

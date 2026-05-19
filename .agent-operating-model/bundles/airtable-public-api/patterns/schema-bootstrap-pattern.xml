@@ -1,1 +1,0 @@
-<pattern id="schema-bootstrap-pattern"><purpose>Create bases, tables, and fields before record ingestion. Keep field creation conservative and explicit.</purpose></pattern>

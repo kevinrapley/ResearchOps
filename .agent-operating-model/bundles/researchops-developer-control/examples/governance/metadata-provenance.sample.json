@@ -1,7 +1,0 @@
-{
-  "artifact": "participant-consent-export.csv",
-  "source": "ResearchOps Sessions and Consent Forms",
-  "createdBy": "researchops-demo-user",
-  "createdAt": "2026-04-26T12:00:00.000Z",
-  "provenance": ["study", "participant", "consent-form"]
-}

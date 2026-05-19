@@ -1,4 +1,0 @@
-<reference id="endpoint-normalization-reference">
-  <alias supplied="updatetetextbox" canonical="updatetextbox">Normalize the operation name while preserving the supplied reference URL in provenance.</alias>
-  <rule>Do not normalize speculative names. Only normalize when the canonical target is clear from the reference surface.</rule>
-</reference>

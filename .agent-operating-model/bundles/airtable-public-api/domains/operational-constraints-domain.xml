@@ -1,8 +1,0 @@
-<domain id="operational-constraints-domain">
-  <purpose>Carry pagination, batching, rate-limit, retry, and id-discovery constraints.</purpose>
-  <rules>
-    <rule>Per-base rate limits apply to every plan.</rule>
-    <rule>Respect PAT aggregate rate limits and 429 backoff guidance.</rule>
-    <rule>Use batching deliberately for write throughput.</rule>
-  </rules>
-</domain>

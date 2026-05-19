@@ -1,9 +1,0 @@
-<template id="endpoint-coverage-template">
-  <field name="operation_name"/>
-  <field name="method"/>
-  <field name="path"/>
-  <field name="source_url"/>
-  <field name="source_status"/>
-  <field name="minimum_scopes"/>
-  <field name="notes"/>
-</template>

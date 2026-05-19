@@ -1,2 +1,0 @@
-# Require at least one review from the core maintainers
-* @digikev @researchops-maintainers

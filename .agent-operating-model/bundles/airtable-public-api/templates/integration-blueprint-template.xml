@@ -1,1 +1,0 @@
-<template id="integration-blueprint-template"><field>auth</field><field>schema-read</field><field>mutation-plan</field><field>retries</field></template>

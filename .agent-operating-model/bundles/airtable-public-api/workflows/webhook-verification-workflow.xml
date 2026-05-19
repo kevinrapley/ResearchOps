@@ -1,1 +1,0 @@
-<workflow id="webhook-verification-workflow"><step>Verify MAC, retrieve payloads, checkpoint cursor, and renew webhooks before expiry.</step></workflow>

@@ -1,1 +1,0 @@
-<workflow id="schema-write-safety-workflow"><step>Read schema first, then write schema, then write records.</step></workflow>

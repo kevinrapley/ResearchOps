@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-ci-governance-pack" version="1.13.0">
-  <purpose>Defines CI governance expectations for ResearchOps.</purpose>
-  <rules>
-    <rule>CI must validate syntax, format, route contracts and release gates where configured.</rule>
-    <rule>Broken fixture, route-state or contract tests must not be bypassed silently.</rule>
-    <rule>Prettier exclusions for generated or static contract fixtures must be narrow and documented.</rule>
-  </rules>
-</reference>

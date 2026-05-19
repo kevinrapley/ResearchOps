@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<role id="security" version="1.13.0">
-  <focus>Authentication, authorisation, logging, secret handling, least privilege and sensitive data protection.</focus>
-</role>

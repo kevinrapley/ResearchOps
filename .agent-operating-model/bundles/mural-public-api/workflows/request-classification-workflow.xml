@@ -1,5 +1,0 @@
-<workflow id="request-classification-workflow">
-  <step order="1">Identify whether the request is about auth, hierarchy discovery, resource CRUD, sharing, facilitation runtime, widgets, templates, search, or operational hardening.</step>
-  <step order="2">Identify the object layer: workspace, room, folder, mural, user, template, widget, or facilitation state.</step>
-  <step order="3">Identify whether the user needs read-only discovery, write mutation, or both.</step>
-</workflow>

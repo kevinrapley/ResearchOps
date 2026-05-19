@@ -1,4 +1,0 @@
-{
-  "latency": {"p95": 100},
-  "requests": {"average": 500}
-}

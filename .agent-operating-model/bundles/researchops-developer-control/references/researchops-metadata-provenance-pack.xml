@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-metadata-provenance-pack" version="1.13.0">
-  <purpose>Defines provenance metadata expectations.</purpose>
-  <rules>
-    <rule>Research artefacts should preserve source, creator, timestamp and related project or study context.</rule>
-    <rule>Evidence, insight and recommendation relationships should stay traceable.</rule>
-    <rule>Generated artefacts must distinguish generated content from human-authored decisions.</rule>
-  </rules>
-</reference>

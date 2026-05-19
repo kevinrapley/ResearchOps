@@ -1,9 +1,0 @@
-{
-  "categories": {
-    "performance": {"score": 0.91},
-    "accessibility": {"score": 0.98}
-  },
-  "audits": {
-    "largest-contentful-paint": {"numericValue": 1800}
-  }
-}

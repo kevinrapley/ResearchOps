@@ -1,4 +1,0 @@
-<pattern id="search-and-inventory-pattern">
-  <use_when>Need name-based lookup of murals, rooms, or templates within a workspace.</use_when>
-  <sequence>searchmurals or searchrooms or searchtemplates -> follow with exact get endpoint if mutation or deep inspection is required</sequence>
-</pattern>

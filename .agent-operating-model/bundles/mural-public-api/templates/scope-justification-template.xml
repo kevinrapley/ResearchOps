@@ -1,6 +1,0 @@
-<template id="scope-justification-template">
-  <field name="scope"/>
-  <field name="why_needed"/>
-  <field name="operations_enabled"/>
-  <field name="can_be_avoided"/>
-</template>

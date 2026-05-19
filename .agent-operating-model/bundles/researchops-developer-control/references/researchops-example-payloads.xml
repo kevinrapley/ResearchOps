@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-example-payloads" version="1.13.0">
-  <purpose>Defines example payload rules.</purpose>
-  <rules>
-    <rule>Examples must be synthetic and must not include real participant data.</rule>
-    <rule>Examples must remain aligned with route catalog and fixtures.</rule>
-    <rule>Request and response examples should be updated with route shape changes.</rule>
-  </rules>
-</reference>

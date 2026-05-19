@@ -1,7 +1,0 @@
-budgets:
-  - metric: response_time_mean_seconds
-    threshold: 0.5
-    tolerance_percent: 10
-  - metric: response_time_max_seconds
-    threshold: 1.0
-    tolerance_percent: 10

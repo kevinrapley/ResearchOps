@@ -1,6 +1,0 @@
-<grader id="source-grounding-grader">
-  <criterion>Recommendations cite or preserve the published reference URLs rather than replacing them with guessed operations.</criterion>
-  <criterion>Every contract referenced must have source_status: official-reference-page, canonicalized-from-user-supplied-typo, or legacy-or-unlisted — never user-supplied-reference-page or official-or-inferred-reference-page.</criterion>
-  <criterion>When sendrequestaccesstomural is referenced, its legacy-or-unlisted status must be surfaced to the developer.</criterion>
-  <criterion>inviteuserstoworkspace must cite workspaces:write as its scope, with a note that this scope does not appear on Mural's scopes overview page (which predates the endpoint); the endpoint reference page is authoritative.</criterion>
-</grader>

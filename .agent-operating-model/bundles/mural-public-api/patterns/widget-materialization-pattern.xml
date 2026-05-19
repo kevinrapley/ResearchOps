@@ -1,4 +1,0 @@
-<pattern id="widget-materialization-pattern">
-  <use_when>Need to create file or image widgets from externally hosted content or uploaded assets, or build mural content programmatically.</use_when>
-  <sequence>createasset when needed -> createfile or createimage -> getmuralwidgets or getmuralwidget -> update subtype widget as needed</sequence>
-</pattern>

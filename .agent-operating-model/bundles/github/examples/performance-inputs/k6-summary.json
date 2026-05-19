@@ -1,6 +1,0 @@
-{
-  "metrics": {
-    "http_req_duration": {"values": {"p(95)": 250}},
-    "http_req_failed": {"values": {"rate": 0.01}}
-  }
-}

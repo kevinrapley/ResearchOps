@@ -1,1 +1,0 @@
-# Empty multi-language fixture

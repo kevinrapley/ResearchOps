@@ -1,2 +1,0 @@
-commands:
-  - python -I -S -c "print('fixture tests passed')"

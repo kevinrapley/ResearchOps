@@ -1,7 +1,0 @@
-records:
-  - id: CONF-001
-    rule: Security policy exists
-    expected_evidence: SECURITY.md exists
-    actual_evidence: ""
-    status: missing
-    owner: maintainer

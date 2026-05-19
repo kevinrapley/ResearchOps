@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-conformance-summary-pack" version="1.13.0">
-  <purpose>Defines conformance summary reporting.</purpose>
-  <rules>
-    <rule>Summaries must include coverage, gaps and failed checks.</rule>
-    <rule>Summaries must distinguish blocked, skipped, failed and passed checks.</rule>
-  </rules>
-</reference>

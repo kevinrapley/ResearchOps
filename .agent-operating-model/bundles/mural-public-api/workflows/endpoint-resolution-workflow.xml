@@ -1,6 +1,0 @@
-<workflow id="endpoint-resolution-workflow">
-  <step order="1">Resolve candidate operations from endpoint-coverage.matrix.yaml.</step>
-  <step order="2">Prefer exact endpoint pages over inferred category guidance.</step>
-  <step order="3">Return method, path, source URL, and why each endpoint belongs in the flow.</step>
-  <step order="4">If a supplied slug is wrong but clearly mappable, preserve the original and state the canonical target.</step>
-</workflow>

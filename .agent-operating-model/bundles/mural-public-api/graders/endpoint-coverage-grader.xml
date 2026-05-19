@@ -1,6 +1,0 @@
-<grader id="endpoint-coverage-grader">
-  <criterion>Every user-supplied endpoint page appears in endpoint-coverage.matrix.yaml and has a corresponding contract file in contracts/endpoints/.</criterion>
-  <criterion>Users, Rooms, Templates, Workspaces, and Search all have explicit function inventory beyond category prose.</criterion>
-  <criterion>The Users family must expose all 10 operations: getcurrentmember, getroommembers, inviteuserstoroom, updateroommemberpermissions, removeroomusers, getmuralusers, inviteuserstomural, updatemuralmemberpermissions, removemuralusers, inviteuserstoworkspace.</criterion>
-  <criterion>updatemuralmemberpermissions must identify userId as a PATH parameter, not a body parameter — it is not symmetric with updateroommemberpermissions.</criterion>
-</grader>

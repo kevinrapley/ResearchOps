@@ -1,4 +1,0 @@
-<grader id="portability-grader">
-  <criterion>Bundle remains prompt-portable and does not depend on platform-specific hidden tools.</criterion>
-  <criterion>Code examples in all four languages (Node, Ruby, PHP, Python) are near-runnable: path parameters are declared as env-var-backed variables, PHP uses associative array syntax, Ruby uses double-quoted path strings.</criterion>
-</grader>

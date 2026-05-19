@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<template id="endpoint-example-template" version="1.13.0">
-  <sections>request, response, status, content type, edge cases, synthetic data note</sections>
-</template>

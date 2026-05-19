@@ -1,9 +1,0 @@
-<domain id="widgets-table-domain">
-  <purpose>Cover table widget creation.</purpose>
-  <covered_operations>
-    <operation>createtable</operation>
-  </covered_operations>
-  <rules>
-    <rule>Treat tables as their own subtype, not as grouped textboxes.</rule>
-  </rules>
-</domain>

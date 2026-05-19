@@ -1,7 +1,0 @@
-auth_profile:
-  scheme: OAuth 2.0
-  flow: authorization_code
-  pkce_supported: true
-  token_transport: Bearer access token in Authorization header
-  base_url_template: https://app.mural.co/api/public/{version}
-  scope_policy: Scopes are checked against resource requirements; invalid scopes yield 403.

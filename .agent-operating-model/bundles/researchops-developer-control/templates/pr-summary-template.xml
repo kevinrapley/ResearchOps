@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<template id="pr-summary-template" version="1.13.0">
-  <sections>summary, changes, validation, screenshots, risks, follow-ups</sections>
-</template>

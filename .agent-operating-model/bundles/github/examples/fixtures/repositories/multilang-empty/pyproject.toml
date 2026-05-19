@@ -1,6 +1,0 @@
-[project]
-name = "example-backend"
-version = "0.1.0"
-
-[tool.pytest.ini_options]
-addopts = "-q"

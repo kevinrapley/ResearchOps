@@ -1,6 +1,0 @@
-budgets:
-  - metric: response_time_p95_ms
-    threshold: 500
-    tolerance_percent: 10
-  - metric: error_rate
-    threshold: 0.05

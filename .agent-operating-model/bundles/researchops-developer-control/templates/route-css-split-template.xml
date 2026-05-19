@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<template id="route-css-split-template" version="1.13.0">
-  <sections>global CSS, shared pattern CSS, route CSS, obsolete selectors, validation</sections>
-</template>

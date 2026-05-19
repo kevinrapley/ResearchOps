@@ -1,8 +1,0 @@
-{
-  "pr": 123,
-  "loggingReviewed": true,
-  "secretsLogged": false,
-  "personalDataLogged": false,
-  "auditEvents": ["participant.export.created"],
-  "releaseDecision": "can proceed if CI passes"
-}

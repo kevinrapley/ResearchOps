@@ -1,8 +1,0 @@
-{
-  "ok": true,
-  "checked": 42,
-  "missing": [],
-  "unindexed": [],
-  "unreachable": [],
-  "summary": "All route-catalog fixtures are present, indexed and reachable."
-}

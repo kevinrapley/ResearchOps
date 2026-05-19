@@ -1,5 +1,0 @@
-measurements:
-- metric: response_time_p95_ms
-  value: 250
-- metric: bundle_size_kb
-  value: 220

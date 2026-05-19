@@ -16,7 +16,7 @@ function configuredApiOrigin() {
 }
 
 function defaultApiOrigin() {
-	return configuredApiOrigin();
+	return configuredApiOrigin() || location.origin.replace(/\/$/, "");
 }
 
 const CONFIG = Object.freeze({
@@ -140,15 +140,13 @@ function isResearchOpsBranchPreviewHost(hostname = location.hostname) {
 }
 
 function shouldUseFallbackApiOrigin() {
-	return !CONFIG.API_BASE && location.hostname.endsWith("pages.dev");
+	return false;
 }
 
 function apiBaseCandidates() {
-	if (CONFIG.API_BASE) return [CONFIG.API_BASE];
-	if (isProductionPagesHost()) return [PRODUCTION_API_ORIGIN];
-	if (isResearchOpsBranchPreviewHost()) return [PREVIEW_API_ORIGIN];
-	if (shouldUseFallbackApiOrigin()) return [PRODUCTION_API_ORIGIN];
-	return [""];
+	const candidates = [CONFIG.API_BASE];
+	if (shouldUseFallbackApiOrigin()) candidates.push(...FALLBACK_API_ORIGINS);
+	return [...new Set(candidates.map((base) => String(base || "").replace(/\/$/, "")))];
 }
 
 function endpoint(path, base = CONFIG.API_BASE) {

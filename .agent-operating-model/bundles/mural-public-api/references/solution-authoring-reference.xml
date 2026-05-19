@@ -1,5 +1,0 @@
-<reference id="solution-authoring-reference">
-  <rule>Return exact endpoint recommendations, rationale, scope selection, orchestration order, and failure posture.</rule>
-  <rule>Keep distinctions clear between room, folder, mural, template, collaborator, share settings, facilitation runtime, and widget CRUD.</rule>
-  <rule>Use implementation language, not marketing language.</rule>
-</reference>

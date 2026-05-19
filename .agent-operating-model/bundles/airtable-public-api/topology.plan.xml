@@ -1,7 +1,0 @@
-<topology bundle_id="airtable-public-api-developer-contract-bundle" version="1.0.0">
-  <kind>hybrid-agent-bundle</kind>
-  <rationale>Endpoint contracts are the backbone. Domains, workflows, and patterns help the agent author code and architecture decisions instead of only echoing endpoint trivia.</rationale>
-  <domains>auth-domain, boundaries-domain, comments-domain, operational-constraints-domain, records-domain, schema-domain, webhooks-domain</domains>
-  <workflows>boundary-and-failure-workflow, endpoint-resolution-workflow, pagination-rate-limit-workflow, request-classification-workflow, schema-write-safety-workflow, webhook-verification-workflow</workflows>
-  <patterns>comment-automation-pattern, metadata-inventory-pattern, record-sync-pattern, schema-bootstrap-pattern, webhook-consumer-pattern</patterns>
-</topology>

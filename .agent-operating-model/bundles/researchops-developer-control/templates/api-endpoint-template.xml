@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<template id="api-endpoint-template" version="1.13.0">
-  <sections>method, path, auth, request, response, errors, examples, tests</sections>
-</template>

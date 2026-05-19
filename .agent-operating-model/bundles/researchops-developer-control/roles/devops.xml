@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<role id="devops" version="1.13.0">
-  <focus>Cloudflare deployment, CI, release gates, caching, workflow safety and operational evidence.</focus>
-</role>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-ethics-pack" version="1.13.0">
-  <purpose>Defines ethics and harm checks for ResearchOps delivery.</purpose>
-  <rules>
-    <rule>Consider consent, safeguarding, privacy, provenance and data minimisation for research workflows.</rule>
-    <rule>High-stakes user groups require explicit harm framing.</rule>
-    <rule>Do not remove safety, safeguarding or distress guidance to shorten research artefacts.</rule>
-  </rules>
-</reference>

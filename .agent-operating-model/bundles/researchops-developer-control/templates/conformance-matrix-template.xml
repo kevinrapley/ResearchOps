@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<template id="conformance-matrix-template" version="1.13.0">
-  <sections>requirement, status, evidence, owner, gap, review date</sections>
-</template>

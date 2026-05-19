@@ -1,6 +1,0 @@
-<grader id="schema-contract-grader">
-  <criterion>Input, output, and grade schemas exist and align with prompt requirements.</criterion>
-  <criterion>Every endpoint contract answer must include body_shape_inline for the 200 response — the fully dereferenced, self-contained success schema — rather than only the $ref form.</criterion>
-  <criterion>Every endpoint contract answer must include inline_error_envelope for the error schema without requiring a ref hop.</criterion>
-  <criterion>contract_strength fields must reflect reference-verified provenance; family-derived or coverage-matrix-derived labels are not acceptable in new answers.</criterion>
-</grader>

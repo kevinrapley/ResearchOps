@@ -1,4 +1,0 @@
-<pattern id="template-driven-provisioning-pattern">
-  <use_when>Need to create murals from templates or derive reusable templates from existing murals.</use_when>
-  <sequence>getdefaulttemplates or gettemplatesbyworkspace -> createmuralfromtemplate or createcustomtemplate -> getmuralbyid</sequence>
-</pattern>

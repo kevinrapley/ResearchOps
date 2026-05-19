@@ -1,8 +1,0 @@
-records:
-  - artifact: ""
-    origin: ""
-    inputs: ""
-    date: ""
-    commit_or_pr: ""
-    workflow: ""
-    authoring_method: ""

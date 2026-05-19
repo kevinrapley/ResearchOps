@@ -1,9 +1,0 @@
-languages:
-- Node
-- Ruby
-- PHP
-- Python
-conventions:
-- Examples are near-runnable and use environment variables for tokens and object ids.
-- Examples default to base URL https://api.airtable.com/v0.
-- Examples prefer explicit JSON payloads and Accept headers.

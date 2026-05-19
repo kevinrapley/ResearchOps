@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<reference id="researchops-fixture-index-validation-pack" version="1.13.0">
-  <purpose>Defines fixture index validation expectations.</purpose>
-  <rules>
-    <rule>Every fixture referenced by a catalog or manifest must exist.</rule>
-    <rule>Every route example fixture should be indexed or otherwise discoverable.</rule>
-    <rule>Validation should report missing, unindexed and unreachable fixtures separately.</rule>
-  </rules>
-</reference>

@@ -1,6 +1,0 @@
-<workflow id="orchestration-and-state-workflow">
-  <step order="1">Sequence auth and discovery before mutations.</step>
-  <step order="2">For asset-backed widgets, create an asset URL before widget materialization.</step>
-  <step order="3">For exports, start the export and then retrieve the export URL.</step>
-  <step order="4">For voting, timer, and private mode, treat stateful facilitator controls as ordered sessions.</step>
-</workflow>
