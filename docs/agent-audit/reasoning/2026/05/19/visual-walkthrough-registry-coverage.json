@@ -1,0 +1,37 @@
+{
+  "traceId": "visual-walkthrough-registry-coverage",
+  "date": "2026-05-19",
+  "branch": "fix/visual-walkthrough-registry-coverage",
+  "task": "Restore visual walkthrough route registry coverage after PR #252 weakened the registry contract.",
+  "signals": [
+    "visual-walkthrough",
+    "route-registry",
+    "route-state",
+    "study-routing",
+    "ci-governance"
+  ],
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "changes": [
+    "Registered canonical /pages/study/synthesis/index.html walkthrough coverage.",
+    "Excluded /pages/synthesize/index.html from walkthrough coverage with an explicit reason.",
+    "Added excluded route reasoning support to the walkthrough config.",
+    "Added a route coverage contract test for discoverable public HTML routes.",
+    "Shifted Study walkthrough state coverage to id=rec... canonical routing."
+  ],
+  "deferredWork": [
+    "Removal of public/pages/synthesize/ redirect bridge route.",
+    "Removal of compatibility assertions for legacy pid/sid synthesis redirects."
+  ],
+  "validation": [
+    {
+      "command": "npm test",
+      "result": "not_run_in_chatgpt_environment"
+    }
+  ]
+}
