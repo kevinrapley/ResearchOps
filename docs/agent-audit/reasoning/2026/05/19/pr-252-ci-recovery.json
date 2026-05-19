@@ -1,0 +1,15 @@
+{
+  "date": "2026-05-19",
+  "branch": "fix/projects-team-scoped-access",
+  "pullRequest": 252,
+  "summary": "CI recovery trace for PR 252 after route-state and Study canonical routing checks were updated.",
+  "changes": [
+    "Aligned route-state tests with Study record ID routing.",
+    "Confirmed project dashboard add-study link no longer emits the legacy pid query parameter.",
+    "Added current-day trace coverage required by the agent trace policy."
+  ],
+  "validation": {
+    "observedFailure": "agent trace coverage missing current-day trace directory",
+    "expectedEffect": "agent trace coverage can find at least one JSON trace artefact for 2026-05-19"
+  }
+}
