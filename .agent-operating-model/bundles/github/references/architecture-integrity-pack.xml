@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="architecture-integrity-pack" xml_profile="native-semantic-xml/v1" version="2.9.1">
+<reference id="architecture-integrity-pack" xml_profile="native-semantic-xml/v1" version="2.9.2">
   <title>Architecture Integrity Pack</title>
   <description>
     Guidance for ensuring that the repository’s architecture remains coherent as it evolves.  Agents must respect existing layering and modularisation, avoid cyclic dependencies and enforce boundaries between domains.  This pack lists tools and practices to maintain structural integrity.

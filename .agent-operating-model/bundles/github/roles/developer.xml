@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<role id="developer" version="2.9.1">
+<role id="developer" version="2.9.2">
   <title>Developer</title>
   <description>Implements features, fixes bugs and writes documentation while adhering to repository standards.</description>
   <responsibilities>

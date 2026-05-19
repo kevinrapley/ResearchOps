@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="security-supply-chain-pack" version="2.9.1" xml_profile="native-semantic-xml/v1">
+<reference id="security-supply-chain-pack" version="2.9.2" xml_profile="native-semantic-xml/v1">
   <title>Security Supply Chain Pack</title>
   <description source="internal-doctrine">Security Supply Chain Pack for repository operation.</description>
   <rules>

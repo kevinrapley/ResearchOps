@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<role id="architect" xml_profile="native-semantic-xml/v1" version="2.9.1">
+<role id="architect" xml_profile="native-semantic-xml/v1" version="2.9.2">
   <title>Software Architect</title>
   <description>
     The architect is responsible for the system’s structure and technical direction.  They approve architectural changes, guide technology choices and ensure that the repository adheres to the Architecture Integrity Pack.

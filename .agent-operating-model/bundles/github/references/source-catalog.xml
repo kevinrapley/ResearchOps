@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<source_catalog id="source-catalog" version="2.9.1" xml_profile="native-semantic-xml/v1">
+<source_catalog id="source-catalog" version="2.9.2" xml_profile="native-semantic-xml/v1">
   <title>Source Catalogue</title>
   <description>Portable source references used by this bundle. Use these source identifiers rather than transient chat citations.</description>
   <source id="github-branch-protection" status="used"><title>GitHub protected branches documentation</title><url>https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches</url></source>
