@@ -25,6 +25,16 @@ const container = document.getElementById("list");
 const startProjectAction = document.querySelector(".projects-page-actions");
 
 const VALID_PROJECT_PHASES = new Set(["pre-discovery", "discovery", "alpha", "beta", "live"]);
+const REDIRECTING_TO_SIGN_IN_ERROR = "redirecting_to_sign_in";
+
+function signInUrl() {
+	const returnTo = `${window.location.pathname}${window.location.search || ""}`;
+	return `/pages/account/sign-in/?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
+function redirectToSignIn() {
+	window.location.assign(signInUrl());
+}
 
 function setListBusy(isBusy) {
 	if (!container) return;
@@ -176,6 +186,10 @@ function normaliseProject(p) {
 
 async function listProjects() {
 	const { ok, status, data } = await fetchWithTimeout(apiUrl("/api/projects"));
+	if (status === 401) {
+		redirectToSignIn();
+		throw new Error(REDIRECTING_TO_SIGN_IN_ERROR);
+	}
 	if (!ok || !data?.ok) throw new Error(`Project list failed (${status})`);
 
 	const rawProjects = Array.isArray(data.projects) ? data.projects : [];
@@ -327,6 +341,7 @@ function render(projects, source, canStartProject = false, malformed = []) {
 		const { source, projects, canStartProject, malformed } = await listProjects();
 		render(projects, source, canStartProject, malformed);
 	} catch (error) {
+		if (error?.message === REDIRECTING_TO_SIGN_IN_ERROR) return;
 		setStartProjectVisible(false);
 		renderErrorState(error);
 	} finally {

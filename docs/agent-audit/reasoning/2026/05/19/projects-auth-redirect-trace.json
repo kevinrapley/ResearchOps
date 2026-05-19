@@ -1,0 +1,30 @@
+{
+  "traceId": "projects-auth-redirect-trace",
+  "date": "2026-05-19",
+  "branch": "fix/projects-auth-redirect-pr-unified",
+  "task": "Redirect logged out user from /pages/projects/ to /pages/account/sign-in/.",
+  "signals": [
+    "authentication",
+    "route-behaviour",
+    "frontend-page-logic"
+  ],
+  "selectedBundles": [
+    "github",
+    "researchops-developer-control",
+    "cloudflare",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "changes": [
+    "Added sign-in redirect helper in public/js/projects-page.js.",
+    "Trigger redirect when /api/projects returns HTTP 401.",
+    "Avoid rendering transient error when redirect is in progress.",
+    "Use a named redirect sentinel error constant instead of a hard-coded message string."
+  ],
+  "validation": [
+    {
+      "command": "npm run lint -- public/js/projects-page.js",
+      "result": "pass_with_existing_warnings"
+    }
+  ]
+}
