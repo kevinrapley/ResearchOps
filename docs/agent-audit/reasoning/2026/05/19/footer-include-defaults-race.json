@@ -1,0 +1,43 @@
+{
+  "traceId": "footer-include-defaults-race",
+  "date": "2026-05-19",
+  "branch": "fix/footer-include-defaults-race",
+  "task": "Fix intermittent footer partial rendering with missing default variables.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "rootCause": {
+    "type": "custom-element-lifecycle-race",
+    "summary": "Observed attribute changes could trigger x-include rendering before connectedCallback applied footer defaults.",
+    "impact": "A stale footer render could output blank template variables and overwrite the correct footer text."
+  },
+  "filesChanged": [
+    {
+      "path": "public/components/layout.js",
+      "changes": [
+        "Added connected-state guard before rendering from attributeChangedCallback.",
+        "Queued renders so footer defaults are applied before first render.",
+        "Added render IDs and abort handling to stop stale fetches overwriting newer content."
+      ]
+    },
+    {
+      "path": "tests/layout-footer-include-race.test.js",
+      "changes": [
+        "Added regression coverage for footer include lifecycle ordering and stale render protection."
+      ]
+    }
+  ],
+  "expectedOutcome": {
+    "footerAlwaysContainsYear": true,
+    "footerAlwaysContainsOrganisation": true,
+    "footerAlwaysContainsBuild": true,
+    "blankFooterTemplatePrevented": true
+  },
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}
