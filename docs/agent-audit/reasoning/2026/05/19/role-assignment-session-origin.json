@@ -1,0 +1,41 @@
+{
+  "task": "Fix Team Admin role assignment page session origin handling",
+  "branch": "fix/role-assignment-session-origin",
+  "date": "2026-05-19",
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare",
+    "airtable-public-api"
+  ],
+  "rootCause": {
+    "type": "cross-origin-auth-context",
+    "summary": "Role assignment page resolved API requests to external Worker origins instead of same-origin Pages API routes.",
+    "impact": "Authenticated Team Admin users appeared unauthenticated on the role assignment page."
+  },
+  "filesChanged": [
+    {
+      "path": "public/js/auth-role-assignment-page.js",
+      "changes": [
+        "defaultApiOrigin now falls back to location.origin",
+        "fallback API origin routing disabled for this flow",
+        "apiBaseCandidates prioritises same-origin API routing"
+      ]
+    }
+  ],
+  "gitWorkflow": {
+    "strategy": "blob-tree-commit-ref",
+    "forcePush": false
+  },
+  "expectedOutcome": {
+    "authenticatedTeamAdmin": true,
+    "roleAssignmentVisible": true,
+    "sameOriginApi": true
+  },
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}
