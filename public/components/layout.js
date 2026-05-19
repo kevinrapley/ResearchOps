@@ -63,24 +63,29 @@ class XInclude extends HTMLElement {
 		super();
 		this._loading = false;
 		this._abort = null;
-		this._needsRerender = false; // NEW: queue flag
+		this._needsRerender = false;
+		this._renderQueued = false;
+		this._renderId = 0;
+		this._hasConnected = false;
 	}
 
 	connectedCallback() {
-		this._maybeApplyFooterDefaults(); // NEW: ensure footer vars before first render
-		this._render();
+		this._hasConnected = true;
+		this._maybeApplyFooterDefaults();
+		this._queueRender();
 	}
 
 	attributeChangedCallback() {
-		// If a change happens during a fetch, queue one more render
-		if (this._loading) {
-			this._needsRerender = true;
-			return;
-		}
-		this._render();
+		if (!this._hasConnected) return;
+		this._maybeApplyFooterDefaults();
+		this._queueRender();
 	}
 
-	disconnectedCallback() { if (this._abort) this._abort.abort(); }
+	disconnectedCallback() {
+		this._hasConnected = false;
+		this._renderId += 1;
+		if (this._abort) this._abort.abort();
+	}
 
 	// ── utils ───────────────────────────────────────────────────────────
 	normalizeUrl(u) {
@@ -167,8 +172,21 @@ class XInclude extends HTMLElement {
 		return isDebugPartial ? "no-store" : "force-cache";
 	}
 
+	_queueRender() {
+		if (this._renderQueued) return;
+		this._renderQueued = true;
+		Promise.resolve().then(() => {
+			this._renderQueued = false;
+			this._render();
+		});
+	}
+
 	// ── rendering ───────────────────────────────────────────────────────
 	async _render() {
+		const renderId = this._renderId + 1;
+		this._renderId = renderId;
+		if (this._abort) this._abort.abort();
+
 		// Debug gate
 		if (this.hasAttribute("debug-only")) {
 			const url = new URL(location.href);
@@ -186,13 +204,14 @@ class XInclude extends HTMLElement {
 
 		// Begin fetch
 		this._loading = true;
-		this._needsRerender = false; // clear any prior request (we're starting a fresh one)
+		this._needsRerender = false;
 		this._abort = new AbortController();
 
 		try {
 			const res = await fetch(src, { cache: this.fetchCacheMode(src), credentials: "same-origin", signal: this._abort.signal });
 			const text = await res.text();
 			if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+			if (renderId !== this._renderId) return;
 
 			const html = this.renderTemplate(text, data);
 			this.innerHTML = html;
@@ -203,18 +222,18 @@ class XInclude extends HTMLElement {
 
 			this.dispatchEvent(new CustomEvent("x-include:loaded", { detail: { src, ok: true } }));
 		} catch (err) {
+			if (renderId !== this._renderId || err?.name === "AbortError") return;
 			console.error("[x-include] render error:", src, err);
 			this.innerHTML = `<!-- x-include error: ${this.esc(String(err?.message || err))} -->`;
 			this.dispatchEvent(new CustomEvent("x-include:error", { detail: { src, error: String(err) } }));
 		} finally {
+			if (renderId !== this._renderId) return;
 			this._loading = false;
 			this._abort = null;
 
-			// If attributes changed while we were fetching, do exactly one more render
 			if (this._needsRerender) {
 				this._needsRerender = false;
-				// Important: avoid tight recursion; schedule microtask
-				Promise.resolve().then(() => this._render());
+				this._queueRender();
 			}
 		}
 	}
