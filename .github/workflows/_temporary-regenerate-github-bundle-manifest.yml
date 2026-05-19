@@ -1,0 +1,72 @@
+name: Temporary regenerate GitHub bundle manifest
+
+on:
+  push:
+    branches:
+      - fix/github-tooling-mutation-policy
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.ref == 'refs/heads/fix/github-tooling-mutation-policy'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/github-tooling-mutation-policy
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Regenerate registry manifest
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          root = Path('.agent-operating-model/bundles/github')
+          manifest = root / 'registry-manifest.yaml'
+          workflow = Path('.github/workflows/_temporary-regenerate-github-bundle-manifest.yml')
+          generated_parts = {'__pycache__', '.pytest_cache', 'node_modules', 'dist', 'build', 'coverage', 'artifacts', 'tmp', 'temp', '__MACOSX'}
+          generated_suffixes = {'.pyc', '.pyo', '.log'}
+
+          def is_generated(path: Path) -> bool:
+              parts = set(path.relative_to(root).parts)
+              return bool(parts & generated_parts) or path.suffix in generated_suffixes
+
+          files = []
+          for path in root.rglob('*'):
+              if not path.is_file():
+                  continue
+              if path.name == 'registry-manifest.yaml':
+                  continue
+              if is_generated(path):
+                  continue
+              files.append(path.relative_to(root).as_posix())
+
+          lines = [
+              'bundle:',
+              '  id: github-diamond-standard',
+              '  version: 2.9.2',
+              '  status: auditable-release-assurance',
+              'artifacts:',
+          ]
+
+          for rel in sorted(files):
+              digest = hashlib.sha256((root / rel).read_bytes()).hexdigest()
+              lines.append(f'- path: {rel}')
+              lines.append(f'  sha256: {digest}')
+
+          manifest.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          workflow.unlink()
+          PY
+      - name: Commit regenerated manifest
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add .agent-operating-model/bundles/github/registry-manifest.yaml .github/workflows/_temporary-regenerate-github-bundle-manifest.yml
+          if git diff --cached --quiet; then
+            echo "No manifest changes"
+            exit 0
+          fi
+          git commit -m "Regenerate GitHub bundle manifest"
+          git push origin HEAD:fix/github-tooling-mutation-policy
