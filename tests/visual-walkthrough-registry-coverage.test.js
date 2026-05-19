@@ -24,7 +24,10 @@ function listHtmlFiles(dir) {
 }
 
 function routeFromPublicFile(filePath) {
-	const relativePath = path.relative(visualWalkthroughConfig.publicRoot, filePath).replaceAll(path.sep, '/');
+	const relativePath = path
+		.relative(visualWalkthroughConfig.publicRoot, filePath)
+		.replaceAll(path.sep, '/');
+
 	return relativePath === 'index.html' ? '/' : `/${relativePath}`;
 }
 
