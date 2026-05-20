@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond validation</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Validation</h1><p class="site-header__lede">Validation explains whether the bundle is structurally sound and safe to use for repository governance.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/VALIDATION-REPORT.md</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Validation</span></nav>
+		<p class="lede">The current validation report records the GitHub Diamond bundle v2.9.2 as passed, last checked on 2026-05-11. It describes the bundle as the highest-precedence repository governance bundle in the operating model.</p>
+		<section class="grid">
+			<article class="card card--green"><h2>Validation status</h2><p><span class="pill">passed</span> The bundle is suitable for current ResearchOps repository governance use.</p></article>
+			<article class="card"><h2>Scope</h2><p>Repository operation, branch hygiene, pull-request discipline, CI, release gates, evidence handling, attestation, repository settings, workflow hardening and live repository assurance.</p></article>
+		</section>
+		<section>
+			<h2>Entrypoints checked</h2>
+			<table><thead><tr><th>Entrypoint</th><th>What it proves</th></tr></thead><tbody>
+				<tr><td><code>README.md</code></td><td>Human-readable release guidance and non-negotiable behaviours.</td></tr>
+				<tr><td><code>CHANGELOG.md</code></td><td>Version history, release discipline and change trace.</td></tr>
+				<tr><td><code>prompt.spec.yaml</code></td><td>Bundle assembly, role/mode/reference/contract/grader registration.</td></tr>
+				<tr><td><code>prompt.body.xml</code></td><td>Core doctrine, branch governance, mutation policy and refusal rules.</td></tr>
+				<tr><td><code>evals.yaml</code></td><td>Executable behaviour scenarios.</td></tr>
+				<tr><td><code>tests.regression.yaml</code></td><td>Regression behaviour expectations.</td></tr>
+				<tr><td><code>tests.redteam.yaml</code></td><td>Refusal behaviour under unsafe prompts.</td></tr>
+				<tr><td><code>variables.schema.json</code>, <code>output.schema.json</code>, <code>grade.schema.json</code></td><td>Input, output and grading shape.</td></tr>
+				<tr><td><code>registry-manifest.yaml</code></td><td>File coverage and SHA-256 integrity.</td></tr>
+			</tbody></table>
+		</section>
+		<section>
+			<h2>Structural checks</h2>
+			<ul>
+				<li>XML, JSON and YAML parsed successfully.</li>
+				<li>All XML roots declare version <code>2.9.2</code>.</li>
+				<li>Manifest hashes and manifest coverage checked.</li>
+				<li>Changelog order and uniqueness checked.</li>
+				<li>Template registry and eval definition validation checked.</li>
+				<li>Agent evidence validation and evidence-to-repository cross-check checked.</li>
+				<li>Fast and full release gate checked.</li>
+				<li>Pass and fail release-gate report validation checked.</li>
+				<li>SBOM, trusted attestation and external verification evidence checked.</li>
+				<li>Accessibility positive and negative fixtures checked.</li>
+				<li>Workflow hardening and action lock validation checked.</li>
+				<li>High-assurance live gate positive and negative fixtures checked.</li>
+			</ul>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/VALIDATION-REPORT.md</code>.</div></footer>
+</body>
+</html>
