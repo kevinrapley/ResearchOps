@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const packageLock = fs.readFileSync('package-lock.json', 'utf8');
 const sassEntry = fs.readFileSync('src/styles/govuk.scss', 'utf8');
+const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
 const copyScript = fs.readFileSync('scripts/govuk/copy-govuk-assets.mjs', 'utf8');
 const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const initScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
@@ -43,7 +44,9 @@ assert.match(packageLock, /"nunjucks": "\^3\.2\.4"/);
 assert.match(packageLock, /"node_modules\/govuk-frontend"/);
 assert.match(packageLock, /"version": "6\.1\.0"/);
 
+assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
 assert.match(sassEntry, /@import ['"]govuk-frontend\/dist\/govuk['"];/);
+assert.match(generatedCss, /\.govuk-width-container\{max-width:1020px/);
 assert.match(copyScript, /node_modules\/govuk-frontend\/dist\/govuk/);
 assert.match(copyScript, /public\/assets\/govuk/);
 assert.match(copyScript, /govuk-frontend\.min\.js/);
