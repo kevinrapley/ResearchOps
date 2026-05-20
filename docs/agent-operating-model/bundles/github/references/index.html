@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond references</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>References</h1><p class="site-header__lede">Reference modules are the policy packs behind the bundle.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/references/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>References</span></nav>
+		<p class="lede">References hold doctrine that would be too large or too specialised for the main prompt body. They are loaded by the prompt spec and used by modes, contracts, graders and scripts.</p>
+		<section class="grid-three">
+			<article class="card"><h2>Repository governance</h2><p><code>repository-charter.xml</code>, <code>repository-conventions.xml</code>, <code>implementation-workflow.xml</code>, <code>developer-control-contract.xml</code>.</p></article>
+			<article class="card card--purple"><h2>Quality and CI</h2><p><code>quality-gates.xml</code>, <code>ci-selection-guidelines.xml</code>, <code>code-confidence-pack.xml</code>, <code>formatter-and-style-policy.xml</code>.</p></article>
+			<article class="card card--red"><h2>Security and supply chain</h2><p><code>github-settings-pack.xml</code>, <code>security-supply-chain-pack.xml</code>, <code>sbom-and-attestation.xml</code>.</p></article>
+			<article class="card card--yellow"><h2>Evidence and risk</h2><p><code>agent-evidence.xml</code>, <code>harm-register.xml</code>, <code>rule-source-traceability.xml</code>.</p></article>
+			<article class="card"><h2>Performance and accessibility</h2><p><code>performance-confidence-pack.xml</code>, <code>performance-budget-control.xml</code>, <code>accessibility-confidence-pack.xml</code>.</p></article>
+			<article class="card card--green"><h2>Mutation policy</h2><p><code>github-tooling-mutation-policy.xml</code> prevents unsafe full-file replacement as the default GitHub edit strategy.</p></article>
+		</section>
+		<section class="source-panel source-panel--reference">
+			<div class="source-panel__header"><h2>Mutation policy excerpt</h2><p>This reference is critical because it governs how agents change files through GitHub tooling.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>&lt;githubToolingMutationPolicy version="1.0.0"&gt;
+  &lt;purpose&gt;
+    Prevent agents from using full-file GitHub contents API replacement
+    as the default for small repository edits.
+  &lt;/purpose&gt;
+  &lt;coreRules&gt;
+    &lt;rule id="mutation-001" priority="must"&gt;
+      When changing an existing file through GitHub tooling, prefer the
+      smallest safe commit mechanism that preserves surrounding content.
+    &lt;/rule&gt;
+    &lt;rule id="mutation-003" priority="must"&gt;
+      A user preference for full rewritten files applies to code shown in
+      chat. It does not require full-file repository replacement.
+    &lt;/rule&gt;
+  &lt;/coreRules&gt;
+  &lt;surgicalEdits&gt;
+    &lt;rule id="surgical-004" priority="must"&gt;
+      If using Git object primitives, create a corrected blob, create a
+      tree based on the current branch head tree, create a commit with
+      the current branch head as parent and update the branch ref with
+      force=false.
+    &lt;/rule&gt;
+  &lt;/surgicalEdits&gt;
+&lt;/githubToolingMutationPolicy&gt;</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>Before repository mutation, the agent must choose the smallest safe edit path. It must verify the diff and changed-file list before reporting readiness.</p><h3>Why it matters</h3><p>This reference reduces the risk of accidental repository-wide deletions, stale full-file writes and misleading PR readiness claims.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/references/</code>.</div></footer>
+</body>
+</html>

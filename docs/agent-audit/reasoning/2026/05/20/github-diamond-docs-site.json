@@ -1,0 +1,53 @@
+{
+  "traceId": "github-diamond-docs-site",
+  "date": "2026-05-20",
+  "branch": "feature/github-diamond-docs-site",
+  "task": "Create a generated multi-file static documentation site for the GitHub Diamond bundle under docs/agent-operating-model/bundles/github/.",
+  "branchTraceDecision": "feature/ branch, trace required.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "canonicalSourceBoundary": {
+    "generatedDocumentationPath": "docs/agent-operating-model/bundles/github/",
+    "canonicalBundleSourcePath": ".agent-operating-model/bundles/github/",
+    "rule": "Generated documentation must not replace or mutate canonical bundle source files."
+  },
+  "filesChanged": [
+    "docs/agent-operating-model/bundles/github/index.html",
+    "docs/agent-operating-model/bundles/github/assets/styles.css",
+    "docs/agent-operating-model/bundles/github/modes/index.html",
+    "docs/agent-operating-model/bundles/github/roles/index.html",
+    "docs/agent-operating-model/bundles/github/references/index.html",
+    "docs/agent-operating-model/bundles/github/contracts/index.html",
+    "docs/agent-operating-model/bundles/github/graders/index.html",
+    "docs/agent-operating-model/bundles/github/templates/index.html",
+    "docs/agent-operating-model/bundles/github/scripts/index.html",
+    "docs/agent-operating-model/bundles/github/validation/index.html",
+    "docs/agent-operating-model/bundles/github/changelog/index.html",
+    "docs/agent-operating-model/bundles/github/generated-metadata.json",
+    "docs/agent-audit/reasoning/2026/05/20/github-diamond-docs-site.json",
+    "docs/agent-audit/reasoning/2026/05/20/github-diamond-docs-site.md"
+  ],
+  "implementationSummary": [
+    "Created a generated static documentation site separate from the canonical bundle source.",
+    "Added a shared stylesheet using ResearchOps/GOV.UK-style documentation conventions.",
+    "Added landing page and section pages for modes, roles, references, contracts, graders, templates, scripts, validation and changelog.",
+    "Added generated metadata to record source boundary and page inventory.",
+    "Added generated-source warnings to pages pointing readers to .agent-operating-model/bundles/github/."
+  ],
+  "validation": {
+    "localExecution": false,
+    "reason": "Changes were created through the GitHub connector in the ChatGPT environment; no local checkout or CI runner was available.",
+    "expectedChecks": [
+      "Review generated HTML in browser.",
+      "Run repository formatting or docs checks if available.",
+      "Confirm no canonical bundle source files changed."
+    ]
+  },
+  "residualRisk": [
+    "The first generated documentation site is explanatory and navigable, not a line-for-line mirror of every bundle source file.",
+    "Full generated source mirroring can be added in a later iteration with a generator script."
+  ]
+}

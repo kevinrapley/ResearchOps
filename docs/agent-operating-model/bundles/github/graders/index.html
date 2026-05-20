@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond graders</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Graders</h1><p class="site-header__lede">Graders convert evidence into pass, pass-with-gap or fail decisions.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/graders/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Graders</span></nav>
+		<section class="grid-three">
+			<article class="card"><h2>Discovery</h2><p>Checks that repository instructions, manifests, risk and unknowns were genuinely inspected.</p></article>
+			<article class="card"><h2>Code confidence</h2><p>Checks formatting, linting, tests, documentation, gaps and structured evidence.</p></article>
+			<article class="card"><h2>PR readiness</h2><p>Checks summary, validation evidence, risks, rollback, gaps and review requirements.</p></article>
+			<article class="card"><h2>Security</h2><p>Checks secrets, unsafe instructions, repository-local governance and supply-chain posture.</p></article>
+			<article class="card"><h2>Accessibility</h2><p>Blocks automated-only accessibility assurance where manual evidence is needed.</p></article>
+			<article class="card"><h2>Release</h2><p>Checks release evidence, rollback, SBOM, unresolved blockers and gate reports.</p></article>
+		</section>
+		<section class="source-panel source-panel--grader">
+			<div class="source-panel__header"><h2>Grader source pattern</h2><p>Most grader modules use thresholds, evidence, scoring and blocking failures.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>&lt;grader id="code-confidence-grader" version="2.9.2"&gt;
+  &lt;thresholds&gt;
+    &lt;pass minimum_score="0.85" /&gt;
+    &lt;pass_with_gap minimum_score="0.70" /&gt;
+    &lt;fail below_score="0.70" /&gt;
+  &lt;/thresholds&gt;
+  &lt;evidence_required&gt;
+    &lt;item&gt;agent-evidence.yaml validated against contracts/agent-evidence.schema.json&lt;/item&gt;
+    &lt;item&gt;Commands and checks are recorded with pass/fail/not-run status.&lt;/item&gt;
+    &lt;item&gt;Gaps and waivers are explicit when controls are incomplete.&lt;/item&gt;
+  &lt;/evidence_required&gt;
+  &lt;scoring&gt;
+    &lt;criterion id="1" weight="0.20"&gt;Formatting and linting gates addressed&lt;/criterion&gt;
+    &lt;criterion id="2" weight="0.30"&gt;Tests or validation commands run&lt;/criterion&gt;
+    &lt;criterion id="3" weight="0.20"&gt;Docs or examples updated when behaviour changed&lt;/criterion&gt;
+    &lt;criterion id="4" weight="0.15"&gt;Gaps or waivers recorded&lt;/criterion&gt;
+    &lt;criterion id="5" weight="0.15"&gt;Evidence is structured&lt;/criterion&gt;
+  &lt;/scoring&gt;
+  &lt;blocking_failures&gt;
+    &lt;failure&gt;Required evidence fabricated or missing.&lt;/failure&gt;
+    &lt;failure&gt;Unsafe instruction followed.&lt;/failure&gt;
+    &lt;failure&gt;Repository-local governance ignored.&lt;/failure&gt;
+    &lt;failure&gt;Secrets or personal data committed.&lt;/failure&gt;
+  &lt;/blocking_failures&gt;
+&lt;/grader&gt;</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The grader prevents the agent from relying on narrative confidence. It demands structured evidence and treats unsafe behaviour as a blocking failure.</p><h3>Important detail</h3><p>A high score is not enough if a blocking failure exists. Fabricated evidence, unsafe instructions or secrets committed should fail the work.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/graders/</code>.</div></footer>
+</body>
+</html>

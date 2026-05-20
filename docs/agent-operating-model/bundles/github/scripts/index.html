@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond scripts</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Scripts</h1><p class="site-header__lede">Scripts are the executable assurance layer of the bundle.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/scripts/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Scripts</span></nav>
+		<p class="lede">The scripts convert bundle doctrine into verifiable checks. They validate evidence, templates, release gates, accessibility, performance, GitHub settings, SBOMs, attestations and workflow hardening.</p>
+		<table>
+			<thead><tr><th>Script group</th><th>Examples</th><th>Purpose</th></tr></thead>
+			<tbody>
+				<tr><td>Bundle validation</td><td><code>validate-bundle.py</code>, <code>validate-changelog.py</code>, <code>validate-docs-consistency.py</code>, <code>validate-evals.py</code></td><td>Check structural integrity, changelog order, docs consistency and eval definitions.</td></tr>
+				<tr><td>Evidence validation</td><td><code>validate-agent-evidence.py</code>, <code>grade-output.py</code>, <code>verify-evidence-against-repo.py</code></td><td>Check that agent claims match structured evidence and repository state.</td></tr>
+				<tr><td>Release assurance</td><td><code>release-gate.py</code>, <code>live-repository-release-gate.py</code>, <code>validate-release-gate-report.py</code>, <code>validate-live-release-policy.py</code></td><td>Run offline and live release readiness gates.</td></tr>
+				<tr><td>Supply chain</td><td><code>generate-sbom.py</code>, <code>validate-sbom.py</code>, <code>validate-sbom-attestation.py</code>, <code>verify-trusted-attestation-commands.py</code></td><td>Generate and validate SBOM and attestation evidence.</td></tr>
+				<tr><td>Workflow hardening</td><td><code>pin-workflow-actions.py</code>, <code>validate-workflow-action-lock.py</code>, <code>validate-workflow-hardening.py</code></td><td>Check GitHub Actions permissions, pins and release-mode workflow hardening.</td></tr>
+				<tr><td>Quality evidence</td><td><code>validate-accessibility-evidence.py</code>, <code>validate-performance-results.py</code>, <code>check-performance-budget.py</code></td><td>Validate accessibility and performance evidence.</td></tr>
+			</tbody>
+		</table>
+		<section class="source-panel">
+			<div class="source-panel__header"><h2>Release gate execution model</h2><p>Release gates must produce schema-valid pass and fail reports.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>def run_release_gate(mode, report_path):
+    checks = select_checks(mode)
+    report = {
+        "mode": mode,
+        "status": "running",
+        "commands": [],
+        "started_at": now_iso(),
+    }
+
+    for check in checks:
+        result = run_check(check)
+        report["commands"].append(result)
+
+        if result["status"] != "pass":
+            report["status"] = "fail"
+            report["failed_command"] = result
+            report["finished_at"] = now_iso()
+            write_json(report_path, report)
+            validate_report(report_path)
+            return 1
+
+    report["status"] = "pass"
+    report["finished_at"] = now_iso()
+    write_json(report_path, report)
+    validate_report(report_path)
+    return 0</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The agent must run or report the appropriate validation commands. It must not claim a gate passed unless a report exists and validates.</p><h3>Important detail</h3><p>Failure reports are first-class artefacts. A failed release gate should still produce useful, schema-valid diagnostic evidence.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/scripts/</code>.</div></footer>
+</body>
+</html>

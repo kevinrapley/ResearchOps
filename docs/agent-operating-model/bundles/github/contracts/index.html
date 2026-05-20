@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond contracts</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Contracts</h1><p class="site-header__lede">Contracts define the shape of evidence and governance artefacts.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/contracts/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Contracts</span></nav>
+		<p class="lede">The bundle uses JSON Schema contracts so repository state can be checked, graded and audited rather than described informally.</p>
+		<section>
+			<h2>Contract families</h2>
+			<table>
+				<thead><tr><th>Family</th><th>Contract files</th><th>Purpose</th></tr></thead>
+				<tbody>
+					<tr><td>Evidence</td><td><code>agent-evidence.schema.json</code>, <code>grade-result.schema.json</code>, <code>eval-result.schema.json</code></td><td>Prove what the agent did, what it checked and how it was graded.</td></tr>
+					<tr><td>Repository governance</td><td><code>repository-contract.schema.json</code>, <code>github-settings.schema.json</code>, <code>conformance-record.schema.json</code>, <code>gap-register.schema.json</code></td><td>Describe repository posture, required settings and incomplete controls.</td></tr>
+					<tr><td>Delivery surfaces</td><td><code>pull-request-contract.schema.json</code>, <code>issue-contract.schema.json</code>, <code>endpoint-catalog.schema.json</code>, <code>workflow-contract.schema.json</code></td><td>Control PRs, issues, API catalogues and GitHub Actions workflows.</td></tr>
+					<tr><td>Release assurance</td><td><code>release-contract.schema.json</code>, <code>release-gate-report.schema.json</code>, <code>live-release-policy.schema.json</code>, <code>sbom-record.schema.json</code>, <code>trusted-attestation-verification.schema.json</code></td><td>Control release readiness, SBOM, attestation and live gate requirements.</td></tr>
+					<tr><td>High-stakes quality</td><td><code>accessibility-evidence.schema.json</code>, <code>harm-register.schema.json</code>, <code>performance-budget.schema.json</code>, <code>provenance-record.schema.json</code></td><td>Structure evidence for accessibility, harms, performance and provenance.</td></tr>
+				</tbody>
+			</table>
+		</section>
+		<section class="source-panel source-panel--contract">
+			<div class="source-panel__header"><h2>Agent evidence schema model</h2><p>This representative shape shows how the bundle makes evidence checkable.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent evidence",
+  "type": "object",
+  "required": [
+    "task",
+    "repository",
+    "mode",
+    "commands",
+    "changed_files",
+    "validation"
+  ],
+  "properties": {
+    "task": { "type": "string" },
+    "repository": { "type": "string" },
+    "mode": { "type": "string" },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "status"],
+        "properties": {
+          "command": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "not-run"] },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The agent records commands and outcomes. A validation claim without evidence should fail grading.</p><h3>Downstream use</h3><p>Graders and scripts use schema-valid evidence as the input to release readiness, PR readiness and conformance checks.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/contracts/</code>.</div></footer>
+</body>
+</html>
