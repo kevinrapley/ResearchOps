@@ -1,0 +1,40 @@
+name: Temporary rebuild GOV.UK page width assets
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    if: github.ref == 'refs/heads/chore/govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Rebuild GOV.UK Frontend assets and pages
+        run: npm run build
+      - name: Remove temporary workflow
+        run: rm .github/workflows/_temporary-rebuild-govuk-width.yml
+      - name: Commit rebuilt assets
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          git add -f public/assets/govuk
+          if git diff --cached --quiet; then
+            echo "No rebuilt GOV.UK width changes"
+            exit 0
+          fi
+          git commit -m "Rebuild GOV.UK Frontend page width assets"
+          git push origin HEAD:chore/govuk-frontend-integration
