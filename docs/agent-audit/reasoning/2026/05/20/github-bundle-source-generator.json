@@ -1,0 +1,55 @@
+{
+  "traceId": "github-bundle-source-generator",
+  "date": "2026-05-20",
+  "branch": "feature/github-bundle-source-generator",
+  "task": "Add a generator script that creates source extraction pages for each file in the GitHub Diamond bundle documentation site.",
+  "branchTraceDecision": "feature/ branch, trace required.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "sourceBoundary": {
+    "generatorScript": "scripts/agent-operating-model/generate-bundle-source-docs.mjs",
+    "canonicalBundleSourcePath": ".agent-operating-model/bundles/github/",
+    "generatedDocumentationPath": "docs/agent-operating-model/bundles/github/source/",
+    "rule": "The generator reads canonical bundle source and writes generated documentation. It does not edit canonical bundle source files."
+  },
+  "filesChanged": [
+    "scripts/agent-operating-model/generate-bundle-source-docs.mjs",
+    "package.json",
+    "docs/agent-operating-model/bundles/github/index.html",
+    "docs/agent-operating-model/bundles/github/generated-metadata.json",
+    "docs/agent-audit/reasoning/2026/05/20/github-bundle-source-generator.json",
+    "docs/agent-audit/reasoning/2026/05/20/github-bundle-source-generator.md"
+  ],
+  "implementationSummary": [
+    "Added a Node generator that recursively walks .agent-operating-model/bundles/<bundle>/.",
+    "Generated pages are written under docs/agent-operating-model/bundles/<bundle>/source/.",
+    "Each generated source page includes escaped source, line anchors, metadata, purpose notes and canonical source warnings.",
+    "The generator writes a source index grouped by bundle category and a source-metadata.json inventory.",
+    "Added npm scripts for generation and dry-run discovery.",
+    "Linked the GitHub bundle landing page to source/index.html.",
+    "Updated generated-metadata.json to record the generator and source-browser output contract.",
+    "Safe public output paths are used for canonical dot-directories such as .github, emitted as _dot_github in generated docs."
+  ],
+  "validation": {
+    "localRepositoryExecution": false,
+    "reason": "A full repository checkout was not available in this environment.",
+    "mockValidation": [
+      "node --check passed against the generated script in a local mock environment.",
+      "The generator ran against a mock bundle containing prompt.body.xml and templates/github/.github/workflows/ci-node.yml.",
+      "Observed output included source/index.html, source-metadata.json, prompt.body.xml.html and a _dot_github workflow page."
+    ],
+    "recommendedChecks": [
+      "Run npm run agent:docs:source:dry-run in a repository checkout.",
+      "Run npm run agent:docs:source before deployment or as the Cloudflare Pages build command.",
+      "Open /bundles/github/source/index.html after generation.",
+      "Confirm generated pages retain canonical source paths while using safe public output paths."
+    ]
+  },
+  "residualRisk": [
+    "The generator was added but generated source output was not committed from a full repository checkout.",
+    "Cloudflare Pages must run npm run agent:docs:source during build, or generated source files must be committed after running the script locally."
+  ]
+}
