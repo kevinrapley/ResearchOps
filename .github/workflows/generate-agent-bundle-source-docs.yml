@@ -1,0 +1,46 @@
+name: Generate agent bundle source docs
+
+on:
+  push:
+    branches:
+      - feature/github-bundle-source-generator
+    paths:
+      - '.agent-operating-model/bundles/github/**'
+      - 'docs/agent-operating-model/bundles/github/**'
+      - 'scripts/agent-operating-model/generate-bundle-source-docs.mjs'
+      - 'package.json'
+      - '.github/workflows/generate-agent-bundle-source-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-source-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: feature/github-bundle-source-generator
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate GitHub bundle source docs
+        run: npm run agent:docs:source
+
+      - name: Commit generated source docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/agent-operating-model/bundles/github/source
+          if git diff --cached --quiet; then
+            echo "No generated source docs changes to commit."
+          else
+            git commit -m "Generate GitHub bundle source docs"
+            git push origin HEAD:feature/github-bundle-source-generator
+          fi
