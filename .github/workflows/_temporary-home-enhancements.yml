@@ -1,0 +1,78 @@
+name: Temporary ResearchOps home enhancements
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.ref == 'refs/heads/chore-govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Apply home enhancements
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'src/govuk/templates/pages/home.njk';
+          let page = fs.readFileSync(path, 'utf8');
+
+          page = page.replace(
+            `{% from "govuk/components/tag/macro.njk" import govukTag %}\n\n{% block content %}`,
+            `{% from "govuk/components/tag/macro.njk" import govukTag %}\n\n{% block head %}\n\t<link rel="stylesheet" href="/assets/researchops/researchops-home.css" media="screen">\n{% endblock %}\n\n{% block content %}`
+          );
+
+          page = page.replace(
+            `<section class="govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">`,
+            `<section class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">`
+          );
+
+          page = page.replace(
+            `<section class="govuk-!-margin-bottom-7" aria-labelledby="support-title">`,
+            `<section class="researchops-journey-map govuk-!-margin-bottom-8" aria-labelledby="support-title">`
+          );
+
+          page = page.replace(
+            `<ol class="govuk-list govuk-list--number govuk-!-margin-top-4">`,
+            `<ol class="researchops-step-grid">`
+          );
+
+          page = page.replaceAll(
+            `<li>\n\t\t\t\t<p class="govuk-body-s govuk-!-font-weight-bold">Step {{ loop.index }} of {{ steps.length }}</p>\n\t\t\t\t<h3 class="govuk-heading-s">{{ step.title }}</h3>\n\t\t\t\t<p class="govuk-body">{{ step.text }}</p>\n\t\t\t</li>`,
+            `<li class="researchops-step-card">\n\t\t\t\t<p class="researchops-step-card__tag">Step {{ loop.index }} of {{ steps.length }}</p>\n\t\t\t\t<h3 class="researchops-step-card__heading govuk-heading-s">{{ step.title }}</h3>\n\t\t\t\t<p class="govuk-body-s govuk-!-margin-bottom-0">{{ step.text }}</p>\n\t\t\t</li>`
+          );
+
+          page = page.replace(
+            `<div class="govuk-grid-row">\n\t\t\t{% for card in cards %}\n\t\t\t<div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">\n\t\t\t\t<p class="govuk-body-s">{{ card.category }}</p>\n\t\t\t\t<h3 class="govuk-heading-m">{{ card.title }}</h3>\n\t\t\t\t{{ govukTag({ text: card.status }) }}\n\t\t\t\t<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3">{{ card.question }}</p>\n\t\t\t\t<p class="govuk-body">{{ card.text }}</p>\n\t\t\t</div>\n\t\t\t{% endfor %}\n\t\t</div>`,
+            `<div class="researchops-next-actions">\n\t\t\t{% for card in cards %}\n\t\t\t<section class="researchops-next-action">\n\t\t\t\t<p class="researchops-next-action__category">{{ card.category }}</p>\n\t\t\t\t<h3 class="researchops-next-action__heading govuk-heading-m">{{ card.title }}</h3>\n\t\t\t\t{{ govukTag({ text: card.status }) }}\n\t\t\t\t<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">{{ card.question }}</p>\n\t\t\t\t<p class="govuk-body">{{ card.text }}</p>\n\t\t\t</section>\n\t\t\t{% endfor %}\n\t\t</div>`
+          );
+
+          fs.writeFileSync(path, page, 'utf8');
+          fs.rmSync('.github/workflows/_temporary-home-enhancements.yml');
+          NODE
+      - name: Build generated assets and pages
+        run: |
+          npm ci
+          npm run build
+      - name: Commit home enhancements
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          git add -f public/assets/researchops public/assets/govuk
+          if git diff --cached --quiet; then
+            echo "No home enhancement changes"
+            exit 0
+          fi
+          git commit -m "Apply ResearchOps home GOV.UK Sass enhancements"
+          git push origin HEAD:chore/govuk-frontend-integration
