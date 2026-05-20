@@ -1,0 +1,34 @@
+{
+  "siteId": "github-diamond-generated-docs",
+  "generatedAt": "2026-05-20",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "feature/github-diamond-docs-site",
+  "outputPath": "docs/agent-operating-model/bundles/github/",
+  "canonicalSourcePath": ".agent-operating-model/bundles/github/",
+  "bundle": {
+    "id": "github-diamond-standard",
+    "version": "2.9.2",
+    "status": "auditable-release-assurance"
+  },
+  "pages": [
+    "index.html",
+    "modes/index.html",
+    "roles/index.html",
+    "references/index.html",
+    "contracts/index.html",
+    "graders/index.html",
+    "templates/index.html",
+    "scripts/index.html",
+    "validation/index.html",
+    "changelog/index.html"
+  ],
+  "assets": [
+    "assets/styles.css"
+  ],
+  "sourceBoundary": "Generated documentation only. Canonical bundle source remains under .agent-operating-model/bundles/github/.",
+  "notes": [
+    "Generated pages include warning banners that point readers back to the canonical source.",
+    "The static site is intentionally placed outside the canonical bundle directory.",
+    "The first generated version favours navigable explanation over line-for-line source mirroring."
+  ]
+}
