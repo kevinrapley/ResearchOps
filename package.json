@@ -31,7 +31,7 @@
     "qa:visual-walkthrough": "node scripts/visual-walkthrough.mjs"
   },
   "dependencies": {
-    "govuk-frontend": "^5.11.2"
+    "govuk-frontend": "^6.0.0"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
