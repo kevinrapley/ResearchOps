@@ -2,9 +2,10 @@
   "siteId": "github-diamond-generated-docs",
   "generatedAt": "2026-05-20",
   "repository": "kevinrapley/ResearchOps",
-  "branch": "feature/github-diamond-docs-site",
+  "branch": "feature/github-bundle-source-generator",
   "outputPath": "docs/agent-operating-model/bundles/github/",
   "canonicalSourcePath": ".agent-operating-model/bundles/github/",
+  "publicUrl": "https://agents.research-operations.com/bundles/github",
   "bundle": {
     "id": "github-diamond-standard",
     "version": "2.9.2",
@@ -20,15 +21,29 @@
     "templates/index.html",
     "scripts/index.html",
     "validation/index.html",
-    "changelog/index.html"
+    "changelog/index.html",
+    "source/index.html"
   ],
   "assets": [
     "assets/styles.css"
+  ],
+  "generators": [
+    {
+      "id": "bundle-source-browser",
+      "script": "scripts/agent-operating-model/generate-bundle-source-docs.mjs",
+      "defaultCommand": "npm run agent:docs:source",
+      "dryRunCommand": "npm run agent:docs:source:dry-run",
+      "defaultBundle": "github",
+      "sourceDirectory": ".agent-operating-model/bundles/github/",
+      "outputDirectory": "docs/agent-operating-model/bundles/github/source/",
+      "description": "Recursively extracts readable canonical bundle source files into generated source pages, with line anchors, metadata, purpose notes and safe public paths."
+    }
   ],
   "sourceBoundary": "Generated documentation only. Canonical bundle source remains under .agent-operating-model/bundles/github/.",
   "notes": [
     "Generated pages include warning banners that point readers back to the canonical source.",
     "The static site is intentionally placed outside the canonical bundle directory.",
-    "The first generated version favours navigable explanation over line-for-line source mirroring."
+    "The source browser is generated from canonical files and should not be hand-edited.",
+    "Files under canonical dot-directories such as .github are emitted under safe public paths such as _dot_github while retaining the canonical path in page content."
   ]
 }
