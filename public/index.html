@@ -11,6 +11,8 @@
 	<title>ResearchOps demo suite</title>
 	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
 	
+	<link rel="stylesheet" href="/assets/researchops/researchops-home.css" media="screen">
+
 	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
 <body class="govuk-template__body">
@@ -161,7 +163,7 @@ data-module="govuk-service-navigation"
 		</div>
 	</div>
 
-	<section class="govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
+	<section class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
 				<h2 class="govuk-heading-l" id="start-guidance-title">Start by creating a research project</h2>
@@ -176,7 +178,7 @@ data-module="govuk-service-navigation"
 		</div>
 	</section>
 
-	<section class="govuk-!-margin-bottom-7" aria-labelledby="support-title">
+	<section class="researchops-journey-map govuk-!-margin-bottom-8" aria-labelledby="support-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
 				<h2 class="govuk-heading-l" id="support-title">How ResearchOps supports a research project</h2>
@@ -185,54 +187,54 @@ data-module="govuk-service-navigation"
 			</div>
 		</div>
 
-		<ol class="govuk-list govuk-list--number govuk-!-margin-top-4">
+		<ol class="researchops-step-grid">
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 1 of 8</p>
-				<h3 class="govuk-heading-s">Project</h3>
-				<p class="govuk-body">Define the research work, service phase, team context and objectives.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 1 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Project</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Define the research work, service phase, team context and objectives.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 2 of 8</p>
-				<h3 class="govuk-heading-s">Study</h3>
-				<p class="govuk-body">Plan a specific round of research within the project.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 2 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Study</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Plan a specific round of research within the project.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 3 of 8</p>
-				<h3 class="govuk-heading-s">Participants</h3>
-				<p class="govuk-body">Recruit and manage people taking part in the study.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 3 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Participants</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Recruit and manage people taking part in the study.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 4 of 8</p>
-				<h3 class="govuk-heading-s">Sessions</h3>
-				<p class="govuk-body">Schedule and run research sessions.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 4 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Sessions</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Schedule and run research sessions.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 5 of 8</p>
-				<h3 class="govuk-heading-s">Notes</h3>
-				<p class="govuk-body">Capture observations and structured session notes.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 5 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Notes</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Capture observations and structured session notes.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 6 of 8</p>
-				<h3 class="govuk-heading-s">Evidence</h3>
-				<p class="govuk-body">Organise what was seen, heard or recorded.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 6 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Evidence</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Organise what was seen, heard or recorded.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 7 of 8</p>
-				<h3 class="govuk-heading-s">Insights</h3>
-				<p class="govuk-body">Analyse evidence into meaningful findings.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 7 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Insights</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Analyse evidence into meaningful findings.</p>
 			</li>
 			
-			<li>
-				<p class="govuk-body-s govuk-!-font-weight-bold">Step 8 of 8</p>
-				<h3 class="govuk-heading-s">Recommendations</h3>
-				<p class="govuk-body">Turn findings into decisions, actions and service improvements.</p>
+			<li class="researchops-step-card">
+				<p class="researchops-step-card__tag">Step 8 of 8</p>
+				<h3 class="researchops-step-card__heading govuk-heading-s">Recommendations</h3>
+				<p class="govuk-body-s govuk-!-margin-bottom-0">Turn findings into decisions, actions and service improvements.</p>
 			</li>
 			
 		</ol>
@@ -246,40 +248,40 @@ data-module="govuk-service-navigation"
 			</div>
 		</div>
 
-		<div class="govuk-grid-row">
+		<div class="researchops-next-actions">
 			
-			<div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">
-				<p class="govuk-body-s">Team alignment</p>
-				<h3 class="govuk-heading-m">Set clear research objectives</h3>
+			<section class="researchops-next-action">
+				<p class="researchops-next-action__category">Team alignment</p>
+				<h3 class="researchops-next-action__heading govuk-heading-m">Set clear research objectives</h3>
 				<strong class="govuk-tag">
   Available after project creation
 </strong>
 
-				<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3">How might we overcome the impact of unclear objectives in user research?</p>
+				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we overcome the impact of unclear objectives in user research?</p>
 				<p class="govuk-body">Use the project space to align stakeholder objectives with research, design and delivery work.</p>
-			</div>
+			</section>
 			
-			<div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">
-				<p class="govuk-body-s">Recruitment</p>
-				<h3 class="govuk-heading-m">Recruit participants for user research studies</h3>
+			<section class="researchops-next-action">
+				<p class="researchops-next-action__category">Recruitment</p>
+				<h3 class="researchops-next-action__heading govuk-heading-m">Recruit participants for user research studies</h3>
 				<strong class="govuk-tag">
   Available after study planning
 </strong>
 
-				<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3">How might we ensure that participant recruitment reflects the diversity and needs of the service’s real users?</p>
+				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we ensure that participant recruitment reflects the diversity and needs of the service’s real users?</p>
 				<p class="govuk-body">Plan recruitment so findings are not biased, exclusionary or weakly connected to the service’s real users.</p>
-			</div>
+			</section>
 			
-			<div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">
-				<p class="govuk-body-s">Evidence and analysis</p>
-				<h3 class="govuk-heading-m">Turn research evidence into recommendations</h3>
+			<section class="researchops-next-action">
+				<p class="researchops-next-action__category">Evidence and analysis</p>
+				<h3 class="researchops-next-action__heading govuk-heading-m">Turn research evidence into recommendations</h3>
 				<strong class="govuk-tag">
   Available after sessions
 </strong>
 
-				<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3">How might we keep evidence, insights and recommendations connected?</p>
+				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we keep evidence, insights and recommendations connected?</p>
 				<p class="govuk-body">Use structured notes and evidence trails to show how research findings lead to service decisions.</p>
-			</div>
+			</section>
 			
 		</div>
 	</section>
