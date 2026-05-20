@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond bundle documentation</title>
+	<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header">
+		<div class="site-header__inner">
+			<p class="site-header__product">ResearchOps · Agent operating model</p>
+			<h1>GitHub Diamond bundle</h1>
+			<p class="site-header__lede">Generated static documentation for the highest-precedence repository governance bundle.</p>
+		</div>
+	</header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs">
+			<a href="index.html">GitHub bundle</a>
+		</nav>
+		<p class="lede">This site explains how the GitHub Diamond bundle works as a control system. It separates the generated learning layer from the canonical bundle source.</p>
+		<section class="grid-three" aria-label="Documentation sections">
+			<article class="card card--green">
+				<h2><a href="modes/index.html">Modes</a></h2>
+				<p>Task runbooks for discovery, instantiation, build, fix, review, security, release, conformance, documentation and archive work.</p>
+			</article>
+			<article class="card card--purple">
+				<h2><a href="roles/index.html">Roles</a></h2>
+				<p>Expert lenses used to judge repository work: repository operator, developer, architect, maintainer, QA, security, documentation and performance.</p>
+			</article>
+			<article class="card card--red">
+				<h2><a href="references/index.html">References</a></h2>
+				<p>Policy and doctrine modules, including repository conventions, quality gates, GitHub settings, security, mutation policy and evidence packs.</p>
+			</article>
+			<article class="card card--yellow">
+				<h2><a href="contracts/index.html">Contracts</a></h2>
+				<p>JSON Schema contracts that make repository evidence, release gates, SBOMs, workflows and settings checkable.</p>
+			</article>
+			<article class="card">
+				<h2><a href="graders/index.html">Graders</a></h2>
+				<p>Scoring modules that convert evidence into pass, pass-with-gap, fail or blocking decisions.</p>
+			</article>
+			<article class="card card--green">
+				<h2><a href="templates/index.html">Templates</a></h2>
+				<p>Repository scaffolds, GitHub workflows, evidence templates, starter trees and release artefact templates.</p>
+			</article>
+			<article class="card card--purple">
+				<h2><a href="scripts/index.html">Scripts</a></h2>
+				<p>Executable validation and generation tools for bundle assurance, release gates, GitHub settings, SBOM, accessibility and workflow hardening.</p>
+			</article>
+			<article class="card card--red">
+				<h2><a href="validation/index.html">Validation</a></h2>
+				<p>How validation evidence proves that the bundle is structurally sound and suitable for repository governance use.</p>
+			</article>
+			<article class="card card--yellow">
+				<h2><a href="changelog/index.html">Changelog</a></h2>
+				<p>Release history from the initial bundle through the current auditable release-assurance model.</p>
+			</article>
+		</section>
+		<section>
+			<h2>Operating model at a glance</h2>
+			<div class="diagram" role="img" aria-label="GitHub bundle operating model flow">
+				<svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+					<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#1d70b8"/></marker></defs>
+					<rect x="30" y="40" width="160" height="70" fill="#fff" stroke="#0b0c0c" stroke-width="2"/><text x="110" y="82" text-anchor="middle" font-size="17" font-weight="700">User task</text>
+					<rect x="250" y="40" width="160" height="70" fill="#fff" stroke="#1d70b8" stroke-width="3"/><text x="330" y="74" text-anchor="middle" font-size="17" font-weight="700">Select mode</text><text x="330" y="96" text-anchor="middle" font-size="13">workflow route</text>
+					<rect x="470" y="40" width="160" height="70" fill="#fff" stroke="#00703c" stroke-width="3"/><text x="550" y="74" text-anchor="middle" font-size="17" font-weight="700">Apply roles</text><text x="550" y="96" text-anchor="middle" font-size="13">expert judgement</text>
+					<rect x="690" y="40" width="160" height="70" fill="#fff" stroke="#4c2c92" stroke-width="3"/><text x="770" y="74" text-anchor="middle" font-size="17" font-weight="700">Use contracts</text><text x="770" y="96" text-anchor="middle" font-size="13">evidence shape</text>
+					<rect x="250" y="210" width="160" height="70" fill="#fff" stroke="#d4351c" stroke-width="3"/><text x="330" y="244" text-anchor="middle" font-size="17" font-weight="700">Run scripts</text><text x="330" y="266" text-anchor="middle" font-size="13">validation</text>
+					<rect x="470" y="210" width="160" height="70" fill="#fff" stroke="#ffdd00" stroke-width="3"/><text x="550" y="244" text-anchor="middle" font-size="17" font-weight="700">Grade</text><text x="550" y="266" text-anchor="middle" font-size="13">quality gate</text>
+					<rect x="690" y="210" width="160" height="70" fill="#fff" stroke="#00703c" stroke-width="3"/><text x="770" y="244" text-anchor="middle" font-size="17" font-weight="700">PR evidence</text><text x="770" y="266" text-anchor="middle" font-size="13">ready or revise</text>
+					<line x1="190" y1="75" x2="250" y2="75" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/><line x1="410" y1="75" x2="470" y2="75" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/><line x1="630" y1="75" x2="690" y2="75" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/><line x1="770" y1="110" x2="330" y2="210" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/><line x1="410" y1="245" x2="470" y2="245" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/><line x1="630" y1="245" x2="690" y2="245" stroke="#1d70b8" stroke-width="3" marker-end="url(#arrow)"/>
+				</svg>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation for ResearchOps. Canonical bundle source remains under <code>.agent-operating-model/bundles/github/</code>.</div></footer>
+</body>
+</html>
