@@ -1,0 +1,105 @@
+@import 'govuk-frontend/dist/govuk/base';
+
+.researchops-highlight-panel {
+	padding: govuk-spacing(4);
+	border: 1px solid govuk-colour('mid-grey');
+	border-left: govuk-spacing(1) solid govuk-colour('blue');
+	}
+
+.researchops-journey-map {
+	padding: govuk-spacing(4);
+	border: 1px solid govuk-colour('mid-grey');
+	}
+
+.researchops-step-grid {
+	display: grid;
+	gap: govuk-spacing(3);
+	grid-template-columns: 1fr;
+	margin: govuk-spacing(6) 0 0;
+	padding: 0;
+	list-style: none;
+	}
+
+.researchops-step-card {
+	min-height: 110px;
+	padding: govuk-spacing(3);
+	border: 1px solid govuk-colour('mid-grey');
+	background: govuk-colour('light-grey');
+	}
+
+.researchops-step-card__tag {
+	display: inline-block;
+	margin-bottom: govuk-spacing(1);
+	padding: 2px 8px 1px;
+	background: govuk-colour('blue');
+	color: govuk-colour('white');
+	font-family: $govuk-font-family;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 1.25;
+	}
+
+.researchops-step-card__heading {
+	margin-bottom: govuk-spacing(1);
+	}
+
+.researchops-next-actions {
+	display: grid;
+	gap: govuk-spacing(5);
+	grid-template-columns: 1fr;
+	}
+
+.researchops-next-action {
+	padding-top: govuk-spacing(1);
+	}
+
+.researchops-next-action__category {
+	margin-bottom: govuk-spacing(3);
+	color: govuk-colour('dark-grey');
+	font-family: $govuk-font-family;
+	font-size: 16px;
+	line-height: 1.25;
+	}
+
+.researchops-next-action__heading {
+	margin-bottom: govuk-spacing(3);
+	}
+
+.researchops-next-action__question {
+	margin-top: govuk-spacing(3);
+	}
+
+@media (min-width: 40.0625em) {
+	.researchops-highlight-panel,
+	.researchops-journey-map {
+		padding: govuk-spacing(6);
+		}
+
+	.researchops-step-grid {
+		grid-template-columns: repeat(4, 1fr);
+		}
+
+	.researchops-step-card {
+		min-height: 130px;
+		}
+
+	.researchops-next-actions {
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0;
+		}
+
+	.researchops-next-action {
+		padding-right: govuk-spacing(5);
+		padding-left: govuk-spacing(5);
+		}
+
+	.researchops-next-action:first-child {
+		padding-left: 0;
+		}
+
+	.researchops-next-action:not(:last-child) {
+		border-right: 1px solid govuk-colour('mid-grey');
+		}
+	}
+
+/* transparency begins in the cascade */
