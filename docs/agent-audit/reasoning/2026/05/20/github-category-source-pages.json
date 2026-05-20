@@ -1,0 +1,75 @@
+{
+  "traceId": "github-category-source-pages",
+  "date": "2026-05-20",
+  "branch": "feature/github-category-source-pages",
+  "task": "Update the GitHub Diamond bundle documentation generator so source documentation is generated as category pages with full source panels, syntax highlighting and annotations.",
+  "branchTraceDecision": "feature/ branch, trace required.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "sourceBoundary": {
+    "canonicalBundleSourcePath": ".agent-operating-model/bundles/github/",
+    "generatedDocumentationPath": "docs/agent-operating-model/bundles/github/source/",
+    "rule": "The generator reads canonical bundle source and writes generated documentation. It does not edit canonical bundle source files."
+  },
+  "filesChanged": [
+    "scripts/agent-operating-model/generate-bundle-source-docs.mjs",
+    "docs/agent-operating-model/bundles/github/index.html",
+    "docs/agent-operating-model/bundles/github/generated-metadata.json",
+    "cucumber.mjs",
+    "features/support/timeouts.js",
+    "docs/agent-audit/reasoning/2026/05/20/github-category-source-pages.json",
+    "docs/agent-audit/reasoning/2026/05/20/github-category-source-pages.md"
+  ],
+  "implementationSummary": [
+    "Changed the source documentation generator from a per-file source browser to a source hub plus category pages.",
+    "The generator now writes category pages such as source/modes/index.html, source/roles/index.html, source/references/index.html, source/contracts/index.html, source/graders/index.html, source/templates/index.html, source/scripts/index.html and source/examples/index.html when those source categories exist.",
+    "Each category page renders complete source panels with code blocks, syntax highlighting and side annotations explaining how the agent uses each file.",
+    "Removed the right-hand file navigation pattern from generated category pages so the main content area can prioritise code panels and annotations.",
+    "Renamed the overview entry from Source browser to Source panels.",
+    "Updated generated metadata to describe the category source panel model and include the examples source page.",
+    "Raised the Cucumber default step timeout to 15 seconds using the supported setDefaultTimeout mechanism in features/support/timeouts.js after the live-site BDD smoke suite timed out during navigation to researchops.pages.dev."
+  ],
+  "reviewResponse": [
+    {
+      "reviewer": "chatgpt-codex-connector[bot]",
+      "comment": "Set Cucumber default timeout via supported mechanism.",
+      "resolution": "Removed the unsupported timeout profile field from cucumber.mjs and added features/support/timeouts.js using setDefaultTimeout(15000)."
+    },
+    {
+      "reviewer": "chatgpt-codex-connector[bot]",
+      "comment": "Add examples source page to generated metadata list.",
+      "resolution": "Added source/examples/index.html to docs/agent-operating-model/bundles/github/generated-metadata.json."
+    }
+  ],
+  "validation": {
+    "localRepositoryExecution": false,
+    "reason": "A full repository checkout was not available in this environment.",
+    "mockValidation": [
+      "node --check passed against the revised generator in a local mock environment.",
+      "The generator ran against a mock bundle containing prompt.spec.yaml, modes/repo-build.xml and templates/github/.github/workflows/ci-node.yml.",
+      "Observed output included source/index.html, source/bundle-root/index.html, source/modes/index.html, source/templates/index.html and source/source-metadata.json."
+    ],
+    "workflowValidation": [
+      "Initial qa-bdd run failed because Cucumber killed page.goto navigation after the default 5000ms step timeout while testing the live researchops.pages.dev site.",
+      "After adding timeout: 15000 to cucumber.mjs, the BDD smoke suite step passed on the rerun for commit 0a54afa178cccc161e7ffb78a2925039b9e39c17.",
+      "Codex review then correctly identified that timeout is not a supported cucumber.mjs profile option.",
+      "The timeout fix was moved to features/support/timeouts.js using setDefaultTimeout(15000)."
+    ],
+    "recommendedChecks": [
+      "Run npm run agent:docs:source:dry-run in a full repository checkout.",
+      "Run npm run agent:docs:source in a full repository checkout or Cloudflare Pages build.",
+      "Open /bundles/github/source/ after deployment.",
+      "Open /bundles/github/source/modes/ after deployment.",
+      "Confirm source category pages do not include a right-hand file navigation rail.",
+      "Confirm the latest PR-head workflows complete after Codex review fixes."
+    ]
+  },
+  "residualRisk": [
+    "Generated source output is produced by running npm run agent:docs:source and is not committed directly in this PR.",
+    "The syntax highlighting is static and deliberately lightweight, not a full Shiki or Prism implementation.",
+    "The generator assumes canonical bundle files are text-oriented documentation, source, schema, template or script files."
+  ]
+}
