@@ -1,0 +1,86 @@
+name: Temporary GOV.UK Frontend build
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/chore/govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Add GOV.UK Frontend links to representative pages
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const pages = [
+            'public/partials/html-head.html',
+            'public/index.html',
+            'public/pages/account/index.html',
+            'public/pages/start/overview/index.html'
+          ];
+
+          for (const path of pages) {
+            let text = fs.readFileSync(path, 'utf8');
+
+            if (!text.includes('/assets/govuk/govuk-frontend.css')) {
+              text = text.replace(
+                '\t<!-- Global styles -->',
+                '\t<!-- GOV.UK Frontend generated styles -->\n\t<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />\n\t\n\t<!-- Global styles -->'
+              );
+            }
+
+            if (path !== 'public/partials/html-head.html' && !text.includes('class="govuk-template__body"')) {
+              text = text.replace(
+                '<body>',
+                '<body class="govuk-template__body">\n\t<script>document.body.className += \' js-enabled\' + (\'noModule\' in HTMLScriptElement.prototype ? \' govuk-frontend-supported\' : \'\');</script>'
+              );
+            }
+
+            if (!text.includes('/js/govuk-frontend-init.js')) {
+              if (path === 'public/partials/html-head.html') {
+                text = text.replace(
+                  '\t<script type="module" src="/components/layout.js" defer></script>',
+                  '\t<script type="module" src="/components/layout.js" defer></script>\n\t<script type="module" src="/js/govuk-frontend-init.js" defer></script>'
+                );
+              } else {
+                text = text.replace(
+                  '</body>',
+                  '\t<script type="module" src="/js/govuk-frontend-init.js"></script>\n</body>'
+                );
+              }
+            }
+
+            fs.writeFileSync(path, text, 'utf8');
+          }
+          NODE
+      - name: Build GOV.UK Frontend assets
+        run: npm run build:govuk
+      - name: Remove temporary workflow
+        run: rm .github/workflows/_temporary-govuk-frontend-build.yml
+      - name: Commit generated GOV.UK Frontend assets
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          git add -f package-lock.json public/assets/govuk
+          if git diff --cached --quiet; then
+            echo "No GOV.UK Frontend build changes"
+            exit 0
+          fi
+          git commit -m "Build GOV.UK Frontend integration assets"
+          git push origin HEAD:chore/govuk-frontend-integration
