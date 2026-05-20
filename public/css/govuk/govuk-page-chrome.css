@@ -421,10 +421,12 @@
 		}
 
 	.govuk-header,
-	.govuk-service-navigation,
+	.govuk-service-navigation {
+		margin: 0;
+		}
+
 	.govuk-footer {
-		margin-right: 0;
-		margin-left: 0;
+		margin: 48px 0 0;
 		}
 
 	.govuk-header__container {
@@ -567,7 +569,6 @@
 		}
 
 	.govuk-footer {
-		margin-top: 48px;
 		padding-top: 28px;
 		padding-bottom: 32px;
 		border-top-color: #b1b4b6;
