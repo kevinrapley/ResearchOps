@@ -10,6 +10,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{ pageTitle }}</title>
 	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	{% block head %}{% endblock %}
 	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
 <body class="govuk-template__body">
@@ -40,5 +41,6 @@
 			html: '&copy; 2026 Home Office Biometrics · ResearchOps v1.0.0'
 		}
 	}) }}
+	{% block scripts %}{% endblock %}
 </body>
 </html>
