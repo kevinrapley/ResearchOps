@@ -16,6 +16,8 @@ function excludes(source, text, label) {
 
 includes(pageChromeCss, '@media (max-width: 640px)', 'GOV.UK page chrome stylesheet');
 includes(pageChromeCss, 'body {\n\t\tmargin: 0 !important;', 'GOV.UK page chrome stylesheet');
+includes(pageChromeCss, '.govuk-header,\n\t.govuk-service-navigation {\n\t\tmargin: 0;', 'GOV.UK page chrome stylesheet');
+includes(pageChromeCss, '.govuk-footer {\n\t\tmargin: 48px 0 0;', 'GOV.UK page chrome stylesheet');
 includes(pageChromeCss, '.govuk-service-navigation__toggle {\n\t\tdisplay: inline-flex;', 'GOV.UK page chrome stylesheet');
 includes(pageChromeCss, 'border: 0;', 'GOV.UK page chrome stylesheet');
 includes(pageChromeCss, 'text-decoration: underline;', 'GOV.UK page chrome stylesheet');
