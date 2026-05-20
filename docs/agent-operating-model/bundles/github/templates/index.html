@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond templates</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Templates</h1><p class="site-header__lede">Templates make repository scaffolding reproducible.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/templates/</code> and <code>template-registry.yaml</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Templates</span></nav>
+		<section class="grid-three">
+			<article class="card card--green"><h2>Repository baseline</h2><p><code>README.md</code>, <code>CONTRIBUTING.md</code>, <code>SECURITY.md</code>, <code>CODEOWNERS</code>, <code>RECENT_LEARNINGS.md</code>.</p></article>
+			<article class="card"><h2>GitHub workflow templates</h2><p>Node, Python, Go, Java, .NET, Rust, Ruby, PHP, Data/ML, accessibility, performance, conformance, documentation quality, CodeQL and dependency review.</p></article>
+			<article class="card"><h2>Hardened workflows</h2><p>Release-ready workflow variants with stricter permissions, action pinning and lock-file expectations.</p></article>
+			<article class="card card--purple"><h2>Evidence templates</h2><p><code>agent-evidence.yaml</code>, <code>conformance-matrix.yaml</code>, <code>gap-register.yaml</code>, <code>github-settings.yaml</code>, <code>harm-register.yaml</code>.</p></article>
+			<article class="card card--yellow"><h2>Performance templates</h2><p>Budget profiles for Lighthouse, k6, autocannon, JMeter, Gatling, Artillery, Go benchmarks and pytest-benchmark.</p></article>
+			<article class="card"><h2>Starter trees</h2><p>Archetype scaffolds for agent systems, API services, CLIs, data/ML projects, libraries and web apps.</p></article>
+		</section>
+		<section class="source-panel">
+			<div class="source-panel__header"><h2>Template registry entry model</h2><p>The registry links source template, destination, trigger, contract and grader.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>- id: repository-github-settings-template-yaml
+  template_path: templates/repository/github-settings-template.yaml
+  destination_path: github-settings.yaml
+  required_for:
+    - all
+  archetypes:
+    - all
+  trigger_conditions:
+    - instantiate repository or when matching artefact is needed
+  associated_contract: contracts/github-settings.schema.json
+  associated_graders:
+    - graders/github-settings-grader.xml
+  copy_mode: copy
+  required: false</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The agent should select files from <code>template-registry.yaml</code> rather than inventing scaffold paths. This keeps destination paths, contracts and graders traceable.</p><h3>Why it matters</h3><p>Template selection becomes repeatable and auditable. Required status checks can also be inferred from selected workflow templates.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/templates/</code>.</div></footer>
+</body>
+</html>
