@@ -1,0 +1,45 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Home',
+				href: '/'
+			}
+		]
+	}) }}
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-xl">Start a research project</h1>
+			<p class="govuk-body-l">Create a project record before you plan studies, recruit participants, run sessions or analyse evidence.</p>
+			<p class="govuk-body">A project gives your research work a shared place to hold context, objectives, ownership and later evidence.</p>
+			{{ govukButton({
+				text: 'Start now',
+				href: '/pages/start/'
+			}) }}
+			<h2 class="govuk-heading-m">Before you start</h2>
+			<p class="govuk-body">You should know:</p>
+			<ul class="govuk-list govuk-list--bullet">
+				<li>the name of the project</li>
+				<li>what the research needs to learn</li>
+				<li>which service phase the work relates to</li>
+				<li>who owns or supports the research</li>
+			</ul>
+			<h2 class="govuk-heading-m">What you will do</h2>
+			<ol class="govuk-list govuk-list--number">
+				<li>Define the project.</li>
+				<li>Add stakeholders, objectives and user groups.</li>
+				<li>Add project ownership and notes.</li>
+				<li>Check your answers before creating the project.</li>
+			</ol>
+			<h2 class="govuk-heading-m">Do not include real personal data</h2>
+			<p class="govuk-body">This is a prototype. Use dummy information only.</p>
+		</div>
+	</div>
+</div>
+{% endblock %}
