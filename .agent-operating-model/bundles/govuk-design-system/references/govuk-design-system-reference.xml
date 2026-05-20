@@ -12,6 +12,10 @@
     <rule>Use the design system to learn from the research and experience of other teams and avoid repeating work【635201063113150†L169-L171】.</rule>
     <rule>Follow the Government Design Principles, the GOV.UK Service Manual and the GOV.UK style and content design guidance when using the design system【635201063113150†L229-L234】.</rule>
   </principles>
+  <css_cascade_rules>
+    <rule priority="must-not">Do not use the CSS `!important` flag in ResearchOps stylesheets. Resolve precedence through correct stylesheet ownership, selector design, source order and component boundaries instead.</rule>
+    <rule priority="must">When a style requires higher precedence, change the cascade deliberately. Do not override the cascade with `!important`.</rule>
+  </css_cascade_rules>
   <colour_guidelines>
     <rule>Always use the GOV.UK colour palette【529411222321622†L196-L204】.</rule>
     <rule>Ensure that the contrast ratio of text and interactive elements meets WCAG 2.2 success criterion 1.4.3 (minimum)【529411222321622†L200-L203】.</rule>
