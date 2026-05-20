@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond modes</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Modes</h1><p class="site-header__lede">Mode modules are task runbooks. They define the correct workflow before an agent edits, reviews or releases repository work.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/modes/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Modes</span></nav>
+		<p class="lede">Every mode has the same control shape: inputs, actions, outputs, failure states, required contracts and required graders.</p>
+		<section class="grid">
+			<article class="card"><h2>Discovery</h2><p><code>repo-discovery.xml</code> builds verified understanding before changes. It requires root docs, manifests, workflows and governance to be read before implementation.</p></article>
+			<article class="card"><h2>Instantiation</h2><p><code>repo-instantiate.xml</code> creates a governed repository foundation using the template registry, GitHub settings, conformance matrix, gap register and CI selection.</p></article>
+			<article class="card"><h2>Build</h2><p><code>repo-build.xml</code> implements small reviewable changes with tests, docs, fixtures, evidence, conformance updates and PR summary.</p></article>
+			<article class="card"><h2>Fix</h2><p><code>repo-fix.xml</code> diagnoses defects, fixes root causes, adds regression tests and records non-obvious traps in <code>RECENT_LEARNINGS.md</code>.</p></article>
+			<article class="card"><h2>Review</h2><p><code>repo-review.xml</code> reviews PRs, CI evidence, inline comments and Codex comments. It blocks approval without evidence.</p></article>
+			<article class="card"><h2>Security</h2><p><code>repo-security.xml</code> handles vulnerabilities, dependency review, CodeQL, secret scanning and workflow hardening.</p></article>
+			<article class="card"><h2>Release</h2><p><code>repo-release.xml</code> validates version, changelog, release gates, SBOM, provenance, performance budgets and rollback.</p></article>
+			<article class="card"><h2>Conformance</h2><p><code>repo-conformance.xml</code> audits repository files, workflows and settings against bundle controls.</p></article>
+			<article class="card"><h2>Documentation</h2><p><code>repo-docs.xml</code> treats documentation as a tested surface with provenance and validation evidence.</p></article>
+			<article class="card"><h2>Archive</h2><p><code>repo-archive.xml</code> supports safe deprecation, consumer assessment, migration notes and settings updates.</p></article>
+		</section>
+		<section class="source-panel source-panel--mode">
+			<div class="source-panel__header"><h2>Mode source pattern</h2><p>The source is intentionally regular so the agent can treat it as a checklist.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>&lt;mode id="repo-build" version="2.9.2"&gt;
+  &lt;title&gt;Repository Build Mode&lt;/title&gt;
+  &lt;purpose&gt;Implement small reviewable changes.&lt;/purpose&gt;
+  &lt;inputs&gt;
+    &lt;item&gt;Issue/task&lt;/item&gt;
+    &lt;item&gt;Discovery summary&lt;/item&gt;
+  &lt;/inputs&gt;
+  &lt;actions&gt;
+    &lt;item&gt;Plan with developer control contract.&lt;/item&gt;
+    &lt;item&gt;Implement code, tests, docs and fixtures.&lt;/item&gt;
+    &lt;item&gt;Validate contracts and quality gates.&lt;/item&gt;
+    &lt;item&gt;Update conformance, gaps and recent learnings.&lt;/item&gt;
+  &lt;/actions&gt;
+  &lt;outputs&gt;
+    &lt;item&gt;Diff&lt;/item&gt;
+    &lt;item&gt;Tests&lt;/item&gt;
+    &lt;item&gt;Evidence&lt;/item&gt;
+    &lt;item&gt;PR summary&lt;/item&gt;
+  &lt;/outputs&gt;
+  &lt;failure_states&gt;
+    &lt;item&gt;No tests&lt;/item&gt;
+    &lt;item&gt;Docs stale&lt;/item&gt;
+    &lt;item&gt;Fabricated evidence&lt;/item&gt;
+  &lt;/failure_states&gt;
+  &lt;required_contracts&gt;
+    &lt;item&gt;pull-request-contract.schema.json&lt;/item&gt;
+    &lt;item&gt;agent-evidence.schema.json&lt;/item&gt;
+  &lt;/required_contracts&gt;
+  &lt;required_graders&gt;
+    &lt;item&gt;code-confidence-grader.xml&lt;/item&gt;
+    &lt;item&gt;pr-readiness-grader.xml&lt;/item&gt;
+  &lt;/required_graders&gt;
+&lt;/mode&gt;</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The mode tells the agent what counts as complete. For build work, a code diff alone is insufficient. Tests, evidence, PR summary and governance updates are also part of the mode.</p><h3>Failure states</h3><p>Failure states are blocking conditions. The agent must not call work complete if one remains true.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/modes/</code>.</div></footer>
+</body>
+</html>
