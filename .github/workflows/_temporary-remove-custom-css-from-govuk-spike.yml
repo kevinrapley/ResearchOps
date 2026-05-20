@@ -1,0 +1,101 @@
+name: Temporary remove custom CSS from GOV.UK spike pages
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.ref == 'refs/heads/chore/govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - name: Remove custom CSS from spike pages
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const representativePages = [
+            'public/index.html',
+            'public/pages/account/index.html',
+            'public/pages/start/overview/index.html',
+            'public/partials/html-head.html'
+          ];
+
+          const customCssPatterns = [
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-typography\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-colours\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-page-chrome\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-buttons\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-forms\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/govuk\/govuk-frontend-v6\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/screen\.css" media="screen" \/>/g,
+            /\n\t<link rel="stylesheet" href="\/css\/home-lifecycle\.css" media="screen" \/>/g
+          ];
+
+          for (const path of representativePages) {
+            let text = fs.readFileSync(path, 'utf8');
+            text = text.replace('<html lang="en">', '<html class="govuk-template" lang="en">');
+
+            for (const pattern of customCssPatterns) {
+              text = text.replace(pattern, '');
+            }
+
+            if (!text.includes('/assets/govuk/govuk-frontend.css')) {
+              text = text.replace(
+                /\t<title>(.*?)<\/title>/,
+                '\t<title>$1</title>\n\t<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />'
+              );
+            }
+
+            if (path !== 'public/partials/html-head.html' && !text.includes('/js/govuk-frontend-init.js')) {
+              text = text.replace('</body>', '\t<script type="module" src="/js/govuk-frontend-init.js"></script>\n</body>');
+            }
+
+            fs.writeFileSync(path, text, 'utf8');
+          }
+
+          const headerPath = 'public/partials/header.html';
+          let header = fs.readFileSync(headerPath, 'utf8');
+          header = header.replace('\n<link rel="stylesheet" href="/css/govuk/govuk-header-service-brand.css" media="screen">', '');
+          header = header.replace('\n<link rel="stylesheet" href="/css/govuk/govuk-main-content-focus.css" media="screen">', '');
+          header = header.replace('<a href="/" class="govuk-header__homepage-link">', '<a href="/" class="govuk-header__link govuk-header__link--homepage">');
+          header = header.replace('\n\t\t\t\t<span class="govuk-header__product-name">ResearchOps Demo Suite</span>', '');
+          header = header.replace(
+            '\n\t\t</div>\n\t</div>\n</header>',
+            '\n\t\t</div>\n\t\t<div class="govuk-header__content">\n\t\t\t<a class="govuk-header__link govuk-header__service-name" href="/">ResearchOps Demo Suite</a>\n\t\t</div>\n\t</div>\n</header>'
+          );
+          const scriptStart = header.indexOf('\n\n<script>\n\t(function () {');
+          if (scriptStart !== -1) {
+            header = header.slice(0, scriptStart) + '\n';
+          }
+          fs.writeFileSync(headerPath, header, 'utf8');
+
+          const initPath = 'public/js/govuk-frontend-init.js';
+          fs.writeFileSync(initPath, `import { initAll } from '/assets/govuk/govuk-frontend.min.js';\n\nfunction initialiseGovukFrontend(scope = document) {\n\ttry {\n\t\tinitAll({ scope });\n\t} catch (error) {\n\t\tdocument.dispatchEvent(\n\t\t\tnew CustomEvent('govuk-frontend:init-error', {\n\t\t\t\tdetail: { error: String(error) },\n\t\t\t}),\n\t\t);\n\t}\n}\n\nif (document.readyState === 'loading') {\n\tdocument.addEventListener('DOMContentLoaded', () => initialiseGovukFrontend(), { once: true });\n} else {\n\tinitialiseGovukFrontend();\n}\n\ndocument.addEventListener('x-include:loaded', (event) => {\n\tinitialiseGovukFrontend(event.target);\n});\n`, 'utf8');
+
+          const sassPath = 'src/styles/govuk.scss';
+          let sass = fs.readFileSync(sassPath, 'utf8');
+          sass = sass.replace('@import "govuk-frontend/dist/govuk";', "@import 'govuk-frontend/dist/govuk';");
+          fs.writeFileSync(sassPath, sass, 'utf8');
+
+          const workflowPath = '.github/workflows/_temporary-remove-custom-css-from-govuk-spike.yml';
+          fs.rmSync(workflowPath);
+          NODE
+      - name: Commit patch
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No GOV.UK Frontend spike CSS removal changes"
+            exit 0
+          fi
+          git commit -m "Remove custom CSS from GOV.UK Frontend spike pages"
+          git push origin HEAD:chore/govuk-frontend-integration
