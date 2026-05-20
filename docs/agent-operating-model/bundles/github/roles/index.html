@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GitHub Diamond roles</title>
+	<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to main content</a>
+	<header class="site-header"><div class="site-header__inner"><p class="site-header__product">ResearchOps · GitHub Diamond bundle</p><h1>Roles</h1><p class="site-header__lede">Role modules provide expert lenses for repository governance work.</p></div></header>
+	<p class="generated-warning">This page is generated documentation. The canonical source is <code>.agent-operating-model/bundles/github/roles/</code>.</p>
+	<main id="main" class="wrapper">
+		<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">GitHub bundle</a><span>Roles</span></nav>
+		<section class="grid">
+			<article class="card card--green"><h2>Repository operator</h2><p>Coordinates discovery, repository mode, governance structures, branch plans, PR descriptions, conformance, gap register and recent learnings.</p></article>
+			<article class="card"><h2>Developer</h2><p>Implements features and fixes while following branch naming, code standards, tests, validation checks and documentation expectations.</p></article>
+			<article class="card"><h2>Architect</h2><p>Reviews frameworks, infrastructure changes, ADRs, layering, domain boundaries and architecture integrity.</p></article>
+			<article class="card"><h2>Maintainer</h2><p>Stewards repository health, branch protection, CODEOWNERS, PR evidence, releases, conformance and gaps.</p></article>
+			<article class="card"><h2>QA</h2><p>Checks completeness, test coverage, accessibility, performance and required artefacts before approval.</p></article>
+			<article class="card card--red"><h2>Security</h2><p>Enforces Dependabot, secret scanning, push protection, disclosure process, dependency review and secure coding.</p></article>
+			<article class="card"><h2>Docs lead</h2><p>Owns repository documentation accuracy, clarity, build health, inclusive language and diagram/documentation updates.</p></article>
+			<article class="card card--yellow"><h2>Performance engineer</h2><p>Defines budgets, selects benchmark tools, reviews results and investigates regressions.</p></article>
+		</section>
+		<section class="source-panel source-panel--role">
+			<div class="source-panel__header"><h2>Role source pattern</h2><p>Roles define responsibilities and escalation. They shape how the agent critiques work.</p></div>
+			<div class="source-panel__grid">
+				<pre><code>&lt;role id="repository-operator" version="2.9.2"&gt;
+  &lt;title&gt;Repository Operator&lt;/title&gt;
+  &lt;description&gt;
+    Coordinates creation, maintenance and governance of GitHub repositories.
+  &lt;/description&gt;
+  &lt;responsibilities&gt;
+    &lt;item&gt;Lead discovery and classify the repository mode.&lt;/item&gt;
+    &lt;item&gt;Draft change plans, branch names and PR descriptions.&lt;/item&gt;
+    &lt;item&gt;Enforce code owners, branch protection and security policies.&lt;/item&gt;
+    &lt;item&gt;Capture project-specific learnings in RECENT_LEARNINGS.md.&lt;/item&gt;
+    &lt;item&gt;Maintain conformance matrix and gap register.&lt;/item&gt;
+  &lt;/responsibilities&gt;
+  &lt;escalation&gt;
+    &lt;item&gt;Escalate architectural, legal, ethical or safety concerns.&lt;/item&gt;
+  &lt;/escalation&gt;
+&lt;/role&gt;</code></pre>
+				<aside class="source-panel__notes"><h3>How the agent uses this</h3><p>The role frames judgement. Repository operator is the default coordinating lens. Other roles are added when a task touches security, performance, documentation, architecture or QA.</p><h3>Relationship to modes</h3><p>Modes decide the route. Roles decide the specialist concerns that must be checked along the route.</p></aside>
+			</div>
+		</section>
+	</main>
+	<footer class="site-footer"><div class="site-footer__inner">Generated documentation. Canonical source remains under <code>.agent-operating-model/bundles/github/roles/</code>.</div></footer>
+</body>
+</html>
