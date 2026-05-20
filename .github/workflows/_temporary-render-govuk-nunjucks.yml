@@ -1,0 +1,40 @@
+name: Temporary render GOV.UK Nunjucks pages
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    if: github.ref == 'refs/heads/chore/govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Build GOV.UK Frontend and Nunjucks pages
+        run: npm run build
+      - name: Remove temporary workflow
+        run: rm .github/workflows/_temporary-render-govuk-nunjucks.yml
+      - name: Commit rendered GOV.UK Nunjucks spike
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          git add -f package-lock.json public/assets/govuk
+          if git diff --cached --quiet; then
+            echo "No rendered GOV.UK Nunjucks changes"
+            exit 0
+          fi
+          git commit -m "Render GOV.UK Frontend Nunjucks spike pages"
+          git push origin HEAD:chore/govuk-frontend-integration
