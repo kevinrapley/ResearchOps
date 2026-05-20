@@ -1,0 +1,74 @@
+name: Temporary home integration test patch
+
+on:
+  push:
+    branches:
+      - chore/govuk-frontend-integration
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.ref == 'refs/heads/chore/govuk-frontend-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/govuk-frontend-integration
+      - name: Patch integration test
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'tests/govuk-frontend-integration-route-state.test.js';
+          let test = fs.readFileSync(path, 'utf8');
+
+          test = test.replace(
+            "const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');",
+            "const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');\nconst generatedHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');\nconst homeSassEntry = fs.readFileSync('src/styles/researchops-home.scss', 'utf8');"
+          );
+
+          test = test.replace(
+            "assert.equal(packageJson.scripts.build, 'npm run build:govuk && npm run build:govuk-pages');",
+            "assert.equal(packageJson.scripts.build, 'npm run build:govuk && npm run build:researchops && npm run build:govuk-pages');"
+          );
+
+          test = test.replace(
+            "assert.equal(packageJson.scripts['build:govuk-pages'], 'node scripts/govuk/render-govuk-pages.mjs');",
+            "assert.equal(\n\tpackageJson.scripts['build:researchops'],\n\t'sass --load-path=node_modules --no-source-map --style=compressed src/styles/researchops-home.scss public/assets/researchops/researchops-home.css',\n);\nassert.equal(packageJson.scripts['build:govuk-pages'], 'node scripts/govuk/render-govuk-pages.mjs');"
+          );
+
+          test = test.replace(
+            "assert.match(sassEntry, /@import ['\\\"]govuk-frontend\\/dist\\/govuk['\\\"];/);",
+            "assert.match(sassEntry, /@import ['\\\"]govuk-frontend\\/dist\\/govuk['\\\"];/);\nassert.match(homeSassEntry, /researchops-step-grid/);\nassert.match(homeSassEntry, /researchops-next-action/);"
+          );
+
+          test = test.replace(
+            "assert.match(generatedCss, /\\.govuk-width-container\\{max-width:1020px/);",
+            "assert.match(generatedCss, /\\.govuk-width-container\\{max-width:1020px/);\nassert.match(generatedHomeCss, /\\.researchops-step-grid/);\nassert.match(generatedHomeCss, /\\.researchops-next-action/);"
+          );
+
+          test = test.replace(
+            "assert.match(homeTemplate, /govuk\\/components\\/tag\\/macro\\.njk/);",
+            "assert.match(homeTemplate, /govuk\\/components\\/tag\\/macro\\.njk/);\nassert.match(homeTemplate, /assets\\/researchops\\/researchops-home\\.css/);\nassert.match(homeTemplate, /researchops-step-card/);\nassert.match(homeTemplate, /researchops-next-actions/);"
+          );
+
+          test = test.replace(
+            "'public/assets/govuk/govuk-frontend.min.js',",
+            "'public/assets/govuk/govuk-frontend.min.js',\n\t'public/assets/researchops/researchops-home.css',"
+          );
+
+          fs.writeFileSync(path, test, 'utf8');
+          fs.rmSync('.github/workflows/_temporary-home-test-patch.yml');
+          NODE
+      - name: Commit test patch
+        run: |
+          git config user.name "researchops-agent"
+          git config user.email "researchops-agent@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No test patch changes"
+            exit 0
+          fi
+          git commit -m "Assert ResearchOps home Sass integration"
+          git push origin HEAD:chore/govuk-frontend-integration
