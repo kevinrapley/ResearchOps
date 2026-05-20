@@ -5,6 +5,8 @@ const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const packageLock = fs.readFileSync('package-lock.json', 'utf8');
 const sassEntry = fs.readFileSync('src/styles/govuk.scss', 'utf8');
 const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
+const generatedHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
+const homeSassEntry = fs.readFileSync('src/styles/researchops-home.scss', 'utf8');
 const copyScript = fs.readFileSync('scripts/govuk/copy-govuk-assets.mjs', 'utf8');
 const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const initScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
@@ -33,10 +35,14 @@ const customCssAssets = [
 assert.equal(packageJson.dependencies['govuk-frontend'], '^6.0.0');
 assert.equal(packageJson.devDependencies.sass, '^1.94.2');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
-assert.equal(packageJson.scripts.build, 'npm run build:govuk && npm run build:govuk-pages');
+assert.equal(packageJson.scripts.build, 'npm run build:govuk && npm run build:researchops && npm run build:govuk-pages');
 assert.equal(
 	packageJson.scripts['build:govuk'],
 	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs',
+);
+assert.equal(
+	packageJson.scripts['build:researchops'],
+	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/researchops-home.scss public/assets/researchops/researchops-home.css',
 );
 assert.equal(packageJson.scripts['build:govuk-pages'], 'node scripts/govuk/render-govuk-pages.mjs');
 assert.match(packageLock, /"govuk-frontend": "\^6\.0\.0"/);
@@ -47,6 +53,8 @@ assert.match(packageLock, /"version": "6\.1\.0"/);
 assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
 assert.match(sassEntry, /@import ['"]govuk-frontend\/dist\/govuk['"];/);
 assert.match(generatedCss, /\.govuk-width-container\{max-width:1020px/);
+assert.match(generatedHomeCss, /\.researchops-step-grid/);
+assert.match(generatedHomeCss, /\.researchops-next-action/);
 assert.match(copyScript, /node_modules\/govuk-frontend\/dist\/govuk/);
 assert.match(copyScript, /public\/assets\/govuk/);
 assert.match(copyScript, /govuk-frontend\.min\.js/);
@@ -67,6 +75,9 @@ assert.match(layoutTemplate, /govukServiceNavigation\(\{/);
 assert.match(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/button\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/tag\/macro\.njk/);
+assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css/);
+assert.match(homeTemplate, /researchops-step-card/);
+assert.match(homeTemplate, /researchops-next-actions/);
 
 for (const path of representativePages) {
 	const page = fs.readFileSync(path, 'utf8');
@@ -89,6 +100,7 @@ for (const path of representativePages) {
 for (const path of [
 	'public/assets/govuk/govuk-frontend.css',
 	'public/assets/govuk/govuk-frontend.min.js',
+	'public/assets/researchops/researchops-home.css',
 	'public/assets/govuk/assets/fonts/light-94a07e06a1-v2.woff2',
 	'public/assets/govuk/assets/fonts/bold-b542beb274-v2.woff2',
 	'public/assets/govuk/assets/manifest.json',
