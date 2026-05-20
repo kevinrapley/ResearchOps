@@ -91,8 +91,20 @@ function escapeHtml(value) {
 		.replaceAll("'", '&#39;');
 }
 
+function safePathSegment(segment) {
+	const visible = segment.startsWith('.') ? `_dot_${segment.slice(1)}` : segment;
+	return encodeURIComponent(visible).replaceAll('%20', '-');
+}
+
+function safeRelativeHtmlPath(relativePath) {
+	return normalisePath(relativePath)
+		.split('/')
+		.map(safePathSegment)
+		.join('/');
+}
+
 function pagePathForSourceFile(relativePath) {
-	return path.join('source', 'files', `${relativePath}.html`);
+	return path.join('source', 'files', `${safeRelativeHtmlPath(relativePath)}.html`);
 }
 
 function titleForBundle(bundle) {
@@ -349,6 +361,7 @@ async function writeGeneratedMetadata({ bundle, generatedAt, files, outputDirect
 		fileCount: files.length,
 		files: files.map((file) => ({
 			path: file.relativePath,
+			page: normalisePath(path.relative(outputDirectory, pagePathForSourceFile(file.relativePath).replace(/^source\//, ''))),
 			bytes: file.byteLength,
 			category: categoryForFile(file.relativePath),
 			purpose: purposeForFile(file.relativePath)
