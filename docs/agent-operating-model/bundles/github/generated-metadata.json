@@ -30,7 +30,8 @@
     "source/contracts/index.html",
     "source/graders/index.html",
     "source/templates/index.html",
-    "source/scripts/index.html"
+    "source/scripts/index.html",
+    "source/examples/index.html"
   ],
   "assets": [
     "assets/styles.css"
