@@ -45,5 +45,6 @@ export default {
 		strict: true,
 		failFast: false,
 		dryRun: false,
+		timeout: 15000,
 	},
 };
