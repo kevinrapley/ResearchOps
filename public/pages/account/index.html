@@ -13,7 +13,8 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" />
 	<script type="module" src="/components/layout.js" defer></script>
 </head>
-<body>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
 	<x-include src="/partials/header.html" vars='{"active":"Account","subtitle":"Your account"}'></x-include>
 
@@ -86,5 +87,6 @@
 
 	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
 	<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
+	<script type="module" src="/js/govuk-frontend-init.js"></script>
 </body>
 </html>
