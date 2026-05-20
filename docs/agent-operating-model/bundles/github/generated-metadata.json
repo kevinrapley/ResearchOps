@@ -2,7 +2,7 @@
   "siteId": "github-diamond-generated-docs",
   "generatedAt": "2026-05-20",
   "repository": "kevinrapley/ResearchOps",
-  "branch": "feature/github-bundle-source-generator",
+  "branch": "feature/github-category-source-pages",
   "outputPath": "docs/agent-operating-model/bundles/github/",
   "canonicalSourcePath": ".agent-operating-model/bundles/github/",
   "publicUrl": "https://agents.research-operations.com/bundles/github",
@@ -22,28 +22,37 @@
     "scripts/index.html",
     "validation/index.html",
     "changelog/index.html",
-    "source/index.html"
+    "source/index.html",
+    "source/bundle-root/index.html",
+    "source/modes/index.html",
+    "source/roles/index.html",
+    "source/references/index.html",
+    "source/contracts/index.html",
+    "source/graders/index.html",
+    "source/templates/index.html",
+    "source/scripts/index.html"
   ],
   "assets": [
     "assets/styles.css"
   ],
   "generators": [
     {
-      "id": "bundle-source-browser",
+      "id": "bundle-source-panels",
       "script": "scripts/agent-operating-model/generate-bundle-source-docs.mjs",
       "defaultCommand": "npm run agent:docs:source",
       "dryRunCommand": "npm run agent:docs:source:dry-run",
       "defaultBundle": "github",
       "sourceDirectory": ".agent-operating-model/bundles/github/",
       "outputDirectory": "docs/agent-operating-model/bundles/github/source/",
-      "description": "Recursively extracts readable canonical bundle source files into generated source pages, with line anchors, metadata, purpose notes and safe public paths."
+      "description": "Generates a source hub and category pages with full source panels, syntax highlighting, annotations and source-category navigation. The generated category pages do not include a right-hand file navigation rail."
     }
   ],
   "sourceBoundary": "Generated documentation only. Canonical bundle source remains under .agent-operating-model/bundles/github/.",
   "notes": [
     "Generated pages include warning banners that point readers back to the canonical source.",
     "The static site is intentionally placed outside the canonical bundle directory.",
-    "The source browser is generated from canonical files and should not be hand-edited.",
-    "Files under canonical dot-directories such as .github are emitted under safe public paths such as _dot_github while retaining the canonical path in page content."
+    "The source panel pages are generated from canonical files and should not be hand-edited.",
+    "Source category pages use the full main content width for code panels and annotations.",
+    "The source hub and category pages are generated at build time from .agent-operating-model/bundles/github/."
   ]
 }
