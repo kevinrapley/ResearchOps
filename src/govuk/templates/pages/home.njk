@@ -1,0 +1,71 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block content %}
+<div class="govuk-width-container">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-xl">ResearchOps demo suite</h1>
+			<p class="govuk-body-l">Objective orientated applied user research done well.</p>
+			<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
+		</div>
+	</div>
+
+	<section class="govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="start-guidance-title">Start by creating a research project</h2>
+				<p class="govuk-body">A project gives you somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
+				<p class="govuk-body">Create the project first. Later parts of the service become useful once the research work has somewhere to live.</p>
+				{{ govukButton({
+					text: 'Start a research project',
+					href: '/pages/start/overview/'
+				}) }}
+			</div>
+		</div>
+	</section>
+
+	<section class="govuk-!-margin-bottom-7" aria-labelledby="support-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="support-title">How ResearchOps supports a research project</h2>
+				<p class="govuk-body">ResearchOps follows the shape of a user research project. Start by creating a project. Then add studies, participants, sessions, notes, evidence, insights and recommendations as the work develops.</p>
+				<p class="govuk-body">This sequence is a mental model, not a set of first-visit shortcuts. It shows how the work becomes connected over time.</p>
+			</div>
+		</div>
+
+		<ol class="govuk-list govuk-list--number govuk-!-margin-top-4">
+			{% for step in steps %}
+			<li>
+				<p class="govuk-body-s govuk-!-font-weight-bold">Step {{ loop.index }} of {{ steps.length }}</p>
+				<h3 class="govuk-heading-s">{{ step.title }}</h3>
+				<p class="govuk-body">{{ step.text }}</p>
+			</li>
+			{% endfor %}
+		</ol>
+	</section>
+
+	<section aria-labelledby="after-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="after-title">What you can do after creating a project</h2>
+				<p class="govuk-body">These parts of ResearchOps are shown as orientation. They make more sense after a project record has been created.</p>
+			</div>
+		</div>
+
+		<div class="govuk-grid-row">
+			{% for card in cards %}
+			<div class="govuk-grid-column-one-third govuk-!-margin-bottom-6">
+				<p class="govuk-body-s">{{ card.category }}</p>
+				<h3 class="govuk-heading-m">{{ card.title }}</h3>
+				{{ govukTag({ text: card.status }) }}
+				<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3">{{ card.question }}</p>
+				<p class="govuk-body">{{ card.text }}</p>
+			</div>
+			{% endfor %}
+		</div>
+	</section>
+</div>
+{% endblock %}
