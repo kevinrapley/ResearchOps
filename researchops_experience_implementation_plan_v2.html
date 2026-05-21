@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchOps Experience-native AI MVP implementation plan (v2)</title>
+<style>
+:root {
+    --ink: #0b0c0c;
+    --muted: #505a5f;
+    --line: #b1b4b6;
+    --panel: #ffffff;
+    --canvas: #f3f2f1;
+    --blue: #1d70b8;
+    --blue-dark: #003078;
+    --green: #00703c;
+    --yellow: #ffdd00;
+    --red: #d4351c;
+    --purple: #4c2c92;
+    --teal: #10403b;
+    --code: #111827;
+    --code-line: #263244;
+    --shadow: 0 1px 0 rgba(11, 12, 12, 0.12), 0 8px 24px rgba(11, 12, 12, 0.08);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--canvas);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+}
+
+header.hero {
+    background: var(--ink);
+    color: #ffffff;
+    padding: 48px 24px 36px;
+}
+
+.hero__inner,
+.main-grid {
+    max-width: 1220px;
+    margin: 0 auto;
+}
+
+.eyebrow {
+    margin: 0 0 12px;
+    color: #b1b4b6;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+h1 {
+    max-width: 980px;
+    margin: 0;
+    font-size: clamp(34px, 5vw, 64px);
+    line-height: 1.02;
+}
+
+.hero p {
+    max-width: 900px;
+    margin: 22px 0 0;
+    color: #f3f2f1;
+    font-size: 21px;
+}
+
+.meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: #ffffff;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.tag--hero { border-color: #ffffff; background: transparent; color: #ffffff; }
+.tag--green { border-color: var(--green); color: var(--green); }
+.tag--blue { border-color: var(--blue); color: var(--blue); }
+.tag--red { border-color: var(--red); color: var(--red); }
+.tag--purple { border-color: var(--purple); color: var(--purple); }
+.tag--code { border-color: #93c5fd; background: #eff6ff; color: #1e3a8a; }
+.tag--new { border-color: var(--purple); background: #f3eafe; color: var(--purple); }
+
+.main-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    gap: 28px;
+    padding: 28px 24px 80px;
+}
+
+nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow: auto;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    padding: 18px;
+    box-shadow: var(--shadow);
+}
+
+nav.toc h2 { margin: 0 0 10px; font-size: 18px; }
+
+nav.toc a {
+    display: block;
+    border-left: 4px solid transparent;
+    padding: 8px 8px 8px 10px;
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+nav.toc a:hover { border-left-color: var(--blue); background: #f3f2f1; }
+nav.toc a.new::after { content: " ●"; color: var(--purple); }
+
+main { min-width: 0; }
+
+section {
+    margin-bottom: 32px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    padding: clamp(20px, 3vw, 36px);
+    box-shadow: var(--shadow);
+}
+
+section > h2 {
+    margin: 0 0 16px;
+    font-size: clamp(26px, 3vw, 38px);
+    line-height: 1.15;
+}
+
+section > p, .card p, .phase p {
+    max-width: 900px;
+    color: var(--muted);
+}
+
+.lede {
+    max-width: 980px;
+    color: var(--ink);
+    font-size: 21px;
+}
+
+.grid { display: grid; gap: 18px; }
+.grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.card {
+    border: 1px solid var(--line);
+    background: #ffffff;
+    padding: 18px;
+}
+
+.card h3 { margin: 0 0 8px; font-size: 21px; }
+.card p { margin: 0; }
+.card--principle { border-left: 6px solid var(--blue); }
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 22px 0;
+}
+
+.kpi {
+    border-top: 6px solid var(--blue);
+    background: #f8f8f8;
+    padding: 16px;
+}
+
+.kpi strong { display: block; font-size: 28px; line-height: 1; }
+.kpi span { display: block; margin-top: 8px; color: var(--muted); font-weight: 700; }
+
+.phase-list { display: grid; gap: 14px; }
+
+.phase {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) 200px;
+    gap: 16px;
+    align-items: start;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    padding: 16px;
+}
+
+.phase__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.phase h3 { margin: 0 0 6px; }
+.phase p { margin: 0; }
+.phase ul { margin: 8px 0 0; }
+.phase__exit { display: block; margin-top: 8px; color: var(--green); font-weight: 700; font-size: 14px; }
+
+.diagram-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    background: #f8f8f8;
+    padding: 18px;
+}
+
+svg { max-width: 100%; height: auto; }
+
+.mockup {
+    border: 2px solid var(--ink);
+    background: #ffffff;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.mockup__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ink);
+    color: #ffffff;
+    padding: 10px 14px;
+    font-weight: 700;
+}
+
+.mockup__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    min-height: 420px;
+}
+
+.mockup__content { padding: 18px; border-right: 1px solid var(--line); }
+.mockup__panel { background: #f8f8f8; padding: 18px; }
+.mockup--full .mockup__content { border-right: 0; }
+
+.fake-field {
+    height: 36px;
+    margin: 10px 0;
+    border: 1px solid var(--line);
+    background: #ffffff;
+}
+
+.fake-field--large { height: 92px; }
+
+.agent-card {
+    border-left: 6px solid var(--blue);
+    background: #ffffff;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.agent-card--medium { border-left-color: var(--red); }
+.agent-card--learn { border-left-color: var(--purple); }
+
+.agent-card h4 { margin: 0 0 6px; font-size: 17px; }
+.agent-card p { margin: 0 0 10px; color: var(--muted); }
+
+.skeleton {
+    height: 14px;
+    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+    border-radius: 3px;
+    margin: 6px 0;
+}
+.skeleton--short { width: 60%; }
+
+.state-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.state-box { border: 1px dashed var(--line); padding: 14px; background: #fafafa; }
+.state-box h5 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; color: var(--muted); }
+
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.fake-button {
+    display: inline-block;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: #ffffff;
+    padding: 7px 10px;
+    font-weight: 700;
+}
+
+.fake-button--secondary { background: #ffffff; color: var(--ink); }
+
+.timeline { border-left: 4px solid var(--blue); padding-left: 18px; }
+.timeline__item { position: relative; margin-bottom: 18px; }
+.timeline__item::before {
+    content: "";
+    position: absolute;
+    left: -29px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--blue);
+}
+.timeline__item--predict::before { background: var(--purple); }
+.timeline__item--env::before { background: var(--green); }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+th, td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th { background: var(--ink); color: #ffffff; }
+
+.snippet-card { margin-bottom: 20px; border: 1px solid var(--line); background: #ffffff; }
+.snippet-card__header { display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); padding: 16px; }
+.snippet-card h3 { margin: 0 0 6px; }
+.snippet-card p { margin: 0; color: var(--muted); }
+
+pre {
+    margin: 0;
+    overflow: auto;
+    background: var(--code);
+    color: #e5e7eb;
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+.callout {
+    border-left: 8px solid var(--yellow);
+    background: #fff7bf;
+    padding: 16px;
+    margin: 18px 0;
+}
+
+.callout--risk { border-left-color: var(--red); background: #fef2f2; }
+.callout--good { border-left-color: var(--green); background: #ecfdf3; }
+.callout--purple { border-left-color: var(--purple); background: #f3eafe; }
+
+.checklist { display: grid; gap: 8px; padding-left: 0; list-style: none; }
+.checklist li { border: 1px solid var(--line); background: #f8f8f8; padding: 12px; }
+.checklist li::before { content: "□"; margin-right: 10px; font-weight: 700; }
+
+.diff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.diff-was, .diff-is { padding: 12px; border: 1px solid var(--line); }
+.diff-was { background: #fef2f2; border-left: 4px solid var(--red); }
+.diff-is { background: #ecfdf3; border-left: 4px solid var(--green); }
+.diff-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+
+footer { padding: 24px; background: var(--ink); color: #ffffff; }
+footer div { max-width: 1220px; margin: 0 auto; }
+
+@media (max-width: 980px) {
+    .main-grid { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; }
+    .grid--2, .grid--3, .grid--4, .kpi-grid, .mockup__body, .phase { grid-template-columns: 1fr; }
+    .diff-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+    <div class="hero__inner">
+        <p class="eyebrow">ResearchOps platform implementation plan · v2</p>
+        <h1>Experience-native AI MVP: Study Quality Watcher</h1>
+        <p>A repo-accurate, production-grade build plan that turns ResearchOps into an environment an AI agent can observe, learn from, plan over, and act inside &mdash; behind explicit approval boundaries. Revised to align with the actual codebase, the four principles of <em>The Era of Experience</em>, and UK research governance.</p>
+        <div class="meta-row" aria-label="Plan metadata">
+            <span class="tag tag--hero">v2 &mdash; repo-accurate</span>
+            <span class="tag tag--hero">Cloudflare Worker</span>
+            <span class="tag tag--hero">D1 + Workers AI</span>
+            <span class="tag tag--hero">Cucumber + Playwright</span>
+            <span class="tag tag--hero">GOV.UK Service Standard</span>
+            <span class="tag tag--hero">DPIA &amp; DSAR</span>
+        </div>
+    </div>
+</header>
+
+<div class="main-grid">
+<nav class="toc" aria-label="Page contents">
+    <h2>Contents</h2>
+    <a href="#purpose">1. Purpose &amp; what changed</a>
+    <a href="#principles" class="new">2. Four-principle backbone</a>
+    <a href="#mvp">3. MVP boundary</a>
+    <a href="#alignment" class="new">4. Repo alignment fixes</a>
+    <a href="#architecture">5. Architecture</a>
+    <a href="#data-model">6. Data model additions</a>
+    <a href="#reward" class="new">7. Grounded reward</a>
+    <a href="#diary" class="new">8. Agent diary</a>
+    <a href="#planning" class="new">9. Planning loop</a>
+    <a href="#approval" class="new">10. Approval matrix</a>
+    <a href="#privacy" class="new">11. Privacy &amp; DPIA</a>
+    <a href="#mockups">12. Mockups &amp; states</a>
+    <a href="#testing" class="new">13. Testing strategy</a>
+    <a href="#evaluation" class="new">14. Evaluation harness</a>
+    <a href="#shadow" class="new">15. Shadow mode A/B</a>
+    <a href="#implementation">16. Implementation phases</a>
+    <a href="#files">17. Critical files</a>
+    <a href="#snippets">18. Code snippets</a>
+    <a href="#verification">19. Verification</a>
+    <a href="#risks">20. Risks &amp; open questions</a>
+    <a href="#checklist">21. Checklist</a>
+</nav>
+
+<main>
+
+<section id="purpose">
+    <h2>1. Purpose &amp; what changed in v2</h2>
+    <p class="lede">The goal is not a better chatbot. It is to make ResearchOps observable to an AI agent, then let that agent build experiential knowledge from real product events, ground its rewards in observed environment deltas, plan over a small world model, and act inside the platform behind explicit approval gates.</p>
+
+    <div class="callout callout--purple">
+        <strong>v2 in one paragraph:</strong> v1 was a solid sketch but read as a generic Cloudflare tutorial. v2 is grounded in the actual ResearchOps repo (correct migration numbering, real binding names, real auth helper, real worker entrypoint), reuses what already exists (Workers AI binding, <code>ai-rewrite.js</code> pattern, Cucumber + Playwright), and treats the four <em>Era of Experience</em> principles &mdash; streams, grounded rewards, real actions, planning &mdash; as load-bearing rather than decorative.
+    </div>
+
+    <div class="grid grid--3">
+        <div class="card card--principle">
+            <h3>Observe</h3>
+            <p>The platform emits structured events when studies, guides, consent forms, sessions, notes, synthesis artefacts and recommendations change. Streams, not episodes.</p>
+        </div>
+        <div class="card card--principle">
+            <h3>Contribute</h3>
+            <p>The agent drafts reviewable, evidence-linked recommendations for safeguarding, traceability, research questions, sampling, accessibility, notes and analysis gaps.</p>
+        </div>
+        <div class="card card--principle">
+            <h3>Learn</h3>
+            <p>Two reward channels &mdash; environment-grounded and human-grounded &mdash; update action values. A planner predicts the next gap; outcomes refine the planner.</p>
+        </div>
+    </div>
+
+    <div class="callout callout--good">
+        <strong>Operating principle:</strong> no fake outcomes, no simulated rewards, no agent value without platform evidence. The AI learns from observed ResearchOps activity, not from a toy loop. Every component below must be justifiable against one of the four principles in &sect;2.
+    </div>
+</section>
+
+<section id="principles">
+    <h2>2. The four-principle backbone <span class="tag tag--new">new in v2</span></h2>
+    <p>Every component below must advance one of these. If it does not, it is out of scope.</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Principle</th><th>What it demands of ResearchOps</th><th>Lives in</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Streams, not episodes</strong></td><td>A continuous, lifelong experience trace per study/project &mdash; not isolated chat turns or single API calls.</td><td>&sect;6 D1 stream, &sect;8 diary</td></tr>
+                <tr><td><strong>Grounded rewards</strong></td><td>Reward comes from observed environment deltas (a safeguarding section <em>did</em> appear after the agent flagged it), not only from a human thumbs-up.</td><td>&sect;7 signals + credit assignment</td></tr>
+                <tr><td><strong>Actions in the environment</strong></td><td>The agent drafts real artefacts (gap reviews, plans), behind approvals. It does not just produce conversational replies.</td><td>&sect;10 approvals, &sect;18 actions</td></tr>
+                <tr><td><strong>Planning over a world model</strong></td><td>The agent predicts where the next gap will appear and pre-positions effort. Outcomes verify or refute the prediction.</td><td>&sect;9 planning loop</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="callout">
+        <strong>v1 vs v2:</strong> v1 implemented the first three lightly and skipped the fourth. v2 treats all four as load-bearing and adds streams (<code>stream_key</code>, <code>stream_seq</code>, <code>event_hash</code>), explicit grounded reward (<code>credit.js</code>), and a planner that writes to <code>rops_experience_predictions</code>.
+    </div>
+</section>
+
+<section id="mvp">
+    <h2>3. MVP boundary</h2>
+    <p>Scope unchanged from v1; wording sharpened.</p>
+
+    <div class="kpi-grid">
+        <div class="kpi"><strong>8</strong><span>Recommendation types</span></div>
+        <div class="kpi"><strong>11</strong><span>Experience endpoints</span></div>
+        <div class="kpi"><strong>8</strong><span>D1 tables</span></div>
+        <div class="kpi"><strong>0</strong><span>Raw PII in stream</span></div>
+    </div>
+
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>In scope (Alpha-eligible)</h3>
+            <ul>
+                <li>Study, guide, consent, session, notes and synthesis observation.</li>
+                <li>Derived feature payloads (booleans, counts, enums) &mdash; never raw PII.</li>
+                <li>Rules-based recommendations with optional Workers AI reflection.</li>
+                <li>Feedback-driven and environment-driven action-value updates.</li>
+                <li>Approval-gated draft contributions (L0&ndash;L2 matrix).</li>
+                <li>Visible agent panel and experience cockpit (WCAG 2.2 AA).</li>
+                <li>Agent diary, planning loop, evaluator, shadow mode.</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Out of scope &mdash; hard boundaries</h3>
+            <ul>
+                <li>No autonomous participant contact.</li>
+                <li>No consent-wording changes.</li>
+                <li>No report publishing without human review.</li>
+                <li>No deletion of research records.</li>
+                <li>No model fine-tuning or weight updates.</li>
+                <li>No compliance attestations by the agent.</li>
+                <li>No writes to Airtable participant tables.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="alignment">
+    <h2>4. Repo alignment fixes <span class="tag tag--new">new in v2</span></h2>
+    <p>v1 contained several instructions that did not match the actual repo. The build will fail or drift unless these are corrected first.</p>
+
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span><code>003_experience_layer.sql</code></div>
+        <div class="diff-is"><span class="diff-label">Actual</span><code>0006_experience_layer.sql</code> &mdash; existing migrations run 0001&ndash;0005</div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span>"D1 binding" (unnamed)</div>
+        <div class="diff-is"><span class="diff-label">Actual</span><code>RESEARCHOPS_D1</code>, database <code>researchops-d1</code>, at <code>wrangler.toml:80&ndash;83</code></div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span>"Insert before fallback" (vague)</div>
+        <div class="diff-is"><span class="diff-label">Actual</span><code>infra/cloudflare/src/worker.js</code> &mdash; the existing <code>if/else if</code> chain at ~line 295, before <code>handleRequest(request, env, ctx)</code> fallback</div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span><code>authContextFor(request, env)</code> (assumed)</div>
+        <div class="diff-is"><span class="diff-label">Actual</span>Wrapper at <code>worker.js:105</code> already exists; it calls <code>resolveAuthenticatedContext</code> from <code>infra/cloudflare/src/core/auth/access-scoped.js:276</code>. Reuse the wrapper.</div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span>"AI reflection later"</div>
+        <div class="diff-is"><span class="diff-label">Actual</span>Workers AI binding <code>AI</code> and model <code>@cf/meta/llama-3.1-8b-instruct</code> are <strong>already in <code>wrangler.toml</code></strong>. Follow the <code>env.AI.run(model, ...)</code> pattern in <code>infra/cloudflare/src/service/ai-rewrite.js</code>.</div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 said</span>Branch <code>claude/&hellip;</code></div>
+        <div class="diff-is"><span class="diff-label">Actual</span>AGENTS.md forbids <code>claude/</code>. Implementation work moves to <code>feature/experience-layer-mvp</code>.</div>
+    </div>
+    <div class="diff-row">
+        <div class="diff-was"><span class="diff-label">v1 omitted</span>Operating-model bundle registration</div>
+        <div class="diff-is"><span class="diff-label">Required</span>Register <code>researchops-experience-agent</code> in <code>.agent-operating-model/bundle-registry.json</code> with <code>prompt.spec.yaml</code> + <code>prompt.body.xml</code>.</div>
+    </div>
+</section>
+
+<section id="architecture">
+    <h2>5. Architecture</h2>
+    <p>The Experience Layer sits alongside the existing ResearchOps Worker and service modules. It uses the current Worker route pattern, adds an experience service module, persists events in D1, optionally stores semantic memory in Vectorize, runs a scheduled cron for the diary/evaluator, and returns recommendations to the UI.</p>
+
+    <div class="diagram-wrap" role="img" aria-label="Architecture diagram showing ResearchOps UI, Worker, Experience service, D1, Vectorize and Workers AI">
+        <svg width="1080" height="560" viewBox="0 0 1080 560" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#1d70b8" />
+                </marker>
+                <style>
+                    .box { fill: #fff; stroke: #0b0c0c; stroke-width: 2; }
+                    .boxBlue { fill: #e8f1f8; stroke: #1d70b8; stroke-width: 2; }
+                    .boxGreen { fill: #ecfdf3; stroke: #00703c; stroke-width: 2; }
+                    .boxYellow { fill: #fff7bf; stroke: #ffdd00; stroke-width: 2; }
+                    .boxPurple { fill: #f3eafe; stroke: #4c2c92; stroke-width: 2; }
+                    .label { font: 700 17px Arial, sans-serif; fill: #0b0c0c; }
+                    .small { font: 13px Arial, sans-serif; fill: #505a5f; }
+                    .line { stroke: #1d70b8; stroke-width: 3; marker-end: url(#arrow); fill: none; }
+                </style>
+            </defs>
+
+            <rect x="30" y="40" width="210" height="110" rx="4" class="box" />
+            <text x="50" y="76" class="label">ResearchOps UI</text>
+            <text x="50" y="102" class="small">Study, guide, session,</text>
+            <text x="50" y="124" class="small">synthesis, cockpit pages</text>
+
+            <rect x="30" y="240" width="210" height="110" rx="4" class="box" />
+            <text x="50" y="276" class="label">ResearchOps API</text>
+            <text x="50" y="302" class="small">Airtable, Mural, GitHub,</text>
+            <text x="50" y="324" class="small">D1-backed routes</text>
+
+            <rect x="30" y="430" width="210" height="90" rx="4" class="boxPurple" />
+            <text x="50" y="466" class="label">Cron trigger</text>
+            <text x="50" y="492" class="small">02:00 daily &middot; diary + evaluator</text>
+
+            <rect x="320" y="60" width="240" height="320" rx="4" class="boxBlue" />
+            <text x="344" y="96" class="label">Experience Service</text>
+            <text x="344" y="124" class="small">/observe &middot; /events</text>
+            <text x="344" y="148" class="small">/recommend &middot; /recommendations</text>
+            <text x="344" y="172" class="small">/feedback &middot; /act</text>
+            <text x="344" y="196" class="small">/approvals &middot; /approvals/resolve</text>
+            <text x="344" y="220" class="small">/state &middot; /dsar</text>
+            <text x="344" y="252" class="small">&mdash;</text>
+            <text x="344" y="276" class="small">privacy &middot; signals &middot; rules</text>
+            <text x="344" y="300" class="small">credit &middot; planner &middot; diary</text>
+            <text x="344" y="324" class="small">actions &middot; approvals</text>
+            <text x="344" y="356" class="small">Idempotent on event_hash</text>
+
+            <rect x="650" y="30" width="180" height="90" rx="4" class="boxGreen" />
+            <text x="674" y="66" class="label">D1 stream</text>
+            <text x="674" y="92" class="small">events &middot; recs &middot; feedback</text>
+            <text x="674" y="110" class="small">action_values &middot; approvals</text>
+
+            <rect x="650" y="140" width="180" height="80" rx="4" class="boxGreen" />
+            <text x="674" y="176" class="label">D1 diary + plan</text>
+            <text x="674" y="202" class="small">diary &middot; predictions</text>
+
+            <rect x="650" y="240" width="180" height="80" rx="4" class="boxGreen" />
+            <text x="674" y="276" class="label">Vectorize</text>
+            <text x="674" y="302" class="small">Semantic memory (opt-in)</text>
+
+            <rect x="650" y="340" width="180" height="80" rx="4" class="boxYellow" />
+            <text x="674" y="376" class="label">Workers AI</text>
+            <text x="674" y="402" class="small">Reflection &middot; diary copy</text>
+
+            <rect x="880" y="160" width="170" height="160" rx="4" class="box" />
+            <text x="902" y="196" class="label">Agent UI</text>
+            <text x="902" y="222" class="small">Recommendations</text>
+            <text x="902" y="244" class="small">Approvals</text>
+            <text x="902" y="266" class="small">Cockpit timeline</text>
+            <text x="902" y="288" class="small">Diary &amp; predictions</text>
+            <text x="902" y="310" class="small">DSAR &amp; admin</text>
+
+            <path d="M240,95 C275,95 290,160 320,160" class="line" />
+            <path d="M240,295 C275,295 290,260 320,260" class="line" />
+            <path d="M240,475 C275,475 290,360 320,360" class="line" />
+            <path d="M560,120 C600,90 610,70 650,70" class="line" />
+            <path d="M560,180 C600,180 610,180 650,180" class="line" />
+            <path d="M560,250 C600,260 610,275 650,275" class="line" />
+            <path d="M560,320 C600,340 610,370 650,370" class="line" />
+            <path d="M830,75 C855,75 870,210 880,220" class="line" />
+            <path d="M830,180 C855,210 870,240 880,250" class="line" />
+            <path d="M880,290 C720,520 320,520 180,355" class="line" />
+            <text x="430" y="540" class="small">Feedback updates action values &middot; environment deltas attribute reward to prior actions</text>
+        </svg>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Layer</th><th>Responsibility</th><th>MVP implementation</th></tr></thead>
+            <tbody>
+                <tr><td>Observation</td><td>Make platform activity visible. Idempotent.</td><td><code>experience-client.js</code>, <code>observeExperience()</code>, <code>event_hash</code> dedupe.</td></tr>
+                <tr><td>Experience stream</td><td>Canonical record of events and consequences, ordered per stream.</td><td><code>rops_experience_events</code> with <code>stream_key</code> + <code>stream_seq</code>.</td></tr>
+                <tr><td>Inference</td><td>Turn observed gaps into useful interventions; predict the next one.</td><td>Rules-first; planner predicts; Workers AI reflects.</td></tr>
+                <tr><td>Learning</td><td>Adapt from two reward channels.</td><td><code>credit.js</code> attributes environment deltas; <code>rewardFromFeedback</code> attributes humans.</td></tr>
+                <tr><td>Oversight</td><td>Prevent unsafe autonomy via a transparent matrix.</td><td>L0&ndash;L2 approval matrix in <code>actions.js</code> + approvals queue.</td></tr>
+                <tr><td>Reflection</td><td>Non-human reasoning, auditable in language.</td><td>Daily cron writes <code>rops_experience_diary</code>.</td></tr>
+                <tr><td>Validation</td><td>Prove the agent helps; defer rollout if it does not.</td><td>Shadow mode + evaluator + replay scripts.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="data-model">
+    <h2>6. Data model &mdash; additions over v1</h2>
+    <p>Take the bundled <code>003_experience_layer.sql</code>, rename to <code>0006_experience_layer.sql</code>, and add streams, idempotency, diary and predictions.</p>
+
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>Existing tables (renamed migration)</h3>
+            <ul>
+                <li><code>rops_experience_events</code> &mdash; canonical event stream.</li>
+                <li><code>rops_experience_recommendations</code> &mdash; agent contributions.</li>
+                <li><code>rops_experience_feedback</code> &mdash; human + environment reward rows.</li>
+                <li><code>rops_experience_action_values</code> &mdash; learned action usefulness by context.</li>
+                <li><code>rops_experience_approvals</code> &mdash; gated action queue with role.</li>
+                <li><code>rops_experience_agent_state</code> &mdash; scoped snapshots.</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>New in v2</h3>
+            <ul>
+                <li><code>rops_experience_events.stream_key</code>, <code>stream_seq</code>, <code>event_hash UNIQUE</code> &mdash; ordered streams + idempotency.</li>
+                <li><code>rops_experience_diary</code> &mdash; natural-language reflection windows.</li>
+                <li><code>rops_experience_predictions</code> &mdash; predicted gaps + resolution outcomes.</li>
+                <li><code>rops_experience_recommendations.visibility</code>, <code>cohort</code> &mdash; shadow mode A/B.</li>
+            </ul>
+        </div>
+    </div>
+
+    <pre><code>-- streams, idempotency
+ALTER TABLE rops_experience_events ADD COLUMN stream_key TEXT;
+ALTER TABLE rops_experience_events ADD COLUMN stream_seq INTEGER;
+ALTER TABLE rops_experience_events ADD COLUMN event_hash TEXT UNIQUE;
+CREATE INDEX idx_rops_exp_stream ON rops_experience_events (stream_key, stream_seq);
+
+-- non-human reasoning
+CREATE TABLE IF NOT EXISTS rops_experience_diary (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  scope_key TEXT NOT NULL,
+  window_start TEXT NOT NULL,
+  window_end TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  metrics_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+-- planning over a world model
+CREATE TABLE IF NOT EXISTS rops_experience_predictions (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  stream_key TEXT NOT NULL,
+  predicted_event_type TEXT NOT NULL,
+  predicted_recommendation_type TEXT,
+  confidence REAL NOT NULL,
+  rationale TEXT,
+  expires_at TEXT NOT NULL,
+  resolved_event_id TEXT,
+  resolution TEXT,
+  created_at TEXT NOT NULL
+);
+
+-- shadow mode
+ALTER TABLE rops_experience_recommendations
+  ADD COLUMN visibility TEXT NOT NULL DEFAULT 'visible';
+ALTER TABLE rops_experience_recommendations
+  ADD COLUMN cohort TEXT;</code></pre>
+
+    <div class="callout">
+        <strong>Why <code>event_hash</code> matters most:</strong> it makes the observation endpoint idempotent. Page-render hooks can fire freely without polluting the stream. Without it, the entire learning loop is undermined by duplicate events.
+    </div>
+</section>
+
+<section id="reward">
+    <h2>7. Grounded reward &mdash; the two channels <span class="tag tag--new">new</span></h2>
+    <p>v1's reward model conflated environment signal with human approval. v2 separates them explicitly.</p>
+
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>Channel 1: environment-grounded</h3>
+            <p>Reward derived from observed feature deltas (<code>signals.js</code> &rarr; <code>rewardFromSignals</code>). Did the world actually improve? Did <code>hasSafeguardingSection</code> flip false &rarr; true after a <code>SAFEGUARDING_GAP</code> was opened?</p>
+        </div>
+        <div class="card">
+            <h3>Channel 2: human-grounded</h3>
+            <p>Reward derived from researcher feedback (<code>rewardFromFeedback</code>). Did a researcher accept, resolve, ignore, reject or mark harmful?</p>
+        </div>
+    </div>
+
+    <p>A new <code>credit.js</code> closes the loop: when a flip-event arrives within N hours of a related open recommendation, the environment delta is attributed back to the prior action and a synthetic feedback row is written with <code>feedbackType = 'environment_resolved'</code>. <em>Feedback alone would be sycophancy bait;</em> environment-grounded reward is what the paper calls for.</p>
+
+    <pre><code>// infra/cloudflare/src/service/experience/credit.js (new)
+export async function attributeEnvironmentReward(env, event) {
+  // For each open recommendation in the same stream that targeted a feature
+  // newly satisfied in event.after, write a synthetic feedback row with
+  // feedbackType = "environment_resolved" and reward = +0.5.
+}</code></pre>
+</section>
+
+<section id="diary">
+    <h2>8. Agent diary &mdash; non-human reasoning <span class="tag tag--new">new</span></h2>
+    <p>A scheduled Worker (cron <code>0 2 * * *</code>) wakes the agent and asks it to write a paragraph per active stream. Stored in <code>rops_experience_diary</code> and surfaced in the cockpit. This is the closest the MVP gets to the paper's "non-human reasoning" idea, because the diary is generated from the action-value table and predictions the agent maintains itself &mdash; not from researcher prose.</p>
+
+    <div class="callout callout--good">
+        <strong>Example diary entry:</strong> &ldquo;In the last 24 hours on study recXXX, I observed 7 events. I opened 3 recommendations &mdash; 2 traceability, 1 safeguarding. Researchers accepted the safeguarding draft and ignored one traceability. My estimate of <code>draft_traceability_gap_report</code> value for <code>consent_form</code> context dropped from 0.41 to 0.36; I will deprioritise it there. I predict a <code>session_notes_gap</code> after the next <code>session.completed</code> because the team has no notes uploaded yet this week.&rdquo;
+    </div>
+
+    <div class="callout callout--risk">
+        <strong>Prompt-injection defense:</strong> the diary prompt only ever ingests <strong>D1 aggregates and feature flags</strong>, never raw researcher prose or participant text. There is no path for participant content to influence the LLM call.
+    </div>
+</section>
+
+<section id="planning">
+    <h2>9. Planning loop <span class="tag tag--new">new</span></h2>
+    <p>v1 was reactive (recommend <em>after</em> seeing the gap). v2 adds a small planner that predicts where the next gap will appear and pre-positions effort.</p>
+
+    <pre><code>// infra/cloudflare/src/service/experience/planner.js (new)
+export function predictNextGaps(stream, actionValues) {
+  // Inputs:
+  //   stream         &mdash; last N events for the same stream_key
+  //   actionValues   &mdash; { contextKey -> { actionName -> { meanReward, n } } }
+  // Output: [{ predictedEventType, predictedRecommendationType, confidence, rationale }]
+}</code></pre>
+
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>V0 (Alpha 3)</h3>
+            <p>Heuristic state-machine: "a study with <code>hasVulnerableUsersFlag</code> and no safeguarding section, open >48h, predicts <code>session.started</code> without distress protocol."</p>
+        </div>
+        <div class="card">
+            <h3>V1 (Beta)</h3>
+            <p>Swap heuristics for <code>env.AI</code> reflection if the cost ceiling allows. Resolution outcomes feed a multiplier into the action-value table, so good planners are reinforced.</p>
+        </div>
+    </div>
+</section>
+
+<section id="approval">
+    <h2>10. Approval matrix &mdash; UK ICO / UKRI aligned <span class="tag tag--new">new</span></h2>
+    <p>v1's two opaque allowlists become a transparent matrix anchored to UK research governance. The <code>actions.js</code> set becomes a table keyed by <code>actionName &rarr; level</code>. Each approval row carries <code>approver_role</code>, <code>approver_user_id</code> and a free-text justification.</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Level</th><th>Examples</th><th>Trigger</th><th>Approver</th><th>Audit retention</th></tr></thead>
+            <tbody>
+                <tr><td><strong>L0</strong> Autonomous draft</td><td><code>draft_traceability_gap_report</code>, <code>draft_research_question_review</code></td><td>Low risk, no PII, no compliance claim</td><td>None</td><td>90 d</td></tr>
+                <tr><td><strong>L1</strong> Lead-researcher approval</td><td><code>draft_safeguarding_gap_review</code>, <code>draft_consent_quality_check</code></td><td>Safeguarding or consent language</td><td>Study lead</td><td>2 y</td></tr>
+                <tr><td><strong>L2</strong> DPO / governance approval</td><td><code>change_consent_terms</code>, <code>publish_report</code>, <code>release_production_change</code></td><td>Data-subject impact, public-facing artefact</td><td>DPO + study lead</td><td>6 y (UKRI)</td></tr>
+                <tr><td><strong>L3</strong> Blocked in MVP</td><td><code>contact_participant</code>, <code>delete_research_record</code></td><td>Direct participant contact or destructive change</td><td>Not permitted</td><td>n/a</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="privacy">
+    <h2>11. Privacy &amp; DPIA <span class="tag tag--new">new</span></h2>
+    <p>v1's "don't store raw notes" callout was correct but vague. v2 makes it concrete and enforceable.</p>
+
+    <ul>
+        <li><strong>Allow-list, not block-list.</strong> The sanitiser accepts only known feature keys (booleans, counts, enums). Anything else is dropped before persistence. A unit test throws if an unknown key reaches storage.</li>
+        <li><strong>No free text</strong> in <code>before_json</code>, <code>after_json</code>, <code>derived_features_json</code>. Free text is hashed to a category if needed.</li>
+        <li><strong>Stable derived features only.</strong> Names, emails, postcodes, dates of birth, free-text quotes are never derived features.</li>
+        <li><strong>DSAR endpoint.</strong> <code>GET /api/experience/dsar?actorId=&hellip;</code> (admin) returns every event/recommendation/feedback row where the user appears as <code>actor_id</code>; <code>DELETE</code> tombstones them.</li>
+        <li><strong>Retention.</strong> Events 90 d &middot; Recommendations 1 y &middot; Feedback 1 y &middot; Action values indefinite (no PII) &middot; Diary 2 y &middot; Predictions 30 d.</li>
+        <li><strong>DPIA template.</strong> <code>docs/dpia/experience-layer.md</code> covers purposes, legal basis (legitimate interest, opt-out), categories of data, retention, risks, mitigations, sign-off.</li>
+    </ul>
+</section>
+
+<section id="mockups">
+    <h2>12. Mockups &mdash; with empty, loading, error, learning &amp; disagreement states</h2>
+    <p>v1 mockups showed only the happy path. v2 surfaces the states real researchers will hit.</p>
+
+    <h3>Mockup A: Study planning page &mdash; happy path</h3>
+    <div class="mockup" aria-label="Mockup of a ResearchOps study planning page with agent panel">
+        <div class="mockup__bar"><span>ResearchOps / Study planning</span><span>Experience Agent: active &middot; 12 events observed</span></div>
+        <div class="mockup__body">
+            <div class="mockup__content">
+                <h4>Study: Digital identity support journey</h4>
+                <label>Research questions</label>
+                <div class="fake-field fake-field--large"></div>
+                <label>Participant criteria</label>
+                <div class="fake-field"></div>
+                <label>Safeguarding and distress protocol</label>
+                <div class="fake-field fake-field--large"></div>
+                <label>Decision traceability</label>
+                <div class="fake-field"></div>
+            </div>
+            <aside class="mockup__panel">
+                <h4>Study Quality Watcher</h4>
+                <div class="agent-card agent-card--medium">
+                    <span class="tag tag--red">L1 &middot; medium risk</span>
+                    <h4>Add safeguarding and distress handling before recruitment</h4>
+                    <p>Observed <code>hasVulnerableUsersFlag=true</code>, no distress protocol.</p>
+                    <div class="button-row"><span class="fake-button">Review draft</span><span class="fake-button fake-button--secondary">Reject</span></div>
+                </div>
+                <div class="agent-card">
+                    <span class="tag tag--blue">L0 &middot; low risk</span>
+                    <h4>Define research questions before refining the guide</h4>
+                    <p>Questions are not explicit enough to separate assumptions from decision evidence.</p>
+                    <div class="button-row"><span class="fake-button">Accept</span><span class="fake-button fake-button--secondary">Not useful</span></div>
+                </div>
+                <div class="agent-card agent-card--learn">
+                    <span class="tag tag--purple">prediction</span>
+                    <h4>Likely <code>session_notes_gap</code> after next session</h4>
+                    <p>Confidence 0.72 &middot; based on prior 4 weeks. The agent will offer a draft if it occurs.</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <h3>Mockup A&prime;: agent panel states <span class="tag tag--new">new</span></h3>
+    <div class="state-grid">
+        <div class="state-box">
+            <h5>Empty</h5>
+            <p>The agent has not observed enough events on this study yet. It will start contributing once a few changes are made.</p>
+        </div>
+        <div class="state-box">
+            <h5>Learning</h5>
+            <p>12 events observed, 3 feedback signals. Recommendations may be incomplete; confidence ribbon shown.</p>
+        </div>
+        <div class="state-box">
+            <h5>Loading</h5>
+            <div class="skeleton"></div>
+            <div class="skeleton skeleton--short"></div>
+            <div class="skeleton"></div>
+        </div>
+        <div class="state-box">
+            <h5>Error</h5>
+            <p>The agent cannot reach D1 right now. Researchers can continue without it; nothing is lost.</p>
+        </div>
+        <div class="state-box">
+            <h5>Disagreement</h5>
+            <p>One researcher accepted, one rejected. The card asks for a tie-break and pauses learning until resolved.</p>
+        </div>
+    </div>
+
+    <h3>Mockup B: Experience cockpit</h3>
+    <div class="mockup" aria-label="Mockup of an experience cockpit dashboard">
+        <div class="mockup__bar"><span>Experience cockpit</span><span>Stream, predictions, diary</span></div>
+        <div class="mockup__body">
+            <div class="mockup__content">
+                <h4>Experience stream</h4>
+                <div class="timeline">
+                    <div class="timeline__item timeline__item--env"><strong>guide.updated</strong><br><span class="tag tag--green">+0.13 env-reward</span> Safeguarding section added &mdash; attributed to prior <code>SAFEGUARDING_GAP</code>.</div>
+                    <div class="timeline__item"><strong>session.completed</strong><br><span class="tag tag--red">gap</span> No notes observed.</div>
+                    <div class="timeline__item timeline__item--predict"><strong>prediction</strong><br><span class="tag tag--purple">0.72 confidence</span> <code>session_notes_gap</code> within 48h.</div>
+                    <div class="timeline__item"><strong>synthesis.updated</strong><br><span class="tag tag--blue">traceability</span> Three evidence links created.</div>
+                </div>
+                <h4>Today's diary</h4>
+                <p style="color:var(--muted);font-size:14px"><em>&ldquo;In the last 24h on study recDigitalIdentity, I observed 7 events&hellip;&rdquo;</em></p>
+            </div>
+            <aside class="mockup__panel">
+                <h4>Learned action values</h4>
+                <div class="agent-card"><h4><code>draft_traceability_gap_report</code></h4><p>Mean reward: 0.41 &middot; 12 samples</p></div>
+                <div class="agent-card"><h4><code>draft_accessibility_review</code></h4><p>Mean reward: 0.22 &middot; 5 samples</p></div>
+                <div class="agent-card"><h4><code>draft_session_notes_gap</code></h4><p>Mean reward: &minus;0.04 &middot; 3 samples</p></div>
+                <h4 style="margin-top:18px">Predictions resolved this week</h4>
+                <div class="agent-card agent-card--learn"><h4>3 confirmed &middot; 1 refuted</h4><p>Planner confirmation rate: 75% (target &ge; 40%).</p></div>
+            </aside>
+        </div>
+    </div>
+
+    <h3>Mockup C: Approval queue (L1/L2 only)</h3>
+    <div class="mockup mockup--full" aria-label="Mockup of approval queue">
+        <div class="mockup__bar"><span>Experience approvals</span><span>Human-controlled risk boundary</span></div>
+        <div class="mockup__content">
+            <div class="agent-card agent-card--medium">
+                <span class="tag tag--red">L2 &middot; DPO + Lead</span>
+                <h4>Draft a consent quality check</h4>
+                <p>This action concerns consent. The agent may draft a review, but it must not change consent terms or mark compliance.</p>
+                <div class="button-row"><span class="fake-button">Approve draft only</span><span class="fake-button fake-button--secondary">Reject</span></div>
+            </div>
+            <div class="agent-card agent-card--medium">
+                <span class="tag tag--red">L1 &middot; Lead researcher</span>
+                <h4>Draft a safeguarding gap review</h4>
+                <p>Medium risk &mdash; study includes vulnerable-user indicators.</p>
+                <div class="button-row"><span class="fake-button">Approve</span><span class="fake-button fake-button--secondary">Reject</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="callout">
+        <strong>Accessibility (WCAG 2.2 AA, GDS standard #5):</strong> all cards keyboard-reachable in single tab order; risk announced in text (not colour alone); live regions announce new recommendations; cockpit timeline has a text-alternative table.
+    </div>
+
+    <p><strong>Researcher onboarding:</strong> on first visit to a study page after the agent ships, show a one-time GOV.UK-style banner: <em>&ldquo;Study Quality Watcher is now active. It observes your changes and may suggest improvements. It cannot change your work without your approval. <a>Learn more</a>&rdquo;</em>. The linked page explains the four principles in plain English.</p>
+</section>
+
+<section id="testing">
+    <h2>13. Testing &mdash; leverage Cucumber + Playwright + node:test <span class="tag tag--new">new</span></h2>
+    <p>v1's testing was generic. v2 mirrors the repo's heavy BDD + E2E investment.</p>
+
+    <div class="grid grid--3">
+        <div class="card">
+            <h3>Cucumber features (new)</h3>
+            <ul>
+                <li><code>agent-observes-guide-update.feature</code></li>
+                <li><code>agent-learns-from-feedback.feature</code></li>
+                <li><code>agent-respects-approval-boundary.feature</code></li>
+                <li><code>agent-attributes-environment-reward.feature</code></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Node tests (new)</h3>
+            <ul>
+                <li><code>experience-rules.test.mjs</code> (from bundle)</li>
+                <li><code>experience-signals.test.mjs</code></li>
+                <li><code>experience-credit.test.mjs</code></li>
+                <li><code>experience-planner.test.mjs</code></li>
+                <li><code>experience-privacy-allowlist.test.mjs</code></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Playwright (new)</h3>
+            <ul>
+                <li><code>tests/e2e/experience-panel.spec.ts</code> &mdash; mutate guide, see card, accept, verify D1.</li>
+                <li>Axe-core run against the panel.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Area</th><th>Pass criterion</th></tr></thead>
+            <tbody>
+                <tr><td>Idempotency</td><td>Same event observed twice writes one row; <code>event_hash</code> collision is silent.</td></tr>
+                <tr><td>Privacy allow-list</td><td>Unknown key reaching storage throws an explicit error in the unit test.</td></tr>
+                <tr><td>Grounded reward</td><td>Synthetic <code>environment_resolved</code> feedback row appears after the matching flip-event.</td></tr>
+                <tr><td>Planning</td><td>&ge; 1 resolved prediction per active stream per week; confirmation rate &ge; 40% by end of Alpha 2.</td></tr>
+                <tr><td>Approval gating</td><td>L1/L2 actions never produce drafts without an approved approval row.</td></tr>
+                <tr><td>DSAR</td><td>Endpoint returns &ge; 1 row when seeded; <code>DELETE</code> returns 0 rows afterwards.</td></tr>
+                <tr><td>Accessibility</td><td>Axe-core reports zero violations on the agent panel.</td></tr>
+                <tr><td>Cucumber</td><td>All <code>features/experience/*.feature</code> scenarios green in CI.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="evaluation">
+    <h2>14. Evaluation harness <span class="tag tag--new">new</span></h2>
+    <p>v1 had success measures but no way to compute them. v2 adds explicit scripts.</p>
+
+    <ul>
+        <li><code>scripts/experience/evaluate.mjs</code> &mdash; reads the last 30 days of events and feedback, computes per-recommendation-type precision/recall against accepted/resolved, prints a markdown report. Wired into <code>npm run experience:eval</code>.</li>
+        <li><code>scripts/experience/replay.mjs</code> &mdash; replays a study's stream against the current rules/planner and reports differences vs. shipped recommendations. Used before any rules/planner change.</li>
+        <li>Cron runs the evaluator weekly and writes a summary diary entry with <code>scope_key='global'</code>.</li>
+    </ul>
+
+    <div class="callout callout--good">
+        <strong>Why this matters:</strong> it is what makes the agent's learning verifiable rather than vibes-based. Without it, the team has no way to tell whether action values are improving or drifting.
+    </div>
+</section>
+
+<section id="shadow">
+    <h2>15. Shadow mode A/B <span class="tag tag--new">new</span></h2>
+    <p>For the first two weeks of Alpha 2, a random 30% of new recommendations are written with <code>visibility='shadow'</code>. They never render. After two weeks, compare gap-closure rate between studies that saw recommendations and those that did not.</p>
+
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>If lift is statistically meaningful</h3>
+            <p>Flip everyone to <code>visibility='visible'</code> and proceed to Alpha 3.</p>
+        </div>
+        <div class="card">
+            <h3>If not</h3>
+            <p>The team has a real datum to redesign against, rather than a "the agent feels useful" claim.</p>
+        </div>
+    </div>
+
+    <div class="callout callout--risk">
+        <strong>Ethics:</strong> withholding potentially useful recommendations from 30% of studies for two weeks needs DPO sign-off. Fallback: per-recommendation A/B (30% of <em>candidates</em> shadowed) instead of whole studies.
+    </div>
+</section>
+
+<section id="implementation">
+    <h2>16. Implementation phases &mdash; with explicit exit gates</h2>
+    <p>Each phase ships independently and has a numeric exit gate.</p>
+
+    <div class="phase-list">
+        <article class="phase">
+            <span class="phase__num">0</span>
+            <div>
+                <h3>Branch + bundle registration</h3>
+                <p>Create <code>feature/experience-layer-mvp</code>. Register <code>researchops-experience-agent</code> under <code>.agent-operating-model/bundles/</code> with <code>prompt.spec.yaml</code> + <code>prompt.body.xml</code>. Add DPIA stub.</p>
+                <span class="phase__exit">Exit: bundle registry loads in agent bootstrap.</span>
+            </div>
+            <span class="tag tag--blue">Foundation</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">1</span>
+            <div>
+                <h3>Migration <code>0006_experience_layer.sql</code></h3>
+                <p>Apply to local + preview D1. Extend <code>storage.js</code> with <code>stream_key</code>, <code>event_hash</code>, diary, predictions.</p>
+                <span class="phase__exit">Exit: <code>wrangler d1 execute</code> succeeds; storage unit tests green.</span>
+            </div>
+            <span class="tag tag--blue">Data</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">2</span>
+            <div>
+                <h3>Worker integration</h3>
+                <p>Import + route block in <code>worker.js</code> ~line 295. Reuse <code>authContextFor</code>.</p>
+                <span class="phase__exit">Exit: <code>POST /api/experience/observe</code> returns 200 with a stored row.</span>
+            </div>
+            <span class="tag tag--blue">Worker</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">3</span>
+            <div>
+                <h3>Client instrumentation</h3>
+                <p><code>public/js/experience-client.js</code> + explicit <code>observe()</code> calls on study + guide pages.</p>
+                <span class="phase__exit">Exit: study-page edit produces an event in D1.</span>
+            </div>
+            <span class="tag tag--green">Observation</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">4</span>
+            <div>
+                <h3>Rules + signals + credit + privacy allow-list</h3>
+                <p>Sanitiser, signal weights, environment-reward attribution.</p>
+                <span class="phase__exit">Exit: all node tests + 4 Cucumber features green.</span>
+            </div>
+            <span class="tag tag--green">Learning</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">5</span>
+            <div>
+                <h3>Agent panel UI</h3>
+                <p>Empty/learning/loading/error/disagreement states; feedback wiring.</p>
+                <span class="phase__exit">Exit: Playwright e2e green; axe-core clean.</span>
+            </div>
+            <span class="tag tag--green">UI</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">6</span>
+            <div>
+                <h3>Approvals (L0&ndash;L2) + draft contributions</h3>
+                <p>Approval matrix, role-bound queue.</p>
+                <span class="phase__exit">Exit: approval Cucumber feature green; no L1/L2 draft ever written without approval row.</span>
+            </div>
+            <span class="tag tag--red">Oversight</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">7</span>
+            <div>
+                <h3>Cron + diary + planning + Workers AI reflection</h3>
+                <p>Reuses <code>ai-rewrite.js</code> pattern.</p>
+                <span class="phase__exit">Exit: one diary entry per active stream after 24 h; &ge; 1 resolved prediction.</span>
+            </div>
+            <span class="tag tag--purple">Reflection</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">8</span>
+            <div>
+                <h3>Shadow mode + evaluator + replay</h3>
+                <p>Two-week shadow A/B.</p>
+                <span class="phase__exit">Exit: two-week A/B report exists with lift estimate.</span>
+            </div>
+            <span class="tag tag--purple">Validation</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">9</span>
+            <div>
+                <h3>DSAR + retention sweepers + admin dashboard</h3>
+                <p>Endpoints + scheduled deletes.</p>
+                <span class="phase__exit">Exit: DSAR Cucumber green; retention job removes rows older than policy.</span>
+            </div>
+            <span class="tag tag--red">Governance</span>
+        </article>
+        <article class="phase">
+            <span class="phase__num">10</span>
+            <div>
+                <h3>Optional Vectorize semantic memory</h3>
+                <p><code>researchops-experience-memory</code>, 768d, cosine. Only if Phase 8 lift was significant.</p>
+                <span class="phase__exit">Exit: retrieval improves a reflection benchmark vs. D1-only baseline.</span>
+            </div>
+            <span class="tag tag--blue">Memory</span>
+        </article>
+    </div>
+
+    <div class="callout">
+        <strong>Release gates:</strong> Alpha 1 = phases 0&ndash;4 (observe only). Alpha 2 = phases 5&ndash;6 (recommend + bounded action). Alpha 3 = phases 7&ndash;9 (learn, plan, prove value). GA gates on Phase 8 A/B result.
+    </div>
+</section>
+
+<section id="files">
+    <h2>17. Critical files &mdash; single index</h2>
+
+    <div class="grid grid--3">
+        <div class="card">
+            <h3>New</h3>
+            <ul>
+                <li><code>infra/cloudflare/migrations/0006_experience_layer.sql</code></li>
+                <li><code>infra/cloudflare/src/service/experience/{index,storage,signals,rules,privacy,actions,memory,ai,credit,planner,diary,cron,util}.js</code></li>
+                <li><code>public/js/experience-client.js</code></li>
+                <li><code>public/pages/experience/index.html</code></li>
+                <li><code>features/experience/*.feature</code> (4 specs)</li>
+                <li><code>tests/experience-*.test.mjs</code> (5 suites)</li>
+                <li><code>tests/e2e/experience-panel.spec.ts</code></li>
+                <li><code>scripts/experience/{evaluate,replay,retention}.mjs</code></li>
+                <li><code>docs/dpia/experience-layer.md</code></li>
+                <li><code>.agent-operating-model/bundles/researchops-experience-agent/{prompt.spec.yaml,prompt.body.xml}</code></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Modified</h3>
+            <ul>
+                <li><code>infra/cloudflare/src/worker.js</code> &mdash; route block ~line 295</li>
+                <li><code>infra/cloudflare/wrangler.toml</code> &mdash; add <code>[triggers] crons</code>; optional Vectorize binding behind a flag</li>
+                <li><code>public/pages/study/index.html</code>, <code>public/pages/study/guides/*</code>, <code>public/pages/consent/*</code>, <code>public/pages/sessions/*</code></li>
+                <li><code>package.json</code> &mdash; new scripts <code>experience:eval</code>, <code>experience:replay</code>, <code>experience:retention</code></li>
+                <li><code>AGENTS.md</code> &mdash; pointer to new bundle</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Reused (do not duplicate)</h3>
+            <ul>
+                <li><code>infra/cloudflare/src/service/ai-rewrite.js</code> (<code>env.AI.run</code> pattern)</li>
+                <li><code>infra/cloudflare/src/core/auth/access-scoped.js</code> (auth context)</li>
+                <li><code>worker.js:105</code> <code>authContextFor</code> wrapper</li>
+                <li>Cucumber + Playwright + <code>node:test</code> infrastructure</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="snippets">
+    <h2>18. Code snippets &mdash; review points</h2>
+    <p>Compact, deliberately scoped to boundaries, contracts and governance.</p>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Worker route integration</h3><p>The only entrypoint change. Slotted before the fallback in the existing <code>if/else if</code> chain.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code>import { handleExperienceRoute } from "./service/experience/index.js";
+
+// In worker.js, before the handleRequest(request, env, ctx) fallback (~line 295):
+else if (apiPath === "/api/experience/observe" || apiPath.startsWith("/api/experience/")) {
+    result = await handleExperienceRoute(
+        request,
+        env,
+        ctx,
+        apiPath,
+        await authContextFor(request, env)
+    );
+}</code></pre>
+    </article>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Client-side observation hook</h3><p>Idempotent because the server hashes <code>(stream_key, eventType, after_json)</code> into <code>event_hash UNIQUE</code>.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code>&lt;script src="/js/experience-client.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+ResearchOpsExperience.configure({ projectId, studyId, debug: false });
+
+ResearchOpsExperience.observe({
+    eventType: "guide.updated",
+    entityType: "discussion_guide",
+    entityId: guideId,
+    streamKey: `study:${studyId}`,
+    before: previousGuideFeatures,
+    after: currentGuideFeatures,
+    derivedFeatures: {
+        hasSafeguardingSection: true,
+        hasResearchQuestions: true,
+        evidenceLinkCount: 3
+    }
+});
+&lt;/script&gt;</code></pre>
+    </article>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Grounded reward attribution</h3><p>Closes the loop between an open recommendation and the environment delta that resolves it.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code>// infra/cloudflare/src/service/experience/credit.js
+export async function attributeEnvironmentReward(env, event) {
+    const openRecs = await listOpenRecommendationsForStream(env, event.streamKey);
+    for (const rec of openRecs) {
+        if (recommendationResolvedBy(rec, event)) {
+            await insertFeedback(env, {
+                id: createId("fb"),
+                agentId: rec.agentId,
+                recommendationId: rec.id,
+                feedbackType: "environment_resolved",
+                reward: 0.5,
+                actorId: null,
+                note: `auto: env delta ${describeDelta(rec, event)}`,
+                createdAt: nowIso()
+            });
+            await updateActionValue(env, rec.agentId,
+                contextKeyFromRecommendation(rec),
+                rec.action?.name, 0.5);
+        }
+    }
+}</code></pre>
+    </article>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Planner V0 (heuristic)</h3><p>State-machine over recent events + action values. AI swap-in is V1.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code>// infra/cloudflare/src/service/experience/planner.js
+export function predictNextGaps(stream, actionValues) {
+    const predictions = [];
+    const latest = stream[stream.length - 1];
+    const features = mergeFeatures(latest);
+
+    if (features.hasVulnerableUsersFlag && !features.hasDistressProtocol &&
+        hoursOpen(latest) > 48) {
+        predictions.push({
+            predictedEventType: "session.started",
+            predictedRecommendationType: "safeguarding_gap",
+            confidence: 0.72,
+            rationale: "vuln flag set, no distress protocol, > 48h open"
+        });
+    }
+    return predictions;
+}</code></pre>
+    </article>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Approval matrix lookup</h3><p>Replaces the two opaque allowlists with a transparent table.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code>const actionLevels = {
+    draft_traceability_gap_report:    { level: "L0", approver: null },
+    draft_research_question_review:   { level: "L0", approver: null },
+    draft_sampling_rationale_review:  { level: "L0", approver: null },
+    draft_accessibility_review:       { level: "L0", approver: null },
+    draft_session_notes_gap:          { level: "L0", approver: null },
+    draft_analysis_plan_review:       { level: "L0", approver: null },
+    draft_safeguarding_gap_review:    { level: "L1", approver: "study_lead" },
+    draft_consent_quality_check:      { level: "L1", approver: "study_lead" },
+    change_consent_terms:             { level: "L2", approver: "dpo+lead" },
+    publish_report:                   { level: "L2", approver: "dpo+lead" },
+    release_production_change:        { level: "L2", approver: "dpo+lead" },
+    contact_participant:              { level: "L3", approver: null }, // blocked in MVP
+    delete_research_record:           { level: "L3", approver: null }  // blocked in MVP
+};</code></pre>
+    </article>
+
+    <article class="snippet-card">
+        <div class="snippet-card__header">
+            <div><h3>Deployment commands</h3><p>Real binding names, real migration number.</p></div>
+            <span class="tag tag--code">review</span>
+        </div>
+        <pre><code># Apply the D1 migration against the ResearchOps D1 database.
+npx wrangler d1 execute researchops-d1 \
+    --file=infra/cloudflare/migrations/0006_experience_layer.sql --remote
+
+# Optional Vectorize binding (deferred to Phase 10).
+npx wrangler vectorize create researchops-experience-memory \
+    --dimensions=768 --metric=cosine
+
+# Run worker locally against remote bindings.
+npx wrangler dev --remote
+
+# Test suites.
+npm test
+npm run qa:cucumber -- --tags @experience
+npx playwright test tests/e2e/experience-panel.spec.ts
+
+# Evaluation.
+npm run experience:eval</code></pre>
+    </article>
+</section>
+
+<section id="verification">
+    <h2>19. Verification &mdash; end-to-end post-implementation</h2>
+    <pre><code># 1. Apply migration to preview D1
+npx wrangler d1 execute researchops-d1 \
+    --file=infra/cloudflare/migrations/0006_experience_layer.sql --preview
+
+# 2. Run all unit + integration suites
+npm run lint &amp;&amp; npm run format -c &amp;&amp; npm run typecheck &amp;&amp; npm test
+npm run qa:cucumber -- --tags @experience
+
+# 3. End-to-end browser walkthrough
+npx wrangler dev --remote
+npx playwright test tests/e2e/experience-panel.spec.ts
+
+# 4. Manual smoke against deployed preview
+curl -X POST $PREVIEW/api/experience/observe \
+    -H 'content-type: application/json' \
+    -d '{"eventType":"guide.updated","entityType":"discussion_guide",
+         "studyId":"recStudyTest","streamKey":"study:recStudyTest",
+         "after":{"hasResearchQuestions":false}}'
+curl "$PREVIEW/api/experience/recommendations?studyId=recStudyTest&amp;status=open"
+
+# 5. Evaluator
+npm run experience:eval
+
+# 6. DSAR smoke
+curl "$PREVIEW/api/experience/dsar?actorId=&lt;test-user-id&gt;"</code></pre>
+
+    <div class="callout callout--good">
+        <strong>Pass criteria:</strong> every command exits zero; the manual smoke produces exactly one <code>research_question_gap</code> recommendation; the evaluator prints a non-empty report; the DSAR call returns the seeded rows.
+    </div>
+</section>
+
+<section id="risks">
+    <h2>20. Risks &amp; open questions</h2>
+    <div class="grid grid--2">
+        <div class="card">
+            <h3>Cron + Workers AI cost</h3>
+            <p>Daily diary across many active studies could exceed the Workers AI free tier. Rate-limit to <code>max(active_streams, 50)</code> per cron and back off if the previous run hit the budget guard. <em>Decision needed: cost ceiling per day.</em></p>
+        </div>
+        <div class="card">
+            <h3>Airtable &harr; D1 drift</h3>
+            <p>If features are derived from Airtable but the record changes underneath, the agent's view goes stale. Mitigation: include Airtable <code>lastModifiedTime</code> in event payloads.</p>
+        </div>
+        <div class="card">
+            <h3><code>claude/</code> branch policy conflict</h3>
+            <p>This plan was authored on <code>claude/&hellip;</code> per session instruction, but AGENTS.md forbids that prefix for repo-affecting work. Confirmed: that branch carries <em>only this plan file</em>; all implementation moves to <code>feature/experience-layer-mvp</code>.</p>
+        </div>
+        <div class="card">
+            <h3>Shadow-mode ethics</h3>
+            <p>Withholding potentially useful recommendations from 30% of studies for two weeks needs DPO sign-off. Fallback: per-recommendation A/B (30% of <em>candidates</em>) instead of whole studies.</p>
+        </div>
+    </div>
+</section>
+
+<section id="checklist">
+    <h2>21. Implementation checklist</h2>
+    <ul class="checklist">
+        <li>Create branch <code>feature/experience-layer-mvp</code>.</li>
+        <li>Register <code>researchops-experience-agent</code> bundle in <code>.agent-operating-model/</code>.</li>
+        <li>Draft <code>docs/dpia/experience-layer.md</code> and route to DPO for sign-off.</li>
+        <li>Apply <code>0006_experience_layer.sql</code> to local and preview D1.</li>
+        <li>Drop in <code>src/service/experience/</code> from the bundle; rename module & integrate.</li>
+        <li>Add Worker import + route block at ~<code>worker.js:295</code>.</li>
+        <li>Implement <code>credit.js</code>, <code>planner.js</code>, <code>diary.js</code>, <code>cron.js</code>.</li>
+        <li>Add <code>public/js/experience-client.js</code> and explicit <code>observe()</code> calls on study/guide pages.</li>
+        <li>Build agent panel UI with all five states (empty / learning / loading / error / disagreement).</li>
+        <li>Wire feedback buttons to <code>POST /api/experience/feedback</code>.</li>
+        <li>Implement L0&ndash;L2 approval matrix in <code>actions.js</code>.</li>
+        <li>Add 4 Cucumber feature specs and 5 node test suites; run in CI.</li>
+        <li>Add Playwright e2e + axe-core run.</li>
+        <li>Add evaluator, replay and retention scripts; wire <code>experience:*</code> npm scripts.</li>
+        <li>Configure <code>[triggers] crons = ["0 2 * * *"]</code> in <code>wrangler.toml</code>.</li>
+        <li>Add DSAR endpoints and retention sweeper.</li>
+        <li>Enable shadow mode for Alpha 2; export A/B report at week 2.</li>
+        <li>Review stored D1 events for privacy leakage (sample 20 rows).</li>
+        <li>Run internal walkthrough on a real study record with 3&ndash;5 researchers.</li>
+        <li>Gate Phase 10 (Vectorize) on Phase 8 A/B lift.</li>
+    </ul>
+</section>
+
+</main>
+</div>
+
+<footer>
+    <div>
+        <strong>Plan status:</strong> v2 implementation-ready. Repo-accurate against <code>kevinrapley/researchops</code> as of 2026-05-21. Anchored to <em>The Era of Experience</em> (Silver &amp; Sutton). Authored on the <code>claude/enhance-implementation-plan-IVU8V</code> branch as a plan-file-only deliverable; implementation work moves to <code>feature/experience-layer-mvp</code>.
+    </div>
+</footer>
+
+</body>
+</html>
