@@ -62,6 +62,13 @@ def markdown_section_has_content(text, heading_terms):
             return bool(body)
     return False
 
+def pa11y_issues_from_output(parsed):
+    if isinstance(parsed, list):
+        return parsed
+    if isinstance(parsed, dict) and isinstance(parsed.get("issues"), list):
+        return parsed["issues"]
+    return None
+
 def validate_tool_output(tool, data, evidence_path, root):
     errors = []
     file_path = data.get("file")
@@ -79,9 +86,10 @@ def validate_tool_output(tool, data, evidence_path, root):
         if len(parsed.get("violations", [])) > 0:
             errors.append("axe output contains violations")
     elif tool == "pa11y":
-        if not isinstance(parsed, list):
-            errors.append("pa11y output must be a list")
-        if len(parsed) > 0:
+        issues = pa11y_issues_from_output(parsed)
+        if issues is None:
+            errors.append("pa11y output must be a list or an object with an issues list")
+        elif len(issues) > 0:
             errors.append("pa11y output contains issues")
     elif tool == "lighthouse":
         score = ((parsed.get("categories") or {}).get("accessibility") or {}).get("score")
