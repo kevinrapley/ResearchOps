@@ -159,8 +159,32 @@ files:
   "roles/security.xml":
     family: role
     how_agent_uses_this_role:
-      - "The agent applies this role to examine security posture, supply chain trust and sensitive-change risk. It should change the questions the agent asks, not merely change the tone of the answer."
+      - "The agent applies this role to examine security posture, supply-chain trust and sensitive-change risk. It should change the questions the agent asks, not merely change the tone of the answer."
     what_judgement_it_applies:
       - "This role judges whether the change introduces exposure through dependencies, workflows, secrets, permissions or artefacts. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
     escalation_signals:
       - "Escalate or block when there is evidence of unpinned actions, missing dependency review, untrusted build artefacts, secret-handling gaps or unverified attestations."
+  "contracts/accessibility-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls accessibility evidence from axe, Pa11y, Lighthouse or equivalent checks. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates tool outputs, issue counts, severity, affected pages and any stated exceptions. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are missing raw results, unresolved critical issues or evidence that cannot be tied to tested pages."
+  "contracts/agent-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls the agent's audit evidence for a repository task. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates selected bundles, changed files, commands, outcomes, assumptions and residual risk. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are claims of completion without trace, validation evidence or changed-file review."
+  "contracts/conformance-record.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls a record of whether repository artefacts satisfy the Diamond standard. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates rules checked, pass or fail status, evidence links and remediation notes. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are unchecked rules, vague pass claims or missing linkage to specific repository files."
