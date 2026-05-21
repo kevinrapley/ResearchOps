@@ -7,13 +7,13 @@ import process from 'node:process';
 const DOCS_ROOT = 'docs/agent-operating-model/bundles/github';
 const SOURCE_ROOT = path.join(DOCS_ROOT, 'source');
 const REQUIRED_FAMILY_PAGES = [
-	['modes', 'mode'],
-	['roles', 'role'],
-	['references', 'reference'],
-	['contracts', 'contract'],
-	['graders', 'grader'],
-	['templates', 'template'],
-	['scripts', 'script'],
+	['modes', 'mode', ['How the agent uses this file', 'What to look for', 'Completion evidence']],
+	['roles', 'role', ['How the agent uses this role', 'What judgement it applies', 'Escalation signals']],
+	['references', 'reference', ['How the agent uses this file', 'What to look for']],
+	['contracts', 'contract', ['What this schema controls', 'What evidence it validates', 'What breaks the contract']],
+	['graders', 'grader', ['What this grader scores', 'What causes a fail', 'What evidence it expects']],
+	['templates', 'template', ['When this template is used', 'What must be customised', 'What must not be changed blindly']],
+	['scripts', 'script', ['What this script verifies', 'When it should be run', 'What failure means']],
 ];
 
 async function fileExists(filePath) {
@@ -73,13 +73,12 @@ async function main() {
 		throw new Error('Generated docs must not contain source/bundle-root/. Root files belong in /bundles/github/index.html.');
 	}
 
-	for (const [family, pill] of REQUIRED_FAMILY_PAGES) {
+	for (const [family, pill, headings] of REQUIRED_FAMILY_PAGES) {
 		const pagePath = path.join(SOURCE_ROOT, family, 'index.html');
 		const html = await readRequired(pagePath);
 
 		assertContains(html, `<span class="pill">${pill}</span>`, pagePath);
-		assertContains(html, 'How the agent uses this file', pagePath);
-		assertContains(html, 'What to look for', pagePath);
+		for (const heading of headings) assertContains(html, heading, pagePath);
 
 		for (const forbidden of [
 			'Canonical source',
