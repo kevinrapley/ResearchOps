@@ -6,9 +6,7 @@ import process from 'node:process';
 
 const ANNOTATIONS_PATH = '.agent-operating-model/bundles/github/source-annotations.yaml';
 const ANNOTATION_FRAGMENTS_DIR = '.agent-operating-model/bundles/github/source-annotations';
-const SOURCE_BUNDLE_ROOT = '.agent-operating-model/bundles/github';
 const SOURCE_ROOT = 'docs/agent-operating-model/bundles/github/source';
-const TEXT_EXTENSIONS = new Set(['.css', '.csv', '.html', '.js', '.json', '.jsonc', '.md', '.mjs', '.py', '.txt', '.xml', '.yaml', '.yml']);
 
 const FAMILY_HEADINGS = {
 	modes: {
@@ -61,10 +59,6 @@ const FAMILY_HEADINGS = {
 	},
 };
 
-function slug(value) {
-	return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'source-file';
-}
-
 function escapeHtml(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
@@ -72,6 +66,15 @@ function escapeHtml(value) {
 		.replaceAll('>', '&gt;')
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#39;');
+}
+
+function unescapeHtml(value) {
+	return String(value)
+		.replaceAll('&lt;', '<')
+		.replaceAll('&gt;', '>')
+		.replaceAll('&quot;', '"')
+		.replaceAll('&#39;', "'")
+		.replaceAll('&amp;', '&');
 }
 
 function unquote(value) {
@@ -83,12 +86,27 @@ function unquote(value) {
 	return trimmed;
 }
 
+function escapeRegExp(value) {
+	return value.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function globToRegExp(pattern) {
-	const escaped = pattern
-		.split('*')
-		.map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
-		.join('[^/]*');
-	return new RegExp(`^${escaped}$`);
+	let output = '';
+	for (let index = 0; index < pattern.length; index += 1) {
+		const current = pattern[index];
+		const next = pattern[index + 1];
+
+		if (current === '*' && next === '*') {
+			output += '.*';
+			index += 1;
+		} else if (current === '*') {
+			output += '[^/]*';
+		} else {
+			output += escapeRegExp(current);
+		}
+	}
+
+	return new RegExp(`^${output}$`);
 }
 
 function parseAnnotationYaml(source) {
@@ -170,23 +188,6 @@ async function loadAnnotations() {
 	return output;
 }
 
-async function walk(directory, root = directory) {
-	const entries = await readdir(directory, { withFileTypes: true });
-	const files = [];
-
-	for (const entry of entries) {
-		if (entry.name.startsWith('.') && entry.name !== '.github') continue;
-		const fullPath = path.join(directory, entry.name);
-		if (entry.isDirectory()) {
-			files.push(...await walk(fullPath, root));
-		} else if (entry.isFile() && TEXT_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
-			files.push(fullPath.split(path.sep).join('/').replace(`${root.split(path.sep).join('/')}/`, ''));
-		}
-	}
-
-	return files.sort();
-}
-
 function annotationFor(filePath, annotations, patterns) {
 	if (annotations.has(filePath)) return annotations.get(filePath);
 	return patterns.find((pattern) => globToRegExp(pattern.match).test(filePath)) || null;
@@ -203,47 +204,73 @@ function annotationHtml(annotation, sourceFamily) {
 	}).filter(Boolean).join('\n');
 }
 
-function replacePanelNotes(html, filePath, annotation, sourceFamily) {
+function sourcePanels(html) {
+	return [...html.matchAll(/<article class="source-panel[\s\S]*?<\/article>/g)].map((match) => match[0]);
+}
+
+function panelSourcePath(panelHtml) {
+	const match = panelHtml.match(/<h3><code>([\s\S]*?)<\/code><\/h3>/);
+	return match ? unescapeHtml(match[1].trim()) : null;
+}
+
+function replacePanel(html, originalPanel, annotation, sourceFamily) {
 	const notesHtml = annotationHtml(annotation, sourceFamily);
 	if (!notesHtml) return html;
 
-	const panelId = slug(filePath);
-	const pattern = new RegExp(`(<article class="source-panel [^"]+" id="${panelId}">[\\s\\S]*?<aside class="notes">)[\\s\\S]*?(</aside>[\\s\\S]*?</article>)`);
+	const updatedPanel = originalPanel.replace(
+		/(<aside class="notes">)[\s\S]*?(<\/aside>)/,
+		`$1\n${notesHtml}\n$2`,
+	);
 
-	if (!pattern.test(html)) throw new Error(`Unable to find generated source panel for ${filePath}.`);
-	return html.replace(pattern, `$1\n${notesHtml}\n$2`);
+	return html.replace(originalPanel, updatedPanel);
 }
 
-function familyPagePath(sourceFamily) {
-	return path.join(SOURCE_ROOT, sourceFamily, 'index.html');
+async function applyAnnotationsToFamily(sourceFamily, annotations, patterns) {
+	const pagePath = path.join(SOURCE_ROOT, sourceFamily, 'index.html');
+	let html = await readFile(pagePath, 'utf8').catch(() => null);
+	if (!html) return { applied: 0, missing: [] };
+
+	let applied = 0;
+	const missing = [];
+
+	for (const panel of sourcePanels(html)) {
+		const filePath = panelSourcePath(panel);
+		if (!filePath) {
+			missing.push(`${sourceFamily}: unknown panel path`);
+			continue;
+		}
+
+		const annotation = annotationFor(filePath, annotations, patterns);
+		if (!annotation) {
+			missing.push(filePath);
+			continue;
+		}
+
+		html = replacePanel(html, panel, annotation, sourceFamily);
+		applied += 1;
+	}
+
+	await writeFile(pagePath, html, 'utf8');
+	return { applied, missing };
 }
 
 async function main() {
 	const { annotations, patterns } = await loadAnnotations();
-	const sourceFiles = await walk(SOURCE_BUNDLE_ROOT);
-	const grouped = new Map();
+	const governedFamilies = Object.keys(FAMILY_HEADINGS);
+	const missing = [];
+	let applied = 0;
 
-	for (const filePath of sourceFiles) {
-		const sourceFamily = filePath.split('/')[0];
-		if (!FAMILY_HEADINGS[sourceFamily]) continue;
-
-		const annotation = annotationFor(filePath, annotations, patterns);
-		if (!annotation) continue;
-
-		const pagePath = familyPagePath(sourceFamily);
-		if (!grouped.has(pagePath)) grouped.set(pagePath, []);
-		grouped.get(pagePath).push([filePath, annotation, sourceFamily]);
+	for (const sourceFamily of governedFamilies) {
+		const result = await applyAnnotationsToFamily(sourceFamily, annotations, patterns);
+		applied += result.applied;
+		missing.push(...result.missing);
 	}
 
-	for (const [pagePath, entries] of grouped.entries()) {
-		let html = await readFile(pagePath, 'utf8');
-		for (const [filePath, annotation, sourceFamily] of entries) {
-			html = replacePanelNotes(html, filePath, annotation, sourceFamily);
-		}
-		await writeFile(pagePath, html, 'utf8');
+	if (missing.length) {
+		throw new Error(`Missing source annotations for ${missing.length} generated panels:\n${missing.slice(0, 80).join('\n')}`);
 	}
 
-	console.log(`Applied source annotations to ${[...grouped.values()].flat().length} source panels.`);
+	console.log(`Applied source annotations to ${applied} source panels.`);
 }
 
 main().catch((error) => {
