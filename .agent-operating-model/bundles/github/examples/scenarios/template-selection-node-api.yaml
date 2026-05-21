@@ -1,0 +1,93 @@
+id: template-selection-node-api
+kind: scenario
+status: canonical
+
+user_prompt: >
+  Instantiate a new Node API service repository with CI, dependency review,
+  CODEOWNERS, README, security policy and release evidence.
+
+repository_context:
+  archetype: api-service
+  detected_files:
+    - package.json
+    - package-lock.json
+    - src/server.js
+    - test/server.test.js
+  risk_profile:
+    public_service: false
+    regulated: false
+    performance_sensitive: false
+    high_assurance: false
+
+expected_mode:
+  file: modes/repo-instantiate.xml
+  rationale: >
+    The user is asking to instantiate repository controls and starter governance
+    artefacts for a new API service.
+
+roles:
+  primary:
+    - roles/repository-operator.xml
+    - roles/maintainer.xml
+  supporting:
+    - roles/qa.xml
+    - roles/security.xml
+
+selected_templates:
+  - id: github-github-workflows-ci-node-yml
+    template_path: templates/github/.github/workflows/ci-node.yml
+    destination_path: .github/workflows/ci-node.yml
+    reason: >
+      Selected because package.json is present and the repository requires
+      Node CI.
+  - id: github-github-workflows-dependency-review-yml
+    template_path: templates/github/.github/workflows/dependency-review.yml
+    destination_path: .github/workflows/dependency-review.yml
+    reason: >
+      Selected because dependency review is part of the security baseline for
+      repositories with package dependencies.
+  - id: github-codeowners
+    template_path: templates/github/.github/CODEOWNERS
+    destination_path: .github/CODEOWNERS
+    reason: >
+      Selected because ownership routing is required for repository governance.
+  - id: repository-readme-template-md
+    template_path: templates/repository/README-template.md
+    destination_path: README.md
+    reason: >
+      Selected because new repositories require purpose, setup, validation and
+      ownership documentation.
+  - id: repository-security-template-md
+    template_path: templates/repository/SECURITY-template.md
+    destination_path: SECURITY.md
+    reason: >
+      Selected because all repositories need a clear security reporting route.
+
+rejected_templates:
+  - id: github-github-workflows-ci-python-yml
+    reason: Rejected because no Python project files were detected.
+  - id: github-github-workflows-ci-accessibility-yml
+    reason: Rejected because this API service has no detected web UI.
+  - id: performance-budget-lighthouse
+    reason: >
+      Rejected because this repository is not currently classified as a
+      performance-sensitive frontend.
+
+contracts:
+  must_apply:
+    - contracts/repository-contract.schema.json
+    - contracts/workflow-contract.schema.json
+    - contracts/github-settings.schema.json
+    - contracts/agent-evidence.schema.json
+
+graders:
+  must_consider:
+    - graders/ci-selection-grader.xml
+    - graders/github-settings-grader.xml
+    - graders/security-grader.xml
+
+required_evidence:
+  - Each selected template must map to a template-registry entry.
+  - Each rejected template must include a reason.
+  - The agent must explain why Node CI is selected.
+  - The agent must not leave template, contract or grader arrays empty.
