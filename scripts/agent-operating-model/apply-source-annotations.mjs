@@ -4,8 +4,9 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
-const ANNOTATIONS_PATH = '.agent-operating-model/bundles/github/source-annotations.yaml';
-const ANNOTATION_FRAGMENTS_DIR = '.agent-operating-model/bundles/github/source-annotations';
+const ANNOTATIONS_ROOT = '.agent-operating-model/source-annotations/github';
+const ANNOTATIONS_PATH = path.join(ANNOTATIONS_ROOT, 'source-annotations.yaml');
+const ANNOTATION_FRAGMENTS_DIR = path.join(ANNOTATIONS_ROOT, 'fragments');
 const SOURCE_ROOT = 'docs/agent-operating-model/bundles/github/source';
 
 const FAMILY_HEADINGS = {
