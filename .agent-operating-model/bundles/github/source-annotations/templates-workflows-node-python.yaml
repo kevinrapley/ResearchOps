@@ -1,0 +1,34 @@
+version: 1
+files:
+  "templates/github/.github/workflows/ci-node.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used for Node.js repositories in the standard workflow set."
+    what_must_be_customised:
+      - "Set Node version, package manager and lint/test/build commands."
+    what_must_not_be_changed_blindly:
+      - "Keep install behaviour consistent with the repository lockfile."
+  "templates/github/.github/workflows/ci-python.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used for Python repositories in the standard workflow set."
+    what_must_be_customised:
+      - "Set Python version, dependency install command and test command."
+    what_must_not_be_changed_blindly:
+      - "Keep lint and test evidence aligned to the repository packaging model."
+  "templates/github/.github/workflows-hardened/ci-node.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used for Node.js repositories that need the hardened workflow variant."
+    what_must_be_customised:
+      - "Set Node version, package manager, permissions and retained artefacts."
+    what_must_not_be_changed_blindly:
+      - "Keep the hardened permissions and review controls unless an equivalent control replaces them."
+  "templates/github/.github/workflows-hardened/ci-python.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used for Python repositories that need the hardened workflow variant."
+    what_must_be_customised:
+      - "Set Python version, dependency install, permissions and artefact paths."
+    what_must_not_be_changed_blindly:
+      - "Keep the hardened permissions and evidence upload behaviour aligned to the release policy."
