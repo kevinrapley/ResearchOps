@@ -1,0 +1,66 @@
+version: 1
+files:
+  "scripts/validate-template-registry.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the template registry and its output mappings."
+    when_it_should_be_run:
+      - "Run it when templates are added, removed, renamed or retargeted."
+    what_failure_means:
+      - "Templates may be orphaned, duplicated or mapped to the wrong destination."
+  "scripts/validate-trusted-attestation-verification.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks trusted attestation verification records."
+    when_it_should_be_run:
+      - "Run it after verifying artefacts or release packages."
+    what_failure_means:
+      - "A trust decision lacks usable verification structure."
+  "scripts/validate-workflow-action-lock.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks workflow action lock files."
+    when_it_should_be_run:
+      - "Run it after pinning or reviewing GitHub Actions."
+    what_failure_means:
+      - "Workflow action references may remain untracked."
+  "scripts/validate-workflow-hardening.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks workflows for hardening controls such as permissions and trigger safety."
+    when_it_should_be_run:
+      - "Run it after editing workflow templates or repository workflows."
+    what_failure_means:
+      - "Workflows may retain excessive permissions or weak dependency controls."
+  "scripts/verify-evidence-against-repo.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks that evidence claims match the actual repository tree."
+    when_it_should_be_run:
+      - "Run it before accepting evidence in a PR, conformance or release decision."
+    what_failure_means:
+      - "Evidence describes files, commands or states that do not match the repository."
+  "scripts/verify-github-settings.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks GitHub settings evidence against expected repository controls."
+    when_it_should_be_run:
+      - "Run it after settings export or governance review."
+    what_failure_means:
+      - "Branch protection, required checks or permissions may be misreported."
+  "scripts/verify-repository-state.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks repository state against expected files and controls."
+    when_it_should_be_run:
+      - "Run it after generated changes and before completion claims."
+    what_failure_means:
+      - "The repository tree does not match what the agent says it changed or checked."
+  "scripts/verify-trusted-attestation-commands.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks that trusted attestation commands are present and usable."
+    when_it_should_be_run:
+      - "Run it before accepting attestation verification as release evidence."
+    what_failure_means:
+      - "The release trust claim depends on commands that are absent or not usable."
