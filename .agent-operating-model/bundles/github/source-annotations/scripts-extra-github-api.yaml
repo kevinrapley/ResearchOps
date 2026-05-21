@@ -1,0 +1,10 @@
+version: 1
+files:
+  "scripts/validate-github-api-fixtures.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the sample GitHub API payloads used by bundle tests."
+    when_it_should_be_run:
+      - "Run it after editing API sample data or code that reads it."
+    what_failure_means:
+      - "The sample data needs correction before it can support tests."
