@@ -1,0 +1,82 @@
+version: 1
+files:
+  "templates/repository/performance-budget-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used as the generic performance budget template when the specific tool profile is not yet chosen."
+    what_must_be_customised:
+      - "Set route, scenario, metric names, units, thresholds and measurement command."
+    what_must_not_be_changed_blindly:
+      - "Do not leave thresholds as examples; they become release evidence once committed."
+  "templates/repository/performance-budget-lighthouse.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when Lighthouse provides the web-performance budget evidence."
+    what_must_be_customised:
+      - "Set target URLs, Lighthouse categories, score thresholds and artefact path."
+    what_must_not_be_changed_blindly:
+      - "Do not apply Lighthouse thresholds to journeys it does not test."
+  "templates/repository/performance-budget-k6.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when k6 supplies load or journey performance evidence."
+    what_must_be_customised:
+      - "Set script path, virtual-user profile, thresholds and result location."
+    what_must_not_be_changed_blindly:
+      - "Do not reuse load profiles without checking they match the service risk."
+  "templates/repository/performance-budget-jmeter.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when JMeter is the chosen performance-test runner."
+    what_must_be_customised:
+      - "Set test plan, scenario, thread group assumptions and threshold outputs."
+    what_must_not_be_changed_blindly:
+      - "Do not treat the template plan as a real service scenario without adaptation."
+  "templates/repository/performance-budget-gatling.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when Gatling is the chosen performance-test runner."
+    what_must_be_customised:
+      - "Set simulation class, assertions, scenario name and artefact path."
+    what_must_not_be_changed_blindly:
+      - "Do not keep sample simulation names or thresholds in a real repository."
+  "templates/repository/performance-budget-artillery.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when Artillery provides API or journey performance evidence."
+    what_must_be_customised:
+      - "Set scenario file, arrival-rate assumptions, endpoints and thresholds."
+    what_must_not_be_changed_blindly:
+      - "Do not reuse example traffic assumptions without service evidence."
+  "templates/repository/performance-budget-autocannon.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when autocannon supplies HTTP performance measurements."
+    what_must_be_customised:
+      - "Set target URL, connection profile, duration and latency thresholds."
+    what_must_not_be_changed_blindly:
+      - "Do not use localhost-only results as production-readiness evidence without context."
+  "templates/repository/performance-budget-go-bench.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when Go benchmark output is used as performance evidence."
+    what_must_be_customised:
+      - "Set package path, benchmark pattern, metric thresholds and comparison baseline."
+    what_must_not_be_changed_blindly:
+      - "Do not compare benchmarks across environments without recording that difference."
+  "templates/repository/performance-budget-pytest-benchmark.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when pytest-benchmark supplies Python performance evidence."
+    what_must_be_customised:
+      - "Set benchmark marker, threshold fields and result export path."
+    what_must_not_be_changed_blindly:
+      - "Do not use benchmark output without recording baseline and environment."
+  "templates/repository/performance-metric-profiles.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to describe which performance metrics matter for each service or repository type."
+    what_must_be_customised:
+      - "Set relevant metric families, units, journeys and interpretation notes."
+    what_must_not_be_changed_blindly:
+      - "Do not add metrics that cannot be measured by the selected tools."
