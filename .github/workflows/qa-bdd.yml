@@ -15,8 +15,17 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths-ignore:
-      - "reports-site/**"
+    paths:
+      - "pages/**"
+      - "public/**"
+      - "src/**"
+      - "features/**"
+      - "fixtures/**"
+      - "tests/**"
+      - "playwright.config.*"
+      - "cucumber.*"
+      - "package.json"
+      - "package-lock.json"
   workflow_run:
     workflows: ["QA • Playwright E2E"]
     types: [completed]
