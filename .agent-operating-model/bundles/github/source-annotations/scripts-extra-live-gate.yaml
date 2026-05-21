@@ -1,0 +1,10 @@
+version: 1
+files:
+  "scripts/validate-live-gate-fixtures.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the sample data used by live release-gate tests."
+    when_it_should_be_run:
+      - "Run it after editing live gate sample data."
+    what_failure_means:
+      - "The sample data needs correction before it can support gate tests."
