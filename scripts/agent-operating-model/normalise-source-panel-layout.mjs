@@ -8,24 +8,33 @@ const DOCS_ROOT = 'docs/agent-operating-model/bundles/github';
 const ASSETS_DIR = path.join(DOCS_ROOT, 'assets');
 const CSS_HREF = '/bundles/github/assets/source-panel-layout.css';
 const JS_SRC = '/bundles/github/assets/source-panel-layout.js';
+const CODE_PANEL_MAX_HEIGHT = 1400;
 
 const CSS = `.source-grid { align-items: stretch; }
-.source-grid pre { height: auto; max-height: none; min-height: 0; }
+.source-grid pre {
+  height: auto;
+  max-height: ${CODE_PANEL_MAX_HEIGHT}px;
+  min-height: 0;
+  overflow-y: auto;
+}
 .source-grid aside.notes p { margin: 0 0 12px; }
 .source-grid aside.notes h4 + p { margin-top: 0; }
 `;
 
-const JS = `function syncSourcePanelHeights() {
+const JS = `var SOURCE_PANEL_CODE_MAX_HEIGHT = ${CODE_PANEL_MAX_HEIGHT};
+
+function syncSourcePanelHeights() {
   document.querySelectorAll('.source-grid').forEach(function (grid) {
     var code = grid.querySelector('pre');
     var notes = grid.querySelector('aside.notes');
     if (!code || !notes) return;
     code.style.height = 'auto';
-    code.style.maxHeight = 'none';
+    code.style.maxHeight = SOURCE_PANEL_CODE_MAX_HEIGHT + 'px';
+    code.style.overflowY = 'auto';
     if (window.matchMedia('(max-width: 1020px)').matches) return;
-    var height = Math.ceil(notes.getBoundingClientRect().height);
+    var height = Math.min(Math.ceil(notes.getBoundingClientRect().height), SOURCE_PANEL_CODE_MAX_HEIGHT);
     code.style.height = height + 'px';
-    code.style.maxHeight = height + 'px';
+    code.style.maxHeight = SOURCE_PANEL_CODE_MAX_HEIGHT + 'px';
   });
 }
 window.addEventListener('load', syncSourcePanelHeights);
