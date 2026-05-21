@@ -48,26 +48,74 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine BDD scope
+        id: bdd_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          run_bdd="true"
+
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            base_ref="${{ github.event.pull_request.base.ref }}"
+            git fetch --no-tags --prune --depth=1 origin "${base_ref}"
+            changed_files="$(git diff --name-only "origin/${base_ref}"...HEAD)"
+
+            echo "Changed files considered for BDD scope:"
+            printf '%s\n' "${changed_files}"
+
+            run_bdd="false"
+
+            while IFS= read -r file_path; do
+              [ -z "${file_path}" ] && continue
+
+              case "${file_path}" in
+                pages/**|public/**|src/**|features/**|fixtures/**|tests/**|playwright.config.*|cucumber.*|package.json|package-lock.json)
+                  run_bdd="true"
+                  ;;
+              esac
+            done <<< "${changed_files}"
+          fi
+
+          echo "run_bdd=${run_bdd}" >> "$GITHUB_OUTPUT"
+          echo "Run BDD smoke suite: ${run_bdd}"
+
+      - name: Record BDD skip reason
+        if: steps.bdd_scope.outputs.run_bdd != 'true'
+        shell: bash
+        run: |
+          echo "BDD smoke suite skipped because this pull request does not change public app or BDD test files."
+          echo "## BDD smoke suite" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Skipped. This pull request does not change public app or BDD test files." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup Node
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: npm ci
 
       - name: Cache Playwright browsers
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright Chromium
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: npx playwright install chromium
 
       - name: Resolve BASE_URL
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         shell: bash
         run: |
           val="${{ inputs.base_url }}"
@@ -79,6 +127,7 @@ jobs:
           echo "Using BASE_URL: $val"
 
       - name: Diagnose BASE_URL
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         shell: bash
         run: |
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
@@ -86,13 +135,15 @@ jobs:
             || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
 
       - name: Prepare Cucumber report directory
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: mkdir -p reports
 
       - name: Run BDD smoke suite
+        if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: npm run qa:cucumber:ci
 
       - name: List Cucumber report outputs
-        if: always()
+        if: always() && steps.bdd_scope.outputs.run_bdd == 'true'
         shell: bash
         run: |
           if [ -d reports ]; then
@@ -102,7 +153,7 @@ jobs:
           fi
 
       - name: Verify Cucumber report outputs
-        if: always()
+        if: always() && steps.bdd_scope.outputs.run_bdd == 'true'
         id: detect_cucumber_report
         shell: bash
         run: |
@@ -118,7 +169,7 @@ jobs:
           echo "present=$present" >> "$GITHUB_OUTPUT"
 
       - name: Upload Cucumber report
-        if: always() && steps.detect_cucumber_report.outputs.present == 'true'
+        if: always() && steps.bdd_scope.outputs.run_bdd == 'true' && steps.detect_cucumber_report.outputs.present == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-report
