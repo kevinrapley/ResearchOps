@@ -47,7 +47,8 @@ jobs:
       - name: Build agent documentation
         run: bash build.sh
 
-      - name: Request Cloudflare Pages deployment through rops API
+      - name: Resolve rops API deployment configuration
+        id: rops_deploy
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           ROPS_API_BASE_URL: ${{ secrets.ROPS_API_BASE_URL }}
@@ -56,21 +57,43 @@ jobs:
         run: |
           set -euo pipefail
 
+          configured="true"
+
           if [ -z "${ROPS_API_BASE_URL:-}" ]; then
-            echo "ROPS_API_BASE_URL secret is required."
-            exit 1
+            echo "ROPS_API_BASE_URL secret is not configured."
+            configured="false"
           fi
 
           if [ -z "${AGENT_PAGES_DEPLOY_TOKEN:-}" ]; then
-            echo "AGENT_PAGES_DEPLOY_TOKEN secret is required."
-            exit 1
+            echo "AGENT_PAGES_DEPLOY_TOKEN secret is not configured."
+            configured="false"
           fi
 
-          api="${ROPS_API_BASE_URL%/}/api/agent-pages/deploy"
+          echo "configured=${configured}" >> "$GITHUB_OUTPUT"
+
+          if [ "$configured" != "true" ]; then
+            echo "Agent Pages deployment request skipped because rops API deployment secrets are incomplete." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "api=${ROPS_API_BASE_URL%/}/api/agent-pages/deploy" >> "$GITHUB_OUTPUT"
+
+      - name: Request Cloudflare Pages deployment through rops API
+        if: >-
+          ${{
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            steps.rops_deploy.outputs.configured == 'true'
+          }}
+        env:
+          AGENT_PAGES_DEPLOY_TOKEN: ${{ secrets.AGENT_PAGES_DEPLOY_TOKEN }}
+          ROPS_API_DEPLOY_URL: ${{ steps.rops_deploy.outputs.api }}
+        shell: bash
+        run: |
+          set -euo pipefail
 
           curl --fail --show-error --silent --location \
             --request POST \
             --header "authorization: Bearer ${AGENT_PAGES_DEPLOY_TOKEN}" \
             --header "content-type: application/json" \
             --data "{\"branch\":\"${GITHUB_REF_NAME}\",\"commit\":\"${GITHUB_SHA}\",\"source\":\"github-actions\"}" \
-            "$api"
+            "$ROPS_API_DEPLOY_URL"
