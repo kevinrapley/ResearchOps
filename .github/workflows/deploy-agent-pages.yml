@@ -5,15 +5,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '.agent-operating-model/bundles/github/**'
-      - 'docs/agent-operating-model/**'
-      - 'scripts/agent-operating-model/**'
-      - 'build.sh'
-      - 'wrangler.toml'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/deploy-agent-pages.yml'
   pull_request:
     paths:
       - '.agent-operating-model/bundles/github/**'
