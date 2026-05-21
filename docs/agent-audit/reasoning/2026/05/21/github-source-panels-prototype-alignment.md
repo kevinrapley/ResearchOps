@@ -2,7 +2,7 @@
 
 - Branch: `fix/source-panels-align-prototype`
 - Date: 2026-05-21
-- Task: Correct the GitHub Diamond bundle documentation generator so it follows the agreed source-panel navigation prototype and removes the metadata-oriented source browser output.
+- Task: Correct the GitHub Diamond bundle documentation generator so it follows the agreed source-panel navigation prototype and uses bespoke source annotations for governed source families.
 
 ## Design inputs
 
@@ -21,6 +21,27 @@ It writes generated documentation to:
 
 The generator must not edit canonical bundle source files.
 
+## Annotation model
+
+The annotation entry point is:
+
+`.agent-operating-model/bundles/github/source-annotations.yaml`
+
+The annotation fragments live in:
+
+`.agent-operating-model/bundles/github/source-annotations/`
+
+The annotation set is large. The main `source-annotations.yaml` establishes the schema and core mode/role annotations. Fragments keep contracts, graders, scripts and template groups reviewable while remaining canonical bundle source.
+
+The governed headings are:
+
+- Mode files: How the agent uses this file; What to look for; Completion evidence.
+- Role files: How the agent uses this role; What judgement it applies; Escalation signals.
+- Contract files: What this schema controls; What evidence it validates; What breaks the contract.
+- Grader files: What this grader scores; What causes a fail; What evidence it expects.
+- Template files: When this template is used; What must be customised; What must not be changed blindly.
+- Script files: What this script verifies; When it should be run; What failure means.
+
 ## Implementation summary
 
 - Rebuilt the generated `/bundles/github/` page as the overview operating manual rather than a card-grid landing page.
@@ -31,18 +52,18 @@ The generator must not edit canonical bundle source files.
 - Changed visible pills from language labels to family labels such as mode, role, reference, contract, grader, template, script and example.
 - Removed generated metadata cards such as Files, Generated, Coverage, Source and Layout rule from the visible UI.
 - Removed Canonical source and File details from the right-hand notes panel.
-- Added file-specific explanatory annotation logic for How the agent uses this file and What to look for.
-- Added a verifier script that fails the build if old source-browser output, `/source/bundle-root/`, metadata panels or language-only pills reappear.
-- Updated `npm run agent:docs:source` so Cloudflare builds generate and verify the docs in one command.
+- Added canonical source annotations under `.agent-operating-model/bundles/github/source-annotations.yaml` and `.agent-operating-model/bundles/github/source-annotations/`.
+- Added `scripts/agent-operating-model/apply-source-annotations.mjs` so generated source panels use canonical annotation text rather than synthetic repeated prose.
+- Added exact annotation entries for modes, roles, contracts, graders, scripts and major template groups.
+- Added pattern annotations for repeated workflow template families where exact-path GitHub contents writes were blocked by the connector.
+- Updated `npm run agent:docs:source` so Cloudflare builds generate, apply annotations and verify the docs in one command.
+- Updated the verifier so each individual source panel in governed families must include the expected family-specific headings.
 
 ## Files changed
 
-- `scripts/agent-operating-model/generate-bundle-source-docs.mjs`
-- `scripts/agent-operating-model/verify-github-source-panel-docs.mjs`
-- `docs/agent-operating-model/bundles/github/generated-metadata.json`
-- `package.json`
-- `docs/agent-audit/reasoning/2026/05/21/github-source-panels-prototype-alignment.json`
-- `docs/agent-audit/reasoning/2026/05/21/github-source-panels-prototype-alignment.md`
+The PR now changes generator, applier and verifier scripts; the package docs command; generated metadata; canonical annotation files; and trace files.
+
+See the PR changed-file verification for the current exact file list.
 
 ## Validation
 
@@ -59,19 +80,22 @@ Mock validation completed:
 
 Build verification:
 
-- `scripts/agent-operating-model/verify-github-source-panel-docs.mjs` checks the generated output shape after generation.
-- `package.json` now runs generation and verification through `npm run agent:docs:source`.
+- `npm run agent:docs:source` now runs generation, source annotation application and source panel verification.
+- `verify-github-source-panel-docs.mjs` checks forbidden old UI copy, absence of `source/bundle-root` and per-panel family-specific headings.
 
 Recommended checks:
 
 - Run `npm run agent:docs:source`.
 - Open `/bundles/github/` and confirm it starts with `How the GitHub bundle works`.
 - Open `/bundles/github/source/` and confirm it is a source-family gateway only.
-- Open `/bundles/github/source/modes/` and confirm panels use `mode` pills and rich notes.
+- Open `/bundles/github/source/modes/` and confirm panels use `mode` pills and mode-specific headings.
+- Open `/bundles/github/source/contracts/` and confirm contract panels use schema-specific headings.
+- Open `/bundles/github/source/templates/` and confirm template panels use template-specific headings.
+- Open `/bundles/github/source/scripts/` and confirm script panels use script-specific headings.
 - Confirm `/bundles/github/source/bundle-root/` is not uploaded.
 
 ## Residual risk
 
-The annotations are generated from path, family and source signals rather than a hand-authored annotation file for every individual file.
+Several repeated workflow-template files use pattern annotations to avoid near-duplicate YAML and connector write blocks. These are family-specific and workflow-specific, but less individually bespoke than hand-authored one-file entries.
 
-The approach is now prototype-aligned, but future work should move annotations into an explicit `source-annotations.yaml` if Kevin wants fully curated commentary per file.
+The final quality still depends on running `npm run agent:docs:source` in a full checkout so the annotation applier and verifier execute against real generated HTML.
