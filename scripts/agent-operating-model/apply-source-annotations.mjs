@@ -6,39 +6,59 @@ import process from 'node:process';
 
 const ANNOTATIONS_PATH = '.agent-operating-model/bundles/github/source-annotations.yaml';
 const ANNOTATION_FRAGMENTS_DIR = '.agent-operating-model/bundles/github/source-annotations';
+const SOURCE_BUNDLE_ROOT = '.agent-operating-model/bundles/github';
 const SOURCE_ROOT = 'docs/agent-operating-model/bundles/github/source';
+const TEXT_EXTENSIONS = new Set(['.css', '.csv', '.html', '.js', '.json', '.jsonc', '.md', '.mjs', '.py', '.txt', '.xml', '.yaml', '.yml']);
 
 const FAMILY_HEADINGS = {
-	mode: [
-		['how_agent_uses_this_file', 'How the agent uses this file'],
-		['what_to_look_for', 'What to look for'],
-		['completion_evidence', 'Completion evidence'],
-	],
-	role: [
-		['how_agent_uses_this_role', 'How the agent uses this role'],
-		['what_judgement_it_applies', 'What judgement it applies'],
-		['escalation_signals', 'Escalation signals'],
-	],
-	contract: [
-		['what_this_schema_controls', 'What this schema controls'],
-		['what_evidence_it_validates', 'What evidence it validates'],
-		['what_breaks_the_contract', 'What breaks the contract'],
-	],
-	grader: [
-		['what_this_grader_scores', 'What this grader scores'],
-		['what_causes_a_fail', 'What causes a fail'],
-		['what_evidence_it_expects', 'What evidence it expects'],
-	],
-	template: [
-		['when_this_template_is_used', 'When this template is used'],
-		['what_must_be_customised', 'What must be customised'],
-		['what_must_not_be_changed_blindly', 'What must not be changed blindly'],
-	],
-	script: [
-		['what_this_script_verifies', 'What this script verifies'],
-		['when_it_should_be_run', 'When it should be run'],
-		['what_failure_means', 'What failure means'],
-	],
+	modes: {
+		family: 'mode',
+		headings: [
+			['how_agent_uses_this_file', 'How the agent uses this file'],
+			['what_to_look_for', 'What to look for'],
+			['completion_evidence', 'Completion evidence'],
+		],
+	},
+	roles: {
+		family: 'role',
+		headings: [
+			['how_agent_uses_this_role', 'How the agent uses this role'],
+			['what_judgement_it_applies', 'What judgement it applies'],
+			['escalation_signals', 'Escalation signals'],
+		],
+	},
+	contracts: {
+		family: 'contract',
+		headings: [
+			['what_this_schema_controls', 'What this schema controls'],
+			['what_evidence_it_validates', 'What evidence it validates'],
+			['what_breaks_the_contract', 'What breaks the contract'],
+		],
+	},
+	graders: {
+		family: 'grader',
+		headings: [
+			['what_this_grader_scores', 'What this grader scores'],
+			['what_causes_a_fail', 'What causes a fail'],
+			['what_evidence_it_expects', 'What evidence it expects'],
+		],
+	},
+	templates: {
+		family: 'template',
+		headings: [
+			['when_this_template_is_used', 'When this template is used'],
+			['what_must_be_customised', 'What must be customised'],
+			['what_must_not_be_changed_blindly', 'What must not be changed blindly'],
+		],
+	},
+	scripts: {
+		family: 'script',
+		headings: [
+			['what_this_script_verifies', 'What this script verifies'],
+			['when_it_should_be_run', 'When it should be run'],
+			['what_failure_means', 'What failure means'],
+		],
+	},
 };
 
 function slug(value) {
@@ -96,8 +116,8 @@ function parseAnnotationYaml(source) {
 		if (section === 'files') {
 			const fileMatch = line.match(/^  "(.+)":$/);
 			if (fileMatch) {
-				current = { kind: 'file', key: fileMatch[1], value: {} };
-				annotations.set(current.key, current.value);
+				current = { value: {} };
+				annotations.set(fileMatch[1], current.value);
 				currentKey = null;
 				continue;
 			}
@@ -106,7 +126,7 @@ function parseAnnotationYaml(source) {
 		if (section === 'patterns') {
 			const patternMatch = line.match(/^  - match: "(.+)"$/);
 			if (patternMatch) {
-				current = { kind: 'pattern', key: patternMatch[1], value: { match: patternMatch[1] } };
+				current = { value: { match: patternMatch[1] } };
 				patterns.push(current.value);
 				currentKey = null;
 				continue;
@@ -119,12 +139,7 @@ function parseAnnotationYaml(source) {
 		if (keyMatch) {
 			const [, key, inlineValue] = keyMatch;
 			currentKey = key;
-
-			if (inlineValue && inlineValue.trim()) {
-				current.value[key] = unquote(inlineValue);
-			} else {
-				current.value[key] = [];
-			}
+			current.value[key] = inlineValue && inlineValue.trim() ? unquote(inlineValue) : [];
 			continue;
 		}
 
@@ -139,12 +154,8 @@ function parseAnnotationYaml(source) {
 }
 
 function mergeParsed(target, source) {
-	for (const [filePath, annotation] of source.annotations.entries()) {
-		target.annotations.set(filePath, annotation);
-	}
-	for (const pattern of source.patterns) {
-		target.patterns.push(pattern);
-	}
+	for (const [filePath, annotation] of source.annotations.entries()) target.annotations.set(filePath, annotation);
+	for (const pattern of source.patterns) target.patterns.push(pattern);
 }
 
 async function loadAnnotations() {
@@ -153,105 +164,86 @@ async function loadAnnotations() {
 
 	const fragmentNames = await readdir(ANNOTATION_FRAGMENTS_DIR).catch(() => []);
 	for (const fragmentName of fragmentNames.filter((name) => name.endsWith('.yaml')).sort()) {
-		const fragmentPath = path.join(ANNOTATION_FRAGMENTS_DIR, fragmentName);
-		mergeParsed(output, parseAnnotationYaml(await readFile(fragmentPath, 'utf8')));
+		mergeParsed(output, parseAnnotationYaml(await readFile(path.join(ANNOTATION_FRAGMENTS_DIR, fragmentName), 'utf8')));
 	}
 
 	return output;
 }
 
-function annotationHtml(annotation) {
-	const headings = FAMILY_HEADINGS[annotation.family];
-	if (!headings) return null;
+async function walk(directory, root = directory) {
+	const entries = await readdir(directory, { withFileTypes: true });
+	const files = [];
 
-	return headings.map(([key, label]) => {
-		const values = annotation[key];
-		if (!Array.isArray(values) || !values.length) return '';
-		return `<h4>${escapeHtml(label)}</h4>\n<ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
-	}).join('\n');
-}
-
-function replacePanelNotes(html, filePath, annotation) {
-	const panelId = slug(filePath);
-	const notesHtml = annotationHtml(annotation);
-
-	if (!notesHtml) return html;
-
-	const pattern = new RegExp(`(<article class="source-panel [^"]+" id="${panelId}">[\\s\\S]*?<aside class="notes">)[\\s\\S]*?(</aside>[\\s\\S]*?</article>)`);
-
-	if (!pattern.test(html)) {
-		throw new Error(`Unable to find generated source panel for ${filePath}.`);
+	for (const entry of entries) {
+		if (entry.name.startsWith('.') && entry.name !== '.github') continue;
+		const fullPath = path.join(directory, entry.name);
+		if (entry.isDirectory()) {
+			files.push(...await walk(fullPath, root));
+		} else if (entry.isFile() && TEXT_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
+			files.push(fullPath.split(path.sep).join('/').replace(`${root.split(path.sep).join('/')}/`, ''));
+		}
 	}
 
-	return html.replace(pattern, `$1\n${notesHtml}\n$2`);
-}
-
-function familyPagePath(filePath) {
-	const family = filePath.split('/')[0];
-	return path.join(SOURCE_ROOT, family, 'index.html');
-}
-
-function getPanelIds(html) {
-	return [...html.matchAll(/<article class="source-panel [^"]+" id="([^"]+)">/g)].map((match) => match[1]);
+	return files.sort();
 }
 
 function annotationFor(filePath, annotations, patterns) {
 	if (annotations.has(filePath)) return annotations.get(filePath);
-	const match = patterns.find((pattern) => globToRegExp(pattern.match).test(filePath));
-	return match || null;
+	return patterns.find((pattern) => globToRegExp(pattern.match).test(filePath)) || null;
+}
+
+function annotationHtml(annotation, sourceFamily) {
+	const config = FAMILY_HEADINGS[sourceFamily];
+	if (!config) return null;
+
+	return config.headings.map(([key, label]) => {
+		const values = annotation[key];
+		if (!Array.isArray(values) || !values.length) return '';
+		return `<h4>${escapeHtml(label)}</h4>\n<ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
+	}).filter(Boolean).join('\n');
+}
+
+function replacePanelNotes(html, filePath, annotation, sourceFamily) {
+	const notesHtml = annotationHtml(annotation, sourceFamily);
+	if (!notesHtml) return html;
+
+	const panelId = slug(filePath);
+	const pattern = new RegExp(`(<article class="source-panel [^"]+" id="${panelId}">[\\s\\S]*?<aside class="notes">)[\\s\\S]*?(</aside>[\\s\\S]*?</article>)`);
+
+	if (!pattern.test(html)) throw new Error(`Unable to find generated source panel for ${filePath}.`);
+	return html.replace(pattern, `$1\n${notesHtml}\n$2`);
+}
+
+function familyPagePath(sourceFamily) {
+	return path.join(SOURCE_ROOT, sourceFamily, 'index.html');
 }
 
 async function main() {
 	const { annotations, patterns } = await loadAnnotations();
+	const sourceFiles = await walk(SOURCE_BUNDLE_ROOT);
 	const grouped = new Map();
-	const familyPages = ['modes', 'roles', 'contracts', 'graders', 'templates', 'scripts'];
 
-	for (const family of familyPages) {
-		const pagePath = path.join(SOURCE_ROOT, family, 'index.html');
-		const html = await readFile(pagePath, 'utf8').catch(() => null);
-		if (!html) continue;
+	for (const filePath of sourceFiles) {
+		const sourceFamily = filePath.split('/')[0];
+		if (!FAMILY_HEADINGS[sourceFamily]) continue;
 
-		for (const panelId of getPanelIds(html)) {
-			const filePath = panelId.replaceAll('-', '/').replace(/^templates\//, 'templates/');
-			const sourcePath = [...annotations.keys()].find((key) => slug(key) === panelId)
-				|| patterns.find((pattern) => globToRegExp(pattern.match).test(filePath))?.match;
-			if (!sourcePath) continue;
-		}
-	}
+		const annotation = annotationFor(filePath, annotations, patterns);
+		if (!annotation) continue;
 
-	for (const [filePath, annotation] of annotations.entries()) {
-		if (!annotation.family || !FAMILY_HEADINGS[annotation.family]) continue;
-		const pagePath = familyPagePath(filePath);
+		const pagePath = familyPagePath(sourceFamily);
 		if (!grouped.has(pagePath)) grouped.set(pagePath, []);
-		grouped.get(pagePath).push([filePath, annotation]);
-	}
-
-	for (const pattern of patterns) {
-		if (!pattern.family || !FAMILY_HEADINGS[pattern.family]) continue;
-		const family = pattern.match.split('/')[0];
-		const pagePath = path.join(SOURCE_ROOT, family, 'index.html');
-		const html = await readFile(pagePath, 'utf8').catch(() => null);
-		if (!html) continue;
-
-		const ids = getPanelIds(html);
-		for (const id of ids) {
-			if (!id.startsWith(`${family}-`)) continue;
-			const candidatePath = id.replaceAll('-', '/');
-			if (!globToRegExp(pattern.match).test(candidatePath)) continue;
-			if (!grouped.has(pagePath)) grouped.set(pagePath, []);
-			grouped.get(pagePath).push([candidatePath, pattern]);
-		}
+		grouped.get(pagePath).push([filePath, annotation, sourceFamily]);
 	}
 
 	for (const [pagePath, entries] of grouped.entries()) {
 		let html = await readFile(pagePath, 'utf8');
-		for (const [filePath, annotation] of entries) {
-			html = replacePanelNotes(html, filePath, annotation);
+		for (const [filePath, annotation, sourceFamily] of entries) {
+			html = replacePanelNotes(html, filePath, annotation, sourceFamily);
 		}
 		await writeFile(pagePath, html, 'utf8');
 	}
 
-	console.log(`Applied source annotations to ${annotations.size} files and ${patterns.length} patterns.`);
+	console.log(`Applied source annotations to ${[...grouped.values()].flat().length} source panels.`);
 }
 
 main().catch((error) => {
