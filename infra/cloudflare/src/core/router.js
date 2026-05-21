@@ -79,6 +79,12 @@ function assertAirtableEnv(env) {
 	}
 }
 
+function bearerToken(request) {
+	const header = request.headers.get("Authorization") || "";
+	const match = header.match(/^Bearer\s+(.+)$/i);
+	return match ? match[1].trim() : "";
+}
+
 /**
  * Safely detect whether a binding exposes a fetch function.
  * Avoids calling `.fetch` on undefined bindings (e.g., ASSETS not bound).
@@ -186,6 +192,47 @@ async function studiesJsonDirect(request, env, origin, url) {
 	}
 }
 
+async function agentPagesDeployDirect(request, env, origin) {
+	try {
+		requireEnv(env, ["AGENT_PAGES_DEPLOY_TOKEN", "AGENT_PAGES_DEPLOY_HOOK_URL"]);
+
+		const suppliedToken = bearerToken(request);
+		if (!suppliedToken || suppliedToken !== env.AGENT_PAGES_DEPLOY_TOKEN) {
+			return new Response(json({ ok: false, error: "unauthorised" }), {
+				status: 401,
+				headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+			});
+		}
+
+		let payload = {};
+		try {
+			payload = await request.json();
+		} catch (_error) {
+			payload = {};
+		}
+
+		const deployResponse = await fetch(env.AGENT_PAGES_DEPLOY_HOOK_URL, { method: "POST" });
+		const deployBody = await deployResponse.text().catch(() => "");
+
+		return new Response(json({
+			ok: deployResponse.ok,
+			status: deployResponse.status,
+			branch: payload.branch || null,
+			commit: payload.commit || null,
+			source: payload.source || "unknown",
+			cloudflare: safeSlice(deployBody, 2000)
+		}), {
+			status: deployResponse.ok ? 202 : 502,
+			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+		});
+	} catch (e) {
+		return new Response(json({ ok: false, error: String(e?.message || e) }), {
+			status: 500,
+			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+		});
+	}
+}
+
 /* ────────────────── Main entry router ────────────────── */
 
 export async function handleRequest(request, env) {
@@ -233,6 +280,8 @@ export async function handleRequest(request, env) {
 					hasMuralClientSecret: !!env.MURAL_CLIENT_SECRET,
 					muralRedirectUri: env.MURAL_REDIRECT_URI || "(not set)",
 					hasGithubConfig: !!(env.GH_OWNER && env.GH_REPO && env.GH_BRANCH),
+					hasAgentPagesDeployHook: !!env.AGENT_PAGES_DEPLOY_HOOK_URL,
+					hasAgentPagesDeployToken: !!env.AGENT_PAGES_DEPLOY_TOKEN,
 					timestamp: new Date().toISOString()
 				}
 			}), {
@@ -249,8 +298,13 @@ export async function handleRequest(request, env) {
 		}
 
 		// ═══════════════════════════════════════════════════════════════════════════════
-		// DIRECT ROUTES: Project CSV & Studies (no service.js dependency)
+		// DIRECT ROUTES: Project CSV, Studies & Agent Pages Deploy
 		// ═══════════════════════════════════════════════════════════════════════════════
+
+		if (url.pathname === "/api/agent-pages/deploy" && request.method === "POST") {
+			console.log("[router] ✓ Matched /api/agent-pages/deploy (direct)");
+			return agentPagesDeployDirect(request, env, origin);
+		}
 
 		if (url.pathname === "/api/projects.csv" && request.method === "GET") {
 			console.log("[router] ✓ Matched /api/projects.csv (direct)");
@@ -448,7 +502,7 @@ export async function handleRequest(request, env) {
 					const partialId = decodeURIComponent(parts[2]);
 					if (request.method === "GET") return service.readPartial(origin, partialId);
 					if (request.method === "PATCH") return service.updatePartial(request, origin, partialId);
-					if (request.method === "DELETE") return service.deletePartial(request, origin, partialId);
+					if (request.method === "DELETE") return service.deletePartial(origin, partialId);
 				}
 			}
 
