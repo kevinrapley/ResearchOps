@@ -34,8 +34,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    name: Build and deploy agent documentation
+  build:
+    name: Build agent documentation
     runs-on: ubuntu-latest
 
     steps:
@@ -57,8 +57,9 @@ jobs:
         run: bash build.sh
 
       - name: Deploy to Cloudflare Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages deploy docs/agent-operating-model --project-name=agent-rops --branch=${{ github.head_ref || github.ref_name }}
+          command: pages deploy docs/agent-operating-model --project-name=agent-rops --branch=${{ github.ref_name }}
