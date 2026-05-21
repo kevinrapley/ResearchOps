@@ -1,0 +1,18 @@
+version: 1
+files:
+  "templates/repository/live-release-policy.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs an explicit policy for live release readiness and required evidence."
+    what_must_be_customised:
+      - "Set required checks, approval roles, rollback expectations and evidence artefacts for the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not reduce release evidence requirements without recording the reason and replacement control."
+  "templates/repository/performance-budget-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs a general performance budget before selecting a tool-specific profile."
+    what_must_be_customised:
+      - "Set route, scenario, metric, threshold, unit and measurement command."
+    what_must_not_be_changed_blindly:
+      - "Do not keep example thresholds after the budget becomes release evidence."
