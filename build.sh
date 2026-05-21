@@ -6,7 +6,13 @@ printf 'Branch: %s\n' "${CF_PAGES_BRANCH:-local}"
 printf 'Commit: %s\n' "${CF_PAGES_COMMIT_SHA:-unknown}"
 
 test -f .agent-operating-model/source-annotations/github/source-annotations.yaml
-test -d .agent-operating-model/source-annotations/github/fragments
+test -f .agent-operating-model/source-annotations/github/contracts.yaml
+test -f .agent-operating-model/source-annotations/github/graders.yaml
+
+if [ -d .agent-operating-model/source-annotations/github/fragments ]; then
+	printf '%s\n' 'Source annotations must live directly in .agent-operating-model/source-annotations/github/.' >&2
+	exit 1
+fi
 
 if [ -f .agent-operating-model/bundles/github/source-annotations.yaml ] || [ -d .agent-operating-model/bundles/github/source-annotations ]; then
 	printf '%s\n' 'Source annotations must not live inside the GitHub bundle directory.' >&2
