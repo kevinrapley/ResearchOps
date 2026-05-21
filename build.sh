@@ -5,6 +5,14 @@ printf '%s\n' '--- ResearchOps agent documentation build ---'
 printf 'Branch: %s\n' "${CF_PAGES_BRANCH:-local}"
 printf 'Commit: %s\n' "${CF_PAGES_COMMIT_SHA:-unknown}"
 
+test -f .agent-operating-model/source-annotations/github/source-annotations.yaml
+test -d .agent-operating-model/source-annotations/github/fragments
+
+if [ -f .agent-operating-model/bundles/github/source-annotations.yaml ] || [ -d .agent-operating-model/bundles/github/source-annotations ]; then
+	printf '%s\n' 'Source annotations must not live inside the GitHub bundle directory.' >&2
+	exit 1
+fi
+
 node scripts/agent-operating-model/generate-bundle-source-docs.mjs --bundle github
 node scripts/agent-operating-model/apply-source-annotations.mjs
 node scripts/agent-operating-model/normalise-source-panel-layout.mjs
