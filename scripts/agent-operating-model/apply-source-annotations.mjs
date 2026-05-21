@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
 const ANNOTATIONS_PATH = '.agent-operating-model/bundles/github/source-annotations.yaml';
+const ANNOTATION_FRAGMENTS_DIR = '.agent-operating-model/bundles/github/source-annotations';
 const SOURCE_ROOT = 'docs/agent-operating-model/bundles/github/source';
 
 const FAMILY_HEADINGS = {
@@ -62,6 +63,12 @@ function unquote(value) {
 	return trimmed;
 }
 
+function mergeAnnotations(target, source) {
+	for (const [filePath, annotation] of source.entries()) {
+		target.set(filePath, annotation);
+	}
+}
+
 function parseAnnotations(source) {
 	const annotations = new Map();
 	let currentPath = null;
@@ -102,6 +109,19 @@ function parseAnnotations(source) {
 	return annotations;
 }
 
+async function loadAnnotations() {
+	const annotations = new Map();
+	mergeAnnotations(annotations, parseAnnotations(await readFile(ANNOTATIONS_PATH, 'utf8')));
+
+	const fragmentNames = await readdir(ANNOTATION_FRAGMENTS_DIR).catch(() => []);
+	for (const fragmentName of fragmentNames.filter((name) => name.endsWith('.yaml')).sort()) {
+		const fragmentPath = path.join(ANNOTATION_FRAGMENTS_DIR, fragmentName);
+		mergeAnnotations(annotations, parseAnnotations(await readFile(fragmentPath, 'utf8')));
+	}
+
+	return annotations;
+}
+
 function annotationHtml(annotation) {
 	const headings = FAMILY_HEADINGS[annotation.family];
 	if (!headings) return null;
@@ -134,7 +154,7 @@ function familyPagePath(filePath) {
 }
 
 async function main() {
-	const annotations = parseAnnotations(await readFile(ANNOTATIONS_PATH, 'utf8'));
+	const annotations = await loadAnnotations();
 	const grouped = new Map();
 
 	for (const [filePath, annotation] of annotations.entries()) {
