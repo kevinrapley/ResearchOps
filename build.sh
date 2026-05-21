@@ -26,6 +26,10 @@ test -f docs/agent-operating-model/bundles/github/source/scripts/index.html
 test -f docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
 test -f docs/agent-operating-model/bundles/github/assets/source-panel-layout.js
 
+grep -n 'max-height: 1400px' docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
+grep -n 'SOURCE_PANEL_CODE_MAX_HEIGHT = 1400' docs/agent-operating-model/bundles/github/assets/source-panel-layout.js
+grep -n 'overflow-y: auto' docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
+
 if grep -R '<aside class="notes">[[:space:]]*<ul>' docs/agent-operating-model/bundles/github/source; then
 	printf '%s\n' 'Unexpected list markup found at the start of a source-panel notes column.' >&2
 	exit 1
