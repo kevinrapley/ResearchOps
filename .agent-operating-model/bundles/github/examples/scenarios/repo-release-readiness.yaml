@@ -1,0 +1,69 @@
+id: repo-release-readiness
+kind: scenario
+status: canonical
+
+user_prompt: >
+  Check whether this repository is ready for release. Identify any blocking
+  issues and produce release evidence.
+
+repository_context:
+  observed_files:
+    - release-checklist.md
+    - sbom.cdx.json
+    - metadata-provenance.yaml
+    - .github/workflows/release-gate.yml
+    - .github/workflows/dependency-review.yml
+  current_status:
+    ci: passing
+    dependency_review: passing
+    codeql: unknown
+    sbom: present
+    rollback_note: missing
+
+expected_mode:
+  file: modes/repo-release.xml
+  rationale: >
+    The user is asking for a release readiness judgement and evidence.
+
+roles:
+  primary:
+    - roles/maintainer.xml
+    - roles/qa.xml
+  supporting:
+    - roles/security.xml
+
+contracts:
+  must_apply:
+    - contracts/release-contract.schema.json
+    - contracts/sbom-record.schema.json
+    - contracts/provenance-record.schema.json
+    - contracts/agent-evidence.schema.json
+
+graders:
+  must_consider:
+    - graders/release-grader.xml
+    - graders/security-grader.xml
+    - graders/sbom-grader.xml
+    - graders/provenance-grader.xml
+
+required_evidence:
+  - CI result
+  - Dependency review result
+  - Security scan status
+  - SBOM presence
+  - Provenance record
+  - Rollback note
+  - Release owner
+  - Known gaps
+
+expected_judgement:
+  status: not_ready
+  reason: >
+    Release cannot be recommended while CodeQL status is unknown and rollback
+    evidence is missing.
+
+failure_conditions:
+  - The agent marks the release ready without security scan evidence.
+  - The agent treats unknown evidence as passed.
+  - The agent omits rollback guidance.
+  - The agent does not state a release judgement.
