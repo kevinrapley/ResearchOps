@@ -1,0 +1,50 @@
+version: 1
+files:
+  "templates/starter-trees/agent-system.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for an agent-system repository."
+    what_must_be_customised:
+      - "Adapt prompt, eval, provenance and runtime folders to the actual agent architecture."
+    what_must_not_be_changed_blindly:
+      - "Do not remove eval or provenance paths unless the repository has an equivalent governance structure."
+  "templates/starter-trees/api-service.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for an API service repository."
+    what_must_be_customised:
+      - "Adapt source, route, contract, test and deployment folders to the actual service stack."
+    what_must_not_be_changed_blindly:
+      - "Do not remove endpoint, contract or test paths before confirming the API has another control point."
+  "templates/starter-trees/cli.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for a command-line tool repository."
+    what_must_be_customised:
+      - "Adapt command, package, test and documentation paths to the actual CLI."
+    what_must_not_be_changed_blindly:
+      - "Do not remove command examples or tests because they are central to CLI review."
+  "templates/starter-trees/data-ml.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for a data, ML or pipeline repository."
+    what_must_be_customised:
+      - "Adapt data, model, evaluation, provenance and pipeline paths to the actual project."
+    what_must_not_be_changed_blindly:
+      - "Do not remove provenance or evaluation folders because they explain how results are trusted."
+  "templates/starter-trees/library.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for a reusable library repository."
+    what_must_be_customised:
+      - "Adapt package, public API, tests, examples and release paths to the actual library ecosystem."
+    what_must_not_be_changed_blindly:
+      - "Do not remove compatibility or examples paths without confirming how consumers will test usage."
+  "templates/starter-trees/web-app.txt":
+    family: template
+    when_this_template_is_used:
+      - "Used to sketch the initial folder and file shape for a web-application repository."
+    what_must_be_customised:
+      - "Adapt app, route, accessibility, performance and deployment paths to the real user journeys."
+    what_must_not_be_changed_blindly:
+      - "Do not remove accessibility or performance paths because they hold user-facing readiness evidence."
