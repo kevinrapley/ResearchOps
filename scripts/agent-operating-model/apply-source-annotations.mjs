@@ -4,59 +4,41 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
-const ANNOTATIONS_PATH = '.agent-operating-model/bundles/github/source-annotations.yaml';
-const ANNOTATION_FRAGMENTS_DIR = '.agent-operating-model/bundles/github/source-annotations';
+const ANNOTATIONS_ROOT = '.agent-operating-model/source-annotations/github';
+const ANNOTATIONS_INDEX = path.join(ANNOTATIONS_ROOT, 'source-annotations.yaml');
 const SOURCE_ROOT = 'docs/agent-operating-model/bundles/github/source';
 
 const FAMILY_HEADINGS = {
-	modes: {
-		family: 'mode',
-		headings: [
-			['how_agent_uses_this_file', 'How the agent uses this file'],
-			['what_to_look_for', 'What to look for'],
-			['completion_evidence', 'Completion evidence'],
-		],
-	},
-	roles: {
-		family: 'role',
-		headings: [
-			['how_agent_uses_this_role', 'How the agent uses this role'],
-			['what_judgement_it_applies', 'What judgement it applies'],
-			['escalation_signals', 'Escalation signals'],
-		],
-	},
-	contracts: {
-		family: 'contract',
-		headings: [
-			['what_this_schema_controls', 'What this schema controls'],
-			['what_evidence_it_validates', 'What evidence it validates'],
-			['what_breaks_the_contract', 'What breaks the contract'],
-		],
-	},
-	graders: {
-		family: 'grader',
-		headings: [
-			['what_this_grader_scores', 'What this grader scores'],
-			['what_causes_a_fail', 'What causes a fail'],
-			['what_evidence_it_expects', 'What evidence it expects'],
-		],
-	},
-	templates: {
-		family: 'template',
-		headings: [
-			['when_this_template_is_used', 'When this template is used'],
-			['what_must_be_customised', 'What must be customised'],
-			['what_must_not_be_changed_blindly', 'What must not be changed blindly'],
-		],
-	},
-	scripts: {
-		family: 'script',
-		headings: [
-			['what_this_script_verifies', 'What this script verifies'],
-			['when_it_should_be_run', 'When it should be run'],
-			['what_failure_means', 'What failure means'],
-		],
-	},
+	modes: [
+		['how_agent_uses_this_file', 'How the agent uses this file'],
+		['what_to_look_for', 'What to look for'],
+		['completion_evidence', 'Completion evidence'],
+	],
+	roles: [
+		['how_agent_uses_this_role', 'How the agent uses this role'],
+		['what_judgement_it_applies', 'What judgement it applies'],
+		['escalation_signals', 'Escalation signals'],
+	],
+	contracts: [
+		['what_this_schema_controls', 'What this schema controls'],
+		['what_evidence_it_validates', 'What evidence it validates'],
+		['what_breaks_the_contract', 'What breaks the contract'],
+	],
+	graders: [
+		['what_this_grader_scores', 'What this grader scores'],
+		['what_causes_a_fail', 'What causes a fail'],
+		['what_evidence_it_expects', 'What evidence it expects'],
+	],
+	templates: [
+		['when_this_template_is_used', 'When this template is used'],
+		['what_must_be_customised', 'What must be customised'],
+		['what_must_not_be_changed_blindly', 'What must not be changed blindly'],
+	],
+	scripts: [
+		['what_this_script_verifies', 'What this script verifies'],
+		['when_it_should_be_run', 'When it should be run'],
+		['what_failure_means', 'What failure means'],
+	],
 };
 
 function escapeHtml(value) {
@@ -134,8 +116,8 @@ function parseAnnotationYaml(source) {
 		if (section === 'files') {
 			const fileMatch = line.match(/^  "(.+)":$/);
 			if (fileMatch) {
-				current = { value: {} };
-				annotations.set(fileMatch[1], current.value);
+				current = {};
+				annotations.set(fileMatch[1], current);
 				currentKey = null;
 				continue;
 			}
@@ -144,8 +126,8 @@ function parseAnnotationYaml(source) {
 		if (section === 'patterns') {
 			const patternMatch = line.match(/^  - match: "(.+)"$/);
 			if (patternMatch) {
-				current = { value: { match: patternMatch[1] } };
-				patterns.push(current.value);
+				current = { match: patternMatch[1] };
+				patterns.push(current);
 				currentKey = null;
 				continue;
 			}
@@ -157,14 +139,14 @@ function parseAnnotationYaml(source) {
 		if (keyMatch) {
 			const [, key, inlineValue] = keyMatch;
 			currentKey = key;
-			current.value[key] = inlineValue && inlineValue.trim() ? unquote(inlineValue) : [];
+			current[key] = inlineValue && inlineValue.trim() ? unquote(inlineValue) : [];
 			continue;
 		}
 
 		const itemMatch = line.match(/^      -\s+(.+)$/);
 		if (itemMatch && currentKey) {
-			if (!Array.isArray(current.value[currentKey])) current.value[currentKey] = [];
-			current.value[currentKey].push(unquote(itemMatch[1]));
+			if (!Array.isArray(current[currentKey])) current[currentKey] = [];
+			current[currentKey].push(unquote(itemMatch[1]));
 		}
 	}
 
@@ -178,21 +160,14 @@ function mergeParsed(target, source) {
 
 async function loadAnnotations() {
 	const output = { annotations: new Map(), patterns: [] };
-	mergeParsed(output, parseAnnotationYaml(await readFile(ANNOTATIONS_PATH, 'utf8')));
+	mergeParsed(output, parseAnnotationYaml(await readFile(ANNOTATIONS_INDEX, 'utf8')));
 
-	const fragmentNames = await readdir(ANNOTATION_FRAGMENTS_DIR).catch(() => []);
-	for (const fragmentName of fragmentNames.filter((name) => name.endsWith('.yaml')).sort()) {
-		mergeParsed(output, parseAnnotationYaml(await readFile(path.join(ANNOTATION_FRAGMENTS_DIR, fragmentName), 'utf8')));
+	const fileNames = await readdir(ANNOTATIONS_ROOT);
+	for (const fileName of fileNames.filter((name) => name.endsWith('.yaml') && name !== 'source-annotations.yaml').sort()) {
+		mergeParsed(output, parseAnnotationYaml(await readFile(path.join(ANNOTATIONS_ROOT, fileName), 'utf8')));
 	}
 
 	return output;
-}
-
-function annotationFor(filePath, annotations, patterns) {
-	if (annotations.has(filePath)) return { annotation: annotations.get(filePath), source: 'exact' };
-	const pattern = patterns.find((entry) => globToRegExp(entry.match).test(filePath));
-	if (pattern) return { annotation: pattern, source: 'pattern' };
-	return { annotation: fallbackAnnotation(filePath), source: 'fallback' };
 }
 
 function fallbackAnnotation(filePath) {
@@ -204,7 +179,7 @@ function fallbackAnnotation(filePath) {
 		return {
 			how_agent_uses_this_file: [`The agent uses ${fileName} as a mode file. It should define when this repository workflow applies and what evidence is needed before the task can be treated as complete.`],
 			what_to_look_for: [`Check the entry conditions, required evidence and blocking states for ${fileName}.`],
-			completion_evidence: [`Completion evidence should show that the mode was selected deliberately, run against repository facts and closed with validation or a recorded gap.`],
+			completion_evidence: ['Completion evidence should show that the mode was selected deliberately, run against repository facts and closed with validation or a recorded gap.'],
 		};
 	}
 
@@ -212,7 +187,7 @@ function fallbackAnnotation(filePath) {
 		return {
 			how_agent_uses_this_role: [`The agent uses ${fileName} as a role lens. It should change the judgement applied to the work, not just the tone of the response.`],
 			what_judgement_it_applies: [`This role should define the professional standard used to assess files under ${directory}.`],
-			escalation_signals: [`Escalate when the role reveals risk, weak evidence or a decision that should not be made by the agent alone.`],
+			escalation_signals: ['Escalate when the role reveals risk, weak evidence or a decision that should not be made by the agent alone.'],
 		};
 	}
 
@@ -220,31 +195,31 @@ function fallbackAnnotation(filePath) {
 		return {
 			what_this_schema_controls: [`This schema controls the structure of ${fileName}. It turns a repository claim into a machine-checkable evidence shape.`],
 			what_evidence_it_validates: [`It validates the fields, required values and nested objects needed before ${fileName} can support review or release evidence.`],
-			what_breaks_the_contract: [`The contract breaks when required fields are missing, evidence is vague, or the recorded data cannot be traced to repository artefacts.`],
+			what_breaks_the_contract: ['The contract breaks when required fields are missing, evidence is vague, or the recorded data cannot be traced to repository artefacts.'],
 		};
 	}
 
 	if (sourceFamily === 'graders') {
 		return {
 			what_this_grader_scores: [`This grader scores whether the evidence for ${fileName} is strong enough to pass, fail or require revision.`],
-			what_causes_a_fail: [`A fail should occur when required evidence is absent, weak, contradictory or not linked to the repository state being assessed.`],
-			what_evidence_it_expects: [`It expects concrete artefacts, command results, source references or structured records that support the judgement.`],
+			what_causes_a_fail: ['A fail should occur when required evidence is absent, weak, contradictory or not linked to the repository state being assessed.'],
+			what_evidence_it_expects: ['It expects concrete artefacts, command results, source references or structured records that support the judgement.'],
 		};
 	}
 
 	if (sourceFamily === 'templates') {
 		return {
 			when_this_template_is_used: [`This template is used when the bundle needs to generate or explain ${fileName} within ${directory}.`],
-			what_must_be_customised: [`Customise placeholders, repository-specific paths, owner names, commands, thresholds and evidence locations before using it in a real repository.`],
-			what_must_not_be_changed_blindly: [`Do not remove validation, evidence, ownership or review controls unless an equivalent repository-specific control replaces them.`],
+			what_must_be_customised: ['Customise placeholders, repository-specific paths, owner names, commands, thresholds and evidence locations before using it in a real repository.'],
+			what_must_not_be_changed_blindly: ['Do not remove validation, evidence, ownership or review controls unless an equivalent repository-specific control replaces them.'],
 		};
 	}
 
 	if (sourceFamily === 'scripts') {
 		return {
 			what_this_script_verifies: [`This script verifies or generates evidence for ${fileName}. It should turn an agent claim into a checkable repository outcome.`],
-			when_it_should_be_run: [`Run it when the corresponding evidence is needed for PR review, conformance, release readiness or documentation generation.`],
-			what_failure_means: [`Failure means the relevant evidence is missing, malformed or not strong enough to support the claim being made.`],
+			when_it_should_be_run: ['Run it when the corresponding evidence is needed for PR review, conformance, release readiness or documentation generation.'],
+			what_failure_means: ['Failure means the relevant evidence is missing, malformed or not strong enough to support the claim being made.'],
 		};
 	}
 
@@ -254,11 +229,15 @@ function fallbackAnnotation(filePath) {
 	};
 }
 
-function annotationHtml(annotation, sourceFamily) {
-	const config = FAMILY_HEADINGS[sourceFamily];
-	if (!config) return null;
+function annotationFor(filePath, annotations, patterns) {
+	if (annotations.has(filePath)) return { annotation: annotations.get(filePath), source: 'exact' };
+	const pattern = patterns.find((entry) => globToRegExp(entry.match).test(filePath));
+	if (pattern) return { annotation: pattern, source: 'pattern' };
+	return { annotation: fallbackAnnotation(filePath), source: 'fallback' };
+}
 
-	return config.headings.map(([key, label]) => {
+function annotationHtml(annotation, sourceFamily) {
+	return (FAMILY_HEADINGS[sourceFamily] || []).map(([key, label]) => {
 		const values = annotation[key];
 		if (!Array.isArray(values) || !values.length) return '';
 		return `<h4>${escapeHtml(label)}</h4>\n<ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
@@ -284,7 +263,6 @@ function replacePanel(html, originalPanel, annotation, sourceFamily) {
 	if (!id || !notesHtml) return html;
 
 	const pattern = new RegExp(`(<article class="source-panel[^"]*" id="${escapeRegExp(id)}">[\\s\\S]*?<aside class="notes">)[\\s\\S]*?(<\\/aside>)`);
-
 	return html.replace(pattern, (_match, start, end) => `${start}\n${notesHtml}\n${end}`);
 }
 
@@ -312,11 +290,10 @@ async function applyAnnotationsToFamily(sourceFamily, annotations, patterns) {
 
 async function main() {
 	const { annotations, patterns } = await loadAnnotations();
-	const governedFamilies = Object.keys(FAMILY_HEADINGS);
 	const fallbacks = [];
 	let applied = 0;
 
-	for (const sourceFamily of governedFamilies) {
+	for (const sourceFamily of Object.keys(FAMILY_HEADINGS)) {
 		const result = await applyAnnotationsToFamily(sourceFamily, annotations, patterns);
 		applied += result.applied;
 		fallbacks.push(...result.fallbacks);
