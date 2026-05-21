@@ -1,0 +1,10 @@
+version: 1
+files:
+  "roles/repository-operator.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when GitHub behaviour matters: branch rules, required checks, workflow permissions, labels, CODEOWNERS and deployment settings."
+    what_judgement_it_applies:
+      - "This role judges whether the repository will behave safely once the change reaches GitHub, especially around review routing, merge gates and automation authority."
+    escalation_signals:
+      - "Escalate when branch protection is absent, required checks are unclear, workflow permissions are too broad, CODEOWNERS is stale or deployment settings bypass review."
