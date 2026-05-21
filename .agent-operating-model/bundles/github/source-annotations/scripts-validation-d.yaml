@@ -1,0 +1,50 @@
+version: 1
+files:
+  "scripts/validate-performance-results.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks performance result files after tool output has been normalised."
+    when_it_should_be_run:
+      - "Run it before using benchmark results in grading or release gates."
+    what_failure_means:
+      - "Result data lacks required metrics, units, tool identity or comparable values."
+  "scripts/validate-release-gate-report.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the final release-gate report structure."
+    when_it_should_be_run:
+      - "Run it before accepting a release decision."
+    what_failure_means:
+      - "The release decision lacks required gate evidence or approval shape."
+  "scripts/validate-release-gate-termination.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks that release-gate failure stops the release path."
+    when_it_should_be_run:
+      - "Run it when gate logic or related fixtures change."
+    what_failure_means:
+      - "A failed gate may not stop release progression."
+  "scripts/validate-sbom.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks SBOM records for structure and completeness."
+    when_it_should_be_run:
+      - "Run it after SBOM generation and before release assessment."
+    what_failure_means:
+      - "Dependency inventory evidence is malformed, incomplete or empty."
+  "scripts/validate-sbom-attestation.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the structure of SBOM attestation evidence."
+    when_it_should_be_run:
+      - "Run it after creating or receiving attestation files."
+    what_failure_means:
+      - "The attestation cannot support the trust claim attached to the SBOM."
+  "scripts/validate-selected-template-set.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the group of templates selected for a repository."
+    when_it_should_be_run:
+      - "Run it after CI or repository templates have been selected."
+    what_failure_means:
+      - "Required templates are missing or selected templates conflict with the repository archetype."
