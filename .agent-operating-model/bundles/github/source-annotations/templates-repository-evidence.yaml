@@ -1,0 +1,66 @@
+version: 1
+files:
+  "templates/repository/accessibility-evidence-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used to capture accessibility test results and review notes as repository evidence."
+    what_must_be_customised:
+      - "Set tested pages, tools used, findings, exceptions and follow-up actions."
+    what_must_not_be_changed_blindly:
+      - "Do not remove tested-scope or unresolved-issue fields."
+  "templates/repository/agent-evidence-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to record the evidence behind an agent-led repository task."
+    what_must_be_customised:
+      - "Set selected bundles, changed files, commands, results, assumptions and residual risk."
+    what_must_not_be_changed_blindly:
+      - "Do not remove validation or risk fields because they explain why the agent can claim completion."
+  "templates/repository/conformance-matrix-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to map repository files and behaviours against Diamond standard requirements."
+    what_must_be_customised:
+      - "Set each checked rule, status, evidence link and remediation note."
+    what_must_not_be_changed_blindly:
+      - "Do not mark rules complete without evidence links."
+  "templates/repository/endpoint-catalog-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when an API or service repository needs a catalogue of endpoints."
+    what_must_be_customised:
+      - "Set method, route, owner, auth, request and response expectations for real endpoints."
+    what_must_not_be_changed_blindly:
+      - "Do not leave endpoint rows as examples if the service is live or reviewable."
+  "templates/repository/gap-register-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to capture known gaps, risk acceptances and deferred work."
+    what_must_be_customised:
+      - "Set owner, severity, due date, mitigation and acceptance decision."
+    what_must_not_be_changed_blindly:
+      - "Do not remove ownership or severity fields because they make the gap actionable."
+  "templates/repository/github-settings-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to record expected GitHub repository settings."
+    what_must_be_customised:
+      - "Set branch protection, required checks, permissions and CODEOWNERS expectations."
+    what_must_not_be_changed_blindly:
+      - "Do not weaken branch or review controls without recording the decision."
+  "templates/repository/harm-register-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when a change may introduce user, operational, ethical or governance harms."
+    what_must_be_customised:
+      - "Set affected group, harm type, likelihood, severity, mitigation and escalation route."
+    what_must_not_be_changed_blindly:
+      - "Do not remove escalation or mitigation fields for high-impact changes."
+  "templates/repository/metadata-provenance-template.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to record where generated or important repository artefacts came from."
+    what_must_be_customised:
+      - "Set source file, generator, commit, timestamp and verification notes."
+    what_must_not_be_changed_blindly:
+      - "Do not publish generated artefacts without a traceable source path."
