@@ -279,20 +279,13 @@ function panelId(panelHtml) {
 }
 
 function replacePanel(html, originalPanel, annotation, sourceFamily) {
-	const notesHtml = annotationHtml(annotation, sourceFamily);
-	if (!notesHtml) return html;
-
 	const id = panelId(originalPanel);
-	const updatedPanel = originalPanel.replace(
-		/(<aside class="notes">)[\s\S]*?(<\/aside>)/,
-		`$1\n${notesHtml}\n$2`,
-	);
+	const notesHtml = annotationHtml(annotation, sourceFamily);
+	if (!id || !notesHtml) return html;
 
-	if (!id) return html.replace(originalPanel, updatedPanel);
+	const pattern = new RegExp(`(<article class="source-panel[^"]*" id="${escapeRegExp(id)}">[\\s\\S]*?<aside class="notes">)[\\s\\S]*?(<\\/aside>)`);
 
-	const panelPattern = new RegExp(`(<article class="source-panel[^"]*" id="${escapeRegExp(id)}">)[\\s\\S]*?(</article>)`);
-	if (!panelPattern.test(html)) return html.replace(originalPanel, updatedPanel);
-	return html.replace(panelPattern, updatedPanel);
+	return html.replace(pattern, (_match, start, end) => `${start}\n${notesHtml}\n${end}`);
 }
 
 async function applyAnnotationsToFamily(sourceFamily, annotations, patterns) {
