@@ -1,0 +1,10 @@
+version: 1
+files:
+  "roles/security.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when repository changes affect trust: dependencies, workflows, secrets, artefacts, SBOMs, attestations or release gates."
+    what_judgement_it_applies:
+      - "This role judges whether the change introduces exposure and whether the evidence is enough to trust the dependency, workflow, build or release path."
+    escalation_signals:
+      - "Escalate when secrets are mishandled, actions are mutable, dependency evidence is missing, artefacts are not traceable or trust claims are accepted without verification."
