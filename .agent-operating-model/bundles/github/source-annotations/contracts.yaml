@@ -1,0 +1,178 @@
+version: 1
+files:
+  "contracts/accessibility-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls accessibility evidence from axe, Pa11y, Lighthouse or equivalent checks, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates tool outputs, issue counts, severity, affected pages and any stated exceptions; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are missing raw results, unresolved critical issues or evidence that cannot be tied to tested pages."
+  "contracts/agent-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the agent's audit evidence for a repository task, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates selected bundles, changed files, commands, outcomes, assumptions and residual risk; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are claims of completion without trace, validation evidence or changed-file review."
+  "contracts/conformance-record.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls a record of whether repository artefacts satisfy the Diamond standard, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates rules checked, pass or fail status, evidence links and remediation notes; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are unchecked rules, vague pass claims or missing linkage to specific repository files."
+  "contracts/endpoint-catalog.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls catalogued API and service endpoints in a repository, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates routes, methods, ownership, authentication, request and response expectations; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are undocumented endpoints, missing auth notes or contracts that do not reflect implemented routes."
+  "contracts/eval-result.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the result of running one evaluation case, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates case id, expected behaviour, observed output, score and failure explanation; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are score without evidence, missing case id or unclear reason for pass/fail."
+  "contracts/eval.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the shape of an evaluation case before it is run, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates prompt, mode, required files, expected outputs and grading criteria; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are ambiguous expected behaviour or cases that cannot be reproduced by the harness."
+  "contracts/gap-register.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls known gaps, debt and unresolved repository risks, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates gap description, severity, owner, mitigation, due date and acceptance decision; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are unowned risks, missing severity or gaps silently treated as closed."
+  "contracts/github-settings.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the expected GitHub repository configuration, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates branch protections, required checks, permissions, CODEOWNERS, actions policy and review gates; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are settings that weaken merge safety or allow bypass of required controls."
+  "contracts/grade-result.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls a grader's structured decision, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates score, pass/fail decision, rationale, evidence and blocking findings; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are grade decisions without observable criteria or unsupported confidence language."
+  "contracts/harm-register.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls possible harms introduced by repository or product changes, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates affected groups, harm type, likelihood, severity, mitigation and escalation route; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are ignored vulnerable groups, missing mitigation or untriaged high-severity harms."
+  "contracts/issue-contract.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the expected shape of generated or reviewed GitHub issues, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates title, problem, acceptance criteria, evidence, labels and ownership; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are issues that describe work vaguely or cannot be converted into testable tasks."
+  "contracts/live-release-policy.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls release policy for live or high-assurance deployments, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates release readiness, required evidence, gate criteria, rollback and approval state; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are live release claims without required safety, security and operational evidence."
+  "contracts/performance-budget.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls performance budgets and thresholds, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates metric names, tools, thresholds, units, routes and comparison baselines; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are budgets without units, thresholds or evidence of the measured journey."
+  "contracts/provenance-record.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls where artefacts, decisions and generated files came from, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates source file, generator, commit, timestamp, authoring process and verification notes; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are untraceable artefacts or files whose origin cannot be explained."
+  "contracts/pull-request-contract.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the structure of a PR prepared by the agent, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates summary, changed files, validation, risks, trace links and review readiness; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are PRs that omit evidence, hide risks or misstate the actual diff."
+  "contracts/release-contract.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the minimum information for a release candidate, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates version, change set, migration notes, validation, approvals and rollback; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are release candidates without traceable validation or unsupported go-live claims."
+  "contracts/release-gate-report.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the final release-gate assessment, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates all mandatory checks, pass/fail results, exceptions, approvers and go/no-go decision; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are missing gate checks, unapproved exceptions or release without a clear decision."
+  "contracts/repository-contract.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the baseline structure expected of a repository, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates required files, folders, metadata, CI, security and documentation controls; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are repositories that appear complete but lack mandatory control artefacts."
+  "contracts/sbom-record.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls software bill of materials evidence, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates components, versions, package manager, generated file, tool and attestation links; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are empty SBOMs, stale dependency snapshots or components with unknown provenance."
+  "contracts/template-registry.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls the registry connecting templates to destinations and conditions, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates template path, output path, usage condition, related contract and validation expectation; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are templates that can be generated without a destination or validation rule."
+  "contracts/trusted-attestation-verification.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls verification evidence for trusted build attestations, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates attestation source, artifact digest, verifier command and trust result; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are unsigned artefacts, unverifiable digests or acceptance of self-asserted trust."
+  "contracts/workflow-contract.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "Controls GitHub Actions workflow structure and safety properties, turning that part of the bundle into a checkable evidence shape."
+    what_evidence_it_validates:
+      - "Validates triggers, permissions, pinned actions, jobs, required checks and artefacts; reviewers should be able to trace each field to a real repository artefact or command output."
+    what_breaks_the_contract:
+      - "Breaks when there are broad permissions, unpinned actions or workflows that cannot support a release gate."
