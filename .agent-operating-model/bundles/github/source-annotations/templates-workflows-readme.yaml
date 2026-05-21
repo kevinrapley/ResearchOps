@@ -1,0 +1,10 @@
+version: 1
+files:
+  "templates/github/.github/workflows-hardened/README.md":
+    family: template
+    when_this_template_is_used:
+      - "Used to explain the purpose and review expectations for the hardened workflow template set."
+    what_must_be_customised:
+      - "Adapt the explanation to the workflows selected for the repository and the assurance level expected."
+    what_must_not_be_changed_blindly:
+      - "Do not let this README describe controls that the selected workflow files do not actually provide."

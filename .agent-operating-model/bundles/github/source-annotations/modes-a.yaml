@@ -1,0 +1,42 @@
+version: 1
+files:
+  "modes/repo-archive.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when repository work is about preserving, freezing, transferring or retiring a repository responsibly. It should move from delivery work into custody and closure work."
+      - "This mode prevents archive tasks from becoming casual deletion, renaming or documentation cleanup."
+    what_to_look_for:
+      - "Check whether the mode separates archive, deprecation, transfer and deletion. These are different governance decisions."
+      - "Look for retained evidence, final status, remaining risks, owners and successor repository links."
+    completion_evidence:
+      - "A complete archive run should show the archive decision, final validation result, remaining risks, retained documents, owner or steward and any successor location."
+  "modes/repo-build.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when it is allowed to change repository files. It should inspect first, make bounded edits, preserve conventions, run checks and explain the result."
+      - "This is the mode that stops broad attractive rewrites. It should keep implementation work small enough to review and strong enough to defend with evidence."
+    what_to_look_for:
+      - "Check that repository inspection happens before editing."
+      - "Look for changed-file review, checks, trace update requirements and a clear statement of residual risk."
+    completion_evidence:
+      - "A complete build run should show changed files, why each change was needed, commands run, results, generated artefacts, trace entry and remaining risks."
+  "modes/repo-conformance.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode to assess whether a repository satisfies the Diamond operating model. It should inspect, compare, record gaps and only then recommend remediation."
+      - "This mode produces a map of compliance, non-compliance and uncertainty without immediately mutating the repository."
+    what_to_look_for:
+      - "Check that evidence is tied to actual files, settings, workflows or contracts."
+      - "Look for treatment of partial compliance, not-applicable rules and gaps needing owner decision."
+    completion_evidence:
+      - "A complete conformance run should show checked rules, evidence links, pass/fail/partial status, gaps, remediation priority and any rule that could not be assessed."
+  "modes/repo-discovery.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode before acting on an unfamiliar repository. It should learn the repository shape, technology stack, risks, entry points and governance files before proposing changes."
+      - "This mode is useful when the user asks for reassurance, context, review or a plan rather than immediate code change."
+    what_to_look_for:
+      - "Check that discovery covers source, tests, workflows, deployment, documentation, assumptions and known unknowns."
+      - "Look for a clear next-mode recommendation."
+    completion_evidence:
+      - "A complete discovery run should show repository inventory, important files inspected, assumptions, unknowns, risk areas and recommended next action."

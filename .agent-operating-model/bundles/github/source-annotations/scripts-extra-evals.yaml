@@ -1,0 +1,10 @@
+version: 1
+files:
+  "scripts/validate-evals.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks eval definitions before the harness uses them."
+    when_it_should_be_run:
+      - "Run it after eval case edits."
+    what_failure_means:
+      - "The eval set needs correction before use."

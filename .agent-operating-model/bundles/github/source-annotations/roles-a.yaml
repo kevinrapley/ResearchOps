@@ -1,0 +1,34 @@
+version: 1
+files:
+  "roles/architect.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when the question is whether a repository change fits the system shape. It should look beyond the local diff and examine boundaries, ownership, integration points and future extensibility."
+    what_judgement_it_applies:
+      - "This role judges architectural coherence: whether a change strengthens the repository's structure or creates hidden coupling, duplicated patterns or awkward future maintenance."
+    escalation_signals:
+      - "Escalate when a change creates unclear ownership, bypasses established contracts, introduces new integration paths without documentation or solves a local issue by weakening the system model."
+  "roles/developer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when implementation quality is the central question. It should inspect whether the change is readable, narrow, maintainable and consistent with the codebase."
+    what_judgement_it_applies:
+      - "This role judges whether the implementation is technically sound enough to keep: small diffs, clear names, minimal side effects, testable behaviour and no avoidable complexity."
+    escalation_signals:
+      - "Escalate when the diff is broad without reason, behaviour is untested, paths are fragile, assumptions are hidden or the implementation does not match the repository conventions."
+  "roles/docs-lead.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when the repository output needs to be understandable by future readers. It should test whether documentation explains the real system rather than decorating it."
+    what_judgement_it_applies:
+      - "This role judges whether the docs help a reader act correctly: set up the repo, review a change, run checks, understand generated files and locate canonical source."
+    escalation_signals:
+      - "Escalate when documentation contains stale paths, generic prose, broken links, misleading examples or claims that are not supported by source files."
+  "roles/maintainer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when the question is whether the repository can be safely owned after the change lands. It should think about review burden, release continuity and operational clarity."
+    what_judgement_it_applies:
+      - "This role judges whether a change is mergeable from a stewardship view: understandable PR, bounded risk, clear rollback, current generated assets and no hidden follow-up obligations."
+    escalation_signals:
+      - "Escalate when a PR is too broad, trace is missing, generated files are stale, ownership is unclear, or unresolved review threads are being treated as complete."

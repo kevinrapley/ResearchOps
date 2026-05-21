@@ -1,0 +1,62 @@
+version: 1
+files:
+  "modes/repo-docs.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is to create, repair or align documentation. It treats documentation as part of the repository operating system, not as prose bolted on afterwards."
+      - "This mode should make the agent check whether the docs match source files, workflows, generated artefacts and user-facing behaviour."
+    what_to_look_for:
+      - "Check that the mode distinguishes authored documentation, generated documentation and canonical source."
+      - "Look for broken-link checks, stale examples, misleading setup commands, generated-page provenance and audience fit."
+    completion_evidence:
+      - "A complete docs run should show source checked, docs changed, link or consistency checks, affected audience and any unresolved documentation gap."
+  "modes/repo-fix.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when something is failing or visibly wrong. It should diagnose the fault, isolate the cause and make the smallest corrective change that can be validated."
+      - "This mode preserves the distinction between symptom, cause, fix, evidence and prevention."
+    what_to_look_for:
+      - "Check that the original failure evidence is captured before the fix is claimed."
+      - "Look for root-cause explanation, targeted diff, rerun evidence and confirmation that nearby behaviour was not changed by accident."
+    completion_evidence:
+      - "A complete fix run should show original failure, diagnosis, changed files, validation rerun, outcome and any follow-up needed to prevent recurrence."
+  "modes/repo-instantiate.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when creating a new repository or applying the Diamond standard to an immature one. It should select an archetype, choose templates and create the minimum governed structure needed for that repository type."
+      - "This mode is where the bundle becomes a scaffold. It should avoid both too little governance and a generic structure that ignores the project type."
+    what_to_look_for:
+      - "Check that archetype selection is evidence-based. A web app, API service, CLI, library, data repository and agent system should not all receive the same files."
+      - "Look for template registry use, selected CI workflows, required repository documents, evidence files and first-pass validation."
+    completion_evidence:
+      - "A complete instantiate run should show selected archetype, generated paths, template registry matches, omitted templates with reasons and first validation results."
+  "modes/repo-release.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when deciding whether a repository change is ready to ship or tag as a release. It should gather evidence across checks, accessibility, performance, provenance, SBOM and approval rather than relying on a green build alone."
+      - "This mode asks whether the evidence is sufficient for the consequence of the release, not merely whether the branch can merge."
+    what_to_look_for:
+      - "Check that release gates are explicit and exceptions are named."
+      - "Look for rollback, artefact integrity, release notes, validation results, approvals and unresolved high-severity issues."
+    completion_evidence:
+      - "A complete release run should show release contract, gate report, validation results, artefact evidence, approvals, rollback path and final release recommendation."
+  "modes/repo-review.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when assessing an existing PR, branch or proposed change. It should read the diff, review comments, checks and repository conventions before saying whether the work is ready."
+      - "This mode should separate blocking issues from suggestions, verify claims against files and keep the PR body honest."
+    what_to_look_for:
+      - "Check that changed-file verification is required and that the PR description is not accepted at face value."
+      - "Look for review-thread handling, validation status, risks, generated-file boundaries and an explicit merge recommendation."
+    completion_evidence:
+      - "A complete review run should show diff summary, review findings, addressed comments, checks, risks and a clear readiness decision."
+  "modes/repo-security.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when repository work touches security, supply chain, secrets, dependency trust, workflow permissions or release artefacts. It shifts the agent from feature correctness to exposure analysis."
+      - "This mode should make evidence concrete: what was scanned, what was trusted, what was pinned, what was signed and what remains unresolved."
+    what_to_look_for:
+      - "Check that the mode covers workflow permissions and dependency trust, not only application code."
+      - "Look for handling of secrets, unpinned actions, dependency review, static analysis evidence, SBOM, attestation and residual risk."
+    completion_evidence:
+      - "A complete security run should show findings, dependency evidence, workflow hardening, SBOM or attestation status, unresolved risks and escalation decisions."

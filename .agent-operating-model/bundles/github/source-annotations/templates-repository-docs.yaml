@@ -1,0 +1,42 @@
+version: 1
+files:
+  "templates/repository/CODEOWNERS-template":
+    family: template
+    when_this_template_is_used:
+      - "Used when creating repository ownership rules outside the nested GitHub template path."
+    what_must_be_customised:
+      - "Replace placeholder owners with real users or teams for the repository paths."
+    what_must_not_be_changed_blindly:
+      - "Do not leave ownership broad or symbolic if review routing depends on it."
+  "templates/repository/CONTRIBUTING-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs contribution rules for setup, testing and review."
+    what_must_be_customised:
+      - "Adapt setup commands, branch expectations, test commands and review process."
+    what_must_not_be_changed_blindly:
+      - "Do not publish commands that have not been checked against the repository."
+  "templates/repository/README-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used to create the repository's primary introduction and operating instructions."
+    what_must_be_customised:
+      - "Replace product name, purpose, install, run, test and architecture sections."
+    what_must_not_be_changed_blindly:
+      - "Do not leave generic claims that are not supported by repository files."
+  "templates/repository/SECURITY-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs a security policy document."
+    what_must_be_customised:
+      - "Set real reporting route, supported versions and response expectations."
+    what_must_not_be_changed_blindly:
+      - "Do not publish placeholder contacts or unsupported response commitments."
+  "templates/repository/release-checklist-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used to structure release preparation and evidence review."
+    what_must_be_customised:
+      - "Adapt checklist items to the repository's release gates and validation commands."
+    what_must_not_be_changed_blindly:
+      - "Do not remove rollback, validation or approval checks from release review."

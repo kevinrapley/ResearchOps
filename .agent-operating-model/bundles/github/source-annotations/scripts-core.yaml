@@ -1,0 +1,66 @@
+version: 1
+files:
+  "scripts/README.md":
+    family: script
+    what_this_script_verifies:
+      - "Explains how the bundle script set is organised and what each script family is expected to prove."
+    when_it_should_be_run:
+      - "Read it before selecting scripts for validation, release evidence or PR review."
+    what_failure_means:
+      - "A mismatch here means reviewers may choose the wrong validation path."
+  "scripts/check-performance-budget.py":
+    family: script
+    what_this_script_verifies:
+      - "Compares performance result files with the declared performance budget."
+    when_it_should_be_run:
+      - "Run it after collecting benchmark output and before accepting performance evidence."
+    what_failure_means:
+      - "The result exceeds the budget or the data cannot be interpreted against the budget."
+  "scripts/fail-intentionally.py":
+    family: script
+    what_this_script_verifies:
+      - "Provides a controlled negative command so test harnesses can prove they notice failing commands."
+    when_it_should_be_run:
+      - "Run it only in negative-path checks that deliberately need a failing command."
+    what_failure_means:
+      - "Failure is expected. An unexpected pass would weaken confidence in the harness."
+  "scripts/generate-sbom.py":
+    family: script
+    what_this_script_verifies:
+      - "Creates a software bill of materials from dependency inputs."
+    when_it_should_be_run:
+      - "Run it before SBOM validation, attestation generation or release assessment."
+    what_failure_means:
+      - "Dependency inventory evidence is missing or incomplete."
+  "scripts/generate-sbom-attestation.py":
+    family: script
+    what_this_script_verifies:
+      - "Creates attestation metadata around SBOM or artefact evidence."
+    when_it_should_be_run:
+      - "Run it after SBOM generation and before release evidence is reviewed."
+    what_failure_means:
+      - "The SBOM cannot support the required provenance claim."
+  "scripts/github_settings_verification.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks repository settings evidence against expected GitHub controls."
+    when_it_should_be_run:
+      - "Run it when branch rules, permissions or required checks are reviewed."
+    what_failure_means:
+      - "Repository settings evidence does not support the governance claim."
+  "scripts/grade-output.py":
+    family: script
+    what_this_script_verifies:
+      - "Runs grading criteria against structured agent output."
+    when_it_should_be_run:
+      - "Run it after an eval, mode run or readiness assessment produces structured output."
+    what_failure_means:
+      - "The output does not meet the expected scoring or evidence shape."
+  "scripts/live-repository-release-gate.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks release readiness using live repository evidence."
+    when_it_should_be_run:
+      - "Run it before a live release decision."
+    what_failure_means:
+      - "Live repository evidence does not support release readiness."

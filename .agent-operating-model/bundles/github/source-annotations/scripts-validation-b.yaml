@@ -1,0 +1,50 @@
+version: 1
+files:
+  "scripts/validate-accessibility-evidence.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks structured accessibility evidence from tools and manual notes."
+    when_it_should_be_run:
+      - "Run it after collecting accessibility results and before readiness claims."
+    what_failure_means:
+      - "The accessibility evidence needs correction before it can support the claim."
+  "scripts/validate-accessibility-fixtures.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the accessibility fixture set used by tests and evals."
+    when_it_should_be_run:
+      - "Run it when fixture files or accessibility validators change."
+    what_failure_means:
+      - "The fixtures may no longer represent reliable pass or fail cases."
+  "scripts/validate-agent-evidence.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the agent evidence file required before a task can be called complete."
+    when_it_should_be_run:
+      - "Run it before PR readiness, merge recommendation or release evidence is accepted."
+    what_failure_means:
+      - "The agent evidence lacks enough trace, validation, changed-file or risk detail."
+  "scripts/validate-bundle.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks the bundle structure, registries and expected artefacts."
+    when_it_should_be_run:
+      - "Run it after changing prompt files, contracts, templates, graders or registries."
+    what_failure_means:
+      - "The bundle may be internally inconsistent or missing declared artefacts."
+  "scripts/validate-changelog.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks changelog structure and release-history quality."
+    when_it_should_be_run:
+      - "Run it when versions, release notes or bundle status change."
+    what_failure_means:
+      - "The release history is not strong enough for audit or maintenance use."
+  "scripts/validate-docs-consistency.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks that generated or maintained documentation remains consistent with canonical bundle source."
+    when_it_should_be_run:
+      - "Run it after generating docs or changing files represented in the docs site."
+    what_failure_means:
+      - "The published documentation may misrepresent the bundle."

@@ -1,0 +1,50 @@
+version: 1
+files:
+  "templates/RECENT_LEARNINGS-template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs a maintained record of recent operational lessons, review findings and repeated failure patterns."
+    what_must_be_customised:
+      - "Replace placeholder learning entries with concrete date, trigger, impact, decision and follow-up detail from the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not remove the evidence and follow-up fields, because they make the learning useful for future review rather than ceremonial documentation."
+  "templates/discussion_template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used to structure GitHub discussion threads or design conversations that need context, options, evidence and decision capture."
+    what_must_be_customised:
+      - "Replace prompt text with the specific problem, affected files, options considered and decision criteria."
+    what_must_not_be_changed_blindly:
+      - "Do not strip out the decision and evidence sections, because they prevent discussion from becoming untraceable opinion."
+  "templates/security.md":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs a SECURITY.md policy describing reporting routes, supported versions and handling expectations."
+    what_must_be_customised:
+      - "Set the real contact route, supported branches or versions, response expectations and disclosure process."
+    what_must_not_be_changed_blindly:
+      - "Do not publish placeholder contact details or unsupported response commitments."
+  "templates/issue_bug_report.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to create a structured bug report issue form outside the nested GitHub template path."
+    what_must_be_customised:
+      - "Adapt labels, required fields and reproduction prompts to the repository's defect triage model."
+    what_must_not_be_changed_blindly:
+      - "Do not remove reproduction evidence or expected/actual behaviour fields; they are what make the issue actionable."
+  "templates/issue_feature_request.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used to create a structured feature request issue form outside the nested GitHub template path."
+    what_must_be_customised:
+      - "Adapt problem statement, benefit, constraints and acceptance prompts to the repository's planning process."
+    what_must_not_be_changed_blindly:
+      - "Do not reduce the request to solution-first wording; the template should preserve user need and evidence."
+  "templates/pull_request_template.md":
+    family: template
+    when_this_template_is_used:
+      - "Used as the default PR body structure for repository changes."
+    what_must_be_customised:
+      - "Update sections to match the repository's required evidence, validation commands, risk statement and source boundary."
+    what_must_not_be_changed_blindly:
+      - "Do not remove validation, risk or changed-file sections; they are required for review confidence."

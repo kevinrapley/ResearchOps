@@ -1,0 +1,122 @@
+version: 1
+files:
+  "graders/accessibility-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores accessibility evidence quality and remaining accessibility risk, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are critical or serious unresolved findings, missing raw results or untested changed pages, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects axe/Pa11y/Lighthouse outputs, affected-page evidence and any justified exceptions; without that evidence, the agent should return to inspection or remediation."
+  "graders/ci-selection-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores whether the chosen CI template set matches the repository archetype, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are missing required language or security workflows, or CI selected without repository evidence, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects detected languages, selected templates, omitted templates and rationale; without that evidence, the agent should return to inspection or remediation."
+  "graders/code-confidence-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores implementation confidence from tests, diff size, risk and evidence quality, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are untested code paths, broad rewrites, unclear assumptions or failed checks, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects changed files, test commands, command output and residual risk notes; without that evidence, the agent should return to inspection or remediation."
+  "graders/conformance-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores repository conformance against the Diamond bundle rules, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are mandatory artefacts missing, unregistered deviations or unverified controls, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects conformance matrix, rule results, evidence links and gap register entries; without that evidence, the agent should return to inspection or remediation."
+  "graders/discovery-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores quality of repository discovery before action is taken, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are missing inventory, unexamined critical files or recommendations not grounded in source, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects repository map, key files inspected, assumptions and next-mode decision; without that evidence, the agent should return to inspection or remediation."
+  "graders/ethics-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores ethical and harm-awareness evidence for changes that may affect users or governance, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are unassessed harms, missing vulnerable-group analysis or unresolved escalation needs, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects harm register entries, mitigation notes and escalation decisions; without that evidence, the agent should return to inspection or remediation."
+  "graders/github-settings-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores whether GitHub repository settings meet the operating model, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are unsafe branch settings, weak actions permissions or missing CODEOWNERS coverage, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects settings export, branch rule evidence, required checks and owner mapping; without that evidence, the agent should return to inspection or remediation."
+  "graders/performance-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores performance evidence against defined budgets, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are missing baselines, failed thresholds, incomparable tools or unsupported performance claims, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects budget file, result file, tool output and threshold comparison; without that evidence, the agent should return to inspection or remediation."
+  "graders/pr-readiness-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores whether a pull request is ready for review or merge, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are missing validation, unresolved review comments, inaccurate body or changed-file mismatch, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects PR body, diff summary, workflow results, trace links and known risks; without that evidence, the agent should return to inspection or remediation."
+  "graders/provenance-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores traceability from generated artefacts back to source and decision, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are unexplained generated files, stale metadata or missing source linkage, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects provenance records, generator metadata, commit references and source paths; without that evidence, the agent should return to inspection or remediation."
+  "graders/recent-learnings-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores whether lessons and operational learning are captured, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are repeat failures without learning or learning notes not tied to evidence, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects RECENT_LEARNINGS entries, failure causes and follow-up actions; without that evidence, the agent should return to inspection or remediation."
+  "graders/release-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores release readiness across evidence, gates and risk, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are failed gates, missing approvals, incomplete rollback or unverified artefacts, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects release contract, gate report, CI results, SBOM and attestation evidence; without that evidence, the agent should return to inspection or remediation."
+  "graders/sbom-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores SBOM completeness and trustworthiness, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are empty SBOMs, missing package ecosystems, stale generation or absent attestation, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects SBOM file, generator command, component count and verification evidence; without that evidence, the agent should return to inspection or remediation."
+  "graders/security-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores security and supply-chain posture, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are critical vulnerabilities, unpinned actions, missing dependency review or untrusted build outputs, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects CodeQL/dependency evidence, workflow hardening, SBOM and attestation records; without that evidence, the agent should return to inspection or remediation."
+  "graders/template-registry-grader.xml":
+    family: grader
+    what_this_grader_scores:
+      - "Scores template registry completeness and destination safety, converting qualitative review into a pass, fail or revision judgement."
+    what_causes_a_fail:
+      - "Fails when there are template paths without outputs, outputs without validation or duplicate conflicting mappings, because those conditions make the agent's readiness claim unsafe."
+    what_evidence_it_expects:
+      - "Expects template registry entries, contract links and selected-template validation; without that evidence, the agent should return to inspection or remediation."

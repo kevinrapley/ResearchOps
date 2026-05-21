@@ -1,0 +1,190 @@
+version: 1
+files:
+  "modes/repo-archive.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about archiving, freezing or retiring a repository. It narrows the response from a general coding assistant posture into a governed archive workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for archiving, freezing or retiring a repository; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the archive route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes archive decision, final validation status, owner sign-off, dependency/security posture and links to retained documentation."
+  "modes/repo-build.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about implementing repository changes or adding code. It narrows the response from a general coding assistant posture into a governed build workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for implementing repository changes or adding code; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the build route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes changed files, test commands, passing checks, trace entry and explanation of any residual gaps."
+  "modes/repo-conformance.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about checking whether a repository follows the Diamond standard. It narrows the response from a general coding assistant posture into a governed conformance workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for checking whether a repository follows the Diamond standard; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the conformance route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes conformance matrix, failing clauses, remediation plan and evidence that each checked rule was inspected."
+  "modes/repo-discovery.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about understanding an unfamiliar repository before proposing changes. It narrows the response from a general coding assistant posture into a governed discovery workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for understanding an unfamiliar repository before proposing changes; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the discovery route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes repository inventory, assumptions, unknowns, risk areas and a clear next-mode recommendation."
+  "modes/repo-docs.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about creating or correcting repository documentation. It narrows the response from a general coding assistant posture into a governed docs workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for creating or correcting repository documentation; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the docs route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes docs changed, source checked, broken-link status, audience fit and any unresolved documentation gaps."
+  "modes/repo-fix.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about diagnosing and correcting a specific failure. It narrows the response from a general coding assistant posture into a governed fix workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for diagnosing and correcting a specific failure; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the fix route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes failure evidence, root cause, changed files, rerun checks and confirmation that unrelated behaviour was not altered."
+  "modes/repo-instantiate.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about creating a new repository from the bundle. It narrows the response from a general coding assistant posture into a governed instantiate workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for creating a new repository from the bundle; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the instantiate route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes selected archetype, generated files, template registry matches, CI selection and first-pass validation results."
+  "modes/repo-release.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about preparing or assessing a release. It narrows the response from a general coding assistant posture into a governed release workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for preparing or assessing a release; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the release route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes release contract, release-gate report, SBOM/attestation, accessibility/performance/security evidence and go/no-go decision."
+  "modes/repo-review.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about reviewing a pull request or branch. It narrows the response from a general coding assistant posture into a governed review workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for reviewing a pull request or branch; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the review route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes review findings, addressed comments, changed-file verification, test status and explicit merge recommendation."
+  "modes/repo-security.xml":
+    family: mode
+    how_agent_uses_this_file:
+      - "The agent uses this mode when the task is about security and supply-chain assessment. It narrows the response from a general coding assistant posture into a governed security workflow."
+      - "It sets the order of work: inspect the repository, decide whether change is allowed, apply the relevant roles and references, then produce evidence rather than only a narrative answer."
+    what_to_look_for:
+      - "Check that the mode still makes sense for security and supply-chain assessment; the entry conditions should prevent it being used for unrelated repository work."
+      - "Look for explicit links to contracts, graders and validation scripts. Those links are what make the security route auditable rather than advisory."
+    completion_evidence:
+      - "Expected completion evidence includes security findings, dependency review status, CodeQL or equivalent evidence, workflow hardening and residual risk."
+  "roles/architect.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine system coherence, boundaries, extensibility and integration risk. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether a change preserves the repository architecture instead of creating local convenience. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of unclear ownership, hidden coupling, bypassed contracts, duplicated patterns or changes that weaken long-term maintainability."
+  "roles/developer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine implementation quality, maintainability and practical correctness. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the code or template change is small, readable, testable and consistent with existing conventions. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of untested behaviour, broad rewrites, fragile paths, hidden assumptions or claims not backed by execution evidence."
+  "roles/docs-lead.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine documentation quality, reader comprehension and source alignment. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the documentation explains the real system rather than repeating technical inventory. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of stale screenshots, broken links, generic copy, missing audience context or docs that diverge from source behaviour."
+  "roles/maintainer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine repository stewardship, operational continuity and merge safety. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the change can be reviewed, owned, released and supported after merge. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of large unbounded changes, missing trace, unclear rollback, stale generated assets or unresolved review threads."
+  "roles/performance-engineer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine performance budgets, measurement evidence and regression risk. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether performance claims are measured, bounded and comparable across runs. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of unvalidated budgets, synthetic-only confidence, missing thresholds, slow CI paths or metrics that cannot be reproduced."
+  "roles/qa.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine test coverage, scenario evidence and release confidence. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the work has enough checks to justify the claim that it is done. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of skipped tests, weak smoke coverage, assertion-free validation, flaky failures or acceptance criteria not mapped to evidence."
+  "roles/repository-operator.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine GitHub settings, branch rules, workflow permissions and operational controls. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the repository will behave safely in GitHub once the change lands. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of missing protections, unsafe workflow permissions, absent CODEOWNERS, branch-rule drift or deployment settings that bypass policy."
+  "roles/security.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role to examine security posture, supply-chain trust and sensitive-change risk. It should change the questions the agent asks, not merely change the tone of the answer."
+    what_judgement_it_applies:
+      - "This role judges whether the change introduces exposure through dependencies, workflows, secrets, permissions or artefacts. Its value is in deciding whether the repository work is safe, coherent and reviewable from that viewpoint."
+    escalation_signals:
+      - "Escalate or block when there is evidence of unpinned actions, missing dependency review, untrusted build artefacts, secret-handling gaps or unverified attestations."
+  "contracts/accessibility-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls accessibility evidence from axe, Pa11y, Lighthouse or equivalent checks. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates tool outputs, issue counts, severity, affected pages and any stated exceptions. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are missing raw results, unresolved critical issues or evidence that cannot be tied to tested pages."
+  "contracts/agent-evidence.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls the agent's audit evidence for a repository task. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates selected bundles, changed files, commands, outcomes, assumptions and residual risk. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are claims of completion without trace, validation evidence or changed-file review."
+  "contracts/conformance-record.schema.json":
+    family: contract
+    what_this_schema_controls:
+      - "This schema controls a record of whether repository artefacts satisfy the Diamond standard. It defines the data shape that must exist before the agent can treat that evidence as valid."
+    what_evidence_it_validates:
+      - "It validates rules checked, pass or fail status, evidence links and remediation notes. When reviewing the page, check that these fields are concrete enough to be inspected, not just asserted."
+    what_breaks_the_contract:
+      - "The contract should fail or be treated as incomplete when there are unchecked rules, vague pass claims or missing linkage to specific repository files."

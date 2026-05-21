@@ -1,0 +1,18 @@
+version: 1
+files:
+  "roles/performance-engineer.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when speed, stability or capacity claims need evidence. It should treat performance as a measured property, not an optimistic side-effect of clean code."
+    what_judgement_it_applies:
+      - "This role judges whether performance evidence has a clear scenario, baseline, metric, unit, threshold and environment, and whether the result can be compared fairly."
+    escalation_signals:
+      - "Escalate when thresholds are missing, benchmark conditions are unclear, metrics cannot be reproduced or a performance claim is made from anecdotal observation."
+  "roles/qa.xml":
+    family: role
+    how_agent_uses_this_role:
+      - "The agent applies this role when completion depends on evidence that behaviour has been checked. It should ask what scenario was tested, what assertion proves it and what remains untested."
+    what_judgement_it_applies:
+      - "This role judges whether validation is strong enough for the change: meaningful assertions, relevant smoke coverage, reliable fixtures and clear acceptance criteria."
+    escalation_signals:
+      - "Escalate when tests are skipped, checks have no assertions, acceptance criteria are not mapped to evidence, or a workflow failure is treated as unrelated without proof."

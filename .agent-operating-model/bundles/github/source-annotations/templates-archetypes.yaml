@@ -1,0 +1,50 @@
+version: 1
+files:
+  "templates/archetype-control-profiles/agent-system.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository being instantiated or assessed is an agent system with prompt, orchestration and evaluation concerns."
+    what_must_be_customised:
+      - "Tune required workflows, evidence packs and release gates to the agent's risk profile and runtime architecture."
+    what_must_not_be_changed_blindly:
+      - "Do not remove eval, provenance or prompt-governance controls because they are the distinguishing controls for an agent system."
+  "templates/archetype-control-profiles/api-service.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository exposes an API service and needs endpoint, contract, security and release controls."
+    what_must_be_customised:
+      - "Adapt endpoint catalogue expectations, runtime checks, language workflows and authentication evidence to the actual service."
+    what_must_not_be_changed_blindly:
+      - "Do not remove endpoint catalogue or security controls just because the API surface appears small."
+  "templates/archetype-control-profiles/cli.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository builds a command-line tool and needs command, packaging and release controls."
+    what_must_be_customised:
+      - "Set command test expectations, packaging checks and documentation requirements for the actual CLI behaviour."
+    what_must_not_be_changed_blindly:
+      - "Do not drop usage examples or command validation, because they are central to CLI usability and review."
+  "templates/archetype-control-profiles/data-ml.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository contains data, ML, model, evaluation or pipeline work."
+    what_must_be_customised:
+      - "Adapt provenance, data handling, evaluation and reproducibility controls to the actual model or pipeline."
+    what_must_not_be_changed_blindly:
+      - "Do not remove provenance, repeatability or evaluation controls; those are the main risk controls for this archetype."
+  "templates/archetype-control-profiles/library.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository publishes reusable library code or package APIs."
+    what_must_be_customised:
+      - "Set package manager, public API, compatibility and release evidence to match the library ecosystem."
+    what_must_not_be_changed_blindly:
+      - "Do not remove compatibility or versioning checks because library consumers depend on stable behaviour."
+  "templates/archetype-control-profiles/web-app.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository builds a web application with user-facing journeys and browser-delivered assets."
+    what_must_be_customised:
+      - "Adapt accessibility, performance, browser, route and deployment evidence to the app's real user journeys."
+    what_must_not_be_changed_blindly:
+      - "Do not remove accessibility or performance controls, because web-app readiness depends on user-facing evidence."

@@ -1,0 +1,50 @@
+version: 1
+files:
+  "scripts/performance-adapters.py":
+    family: script
+    what_this_script_verifies:
+      - "Normalises performance tool outputs into the bundle evidence format."
+    when_it_should_be_run:
+      - "Run it after benchmark tools produce their native output."
+    what_failure_means:
+      - "The benchmark data is not ready for comparison or grading."
+  "scripts/pin-workflow-actions.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks workflow action references and helps move them toward fixed versions."
+    when_it_should_be_run:
+      - "Run it during workflow hardening or template review."
+    what_failure_means:
+      - "Workflow dependencies still need review before they can support an assurance claim."
+  "scripts/release-gate.py":
+    family: script
+    what_this_script_verifies:
+      - "Runs release-gate checks over prepared release evidence."
+    when_it_should_be_run:
+      - "Run it after release evidence has been assembled."
+    what_failure_means:
+      - "The release evidence is not ready for a go decision."
+  "scripts/repository_conditions.py":
+    family: script
+    what_this_script_verifies:
+      - "Detects repository conditions used by mode and template selection."
+    when_it_should_be_run:
+      - "Run it during discovery, instantiation or CI selection."
+    what_failure_means:
+      - "The agent may choose the wrong workflow or template set."
+  "scripts/run-eval-harness.py":
+    family: script
+    what_this_script_verifies:
+      - "Executes behavioural eval cases for the bundle."
+    when_it_should_be_run:
+      - "Run it when changing modes, roles, graders, contracts or prompt instructions."
+    what_failure_means:
+      - "A behaviour case needs investigation before merge."
+  "scripts/select-ci-templates.py":
+    family: script
+    what_this_script_verifies:
+      - "Selects CI templates from repository conditions and archetype rules."
+    when_it_should_be_run:
+      - "Run it during repository instantiation or CI remediation."
+    what_failure_means:
+      - "The repository may receive a mismatched workflow set."

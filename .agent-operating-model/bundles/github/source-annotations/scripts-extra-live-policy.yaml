@@ -1,0 +1,10 @@
+version: 1
+files:
+  "scripts/validate-live-release-policy.py":
+    family: script
+    what_this_script_verifies:
+      - "Checks live-release policy documents for the required structure."
+    when_it_should_be_run:
+      - "Run it after editing live-release policy constraints or examples."
+    what_failure_means:
+      - "The policy document needs correction before it can support release review."

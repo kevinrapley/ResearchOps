@@ -1,0 +1,42 @@
+version: 1
+files:
+  "templates/github/.github/CODEOWNERS":
+    family: template
+    when_this_template_is_used:
+      - "Used when a repository needs ownership rules for review routing and protected changes."
+    what_must_be_customised:
+      - "Replace placeholder owners with real GitHub users or teams for the repository's paths and risk areas."
+    what_must_not_be_changed_blindly:
+      - "Do not leave broad catch-all ownership without checking who can actually review the affected files."
+  "templates/github/.github/ISSUE_TEMPLATE/bug_report.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used to create the GitHub bug report issue form in the repository's .github directory."
+    what_must_be_customised:
+      - "Tune labels, required fields, reproduction prompts and environment questions to the product or codebase."
+    what_must_not_be_changed_blindly:
+      - "Do not remove reproduction or impact fields, because those make defects diagnosable."
+  "templates/github/.github/ISSUE_TEMPLATE/feature_request.yml":
+    family: template
+    when_this_template_is_used:
+      - "Used to create the GitHub feature request issue form in the repository's .github directory."
+    what_must_be_customised:
+      - "Tune problem, user need, constraints and acceptance prompts to the repository's planning workflow."
+    what_must_not_be_changed_blindly:
+      - "Do not turn it into a solution-only form; keep the problem and evidence prompts."
+  "templates/github/.github/PULL_REQUEST_TEMPLATE/default.md":
+    family: template
+    when_this_template_is_used:
+      - "Used as the default GitHub PR template for repository changes."
+    what_must_be_customised:
+      - "Set validation, risk, evidence and source-boundary sections to match the repository convention."
+    what_must_not_be_changed_blindly:
+      - "Do not remove changed-file verification or validation evidence sections."
+  "templates/github/workflow-action-lock.example.yaml":
+    family: template
+    when_this_template_is_used:
+      - "Used as an example lock file for GitHub Actions references."
+    what_must_be_customised:
+      - "Replace example workflow references and digests with the repository's real action references."
+    what_must_not_be_changed_blindly:
+      - "Do not treat example values as verified lock data for a real repository."

@@ -1,0 +1,98 @@
+version: 1
+patterns:
+  - match: "templates/github/.github/workflows/ci-*.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository needs a standard language or quality workflow for the matching technology area."
+    what_must_be_customised:
+      - "Set runtime version, install command, test command, cache behaviour and artefact paths to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not keep placeholder runtime assumptions or commands that do not match the repository."
+  - match: "templates/github/.github/workflows-hardened/ci-*.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository needs a hardened language or quality workflow for the matching technology area."
+    what_must_be_customised:
+      - "Set runtime version, permissions, install command, test command, evidence outputs and artefact retention to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not remove hardened permissions, evidence outputs or retention behaviour without an equivalent control."
+  - match: "templates/github/.github/workflows/codeql.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when static analysis is required as part of the standard workflow set."
+    what_must_be_customised:
+      - "Set analysed languages, schedule, permissions and upload behaviour to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not remove analysis coverage for languages that are present in the repository."
+  - match: "templates/github/.github/workflows-hardened/codeql.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when static analysis is required with hardened workflow controls."
+    what_must_be_customised:
+      - "Set analysed languages, permissions, schedule and evidence outputs to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not weaken permissions or evidence retention without a replacement control."
+  - match: "templates/github/.github/workflows/dependency-review.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when dependency review is required in the standard workflow set."
+    what_must_be_customised:
+      - "Set policy thresholds and dependency review expectations for the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not disable dependency review for repositories that publish or deploy code."
+  - match: "templates/github/.github/workflows-hardened/dependency-review.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when dependency review is required with hardened workflow controls."
+    what_must_be_customised:
+      - "Set policy thresholds, permissions and retained evidence to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not remove dependency review evidence from a hardened workflow set."
+  - match: "templates/github/.github/workflows/file-inventory.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when the repository needs a generated file inventory as governance evidence."
+    what_must_be_customised:
+      - "Set inventory output path and any ignored paths to match the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not hide generated or governance files that reviewers need to inspect."
+  - match: "templates/github/.github/workflows-hardened/file-inventory.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when file inventory evidence is needed with hardened workflow controls."
+    what_must_be_customised:
+      - "Set inventory output path, permissions and retained artefact behaviour."
+    what_must_not_be_changed_blindly:
+      - "Do not remove retained inventory artefacts if they support release review."
+  - match: "templates/github/.github/workflows/release-gate.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when release checks are required in the standard workflow set."
+    what_must_be_customised:
+      - "Set release evidence paths, required jobs and report outputs for the repository."
+    what_must_not_be_changed_blindly:
+      - "Do not detach the release workflow from the evidence files it is meant to check."
+  - match: "templates/github/.github/workflows-hardened/release-gate.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when release checks require hardened workflow controls."
+    what_must_be_customised:
+      - "Set release evidence paths, required jobs, permissions and report outputs."
+    what_must_not_be_changed_blindly:
+      - "Do not weaken permissions or retained evidence without a replacement control."
+  - match: "templates/github/.github/workflows/sbom-cyclonedx.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when SBOM generation is required in the standard workflow set."
+    what_must_be_customised:
+      - "Set package ecosystem, SBOM output path and upload behaviour."
+    what_must_not_be_changed_blindly:
+      - "Do not produce an SBOM workflow that omits the repository's active package ecosystem."
+  - match: "templates/github/.github/workflows-hardened/sbom-cyclonedx.yml"
+    family: template
+    when_this_template_is_used:
+      - "Used when SBOM generation requires hardened workflow controls."
+    what_must_be_customised:
+      - "Set package ecosystem, permissions, SBOM output path and retained evidence behaviour."
+    what_must_not_be_changed_blindly:
+      - "Do not remove SBOM evidence from a hardened release path."
