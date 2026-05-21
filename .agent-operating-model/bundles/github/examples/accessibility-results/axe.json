@@ -1,1 +1,204 @@
-{"violations":[],"passes":[{"id":"fixture-pass"}]}
+{
+  "example_metadata": {
+    "id": "accessibility-results-axe-pass",
+    "kind": "accessibility-result-example",
+    "tool": "axe-core",
+    "scenario": "Primary service journey passes automated axe checks",
+    "purpose": "Shows the expected shape of a passing axe-core result while preserving zero violations for release-gate fixtures.",
+    "service_context": {
+      "repository_archetype": "public-service-web-frontend",
+      "journey": "Apply for a research session",
+      "page": "/apply",
+      "risk_profile": "public-service"
+    },
+    "interpretation": {
+      "automated_result": "pass",
+      "violations": 0,
+      "incomplete": 0,
+      "release_meaning": "This result supports accessibility confidence but does not replace keyboard, screen-reader or assistive technology checks."
+    }
+  },
+  "url": "http://localhost:4173/apply",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright",
+    "version": "4.10.2"
+  },
+  "testEnvironment": {
+    "userAgent": "Mozilla/5.0 AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+    "windowWidth": 1440,
+    "windowHeight": 1100,
+    "orientationAngle": 0,
+    "orientationType": "landscape-primary"
+  },
+  "toolOptions": {
+    "runOnly": {
+      "type": "tag",
+      "values": [
+        "wcag2a",
+        "wcag2aa",
+        "wcag21a",
+        "wcag21aa",
+        "wcag22aa",
+        "best-practice"
+      ]
+    }
+  },
+  "violations": [],
+  "incomplete": [],
+  "inapplicable": [
+    {
+      "id": "accesskeys",
+      "impact": null,
+      "tags": [
+        "cat.keyboard",
+        "best-practice"
+      ],
+      "description": "Ensures every accesskey attribute value is unique",
+      "help": "accesskey attribute value should be unique",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/accesskeys",
+      "nodes": []
+    }
+  ],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": [
+        "cat.text-alternatives",
+        "wcag2a",
+        "wcag242"
+      ],
+      "description": "Ensures each HTML document contains a non-empty title element",
+      "help": "Documents must have title element to aid in navigation",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/document-title",
+      "nodes": [
+        {
+          "target": [
+            "html"
+          ],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null,
+          "any": [
+            {
+              "id": "doc-has-title",
+              "data": null,
+              "relatedNodes": [],
+              "impact": null,
+              "message": "Document has a non-empty title element"
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    },
+    {
+      "id": "html-has-lang",
+      "impact": null,
+      "tags": [
+        "cat.language",
+        "wcag2a",
+        "wcag311"
+      ],
+      "description": "Ensures every HTML document has a lang attribute",
+      "help": "html element must have a lang attribute",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/html-has-lang",
+      "nodes": [
+        {
+          "target": [
+            "html"
+          ],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null,
+          "any": [
+            {
+              "id": "has-lang",
+              "data": "en-GB",
+              "relatedNodes": [],
+              "impact": null,
+              "message": "The html element has a lang attribute"
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    },
+    {
+      "id": "button-name",
+      "impact": null,
+      "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag412"
+      ],
+      "description": "Ensures buttons have discernible text",
+      "help": "Buttons must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/button-name",
+      "nodes": [
+        {
+          "target": [
+            "button[type=\"submit\"]"
+          ],
+          "html": "<button type=\"submit\" class=\"govuk-button\">Continue</button>",
+          "failureSummary": null,
+          "any": [
+            {
+              "id": "button-has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": null,
+              "message": "Element has inner text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": null,
+      "tags": [
+        "cat.forms",
+        "wcag2a",
+        "wcag412"
+      ],
+      "description": "Ensures every form element has a label",
+      "help": "Form elements must have labels",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/label",
+      "nodes": [
+        {
+          "target": [
+            "#full-name"
+          ],
+          "html": "<input class=\"govuk-input\" id=\"full-name\" name=\"fullName\" type=\"text\">",
+          "failureSummary": null,
+          "any": [
+            {
+              "id": "implicit-label",
+              "data": null,
+              "relatedNodes": [
+                {
+                  "target": [
+                    "label[for=\"full-name\"]"
+                  ],
+                  "html": "<label class=\"govuk-label\" for=\"full-name\">Full name</label>"
+                }
+              ],
+              "impact": null,
+              "message": "Form element has an explicit label"
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    }
+  ]
+}
