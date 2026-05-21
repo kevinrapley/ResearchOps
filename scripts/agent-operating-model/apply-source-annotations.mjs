@@ -63,27 +63,57 @@ function unquote(value) {
 	return trimmed;
 }
 
-function mergeAnnotations(target, source) {
-	for (const [filePath, annotation] of source.entries()) {
-		target.set(filePath, annotation);
-	}
+function globToRegExp(pattern) {
+	const escaped = pattern
+		.split('*')
+		.map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+		.join('[^/]*');
+	return new RegExp(`^${escaped}$`);
 }
 
-function parseAnnotations(source) {
+function parseAnnotationYaml(source) {
 	const annotations = new Map();
-	let currentPath = null;
+	const patterns = [];
+	let section = null;
+	let current = null;
 	let currentKey = null;
 
 	for (const line of source.split('\n')) {
-		const fileMatch = line.match(/^  "(.+)":$/);
-		if (fileMatch) {
-			currentPath = fileMatch[1];
-			annotations.set(currentPath, {});
+		if (line === 'files:') {
+			section = 'files';
+			current = null;
 			currentKey = null;
 			continue;
 		}
 
-		if (!currentPath) continue;
+		if (line === 'patterns:') {
+			section = 'patterns';
+			current = null;
+			currentKey = null;
+			continue;
+		}
+
+		if (section === 'files') {
+			const fileMatch = line.match(/^  "(.+)":$/);
+			if (fileMatch) {
+				current = { kind: 'file', key: fileMatch[1], value: {} };
+				annotations.set(current.key, current.value);
+				currentKey = null;
+				continue;
+			}
+		}
+
+		if (section === 'patterns') {
+			const patternMatch = line.match(/^  - match: "(.+)"$/);
+			if (patternMatch) {
+				current = { kind: 'pattern', key: patternMatch[1], value: { match: patternMatch[1] } };
+				patterns.push(current.value);
+				currentKey = null;
+				continue;
+			}
+		}
+
+		if (!current) continue;
 
 		const keyMatch = line.match(/^    ([a-z0-9_]+):(?:\s*(.*))?$/i);
 		if (keyMatch) {
@@ -91,35 +121,43 @@ function parseAnnotations(source) {
 			currentKey = key;
 
 			if (inlineValue && inlineValue.trim()) {
-				annotations.get(currentPath)[key] = unquote(inlineValue);
+				current.value[key] = unquote(inlineValue);
 			} else {
-				annotations.get(currentPath)[key] = [];
+				current.value[key] = [];
 			}
 			continue;
 		}
 
 		const itemMatch = line.match(/^      -\s+(.+)$/);
 		if (itemMatch && currentKey) {
-			const entry = annotations.get(currentPath);
-			if (!Array.isArray(entry[currentKey])) entry[currentKey] = [];
-			entry[currentKey].push(unquote(itemMatch[1]));
+			if (!Array.isArray(current.value[currentKey])) current.value[currentKey] = [];
+			current.value[currentKey].push(unquote(itemMatch[1]));
 		}
 	}
 
-	return annotations;
+	return { annotations, patterns };
+}
+
+function mergeParsed(target, source) {
+	for (const [filePath, annotation] of source.annotations.entries()) {
+		target.annotations.set(filePath, annotation);
+	}
+	for (const pattern of source.patterns) {
+		target.patterns.push(pattern);
+	}
 }
 
 async function loadAnnotations() {
-	const annotations = new Map();
-	mergeAnnotations(annotations, parseAnnotations(await readFile(ANNOTATIONS_PATH, 'utf8')));
+	const output = { annotations: new Map(), patterns: [] };
+	mergeParsed(output, parseAnnotationYaml(await readFile(ANNOTATIONS_PATH, 'utf8')));
 
 	const fragmentNames = await readdir(ANNOTATION_FRAGMENTS_DIR).catch(() => []);
 	for (const fragmentName of fragmentNames.filter((name) => name.endsWith('.yaml')).sort()) {
 		const fragmentPath = path.join(ANNOTATION_FRAGMENTS_DIR, fragmentName);
-		mergeAnnotations(annotations, parseAnnotations(await readFile(fragmentPath, 'utf8')));
+		mergeParsed(output, parseAnnotationYaml(await readFile(fragmentPath, 'utf8')));
 	}
 
-	return annotations;
+	return output;
 }
 
 function annotationHtml(annotation) {
@@ -153,15 +191,56 @@ function familyPagePath(filePath) {
 	return path.join(SOURCE_ROOT, family, 'index.html');
 }
 
+function getPanelIds(html) {
+	return [...html.matchAll(/<article class="source-panel [^"]+" id="([^"]+)">/g)].map((match) => match[1]);
+}
+
+function annotationFor(filePath, annotations, patterns) {
+	if (annotations.has(filePath)) return annotations.get(filePath);
+	const match = patterns.find((pattern) => globToRegExp(pattern.match).test(filePath));
+	return match || null;
+}
+
 async function main() {
-	const annotations = await loadAnnotations();
+	const { annotations, patterns } = await loadAnnotations();
 	const grouped = new Map();
+	const familyPages = ['modes', 'roles', 'contracts', 'graders', 'templates', 'scripts'];
+
+	for (const family of familyPages) {
+		const pagePath = path.join(SOURCE_ROOT, family, 'index.html');
+		const html = await readFile(pagePath, 'utf8').catch(() => null);
+		if (!html) continue;
+
+		for (const panelId of getPanelIds(html)) {
+			const filePath = panelId.replaceAll('-', '/').replace(/^templates\//, 'templates/');
+			const sourcePath = [...annotations.keys()].find((key) => slug(key) === panelId)
+				|| patterns.find((pattern) => globToRegExp(pattern.match).test(filePath))?.match;
+			if (!sourcePath) continue;
+		}
+	}
 
 	for (const [filePath, annotation] of annotations.entries()) {
 		if (!annotation.family || !FAMILY_HEADINGS[annotation.family]) continue;
 		const pagePath = familyPagePath(filePath);
 		if (!grouped.has(pagePath)) grouped.set(pagePath, []);
 		grouped.get(pagePath).push([filePath, annotation]);
+	}
+
+	for (const pattern of patterns) {
+		if (!pattern.family || !FAMILY_HEADINGS[pattern.family]) continue;
+		const family = pattern.match.split('/')[0];
+		const pagePath = path.join(SOURCE_ROOT, family, 'index.html');
+		const html = await readFile(pagePath, 'utf8').catch(() => null);
+		if (!html) continue;
+
+		const ids = getPanelIds(html);
+		for (const id of ids) {
+			if (!id.startsWith(`${family}-`)) continue;
+			const candidatePath = id.replaceAll('-', '/');
+			if (!globToRegExp(pattern.match).test(candidatePath)) continue;
+			if (!grouped.has(pagePath)) grouped.set(pagePath, []);
+			grouped.get(pagePath).push([candidatePath, pattern]);
+		}
 	}
 
 	for (const [pagePath, entries] of grouped.entries()) {
@@ -172,7 +251,7 @@ async function main() {
 		await writeFile(pagePath, html, 'utf8');
 	}
 
-	console.log(`Applied source annotations to ${annotations.size} files.`);
+	console.log(`Applied source annotations to ${annotations.size} files and ${patterns.length} patterns.`);
 }
 
 main().catch((error) => {
