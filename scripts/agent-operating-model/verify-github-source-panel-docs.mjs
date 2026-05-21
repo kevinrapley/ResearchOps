@@ -44,6 +44,14 @@ function assertNotContains(value, forbidden, filePath) {
 	}
 }
 
+function sourcePanels(html) {
+	return [...html.matchAll(/<article class="source-panel[\s\S]*?<\/article>/g)].map((match) => match[0]);
+}
+
+function panelId(panelHtml) {
+	return panelHtml.match(/id="([^"]+)"/)?.[1] || 'unknown-panel';
+}
+
 async function main() {
 	const overviewPath = path.join(DOCS_ROOT, 'index.html');
 	const sourceHubPath = path.join(SOURCE_ROOT, 'index.html');
@@ -78,7 +86,18 @@ async function main() {
 		const html = await readRequired(pagePath);
 
 		assertContains(html, `<span class="pill">${pill}</span>`, pagePath);
-		for (const heading of headings) assertContains(html, heading, pagePath);
+
+		const panels = sourcePanels(html);
+		if (!panels.length) throw new Error(`${pagePath} must contain at least one source panel.`);
+
+		for (const panel of panels) {
+			const id = panelId(panel);
+			for (const heading of headings) {
+				if (!panel.includes(heading)) {
+					throw new Error(`${pagePath} panel ${id} must contain: ${heading}`);
+				}
+			}
+		}
 
 		for (const forbidden of [
 			'Canonical source',
