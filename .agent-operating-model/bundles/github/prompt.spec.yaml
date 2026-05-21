@@ -1,8 +1,8 @@
 bundle:
   id: github-diamond-standard
   name: GitHub Diamond Standard Prompt Bundle
-  version: 2.9.2
-  status: auditable-release-assurance
+  version: 2.9.3
+  status: examples-assurance-refresh
   default_mode: repository-operator
   prompt_body: prompt.body.xml
 design:
