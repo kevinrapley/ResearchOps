@@ -1,0 +1,67 @@
+id: workflow-node-ci-selection
+kind: scenario
+status: canonical
+
+user_prompt: >
+  Add the right CI workflow for this repository. It is a Node service with tests,
+  but it does not currently have GitHub Actions configured.
+
+repository_context:
+  detected_files:
+    - package.json
+    - package-lock.json
+    - src/server.js
+    - test/server.test.js
+  package_json:
+    engines:
+      node: ">=20"
+    scripts:
+      test: node --test
+      lint: eslint .
+
+expected_mode:
+  file: modes/repo-build.xml
+  rationale: >
+    The user is asking for a repository build-control addition. This is not a
+    release, archive or review-only task.
+
+roles:
+  primary:
+    - roles/developer.xml
+    - roles/qa.xml
+  supporting:
+    - roles/maintainer.xml
+
+selected_template:
+  id: github-github-workflows-ci-node-yml
+  reason: >
+    The repository has package.json, a lockfile and a test script, so Node CI is
+    the matching workflow template.
+
+expected_workflow_shape:
+  name: CI Node
+  triggers:
+    - pull_request
+    - push to main
+  steps:
+    - checkout
+    - setup-node
+    - npm ci
+    - npm run lint
+    - npm test
+
+contracts:
+  must_apply:
+    - contracts/workflow-contract.schema.json
+    - contracts/pull-request-contract.schema.json
+
+graders:
+  must_consider:
+    - graders/ci-selection-grader.xml
+    - graders/code-confidence-grader.xml
+
+failure_conditions:
+  - The agent uses npm install instead of npm ci when a lockfile exists.
+  - The workflow calls a script that does not exist in package.json.
+  - The agent removes tests to make the workflow pass.
+  - The agent adds unrelated deployment steps.
