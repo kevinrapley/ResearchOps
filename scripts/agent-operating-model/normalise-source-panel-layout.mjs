@@ -6,16 +6,21 @@ import process from 'node:process';
 
 const DOCS_ROOT = 'docs/agent-operating-model/bundles/github';
 const ASSETS_DIR = path.join(DOCS_ROOT, 'assets');
-const CSS_HREF = '/bundles/github/assets/source-panel-layout.css';
-const JS_SRC = '/bundles/github/assets/source-panel-layout.js';
+const ASSET_VERSION = 'source-panel-height-cap-v2';
+const CSS_PATH = '/bundles/github/assets/source-panel-layout.css';
+const JS_PATH = '/bundles/github/assets/source-panel-layout.js';
+const CSS_HREF = `${CSS_PATH}?v=${ASSET_VERSION}`;
+const JS_SRC = `${JS_PATH}?v=${ASSET_VERSION}`;
 const CODE_PANEL_MAX_HEIGHT = 1400;
 
-const CSS = `.source-grid { align-items: stretch; }
+const CSS = `.source-grid { align-items: start; }
 .source-grid pre {
+  align-self: start;
+  box-sizing: border-box;
   height: auto;
-  max-height: ${CODE_PANEL_MAX_HEIGHT}px;
+  max-height: ${CODE_PANEL_MAX_HEIGHT}px !important;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: auto !important;
 }
 .source-grid aside.notes p { margin: 0 0 12px; }
 .source-grid aside.notes h4 + p { margin-top: 0; }
@@ -31,6 +36,7 @@ function syncSourcePanelHeights() {
     code.style.height = 'auto';
     code.style.maxHeight = SOURCE_PANEL_CODE_MAX_HEIGHT + 'px';
     code.style.overflowY = 'auto';
+    code.style.alignSelf = 'start';
     if (window.matchMedia('(max-width: 1020px)').matches) return;
     var height = Math.min(Math.ceil(notes.getBoundingClientRect().height), SOURCE_PANEL_CODE_MAX_HEIGHT);
     code.style.height = height + 'px';
@@ -88,12 +94,10 @@ function normaliseNotes(html) {
 
 function addAssets(html) {
 	let output = html;
-	if (!output.includes(CSS_HREF)) {
-		output = output.replace('</head>', `<link rel="stylesheet" href="${CSS_HREF}">\n</head>`);
-	}
-	if (!output.includes(JS_SRC)) {
-		output = output.replace('</body>', `<script src="${JS_SRC}" defer></script>\n</body>`);
-	}
+	output = output.replace(/<link rel="stylesheet" href="\/bundles\/github\/assets\/source-panel-layout\.css(?:\?[^\"]*)?">\n?/g, '');
+	output = output.replace(/<script src="\/bundles\/github\/assets\/source-panel-layout\.js(?:\?[^\"]*)?" defer><\/script>\n?/g, '');
+	output = output.replace('</head>', `<link rel="stylesheet" href="${CSS_HREF}">\n</head>`);
+	output = output.replace('</body>', `<script src="${JS_SRC}" defer></script>\n</body>`);
 	return output;
 }
 
