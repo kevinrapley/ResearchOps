@@ -1,0 +1,10 @@
+version: 1
+files:
+  "templates/discussion-template.xml":
+    family: template
+    when_this_template_is_used:
+      - "Used as the XML-format discussion template placeholder for repositories or bundle processes that need structured discussion markup rather than the Markdown discussion template."
+    what_must_be_customised:
+      - "Add the concrete discussion schema, fields, examples and expected destination before using it in a real repository workflow."
+    what_must_not_be_changed_blindly:
+      - "Do not treat this empty template as production-ready. It should either be completed with a real XML structure or removed from the generated source set if it is intentionally unused."
