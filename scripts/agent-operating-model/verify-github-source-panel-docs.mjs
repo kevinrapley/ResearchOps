@@ -14,6 +14,15 @@ const REQUIRED_FAMILY_PAGES = [
 	['graders', 'grader', ['What this grader scores', 'What causes a fail', 'What evidence it expects']],
 	['templates', 'template', ['When this template is used', 'What must be customised', 'What must not be changed blindly']],
 	['scripts', 'script', ['What this script verifies', 'When it should be run', 'What failure means']],
+	['examples', 'example', ['How the agent uses this file', 'What to look for']],
+];
+const REQUIRED_EXAMPLE_PATHS = [
+	'examples/scenarios/repo-discovery-node-api.yaml',
+	'examples/scenarios/repo-fix-failing-ci.yaml',
+	'examples/expected-outputs/repo-release-readiness.md',
+	'examples/payloads/http-json-success.json',
+	'examples/performance-inputs/k6-summary.json',
+	'examples/performance-results/python-results.yaml',
 ];
 
 async function fileExists(filePath) {
@@ -66,6 +75,7 @@ async function main() {
 	assertContains(overview, 'Source panels', overviewPath);
 	assertContains(overview, 'Worked flow', overviewPath);
 	assertContains(overview, 'Coverage note', overviewPath);
+	assertContains(overview, '<strong>Version</strong>2.9.3', overviewPath);
 
 	for (const forbidden of [
 		'Source browser',
@@ -112,6 +122,13 @@ async function main() {
 			assertNotContains(html, forbidden, pagePath);
 		}
 	}
+
+	const examplesPath = path.join(SOURCE_ROOT, 'examples', 'index.html');
+	const examples = await readRequired(examplesPath);
+	for (const examplePath of REQUIRED_EXAMPLE_PATHS) {
+		assertContains(examples, examplePath, examplesPath);
+	}
+	assertContains(examples, '<span class="pill">example</span>', examplesPath);
 
 	console.log('GitHub source panel docs verified.');
 }
