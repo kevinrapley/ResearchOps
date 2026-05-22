@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@34567890abcdef1234567890abcdef1234567890
         with:
           python-version: '3.12'
 
