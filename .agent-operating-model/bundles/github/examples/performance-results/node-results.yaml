@@ -1,5 +1,141 @@
+adapter: node-performance-summary
+profile: github-diamond-standard
+run:
+  id: perf_01JZ8S1M4C7Q2X9N0A5B6D8E3F
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:00:00Z'
+  duration_seconds: 71.4
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    node_version: 20.19.0
+    npm_version: 10.8.2
+    cpu_count: 4
+    memory_mb: 8192
+scenario:
+  name: Repository assurance API smoke performance
+  description: Synthetic Node performance evidence for conformance and release-gate API behaviour.
+  workload:
+    virtual_users: 20
+    duration_seconds: 60
+    warmup_seconds: 10
+    total_requests: 3000
+    endpoints:
+      - method: GET
+        path: /api/repository/conformance
+        request_share_percent: 50
+      - method: POST
+        path: /api/repository/release-gate
+        request_share_percent: 25
+      - method: GET
+        path: /api/repository/conformance/evidence
+        request_share_percent: 25
+budgets_applied:
+  - metric: response_time_p95_ms
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    unit: ms
+    mode: blocking
+  - metric: bundle_size_kb
+    threshold: 250
+    tolerance_percent: 3
+    allowed_value: 257.5
+    unit: kb
+    mode: advisory
 measurements:
   - metric: response_time_p95_ms
+    canonical_metric: response_time_p95_ms
     value: 240
+    unit: ms
+    status: pass
+    source: synthetic-node-summary
+    sample_count: 3000
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    comparator: max
+    evidence:
+      calculation: p95 over all successful and expected blocked responses in the smoke workload
+      raw_window: 2026-05-21T13:00:10Z/2026-05-21T13:01:10Z
+      endpoint_breakdown:
+        - endpoint: GET /api/repository/conformance
+          p95_ms: 198
+          count: 1500
+        - endpoint: POST /api/repository/release-gate
+          p95_ms: 276
+          count: 750
+        - endpoint: GET /api/repository/conformance/evidence
+          p95_ms: 252
+          count: 750
+  - metric: response_time_mean_ms
+    canonical_metric: response_time_mean_ms
+    value: 136.8
+    unit: ms
+    status: pass
+    source: synthetic-node-summary
+    sample_count: 3000
+    comparator: max
+    evidence:
+      calculation: arithmetic mean over the same smoke workload
+      endpoint_breakdown:
+        - endpoint: GET /api/repository/conformance
+          mean_ms: 108.4
+          count: 1500
+        - endpoint: POST /api/repository/release-gate
+          mean_ms: 148.2
+          count: 750
+        - endpoint: GET /api/repository/conformance/evidence
+          mean_ms: 181.2
+          count: 750
+  - metric: error_rate_percent
+    canonical_metric: error_rate_percent
+    value: 1.0
+    unit: percent
+    status: pass
+    source: synthetic-node-summary
+    sample_count: 3000
+    comparator: max
+    evidence:
+      calculation: synthetic blocked release-gate responses are counted separately from unexpected transport errors
+      unexpected_error_count: 0
+      expected_blocking_response_count: 30
+  - metric: throughput_requests_per_second
+    canonical_metric: throughput_requests_per_second
+    value: 50
+    unit: requests/second
+    status: pass
+    source: synthetic-node-summary
+    sample_count: 60
+    comparator: min
+    evidence:
+      calculation: completed requests divided by measured workload duration
   - metric: bundle_size_kb
+    canonical_metric: bundle_size_kb
     value: 210
+    unit: kb
+    status: pass
+    source: synthetic-build-summary
+    threshold: 250
+    tolerance_percent: 3
+    allowed_value: 257.5
+    comparator: max
+    evidence:
+      calculation: gzip-size summary for the repository assurance client bundle
+      files:
+        - path: public/js/repository-conformance.js
+          size_kb: 82
+        - path: public/js/release-gate.js
+          size_kb: 74
+        - path: public/js/evidence-panel.js
+          size_kb: 54
+quality_notes:
+  - Expected 422 release-gate responses are included in latency measurements because the user still waits for the blocked-release decision.
+  - Synthetic data does not contain secrets, personal data or production endpoint telemetry.
+  - This fixture is designed to exercise performance budget validation, not to represent live production SLOs.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded Node performance-results fixture with realistic run context, workload description, applied budgets, measurement provenance and release-gate interpretation notes.
