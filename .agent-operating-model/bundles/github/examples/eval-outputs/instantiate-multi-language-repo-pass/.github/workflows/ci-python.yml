@@ -23,8 +23,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install project with development extras
-        run: python -m pip install -e '.[dev]'
+      - name: Install test runner
+        run: python -m pip install pytest
 
       - name: Run Python tests
         run: pytest
