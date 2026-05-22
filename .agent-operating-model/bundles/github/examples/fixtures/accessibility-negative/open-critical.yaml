@@ -1,29 +1,67 @@
+fixture_metadata:
+  id: accessibility-negative-open-critical
+  kind: negative_accessibility_fixture
+  expected_validator_result: fail
+  failure_reason: open critical accessibility defect exists
+  purpose: >
+    Proves that structured accessibility evidence must fail when an open critical
+    defect exists, even when axe, Pa11y, Lighthouse, keyboard testing and
+    screen-reader testing appear acceptable.
+  validator_expected_message: open high or critical accessibility defects block release
+
 automated_checks:
   axe:
     tool: axe-core
     file: results/axe-pass.json
+    interpretation: Passing control result used to isolate the open critical defect failure.
   pa11y:
     tool: pa11y
     file: results/pa11y-pass.json
+    interpretation: Passing control result used to isolate the open critical defect failure.
   lighthouse:
     tool: lighthouse
     file: results/lighthouse-pass.json
+    interpretation: Passing control result used to isolate the open critical defect failure.
+
 keyboard_tests:
   - name: Keyboard journey
-    steps: [Tab through page]
+    steps:
+      - Load the example service page.
+      - Tab through all interactive controls.
+      - Confirm focus is visible at each step.
+      - Complete the form without a pointer device.
     result: pass
+    notes: Keyboard evidence is intentionally passing so the fixture fails only on the open critical defect.
+
 screen_reader_tests:
   - screen_reader: NVDA
     browser: Firefox
     result: pass
-    notes: Labels announced.
+    notes: Screen-reader evidence is intentionally passing so the fixture isolates defect-state failure.
+
 assistive_technology_matrix:
   - technology: NVDA
     browser: Firefox
     platform: Windows
     result: pass
+    notes: Control assistive-technology combination used to isolate open critical defect failure.
+
 defects:
   - id: A11Y-CRIT
     severity: critical
     status: open
+    summary: >
+      Critical defect remains open for the example journey. The validator must
+      block release even when automated tools report pass.
+    affected_users: >
+      Screen-reader and keyboard users may be unable to complete the journey.
+    required_action: Resolve or formally de-scope the critical defect before release.
+
 release_decision: pass
+
+expected_failure:
+  blocking_signal: defects[0]
+  explanation: >
+    The release decision is deliberately inconsistent with the defect evidence.
+    The validator should fail this fixture because an open critical accessibility
+    defect blocks release.
