@@ -1,1 +1,51 @@
-{"violations":[]}
+{
+  "example_metadata": {
+    "id": "accessibility-paths-root-relative-axe",
+    "kind": "accessibility_path_result_fixture",
+    "tool": "axe-core",
+    "path_resolution_model": "root_relative",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing axe result loaded from results/axe.json when the evidence file is stored in a separate evidence directory."
+  },
+  "url": "http://localhost:4173/accessibility-paths/root-relative",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright"
+  },
+  "violations": [],
+  "incomplete": [],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": ["wcag2a", "wcag242"],
+      "description": "Ensures the document has a non-empty title element",
+      "help": "Documents must have a title element",
+      "nodes": [
+        {
+          "target": ["html"],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": null,
+      "tags": ["wcag2a", "wcag412"],
+      "description": "Ensures form controls have labels",
+      "help": "Form elements must have labels",
+      "nodes": [
+        {
+          "target": ["#name"],
+          "html": "<input id=\"name\" name=\"name\" type=\"text\">",
+          "failureSummary": null
+        }
+      ]
+    }
+  ]
+}
