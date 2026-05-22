@@ -1,3 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name='example-backend'
-version='0.1.0'
+name = "live-gate-high-assurance-backend-fixture"
+version = "0.1.0"
+description = "Python-side project signal for the high-assurance live-gate passing fixture."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.github-diamond-fixture]
+fixture_kind = "live_gate_positive_fixture"
+profile = "high-assurance"
+expected_result = "pass"
+purpose = "Provides a Python project signal for the local live-gate high-assurance fixture."
