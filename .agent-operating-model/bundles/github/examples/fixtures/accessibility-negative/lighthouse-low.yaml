@@ -1,29 +1,65 @@
+fixture_metadata:
+  id: accessibility-negative-lighthouse-low
+  kind: negative_accessibility_fixture
+  expected_validator_result: fail
+  failure_reason: Lighthouse accessibility score is below threshold
+  purpose: >
+    Proves that structured accessibility evidence must fail when Lighthouse
+    accessibility score is below the required threshold, even when axe, Pa11y,
+    keyboard testing, screen-reader testing and known defects appear acceptable.
+  validator_expected_message: lighthouse accessibility score below 0.9
+
 automated_checks:
   axe:
     tool: axe-core
     file: results/axe-pass.json
+    interpretation: Passing control result used to isolate the Lighthouse failure.
   pa11y:
     tool: pa11y
     file: results/pa11y-pass.json
+    interpretation: Passing control result used to isolate the Lighthouse failure.
   lighthouse:
     tool: lighthouse
     file: results/lighthouse-fail.json
+    interpretation: >
+      This result is intentionally failing because the Lighthouse accessibility
+      score is below the bundle threshold. The validator must not allow
+      release_decision: pass to override a low accessibility score.
+
 keyboard_tests:
   - name: Keyboard journey
-    steps: [Tab through page]
+    steps:
+      - Load the example service page.
+      - Tab through the primary navigation and form controls.
+      - Confirm focus remains visible.
+      - Complete the journey without a pointer device.
     result: pass
+    notes: Keyboard evidence is intentionally passing so the fixture fails only on Lighthouse score.
+
 screen_reader_tests:
   - screen_reader: NVDA
     browser: Firefox
     result: pass
-    notes: Labels announced.
+    notes: Screen-reader evidence is intentionally passing so the fixture isolates Lighthouse failure.
+
 assistive_technology_matrix:
   - technology: NVDA
     browser: Firefox
     platform: Windows
     result: pass
+    notes: Control assistive-technology combination used to isolate Lighthouse score failure.
+
 defects:
   - id: A11Y-LOW
     severity: low
     status: closed
+    summary: Closed low-severity defect included to show that defect evidence is not the blocker.
+
 release_decision: pass
+
+expected_failure:
+  blocking_signal: automated_checks.lighthouse.file
+  explanation: >
+    The release decision is deliberately inconsistent with the automated evidence.
+    The validator should fail this fixture because Lighthouse accessibility score
+    is below 0.9.
