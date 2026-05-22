@@ -1,3 +1,120 @@
+adapter: lighthouse-summary
+profile: github-diamond-standard
+run:
+  id: perf_lighthouse_01JZ8T1LH00000000000001
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:14:00Z'
+  duration_seconds: 42.8
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    lighthouse_version: 12.6.0-fixture
+    browser: chromium-fixture
+    form_factor: desktop
+scenario:
+  name: Repository assurance UI Lighthouse performance
+  description: Synthetic Lighthouse result for the repository conformance page and release-gate evidence panel.
+  url: https://example.service.gov.uk/repository/conformance
+  gather_mode: navigation
+  throttling_method: simulate
+budgets_applied:
+  - metric: lighthouse_performance_score
+    threshold: 0.8
+    comparator: min
+    allowed_value: 0.8
+    unit: ratio
+    mode: blocking
+  - metric: lighthouse_accessibility_score
+    threshold: 0.9
+    comparator: min
+    allowed_value: 0.9
+    unit: ratio
+    mode: blocking
+  - metric: lcp_ms
+    threshold: 2500
+    tolerance_percent: 10
+    allowed_value: 2750
+    unit: ms
+    mode: blocking
 measurements:
   - metric: lighthouse_performance_score
+    canonical_metric: lighthouse_performance_score
     value: 0.92
+    unit: ratio
+    status: pass
+    source: synthetic-lighthouse-summary
+    threshold: 0.8
+    comparator: min
+    allowed_value: 0.8
+    evidence:
+      category: performance
+      score_display_mode: numeric
+      page: /repository/conformance
+      calculation: Lighthouse category score from desktop navigation run
+  - metric: lighthouse_accessibility_score
+    canonical_metric: lighthouse_accessibility_score
+    value: 0.98
+    unit: ratio
+    status: pass
+    source: synthetic-lighthouse-summary
+    threshold: 0.9
+    comparator: min
+    allowed_value: 0.9
+    evidence:
+      category: accessibility
+      score_display_mode: numeric
+      page: /repository/conformance
+      calculation: Lighthouse accessibility category score from same run
+  - metric: lcp_ms
+    canonical_metric: lcp_ms
+    value: 1800
+    unit: ms
+    status: pass
+    source: synthetic-lighthouse-summary
+    threshold: 2500
+    tolerance_percent: 10
+    allowed_value: 2750
+    comparator: max
+    evidence:
+      audit: largest-contentful-paint
+      display_value: 1.8 s
+      page: /repository/conformance
+  - metric: fcp_ms
+    canonical_metric: fcp_ms
+    value: 1050
+    unit: ms
+    status: pass
+    source: synthetic-lighthouse-summary
+    comparator: max
+    evidence:
+      audit: first-contentful-paint
+      display_value: 1.1 s
+  - metric: total_blocking_time_ms
+    canonical_metric: total_blocking_time_ms
+    value: 45
+    unit: ms
+    status: pass
+    source: synthetic-lighthouse-summary
+    comparator: max
+    evidence:
+      audit: total-blocking-time
+      display_value: 45 ms
+  - metric: cumulative_layout_shift
+    canonical_metric: cumulative_layout_shift
+    value: 0.01
+    unit: unitless
+    status: pass
+    source: synthetic-lighthouse-summary
+    comparator: max
+    evidence:
+      audit: cumulative-layout-shift
+      display_value: '0.01'
+quality_notes:
+  - Lighthouse results are treated as browser evidence, not as a substitute for API load testing.
+  - Accessibility category score is retained here because the Lighthouse budget profile includes it, but manual accessibility evidence remains separate.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded Lighthouse performance-results fixture with category scores, core web vital evidence, budget thresholds and browser-run context.
