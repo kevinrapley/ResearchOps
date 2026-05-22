@@ -1,7 +1,105 @@
 {
+  "ok": false,
+  "status": "error",
+  "request": {
+    "id": "req_01JZ8R4M9F3Q6P2V7K1W0B5N8C",
+    "method": "POST",
+    "path": "/api/repository/release-gate",
+    "received_at": "2026-05-21T12:34:00Z",
+    "duration_ms": 126,
+    "api_version": "2026-05-21",
+    "content_type": "application/json"
+  },
   "error": {
-    "code": "example_error",
-    "message": "Example error",
-    "details": []
+    "code": "release_gate_blocked",
+    "message": "The release gate cannot pass because required release evidence is missing or incomplete.",
+    "severity": "blocking",
+    "category": "release_assurance",
+    "retryable": false,
+    "http_status": 422,
+    "details": [
+      {
+        "code": "missing_agent_evidence",
+        "field": "agent-evidence.yaml",
+        "message": "Agent evidence is required before a release recommendation can be made.",
+        "expected": "A populated agent-evidence.yaml file with task summary, files changed, validation results, risks and rollback notes.",
+        "actual": "File not found in repository root."
+      },
+      {
+        "code": "missing_conformance_matrix",
+        "field": "conformance-matrix.yaml",
+        "message": "Conformance evidence is required for the selected GitHub Diamond profile.",
+        "expected": "A conformance matrix with control identifiers, status, evidence references and unresolved gaps.",
+        "actual": "No conformance matrix was supplied."
+      },
+      {
+        "code": "unverified_attestation",
+        "field": "trusted-attestation-verification.json",
+        "message": "Trusted attestation evidence must include successful command provenance before release can proceed.",
+        "expected": "At least one successful trusted attestation verification command with return code, stdout tail and duration.",
+        "actual": "Only offline placeholder evidence was supplied."
+      }
+    ]
+  },
+  "validation": {
+    "profile": "github-diamond-standard",
+    "profile_version": "2.9.3",
+    "checked_at": "2026-05-21T12:34:00Z",
+    "summary": {
+      "passed": 4,
+      "warning": 1,
+      "failed": 3,
+      "not_applicable": 1
+    },
+    "blocking_controls": [
+      "agent-evidence-required",
+      "conformance-matrix-required",
+      "trusted-attestation-required"
+    ],
+    "warnings": [
+      {
+        "code": "accessibility_manual_retest_recommended",
+        "message": "Accessibility evidence is present, but manual retest is recommended because the last evidence capture predates UI changes."
+      }
+    ]
+  },
+  "remediation": {
+    "next_actions": [
+      {
+        "order": 1,
+        "action": "Create or update agent-evidence.yaml with the completed task summary, changed-file list, validation results and residual risks."
+      },
+      {
+        "order": 2,
+        "action": "Create or update conformance-matrix.yaml and link each control to concrete evidence."
+      },
+      {
+        "order": 3,
+        "action": "Run trusted attestation verification against the release artifact and store the command report."
+      },
+      {
+        "order": 4,
+        "action": "Re-run the release gate after evidence is present."
+      }
+    ],
+    "safe_to_retry_after_remediation": true,
+    "must_not_do": [
+      "Do not mark the release as ready while blocking evidence is missing.",
+      "Do not replace missing evidence with narrative claims.",
+      "Do not bypass release-gate controls by changing the profile to a weaker mode without recording a waiver."
+    ]
+  },
+  "links": {
+    "release_gate": "/api/repository/release-gate?repository=example-owner/example-service",
+    "evidence_requirements": "/api/repository/release-gate/requirements?profile=github-diamond-standard",
+    "conformance": "/api/repository/conformance?repository=example-owner/example-service"
+  },
+  "meta": {
+    "fixture": true,
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded error JSON response fixture for realistic GitHub Diamond API examples.",
+    "notes": "This payload demonstrates structured failure, blocking evidence, remediation guidance and explicit anti-bypass language."
   }
 }
