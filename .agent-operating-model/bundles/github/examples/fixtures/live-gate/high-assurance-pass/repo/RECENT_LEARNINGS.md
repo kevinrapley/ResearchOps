@@ -2,6 +2,58 @@
 
 This file records fixture-specific lessons for the high-assurance live-gate positive case.
 
+## 2026-05-23 — Root evidence files must be realistic examples
+
+The immediate files in `examples/fixtures/live-gate/high-assurance-pass/repo/` are part of the teaching surface of the GitHub Diamond bundle.
+
+They must not be thin placeholders. A positive high-assurance fixture should show realistic synthetic evidence for repository state, GitHub settings, accessibility, performance, SBOM, attestation, trusted verification, command execution, conformance and gap management.
+
+The following direct root files were expanded to strengthen the fixture:
+
+- `accessibility-evidence.yaml`
+- `agent-evidence.yaml`
+- `attestation.json`
+- `conformance-matrix.yaml`
+- `gap-register.yaml`
+- `github-settings.yaml`
+- `package.json`
+- `performance-budget.yaml`
+- `performance-results.yaml`
+- `pyproject.toml`
+- `README.md`
+- `sbom.json`
+- `sigstore-bundle.json`
+- `test-commands.yaml`
+- `trusted-attestation-verification.json`
+
+Nested directories such as `.github/`, `docs/`, `results/` and `templates/` should be reviewed separately. Do not assume work on the immediate root files also expands nested fixture content.
+
+## 2026-05-23 — Gap evidence can be non-empty without creating blockers
+
+The positive fixture should not hide active release blockers.
+
+An empty `gap-register.yaml` is structurally valid, but it does not teach how gap evidence should be represented. The positive fixture now includes closed, non-blocking fixture-quality records.
+
+This keeps the release-gate interpretation as `pass` while showing how a high-assurance gate can distinguish closed fixture-quality gaps from active release blockers.
+
+## 2026-05-23 — Attestation evidence should show linkage
+
+High-assurance attestation evidence should not be a disconnected blob.
+
+The fixture now links:
+
+- release artifact digest
+- SBOM digest
+- subject files
+- builder identity
+- SLSA-style provenance
+- GitHub artifact attestation
+- Sigstore-style bundle evidence
+- DSSE envelope metadata
+- trusted verification command output
+
+The evidence remains synthetic and fixture-safe. Real release gates must still verify actual artifacts, repositories and bundles using trusted tooling.
+
 ## 2026-05-21 — Positive live-gate fixture must remain complete
 
 The positive fixture is intentionally complete for the high-assurance release profile.
