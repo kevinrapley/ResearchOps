@@ -348,21 +348,21 @@ artifacts:
 - path: graders/discovery-grader.xml
   sha256: 8198902b6c6ac81c51b0d16189ca3f7ab3364cafc8db849b98af828f0814dcf5
 - path: graders/ethics-grader.xml
-  sha256: ddd1fec9057fd31fbee94aa6ad615606fe58d6731d745dec595132b02863bb0b
+  sha256: 5e4000a8723130976557dda2ebd86fc8c7c50176ebe64bafbf20c0487d7245e1
 - path: graders/github-settings-grader.xml
-  sha256: 5ef954c66c2def8f7f4fa3853ea360fa44d312a92b4d60f4b4b7ef1c25ea4072
+  sha256: 8c5f7a5cdbed982bbeffdd8ee0298ebdc716f290f2794a2c1966275b959be5e2
 - path: graders/performance-grader.xml
-  sha256: 54ff749f6115cee071f7c1d558bdafeb79b016a013ab8fdafce3e3914ecbf80d
+  sha256: 6a02ebccecf7c6f36d718c0c0e82ec3760a9c602cf4fbe1ece0cb7b7adbfa122
 - path: graders/pr-readiness-grader.xml
-  sha256: 16ec97fa0992345484a58a876f0bb852537738480c3df52d794a4b8a68ca2c93
+  sha256: c30c0a810959675a8daa86aa5a83392ad7c97d80ebec4c551bf00080c9b80fc3
 - path: graders/provenance-grader.xml
-  sha256: 518512469ffcd64d9a56b22b31024e110c62f2ac9880c388968b1eca2ae2e956
+  sha256: f9dec1f57132dfb2851de48566b2da2a1afdbd6bde60118230dca12873ac2a09
 - path: graders/recent-learnings-grader.xml
-  sha256: 4fcfc4107a0e8cd76ddb399d841d9f58edb0740d57464da6bff8f5b8f81dc1ba
+  sha256: 1ec26dd526cf2d5e402a7900c3f5f4fa75b37da86ac43cfa2979b232d44ceb72
 - path: graders/release-grader.xml
-  sha256: f81518f86a35d95d79ec5b3b052c0fba9b8233047ee64ac85126547cbeec12bc
+  sha256: 0e9cf5d9dc4568272cda51a389235a85d0d9307bf8cc7791bcdb465fef4d6a8f
 - path: graders/sbom-grader.xml
-  sha256: e66ff96731aed26bfd8f09826fe401e5a89cf05f958d40af6cbd086e3ddd9363
+  sha256: b08f672d8bb9818d73bbe76da436d3a881881e9e1c355f9f4df4420cc3c9c64e
 - path: graders/security-grader.xml
   sha256: 41555ad84b2e9cab0bdd5a971eda321af7588f98d67b50e06d8ab4ba9375f3ce
 - path: graders/template-registry-grader.xml
