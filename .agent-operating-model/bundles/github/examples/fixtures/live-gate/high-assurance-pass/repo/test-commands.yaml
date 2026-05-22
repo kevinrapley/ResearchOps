@@ -1,2 +1,88 @@
 commands:
-  - python -I -S -c "print('fixture tests passed')"
+  - id: node-unit
+    command: npm test
+    status: passed
+    returncode: 0
+    timeout_seconds: 30
+    evidence_type: deterministic-fixture-command
+    stdout_tail: live gate node fixture tests passed
+    stderr_tail: ''
+    validates:
+      - package.json scripts.test
+      - Node project signal
+    release_gate_interpretation: >
+      Confirms that the Node-side fixture command is present, deterministic and
+      successful without requiring external services or secrets.
+
+  - id: node-lint
+    command: npm run lint
+    status: passed
+    returncode: 0
+    timeout_seconds: 30
+    evidence_type: deterministic-fixture-command
+    stdout_tail: live gate node fixture lint passed
+    stderr_tail: ''
+    validates:
+      - package.json scripts.lint
+      - static-quality command wiring
+    release_gate_interpretation: >
+      Represents a successful static-quality command for the fixture. The command
+      is intentionally synthetic so the live gate can test orchestration rather
+      than application implementation detail.
+
+  - id: node-build
+    command: npm run build
+    status: passed
+    returncode: 0
+    timeout_seconds: 30
+    evidence_type: deterministic-fixture-command
+    stdout_tail: live gate node fixture build passed
+    stderr_tail: ''
+    validates:
+      - package.json scripts.build
+      - build command wiring
+    release_gate_interpretation: >
+      Represents a successful build command in the positive high-assurance fixture.
+
+  - id: python-smoke
+    command: python -I -S -c "print('fixture tests passed')"
+    status: passed
+    returncode: 0
+    timeout_seconds: 30
+    evidence_type: deterministic-fixture-command
+    stdout_tail: fixture tests passed
+    stderr_tail: ''
+    validates:
+      - Python interpreter availability
+      - isolated command execution
+    release_gate_interpretation: >
+      Confirms that the release-gate command runner can capture a fixture-safe
+      Python command with no package install, no network access and no secrets.
+
+  - id: conformance-fixture-review
+    command: python -I -S -c "print('conformance fixture evidence reviewed')"
+    status: passed
+    returncode: 0
+    timeout_seconds: 30
+    evidence_type: deterministic-fixture-command
+    stdout_tail: conformance fixture evidence reviewed
+    stderr_tail: ''
+    validates:
+      - conformance-matrix.yaml
+      - gap-register.yaml
+      - github-settings.yaml
+    release_gate_interpretation: >
+      Provides deterministic command evidence that root assurance files are part
+      of the positive fixture review set.
+summary:
+  total_commands: 5
+  passed: 5
+  failed: 0
+  timeout_count: 0
+  external_network_required: false
+  secrets_required: false
+  fixture_interpretation: pass
+  notes: >
+    The command list is intentionally expanded and deterministic. It represents
+    the evidence shape expected by a high-assurance release gate without requiring
+    this fixture repository to contain production application code.
