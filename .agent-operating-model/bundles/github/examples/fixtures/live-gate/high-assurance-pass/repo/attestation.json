@@ -1,42 +1,153 @@
 {
   "type": "github-diamond-sbom-attestation",
-  "version": "2.9.1",
+  "version": "2.9.3",
   "attestation_mode": "trusted",
   "created_at_unix": 1770000000,
+  "created_at": "2026-02-02T02:40:00Z",
   "subject": ".",
-  "subject_file_count": 1,
+  "subject_file_count": 12,
   "subject_hashes": [
     {
       "path": "README.md",
-      "sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      "sha256": "67160180e63e00d88aa664416b65d868bbe3d5af2e25e9b4bfd857f57b1b1d4e"
+    },
+    {
+      "path": "agent-evidence.yaml",
+      "sha256": "7399ec4bd08b4f8a769ed441399d7dee8d5a661bb4b9c6a4197e3d78f7ccd1b9"
+    },
+    {
+      "path": "conformance-matrix.yaml",
+      "sha256": "3b5f9ef9212a3a861590c9f5ff7f4432de747695ead9c3883e6eb1129ef5ea26"
+    },
+    {
+      "path": "gap-register.yaml",
+      "sha256": "69ae29a8c82d0412859407fc59f23024d78026dd7c583223d22b29c0e6bf51a6"
+    },
+    {
+      "path": "performance-budget.yaml",
+      "sha256": "89b545aaca6b2e16e1ca83d3aa03fc2eacdd2077964e9fceeb604d5715a3153d"
+    },
+    {
+      "path": "performance-results.yaml",
+      "sha256": "7c66de60527d6526caebb1ccefe19ac62a3e8bb05c13ce7b8439d4e6f436e3da"
+    },
+    {
+      "path": "sbom.json",
+      "sha256": "cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1"
+    },
+    {
+      "path": "sigstore-bundle.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "path": "trusted-attestation-verification.json",
+      "sha256": "b34bf91fc493ff45127cd1f87cb2c16338f112a665df6612f29ffcf852914759"
+    },
+    {
+      "path": "workflow-action-lock.yaml",
+      "sha256": "53dd56aa13c1fac2b3c864a7a9cc2ff405a66f12b5b94a4d61879da86828e375"
+    },
+    {
+      "path": "accessibility-evidence.yaml",
+      "sha256": "114939edd4d7a3c99af166b03ba651ff34784481a9891a8a1f7b7fd12220d2fc"
+    },
+    {
+      "path": "github-settings.yaml",
+      "sha256": "b7b70d53edba529287d1636245715d2f817141e892aae8ae396dad9addb9414f"
     }
   ],
   "sbom": "sbom.json",
   "sbom_sha256": "cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1",
+  "artifact": "artifact.zip",
+  "artifact_sha256": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a",
+  "builder": {
+    "id": "https://github.com/owner/repo/.github/workflows/ci-hardened.yml@refs/heads/main",
+    "workflow": ".github/workflows/ci-hardened.yml",
+    "runner": "github-hosted-fixture-runner",
+    "source_repository": "owner/repo",
+    "source_ref": "refs/heads/main",
+    "source_sha": "0000000000000000000000000000000000000000"
+  },
   "slsa": {
     "enabled": true,
     "predicate_type": "https://slsa.dev/provenance/v1",
-    "statement": {}
+    "predicate": {
+      "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
+      "builder": {
+        "id": "https://github.com/actions/runner/github-hosted"
+      },
+      "invocation": {
+        "configSource": {
+          "uri": "git+https://github.com/owner/repo",
+          "digest": {
+            "sha1": "0000000000000000000000000000000000000000"
+          },
+          "entryPoint": ".github/workflows/ci-hardened.yml"
+        }
+      },
+      "materials": [
+        {
+          "uri": "git+https://github.com/owner/repo",
+          "digest": {
+            "sha1": "0000000000000000000000000000000000000000"
+          }
+        },
+        {
+          "uri": "pkg:generic/live-gate-high-assurance-fixture@0.1.0",
+          "digest": {
+            "sha256": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a"
+          }
+        }
+      ]
+    }
   },
   "github_artifact_attestation": {
     "enabled": true,
     "verification": "verified-fixture",
-    "status": "verified"
+    "status": "verified",
+    "verification_command": [
+      "gh",
+      "attestation",
+      "verify",
+      "artifact.zip",
+      "--repo",
+      "owner/repo"
+    ],
+    "expected_repository": "owner/repo",
+    "expected_workflow": ".github/workflows/ci-hardened.yml"
   },
   "sigstore": {
     "enabled": true,
     "bundle_uri": "sigstore-bundle.json",
-    "status": "verified"
+    "status": "verified",
+    "verification_command": [
+      "cosign",
+      "verify-blob",
+      "artifact.zip",
+      "--bundle",
+      "sigstore-bundle.json"
+    ],
+    "rekor_entry_present": true,
+    "certificate_identity_present": true
   },
   "dsse": {
     "payloadType": "application/vnd.in-toto+json",
     "payload": "e30=",
     "signatures": [
       {
-        "keyid": "fixture",
-        "sig": "fixture"
+        "keyid": "fixture-fulcio-key",
+        "sig": "fixture-dsse-signature"
       }
     ],
-    "signature_algorithm": "HMAC-SHA256-provided-key"
+    "signature_algorithm": "fixture-signature"
+  },
+  "release_gate_interpretation": {
+    "profile": "high-assurance",
+    "expected_result": "pass",
+    "synthetic_data": true,
+    "trusted_attestation_present": true,
+    "external_verification_represented": true,
+    "offline_only": false,
+    "notes": "This attestation is synthetic, but it deliberately models subject hashes, SLSA provenance, GitHub artifact attestation, Sigstore bundle evidence and DSSE envelope metadata so validators can exercise high-assurance release behaviour."
   }
 }
