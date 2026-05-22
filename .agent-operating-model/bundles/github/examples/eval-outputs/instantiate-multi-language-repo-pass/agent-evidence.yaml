@@ -10,6 +10,7 @@ files_read:
   - pyproject.toml
   - template-registry.yaml
   - github-settings.yaml
+  - test-commands.yaml
 
 files_changed:
   - README.md
@@ -26,19 +27,23 @@ files_changed:
   - github-settings.yaml
   - conformance-matrix.yaml
   - gap-register.yaml
+  - agent-evidence.yaml
   - docs/README.md
   - templates/README.md
+  - test/example.test.mjs
+  - tests/test_fixture.py
+  - test-commands.yaml
 
 commands_run:
   - command: npm test
     status: passed
-    evidence: fixture command declared for Node validation
+    evidence: test/example.test.mjs provides the Node fixture validation path
   - command: pytest
     status: passed
-    evidence: fixture command declared for Python validation
+    evidence: tests/test_fixture.py provides the Python fixture validation path
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
-    evidence: direct fixture smoke command
+    evidence: deterministic fixture smoke command
 
 contracts_validated:
   - repository-contract.schema.json
@@ -49,12 +54,12 @@ contracts_validated:
   - agent-evidence.schema.json
 
 tests_run:
-  - name: Node unit test command
+  - name: Node fixture test
     status: passed
-    evidence: npm test is present as the expected Node validation command
-  - name: Python test command
+    evidence: test/example.test.mjs validates fixture metadata for the Node path
+  - name: Python fixture test
     status: passed
-    evidence: pytest is present as the expected Python validation command
+    evidence: tests/test_fixture.py validates fixture metadata for the Python path
   - name: Fixture smoke command
     status: passed
     evidence: python -I -S smoke command returned zero
@@ -82,6 +87,9 @@ artifacts_created:
   - .github/workflows/ci-docs-quality.yml
   - .github/workflows/codeql.yml
   - .github/workflows/dependency-review.yml
+  - test/example.test.mjs
+  - tests/test_fixture.py
+  - test-commands.yaml
 
 recent_learnings:
   read: true
@@ -99,6 +107,9 @@ repository_state:
     - gap-register.yaml
     - agent-evidence.yaml
     - .github/CODEOWNERS
+    - test/example.test.mjs
+    - tests/test_fixture.py
+    - test-commands.yaml
   detected_languages:
     - node
     - python
@@ -176,6 +187,7 @@ claims:
   - The repository has Node and Python project signals.
   - The selected workflow set covers Node, Python, conformance, documentation quality, CodeQL and dependency review.
   - Repository governance files are present.
+  - Node and Python fixture tests are present to support the validation commands.
   - Eval-specific gaps are recorded rather than hidden.
 
 risks:
@@ -183,6 +195,16 @@ risks:
   - This fixture should not be treated as a production release decision.
 
 test_results:
+  - command: npm test
+    status: passed
+    returncode: 0
+    stdout: "node fixture tests passed\n"
+    stderr: ""
+  - command: pytest
+    status: passed
+    returncode: 0
+    stdout: "python fixture tests passed\n"
+    stderr: ""
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
     returncode: 0
