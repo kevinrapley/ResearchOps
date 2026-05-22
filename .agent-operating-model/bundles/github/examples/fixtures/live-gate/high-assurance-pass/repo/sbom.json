@@ -1,7 +1,164 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "metadata": {"tools": [{"name": "fixture"}]},
-  "components": [{"type": "library", "name": "fixture", "bom-ref": "pkg:npm/fixture@1.0.0", "purl": "pkg:npm/fixture@1.0.0", "licenses": [{"license": {"id": "MIT"}}]}],
-  "dependencies": [{"ref": "root", "dependsOn": ["pkg:npm/fixture@1.0.0"]}]
+  "serialNumber": "urn:uuid:11111111-2222-4333-8444-555555555555",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-05-23T10:25:00Z",
+    "component": {
+      "type": "application",
+      "name": "live-gate-high-assurance-fixture",
+      "version": "0.1.0",
+      "bom-ref": "pkg:generic/live-gate-high-assurance-fixture@0.1.0",
+      "description": "Synthetic high-assurance live-gate fixture repository used to exercise release-gate SBOM validation.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    "tools": [
+      {
+        "vendor": "ResearchOps fixture suite",
+        "name": "generate-sbom.py",
+        "version": "2.9.3-fixture"
+      },
+      {
+        "vendor": "CycloneDX",
+        "name": "fixture-writer",
+        "version": "1.5"
+      }
+    ],
+    "properties": [
+      {
+        "name": "fixture.profile",
+        "value": "high-assurance"
+      },
+      {
+        "name": "fixture.expected_result",
+        "value": "pass"
+      },
+      {
+        "name": "fixture.synthetic_data",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "fixture-node-runtime",
+      "version": "20.19.0-fixture",
+      "bom-ref": "pkg:npm/fixture-node-runtime@20.19.0-fixture",
+      "purl": "pkg:npm/fixture-node-runtime@20.19.0-fixture",
+      "description": "Synthetic Node runtime component used by the positive live-gate fixture.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fixture-python-runtime",
+      "version": "3.12.3-fixture",
+      "bom-ref": "pkg:pypi/fixture-python-runtime@3.12.3-fixture",
+      "purl": "pkg:pypi/fixture-python-runtime@3.12.3-fixture",
+      "description": "Synthetic Python runtime component used by the positive live-gate fixture.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Python-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fixture-accessibility-tooling",
+      "version": "1.0.0-fixture",
+      "bom-ref": "pkg:npm/fixture-accessibility-tooling@1.0.0-fixture",
+      "purl": "pkg:npm/fixture-accessibility-tooling@1.0.0-fixture",
+      "description": "Synthetic accessibility tooling dependency representing axe, pa11y and Lighthouse result generation.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:generic/live-gate-high-assurance-fixture@0.1.0",
+      "dependsOn": [
+        "pkg:npm/fixture-node-runtime@20.19.0-fixture",
+        "pkg:pypi/fixture-python-runtime@3.12.3-fixture",
+        "pkg:npm/fixture-accessibility-tooling@1.0.0-fixture"
+      ]
+    },
+    {
+      "ref": "pkg:npm/fixture-node-runtime@20.19.0-fixture",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/fixture-python-runtime@3.12.3-fixture",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/fixture-accessibility-tooling@1.0.0-fixture",
+      "dependsOn": []
+    }
+  ],
+  "services": [
+    {
+      "bom-ref": "service:repository-conformance-page",
+      "name": "Repository conformance page",
+      "description": "Synthetic UI surface represented by the Lighthouse and accessibility result fixtures.",
+      "endpoints": [
+        "https://example.service.gov.uk/repository/conformance"
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "release_gate.sbom_validated",
+      "value": "true"
+    },
+    {
+      "name": "release_gate.licence_metadata_present",
+      "value": "true"
+    },
+    {
+      "name": "release_gate.purls_present",
+      "value": "true"
+    },
+    {
+      "name": "release_gate.dependencies_present",
+      "value": "true"
+    }
+  ]
 }

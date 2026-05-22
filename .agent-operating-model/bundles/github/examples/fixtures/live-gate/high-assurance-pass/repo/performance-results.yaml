@@ -1,10 +1,108 @@
+run:
+  id: hap_perf_20260523_fixture_001
+  profile: high-assurance
+  fixture: live-gate-high-assurance-pass
+  started_at: '2026-05-23T10:20:00Z'
+  duration_seconds: 44.8
+  environment:
+    runner: synthetic-ci-runner
+    browser: chromium-fixture
+    lighthouse_version: 12.6.0-fixture
+    network_profile: simulated-desktop
+    cpu_throttling: fixture-default
+  source_files:
+    budget: performance-budget.yaml
+    lighthouse_result: results/lighthouse.json
 measurements:
   - metric: lighthouse_performance_score
     value: 0.92
     unit: ratio
+    status: pass
+    threshold: 0.8
+    comparator: min
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: Lighthouse performance category score from the representative release assurance page.
+
   - metric: lighthouse_accessibility_score
     value: 0.98
     unit: ratio
+    status: pass
+    threshold: 0.9
+    comparator: min
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: Lighthouse accessibility category score from the same browser run.
+    boundary: >
+      This is automated smoke evidence only. Manual accessibility evidence remains
+      recorded in accessibility-evidence.yaml.
+
   - metric: lcp_ms
     value: 1800
     unit: ms
+    status: pass
+    threshold: 2500
+    tolerance_percent: 10
+    allowed_value: 2750
+    comparator: max
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: Largest Contentful Paint numericValue from the Lighthouse audit.
+    display_value: 1.8 s
+
+  - metric: fcp_ms
+    value: 1050
+    unit: ms
+    status: pass
+    threshold: 1800
+    tolerance_percent: 10
+    allowed_value: 1980
+    comparator: max
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: First Contentful Paint numericValue from the Lighthouse audit.
+    display_value: 1.1 s
+
+  - metric: total_blocking_time_ms
+    value: 45
+    unit: ms
+    status: pass
+    threshold: 200
+    tolerance_percent: 10
+    allowed_value: 220
+    comparator: max
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: Total Blocking Time numericValue from the Lighthouse audit.
+    display_value: 45 ms
+
+  - metric: cumulative_layout_shift
+    value: 0.01
+    unit: unitless
+    status: pass
+    threshold: 0.1
+    comparator: max
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    calculation: Cumulative Layout Shift numericValue from the Lighthouse audit.
+    display_value: '0.01'
+endpoint_context:
+  representative_page: /repository/conformance
+  user_journey: >
+    A reviewer opens the repository conformance page, reviews release evidence,
+    expands the source-panel examples and reaches the release-gate decision.
+  reviewer_impact: >
+    The page must stay responsive enough for evidence review and not introduce
+    visual instability during decision-making.
+summary:
+  total_measurements: 6
+  blocking_measurements: 5
+  advisory_measurements: 1
+  passed: 6
+  failed: 0
+  release_gate_interpretation: pass
+  synthetic_data: true
+  notes:
+    - Expected blocked-release responses are not represented in this browser fixture.
+    - API load evidence belongs in the performance-inputs and performance-results examples outside this live-gate root fixture.
+    - This file demonstrates performance-result shape for the positive high-assurance live-gate fixture.

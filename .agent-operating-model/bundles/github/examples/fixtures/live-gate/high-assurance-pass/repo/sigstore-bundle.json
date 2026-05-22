@@ -1,1 +1,69 @@
-{}
+{
+  "mediaType": "application/vnd.dev.sigstore.bundle+json;version=0.3",
+  "verificationMaterial": {
+    "certificate": {
+      "rawBytes": "RklYVFVSRV9DRVJUSUZJQ0FURV9CWVRFUw==",
+      "issuer": "https://token.actions.githubusercontent.com",
+      "subject": "https://github.com/owner/repo/.github/workflows/ci-hardened.yml@refs/heads/main"
+    },
+    "tlogEntries": [
+      {
+        "logIndex": "123456789",
+        "logId": {
+          "keyId": "fixture-rekor-log-id"
+        },
+        "kindVersion": {
+          "kind": "hashedrekord",
+          "version": "0.0.1"
+        },
+        "integratedTime": "1770000000",
+        "inclusionPromise": {
+          "signedEntryTimestamp": "fixture-signed-entry-timestamp"
+        },
+        "inclusionProof": {
+          "checkpoint": "fixture-checkpoint",
+          "hashes": [
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "logIndex": "123456789",
+          "rootHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "treeSize": "123456790"
+        }
+      }
+    ],
+    "timestampVerificationData": {
+      "rfc3161Timestamps": [
+        {
+          "signedTimestamp": "RklYVFVSRV9SRkMzMTYxX1RJTUVTVEFNUA=="
+        }
+      ]
+    }
+  },
+  "messageSignature": {
+    "messageDigest": {
+      "algorithm": "SHA2_256",
+      "digest": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a"
+    },
+    "signature": "RklYVFVSRV9TSUdOQVRVUkU="
+  },
+  "dsseEnvelope": {
+    "payloadType": "application/vnd.in-toto+json",
+    "payload": "e30=",
+    "signatures": [
+      {
+        "keyid": "fixture-fulcio-key",
+        "sig": "fixture-dsse-signature"
+      }
+    ]
+  },
+  "fixture_metadata": {
+    "profile": "high-assurance",
+    "expected_result": "pass",
+    "synthetic_data": true,
+    "artifact": "artifact.zip",
+    "artifact_sha256": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a",
+    "workflow_identity": "owner/repo/.github/workflows/ci-hardened.yml@refs/heads/main",
+    "release_gate_interpretation": "Fixture-safe Sigstore-style bundle evidence is present and linked to trusted-attestation-verification.json. A real release must verify the actual bundle with cosign or equivalent trusted tooling."
+  }
+}

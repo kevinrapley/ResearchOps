@@ -180,35 +180,35 @@ artifacts:
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/dependency-review.yml
   sha256: 03dc962a098affe0a53b84d2a9697ee34b1a090ba204de4cb30cee9b0934d159
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/accessibility-evidence.yaml
-  sha256: 114939edd4d7a3c99af166b03ba651ff34784481a9891a8a1f7b7fd12220d2fc
+  sha256: b72e2dd08730fd476c08aaa026ff2b316e5e49b0f287cbaa4bfa9d11ced2e960
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/agent-evidence.yaml
-  sha256: 7399ec4bd08b4f8a769ed441399d7dee8d5a661bb4b9c6a4197e3d78f7ccd1b9
+  sha256: f3304855ae289da97ece714dd85032be15f1098ea6978af1b57e882b145a1853
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/artifact.zip
   sha256: 0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/attestation.json
-  sha256: 84265fc373a52e63e454eac3fdb9f3425428a6f4c090315c9bea03ccbccdcaff
+  sha256: 4c573bb99c2dd0281dc66e2bc2638965b320a932dadd11c8dce6cc3601a53138
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/conformance-matrix.yaml
-  sha256: 3b5f9ef9212a3a861590c9f5ff7f4432de747695ead9c3883e6eb1129ef5ea26
+  sha256: 084018768809ec20f546142c29cce27e1e5a81a4b3608fa4e9c2074a15c55a24
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/CONTRIBUTING.md
   sha256: a8d538786bb364cd260038a366a13877694e81a2cd5bddcc425630e0daae4d3b
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/docs/README.md
   sha256: c8fabe68904901ded3bd37f6499328afd7bcaa01bf0f472d5352781b2bc90ea3
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/gap-register.yaml
-  sha256: 69ae29a8c82d0412859407fc59f23024d78026dd7c583223d22b29c0e6bf51a6
+  sha256: 21cf0db817d182ae136007a4a1893eb48e92ad55b7521b628bc8810bb1c9e5be
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/github-settings.yaml
-  sha256: b7b70d53edba529287d1636245715d2f817141e892aae8ae396dad9addb9414f
+  sha256: 6466507a142b76ec380482d0d05ce41d165f9c2cce4b7aa16795678693de70c6
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/package.json
-  sha256: ee91ce9b62fd49a996be69d918e8d41a383ae6065895affc3d2dac959a18c3f6
+  sha256: 35dc91d557676e62271c31487eb4d3628c9eacbd826f15097c9a5c7719742076
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/performance-budget.yaml
-  sha256: 89b545aaca6b2e16e1ca83d3aa03fc2eacdd2077964e9fceeb604d5715a3153d
+  sha256: 60330e7be0627277d41560d2232ea81cd21acf3a31e13cfbfed9d09d92b13fe0
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/performance-results.yaml
-  sha256: 7c66de60527d6526caebb1ccefe19ac62a3e8bb05c13ce7b8439d4e6f436e3da
+  sha256: b423f4b908eaaed5f4b1bad39319072d993d82740b2feaf65d8a8e95d0c2dd28
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/pyproject.toml
-  sha256: 7e29e41c89e485d16617d3eb8fe688a0fb1055d215ac2458be1335cf9e7de9bb
+  sha256: d3cacf4e9ed02dae78ca2a9722251c1cdb0bb9c94c32f1acbb3b17b55648c18f
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/README.md
-  sha256: 67160180e63e00d88aa664416b65d868bbe3d5af2e25e9b4bfd857f57b1b1d4e
+  sha256: e01c47e066a6b29d778fb2982289cc5e7ecc5847566694dbab559ca7e3dba1f1
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/RECENT_LEARNINGS.md
-  sha256: 63e8d2ce40ce3c5928002d00e74c1acf79f7109bf260a41f710357b12d4a5a3a
+  sha256: 2782c81c8489c99206e33e8fb24cd77e6a609cd7a0b850b7c298fb8f1ac659f6
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/axe.json
   sha256: d27b4f8ee266c6bdd61371e1096226e129747713e9a3c8fef2ce7bbf69ebfc80
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/lighthouse.json
@@ -216,17 +216,17 @@ artifacts:
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/pa11y.json
   sha256: 0bf10200bebcc4f9144e3af21384304f8e295391becc8315ae09348bd9670fa1
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/sbom.json
-  sha256: cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1
+  sha256: 0046336cc5af718cc4d7f28d41de5c390b33cf68b9170983e2797e5537d5eac2
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/SECURITY.md
   sha256: 6638d57d3e18763cdd513ae5b76a5d798d02bce9757d6bb7c8f512c52af670c0
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/sigstore-bundle.json
-  sha256: ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356
+  sha256: 27f6bdf62345f67c599a47b3fdf3aa032b6e36fcfca1f58ad67c814975d86eb6
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/templates/README.md
   sha256: 3cf1a74efdb9ea1c3c22572325f448ff4d57cbc4862800dfe2f5fe7e737d591d
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/test-commands.yaml
-  sha256: e817d84867df9f85643ea03940a461ce4b8d1b85f9aaa5ee3d8dbcd2fb40abc1
+  sha256: 1f48dcf6d44bdfb79d926f00b6a90b9a50e759449f82bf39fff252e775cd27b1
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/trusted-attestation-verification.json
-  sha256: b34bf91fc493ff45127cd1f87cb2c16338f112a665df6612f29ffcf852914759
+  sha256: 37863364b9d6e7a13f5d1283f8da19c0ef509a79d9f2fefcab6bf6ef85e091af
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/workflow-action-lock.yaml
   sha256: 53dd56aa13c1fac2b3c864a7a9cc2ff405a66f12b5b94a4d61879da86828e375
 - path: examples/fixtures/live-gate/negative-missing-accessibility-evidence/fixture.yaml

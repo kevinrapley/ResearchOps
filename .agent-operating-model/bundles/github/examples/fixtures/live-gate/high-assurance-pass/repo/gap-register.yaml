@@ -1,1 +1,96 @@
-gaps: []
+gaps:
+  - id: GAP-HAP-001
+    title: Root live-gate fixture examples were previously too slim
+    status: closed
+    severity: medium
+    category: fixture-quality
+    profile: high-assurance
+    opened_at: '2026-05-23T09:30:00Z'
+    closed_at: '2026-05-23T10:15:00Z'
+    owner: github-diamond-bundle-maintainers
+    source: manual-review
+    affected_files:
+      - conformance-matrix.yaml
+      - gap-register.yaml
+      - performance-budget.yaml
+      - performance-results.yaml
+      - sbom.json
+      - sigstore-bundle.json
+      - test-commands.yaml
+    problem: >
+      Some immediate files in the high-assurance positive fixture used minimal
+      placeholder-style content. That made the fixture harder to understand and
+      weakened its value as an example of realistic release-gate evidence.
+    resolution: >
+      Expanded root fixture records with structured provenance, control mapping,
+      thresholds, measurements, evidence interpretation and fixture-safe synthetic
+      values. Nested workflow, result and documentation directories were left
+      unchanged unless they were already part of the immediate-file evidence set.
+    validation_expectation: >
+      The fixture should still represent a positive high-assurance case. Validators
+      should continue to pass because the existing top-level key remains present.
+      This record is closed and is not a release blocker.
+    release_blocking: false
+    follow_up_required: false
+    fixture_interpretation: pass
+
+  - id: GAP-HAP-002
+    title: Positive fixture must not hide active release gaps
+    status: closed
+    severity: low
+    category: release-readiness
+    profile: high-assurance
+    opened_at: '2026-05-23T09:30:00Z'
+    closed_at: '2026-05-23T10:15:00Z'
+    owner: github-diamond-bundle-maintainers
+    source: fixture-design-review
+    affected_files:
+      - gap-register.yaml
+      - agent-evidence.yaml
+      - RECENT_LEARNINGS.md
+    problem: >
+      A positive high-assurance fixture needs a gap register that is meaningful
+      without introducing live release blockers. An entirely empty register passes
+      a permissive schema but teaches little about how a release gate should treat
+      gap evidence.
+    resolution: >
+      Added closed fixture-quality records that explain the assurance boundary and
+      confirm there are no active, waived or unresolved blockers in the positive
+      fixture.
+    validation_expectation: >
+      The release gate should interpret this register as clean because all records
+      are closed and `release_blocking` is false.
+    release_blocking: false
+    follow_up_required: false
+    fixture_interpretation: pass
+
+  - id: GAP-HAP-003
+    title: Live infrastructure evidence remains outside the offline fixture boundary
+    status: closed
+    severity: low
+    category: evidence-boundary
+    profile: high-assurance
+    opened_at: '2026-05-23T09:30:00Z'
+    closed_at: '2026-05-23T10:15:00Z'
+    owner: github-diamond-bundle-maintainers
+    source: fixture-assurance-boundary
+    affected_files:
+      - README.md
+      - SECURITY.md
+      - trusted-attestation-verification.json
+      - github-settings.yaml
+    problem: >
+      The high-assurance positive fixture uses local deterministic evidence. It
+      must not imply that fixture files prove real production branch protection,
+      real live GitHub API access, production deployment controls or genuine
+      third-party attestation verification.
+    resolution: >
+      The fixture records its offline boundary explicitly. High-assurance live
+      gates must still observe live API state in real repositories when the profile
+      requires live-state verification.
+    validation_expectation: >
+      This remains a pass fixture because the offline validation mode is explicit
+      and the fixture provides local substitutes for the required evidence classes.
+    release_blocking: false
+    follow_up_required: false
+    fixture_interpretation: pass

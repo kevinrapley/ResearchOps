@@ -1,10 +1,54 @@
+# High-assurance performance budget for the positive live-gate fixture.
+#
+# The schema for performance budgets is intentionally strict. Explanatory detail is
+# recorded as comments so the file remains both human-readable and validator-safe.
+# Each budget item keeps only the properties allowed by performance-budget.schema.json:
+# metric, threshold, tolerance_percent, unit and mode.
+#
+# Release interpretation:
+# - blocking metrics must pass for the positive fixture to remain release-ready.
+# - advisory metrics provide diagnostic context without automatically blocking.
+
 budgets:
+  # Minimum browser performance score for the representative release-evidence page.
   - metric: lighthouse_performance_score
     threshold: 0.8
-    comparator: min
+    tolerance_percent: 0
+    unit: ratio
+    mode: blocking
+
+  # Automated accessibility smoke signal from the Lighthouse run.
+  # Manual accessibility evidence is recorded separately in accessibility-evidence.yaml.
   - metric: lighthouse_accessibility_score
     threshold: 0.9
-    comparator: min
+    tolerance_percent: 0
+    unit: ratio
+    mode: blocking
+
+  # Largest Contentful Paint is the primary user-visible loading metric.
   - metric: lcp_ms
     threshold: 2500
     tolerance_percent: 10
+    unit: ms
+    mode: blocking
+
+  # First Contentful Paint helps diagnose initial render regressions.
+  - metric: fcp_ms
+    threshold: 1800
+    tolerance_percent: 10
+    unit: ms
+    mode: advisory
+
+  # Total Blocking Time protects interaction readiness for evidence review.
+  - metric: total_blocking_time_ms
+    threshold: 200
+    tolerance_percent: 10
+    unit: ms
+    mode: blocking
+
+  # Layout stability protects trust while reviewers inspect source-panel evidence.
+  - metric: cumulative_layout_shift
+    threshold: 0.1
+    tolerance_percent: 0
+    unit: unitless
+    mode: blocking

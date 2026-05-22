@@ -1,1 +1,180 @@
-records: []
+records:
+  - id: GH-LIVE-001
+    title: Required repository evidence files are present
+    profile: high-assurance
+    requirement: >
+      A high-assurance release candidate must contain explicit repository evidence,
+      governance evidence, release evidence and operational support files before it
+      can be treated as release-ready.
+    source_files:
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - RECENT_LEARNINGS.md
+      - agent-evidence.yaml
+      - github-settings.yaml
+      - gap-register.yaml
+      - conformance-matrix.yaml
+    evidence_type: file-presence-and-content
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      This positive fixture intentionally includes the full root-level evidence set.
+      Negative live-gate fixtures remove or weaken one control at a time.
+
+  - id: GH-LIVE-002
+    title: Workflow coverage exists for multi-language assurance
+    profile: high-assurance
+    requirement: >
+      The repository must contain separate workflow evidence for Node, Python,
+      conformance, documentation quality, dependency review, CodeQL and hardened
+      release checks.
+    source_files:
+      - .github/workflows/ci-node.yml
+      - .github/workflows/ci-python.yml
+      - .github/workflows/ci-conformance.yml
+      - .github/workflows/ci-docs-quality.yml
+      - .github/workflows/dependency-review.yml
+      - .github/workflows/codeql.yml
+      - .github/workflows/ci-hardened.yml
+    evidence_type: workflow-file-review
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      Workflow files are intentionally nested under .github/workflows and are not
+      changed by this root fixture expansion.
+
+  - id: GH-LIVE-003
+    title: GitHub repository settings evidence is complete
+    profile: high-assurance
+    requirement: >
+      Branch protection, code-owner review, required status checks, workflow
+      permissions, security features and deployment protection expectations must
+      be represented in repository settings evidence.
+    source_files:
+      - github-settings.yaml
+      - .github/CODEOWNERS
+    evidence_type: repository-settings-evidence
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      This fixture uses file-backed settings evidence rather than live GitHub API
+      state so it can run deterministically in offline validator tests.
+
+  - id: GH-LIVE-004
+    title: Workflow action lock evidence is present and reviewed
+    profile: high-assurance
+    requirement: >
+      High-assurance workflows must have reviewed action lock evidence so the gate
+      can distinguish intentional pinned action use from placeholder or unreviewed
+      workflow dependencies.
+    source_files:
+      - workflow-action-lock.yaml
+    evidence_type: workflow-action-lock
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The lock file records required workflows, pinned actions, classification,
+      review ownership and high-assurance release-gate interpretation.
+
+  - id: GH-LIVE-005
+    title: Trusted SBOM and attestation evidence is externally represented
+    profile: high-assurance
+    requirement: >
+      The release candidate must include an SBOM, an attestation statement,
+      Sigstore bundle evidence and trusted verification command output.
+    source_files:
+      - sbom.json
+      - attestation.json
+      - sigstore-bundle.json
+      - trusted-attestation-verification.json
+    evidence_type: supply-chain-and-attestation
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The values are synthetic and fixture-safe, but the structure mirrors the
+      evidence a high-assurance release gate should require.
+
+  - id: GH-LIVE-006
+    title: Accessibility evidence supports the release decision
+    profile: high-assurance
+    requirement: >
+      Automated accessibility checks and assisted manual checks must be linked to
+      source result files and summarised in a release decision.
+    source_files:
+      - accessibility-evidence.yaml
+      - results/axe.json
+      - results/pa11y.json
+      - results/lighthouse.json
+    evidence_type: accessibility-assurance
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The fixture includes result-file references, keyboard coverage, screen-reader
+      smoke coverage, assistive technology matrix entries and defect closure evidence.
+
+  - id: GH-LIVE-007
+    title: Performance evidence is measured against an explicit budget
+    profile: high-assurance
+    requirement: >
+      Release performance evidence must include thresholds, comparators, tolerances,
+      measurements, source provenance and pass/fail interpretation.
+    source_files:
+      - performance-budget.yaml
+      - performance-results.yaml
+    evidence_type: performance-budget-and-results
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The fixture covers Lighthouse category scores, LCP, FCP, TBT and CLS so the
+      budget/result relationship is inspectable rather than placeholder-only.
+
+  - id: GH-LIVE-008
+    title: Test commands are deterministic and fixture-safe
+    profile: high-assurance
+    requirement: >
+      Local release-gate fixtures must not depend on live services, secrets or
+      non-deterministic external state when proving command execution evidence.
+    source_files:
+      - test-commands.yaml
+      - package.json
+      - pyproject.toml
+    evidence_type: deterministic-test-command-plan
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      Commands are intentionally synthetic. Their role is to prove orchestration
+      and evidence capture, not to exercise production application code.
+
+  - id: GH-LIVE-009
+    title: Gap register records no active release blockers
+    profile: high-assurance
+    requirement: >
+      The positive high-assurance fixture must not contain active, waived or hidden
+      release blockers. Known historical issues must be represented as closed or
+      resolved evidence if included.
+    source_files:
+      - gap-register.yaml
+      - RECENT_LEARNINGS.md
+    evidence_type: gap-register-review
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The gap register contains closed fixture-quality gaps only. Active release
+      gaps remain absent so the fixture continues to represent the positive case.
+
+  - id: GH-LIVE-010
+    title: Agent evidence ties repository state to release-gate evidence
+    profile: high-assurance
+    requirement: >
+      The agent evidence file must link files read, files changed, commands run,
+      contracts validated, repository state, GitHub settings, accessibility,
+      performance, SBOM and attestation evidence.
+    source_files:
+      - agent-evidence.yaml
+    evidence_type: agent-evidence-trace
+    validator_expectation: pass
+    status: conformant
+    notes: >
+      The evidence is fixture evidence and does not expose private reasoning. It
+      records observable artefacts, command results and validation boundaries only.
