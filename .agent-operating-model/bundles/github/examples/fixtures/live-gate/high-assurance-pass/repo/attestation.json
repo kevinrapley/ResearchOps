@@ -33,7 +33,7 @@
     },
     {
       "path": "sbom.json",
-      "sha256": "cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1"
+      "sha256": "a86e1138f9d1ddbb5b57c893546ae810be8835d75f0e2d27dfa736c32db664d0"
     },
     {
       "path": "sigstore-bundle.json",
@@ -57,7 +57,7 @@
     }
   ],
   "sbom": "sbom.json",
-  "sbom_sha256": "cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1",
+  "sbom_sha256": "a86e1138f9d1ddbb5b57c893546ae810be8835d75f0e2d27dfa736c32db664d0",
   "artifact": "artifact.zip",
   "artifact_sha256": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a",
   "builder": {
