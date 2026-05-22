@@ -1,11 +1,73 @@
 {
+  "machine_info": {
+    "node": "fixture-runner-01",
+    "processor": "x86_64 synthetic CI runner",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-fixture-x86_64-with-glibc2.39",
+    "cpu_count": 4
+  },
+  "commit_info": {
+    "id": "0000000000000000000000000000000000000000",
+    "branch": "feature/example-performance-budget",
+    "time": "2026-05-21T12:40:00Z",
+    "dirty": false
+  },
   "benchmarks": [
     {
-      "name": "test_endpoint",
+      "group": "repository-api",
+      "name": "test_repository_conformance_endpoint",
+      "fullname": "tests.performance.test_repository_api::test_repository_conformance_endpoint",
+      "params": {
+        "repository_size": "medium",
+        "fixture_profile": "github-diamond-standard"
+      },
       "stats": {
-        "mean": 0.12,
-        "max": 0.2
+        "min": 0.082,
+        "max": 0.184,
+        "mean": 0.118,
+        "stddev": 0.014,
+        "median": 0.115,
+        "iqr": 0.011,
+        "rounds": 100,
+        "iterations": 1,
+        "ops": 8.47
+      },
+      "extra_info": {
+        "unit": "seconds",
+        "scenario": "Fetch repository conformance summary with cached fixture metadata.",
+        "budget_metric": "repository_conformance_endpoint_mean_seconds"
+      }
+    },
+    {
+      "group": "release-gate",
+      "name": "test_release_gate_summary_build",
+      "fullname": "tests.performance.test_release_gate::test_release_gate_summary_build",
+      "params": {
+        "evidence_files": 6,
+        "controls": 12
+      },
+      "stats": {
+        "min": 0.146,
+        "max": 0.312,
+        "mean": 0.221,
+        "stddev": 0.026,
+        "median": 0.216,
+        "iqr": 0.018,
+        "rounds": 80,
+        "iterations": 1,
+        "ops": 4.52
+      },
+      "extra_info": {
+        "unit": "seconds",
+        "scenario": "Build release-gate summary from synthetic evidence fixtures.",
+        "budget_metric": "release_gate_summary_build_mean_seconds"
       }
     }
-  ]
+  ],
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded pytest-benchmark input fixture with realistic benchmark metadata, timing distribution and repository-assurance scenarios."
+  }
 }
