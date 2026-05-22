@@ -37,8 +37,8 @@ jobs:
           fail-on-severity: high
           comment-summary-in-pr: always
 
-      - name: Record push context
+      - name: Check dependency manifests on push
         if: github.event_name == 'push'
         run: |
-          echo "Dependency review runs on pull requests."
-          echo "Push events keep the expected high-assurance status check visible for this fixture."
+          test -f package.json
+          test -f pyproject.toml
