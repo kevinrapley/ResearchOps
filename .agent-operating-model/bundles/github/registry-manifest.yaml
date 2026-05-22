@@ -6,11 +6,7 @@ artifacts:
 - path: .gitignore
   sha256: 05a152f1b5f03bbe0cab0df43a62733cab3f88a7cb1298da261c30b8b215a9e0
 - path: CHANGELOG.md
-  sha256: 23ad714d94fc2878f4cbeb4cbc79fc6140dffab22070271753eaab158eb8e960
-- path: README.md
-  sha256: 9be9df98ddd53c45c169065ab124a1df4cc964378f7b10bc849f79eb2f86275b
-- path: VALIDATION-REPORT.md
-  sha256: 3bea07c30a2a133afbe166a73ff45f9f5f4af08efcff9663a038cfeff326c404
+  sha256: d806755f62b9f71f83b377a15d43a9e61be4db782fa820d0c0b6a5510b87f50a
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
@@ -58,119 +54,131 @@ artifacts:
 - path: evals.yaml
   sha256: e870587740cec7391103e958e13dd47a62fb9a93916d6262f9ba7d135cdc1c3c
 - path: examples/accessibility-results/axe.json
-  sha256: d97a1e5c2a73fc2944f8fff46816297f602f2859aaeba4be24fb18f630201ff1
+  sha256: a4b0bbea3e2bb2562dba61b29ebfc6f478cd78bef8050c16d7e565d179f1632a
 - path: examples/accessibility-results/lighthouse.json
-  sha256: 91877efbd04196b0d16d614777f0a5c38ad87ab61d5616f1836867967ee37690
+  sha256: 9d89aaa641eb29f1c2382f526a97bc91d0ce6446a9f15b14d6beaca64ba3cb3b
 - path: examples/accessibility-results/pa11y.json
-  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+  sha256: e320b9c1defc0a09e10b71e199e96a115539ab7bfa0676f9faa3cb6aba721133
 - path: examples/agent-evidence.example.yaml
   sha256: 27991bd62f8c5e917df40553ad126c9971d1691c6c61c323446bd1350647f621
+- path: examples/anti-examples/removes-quality-gates.yaml
+  sha256: bad05cfa75a682389475bb69dd7b1fa19720f182b9a45df9bbb62e804be6001a
+- path: examples/anti-examples/unverified-release-recommendation.yaml
+  sha256: 3f075c10149cdb2b8b1672e254f4d09f13bcd91751ee69efb1cbaa91a7dee733
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/CODEOWNERS
-  sha256: 043477786bc6b2ce796be9afcbfedcde7c5e827a05299ca9d937d3a285791db8
+  sha256: f40e995eee9bfe2fa04c4f3cc8da3e93114e54bfc422e2bed19b26fffff3f21c
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/ci-conformance.yml
-  sha256: 952048059f57e8a39ec0741f814d284a4b12ac576ae687919212d44369ebc28b
+  sha256: 518657dc8c45532442aec353f1fa37da26d4fce4159876e861c42f7e58d0703f
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/ci-docs-quality.yml
-  sha256: 24e3fd5073f453b0b583df020871cf2f373611fc6701aacc222f172437459e92
+  sha256: 864997167f4e3ebacd21388755bacce638d764ba222fbbef69b8004375344c1f
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/ci-node.yml
-  sha256: 7d01af5c9a5ce1a1d1c9c01a2bf0d2c6ef68066caabd80b7844e6244efb284d9
+  sha256: 32c58fed19cbb6ea90cbd1575e9064de4dcc1ff10ee2f12ae25a5b6e6557c482
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/ci-python.yml
-  sha256: acc05626db7b9562903bb55c5f199129185636c6e59e6a079e214005b5357d72
+  sha256: f76362a9041f4216de5c1d7d69debca02fe08934813964b5a44a907dee6b68f8
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/codeql.yml
-  sha256: 478c2de0538182cd8b71649c29ec656787c37bd9f2189929466e5951a6e03a28
+  sha256: ca89e5d05e8d7f81bb188a15a8f5def51eeea45d5d23b63677fdf32f1a504c9c
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/dependency-review.yml
-  sha256: ba11188f1111aac4c4c9367f2d65c3acf6f1a8e375cd28e4cf66841498250f81
-- path: examples/eval-outputs/instantiate-multi-language-repo-pass/CONTRIBUTING.md
-  sha256: 98b2a75ce0f3f7d540bdaf0de6b37043c741b9e6ce5474b5b4ab5e787614309a
-- path: examples/eval-outputs/instantiate-multi-language-repo-pass/README.md
-  sha256: 8739c9d3ed55b473d95a09f5a410285d1799d691ff3dd424347836433a114d02
-- path: examples/eval-outputs/instantiate-multi-language-repo-pass/RECENT_LEARNINGS.md
-  sha256: fbb09eb8a0c5f8f63f422328fcbd755987d9097ddae130c94441980f8eeef803
-- path: examples/eval-outputs/instantiate-multi-language-repo-pass/SECURITY.md
-  sha256: 9efcc3ccba113a86dcca90b2b899588159b48b270014ffb47558b04ae2fef1b3
+  sha256: 68aab9b65551476b75343dc1e3e34778e505bd7ddddc0d345273da86474e152a
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml
-  sha256: 7399ec4bd08b4f8a769ed441399d7dee8d5a661bb4b9c6a4197e3d78f7ccd1b9
+  sha256: c30cf2ce7f8d8c620d5810b180704b4f235cd51b626b578bc1e2742a51367550
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/conformance-matrix.yaml
-  sha256: 3b5f9ef9212a3a861590c9f5ff7f4432de747695ead9c3883e6eb1129ef5ea26
+  sha256: adc5e130b4edbefe1153bbd684af61111a559903e77b7c00a96fe85c6bacf902
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/CONTRIBUTING.md
+  sha256: 6fcaa9795456aac57db4c9fce93d416f117b93b8d825d31f7aa6e503b9bce6a7
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/docs/README.md
-  sha256: b8c2322c9fb62341ee3069769f1e43c3272ec10c83d89a44529b519b97c9cae4
+  sha256: ce1fcfa0b358b812aae92e385542efa5d04df861c93e9bf94e8fd94875841b99
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/gap-register.yaml
-  sha256: 69ae29a8c82d0412859407fc59f23024d78026dd7c583223d22b29c0e6bf51a6
+  sha256: 22ae374f13d6d222b102d1b7aaf1715547fd584c0bedbd3da4bc44deac233c76
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/github-settings.yaml
   sha256: b7b70d53edba529287d1636245715d2f817141e892aae8ae396dad9addb9414f
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/package.json
-  sha256: 5e2b0cb78e2a06c4a4bf2b2cd172ec93ec5812d1758ee573130e7067ade748d6
+  sha256: c968606187f55cef91d4ae67232198ac990d32018b6f24b4b508d7714a32c839
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/pyproject.toml
-  sha256: f2d781ced486cc2f08803a0a0e62f82e9d90c8f5140a6fa135c8c0f7a7b26044
+  sha256: d230be4c92291fcd210c1087716255c5971f6d1ffb2261a5627324b6a4b4cb37
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/README.md
+  sha256: 65f34e406544909ae72d9986ca8ff00422455c91086a191f5d4400eb038b55b1
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/RECENT_LEARNINGS.md
+  sha256: 04efbfae337e6f9e16345e11de629404c52998a939d5b35f9a045163e2ba1c92
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/SECURITY.md
+  sha256: 2700fdaf087c53c03c3cdd6af1a47946e8a4d2dbf2340041d79c7aa3b608cfdf
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/templates/README.md
-  sha256: b376af21f43c242521aa708a0041797372e5f0a5c0d7ca26e0fc5ffa98048358
+  sha256: 306ea93646ec503710444d31bc782e9cbdedb629800da0fcb6794519a59411c7
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml
-  sha256: e817d84867df9f85643ea03940a461ce4b8d1b85f9aaa5ee3d8dbcd2fb40abc1
+  sha256: e0f5a378505667720545e43809fda5f99c19f3811a95685b0e701ad7cf711691
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/tests/example.test.mjs
+  sha256: 0e4532ac8ee6af7d0c56dd7cc02eba29b809dcc6f6468fdbfd582222ba65daed
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_fixture.py
+  sha256: 33ede9e16b3342c69710983a555a3ff9fc9f716e291150d4464c2ee0354a207b
+- path: examples/expected-outputs/repo-discovery-node-api.md
+  sha256: 5478f8433d26e9b0b649de04ffa127ea07ceddab01ec662de37bebac90047097
+- path: examples/expected-outputs/repo-docs-readme-gap.md
+  sha256: 6d0e95ef1374ffdd39f79ee1f28b39ae76629c85f3c46168c52b9635df6c517b
+- path: examples/expected-outputs/repo-fix-failing-ci.md
+  sha256: bbaf058a446a449cf4fb1b06c8675edf66f07f0b44945d9f4e284d4fe76ed8f3
+- path: examples/expected-outputs/repo-release-readiness.md
+  sha256: e70ab6ff31ce99036c39dfec99dd5db3b0ae7d2e4c705dd755def109bb79d589
+- path: examples/expected-outputs/template-selection-node-api.md
+  sha256: dd333831709ea6f425cbf8b00847cf31e1df14689426b7ecd5000a6f50b3987f
+- path: examples/expected-outputs/workflow-node-ci-selection.md
+  sha256: 4068f6a08140576d9188c33975ca5a9e75919a17bcf954eb4ff6a3126eb3b866
 - path: examples/fixture-index.yaml
   sha256: 83f8ee017d28aa61900aef07063bb1b45263a39de9c2c73e7f64113aa32d4e25
 - path: examples/fixtures/accessibility-evidence-pass.md
-  sha256: 9cc4649b727750417f665bc28a3067ca7e22f0612ad737f4f81929d77929b0d3
+  sha256: 7a8f180e3be22fd0e3dd8abdca23cfc656ed99cfc6aef9599c748289ab546e0e
 - path: examples/fixtures/accessibility-evidence-structured.yaml
-  sha256: aef24e3b002be1450434639d12d62a5ca1389b0d5d091640b9db1082eb9361bc
+  sha256: 56417293280bbe9e35554abcd3cc864801dcd9d5b173f411ccd6b5bcc2259bb2
 - path: examples/fixtures/accessibility-negative/axe-violations.yaml
-  sha256: d77c810cdc70bb3b6d324a261494c0ad9cea116f1de35e24c626d1a322f9b5bf
+  sha256: 55ee1cf3b9c834866a3c490874413e91584b1e32f88d103b34c00789fc22e398
 - path: examples/fixtures/accessibility-negative/lighthouse-low.yaml
-  sha256: 6af6f71e66c21ec9c645366d70b67a55a1539fe1a15364343d70a606b3c3906f
+  sha256: 7eaadb3c8defadb1e4c109ed75740cd631ffcdf8236b378008e5e9199baab8ca
 - path: examples/fixtures/accessibility-negative/open-critical.yaml
-  sha256: 856216d805290649e315697c06f8fb308ad352ddb40250609e0ef61ff314082f
+  sha256: b9e696c6e140d9fa6c02d5b71a6d1106c3f8736f52f07caef07ff54fa61dd2b9
 - path: examples/fixtures/accessibility-negative/pa11y-issues.yaml
-  sha256: ef165791cfaa6d09204a0c50a621f55f29989f688f3c401ea6086e61880040e5
+  sha256: bd8b093ab15935664afedac5a08c70473b7ed1a478dd2d439316a9ab8d92f96d
 - path: examples/fixtures/accessibility-negative/results/axe-fail.json
-  sha256: 31eaad4c4605e3c9d8aa286fa04c500a50ecf5e596931411e26bf259749f5977
+  sha256: 48374fc75f15bd4bdeee78d9704c6f6f6e373301d53edf979ee812b83f82ed41
 - path: examples/fixtures/accessibility-negative/results/axe-pass.json
-  sha256: f3fd51641da5d1d1b23d212c9e4a54dd9955ba27c42f342c371d4d278ff4d8be
+  sha256: 93373958cfe61f2b755a94c240bb1ad2a3a425bace15747ab40ceeba2887d857
 - path: examples/fixtures/accessibility-negative/results/lighthouse-fail.json
-  sha256: ccda02a602c4432ed0553a27e73b556df3618929b8301493a2107b126221bf16
+  sha256: 0dc8cd68aa70191449fc1f23c8c8fe1972d44154a6766a21a12e2ddb6bf52832
 - path: examples/fixtures/accessibility-negative/results/lighthouse-pass.json
-  sha256: 785892f84ff66152226375b118067af845ef0719375964e7bd3ae305fa16a168
+  sha256: 122555832af70760ee4e6ec8a60b982c2338902e8e29c6173fe3509749345318
 - path: examples/fixtures/accessibility-negative/results/pa11y-fail.json
-  sha256: 68268f4ae03617796bede4f883c5fb9137876b035fed2e17f2883549ae4cf1da
+  sha256: 76ce8b9361b1d7ad0cc02db6fb7d7c9519fadda289758ee8908126755dd28845
 - path: examples/fixtures/accessibility-negative/results/pa11y-pass.json
-  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+  sha256: 6f1d5eb0f05b6deeeaaab0a705b4e47a9e9662f91bcfe958df2b87dfcc739ba8
 - path: examples/fixtures/accessibility-paths/evidence-relative/evidence/axe.json
-  sha256: f3fd51641da5d1d1b23d212c9e4a54dd9955ba27c42f342c371d4d278ff4d8be
+  sha256: 68d04d2586ecd78be5421c78cc6f9775a99f0252bd62e6194ab8813fb13e0d36
 - path: examples/fixtures/accessibility-paths/evidence-relative/evidence/evidence.yaml
-  sha256: 7663d8262e44d1b994fafd78c1f759711e5260eca1af1a89abee06b63fa23f7d
+  sha256: b10f0e4bdd1c666ff6ef3b479f0b0405d3036cee5a93e34dbb330d785444aaff
 - path: examples/fixtures/accessibility-paths/evidence-relative/evidence/lighthouse.json
-  sha256: 785892f84ff66152226375b118067af845ef0719375964e7bd3ae305fa16a168
+  sha256: b372d776bc8feea5c54a8f6a950a8df721ec6d11563d685f865829b66bb2ce60
 - path: examples/fixtures/accessibility-paths/evidence-relative/evidence/pa11y.json
-  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+  sha256: b1815513f1fd807dbc8623376c74a92b58176887af6a7b23b2eaba45f37c51d7
 - path: examples/fixtures/accessibility-paths/root-relative/evidence/accessibility-evidence.yaml
-  sha256: 114939edd4d7a3c99af166b03ba651ff34784481a9891a8a1f7b7fd12220d2fc
+  sha256: 5d4138b9670987662c6a83db313263e13fe538ac45ddd9540edd0e2f308181d9
 - path: examples/fixtures/accessibility-paths/root-relative/results/axe.json
-  sha256: f3fd51641da5d1d1b23d212c9e4a54dd9955ba27c42f342c371d4d278ff4d8be
+  sha256: 4e335b0a09dc04a28a267ec9226c50c026d0d32a8460f04d6f31da67cfbba4de
 - path: examples/fixtures/accessibility-paths/root-relative/results/lighthouse.json
-  sha256: 785892f84ff66152226375b118067af845ef0719375964e7bd3ae305fa16a168
+  sha256: 12a9f6acccfaecb71d4c30a07015f325e451233b695c79914020960e5835193e
 - path: examples/fixtures/accessibility-paths/root-relative/results/pa11y.json
-  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+  sha256: add8b3669d9533660ebbebb20019521f5615074ff869d62c2f0d76dda41d706c
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/CODEOWNERS
-  sha256: 043477786bc6b2ce796be9afcbfedcde7c5e827a05299ca9d937d3a285791db8
+  sha256: 51f4f405d83edfa11d0491cf28043e51d535f7f68d92734da616ee15830d57f7
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/ci-conformance.yml
-  sha256: 952048059f57e8a39ec0741f814d284a4b12ac576ae687919212d44369ebc28b
+  sha256: f8f00899b179e0b7b47ccfe2757cb7e682a6719c2aff81e0e0d824235109583d
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/ci-docs-quality.yml
-  sha256: 24e3fd5073f453b0b583df020871cf2f373611fc6701aacc222f172437459e92
+  sha256: f3a81bbaff51177a63c5fc5d6b9274e5dff3c725b9905e29da0b1803f2f78b33
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/ci-hardened.yml
-  sha256: c2f3445dbd3e975502ba7dbaff2681630f10f234d22542c78d7c3e326843c50c
+  sha256: 284c68218bee9ab080cb89a55a9544ee762879f910f70ad1fd0fe44c9097f01d
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/ci-node.yml
-  sha256: 7d01af5c9a5ce1a1d1c9c01a2bf0d2c6ef68066caabd80b7844e6244efb284d9
+  sha256: 2174010724fc492841b3721a5ee0ddf7f67439955352be4421544e1f8177bbd9
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/ci-python.yml
-  sha256: acc05626db7b9562903bb55c5f199129185636c6e59e6a079e214005b5357d72
+  sha256: d72cc3bd49a461b5003a228074e7b20f9b671ebbc7fb051b6211f1f143e0c733
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/codeql.yml
-  sha256: 478c2de0538182cd8b71649c29ec656787c37bd9f2189929466e5951a6e03a28
+  sha256: 8a9e33553f72f0c47a0ec3afc267a5edeb54084a97d2846ffa06910a2b43420b
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/.github/workflows/dependency-review.yml
-  sha256: ba11188f1111aac4c4c9367f2d65c3acf6f1a8e375cd28e4cf66841498250f81
-- path: examples/fixtures/live-gate/high-assurance-pass/repo/CONTRIBUTING.md
-  sha256: 98b2a75ce0f3f7d540bdaf0de6b37043c741b9e6ce5474b5b4ab5e787614309a
-- path: examples/fixtures/live-gate/high-assurance-pass/repo/README.md
-  sha256: 8739c9d3ed55b473d95a09f5a410285d1799d691ff3dd424347836433a114d02
-- path: examples/fixtures/live-gate/high-assurance-pass/repo/RECENT_LEARNINGS.md
-  sha256: fbb09eb8a0c5f8f63f422328fcbd755987d9097ddae130c94441980f8eeef803
-- path: examples/fixtures/live-gate/high-assurance-pass/repo/SECURITY.md
-  sha256: 9efcc3ccba113a86dcca90b2b899588159b48b270014ffb47558b04ae2fef1b3
+  sha256: 03dc962a098affe0a53b84d2a9697ee34b1a090ba204de4cb30cee9b0934d159
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/accessibility-evidence.yaml
   sha256: 114939edd4d7a3c99af166b03ba651ff34784481a9891a8a1f7b7fd12220d2fc
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/agent-evidence.yaml
@@ -178,119 +186,159 @@ artifacts:
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/artifact.zip
   sha256: 0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/attestation.json
-  sha256: f3f59a8c6ab9ab7c08d6d0c3ce10a476c763adf8f81332e5b6ab1c05c304f352
+  sha256: 84265fc373a52e63e454eac3fdb9f3425428a6f4c090315c9bea03ccbccdcaff
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/conformance-matrix.yaml
   sha256: 3b5f9ef9212a3a861590c9f5ff7f4432de747695ead9c3883e6eb1129ef5ea26
+- path: examples/fixtures/live-gate/high-assurance-pass/repo/CONTRIBUTING.md
+  sha256: a8d538786bb364cd260038a366a13877694e81a2cd5bddcc425630e0daae4d3b
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/docs/README.md
-  sha256: b8c2322c9fb62341ee3069769f1e43c3272ec10c83d89a44529b519b97c9cae4
+  sha256: c8fabe68904901ded3bd37f6499328afd7bcaa01bf0f472d5352781b2bc90ea3
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/gap-register.yaml
   sha256: 69ae29a8c82d0412859407fc59f23024d78026dd7c583223d22b29c0e6bf51a6
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/github-settings.yaml
   sha256: b7b70d53edba529287d1636245715d2f817141e892aae8ae396dad9addb9414f
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/package.json
-  sha256: 5e2b0cb78e2a06c4a4bf2b2cd172ec93ec5812d1758ee573130e7067ade748d6
+  sha256: ee91ce9b62fd49a996be69d918e8d41a383ae6065895affc3d2dac959a18c3f6
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/performance-budget.yaml
   sha256: 89b545aaca6b2e16e1ca83d3aa03fc2eacdd2077964e9fceeb604d5715a3153d
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/performance-results.yaml
   sha256: 7c66de60527d6526caebb1ccefe19ac62a3e8bb05c13ce7b8439d4e6f436e3da
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/pyproject.toml
-  sha256: f2d781ced486cc2f08803a0a0e62f82e9d90c8f5140a6fa135c8c0f7a7b26044
+  sha256: 7e29e41c89e485d16617d3eb8fe688a0fb1055d215ac2458be1335cf9e7de9bb
+- path: examples/fixtures/live-gate/high-assurance-pass/repo/README.md
+  sha256: 67160180e63e00d88aa664416b65d868bbe3d5af2e25e9b4bfd857f57b1b1d4e
+- path: examples/fixtures/live-gate/high-assurance-pass/repo/RECENT_LEARNINGS.md
+  sha256: 63e8d2ce40ce3c5928002d00e74c1acf79f7109bf260a41f710357b12d4a5a3a
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/axe.json
-  sha256: f3fd51641da5d1d1b23d212c9e4a54dd9955ba27c42f342c371d4d278ff4d8be
+  sha256: d27b4f8ee266c6bdd61371e1096226e129747713e9a3c8fef2ce7bbf69ebfc80
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/lighthouse.json
-  sha256: 785892f84ff66152226375b118067af845ef0719375964e7bd3ae305fa16a168
+  sha256: 94b9b868426dcb813f2bd9d74dbe582477d7af0e0da7ade6f3831f0312ea8dee
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/results/pa11y.json
-  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+  sha256: 0bf10200bebcc4f9144e3af21384304f8e295391becc8315ae09348bd9670fa1
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/sbom.json
   sha256: cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1
+- path: examples/fixtures/live-gate/high-assurance-pass/repo/SECURITY.md
+  sha256: 6638d57d3e18763cdd513ae5b76a5d798d02bce9757d6bb7c8f512c52af670c0
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/sigstore-bundle.json
   sha256: ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/templates/README.md
-  sha256: b376af21f43c242521aa708a0041797372e5f0a5c0d7ca26e0fc5ffa98048358
+  sha256: 3cf1a74efdb9ea1c3c22572325f448ff4d57cbc4862800dfe2f5fe7e737d591d
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/test-commands.yaml
   sha256: e817d84867df9f85643ea03940a461ce4b8d1b85f9aaa5ee3d8dbcd2fb40abc1
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/trusted-attestation-verification.json
-  sha256: 9b519fc20629e23ccb6383e8703973b954ad3a1ef7f81314ed81f42d17901157
+  sha256: b34bf91fc493ff45127cd1f87cb2c16338f112a665df6612f29ffcf852914759
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/workflow-action-lock.yaml
-  sha256: 582e34db4ba44cec58f4a01ede00041ad6f935e73527380daa1533e8ed1b769d
+  sha256: 53dd56aa13c1fac2b3c864a7a9cc2ff405a66f12b5b94a4d61879da86828e375
 - path: examples/fixtures/live-gate/negative-missing-accessibility-evidence/fixture.yaml
-  sha256: d0dc725d00a87807510840b5732744778d2560628b9e0554f18990661e55a456
+  sha256: 4fb129a704e047134d8144f121faa3308e3f328fae70b2dbf184a7ce96568155
 - path: examples/fixtures/live-gate/negative-missing-external-attestation-verification/fixture.yaml
-  sha256: 8939c74fa5858262d1a3217d6b71b82bd838557172a7199032c8e21b7155a6db
+  sha256: f7d30217aca0dd8d72b90a12f4e273d9dbecb0b4b85dada2bfde85ddf0800092
 - path: examples/fixtures/live-gate/negative-missing-github-api-observability/fixture.yaml
-  sha256: dcff56e5a4e9feebdbd368125691b948f0921c8605287fd2d6e26996d9d079d4
+  sha256: d9db03ef30c66d5526c75f7c6085ad9b2bb0c41eef36338f8d7d4b99af16ae79
 - path: examples/fixtures/live-gate/negative-missing-performance-evidence/fixture.yaml
-  sha256: 3e282828e938ab3a81a86cb5d703f52fbf18e3e26f3e3114249046275e1efcf7
+  sha256: 991b14c33bd1825668b3a4bfe43775e1168290e471be32c14debbe4749bd0298
 - path: examples/fixtures/live-gate/negative-missing-trusted-sbom-attestation/fixture.yaml
-  sha256: 7a19c5a786d94711b3433ebdd50203caaef8e18e8ff6b366fe685a8d1d17b9a6
+  sha256: 246fdceca5dd8c3642519c8aabaac4cebb840cdea11f86d7fe1e489ee3d6f933
 - path: examples/fixtures/live-gate/negative-missing-workflow-lock/fixture.yaml
-  sha256: 73481f4801f193be5862bd7be76d6c6290ec479a523a7ae0e467f5455f614350
+  sha256: 682e4796e6e1345d98dbb12b175e322bbbdd331694d4a709a36afd8cf5743bbd
 - path: examples/fixtures/live-gate/negative-offline-test-attestation/fixture.yaml
-  sha256: af44e38862f96683d4b0335ab9ea54874c50ca04a64bec952bea87bc4f2c548a
+  sha256: 441af9007c3b1a003925804d3852a2c925f931075a60f9b44ed86d25a2462e5e
 - path: examples/fixtures/live-gate/negative-placeholder-workflow-sha/fixture.yaml
-  sha256: 998c85a82f1ca65ad9d18429f0465b68e6c0f36b0ea5786c3b9ad888d940d7a6
+  sha256: 1f52053ce60dd16d0b674c31609fcb1c8bc0637e216ed9e7ec2068245ebf72f6
 - path: examples/fixtures/release-gate-report-fail.json
-  sha256: c3b44d9e75e4f6f324a1a7d0558562c5e01f39a010579db3ff10f668f8b8e49b
+  sha256: 6874b18abc8bffb1493ddb90e961a377cb0d5c9fb398a1fa589ce7601f6f1bb3
 - path: examples/fixtures/release-gate-report-pass.json
-  sha256: 1262a1a05a4130e2e20fa805b133bd76e3b62518a12fd3045a31d2c59cb676af
-- path: examples/fixtures/repositories/api-service/README.md
-  sha256: f706ffac39de0e8db7adc9870ebb9b09135a92a87879e1045911d1799bdff2c2
-- path: examples/fixtures/repositories/api-service/src/app.py
-  sha256: f703803d1b5d426ca2cc6713d4b87b0f2ad0abceedbcf2d8b9909f94725819ee
+  sha256: 1c2ee57374f8f0d72909da44067d173b0f08599fdf35393b4f5d68986e1ea035
+- path: examples/fixtures/release-policy/live-release-policy-pass.yaml
+  sha256: 794b8d3cc1ea309007250e7505e07845870bdfacaa67b65672d6bd5cb864997b
 - path: examples/fixtures/repositories/multilang-empty/package.json
-  sha256: 83866b6153cb03b79f3e0618cd6954241335a4a668a5fdf34bac7042d4c7400e
+  sha256: 436909968115a2d45beb6d6033224ae41332f97b2bb6214b77f80b0ec8e9923f
 - path: examples/fixtures/repositories/multilang-empty/pyproject.toml
-  sha256: 26df42daf1dec225a0e7a43e552e77e4bed93653f4e9229c42ed2ee8362bcd4a
+  sha256: e636706d6d484d48bcfd5bd079b26dd7d4c4c64e8489676f745c0ed043a59bdc
+- path: examples/fixtures/repositories/multilang-empty/README.md
+  sha256: 51735f98177ac7498c7782811a261865ba47260702d7eef04b2831ce912c3ddd
+- path: examples/fixtures/repositories/node-empty/package.json
+  sha256: 02a3a6d4fc44b24d9a4a06902e5027c971f7849f4b0873b4e78659297c524914
+- path: examples/fixtures/repositories/node-empty/README.md
+  sha256: a1fbbf6cf89429892b521d7f71d170cfc2d44df0ab7ff532f07c1b9668ddbc0e
+- path: examples/fixtures/repositories/python-empty/pyproject.toml
+  sha256: 8196ee78822e28ab00b58bdc81d4dc172bfeabc30aaca3fae9703c9fc9806bbb
+- path: examples/fixtures/repositories/python-empty/README.md
+  sha256: 4fbaac2c7913814efbf926a906c37dc2e46ed6b618c697c29a08a2580f3efcf4
+- path: examples/fixtures/repositories/release-ready/.github/workflows/ci.yml
+  sha256: 18842b046705695d5d5c2a402f7e9f5bcf691260216f118cb9439fa4e92f8e82
+- path: examples/fixtures/repositories/release-ready/CHANGELOG.md
+  sha256: f95267d24c5287f54d77e24cb9ae1600572810c895a78d4e7a70a1529ea8dbf2
 - path: examples/fixtures/repositories/release-ready/README.md
-  sha256: 68bb09da1afd2b2e0371982f39e0097dcbaab59e07ae8f7fed85f0c0ab015e35
+  sha256: edab2996932625ff84db6e78f7312c1fb1211c90e4ba753e9f99f5a227fa5bce
 - path: examples/fixtures/repositories/web-app/package.json
-  sha256: 1310e6a6da2602b40a0a137d9ecba96a7435f121bf7de2a9b53abafdbcb3b97b
+  sha256: 3e477d7b2b5f1018c0968ca26fa16dd4be58fd4c7f89517f6d4a5f9c70d50ed8
+- path: examples/fixtures/repositories/web-app/README.md
+  sha256: 532fc0ded5d5a3c181849c806082b5268d353f9211fc1d5bc10c9d0573adc1b6
 - path: examples/fixtures/sbom-non-empty/package-lock.json
-  sha256: 23375674fda4d19f1149fe94d1bb07d44324deaa434462c8e1526420756856ea
+  sha256: 4831da1d0e9c915c953583beb4386059b8c9be18af5b23316f5f2778c45bd3f1
+- path: examples/fixtures/sbom-non-empty/package.json
+  sha256: 3650dba2e546043460dc1c12a18219c83271a09fbdd3a468681c54b3144dee22
+- path: examples/fixtures/sbom-non-empty/README.md
+  sha256: d75be7318b0ae85ccb46890d67c8beba2517da8bed544219d3fc92de535685ca
 - path: examples/fixtures/trusted-attestation-verification-pass.json
-  sha256: 9b519fc20629e23ccb6383e8703973b954ad3a1ef7f81314ed81f42d17901157
+  sha256: d3e889b7e98ab1aed6ef8c0da0b529003cd232e37cee5db1122a1acaffd5d4b8
 - path: examples/fixtures/workflows-release-mode-pass/.github/workflows/ci.yml
-  sha256: d09d7b4f428648fceff66175dd5e305b31bd260290d8c38d11d8fafe94b3aeda
+  sha256: 872ab2a28a2c2b278024f1e4f05667c14bf2a46d8cecf7526172bc9de4b1f685
+- path: examples/fixtures/workflows-release-mode-pass/README.md
+  sha256: ceadebc477674275f2e77be5550ec70686893505d884c0e3367ae316ff87d8fa
 - path: examples/fixtures/workflows-release-mode-pass/workflow-action-lock.yaml
-  sha256: 582e34db4ba44cec58f4a01ede00041ad6f935e73527380daa1533e8ed1b769d
+  sha256: a56b199766b90c1f02897e07a9175da768f803d10b369ff9e0864eaf01b2eea3
 - path: examples/payloads/http-json-error.json
-  sha256: b3bf184e1fdd68d58af504280fdf6da6d6cdd2d2762197bccb29ad14e30ebcf3
+  sha256: 08598237d7bf7d20bbb3ca6837e0a8c3cdbb8b6caf41d9af9001150f6783713e
 - path: examples/payloads/http-json-success.json
-  sha256: 1a0df29a118efe3770cdca57749eb3b45b97e545781dfa7969f30950878468a5
+  sha256: 30d783947b12c5105fe34b1a6aa595cb0d4fdd5309924782e49bb56f094f9462
 - path: examples/performance-budget.example.yaml
   sha256: 9bfbe5cbae6dbc8d3d89f252d52d96de45ab80fb9c86dfd390ef76926ec8c8d4
 - path: examples/performance-inputs/artillery.json
-  sha256: dda0d76023fd67c69a36c750c9e0b72a3153df59559da73fcd5a577686342ed9
+  sha256: d30ff2bff5a7a4d38a855f31b4356e4d547881848cfe01191b8d13d80db01c1e
 - path: examples/performance-inputs/autocannon.json
-  sha256: b299c9a59c5d35668653330abb96b5e80e591fc78cd205fc6db15872a8c6efd8
+  sha256: a7ed9b826da52010f1f97ac94abe56d20da7d9fd5b1a00939f6a31dcd5b8e0aa
 - path: examples/performance-inputs/gatling.json
-  sha256: a33407180b0bbd4b178d62197eb7aa45e088a9217c7142dd6e7cbf6ed67307bc
+  sha256: 2030e02b19b79940889a27608c60f7fca9910394b47bd16257b0af7714527dc8
 - path: examples/performance-inputs/go-bench.txt
-  sha256: a1a39ca42892af3e8be4a0da55a134f8e82ae642d1a7821398826210aca4e102
+  sha256: b7c82875c056c3def43c30aa3244dafb6d9f7d2be78a512c0a025d52e1eb7d03
 - path: examples/performance-inputs/jmeter.jtl
-  sha256: c37c117fc4f2ed289ab7c3aa14a1aabfa601b73a382d6650ed5a1d5e9ea3aec2
+  sha256: 50f619dbeda5c1319c0dcd42482b58cc471b77820e2271c87e01b8d39bb170f6
 - path: examples/performance-inputs/k6-summary.json
-  sha256: 03984fa182fa3b6ed50701f9fb6714b8ea95f270d2861052dfbc54bfb16d131e
+  sha256: 26c47ffffb0de64dbf0a4dffaf067e185d8d42acea89fd1361f46aa82182139a
 - path: examples/performance-inputs/lighthouse.json
-  sha256: 9988ee3dbbf5d2215453bb0ff81d25779b7732c8285eb9b21143021c3a47aa40
+  sha256: f54b3b39262520ca3b055181b2c97cd0460ff84d083e0b60e834faeb27b38ee0
 - path: examples/performance-inputs/pytest-benchmark.json
-  sha256: aafa92b8080cd1f762d77ef40c72c1b4dcc3e9d44369c29bbe2f1fa6a2347fb3
+  sha256: b9f02eae17d4ba05bdb1025efdcd7fc2a223236767e88461571eb5b9abfd5817
 - path: examples/performance-results/example-results.yaml
-  sha256: 202b46d45f5c1e5767e5856c57aca9497e7aa1fdd151afcba17b2a55deef881b
+  sha256: 22b551791806012758224734c19983bc497199d7cdfbfae1b6378011b51cce11
 - path: examples/performance-results/go-results.yaml
-  sha256: 465ea319e4a3749e6b36076625a42ef99b19b0932ba2d9dfed495c3252eb28cb
+  sha256: 192549c6d9640257da72b422af84acc79fbd761404249769274a5f3d9f79eb57
 - path: examples/performance-results/lighthouse-results.yaml
-  sha256: ae6f3f6f163c70aa8897f83158f4cfc3b5389c65b5278fd6d3fb8f7eeea68aae
+  sha256: 2158ed510cfd3e9f303a9e96747142127094efc2e5ad9980448a295cf0664f5c
 - path: examples/performance-results/node-results.yaml
-  sha256: da061394fe1d9031ecb939be77813796e19627dae74138e408e0858ae7261a31
+  sha256: 00ab630b95fabb3bebb9eaca282ad450a2634e245c73cd1780d785d27d8c2459
 - path: examples/performance-results/python-results.yaml
-  sha256: 01f34c5291f1d254c9f18c43008073739be8e351bed0771be784169d8555819c
+  sha256: 5bdaac0589531d72a521aefb392326b19de323411078af371084826816411588
 - path: examples/performance-results/rust-results.yaml
-  sha256: 197406b108fcf2cab3b311ff987658962fa4bf62064fc71a731184998f926933
+  sha256: b12c18ef8e72614bbf372be3b2b107edbba157bd2788ce2194fa0c411fce8103
+- path: examples/scenarios/repo-discovery-node-api.yaml
+  sha256: 83dd06b66d661b66d0ebabe6885192fa7c1d03491419e46959f398546f9dafc7
+- path: examples/scenarios/repo-docs-readme-gap.yaml
+  sha256: 73f850e990542ade620ed8444d84da0cab320e86f5102c7da8c50254b0b40c75
+- path: examples/scenarios/repo-fix-failing-ci.yaml
+  sha256: 0e756a4e1987ebb06eb82c0db3a33fe49a55bb942e2681f771b64579209de742
+- path: examples/scenarios/repo-release-readiness.yaml
+  sha256: 968e938a6150b90f0c3bd4c4fc50776fac7ced619e8a988f4475f249edd0fe4b
+- path: examples/scenarios/template-selection-node-api.yaml
+  sha256: 5075c976bbc376a17cc618149e0e02919428a7216ba92ebd86998dbfef8e5e5f
+- path: examples/scenarios/workflow-node-ci-selection.yaml
+  sha256: 7f5510693b1fee8a1b8ae50d1c64e4c5f438a627ebb7cee5e8d8538778f18294
 - path: grade.schema.json
   sha256: 1042e384faf41b1a3bd58fdb21b51fa58347f2d0df8a446e72aa3fed0f0d2b62
 - path: graders/accessibility-grader.xml
-  sha256: 891fa74909a3619cd8078bb246be44b997492e74d2d41f9aaf97d060e63f773b
+  sha256: dd9cc2fba312d20f161d506b2e44c3a7520169a2ca74c8e0d5a52a77ba7968d9
 - path: graders/ci-selection-grader.xml
   sha256: 5f4de853daf48ff6003184dbe3b7714f7f10438e77b549618a7ae40034e51be9
 - path: graders/code-confidence-grader.xml
@@ -320,31 +368,33 @@ artifacts:
 - path: graders/template-registry-grader.xml
   sha256: 5d4185097170ddce59e8d6a8b7a5882f199581302143ce550a5c4bb973f0fa4a
 - path: modes/repo-archive.xml
-  sha256: 7c1f88646cd286abb9fc96afd37d67c7d0c31d95a0d51afdbf80b36caa3c3870
+  sha256: 32bbb7dc470efa68e2a477f80efbf2a380cb00b77e09289176a911b0b5b691c2
 - path: modes/repo-build.xml
-  sha256: d0a1dbcd5e3e5ffb402472759356e0f5d2faa084da2ebc13ac6c59bf7b913dbf
+  sha256: 7e1cd8e0a2f8e2afe55be38a34b750de7ae341b0efe6b766326b7af1e1bd0a18
 - path: modes/repo-conformance.xml
-  sha256: 7188fc6f951deb444972851bf7893ef77bdeda79174efabeced557bdeef310b7
+  sha256: fffa2ef9c0749292fb7507c22fad764577564ed941858a52004d7cf80e1de7d3
 - path: modes/repo-discovery.xml
-  sha256: cdc2fdae5e065e4ab3814c441d2ad2dd7a36c9669f7de9d5b470c8ca5c694ed8
+  sha256: e65ca9c93b6dbd24ad65baa7ab42da52c52cdac7e94387b3674c4b3399dc75d5
 - path: modes/repo-docs.xml
-  sha256: 04a35498251a38f48a9b15e9793e5d020d00fa9289e96283b5ef1920b3a577bd
+  sha256: 5d915016ab89fb327bb736ed507537780c8e44584d7f5efaf5ad6c7708f1792e
 - path: modes/repo-fix.xml
-  sha256: 77e66d2838341f47beb86fd3c822dd0d4330d6f9b5aa1aaf45cad81f925722e0
+  sha256: 66516c2e9a19be8796f589d846901742da8256a80bc90d11515f29901c751342
 - path: modes/repo-instantiate.xml
-  sha256: b62b50c9f979704bf6bef6b51cf481666ba0db25e7f55c166a496fc2a8269463
+  sha256: bdb097592e4542c62988121d70a4a9e6484dffc21db592e3aaa993f0a1a859c3
 - path: modes/repo-release.xml
-  sha256: 0589182d141c5d4992d811536f2735bcf62be9c28c86268cdc068a56e57c5d9a
+  sha256: 9a2d5f63a11da14bce1446d1fbc2d9c70c140a3ca42f0c4c05a2f8aa616b64a5
 - path: modes/repo-review.xml
-  sha256: ce39eace6869bc15cfa275b7d838fc521bca069bbdb94ea5aed6afd2da91282e
+  sha256: d0889ea25d242a7175225b6f36181e0a97d63c2599f2203064828c944372408b
 - path: modes/repo-security.xml
-  sha256: 56d36d9d6cb761fca44ae7db825b360f95d44c4503363d795f74c59b1c41518d
+  sha256: badece4401ba0f8c072a4353d3e12d471037cabac8a46df21e88167428396ccf
 - path: output.schema.json
   sha256: b385b0f658ad5c29bf9c0511aa117b0939a6c2e8baccdbca5cd88dddd57495d0
 - path: prompt.body.xml
-  sha256: 02b3b7e8b43f1501d926d410dfc9b41b527a0ac40a0f3a16d26e64f334e79e94
+  sha256: a0bd68a5fe3c3f700ba2d6e6d7d0a7592c2feef3fe986a4c5811435abbcb6ba0
 - path: prompt.spec.yaml
-  sha256: ed454e35d34872e3a05dc75cbae6ac035858d98d76513d09ea33b72ddce66cf9
+  sha256: 1bb00446a7a1d1e861cbec1c21250cedaed8f50b3dcb53f47735b6f4968d5115
+- path: README.md
+  sha256: 6c34825d920bf11b9a7e7e85d1a43a50e74970c48be147147bb073d426018438
 - path: references/accessibility-confidence-pack.xml
   sha256: 5a8ee2853d209d36401c4f852109a69cc2bfb2362e133eed148ff570fccc7410
 - path: references/agent-evidence.xml
@@ -370,7 +420,7 @@ artifacts:
 - path: references/github-settings-pack.xml
   sha256: 7f55e8f4dbcc9a9550f327e25effdc754fc0a4225534aed08c0447cb0c265694
 - path: references/github-tooling-mutation-policy.xml
-  sha256: 37072d2e2bcbee40afb336735cdfb6181dcf4291d66618c47b07a1371afb20ab
+  sha256: 94c8c0fb10294b30add933e74281b31af24bcd160f61398696164e63d233c6ef
 - path: references/harm-register.xml
   sha256: b7e7799a06cec6ff47fd9df2879904aa932214cf2844a0bd7e2f0d8aba48dbf8
 - path: references/implementation-workflow.xml
@@ -413,16 +463,14 @@ artifacts:
   sha256: 622232c90712f983eebbb8cf111f6fd24415451d0d89ac88ad43af28d9f8e257
 - path: roles/security.xml
   sha256: d81f98991346a6249c8a6fbc435b8aa74b489ae5d862bda995190e34d2992fd2
-- path: scripts/README.md
-  sha256: 66e887fd40f4c8bb669d3b83b1d7a81b043615851758baad5a005c260086aeec
 - path: scripts/check-performance-budget.py
   sha256: 1f39b2249084844a54a5a5e1b3c21efb1f4bccf368c2dcab1dd1c589f528c3fd
 - path: scripts/fail-intentionally.py
   sha256: ef9af8d0070958b4656c7ce7a76d494e961f67f8c3ef46b296d2742bf1c58b84
 - path: scripts/generate-sbom-attestation.py
-  sha256: 87b72be71f7427a973994d40be6d98213da2aca1a240c37eaa008da034a4fdf2
+  sha256: 984af792960f3144f726dc64b1aa3b1e897c8d618be64aa46660f4781e89282c
 - path: scripts/generate-sbom.py
-  sha256: a497f5adc3d1e59111f8d4c6798bf566c90adf9a8e53267e635ca09f7e826527
+  sha256: deb56bb952254161d060da67e73a4c19dc43ef960244c5de2e4749bff98e01de
 - path: scripts/github_settings_verification.py
   sha256: 4bdddd4d29acec55c7999771c2b1826bbf1b8d202180a279ae56074f20ff8834
 - path: scripts/grade-output.py
@@ -433,6 +481,8 @@ artifacts:
   sha256: db80b6e0d5e26d2b63865ffaabd206971e5a484fd8090874987431976cdf043b
 - path: scripts/pin-workflow-actions.py
   sha256: 8855ecbe8c4c17dee2598ab48da6be48be89b96b05fd1c032210b4dd16626287
+- path: scripts/README.md
+  sha256: 77b533dff46947c81a32dea78ea3f66eb59fb635535861c33babeb07c18e9cac
 - path: scripts/release-gate.py
   sha256: a2c6b50e0af367442e100310f3ac650191b4a7b996853b44038648f032298ca1
 - path: scripts/repository_conditions.py
@@ -442,7 +492,7 @@ artifacts:
 - path: scripts/select-ci-templates.py
   sha256: 3e9efd40899dabacd051732c6b27dbb1847dd7b4b981a65d287def71324d4cac
 - path: scripts/validate-accessibility-evidence.py
-  sha256: bd2a72b458bdfe93594cb96906d21a39d2eae04ef0dc36bf3b34b73dfacfc265
+  sha256: 4929046e1bc58ad41062cd5615fa77838aff8102ed4fcbc9cf3ac01ab09bdd08
 - path: scripts/validate-accessibility-fixtures.py
   sha256: 21de89e7236b79988e52a77b815568b65d08355604c848b00c4bb7a385498c05
 - path: scripts/validate-agent-evidence.py
@@ -450,9 +500,9 @@ artifacts:
 - path: scripts/validate-bundle.py
   sha256: a085f00149ee800e5267256d3ac062520ddf449c88d07ccf780b82d5503f030d
 - path: scripts/validate-changelog.py
-  sha256: 4ab2de0290d6f9e737644c65b148728fd995a3a293e2d4d95e93e75dc2522a46
+  sha256: 697806c2e1e718fb1ce35beff7603a8c03a8392dc49d6e94cf4e388007436e1f
 - path: scripts/validate-docs-consistency.py
-  sha256: 1113fd48fd31ba312579b5eae85943ed3bab649e10e45604e337fb3e1d8d478d
+  sha256: c4e665ca3d7194c4fc5cef8443d9bf283bfca2c67c680386d8235bf85c6c74b4
 - path: scripts/validate-evals.py
   sha256: 754f1328ae7f322a8979e10dcf7993507a4bf047c183806a579905b7fd3a8dd9
 - path: scripts/validate-github-api-fixtures.py
@@ -491,8 +541,6 @@ artifacts:
   sha256: 13fdce2d988c6491aa5a1af197e4fd814976809cb5e8f7fb7f655b1e1ba2aecf
 - path: template-registry.yaml
   sha256: 987e33d8198fc617bf3d9cb323f9cf547dde04fcae520e5d94e0826176a576ba
-- path: templates/RECENT_LEARNINGS-template.md
-  sha256: 96d7c42467746b872ed7263816e3b05fc4a25c7390c24203bfbd3086ad5ea8b5
 - path: templates/archetype-control-profiles/agent-system.yaml
   sha256: a8943fad82607a7359d301bbf4e2a3418ffc3121a787f72968927e43be44bd58
 - path: templates/archetype-control-profiles/api-service.yaml
@@ -507,88 +555,8 @@ artifacts:
   sha256: 5f34b7323297390313e9da63542e56a1cc3d799222b7349541d1e39f9a4ead27
 - path: templates/discussion_template.md
   sha256: e45e9edfca5fae65140fe6b00b7ded3e64a8136250078182aca8adfe90ed203c
-- path: templates/github/.github/CODEOWNERS
-  sha256: 3da9e38fa58abd603fe58e9801aae6850acd4e4dd19270a3cde253ecce231127
-- path: templates/github/.github/ISSUE_TEMPLATE/bug_report.yml
-  sha256: a44eff200c199df70aa8f2b1b3f75d11e761e43c886553076347c622fa4cffe3
-- path: templates/github/.github/ISSUE_TEMPLATE/feature_request.yml
-  sha256: 460b5442fd6048fdbd120cc02730d28a784d3512f25945ae2eb4c44ab8ac9a51
-- path: templates/github/.github/PULL_REQUEST_TEMPLATE/default.md
-  sha256: 350e1a9b7a12ee7d35266cd2cdafad5711522a769e02f1b7dbca61160fedd048
-- path: templates/github/.github/workflows-hardened/README.md
-  sha256: d695ae685a8387932b20d7001e1078b390bb0f7849e319e80c3fac18bc2a5648
-- path: templates/github/.github/workflows-hardened/ci-accessibility.yml
-  sha256: ea1c503b5b716b95ff878bd7e993cf2578d7187c1da0e16197cd288ddf2cb079
-- path: templates/github/.github/workflows-hardened/ci-conformance.yml
-  sha256: d90b6d9eacd31fbbe7fc13d1d4160fe3b98cb7c81cc796e1119b897363bdda5e
-- path: templates/github/.github/workflows-hardened/ci-data-ml.yml
-  sha256: 04d0d7a681bd378c87c5b28c5828e2b9fe6544ebcc63592826fe27ed0178b47e
-- path: templates/github/.github/workflows-hardened/ci-docs-quality.yml
-  sha256: 38e6e3bcd7e06252b7ef77ef6926402c738c22e6800095001ae72aea6dab48f8
-- path: templates/github/.github/workflows-hardened/ci-dotnet.yml
-  sha256: 95de91017f05f3be830610b55baecfc76981aeb5d77cdac4c0359fced1af632d
-- path: templates/github/.github/workflows-hardened/ci-go.yml
-  sha256: 1bb4b22826c36ce2638ccdf0daf7bf20f49496ce275362f3e0ab4bc9020a17a9
-- path: templates/github/.github/workflows-hardened/ci-java.yml
-  sha256: c63549362397b1883303bf77002cae194d839f7a113bd3e78b18b985313103d0
-- path: templates/github/.github/workflows-hardened/ci-node.yml
-  sha256: b65073aa4df20b4d9e5eba21b9a22f0c575c8b380b8790d897c97084f6a97eb1
-- path: templates/github/.github/workflows-hardened/ci-performance.yml
-  sha256: a62df8f00123219f8c0a14a772421184d41968d7b8bab328f8c52dcffabcdfc2
-- path: templates/github/.github/workflows-hardened/ci-php.yml
-  sha256: b0d9747fe163f60f34114ed4d7c5886c40de32c7ec4a16f14665da5e7559161b
-- path: templates/github/.github/workflows-hardened/ci-python.yml
-  sha256: 27484dd6dd0ebef7c9b8f941a8b45a19419f344c7c01ef95e0ce922ea8bc6487
-- path: templates/github/.github/workflows-hardened/ci-ruby.yml
-  sha256: dbe114d66a1b450d5bb03f99d8bd38e421e4ac00413854ffcb3cb85b8898c47d
-- path: templates/github/.github/workflows-hardened/ci-rust.yml
-  sha256: 469bf006e782227e2a612cd1a5df3f97ad593e4cdc7e847068a41e45de41cc6b
-- path: templates/github/.github/workflows-hardened/codeql.yml
-  sha256: e686fe2eb5414b6e93b10df3120a620860e9d37ba8a8855fb08d51b051792920
-- path: templates/github/.github/workflows-hardened/dependency-review.yml
-  sha256: cedf7b4d894722dd3498a1b00df29970e9a6fd94c51263aff8054e44c2aa5f50
-- path: templates/github/.github/workflows-hardened/file-inventory.yml
-  sha256: 7f16df5fafaee5e97b563b98b7688e1d226fab07bbf6b69e6dd54aa9bba37b5d
-- path: templates/github/.github/workflows-hardened/release-gate.yml
-  sha256: b39b39258d5c429d2c955cc61eb0493ea9a4458a17a75d506a31153b7002a05c
-- path: templates/github/.github/workflows-hardened/sbom-cyclonedx.yml
-  sha256: c1575069aef7c2ed77d1f74b40a50160f286481f2b9392ea6c8311934d4f8b41
-- path: templates/github/.github/workflows/ci-accessibility.yml
-  sha256: 27ae6a849bdb635664dda0d1a2f5b14de508f71a7947a2b05a732a2821bbb8b2
-- path: templates/github/.github/workflows/ci-conformance.yml
-  sha256: 9c4ce03e31fe230c761d8dad184cc5a8332af9fbe7f71a98bdbff3e544169708
-- path: templates/github/.github/workflows/ci-data-ml.yml
-  sha256: 469910852969ed9096c3c8a4ccb333dad7e5672d10f76715d91404409876b8b2
-- path: templates/github/.github/workflows/ci-docs-quality.yml
-  sha256: 0a42a9e12084936c92c889b008b23d0e489130a5e7b530fdb8b12f8b9ff2090f
-- path: templates/github/.github/workflows/ci-dotnet.yml
-  sha256: e8d23f17f8227d2187e8e24933f7c9a736ecbd7dbb415985440ef4916de5b390
-- path: templates/github/.github/workflows/ci-go.yml
-  sha256: af80789364aa6728b5f559c3739d5140ca2c6164cea1d4c70a0395de3f7b43a0
-- path: templates/github/.github/workflows/ci-java.yml
-  sha256: 00e03d2f046c05fe7336c8a3cd2be5ce58df0c471675f649f602c7b22a5ab7b3
-- path: templates/github/.github/workflows/ci-node.yml
-  sha256: ac9622596abf2be698b1b909676e29d945795a5b1ddd32b13122535ef482b62f
-- path: templates/github/.github/workflows/ci-performance.yml
-  sha256: 2401e5a0535769d14a0f004928fcc9d6fdbf106078f51399b8f3c690a23284e0
-- path: templates/github/.github/workflows/ci-php.yml
-  sha256: fa97827f79d213880cf5d21157ab778054c8ab4417fafadaf29967714f133a5f
-- path: templates/github/.github/workflows/ci-python.yml
-  sha256: 84a4cd24d9e6dfc76cccd25c34db7d7b0d85264dde7e7244087037e6c73a1390
-- path: templates/github/.github/workflows/ci-ruby.yml
-  sha256: eb6fedae7af2f3205b9b1ff51cc2ea3424f18c5628c76a6065cfa3f4e5c1c119
-- path: templates/github/.github/workflows/ci-rust.yml
-  sha256: a9710fb027d3d2246ab9d38a4bcc9e2b42a302b7fa052475bbaab18f5c91b4c1
-- path: templates/github/.github/workflows/codeql.yml
-  sha256: 6c1f36c7ce59fc406bb112c1bea5ac2b54148a2c5792acf82ede598e3ab3944c
-- path: templates/github/.github/workflows/dependency-review.yml
-  sha256: a3f1c2a6dcb399360836ea4ee55b10568358b31d3115b8b4b5c2619db1704d1e
-- path: templates/github/.github/workflows/file-inventory.yml
-  sha256: 39a54598131ffcca9b491593b8450aaf17cb3ade24d7e1fde80955c44c968d3c
-- path: templates/github/.github/workflows/release-gate.yml
-  sha256: 5a366c10febcba432cce6985740c946e07f53d3ba103a6f5dc32c7034055d6ca
-- path: templates/github/.github/workflows/sbom-cyclonedx.yml
-  sha256: 8ff0bfc382679c880516a9c563c4cbfb87657ab9f1068234b77ed2994c4b6bcb
+- path: templates/discussion-template.xml
+  sha256: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
 - path: templates/github/workflow-action-lock.example.yaml
   sha256: d2a5d6ca69a4b2dfc0071f8270a6e24b576ed3c1037f719490de152034b22274
 - path: templates/issue_bug_report.yaml
@@ -597,20 +565,18 @@ artifacts:
   sha256: 460b5442fd6048fdbd120cc02730d28a784d3512f25945ae2eb4c44ab8ac9a51
 - path: templates/pull_request_template.md
   sha256: 350e1a9b7a12ee7d35266cd2cdafad5711522a769e02f1b7dbca61160fedd048
-- path: templates/repository/CODEOWNERS-template
-  sha256: c7faf7f5afe29945d4d89981ee48c6f3117f2f4fc35ef7e5b6c296ea767f1f28
-- path: templates/repository/CONTRIBUTING-template.md
-  sha256: 44367520c9c02ed2b986c01bbf8c51420881537574ab331d0d0c7a15e21d53a2
-- path: templates/repository/README-template.md
-  sha256: 7949234b4689be411618a81335d0e0d0e00d0b071da8f519ed25536759acbce5
-- path: templates/repository/SECURITY-template.md
-  sha256: 8c4721948c5b20de6d7975e5cf19f093b9b4d136f1b07ca031a7c430c90549ad
+- path: templates/RECENT_LEARNINGS-template.md
+  sha256: 96d7c42467746b872ed7263816e3b05fc4a25c7390c24203bfbd3086ad5ea8b5
 - path: templates/repository/accessibility-evidence-template.md
   sha256: 4a9b004d9e70047bb0077397aff191cf255e8b155944c01486b29d509c935248
 - path: templates/repository/agent-evidence-template.yaml
   sha256: 117117fd7c8f611eb319468684e37dda767b3cdd86036a6f0ddccca0f7e96248
+- path: templates/repository/CODEOWNERS-template
+  sha256: c7faf7f5afe29945d4d89981ee48c6f3117f2f4fc35ef7e5b6c296ea767f1f28
 - path: templates/repository/conformance-matrix-template.yaml
   sha256: fc60ed65b0749dd4b4105e53c7acc66f71f7a86205992cccff0769731d0abdae
+- path: templates/repository/CONTRIBUTING-template.md
+  sha256: 44367520c9c02ed2b986c01bbf8c51420881537574ab331d0d0c7a15e21d53a2
 - path: templates/repository/endpoint-catalog-template.yaml
   sha256: 7b643b4d847ba686d547e0ead4ebd21fee9b1e6235cac325aea263d8f4d65f55
 - path: templates/repository/gap-register-template.yaml
@@ -620,7 +586,7 @@ artifacts:
 - path: templates/repository/harm-register-template.yaml
   sha256: c2e84079aa3f3792a4bf4b5f9b07d45329e1b2baeff75f9b8f149945cc138798
 - path: templates/repository/live-release-policy.yaml
-  sha256: d0680ca63aa55d74b7b8fed43ef847742f3fe54b7e351779e7589275f899171d
+  sha256: c51c302f18a56b00f2199bbc5dc9fc2a29e1a9fb32627c50a2298a6f9e6156a2
 - path: templates/repository/metadata-provenance-template.yaml
   sha256: 3ca8b57a54f1169867f045b42db410a1756e33e098c4ccd320f26b309a9a01f1
 - path: templates/repository/performance-budget-artillery.yaml
@@ -643,8 +609,12 @@ artifacts:
   sha256: 59aeaf47e5783dc6c0abed1400e9ae7e9ba170a96c54ed8202fadeed19d6c620
 - path: templates/repository/performance-metric-profiles.yaml
   sha256: 06cf5c1a089180e5eece1a9bfb98287fe463833bb1b467d9df6fdc5d680b6a7c
+- path: templates/repository/README-template.md
+  sha256: 7949234b4689be411618a81335d0e0d0e00d0b071da8f519ed25536759acbce5
 - path: templates/repository/release-checklist-template.md
   sha256: 1fd0e0426b3023a03941858e71ba32a11775a07c1b482f19d65d0aa485bf1157
+- path: templates/repository/SECURITY-template.md
+  sha256: 8c4721948c5b20de6d7975e5cf19f093b9b4d136f1b07ca031a7c430c90549ad
 - path: templates/security.md
   sha256: 4b7886014210e65f4292c11e698df862d2aa990ca3a7bfdd97a64f1188764e29
 - path: templates/starter-trees/agent-system.txt
@@ -663,5 +633,7 @@ artifacts:
   sha256: 30b73c13c07c4a73dbc65e9db241cfcf2229d014efe9138869d9f1180660eb39
 - path: tests.regression.yaml
   sha256: 45350ecffeb5040f7cb61301fc99d6a23436d934280fc48bb7c3f47d8263d6a1
+- path: VALIDATION-REPORT.md
+  sha256: b7305cb5ba1149685f6fe5ab5568e907c5ca43bbfbb29c96f7798c9a233b0d3a
 - path: variables.schema.json
   sha256: 98e5a233501da227f3209b48e8729ac9a3b2a45d6de0c471251d1148e7ce0593
