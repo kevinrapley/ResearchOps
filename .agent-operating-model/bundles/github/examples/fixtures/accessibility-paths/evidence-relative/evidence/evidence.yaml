@@ -1,29 +1,65 @@
+fixture_metadata:
+  id: accessibility-paths-evidence-relative
+  kind: accessibility_path_resolution_fixture
+  expected_validator_result: pass
+  path_resolution_model: evidence_file_relative
+  purpose: >
+    Proves that structured accessibility evidence can refer to automated result
+    artefacts stored beside the evidence file itself, without requiring the
+    result paths to be rooted at the repository fixture root.
+  important_distinction: >
+    The result paths below are intentionally written as plain filenames. The
+    validator should resolve them relative to this evidence file after checking
+    root-relative candidates.
+
 automated_checks:
   axe:
     tool: axe-core
     file: axe.json
+    interpretation: Passing axe result stored beside this evidence file.
   pa11y:
     tool: pa11y
     file: pa11y.json
+    interpretation: Passing Pa11y result stored beside this evidence file.
   lighthouse:
     tool: lighthouse
     file: lighthouse.json
+    interpretation: Passing Lighthouse result stored beside this evidence file.
+
 keyboard_tests:
   - name: Keyboard journey
-    steps: [Tab through page]
+    steps:
+      - Load the example service page.
+      - Tab through the header, main content and form controls.
+      - Confirm focus order follows the visible page order.
+      - Submit the form using the keyboard.
     result: pass
+    notes: Manual keyboard evidence remains present even though the fixture focuses on path resolution.
+
 screen_reader_tests:
   - screen_reader: VoiceOver
     browser: Safari
     result: pass
-    notes: Main landmarks announced.
+    notes: Main landmarks, heading structure and form labels are announced.
+
 assistive_technology_matrix:
   - technology: VoiceOver
     browser: Safari
     platform: macOS
     result: pass
+    notes: Evidence-relative fixture uses this as representative assistive-technology evidence.
+
 defects:
-  - id: A11Y-2
+  - id: A11Y-PATH-EVIDENCE-1
     severity: low
     status: closed
+    summary: Closed low-severity defect included to prove non-blocking defect handling.
+
 release_decision: pass
+
+expected_path_resolution:
+  axe: axe.json
+  pa11y: pa11y.json
+  lighthouse: lighthouse.json
+  should_resolve_files_next_to_evidence: true
+  should_pass_without_copying_results_to_fixture_root: true
