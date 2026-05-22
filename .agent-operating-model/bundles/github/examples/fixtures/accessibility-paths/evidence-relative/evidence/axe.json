@@ -1,1 +1,51 @@
-{"violations":[]}
+{
+  "example_metadata": {
+    "id": "accessibility-paths-evidence-relative-axe",
+    "kind": "accessibility_path_result_fixture",
+    "tool": "axe-core",
+    "path_resolution_model": "evidence_file_relative",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing axe result stored beside evidence.yaml and resolved through evidence-file-relative lookup."
+  },
+  "url": "http://localhost:4173/accessibility-paths/evidence-relative",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright"
+  },
+  "violations": [],
+  "incomplete": [],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": ["wcag2a", "wcag242"],
+      "description": "Ensures the document has a non-empty title element",
+      "help": "Documents must have a title element",
+      "nodes": [
+        {
+          "target": ["html"],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    },
+    {
+      "id": "html-has-lang",
+      "impact": null,
+      "tags": ["wcag2a", "wcag311"],
+      "description": "Ensures the html element has a lang attribute",
+      "help": "html element must have a lang attribute",
+      "nodes": [
+        {
+          "target": ["html"],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    }
+  ]
+}
