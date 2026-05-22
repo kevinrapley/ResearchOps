@@ -1,0 +1,33 @@
+id: negative-missing-trusted-sbom-attestation
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_trusted_sbom_attestation
+blocking_requirement: attestation.json
+
+purpose: >
+  Proves that the high-assurance live gate fails when trusted SBOM attestation
+  evidence is absent.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: remove attestation.json
+  primary_missing_file: attestation.json
+
+expected_validator_behaviour:
+  - Detect that attestation evidence is absent.
+  - Refuse to mark trusted SBOM evidence as complete.
+  - Report the missing attestation as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_attestation: true
+  negative_fixture_omits_attestation: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - workflow lock evidence
+  - accessibility evidence quality
+  - performance evidence quality
+  - external attestation verification evidence
+  - GitHub API observability
