@@ -364,9 +364,9 @@ artifacts:
 - path: graders/sbom-grader.xml
   sha256: b08f672d8bb9818d73bbe76da436d3a881881e9e1c355f9f4df4420cc3c9c64e
 - path: graders/security-grader.xml
-  sha256: 41555ad84b2e9cab0bdd5a971eda321af7588f98d67b50e06d8ab4ba9375f3ce
+  sha256: b67d0ff23ab874565188a7c3b859e03738deb22755c31146c8a5057f894c0de9
 - path: graders/template-registry-grader.xml
-  sha256: 5d4185097170ddce59e8d6a8b7a5882f199581302143ce550a5c4bb973f0fa4a
+  sha256: 6057945f39c59cd88f8745ce60075428eef00e89b2111f428d9a834a1b07a788
 - path: modes/repo-archive.xml
   sha256: 32bbb7dc470efa68e2a477f80efbf2a380cb00b77e09289176a911b0b5b691c2
 - path: modes/repo-build.xml
