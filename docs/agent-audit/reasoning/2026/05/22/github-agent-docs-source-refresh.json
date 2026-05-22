@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-22",
+  "branch": "fix/github-agent-docs-source-refresh",
+  "scope": [
+    "agent-documentation",
+    "github-diamond-bundle",
+    "generated-source-panels",
+    "examples-source-panels",
+    "bundle-version-metadata",
+    "cloudflare-pages-build"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to fix stale generated GitHub bundle documentation. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The public GitHub bundle overview page showed version 2.9.2 after the GitHub bundle was promoted to 2.9.3.",
+    "The public examples source panels did not visibly expose all expanded example source because example code panels inherited the height cap and scroll-box behaviour used for other source families.",
+    "The build script did not explicitly assert that source/examples/index.html existed or contained representative post-2.9.3 example files."
+  ],
+  "workSummary": [
+    "Created fix/github-agent-docs-source-refresh from main after PR #276 was merged.",
+    "Updated the source-panel layout normaliser so example panels show full source code instead of height-capped scroll boxes.",
+    "Changed the source-panel asset version to source-panel-examples-full-source-v1 so Cloudflare Pages receives a cache-busting asset URL.",
+    "Added a metadata sync script that reads the canonical GitHub bundle version from prompt.spec.yaml and updates generated documentation metadata after source pages are generated.",
+    "Updated build.sh to run the metadata sync step and assert that the overview page and generated metadata use version 2.9.3.",
+    "Updated build.sh and the reusable verifier to require the generated examples source page and representative expanded examples."
+  ],
+  "changedAreas": [
+    "scripts/agent-operating-model/normalise-source-panel-layout.mjs",
+    "scripts/agent-operating-model/sync-github-docs-generated-metadata.mjs",
+    "scripts/agent-operating-model/verify-github-source-panel-docs.mjs",
+    "build.sh",
+    "docs/agent-audit/reasoning/2026/05/22"
+  ],
+  "validationEvidence": {
+    "staticChecksAdded": [
+      "build.sh now greps for <strong>Version</strong>2.9.3 in the generated GitHub bundle overview.",
+      "build.sh now greps for version 2.9.3 in generated-metadata.json.",
+      "build.sh now requires docs/agent-operating-model/bundles/github/source/examples/index.html.",
+      "build.sh now checks representative examples including examples/scenarios/repo-discovery-node-api.yaml and examples/performance-results/python-results.yaml.",
+      "verify-github-source-panel-docs.mjs now treats examples as a required source family."
+    ],
+    "notRunLocally": [
+      "No local build command was run in this connector-only environment. CI should run build.sh on the pull request."
+    ]
+  },
+  "risks": [
+    {
+      "risk": "The public site will remain stale until the fix branch is merged and the agent documentation deployment succeeds.",
+      "mitigation": "Open a pull request and rely on the existing Build and deploy agent documentation Pages workflow to verify and deploy."
+    },
+    {
+      "risk": "Long examples pages will become taller because example panels now show full source instead of internal scroll boxes.",
+      "mitigation": "The change is limited to source-panel examples only. Other source families retain the 1400px cap."
+    }
+  ],
+  "status": "ready-for-pr"
+}
