@@ -1,0 +1,79 @@
+fixture_metadata:
+  id: high-assurance-workflow-action-lock
+  kind: live_gate_positive_fixture
+  profile: high-assurance
+  expected_result: pass
+  purpose: >
+    Provides reviewed workflow action evidence for the high-assurance live-gate
+    passing fixture.
+
+workflow_action_lock:
+  generated_at: '2026-05-21T12:00:00Z'
+  verification_mode: fixture
+  status: reviewed
+  notes: >
+    This is fixture evidence. Real repositories should generate this from the
+    actual workflow files and reviewed action references.
+
+required_workflows:
+  - path: .github/workflows/ci-node.yml
+    status: present
+    required_for: Node validation
+  - path: .github/workflows/ci-python.yml
+    status: present
+    required_for: Python validation
+  - path: .github/workflows/ci-conformance.yml
+    status: present
+    required_for: repository evidence validation
+  - path: .github/workflows/ci-docs-quality.yml
+    status: present
+    required_for: documentation quality validation
+  - path: .github/workflows/codeql.yml
+    status: present
+    required_for: code scanning evidence
+  - path: .github/workflows/dependency-review.yml
+    status: present
+    required_for: dependency review evidence
+  - path: .github/workflows/ci-hardened.yml
+    status: present
+    required_for: high-assurance release gate evidence
+
+actions:
+  - workflow: .github/workflows/ci-node.yml
+    action: actions/checkout
+    version: v4
+    reviewed: true
+  - workflow: .github/workflows/ci-node.yml
+    action: actions/setup-node
+    version: v4
+    reviewed: true
+  - workflow: .github/workflows/ci-python.yml
+    action: actions/checkout
+    version: v4
+    reviewed: true
+  - workflow: .github/workflows/ci-python.yml
+    action: actions/setup-python
+    version: v5
+    reviewed: true
+  - workflow: .github/workflows/codeql.yml
+    action: github/codeql-action/init
+    version: v3
+    reviewed: true
+  - workflow: .github/workflows/codeql.yml
+    action: github/codeql-action/autobuild
+    version: v3
+    reviewed: true
+  - workflow: .github/workflows/codeql.yml
+    action: github/codeql-action/analyze
+    version: v3
+    reviewed: true
+  - workflow: .github/workflows/dependency-review.yml
+    action: actions/dependency-review-action
+    version: v4
+    reviewed: true
+
+release_gate_interpretation:
+  workflow_lock_present: true
+  placeholder_values_present: false
+  reviewed_actions_present: true
+  should_pass_high_assurance_workflow_check: true
