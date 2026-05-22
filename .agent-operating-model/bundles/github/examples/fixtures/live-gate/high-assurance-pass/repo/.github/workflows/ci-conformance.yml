@@ -1,10 +1,50 @@
 name: CI (Conformance)
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 permissions:
   contents: read
+
 jobs:
-  check:
+  conformance-validation:
+    name: Validate high-assurance evidence set
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - run: echo ok
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check required repository evidence exists
+        run: |
+          test -f github-settings.yaml
+          test -f conformance-matrix.yaml
+          test -f gap-register.yaml
+          test -f agent-evidence.yaml
+          test -f RECENT_LEARNINGS.md
+
+      - name: Check required high-assurance evidence exists
+        run: |
+          test -f workflow-action-lock.yaml
+          test -f attestation.json
+          test -f trusted-attestation-verification.json
+          test -f accessibility-evidence.yaml
+          test -f performance-budget.yaml
+          test -f performance-results.yaml
+          test -f sbom.json
+
+      - name: Check required workflow files exist
+        run: |
+          test -f .github/workflows/ci-node.yml
+          test -f .github/workflows/ci-python.yml
+          test -f .github/workflows/ci-conformance.yml
+          test -f .github/workflows/ci-docs-quality.yml
+          test -f .github/workflows/codeql.yml
+          test -f .github/workflows/dependency-review.yml
+          test -f .github/workflows/ci-hardened.yml
+
+      - name: Check ownership routing exists
+        run: test -f .github/CODEOWNERS
