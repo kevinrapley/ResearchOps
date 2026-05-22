@@ -1,4 +1,69 @@
 {
-  "latency": {"p95": 100},
-  "requests": {"average": 500}
+  "url": "https://example.service.gov.uk/api/repository/conformance",
+  "connections": 20,
+  "pipelining": 1,
+  "duration": 60,
+  "workers": 4,
+  "method": "GET",
+  "headers": {
+    "accept": "application/json",
+    "x-fixture-profile": "github-diamond-standard"
+  },
+  "requests": {
+    "average": 500,
+    "mean": 500,
+    "stddev": 24.8,
+    "min": 452,
+    "max": 548,
+    "total": 30000,
+    "sent": 30020,
+    "p1": 456,
+    "p2_5": 462,
+    "p50": 501,
+    "p75": 517,
+    "p90": 531,
+    "p95": 538,
+    "p97_5": 543,
+    "p99": 548
+  },
+  "latency": {
+    "average": 74.6,
+    "mean": 74.6,
+    "stddev": 12.4,
+    "min": 42,
+    "max": 141,
+    "p1": 46,
+    "p2_5": 49,
+    "p50": 72,
+    "p75": 84,
+    "p90": 95,
+    "p95": 100,
+    "p97_5": 112,
+    "p99": 128
+  },
+  "throughput": {
+    "average": 328000,
+    "mean": 328000,
+    "stddev": 16200,
+    "min": 296000,
+    "max": 360000,
+    "total": 19680000,
+    "p95": 352000
+  },
+  "errors": 0,
+  "timeouts": 0,
+  "mismatches": 0,
+  "non2xx": 0,
+  "resets": 0,
+  "statusCodeStats": {
+    "200": {
+      "count": 30000
+    }
+  },
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded autocannon fixture for HTTP throughput and latency evidence while preserving latency.p95 and requests.average parser fields."
+  }
 }
