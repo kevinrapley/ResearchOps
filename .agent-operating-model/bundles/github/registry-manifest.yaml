@@ -420,7 +420,7 @@ artifacts:
 - path: references/github-settings-pack.xml
   sha256: 7f55e8f4dbcc9a9550f327e25effdc754fc0a4225534aed08c0447cb0c265694
 - path: references/github-tooling-mutation-policy.xml
-  sha256: 94c8c0fb10294b30add933e74281b31af24bcd160f61398696164e63d233c6ef
+  sha256: 91d7330db8ec109a19367e70a6dce96f99bc57e0f8c2564e990d8dfd9110ac38
 - path: references/harm-register.xml
   sha256: b7e7799a06cec6ff47fd9df2879904aa932214cf2844a0bd7e2f0d8aba48dbf8
 - path: references/implementation-workflow.xml

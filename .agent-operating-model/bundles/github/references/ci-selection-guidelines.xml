@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="ci-selection-guidelines" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<reference id="ci-selection-guidelines" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>CI Selection Guidelines</title>
   <description>
     Guidance for selecting the appropriate continuous‑integration (CI) workflow template based on the repository’s language, framework and purpose.  The agent should read the `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `pom.xml` or similar manifests to determine which workflow to use.  If multiple languages are present, multiple workflows may be combined in a single pipeline or executed as separate jobs.

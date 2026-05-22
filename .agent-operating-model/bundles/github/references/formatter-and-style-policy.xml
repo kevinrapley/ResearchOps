@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="formatter-and-style-policy" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<reference id="formatter-and-style-policy" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>Formatter and Style Policy</title>
   <description>
     Guidelines for respecting and configuring code formatters and style rules.  Agents must detect existing configuration files and adhere to them.  If no configuration exists, sensible defaults are provided.  Formatting should be automated and enforced both locally and in CI to avoid “nitpick” reviews.

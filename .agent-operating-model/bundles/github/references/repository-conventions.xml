@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="repository-conventions" version="2.9.2" xml_profile="native-semantic-xml/v1">
+<reference id="repository-conventions" version="2.9.3" xml_profile="native-semantic-xml/v1">
   <title>Repository Conventions</title>
   <description source="internal-doctrine">Repository Conventions for repository operation.</description>
   <rules>

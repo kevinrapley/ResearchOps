@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="performance-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<reference id="performance-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>Performance Confidence Pack</title>
   <description>
     Guidelines for monitoring and enforcing performance characteristics of the software.  Performance matters for user experience and operational cost.  Agents should implement benchmarks and performance budgets suitable for the repository’s domain.

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="github-settings-pack" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<reference id="github-settings-pack" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>GitHub Settings Pack</title>
   <description>
     Guidance for configuring repository settings on GitHub to enforce quality and security.  The settings described here should be applied during repository instantiation and checked regularly.  Agents must adapt the values to the organisation’s policies but should not leave critical protections disabled.

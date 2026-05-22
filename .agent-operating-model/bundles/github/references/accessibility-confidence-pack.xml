@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<reference id="accessibility-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<reference id="accessibility-confidence-pack" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>Accessibility Confidence Pack</title>
   <description>
     A checklist and policy for ensuring that repositories meet accessibility requirements.  It complements the Code Confidence Pack by emphasising inclusive design and testing.  Government services must meet WCAG 2.2 AA standards and avoid discrimination.
