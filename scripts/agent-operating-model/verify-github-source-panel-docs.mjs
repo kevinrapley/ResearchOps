@@ -6,6 +6,7 @@ import process from 'node:process';
 
 const DOCS_ROOT = 'docs/agent-operating-model/bundles/github';
 const SOURCE_ROOT = path.join(DOCS_ROOT, 'source');
+const PROMPT_SPEC_PATH = '.agent-operating-model/bundles/github/prompt.spec.yaml';
 const REQUIRED_FAMILY_PAGES = [
 	['modes', 'mode', ['How the agent uses this file', 'What to look for', 'Completion evidence']],
 	['roles', 'role', ['How the agent uses this role', 'What judgement it applies', 'Escalation signals']],
@@ -14,6 +15,15 @@ const REQUIRED_FAMILY_PAGES = [
 	['graders', 'grader', ['What this grader scores', 'What causes a fail', 'What evidence it expects']],
 	['templates', 'template', ['When this template is used', 'What must be customised', 'What must not be changed blindly']],
 	['scripts', 'script', ['What this script verifies', 'When it should be run', 'What failure means']],
+	['examples', 'example', ['How the agent uses this file', 'What to look for']],
+];
+const REQUIRED_EXAMPLE_PATHS = [
+	'examples/scenarios/repo-discovery-node-api.yaml',
+	'examples/scenarios/repo-fix-failing-ci.yaml',
+	'examples/expected-outputs/repo-release-readiness.md',
+	'examples/payloads/http-json-success.json',
+	'examples/performance-inputs/k6-summary.json',
+	'examples/performance-results/python-results.yaml',
 ];
 
 async function fileExists(filePath) {
@@ -30,6 +40,17 @@ async function readRequired(filePath) {
 	}
 
 	return readFile(filePath, 'utf8');
+}
+
+async function expectedBundleVersion() {
+	const promptSpec = await readRequired(PROMPT_SPEC_PATH);
+	const match = promptSpec.match(/^\s*version:\s*['"]?([^'"\n]+)['"]?\s*$/m);
+
+	if (!match) {
+		throw new Error(`Could not read GitHub bundle version from ${PROMPT_SPEC_PATH}`);
+	}
+
+	return match[1].trim();
 }
 
 function assertContains(value, expected, filePath) {
@@ -53,6 +74,7 @@ function panelId(panelHtml) {
 }
 
 async function main() {
+	const expectedVersion = await expectedBundleVersion();
 	const overviewPath = path.join(DOCS_ROOT, 'index.html');
 	const sourceHubPath = path.join(SOURCE_ROOT, 'index.html');
 	const overview = await readRequired(overviewPath);
@@ -66,6 +88,7 @@ async function main() {
 	assertContains(overview, 'Source panels', overviewPath);
 	assertContains(overview, 'Worked flow', overviewPath);
 	assertContains(overview, 'Coverage note', overviewPath);
+	assertContains(overview, `<strong>Version</strong>${expectedVersion}`, overviewPath);
 
 	for (const forbidden of [
 		'Source browser',
@@ -112,6 +135,13 @@ async function main() {
 			assertNotContains(html, forbidden, pagePath);
 		}
 	}
+
+	const examplesPath = path.join(SOURCE_ROOT, 'examples', 'index.html');
+	const examples = await readRequired(examplesPath);
+	for (const examplePath of REQUIRED_EXAMPLE_PATHS) {
+		assertContains(examples, examplePath, examplesPath);
+	}
+	assertContains(examples, '<span class="pill">example</span>', examplesPath);
 
 	console.log('GitHub source panel docs verified.');
 }

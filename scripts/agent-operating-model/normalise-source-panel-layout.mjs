@@ -6,7 +6,7 @@ import process from 'node:process';
 
 const DOCS_ROOT = 'docs/agent-operating-model/bundles/github';
 const ASSETS_DIR = path.join(DOCS_ROOT, 'assets');
-const ASSET_VERSION = 'source-panel-height-cap-v2';
+const ASSET_VERSION = 'source-panel-examples-full-source-v1';
 const CSS_PATH = '/bundles/github/assets/source-panel-layout.css';
 const JS_PATH = '/bundles/github/assets/source-panel-layout.js';
 const CSS_HREF = `${CSS_PATH}?v=${ASSET_VERSION}`;
@@ -22,6 +22,11 @@ const CSS = `.source-grid { align-items: start; }
   min-height: 0;
   overflow-y: auto !important;
 }
+.source-panel.example .source-grid pre {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
 .source-grid aside.notes p { margin: 0 0 12px; }
 .source-grid aside.notes h4 + p { margin-top: 0; }
 `;
@@ -32,8 +37,15 @@ function syncSourcePanelHeights() {
   document.querySelectorAll('.source-grid').forEach(function (grid) {
     var code = grid.querySelector('pre');
     var notes = grid.querySelector('aside.notes');
+    var panel = grid.closest('.source-panel');
     if (!code || !notes) return;
     code.style.height = 'auto';
+    if (panel && panel.classList.contains('example')) {
+      code.style.maxHeight = 'none';
+      code.style.overflowY = 'visible';
+      code.style.alignSelf = 'start';
+      return;
+    }
     code.style.maxHeight = SOURCE_PANEL_CODE_MAX_HEIGHT + 'px';
     code.style.overflowY = 'auto';
     code.style.alignSelf = 'start';
