@@ -1,6 +1,127 @@
 {
+  "simulation": "GitHubDiamondRepositoryAssuranceSimulation",
+  "simulationId": "github-diamond-repository-assurance-fixture",
+  "start": "2026-05-21T12:50:00Z",
+  "description": "Synthetic Gatling fixture for repository conformance and release-gate API performance evidence.",
   "stats": {
-    "meanResponseTime": {"total": 120},
-    "percentiles3": {"total": 250}
+    "name": "Global Information",
+    "numberOfRequests": {
+      "total": 3000,
+      "ok": 2970,
+      "ko": 30
+    },
+    "minResponseTime": {
+      "total": 74,
+      "ok": 74,
+      "ko": 180
+    },
+    "maxResponseTime": {
+      "total": 412,
+      "ok": 340,
+      "ko": 412
+    },
+    "meanResponseTime": {
+      "total": 120,
+      "ok": 116,
+      "ko": 232
+    },
+    "standardDeviation": {
+      "total": 36,
+      "ok": 31,
+      "ko": 52
+    },
+    "percentiles1": {
+      "total": 118,
+      "ok": 115,
+      "ko": 220
+    },
+    "percentiles2": {
+      "total": 190,
+      "ok": 184,
+      "ko": 290
+    },
+    "percentiles3": {
+      "total": 250,
+      "ok": 240,
+      "ko": 360
+    },
+    "percentiles4": {
+      "total": 325,
+      "ok": 300,
+      "ko": 408
+    },
+    "group1": {
+      "name": "t < 800 ms",
+      "count": 2970,
+      "percentage": 99
+    },
+    "group2": {
+      "name": "800 ms < t < 1200 ms",
+      "count": 0,
+      "percentage": 0
+    },
+    "group3": {
+      "name": "t > 1200 ms",
+      "count": 0,
+      "percentage": 0
+    },
+    "group4": {
+      "name": "failed",
+      "count": 30,
+      "percentage": 1
+    },
+    "meanNumberOfRequestsPerSecond": {
+      "total": 50,
+      "ok": 49.5,
+      "ko": 0.5
+    }
+  },
+  "contents": {
+    "GET conformance": {
+      "stats": {
+        "name": "GET conformance",
+        "numberOfRequests": {
+          "total": 1500,
+          "ok": 1500,
+          "ko": 0
+        },
+        "meanResponseTime": {
+          "total": 108,
+          "ok": 108,
+          "ko": 0
+        },
+        "percentiles3": {
+          "total": 218,
+          "ok": 218,
+          "ko": 0
+        }
+      }
+    },
+    "POST release gate blocked": {
+      "stats": {
+        "name": "POST release gate blocked",
+        "numberOfRequests": {
+          "total": 1500,
+          "ok": 1470,
+          "ko": 30
+        },
+        "meanResponseTime": {
+          "total": 132,
+          "ok": 126,
+          "ko": 232
+        },
+        "percentiles3": {
+          "total": 276,
+          "ok": 248,
+          "ko": 360
+        }
+      }
+    }
+  },
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded Gatling fixture with global and endpoint-level request statistics while preserving stats.meanResponseTime.total and stats.percentiles3.total parser fields."
   }
 }
