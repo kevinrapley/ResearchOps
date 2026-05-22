@@ -1,10 +1,38 @@
 name: CI (Node)
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 permissions:
   contents: read
+
 jobs:
-  check:
+  node-validation:
+    name: Validate Node live-gate fixture
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - run: echo ok
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check Node project metadata
+        run: |
+          test -f package.json
+          node -e "const pkg = require('./package.json'); if (!pkg.fixture_context || pkg.fixture_context.profile !== 'high-assurance') process.exit(1);"
+
+      - name: Run Node lint command
+        run: npm run lint
+
+      - name: Run Node test command
+        run: npm test
+
+      - name: Run Node build command
+        run: npm run build
