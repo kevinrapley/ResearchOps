@@ -9,7 +9,7 @@ test -f .agent-operating-model/source-annotations/github/source-annotations.yaml
 test -f .agent-operating-model/source-annotations/github/contracts.yaml
 test -f .agent-operating-model/source-annotations/github/graders.yaml
 
-EXPECTED_BUNDLE_VERSION="$(sed -n 's/^version:[[:space:]]*//p' .agent-operating-model/bundles/github/prompt.spec.yaml | head -n 1 | tr -d '"' | tr -d "'")"
+EXPECTED_BUNDLE_VERSION="$(node -e "const fs = require('fs'); const source = fs.readFileSync('.agent-operating-model/bundles/github/prompt.spec.yaml', 'utf8'); const match = source.match(/^\\s*version:\\s*['\"]?([^'\"\\n]+)['\"]?\\s*$/m); if (!match) process.exit(1); process.stdout.write(match[1].trim());")"
 
 if [ -z "${EXPECTED_BUNDLE_VERSION}" ]; then
 	printf '%s\n' 'Could not read GitHub bundle version from prompt.spec.yaml.' >&2
@@ -26,6 +26,7 @@ if [ -f .agent-operating-model/bundles/github/source-annotations.yaml ] || [ -d 
 	exit 1
 fi
 
+node --test scripts/agent-operating-model/tests/source-panel-layout-contract.test.mjs
 node scripts/agent-operating-model/generate-bundle-source-docs.mjs --bundle github
 node scripts/agent-operating-model/apply-source-annotations.mjs
 node scripts/agent-operating-model/normalise-source-panel-layout.mjs
