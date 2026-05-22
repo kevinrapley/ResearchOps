@@ -44,32 +44,63 @@ function isSkipped(relativePath) {
 	return parts.some((part) => SKIPPED_DIRECTORIES.has(part)) || SKIPPED_SUFFIXES.has(path.extname(relativePath));
 }
 
-function updateRootVersion(source, targetVersion) {
-	const rootStart = source.indexOf('<');
+function findRootElementRange(source) {
+	let index = 0;
 
-	if (rootStart === -1) {
+	while (index < source.length) {
+		const start = source.indexOf('<', index);
+
+		if (start === -1) {
+			return null;
+		}
+
+		if (source.startsWith('<?', start)) {
+			const end = source.indexOf('?>', start);
+			index = end === -1 ? source.length : end + 2;
+			continue;
+		}
+
+		if (source.startsWith('<!--', start)) {
+			const end = source.indexOf('-->', start);
+			index = end === -1 ? source.length : end + 3;
+			continue;
+		}
+
+		if (source.startsWith('<!', start) || source.startsWith('</', start)) {
+			const end = source.indexOf('>', start);
+			index = end === -1 ? source.length : end + 1;
+			continue;
+		}
+
+		const end = source.indexOf('>', start);
+
+		if (end === -1) {
+			return null;
+		}
+
 		return {
-			content: source,
-			changed: false,
-			reason: 'no XML root element found'
+			start,
+			end,
+			tag: source.slice(start, end + 1)
 		};
 	}
 
-	const rootEnd = source.indexOf('>', rootStart);
+	return null;
+}
 
-	if (rootEnd === -1) {
-		return {
-			content: source,
-			changed: false,
-			reason: 'no complete XML root element found'
-		};
+function replaceVersionInRootTag(source, range, targetVersion) {
+	const tag = range.tag;
+	const doubleKey = ' version="';
+	const singleKey = " version='";
+	let key = doubleKey;
+	let offset = tag.indexOf(key);
+
+	if (offset === -1) {
+		key = singleKey;
+		offset = tag.indexOf(key);
 	}
 
-	const openTag = source.slice(rootStart, rootEnd + 1);
-	const versionKey = ' version="';
-	const versionStart = openTag.indexOf(versionKey);
-
-	if (versionStart === -1) {
+	if (offset === -1) {
 		return {
 			content: source,
 			changed: false,
@@ -77,10 +108,11 @@ function updateRootVersion(source, targetVersion) {
 		};
 	}
 
-	const valueStart = rootStart + versionStart + versionKey.length;
-	const valueEnd = source.indexOf('"', valueStart);
+	const valueStart = range.start + offset + key.length;
+	const quote = key.endsWith('"') ? '"' : "'";
+	const valueEnd = source.indexOf(quote, valueStart);
 
-	if (valueEnd === -1 || valueEnd > rootEnd) {
+	if (valueEnd === -1 || valueEnd > range.end) {
 		return {
 			content: source,
 			changed: false,
@@ -103,6 +135,20 @@ function updateRootVersion(source, targetVersion) {
 		changed: true,
 		reason: `${currentVersion} -> ${targetVersion}`
 	};
+}
+
+function updateRootVersion(source, targetVersion) {
+	const range = findRootElementRange(source);
+
+	if (!range) {
+		return {
+			content: source,
+			changed: false,
+			reason: 'no XML root element found'
+		};
+	}
+
+	return replaceVersionInRootTag(source, range, targetVersion);
 }
 
 async function collectXmlFiles(root, current = root) {
