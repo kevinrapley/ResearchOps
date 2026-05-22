@@ -8,8 +8,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node -e \"console.log('node fixture tests passed')\"",
-    "lint": "node -e \"console.log('node fixture lint passed')\"",
+    "test": "node --test",
+    "lint": "node --check test/example.test.mjs",
     "build": "node -e \"console.log('node fixture build passed')\"",
     "docs:check": "node -e \"console.log('documentation fixture check passed')\"",
     "conformance:check": "node -e \"console.log('conformance fixture check passed')\""
