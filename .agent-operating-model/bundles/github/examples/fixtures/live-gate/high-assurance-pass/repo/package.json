@@ -2,7 +2,7 @@
   "name": "live-gate-high-assurance-ui-fixture",
   "version": "0.1.0",
   "private": true,
-  "description": "Node-side project signal for the high-assurance live-gate passing fixture.",
+  "description": "Node-side project signal and deterministic command fixture for the GitHub Diamond high-assurance live-gate positive case.",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -11,13 +11,57 @@
     "test": "node -e \"console.log('live gate node fixture tests passed')\"",
     "lint": "node -e \"console.log('live gate node fixture lint passed')\"",
     "build": "node -e \"console.log('live gate node fixture build passed')\"",
-    "docs:check": "node -e \"console.log('live gate documentation fixture passed')\""
+    "docs:check": "node -e \"console.log('live gate documentation fixture passed')\"",
+    "evidence:check": "node -e \"console.log('live gate evidence fixture passed')\""
   },
   "fixture_context": {
     "fixture_kind": "live_gate_positive_fixture",
     "profile": "high-assurance",
     "expected_result": "pass",
-    "purpose": "Provides a Node project signal and deterministic commands for the local live-gate high-assurance fixture."
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Provides Node project detection, deterministic command output and script metadata for the high-assurance live-gate fixture."
+  },
+  "release_gate_evidence": {
+    "command_source": "test-commands.yaml",
+    "commands": [
+      {
+        "id": "node-unit",
+        "script": "test",
+        "expected_status": "passed"
+      },
+      {
+        "id": "node-lint",
+        "script": "lint",
+        "expected_status": "passed"
+      },
+      {
+        "id": "node-build",
+        "script": "build",
+        "expected_status": "passed"
+      },
+      {
+        "id": "node-docs-check",
+        "script": "docs:check",
+        "expected_status": "passed"
+      },
+      {
+        "id": "node-evidence-check",
+        "script": "evidence:check",
+        "expected_status": "passed"
+      }
+    ],
+    "validator_note": "Scripts are intentionally deterministic and do not require network access, package installation, credentials or production endpoints."
+  },
+  "repository_signals": {
+    "language": "node",
+    "used_by_workflows": [
+      ".github/workflows/ci-node.yml",
+      ".github/workflows/ci-conformance.yml",
+      ".github/workflows/ci-hardened.yml"
+    ],
+    "paired_python_project": "pyproject.toml"
   },
   "devDependencies": {}
 }
