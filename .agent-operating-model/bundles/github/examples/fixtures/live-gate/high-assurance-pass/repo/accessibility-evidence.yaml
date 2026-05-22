@@ -1,29 +1,142 @@
 automated_checks:
   axe:
     tool: axe-core
+    version: fixture
     file: results/axe.json
+    result: pass
+    violations: 0
+    evidence_type: automated_json
+    reviewed_by: accessibility-fixture-reviewer
+    reviewed_at: '2026-05-23T10:30:00Z'
+    notes: >
+      Axe fixture evidence is linked from the root release evidence file so the
+      high-assurance gate can verify that automated accessibility evidence exists.
   pa11y:
     tool: pa11y
+    version: fixture
     file: results/pa11y.json
+    result: pass
+    issues: 0
+    evidence_type: automated_json
+    reviewed_by: accessibility-fixture-reviewer
+    reviewed_at: '2026-05-23T10:30:00Z'
+    notes: >
+      Pa11y fixture evidence represents command-line accessibility smoke testing
+      for the repository conformance page.
   lighthouse:
     tool: lighthouse
+    version: fixture
     file: results/lighthouse.json
-keyboard_tests:
-  - name: Keyboard journey
-    steps: [Tab through page, Submit form]
     result: pass
+    accessibility_score: 0.98
+    performance_score: 0.92
+    evidence_type: automated_json
+    reviewed_by: accessibility-fixture-reviewer
+    reviewed_at: '2026-05-23T10:30:00Z'
+    notes: >
+      Lighthouse provides supporting browser evidence. It does not replace manual
+      keyboard or assistive technology checks.
+keyboard_tests:
+  - name: Complete representative release-evidence journey using keyboard
+    result: pass
+    performed_at: '2026-05-23T10:31:00Z'
+    tester: fixture-accessibility-reviewer
+    steps:
+      - Open repository conformance page.
+      - Use skip link to move to main content.
+      - Tab through source-panel navigation.
+      - Expand and scroll the code panel using keyboard only.
+      - Move to release decision controls.
+      - Submit the representative release-gate form.
+      - Follow the error-summary link back to the affected control.
+    evidence: >
+      All interactive elements were reachable and operable using keyboard only.
+      Code panels used internal scrolling but did not trap focus.
+  - name: Keyboard focus after validation message
+    result: pass
+    performed_at: '2026-05-23T10:32:00Z'
+    tester: fixture-accessibility-reviewer
+    steps:
+      - Submit the representative form with a missing required value.
+      - Confirm focus moves to the error summary.
+      - Activate the error link.
+      - Confirm focus moves to the relevant field.
+    evidence: >
+      Focus movement supports recovery from validation errors.
+focus_tests:
+  - name: Visible focus indicator on release evidence controls
+    result: pass
+    evidence: Links, buttons, form fields and source-panel controls showed visible focus.
+  - name: Code panel scroll does not trap keyboard focus
+    result: pass
+    evidence: Focus could enter, scroll and leave source code panels using keyboard only.
 screen_reader_tests:
   - screen_reader: NVDA
     browser: Firefox
+    platform: Windows
     result: pass
-    notes: Labels and errors announced.
+    notes: >
+      Page title, main landmark, headings, source-panel labels, field labels,
+      hint text and error summary were announced in a usable order.
+  - screen_reader: VoiceOver
+    browser: Safari
+    platform: macOS
+    result: pass
+    notes: >
+      Main landmarks, source-panel headings, release-decision controls and status
+      text were announced without relying on colour alone.
 assistive_technology_matrix:
   - technology: NVDA
     browser: Firefox
     platform: Windows
     result: pass
+    coverage:
+      - landmarks
+      - headings
+      - form labels
+      - error summary
+      - source panel code region
+  - technology: VoiceOver
+    browser: Safari
+    platform: macOS
+    result: pass
+    coverage:
+      - landmarks
+      - headings
+      - links
+      - status text
+      - release decision controls
+zoom_and_reflow_tests:
+  - name: 200 percent zoom
+    result: pass
+    notes: Content remained readable and release decision controls remained operable.
+  - name: Narrow viewport reflow
+    result: pass
+    notes: Source panels stacked cleanly and did not require horizontal page scrolling for core content.
 defects:
   - id: A11Y-1
     severity: low
     status: closed
+    summary: Clarified helper text for the fixture release-decision control.
+    opened_at: '2026-05-21T09:00:00Z'
+    closed_at: '2026-05-21T11:30:00Z'
+    evidence: Copy was clarified and no residual blocking accessibility issue remains.
+  - id: A11Y-2
+    severity: low
+    status: closed
+    summary: Confirmed code panel scroll did not create a keyboard trap.
+    opened_at: '2026-05-23T10:30:00Z'
+    closed_at: '2026-05-23T10:35:00Z'
+    evidence: Keyboard test confirmed focus can leave scrollable code panels.
 release_decision: pass
+fixture_metadata:
+  profile: high-assurance
+  expected_result: pass
+  synthetic_data: true
+  contains_personal_data: false
+  contains_secrets: false
+  purpose: >
+    Expanded accessibility evidence for the high-assurance positive live-gate
+    fixture. The file links automated results, keyboard checks, focus behaviour,
+    screen-reader smoke checks, assistive technology matrix entries, reflow checks
+    and closed defect evidence.
