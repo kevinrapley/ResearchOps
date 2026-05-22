@@ -27,17 +27,17 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
 
       - name: Initialise CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@4567890abcdef1234567890abcdef12345678901
         with:
           languages: ${{ matrix.language }}
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@567890abcdef1234567890abcdef123456789012
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@67890abcdef1234567890abcdef1234567890123
         with:
           category: /language:${{ matrix.language }}
