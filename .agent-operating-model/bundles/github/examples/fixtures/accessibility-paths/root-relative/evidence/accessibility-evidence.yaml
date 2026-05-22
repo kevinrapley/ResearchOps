@@ -1,29 +1,66 @@
+fixture_metadata:
+  id: accessibility-paths-root-relative
+  kind: accessibility_path_resolution_fixture
+  expected_validator_result: pass
+  path_resolution_model: root_relative
+  purpose: >
+    Proves that structured accessibility evidence can refer to automated result
+    artefacts using paths resolved from the supplied repository root, even when
+    the evidence file itself is stored in an evidence subdirectory.
+  important_distinction: >
+    The result paths below are intentionally written as results/*.json. They are
+    not located next to this evidence file. The validator should resolve them
+    from the configured root path before falling back to evidence-file-relative
+    lookup.
+
 automated_checks:
   axe:
     tool: axe-core
     file: results/axe.json
+    interpretation: Passing axe result resolved through the root-relative path fixture.
   pa11y:
     tool: pa11y
     file: results/pa11y.json
+    interpretation: Passing Pa11y result resolved through the root-relative path fixture.
   lighthouse:
     tool: lighthouse
     file: results/lighthouse.json
+    interpretation: Passing Lighthouse result resolved through the root-relative path fixture.
+
 keyboard_tests:
   - name: Keyboard journey
-    steps: [Tab through page, Submit form]
+    steps:
+      - Load the example form page.
+      - Tab through all interactive controls.
+      - Confirm visible focus on each control.
+      - Submit the form using the keyboard.
     result: pass
+    notes: Confirms that manual keyboard evidence is still required alongside automated output paths.
+
 screen_reader_tests:
   - screen_reader: NVDA
     browser: Firefox
     result: pass
-    notes: Labels and errors announced.
+    notes: Labels, error summary and field-level errors are announced.
+
 assistive_technology_matrix:
   - technology: NVDA
     browser: Firefox
     platform: Windows
     result: pass
+    notes: Root-relative path fixture uses this as representative assistive-technology evidence.
+
 defects:
-  - id: A11Y-1
+  - id: A11Y-PATH-ROOT-1
     severity: low
     status: closed
+    summary: Closed low-severity defect included to prove non-blocking defect handling.
+
 release_decision: pass
+
+expected_path_resolution:
+  axe: results/axe.json
+  pa11y: results/pa11y.json
+  lighthouse: results/lighthouse.json
+  should_not_require_files_next_to_evidence: true
+  should_pass_when_validator_root_points_to_fixture_root: true
