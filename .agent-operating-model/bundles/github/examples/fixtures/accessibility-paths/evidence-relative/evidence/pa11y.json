@@ -1,1 +1,51 @@
-[]
+{
+  "example_metadata": {
+    "id": "accessibility-paths-evidence-relative-pa11y",
+    "kind": "accessibility_path_result_fixture",
+    "tool": "pa11y",
+    "path_resolution_model": "evidence_file_relative",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing Pa11y result stored beside evidence.yaml and resolved through evidence-file-relative lookup."
+  },
+  "tool": {
+    "name": "pa11y",
+    "version": "8.0.0",
+    "runner": "pa11y-ci"
+  },
+  "page": {
+    "url": "http://localhost:4173/accessibility-paths/evidence-relative",
+    "title": "Evidence-relative accessibility path fixture"
+  },
+  "run": {
+    "standard": "WCAG2AA",
+    "started_at": "2026-05-21T12:00:00.000Z"
+  },
+  "summary": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "notices": 0,
+    "issues": 0
+  },
+  "issues": [],
+  "sample_passes": [
+    {
+      "code": "WCAG2AA.Principle2.Guideline2_4.2_4_2.H25.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Document has a non-empty title element.",
+      "context": "<title>Evidence-relative accessibility path fixture</title>",
+      "selector": "html > head > title",
+      "runner": "htmlcs"
+    },
+    {
+      "code": "WCAG2AA.Principle3.Guideline3_1.3_1_1.H57.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Page language is declared.",
+      "context": "<html lang=\"en-GB\">",
+      "selector": "html",
+      "runner": "htmlcs"
+    }
+  ]
+}
