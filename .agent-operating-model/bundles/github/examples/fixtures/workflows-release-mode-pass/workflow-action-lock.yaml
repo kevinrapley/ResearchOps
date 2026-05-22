@@ -1,3 +1,13 @@
+fixture_metadata:
+  id: workflows-release-mode-pass
+  kind: workflow_hardening_release_mode_fixture
+  expected_validator_result: pass
+  validator: scripts/validate-workflow-hardening.py
+  purpose: >
+    Provides reviewed action lock evidence for the release-mode workflow
+    hardening pass fixture. The action SHA below must match the action pin in
+    .github/workflows/ci.yml.
+
 actions:
   actions/checkout:
     ref: v4
@@ -5,3 +15,17 @@ actions:
     classification: first-party
     reviewed_by: repository-maintainers
     reviewed_at: 2026-04-28
+    review_context: >
+      Fixture-safe first-party action used to prove that release-mode workflow
+      validation accepts a full 40-character SHA when it matches the lock file.
+    used_by:
+      - .github/workflows/ci.yml
+
+release_mode_expectation:
+  workflow_path: .github/workflows/ci.yml
+  mode: hardened
+  validation_scope: release
+  expected_result: pass
+  placeholder_sha_present: false
+  workflow_pin_matches_lock: true
+  third_party_actions_present: false
