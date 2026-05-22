@@ -28,11 +28,11 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
 
       - name: Review pull request dependencies
         if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@7890abcdef1234567890abcdef12345678901234
         with:
           fail-on-severity: high
           comment-summary-in-pr: always
