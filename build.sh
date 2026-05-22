@@ -9,6 +9,8 @@ test -f .agent-operating-model/source-annotations/github/source-annotations.yaml
 test -f .agent-operating-model/source-annotations/github/contracts.yaml
 test -f .agent-operating-model/source-annotations/github/graders.yaml
 
+EXPECTED_BUNDLE_VERSION="$(node -e "const fs = require('fs'); const source = fs.readFileSync('.agent-operating-model/bundles/github/prompt.spec.yaml', 'utf8'); const match = source.match(/^\\s*version:\\s*['\"]?([^'\"\\n]+)['\"]?\\s*$/m); if (!match) process.exit(1); process.stdout.write(match[1].trim());")"
+
 if [ -d .agent-operating-model/source-annotations/github/fragments ]; then
 	printf '%s\n' 'Source annotations must live directly in .agent-operating-model/source-annotations/github/.' >&2
 	exit 1
@@ -28,8 +30,8 @@ node scripts/agent-operating-model/verify-github-source-panel-docs.mjs
 printf '%s\n' '--- Verify generated GitHub bundle documentation ---'
 
 grep -n 'Source panels' docs/agent-operating-model/bundles/github/index.html
-grep -n '<strong>Version</strong>2.9.3' docs/agent-operating-model/bundles/github/index.html
-grep -n '"version": "2.9.3"' docs/agent-operating-model/bundles/github/generated-metadata.json
+grep -n "<strong>Version</strong>${EXPECTED_BUNDLE_VERSION}" docs/agent-operating-model/bundles/github/index.html
+grep -n "\"version\": \"${EXPECTED_BUNDLE_VERSION}\"" docs/agent-operating-model/bundles/github/generated-metadata.json
 
 if grep -n 'Source browser' docs/agent-operating-model/bundles/github/index.html; then
 	printf '%s\n' 'Unexpected old Source browser copy found in GitHub bundle overview.' >&2
