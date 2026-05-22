@@ -48,19 +48,25 @@ Expected before release:
 - structured accessibility evidence validation still passes
 - high-assurance live gate fixture validation still passes
 
-## Example coverage
+## Evaluation coverage
 
 The v2.9.3 examples are organised into:
 
 - `examples/scenarios/`
 - `examples/expected-outputs/`
 - `examples/anti-examples/`
+- `examples/fixtures/`
+- `examples/payloads/`
+- `examples/performance-inputs/`
+- `examples/performance-results/`
 
 Scenarios define realistic user prompts, repository context, expected mode selection, roles, references, contracts, graders, required evidence and failure conditions.
 
 Expected outputs show acceptable response shape without redundant example title headings.
 
 Anti-examples are limited to genuine incorrect behaviours. Placeholder examples are not treated as anti-examples.
+
+Fixture, payload and performance examples have been expanded to exercise validators, adapters and release-gate evidence paths with realistic synthetic data rather than minimal placeholder records.
 
 ## Known gaps
 
