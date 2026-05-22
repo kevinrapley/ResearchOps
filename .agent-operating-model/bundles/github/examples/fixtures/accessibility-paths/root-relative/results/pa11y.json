@@ -1,1 +1,51 @@
-[]
+{
+  "example_metadata": {
+    "id": "accessibility-paths-root-relative-pa11y",
+    "kind": "accessibility_path_result_fixture",
+    "tool": "pa11y",
+    "path_resolution_model": "root_relative",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing Pa11y result loaded from results/pa11y.json when the evidence file is stored in a separate evidence directory."
+  },
+  "tool": {
+    "name": "pa11y",
+    "version": "8.0.0",
+    "runner": "pa11y-ci"
+  },
+  "page": {
+    "url": "http://localhost:4173/accessibility-paths/root-relative",
+    "title": "Root-relative accessibility path fixture"
+  },
+  "run": {
+    "standard": "WCAG2AA",
+    "started_at": "2026-05-21T12:00:00.000Z"
+  },
+  "summary": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "notices": 0,
+    "issues": 0
+  },
+  "issues": [],
+  "sample_passes": [
+    {
+      "code": "WCAG2AA.Principle1.Guideline1_3.1_3_1.H44.NonExistentFragment",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Form control has an explicit label associated with it.",
+      "context": "<input id=\"name\" name=\"name\" type=\"text\">",
+      "selector": "#name",
+      "runner": "htmlcs"
+    },
+    {
+      "code": "WCAG2AA.Principle3.Guideline3_1.3_1_1.H57.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Page language is declared.",
+      "context": "<html lang=\"en-GB\">",
+      "selector": "html",
+      "runner": "htmlcs"
+    }
+  ]
+}
