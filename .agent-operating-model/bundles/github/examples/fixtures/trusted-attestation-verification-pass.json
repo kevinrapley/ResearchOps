@@ -5,6 +5,7 @@
   "sigstore_bundle": "sigstore-bundle.json",
   "checks": [
     {
+      "name": "github_artifact_attestation",
       "command": [
         "gh",
         "attestation",
@@ -17,9 +18,12 @@
       "duration_seconds": 0.1,
       "stdout_tail": "Verified",
       "stderr_tail": "",
-      "passed": true
+      "passed": true,
+      "dry_run": false,
+      "tool_unavailable": false
     },
     {
+      "name": "sigstore_bundle_verification",
       "command": [
         "cosign",
         "verify-blob",
@@ -31,10 +35,25 @@
       "duration_seconds": 0.1,
       "stdout_tail": "Verified OK",
       "stderr_tail": "",
-      "passed": true
+      "passed": true,
+      "dry_run": false,
+      "tool_unavailable": false
     }
   ],
   "passed": true,
   "errors": [],
-  "created_at_unix": 1770000000
+  "created_at_unix": 1770000000,
+  "verification_summary": {
+    "fixture_profile": "positive",
+    "synthetic_data": true,
+    "trusted_mode": true,
+    "offline_only": false,
+    "purpose": "Demonstrates trusted attestation evidence with explicit command provenance, successful external verification results and no dry-run fallback."
+  },
+  "release_decision_use": {
+    "may_support_release": true,
+    "requires_matching_artifact_digest": true,
+    "requires_repository_identity_match": true,
+    "notes": "This fixture is synthetic. A real release must verify the actual artifact and repository identity before treating attestation evidence as trusted."
+  }
 }
