@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<grader id="conformance-grader" version="2.9.2" xml_profile="native-semantic-xml/v1">
+<grader id="conformance-grader" version="2.9.3" xml_profile="native-semantic-xml/v1">
   <title>Conformance Grader</title>
   <thresholds>
     <pass minimum_score="0.85" />
