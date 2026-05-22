@@ -11,6 +11,7 @@ branch_protection:
     - CI (Python)
     - CI (Conformance)
     - CI (Documentation Quality)
+    - CI (Hardened Release)
     - CodeQL
     - Dependency Review
   require_conversation_resolution: true
@@ -21,9 +22,17 @@ branch_protection:
 workflow_permissions: read
 actions_policy:
   allowed_actions: local-and-verified
-  sha_pinning_required: false
+  sha_pinning_required: true
   oidc_for_deployments: true
   default_workflow_permissions: read
+environments:
+  deployment_protections_required: true
+  protected_environments:
+    - name: production
+      reviewers_required: true
+      wait_timer_minutes: 0
+      secrets_available_to_pull_requests: false
+      deployment_branch_policy: protected_branches
 security_features:
   dependabot: true
   dependabot_updates: true
@@ -32,8 +41,56 @@ security_features:
   code_scanning: true
   dependency_review: true
   sbom_on_release: true
+  private_vulnerability_reporting: true
 repository_rulesets:
   required: true
-environments:
-  deployment_protections_required: true
+  rules:
+    - name: main-release-protection
+      target: branch
+      enforcement: active
+      conditions:
+        ref_name:
+          include:
+            - refs/heads/main
+      rules:
+        - type: pull_request
+          parameters:
+            required_approving_review_count: 1
+            dismiss_stale_reviews_on_push: true
+            require_code_owner_review: true
+            require_last_push_approval: false
+        - type: required_status_checks
+          parameters:
+            strict_required_status_checks_policy: true
+            required_status_checks:
+              - context: CI (Node)
+              - context: CI (Python)
+              - context: CI (Conformance)
+              - context: CI (Documentation Quality)
+              - context: CI (Hardened Release)
+              - context: CodeQL
+              - context: Dependency Review
+        - type: deletion
+        - type: non_fast_forward
 verification_method: file
+verification_context:
+  fixture: live-gate-high-assurance-pass
+  profile: high-assurance
+  expected_result: pass
+  synthetic_data: true
+  evidence_boundary: >
+    This file represents expected repository settings for a deterministic fixture.
+    It does not prove that a live GitHub repository currently has these settings.
+  live_release_requirement: >
+    In live high-assurance mode, validators should compare this desired state with
+    GitHub API observations where API access is available. Missing or unavailable
+    live observability must be explicit rather than silently treated as pass.
+release_gate_interpretation:
+  branch_protection_complete: true
+  required_status_checks_complete: true
+  code_owner_review_required: true
+  workflow_permissions_restricted: true
+  actions_policy_represented: true
+  security_features_represented: true
+  deployment_protection_represented: true
+  should_pass_file_backed_settings_check: true
