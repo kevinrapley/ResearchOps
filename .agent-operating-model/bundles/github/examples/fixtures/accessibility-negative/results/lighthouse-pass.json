@@ -1,1 +1,82 @@
-{"categories":{"accessibility":{"score":0.95}}}
+{
+  "example_metadata": {
+    "id": "accessibility-negative-lighthouse-pass-control",
+    "kind": "accessibility_result_control",
+    "tool": "lighthouse",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing Lighthouse control result used by negative accessibility fixtures to isolate failures in another evidence source."
+  },
+  "lighthouseVersion": "12.1.0",
+  "requestedUrl": "http://localhost:4173/example-accessibility-negative",
+  "finalDisplayedUrl": "http://localhost:4173/example-accessibility-negative",
+  "fetchTime": "2026-05-21T12:00:00.000Z",
+  "configSettings": {
+    "formFactor": "desktop",
+    "onlyCategories": [
+      "accessibility"
+    ]
+  },
+  "categories": {
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 0.95,
+      "auditRefs": [
+        {
+          "id": "color-contrast",
+          "weight": 3,
+          "group": "a11y-color-contrast"
+        },
+        {
+          "id": "document-title",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "html-has-lang",
+          "weight": 3,
+          "group": "a11y-language"
+        },
+        {
+          "id": "label",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        }
+      ]
+    }
+  },
+  "audits": {
+    "color-contrast": {
+      "id": "color-contrast",
+      "title": "Background and foreground colours have a sufficient contrast ratio",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "items": []
+      }
+    },
+    "document-title": {
+      "id": "document-title",
+      "title": "Document has a title element",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "html-has-lang": {
+      "id": "html-has-lang",
+      "title": "html element has a lang attribute",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "label": {
+      "id": "label",
+      "title": "Form elements have associated labels",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "items": []
+      }
+    }
+  }
+}
