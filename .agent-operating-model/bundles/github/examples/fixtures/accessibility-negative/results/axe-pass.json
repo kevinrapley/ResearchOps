@@ -1,1 +1,60 @@
-{"violations":[]}
+{
+  "example_metadata": {
+    "id": "accessibility-negative-axe-pass-control",
+    "kind": "accessibility_result_control",
+    "tool": "axe-core",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing axe-core control result used by negative accessibility fixtures to isolate failures in another evidence source."
+  },
+  "url": "http://localhost:4173/example-accessibility-negative",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright"
+  },
+  "violations": [],
+  "incomplete": [],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": [
+        "wcag2a",
+        "wcag242"
+      ],
+      "description": "Ensures each HTML document contains a non-empty title element",
+      "help": "Documents must have a title element",
+      "nodes": [
+        {
+          "target": [
+            "html"
+          ],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": null,
+      "tags": [
+        "wcag2a",
+        "wcag412"
+      ],
+      "description": "Ensures every form element has a label",
+      "help": "Form elements must have labels",
+      "nodes": [
+        {
+          "target": [
+            "#email"
+          ],
+          "html": "<input id=\"email\" name=\"email\" type=\"email\">",
+          "failureSummary": null
+        }
+      ]
+    }
+  ]
+}
