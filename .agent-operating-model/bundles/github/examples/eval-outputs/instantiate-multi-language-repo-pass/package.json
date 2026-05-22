@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "lint": "node --check test/example.test.mjs",
+    "lint": "node --check tests/example.test.mjs",
     "build": "node -e \"console.log('node fixture build passed')\"",
     "docs:check": "node -e \"console.log('documentation fixture check passed')\"",
     "conformance:check": "node -e \"console.log('conformance fixture check passed')\""
