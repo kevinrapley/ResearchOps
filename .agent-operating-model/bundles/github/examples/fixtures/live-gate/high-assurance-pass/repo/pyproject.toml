@@ -5,13 +5,33 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "live-gate-high-assurance-backend-fixture"
 version = "0.1.0"
-description = "Python-side project signal for the high-assurance live-gate passing fixture."
+description = "Python-side project signal and deterministic command fixture for the GitHub Diamond high-assurance live-gate positive case."
 requires-python = ">=3.11"
 readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "ResearchOps fixture maintainers" }
+]
+keywords = [
+  "github-diamond",
+  "release-gate",
+  "high-assurance",
+  "fixture",
+  "synthetic-evidence"
+]
+classifiers = [
+  "Private :: Do Not Upload",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12"
+]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0"
+]
+assurance = [
+  "pyyaml>=6.0"
 ]
 
 [tool.pytest.ini_options]
@@ -22,4 +42,34 @@ testpaths = ["tests"]
 fixture_kind = "live_gate_positive_fixture"
 profile = "high-assurance"
 expected_result = "pass"
+synthetic_data = true
+contains_secrets = false
+contains_personal_data = false
 purpose = "Provides a Python project signal for the local live-gate high-assurance fixture."
+paired_node_project = "package.json"
+command_source = "test-commands.yaml"
+
+[tool.github-diamond-fixture.release_gate_evidence]
+repository_contract = "repository-contract.schema.json"
+agent_evidence = "agent-evidence.yaml"
+conformance_matrix = "conformance-matrix.yaml"
+gap_register = "gap-register.yaml"
+performance_budget = "performance-budget.yaml"
+performance_results = "performance-results.yaml"
+sbom = "sbom.json"
+attestation = "attestation.json"
+trusted_attestation_verification = "trusted-attestation-verification.json"
+workflow_action_lock = "workflow-action-lock.yaml"
+
+[tool.github-diamond-fixture.commands.python_smoke]
+command = "python -I -S -c \"print('fixture tests passed')\""
+expected_status = "passed"
+network_required = false
+secrets_required = false
+release_gate_interpretation = "Deterministic isolated Python command used to prove command capture and fixture orchestration."
+
+[tool.github-diamond-fixture.boundary]
+offline_fixture = true
+live_github_api_required = false
+production_release_evidence = false
+notes = "This TOML file is part of a deterministic fixture. Real repositories must supply live runtime, dependency and deployment evidence where the selected release profile requires it."
