@@ -11,6 +11,11 @@ test -f .agent-operating-model/source-annotations/github/graders.yaml
 
 EXPECTED_BUNDLE_VERSION="$(node -e "const fs = require('fs'); const source = fs.readFileSync('.agent-operating-model/bundles/github/prompt.spec.yaml', 'utf8'); const match = source.match(/^\\s*version:\\s*['\"]?([^'\"\\n]+)['\"]?\\s*$/m); if (!match) process.exit(1); process.stdout.write(match[1].trim());")"
 
+if [ -z "${EXPECTED_BUNDLE_VERSION}" ]; then
+	printf '%s\n' 'Could not read GitHub bundle version from prompt.spec.yaml.' >&2
+	exit 1
+fi
+
 if [ -d .agent-operating-model/source-annotations/github/fragments ]; then
 	printf '%s\n' 'Source annotations must live directly in .agent-operating-model/source-annotations/github/.' >&2
 	exit 1
@@ -21,6 +26,7 @@ if [ -f .agent-operating-model/bundles/github/source-annotations.yaml ] || [ -d 
 	exit 1
 fi
 
+node --test scripts/agent-operating-model/tests/source-panel-layout-contract.test.mjs
 node scripts/agent-operating-model/generate-bundle-source-docs.mjs --bundle github
 node scripts/agent-operating-model/apply-source-annotations.mjs
 node scripts/agent-operating-model/normalise-source-panel-layout.mjs
@@ -47,11 +53,10 @@ test -f docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
 test -f docs/agent-operating-model/bundles/github/assets/source-panel-layout.js
 
 grep -n 'max-height: 1400px !important' docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
-grep -n 'source-panel example' docs/agent-operating-model/bundles/github/source/examples/index.html
-grep -n 'max-height: none !important' docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
+grep -n 'overflow-y: auto !important' docs/agent-operating-model/bundles/github/assets/source-panel-layout.css
 grep -n 'SOURCE_PANEL_CODE_MAX_HEIGHT = 1400' docs/agent-operating-model/bundles/github/assets/source-panel-layout.js
-grep -n 'source-panel-layout.css?v=source-panel-examples-full-source-v1' docs/agent-operating-model/bundles/github/source/modes/index.html
-grep -n 'source-panel-layout.js?v=source-panel-examples-full-source-v1' docs/agent-operating-model/bundles/github/source/modes/index.html
+grep -n 'source-panel-layout.css?v=source-panel-height-cap-v3' docs/agent-operating-model/bundles/github/source/modes/index.html
+grep -n 'source-panel-layout.js?v=source-panel-height-cap-v3' docs/agent-operating-model/bundles/github/source/modes/index.html
 grep -n 'examples/scenarios/repo-discovery-node-api.yaml' docs/agent-operating-model/bundles/github/source/examples/index.html
 grep -n 'examples/performance-results/python-results.yaml' docs/agent-operating-model/bundles/github/source/examples/index.html
 

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-22",
+  "branch": "fix/github-source-panel-height-cap",
+  "scope": [
+    "agent-documentation",
+    "github-diamond-bundle",
+    "source-panel-layout",
+    "generated-examples-page",
+    "cloudflare-pages-build"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to restore source-panel code-block height synchronisation. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The previous generated-docs fix overcorrected the examples source panel layout by removing the max-height behaviour for example code blocks.",
+    "This broke the agreed source-panel prototype behaviour where the code block aligns to the accompanying text panel height, with a maximum code-panel height of 1400px and internal scrolling."
+  ],
+  "workSummary": [
+    "Created fix/github-source-panel-height-cap from current main after PR #277 was merged.",
+    "Restored the generated source-panel layout so examples use the same code block behaviour as other source families.",
+    "Removed the example-specific CSS and JavaScript override that set max-height to none and overflow-y to visible.",
+    "Set the source-panel asset version to source-panel-height-cap-v3 to invalidate cached generated assets.",
+    "Updated build.sh checks to assert the restored 1400px max-height and overflow-y:auto behaviour rather than the removed full-source override.",
+    "Preserved the generated examples page checks so the page still has to include representative expanded examples."
+  ],
+  "changedAreas": [
+    "scripts/agent-operating-model/normalise-source-panel-layout.mjs",
+    "build.sh",
+    "docs/agent-audit/reasoning/2026/05/22"
+  ],
+  "validationEvidence": {
+    "staticChecksAdded": [
+      "build.sh checks max-height: 1400px !important in the generated source-panel CSS.",
+      "build.sh checks overflow-y: auto !important in the generated source-panel CSS.",
+      "build.sh checks SOURCE_PANEL_CODE_MAX_HEIGHT = 1400 in the generated source-panel JavaScript.",
+      "build.sh checks the cache-busted source-panel-height-cap-v3 CSS and JS asset URLs.",
+      "build.sh still checks representative examples in source/examples/index.html."
+    ],
+    "notRunLocally": [
+      "No local build command was run in this connector-only environment. CI should run build.sh on the pull request."
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Long code examples will again use internal scrolling rather than expanding the full page height.",
+      "mitigation": "This is intentional and restores the agreed source-panel design contract. The examples page still includes representative source files and exposes code within the scrollable code panel."
+    }
+  ],
+  "status": "ready-for-pr"
+}
