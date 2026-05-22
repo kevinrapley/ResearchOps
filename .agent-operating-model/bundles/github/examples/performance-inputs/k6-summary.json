@@ -1,6 +1,109 @@
 {
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "name": "repository conformance API",
+        "path": "::repository conformance API",
+        "id": "fixture-group-conformance"
+      },
+      {
+        "name": "release gate API",
+        "path": "::release gate API",
+        "id": "fixture-group-release-gate"
+      }
+    ]
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "p(90)",
+      "p(95)",
+      "max"
+    ],
+    "scenarios": {
+      "conformance_smoke": {
+        "executor": "constant-vus",
+        "vus": 10,
+        "duration": "1m"
+      }
+    }
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 60000
+  },
   "metrics": {
-    "http_req_duration": {"values": {"p(95)": 250}},
-    "http_req_failed": {"values": {"rate": 0.01}}
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3000,
+        "rate": 50
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 142.4,
+        "min": 74.1,
+        "med": 131.8,
+        "p(90)": 218.6,
+        "p(95)": 250,
+        "max": 412.7
+      },
+      "thresholds": {
+        "p(95)<300": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 30,
+        "fails": 2970,
+        "rate": 0.01
+      },
+      "thresholds": {
+        "rate<0.02": {
+          "ok": true
+        }
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 5940,
+        "fails": 60,
+        "rate": 0.99
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 168.2,
+        "min": 88.4,
+        "med": 154.7,
+        "p(90)": 245.1,
+        "p(95)": 278.3,
+        "max": 482.9
+      }
+    }
+  },
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded k6 summary fixture for repository and release-gate API load evidence while preserving http_req_duration.values.p(95) and http_req_failed.values.rate parser fields."
   }
 }
