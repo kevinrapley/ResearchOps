@@ -5,15 +5,11 @@ fixture_metadata:
   expected_result: pass
   purpose: >
     Provides reviewed workflow action evidence for the high-assurance live-gate
-    passing fixture.
+    passing fixture in the shape expected by validate-workflow-action-lock.py.
 
-workflow_action_lock:
-  generated_at: '2026-05-21T12:00:00Z'
-  verification_mode: fixture
-  status: reviewed
-  notes: >
-    This is fixture evidence. Real repositories should generate this from the
-    actual workflow files and reviewed action references.
+generated_at: '2026-05-21T12:00:00Z'
+verification_mode: fixture
+status: reviewed
 
 required_workflows:
   - path: .github/workflows/ci-node.yml
@@ -39,38 +35,54 @@ required_workflows:
     required_for: high-assurance release gate evidence
 
 actions:
-  - workflow: .github/workflows/ci-node.yml
-    action: actions/checkout
-    version: v4
-    reviewed: true
-  - workflow: .github/workflows/ci-node.yml
-    action: actions/setup-node
-    version: v4
-    reviewed: true
-  - workflow: .github/workflows/ci-python.yml
-    action: actions/checkout
-    version: v4
-    reviewed: true
-  - workflow: .github/workflows/ci-python.yml
-    action: actions/setup-python
-    version: v5
-    reviewed: true
-  - workflow: .github/workflows/codeql.yml
-    action: github/codeql-action/init
-    version: v3
-    reviewed: true
-  - workflow: .github/workflows/codeql.yml
-    action: github/codeql-action/autobuild
-    version: v3
-    reviewed: true
-  - workflow: .github/workflows/codeql.yml
-    action: github/codeql-action/analyze
-    version: v3
-    reviewed: true
-  - workflow: .github/workflows/dependency-review.yml
-    action: actions/dependency-review-action
-    version: v4
-    reviewed: true
+  actions/checkout:
+    sha: 1234567890abcdef1234567890abcdef12345678
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/ci-node.yml
+      - .github/workflows/ci-python.yml
+      - .github/workflows/ci-conformance.yml
+      - .github/workflows/ci-docs-quality.yml
+      - .github/workflows/codeql.yml
+      - .github/workflows/dependency-review.yml
+      - .github/workflows/ci-hardened.yml
+  actions/setup-node:
+    sha: 234567890abcdef1234567890abcdef123456789
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/ci-node.yml
+  actions/setup-python:
+    sha: 34567890abcdef1234567890abcdef1234567890
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/ci-python.yml
+  github/codeql-action/init:
+    sha: 4567890abcdef1234567890abcdef12345678901
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/codeql.yml
+  github/codeql-action/autobuild:
+    sha: 567890abcdef1234567890abcdef123456789012
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/codeql.yml
+  github/codeql-action/analyze:
+    sha: 67890abcdef1234567890abcdef1234567890123
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/codeql.yml
+  actions/dependency-review-action:
+    sha: 7890abcdef1234567890abcdef12345678901234
+    classification: first-party
+    reviewed_by: fixture-maintainer
+    used_by:
+      - .github/workflows/dependency-review.yml
 
 release_gate_interpretation:
   workflow_lock_present: true
