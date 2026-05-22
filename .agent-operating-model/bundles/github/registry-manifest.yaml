@@ -338,11 +338,11 @@ artifacts:
 - path: grade.schema.json
   sha256: 1042e384faf41b1a3bd58fdb21b51fa58347f2d0df8a446e72aa3fed0f0d2b62
 - path: graders/accessibility-grader.xml
-  sha256: dd9cc2fba312d20f161d506b2e44c3a7520169a2ca74c8e0d5a52a77ba7968d9
+  sha256: f34c3a0986d765316eeb71b881ec6dc2158511b28e549f5f953a45bd5df6ab79
 - path: graders/ci-selection-grader.xml
-  sha256: 5f4de853daf48ff6003184dbe3b7714f7f10438e77b549618a7ae40034e51be9
+  sha256: 2dadb60ed7c2e2aee949e9b77dfe173cb5a49ae383716824bb78584e83a5c3de
 - path: graders/code-confidence-grader.xml
-  sha256: d505c64da3fe1d82241b3a9a60889cdceaa5a6aa63e8cd3751187f5c5185ca0c
+  sha256: 23570631474bdd72c333e2a464bfb09b55c7669c0d53c71797e3847050866d81
 - path: graders/conformance-grader.xml
   sha256: 515d20733c91a7e172f89537da5e27c0dc697b1e9bd292b94a0b714d7a489915
 - path: graders/discovery-grader.xml
