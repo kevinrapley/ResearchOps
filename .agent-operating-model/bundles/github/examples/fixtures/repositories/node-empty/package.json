@@ -1,7 +1,28 @@
 {
-  "name": "node-empty",
+  "name": "node-empty-seed-fixture",
   "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Node repository seed fixture used to test template and CI selection.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "echo ok"
-  }
+    "test": "node -e \"console.log('node seed fixture test command available')\"",
+    "lint": "node -e \"console.log('node seed fixture lint command available')\""
+  },
+  "fixture_context": {
+    "fixture_kind": "repository_seed",
+    "expected_detection": "node",
+    "expected_mode": "repo-instantiate",
+    "intentionally_missing": [
+      ".github/workflows/ci-node.yml",
+      ".github/CODEOWNERS",
+      "github-settings.yaml",
+      "conformance-matrix.yaml",
+      "gap-register.yaml",
+      "agent-evidence.yaml"
+    ]
+  },
+  "devDependencies": {}
 }
