@@ -2,6 +2,71 @@
   "gate": "offline-bundle-release",
   "mode": "failure-fixture",
   "status": "failed",
+  "started_at_unix": 1770000300,
+  "duration_seconds": 21.87,
+  "commands": [
+    {
+      "name": "schema_validation",
+      "command": [
+        "python",
+        "scripts/validate-bundle.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 4.02,
+      "stdout_tail": "Bundle schema validation passed.",
+      "stderr_tail": ""
+    },
+    {
+      "name": "regression_tests",
+      "command": [
+        "python",
+        "scripts/run-regression-tests.py"
+      ],
+      "status": "failed",
+      "returncode": 1,
+      "duration_seconds": 6.44,
+      "stdout_tail": "Regression tests failed: 1 fixture mismatch.",
+      "stderr_tail": "Expected release gate failure fixture to include command history."
+    },
+    {
+      "name": "security_and_supply_chain",
+      "command": [
+        "python",
+        "scripts/check-supply-chain-evidence.py"
+      ],
+      "status": "failed",
+      "returncode": 1,
+      "duration_seconds": 5.96,
+      "stdout_tail": "SBOM evidence missing. Attestation verification missing.",
+      "stderr_tail": "trusted_attestation_verification.json was not found."
+    },
+    {
+      "name": "release_contract",
+      "command": [
+        "python",
+        "scripts/validate-release-contract.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 3.71,
+      "stdout_tail": "Release contract file is structurally valid.",
+      "stderr_tail": ""
+    },
+    {
+      "name": "accessibility_evidence",
+      "command": [
+        "python",
+        "scripts/validate-accessibility-evidence.py",
+        "examples/fixtures/accessibility-evidence-structured.yaml"
+      ],
+      "status": "failed",
+      "returncode": 1,
+      "duration_seconds": 1.74,
+      "stdout_tail": "Accessibility evidence validation failed.",
+      "stderr_tail": "automated_checks.pa11y output file not found"
+    }
+  ],
   "results": [
     {
       "name": "tests",
@@ -10,7 +75,8 @@
     },
     {
       "name": "security",
-      "status": "passed"
+      "status": "failed",
+      "message": "SBOM and trusted attestation evidence are missing"
     },
     {
       "name": "release_contract",
@@ -34,8 +100,29 @@
     {
       "name": "accessibility",
       "status": "failed",
-      "message": "Accessibility evidence missing"
+      "message": "Accessibility evidence missing or unresolved"
     }
   ],
-  "release_allowed": false
+  "failed_command": [
+    "python",
+    "scripts/run-regression-tests.py"
+  ],
+  "error": {
+    "type": "release_gate_failed",
+    "message": "Release gate blocked because regression, supply-chain and accessibility evidence did not satisfy the fixture contract.",
+    "blocking_results": [
+      "tests",
+      "security",
+      "sbom",
+      "attestation",
+      "trusted_attestation_verification",
+      "accessibility"
+    ]
+  },
+  "release_allowed": false,
+  "evidence_summary": {
+    "fixture_profile": "negative",
+    "synthetic_data": true,
+    "purpose": "Demonstrates a schema-valid failing release-gate report with command history, failed command evidence and structured blocking error."
+  }
 }
