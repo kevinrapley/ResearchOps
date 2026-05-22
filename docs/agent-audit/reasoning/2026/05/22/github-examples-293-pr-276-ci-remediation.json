@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-22",
+  "branch": "feature/github-examples-293",
+  "pullRequest": {
+    "number": 276,
+    "url": "https://github.com/kevinrapley/ResearchOps/pull/276",
+    "state": "open",
+    "draft": true
+  },
+  "scope": [
+    "github-diamond-bundle",
+    "examples",
+    "fixtures",
+    "payloads",
+    "performance-inputs",
+    "performance-results",
+    "validation-report",
+    "ci-remediation"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work and CI remediation for PR #276. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "feature/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "workSummary": [
+    "Expanded GitHub Diamond examples and fixtures from placeholder-style records into realistic synthetic evidence.",
+    "Expanded API payloads, performance inputs and performance-result examples while preserving adapter and validator-critical fields.",
+    "Opened draft PR #276 from feature/github-examples-293 to main.",
+    "Investigated failing CI on PR #276 and identified missing trace coverage plus a missing validation-report section.",
+    "Restored the required ## Evaluation coverage section in the GitHub bundle validation report.",
+    "Added this audit trace so branch-driven trace coverage can pass for 2026-05-22."
+  ],
+  "ciFindings": [
+    {
+      "workflow": "Validate ResearchOps",
+      "finding": "Trace coverage failed because docs/agent-audit/reasoning/2026/05/22 did not exist for the feature branch.",
+      "status": "remediated-by-this-trace"
+    },
+    {
+      "workflow": "CI",
+      "job": "Node 22",
+      "finding": "Unit test 'today's trace directory passes coverage check' failed with missing-dir for docs/agent-audit/reasoning/2026/05/22.",
+      "status": "remediated-by-this-trace"
+    },
+    {
+      "workflow": "CI",
+      "job": "Node 22",
+      "finding": "Unit test 'validation reports use the standard section structure' failed because the GitHub bundle report used ## Example coverage instead of ## Evaluation coverage.",
+      "status": "remediated-in-commit-4c88754d92350f81e07b342a7407ddc40d79f9a5"
+    }
+  ],
+  "changedAreas": [
+    ".agent-operating-model/bundles/github/examples/fixtures",
+    ".agent-operating-model/bundles/github/examples/payloads",
+    ".agent-operating-model/bundles/github/examples/performance-inputs",
+    ".agent-operating-model/bundles/github/examples/performance-results",
+    ".agent-operating-model/bundles/github/VALIDATION-REPORT.md",
+    "docs/agent-audit/reasoning/2026/05/22"
+  ],
+  "validationEvidence": {
+    "readFromCi": [
+      "CI Node unit logs showed 153 passing tests and two failures before remediation.",
+      "Validate ResearchOps reported missing trace artefacts for 2026-05-22."
+    ],
+    "notRunLocally": [
+      "No local npm, Python or release-gate validation was run in the connector-only environment."
+    ],
+    "recommendedNextChecks": [
+      "npm test",
+      "npm run validate",
+      "cd .agent-operating-model/bundles/github && python scripts/release-gate.py --mode full"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "The branch remains large and CI may surface further fixture or schema issues after this trace and validation-report fix.",
+      "mitigation": "Keep PR in draft until all checks pass or remaining failures are reviewed and remediated."
+    },
+    {
+      "risk": "Release Gate failure details may include additional bundle-level validation errors beyond the first two CI blockers.",
+      "mitigation": "Re-inspect Release Gate logs after the new commits trigger CI."
+    }
+  ],
+  "status": "ci-remediation-committed"
+}
