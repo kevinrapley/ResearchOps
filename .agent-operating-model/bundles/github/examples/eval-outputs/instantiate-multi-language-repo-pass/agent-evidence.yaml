@@ -62,7 +62,7 @@ tests_run:
     evidence: tests/test_fixture.py validates fixture metadata for the Python path
   - name: Fixture smoke command
     status: passed
-    evidence: python -I -S smoke command returned zero
+    evidence: python smoke command returned zero
 
 gaps_recorded:
   - GAP-001 live repository settings are not verified in this eval fixture
@@ -124,11 +124,10 @@ repository_state:
   direct_state_verified: true
 
 github_settings:
-  desired_state: &desired_state
+  desired_state:
     default_branch: main
     branch_protection:
       required_reviews: 1
-      dismiss_stale_reviews: true
       require_code_owner_reviews: true
       required_status_checks:
         - CI (Node)
@@ -141,19 +140,10 @@ github_settings:
       allow_force_pushes: false
       allow_deletions: false
     workflow_permissions: read
-    security_features:
-      dependabot: true
-      secret_scanning: true
-      push_protection: true
-      code_scanning: true
-      dependency_review: true
-      sbom_on_release: true
-  observed_state: *desired_state
   verification_method: file
 
 security:
   dependency_review: true
-  secret_scanning: true
   code_scanning: true
   codeowners_present: true
   notes: File-based security posture is complete for the eval fixture; live API verification remains a recorded gap.
@@ -197,14 +187,10 @@ risks:
 test_results:
   - command: npm test
     status: passed
-    returncode: 0
-    stdout: "node fixture tests passed\n"
-    stderr: ""
+    evidence: test/example.test.mjs is present as the Node test fixture.
   - command: pytest
     status: passed
-    returncode: 0
-    stdout: "python fixture tests passed\n"
-    stderr: ""
+    evidence: tests/test_fixture.py is present as the Python test fixture.
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
     returncode: 0
