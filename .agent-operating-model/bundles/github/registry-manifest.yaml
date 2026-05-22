@@ -344,9 +344,9 @@ artifacts:
 - path: graders/code-confidence-grader.xml
   sha256: 23570631474bdd72c333e2a464bfb09b55c7669c0d53c71797e3847050866d81
 - path: graders/conformance-grader.xml
-  sha256: 515d20733c91a7e172f89537da5e27c0dc697b1e9bd292b94a0b714d7a489915
+  sha256: db4c50f17ec5d35ed5d3197047bc9d64c8c6aa30612873051bc70a3b27c6b8c2
 - path: graders/discovery-grader.xml
-  sha256: 284a79e46ff1537998cc6e8c1089524b0541f6805ba57e13fe5f2cf622a8224b
+  sha256: 8198902b6c6ac81c51b0d16189ca3f7ab3364cafc8db849b98af828f0814dcf5
 - path: graders/ethics-grader.xml
   sha256: ddd1fec9057fd31fbee94aa6ad615606fe58d6731d745dec595132b02863bb0b
 - path: graders/github-settings-grader.xml
