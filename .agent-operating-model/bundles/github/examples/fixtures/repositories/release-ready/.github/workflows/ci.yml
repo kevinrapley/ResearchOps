@@ -1,9 +1,34 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 permissions:
   contents: read
+
 jobs:
-  test:
+  fixture-validation:
+    name: Validate release-ready seed fixture
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo ok
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check release seed files exist
+        run: |
+          test -f README.md
+          test -f CHANGELOG.md
+
+      - name: Check changelog contains release signal
+        run: grep -q "0.1.0" CHANGELOG.md
+
+      - name: Record missing release artefacts for eval pressure
+        run: |
+          test ! -f release-checklist.md
+          test ! -f rollback-plan.md
+          test ! -f metadata-provenance.yaml
+          test ! -f artifacts/sbom.cyclonedx.json
