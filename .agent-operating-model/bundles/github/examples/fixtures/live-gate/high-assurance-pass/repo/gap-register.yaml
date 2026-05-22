@@ -28,9 +28,11 @@ gaps:
       unchanged unless they were already part of the immediate-file evidence set.
     validation_expectation: >
       The fixture should still represent a positive high-assurance case. Validators
-      should continue to pass because the existing top-level keys remain present.
+      should continue to pass because the existing top-level key remains present.
+      This record is closed and is not a release blocker.
     release_blocking: false
     follow_up_required: false
+    fixture_interpretation: pass
 
   - id: GAP-HAP-002
     title: Positive fixture must not hide active release gaps
@@ -60,6 +62,7 @@ gaps:
       are closed and `release_blocking` is false.
     release_blocking: false
     follow_up_required: false
+    fixture_interpretation: pass
 
   - id: GAP-HAP-003
     title: Live infrastructure evidence remains outside the offline fixture boundary
@@ -90,12 +93,4 @@ gaps:
       and the fixture provides local substitutes for the required evidence classes.
     release_blocking: false
     follow_up_required: false
-summary:
-  active_gaps: 0
-  closed_gaps: 3
-  waived_gaps: 0
-  release_blocking_gaps: 0
-  fixture_interpretation: pass
-  reviewer_note: >
-    This register is intentionally non-empty so the positive fixture demonstrates
-    how gap evidence is recorded without creating an active release blocker.
+    fixture_interpretation: pass
