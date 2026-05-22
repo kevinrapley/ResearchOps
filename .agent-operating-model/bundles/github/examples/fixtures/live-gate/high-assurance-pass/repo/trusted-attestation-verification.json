@@ -1,10 +1,20 @@
 {
   "type": "trusted-attestation-command-report",
   "artifact": "artifact.zip",
+  "artifact_sha256": "0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a",
   "repo": "owner/repo",
+  "expected_repository": "owner/repo",
+  "expected_ref": "refs/heads/main",
+  "expected_workflow": ".github/workflows/ci-hardened.yml",
   "sigstore_bundle": "sigstore-bundle.json",
+  "attestation": "attestation.json",
+  "sbom": "sbom.json",
+  "created_at_unix": 1770000000,
+  "created_at": "2026-02-02T02:40:00Z",
+  "verification_mode": "trusted-fixture",
   "checks": [
     {
+      "name": "github_artifact_attestation",
       "command": [
         "gh",
         "attestation",
@@ -15,11 +25,20 @@
       ],
       "returncode": 0,
       "duration_seconds": 0.1,
-      "stdout_tail": "Verified",
+      "stdout_tail": "Verified artifact.zip for owner/repo using GitHub artifact attestation fixture evidence.",
       "stderr_tail": "",
-      "passed": true
+      "passed": true,
+      "dry_run": false,
+      "tool_unavailable": false,
+      "validated_claims": [
+        "repository identity matches owner/repo",
+        "workflow identity matches .github/workflows/ci-hardened.yml",
+        "artifact digest matches expected SHA-256",
+        "attestation subject is present"
+      ]
     },
     {
+      "name": "sigstore_bundle_verification",
       "command": [
         "cosign",
         "verify-blob",
@@ -29,10 +48,67 @@
       ],
       "returncode": 0,
       "duration_seconds": 0.1,
-      "stdout_tail": "Verified OK",
+      "stdout_tail": "Verified OK. Bundle contains fixture certificate, Rekor entry, message digest and DSSE envelope.",
       "stderr_tail": "",
-      "passed": true
+      "passed": true,
+      "dry_run": false,
+      "tool_unavailable": false,
+      "validated_claims": [
+        "Sigstore bundle file exists",
+        "message digest matches artifact.zip",
+        "transparency log entry is represented",
+        "certificate identity is represented"
+      ]
+    },
+    {
+      "name": "sbom_attestation_linkage",
+      "command": [
+        "python",
+        "scripts/validate-sbom-attestation.py",
+        "--attestation",
+        "attestation.json",
+        "--sbom",
+        "sbom.json"
+      ],
+      "returncode": 0,
+      "duration_seconds": 0.12,
+      "stdout_tail": "SBOM attestation linkage validated for high-assurance fixture.",
+      "stderr_tail": "",
+      "passed": true,
+      "dry_run": false,
+      "tool_unavailable": false,
+      "validated_claims": [
+        "attestation references sbom.json",
+        "SBOM SHA-256 is represented",
+        "subject hashes are present",
+        "DSSE and SLSA metadata are present"
+      ]
     }
   ],
-  "verified": true
+  "verified": true,
+  "passed": true,
+  "errors": [],
+  "summary": {
+    "total_checks": 3,
+    "passed_checks": 3,
+    "failed_checks": 0,
+    "dry_run_checks": 0,
+    "tool_unavailable_checks": 0,
+    "release_gate_interpretation": "pass"
+  },
+  "fixture_metadata": {
+    "profile": "high-assurance",
+    "expected_result": "pass",
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded trusted attestation verification evidence for the high-assurance positive live-gate fixture."
+  },
+  "release_decision_use": {
+    "may_support_release": true,
+    "requires_matching_artifact_digest": true,
+    "requires_repository_identity_match": true,
+    "requires_workflow_identity_match": true,
+    "notes": "This file is fixture evidence. A real release must execute trusted verification commands against the actual release artifact, repository and Sigstore bundle."
+  }
 }
