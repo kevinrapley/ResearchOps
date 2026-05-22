@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
 
       - name: Check workflow lock evidence exists
         run: test -f workflow-action-lock.yaml
