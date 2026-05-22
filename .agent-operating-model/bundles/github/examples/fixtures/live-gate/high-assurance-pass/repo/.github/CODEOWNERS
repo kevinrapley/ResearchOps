@@ -1,4 +1,30 @@
-/* @repository-maintainers
+# Ownership model for the high-assurance live-gate passing fixture.
+#
+# The fixture uses placeholder teams. Real repositories should replace these
+# with organisation-specific maintainers, security reviewers and service owners.
+
+* @repository-maintainers
+
+.github/CODEOWNERS @repository-maintainers
 .github/workflows/* @repository-maintainers
+
+README.md @repository-maintainers
+CONTRIBUTING.md @repository-maintainers
 SECURITY.md @repository-maintainers
+RECENT_LEARNINGS.md @repository-maintainers
+
 github-settings.yaml @repository-maintainers
+conformance-matrix.yaml @repository-maintainers
+gap-register.yaml @repository-maintainers
+agent-evidence.yaml @repository-maintainers
+workflow-action-lock.yaml @repository-maintainers
+
+accessibility-evidence.yaml @repository-maintainers
+performance-budget.yaml @repository-maintainers
+performance-results.yaml @repository-maintainers
+sbom.json @repository-maintainers
+attestation.json @repository-maintainers
+trusted-attestation-verification.json @repository-maintainers
+sigstore-bundle.json @repository-maintainers
+
+results/* @repository-maintainers
