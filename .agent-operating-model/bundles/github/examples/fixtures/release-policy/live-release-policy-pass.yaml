@@ -1,17 +1,123 @@
-high_assurance:
-  required: true
-  minimum_grade: A
-  required_checks:
-    - tests
-    - security
-    - accessibility
-    - sbom
-    - attestation
-    - provenance
-    - performance
-    - harms
-live_release:
+version: '1.0'
+
+fixture_metadata:
+  id: live-release-policy-pass
+  kind: release_policy_fixture
+  expected_validator_result: pass
+  purpose: >
+    Provides a complete passing live-release policy fixture for validating
+    standard, high-assurance, regulated and public-service release profiles.
+  validator: scripts/validate-live-release-policy.py
+
+profiles:
+  standard:
+    description: >
+      Baseline live release profile. It requires live GitHub API observability
+      so local file evidence is not mistaken for observed repository state.
+    required_controls:
+      github_api: true
+      workflow_lock: false
+      hardened_workflows: false
+      trusted_sbom_attestation: false
+      external_attestation_verification: false
+      accessibility_evidence: false
+      performance_evidence: false
+      evidence_to_repository_cross_check: false
+    optional_github_api_endpoints:
+      - repository
+      - branches
+      - workflows
+      - checks
+
+  high-assurance:
+    description: >
+      High-assurance profile for releases that require workflow hardening,
+      trusted supply-chain evidence, accessibility evidence, performance
+      evidence and cross-checking between agent evidence and repository state.
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints:
+      - repository
+      - branches
+      - rulesets
+      - environments
+      - actions_permissions
+      - code_scanning
+      - dependabot
+      - secret_scanning
+      - required_status_checks
+
+  regulated:
+    inherits: high-assurance
+    description: >
+      Regulated profile. It preserves all high-assurance requirements and adds
+      a stronger expectation that release exceptions, waivers and governance
+      decisions are represented in evidence.
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints:
+      - repository
+      - branches
+      - rulesets
+      - environments
+      - deployment_protection_rules
+      - actions_permissions
+      - code_scanning
+      - dependabot
+      - secret_scanning
+      - required_status_checks
+
+  public-service:
+    inherits: high-assurance
+    description: >
+      Public-service profile. It preserves all high-assurance requirements and
+      makes accessibility, evidence traceability and repository-state
+      observability explicit release blockers.
+    required_controls:
+      github_api: true
+      workflow_lock: true
+      hardened_workflows: true
+      trusted_sbom_attestation: true
+      external_attestation_verification: true
+      accessibility_evidence: true
+      performance_evidence: true
+      evidence_to_repository_cross_check: true
+    optional_github_api_endpoints:
+      - repository
+      - branches
+      - rulesets
+      - environments
+      - actions_permissions
+      - code_scanning
+      - dependabot
+      - secret_scanning
+      - required_status_checks
+
+release_decision_policy:
   required_approval: true
   approvers:
     - release-owner
+    - service-owner
   rollback_required: true
+  unresolved_blockers_allowed: false
+  evidence_fabrication_allowed: false
+
+expected_validator_behaviour:
+  - Schema validation passes because version and all required profiles are present.
+  - Standard profile requires GitHub API observability.
+  - High-assurance, regulated and public-service profiles require every high-assurance control.
+  - Extra explanatory fixture metadata is tolerated by the schema.
