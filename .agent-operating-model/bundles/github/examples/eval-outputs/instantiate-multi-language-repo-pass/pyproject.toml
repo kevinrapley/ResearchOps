@@ -1,3 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name='example-backend'
-version='0.1.0'
+name = "example-multilang-eval-output"
+version = "0.1.0"
+description = "Passing eval output fixture for a generated multi-language repository."
+requires-python = ">=3.11"
+readme = "README.md"
+authors = [
+  { name = "GitHub Diamond Standard fixture" }
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.github-diamond-fixture]
+fixture_kind = "eval-output"
+selected_mode = "repo-instantiate"
+detected_languages = ["node", "python"]
+evidence_files = [
+  "agent-evidence.yaml",
+  "conformance-matrix.yaml",
+  "gap-register.yaml",
+  "github-settings.yaml"
+]
