@@ -1,0 +1,33 @@
+id: negative-missing-workflow-lock
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_workflow_lock
+blocking_requirement: workflow-action-lock.yaml
+
+purpose: >
+  Proves that the high-assurance live gate fails when workflow action lock
+  evidence is missing. High-assurance release mode must not treat workflow
+  files as hardened unless a reviewed lock file is present.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: remove workflow-action-lock.yaml
+  primary_missing_file: workflow-action-lock.yaml
+
+expected_validator_behaviour:
+  - Detect that the workflow lock file is absent.
+  - Refuse to mark the high-assurance release gate as passing.
+  - Report workflow lock evidence as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_required_file: true
+  negative_fixture_omits_required_file: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - accessibility evidence quality
+  - performance evidence quality
+  - SBOM attestation quality
+  - GitHub API observability

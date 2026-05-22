@@ -1,0 +1,26 @@
+id: negative-placeholder-workflow-sha
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: placeholder_workflow_reference
+blocking_requirement: workflow-action-lock.yaml
+
+purpose: >
+  Proves that the high-assurance live gate fails when workflow hardening evidence
+  is not reviewable release evidence.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: use a non-reviewable workflow reference in workflow-action-lock.yaml
+  primary_invalid_file: workflow-action-lock.yaml
+
+expected_validator_behaviour:
+  - Detect invalid workflow lock evidence.
+  - Refuse to mark the high-assurance profile as passing.
+  - Report workflow hardening evidence as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_workflow_lock: true
+  negative_fixture_contains_invalid_workflow_lock: true
+  other_high_assurance_controls_should_remain_unchanged: true

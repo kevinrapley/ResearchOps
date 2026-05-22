@@ -1,0 +1,17 @@
+{
+  "name": "sbom-non-empty-fixture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal npm fixture used to prove non-empty SBOM generation.",
+  "license": "MIT",
+  "dependencies": {
+    "left-pad": "1.3.0"
+  },
+  "fixture_context": {
+    "fixture_kind": "sbom_non_empty_fixture",
+    "expected_validator_result": "pass",
+    "expected_minimum_components": 1,
+    "expected_dependency_manifest": "package-lock.json",
+    "purpose": "Provides a package manifest and lock file with at least one dependency for SBOM generation tests."
+  }
+}

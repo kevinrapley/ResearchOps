@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<role id="performance-engineer" xml_profile="native-semantic-xml/v1" version="2.9.2">
+<role id="performance-engineer" xml_profile="native-semantic-xml/v1" version="2.9.3">
   <title>Performance Engineer</title>
   <description>
     The performance engineer monitors and optimises the performance of the software.  They define budgets, implement benchmarks and ensure that code changes do not degrade the user experience or overload infrastructure.

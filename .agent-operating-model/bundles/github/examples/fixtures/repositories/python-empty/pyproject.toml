@@ -1,3 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "python-empty"
+name = "python-empty-seed-fixture"
 version = "0.1.0"
+description = "Minimal Python repository seed fixture used to test template and CI selection."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.github-diamond-fixture]
+fixture_kind = "repository_seed"
+expected_detection = "python"
+expected_mode = "repo-instantiate"
+intentionally_missing = [
+  ".github/workflows/ci-python.yml",
+  ".github/CODEOWNERS",
+  "github-settings.yaml",
+  "conformance-matrix.yaml",
+  "gap-register.yaml",
+  "agent-evidence.yaml"
+]

@@ -1,4 +1,25 @@
-/* @repository-maintainers
-.github/workflows/* @repository-maintainers
-SECURITY.md @repository-maintainers
-github-settings.yaml @repository-maintainers
+# Ownership model for the generated multi-language eval output.
+#
+# This fixture uses placeholder teams to show review routing. A real repository
+# should replace these with organisation-specific teams or maintainers.
+
+* @repository-maintainers
+
+# Repository governance artefacts need maintainer review.
+/.github/CODEOWNERS @repository-maintainers
+/github-settings.yaml @repository-maintainers
+/conformance-matrix.yaml @repository-maintainers
+/gap-register.yaml @repository-maintainers
+/agent-evidence.yaml @repository-maintainers
+
+# Workflow changes affect validation and release confidence.
+/.github/workflows/* @repository-maintainers
+
+# Security-facing documentation and checks need security-aware review.
+/SECURITY.md @repository-maintainers
+/.github/workflows/codeql.yml @repository-maintainers
+/.github/workflows/dependency-review.yml @repository-maintainers
+
+# Runtime project files should be reviewed by maintainers for the fixture.
+/package.json @repository-maintainers
+/pyproject.toml @repository-maintainers

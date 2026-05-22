@@ -1,0 +1,73 @@
+id: repo-discovery-node-api
+kind: scenario
+status: canonical
+
+user_prompt: >
+  Review this repository and tell me what kind of project it is, what quality
+  gates it already has, what gaps exist, and what should be done before active
+  development begins.
+
+repository_context:
+  observed_files:
+    - package.json
+    - package-lock.json
+    - src/server.js
+    - test/server.test.js
+    - .github/workflows/ci-node.yml
+    - README.md
+  likely_archetype: api-service
+  primary_language: javascript
+  runtime:
+    node: ">=20"
+
+expected_mode:
+  file: modes/repo-discovery.xml
+  rationale: >
+    The user is asking the agent to inspect and explain repository state. No
+    implementation, release, archive or security mutation has been requested.
+
+roles:
+  primary:
+    - roles/repository-operator.xml
+  supporting:
+    - roles/architect.xml
+    - roles/qa.xml
+
+references:
+  must_load:
+    - references/source-catalog.xml
+    - references/repository-charter.xml
+    - references/implementation-workflow.xml
+    - references/quality-gates.xml
+
+contracts:
+  must_apply:
+    - contracts/repository-contract.schema.json
+    - contracts/gap-register.schema.json
+    - contracts/agent-evidence.schema.json
+
+graders:
+  must_consider:
+    - graders/discovery-grader.xml
+    - graders/code-confidence-grader.xml
+
+required_evidence:
+  inspected_files:
+    - package.json
+    - .github/workflows/ci-node.yml
+    - README.md
+    - src/server.js
+    - test/server.test.js
+  evidence_questions:
+    - What type of repository is this?
+    - What framework or runtime does it use?
+    - What quality gates exist?
+    - What quality gates are missing?
+    - What should be done next?
+    - What remains uncertain?
+
+failure_conditions:
+  - The agent claims repository facts without naming evidence.
+  - The agent starts editing files before discovery is complete.
+  - The agent ignores missing or weak CI.
+  - The agent produces a generic summary that could apply to any repository.

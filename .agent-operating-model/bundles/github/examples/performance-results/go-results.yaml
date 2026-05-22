@@ -1,3 +1,84 @@
+adapter: go-bench-summary
+profile: github-diamond-standard
+run:
+  id: perf_go_01JZ8T1GO000000000000000001
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:12:00Z'
+  duration_seconds: 18.7
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    go_version: go1.23.4
+    goos: linux
+    goarch: amd64
+    cpu: synthetic-ci-runner
+scenario:
+  name: Go repository assurance handler benchmarks
+  description: Synthetic Go benchmark result for fast repository conformance and evidence-index handlers.
+  package: example.com/github-diamond/performance-fixtures
+  command:
+    - go
+    - test
+    - ./...
+    - -bench=.
+    - -benchmem
+budgets_applied:
+  - metric: handler_ns_per_op
+    threshold: 50000
+    tolerance_percent: 10
+    allowed_value: 55000
+    unit: ns/op
+    mode: blocking
 measurements:
-  - metric: response_time_p95_ms
-    value: 90
+  - metric: handler_ns_per_op
+    canonical_metric: handler_ns_per_op
+    value: 18420
+    unit: ns/op
+    status: pass
+    source: synthetic-go-bench
+    sample_count: 75000
+    threshold: 50000
+    tolerance_percent: 10
+    allowed_value: 55000
+    comparator: max
+    evidence:
+      benchmark: BenchmarkReleaseGateSummaryHandler-8
+      raw_value: 18420 ns/op
+      bytes_per_op: 4096
+      allocs_per_op: 38
+      calculation: highest relevant handler benchmark retained as conservative gate value
+  - metric: repository_conformance_handler_ns_per_op
+    canonical_metric: repository_conformance_handler_ns_per_op
+    value: 12345
+    unit: ns/op
+    status: pass
+    source: synthetic-go-bench
+    sample_count: 100000
+    comparator: max
+    evidence:
+      benchmark: BenchmarkRepositoryConformanceHandler-8
+      raw_value: 12345 ns/op
+      bytes_per_op: 2048
+      allocs_per_op: 24
+  - metric: evidence_index_lookup_ns_per_op
+    canonical_metric: evidence_index_lookup_ns_per_op
+    value: 8340
+    unit: ns/op
+    status: pass
+    source: synthetic-go-bench
+    sample_count: 200000
+    comparator: max
+    evidence:
+      benchmark: BenchmarkEvidenceIndexLookup-8
+      raw_value: 8340 ns/op
+      bytes_per_op: 1024
+      allocs_per_op: 12
+quality_notes:
+  - The blocking `handler_ns_per_op` value uses the slowest relevant handler benchmark to avoid cherry-picking the fastest result.
+  - Allocation counts are included as diagnostic evidence even though the current budget gates only on ns/op.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded Go performance-results fixture with benchmark provenance, conservative gate value and allocation diagnostics.

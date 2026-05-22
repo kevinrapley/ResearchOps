@@ -1,1 +1,83 @@
-{"categories":{"accessibility":{"score":0.95}}}
+{
+  "example_metadata": {
+    "id": "accessibility-paths-root-relative-lighthouse",
+    "kind": "accessibility_path_result_fixture",
+    "tool": "lighthouse",
+    "path_resolution_model": "root_relative",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing Lighthouse result loaded from results/lighthouse.json when the evidence file is stored in a separate evidence directory."
+  },
+  "lighthouseVersion": "12.1.0",
+  "requestedUrl": "http://localhost:4173/accessibility-paths/root-relative",
+  "finalDisplayedUrl": "http://localhost:4173/accessibility-paths/root-relative",
+  "fetchTime": "2026-05-21T12:00:00.000Z",
+  "configSettings": {
+    "formFactor": "desktop",
+    "onlyCategories": [
+      "accessibility"
+    ]
+  },
+  "categories": {
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 0.95,
+      "auditRefs": [
+        {
+          "id": "document-title",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "html-has-lang",
+          "weight": 3,
+          "group": "a11y-language"
+        },
+        {
+          "id": "label",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "color-contrast",
+          "weight": 3,
+          "group": "a11y-color-contrast"
+        }
+      ]
+    }
+  },
+  "audits": {
+    "document-title": {
+      "id": "document-title",
+      "title": "Document has a title element",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "html-has-lang": {
+      "id": "html-has-lang",
+      "title": "html element has a lang attribute",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "label": {
+      "id": "label",
+      "title": "Form elements have associated labels",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "items": []
+      }
+    },
+    "color-contrast": {
+      "id": "color-contrast",
+      "title": "Background and foreground colours have a sufficient contrast ratio",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "items": []
+      }
+    }
+  }
+}

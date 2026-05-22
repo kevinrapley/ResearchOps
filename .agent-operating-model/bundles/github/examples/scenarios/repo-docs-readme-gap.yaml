@@ -1,0 +1,63 @@
+id: repo-docs-readme-gap
+kind: scenario
+status: canonical
+
+user_prompt: >
+  Review the repository documentation and improve the README if it does not give
+  enough context to set up, test and maintain the project.
+
+repository_context:
+  observed_files:
+    - README.md
+    - package.json
+    - .github/workflows/ci-node.yml
+  current_readme_coverage:
+    purpose: present
+    setup: missing
+    test_commands: missing
+    ownership: missing
+    release_notes: missing
+
+expected_mode:
+  file: modes/repo-docs.xml
+  rationale: >
+    The request is specifically about repository documentation quality and
+    contributor comprehension, not a runtime feature change.
+
+roles:
+  primary:
+    - roles/docs-lead.xml
+  supporting:
+    - roles/repository-operator.xml
+    - roles/qa.xml
+
+references:
+  must_load:
+    - references/documentation-quality-pack.xml
+    - references/source-catalog.xml
+    - references/repository-charter.xml
+    - references/implementation-workflow.xml
+
+contracts:
+  must_apply:
+    - contracts/repository-contract.schema.json
+    - contracts/gap-register.schema.json
+    - contracts/agent-evidence.schema.json
+
+graders:
+  must_consider:
+    - graders/documentation-grader.xml
+    - graders/discovery-grader.xml
+    - graders/pr-readiness-grader.xml
+
+required_evidence:
+  - README sections present and missing.
+  - Package scripts that should be documented.
+  - CI workflows that define the validation path.
+  - Any ownership or support artefacts that exist.
+
+failure_conditions:
+  - The agent rewrites the README without inspecting package scripts.
+  - The agent invents deployment or release details.
+  - The agent removes existing accurate context.
+  - The agent omits validation commands from the documentation update.

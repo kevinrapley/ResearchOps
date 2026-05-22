@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-22",
+  "branch": "feature/github-examples-293",
+  "pullRequest": {
+    "number": 276,
+    "url": "https://github.com/kevinrapley/ResearchOps/pull/276",
+    "state": "open",
+    "draft": false
+  },
+  "scope": [
+    "github-diamond-bundle",
+    "examples",
+    "fixtures",
+    "payloads",
+    "performance-inputs",
+    "performance-results",
+    "validation-report",
+    "registry-manifest",
+    "ci-remediation"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work and CI remediation for PR #276. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "feature/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "workSummary": [
+    "Expanded GitHub Diamond examples and fixtures from placeholder-style records into realistic synthetic evidence.",
+    "Expanded API payloads, performance inputs and performance-result examples while preserving adapter and validator-critical fields.",
+    "Opened PR #276 from feature/github-examples-293 to main.",
+    "Investigated failing CI on PR #276 and identified missing trace coverage plus a missing validation-report section.",
+    "Restored the required ## Evaluation coverage section in the GitHub bundle validation report.",
+    "Added this audit trace so branch-driven trace coverage can pass for 2026-05-22.",
+    "Added a Node-based generator for .agent-operating-model/bundles/github/registry-manifest.yaml SHA-256 checksums.",
+    "Added a GitHub Actions workflow that runs when GitHub bundle files change and commits registry-manifest.yaml when generated checksums differ.",
+    "Observed the new manifest action successfully commit updated SHA-256 checksums to the PR branch."
+  ],
+  "ciFindings": [
+    {
+      "workflow": "Validate ResearchOps",
+      "finding": "Trace coverage failed because docs/agent-audit/reasoning/2026/05/22 did not exist for the feature branch.",
+      "status": "remediated-by-this-trace"
+    },
+    {
+      "workflow": "CI",
+      "job": "Node 22",
+      "finding": "Unit test 'today's trace directory passes coverage check' failed with missing-dir for docs/agent-audit/reasoning/2026/05/22.",
+      "status": "remediated-by-this-trace"
+    },
+    {
+      "workflow": "CI",
+      "job": "Node 22",
+      "finding": "Unit test 'validation reports use the standard section structure' failed because the GitHub bundle report used ## Example coverage instead of ## Evaluation coverage.",
+      "status": "remediated-in-commit-4c88754d92350f81e07b342a7407ddc40d79f9a5"
+    },
+    {
+      "workflow": "Update GitHub bundle registry manifest",
+      "finding": "The new workflow updated registry-manifest.yaml with 317 SHA-256 checksum entries and pushed commit 9c8f86e829d01e966b87dedce33907170805efbb.",
+      "status": "observed-success"
+    }
+  ],
+  "changedAreas": [
+    ".github/workflows/update-github-bundle-registry-manifest.yml",
+    ".agent-operating-model/bundles/github/examples/fixtures",
+    ".agent-operating-model/bundles/github/examples/payloads",
+    ".agent-operating-model/bundles/github/examples/performance-inputs",
+    ".agent-operating-model/bundles/github/examples/performance-results",
+    ".agent-operating-model/bundles/github/registry-manifest.yaml",
+    ".agent-operating-model/bundles/github/VALIDATION-REPORT.md",
+    "scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs",
+    "docs/agent-audit/reasoning/2026/05/22"
+  ],
+  "validationEvidence": {
+    "readFromCi": [
+      "CI Node unit logs showed 153 passing tests and two failures before remediation.",
+      "Validate ResearchOps reported missing trace artefacts for 2026-05-22.",
+      "The Update GitHub bundle registry manifest workflow completed successfully and committed registry-manifest.yaml updates."
+    ],
+    "notRunLocally": [
+      "No local npm, Python or release-gate validation was run in the connector-only environment."
+    ],
+    "recommendedNextChecks": [
+      "npm test",
+      "npm run validate",
+      "node scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs --check",
+      "cd .agent-operating-model/bundles/github && python scripts/release-gate.py --mode full"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "The branch remains large and CI may surface further fixture or schema issues after this trace and validation-report fix.",
+      "mitigation": "Keep PR checks under review until all latest-head workflows complete."
+    },
+    {
+      "risk": "Commits pushed by a workflow using the default GITHUB_TOKEN do not always trigger downstream workflows on the new head commit.",
+      "mitigation": "This trace update creates a normal repository commit after the generated manifest update so current PR checks can run on the latest head. For permanent fully automatic cascades, configure a dedicated automation token and use it in the manifest workflow checkout step."
+    }
+  ],
+  "status": "manifest-action-implemented"
+}

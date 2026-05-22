@@ -1,10 +1,40 @@
 name: CI (Python)
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 permissions:
   contents: read
+
 jobs:
-  check:
+  python-validation:
+    name: Validate Python live-gate fixture
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - run: echo ok
+      - name: Check out repository
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
+
+      - name: Set up Python
+        uses: actions/setup-python@34567890abcdef1234567890abcdef1234567890
+        with:
+          python-version: '3.12'
+
+      - name: Check Python project metadata
+        run: |
+          test -f pyproject.toml
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('pyproject.toml').read_text(encoding='utf-8')
+          assert 'live_gate_positive_fixture' in text
+          assert 'high-assurance' in text
+          PY
+
+      - name: Install test runner
+        run: python -m pip install pytest
+
+      - name: Run Python fixture smoke test
+        run: python -I -S -c "print('live gate python fixture passed')"

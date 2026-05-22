@@ -1,2 +1,35 @@
 commands:
-  - python -I -S -c "print('fixture tests passed')"
+  - id: fixture-smoke
+    command: python -I -S -c "print('fixture tests passed')"
+    purpose: >
+      Provides a deterministic smoke command that can run without installing
+      project dependencies.
+    expected_status: passed
+    expected_stdout: fixture tests passed
+
+  - id: node-tests
+    command: npm test
+    purpose: >
+      Represents the Node validation command selected because package.json is
+      present in the eval output.
+    expected_status: passed
+    fixture_note: >
+      In this compact fixture, the command is evidence of expected repository
+      shape. A real generated repository should provide actual Node tests.
+
+  - id: python-tests
+    command: pytest
+    purpose: >
+      Represents the Python validation command selected because pyproject.toml
+      is present in the eval output.
+    expected_status: passed
+    fixture_note: >
+      In this compact fixture, the command is evidence of expected repository
+      shape. A real generated repository should provide actual Python tests.
+
+  - id: repository-evidence-check
+    command: check generated repository evidence
+    purpose: >
+      Represents direct review of generated files, workflows and governance
+      artefacts.
+    expected_status: passed

@@ -1,0 +1,32 @@
+id: negative-missing-github-api-observability
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_github_api_observability
+blocking_requirement: live GitHub API observability
+
+purpose: >
+  Proves that the high-assurance live gate fails when required live repository
+  state cannot be observed through the GitHub API.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: simulate unavailable or insufficient GitHub API evidence
+  primary_missing_signal: github_api_observability
+
+expected_validator_behaviour:
+  - Detect that live repository state is not observable.
+  - Refuse to treat local file evidence as sufficient for the live high-assurance profile.
+  - Report GitHub API observability as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_local_evidence: true
+  negative_fixture_lacks_live_observability: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - workflow lock evidence
+  - accessibility evidence quality
+  - performance evidence quality
+  - SBOM attestation evidence

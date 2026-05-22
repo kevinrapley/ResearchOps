@@ -1,9 +1,103 @@
 {
+  "lighthouseVersion": "12.6.0-fixture",
+  "requestedUrl": "https://example.service.gov.uk/repository/conformance",
+  "finalDisplayedUrl": "https://example.service.gov.uk/repository/conformance",
+  "finalUrl": "https://example.service.gov.uk/repository/conformance",
+  "fetchTime": "2026-05-21T12:45:00.000Z",
+  "gatherMode": "navigation",
+  "runWarnings": [],
+  "environment": {
+    "networkUserAgent": "Mozilla/5.0 synthetic Lighthouse fixture",
+    "hostUserAgent": "Mozilla/5.0 synthetic Lighthouse fixture",
+    "benchmarkIndex": 1450,
+    "credits": {
+      "axe-core": "fixture"
+    }
+  },
+  "configSettings": {
+    "formFactor": "desktop",
+    "screenEmulation": {
+      "mobile": false,
+      "width": 1350,
+      "height": 940,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "throttlingMethod": "simulate"
+  },
   "categories": {
-    "performance": {"score": 0.91},
-    "accessibility": {"score": 0.98}
+    "performance": {
+      "id": "performance",
+      "title": "Performance",
+      "score": 0.91
+    },
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 0.98
+    },
+    "best-practices": {
+      "id": "best-practices",
+      "title": "Best Practices",
+      "score": 0.96
+    },
+    "seo": {
+      "id": "seo",
+      "title": "SEO",
+      "score": 0.92
+    }
   },
   "audits": {
-    "largest-contentful-paint": {"numericValue": 1800}
+    "largest-contentful-paint": {
+      "id": "largest-contentful-paint",
+      "title": "Largest Contentful Paint",
+      "score": 0.88,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 1800,
+      "numericUnit": "millisecond",
+      "displayValue": "1.8 s"
+    },
+    "first-contentful-paint": {
+      "id": "first-contentful-paint",
+      "title": "First Contentful Paint",
+      "score": 0.94,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 1050,
+      "numericUnit": "millisecond",
+      "displayValue": "1.1 s"
+    },
+    "total-blocking-time": {
+      "id": "total-blocking-time",
+      "title": "Total Blocking Time",
+      "score": 0.99,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 45,
+      "numericUnit": "millisecond",
+      "displayValue": "45 ms"
+    },
+    "cumulative-layout-shift": {
+      "id": "cumulative-layout-shift",
+      "title": "Cumulative Layout Shift",
+      "score": 1,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 0.01,
+      "numericUnit": "unitless",
+      "displayValue": "0.01"
+    },
+    "interactive": {
+      "id": "interactive",
+      "title": "Time to Interactive",
+      "score": 0.9,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 2150,
+      "numericUnit": "millisecond",
+      "displayValue": "2.2 s"
+    }
+  },
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded Lighthouse fixture for repository conformance UI performance checks while preserving categories.performance.score, categories.accessibility.score and largest-contentful-paint.numericValue parser fields."
   }
 }

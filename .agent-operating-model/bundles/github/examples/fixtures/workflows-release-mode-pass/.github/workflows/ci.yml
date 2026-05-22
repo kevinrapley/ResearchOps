@@ -1,17 +1,30 @@
-name: CI (Fixture)
+name: CI (Release Mode Pass Fixture)
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  fixture:
+  release-mode-fixture:
+    name: Validate release-mode workflow fixture
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
-      - name: Fixture
-        run: echo "release-mode workflow fixture"
+      - name: Check out repository with reviewed SHA pin
+        uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
+
+      - name: Confirm release-mode fixture evidence
+        run: |
+          test -f workflow-action-lock.yaml
+          grep -q "actions/checkout" workflow-action-lock.yaml
+          grep -q "1234567890abcdef1234567890abcdef12345678" workflow-action-lock.yaml
+
+      - name: Confirm workflow hardening purpose
+        run: |
+          test -f README.md
+          grep -q "Release-mode workflow hardening pass fixture" README.md

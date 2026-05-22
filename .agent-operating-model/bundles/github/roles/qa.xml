@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<role id="qa" version="2.9.2">
+<role id="qa" version="2.9.3">
   <title>Quality Assurance</title>
   <description>Ensures that changes meet functional, usability, accessibility and performance standards.</description>
   <responsibilities>

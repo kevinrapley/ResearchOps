@@ -1,10 +1,44 @@
 name: Dependency Review
-on: [push, pull_request]
+
+on:
+  pull_request:
+    paths:
+      - package.json
+      - package-lock.json
+      - pyproject.toml
+      - requirements*.txt
+      - .github/workflows/dependency-review.yml
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - package-lock.json
+      - pyproject.toml
+      - requirements*.txt
+
 permissions:
   contents: read
+  pull-requests: read
+
 jobs:
-  check:
+  dependency-review:
+    name: Review dependency changes
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - run: echo ok
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Review pull request dependencies
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: always
+
+      - name: Record push context
+        if: github.event_name == 'push'
+        run: |
+          echo "Dependency review runs on pull requests."
+          echo "Push events keep the expected status check visible for this fixture."

@@ -1,1 +1,40 @@
-[{"code":"WCAG2AA.Principle1.Guideline1_1"}]
+{
+  "example_metadata": {
+    "id": "accessibility-negative-pa11y-fail",
+    "kind": "accessibility_result_failure",
+    "tool": "pa11y",
+    "expected_validator_effect": "fail",
+    "purpose": "Failing Pa11y result used to prove that the accessibility validator blocks evidence when Pa11y reports issues."
+  },
+  "tool": {
+    "name": "pa11y",
+    "version": "8.0.0",
+    "runner": "pa11y-ci"
+  },
+  "page": {
+    "url": "http://localhost:4173/example-accessibility-negative",
+    "title": "Example accessibility negative fixture"
+  },
+  "run": {
+    "standard": "WCAG2AA",
+    "started_at": "2026-05-21T12:00:00.000Z"
+  },
+  "summary": {
+    "status": "fail",
+    "errors": 1,
+    "warnings": 0,
+    "notices": 0,
+    "issues": 1
+  },
+  "issues": [
+    {
+      "code": "WCAG2AA.Principle1.Guideline1_1.1_1_1.H37",
+      "type": "error",
+      "typeCode": 1,
+      "message": "Img element missing an alt attribute. Use the alt attribute to specify a short text alternative.",
+      "context": "<img src=\"/assets/reference-number.png\">",
+      "selector": "main img.reference-number-example",
+      "runner": "htmlcs"
+    }
+  ]
+}

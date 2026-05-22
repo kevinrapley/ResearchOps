@@ -1,1 +1,50 @@
-[]
+{
+  "example_metadata": {
+    "id": "accessibility-negative-pa11y-pass-control",
+    "kind": "accessibility_result_control",
+    "tool": "pa11y",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing Pa11y control result used by negative accessibility fixtures to isolate failures in another evidence source."
+  },
+  "tool": {
+    "name": "pa11y",
+    "version": "8.0.0",
+    "runner": "pa11y-ci"
+  },
+  "page": {
+    "url": "http://localhost:4173/example-accessibility-negative",
+    "title": "Example accessibility negative fixture"
+  },
+  "run": {
+    "standard": "WCAG2AA",
+    "started_at": "2026-05-21T12:00:00.000Z"
+  },
+  "summary": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "notices": 0,
+    "issues": 0
+  },
+  "issues": [],
+  "sample_passes": [
+    {
+      "code": "WCAG2AA.Principle1.Guideline1_1.1_1_1.H37",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Image alternative text is present where images convey meaning.",
+      "context": "<img src=\"/assets/example.png\" alt=\"Example confirmation screen\">",
+      "selector": "img.example-confirmation",
+      "runner": "htmlcs"
+    },
+    {
+      "code": "WCAG2AA.Principle3.Guideline3_1.3_1_1.H57.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Page language is declared.",
+      "context": "<html lang=\"en-GB\">",
+      "selector": "html",
+      "runner": "htmlcs"
+    }
+  ]
+}

@@ -1,1 +1,58 @@
-records: []
+records:
+  - id: CONF-001
+    control: Repository purpose is documented
+    status: pass
+    evidence:
+      - README.md explains the repository purpose and eval-output status.
+    owner: repository-operator
+
+  - id: CONF-002
+    control: Contribution workflow is documented
+    status: pass
+    evidence:
+      - CONTRIBUTING.md explains branch, validation and pull request expectations.
+    owner: maintainer
+
+  - id: CONF-003
+    control: Security reporting route is documented
+    status: pass_with_fixture_gap
+    evidence:
+      - SECURITY.md explains how sensitive concerns should be handled.
+      - gap-register.yaml records that live repository settings are not verified in this fixture.
+    owner: security
+
+  - id: CONF-004
+    control: Required CI workflows are present
+    status: pass
+    evidence:
+      - .github/workflows/ci-node.yml
+      - .github/workflows/ci-python.yml
+      - .github/workflows/ci-conformance.yml
+      - .github/workflows/ci-docs-quality.yml
+      - .github/workflows/codeql.yml
+      - .github/workflows/dependency-review.yml
+    owner: qa
+
+  - id: CONF-005
+    control: Repository governance evidence is present
+    status: pass
+    evidence:
+      - github-settings.yaml
+      - conformance-matrix.yaml
+      - gap-register.yaml
+      - agent-evidence.yaml
+    owner: repository-operator
+
+  - id: CONF-006
+    control: Local project memory is present
+    status: pass
+    evidence:
+      - RECENT_LEARNINGS.md records the initial scaffold learning.
+    owner: repository-operator
+
+  - id: CONF-007
+    control: Deferred controls are explicit
+    status: pass
+    evidence:
+      - gap-register.yaml records fixture-scoped gaps for live settings, accessibility and performance.
+    owner: maintainer

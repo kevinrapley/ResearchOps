@@ -1,0 +1,58 @@
+name: Update GitHub bundle registry manifest
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".agent-operating-model/bundles/github/**"
+      - "scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs"
+      - ".github/workflows/update-github-bundle-registry-manifest.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-bundle-registry-manifest-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-registry-manifest:
+    name: Update registry manifest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Checkout writable branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          repository: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Update GitHub bundle registry manifest checksums
+        run: node scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs
+
+      - name: Commit registry manifest update
+        env:
+          BRANCH_NAME: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- .agent-operating-model/bundles/github/registry-manifest.yaml; then
+            echo "registry-manifest.yaml is already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .agent-operating-model/bundles/github/registry-manifest.yaml
+          git commit -m "Update GitHub bundle registry manifest checksums"
+          git push origin "HEAD:${BRANCH_NAME}"

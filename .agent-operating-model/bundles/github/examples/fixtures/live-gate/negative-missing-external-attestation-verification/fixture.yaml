@@ -1,0 +1,33 @@
+id: negative-missing-external-attestation-verification
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_external_attestation_verification
+blocking_requirement: trusted-attestation-verification.json
+
+purpose: >
+  Proves that the high-assurance live gate fails when external attestation
+  verification evidence is absent.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: remove trusted-attestation-verification.json
+  primary_missing_file: trusted-attestation-verification.json
+
+expected_validator_behaviour:
+  - Detect that external verification evidence is absent.
+  - Refuse to treat declared attestation metadata as enough for trusted mode.
+  - Report missing external verification as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_external_verification: true
+  negative_fixture_omits_external_verification: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - missing attestation metadata
+  - workflow lock evidence
+  - accessibility evidence quality
+  - performance evidence quality
+  - GitHub API observability

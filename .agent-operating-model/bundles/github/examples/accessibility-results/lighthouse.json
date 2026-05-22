@@ -1,1 +1,202 @@
-{"categories":{"accessibility":{"score":1}}}
+{
+  "example_metadata": {
+    "id": "accessibility-results-lighthouse-pass",
+    "kind": "accessibility-result-example",
+    "tool": "lighthouse",
+    "scenario": "Primary service journey passes Lighthouse accessibility checks",
+    "purpose": "Shows the expected shape of a passing Lighthouse accessibility result while preserving a score that satisfies the bundle release gate.",
+    "service_context": {
+      "repository_archetype": "public-service-web-frontend",
+      "journey": "Apply for a research session",
+      "page": "/apply",
+      "risk_profile": "public-service"
+    },
+    "interpretation": {
+      "automated_result": "pass",
+      "accessibility_score": 1,
+      "minimum_required_score": 0.9,
+      "release_meaning": "This result supports accessibility confidence but does not replace manual keyboard, screen-reader, cognitive load or assisted digital checks."
+    }
+  },
+  "lighthouseVersion": "12.1.0",
+  "requestedUrl": "http://localhost:4173/apply",
+  "finalDisplayedUrl": "http://localhost:4173/apply",
+  "fetchTime": "2026-05-21T12:00:00.000Z",
+  "userAgent": "Mozilla/5.0 AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+  "environment": {
+    "networkUserAgent": "Mozilla/5.0 AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+    "hostUserAgent": "Mozilla/5.0 AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+    "benchmarkIndex": 1200
+  },
+  "configSettings": {
+    "formFactor": "desktop",
+    "screenEmulation": {
+      "mobile": false,
+      "width": 1440,
+      "height": 1100,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "onlyCategories": [
+      "accessibility"
+    ]
+  },
+  "categories": {
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "description": "These checks highlight opportunities to improve the accessibility of the web application. Automated checks are not a substitute for manual testing.",
+      "score": 1,
+      "auditRefs": [
+        {
+          "id": "color-contrast",
+          "weight": 3,
+          "group": "a11y-color-contrast"
+        },
+        {
+          "id": "document-title",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "html-has-lang",
+          "weight": 3,
+          "group": "a11y-language"
+        },
+        {
+          "id": "label",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "button-name",
+          "weight": 3,
+          "group": "a11y-names-labels"
+        },
+        {
+          "id": "heading-order",
+          "weight": 2,
+          "group": "a11y-navigation"
+        }
+      ]
+    }
+  },
+  "categoryGroups": {
+    "a11y-color-contrast": {
+      "title": "Contrast"
+    },
+    "a11y-language": {
+      "title": "Language"
+    },
+    "a11y-names-labels": {
+      "title": "Names and labels"
+    },
+    "a11y-navigation": {
+      "title": "Navigation"
+    }
+  },
+  "audits": {
+    "color-contrast": {
+      "id": "color-contrast",
+      "title": "Background and foreground colours have a sufficient contrast ratio",
+      "description": "Low-contrast text is difficult or impossible for many users to read.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Failing elements"
+          }
+        ],
+        "items": []
+      }
+    },
+    "document-title": {
+      "id": "document-title",
+      "title": "Document has a title element",
+      "description": "The title gives screen-reader and browser users context about the current page.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "debugdata",
+        "items": [
+          {
+            "title": "Apply for a research session - ResearchOps"
+          }
+        ]
+      }
+    },
+    "html-has-lang": {
+      "id": "html-has-lang",
+      "title": "html element has a lang attribute",
+      "description": "The lang attribute helps assistive technologies announce content using the correct language rules.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "debugdata",
+        "items": [
+          {
+            "lang": "en-GB"
+          }
+        ]
+      }
+    },
+    "label": {
+      "id": "label",
+      "title": "Form elements have associated labels",
+      "description": "Labels help users understand the purpose of form controls.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Failing elements"
+          }
+        ],
+        "items": []
+      }
+    },
+    "button-name": {
+      "id": "button-name",
+      "title": "Buttons have accessible names",
+      "description": "Button names help assistive technology users understand the action that will be taken.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Failing elements"
+          }
+        ],
+        "items": []
+      }
+    },
+    "heading-order": {
+      "id": "heading-order",
+      "title": "Heading elements appear in a sequentially-descending order",
+      "description": "Proper heading order helps keyboard and screen-reader users understand the page structure.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Failing elements"
+          }
+        ],
+        "items": []
+      }
+    }
+  }
+}

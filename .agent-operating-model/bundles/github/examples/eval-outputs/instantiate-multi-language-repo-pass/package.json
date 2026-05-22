@@ -1,1 +1,46 @@
-{"name":"example-ui","version":"0.1.0","scripts":{"test":"echo ok","lint":"echo ok","build":"echo ok"}}
+{
+  "name": "example-multilang-eval-output",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Passing eval output fixture for a generated multi-language repository.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check tests/example.test.mjs",
+    "build": "node -e \"console.log('node fixture build passed')\"",
+    "docs:check": "node -e \"console.log('documentation fixture check passed')\"",
+    "conformance:check": "node -e \"console.log('conformance fixture check passed')\""
+  },
+  "keywords": [
+    "github-diamond-standard",
+    "eval-output",
+    "multi-language",
+    "fixture"
+  ],
+  "repository_context": {
+    "fixture_kind": "eval-output",
+    "selected_mode": "repo-instantiate",
+    "detected_languages": [
+      "node",
+      "python"
+    ],
+    "expected_workflows": [
+      ".github/workflows/ci-node.yml",
+      ".github/workflows/ci-python.yml",
+      ".github/workflows/ci-conformance.yml",
+      ".github/workflows/ci-docs-quality.yml",
+      ".github/workflows/codeql.yml",
+      ".github/workflows/dependency-review.yml"
+    ],
+    "evidence_files": [
+      "agent-evidence.yaml",
+      "conformance-matrix.yaml",
+      "gap-register.yaml",
+      "github-settings.yaml"
+    ]
+  },
+  "devDependencies": {}
+}

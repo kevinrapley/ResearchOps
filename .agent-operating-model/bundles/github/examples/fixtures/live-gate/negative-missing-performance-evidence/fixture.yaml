@@ -1,0 +1,34 @@
+id: negative-missing-performance-evidence
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_performance_evidence
+blocking_requirement: performance evidence
+
+purpose: >
+  Proves that the high-assurance live gate fails when required performance
+  evidence is absent.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: remove performance-budget.yaml and performance-results.yaml
+  primary_missing_files:
+    - performance-budget.yaml
+    - performance-results.yaml
+
+expected_validator_behaviour:
+  - Detect that performance evidence is absent.
+  - Refuse to mark the high-assurance profile as passing.
+  - Report performance evidence as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_performance_evidence: true
+  negative_fixture_omits_performance_evidence: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - workflow lock evidence
+  - accessibility evidence quality
+  - SBOM attestation evidence
+  - GitHub API observability

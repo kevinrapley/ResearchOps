@@ -1,3 +1,115 @@
+adapter: pytest-benchmark-summary
+profile: github-diamond-standard
+run:
+  id: perf_python_01JZ8T1PY00000000000001
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:16:00Z'
+  duration_seconds: 28.3
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    python_version: 3.12.3
+    pytest_version: 8.3.5
+    pytest_benchmark_version: 4.0.0-fixture
+    cpu_count: 4
+scenario:
+  name: Python repository assurance API benchmark
+  description: Synthetic pytest-benchmark result for repository conformance and release-gate summary functions.
+  command:
+    - pytest
+    - tests/performance
+    - --benchmark-json=pytest-benchmark.json
+  benchmark_groups:
+    - repository-api
+    - release-gate
+budgets_applied:
+  - metric: response_time_mean_seconds
+    threshold: 0.5
+    tolerance_percent: 10
+    allowed_value: 0.55
+    unit: seconds
+    mode: blocking
+  - metric: response_time_max_seconds
+    threshold: 1.0
+    tolerance_percent: 10
+    allowed_value: 1.1
+    unit: seconds
+    mode: blocking
 measurements:
   - metric: response_time_p95_ms
+    canonical_metric: response_time_p95_ms
     value: 180
+    unit: ms
+    status: pass
+    source: synthetic-pytest-summary
+    sample_count: 180
+    comparator: max
+    evidence:
+      calculation: p95 derived from the combined repository conformance and release-gate benchmark samples
+      raw_window: 2026-05-21T13:16:05Z/2026-05-21T13:16:33Z
+      note: Retained for compatibility with generic performance result examples.
+  - metric: response_time_mean_seconds
+    canonical_metric: response_time_mean_seconds
+    value: 0.221
+    unit: seconds
+    status: pass
+    source: synthetic-pytest-benchmark
+    sample_count: 80
+    threshold: 0.5
+    tolerance_percent: 10
+    allowed_value: 0.55
+    comparator: max
+    evidence:
+      benchmark: test_release_gate_summary_build
+      calculation: pytest-benchmark stats.mean for the slower benchmark retained as conservative gate value
+      min_seconds: 0.146
+      median_seconds: 0.216
+      max_seconds: 0.312
+      stddev_seconds: 0.026
+  - metric: response_time_max_seconds
+    canonical_metric: response_time_max_seconds
+    value: 0.312
+    unit: seconds
+    status: pass
+    source: synthetic-pytest-benchmark
+    sample_count: 80
+    threshold: 1.0
+    tolerance_percent: 10
+    allowed_value: 1.1
+    comparator: max
+    evidence:
+      benchmark: test_release_gate_summary_build
+      calculation: pytest-benchmark stats.max for the slower benchmark retained as conservative gate value
+  - metric: repository_conformance_mean_seconds
+    canonical_metric: repository_conformance_mean_seconds
+    value: 0.118
+    unit: seconds
+    status: pass
+    source: synthetic-pytest-benchmark
+    sample_count: 100
+    comparator: max
+    evidence:
+      benchmark: test_repository_conformance_endpoint
+      min_seconds: 0.082
+      median_seconds: 0.115
+      max_seconds: 0.184
+      stddev_seconds: 0.014
+  - metric: throughput_ops_per_second
+    canonical_metric: throughput_ops_per_second
+    value: 4.52
+    unit: ops/second
+    status: advisory
+    source: synthetic-pytest-benchmark
+    comparator: min
+    evidence:
+      benchmark: test_release_gate_summary_build
+      calculation: pytest-benchmark stats.ops for the slower benchmark
+quality_notes:
+  - The blocking pytest budget values use the slower release-gate summary benchmark to avoid hiding worst-case behaviour behind faster conformance reads.
+  - The generic `response_time_p95_ms` metric is retained for cross-language comparison even though pytest-benchmark adapter budgets gate on seconds.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded Python performance-results fixture with pytest-benchmark provenance, conservative threshold mapping and cross-language compatibility metrics.

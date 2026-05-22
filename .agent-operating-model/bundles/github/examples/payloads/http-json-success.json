@@ -1,7 +1,121 @@
 {
-  "status": "ok",
+  "ok": true,
+  "status": "success",
+  "request": {
+    "id": "req_01JZ8R2QK4V7YQ3M8F0D9C6B2A",
+    "method": "GET",
+    "path": "/api/repository/conformance",
+    "received_at": "2026-05-21T12:30:00Z",
+    "duration_ms": 84,
+    "api_version": "2026-05-21",
+    "content_type": "application/json"
+  },
   "data": {
-    "id": "example-123",
-    "name": "Example"
+    "repository": {
+      "owner": "example-owner",
+      "name": "example-service",
+      "default_branch": "main",
+      "visibility": "private",
+      "classification": "multi-language-service",
+      "primary_languages": [
+        "JavaScript",
+        "Python"
+      ]
+    },
+    "conformance": {
+      "overall_status": "pass",
+      "profile": "github-diamond-standard",
+      "profile_version": "2.9.3",
+      "checked_at": "2026-05-21T12:30:00Z",
+      "summary": {
+        "passed": 8,
+        "warning": 1,
+        "failed": 0,
+        "not_applicable": 2
+      },
+      "controls": [
+        {
+          "id": "repo-readme-present",
+          "title": "Repository README exists and explains purpose",
+          "status": "pass",
+          "evidence": [
+            {
+              "type": "file",
+              "path": "README.md",
+              "observation": "README contains service purpose, local setup, validation commands and support ownership."
+            }
+          ]
+        },
+        {
+          "id": "ci-required-checks-present",
+          "title": "Required CI checks are represented in workflows",
+          "status": "pass",
+          "evidence": [
+            {
+              "type": "workflow",
+              "path": ".github/workflows/ci-node.yml",
+              "observation": "Node lint and test commands are defined with pinned checkout and setup actions."
+            },
+            {
+              "type": "workflow",
+              "path": ".github/workflows/ci-python.yml",
+              "observation": "Python test command is defined with dependency installation and reproducible runner configuration."
+            }
+          ]
+        },
+        {
+          "id": "release-evidence-present",
+          "title": "Release evidence is available before release recommendation",
+          "status": "pass",
+          "evidence": [
+            {
+              "type": "artifact",
+              "path": "agent-evidence.yaml",
+              "observation": "Agent evidence links implementation, validation and residual risk."
+            },
+            {
+              "type": "artifact",
+              "path": "conformance-matrix.yaml",
+              "observation": "Conformance matrix records control status and evidence references."
+            }
+          ]
+        },
+        {
+          "id": "accessibility-evidence-present",
+          "title": "Accessibility evidence is present where UI is in scope",
+          "status": "warning",
+          "evidence": [
+            {
+              "type": "file",
+              "path": "accessibility-evidence.yaml",
+              "observation": "Automated and manual evidence present. One low-severity defect is closed."
+            }
+          ],
+          "warning": {
+            "code": "manual_retest_recommended",
+            "message": "Manual assistive technology checks should be repeated before production release if UI changes after this evidence was captured."
+          }
+        }
+      ]
+    },
+    "recommendation": {
+      "decision": "continue",
+      "next_action": "Open pull request for review after changed-file verification and CI completion.",
+      "release_allowed": false,
+      "release_reason": "This payload describes conformance readiness only. Release requires a separate release-gate report."
+    }
+  },
+  "links": {
+    "self": "/api/repository/conformance?repository=example-owner/example-service",
+    "evidence": "/api/repository/conformance/evidence?repository=example-owner/example-service",
+    "release_gate": "/api/repository/release-gate?repository=example-owner/example-service"
+  },
+  "meta": {
+    "fixture": true,
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded successful JSON response fixture for realistic GitHub Diamond API examples.",
+    "notes": "This payload is intentionally representative rather than minimal. It demonstrates status, request metadata, evidence-bearing data, links and release boundary language."
   }
 }

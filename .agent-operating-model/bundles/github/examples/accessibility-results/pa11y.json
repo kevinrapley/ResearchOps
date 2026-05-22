@@ -1,1 +1,95 @@
-[]
+{
+  "example_metadata": {
+    "id": "accessibility-results-pa11y-pass",
+    "kind": "accessibility-result-example",
+    "tool": "pa11y",
+    "scenario": "Primary service journey passes Pa11y WCAG checks",
+    "purpose": "Shows a full Pa11y result example while preserving zero issues for release-gate fixtures.",
+    "service_context": {
+      "repository_archetype": "public-service-web-frontend",
+      "journey": "Apply for a research session",
+      "page": "/apply",
+      "risk_profile": "public-service"
+    },
+    "interpretation": {
+      "automated_result": "pass",
+      "issues": 0,
+      "standard": "WCAG2AA",
+      "release_meaning": "This result supports accessibility confidence but does not replace manual testing with keyboard users, screen-reader users or assisted digital users."
+    }
+  },
+  "tool": {
+    "name": "pa11y",
+    "version": "8.0.0",
+    "runner": "pa11y-ci"
+  },
+  "page": {
+    "url": "http://localhost:4173/apply",
+    "title": "Apply for a research session - ResearchOps",
+    "viewport": {
+      "width": 1440,
+      "height": 1100,
+      "deviceScaleFactor": 1,
+      "isMobile": false
+    }
+  },
+  "run": {
+    "started_at": "2026-05-21T12:00:00.000Z",
+    "standard": "WCAG2AA",
+    "timeout_ms": 30000,
+    "wait_ms": 500,
+    "include_warnings": true,
+    "include_notices": true,
+    "actions": [
+      "navigate to http://localhost:4173/apply",
+      "wait for element main",
+      "wait for networkidle"
+    ]
+  },
+  "summary": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "notices": 0,
+    "issues": 0,
+    "selectors_checked": [
+      "html",
+      "main",
+      "h1",
+      "form",
+      "label[for=\"full-name\"]",
+      "#full-name",
+      "button[type=\"submit\"]"
+    ]
+  },
+  "issues": [],
+  "sample_passes": [
+    {
+      "code": "WCAG2AA.Principle1.Guideline1_3.1_3_1.H44.NonExistentFragment",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Form control has an explicit label associated with it.",
+      "context": "<input class=\"govuk-input\" id=\"full-name\" name=\"fullName\" type=\"text\">",
+      "selector": "#full-name",
+      "runner": "htmlcs"
+    },
+    {
+      "code": "WCAG2AA.Principle2.Guideline2_4.2_4_2.H25.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Document has a non-empty title element.",
+      "context": "<title>Apply for a research session - ResearchOps</title>",
+      "selector": "html > head > title",
+      "runner": "htmlcs"
+    },
+    {
+      "code": "WCAG2AA.Principle3.Guideline3_1.3_1_1.H57.2",
+      "type": "pass",
+      "typeCode": 1,
+      "message": "Page language is declared.",
+      "context": "<html lang=\"en-GB\">",
+      "selector": "html",
+      "runner": "htmlcs"
+    }
+  ]
+}

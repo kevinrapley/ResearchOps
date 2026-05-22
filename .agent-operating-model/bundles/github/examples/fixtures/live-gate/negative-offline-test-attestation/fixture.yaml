@@ -1,0 +1,34 @@
+id: negative-offline-test-attestation
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: offline_test_attestation
+blocking_requirement: trusted_attestation_mode
+
+purpose: >
+  Proves that the high-assurance live gate fails when attestation evidence is
+  only suitable for offline testing and should not be treated as trusted release
+  evidence.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: use offline-test attestation evidence
+  primary_invalid_file: attestation.json
+
+expected_validator_behaviour:
+  - Detect that the attestation evidence is marked for offline test use.
+  - Refuse to treat offline-test evidence as trusted release evidence.
+  - Report attestation mode as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_trusted_attestation: true
+  negative_fixture_uses_offline_test_attestation: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - missing attestation file
+  - workflow lock evidence
+  - accessibility evidence quality
+  - performance evidence quality
+  - GitHub API observability

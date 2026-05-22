@@ -4,31 +4,48 @@ automated_checks:
     version: fixture
     violations: 0
     file: examples/accessibility-results/axe.json
+    result: pass
+    evidence_type: automated_json
   pa11y:
     tool: pa11y
     version: fixture
     issues: 0
     file: examples/accessibility-results/pa11y.json
+    result: pass
+    evidence_type: automated_json
   lighthouse:
     tool: lighthouse
     version: fixture
     accessibility_score: 1.0
     file: examples/accessibility-results/lighthouse.json
+    result: pass
+    evidence_type: automated_json
 keyboard_tests:
   - name: Complete primary journey using keyboard
     steps:
       - Tab through header navigation
+      - Activate skip link and confirm focus moves to main content
       - Complete form fields
       - Submit form
+      - Follow the error-summary link back to the relevant field
     result: pass
+    evidence: Manual keyboard smoke test recorded by QA fixture
 focus_tests:
   - name: Error summary receives focus
     result: pass
+    evidence: Focus moved to the summary after validation errors
+  - name: Error summary link returns focus to field
+    result: pass
+    evidence: Link target receives focus and remains keyboard-operable
 screen_reader_tests:
   - screen_reader: NVDA
     browser: Firefox
     result: pass
-    notes: Headings, labels and errors announced.
+    notes: Page title, headings, landmarks, labels and errors announced.
+  - screen_reader: VoiceOver
+    browser: Safari
+    result: pass
+    notes: Main landmarks, form controls and status text announced in expected order.
 assistive_technology_matrix:
   - technology: NVDA
     browser: Firefox
@@ -38,8 +55,20 @@ assistive_technology_matrix:
     browser: Safari
     platform: macOS
     result: pass
+zoom_and_reflow_tests:
+  - name: 200 percent zoom
+    result: pass
+    notes: Content remains readable and controls remain operable.
+  - name: Narrow viewport reflow
+    result: pass
+    notes: No horizontal scrolling required for core journey content.
 defects:
   - id: AX-001
     severity: low
     status: closed
+    summary: Clarified secondary helper copy before release decision.
 release_decision: pass
+fixture_metadata:
+  profile: positive
+  synthetic_data: true
+  purpose: Demonstrates structured passing accessibility evidence with automated results, manual keyboard checks, focus behaviour, screen-reader evidence, assistive technology coverage and closed defect status.

@@ -1,1 +1,44 @@
-gaps: []
+gaps:
+  - id: GAP-001
+    title: Live repository settings are not verified in this eval fixture
+    status: accepted_for_fixture
+    severity: low
+    owner: repository-operator
+    reason: >
+      The eval output uses file-based repository settings evidence. It does not
+      call the GitHub API because this fixture must remain portable and runnable
+      without credentials.
+    evidence:
+      - github-settings.yaml records the desired state.
+      - agent-evidence.yaml records verification_method: file.
+    next_action: >
+      A real repository should run live settings verification before release or
+      production use.
+
+  - id: GAP-002
+    title: Accessibility evidence is not applicable to this generated scaffold
+    status: accepted_for_fixture
+    severity: low
+    owner: qa
+    reason: >
+      The generated repository fixture does not include a public web interface.
+      Accessibility evidence is therefore recorded as not applicable rather than
+      left empty or implied.
+    evidence:
+      - agent-evidence.yaml records accessibility.release_decision: not_applicable.
+    next_action: >
+      Add structured accessibility evidence if a web user interface is introduced.
+
+  - id: GAP-003
+    title: Performance budget is deferred until a runtime surface exists
+    status: accepted_for_fixture
+    severity: low
+    owner: maintainer
+    reason: >
+      The fixture demonstrates repository instantiation. It does not include a
+      deployable runtime surface with meaningful performance metrics.
+    evidence:
+      - agent-evidence.yaml records performance as not applicable for this fixture.
+    next_action: >
+      Add a performance budget when the repository has a service endpoint, web
+      frontend, batch process or benchmarkable component.

@@ -2,6 +2,58 @@
   "gate": "offline-bundle-release",
   "mode": "fast",
   "status": "passed",
+  "started_at_unix": 1770000000,
+  "duration_seconds": 16.42,
+  "commands": [
+    {
+      "name": "schema_validation",
+      "command": [
+        "python",
+        "scripts/validate-bundle.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 4.18,
+      "stdout_tail": "Bundle schema validation passed.",
+      "stderr_tail": ""
+    },
+    {
+      "name": "regression_tests",
+      "command": [
+        "python",
+        "scripts/run-regression-tests.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 5.73,
+      "stdout_tail": "Regression fixtures passed.",
+      "stderr_tail": ""
+    },
+    {
+      "name": "security_and_supply_chain",
+      "command": [
+        "python",
+        "scripts/check-supply-chain-evidence.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 3.21,
+      "stdout_tail": "SBOM and attestation evidence present.",
+      "stderr_tail": ""
+    },
+    {
+      "name": "release_contract",
+      "command": [
+        "python",
+        "scripts/validate-release-contract.py"
+      ],
+      "status": "passed",
+      "returncode": 0,
+      "duration_seconds": 3.3,
+      "stdout_tail": "Release contract satisfied.",
+      "stderr_tail": ""
+    }
+  ],
   "results": [
     {
       "name": "tests",
@@ -16,5 +68,12 @@
       "status": "passed"
     }
   ],
-  "release_allowed": true
+  "failed_command": null,
+  "error": null,
+  "release_allowed": true,
+  "evidence_summary": {
+    "fixture_profile": "positive",
+    "synthetic_data": true,
+    "purpose": "Demonstrates a schema-valid passing release-gate report with command history, timings and release decision evidence."
+  }
 }

@@ -1,0 +1,32 @@
+id: negative-missing-accessibility-evidence
+kind: live_gate_negative_fixture
+profile: high-assurance
+expected: fail
+
+failure_condition: missing_accessibility_evidence
+blocking_requirement: accessibility-evidence.yaml
+
+purpose: >
+  Proves that the high-assurance live gate fails when structured accessibility
+  evidence is absent.
+
+fixture_setup:
+  base_fixture: high-assurance-pass/repo
+  mutation: remove accessibility-evidence.yaml
+  primary_missing_file: accessibility-evidence.yaml
+
+expected_validator_behaviour:
+  - Detect that accessibility evidence is absent.
+  - Refuse to mark the high-assurance profile as passing.
+  - Report accessibility evidence as the blocking failure.
+
+control_evidence:
+  positive_fixture_contains_accessibility_evidence: true
+  negative_fixture_omits_accessibility_evidence: true
+  other_high_assurance_controls_should_remain_unchanged: true
+
+what_this_should_not_test:
+  - workflow lock evidence
+  - SBOM attestation evidence
+  - performance evidence quality
+  - GitHub API observability

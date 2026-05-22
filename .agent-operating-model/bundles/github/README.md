@@ -1,6 +1,6 @@
 # GitHub Diamond Standard Prompt Bundle
 
-Version: 2.9.2
+Version: 2.9.3
 
 ## Purpose
 
@@ -10,9 +10,21 @@ It guides repository instantiation, maintenance, review, release and conformance
 
 ## Current release
 
-Version 2.9.2 moves the bundle closer to a fully auditable assurance regime.
+Version 2.9.3 strengthens the examples layer so bundle behaviour is easier to understand, review and test.
 
-It adds schema-valid release-gate reports for both pass and fail states, policy-driven live release profiles, stricter GitHub API observability handling, trusted attestation verification evidence, stronger accessibility fixtures, and high-assurance live gate fixtures.
+It reorganises examples around canonical scenarios, expected outputs and behavioural anti-examples. Placeholder-style examples are promoted into concrete worked examples with mode selection, roles, references, contracts, graders, evidence requirements and failure conditions.
+
+The release preserves the 2.9.2 auditable assurance regime, including schema-valid release-gate reports, policy-driven live release profiles, stricter GitHub API observability handling, trusted attestation verification evidence, stronger accessibility fixtures, and high-assurance live gate fixtures.
+
+## Example structure
+
+Examples are teaching artefacts for the bundle operating model.
+
+Use `examples/scenarios/` for scenario YAML files that describe prompts, repository context, selected modes, roles, references, contracts, graders, required evidence and failure conditions.
+
+Use `examples/expected-outputs/` for Markdown files that show what an acceptable agent response looks like.
+
+Use `examples/anti-examples/` for genuine unsafe or incorrect agent behaviours. Placeholder files must not be treated as anti-examples.
 
 ## Automated review comment handling
 
@@ -69,17 +81,9 @@ Validate the policy:
 python scripts/validate-live-release-policy.py
 ```
 
-Run a standard live gate:
+Run a standard live gate with `scripts/live-repository-release-gate.py --profile standard`.
 
-```bash
-GITHUB_TOKEN=<token> python scripts/live-repository-release-gate.py --profile standard --repo . --owner <owner> --repo-name <repo>
-```
-
-Run a high-assurance live gate:
-
-```bash
-GITHUB_TOKEN=<token> python scripts/live-repository-release-gate.py --profile high-assurance --repo . --owner <owner> --repo-name <repo> --evidence agent-evidence.yaml --workflow-lock workflow-action-lock.yaml --trusted-attestation attestation.json --trusted-attestation-verification trusted-attestation-verification.json --sbom sbom.json --artifact artifact.zip --repo-full-name <owner>/<repo> --sigstore-bundle sigstore-bundle.json --accessibility-evidence accessibility-evidence.yaml --performance-budget performance-budget.yaml --performance-results performance-results.yaml
-```
+Run a high-assurance live gate with `scripts/live-repository-release-gate.py --profile high-assurance` and the required evidence files for the selected profile.
 
 High-assurance, regulated and public-service profiles require GitHub API verification, workflow lock validation, hardened workflow release-mode validation, trusted SBOM attestation, external attestation verification evidence, accessibility evidence, performance evidence and evidence-to-repository cross-checking.
 
@@ -87,67 +91,33 @@ High-assurance, regulated and public-service profiles require GitHub API verific
 
 Trusted attestation requires both metadata validation and external verification evidence.
 
-Metadata validation:
+Metadata validation is handled by `scripts/validate-sbom-attestation.py`.
 
-```bash
-python scripts/validate-sbom-attestation.py --attestation attestation.json --sbom sbom.json --require-dsse --require-slsa --require-github-artifact-attestation --require-sigstore --trusted-mode
-```
+External verification evidence is handled by `scripts/verify-trusted-attestation-commands.py` and `scripts/validate-trusted-attestation-verification.py`.
 
-External verification evidence:
-
-```bash
-python scripts/verify-trusted-attestation-commands.py --artifact artifact.zip --repo <owner>/<repo> --sigstore-bundle sigstore-bundle.json --output trusted-attestation-verification.json
-python scripts/validate-trusted-attestation-verification.py trusted-attestation-verification.json
-```
-
-The external verifier records `gh attestation verify` and `cosign verify-blob` results. Declared verification without command evidence is not enough for trusted live release mode.
+Declared verification without command evidence is not enough for trusted live release mode.
 
 ## Workflow hardening
 
 Release-ready workflows must use reviewed, non-placeholder SHA pins.
 
-Validate release-ready workflows:
+Validate release-ready workflows with `scripts/validate-workflow-action-lock.py` and `scripts/validate-workflow-hardening.py`.
 
-```bash
-python scripts/validate-workflow-action-lock.py --lock-file workflow-action-lock.yaml --release-mode
-python scripts/validate-workflow-hardening.py .github/workflows --mode hardened --release-mode --lock-file workflow-action-lock.yaml
-```
-
-The release-mode fixture proving non-placeholder locked SHAs is located at:
-
-```text
-examples/fixtures/workflows-release-mode-pass/
-```
+The release-mode fixture proving non-placeholder locked SHAs is located at `examples/fixtures/workflows-release-mode-pass/`.
 
 ## Accessibility assurance
 
-Structured accessibility evidence is defined in:
+Structured accessibility evidence is defined in `contracts/accessibility-evidence.schema.json`.
 
-```text
-contracts/accessibility-evidence.schema.json
-```
-
-Validate against a repository root:
-
-```bash
-python scripts/validate-accessibility-evidence.py accessibility-evidence.yaml --root .
-```
+Validate against a repository root with `scripts/validate-accessibility-evidence.py`.
 
 Fixture coverage includes repository-root-relative paths, evidence-file-relative paths, open critical defects, low Lighthouse accessibility score, axe violations and Pa11y issues.
 
 ## High-assurance fixture assurance
 
-High-assurance live gate fixtures are located at:
+High-assurance live gate fixtures are located at `examples/fixtures/live-gate/`.
 
-```text
-examples/fixtures/live-gate/
-```
-
-Validate them:
-
-```bash
-python scripts/validate-live-gate-fixtures.py
-```
+Validate them with `scripts/validate-live-gate-fixtures.py`.
 
 ## Non-negotiable behaviours
 

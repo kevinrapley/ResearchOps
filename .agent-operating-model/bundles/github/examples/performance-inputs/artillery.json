@@ -1,10 +1,101 @@
 {
   "aggregate": {
+    "timestamp": "2026-05-21T12:55:00Z",
+    "scenariosCreated": 3000,
+    "scenariosCompleted": 2970,
+    "requestsCompleted": 3000,
+    "latency": {
+      "min": 68,
+      "max": 430,
+      "median": 128,
+      "p95": 220,
+      "p99": 318
+    },
     "summaries": {
-      "http.response_time": {"p95": 220}
+      "http.response_time": {
+        "min": 68,
+        "max": 430,
+        "median": 128,
+        "p75": 164,
+        "p90": 198,
+        "p95": 220,
+        "p99": 318
+      },
+      "http.response_time.2xx": {
+        "min": 68,
+        "max": 344,
+        "median": 119,
+        "p75": 152,
+        "p90": 184,
+        "p95": 206,
+        "p99": 292
+      },
+      "plugins.metrics-by-endpoint./api/repository/conformance.response_time": {
+        "min": 68,
+        "max": 344,
+        "median": 116,
+        "p75": 148,
+        "p90": 178,
+        "p95": 198,
+        "p99": 280
+      },
+      "plugins.metrics-by-endpoint./api/repository/release-gate.response_time": {
+        "min": 92,
+        "max": 430,
+        "median": 146,
+        "p75": 182,
+        "p90": 216,
+        "p95": 260,
+        "p99": 342
+      }
     },
     "rates": {
-      "http.request_rate": 50
+      "http.request_rate": 50,
+      "http.codes.200": 25,
+      "http.codes.422": 24.5,
+      "http.errors": 0.5,
+      "vusers.created_by_name.conformance smoke": 25,
+      "vusers.created_by_name.release gate blocked": 25
+    },
+    "counters": {
+      "http.requests": 3000,
+      "http.responses": 3000,
+      "http.codes.200": 1500,
+      "http.codes.422": 1470,
+      "http.errors.synthetic_blocked_release_gate": 30,
+      "vusers.created": 3000,
+      "vusers.completed": 2970,
+      "vusers.failed": 30
     }
+  },
+  "intermediate": [
+    {
+      "timestamp": "2026-05-21T12:54:15Z",
+      "summaries": {
+        "http.response_time": {
+          "p95": 214
+        }
+      },
+      "rates": {
+        "http.request_rate": 49.7
+      }
+    },
+    {
+      "timestamp": "2026-05-21T12:54:45Z",
+      "summaries": {
+        "http.response_time": {
+          "p95": 221
+        }
+      },
+      "rates": {
+        "http.request_rate": 50.2
+      }
+    }
+  ],
+  "fixture_metadata": {
+    "synthetic_data": true,
+    "contains_secrets": false,
+    "contains_personal_data": false,
+    "purpose": "Expanded Artillery aggregate fixture with realistic response-time summaries, request rates, counters and endpoint-level evidence while preserving aggregate.summaries.http.response_time.p95 and aggregate.rates.http.request_rate parser fields."
   }
 }

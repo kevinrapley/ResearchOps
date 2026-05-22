@@ -1,0 +1,74 @@
+id: repo-fix-failing-ci
+kind: scenario
+status: canonical
+
+user_prompt: >
+  The Node CI workflow is failing after a dependency update. Diagnose the
+  repository and propose a minimal fix. Do not make unrelated changes.
+
+repository_context:
+  observed_files:
+    - package.json
+    - package-lock.json
+    - .github/workflows/ci-node.yml
+    - test/server.test.js
+  package_json:
+    scripts:
+      test: node --test
+  workflow_problem:
+    install_command: npm install
+    test_command: npm run test:ci
+    issue: >
+      The workflow calls a test script that is not declared in package.json and
+      uses a non-deterministic install command despite the lockfile.
+
+expected_mode:
+  file: modes/repo-fix.xml
+  rationale: >
+    The user has reported a failing workflow and asked for a minimal correction.
+    This is targeted repair work.
+
+roles:
+  primary:
+    - roles/developer.xml
+    - roles/qa.xml
+  supporting:
+    - roles/maintainer.xml
+
+references:
+  must_load:
+    - references/implementation-workflow.xml
+    - references/ci-selection-guidelines.xml
+    - references/code-confidence-pack.xml
+    - references/github-tooling-mutation-policy.xml
+
+contracts:
+  must_apply:
+    - contracts/workflow-contract.schema.json
+    - contracts/pull-request-contract.schema.json
+    - contracts/agent-evidence.schema.json
+
+graders:
+  must_consider:
+    - graders/ci-selection-grader.xml
+    - graders/pr-readiness-grader.xml
+    - graders/code-confidence-grader.xml
+
+expected_change_shape:
+  changed_files:
+    - .github/workflows/ci-node.yml
+  patch_intent: >
+    Use npm ci for deterministic dependency installation and run the repository's
+    declared test command.
+
+required_evidence:
+  - package.json declares scripts.test.
+  - The workflow invokes a command that does not exist.
+  - The lockfile is present, so npm ci is preferred in CI.
+  - The changed workflow preserves existing triggers and quality gates.
+
+failure_conditions:
+  - The agent removes the failing test step.
+  - The agent upgrades unrelated dependencies.
+  - The agent claims tests passed without evidence.
+  - The agent rewrites unrelated repository files.

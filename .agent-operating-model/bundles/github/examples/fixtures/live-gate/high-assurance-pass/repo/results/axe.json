@@ -1,1 +1,51 @@
-{"violations":[]}
+{
+  "example_metadata": {
+    "id": "live-gate-high-assurance-axe-pass",
+    "kind": "live_gate_accessibility_result_fixture",
+    "profile": "high-assurance",
+    "tool": "axe-core",
+    "expected_validator_effect": "pass",
+    "purpose": "Passing axe-core result used by the high-assurance live-gate positive fixture."
+  },
+  "url": "http://localhost:4173/live-gate/high-assurance-pass",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright"
+  },
+  "violations": [],
+  "incomplete": [],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": ["wcag2a", "wcag242"],
+      "description": "Document has a non-empty title element",
+      "help": "Documents must have a title element",
+      "nodes": [
+        {
+          "target": ["html"],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "impact": null,
+      "tags": ["wcag2a", "wcag412"],
+      "description": "Form controls have labels",
+      "help": "Form elements must have labels",
+      "nodes": [
+        {
+          "target": ["#example-field"],
+          "html": "<input id=\"example-field\" name=\"exampleField\" type=\"text\">",
+          "failureSummary": null
+        }
+      ]
+    }
+  ]
+}

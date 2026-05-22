@@ -1,3 +1,102 @@
+adapter: rust-criterion-summary
+profile: github-diamond-standard
+run:
+  id: perf_rust_01JZ8T1RS00000000000001
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:18:00Z'
+  duration_seconds: 24.9
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    rustc_version: 1.86.0-fixture
+    cargo_version: 1.86.0-fixture
+    target: x86_64-unknown-linux-gnu
+    cpu_count: 4
+scenario:
+  name: Rust repository assurance service benchmarks
+  description: Synthetic Rust performance result for conformance lookup, release-gate summary and evidence index operations.
+  command:
+    - cargo
+    - bench
+    - --bench
+    - repository_assurance
+  benchmark_groups:
+    - repository_conformance
+    - release_gate
+    - evidence_index
+budgets_applied:
+  - metric: response_time_p95_ms
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    unit: ms
+    mode: blocking
 measurements:
   - metric: response_time_p95_ms
+    canonical_metric: response_time_p95_ms
     value: 70
+    unit: ms
+    status: pass
+    source: synthetic-rust-criterion-summary
+    sample_count: 1000
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    comparator: max
+    evidence:
+      calculation: p95 over synthetic Criterion benchmark samples mapped to the generic repository assurance budget
+      raw_window: 2026-05-21T13:18:05Z/2026-05-21T13:18:29Z
+      benchmark_breakdown:
+        - benchmark: repository_conformance_lookup
+          p95_ms: 42
+          mean_ms: 28.4
+          sample_count: 400
+        - benchmark: release_gate_summary_build
+          p95_ms: 70
+          mean_ms: 46.2
+          sample_count: 300
+        - benchmark: evidence_index_lookup
+          p95_ms: 36
+          mean_ms: 22.1
+          sample_count: 300
+  - metric: response_time_mean_ms
+    canonical_metric: response_time_mean_ms
+    value: 46.2
+    unit: ms
+    status: pass
+    source: synthetic-rust-criterion-summary
+    sample_count: 300
+    comparator: max
+    evidence:
+      benchmark: release_gate_summary_build
+      calculation: slower benchmark mean retained as conservative comparison value
+  - metric: throughput_ops_per_second
+    canonical_metric: throughput_ops_per_second
+    value: 21.6
+    unit: ops/second
+    status: advisory
+    source: synthetic-rust-criterion-summary
+    sample_count: 300
+    comparator: min
+    evidence:
+      benchmark: release_gate_summary_build
+      calculation: reciprocal of mean benchmark time
+  - metric: memory_allocated_kb
+    canonical_metric: memory_allocated_kb
+    value: 96
+    unit: kb
+    status: advisory
+    source: synthetic-rust-criterion-summary
+    comparator: max
+    evidence:
+      calculation: synthetic allocation estimate for release-gate summary build
+quality_notes:
+  - Rust results use the generic response-time budget because no Rust-specific budget template exists on this branch.
+  - Criterion-style timings are normalised into the shared `measurements` contract for cross-runtime comparison.
+  - Memory allocation is advisory and does not affect the current performance gate.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded Rust performance-results fixture with Criterion-style provenance, cross-runtime response-time mapping and advisory memory diagnostics.

@@ -1,1 +1,79 @@
-{"violations":[{"id":"color-contrast"}]}
+{
+  "example_metadata": {
+    "id": "accessibility-negative-axe-fail",
+    "kind": "accessibility_result_failure",
+    "tool": "axe-core",
+    "expected_validator_effect": "fail",
+    "purpose": "Failing axe-core result used to prove that the accessibility validator blocks evidence with automated violations."
+  },
+  "url": "http://localhost:4173/example-accessibility-negative",
+  "timestamp": "2026-05-21T12:00:00.000Z",
+  "testEngine": {
+    "name": "axe-core",
+    "version": "4.10.2"
+  },
+  "testRunner": {
+    "name": "@axe-core/playwright"
+  },
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143"
+      ],
+      "description": "Ensures the contrast between foreground and background colours meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum colour contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast",
+      "nodes": [
+        {
+          "target": [
+            ".example-low-contrast-hint"
+          ],
+          "html": "<p class=\"example-low-contrast-hint\">You can find your reference number in the email we sent you.</p>",
+          "failureSummary": "Fix any of the following: Element has insufficient colour contrast of 2.1:1. Expected contrast ratio of at least 4.5:1 for normal text.",
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#777777",
+                "bgColor": "#999999",
+                "contrastRatio": 2.1,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has insufficient colour contrast."
+            }
+          ],
+          "all": [],
+          "none": []
+        }
+      ]
+    }
+  ],
+  "incomplete": [],
+  "passes": [
+    {
+      "id": "document-title",
+      "impact": null,
+      "tags": [
+        "wcag2a",
+        "wcag242"
+      ],
+      "description": "Document has a non-empty title element",
+      "help": "Documents must have a title element",
+      "nodes": [
+        {
+          "target": [
+            "html"
+          ],
+          "html": "<html lang=\"en-GB\">",
+          "failureSummary": null
+        }
+      ]
+    }
+  ]
+}

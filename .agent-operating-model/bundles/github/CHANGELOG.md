@@ -6,6 +6,27 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.3+researchops.2026-05-21] - 2026-05-21
+
+### Added
+
+- Added canonical scenario examples under `examples/scenarios/` for repository discovery, CI repair, release readiness, documentation gaps, Node template selection and Node CI workflow selection.
+- Added expected-output examples under `examples/expected-outputs/` to show acceptable agent response shape without redundant example headings.
+- Added behavioural anti-examples under `examples/anti-examples/` for genuine unsafe or incorrect agent behaviour.
+
+### Changed
+
+- Promoted placeholder-style examples into concrete worked examples with user prompts, repository context, mode selection, roles, references, contracts, graders, required evidence and failure conditions.
+- Updated `README.md`, `VALIDATION-REPORT.md`, `prompt.spec.yaml` and `prompt.body.xml` to version `2.9.3`.
+- Reframed examples as teaching artefacts for bundle behaviour rather than decorative snippets or placeholder files.
+
+### Fixed
+
+- Removed ambiguity around empty arrays and heading-only examples by replacing placeholder intent with concrete scenarios and expected outputs.
+- Clarified that placeholder examples are not anti-examples; anti-examples are reserved for genuine unsafe or incorrect behaviours.
+
+---
+
 ## [2.9.2+researchops.2026-05-19] - 2026-05-19
 
 ### Added
