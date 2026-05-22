@@ -1,5 +1,114 @@
+adapter: generic-performance-summary
+profile: github-diamond-standard
+run:
+  id: perf_example_01JZ8T1EXAMPLE000000000001
+  branch: feature/example-performance-budget
+  commit: '0000000000000000000000000000000000000000'
+  started_at: '2026-05-21T13:10:00Z'
+  duration_seconds: 64.2
+  environment:
+    runner: synthetic-ci-runner
+    os: ubuntu-24.04
+    runtime: mixed-fixture
+    cpu_count: 4
+    memory_mb: 8192
+scenario:
+  name: Generic repository assurance performance smoke
+  description: Synthetic cross-runtime performance result used as a compact reference example for the GitHub Diamond performance-result contract.
+  workload:
+    virtual_users: 20
+    duration_seconds: 60
+    total_requests: 3000
+    endpoints:
+      - method: GET
+        path: /api/repository/conformance
+        request_share_percent: 50
+      - method: POST
+        path: /api/repository/release-gate
+        request_share_percent: 25
+      - method: GET
+        path: /api/repository/conformance/evidence
+        request_share_percent: 25
+budgets_applied:
+  - metric: response_time_p95_ms
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    unit: ms
+    mode: blocking
+  - metric: bundle_size_kb
+    threshold: 250
+    tolerance_percent: 3
+    allowed_value: 257.5
+    unit: kb
+    mode: advisory
 measurements:
-- metric: response_time_p95_ms
-  value: 250
-- metric: bundle_size_kb
-  value: 220
+  - metric: response_time_p95_ms
+    canonical_metric: response_time_p95_ms
+    value: 250
+    unit: ms
+    status: pass
+    source: synthetic-generic-summary
+    sample_count: 3000
+    threshold: 300
+    tolerance_percent: 5
+    allowed_value: 315
+    comparator: max
+    evidence:
+      calculation: p95 over representative repository assurance API workload
+      raw_window: 2026-05-21T13:10:05Z/2026-05-21T13:11:05Z
+      endpoint_breakdown:
+        - endpoint: GET /api/repository/conformance
+          p95_ms: 204
+          count: 1500
+        - endpoint: POST /api/repository/release-gate
+          p95_ms: 286
+          count: 750
+        - endpoint: GET /api/repository/conformance/evidence
+          p95_ms: 250
+          count: 750
+  - metric: response_time_mean_ms
+    canonical_metric: response_time_mean_ms
+    value: 141.6
+    unit: ms
+    status: pass
+    source: synthetic-generic-summary
+    sample_count: 3000
+    comparator: max
+    evidence:
+      calculation: arithmetic mean over the same smoke workload
+  - metric: throughput_requests_per_second
+    canonical_metric: throughput_requests_per_second
+    value: 50
+    unit: requests/second
+    status: pass
+    source: synthetic-generic-summary
+    sample_count: 60
+    comparator: min
+  - metric: bundle_size_kb
+    canonical_metric: bundle_size_kb
+    value: 220
+    unit: kb
+    status: pass
+    source: synthetic-build-summary
+    threshold: 250
+    tolerance_percent: 3
+    allowed_value: 257.5
+    comparator: max
+    evidence:
+      calculation: gzip-size summary for representative repository assurance UI bundle
+      files:
+        - path: public/js/repository-conformance.js
+          size_kb: 88
+        - path: public/js/release-gate.js
+          size_kb: 76
+        - path: public/js/evidence-panel.js
+          size_kb: 56
+quality_notes:
+  - This generic example is intentionally broader than language-specific result fixtures.
+  - It demonstrates how a compact performance-results file can still include thresholds, sample counts and evidence provenance.
+fixture_metadata:
+  synthetic_data: true
+  contains_secrets: false
+  contains_personal_data: false
+  purpose: Expanded generic performance-results fixture with realistic run context, workload, applied budgets and measurement provenance.
