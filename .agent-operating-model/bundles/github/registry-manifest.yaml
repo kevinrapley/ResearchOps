@@ -1,6 +1,6 @@
 bundle:
   id: github-diamond-standard
-  version: 2.9.2
+  version: 2.9.3
   status: auditable-release-assurance
 artifacts:
 - path: .gitignore
