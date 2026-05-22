@@ -30,14 +30,14 @@ files_changed:
   - agent-evidence.yaml
   - docs/README.md
   - templates/README.md
-  - test/example.test.mjs
+  - tests/example.test.mjs
   - tests/test_fixture.py
   - test-commands.yaml
 
 commands_run:
   - command: npm test
     status: passed
-    evidence: test/example.test.mjs provides the Node fixture validation path
+    evidence: tests/example.test.mjs provides the Node fixture validation path
   - command: pytest
     status: passed
     evidence: tests/test_fixture.py provides the Python fixture validation path
@@ -56,7 +56,7 @@ contracts_validated:
 tests_run:
   - name: Node fixture test
     status: passed
-    evidence: test/example.test.mjs validates fixture metadata for the Node path
+    evidence: tests/example.test.mjs validates fixture metadata for the Node path
   - name: Python fixture test
     status: passed
     evidence: tests/test_fixture.py validates fixture metadata for the Python path
@@ -87,7 +87,7 @@ artifacts_created:
   - .github/workflows/ci-docs-quality.yml
   - .github/workflows/codeql.yml
   - .github/workflows/dependency-review.yml
-  - test/example.test.mjs
+  - tests/example.test.mjs
   - tests/test_fixture.py
   - test-commands.yaml
 
@@ -107,7 +107,7 @@ repository_state:
     - gap-register.yaml
     - agent-evidence.yaml
     - .github/CODEOWNERS
-    - test/example.test.mjs
+    - tests/example.test.mjs
     - tests/test_fixture.py
     - test-commands.yaml
   detected_languages:
@@ -187,7 +187,7 @@ risks:
 test_results:
   - command: npm test
     status: passed
-    evidence: test/example.test.mjs is present as the Node test fixture.
+    evidence: tests/example.test.mjs is present as the Node test fixture.
   - command: pytest
     status: passed
     evidence: tests/test_fixture.py is present as the Python test fixture.
