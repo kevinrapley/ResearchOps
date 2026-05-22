@@ -1,102 +1,193 @@
 task_id: instantiate-multi-language-repo
 mode: repo-instantiate
 repository: example-multilang
-risk_level: standard
+risk_level: high-assurance
 files_read:
-- README.md
-- RECENT_LEARNINGS.md
-- package.json
-- pyproject.toml
+  - README.md
+  - RECENT_LEARNINGS.md
+  - package.json
+  - pyproject.toml
+  - github-settings.yaml
+  - conformance-matrix.yaml
+  - gap-register.yaml
+  - accessibility-evidence.yaml
+  - performance-budget.yaml
+  - performance-results.yaml
+  - sbom.json
+  - attestation.json
+  - trusted-attestation-verification.json
+  - workflow-action-lock.yaml
 files_changed:
-- README.md
-- CONTRIBUTING.md
-- SECURITY.md
-- RECENT_LEARNINGS.md
-- .github/workflows/ci-node.yml
-- .github/workflows/ci-python.yml
-- .github/workflows/ci-conformance.yml
-- .github/workflows/ci-docs-quality.yml
-- .github/workflows/codeql.yml
-- .github/workflows/dependency-review.yml
-- github-settings.yaml
-- conformance-matrix.yaml
-- gap-register.yaml
-- docs/README.md
-- templates/README.md
-commands_run:
-- command: npm test
-  status: passed
-  evidence: fixture
-- command: pytest
-  status: passed
-  evidence: fixture
-contracts_validated:
-- repository-contract.schema.json
-- github-settings.schema.json
-- workflow-contract.schema.json
-- conformance-record.schema.json
-tests_run:
-- name: unit tests
-  status: passed
-  evidence: fixture
-gaps_recorded: []
-waivers_recorded: []
-artifacts_created:
-- github-settings.yaml
-- conformance-matrix.yaml
-- gap-register.yaml
-- RECENT_LEARNINGS.md
-- .github/workflows/ci-node.yml
-- .github/workflows/ci-python.yml
-- .github/workflows/ci-conformance.yml
-- .github/workflows/ci-docs-quality.yml
-- .github/workflows/codeql.yml
-- .github/workflows/dependency-review.yml
-recent_learnings:
-  read: true
-  updated: true
-  entry: Initial repository scaffold created.
-repository_state:
-  required_files_present:
   - README.md
   - CONTRIBUTING.md
   - SECURITY.md
   - RECENT_LEARNINGS.md
+  - package.json
+  - pyproject.toml
   - github-settings.yaml
   - conformance-matrix.yaml
   - gap-register.yaml
-  required_files_missing: []
-  detected_languages:
-  - node
-  - python
-  selected_workflows:
+  - accessibility-evidence.yaml
+  - performance-budget.yaml
+  - performance-results.yaml
+  - sbom.json
+  - attestation.json
+  - sigstore-bundle.json
+  - trusted-attestation-verification.json
+  - workflow-action-lock.yaml
+  - test-commands.yaml
   - .github/workflows/ci-node.yml
   - .github/workflows/ci-python.yml
   - .github/workflows/ci-conformance.yml
   - .github/workflows/ci-docs-quality.yml
+  - .github/workflows/ci-hardened.yml
   - .github/workflows/codeql.yml
   - .github/workflows/dependency-review.yml
+  - docs/README.md
+  - templates/README.md
+commands_run:
+  - command: npm test
+    status: passed
+    evidence: test-commands.yaml#node-unit
+  - command: npm run lint
+    status: passed
+    evidence: test-commands.yaml#node-lint
+  - command: npm run build
+    status: passed
+    evidence: test-commands.yaml#node-build
+  - command: python -I -S -c "print('fixture tests passed')"
+    status: passed
+    evidence: test-commands.yaml#python-smoke
+  - command: python scripts/validate-sbom-attestation.py --attestation attestation.json --sbom sbom.json
+    status: passed
+    evidence: trusted-attestation-verification.json#sbom_attestation_linkage
+  - command: gh attestation verify artifact.zip --repo owner/repo
+    status: passed
+    evidence: trusted-attestation-verification.json#github_artifact_attestation
+  - command: cosign verify-blob artifact.zip --bundle sigstore-bundle.json
+    status: passed
+    evidence: trusted-attestation-verification.json#sigstore_bundle_verification
+contracts_validated:
+  - repository-contract.schema.json
+  - github-settings.schema.json
+  - workflow-contract.schema.json
+  - conformance-record.schema.json
+  - gap-register.schema.json
+  - agent-evidence.schema.json
+  - performance-budget.schema.json
+  - trusted-attestation-verification.schema.json
+  - release-gate-report.schema.json
+tests_run:
+  - name: Node unit fixture command
+    status: passed
+    evidence: test-commands.yaml#node-unit
+  - name: Node lint fixture command
+    status: passed
+    evidence: test-commands.yaml#node-lint
+  - name: Node build fixture command
+    status: passed
+    evidence: test-commands.yaml#node-build
+  - name: Python smoke fixture command
+    status: passed
+    evidence: test-commands.yaml#python-smoke
+  - name: Accessibility evidence review
+    status: passed
+    evidence: accessibility-evidence.yaml
+  - name: Performance budget/result review
+    status: passed
+    evidence: performance-results.yaml
+  - name: Trusted attestation verification review
+    status: passed
+    evidence: trusted-attestation-verification.json
+gaps_recorded:
+  - GAP-HAP-001
+  - GAP-HAP-002
+  - GAP-HAP-003
+waivers_recorded: []
+artifacts_created:
+  - github-settings.yaml
+  - conformance-matrix.yaml
+  - gap-register.yaml
+  - accessibility-evidence.yaml
+  - performance-budget.yaml
+  - performance-results.yaml
+  - sbom.json
+  - attestation.json
+  - sigstore-bundle.json
+  - trusted-attestation-verification.json
+  - workflow-action-lock.yaml
+  - test-commands.yaml
+  - RECENT_LEARNINGS.md
+  - .github/workflows/ci-node.yml
+  - .github/workflows/ci-python.yml
+  - .github/workflows/ci-conformance.yml
+  - .github/workflows/ci-docs-quality.yml
+  - .github/workflows/ci-hardened.yml
+  - .github/workflows/codeql.yml
+  - .github/workflows/dependency-review.yml
+recent_learnings:
+  read: true
+  updated: true
+  entry: Expanded high-assurance root live-gate fixtures from slim placeholders into realistic synthetic release-gate evidence.
+repository_state:
+  required_files_present:
+    - README.md
+    - CONTRIBUTING.md
+    - SECURITY.md
+    - RECENT_LEARNINGS.md
+    - package.json
+    - pyproject.toml
+    - github-settings.yaml
+    - conformance-matrix.yaml
+    - gap-register.yaml
+    - accessibility-evidence.yaml
+    - performance-budget.yaml
+    - performance-results.yaml
+    - sbom.json
+    - attestation.json
+    - sigstore-bundle.json
+    - trusted-attestation-verification.json
+    - workflow-action-lock.yaml
+    - test-commands.yaml
+  required_files_missing: []
+  detected_languages:
+    - node
+    - python
+  selected_workflows:
+    - .github/workflows/ci-node.yml
+    - .github/workflows/ci-python.yml
+    - .github/workflows/ci-conformance.yml
+    - .github/workflows/ci-docs-quality.yml
+    - .github/workflows/ci-hardened.yml
+    - .github/workflows/codeql.yml
+    - .github/workflows/dependency-review.yml
   missing_workflows: []
   template_registry_validated: true
   direct_state_verified: true
 github_settings:
-  desired_state: &id001
+  desired_state: &github_settings_state
     default_branch: main
     branch_protection:
       required_reviews: 1
       dismiss_stale_reviews: true
       require_code_owner_reviews: true
+      require_conversation_resolution: true
       required_status_checks:
-      - CI (Node)
-      - CI (Python)
-      - CI (Conformance)
-      - CI (Documentation Quality)
-      - CodeQL
-      - Dependency Review
+        - CI (Node)
+        - CI (Python)
+        - CI (Conformance)
+        - CI (Documentation Quality)
+        - CI (Hardened Release)
+        - CodeQL
+        - Dependency Review
       linear_history: true
       allow_force_pushes: false
       allow_deletions: false
     workflow_permissions: read
+    actions_policy:
+      allowed_actions: local-and-verified
+      oidc_for_deployments: true
+      default_workflow_permissions: read
     security_features:
       dependabot: true
       secret_scanning: true
@@ -104,41 +195,109 @@ github_settings:
       code_scanning: true
       dependency_review: true
       sbom_on_release: true
-  observed_state: *id001
+    repository_rulesets:
+      required: true
+    environments:
+      deployment_protections_required: true
+  observed_state: *github_settings_state
   verification_method: file
 security:
   dependency_review: true
   secret_scanning: true
+  push_protection: true
+  code_scanning: true
+  workflow_action_lock: workflow-action-lock.yaml
+  trusted_attestation_verification: trusted-attestation-verification.json
+  sbom: sbom.json
+  attestation: attestation.json
+  sigstore_bundle: sigstore-bundle.json
+  release_gate_interpretation: pass
 accessibility:
-  required: false
-  automated_checks: []
-  keyboard_checks: []
-  focus_checks: []
-  screen_reader_smoke_checks: []
-  known_defects: []
-  release_decision: not_applicable
-performance: {}
+  required: true
+  automated_checks:
+    - axe:results/axe.json
+    - pa11y:results/pa11y.json
+    - lighthouse:results/lighthouse.json
+  keyboard_checks:
+    - Complete representative release-evidence journey using keyboard
+    - Keyboard focus after validation message
+  focus_checks:
+    - Visible focus indicator on release evidence controls
+    - Code panel scroll does not trap keyboard focus
+  screen_reader_smoke_checks:
+    - NVDA with Firefox
+    - VoiceOver with Safari
+  known_defects:
+    - A11Y-1 closed
+    - A11Y-2 closed
+  release_decision: pass
+  manual_requirements_covered: true
+  automated_requirements_covered: true
+  evidence_file: accessibility-evidence.yaml
+performance:
+  budget_file: performance-budget.yaml
+  results_file: performance-results.yaml
+  release_decision: pass
+  measurements:
+    lighthouse_performance_score: 0.92
+    lighthouse_accessibility_score: 0.98
+    lcp_ms: 1800
+    fcp_ms: 1050
+    total_blocking_time_ms: 45
+    cumulative_layout_shift: 0.01
+  blocking_measurements_failed: 0
+  advisory_measurements_failed: 0
 harms: []
 claims:
-- Tests passed with structured evidence.
-risks: []
+  - Tests passed with structured evidence.
+  - High-assurance root fixture evidence is present and expanded.
+  - Accessibility evidence supports a pass release decision.
+  - Performance evidence is measured against an explicit budget.
+  - SBOM, attestation, Sigstore bundle and trusted verification evidence are represented.
+risks:
+  - Fixture evidence is synthetic and must not be treated as proof of a real production release.
+  - Real high-assurance releases must verify live GitHub API state where the selected profile requires it.
 test_results:
-- command: python -I -S -c "print('fixture tests passed')"
-  status: passed
-  returncode: 0
-  stdout: 'fixture tests passed
-
-    '
-  stderr: ''
+  - command: npm test
+    status: passed
+    returncode: 0
+    stdout: live gate node fixture tests passed
+    stderr: ''
+  - command: npm run lint
+    status: passed
+    returncode: 0
+    stdout: live gate node fixture lint passed
+    stderr: ''
+  - command: npm run build
+    status: passed
+    returncode: 0
+    stdout: live gate node fixture build passed
+    stderr: ''
+  - command: python -I -S -c "print('fixture tests passed')"
+    status: passed
+    returncode: 0
+    stdout: fixture tests passed
+    stderr: ''
+  - command: gh attestation verify artifact.zip --repo owner/repo
+    status: passed
+    returncode: 0
+    stdout: Verified artifact.zip for owner/repo using GitHub artifact attestation fixture evidence.
+    stderr: ''
+  - command: cosign verify-blob artifact.zip --bundle sigstore-bundle.json
+    status: passed
+    returncode: 0
+    stdout: Verified OK. Bundle contains fixture certificate, Rekor entry, message digest and DSSE envelope.
+    stderr: ''
 github_settings_verification:
   verification_method: file
   expected_status_checks:
-  - CI (Node)
-  - CI (Python)
-  - CI (Conformance)
-  - CI (Documentation Quality)
-  - CodeQL
-  - Dependency Review
+    - CI (Node)
+    - CI (Python)
+    - CI (Conformance)
+    - CI (Documentation Quality)
+    - CI (Hardened Release)
+    - CodeQL
+    - Dependency Review
   file_state_errors: []
   api_errors: []
   passed: true
@@ -147,20 +306,28 @@ branch_protection_verification:
   required_approving_review_count: 1
   status_checks_required: true
   required_status_checks:
-  - CI (Node)
-  - CI (Python)
-  - CI (Conformance)
-  - CI (Documentation Quality)
-  - CodeQL
-  - Dependency Review
+    - CI (Node)
+    - CI (Python)
+    - CI (Conformance)
+    - CI (Documentation Quality)
+    - CI (Hardened Release)
+    - CodeQL
+    - Dependency Review
   codeowners_present: true
   passed: true
 sbom:
   path: sbom.json
-  component_count: 0
-  dependency_graph_entries: 0
-  licence_metadata_present: false
+  component_count: 3
+  dependency_graph_entries: 4
+  licence_metadata_present: true
+  purls_present: true
+  tool_metadata_present: true
 sbom_attestation:
-  path: sbom-attestation.json
-  subject_file_count: 1
+  path: attestation.json
+  sbom_sha256: cb8803803d00e76ade454091a91a3d445ce0c8df81f71fbc834e52cd372e19e1
+  subject_file_count: 12
   validated: true
+  dsse_present: true
+  slsa_present: true
+  github_artifact_attestation_present: true
+  sigstore_present: true
