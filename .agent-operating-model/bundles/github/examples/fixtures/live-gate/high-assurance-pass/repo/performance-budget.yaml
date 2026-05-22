@@ -2,9 +2,103 @@ budgets:
   - metric: lighthouse_performance_score
     threshold: 0.8
     comparator: min
+    unit: ratio
+    mode: blocking
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      The high-assurance fixture requires a browser performance category score
+      high enough to support release-readiness evidence for the representative
+      repository assurance page.
+    failure_interpretation: >
+      Scores below the threshold block release because the positive fixture should
+      demonstrate that performance evidence is present and above the minimum gate.
+
   - metric: lighthouse_accessibility_score
     threshold: 0.9
     comparator: min
+    unit: ratio
+    mode: blocking
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      The release fixture keeps the Lighthouse accessibility category as an
+      automated smoke signal while separate manual accessibility evidence remains
+      recorded in accessibility-evidence.yaml.
+    failure_interpretation: >
+      Scores below the threshold block release and should be paired with manual
+      accessibility triage before a release decision is made.
+
   - metric: lcp_ms
     threshold: 2500
     tolerance_percent: 10
+    allowed_value: 2750
+    comparator: max
+    unit: ms
+    mode: blocking
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      Largest Contentful Paint is treated as the primary user-visible loading
+      measure for this fixture. The tolerance reflects normal variation in browser
+      performance runs while still preventing a slow positive fixture.
+    failure_interpretation: >
+      Values above the allowed tolerance block release and should produce a
+      performance gap entry in gap-register.yaml.
+
+  - metric: fcp_ms
+    threshold: 1800
+    tolerance_percent: 10
+    allowed_value: 1980
+    comparator: max
+    unit: ms
+    mode: advisory
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      First Contentful Paint is retained as advisory context. It helps reviewers
+      diagnose whether LCP issues are part of a broader initial-render problem.
+    failure_interpretation: >
+      Advisory failure does not automatically block the fixture, but should be
+      reviewed if LCP or total blocking time also regresses.
+
+  - metric: total_blocking_time_ms
+    threshold: 200
+    tolerance_percent: 10
+    allowed_value: 220
+    comparator: max
+    unit: ms
+    mode: blocking
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      Total Blocking Time protects interaction readiness for users reviewing
+      evidence-heavy release pages.
+    failure_interpretation: >
+      Blocking-time regressions indicate too much main-thread work and should
+      prevent the high-assurance pass fixture from being treated as release-ready.
+
+  - metric: cumulative_layout_shift
+    threshold: 0.1
+    comparator: max
+    unit: unitless
+    mode: blocking
+    source: lighthouse
+    evidence_file: results/lighthouse.json
+    rationale: >
+      Layout instability can undermine trust in evidence-review pages. The fixture
+      should prove that visual stability has been considered.
+    failure_interpretation: >
+      Values above the threshold block release because layout instability is a
+      user-facing quality defect.
+
+summary:
+  profile: high-assurance
+  expected_result: pass
+  fixture: live-gate-high-assurance-pass
+  synthetic_data: true
+  release_gate_interpretation: >
+    This budget is intentionally richer than the minimum validator schema. It
+    shows how a high-assurance fixture should explain threshold, comparator,
+    tolerance, evidence source, rationale and failure interpretation for each
+    performance control.
