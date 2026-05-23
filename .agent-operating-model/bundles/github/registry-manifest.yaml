@@ -518,7 +518,7 @@ artifacts:
 - path: scripts/validate-docs-consistency.py
   sha256: 62fb79947860fc46f2242354eef11a9383d39de519770566efe72b3ac650341a
 - path: scripts/validate-eval-harness-execution.py
-  sha256: be0c44a696b4179718f864c5b41c64c7fa4c7c48f2666ca0a0202f5a11f7f6de
+  sha256: 9846479017d1881435dbee31f7132c8eec068f4bb3b352e81f3c2eae9aacc229
 - path: scripts/validate-evals.py
   sha256: 754f1328ae7f322a8979e10dcf7993507a4bf047c183806a579905b7fd3a8dd9
 - path: scripts/validate-github-api-fixtures.py
