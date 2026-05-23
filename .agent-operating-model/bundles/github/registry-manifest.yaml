@@ -570,7 +570,7 @@ artifacts:
 - path: templates/discussion-template.xml
   sha256: fce91a2c126f52d7383fa9c8f59843cdab420bf47f0fb878f7e3490ee647f0c8
 - path: templates/github/.github/CODEOWNERS
-  sha256: 107d6fee7c3ef4fcbc91939cdbb7de3717531d8f46404a953b7f9af51db2e620
+  sha256: 0069336414efd86cce54d1b2b47b704c1327753e0365c5d4cf50d45b262208ec
 - path: templates/github/.github/ISSUE_TEMPLATE/bug_report.yml
   sha256: 7a67b754b86840c937890352bf55858259d25ab301151574190e4f5ce07e3677
 - path: templates/github/.github/ISSUE_TEMPLATE/feature_request.yml
