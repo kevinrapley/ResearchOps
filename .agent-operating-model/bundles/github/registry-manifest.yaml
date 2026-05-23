@@ -188,7 +188,7 @@ artifacts:
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/accessibility-evidence.yaml
   sha256: b72e2dd08730fd476c08aaa026ff2b316e5e49b0f287cbaa4bfa9d11ced2e960
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/agent-evidence.yaml
-  sha256: f3304855ae289da97ece714dd85032be15f1098ea6978af1b57e882b145a1853
+  sha256: cf3f84e29f73bff16c9b216e79bd11d1ce62c7879b8a5cccbf3fb1132ddce1ba
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/artifact.zip
   sha256: 0fc7c8c357dfa2cc6116cdf1172b5734908a31644d6a807152023dd63d7f151a
 - path: examples/fixtures/live-gate/high-assurance-pass/repo/attestation.json
