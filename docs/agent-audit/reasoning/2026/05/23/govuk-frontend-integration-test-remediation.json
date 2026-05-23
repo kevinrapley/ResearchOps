@@ -1,0 +1,45 @@
+{
+  "traceId": "govuk-frontend-integration-test-remediation",
+  "date": "2026-05-23",
+  "repository": "kevinrapley/ResearchOps",
+  "pullRequest": 262,
+  "branch": "chore/govuk-frontend-integration",
+  "branchTraceDecision": "trace-required",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "summary": "Resolved direct CI, validation, accessibility and BDD failures after shared GOV.UK x-include chrome changes.",
+  "validatedGreenBeforeTraceCommit": {
+    "head": "58df143b0b1fc0af72acf74fca9fbedca8587711",
+    "workflows": [
+      "CI",
+      "Validate ResearchOps",
+      "Accessibility audit (pa11y-ci)",
+      "qa-bdd",
+      "Format pull request",
+      "QA — Broken links (Lychee)",
+      "Build and deploy agent documentation Pages",
+      "Update GitHub bundle registry manifest"
+    ]
+  },
+  "remainingBlocker": "Release Gate failed at Run ResearchOps release gate. The exact failing subcommand needs the release-gate artifact or a local gate run.",
+  "recommendedLocalDiagnosis": [
+    "npm ci",
+    "npm run validate",
+    "npm run lint",
+    "npm run format:check",
+    "npm test",
+    "npm run audit:performance --if-present",
+    "npm run audit:security"
+  ]
+}
