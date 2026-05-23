@@ -513,6 +513,8 @@ artifacts:
   sha256: 4929046e1bc58ad41062cd5615fa77838aff8102ed4fcbc9cf3ac01ab09bdd08
 - path: scripts/validate-accessibility-fixtures.py
   sha256: 21de89e7236b79988e52a77b815568b65d08355604c848b00c4bb7a385498c05
+- path: scripts/validate-agent-evidence-fixtures.py
+  sha256: e07a93f2624e63cbd1f64d555b1457b6bbc9b60424892b5c3b578601996d06e8
 - path: scripts/validate-agent-evidence.py
   sha256: 21f16f53525db6d2bbe811b269eeea0a64cfbef3025bfc3b8a9b14e821e27e49
 - path: scripts/validate-bundle.py
