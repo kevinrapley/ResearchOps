@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<grader id="documentation-grader" version="2.9.3" xml_profile="native-semantic-xml/v1">
+  <title>Documentation Grader</title>
+  <thresholds>
+    <pass minimum_score="0.85" />
+    <pass_with_gap minimum_score="0.70" />
+    <fail below_score="0.70" />
+  </thresholds>
+  <evidence_required>
+    <item>README.md has been inspected before any rewrite.</item>
+    <item>Repository manifests and CI workflows have been inspected for setup, test and validation commands.</item>
+    <item>RECENT_LEARNINGS.md has been read and updated when documentation behaviour changes.</item>
+    <item>Any unknown deployment, ownership or release detail is recorded as a gap rather than invented.</item>
+  </evidence_required>
+  <scoring>
+    <criterion id="1" weight="0.25">Documentation accurately explains repository purpose, setup and validation commands.</criterion>
+    <criterion id="2" weight="0.25">Documentation reflects observed files, scripts and workflows rather than invented implementation details.</criterion>
+    <criterion id="3" weight="0.25">Documentation supports maintainers and reviewers with clear ownership, risks and release notes.</criterion>
+    <criterion id="4" weight="0.25">Documentation changes preserve existing correct context and record remaining gaps.</criterion>
+  </scoring>
+  <blocking_failures>
+    <failure>README is rewritten without inspecting package scripts or workflow files.</failure>
+    <failure>Deployment, ownership or release claims are invented.</failure>
+    <failure>Existing accurate repository context is removed.</failure>
+    <failure>Validation commands are omitted from the documentation update.</failure>
+  </blocking_failures>
+</grader>
