@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-23",
+  "branch": "fix/github-contracts-scenario-validation",
+  "scope": [
+    "github-diamond-bundle",
+    "output-contract",
+    "grade-contract",
+    "scenario-reference-validation",
+    "safe-audit-trail",
+    "evidence-state-model"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to tighten GitHub Diamond contracts and scenario validation. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The prior bundle evaluation found that output.schema.json only required response and grade.schema.json only required score and feedback.",
+    "Scenario files referenced modes, roles, references, contracts, graders and selected templates, but there was no dedicated scenario-reference validator to fail on drift.",
+    "The bundle used reasoning-trace language, but the safer governance need is an observable audit trail that excludes private chain-of-thought.",
+    "Evidence files implied different evidence states, but there was no shared contract vocabulary for claimed, observed, verified, unavailable and waived evidence."
+  ],
+  "workSummary": [
+    "Strengthened output.schema.json so final outputs must include mode selection, repository classification, evidence read, branch decision, mutation strategy, changed files, commands, validation results, gaps, waivers, risk decision, PR readiness and a safe audit trail.",
+    "Added contracts/evidence-state.schema.json with the shared evidence-state vocabulary: claimed, observed, verified, unavailable and waived.",
+    "Added contracts/safe-audit-trail.schema.json requiring task interpretation, rules loaded, files inspected, evidence used, decisions, commands, changes, errors, pivots, validation, gaps and chain_of_thought_excluded=true.",
+    "Strengthened grade.schema.json so grade outputs must include grader_id, score, decision, blocking failures, evidence, deductions and feedback.",
+    "Updated grade-output.py so emitted grader results match the tightened grade contract and include evidence-state records.",
+    "Registered evidence-state and safe-audit-trail contracts in prompt.spec.yaml.",
+    "Added scripts/validate-scenario-references.py to check scenario references against actual mode, role, reference, contract, grader and template-registry paths.",
+    "Wired scenario-reference validation into scripts/release-gate.py.",
+    "Updated validate-bundle.py strict mode so weak output and grade contracts fail explicit contract-strength checks.",
+    "Updated agent-evidence.schema.json to allow evidence_states records and evidence-state fields on commands, tests and test results."
+  ],
+  "changedAreas": [
+    ".agent-operating-model/bundles/github/output.schema.json",
+    ".agent-operating-model/bundles/github/grade.schema.json",
+    ".agent-operating-model/bundles/github/contracts/evidence-state.schema.json",
+    ".agent-operating-model/bundles/github/contracts/safe-audit-trail.schema.json",
+    ".agent-operating-model/bundles/github/contracts/agent-evidence.schema.json",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/scripts/grade-output.py",
+    ".agent-operating-model/bundles/github/scripts/validate-scenario-references.py",
+    ".agent-operating-model/bundles/github/scripts/validate-bundle.py",
+    ".agent-operating-model/bundles/github/scripts/release-gate.py"
+  ],
+  "validationEvidence": {
+    "staticCompatibilityChecks": [
+      "output.schema.json now has additionalProperties=false and requires safe_audit_trail.",
+      "grade.schema.json now has additionalProperties=false and requires decision, blocking_failures, evidence and deductions.",
+      "validate-bundle.py --strict now enforces strengthened output and grade contract fields.",
+      "validate-scenario-references.py checks selected template IDs against template-registry.yaml.",
+      "release-gate.py now runs validate-scenario-references.py as part of common checks.",
+      "safe-audit-trail.schema.json explicitly excludes private chain-of-thought by requiring chain_of_thought_excluded=true."
+    ],
+    "notRunLocally": [
+      "No local release gate was run in this connector-only environment. CI should run the fast release gate and bundle validators on the pull request."
+    ],
+    "recommendedNextChecks": [
+      "cd .agent-operating-model/bundles/github",
+      "python scripts/validate-scenario-references.py",
+      "python scripts/validate-bundle.py --strict",
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode fast --report fast-release-gate-report.json"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Stronger schemas may expose previously tolerated weak outputs or grader results.",
+      "mitigation": "grade-output.py was updated to emit the tightened shape; output.schema.json is a contract for future agent output rather than a validator for existing fixture files."
+    },
+    {
+      "risk": "Scenario-reference validation may reveal existing stale scenario links.",
+      "mitigation": "The validator is intentionally wired into the release gate so CI will expose any residual drift before merge."
+    },
+    {
+      "risk": "Registry manifest checksums may be stale after adding contract and script files.",
+      "mitigation": "The existing GitHub bundle registry-manifest workflow should regenerate registry-manifest.yaml on the pull request branch."
+    }
+  ],
+  "status": "ready-for-pr"
+}
