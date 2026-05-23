@@ -97,27 +97,28 @@ assert.match(renderedHomePage, /class="researchops-next-actions"/);
 assert.match(renderedHomePage, /class="researchops-next-action"/);
 
 assert.match(sharedHead, /\/assets\/govuk\/govuk-frontend\.css/);
-assert.doesNotMatch(sharedHead, /\/css\/govuk\/govuk-frontend-v6\.css/);
+assert.match(sharedHead, /\/css\/govuk\/govuk-frontend-v6\.css/);
 assert.match(sharedHeader, /class="govuk-skip-link" href="#main-content"/);
 assert.match(sharedHeader, /class="govuk-header"/);
-assert.match(sharedHeader, /govuk-header__service-name/);
+assert.match(sharedHeader, /govuk-header__product-name/);
 assert.match(sharedHeader, /ResearchOps Demo Suite/);
 assert.match(sharedHeader, /class="govuk-service-navigation"/);
 assert.match(sharedHeader, /data-active="\{\{active\}\}"/);
 assert.match(sharedHeader, /govuk-phase-banner/);
-assert.doesNotMatch(sharedHeader, /\/css\/govuk\//);
-assert.doesNotMatch(sharedHeader, /ensurePageChromeStylesheet/);
-assert.doesNotMatch(sharedHeader, /ensureMainContentTarget/);
+assert.match(sharedHeader, /\/css\/govuk\/govuk-header-service-brand\.css/);
+assert.match(sharedHeader, /\/css\/govuk\/govuk-main-content-focus\.css/);
+assert.match(sharedHeader, /ensurePageChromeStylesheet/);
+assert.match(sharedHeader, /ensureMainContentTarget/);
 assert.match(sharedFooter, /class="govuk-footer"/);
-assert.match(sharedFooter, /class="govuk-width-container"/);
+assert.match(sharedFooter, /class="govuk-footer__container"/);
 assert.match(sharedFooter, /govuk-footer__meta/);
 assert.match(sharedFooter, /aria-hidden="true"/);
 assert.match(sharedFooter, /Open Government Licence v3\.0/);
 assert.match(sharedLayoutLoader, /class XInclude extends HTMLElement/);
 assert.match(sharedLayoutLoader, /customElements\.define\("x-include", XInclude\)/);
 assert.match(sharedLayoutLoader, /x-include:loaded/);
-assert.doesNotMatch(sharedLayoutLoader, /govuk-frontend-v6\.css/);
-assert.doesNotMatch(sharedLayoutLoader, /ensureGovukFrontendV6Stylesheet/);
+assert.match(sharedLayoutLoader, /GOVUK_FRONTEND_V6_STYLESHEET/);
+assert.match(sharedLayoutLoader, /ensureGovukFrontendV6Stylesheet/);
 
 for (const path of representativePages) {
 	const page = fs.readFileSync(path, 'utf8');
