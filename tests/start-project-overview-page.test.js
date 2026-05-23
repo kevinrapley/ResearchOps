@@ -65,7 +65,11 @@ assert.equal(
 );
 assert.equal(overviewPage.includes('src="/partials/header.html"'), true);
 assert.equal(overviewPage.includes('src="/partials/footer.html"'), true);
-assert.equal(overviewPage.includes('class="govuk-button" href="/pages/start/"'), true);
+assert.equal(
+	linkHref(overviewPage, 'Start now'),
+	'/pages/start/',
+	'Overview page Start now action should route to the existing creation form'
+);
 assert.equal(
 	textContent(overviewPage, /<a\b[^>]*class="govuk-button"[^>]*>([\s\S]*?)<\/a>/),
 	'Start now'
@@ -104,9 +108,4 @@ assert.equal(
 	linkHref(projectsPage, 'Start a research project'),
 	'/pages/start/overview/',
 	'Projects page Start a research project button should route to the overview page'
-);
-assert.equal(
-	overviewPage.includes('href="/pages/start/"'),
-	true,
-	'Overview page should keep the Start now action routed to the existing creation form'
 );
