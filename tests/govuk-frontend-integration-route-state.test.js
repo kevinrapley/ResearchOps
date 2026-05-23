@@ -15,6 +15,7 @@ const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
 const govukLayoutLoader = fs.readFileSync('public/components/govuk-layout.js', 'utf8');
+const renderedHomePage = fs.readFileSync('public/index.html', 'utf8');
 
 const representativePages = [
 	'public/index.html',
@@ -56,6 +57,10 @@ assert.match(packageLock, /"version": "6\.1\.0"/);
 assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
 assert.match(sassEntry, /@import ['"]govuk-frontend\/dist\/govuk['"];/);
 assert.match(generatedCss, /\.govuk-width-container\{max-width:1020px/);
+assert.match(homeSassEntry, /\.researchops-step-grid/);
+assert.match(homeSassEntry, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
+assert.match(homeSassEntry, /\.researchops-next-actions/);
+assert.match(homeSassEntry, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
 assert.match(generatedHomeCss, /\.researchops-step-grid/);
 assert.match(generatedHomeCss, /\.researchops-next-action/);
 assert.match(copyScript, /node_modules\/govuk-frontend\/dist\/govuk/);
@@ -80,9 +85,14 @@ assert.doesNotMatch(layoutTemplate, /govuk\/components\/header\/macro\.njk/);
 assert.doesNotMatch(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/button\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/tag\/macro\.njk/);
-assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css/);
+assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css\?v=govuk-x-include-home-grid/);
 assert.match(homeTemplate, /researchops-step-card/);
 assert.match(homeTemplate, /researchops-next-actions/);
+
+assert.match(renderedHomePage, /assets\/researchops\/researchops-home\.css\?v=govuk-x-include-home-grid/);
+assert.match(renderedHomePage, /class="researchops-step-grid"/);
+assert.match(renderedHomePage, /class="researchops-next-actions"/);
+assert.match(renderedHomePage, /class="researchops-next-action"/);
 
 assert.match(sharedHeader, /class="govuk-header"/);
 assert.match(sharedHeader, /govuk-header__product-name/);
