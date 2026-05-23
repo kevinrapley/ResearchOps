@@ -1,1 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<discussion-template id="discussion-template" version="2.9.3">
+  <purpose>
+    Provide a structured discussion record for repository decisions, trade-offs,
+    risks, validation evidence and follow-up actions.
+  </purpose>
+  <required-sections>
+    <section id="context" title="Context" />
+    <section id="decision" title="Decision" />
+    <section id="options-considered" title="Options considered" />
+    <section id="evidence" title="Evidence used" />
+    <section id="risks" title="Risks and mitigations" />
+    <section id="validation" title="Validation" />
+    <section id="follow-up" title="Follow-up actions" />
+  </required-sections>
+  <rules>
+    <rule id="no-private-chain-of-thought">
+      Record observable audit evidence. Do not require or expose private chain-of-thought.
+    </rule>
+    <rule id="evidence-before-decision">
+      Decisions must cite inspected files, commands, checks or explicit unavailable evidence.
+    </rule>
+    <rule id="open-gaps-visible">
+      Any unresolved gap or waiver must be recorded with owner, risk and next action.
+    </rule>
+  </rules>
+  <template><![CDATA[
+# Discussion record
 
+## Context
+
+Describe the repository situation, user request and operating mode.
+
+## Decision
+
+State the decision and why it is appropriate.
+
+## Options considered
+
+- Option 1:
+- Option 2:
+- Rejected options:
+
+## Evidence used
+
+- Files inspected:
+- Commands run:
+- Validator results:
+- External or live evidence unavailable:
+
+## Risks and mitigations
+
+| Risk | Mitigation | Owner |
+| --- | --- | --- |
+| | | |
+
+## Validation
+
+Record observed validation results. Do not claim checks that were not run.
+
+## Follow-up actions
+
+- [ ] Action, owner, target date.
+]]></template>
+</discussion-template>
