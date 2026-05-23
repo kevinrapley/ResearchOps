@@ -33,6 +33,13 @@ def percentile(values, pct):
         return values[int(k)]
     return values[f] * (c - k) + values[c] * (k - f)
 
+def canonical_rollup(metric, value, unit, source, detail_metrics):
+    result = measurement(metric, value, unit, source)
+    result["rollup"] = True
+    result["rollup_strategy"] = "max"
+    result["source_metrics"] = detail_metrics
+    return result
+
 def apply_profile(adapter, measurements, profile_path):
     if not profile_path:
         return measurements
@@ -47,22 +54,48 @@ def apply_profile(adapter, measurements, profile_path):
     return measurements
 
 def adapt_pytest_benchmark(path):
-    data=json.loads(Path(path).read_text(encoding="utf-8"))
+    path = Path(path)
+    data=json.loads(path.read_text(encoding="utf-8"))
     out=[]
+    mean_values=[]
+    max_values=[]
+    mean_metrics=[]
+    max_metrics=[]
     for item in data.get("benchmarks", []):
         name=item.get("name", "benchmark")
         stats=item.get("stats", {})
-        if "mean" in stats: out.append(measurement(f"{name}_mean_seconds", stats["mean"], "seconds", str(path)))
-        if "max" in stats: out.append(measurement(f"{name}_max_seconds", stats["max"], "seconds", str(path)))
+        if "mean" in stats:
+            metric_name = f"{name}_mean_seconds"
+            out.append(measurement(metric_name, stats["mean"], "seconds", str(path)))
+            mean_values.append(float(stats["mean"]))
+            mean_metrics.append(metric_name)
+        if "max" in stats:
+            metric_name = f"{name}_max_seconds"
+            out.append(measurement(metric_name, stats["max"], "seconds", str(path)))
+            max_values.append(float(stats["max"]))
+            max_metrics.append(metric_name)
+    if mean_values:
+        out.append(canonical_rollup("response_time_mean_seconds", max(mean_values), "seconds", str(path), mean_metrics))
+    if max_values:
+        out.append(canonical_rollup("response_time_max_seconds", max(max_values), "seconds", str(path), max_metrics))
     return out
 
 def adapt_go_bench(path):
+    path = Path(path)
     out=[]
-    text=Path(path).read_text(encoding="utf-8", errors="ignore")
+    ns_values=[]
+    ns_metrics=[]
+    text=path.read_text(encoding="utf-8", errors="ignore")
     for line in text.splitlines():
         m=re.match(r"(Benchmark\S+)\s+\d+\s+([0-9.]+)\s+ns/op", line)
         if m:
-            out.append(measurement(f"{m.group(1)}_ns_per_op", float(m.group(2)), "ns/op", str(path)))
+            metric_name = f"{m.group(1)}_ns_per_op"
+            value = float(m.group(2))
+            out.append(measurement(metric_name, value, "ns/op", str(path)))
+            ns_values.append(value)
+            ns_metrics.append(metric_name)
+    if ns_values:
+        out.append(canonical_rollup("handler_ns_per_op", max(ns_values), "ns/op", str(path), ns_metrics))
     return out
 
 def adapt_lighthouse(path):
