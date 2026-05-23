@@ -1,0 +1,24 @@
+name: CI (Conformance)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: CI (Conformance)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate repository evidence files
+        run: |
+          test -f README.md
+          test -f RECENT_LEARNINGS.md
+          if [ -f conformance-matrix.yaml ]; then echo "conformance matrix present"; fi
+          if [ -f gap-register.yaml ]; then echo "gap register present"; fi
+          if [ -f agent-evidence.yaml ]; then echo "agent evidence present"; fi
