@@ -1,0 +1,26 @@
+name: CI (Java)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  java:
+    name: CI (Java)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Test Maven project
+        run: |
+          if [ -f mvnw ]; then ./mvnw test; elif [ -f pom.xml ]; then mvn test; elif [ -f gradlew ]; then ./gradlew test; else gradle test; fi
