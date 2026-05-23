@@ -1,0 +1,33 @@
+name: CI (Hardened Release)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  hardened-release:
+    name: CI (Hardened Release)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Verify hardened release evidence paths
+        run: |
+          test -f README.md
+          test -f SECURITY.md
+          if [ -f workflow-action-lock.yaml ]; then echo "workflow action lock present"; fi
+          if [ -f sbom.json ]; then echo "SBOM evidence present"; fi
+          if [ -f attestation.json ]; then echo "attestation evidence present"; fi
+      - name: Run release gate when configured
+        run: |
+          if [ -f scripts/release-gate.py ]; then
+            python scripts/release-gate.py --mode full --report release-gate-report.json
+          else
+            echo "No repository release gate script configured. Treat this template as scaffold evidence only."
+          fi
