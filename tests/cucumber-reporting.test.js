@@ -88,8 +88,9 @@ test('buildStateAcceptanceGherkin writes ResearchOps home criteria from a user r
 	assert.match(gherkin, /I want to access the ResearchOps home page/);
 	assert.match(gherkin, /So that I can choose the right ResearchOps journey for my work/);
 	assert.match(gherkin, /Scenario: View the ResearchOps service identity/);
-	assert.match(gherkin, /ResearchOps demo suite/);
-	assert.doesNotMatch(gherkin, /ResearchOps Demo Suite/);
+	assert.match(gherkin, /service name "ResearchOps Demo Suite"/);
+	assert.match(gherkin, /page heading "ResearchOps demo suite"/);
+	assert.doesNotMatch(gherkin, /page heading "ResearchOps Demo Suite"/);
 	assert.match(gherkin, /Objective orientated applied user research done well\./);
 	assert.match(gherkin, /Scenario: Navigate using the primary navigation/);
 	assert.match(gherkin, /Start research project/);
