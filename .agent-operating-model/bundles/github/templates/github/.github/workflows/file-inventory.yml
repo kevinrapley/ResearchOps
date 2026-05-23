@@ -1,0 +1,29 @@
+name: File Inventory
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  file-inventory:
+    name: File Inventory
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate file inventory
+        run: |
+          find . -type file \
+            -not -path './.git/*' \
+            -not -path './node_modules/*' \
+            -not -path './.venv/*' \
+            | sort > file-inventory.txt
+          sed -n '1,200p' file-inventory.txt
+      - name: Check required root files
+        run: |
+          test -f README.md
+          test -f RECENT_LEARNINGS.md
