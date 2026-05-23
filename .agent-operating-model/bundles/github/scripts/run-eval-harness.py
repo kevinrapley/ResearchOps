@@ -9,14 +9,18 @@ import os
 import runpy
 import subprocess
 import sys
+import time
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+STDIO_TAIL_LIMIT = 1000
+
 
 def all_files(path):
     if not path.exists():
         return set()
     return {p.relative_to(path).as_posix() for p in path.rglob("*") if p.is_file() and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}}
+
 
 def diff_paths(baseline, output):
     base_files = all_files(baseline)
@@ -32,11 +36,13 @@ def diff_paths(baseline, output):
             modified.append(rel)
     return created, modified, deleted
 
+
 def path_satisfied(prefix, created, modified, output):
     prefix = prefix.rstrip("/")
     if any(f == prefix or f.startswith(prefix + "/") for f in created + modified):
         return True
     return (output / prefix).exists()
+
 
 def run_script(args):
     old_argv = sys.argv[:]
@@ -51,25 +57,173 @@ def run_script(args):
     finally:
         sys.argv = old_argv
 
+
 def load_test_commands(repo):
     path = Path(repo) / "test-commands.yaml"
     if not path.exists():
         return []
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return data.get("commands", [])
+    commands = data.get("commands", [])
+    if not isinstance(commands, list):
+        raise ValueError("test-commands.yaml field 'commands' must be a list")
+    return commands
+
+
+def as_list(value):
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def normalise_command(raw, index):
+    if isinstance(raw, str):
+        command = raw.strip()
+        if not command:
+            raise ValueError(f"test command #{index + 1} is empty")
+        return {
+            "id": f"command-{index + 1}",
+            "command": command,
+            "purpose": None,
+            "expected_status": "passed",
+            "expected_returncode": 0,
+            "expected_stdout": None,
+            "expected_stderr": None,
+            "expected_stdout_contains": [],
+            "expected_stderr_contains": [],
+        }
+
+    if not isinstance(raw, dict):
+        raise ValueError(f"test command #{index + 1} must be a string or object")
+
+    command = raw.get("command")
+    if not isinstance(command, str) or not command.strip():
+        raise ValueError(f"test command #{index + 1} object must include a non-empty string 'command' field")
+
+    expected_status = str(raw.get("expected_status", "passed")).lower()
+    if expected_status not in {"passed", "failed"}:
+        raise ValueError(f"test command #{index + 1} expected_status must be 'passed' or 'failed'")
+
+    expected_returncode = raw.get("expected_returncode")
+    if expected_returncode is not None and not isinstance(expected_returncode, int):
+        raise ValueError(f"test command #{index + 1} expected_returncode must be an integer when provided")
+    if expected_returncode is None and expected_status == "passed":
+        expected_returncode = 0
+
+    return {
+        "id": str(raw.get("id") or f"command-{index + 1}"),
+        "command": command.strip(),
+        "purpose": raw.get("purpose"),
+        "expected_status": expected_status,
+        "expected_returncode": expected_returncode,
+        "expected_stdout": raw.get("expected_stdout"),
+        "expected_stderr": raw.get("expected_stderr"),
+        "expected_stdout_contains": as_list(raw.get("expected_stdout_contains")),
+        "expected_stderr_contains": as_list(raw.get("expected_stderr_contains")),
+    }
+
+
+def expectation_failures(spec, returncode, stdout, stderr, timed_out=False):
+    failures = []
+    if timed_out:
+        failures.append("command timed out")
+        return failures
+
+    observed_status = "passed" if returncode == 0 else "failed"
+    expected_status = spec["expected_status"]
+    expected_returncode = spec["expected_returncode"]
+
+    if observed_status != expected_status:
+        failures.append(f"expected status {expected_status}, observed {observed_status}")
+
+    if expected_returncode is not None and returncode != expected_returncode:
+        failures.append(f"expected return code {expected_returncode}, observed {returncode}")
+
+    if spec["expected_stdout"] is not None and str(spec["expected_stdout"]) not in stdout:
+        failures.append(f"expected stdout to contain: {spec['expected_stdout']}")
+    if spec["expected_stderr"] is not None and str(spec["expected_stderr"]) not in stderr:
+        failures.append(f"expected stderr to contain: {spec['expected_stderr']}")
+    for item in spec["expected_stdout_contains"]:
+        if str(item) not in stdout:
+            failures.append(f"expected stdout to contain: {item}")
+    for item in spec["expected_stderr_contains"]:
+        if str(item) not in stderr:
+            failures.append(f"expected stderr to contain: {item}")
+
+    return failures
+
+
+def run_one_test(repo, raw_command, index, timeout):
+    spec = normalise_command(raw_command, index)
+    started = time.time()
+    result = {
+        "id": spec["id"],
+        "command": spec["command"],
+        "purpose": spec["purpose"],
+        "cwd": str(Path(repo)),
+        "timeout_seconds": timeout,
+        "started_at_unix": int(started),
+        "duration_seconds": 0.0,
+        "expected_status": spec["expected_status"],
+        "expected_returncode": spec["expected_returncode"],
+        "expected_stdout": spec["expected_stdout"],
+        "expected_stderr": spec["expected_stderr"],
+        "status": "unknown",
+        "returncode": None,
+        "stdout": "",
+        "stderr": "",
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "expectation_met": False,
+        "expectation_failures": [],
+    }
+
+    try:
+        completed = subprocess.run(spec["command"], cwd=repo, shell=True, capture_output=True, text=True, timeout=timeout)
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+        failures = expectation_failures(spec, completed.returncode, stdout, stderr)
+        result.update({
+            "status": "passed" if completed.returncode == 0 else "failed",
+            "returncode": completed.returncode,
+            "stdout": stdout,
+            "stderr": stderr,
+            "stdout_tail": stdout[-STDIO_TAIL_LIMIT:],
+            "stderr_tail": stderr[-STDIO_TAIL_LIMIT:],
+            "expectation_met": not failures,
+            "expectation_failures": failures,
+        })
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode(errors="replace")
+        result.update({
+            "status": "timeout",
+            "returncode": None,
+            "stdout": stdout,
+            "stderr": stderr,
+            "stdout_tail": stdout[-STDIO_TAIL_LIMIT:],
+            "stderr_tail": stderr[-STDIO_TAIL_LIMIT:],
+            "expectation_met": False,
+            "expectation_failures": expectation_failures(spec, None, stdout, stderr, timed_out=True),
+        })
+    finally:
+        result["duration_seconds"] = round(time.time() - started, 3)
+        result["finished_at_unix"] = int(time.time())
+
+    return result
+
 
 def run_tests(repo, timeout):
     results = []
-    for command in load_test_commands(repo):
-        completed = subprocess.run(command, cwd=repo, shell=True, capture_output=True, text=True, timeout=timeout)
-        results.append({
-            "command": command,
-            "status": "passed" if completed.returncode == 0 else "failed",
-            "returncode": completed.returncode,
-            "stdout": completed.stdout[-1000:],
-            "stderr": completed.stderr[-1000:],
-        })
+    for index, raw_command in enumerate(load_test_commands(repo)):
+        results.append(run_one_test(repo, raw_command, index, timeout))
     return results
+
 
 def add_github_api_args(base, args):
     if args.github_api:
@@ -83,6 +237,7 @@ def add_github_api_args(base, args):
     if args.allow_api_unavailable:
         base.append("--allow-api-unavailable")
     return base
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -151,9 +306,9 @@ def main():
             test_results = run_tests(output, args.test_timeout)
             if not test_results:
                 blocking.append("No test commands found for --run-tests")
-            failed_tests = [item for item in test_results if item["status"] != "passed"]
-            if failed_tests:
-                blocking.append("Test command failed: " + ", ".join(item["command"] for item in failed_tests))
+            failed_expectations = [item for item in test_results if not item.get("expectation_met")]
+            if failed_expectations:
+                blocking.append("Test expectation failed: " + ", ".join(item["command"] for item in failed_expectations))
         except Exception as exc:
             blocking.append(f"Test execution failed: {exc}")
 
@@ -202,6 +357,7 @@ def main():
     print(json.dumps(result, indent=2) if args.format == "json" else yaml.safe_dump(result, sort_keys=False))
     if blocking:
         raise SystemExit(1)
+
 
 if __name__ == "__main__":
     main()

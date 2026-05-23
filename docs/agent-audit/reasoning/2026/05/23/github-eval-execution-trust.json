@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-23",
+  "branch": "fix/github-eval-execution-trust-v2",
+  "scope": [
+    "github-diamond-bundle",
+    "eval-harness",
+    "test-command-execution",
+    "observed-evidence",
+    "release-gate-regression",
+    "registry-manifest",
+    "codex-review"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to make GitHub Diamond eval execution trustworthy. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The eval harness previously passed each test command entry directly to subprocess.run.",
+    "Structured command objects from test-commands.yaml could therefore be executed as the wrong shell value instead of using their command field.",
+    "This created a false-pass risk where evals appeared to execute tests while not running the intended commands.",
+    "Codex identified a remaining false-positive case where expected_status could be skipped whenever expected_returncode was supplied."
+  ],
+  "workSummary": [
+    "Updated scripts/run-eval-harness.py to normalise string and structured command entries before execution.",
+    "Structured command objects now require a non-empty string command field and fail closed when malformed.",
+    "The harness now records observed command, cwd, timeout, start and finish times, duration, return code, stdout, stderr and tail fields.",
+    "The harness now validates expected_status, expected_returncode, expected_stdout, expected_stderr, expected_stdout_contains and expected_stderr_contains.",
+    "Updated the positive multi-language eval fixture so all test commands are executable in the release-gate environment.",
+    "Added a deterministic Python unittest fixture so Python validation no longer depends on pytest being installed.",
+    "Aligned agent-evidence.yaml with the executable command set and observed evidence model.",
+    "Added scripts/validate-eval-harness-execution.py to prove structured commands run their command field, stdout mismatches fail, and malformed command objects fail closed.",
+    "Wired the new eval harness regression validator into scripts/release-gate.py before the normal eval harness invocation.",
+    "Observed that the registry-manifest automation moved the PR head to a checksum commit, so a follow-up trace update was added to trigger normal CI on the latest head.",
+    "Accepted the Codex P1 review comment and updated expectation_failures so expected_status is always enforced independently of expected_returncode.",
+    "Added a contradiction regression proving expected_status: passed with expected_returncode: 1 fails when the command exits with return code 1."
+  ],
+  "changedAreas": [
+    ".agent-operating-model/bundles/github/scripts/run-eval-harness.py",
+    ".agent-operating-model/bundles/github/scripts/validate-eval-harness-execution.py",
+    ".agent-operating-model/bundles/github/scripts/release-gate.py",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_python_fixture.py",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml",
+    ".agent-operating-model/bundles/github/registry-manifest.yaml"
+  ],
+  "codexReview": {
+    "commentId": 3291861991,
+    "reviewedCommit": "576173da9b",
+    "severity": "P1",
+    "finding": "expected_status was skipped whenever expected_returncode was provided, allowing contradictory expectations to pass.",
+    "decision": "accepted",
+    "mitigation": [
+      "expected_status is now always compared with the observed status.",
+      "expected_returncode is checked separately when provided.",
+      "validate-eval-harness-execution.py includes a contradictory expected_status and expected_returncode regression."
+    ]
+  },
+  "validationEvidence": {
+    "staticCompatibilityChecks": [
+      "run-eval-harness.py still accepts legacy string commands.",
+      "run-eval-harness.py now supports structured command objects explicitly through the command field.",
+      "test-commands.yaml commands are executable shell commands rather than descriptive placeholders.",
+      "release-gate.py now runs validate-eval-harness-execution.py before the normal eval harness invocation.",
+      "registry-manifest.yaml has been refreshed by the existing checksum automation.",
+      "expected_status is now enforced even when expected_returncode is supplied."
+    ],
+    "notRunLocally": [
+      "No local release gate was run in this connector-only environment. CI should run the fast release gate and bundle validators on the pull request."
+    ],
+    "recommendedNextChecks": [
+      "cd .agent-operating-model/bundles/github",
+      "python scripts/validate-eval-harness-execution.py",
+      "python scripts/run-eval-harness.py --eval-id instantiate-multi-language-repo --output-dir examples/eval-outputs/instantiate-multi-language-repo-pass --evidence examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml --run-tests --github-api --allow-api-unavailable --format json",
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode fast --report fast-release-gate-report.json"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Making the harness execute real commands may expose previously hidden fixture weaknesses.",
+      "mitigation": "The positive eval fixture commands were converted to deterministic executable commands that do not require third-party dependencies."
+    },
+    {
+      "risk": "Commits pushed by the default GITHUB_TOKEN may not trigger the full downstream workflow cascade.",
+      "mitigation": "This trace update creates a normal branch commit after the generated manifest update so PR checks can run on the latest head."
+    }
+  ],
+  "status": "codex-feedback-addressed"
+}

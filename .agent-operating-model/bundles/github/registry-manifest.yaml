@@ -80,7 +80,7 @@ artifacts:
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/dependency-review.yml
   sha256: 68aab9b65551476b75343dc1e3e34778e505bd7ddddc0d345273da86474e152a
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml
-  sha256: c30cf2ce7f8d8c620d5810b180704b4f235cd51b626b578bc1e2742a51367550
+  sha256: 3ced3f926b93988876c74c33cbdca5f51b6c19eacfaf6cc0b55c8e7ce0a83c66
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/conformance-matrix.yaml
   sha256: adc5e130b4edbefe1153bbd684af61111a559903e77b7c00a96fe85c6bacf902
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/CONTRIBUTING.md
@@ -104,11 +104,13 @@ artifacts:
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/templates/README.md
   sha256: 306ea93646ec503710444d31bc782e9cbdedb629800da0fcb6794519a59411c7
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml
-  sha256: e0f5a378505667720545e43809fda5f99c19f3811a95685b0e701ad7cf711691
+  sha256: 9c73d25ec680a60a675efadb841d9fe4d97fad89213106792e0bbf8a90fa2ed5
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/tests/example.test.mjs
   sha256: 0e4532ac8ee6af7d0c56dd7cc02eba29b809dcc6f6468fdbfd582222ba65daed
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_fixture.py
   sha256: 33ede9e16b3342c69710983a555a3ff9fc9f716e291150d4464c2ee0354a207b
+- path: examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_python_fixture.py
+  sha256: 4f71b27edc3200768a72c6bbd2db5cdf88a30acf897c5a12e5c95c713cb66c1c
 - path: examples/expected-outputs/repo-discovery-node-api.md
   sha256: 5478f8433d26e9b0b649de04ffa127ea07ceddab01ec662de37bebac90047097
 - path: examples/expected-outputs/repo-docs-readme-gap.md
@@ -496,11 +498,11 @@ artifacts:
 - path: scripts/README.md
   sha256: 77b533dff46947c81a32dea78ea3f66eb59fb635535861c33babeb07c18e9cac
 - path: scripts/release-gate.py
-  sha256: a2c6b50e0af367442e100310f3ac650191b4a7b996853b44038648f032298ca1
+  sha256: 8d71a23edd4f23beede76a4111fb2b1e66385f7c24f5809b1c9a69939604c4f3
 - path: scripts/repository_conditions.py
   sha256: 80cfb8ab4eea061561e3db42eed0ecec3254d9bff9811dfa6d5240d75be976c6
 - path: scripts/run-eval-harness.py
-  sha256: 1a8c83299ea65ad3475de801144e01454a8ef785328e10ddc9311bddb358ece8
+  sha256: de95e5a82f19ba85b57ae731c51f2ebfe1d661f8d94c0fb5f55e1dd19a82d46c
 - path: scripts/select-ci-templates.py
   sha256: 3e9efd40899dabacd051732c6b27dbb1847dd7b4b981a65d287def71324d4cac
 - path: scripts/validate-accessibility-evidence.py
@@ -515,6 +517,8 @@ artifacts:
   sha256: cf8a41db446ed9caf179369f24756cc2abc24aaa9453806fa2b412c988bc45e3
 - path: scripts/validate-docs-consistency.py
   sha256: 62fb79947860fc46f2242354eef11a9383d39de519770566efe72b3ac650341a
+- path: scripts/validate-eval-harness-execution.py
+  sha256: 9846479017d1881435dbee31f7132c8eec068f4bb3b352e81f3c2eae9aacc229
 - path: scripts/validate-evals.py
   sha256: 754f1328ae7f322a8979e10dcf7993507a4bf047c183806a579905b7fd3a8dd9
 - path: scripts/validate-github-api-fixtures.py
