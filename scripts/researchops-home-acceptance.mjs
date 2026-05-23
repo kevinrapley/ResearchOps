@@ -9,8 +9,8 @@ import fs from 'node:fs';
 
 const HOME_PAGE_SOURCE = 'public/index.html';
 const HEADER_PARTIAL_SOURCE = 'public/partials/header.html';
-const BODY_CLASS = 'class=["\\'][^"\\']*\\bgovuk-body(?:\\s|["\\'])';
-const BODY_LEDE_CLASS = 'class=["\\'][^"\\']*\\bgovuk-body-l(?:\\s|["\\'])';
+const BODY_CLASS = `class=["'][^"']*\\bgovuk-body(?:\\s|["'])`;
+const BODY_LEDE_CLASS = `class=["'][^"']*\\bgovuk-body-l(?:\\s|["'])`;
 
 const FALLBACK = {
 	serviceName: 'ResearchOps Demo Suite',
