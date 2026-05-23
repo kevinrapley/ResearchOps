@@ -8,7 +8,8 @@
     "eval-harness",
     "test-command-execution",
     "observed-evidence",
-    "release-gate-regression"
+    "release-gate-regression",
+    "registry-manifest"
   ],
   "evidenceBoundary": {
     "summary": "This trace records observable repository work to make GitHub Diamond eval execution trustworthy. It does not include private chain-of-thought."
@@ -35,7 +36,8 @@
     "Added a deterministic Python unittest fixture so Python validation no longer depends on pytest being installed.",
     "Aligned agent-evidence.yaml with the executable command set and observed evidence model.",
     "Added scripts/validate-eval-harness-execution.py to prove structured commands run their command field, stdout mismatches fail, and malformed command objects fail closed.",
-    "Wired the new eval harness regression validator into scripts/release-gate.py before the normal eval harness invocation."
+    "Wired the new eval harness regression validator into scripts/release-gate.py before the normal eval harness invocation.",
+    "Observed that the registry-manifest automation moved the PR head to a checksum commit, so this follow-up trace update was added to trigger normal CI on the latest head."
   ],
   "changedAreas": [
     ".agent-operating-model/bundles/github/scripts/run-eval-harness.py",
@@ -43,14 +45,16 @@
     ".agent-operating-model/bundles/github/scripts/release-gate.py",
     ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml",
     ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_python_fixture.py",
-    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml"
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml",
+    ".agent-operating-model/bundles/github/registry-manifest.yaml"
   ],
   "validationEvidence": {
     "staticCompatibilityChecks": [
       "run-eval-harness.py still accepts legacy string commands.",
       "run-eval-harness.py now supports structured command objects explicitly through the command field.",
       "test-commands.yaml commands are executable shell commands rather than descriptive placeholders.",
-      "release-gate.py now runs validate-eval-harness-execution.py before the normal eval harness invocation."
+      "release-gate.py now runs validate-eval-harness-execution.py before the normal eval harness invocation.",
+      "registry-manifest.yaml has been refreshed by the existing checksum automation."
     ],
     "notRunLocally": [
       "No local release gate was run in this connector-only environment. CI should run the fast release gate and bundle validators on the pull request."
@@ -68,9 +72,9 @@
       "mitigation": "The positive eval fixture commands were converted to deterministic executable commands that do not require third-party dependencies."
     },
     {
-      "risk": "Registry manifest checksums may be stale after script and fixture edits.",
-      "mitigation": "The existing GitHub bundle registry-manifest workflow should regenerate registry-manifest.yaml on the pull request branch."
+      "risk": "Commits pushed by the default GITHUB_TOKEN may not trigger the full downstream workflow cascade.",
+      "mitigation": "This trace update creates a normal branch commit after the generated manifest update so PR checks can run on the latest head."
     }
   ],
-  "status": "ready-for-pr"
+  "status": "ci-rerun-triggered"
 }
