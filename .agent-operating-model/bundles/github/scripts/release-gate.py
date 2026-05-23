@@ -169,6 +169,7 @@ def add_common_checks(report, positive, evidence, timeout):
     run(["scripts/verify-repository-state.py", "--repo", positive, "--github-api", "--allow-api-unavailable"], report, timeout)
     run(["scripts/verify-github-settings.py", "--repo", positive, "--api", "--allow-api-unavailable"], report, timeout)
     run(["scripts/verify-evidence-against-repo.py", "--repo", positive, "--evidence", evidence], report, timeout)
+    run(["scripts/validate-eval-harness-execution.py"], report, timeout)
     run(["scripts/run-eval-harness.py", "--eval-id", "instantiate-multi-language-repo", "--output-dir", positive, "--evidence", evidence, "--run-tests", "--github-api", "--allow-api-unavailable"], report, timeout)
 
     run(["scripts/validate-accessibility-evidence.py", "examples/fixtures/accessibility-evidence-structured.yaml", "--root", "."], report, timeout)
@@ -258,19 +259,17 @@ def main():
     report = initialise_report(args.mode)
     try:
         try:
-            report = offline_bundle_release_gate(args.mode, args.timeout, inject_failure=args.inject_failure, report=report)
-        except ReleaseGateFailure as exc:
-            write_report(report, ROOT / args.report)
-            validate_report_file(ROOT / args.report)
-            print(f"Release gate failed: {exc}", flush=True)
+            offline_bundle_release_gate(args.mode, args.timeout, inject_failure=args.inject_failure, report=report)
+        except ReleaseGateFailure:
+            pass
+        write_report(report, args.report)
+        validate_report_file(args.report)
+        if report["status"] != "passed":
             raise SystemExit(1)
-        write_report(report, ROOT / args.report)
-        validate_report_file(ROOT / args.report)
+        print(json.dumps(report, indent=2))
     finally:
-        remove_generated_artifacts()
         os.chdir(old_cwd)
-
-    print(f"Release gate passed. Report written to {args.report}", flush=True)
+        remove_generated_artifacts()
 
 if __name__ == "__main__":
     main()
