@@ -542,7 +542,7 @@ artifacts:
 - path: scripts/validate-sbom.py
   sha256: 62a6b5091b7461a715b3e5ff0954c625de3e7ab06c804f1ca7e1fb928e190bdc
 - path: scripts/validate-scenario-references.py
-  sha256: bc65b1680fd42c94b742f97ff5b442a8609147cfe37fe020f60e05d3701ff1db
+  sha256: 3f16d16b9ebf8d31d99b01203c91b7095af42fec862a84c7f8db922569306a62
 - path: scripts/validate-selected-template-set.py
   sha256: ce72ff192a730d036053100c3398982754044f4042261f6445023ecf2b95acd3
 - path: scripts/validate-template-registry.py
