@@ -1,6 +1,5 @@
 {% extends "layouts/researchops.njk" %}
 
-{% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block content %}
@@ -18,10 +17,7 @@
 			<h1 class="govuk-heading-xl">Start a research project</h1>
 			<p class="govuk-body-l">Create a project record before you plan studies, recruit participants, run sessions or analyse evidence.</p>
 			<p class="govuk-body">A project gives your research work a shared place to hold context, objectives, ownership and later evidence.</p>
-			{{ govukButton({
-				text: 'Start now',
-				href: '/pages/start/'
-			}) }}
+			<a class="govuk-button" href="/pages/start/" role="button" draggable="false" data-module="govuk-button">Start now</a>
 			<h2 class="govuk-heading-m">Before you start</h2>
 			<p class="govuk-body">You should know:</p>
 			<ul class="govuk-list govuk-list--bullet">
