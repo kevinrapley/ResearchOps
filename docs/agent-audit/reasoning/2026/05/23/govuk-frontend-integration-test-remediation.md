@@ -57,13 +57,21 @@
 - `src/govuk/templates/pages/account.njk`
 - `src/govuk/templates/pages/start-overview.njk`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/researchops-home-acceptance.mjs`
+- `tests/cucumber-reporting.test.js`
 - `tests/govuk-frontend-integration-route-state.test.js`
+- `tests/start-project-overview-page.test.js`
 
 ## Implementation decisions
 
 - Kept the GOV.UK spike pages on shared `x-include` page chrome.
 - Restored legacy shared chrome contracts required by non-spike routes while the wider route migration is incomplete.
 - Kept `src/styles/researchops-home.scss` as the source of truth for the home-page 8-step and next-action grid styling.
+- Kept the service name `ResearchOps Demo Suite` in title case for service identity, header partials and page title suffixes.
+- Scoped paragraph-case assertions to actual page and content headings, not to the service name in the header.
+- Updated the home acceptance generator so service identity is read from `.govuk-header__product-name` and page heading text is read from the page `h1`.
+- Updated the home acceptance generator to capture all three orientation cards after the shared GOV.UK/Nunjucks page structure changed.
+- Updated start overview tests to assert the `Start now` target semantically instead of relying on brittle attribute ordering.
 - Avoided committing manual generated CSS as the primary fix.
 - Updated the GOV.UK spike route-state test to represent the current shared-chrome migration architecture.
 - Made the footer SVG decorative for accessibility.
@@ -77,7 +85,10 @@
 - `src/govuk/templates/pages/account.njk`
 - `src/govuk/templates/pages/start-overview.njk`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/researchops-home-acceptance.mjs`
 - `public/index.html`
+- `public/pages/account/index.html`
+- `public/pages/start/overview/index.html`
 - `public/partials/html-head.html`
 - `public/partials/header.html`
 - `public/partials/footer.html`
@@ -86,37 +97,26 @@
 - `public/css/govuk/govuk-main-content-focus.css`
 - `.pa11yci.json`
 - `.github/workflows/qa-bdd.yml`
+- `tests/cucumber-reporting.test.js`
 - `tests/govuk-frontend-integration-route-state.test.js`
+- `tests/start-project-overview-page.test.js`
 
 ## Validation evidence
 
-On head `58df143b0b1fc0af72acf74fca9fbedca8587711`, the following direct workflows were green:
+On head `971ac1d6cc556e3cc0f5f6c9fbdaeb3264ebb7ee`, the following workflows passed:
 
 - `CI`
 - `Validate ResearchOps`
 - `Accessibility audit (pa11y-ci)`
 - `qa-bdd`
+- `Release Gate`
 - `Format pull request`
 - `QA — Broken links (Lychee)`
 - `Build and deploy agent documentation Pages`
 - `Update GitHub bundle registry manifest`
 
-`Release Gate` failed on rerun at its `Run ResearchOps release gate` step. The Release Gate workflow runs local checks including `npm run audit:performance --if-present` and `npm run audit:security` in addition to install, validate, lint, format and unit tests.
-
-The exact failing Release Gate subcommand was not available from the visible job-step summary. The workflow uploaded a `researchops-release-gate` artifact for inspection.
-
 ## Residual risk
 
-The direct product, validation, accessibility and BDD workflows are green. The branch is still blocked by `Release Gate` until its artifact or local run identifies the failing subcommand.
+No failing workflow was observed on head `971ac1d6cc556e3cc0f5f6c9fbdaeb3264ebb7ee`.
 
-Recommended next command sequence for local diagnosis:
-
-```bash
-npm ci
-npm run validate
-npm run lint
-npm run format:check
-npm test
-npm run audit:performance --if-present
-npm run audit:security
-```
+The wider GOV.UK migration is still deliberately incomplete. Existing non-spike routes still depend on legacy shared GOV.UK imitation CSS and shared chrome contracts until a full route migration is planned and executed.
