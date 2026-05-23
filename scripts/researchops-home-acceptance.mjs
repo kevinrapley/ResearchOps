@@ -9,6 +9,8 @@ import fs from 'node:fs';
 
 const HOME_PAGE_SOURCE = 'public/index.html';
 const HEADER_PARTIAL_SOURCE = 'public/partials/header.html';
+const BODY_CLASS = 'class=["\\'][^"\\']*\\bgovuk-body(?:\\s|["\\'])';
+const BODY_LEDE_CLASS = 'class=["\\'][^"\\']*\\bgovuk-body-l(?:\\s|["\\'])';
 
 const FALLBACK = {
 	serviceName: 'ResearchOps Demo Suite',
@@ -126,6 +128,16 @@ function section(html = '', className = '') {
 	return match ? match[0] : '';
 }
 
+function container(html = '', className = '') {
+	const pattern = new RegExp(`<div\\b(?=[^>]*class=["'][^"']*\\b${className}\\b)[^>]*>([\\s\\S]*?)<\\/div>`, 'i');
+	const match = html.match(pattern);
+	return match ? match[0] : '';
+}
+
+function paragraphPattern(classPattern = BODY_CLASS) {
+	return new RegExp(`<p\\b(?=[^>]*${classPattern})[^>]*>([\\s\\S]*?)<\\/p>`, 'gi');
+}
+
 function serviceNameFromHeader() {
 	const header = readHeaderHtml();
 	return first(
@@ -143,6 +155,30 @@ function pageHeadingFromHome(html = '') {
 	);
 }
 
+function homeIntro(html = '', intro = '') {
+	return first(
+		intro,
+		/<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i,
+		first(html, new RegExp(`<p\\b(?=[^>]*${BODY_LEDE_CLASS})[^>]*>([\\s\\S]*?)<\\/p>`, 'i'), FALLBACK.tagline)
+	);
+}
+
+function homeIntroBody(html = '', intro = '') {
+	return first(
+		intro,
+		new RegExp(`<p\\b(?=[^>]*${BODY_CLASS})[^>]*>([\\s\\S]*?)<\\/p>`, 'i'),
+		first(html, new RegExp(`<p\\b(?=[^>]*${BODY_CLASS})[^>]*>([\\s\\S]*?)<\\/p>`, 'i'), FALLBACK.intro)
+	);
+}
+
+function orientationTextFromHome(html = '') {
+	return first(
+		html,
+		new RegExp(`<h2\\b(?=[^>]*id=["']after-title["'])[^>]*>[\\s\\S]*?<\\/h2>\\s*<p\\b(?=[^>]*${BODY_CLASS})[^>]*>([\\s\\S]*?)<\\/p>`, 'i'),
+		FALLBACK.orientationText
+	);
+}
+
 function modelFromSource() {
 	const html = readHomeHtml();
 	if (!html) return FALLBACK;
@@ -150,12 +186,12 @@ function modelFromSource() {
 	const intro = html.match(/<header\b(?=[^>]*class=["'][^"']*\bpage-intro\b)[^>]*>([\s\S]*?)<\/header>/i)?.[0] || '';
 	const start = section(html, 'app-start-guidance') || section(html, 'researchops-highlight-panel');
 	const lifecycle = section(html, 'app-lifecycle-map') || section(html, 'researchops-journey-map');
-	const orientation = section(html, 'card-section') || section(html, 'researchops-next-action');
+	const orientation = section(html, 'card-section') || container(html, 'researchops-next-actions');
 	const nav = all(html, /<a\b(?=[^>]*class=["'][^"']*\bgovuk-service-navigation__link\b)[^>]*>([\s\S]*?)<\/a>/gi).filter(
 		(label) => label !== FALLBACK.serviceName
 	);
-	const startText = all(start, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/gi);
-	const lifecycleText = all(lifecycle, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/gi);
+	const startText = all(start, paragraphPattern());
+	const lifecycleText = all(lifecycle, paragraphPattern());
 	const stages = [...lifecycle.matchAll(/<li\b[^>]*class=["'][^"']*\b(?:app-lifecycle-sequence__item|researchops-step-card)\b[^"']*["'][^>]*>([\s\S]*?)<\/li>/gi)].map(
 		(match) => {
 			const item = match[1];
@@ -174,7 +210,7 @@ function modelFromSource() {
 				first(item, /<p\b(?=[^>]*class=["'][^"']*\b(?:eyebrow|researchops-next-action__category)\b)[^>]*>([\s\S]*?)<\/p>/i, 'ResearchOps task'),
 				first(item, /<(?:strong|p)\b(?=[^>]*class=["'][^"']*\b(?:tag|govuk-tag)\b)[^>]*>([\s\S]*?)<\/(?:strong|p)>/i, 'Available after project creation'),
 				first(item, /<h4\b(?=[^>]*class=["'][^"']*\bcard__question\b)[^>]*>([\s\S]*?)<\/h4>/i, first(item, /<p\b(?=[^>]*class=["'][^"']*\bresearchops-next-action__question\b)[^>]*>([\s\S]*?)<\/p>/i, '')),
-				first(item, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, ''),
+				first(item, /<p\b(?=[^>]*class=["']govuk-body["'])[^>]*>([\s\S]*?)<\/p>/i, ''),
 			];
 		}
 	);
@@ -182,8 +218,8 @@ function modelFromSource() {
 	return {
 		serviceName: serviceNameFromHeader(),
 		heading: pageHeadingFromHome(html),
-		tagline: first(intro, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, first(html, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body-l\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.tagline)),
-		intro: first(intro, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, first(html, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.intro)),
+		tagline: homeIntro(html, intro),
+		intro: homeIntroBody(html, intro),
 		prototype: first(readHeaderHtml(), /<span\b(?=[^>]*class=["'][^"']*\bgovuk-phase-banner__text\b)[^>]*>([\s\S]*?)<\/span>/i, FALLBACK.prototype),
 		nav: nav.length > 0 ? nav : FALLBACK.nav,
 		startTitle: first(start, /<h2\b(?=[^>]*id=["']start-guidance-title["'])[^>]*>([\s\S]*?)<\/h2>/i, FALLBACK.startTitle),
@@ -192,8 +228,8 @@ function modelFromSource() {
 		lifecycleTitle: first(lifecycle, /<h2\b(?=[^>]*id=["'](?:lifecycle-map-title|support-title)["'])[^>]*>([\s\S]*?)<\/h2>/i, FALLBACK.lifecycleTitle),
 		lifecycleText: lifecycleText.length > 0 ? lifecycleText : FALLBACK.lifecycleText,
 		stages: stages.length > 0 ? stages : FALLBACK.stages,
-		orientationTitle: first(orientation, /<h2\b(?=[^>]*id=["'](?:card-section-title|after-title)["'])[^>]*>([\s\S]*?)<\/h2>/i, FALLBACK.orientationTitle),
-		orientationText: first(orientation, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.orientationText),
+		orientationTitle: first(html, /<h2\b(?=[^>]*id=["'](?:card-section-title|after-title)["'])[^>]*>([\s\S]*?)<\/h2>/i, FALLBACK.orientationTitle),
+		orientationText: section(html, 'card-section') ? first(orientation, paragraphPattern(), FALLBACK.orientationText) : orientationTextFromHome(html),
 		cards: cards.length > 0 ? cards : FALLBACK.cards,
 		footer: first(html, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-footer__meta\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.footer),
 	};
