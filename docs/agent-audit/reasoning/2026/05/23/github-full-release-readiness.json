@@ -9,7 +9,8 @@
     "performance-adapters",
     "validation-report",
     "prompt-spec-assembly",
-    "agent-evidence-validation"
+    "agent-evidence-validation",
+    "registry-manifest"
   ],
   "evidenceBoundary": {
     "summary": "This trace records observable repository work to address the revised github.zip evaluation and move the GitHub Diamond bundle from fast-gate clean to full-release ready. It does not include private chain-of-thought."
@@ -34,7 +35,9 @@
     "Updated prompt.spec.yaml to include github-best-practices.xml in always_load, documentation-grader.xml in grader_modules, and live assurance contracts in contract_modules.",
     "Updated validate-bundle.py strict mode so prompt.spec assembly coverage is checked against references/*.xml, contracts/*.schema.json and graders/*.xml.",
     "Updated validate-agent-evidence.py to require command/name, status, state and execution detail for command-like evidence items.",
-    "Updated agent evidence examples to include verified and waived evidence states plus returncode/stdout/stderr/evidence details for verified passed command evidence."
+    "Updated agent evidence examples to include verified and waived evidence states plus returncode/stdout/stderr/evidence details for verified passed command evidence.",
+    "Observed that the registry-manifest automation refreshed the manifest and moved the PR head to a generated checksum commit.",
+    "Added this follow-up trace update to create a normal branch commit after the generated manifest update so PR checks can run on the latest head."
   ],
   "changedAreas": [
     ".agent-operating-model/bundles/github/scripts/performance-adapters.py",
@@ -43,7 +46,8 @@
     ".agent-operating-model/bundles/github/scripts/validate-bundle.py",
     ".agent-operating-model/bundles/github/scripts/validate-agent-evidence.py",
     ".agent-operating-model/bundles/github/examples/agent-evidence.example.yaml",
-    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml"
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml",
+    ".agent-operating-model/bundles/github/registry-manifest.yaml"
   ],
   "validationEvidence": {
     "staticCompatibilityChecks": [
@@ -51,7 +55,8 @@
       "Go benchmark adapter now emits handler_ns_per_op while preserving detailed per-benchmark metrics.",
       "validate-bundle.py --strict now checks complete assembly coverage for references, contracts and graders.",
       "validate-agent-evidence.py now rejects passed command evidence unless it has an observed or verified state and execution detail.",
-      "The validation report no longer states that manifest regeneration is the only blocker."
+      "The validation report no longer states that manifest regeneration is the only blocker.",
+      "registry-manifest.yaml has been refreshed by the existing checksum automation."
     ],
     "notRunLocally": [
       "No local full release gate was run in this connector-only environment. CI should run release-gate.py on the pull request."
@@ -74,9 +79,9 @@
       "mitigation": "The release-gate evidence fixtures have been updated with explicit state and execution details."
     },
     {
-      "risk": "Registry manifest checksums may be stale after script and evidence edits.",
-      "mitigation": "The existing GitHub bundle registry-manifest workflow should regenerate registry-manifest.yaml on the pull request branch."
+      "risk": "Commits pushed by the default GITHUB_TOKEN may not trigger the full downstream workflow cascade.",
+      "mitigation": "This trace update creates a normal branch commit after the generated manifest update so PR checks can run on the latest head."
     }
   ],
-  "status": "ready-for-pr"
+  "status": "ci-rerun-triggered"
 }
