@@ -34,18 +34,42 @@ files_changed:
   - tests/test_python_fixture.py
   - test-commands.yaml
 
+evidence_states:
+  - state: verified
+    rationale: Eval fixture includes executable command evidence, repository-state evidence and settings evidence.
+    source: examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml
+  - state: waived
+    rationale: Live GitHub settings cannot be verified in this portable eval fixture.
+    source: WAIVER-001
+
 commands_run:
   - command: npm test
     status: passed
+    state: verified
+    returncode: 0
+    stdout: "node fixture tests passed\n"
+    stderr: ""
     evidence: tests/example.test.mjs provides the Node fixture validation path
   - command: python -I -m unittest discover -s tests -p 'test_*.py'
     status: passed
+    state: verified
+    returncode: 0
+    stdout: ""
+    stderr: "OK\n"
     evidence: tests/test_python_fixture.py provides the Python fixture validation path
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
+    state: verified
+    returncode: 0
+    stdout: "fixture tests passed\n"
+    stderr: ""
     evidence: deterministic fixture smoke command
   - command: python -I -S -c "print('generated repository evidence checked')"
     status: passed
+    state: verified
+    returncode: 0
+    stdout: "generated repository evidence checked\n"
+    stderr: ""
     evidence: deterministic repository evidence check command
 
 contracts_validated:
@@ -59,15 +83,19 @@ contracts_validated:
 tests_run:
   - name: Node fixture test
     status: passed
+    state: verified
     evidence: tests/example.test.mjs validates fixture metadata for the Node path
   - name: Python fixture test
     status: passed
+    state: verified
     evidence: tests/test_python_fixture.py validates fixture metadata for the Python path
   - name: Fixture smoke command
     status: passed
+    state: verified
     evidence: python smoke command returned zero
   - name: Repository evidence check
     status: passed
+    state: verified
     evidence: deterministic repository evidence command returned zero
 
 gaps_recorded:
@@ -193,17 +221,27 @@ risks:
 test_results:
   - command: npm test
     status: passed
+    state: verified
+    returncode: 0
+    stdout: "node fixture tests passed\n"
+    stderr: ""
     evidence: tests/example.test.mjs is present as the Node test fixture.
   - command: python -I -m unittest discover -s tests -p 'test_*.py'
     status: passed
+    state: verified
+    returncode: 0
+    stdout: ""
+    stderr: "OK\n"
     evidence: tests/test_python_fixture.py is present as the Python test fixture.
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
+    state: verified
     returncode: 0
     stdout: "fixture tests passed\n"
     stderr: ""
   - command: python -I -S -c "print('generated repository evidence checked')"
     status: passed
+    state: verified
     returncode: 0
     stdout: "generated repository evidence checked\n"
     stderr: ""

@@ -160,6 +160,7 @@ def add_common_checks(report, positive, evidence, timeout):
     run(["scripts/validate-docs-consistency.py"], report, timeout)
     run(["scripts/validate-agent-evidence.py", "examples/agent-evidence.example.yaml"], report, timeout)
     run(["scripts/validate-agent-evidence.py", evidence], report, timeout)
+    run(["scripts/validate-agent-evidence-fixtures.py"], report, timeout)
 
     selection_yaml = run(["scripts/select-ci-templates.py", "--repo", positive], report, timeout)
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tmp:

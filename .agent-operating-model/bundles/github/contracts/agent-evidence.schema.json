@@ -57,7 +57,8 @@
         "additionalProperties": false,
         "required": [
           "command",
-          "status"
+          "status",
+          "state"
         ],
         "properties": {
           "command": {
@@ -107,7 +108,8 @@
         "additionalProperties": false,
         "required": [
           "name",
-          "status"
+          "status",
+          "state"
         ],
         "properties": {
           "name": {
@@ -404,7 +406,8 @@
         "additionalProperties": true,
         "required": [
           "command",
-          "status"
+          "status",
+          "state"
         ],
         "properties": {
           "command": {
