@@ -2,7 +2,7 @@ bundle:
   id: github-diamond-standard
   name: GitHub Diamond Standard Prompt Bundle
   version: 2.9.3
-  status: examples-assurance-refresh
+  status: full-release-readiness
   default_mode: repository-operator
   prompt_body: prompt.body.xml
 design:
@@ -37,6 +37,7 @@ assembly:
   - references/eval-harness.xml
   - references/archetype-control-profiles.xml
   - references/github-tooling-mutation-policy.xml
+  - references/github-best-practices.xml
   mode_modules:
   - modes/repo-discovery.xml
   - modes/repo-instantiate.xml
@@ -58,6 +59,7 @@ assembly:
   - roles/repository-operator.xml
   - roles/security.xml
   contract_modules:
+  - contracts/accessibility-evidence.schema.json
   - contracts/agent-evidence.schema.json
   - contracts/conformance-record.schema.json
   - contracts/endpoint-catalog.schema.json
@@ -69,14 +71,17 @@ assembly:
   - contracts/grade-result.schema.json
   - contracts/harm-register.schema.json
   - contracts/issue-contract.schema.json
+  - contracts/live-release-policy.schema.json
   - contracts/performance-budget.schema.json
   - contracts/provenance-record.schema.json
   - contracts/pull-request-contract.schema.json
   - contracts/release-contract.schema.json
+  - contracts/release-gate-report.schema.json
   - contracts/repository-contract.schema.json
   - contracts/safe-audit-trail.schema.json
   - contracts/sbom-record.schema.json
   - contracts/template-registry.schema.json
+  - contracts/trusted-attestation-verification.schema.json
   - contracts/workflow-contract.schema.json
   grader_modules:
   - graders/accessibility-grader.xml
@@ -84,6 +89,7 @@ assembly:
   - graders/code-confidence-grader.xml
   - graders/conformance-grader.xml
   - graders/discovery-grader.xml
+  - graders/documentation-grader.xml
   - graders/ethics-grader.xml
   - graders/github-settings-grader.xml
   - graders/performance-grader.xml
