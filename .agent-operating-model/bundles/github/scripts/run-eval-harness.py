@@ -134,16 +134,11 @@ def expectation_failures(spec, returncode, stdout, stderr, timed_out=False):
     expected_status = spec["expected_status"]
     expected_returncode = spec["expected_returncode"]
 
-    if expected_returncode is not None:
-        if returncode != expected_returncode:
-            failures.append(f"expected return code {expected_returncode}, observed {returncode}")
-    elif expected_status == "failed" and returncode == 0:
-        failures.append("expected command to fail, observed return code 0")
-    elif expected_status == "passed" and returncode != 0:
-        failures.append(f"expected command to pass, observed return code {returncode}")
-
-    if observed_status != expected_status and expected_returncode is None:
+    if observed_status != expected_status:
         failures.append(f"expected status {expected_status}, observed {observed_status}")
+
+    if expected_returncode is not None and returncode != expected_returncode:
+        failures.append(f"expected return code {expected_returncode}, observed {returncode}")
 
     if spec["expected_stdout"] is not None and str(spec["expected_stdout"]) not in stdout:
         failures.append(f"expected stdout to contain: {spec['expected_stdout']}")
