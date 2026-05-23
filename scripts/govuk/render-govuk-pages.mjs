@@ -96,6 +96,7 @@ const pages = [
 		context: {
 			pageTitle: 'ResearchOps demo suite',
 			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Home',
 			navigation,
 			steps,
 			cards,
@@ -107,6 +108,7 @@ const pages = [
 		context: {
 			pageTitle: 'Start a research project - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Start research project',
 			navigation: navigation.map((item) => ({
 				...item,
 				active: item.href === '/pages/start/overview/',
@@ -119,6 +121,7 @@ const pages = [
 		context: {
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
 			navigation: navigation.map((item) => ({
 				...item,
 				active: false,
