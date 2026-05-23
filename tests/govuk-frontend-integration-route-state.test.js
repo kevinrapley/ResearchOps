@@ -12,6 +12,9 @@ const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'ut
 const initScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
 const layoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
+const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
+const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
+const govukLayoutLoader = fs.readFileSync('public/components/govuk-layout.js', 'utf8');
 
 const representativePages = [
 	'public/index.html',
@@ -63,21 +66,37 @@ assert.match(renderScript, /node_modules\/govuk-frontend\/dist/);
 assert.match(renderScript, /pages\/home\.njk/);
 assert.match(renderScript, /pages\/account\.njk/);
 assert.match(renderScript, /pages\/start-overview\.njk/);
+assert.match(renderScript, /activeNavigation: 'Home'/);
+assert.match(renderScript, /activeNavigation: 'Start research project'/);
 assert.match(initScript, /import \{ initAll \} from '\/assets\/govuk\/govuk-frontend\.min\.js';/);
 assert.match(initScript, /initAll\(\{ scope \}\);/);
 assert.match(initScript, /x-include:loaded/);
 
-assert.match(layoutTemplate, /govuk\/components\/header\/macro\.njk/);
-assert.match(layoutTemplate, /govukHeader\(\{/);
-assert.match(layoutTemplate, /productName: serviceName/);
-assert.match(layoutTemplate, /govuk\/components\/service-navigation\/macro\.njk/);
-assert.match(layoutTemplate, /govukServiceNavigation\(\{/);
-assert.match(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
+assert.match(layoutTemplate, /\/components\/govuk-layout\.js/);
+assert.match(layoutTemplate, /<x-include src="\/partials\/header\.html"/);
+assert.match(layoutTemplate, /<x-include src="\/partials\/footer\.html"><\/x-include>/);
+assert.match(layoutTemplate, /activeNavigation \| default/);
+assert.doesNotMatch(layoutTemplate, /govuk\/components\/header\/macro\.njk/);
+assert.doesNotMatch(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/button\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/tag\/macro\.njk/);
 assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css/);
 assert.match(homeTemplate, /researchops-step-card/);
 assert.match(homeTemplate, /researchops-next-actions/);
+
+assert.match(sharedHeader, /class="govuk-header"/);
+assert.match(sharedHeader, /govuk-header__product-name/);
+assert.match(sharedHeader, /ResearchOps Demo Suite/);
+assert.match(sharedHeader, /class="govuk-service-navigation"/);
+assert.match(sharedHeader, /data-active="\{\{active\}\}"/);
+assert.match(sharedHeader, /class="govuk-phase-banner"/);
+assert.match(sharedFooter, /class="govuk-footer"/);
+assert.match(sharedFooter, /govuk-footer__meta/);
+assert.match(sharedFooter, /Open Government Licence v3\.0/);
+assert.match(govukLayoutLoader, /class GovukXInclude extends HTMLElement/);
+assert.match(govukLayoutLoader, /customElements\.define\("x-include", GovukXInclude\)/);
+assert.match(govukLayoutLoader, /x-include:loaded/);
+assert.doesNotMatch(govukLayoutLoader, /govuk-frontend-v6\.css/);
 
 for (const path of representativePages) {
 	const page = fs.readFileSync(path, 'utf8');
@@ -85,16 +104,16 @@ for (const path of representativePages) {
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${path} should use the GOV.UK template class`);
 	assert.match(page, /class="govuk-template__body"/, `${path} should use GOV.UK template body class`);
 	assert.match(page, /govuk-frontend-supported/, `${path} should include GOV.UK Frontend support snippet`);
-	assert.match(page, /govuk-header__product-name/, `${path} should render GOV.UK header product name from the macro`);
-	assert.match(page, /ResearchOps Demo Suite/, `${path} should render the ResearchOps service name`);
-	assert.match(page, /govuk-service-navigation/, `${path} should render GOV.UK service navigation`);
-	assert.match(page, /govuk-footer/, `${path} should render GOV.UK footer`);
+	assert.match(page, /\/components\/govuk-layout\.js/, `${path} should load the GOV.UK-specific x-include loader`);
+	assert.match(page, /\/js\/govuk-frontend-init\.js/, `${path} should load GOV.UK Frontend initialisation`);
+	assert.match(page, /<x-include src="\/partials\/header\.html"/, `${path} should include shared GOV.UK header chrome`);
+	assert.match(page, /<x-include src="\/partials\/footer\.html"><\/x-include>/, `${path} should include shared GOV.UK footer chrome`);
+	assert.doesNotMatch(page, /<header class="govuk-header"/, `${path} should not hardcode the GOV.UK header`);
+	assert.doesNotMatch(page, /<footer class="govuk-footer"/, `${path} should not hardcode the GOV.UK footer`);
 
 	for (const customAsset of customCssAssets) {
 		assert.equal(page.includes(customAsset), false, `${path} should not load custom GOV.UK clone CSS asset ${customAsset}`);
 	}
-
-	assert.equal(page.includes('<x-include'), false, `${path} should not use custom x-include page chrome`);
 }
 
 for (const path of [
