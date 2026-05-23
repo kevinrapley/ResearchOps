@@ -10,7 +10,7 @@ artifacts:
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
-  sha256: 5b719e726cf9f52b95c589cc5eca87a649ae91003d9d4524865a69a8001d4f5b
+  sha256: aec8c2eaf9da67a383b47815be2195317067bd2de54a5ade313eff86b11c5452
 - path: contracts/conformance-record.schema.json
   sha256: 3e3ebea281fa111150da063d8d56902f5547e991696553c419e3d4353316627a
 - path: contracts/endpoint-catalog.schema.json
@@ -19,6 +19,8 @@ artifacts:
   sha256: bbc13b4003877c2a26d3935f99825215215d79a8687882e13886f9db720a63c7
 - path: contracts/eval.schema.json
   sha256: 528f8dd1bf317b8740b4d067bafa00917f0a60ea766212d85b143300269dd6d5
+- path: contracts/evidence-state.schema.json
+  sha256: 4dec7c729ae8aebcdb65180961b1693ea0c10911640fb3d12fb4c3b9f307c7ff
 - path: contracts/gap-register.schema.json
   sha256: 29e9ce9d38890c19790fc7852b1ea5ea61f3c90a871dd9b301d0498cc1f84c15
 - path: contracts/github-settings.schema.json
@@ -43,6 +45,8 @@ artifacts:
   sha256: 0df72f7e2d983351f7511722d9c5d895f18564fbb79b03eccc323ce5b0036997
 - path: contracts/repository-contract.schema.json
   sha256: 7dd2463202acaa025df5fd0de5a94da5a10a8dd1303230dc915bd3eeac4d1df3
+- path: contracts/safe-audit-trail.schema.json
+  sha256: 48b88eca3a26dc06173c7ea2ad55809d03952108f4906c2cfc13879dd1c5f0d4
 - path: contracts/sbom-record.schema.json
   sha256: ba8035b279ed28ffb86db82ef04d8eacd29c5abfb490a1fbbd16da68ba80d28a
 - path: contracts/template-registry.schema.json
@@ -348,7 +352,7 @@ artifacts:
 - path: examples/scenarios/workflow-node-ci-selection.yaml
   sha256: 7f5510693b1fee8a1b8ae50d1c64e4c5f438a627ebb7cee5e8d8538778f18294
 - path: grade.schema.json
-  sha256: 1042e384faf41b1a3bd58fdb21b51fa58347f2d0df8a446e72aa3fed0f0d2b62
+  sha256: 14bdfe004b4e06484856ffa13c2bec0a2c8097a4de4c3dc7fd9504800c194110
 - path: graders/accessibility-grader.xml
   sha256: f34c3a0986d765316eeb71b881ec6dc2158511b28e549f5f953a45bd5df6ab79
 - path: graders/ci-selection-grader.xml
@@ -402,11 +406,11 @@ artifacts:
 - path: modes/repo-security.xml
   sha256: 7327d1f02ce2c824c5e3dde2a517411b098f91be7cb111b2e470eb29ef73b142
 - path: output.schema.json
-  sha256: b385b0f658ad5c29bf9c0511aa117b0939a6c2e8baccdbca5cd88dddd57495d0
+  sha256: 5b65943fe37561efc0a98625fa80355b74a451f25e0f714edd52b31452bbf7ad
 - path: prompt.body.xml
   sha256: a0bd68a5fe3c3f700ba2d6e6d7d0a7592c2feef3fe986a4c5811435abbcb6ba0
 - path: prompt.spec.yaml
-  sha256: 1bb00446a7a1d1e861cbec1c21250cedaed8f50b3dcb53f47735b6f4968d5115
+  sha256: 70b63bd30bda9970e20acba30c4a75d6ecda0658096d8e7025002d465c177bb4
 - path: README.md
   sha256: 6c34825d920bf11b9a7e7e85d1a43a50e74970c48be147147bb073d426018438
 - path: references/accessibility-confidence-pack.xml
@@ -488,7 +492,7 @@ artifacts:
 - path: scripts/github_settings_verification.py
   sha256: 4bdddd4d29acec55c7999771c2b1826bbf1b8d202180a279ae56074f20ff8834
 - path: scripts/grade-output.py
-  sha256: c114ddffd0b608445ce1aedc9f64af947cfd3cddb717ae05fdc09a454fb02750
+  sha256: 11285ce180cbcfb8432ebf026c264807828c7dfe1514749da62af774b48f76dc
 - path: scripts/live-repository-release-gate.py
   sha256: a707c0871329e9c50c1a9ff90f43d39ba21cce5b9563ea97543f620f6def9e50
 - path: scripts/performance-adapters.py
@@ -498,7 +502,7 @@ artifacts:
 - path: scripts/README.md
   sha256: 77b533dff46947c81a32dea78ea3f66eb59fb635535861c33babeb07c18e9cac
 - path: scripts/release-gate.py
-  sha256: 8d71a23edd4f23beede76a4111fb2b1e66385f7c24f5809b1c9a69939604c4f3
+  sha256: d8c9f4a52f6fe010810806da8ef677cc94e890d34d63093b531f88cff5470f1b
 - path: scripts/repository_conditions.py
   sha256: 80cfb8ab4eea061561e3db42eed0ecec3254d9bff9811dfa6d5240d75be976c6
 - path: scripts/run-eval-harness.py
@@ -512,7 +516,7 @@ artifacts:
 - path: scripts/validate-agent-evidence.py
   sha256: 7ed427d6aae1212500b3a9547dbff9aa57b580ec15d680c33c1b688249fed952
 - path: scripts/validate-bundle.py
-  sha256: a085f00149ee800e5267256d3ac062520ddf449c88d07ccf780b82d5503f030d
+  sha256: 74eb56b495f00b97cba744775bb2b46cd9abd9265797044982c564a14ce7d85d
 - path: scripts/validate-changelog.py
   sha256: cf8a41db446ed9caf179369f24756cc2abc24aaa9453806fa2b412c988bc45e3
 - path: scripts/validate-docs-consistency.py
@@ -537,6 +541,8 @@ artifacts:
   sha256: f8cb55c28c7dbc70e9cd48929ef60c72f9feb741ac020e5a917cbfacbc28a28a
 - path: scripts/validate-sbom.py
   sha256: 62a6b5091b7461a715b3e5ff0954c625de3e7ab06c804f1ca7e1fb928e190bdc
+- path: scripts/validate-scenario-references.py
+  sha256: 3f16d16b9ebf8d31d99b01203c91b7095af42fec862a84c7f8db922569306a62
 - path: scripts/validate-selected-template-set.py
   sha256: ce72ff192a730d036053100c3398982754044f4042261f6445023ecf2b95acd3
 - path: scripts/validate-template-registry.py

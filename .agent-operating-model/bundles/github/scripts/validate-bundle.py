@@ -15,6 +15,32 @@ SECRET_PATTERNS = [
 ]
 GENERATED_PARTS = {"__pycache__", ".pytest_cache", "node_modules", "dist", "build", "coverage", "artifacts", "tmp", "temp", "__MACOSX"}
 GENERATED_SUFFIXES = {".pyc", ".pyo", ".log"}
+REQUIRED_OUTPUT_FIELDS = {
+    "response",
+    "mode_selected",
+    "repository_classification",
+    "evidence_read",
+    "branch_decision",
+    "mutation_strategy",
+    "files_changed",
+    "commands_run",
+    "validation_results",
+    "gaps",
+    "waivers",
+    "risk_decision",
+    "pr_readiness",
+    "safe_audit_trail",
+}
+REQUIRED_GRADE_FIELDS = {
+    "grader_id",
+    "score",
+    "decision",
+    "blocking_failures",
+    "evidence",
+    "deductions",
+    "feedback",
+}
+
 
 def is_generated(path: Path) -> bool:
     try:
@@ -23,6 +49,7 @@ def is_generated(path: Path) -> bool:
         parts = set(path.parts)
     return bool(parts & GENERATED_PARTS) or path.suffix in GENERATED_SUFFIXES
 
+
 def files_for_manifest():
     return {
         p.relative_to(ROOT).as_posix()
@@ -30,8 +57,10 @@ def files_for_manifest():
         if p.is_file() and p.name != "registry-manifest.yaml" and not is_generated(p)
     }
 
+
 def load_yaml(path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
 
 def check_schema_shape(path, data, errors):
     if not path.name.endswith(".schema.json"):
@@ -42,6 +71,7 @@ def check_schema_shape(path, data, errors):
         errors.append(f"Schema type must be object: {path.relative_to(ROOT)}")
     if "properties" not in data:
         errors.append(f"Schema missing properties: {path.relative_to(ROOT)}")
+
 
 def strict_schema_checks(schema_docs, errors):
     try:
@@ -54,6 +84,35 @@ def strict_schema_checks(schema_docs, errors):
             Draft7Validator.check_schema(data)
         except Exception as exc:
             errors.append(f"Invalid JSON schema {path.relative_to(ROOT)}: {exc}")
+
+
+def contract_strength_checks(errors):
+    output = json.loads((ROOT / "output.schema.json").read_text(encoding="utf-8"))
+    grade = json.loads((ROOT / "grade.schema.json").read_text(encoding="utf-8"))
+    output_required = set(output.get("required", []))
+    grade_required = set(grade.get("required", []))
+
+    missing_output = sorted(REQUIRED_OUTPUT_FIELDS - output_required)
+    if missing_output:
+        errors.append("output.schema.json missing required contract fields: " + ", ".join(missing_output))
+    if output.get("additionalProperties") is not False:
+        errors.append("output.schema.json must set additionalProperties to false")
+    if "safe_audit_trail" not in output.get("properties", {}):
+        errors.append("output.schema.json must require a safe_audit_trail property")
+
+    missing_grade = sorted(REQUIRED_GRADE_FIELDS - grade_required)
+    if missing_grade:
+        errors.append("grade.schema.json missing required contract fields: " + ", ".join(missing_grade))
+    if grade.get("additionalProperties") is not False:
+        errors.append("grade.schema.json must set additionalProperties to false")
+    decision = grade.get("properties", {}).get("decision", {})
+    if set(decision.get("enum", [])) != {"pass", "pass_with_gap", "fail"}:
+        errors.append("grade.schema.json decision enum must be pass, pass_with_gap, fail")
+
+    for rel in ["contracts/evidence-state.schema.json", "contracts/safe-audit-trail.schema.json"]:
+        if not (ROOT / rel).exists():
+            errors.append(f"Required shared contract missing: {rel}")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -88,6 +147,7 @@ def main():
 
     if args.strict:
         strict_schema_checks(schema_docs, errors)
+        contract_strength_checks(errors)
 
     for p in ROOT.rglob("*"):
         if p.is_file() and not is_generated(p) and p.suffix.lower() in {".md", ".xml", ".yaml", ".yml", ".json", ".py", ".txt"}:

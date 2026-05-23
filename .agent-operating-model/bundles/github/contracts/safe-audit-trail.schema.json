@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Safe Audit Trail Contract",
+  "description": "A safe operational audit-trail contract for AI-assisted repository work. This explicitly records observable evidence and decisions without requiring private chain-of-thought.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_interpretation",
+    "rules_loaded",
+    "files_inspected",
+    "evidence_used",
+    "decisions_made",
+    "commands_run",
+    "changes_made",
+    "errors_encountered",
+    "pivots_made",
+    "validation_results",
+    "remaining_gaps",
+    "chain_of_thought_excluded"
+  ],
+  "properties": {
+    "task_interpretation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rules_loaded": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "files_inspected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "state"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "state": { "$ref": "evidence-state.schema.json#/definitions/evidenceState" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "state"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "state": { "$ref": "evidence-state.schema.json#/definitions/evidenceState" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "decisions_made": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision", "rationale"],
+        "properties": {
+          "decision": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "status", "state"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["passed", "failed", "not-run", "timeout", "unavailable"] },
+          "state": { "$ref": "evidence-state.schema.json#/definitions/evidenceState" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "changes_made": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "change_type"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "change_type": { "type": "string", "enum": ["created", "modified", "deleted", "renamed", "none"] },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "errors_encountered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary", "resolved"],
+        "properties": {
+          "summary": { "type": "string", "minLength": 1 },
+          "resolved": { "type": "boolean" },
+          "resolution": { "type": "string" }
+        }
+      }
+    },
+    "pivots_made": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "reason"],
+        "properties": {
+          "from": { "type": "string", "minLength": 1 },
+          "to": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "validation_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "state"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["passed", "failed", "not-run", "not-applicable", "unavailable"] },
+          "state": { "$ref": "evidence-state.schema.json#/definitions/evidenceState" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "remaining_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary", "state"],
+        "properties": {
+          "summary": { "type": "string", "minLength": 1 },
+          "state": { "$ref": "evidence-state.schema.json#/definitions/evidenceState" },
+          "owner": { "type": "string" }
+        }
+      }
+    },
+    "chain_of_thought_excluded": {
+      "type": "boolean",
+      "const": true
+    }
+  }
+}

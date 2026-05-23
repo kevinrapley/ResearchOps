@@ -155,6 +155,7 @@ def add_common_checks(report, positive, evidence, timeout):
     run(["scripts/validate-bundle.py", "--strict"], report, timeout)
     run(["scripts/validate-evals.py"], report, timeout)
     run(["scripts/validate-template-registry.py"], report, timeout)
+    run(["scripts/validate-scenario-references.py"], report, timeout)
     run(["scripts/validate-changelog.py"], report, timeout)
     run(["scripts/validate-docs-consistency.py"], report, timeout)
     run(["scripts/validate-agent-evidence.py", "examples/agent-evidence.example.yaml"], report, timeout)

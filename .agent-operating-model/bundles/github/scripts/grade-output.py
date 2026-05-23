@@ -5,14 +5,17 @@ import argparse, json, yaml, xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {"task_id","mode","files_read","files_changed","commands_run","contracts_validated","artifacts_created","gaps_recorded","waivers_recorded"}
 
+
 def load_data(path):
     text = Path(path).read_text(encoding="utf-8")
     return yaml.safe_load(text) if str(path).endswith((".yaml",".yml")) else json.loads(text)
+
 
 def validate_evidence(e):
     missing = REQUIRED - set(e)
     if missing:
         raise ValueError(f"Evidence missing required fields: {sorted(missing)}")
+
 
 def load_grader(grader):
     gp = ROOT / "graders" / (grader if str(grader).endswith(".xml") else f"{grader}.xml")
@@ -23,12 +26,48 @@ def load_grader(grader):
     gap_min = float(root.find(".//pass_with_gap").attrib["minimum_score"])
     return criteria, pass_min, gap_min
 
+
 def any_passed(items):
     return any(isinstance(i, dict) and i.get("status") == "passed" for i in items)
 
+
+def evidence_state_record(state, rationale, source="agent-evidence"):
+    return {
+        "state": state,
+        "rationale": rationale,
+        "source": source,
+    }
+
+
+def emit_grade_result(grader_id, score, decision, blocking_failures, evidence, deductions):
+    feedback_parts = []
+    if decision == "pass":
+        feedback_parts.append("Evidence satisfies the grader threshold.")
+    elif decision == "pass_with_gap":
+        feedback_parts.append("Evidence satisfies the gap threshold but has deductions that need review.")
+    else:
+        feedback_parts.append("Evidence does not satisfy the grader threshold or has blocking failures.")
+    if blocking_failures:
+        feedback_parts.append("Blocking failures: " + "; ".join(blocking_failures))
+    if deductions:
+        feedback_parts.append("Deductions: " + "; ".join(deductions[:3]))
+    result = {
+        "grader_id": grader_id,
+        "score": round(score, 3),
+        "decision": decision,
+        "blocking_failures": blocking_failures,
+        "evidence": evidence,
+        "deductions": deductions,
+        "feedback": " ".join(feedback_parts),
+        "evidence_states": [
+            evidence_state_record("verified" if decision != "fail" else "observed", "Grader result produced from structured agent evidence.")
+        ],
+    }
+    print(yaml.safe_dump(result, sort_keys=False))
+
+
 def github_settings_score(e):
     raw = e.get("github_settings") or {}
-    # Prefer observed state when available; fall back to desired state, then legacy flat shape.
     gs = raw.get("observed_state") or raw.get("desired_state") or raw
     bp = gs.get("branch_protection") or {}
     sf = gs.get("security_features") or {}
@@ -47,6 +86,7 @@ def github_settings_score(e):
     evidence = [f"github_settings_check_{i+1}: {'pass' if ok else 'fail'}" for i, ok in enumerate(checks)]
     evidence.append(f"verification_method: {verification}")
     return score, evidence
+
 
 def criterion_satisfied(text, e):
     t = text.lower()
@@ -92,6 +132,7 @@ def criterion_satisfied(text, e):
         return bool(e.get("harms")) or "harm-register" in artifacts or "harm-register" in contracts
     return False
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--grader", required=True)
@@ -103,7 +144,7 @@ def main():
     if "github-settings" in grader_id:
         score, ev_lines = github_settings_score(e)
         decision = "pass" if score >= 0.85 else "pass_with_gap" if score >= 0.70 else "fail"
-        print(yaml.safe_dump({"grader_id": grader_id, "score": round(score,3), "decision": decision, "blocking_failures": [] if decision != "fail" else ["github_settings_below_threshold"], "evidence": ev_lines, "deductions": []}, sort_keys=False))
+        emit_grade_result(grader_id, score, decision, [] if decision != "fail" else ["github_settings_below_threshold"], ev_lines, [])
         return
     criteria, pass_min, gap_min = load_grader(args.grader)
     score = 0.0
@@ -120,7 +161,8 @@ def main():
     if "tests passed" in claims and not (any_passed(e.get("commands_run", [])) or any_passed(e.get("tests_run", []))):
         blocking.append("Claimed tests passed without passing command/test evidence.")
     decision = "pass" if score >= pass_min and not blocking else "pass_with_gap" if score >= gap_min and not blocking else "fail"
-    print(yaml.safe_dump({"grader_id": grader_id, "score": round(score,3), "decision": decision, "blocking_failures": blocking, "evidence": ev_lines, "deductions": deductions}, sort_keys=False))
+    emit_grade_result(grader_id, score, decision, blocking, ev_lines, deductions)
+
 
 if __name__ == "__main__":
     main()
