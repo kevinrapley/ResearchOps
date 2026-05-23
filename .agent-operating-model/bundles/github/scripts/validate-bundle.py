@@ -40,6 +40,11 @@ REQUIRED_GRADE_FIELDS = {
     "deductions",
     "feedback",
 }
+ASSEMBLY_COVERAGE = {
+    "always_load": "references/*.xml",
+    "contract_modules": "contracts/*.schema.json",
+    "grader_modules": "graders/*.xml",
+}
 
 
 def is_generated(path: Path) -> bool:
@@ -114,6 +119,22 @@ def contract_strength_checks(errors):
             errors.append(f"Required shared contract missing: {rel}")
 
 
+def assembly_coverage_checks(assembly, errors):
+    for key, glob_pattern in ASSEMBLY_COVERAGE.items():
+        configured = set(assembly.get(key, []) or [])
+        actual = {
+            path.relative_to(ROOT).as_posix()
+            for path in ROOT.glob(glob_pattern)
+            if path.is_file() and not is_generated(path)
+        }
+        missing = sorted(actual - configured)
+        extra = sorted(configured - actual)
+        if missing:
+            errors.append(f"prompt.spec.yaml {key} missing module coverage: " + ", ".join(missing))
+        if extra:
+            errors.append(f"prompt.spec.yaml {key} references non-module paths: " + ", ".join(extra))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--strict", action="store_true")
@@ -145,9 +166,13 @@ def main():
             except Exception as exc:
                 errors.append(f"YAML parse error: {p.relative_to(ROOT)}: {exc}")
 
+    spec = load_yaml(ROOT / "prompt.spec.yaml")
+    assembly = spec.get("assembly", {})
+
     if args.strict:
         strict_schema_checks(schema_docs, errors)
         contract_strength_checks(errors)
+        assembly_coverage_checks(assembly, errors)
 
     for p in ROOT.rglob("*"):
         if p.is_file() and not is_generated(p) and p.suffix.lower() in {".md", ".xml", ".yaml", ".yml", ".json", ".py", ".txt"}:
@@ -180,8 +205,6 @@ def main():
     if extra:
         errors.append("Manifest contains extra/generated files: " + ", ".join(extra[:20]))
 
-    spec = load_yaml(ROOT / "prompt.spec.yaml")
-    assembly = spec.get("assembly", {})
     for key in ["always_load", "mode_modules", "role_modules", "contract_modules", "grader_modules"]:
         for rel in assembly.get(key, []) or []:
             if not (ROOT / rel).exists():
