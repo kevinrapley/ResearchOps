@@ -106,9 +106,9 @@ const pages = [
 		template: 'pages/start-overview.njk',
 		output: 'public/pages/start/overview/index.html',
 		context: {
-			pageTitle: 'Start a research project - ResearchOps Demo Suite',
+			pageTitle: 'Start a research project — ResearchOps demo suite',
 			serviceName: 'ResearchOps Demo Suite',
-			activeNavigation: 'Start research project',
+			activeNavigation: 'Start Research Project',
 			navigation: navigation.map((item) => ({
 				...item,
 				active: item.href === '/pages/start/overview/',
