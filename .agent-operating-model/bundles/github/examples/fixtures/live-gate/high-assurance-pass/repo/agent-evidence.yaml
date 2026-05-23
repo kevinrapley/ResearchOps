@@ -45,27 +45,38 @@ files_changed:
   - .github/workflows/dependency-review.yml
   - docs/README.md
   - templates/README.md
+evidence_states:
+  - state: verified
+    rationale: High-assurance pass fixture records executable command, test, accessibility, performance, SBOM and attestation evidence.
+    source: examples/fixtures/live-gate/high-assurance-pass/repo/agent-evidence.yaml
 commands_run:
   - command: npm test
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-unit
   - command: npm run lint
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-lint
   - command: npm run build
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-build
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
+    state: verified
     evidence: test-commands.yaml#python-smoke
   - command: python scripts/validate-sbom-attestation.py --attestation attestation.json --sbom sbom.json
     status: passed
+    state: verified
     evidence: trusted-attestation-verification.json#sbom_attestation_linkage
   - command: gh attestation verify artifact.zip --repo owner/repo
     status: passed
+    state: verified
     evidence: trusted-attestation-verification.json#github_artifact_attestation
   - command: cosign verify-blob artifact.zip --bundle sigstore-bundle.json
     status: passed
+    state: verified
     evidence: trusted-attestation-verification.json#sigstore_bundle_verification
 contracts_validated:
   - repository-contract.schema.json
@@ -80,24 +91,31 @@ contracts_validated:
 tests_run:
   - name: Node unit fixture command
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-unit
   - name: Node lint fixture command
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-lint
   - name: Node build fixture command
     status: passed
+    state: verified
     evidence: test-commands.yaml#node-build
   - name: Python smoke fixture command
     status: passed
+    state: verified
     evidence: test-commands.yaml#python-smoke
   - name: Accessibility evidence review
     status: passed
+    state: verified
     evidence: accessibility-evidence.yaml
   - name: Performance budget/result review
     status: passed
+    state: verified
     evidence: performance-results.yaml
   - name: Trusted attestation verification review
     status: passed
+    state: verified
     evidence: trusted-attestation-verification.json
 gaps_recorded:
   - GAP-HAP-001
@@ -260,31 +278,37 @@ risks:
 test_results:
   - command: npm test
     status: passed
+    state: verified
     returncode: 0
     stdout: live gate node fixture tests passed
     stderr: ''
   - command: npm run lint
     status: passed
+    state: verified
     returncode: 0
     stdout: live gate node fixture lint passed
     stderr: ''
   - command: npm run build
     status: passed
+    state: verified
     returncode: 0
     stdout: live gate node fixture build passed
     stderr: ''
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
+    state: verified
     returncode: 0
     stdout: fixture tests passed
     stderr: ''
   - command: gh attestation verify artifact.zip --repo owner/repo
     status: passed
+    state: verified
     returncode: 0
     stdout: Verified artifact.zip for owner/repo using GitHub artifact attestation fixture evidence.
     stderr: ''
   - command: cosign verify-blob artifact.zip --bundle sigstore-bundle.json
     status: passed
+    state: verified
     returncode: 0
     stdout: Verified OK. Bundle contains fixture certificate, Rekor entry, message digest and DSSE envelope.
     stderr: ''
