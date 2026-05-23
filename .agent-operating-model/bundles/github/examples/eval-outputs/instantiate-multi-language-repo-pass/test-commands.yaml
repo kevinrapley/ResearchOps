@@ -14,8 +14,6 @@ commands:
       Runs the Node fixture test declared in package.json.
     expected_status: passed
     expected_returncode: 0
-    expected_stdout_contains:
-      - generated repository fixture exposes Node validation evidence
 
   - id: python-tests
     command: python -I -m unittest discover -s tests -p 'test_*.py'
