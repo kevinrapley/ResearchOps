@@ -54,8 +54,13 @@ function pageById(id) {
 
 assert.equal(headingText(overviewPage, 1).length, 1, 'Start overview page should have one h1');
 assert.equal(headingText(overviewPage, 1)[0], 'Start a research project');
+assert.deepEqual(headingText(overviewPage, 2), [
+	'Before you start',
+	'What you will do',
+	'Do not include real personal data',
+]);
 assert.equal(
-	overviewPage.includes('<title>Start a research project — ResearchOps demo suite</title>'),
+	overviewPage.includes('<title>Start a research project - ResearchOps Demo Suite</title>'),
 	true
 );
 assert.equal(overviewPage.includes('src="/partials/header.html"'), true);
