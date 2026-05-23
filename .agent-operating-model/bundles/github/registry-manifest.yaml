@@ -502,7 +502,7 @@ artifacts:
 - path: scripts/README.md
   sha256: 77b533dff46947c81a32dea78ea3f66eb59fb635535861c33babeb07c18e9cac
 - path: scripts/release-gate.py
-  sha256: d8c9f4a52f6fe010810806da8ef677cc94e890d34d63093b531f88cff5470f1b
+  sha256: 839aa893490825012f5b8888d1a267ac94fac5de3c44e913a3568cf1e411b09e
 - path: scripts/repository_conditions.py
   sha256: 80cfb8ab4eea061561e3db42eed0ecec3254d9bff9811dfa6d5240d75be976c6
 - path: scripts/run-eval-harness.py
