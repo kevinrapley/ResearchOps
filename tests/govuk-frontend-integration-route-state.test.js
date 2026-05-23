@@ -14,7 +14,6 @@ const layoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
-const govukLayoutLoader = fs.readFileSync('public/components/govuk-layout.js', 'utf8');
 const sharedLayoutLoader = fs.readFileSync('public/components/layout.js', 'utf8');
 const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const renderedHomePage = fs.readFileSync('public/index.html', 'utf8');
@@ -79,10 +78,11 @@ assert.match(initScript, /import \{ initAll \} from '\/assets\/govuk\/govuk-fron
 assert.match(initScript, /initAll\(\{ scope \}\);/);
 assert.match(initScript, /x-include:loaded/);
 
-assert.match(layoutTemplate, /\/components\/govuk-layout\.js/);
+assert.match(layoutTemplate, /\/components\/layout\.js/);
 assert.match(layoutTemplate, /<x-include src="\/partials\/header\.html"/);
 assert.match(layoutTemplate, /<x-include src="\/partials\/footer\.html"><\/x-include>/);
 assert.match(layoutTemplate, /activeNavigation \| default/);
+assert.doesNotMatch(layoutTemplate, /\/components\/govuk-layout\.js/);
 assert.doesNotMatch(layoutTemplate, /govuk\/components\/header\/macro\.njk/);
 assert.doesNotMatch(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/button\/macro\.njk/);
@@ -113,10 +113,9 @@ assert.match(sharedFooter, /class="govuk-width-container"/);
 assert.match(sharedFooter, /govuk-footer__meta/);
 assert.match(sharedFooter, /aria-hidden="true"/);
 assert.match(sharedFooter, /Open Government Licence v3\.0/);
-assert.match(govukLayoutLoader, /class GovukXInclude extends HTMLElement/);
-assert.match(govukLayoutLoader, /customElements\.define\("x-include", GovukXInclude\)/);
-assert.match(govukLayoutLoader, /x-include:loaded/);
-assert.doesNotMatch(govukLayoutLoader, /govuk-frontend-v6\.css/);
+assert.match(sharedLayoutLoader, /class XInclude extends HTMLElement/);
+assert.match(sharedLayoutLoader, /customElements\.define\("x-include", XInclude\)/);
+assert.match(sharedLayoutLoader, /x-include:loaded/);
 assert.doesNotMatch(sharedLayoutLoader, /govuk-frontend-v6\.css/);
 assert.doesNotMatch(sharedLayoutLoader, /ensureGovukFrontendV6Stylesheet/);
 
@@ -126,7 +125,7 @@ for (const path of representativePages) {
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${path} should use the GOV.UK template class`);
 	assert.match(page, /class="govuk-template__body"/, `${path} should use GOV.UK template body class`);
 	assert.match(page, /govuk-frontend-supported/, `${path} should include GOV.UK Frontend support snippet`);
-	assert.match(page, /\/components\/govuk-layout\.js/, `${path} should load the GOV.UK-specific x-include loader`);
+	assert.match(page, /\/components\/layout\.js/, `${path} should load the shared x-include loader`);
 	assert.match(page, /\/js\/govuk-frontend-init\.js/, `${path} should load GOV.UK Frontend initialisation`);
 	assert.match(page, /<x-include src="\/partials\/header\.html"/, `${path} should include shared GOV.UK header chrome`);
 	assert.match(page, /<x-include src="\/partials\/footer\.html"><\/x-include>/, `${path} should include shared GOV.UK footer chrome`);
