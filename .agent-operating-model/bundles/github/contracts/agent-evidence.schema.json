@@ -43,6 +43,13 @@
         "minLength": 1
       }
     },
+    "evidence_states": {
+      "type": "array",
+      "description": "Explicit evidence-state records distinguishing claimed, observed, verified, unavailable and waived evidence.",
+      "items": {
+        "$ref": "evidence-state.schema.json#/definitions/evidenceStateRecord"
+      }
+    },
     "commands_run": {
       "type": "array",
       "items": {
@@ -62,8 +69,23 @@
             "enum": [
               "passed",
               "failed",
-              "not-run"
+              "not-run",
+              "timeout",
+              "unavailable",
+              "waived"
             ]
+          },
+          "state": {
+            "$ref": "evidence-state.schema.json#/definitions/evidenceState"
+          },
+          "returncode": {
+            "type": ["integer", "null"]
+          },
+          "stdout": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
           },
           "evidence": {
             "type": "string"
@@ -97,8 +119,14 @@
             "enum": [
               "passed",
               "failed",
-              "not-run"
+              "not-run",
+              "timeout",
+              "unavailable",
+              "waived"
             ]
+          },
+          "state": {
+            "$ref": "evidence-state.schema.json#/definitions/evidenceState"
           },
           "evidence": {
             "type": "string"
@@ -387,8 +415,14 @@
             "enum": [
               "passed",
               "failed",
-              "not-run"
+              "not-run",
+              "timeout",
+              "unavailable",
+              "waived"
             ]
+          },
+          "state": {
+            "$ref": "evidence-state.schema.json#/definitions/evidenceState"
           },
           "returncode": {
             "type": "integer"
@@ -416,6 +450,12 @@
           "type": "integer"
         },
         "licence_metadata_present": {
+          "type": "boolean"
+        },
+        "purls_present": {
+          "type": "boolean"
+        },
+        "tool_metadata_present": {
           "type": "boolean"
         }
       }
@@ -455,6 +495,18 @@
           "type": "integer"
         },
         "validated": {
+          "type": "boolean"
+        },
+        "dsse_present": {
+          "type": "boolean"
+        },
+        "slsa_present": {
+          "type": "boolean"
+        },
+        "github_artifact_attestation_present": {
+          "type": "boolean"
+        },
+        "sigstore_present": {
           "type": "boolean"
         }
       }
