@@ -502,7 +502,7 @@ artifacts:
 - path: scripts/repository_conditions.py
   sha256: 80cfb8ab4eea061561e3db42eed0ecec3254d9bff9811dfa6d5240d75be976c6
 - path: scripts/run-eval-harness.py
-  sha256: 1e5c087273f1d2b9e8dc30da5bfb5b6a81d87cfcb268da229a0402155ccdeeb4
+  sha256: de95e5a82f19ba85b57ae731c51f2ebfe1d661f8d94c0fb5f55e1dd19a82d46c
 - path: scripts/select-ci-templates.py
   sha256: 3e9efd40899dabacd051732c6b27dbb1847dd7b4b981a65d287def71324d4cac
 - path: scripts/validate-accessibility-evidence.py
