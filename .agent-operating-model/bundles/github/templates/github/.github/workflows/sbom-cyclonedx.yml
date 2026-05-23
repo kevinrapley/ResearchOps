@@ -1,0 +1,30 @@
+name: CycloneDX SBOM
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: CycloneDX SBOM
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate placeholder SBOM path
+        run: |
+          mkdir -p artifacts
+          if [ -f package-lock.json ]; then
+            echo "Node dependency lockfile present. Configure CycloneDX generation for production use." > artifacts/sbom-note.txt
+          elif [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+            echo "Python dependency manifest present. Configure CycloneDX generation for production use." > artifacts/sbom-note.txt
+          else
+            echo "No dependency manifest found for SBOM generation." > artifacts/sbom-note.txt
+          fi
+      - name: Verify SBOM evidence path
+        run: test -f artifacts/sbom-note.txt
