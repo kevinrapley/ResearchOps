@@ -63,6 +63,7 @@ assembly:
   - contracts/endpoint-catalog.schema.json
   - contracts/eval-result.schema.json
   - contracts/eval.schema.json
+  - contracts/evidence-state.schema.json
   - contracts/gap-register.schema.json
   - contracts/github-settings.schema.json
   - contracts/grade-result.schema.json
@@ -73,6 +74,7 @@ assembly:
   - contracts/pull-request-contract.schema.json
   - contracts/release-contract.schema.json
   - contracts/repository-contract.schema.json
+  - contracts/safe-audit-trail.schema.json
   - contracts/sbom-record.schema.json
   - contracts/template-registry.schema.json
   - contracts/workflow-contract.schema.json
