@@ -1,0 +1,60 @@
+service:
+  id: api-service-fixture
+  name: API service fixture
+  owner: repository-maintainers
+  lifecycle: fixture
+  description: >
+    Compact API service fixture used by the GitHub Diamond api-contract-change eval.
+endpoints:
+  - id: get-health
+    method: GET
+    path: /health
+    status: active
+    owner: repository-maintainers
+    purpose: Report service health for deployment and monitoring checks.
+    request:
+      content_type: null
+      body_schema: null
+    responses:
+      - status: 200
+        content_type: application/json
+        example: ../../examples/payloads/http-json-success.json
+        schema:
+          type: object
+          required:
+            - status
+            - service
+            - checked_at
+          properties:
+            status:
+              type: string
+              enum:
+                - ok
+            service:
+              type: string
+            checked_at:
+              type: string
+              format: date-time
+      - status: 503
+        content_type: application/json
+        example: ../../examples/payloads/http-json-error.json
+        schema:
+          type: object
+          required:
+            - error
+            - message
+            - correlation_id
+          properties:
+            error:
+              type: string
+            message:
+              type: string
+            correlation_id:
+              type: string
+change_control:
+  contract_tests_required: true
+  payload_examples_required: true
+  compatibility_review_required: true
+  notes: >
+    Changes to response fields must update this catalogue, payload examples and
+    tests under tests/contract/.
