@@ -18,28 +18,35 @@
     "airtable-public-api",
     "mural-public-api"
   ],
-  "summary": "Resolved direct CI, validation, accessibility and BDD failures after shared GOV.UK x-include chrome changes.",
-  "validatedGreenBeforeTraceCommit": {
-    "head": "58df143b0b1fc0af72acf74fca9fbedca8587711",
+  "summary": "Resolved CI, validation, accessibility, BDD and Release Gate failures after shared GOV.UK x-include chrome changes while preserving the title-case service name ResearchOps Demo Suite.",
+  "casingDecision": {
+    "serviceName": "ResearchOps Demo Suite",
+    "serviceNameRule": "Keep title case for service identity, header partials and page title suffixes.",
+    "headingRule": "Assert paragraph case only for actual page and content headings, not for text inside the header service identity."
+  },
+  "validatedGreen": {
+    "head": "971ac1d6cc556e3cc0f5f6c9fbdaeb3264ebb7ee",
     "workflows": [
       "CI",
       "Validate ResearchOps",
       "Accessibility audit (pa11y-ci)",
       "qa-bdd",
+      "Release Gate",
       "Format pull request",
       "QA — Broken links (Lychee)",
       "Build and deploy agent documentation Pages",
       "Update GitHub bundle registry manifest"
     ]
   },
-  "remainingBlocker": "Release Gate failed at Run ResearchOps release gate. The exact failing subcommand needs the release-gate artifact or a local gate run.",
-  "recommendedLocalDiagnosis": [
-    "npm ci",
-    "npm run validate",
-    "npm run lint",
-    "npm run format:check",
-    "npm test",
-    "npm run audit:performance --if-present",
-    "npm run audit:security"
-  ]
+  "releaseGate": {
+    "status": "passed",
+    "previousCause": "Unit tests on the Release Gate merge ref saw stale rendered files and brittle title/heading assertions.",
+    "resolvedBy": [
+      "Preserved ResearchOps Demo Suite in service identity assertions.",
+      "Scoped paragraph-case assertions to page and content headings.",
+      "Aligned checked-in rendered representative pages with the GOV.UK layout source.",
+      "Changed the start overview action test to assert link target semantics rather than attribute order."
+    ]
+  },
+  "residualRisk": "The wider GOV.UK migration is still incomplete by design. Existing non-spike routes still depend on legacy shared GOV.UK imitation CSS and shared chrome contracts."
 }
