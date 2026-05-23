@@ -148,11 +148,37 @@ def test_malformed_command_object_fails_closed():
     assert any("must include a non-empty string 'command' field" in item for item in result.get("blocking_failures", []))
 
 
+def test_contradictory_status_and_returncode_fails():
+    with tempfile.TemporaryDirectory() as raw_tmp:
+        tmpdir = Path(raw_tmp)
+        evals_path, backup, output = create_eval_fixture(
+            tmpdir,
+            textwrap.dedent(
+                """
+                commands:
+                  - id: contradictory-status-returncode
+                    command: python -I -S -c "raise SystemExit(1)"
+                    expected_status: passed
+                    expected_returncode: 1
+                """
+            ).strip() + "\n",
+        )
+        try:
+            _completed, result = run_harness(output, expect_success=False)
+        finally:
+            restore(evals_path, backup)
+
+    assert result.get("decision") == "fail"
+    failures = result["test_results"][0]["expectation_failures"]
+    assert any("expected status passed, observed failed" in item for item in failures), failures
+
+
 def main():
     tests = [
         test_structured_command_executes_command_field,
         test_expected_stdout_mismatch_fails,
         test_malformed_command_object_fails_closed,
+        test_contradictory_status_and_returncode_fails,
     ]
     for test in tests:
         test()
