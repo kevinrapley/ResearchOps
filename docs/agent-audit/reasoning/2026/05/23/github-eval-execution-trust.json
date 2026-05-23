@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-23",
+  "branch": "fix/github-eval-execution-trust-v2",
+  "scope": [
+    "github-diamond-bundle",
+    "eval-harness",
+    "test-command-execution",
+    "observed-evidence",
+    "release-gate-regression"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to make GitHub Diamond eval execution trustworthy. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The eval harness previously passed each test command entry directly to subprocess.run.",
+    "Structured command objects from test-commands.yaml could therefore be executed as the wrong shell value instead of using their command field.",
+    "This created a false-pass risk where evals appeared to execute tests while not running the intended commands."
+  ],
+  "workSummary": [
+    "Updated scripts/run-eval-harness.py to normalise string and structured command entries before execution.",
+    "Structured command objects now require a non-empty string command field and fail closed when malformed.",
+    "The harness now records observed command, cwd, timeout, start and finish times, duration, return code, stdout, stderr and tail fields.",
+    "The harness now validates expected_status, expected_returncode, expected_stdout, expected_stderr, expected_stdout_contains and expected_stderr_contains.",
+    "Updated the positive multi-language eval fixture so all test commands are executable in the release-gate environment.",
+    "Added a deterministic Python unittest fixture so Python validation no longer depends on pytest being installed.",
+    "Aligned agent-evidence.yaml with the executable command set and observed evidence model.",
+    "Added scripts/validate-eval-harness-execution.py to prove structured commands run their command field, stdout mismatches fail, and malformed command objects fail closed.",
+    "Wired the new eval harness regression validator into scripts/release-gate.py before the normal eval harness invocation."
+  ],
+  "changedAreas": [
+    ".agent-operating-model/bundles/github/scripts/run-eval-harness.py",
+    ".agent-operating-model/bundles/github/scripts/validate-eval-harness-execution.py",
+    ".agent-operating-model/bundles/github/scripts/release-gate.py",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/test-commands.yaml",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/tests/test_python_fixture.py",
+    ".agent-operating-model/bundles/github/examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml"
+  ],
+  "validationEvidence": {
+    "staticCompatibilityChecks": [
+      "run-eval-harness.py still accepts legacy string commands.",
+      "run-eval-harness.py now supports structured command objects explicitly through the command field.",
+      "test-commands.yaml commands are executable shell commands rather than descriptive placeholders.",
+      "release-gate.py now runs validate-eval-harness-execution.py before the normal eval harness invocation."
+    ],
+    "notRunLocally": [
+      "No local release gate was run in this connector-only environment. CI should run the fast release gate and bundle validators on the pull request."
+    ],
+    "recommendedNextChecks": [
+      "cd .agent-operating-model/bundles/github",
+      "python scripts/validate-eval-harness-execution.py",
+      "python scripts/run-eval-harness.py --eval-id instantiate-multi-language-repo --output-dir examples/eval-outputs/instantiate-multi-language-repo-pass --evidence examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml --run-tests --github-api --allow-api-unavailable --format json",
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode fast --report fast-release-gate-report.json"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Making the harness execute real commands may expose previously hidden fixture weaknesses.",
+      "mitigation": "The positive eval fixture commands were converted to deterministic executable commands that do not require third-party dependencies."
+    },
+    {
+      "risk": "Registry manifest checksums may be stale after script and fixture edits.",
+      "mitigation": "The existing GitHub bundle registry-manifest workflow should regenerate registry-manifest.yaml on the pull request branch."
+    }
+  ],
+  "status": "ready-for-pr"
+}
