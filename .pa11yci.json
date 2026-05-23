@@ -7,7 +7,7 @@
       "args": ["--no-sandbox", "--disable-setuid-sandbox"]
     },
     "includeNotices": false,
-    "includeWarnings": true,
+    "includeWarnings": false,
     "level": "error"
   },
   "urls": [
