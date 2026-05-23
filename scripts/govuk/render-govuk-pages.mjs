@@ -94,7 +94,7 @@ const pages = [
 		template: 'pages/home.njk',
 		output: 'public/index.html',
 		context: {
-			pageTitle: 'ResearchOps demo suite',
+			pageTitle: 'ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Home',
 			navigation,
@@ -106,7 +106,7 @@ const pages = [
 		template: 'pages/start-overview.njk',
 		output: 'public/pages/start/overview/index.html',
 		context: {
-			pageTitle: 'Start a research project — ResearchOps demo suite',
+			pageTitle: 'Start a research project - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Start Research Project',
 			navigation: navigation.map((item) => ({
