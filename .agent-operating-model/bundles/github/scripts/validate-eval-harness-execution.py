@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -9,6 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS = ROOT / "scripts/run-eval-harness.py"
+BASE_OUTPUT_FIXTURE = ROOT / "examples/eval-outputs/instantiate-multi-language-repo-pass"
 
 
 def write(path, content):
@@ -28,6 +30,8 @@ def run_harness(repo, eval_id="eval-harness-regression", expect_success=True):
             "--run-tests",
             "--format",
             "json",
+            "--github-api",
+            "--allow-api-unavailable",
         ],
         cwd=ROOT,
         capture_output=True,
@@ -46,8 +50,7 @@ def create_eval_fixture(tmpdir, commands_yaml, eval_id="eval-harness-regression"
     fixture = tmpdir / "fixture"
     output = tmpdir / "output"
     fixture.mkdir()
-    output.mkdir()
-    write(output / "README.md", "# Eval harness regression output\n")
+    shutil.copytree(BASE_OUTPUT_FIXTURE, output)
     write(output / "test-commands.yaml", commands_yaml)
     original = ROOT / "evals.yaml"
     backup = original.read_text(encoding="utf-8")
@@ -55,7 +58,7 @@ def create_eval_fixture(tmpdir, commands_yaml, eval_id="eval-harness-regression"
     data["evals"].append({
         "id": eval_id,
         "description": "Temporary eval harness regression fixture",
-        "fixture_repo": str(fixture.relative_to(ROOT)) if fixture.is_relative_to(ROOT) else str(fixture),
+        "fixture_repo": str(fixture),
         "expected_files": ["README.md"],
         "expected_changed_paths": [],
         "graders": [],
