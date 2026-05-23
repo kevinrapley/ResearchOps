@@ -1,17 +1,38 @@
 <!-- public/partials/header.html -->
+<link rel="stylesheet" href="/css/govuk/govuk-header-service-brand.css" media="screen" />
+<link rel="stylesheet" href="/css/govuk/govuk-main-content-focus.css" media="screen" />
+
 <a class="govuk-skip-link" href="#main-content" data-module="govuk-skip-link">Skip to main content</a>
 
 <header class="govuk-header" role="banner" data-module="govuk-header">
 	<div class="govuk-header__container govuk-width-container">
 		<div class="govuk-header__logo">
-			<a href="/" class="govuk-header__link govuk-header__link--homepage">
-				<span class="govuk-header__logotype">
-					<span class="govuk-header__logotype-text">GOV.UK</span>
-				</span>
+			<a href="/" class="govuk-header__homepage-link">
+				<svg
+					focusable="false"
+					role="img"
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 324 60"
+					height="30"
+					width="162"
+					fill="currentcolor"
+					class="govuk-header__logotype"
+					aria-label="GOV.UK">
+					<title>GOV.UK</title>
+					<g>
+						<circle cx="20" cy="17.6" r="3.7" />
+						<circle cx="10.2" cy="23.5" r="3.7" />
+						<circle cx="3.7" cy="33.2" r="3.7" />
+						<circle cx="31.7" cy="30.6" r="3.7" />
+						<circle cx="43.3" cy="17.6" r="3.7" />
+						<circle cx="53.2" cy="23.5" r="3.7" />
+						<circle cx="59.7" cy="33.2" r="3.7" />
+					</g>
+					<circle class="govuk-logo-dot" cx="226" cy="36" r="7.3" />
+					<text x="84" y="48" font-size="48" font-weight="700">GOV.UK</text>
+				</svg>
+				<span class="govuk-header__product-name">ResearchOps Demo Suite</span>
 			</a>
-		</div>
-		<div class="govuk-header__content">
-			<a href="/" class="govuk-header__link govuk-header__service-name">ResearchOps Demo Suite</a>
 		</div>
 	</div>
 </header>
@@ -39,11 +60,52 @@
 	</div>
 </section>
 
-<div class="govuk-width-container">
-	<div class="govuk-phase-banner" role="note" aria-label="Service phase">
-		<p class="govuk-phase-banner__content">
-			<strong class="govuk-tag govuk-phase-banner__content__tag">Prototype</strong>
-			<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
-		</p>
-	</div>
+<div class="govuk-phase-banner govuk-width-container" role="note" aria-label="Service phase">
+	<p class="govuk-phase-banner__content">
+		<strong class="govuk-tag govuk-phase-banner__content__tag">Prototype</strong>
+		<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
+	</p>
 </div>
+
+<script>
+	function ensurePageChromeStylesheet() {
+		const stylesheets = [
+			"/css/govuk/govuk-header-service-brand.css",
+			"/css/govuk/govuk-main-content-focus.css",
+		];
+
+		for (const href of stylesheets) {
+			if (document.querySelector(`link[href="${href}"]`)) continue;
+			const link = document.createElement("link");
+			link.rel = "stylesheet";
+			link.href = href;
+			link.media = "screen";
+			document.head.appendChild(link);
+		}
+	}
+
+	function ensureMainContentTarget() {
+		const main = document.querySelector("main");
+		if (!main) return;
+		main.classList.add("govuk-main-wrapper");
+		const target = main;
+		if (!target.id) target.id = "main-content";
+	}
+
+	function initServiceNavigation() {
+		document.querySelectorAll("[data-active]").forEach((container) => {
+			const active = (container.getAttribute("data-active") || "").trim();
+			container.querySelectorAll("[data-nav]").forEach((link) => {
+				const isActive = active && link.getAttribute("data-nav") === active;
+				const item = link.closest(".govuk-service-navigation__item");
+				if (item) item.classList.toggle("govuk-service-navigation__item--active", Boolean(isActive));
+				if (isActive) link.setAttribute("aria-current", "true");
+				else link.removeAttribute("aria-current");
+			});
+		});
+	}
+
+	ensurePageChromeStylesheet();
+	ensureMainContentTarget();
+	initServiceNavigation();
+</script>
