@@ -1,18 +1,32 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import argparse
+import re
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def bundle_version():
+    spec = yaml.safe_load((ROOT / "prompt.spec.yaml").read_text(encoding="utf-8"))
+    version = spec.get("bundle", {}).get("version")
+    if not version:
+        raise SystemExit("Could not read bundle.version from prompt.spec.yaml")
+    return str(version)
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--readme", default="README.md")
-    parser.add_argument("--version", default="2.9.2")
+    parser.add_argument("--version")
     args = parser.parse_args()
+    expected_version = args.version or bundle_version()
     text = (ROOT / args.readme).read_text(encoding="utf-8")
     errors = []
-    if f"Version: {args.version}" not in text:
-        errors.append(f"README missing current Version: {args.version}")
+    if f"Version: {expected_version}" not in text:
+        errors.append(f"README missing current Version: {expected_version}")
+    if not re.search(rf"\bVersion\s+{re.escape(expected_version)}\b", text):
+        errors.append(f"README current release section does not mention Version {expected_version}")
     if "## Current release" not in text:
         errors.append("README missing Current release section")
     if "release-gate report" not in text.lower():
@@ -39,6 +53,7 @@ def main():
             print(error)
         raise SystemExit(1)
     print("Documentation consistency validation passed.")
+
 
 if __name__ == "__main__":
     main()
