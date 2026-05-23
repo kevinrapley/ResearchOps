@@ -1,0 +1,58 @@
+name: Feature request
+description: Propose a capability with evidence, constraints and acceptance criteria.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for new or changed capability requests.
+        Include the user need, evidence and acceptance criteria before implementation starts.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or user need
+      description: What need, pain point or service outcome does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: What evidence supports this need?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What should change?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Provide testable outcomes.
+      placeholder: |
+        Given ...
+        When ...
+        Then ...
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks, dependencies or trade-offs
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have described the evidence and user/service impact.
+          required: true
+        - label: I have not included secrets or unnecessary personal data.
+          required: true
