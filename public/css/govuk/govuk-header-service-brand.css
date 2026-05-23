@@ -1,5 +1,19 @@
 /* GOV.UK header product-name alignment */
 
+.govuk-skip-link,
+.govuk-skip-link:link,
+.govuk-skip-link:visited {
+	background-color: #ffdd00;
+	color: #0b0c0c;
+	}
+
+.govuk-skip-link:focus,
+.govuk-skip-link:active {
+	background-color: #ffdd00;
+	color: #0b0c0c;
+	outline: 3px solid #0b0c0c;
+	}
+
 .govuk-header .govuk-header__homepage-link,
 .govuk-header .govuk-header__homepage-link:visited,
 .govuk-header .govuk-header__link,
