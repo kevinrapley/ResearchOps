@@ -1,0 +1,26 @@
+name: CI (Performance)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  performance:
+    name: CI (Performance)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run performance checks when configured
+        run: |
+          if [ -f performance-budget.yaml ] && [ -f performance-results.yaml ]; then
+            echo "Performance budget and result evidence present."
+          elif [ -f package.json ] && npm run | grep -q "performance"; then
+            npm run performance
+          else
+            echo "No performance command configured. Add performance evidence for performance-sensitive services."
+          fi
