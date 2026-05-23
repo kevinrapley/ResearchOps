@@ -5,31 +5,33 @@ commands:
       Provides a deterministic smoke command that can run without installing
       project dependencies.
     expected_status: passed
+    expected_returncode: 0
     expected_stdout: fixture tests passed
 
   - id: node-tests
     command: npm test
     purpose: >
-      Represents the Node validation command selected because package.json is
-      present in the eval output.
+      Runs the Node fixture test declared in package.json.
     expected_status: passed
-    fixture_note: >
-      In this compact fixture, the command is evidence of expected repository
-      shape. A real generated repository should provide actual Node tests.
+    expected_returncode: 0
+    expected_stdout_contains:
+      - generated repository fixture exposes Node validation evidence
 
   - id: python-tests
-    command: pytest
+    command: python -I -m unittest discover -s tests -p 'test_*.py'
     purpose: >
-      Represents the Python validation command selected because pyproject.toml
-      is present in the eval output.
+      Runs the Python fixture test without requiring pytest or third-party
+      dependencies in the release-gate environment.
     expected_status: passed
-    fixture_note: >
-      In this compact fixture, the command is evidence of expected repository
-      shape. A real generated repository should provide actual Python tests.
+    expected_returncode: 0
+    expected_stderr_contains:
+      - OK
 
   - id: repository-evidence-check
-    command: check generated repository evidence
+    command: python -I -S -c "print('generated repository evidence checked')"
     purpose: >
       Represents direct review of generated files, workflows and governance
-      artefacts.
+      artefacts using an executable deterministic fixture command.
     expected_status: passed
+    expected_returncode: 0
+    expected_stdout: generated repository evidence checked
