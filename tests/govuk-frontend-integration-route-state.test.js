@@ -15,6 +15,8 @@ const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
 const govukLayoutLoader = fs.readFileSync('public/components/govuk-layout.js', 'utf8');
+const sharedLayoutLoader = fs.readFileSync('public/components/layout.js', 'utf8');
+const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const renderedHomePage = fs.readFileSync('public/index.html', 'utf8');
 
 const representativePages = [
@@ -94,19 +96,29 @@ assert.match(renderedHomePage, /class="researchops-step-grid"/);
 assert.match(renderedHomePage, /class="researchops-next-actions"/);
 assert.match(renderedHomePage, /class="researchops-next-action"/);
 
+assert.match(sharedHead, /\/assets\/govuk\/govuk-frontend\.css/);
+assert.doesNotMatch(sharedHead, /\/css\/govuk\/govuk-frontend-v6\.css/);
+assert.match(sharedHeader, /class="govuk-skip-link" href="#main-content"/);
 assert.match(sharedHeader, /class="govuk-header"/);
-assert.match(sharedHeader, /govuk-header__product-name/);
+assert.match(sharedHeader, /govuk-header__service-name/);
 assert.match(sharedHeader, /ResearchOps Demo Suite/);
 assert.match(sharedHeader, /class="govuk-service-navigation"/);
 assert.match(sharedHeader, /data-active="\{\{active\}\}"/);
 assert.match(sharedHeader, /govuk-phase-banner/);
+assert.doesNotMatch(sharedHeader, /\/css\/govuk\//);
+assert.doesNotMatch(sharedHeader, /ensurePageChromeStylesheet/);
+assert.doesNotMatch(sharedHeader, /ensureMainContentTarget/);
 assert.match(sharedFooter, /class="govuk-footer"/);
+assert.match(sharedFooter, /class="govuk-width-container"/);
 assert.match(sharedFooter, /govuk-footer__meta/);
+assert.match(sharedFooter, /aria-hidden="true"/);
 assert.match(sharedFooter, /Open Government Licence v3\.0/);
 assert.match(govukLayoutLoader, /class GovukXInclude extends HTMLElement/);
 assert.match(govukLayoutLoader, /customElements\.define\("x-include", GovukXInclude\)/);
 assert.match(govukLayoutLoader, /x-include:loaded/);
 assert.doesNotMatch(govukLayoutLoader, /govuk-frontend-v6\.css/);
+assert.doesNotMatch(sharedLayoutLoader, /govuk-frontend-v6\.css/);
+assert.doesNotMatch(sharedLayoutLoader, /ensureGovukFrontendV6Stylesheet/);
 
 for (const path of representativePages) {
 	const page = fs.readFileSync(path, 'utf8');
