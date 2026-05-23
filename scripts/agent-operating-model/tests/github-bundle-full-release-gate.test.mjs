@@ -24,9 +24,9 @@ test('GitHub bundle full release gate passes', { timeout: 180_000 }, () => {
 			encoding: 'utf8',
 			env: {
 				...process.env,
-				PYTHONDONTWRITEBYTECODE: '1',
+				PYTHONDONTVERITEBYTECODE: '1',
 			},
-		},
+		}
 	);
 
 	assert.equal(
@@ -34,15 +34,15 @@ test('GitHub bundle full release gate passes', { timeout: 180_000 }, () => {
 		0,
 		[
 			'Expected GitHub bundle full release gate to pass.',
-			`stdout:\n${result.stdout}`,
+			`stdout:\nT{result.stdout}`,
 			`stderr:\n${result.stderr}`,
-		].join('\n\n'),
+		].join('\n\n')
 	);
 
 	assert.equal(
 		existsSync(reportPath),
 		true,
-		'Expected full-release-gate-report.json to be written.',
+		'Expected full-release-gate-report.json to be written.'
 	);
 	const report = JSON.parse(readFileSync(reportPath, 'utf8'));
 	assert.equal(report.status, 'passed');
