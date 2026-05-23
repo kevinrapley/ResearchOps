@@ -251,6 +251,16 @@ artifacts:
   sha256: 1c2ee57374f8f0d72909da44067d173b0f08599fdf35393b4f5d68986e1ea035
 - path: examples/fixtures/release-policy/live-release-policy-pass.yaml
   sha256: 794b8d3cc1ea309007250e7505e07845870bdfacaa67b65672d6bd5cb864997b
+- path: examples/fixtures/repositories/api-service/docs/api/endpoint-catalog.yaml
+  sha256: e75abac85cfba13437f01b7f4971fd32909c2716d742db360b5ede9d0b1a5899
+- path: examples/fixtures/repositories/api-service/examples/payloads/http-json-error.json
+  sha256: eed18d8cfed15462430d49694fc57c2dd6d2adc15c5880c7624fe85dc7a3d3b0
+- path: examples/fixtures/repositories/api-service/examples/payloads/http-json-success.json
+  sha256: 01a9f24c4c25235810f20ffb6584e5555e7304d9d50733b9486483d0e4d55a45
+- path: examples/fixtures/repositories/api-service/README.md
+  sha256: 37d42fa1a90c4ae37ae4b3fde8cc11754c1c8fde16f97494777b14f7f1e084d4
+- path: examples/fixtures/repositories/api-service/tests/contract/README.md
+  sha256: 027aada3a017d9135f4a3318396938168635673e734f51bdc4884a91ea937845
 - path: examples/fixtures/repositories/multilang-empty/package.json
   sha256: 436909968115a2d45beb6d6033224ae41332f97b2bb6214b77f80b0ec8e9923f
 - path: examples/fixtures/repositories/multilang-empty/pyproject.toml
@@ -347,6 +357,8 @@ artifacts:
   sha256: db4c50f17ec5d35ed5d3197047bc9d64c8c6aa30612873051bc70a3b27c6b8c2
 - path: graders/discovery-grader.xml
   sha256: 8198902b6c6ac81c51b0d16189ca3f7ab3364cafc8db849b98af828f0814dcf5
+- path: graders/documentation-grader.xml
+  sha256: 2fb45d32abbd13c52fab978e63f46ee73cad56d8cbe58831429e560144c6f284
 - path: graders/ethics-grader.xml
   sha256: 5e4000a8723130976557dda2ebd86fc8c7c50176ebe64bafbf20c0487d7245e1
 - path: graders/github-settings-grader.xml
@@ -500,9 +512,9 @@ artifacts:
 - path: scripts/validate-bundle.py
   sha256: a085f00149ee800e5267256d3ac062520ddf449c88d07ccf780b82d5503f030d
 - path: scripts/validate-changelog.py
-  sha256: 697806c2e1e718fb1ce35beff7603a8c03a8392dc49d6e94cf4e388007436e1f
+  sha256: cf8a41db446ed9caf179369f24756cc2abc24aaa9453806fa2b412c988bc45e3
 - path: scripts/validate-docs-consistency.py
-  sha256: c4e665ca3d7194c4fc5cef8443d9bf283bfca2c67c680386d8235bf85c6c74b4
+  sha256: 62fb79947860fc46f2242354eef11a9383d39de519770566efe72b3ac650341a
 - path: scripts/validate-evals.py
   sha256: 754f1328ae7f322a8979e10dcf7993507a4bf047c183806a579905b7fd3a8dd9
 - path: scripts/validate-github-api-fixtures.py
@@ -556,7 +568,53 @@ artifacts:
 - path: templates/discussion_template.md
   sha256: e45e9edfca5fae65140fe6b00b7ded3e64a8136250078182aca8adfe90ed203c
 - path: templates/discussion-template.xml
-  sha256: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+  sha256: fce91a2c126f52d7383fa9c8f59843cdab420bf47f0fb878f7e3490ee647f0c8
+- path: templates/github/.github/CODEOWNERS
+  sha256: 0069336414efd86cce54d1b2b47b704c1327753e0365c5d4cf50d45b262208ec
+- path: templates/github/.github/ISSUE_TEMPLATE/bug_report.yml
+  sha256: 7a67b754b86840c937890352bf55858259d25ab301151574190e4f5ce07e3677
+- path: templates/github/.github/ISSUE_TEMPLATE/feature_request.yml
+  sha256: 3532291630b53a079dcc321365bea55b61920ab02c12481b4f82f239f1083971
+- path: templates/github/.github/PULL_REQUEST_TEMPLATE/default.md
+  sha256: 5981c18ff54edca70c01ff613642a40bd5671ff488bae1e9949c32395aacede3
+- path: templates/github/.github/workflows-hardened/ci-hardened.yml
+  sha256: a93f66962584bc76e1132bfd9bee527a11ceac374b133ae38c85a7ff14b53ef0
+- path: templates/github/.github/workflows/ci-accessibility.yml
+  sha256: 6445259feff5595c5cbf390e63f66e6ed56481d66084ed336c4d94a198384d4f
+- path: templates/github/.github/workflows/ci-conformance.yml
+  sha256: 43897ae06a660f5e4eae6ce808c4e5338da0189c0ff2ae552d6af96168ffac0b
+- path: templates/github/.github/workflows/ci-data-ml.yml
+  sha256: 79570e5362d7c77341eedd543b0d5b121c1b351f29b71183206d4fd851de73dc
+- path: templates/github/.github/workflows/ci-docs-quality.yml
+  sha256: 6092c575383b6468429937c2913da83336f1d494217ed8308765661aabca44a9
+- path: templates/github/.github/workflows/ci-dotnet.yml
+  sha256: f30d2b18c89cb0a97de3ad42c8aae5c107bf198c9a889a82ecaff35b1f7d7d72
+- path: templates/github/.github/workflows/ci-go.yml
+  sha256: d705f33949fba8a7668f19682c856d580ab9d44c2a85de9799203c26cd0b601d
+- path: templates/github/.github/workflows/ci-java.yml
+  sha256: ffe9c9c1563541d818deb742bc9e132e13d90f5f665d9a09599bac98a8cd510a
+- path: templates/github/.github/workflows/ci-node.yml
+  sha256: 09b7ee36e77386cfbb29247d18bdf080393f35a489272ce1478dd803281d4586
+- path: templates/github/.github/workflows/ci-performance.yml
+  sha256: 80a385d8594cbc62001c09cadd5eb14d9c60e673b80b6d494d1b9175b42afdde
+- path: templates/github/.github/workflows/ci-php.yml
+  sha256: b849a430eb860e34cad8c35f6136a768892b6e9c18867ef6c5b823bc512d5a5b
+- path: templates/github/.github/workflows/ci-python.yml
+  sha256: 2e673d57d0d241d9662c6e61b5ff2c2cf800780aa4efe05170008988a4f2f8c1
+- path: templates/github/.github/workflows/ci-ruby.yml
+  sha256: 0e6a4c3c9193bc0246fe5f1173320998d4b26af5b2a7ea8d88286128ea6aaf8e
+- path: templates/github/.github/workflows/ci-rust.yml
+  sha256: e2792814f983ee7cd50f4491600f80695a57f855c5ca7a8739dee7e5670d071c
+- path: templates/github/.github/workflows/codeql.yml
+  sha256: a970aa9fa40a5976a1ec8fb9310f9a62a1b27f7c04b6600eb22e96c091725f5c
+- path: templates/github/.github/workflows/dependency-review.yml
+  sha256: 6ead4d3f17060a81372ff5694da8ddeda29b091b4b9f05b1644ae27de3b038f1
+- path: templates/github/.github/workflows/file-inventory.yml
+  sha256: a0834c1ab19ea85a3b1c20829120bc5649ac037dfc190ebbc6e7330b4822787e
+- path: templates/github/.github/workflows/release-gate.yml
+  sha256: 0dcaa859f3aa38cb5f52c162acaec7a50287bb1fde6f5c0ae4d965574ab417b4
+- path: templates/github/.github/workflows/sbom-cyclonedx.yml
+  sha256: 7e7d6e3d217dedb291eee5c57e9225fa53770e826e0610ca78d799993172285c
 - path: templates/github/workflow-action-lock.example.yaml
   sha256: d2a5d6ca69a4b2dfc0071f8270a6e24b576ed3c1037f719490de152034b22274
 - path: templates/issue_bug_report.yaml

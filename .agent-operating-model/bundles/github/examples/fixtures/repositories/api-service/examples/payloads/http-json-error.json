@@ -1,0 +1,6 @@
+{
+  "error": "service_unavailable",
+  "message": "The fixture service is temporarily unavailable.",
+  "correlation_id": "fixture-correlation-0001",
+  "retry_after_seconds": 30
+}

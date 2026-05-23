@@ -1,0 +1,21 @@
+name: CI (Rust)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: CI (Rust)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        run: rustup show
+      - name: Test
+        run: cargo test --locked

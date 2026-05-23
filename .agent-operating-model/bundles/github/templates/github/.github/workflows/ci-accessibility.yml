@@ -1,0 +1,24 @@
+name: CI (Accessibility)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  accessibility:
+    name: CI (Accessibility)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run accessibility checks when configured
+        run: |
+          if [ -f package.json ] && npm run | grep -q "accessibility"; then
+            npm run accessibility
+          else
+            echo "No accessibility command configured. Add axe, pa11y or equivalent checks for public UI work."
+          fi

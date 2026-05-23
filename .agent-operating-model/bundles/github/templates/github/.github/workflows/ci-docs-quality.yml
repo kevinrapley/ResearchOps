@@ -1,0 +1,26 @@
+name: CI (Documentation Quality)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docs-quality:
+    name: CI (Documentation Quality)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check required documentation
+        run: |
+          test -f README.md
+          test -f CONTRIBUTING.md
+          test -f SECURITY.md
+          test -f RECENT_LEARNINGS.md
+      - name: Check Markdown links when configured
+        run: |
+          if [ -f package.json ] && npm run | grep -q "links"; then npm run links; else echo "No link checker configured"; fi

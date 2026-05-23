@@ -1,0 +1,25 @@
+name: CI (PHP)
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: CI (PHP)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Test
+        run: if [ -f vendor/bin/phpunit ]; then vendor/bin/phpunit; else composer test; fi
