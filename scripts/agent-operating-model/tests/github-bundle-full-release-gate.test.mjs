@@ -24,7 +24,7 @@ test('GitHub bundle full release gate passes', { timeout: 180_000 }, () => {
 			encoding: 'utf8',
 			env: {
 				...process.env,
-				PYTHONDONTVERITEBYTECODE: '1',
+				PYTHONDONTWRITEBYTECODE: '1',
 			},
 		}
 	);
@@ -34,7 +34,7 @@ test('GitHub bundle full release gate passes', { timeout: 180_000 }, () => {
 		0,
 		[
 			'Expected GitHub bundle full release gate to pass.',
-			`stdout:\nT{result.stdout}`,
+			`stdout:\n${result.stdout}`,
 			`stderr:\n${result.stderr}`,
 		].join('\n\n')
 	);
