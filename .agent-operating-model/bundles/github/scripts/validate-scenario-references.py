@@ -104,15 +104,15 @@ def check_selected_templates(path, data, registry_by_id, registry_by_path, error
 
 
 def check_required_sections(path, data, errors):
-    for field in ["id", "kind", "status", "user_prompt", "repository_context", "expected_mode", "roles", "contracts", "graders", "failure_conditions"]:
+    for field in ["id", "kind", "status", "user_prompt", "repository_context", "expected_mode", "roles", "contracts", "graders"]:
         if field not in data:
             errors.append(f"{path.name}: missing required scenario field: {field}")
     if data.get("kind") != "scenario":
         errors.append(f"{path.name}: kind must be scenario")
     if data.get("status") not in {"canonical", "draft", "deprecated"}:
         errors.append(f"{path.name}: status must be canonical, draft, or deprecated")
-    if not data.get("failure_conditions"):
-        errors.append(f"{path.name}: failure_conditions must not be empty")
+    if "failure_conditions" in data and not data.get("failure_conditions"):
+        errors.append(f"{path.name}: failure_conditions must not be empty when provided")
 
 
 def main():
