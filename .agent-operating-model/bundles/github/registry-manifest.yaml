@@ -64,7 +64,7 @@ artifacts:
 - path: examples/accessibility-results/pa11y.json
   sha256: e320b9c1defc0a09e10b71e199e96a115539ab7bfa0676f9faa3cb6aba721133
 - path: examples/agent-evidence.example.yaml
-  sha256: 27991bd62f8c5e917df40553ad126c9971d1691c6c61c323446bd1350647f621
+  sha256: ae88267e634710807f710ed39867e04dbb35166455630c790c7631ad7e746cae
 - path: examples/anti-examples/removes-quality-gates.yaml
   sha256: bad05cfa75a682389475bb69dd7b1fa19720f182b9a45df9bbb62e804be6001a
 - path: examples/anti-examples/unverified-release-recommendation.yaml
@@ -84,7 +84,7 @@ artifacts:
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/.github/workflows/dependency-review.yml
   sha256: 68aab9b65551476b75343dc1e3e34778e505bd7ddddc0d345273da86474e152a
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/agent-evidence.yaml
-  sha256: 3ced3f926b93988876c74c33cbdca5f51b6c19eacfaf6cc0b55c8e7ce0a83c66
+  sha256: 2f175e23ffec4c736ca367a3828c4cceaf615f6143fbcbac74751abcc913d2d2
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/conformance-matrix.yaml
   sha256: adc5e130b4edbefe1153bbd684af61111a559903e77b7c00a96fe85c6bacf902
 - path: examples/eval-outputs/instantiate-multi-language-repo-pass/CONTRIBUTING.md
@@ -410,7 +410,7 @@ artifacts:
 - path: prompt.body.xml
   sha256: a0bd68a5fe3c3f700ba2d6e6d7d0a7592c2feef3fe986a4c5811435abbcb6ba0
 - path: prompt.spec.yaml
-  sha256: 70b63bd30bda9970e20acba30c4a75d6ecda0658096d8e7025002d465c177bb4
+  sha256: 4b2cde0f8186dbece11a46b1378856f7758b25e87fb54b9d6e7e5daef2470fbc
 - path: README.md
   sha256: 6c34825d920bf11b9a7e7e85d1a43a50e74970c48be147147bb073d426018438
 - path: references/accessibility-confidence-pack.xml
@@ -496,7 +496,7 @@ artifacts:
 - path: scripts/live-repository-release-gate.py
   sha256: a707c0871329e9c50c1a9ff90f43d39ba21cce5b9563ea97543f620f6def9e50
 - path: scripts/performance-adapters.py
-  sha256: db80b6e0d5e26d2b63865ffaabd206971e5a484fd8090874987431976cdf043b
+  sha256: ed440bcf0b9254ad6c6a811efd1af990548d56a29641487244a4bd5a191cbf63
 - path: scripts/pin-workflow-actions.py
   sha256: 8855ecbe8c4c17dee2598ab48da6be48be89b96b05fd1c032210b4dd16626287
 - path: scripts/README.md
@@ -514,9 +514,9 @@ artifacts:
 - path: scripts/validate-accessibility-fixtures.py
   sha256: 21de89e7236b79988e52a77b815568b65d08355604c848b00c4bb7a385498c05
 - path: scripts/validate-agent-evidence.py
-  sha256: 7ed427d6aae1212500b3a9547dbff9aa57b580ec15d680c33c1b688249fed952
+  sha256: 21f16f53525db6d2bbe811b269eeea0a64cfbef3025bfc3b8a9b14e821e27e49
 - path: scripts/validate-bundle.py
-  sha256: 74eb56b495f00b97cba744775bb2b46cd9abd9265797044982c564a14ce7d85d
+  sha256: cc7488dcf24b7087ebd9d520805872a35432de472614b996543a8c93d900b993
 - path: scripts/validate-changelog.py
   sha256: cf8a41db446ed9caf179369f24756cc2abc24aaa9453806fa2b412c988bc45e3
 - path: scripts/validate-docs-consistency.py
@@ -702,6 +702,6 @@ artifacts:
 - path: tests.regression.yaml
   sha256: 45350ecffeb5040f7cb61301fc99d6a23436d934280fc48bb7c3f47d8263d6a1
 - path: VALIDATION-REPORT.md
-  sha256: b7305cb5ba1149685f6fe5ab5568e907c5ca43bbfbb29c96f7798c9a233b0d3a
+  sha256: e4daa71b60bdaf7b1e9b29526a12115ad4df588df6a66bc9d528856cb749c46e
 - path: variables.schema.json
   sha256: 98e5a233501da227f3209b48e8729ac9a3b2a45d6de0c471251d1148e7ce0593
