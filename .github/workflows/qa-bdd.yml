@@ -123,12 +123,32 @@ jobs:
         if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: npx playwright install chromium
 
+      - name: Start local static site for PR smoke tests
+        if: steps.bdd_scope.outputs.run_bdd == 'true' && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          python3 -m http.server 8080 --directory public > static-site.log 2>&1 &
+          echo $! > static-site.pid
+
+          for i in {1..30}; do
+            if curl -fsS "http://127.0.0.1:8080/" > /dev/null; then
+              echo "Local static site is available."
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "Local static site did not become available."
+          cat static-site.log || true
+          exit 1
+
       - name: Resolve BASE_URL
         if: steps.bdd_scope.outputs.run_bdd == 'true'
         shell: bash
         run: |
           val="${{ inputs.base_url }}"
           if [ -z "$val" ]; then val="${{ vars.PREVIEW_URL }}"; fi
+          if [ -z "$val" ] && [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then val="http://127.0.0.1:8080"; fi
           if [ -z "$val" ]; then val="${{ vars.PAGES_URL }}"; fi
           if [ -z "$val" ]; then val="https://researchops.pages.dev/"; fi
 
@@ -187,6 +207,14 @@ jobs:
             reports/cucumber-report.json
           if-no-files-found: error
           retention-days: 14
+
+      - name: Stop local static site
+        if: always() && steps.bdd_scope.outputs.run_bdd == 'true' && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          if [ -f static-site.pid ]; then
+            kill "$(cat static-site.pid)" || true
+          fi
 
   walkthrough:
     needs: bdd-smoke
