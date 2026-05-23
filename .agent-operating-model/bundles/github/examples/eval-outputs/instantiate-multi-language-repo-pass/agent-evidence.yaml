@@ -31,19 +31,22 @@ files_changed:
   - docs/README.md
   - templates/README.md
   - tests/example.test.mjs
-  - tests/test_fixture.py
+  - tests/test_python_fixture.py
   - test-commands.yaml
 
 commands_run:
   - command: npm test
     status: passed
     evidence: tests/example.test.mjs provides the Node fixture validation path
-  - command: pytest
+  - command: python -I -m unittest discover -s tests -p 'test_*.py'
     status: passed
-    evidence: tests/test_fixture.py provides the Python fixture validation path
+    evidence: tests/test_python_fixture.py provides the Python fixture validation path
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
     evidence: deterministic fixture smoke command
+  - command: python -I -S -c "print('generated repository evidence checked')"
+    status: passed
+    evidence: deterministic repository evidence check command
 
 contracts_validated:
   - repository-contract.schema.json
@@ -59,10 +62,13 @@ tests_run:
     evidence: tests/example.test.mjs validates fixture metadata for the Node path
   - name: Python fixture test
     status: passed
-    evidence: tests/test_fixture.py validates fixture metadata for the Python path
+    evidence: tests/test_python_fixture.py validates fixture metadata for the Python path
   - name: Fixture smoke command
     status: passed
     evidence: python smoke command returned zero
+  - name: Repository evidence check
+    status: passed
+    evidence: deterministic repository evidence command returned zero
 
 gaps_recorded:
   - GAP-001 live repository settings are not verified in this eval fixture
@@ -88,7 +94,7 @@ artifacts_created:
   - .github/workflows/codeql.yml
   - .github/workflows/dependency-review.yml
   - tests/example.test.mjs
-  - tests/test_fixture.py
+  - tests/test_python_fixture.py
   - test-commands.yaml
 
 recent_learnings:
@@ -108,7 +114,7 @@ repository_state:
     - agent-evidence.yaml
     - .github/CODEOWNERS
     - tests/example.test.mjs
-    - tests/test_fixture.py
+    - tests/test_python_fixture.py
     - test-commands.yaml
   detected_languages:
     - node
@@ -188,13 +194,18 @@ test_results:
   - command: npm test
     status: passed
     evidence: tests/example.test.mjs is present as the Node test fixture.
-  - command: pytest
+  - command: python -I -m unittest discover -s tests -p 'test_*.py'
     status: passed
-    evidence: tests/test_fixture.py is present as the Python test fixture.
+    evidence: tests/test_python_fixture.py is present as the Python test fixture.
   - command: python -I -S -c "print('fixture tests passed')"
     status: passed
     returncode: 0
     stdout: "fixture tests passed\n"
+    stderr: ""
+  - command: python -I -S -c "print('generated repository evidence checked')"
+    status: passed
+    returncode: 0
+    stdout: "generated repository evidence checked\n"
     stderr: ""
 
 github_settings_verification:
