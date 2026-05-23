@@ -1,0 +1,46 @@
+{% from "govuk/components/header/macro.njk" import govukHeader %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+{% from "govuk/components/skip-link/macro.njk" import govukSkipLink %}
+<!doctype html>
+<html class="govuk-template" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ pageTitle }}</title>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	{% block head %}{% endblock %}
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+</head>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+	{{ govukSkipLink({ href: '#main-content', text: 'Skip to main content' }) }}
+	{{ govukHeader({
+		homepageUrl: '/',
+		productName: serviceName
+	}) }}
+	{{ govukServiceNavigation({
+		navigationLabel: 'Menu',
+		navigation: navigation
+	}) }}
+	<div class="govuk-width-container">
+		{{ govukPhaseBanner({
+			tag: {
+				text: 'Prototype'
+			},
+			html: 'This is a ResearchOps prototype. Do not enter real participant personal data.'
+		}) }}
+	</div>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		{% block content %}{% endblock %}
+	</main>
+	{{ govukFooter({
+		meta: {
+			items: [],
+			html: '&copy; 2026 Home Office Biometrics · ResearchOps v1.0.0'
+		}
+	}) }}
+	{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "traceId": "govuk-frontend-integration-spike",
+  "date": "2026-05-20",
+  "branch": "chore/govuk-frontend-integration",
+  "task": "Convert PR 261 to draft and create a proper GOV.UK Frontend integration spike branch.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "decisions": [
+    "PR 261 converted to draft and retained as evidence.",
+    "New spike branch created from main.",
+    "Spike will explore official GOV.UK Frontend npm, Sass, assets, JavaScript and Nunjucks route."
+  ],
+  "filesChanged": [
+    "docs/spikes/govuk-frontend-integration.md",
+    "docs/agent-audit/reasoning/2026/05/20/govuk-frontend-integration-spike.md",
+    "docs/agent-audit/reasoning/2026/05/20/govuk-frontend-integration-spike.json"
+  ],
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}
