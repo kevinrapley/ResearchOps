@@ -10,7 +10,7 @@ artifacts:
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
-  sha256: aec8c2eaf9da67a383b47815be2195317067bd2de54a5ade313eff86b11c5452
+  sha256: a5413db1d63e25c3eaf98522ac7fdd7c9268ca5696f29518c2153ea34f235f8a
 - path: contracts/conformance-record.schema.json
   sha256: 3e3ebea281fa111150da063d8d56902f5547e991696553c419e3d4353316627a
 - path: contracts/endpoint-catalog.schema.json
