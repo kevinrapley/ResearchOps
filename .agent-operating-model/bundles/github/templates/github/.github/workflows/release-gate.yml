@@ -1,0 +1,33 @@
+name: Release Gate
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run release gate when configured
+        run: |
+          if [ -f scripts/release-gate.py ]; then
+            python scripts/release-gate.py --mode fast --report release-gate-report.json
+          elif [ -f .agent-operating-model/bundles/github/scripts/release-gate.py ]; then
+            cd .agent-operating-model/bundles/github
+            python scripts/release-gate.py --mode fast --report release-gate-report.json
+          else
+            echo "No release gate script found. Add a release gate before treating this workflow as blocking."
+          fi
