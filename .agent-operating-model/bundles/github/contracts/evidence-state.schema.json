@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Evidence State Contract",
+  "description": "Shared evidence-state vocabulary used to distinguish claimed, observed, verified, unavailable and waived evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["state", "rationale"],
+  "properties": {
+    "state": {
+      "$ref": "#/definitions/evidenceState"
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string"
+    },
+    "verified_by": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "evidenceState": {
+      "type": "string",
+      "enum": [
+        "claimed",
+        "observed",
+        "verified",
+        "unavailable",
+        "waived"
+      ]
+    },
+    "evidenceStateRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "rationale"],
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/evidenceState"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string"
+        },
+        "verified_by": {
+          "type": "string"
+        },
+        "verified_at": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
