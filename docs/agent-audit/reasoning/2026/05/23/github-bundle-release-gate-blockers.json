@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-05-23",
+  "branch": "fix/github-bundle-release-gate-blockers",
+  "scope": [
+    "github-diamond-bundle",
+    "release-gate",
+    "template-registry",
+    "eval-fixtures",
+    "graders",
+    "version-validators"
+  ],
+  "evidenceBoundary": {
+    "summary": "This trace records observable repository work to repair structural blockers reported by an external GitHub bundle evaluation. It does not include private chain-of-thought."
+  },
+  "operatingModel": {
+    "selectedBundles": [
+      "github",
+      "researchops-developer-control",
+      "multi-functional-team"
+    ],
+    "branchPolicy": "fix/ branches require audit trace artefacts under docs/agent-audit/reasoning/YYYY/MM/DD."
+  },
+  "problemSummary": [
+    "The GitHub Diamond bundle archive failed its own fast release gate.",
+    "The release-gate blockers included an empty XML template, missing template-registry targets, a missing eval fixture repository, a missing documentation grader and stale version validators.",
+    "The user requested the first remediation PR and explicitly asked that missing template registry entries be created rather than removed."
+  ],
+  "workSummary": [
+    "Replaced the empty templates/discussion-template.xml file with valid XML and a structured discussion record template.",
+    "Created GitHub issue, pull request, CODEOWNERS and workflow templates referenced by template-registry.yaml.",
+    "Created the templates/github/.github/workflows-hardened/ci-hardened.yml directory/file needed by release-gate workflow-hardening validation.",
+    "Added graders/documentation-grader.xml because scenario examples reference it.",
+    "Added examples/fixtures/repositories/api-service with endpoint catalogue, payload examples and contract-test path evidence because evals.yaml references it.",
+    "Updated validate-docs-consistency.py to read the current bundle version from prompt.spec.yaml instead of defaulting to 2.9.2.",
+    "Updated validate-changelog.py to read the current bundle version from prompt.spec.yaml and validate changelog order without a stale hard-coded version list."
+  ],
+  "changedAreas": [
+    ".agent-operating-model/bundles/github/templates/discussion-template.xml",
+    ".agent-operating-model/bundles/github/templates/github/.github/ISSUE_TEMPLATE",
+    ".agent-operating-model/bundles/github/templates/github/.github/PULL_REQUEST_TEMPLATE",
+    ".agent-operating-model/bundles/github/templates/github/.github/workflows",
+    ".agent-operating-model/bundles/github/templates/github/.github/workflows-hardened",
+    ".agent-operating-model/bundles/github/templates/github/.github/CODEOWNERS",
+    ".agent-operating-model/bundles/github/graders/documentation-grader.xml",
+    ".agent-operating-model/bundles/github/examples/fixtures/repositories/api-service",
+    ".agent-operating-model/bundles/github/scripts/validate-changelog.py",
+    ".agent-operating-model/bundles/github/scripts/validate-docs-consistency.py"
+  ],
+  "validationEvidence": {
+    "staticCompatibilityChecks": [
+      "discussion-template.xml now has a versioned XML root element.",
+      "GitHub workflow templates include top-level permissions so validate-workflow-hardening.py can evaluate them.",
+      "The hardened workflow directory exists for the release gate hardened-template check.",
+      "The api-service eval fixture path exists and contains the expected endpoint catalogue, payload and contract-test locations.",
+      "The documentation grader exists at the scenario-referenced path."
+    ],
+    "notRunLocally": [
+      "No local release gate was run in this connector-only environment. CI should run the fast release gate and bundle validators on the pull request."
+    ],
+    "recommendedNextChecks": [
+      "cd .agent-operating-model/bundles/github",
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode fast --report fast-release-gate-report.json",
+      "python scripts/validate-template-registry.py",
+      "python scripts/validate-evals.py",
+      "python scripts/validate-changelog.py",
+      "python scripts/validate-docs-consistency.py"
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Registry manifest checksums may be stale after adding new bundle files.",
+      "mitigation": "The existing GitHub bundle registry-manifest workflow should regenerate registry-manifest.yaml on the pull request branch."
+    },
+    {
+      "risk": "The fast gate may reveal additional blockers after the known structural blockers are removed.",
+      "mitigation": "Inspect CI logs and patch only release-gate blockers in this first remediation PR. Defer eval-harness hardening and schema tightening to later PRs."
+    }
+  ],
+  "status": "ready-for-pr"
+}
