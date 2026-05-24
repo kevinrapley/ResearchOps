@@ -50,7 +50,7 @@ includes(buttonMigration, "Target classification: GOV.UK global.", "GOV.UK butto
 includes(buttonMigration, "Route stylesheets must not create button systems for individual pages.", "GOV.UK button migration");
 
 includes(generatedGovukCss, ".govuk-button", "generated GOV.UK Frontend stylesheet");
-includes(generatedGovukCss, "font-family:GDS Transport", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, 'font-family:"GDS Transport"', "generated GOV.UK Frontend stylesheet");
 includes(generatedGovukCss, ".govuk-summary-card", "generated GOV.UK Frontend stylesheet");
 includes(generatedGovukCss, ".govuk-details", "generated GOV.UK Frontend stylesheet");
 includes(generatedGovukCss, ".govuk-tag", "generated GOV.UK Frontend stylesheet");
