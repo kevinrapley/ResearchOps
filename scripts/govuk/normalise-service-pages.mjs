@@ -12,17 +12,6 @@ const GOVUK_INIT_SCRIPT = '/js/govuk-frontend-init.js';
 const HEADER_PARTIAL = '/partials/header.html';
 const FOOTER_PARTIAL = '/partials/footer.html';
 
-const legacyStylesheets = new Set([
-	'/css/govuk/govuk-typography.css',
-	'/css/govuk/govuk-colours.css',
-	'/css/govuk/govuk-page-chrome.css',
-	'/css/govuk/govuk-buttons.css',
-	'/css/govuk/govuk-forms.css',
-	'/css/govuk/govuk-frontend-v6.css',
-	'/css/screen.css',
-	'/css/home-lifecycle.css',
-]);
-
 function routeToFile(route) {
 	if (route === '/') return resolve(publicRoot, 'index.html');
 
@@ -51,13 +40,6 @@ function supportSnippet() {
 	return `<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>`;
 }
 
-function removeLegacyStylesheets(head) {
-	return head.replace(/\n?\s*<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi, (match) => {
-		const href = match.match(/href=["']([^"']+)["']/i)?.[1];
-		return href && legacyStylesheets.has(href) ? '' : match;
-	});
-}
-
 function ensureHeadAsset(head, assetMarkup, marker) {
 	if (head.includes(marker)) return head;
 	return head.replace(/<\/head>/i, `\t${assetMarkup}\n</head>`);
@@ -67,7 +49,7 @@ function normaliseHead(html) {
 	let next = html.replace(/<html\b[^>]*>/i, '<html class="govuk-template" lang="en">');
 
 	next = next.replace(/<head>([\s\S]*?)<\/head>/i, (match) => {
-		let head = removeLegacyStylesheets(match);
+		let head = match;
 		head = ensureHeadAsset(head, `<link rel="stylesheet" href="${GOVUK_FRONTEND_STYLESHEET}" media="screen">`, GOVUK_FRONTEND_STYLESHEET);
 		head = ensureHeadAsset(head, `<script type="module" src="${SHARED_LAYOUT_SCRIPT}" defer></script>`, SHARED_LAYOUT_SCRIPT);
 		head = ensureHeadAsset(head, `<script type="module" src="${GOVUK_INIT_SCRIPT}" defer></script>`, GOVUK_INIT_SCRIPT);
