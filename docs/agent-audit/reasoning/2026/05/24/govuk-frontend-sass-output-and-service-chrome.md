@@ -1,11 +1,11 @@
-# GOV.UK Frontend Sass output and service chrome migration trace
+# GOV.UK Frontend Sass output, service chrome and preview asset trace
 
 - Date: 2026-05-24
 - Repository: `kevinrapley/ResearchOps`
 - Pull request: #262
 - Branch: `chore/govuk-frontend-integration`
 - Branch trace decision: `chore/` branch, trace required.
-- Task: Reinstate the home-page Sass-driven grid output and add explicit GOV.UK Frontend chrome to every registered service page.
+- Task: Reinstate the home-page Sass-driven grid output, add explicit GOV.UK Frontend chrome to every registered service page, and fix Cloudflare Pages preview asset 404s.
 
 ## Operating-model files loaded
 
@@ -47,7 +47,16 @@
 - `package.json`
 - `.github/workflows/ci.yml`
 - `.github/workflows/release-gate.yml`
+- `.prettierignore`
+- `src/styles/govuk.scss`
 - `src/styles/researchops-home.scss`
+- `public/_redirects`
+- `public/assets/govuk/govuk-frontend.css`
+- `public/assets/govuk/assets/fonts/light-94a07e06a1-v2.woff2`
+- `public/assets/govuk/assets/fonts/bold-b542beb274-v2.woff2`
+- `public/assets/govuk/assets/fonts/light-f591b13f7d-v2.woff`
+- `public/assets/govuk/assets/fonts/bold-affa96571d-v2.woff`
+- `public/assets/govuk/assets/images/govuk-crest.svg`
 - `public/assets/researchops/researchops-home.css`
 - `public/components/layout.js`
 - `public/partials/header.html`
@@ -56,6 +65,7 @@
 - `public/pages/projects/index.html`
 - `visual-walkthrough.config.mjs`
 - `scripts/researchops-projects-acceptance.mjs`
+- `tests/deploy-asset-paths.test.js`
 - `tests/govuk-frontend-integration-route-state.test.js`
 - `tests/govuk-frontend-service-pages-route-state.test.js`
 - `tests/consent-forms-route-state.test.js`
@@ -76,14 +86,24 @@
 - Migrated `public/pages/projects/index.html` to the explicit GOV.UK Frontend page pattern.
 - Updated stale route-state tests to expect the explicit GOV.UK template and generated GOV.UK Frontend stylesheet.
 - Fixed the Projects acceptance generator so `govuk-body-l` and `govuk-body` are treated as distinct class tokens.
+- Added a top-level `assets/researchops/researchops-home.css` compatibility copy so the Cloudflare Pages preview can serve the exact `/assets/researchops/researchops-home.css` URL observed in the browser network panel.
+- Added Cloudflare Pages rewrites in `public/_redirects` so GOV.UK CSS requests for `/assets/fonts/*` and `/assets/images/govuk-crest.svg` are mapped to the committed GOV.UK asset directory under `/assets/govuk/assets/`.
+- Added `$govuk-assets-path: '/assets/govuk/assets/';` to the GOV.UK Sass source so future compiled CSS points at the deployed GOV.UK asset directory.
+- Added `tests/deploy-asset-paths.test.js` to guard the preview-facing asset paths, home CSS compatibility copy, GOV.UK asset files and redirect mappings.
+- Updated `.prettierignore` so the generated top-level ResearchOps CSS compatibility copy is not reformatted by Prettier.
 
 ## Files modified
 
 - `.github/workflows/release-gate.yml`
+- `.prettierignore`
+- `assets/researchops/researchops-home.css`
 - `package.json`
+- `public/_redirects`
+- `public/pages/projects/index.html`
 - `scripts/govuk/normalise-service-pages.mjs`
 - `scripts/researchops-projects-acceptance.mjs`
-- `public/pages/projects/index.html`
+- `src/styles/govuk.scss`
+- `tests/deploy-asset-paths.test.js`
 - `tests/govuk-frontend-integration-route-state.test.js`
 - `tests/govuk-frontend-service-pages-route-state.test.js`
 - `tests/consent-forms-route-state.test.js`
@@ -91,19 +111,28 @@
 - `tests/study-page-route-state.test.js`
 - `tests/synthesize-page-route-state.test.js`
 
-## Validation evidence before this trace
+## Preview issue addressed
 
-On head `ccfbae0d1d993f46a3c4b16d75183f90c511d496`:
+The browser evidence showed that the home page loaded GOV.UK Frontend but failed to load `/assets/researchops/researchops-home.css`. That missing CSS caused the 8-step grid and 3-column next-actions layout to render as ordinary document flow.
 
-- `Accessibility audit (pa11y-ci)` passed.
-- `qa-bdd` passed.
-- `Format pull request` passed.
-- `QA — Broken links (Lychee)` passed.
-- `Build and deploy agent documentation Pages` passed.
-- `Update GitHub bundle registry manifest` passed.
-- `CI` built the Sass and page outputs successfully, ran `postbuild:govuk-pages`, normalised registered service pages, and passed 159 of 160 tests.
-- The only observed CI failure was `agent-trace-coverage.test.js`, which required trace artefacts for `2026-05-24`.
+The browser evidence also showed missing GOV.UK font and crest asset requests from the compiled GOV.UK CSS. Those requests now have Cloudflare Pages rewrites to the existing committed GOV.UK asset directory.
+
+## Validation evidence
+
+On head `0200d846aeec40df4dd580b2f5bbea33f461e7ef`, the following workflows passed:
+
+- `CI`
+- `Validate ResearchOps`
+- `Accessibility audit (pa11y-ci)`
+- `qa-bdd`
+- `Release Gate`
+- `Format pull request`
+- `QA — Broken links (Lychee)`
+- `Build and deploy agent documentation Pages`
+- `Update GitHub bundle registry manifest`
 
 ## Residual risk
 
 The build-time normaliser covers every page registered in `visual-walkthrough.config.mjs`. If the repository contains additional public HTML files that are not registered as service pages, they are outside this unit and should be covered by a later filesystem-wide page inventory if required.
+
+This trace addresses the preview asset 404s visible in the supplied browser network panel. A final visual check should still be done in the Cloudflare Pages preview after the latest branch deployment has completed.
