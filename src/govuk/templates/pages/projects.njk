@@ -1,0 +1,133 @@
+{% extends "layouts/researchops.njk" %}
+
+{% block head %}
+	<link rel="modulepreload" href="/js/projects-page.js?v=projects-govuk-summary-card-20260524">
+	<link rel="stylesheet" href="/css/projects.css?v=projects-govuk-summary-card-20260524" media="screen">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+	<header class="page-intro">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-xl page-title" id="projects-title">Projects</h1>
+				<p class="govuk-body-l">Review research projects created in ResearchOps.</p>
+				<p class="govuk-body">Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.</p>
+				<p class="projects-page-actions" hidden>
+					<a class="govuk-button" href="/pages/start/overview/" role="button" draggable="false" data-module="govuk-button">Start a research project</a>
+				</p>
+			</div>
+		</div>
+	</header>
+
+	<section class="projects-list-section" aria-labelledby="projects-list-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="projects-list-title">Research projects</h2>
+				<p class="govuk-body">Projects are shown with the newest created project first.</p>
+			</div>
+		</div>
+
+		<div id="list" class="projects-list" aria-live="polite" aria-busy="true" aria-labelledby="projects-list-title">
+			<p class="govuk-body-l">Loading projects.</p>
+		</div>
+
+		<noscript>
+			<div class="govuk-inset-text projects-empty-state" role="status">
+				<h3 class="govuk-heading-m">Project records need JavaScript to load</h3>
+				<p class="govuk-body">You can still start a new research project from this page.</p>
+				<p class="govuk-body"><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
+			</div>
+		</noscript>
+	</section>
+</div>
+
+<template id="project-summary-card-template">
+	<article class="govuk-summary-card rops-project-card">
+		<div class="govuk-summary-card__title-wrapper">
+			<h3 class="govuk-summary-card__title" data-project-field="name"></h3>
+			<ul class="govuk-summary-card__actions">
+				<li class="govuk-summary-card__action">
+					<a class="govuk-link" data-project-link="dashboard">View dashboard</a>
+				</li>
+			</ul>
+		</div>
+		<div class="govuk-summary-card__content">
+			<dl class="govuk-summary-list govuk-summary-list--no-border rops-project-summary-list">
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Team</dt>
+					<dd class="govuk-summary-list__value" data-project-field="team"></dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Phase</dt>
+					<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--blue" data-project-field="phase"></strong></dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Status</dt>
+					<dd class="govuk-summary-list__value"><strong class="govuk-tag" data-project-field="status"></strong></dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">Description</dt>
+					<dd class="govuk-summary-list__value" data-project-field="description"></dd>
+				</div>
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">User groups</dt>
+					<dd class="govuk-summary-list__value"><ul class="govuk-list govuk-list--bullet" data-project-list="user-groups"></ul></dd>
+				</div>
+			</dl>
+			<details class="govuk-details rops-project-details" data-module="govuk-details">
+				<summary class="govuk-details__summary">
+					<span class="govuk-details__summary-text">Stakeholders and objectives</span>
+				</summary>
+				<div class="govuk-details__text">
+					<div class="rops-project-details__columns">
+						<section>
+							<h4 class="govuk-heading-s" data-project-heading="stakeholders">Stakeholders</h4>
+							<ul class="govuk-list govuk-list--bullet" data-project-list="stakeholders"></ul>
+						</section>
+						<section>
+							<h4 class="govuk-heading-s" data-project-heading="objectives">Objectives</h4>
+							<ul class="govuk-list govuk-list--bullet" data-project-list="objectives"></ul>
+						</section>
+					</div>
+				</div>
+			</details>
+		</div>
+	</article>
+</template>
+
+<template id="projects-empty-state-template">
+	<div class="govuk-inset-text projects-empty-state" role="status">
+		<h3 class="govuk-heading-m">No projects yet</h3>
+		<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
+		<p class="govuk-body" data-project-action="start" hidden><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>
+	</div>
+</template>
+
+<template id="projects-error-state-template">
+	<div class="govuk-notification-banner govuk-notification-banner--error projects-error-state" role="alert" aria-labelledby="projects-error-title" data-module="govuk-notification-banner">
+		<div class="govuk-notification-banner__header">
+			<h3 class="govuk-notification-banner__title" id="projects-error-title">Could not load projects</h3>
+		</div>
+		<div class="govuk-notification-banner__content">
+			<p class="govuk-body">Project records could not be loaded. Try again, or start a new project if you need to continue setting up research work.</p>
+			<p class="govuk-body">Technical detail: <span data-project-field="technical-detail"></span></p>
+		</div>
+	</div>
+</template>
+
+<template id="projects-malformed-state-template">
+	<div class="govuk-notification-banner projects-malformed-banner" role="status" aria-live="polite" aria-labelledby="projects-malformed-title" data-module="govuk-notification-banner">
+		<div class="govuk-notification-banner__header">
+			<h3 class="govuk-notification-banner__title" id="projects-malformed-title">Project data hidden</h3>
+		</div>
+		<div class="govuk-notification-banner__content">
+			<p class="govuk-body"><strong data-project-field="count"></strong> <span data-project-field="message"></span></p>
+		</div>
+	</div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/projects-page.js?v=projects-govuk-summary-card-20260524"></script>
+{% endblock %}
