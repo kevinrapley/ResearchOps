@@ -51,7 +51,7 @@ assert.match(sassEntry, /\$govuk-assets-path: '\/assets\/govuk\/assets\/';/);
 assert.match(sassEntry, /@import ['"]govuk-frontend\/dist\/govuk['"];/);
 assert.match(generatedCss, /\.govuk-width-container\{max-width:1020px/);
 assert.match(generatedCss, /\.govuk-button/);
-assert.match(generatedCss, /font-family:GDS Transport/);
+assert.match(generatedCss, /font-family:"GDS Transport"/);
 assert.match(generatedCss, /\.govuk-summary-card/);
 assert.match(generatedCss, /\.govuk-details/);
 assert.match(generatedCss, /\.govuk-tag/);
