@@ -16,13 +16,7 @@
 <body class="govuk-template__body">
 	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<x-include src="/partials/debug.html" debug-only></x-include>
-	<x-include
-		src="/partials/header.html"
-		vars='{
-			"active":"Projects",
-			"subtitle":"Browse projects created in this demo suite"
-		}'>
-	</x-include>
+	<x-include src="/partials/header.html" vars='{"active":"Projects","subtitle":"Browse projects created in this demo suite"}'></x-include>
 
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 		<div class="govuk-width-container">
