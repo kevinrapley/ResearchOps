@@ -317,10 +317,10 @@ function appendStakeholderList(listElement, stakeholders) {
 
 function populateProjectCard(card, project) {
 	const projectId = encodeURIComponent(project.id);
-	card.setAttribute("aria-labelledby", `project-title-${projectId}`);
+	card.setAttribute("aria-labelledby", `project-summary-card-title-${projectId}`);
 	const title = field(card, "name");
 	if (title) {
-		title.id = `project-title-${projectId}`;
+		title.id = `project-summary-card-title-${projectId}`;
 		title.textContent = project.name;
 	}
 
@@ -343,13 +343,6 @@ function createProjectCard(project) {
 	const card = templateContent(TEMPLATE_IDS.PROJECT_CARD);
 	populateProjectCard(card, project);
 	return card;
-}
-
-function renderEmptyState(canStartProject = false) {
-	const emptyState = templateContent(TEMPLATE_IDS.EMPTY_STATE);
-	const startAction = emptyState.querySelector('[data-project-action="start"]');
-	if (startAction) startAction.hidden = !canStartProject;
-	container.replaceChildren(emptyState);
 }
 
 function renderErrorState(error) {
