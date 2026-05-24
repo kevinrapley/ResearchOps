@@ -1,4 +1,5 @@
 {% extends "layouts/researchops.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block head %}
 	<link rel="modulepreload" href="/js/projects-page.js?v=projects-govuk-summary-card-20260524">
@@ -13,15 +14,13 @@
 				<h1 class="govuk-heading-xl page-title" id="projects-title">Projects</h1>
 				<p class="govuk-body-l">Review research projects created in ResearchOps.</p>
 				<p class="govuk-body">Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-				{% from "govuk/components/button/macro.njk" import govukButton %}
-
-				{{ govukButton({
-				  text: "Start a research project",
-					type: "button",
-					href: "/pages/start/overview",
-					classes: "govuk-button--secondary",
-					attributes: 'data-module="govuk-button"'
-				}) }}
+				<p class="projects-page-actions" hidden>
+					{{ govukButton({
+						text: "Start a research project",
+						href: "/pages/start/overview/",
+						classes: "govuk-button--secondary"
+					}) }}
+				</p>
 			</div>
 		</div>
 	</header>
