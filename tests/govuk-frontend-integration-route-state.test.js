@@ -7,16 +7,20 @@ const sassEntry = fs.readFileSync('src/styles/govuk.scss', 'utf8');
 const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
 const generatedHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
 const homeSassEntry = fs.readFileSync('src/styles/researchops-home.scss', 'utf8');
+const projectsSassEntry = fs.readFileSync('src/styles/projects.scss', 'utf8');
+const projectsGeneratedCss = fs.readFileSync('public/css/projects.css', 'utf8');
 const copyScript = fs.readFileSync('scripts/govuk/copy-govuk-assets.mjs', 'utf8');
 const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const initScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
 const layoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
+const projectsTemplate = fs.readFileSync('src/govuk/templates/pages/projects.njk', 'utf8');
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
 const sharedLayoutLoader = fs.readFileSync('public/components/layout.js', 'utf8');
 const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const renderedHomePage = fs.readFileSync('public/index.html', 'utf8');
+const renderedProjectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
 
 const representativePages = [
 	'public/index.html',
@@ -41,7 +45,10 @@ const customCssAssets = [
 assert.equal(packageJson.dependencies['govuk-frontend'], '^6.0.0');
 assert.equal(packageJson.devDependencies.sass, '^1.94.2');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
-assert.equal(packageJson.scripts.build, 'npm run build:govuk && npm run build:researchops && npm run build:govuk-pages');
+assert.equal(
+	packageJson.scripts.build,
+	'npm run build:govuk && npm run build:researchops && npm run build:projects && npm run build:govuk-pages',
+);
 assert.equal(
 	packageJson.scripts['build:govuk'],
 	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs',
@@ -49,6 +56,10 @@ assert.equal(
 assert.equal(
 	packageJson.scripts['build:researchops'],
 	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/researchops-home.scss public/assets/researchops/researchops-home.css',
+);
+assert.equal(
+	packageJson.scripts['build:projects'],
+	'sass --load-path=node_modules --no-source-map src/styles/projects.scss public/css/projects.css',
 );
 assert.equal(packageJson.scripts['build:govuk-pages'], 'node scripts/govuk/render-govuk-pages.mjs');
 assert.match(packageLock, /"govuk-frontend": "\^6\.0\.0"/);
@@ -70,6 +81,14 @@ assert.match(generatedHomeCss, /\.researchops-step-grid\{[^}]*grid-template-colu
 assert.match(generatedHomeCss, /\.researchops-next-actions/);
 assert.match(generatedHomeCss, /\.researchops-next-actions\{[^}]*grid-template-columns:repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(generatedHomeCss, /\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/);
+assert.match(projectsSassEntry, /\.rops-project-details__columns/);
+assert.match(projectsSassEntry, /grid-template-columns: 1fr 1fr;/);
+assert.doesNotMatch(projectsSassEntry, /\.govuk-summary-card/);
+assert.doesNotMatch(projectsSassEntry, /\.govuk-details__summary/);
+assert.match(projectsGeneratedCss, /\.rops-project-details__columns/);
+assert.match(projectsGeneratedCss, /grid-template-columns: 1fr 1fr;/);
+assert.doesNotMatch(projectsGeneratedCss, /\.govuk-summary-card/);
+assert.doesNotMatch(projectsGeneratedCss, /\.govuk-details__summary/);
 assert.match(copyScript, /node_modules\/govuk-frontend\/dist\/govuk/);
 assert.match(copyScript, /public\/assets\/govuk/);
 assert.match(copyScript, /govuk-frontend\.min\.js/);
@@ -78,8 +97,10 @@ assert.match(renderScript, /node_modules\/govuk-frontend\/dist/);
 assert.match(renderScript, /pages\/home\.njk/);
 assert.match(renderScript, /pages\/account\.njk/);
 assert.match(renderScript, /pages\/start-overview\.njk/);
+assert.match(renderScript, /pages\/projects\.njk/);
 assert.match(renderScript, /activeNavigation: 'Home'/);
 assert.match(renderScript, /activeNavigation: 'Start Research Project'/);
+assert.match(renderScript, /activeNavigation: 'Projects'/);
 assert.match(initScript, /import \{ initAll \} from '\/assets\/govuk\/govuk-frontend\.min\.js';/);
 assert.match(initScript, /initAll\(\{ scope \}\);/);
 assert.match(initScript, /x-include:loaded/);
@@ -96,11 +117,22 @@ assert.match(homeTemplate, /govuk\/components\/tag\/macro\.njk/);
 assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css\?v=govuk-home-grid-20260524/);
 assert.match(homeTemplate, /researchops-step-card/);
 assert.match(homeTemplate, /researchops-next-actions/);
+assert.match(projectsTemplate, /id="project-summary-card-template"/);
+assert.match(projectsTemplate, /govuk-summary-card rops-project-card/);
+assert.match(projectsTemplate, /govuk-summary-list govuk-summary-list--no-border rops-project-summary-list/);
+assert.match(projectsTemplate, /govuk-details rops-project-details/);
+assert.match(projectsTemplate, /data-project-field="name"/);
+assert.match(projectsTemplate, /data-project-list="stakeholders"/);
+assert.doesNotMatch(projectsTemplate, /class="card"/);
+assert.doesNotMatch(projectsTemplate, /project-meta/);
 
 assert.match(renderedHomePage, /assets\/researchops\/researchops-home\.css\?v=govuk-home-grid-20260524/);
 assert.match(renderedHomePage, /class="researchops-step-grid"/);
 assert.match(renderedHomePage, /class="researchops-next-actions"/);
 assert.match(renderedHomePage, /class="researchops-next-action"/);
+assert.match(renderedProjectsPage, /id="project-summary-card-template"/);
+assert.match(renderedProjectsPage, /govuk-summary-card rops-project-card/);
+assert.match(renderedProjectsPage, /projects-govuk-summary-card-20260524/);
 
 assert.match(sharedHead, /\/assets\/govuk\/govuk-frontend\.css/);
 assert.match(sharedHead, /\/css\/govuk\/govuk-frontend-v6\.css/);
