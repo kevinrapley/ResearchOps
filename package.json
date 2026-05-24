@@ -13,6 +13,7 @@
     "lint": "prettier -c . && eslint .",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
+    "prevalidate": "npm run build --if-present",
     "validate": "bash ./scripts/validate.sh",
     "audit:performance": "bash ./scripts/performance-audit.sh",
     "audit:performance:write": "bash ./scripts/performance-audit.sh --write docs/performance/performance-inventory.md",
