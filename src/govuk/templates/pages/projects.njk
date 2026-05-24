@@ -13,9 +13,15 @@
 				<h1 class="govuk-heading-xl page-title" id="projects-title">Projects</h1>
 				<p class="govuk-body-l">Review research projects created in ResearchOps.</p>
 				<p class="govuk-body">Open a project dashboard to manage studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-				<p class="projects-page-actions" hidden>
-					<a class="govuk-button" href="/pages/start/overview/" role="button" draggable="false" data-module="govuk-button">Start a research project</a>
-				</p>
+				{% from "govuk/components/button/macro.njk" import govukButton %}
+
+				{{ govukButton({
+				  text: "Start a research project",
+					type: "button",
+					href: "/pages/start/overview",
+					classes: "govuk-button--secondary",
+					attributes: 'data-module="govuk-button"'
+				}) }}
 			</div>
 		</div>
 	</header>
