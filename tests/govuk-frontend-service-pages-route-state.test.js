@@ -25,8 +25,8 @@ for (const route of registeredPagePaths) {
 	assert.match(page, /\/assets\/govuk\/govuk-frontend\.css/, `${filePath} should load generated GOV.UK Frontend CSS explicitly`);
 	assert.match(page, /\/components\/layout\.js/, `${filePath} should load the shared x-include loader explicitly`);
 	assert.match(page, /\/js\/govuk-frontend-init\.js/, `${filePath} should initialise GOV.UK Frontend explicitly`);
-	assert.match(page, /<x-include src="\/partials\/header\.html"/, `${filePath} should include shared GOV.UK header chrome`);
-	assert.match(page, /<x-include src="\/partials\/footer\.html"><\/x-include>/, `${filePath} should include shared GOV.UK footer chrome`);
+	assert.match(page, /<x-include\b[^>]*src="\/partials\/header\.html"/, `${filePath} should include shared GOV.UK header chrome`);
+	assert.match(page, /<x-include\b[^>]*src="\/partials\/footer\.html"[^>]*><\/x-include>/, `${filePath} should include shared GOV.UK footer chrome`);
 	assert.match(page, /<main\b[^>]*id="main-content"/, `${filePath} should expose the skip-link target`);
 	assert.match(page, /<main\b[^>]*class="[^"]*govuk-main-wrapper/, `${filePath} should use GOV.UK main wrapper`);
 	assert.doesNotMatch(page, /<header class="govuk-header"/, `${filePath} should not hardcode the GOV.UK header`);
