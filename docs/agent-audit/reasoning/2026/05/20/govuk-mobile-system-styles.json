@@ -1,0 +1,39 @@
+{
+  "traceId": "govuk-mobile-system-styles",
+  "date": "2026-05-20",
+  "branch": "fix/govuk-mobile-system-styles",
+  "task": "Apply global mobile GOV.UK Design System aligned page chrome and typography refinements.",
+  "supersedes": {
+    "pullRequest": 260,
+    "reason": "The previous approach used an account-page-specific mobile stylesheet instead of shared GOV.UK system styles."
+  },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "consultedRoles": [
+    "GOV.UK specialist",
+    "Interaction designer",
+    "Graphic designer"
+  ],
+  "filesChanged": [
+    "public/css/govuk/govuk-page-chrome.css",
+    "public/css/govuk/govuk-header-service-brand.css",
+    "public/css/govuk/govuk-typography.css",
+    "tests/govuk-mobile-page-chrome-route-state.test.js"
+  ],
+  "expectedOutcome": {
+    "globalMobileOnlyRefinements": true,
+    "noSeparateMobileStylesheet": true,
+    "noAccountPageScopedStylesheet": true,
+    "govukMenuToggleStyle": true,
+    "headerLogoNotClipped": true,
+    "productNameSingleLineOnStandardMobileWidths": true
+  },
+  "validation": {
+    "localExecution": false,
+    "ciExpected": true
+  }
+}
