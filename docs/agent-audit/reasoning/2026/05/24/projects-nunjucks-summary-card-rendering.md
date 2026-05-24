@@ -1,0 +1,77 @@
+# Projects Nunjucks summary-card rendering
+
+- Date: 2026-05-24
+- Repository: `kevinrapley/ResearchOps`
+- Pull request: #262
+- Branch: `chore/govuk-frontend-integration`
+- Branch trace decision: trace required.
+
+## Task
+
+Move the Projects page main content toward GOV.UK Frontend components and patterns, using `src/govuk/templates` as the source of truth as much as possible.
+
+## User decision
+
+The selected option was the hybrid summary-card list. GOV.UK component structure should be authored in Nunjucks. JavaScript should fetch and populate data, not author the GOV.UK component markup from string templates.
+
+## Operating-model files loaded
+
+- `README.md`
+- `AGENTS.md`
+- `RECENT_LEARNINGS.md`
+- `.agent-operating-model/orchestration.xml`
+- `.agent-operating-model/bundle-registry.json`
+- `.agent-operating-model/task-signal-catalog.json`
+- `.agent-operating-model/selection-rules.json`
+- `.agent-operating-model/github-mutation-policy.md`
+
+## Bundles selected
+
+- `github-diamond`
+- `researchops-developer-control`
+- `multi-functional-team`
+- `govuk-design-system`
+
+## Changes made
+
+- Added `src/govuk/templates/pages/projects.njk` as the source of truth for the Projects page and project summary-card templates.
+- Added GOV.UK Summary Card, Summary List, Details, Tag, Inset Text and Notification Banner structures to the Nunjucks template.
+- Updated `scripts/govuk/render-govuk-pages.mjs` so the Projects page is rendered from the Nunjucks template.
+- Committed the rendered `public/pages/projects/index.html` because Cloudflare Pages publishes committed `public/`.
+- Refactored `public/js/projects-page.js` to clone and populate Nunjucks-authored templates using `data-project-field` and `data-project-list` hooks.
+- Kept the existing `/api/projects` data behaviour, newest-first sorting, authentication redirect, malformed-record filtering, empty state and error state.
+- Added `src/styles/projects.scss` as the route-specific Sass source.
+- Added `build:projects` and included it in the main build.
+- Regenerated `public/css/projects.css` from `src/styles/projects.scss`.
+- Kept GOV.UK Summary Card and Details component styling owned by GOV.UK Frontend. Projects Sass only adds route spacing and the product-specific two-column layout inside Details.
+- Updated route-state tests to guard the Nunjucks-led rendering contract and Sass-led route CSS contract.
+
+## Files modified
+
+- `package.json`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `src/govuk/templates/pages/projects.njk`
+- `src/styles/projects.scss`
+- `public/pages/projects/index.html`
+- `public/js/projects-page.js`
+- `public/css/projects.css`
+- `tests/projects-page-route-state.test.js`
+- `tests/govuk-frontend-integration-route-state.test.js`
+
+## Validation evidence
+
+On head `20649360a799b12d12e3248151c2c2a6ffdc9514`, these workflows passed:
+
+- `CI`
+- `Validate ResearchOps`
+- `Accessibility audit (pa11y-ci)`
+- `qa-bdd`
+- `Release Gate`
+- `Format pull request`
+- `QA — Broken links (Lychee)`
+- `Build and deploy agent documentation Pages`
+- `Update GitHub bundle registry manifest`
+
+## Residual risk
+
+This change improves the Projects page main content structure and makes the summary-card rendering Nunjucks-led. Filter and sort controls are still a later progressive enhancement. The Cloudflare Pages preview should be visually checked after deployment completes.
