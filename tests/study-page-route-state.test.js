@@ -8,14 +8,15 @@ const studyCssSource = fs.readFileSync("public/css/study-page.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "<html lang=\"en-GB\">", "study page");
+includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "study page");
+includes(pageSource, "/assets/govuk/govuk-frontend.css", "study page");
 includes(pageSource, "/js/study-page.js", "study page");
 includes(pageSource, "/css/govuk/govuk-buttons.css", "study page");
 includes(pageSource, "/css/study-page.css", "study page");
