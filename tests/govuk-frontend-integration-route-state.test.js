@@ -93,11 +93,11 @@ assert.doesNotMatch(layoutTemplate, /govuk\/components\/header\/macro\.njk/);
 assert.doesNotMatch(layoutTemplate, /govuk\/components\/footer\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/button\/macro\.njk/);
 assert.match(homeTemplate, /govuk\/components\/tag\/macro\.njk/);
-assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css\?v=govuk-x-include-home-grid/);
+assert.match(homeTemplate, /assets\/researchops\/researchops-home\.css\?v=govuk-home-grid-20260524/);
 assert.match(homeTemplate, /researchops-step-card/);
 assert.match(homeTemplate, /researchops-next-actions/);
 
-assert.match(renderedHomePage, /assets\/researchops\/researchops-home\.css\?v=govuk-x-include-home-grid/);
+assert.match(renderedHomePage, /assets\/researchops\/researchops-home\.css\?v=govuk-home-grid-20260524/);
 assert.match(renderedHomePage, /class="researchops-step-grid"/);
 assert.match(renderedHomePage, /class="researchops-next-actions"/);
 assert.match(renderedHomePage, /class="researchops-next-action"/);
