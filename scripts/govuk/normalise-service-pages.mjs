@@ -40,6 +40,12 @@ function supportSnippet() {
 	return `<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>`;
 }
 
+function removeHardcodedGovukChromeFallbacks(html) {
+	return html.replace(/\s*<noscript>[\s\S]*?<\/noscript>/gi, (match) => {
+		return /<header\b[^>]*class=["'][^"']*\bgovuk-header\b/i.test(match) || /<footer\b[^>]*class=["'][^"']*\bgovuk-footer\b/i.test(match) ? '' : match;
+	});
+}
+
 function ensureHeadAsset(head, assetMarkup, marker) {
 	if (head.includes(marker)) return head;
 	return head.replace(/<\/head>/i, `\t${assetMarkup}\n</head>`);
@@ -120,7 +126,8 @@ function normaliseFooter(html) {
 
 function normalisePage(html, route) {
 	const activeNavigation = activeNavigationForRoute(route);
-	let next = normaliseHead(html);
+	let next = removeHardcodedGovukChromeFallbacks(html);
+	next = normaliseHead(next);
 	next = normaliseBody(next);
 	next = normaliseHeader(next, activeNavigation);
 	next = normaliseMain(next);
