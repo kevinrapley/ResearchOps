@@ -1,0 +1,42 @@
+{
+  "traceId": "govuk-generated-css-button-typography",
+  "date": "2026-05-24",
+  "repository": "kevinrapley/ResearchOps",
+  "pullRequest": 262,
+  "branch": "chore/govuk-frontend-integration",
+  "branchTraceDecision": "trace-required",
+  "task": "Restore generated GOV.UK Frontend ownership of migrated page button typography.",
+  "userDirection": "Use full GOV.UK Frontend on migrated pages. Do not add runtime cascade guards or legacy CSS rescue paths.",
+  "changesMade": [
+    "Removed legacy stylesheet injection from the shared x-include loader.",
+    "Removed the legacy stylesheet link from the shared head partial.",
+    "Kept migrated pages loading the generated GOV.UK Frontend stylesheet.",
+    "Updated route-state tests for generated GOV.UK button typography and GOV.UK macro output.",
+    "Restored the start overview route to the existing create-project form."
+  ],
+  "filesModified": [
+    "public/components/layout.js",
+    "public/partials/html-head.html",
+    "src/govuk/templates/pages/start-overview.njk",
+    "tests/govuk-design-system-baseline-route-state.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/start-project-overview-page.test.js",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-generated-css-button-typography.md",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-generated-css-button-typography.json"
+  ],
+  "validationEvidence": {
+    "head": "677bc5c50eef9c65d4049a977946ffef35d0d38b",
+    "workflows": [
+      "CI",
+      "Validate ResearchOps",
+      "Accessibility audit (pa11y-ci)",
+      "qa-bdd",
+      "Release Gate",
+      "Format pull request",
+      "QA Broken links",
+      "Agent documentation Pages",
+      "Bundle registry"
+    ]
+  },
+  "residualRisk": "Unmigrated pages may still have legacy assets until they are migrated route by route."
+}
