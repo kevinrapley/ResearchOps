@@ -21,6 +21,7 @@ const renderedHomePage = fs.readFileSync('public/index.html', 'utf8');
 const representativePages = [
 	'public/index.html',
 	'public/pages/account/index.html',
+	'public/pages/projects/index.html',
 	'public/pages/start/overview/index.html',
 ];
 
