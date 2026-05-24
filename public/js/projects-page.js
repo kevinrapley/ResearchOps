@@ -18,7 +18,7 @@ const CONFIG = Object.freeze({
 	API_BASE: resolveApiBase(),
 	FETCH_TIMEOUT_MS: 12000,
 	CACHE: "no-store",
-	SHOW_SOURCE_NOTE: false
+	SHOW_SOURCE_NOTE: false,
 });
 
 const container = document.getElementById("list");
@@ -26,6 +26,12 @@ const startProjectAction = document.querySelector(".projects-page-actions");
 
 const VALID_PROJECT_PHASES = new Set(["pre-discovery", "discovery", "alpha", "beta", "live"]);
 const REDIRECTING_TO_SIGN_IN_ERROR = "redirecting_to_sign_in";
+const TEMPLATE_IDS = Object.freeze({
+	PROJECT_CARD: "project-summary-card-template",
+	EMPTY_STATE: "projects-empty-state-template",
+	ERROR_STATE: "projects-error-state-template",
+	MALFORMED_STATE: "projects-malformed-state-template",
+});
 
 function signInUrl() {
 	const returnTo = `${window.location.pathname}${window.location.search || ""}`;
@@ -44,15 +50,6 @@ function setListBusy(isBusy) {
 function setStartProjectVisible(isVisible) {
 	if (!startProjectAction) return;
 	startProjectAction.hidden = !isVisible;
-}
-
-function escapeHtml(value) {
-	return String(value ?? "")
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/\"/g, "&quot;")
-		.replace(/'/g, "&#39;");
 }
 
 function toMs(value) {
@@ -76,16 +73,20 @@ function isAirtableRecordId(value) {
 function looksLikeIdentityFragment(value) {
 	const text = String(value || "").trim();
 	if (!text) return false;
-	return /"?EMAIL"?\s*:/i.test(text) ||
+	return (
+		/"?EMAIL"?\s*:/i.test(text) ||
 		/"?email"?\s*:/i.test(text) ||
 		/"?role"?\s*:/i.test(text) ||
 		/^[}\]]+$/.test(text) ||
 		/^[{[]/.test(text) ||
-		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text))
+	);
 }
 
 function looksLikeUuid(value) {
-	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || "").trim());
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+		String(value || "").trim(),
+	);
 }
 
 function normaliseList(value, splitPattern = /[\n|,]/) {
@@ -133,7 +134,7 @@ async function fetchWithTimeout(url) {
 		const response = await fetch(url, {
 			signal: controller.signal,
 			credentials: "include",
-			cache: CONFIG.CACHE
+			cache: CONFIG.CACHE,
 		});
 		const text = await response.text();
 		let data;
@@ -149,21 +150,21 @@ async function fetchWithTimeout(url) {
 }
 
 function normaliseProject(p) {
-	const stakeholders = Array.isArray(p.Stakeholders) ? p.Stakeholders :
-		Array.isArray(p.stakeholders) ? p.stakeholders :
-		p.Stakeholders ? safeJsonArray(p.Stakeholders) :
-		p.stakeholders ? safeJsonArray(p.stakeholders) : [];
+	const stakeholders = Array.isArray(p.Stakeholders)
+		? p.Stakeholders
+		: Array.isArray(p.stakeholders)
+			? p.stakeholders
+			: p.Stakeholders
+				? safeJsonArray(p.Stakeholders)
+				: p.stakeholders
+					? safeJsonArray(p.stakeholders)
+					: [];
 
 	const objectivesRaw = p.Objectives ?? p.objectives ?? "";
 	const groupsRaw = p.UserGroups ?? p.user_groups ?? "";
-	const teamName = normaliseTeamName(firstPresent(
-		p.teamName,
-		p.team_name,
-		p.team,
-		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
-		p.Org,
-		p.org
-	));
+	const teamName = normaliseTeamName(
+		firstPresent(p.teamName, p.team_name, p.team, Array.isArray(p.teamNames) ? p.teamNames[0] : "", p.Org, p.org),
+	);
 
 	return {
 		id: firstPresent(p.id, p.airtableId, p.recordId),
@@ -180,7 +181,7 @@ function normaliseProject(p) {
 		teamName,
 		team_name: teamName,
 		team: teamName,
-		org: teamName || p.Org || p.org || ""
+		org: teamName || p.Org || p.org || "",
 	};
 }
 
@@ -247,87 +248,155 @@ function projectTeamLabel(project) {
 	return project.teamName || project.team_name || project.team || project.org || "Unassigned team";
 }
 
-function projectCard(project) {
-	const projectId = encodeURIComponent(project.id);
-	const dashboardHref = projectDashboardHref(project.id);
-	const dashboardLabel = escapeHtml(projectDashboardLabel(project));
-	const groups = (project.user_groups || [])
-		.map(group => `<li><span class="tag">${escapeHtml(group)}</span></li>`)
-		.join("");
-	const stakeholders = (project.stakeholders || [])
-		.map(stakeholder => {
-			const name = escapeHtml(stakeholder.name || "");
-			const role = stakeholder.role ? ` — ${escapeHtml(stakeholder.role)}` : "";
-			const email = stakeholder.email ? ` <a href="mailto:${escapeHtml(stakeholder.email)}" class="govuk-link">${escapeHtml(stakeholder.email)}</a>` : "";
-			return `<li>${name}${role}${email}</li>`;
-		})
-		.join("");
-	const objectives = (project.objectives || []).map(objective => `<li>${escapeHtml(objective)}</li>`).join("");
+function templateContent(id) {
+	const template = document.getElementById(id);
+	if (!(template instanceof HTMLTemplateElement)) throw new Error(`Missing template: ${id}`);
+	return template.content.firstElementChild.cloneNode(true);
+}
 
-	return `
-<article class="card" aria-labelledby="project-title-${projectId}">
-	<p class="project-org"><span class="govuk-visually-hidden">Team: </span>${escapeHtml(projectTeamLabel(project))}</p>
-	<h3 id="project-title-${projectId}" class="project-title govuk-heading-m">
-		<a class="govuk-link" href="${dashboardHref}" rel="bookmark">${escapeHtml(project.name)}</a>
-	</h3>
-	<p class="project-meta"><strong>Phase:</strong> ${escapeHtml(project["rops:servicePhase"] || "")} · <strong>Status:</strong> ${escapeHtml(project["rops:projectStatus"] || "")}</p>
-	${project.description ? `<section class="project-summary"><p>${escapeHtml(project.description)}</p></section>` : ""}
-	<p class="project-actions">
-		<a class="govuk-button govuk-button--secondary project-dashboard-action" href="${dashboardHref}" aria-label="${dashboardLabel}">View dashboard</a>
-	</p>
-	${project.user_groups?.length ? `<section class="user-groups" aria-labelledby="user-groups-${projectId}"><h4 id="user-groups-${projectId}" class="project-groups-title">User groups</h4><ul class="tags" role="list">${groups}</ul></section>` : ""}
-	<section class="project-extra">
-		<details class="project-details">
-			<summary class="govuk-link">Stakeholders and objectives</summary>
-			<div class="details-columns">
-				<div><h4 class="govuk-heading-s">Stakeholders</h4><ul role="list">${stakeholders || "<li class='lede'>None</li>"}</ul></div>
-				<div><h4 class="govuk-heading-s">Objectives</h4><ul role="list">${objectives || "<li class='lede'>None</li>"}</ul></div>
-			</div>
-		</details>
-	</section>
-</article>`;
+function field(root, name) {
+	return root.querySelector(`[data-project-field="${name}"]`);
+}
+
+function list(root, name) {
+	return root.querySelector(`[data-project-list="${name}"]`);
+}
+
+function setText(root, name, value, fallback = "Not recorded") {
+	const target = field(root, name);
+	if (!target) return;
+	const text = String(value || "").trim();
+	target.textContent = text || fallback;
+	if (!text) target.classList.add("govuk-hint");
+}
+
+function appendTextList(listElement, values, fallbackText) {
+	if (!listElement) return;
+	listElement.replaceChildren();
+	const items = Array.isArray(values) ? values.filter(Boolean) : [];
+	if (!items.length) {
+		const item = document.createElement("li");
+		item.textContent = fallbackText;
+		item.className = "govuk-hint";
+		listElement.append(item);
+		return;
+	}
+	items.forEach((value) => {
+		const item = document.createElement("li");
+		item.textContent = String(value);
+		listElement.append(item);
+	});
+}
+
+function appendStakeholderList(listElement, stakeholders) {
+	if (!listElement) return;
+	listElement.replaceChildren();
+	if (!stakeholders?.length) {
+		const item = document.createElement("li");
+		item.className = "govuk-hint";
+		item.textContent = "No stakeholders recorded";
+		listElement.append(item);
+		return;
+	}
+	stakeholders.forEach((stakeholder) => {
+		const item = document.createElement("li");
+		const name = stakeholder.name || "Unnamed stakeholder";
+		const role = stakeholder.role ? ` — ${stakeholder.role}` : "";
+		item.append(document.createTextNode(`${name}${role}`));
+		if (stakeholder.email) {
+			item.append(document.createTextNode(" "));
+			const email = document.createElement("a");
+			email.className = "govuk-link";
+			email.href = `mailto:${encodeURIComponent(stakeholder.email)}`;
+			email.textContent = stakeholder.email;
+			item.append(email);
+		}
+		listElement.append(item);
+	});
+}
+
+function populateProjectCard(card, project) {
+	const projectId = encodeURIComponent(project.id);
+	card.setAttribute("aria-labelledby", `project-title-${projectId}`);
+	const title = field(card, "name");
+	if (title) {
+		title.id = `project-title-${projectId}`;
+		title.textContent = project.name;
+	}
+
+	const dashboardLink = card.querySelector('[data-project-link="dashboard"]');
+	if (dashboardLink) {
+		dashboardLink.href = projectDashboardHref(project.id);
+		dashboardLink.setAttribute("aria-label", projectDashboardLabel(project));
+	}
+
+	setText(card, "team", projectTeamLabel(project));
+	setText(card, "phase", project["rops:servicePhase"]);
+	setText(card, "status", project["rops:projectStatus"]);
+	setText(card, "description", project.description, "No description recorded");
+	appendTextList(list(card, "user-groups"), project.user_groups, "No user groups recorded");
+	appendStakeholderList(list(card, "stakeholders"), project.stakeholders);
+	appendTextList(list(card, "objectives"), project.objectives, "No objectives recorded");
+}
+
+function createProjectCard(project) {
+	const card = templateContent(TEMPLATE_IDS.PROJECT_CARD);
+	populateProjectCard(card, project);
+	return card;
 }
 
 function renderEmptyState(canStartProject = false) {
-	container.innerHTML = `
-<div class="projects-empty-state" role="status">
-	<h3 class="govuk-heading-m">No projects yet</h3>
-	<p class="govuk-body">Create a research project to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-	${canStartProject ? '<p><a class="govuk-link" href="/pages/start/overview/">Start a research project</a></p>' : ""}
-</div>`;
+	const emptyState = templateContent(TEMPLATE_IDS.EMPTY_STATE);
+	const startAction = emptyState.querySelector('[data-project-action="start"]');
+	if (startAction) startAction.hidden = !canStartProject;
+	container.replaceChildren(emptyState);
 }
 
 function renderErrorState(error) {
-	container.innerHTML = `
-<div class="projects-error-state" role="alert">
-	<h3 class="govuk-heading-m">Could not load projects</h3>
-	<p class="govuk-body">Project records could not be loaded. Try again later.</p>
-	<p class="govuk-body">Technical detail: ${escapeHtml(error?.message || error)}</p>
-</div>`;
+	const errorState = templateContent(TEMPLATE_IDS.ERROR_STATE);
+	setText(errorState, "technical-detail", error?.message || error, "Unknown error");
+	container.replaceChildren(errorState);
 }
 
 function malformedBanner(malformed) {
-	if (!malformed?.length) return "";
+	if (!malformed?.length) return null;
+	const banner = templateContent(TEMPLATE_IDS.MALFORMED_STATE);
 	const count = malformed.length;
 	const noun = count === 1 ? "project record" : "project records";
-	return `
-<div class="projects-malformed-banner" role="status" aria-live="polite">
-	<p class="govuk-body"><strong>${count}</strong> ${noun} could not be linked because the API response did not match the project-card contract. ${count === 1 ? "It has" : "They have"} been hidden from this list. See the browser console for technical detail.</p>
-</div>`;
+	setText(banner, "count", count);
+	setText(
+		banner,
+		"message",
+		`${noun} could not be linked because the API response did not match the project-card contract. ${
+			count === 1 ? "It has" : "They have"
+		} been hidden from this list. See the browser console for technical detail.`,
+	);
+	return banner;
 }
 
 function render(projects, source, canStartProject = false, malformed = []) {
 	setStartProjectVisible(canStartProject);
 	projects.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+
+	const nodes = [];
+	const warning = malformedBanner(malformed);
+	if (warning) nodes.push(warning);
+
 	if (!projects.length) {
-		renderEmptyState(canStartProject);
-		if (malformed?.length) container.innerHTML = malformedBanner(malformed) + container.innerHTML;
+		const emptyState = templateContent(TEMPLATE_IDS.EMPTY_STATE);
+		const startAction = emptyState.querySelector('[data-project-action="start"]');
+		if (startAction) startAction.hidden = !canStartProject;
+		nodes.push(emptyState);
+		container.replaceChildren(...nodes);
 		return;
 	}
-	container.innerHTML = malformedBanner(malformed) + projects.map(projectCard).join("");
+
+	nodes.push(...projects.map(createProjectCard));
+	container.replaceChildren(...nodes);
+
 	if (CONFIG.SHOW_SOURCE_NOTE) {
 		const sourceNote = document.createElement("p");
-		sourceNote.className = "lede";
+		sourceNote.className = "govuk-body-s";
 		sourceNote.textContent = `Source: ${source}`;
 		container.prepend(sourceNote);
 	}
@@ -351,5 +420,5 @@ function render(projects, source, canStartProject = false, malformed = []) {
 
 window.__rops = Object.freeze({
 	CONFIG,
-	toMs
+	toMs,
 });
