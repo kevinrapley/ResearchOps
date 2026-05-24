@@ -128,6 +128,19 @@ const pages = [
 			})),
 		},
 	},
+	{
+		template: 'pages/projects.njk',
+		output: 'public/pages/projects/index.html',
+		context: {
+			pageTitle: 'Projects - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: navigation.map((item) => ({
+				...item,
+				active: item.href === '/pages/projects/',
+			})),
+		},
+	},
 ];
 
 for (const page of pages) {
