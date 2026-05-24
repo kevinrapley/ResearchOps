@@ -1,0 +1,41 @@
+{
+  "traceId": "legacy-page-govuk-frontend-bridge",
+  "date": "2026-05-24",
+  "repository": "kevinrapley/ResearchOps",
+  "pullRequest": 262,
+  "branch": "chore/govuk-frontend-integration",
+  "branchTraceDecision": "trace-required",
+  "task": "Address the broader preview defect where registered pages that still use the legacy committed shell were not receiving the generated GOV.UK Frontend CSS in the Cloudflare Pages preview.",
+  "evidenceUsed": [
+    "Preview screenshots showed that pages beyond account sign-in were affected.",
+    "The project journals page displayed raw skip-link, list navigation and unstyled GOV.UK components.",
+    "The committed project journals page still used the legacy HTML shell, legacy GOV.UK clone stylesheets and no generated GOV.UK Frontend stylesheet.",
+    "The route is registered in the visual walkthrough registry, but the Cloudflare Pages preview publishes the committed public directory rather than running the build normaliser before deploy."
+  ],
+  "decision": "Do not add a new hidden edge or runtime normalisation layer. Use a deployed-source bridge for legacy registered pages by making the existing legacy typography entry point import the generated GOV.UK Frontend stylesheet first.",
+  "changesMade": [
+    "Updated public/css/govuk/govuk-typography.css to import /assets/govuk/govuk-frontend.css before its local compatibility rules.",
+    "Updated tests/deploy-asset-paths.test.js to guard that the legacy typography entry point keeps loading the generated GOV.UK Frontend stylesheet."
+  ],
+  "filesModified": [
+    "public/css/govuk/govuk-typography.css",
+    "tests/deploy-asset-paths.test.js",
+    "docs/agent-audit/reasoning/2026/05/24/legacy-page-govuk-frontend-bridge.md",
+    "docs/agent-audit/reasoning/2026/05/24/legacy-page-govuk-frontend-bridge.json"
+  ],
+  "validationEvidence": {
+    "head": "701de271b78035cf4ca24be680a772fa0fbe5c2c",
+    "workflows": [
+      "CI",
+      "Validate ResearchOps",
+      "Accessibility audit (pa11y-ci)",
+      "qa-bdd",
+      "Release Gate",
+      "Format pull request",
+      "QA broken links",
+      "agent documentation Pages",
+      "bundle registry"
+    ]
+  },
+  "residualRisk": "This is a bridge, not the final architecture. Registered pages still committed with legacy shells should continue to be migrated onto the explicit GOV.UK Frontend template contract route by route. The preview should be visually rechecked after the latest Cloudflare Pages deployment completes."
+}
