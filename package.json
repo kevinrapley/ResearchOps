@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm run build:govuk && npm run build:researchops && npm run build:govuk-pages",
+    "build": "npm run build:govuk && npm run build:researchops && npm run build:projects && npm run build:govuk-pages",
     "build:govuk": "sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs",
     "build:researchops": "sass --load-path=node_modules --no-source-map --style=compressed src/styles/researchops-home.scss public/assets/researchops/researchops-home.css",
+    "build:projects": "sass --load-path=node_modules --no-source-map src/styles/projects.scss public/css/projects.css",
     "build:govuk-pages": "node scripts/govuk/render-govuk-pages.mjs",
     "postbuild:govuk-pages": "node scripts/govuk/normalise-service-pages.mjs",
     "build:service-pages": "node scripts/govuk/normalise-service-pages.mjs",
