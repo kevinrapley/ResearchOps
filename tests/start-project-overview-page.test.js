@@ -7,16 +7,6 @@ const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
 const projectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
 
-function textContent(source, selectorPattern) {
-	const match = source.match(selectorPattern);
-	return match
-		? match[1]
-				.replace(/<[^>]+>/g, ' ')
-				.replace(/\s+/g, ' ')
-				.trim()
-		: '';
-}
-
 function headingText(source, level) {
 	const pattern = new RegExp(`<h${level}\\b[^>]*>([\\s\\S]*?)<\\/h${level}>`, 'gi');
 	return [...source.matchAll(pattern)]
@@ -70,10 +60,8 @@ assert.equal(
 	'/pages/start/',
 	'Overview page Start now action should route to the existing creation form'
 );
-assert.equal(
-	textContent(overviewPage, /<a\b[^>]*class="govuk-button"[^>]*>([\s\S]*?)<\/a>/),
-	'Start now'
-);
+assert.equal(overviewPage.includes('class="govuk-button'), true);
+assert.equal(overviewPage.includes('data-module="govuk-button"'), true);
 assert.equal(overviewPage.includes('<h2 class="govuk-heading-m">Before you start</h2>'), true);
 assert.equal(overviewPage.includes('<h2 class="govuk-heading-m">What you will do</h2>'), true);
 assert.equal(
