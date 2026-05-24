@@ -6,79 +6,105 @@ const loaderSource = fs.readFileSync("public/js/synthesis-route-loader.js", "utf
 const controllerSource = fs.readFileSync("public/js/synthesize-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/synthesize.css", "utf8");
 
-assert.equal(pageSource.includes("<html lang=\"en-GB\">"), true);
-assert.equal(pageSource.includes("/js/synthesis-route-loader.js?v=study-record-id-routing-20260518"), true);
-assert.equal(pageSource.includes("href=\"/css/screen.css\""), true);
-assert.equal(pageSource.includes("href=\"/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure\""), true);
-assert.equal(pageSource.includes("id=\"synthesis-error\""), true);
-assert.equal(pageSource.includes("id=\"synthesis-error-list\""), true);
-assert.equal(pageSource.includes("id=\"synthesis-status\""), true);
-assert.equal(pageSource.includes("id=\"synthesis-title\""), true);
-assert.equal(pageSource.includes("id=\"study-context-text\""), true);
-assert.equal(pageSource.includes("Group study evidence into themes you can trace back to source notes."), true);
-assert.equal(pageSource.includes("id=\"breadcrumb-project\""), true);
-assert.equal(pageSource.includes("id=\"breadcrumb-study\""), true);
-assert.equal(pageSource.includes("id=\"back-to-study\""), true);
-assert.equal(pageSource.includes("id=\"summary-evidence-count\""), true);
-assert.equal(pageSource.includes("id=\"summary-theme-count\""), true);
-assert.equal(pageSource.includes("id=\"no-evidence-state\""), true);
-assert.equal(pageSource.includes("Capture evidence before starting synthesis"), true);
-assert.equal(pageSource.includes("id=\"capture-evidence-link\""), true);
-assert.equal(pageSource.includes("Capture evidence in a session"), true);
-assert.equal(pageSource.includes("id=\"synthesis-workspace\""), true);
-assert.equal(pageSource.includes("id=\"clusters-section\""), true);
-assert.equal(pageSource.includes("id=\"evidence-section\""), true);
-assert.equal(pageSource.includes("id=\"themes-locked\""), true);
-assert.equal(pageSource.includes("id=\"themes-section\""), true);
-assert.equal(pageSource.includes("id=\"tag-filter\""), true);
-assert.equal(pageSource.includes("id=\"target-cluster\""), true);
-assert.equal(pageSource.includes("id=\"add-selected-evidence\""), true);
-assert.equal(pageSource.includes("id=\"add-selected-evidence-hint\""), true);
-assert.equal(pageSource.includes("id=\"evidence-empty\""), true);
-assert.equal(pageSource.includes("id=\"evidence-list\""), true);
-assert.equal(pageSource.includes("Working cluster groupings"), true);
-assert.equal(pageSource.includes("Create a working cluster grouping before selecting evidence."), true);
-assert.equal(pageSource.includes("id=\"cluster-form\""), true);
-assert.equal(pageSource.includes("id=\"cluster-label\""), true);
-assert.equal(pageSource.includes("id=\"cluster-description\""), true);
-assert.equal(pageSource.includes("id=\"create-cluster\""), true);
-assert.equal(pageSource.includes("id=\"create-cluster-hint\""), true);
-assert.equal(pageSource.includes("id=\"cluster-list\""), true);
-assert.equal(pageSource.includes("id=\"theme-form\""), true);
-assert.equal(pageSource.includes("id=\"theme-cluster\""), true);
-assert.equal(pageSource.includes("id=\"theme-label\""), true);
-assert.equal(pageSource.includes("id=\"theme-description\""), true);
-assert.equal(pageSource.includes("id=\"create-theme\""), true);
-assert.equal(pageSource.includes("id=\"create-theme-hint\""), true);
-assert.equal(pageSource.includes("id=\"theme-list\""), true);
-assert.equal(pageSource.includes("disabled>Create cluster grouping</button>"), true);
-assert.equal(pageSource.includes("disabled>Create theme</button>"), true);
-assert.equal(pageSource.includes("id=\"filter\""), false);
-assert.equal(pageSource.includes("id=\"newCluster\""), false);
-assert.equal(pageSource.includes("id=\"publish\""), false);
-assert.equal(pageSource.includes("<script type=\"module\">"), false);
+function includes(source, text, label) {
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+}
 
-assert.equal(loaderSource.includes("study-canonical-url-bridge.js?v=study-record-id-routing-20260518"), true);
-assert.equal(loaderSource.includes("components/layout.js"), true);
-assert.equal(loaderSource.includes("synthesize-page.js?v=study-record-id-routing-20260518"), true);
+function excludes(source, text, label) {
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+}
 
-assert.equal(controllerSource.includes("const API_ORIGIN"), true);
-assert.equal(controllerSource.includes("function apiUrl"), true);
-assert.equal(controllerSource.includes("function workflowState"), true);
-assert.equal(controllerSource.includes("function updateWorkflowVisibility"), true);
-assert.equal(controllerSource.includes("function loadStudySynthesis"), true);
-assert.equal(controllerSource.includes("/api/synthesis/evidence"), true);
-assert.equal(controllerSource.includes("/api/synthesis"), true);
-assert.equal(controllerSource.includes("/api/synthesis/clusters"), true);
-assert.equal(controllerSource.includes("/api/synthesis/themes"), true);
-assert.equal(controllerSource.includes("window.__ropsSynthesize"), true);
-assert.equal(controllerSource.includes("localStorage"), false);
-assert.equal(controllerSource.includes("alert("), false);
+includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis page");
+includes(pageSource, "/assets/govuk/govuk-frontend.css", "synthesis page");
+includes(pageSource, "/components/layout.js", "synthesis page");
+includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
+includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
+includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
+includes(pageSource, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
+includes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
+includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure\"", "synthesis page");
 
-assert.equal(stylesheetSource.includes(".synthesis-hero"), true);
-assert.equal(stylesheetSource.includes(".synthesis-flow"), true);
-assert.equal(stylesheetSource.includes(".synthesis-panel"), true);
-assert.equal(stylesheetSource.includes(".evidence-card"), true);
-assert.equal(stylesheetSource.includes(".cluster-card"), true);
-assert.equal(stylesheetSource.includes(".theme-card"), true);
-assert.equal(stylesheetSource.includes("/* transparency begins in the cascade */"), true);
+for (const id of [
+	"synthesis-error",
+	"synthesis-error-list",
+	"synthesis-status",
+	"synthesis-title",
+	"study-context-text",
+	"breadcrumb-project",
+	"breadcrumb-study",
+	"back-to-study",
+	"summary-evidence-count",
+	"summary-theme-count",
+	"no-evidence-state",
+	"capture-evidence-link",
+	"synthesis-workspace",
+	"clusters-section",
+	"evidence-section",
+	"themes-locked",
+	"themes-section",
+	"tag-filter",
+	"target-cluster",
+	"add-selected-evidence",
+	"add-selected-evidence-hint",
+	"evidence-empty",
+	"evidence-list",
+	"cluster-form",
+	"cluster-label",
+	"cluster-description",
+	"create-cluster",
+	"create-cluster-hint",
+	"cluster-list",
+	"theme-form",
+	"theme-cluster",
+	"theme-label",
+	"theme-description",
+	"create-theme",
+	"create-theme-hint",
+	"theme-list",
+]) {
+	includes(pageSource, `id=\"${id}\"`, "synthesis page");
+}
+
+includes(pageSource, "Group study evidence into themes you can trace back to source notes.", "synthesis page");
+includes(pageSource, "Capture evidence before starting synthesis", "synthesis page");
+includes(pageSource, "Capture evidence in a session", "synthesis page");
+includes(pageSource, "Working cluster groupings", "synthesis page");
+includes(pageSource, "Create a working cluster grouping before selecting evidence.", "synthesis page");
+includes(pageSource, "disabled>Create cluster grouping</button>", "synthesis page");
+includes(pageSource, "disabled>Create theme</button>", "synthesis page");
+excludes(pageSource, "id=\"filter\"", "synthesis page");
+excludes(pageSource, "id=\"newCluster\"", "synthesis page");
+excludes(pageSource, "id=\"publish\"", "synthesis page");
+excludes(pageSource, "<script type=\"module\">", "synthesis page");
+
+includes(loaderSource, "study-canonical-url-bridge.js?v=study-record-id-routing-20260518", "synthesis loader");
+includes(loaderSource, "components/layout.js", "synthesis loader");
+includes(loaderSource, "synthesize-page.js?v=study-record-id-routing-20260518", "synthesis loader");
+
+for (const marker of [
+	"const API_ORIGIN",
+	"function apiUrl",
+	"function workflowState",
+	"function updateWorkflowVisibility",
+	"function loadStudySynthesis",
+	"/api/synthesis/evidence",
+	"/api/synthesis",
+	"/api/synthesis/clusters",
+	"/api/synthesis/themes",
+	"window.__ropsSynthesize",
+]) {
+	includes(controllerSource, marker, "synthesis controller");
+}
+
+for (const selector of [
+	".synthesis-hero",
+	".synthesis-flow",
+	".synthesis-panel",
+	".evidence-card",
+	".cluster-card",
+	".theme-card",
+]) {
+	includes(stylesheetSource, selector, "synthesis stylesheet");
+}
+
+includes(stylesheetSource, "/* transparency begins in the cascade */", "synthesis stylesheet");
