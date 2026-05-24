@@ -113,6 +113,7 @@ jobs:
           run_check "validate" "Validate repository contract" "npm run validate" "true"
           run_check "lint" "Lint" "npm run lint" "true"
           run_check "format-check" "Format check" "npm run format:check" "true"
+          run_check "build" "Build generated frontend assets" "npm run build --if-present" "true"
           run_check "unit-tests" "Unit tests" "npm test" "true"
           run_check "performance-audit" "Performance audit" "npm run audit:performance --if-present" "true"
           run_check "security-audit-policy" "Security audit policy" "npm run audit:security" "true"
