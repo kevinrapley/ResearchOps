@@ -4,7 +4,7 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block head %}
-	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-x-include-home-grid" media="screen">
+	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-home-grid-20260524" media="screen">
 {% endblock %}
 
 {% block content %}
@@ -43,7 +43,7 @@
 		<ol class="researchops-step-grid">
 			{% for step in steps %}
 			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step {{ loop.index }} of {{ steps.length }}</p>
+				<p class="researchops-step-card__tag">Step {{ loop.index }} of {{ steps | length }}</p>
 				<h3 class="researchops-step-card__heading govuk-heading-s">{{ step.title }}</h3>
 				<p class="govuk-body-s govuk-!-margin-bottom-0">{{ step.text }}</p>
 			</li>
