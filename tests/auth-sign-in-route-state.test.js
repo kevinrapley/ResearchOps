@@ -8,6 +8,24 @@ const access = fs.readFileSync('infra/cloudflare/src/core/auth/access.js', 'utf8
 const passwordless = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const migration = fs.readFileSync('infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql', 'utf8');
 
+function assertSignInPageUsesGovukFrontendTemplate() {
+	assert.match(signInPage, /<html class="govuk-template" lang="en">/);
+	assert.match(signInPage, /<body class="govuk-template__body">/);
+	assert.match(signInPage, /govuk-frontend-supported/);
+	assert.match(signInPage, /href="\/assets\/govuk\/govuk-frontend\.css"/);
+	assert.match(signInPage, /src="\/components\/layout\.js"/);
+	assert.match(signInPage, /src="\/js\/govuk-frontend-init\.js"/);
+	assert.match(signInPage, /<x-include src="\/partials\/header\.html" vars='\{"active":""\}'><\/x-include>/);
+	assert.match(signInPage, /<x-include src="\/partials\/footer\.html"><\/x-include>/);
+	assert.match(signInPage, /<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">/);
+	assert.match(signInPage, /class="govuk-width-container"/);
+	assert.equal(signInPage.includes('/css/govuk/govuk-page-chrome.css'), false);
+	assert.equal(signInPage.includes('/css/govuk/govuk-frontend-v6.css'), false);
+	assert.equal(signInPage.includes('/css/screen.css'), false);
+	assert.equal(signInPage.includes('<noscript><a class="govuk-skip-link"'), false);
+	assert.equal(signInPage.includes('vars=\'{"org":"Home Office Biometrics"'), false);
+}
+
 function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /<title>Sign in to ResearchOps - ResearchOps Demo Suite<\/title>/);
 	assert.match(signInPage, /<h1 class="govuk-heading-xl">Sign in to ResearchOps<\/h1>/);
@@ -120,6 +138,7 @@ function assertPasswordlessMigrationExists() {
 	assert.match(migration, /route_api_auth_logout_post/);
 }
 
+assertSignInPageUsesGovukFrontendTemplate();
 assertSignInPageUsesResearchOpsPasswordlessJourney();
 assertSignInPageDoesNotExposeCloudflareToUser();
 assertSignInPageDoesNotCreatePasswordAuth();
