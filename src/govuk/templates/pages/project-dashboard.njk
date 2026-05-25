@@ -89,7 +89,6 @@
 					{{ govukButton({
 						text: "Open reflexive journal",
 						href: "/pages/projects/journals/?id=",
-						classes: "",
 						attributes: {
 							id: "journal-button-link"
 						}
@@ -112,9 +111,32 @@
 					</div>
 				</dl>
 				<div class="govuk-button-group rops-mural-actions">
-					<button id="mural-connect" class="govuk-button govuk-button--secondary" type="button" data-module="govuk-button">Connect Mural</button>
-					<button id="mural-setup" class="govuk-button govuk-button--secondary" type="button" data-module="govuk-button" disabled>Create Mural board</button>
-					<a id="mural-open" class="govuk-button govuk-button--secondary" href="#" role="button" draggable="false" data-module="govuk-button" aria-disabled="true">Open Mural board</a>
+					{{ govukButton({
+						text: "Connect Mural",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "mural-connect"
+						}
+					}) }}
+					{{ govukButton({
+						text: "Create Mural board",
+						type: "button",
+						classes: "govuk-button--secondary",
+						disabled: true,
+						attributes: {
+							id: "mural-setup"
+						}
+					}) }}
+					{{ govukButton({
+						text: "Open Mural board",
+						href: "#",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "mural-open",
+							"aria-disabled": "true"
+						}
+					}) }}
 				</div>
 			</div>
 		</section>
@@ -138,7 +160,16 @@
 				<h2 class="govuk-summary-card__title">Stakeholder management</h2>
 				<ul class="govuk-summary-card__actions">
 					<li class="govuk-summary-card__action">
-						<button id="add-stakeholder-toggle" type="button" class="govuk-button govuk-button--secondary rops-summary-card-button" aria-expanded="false" aria-controls="add-stakeholder-panel" data-module="govuk-button">Add stakeholder</button>
+						{{ govukButton({
+							text: "Add stakeholder",
+							type: "button",
+							classes: "govuk-button--secondary rops-summary-card-button",
+							attributes: {
+								id: "add-stakeholder-toggle",
+								"aria-expanded": "false",
+								"aria-controls": "add-stakeholder-panel"
+							}
+						}) }}
 					</li>
 				</ul>
 			</div>
@@ -165,8 +196,19 @@
 									<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-email" name="email" type="email" autocomplete="email" aria-describedby="stakeholder-email-hint">
 								</div>
 								<div class="govuk-button-group">
-									<button class="govuk-button" type="submit" data-module="govuk-button">Save stakeholder</button>
-									<button class="govuk-button govuk-button--secondary" type="button" data-module="govuk-button" data-close-panel="add-stakeholder-panel" data-toggle="add-stakeholder-toggle">Cancel</button>
+									{{ govukButton({
+										text: "Save stakeholder",
+										type: "submit"
+									}) }}
+									{{ govukButton({
+										text: "Cancel",
+										type: "button",
+										classes: "govuk-button--secondary",
+										attributes: {
+											"data-close-panel": "add-stakeholder-panel",
+											"data-toggle": "add-stakeholder-toggle"
+										}
+									}) }}
 								</div>
 							</form>
 						</div>
@@ -174,7 +216,16 @@
 					<div>
 						<h3 class="govuk-heading-s">Objectives</h3>
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="objectives-list"><li>No objectives yet.</li></ul>
-						<button id="add-objective-toggle" type="button" class="govuk-button govuk-button--secondary" aria-expanded="false" aria-controls="add-objective-panel" data-module="govuk-button">Add objective</button>
+						{{ govukButton({
+							text: "Add objective",
+							type: "button",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "add-objective-toggle",
+								"aria-expanded": "false",
+								"aria-controls": "add-objective-panel"
+							}
+						}) }}
 						<div id="add-objective-panel" class="dashboard-action-panel" hidden>
 							<form id="add-objective-form" novalidate>
 								<h4 class="govuk-heading-s">Add objective</h4>
@@ -185,8 +236,19 @@
 									<textarea class="govuk-textarea" id="objective-text" name="objective" rows="4" required aria-describedby="objective-text-hint"></textarea>
 								</div>
 								<div class="govuk-button-group">
-									<button class="govuk-button" type="submit" data-module="govuk-button">Save objective</button>
-									<button class="govuk-button govuk-button--secondary" type="button" data-module="govuk-button" data-close-panel="add-objective-panel" data-toggle="add-objective-toggle">Cancel</button>
+									{{ govukButton({
+										text: "Save objective",
+										type: "submit"
+									}) }}
+									{{ govukButton({
+										text: "Cancel",
+										type: "button",
+										classes: "govuk-button--secondary",
+										attributes: {
+											"data-close-panel": "add-objective-panel",
+											"data-toggle": "add-objective-toggle"
+										}
+									}) }}
 								</div>
 							</form>
 						</div>
@@ -204,7 +266,16 @@
 					<div>
 						<h3 class="govuk-heading-s">User groups</h3>
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="user-groups-list"><li>No user groups yet.</li></ul>
-						<button id="add-user-group-toggle" type="button" class="govuk-button govuk-button--secondary" aria-expanded="false" aria-controls="add-user-group-panel" data-module="govuk-button">Add user group</button>
+						{{ govukButton({
+							text: "Add user group",
+							type: "button",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "add-user-group-toggle",
+								"aria-expanded": "false",
+								"aria-controls": "add-user-group-panel"
+							}
+						}) }}
 						<div id="add-user-group-panel" class="dashboard-action-panel" hidden>
 							<form id="add-user-group-form" novalidate>
 								<h4 class="govuk-heading-s">Add user group</h4>
@@ -215,8 +286,19 @@
 									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required aria-describedby="user-group-name-hint">
 								</div>
 								<div class="govuk-button-group">
-									<button class="govuk-button" type="submit" data-module="govuk-button">Save user group</button>
-									<button class="govuk-button govuk-button--secondary" type="button" data-module="govuk-button" data-close-panel="add-user-group-panel" data-toggle="add-user-group-toggle">Cancel</button>
+									{{ govukButton({
+										text: "Save user group",
+										type: "submit"
+									}) }}
+									{{ govukButton({
+										text: "Cancel",
+										type: "button",
+										classes: "govuk-button--secondary",
+										attributes: {
+											"data-close-panel": "add-user-group-panel",
+											"data-toggle": "add-user-group-toggle"
+										}
+									}) }}
 								</div>
 							</form>
 						</div>
@@ -226,8 +308,22 @@
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="participants-list"><li>No participants yet.</li></ul>
 						<p class="govuk-hint">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 						<div class="govuk-button-group">
-							<a id="add-participant-link" href="/pages/project-dashboard/participants/?pid=" class="govuk-button govuk-button--secondary" data-module="govuk-button">Add participant</a>
-							<a id="import-participants-link" href="/pages/project-dashboard/participants/import/?pid=" class="govuk-button govuk-button--secondary" data-module="govuk-button">Bulk upload participants via CSV</a>
+							{{ govukButton({
+								text: "Add participant",
+								href: "/pages/project-dashboard/participants/?pid=",
+								classes: "govuk-button--secondary",
+								attributes: {
+									id: "add-participant-link"
+								}
+							}) }}
+							{{ govukButton({
+								text: "Bulk upload participants via CSV",
+								href: "/pages/project-dashboard/participants/import/?pid=",
+								classes: "govuk-button--secondary",
+								attributes: {
+									id: "import-participants-link"
+								}
+							}) }}
 						</div>
 					</div>
 				</div>
@@ -248,13 +344,27 @@
 					<div>
 						<h3 class="govuk-heading-s">Studies</h3>
 						<ul class="govuk-list rops-study-list" id="studies-list"><li>No studies yet.</li></ul>
-						<a id="add-study-link" class="govuk-button govuk-button--secondary" href="/pages/study/new/?pid=" data-module="govuk-button">Add study</a>
+						{{ govukButton({
+							text: "Add study",
+							href: "/pages/study/new/?pid=",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "add-study-link"
+							}
+						}) }}
 					</div>
 					<div>
 						<h3 class="govuk-heading-s">Insights</h3>
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="insights-list"><li>No insights yet.</li></ul>
 						<p class="govuk-hint">Insights and impact records are managed from the outcomes workflow so they remain linked to evidence and decisions.</p>
-						<a id="add-insight-link" href="/pages/projects/outcomes/?id=#impact-form" class="govuk-button govuk-button--secondary" data-module="govuk-button">Add insight</a>
+						{{ govukButton({
+							text: "Add insight",
+							href: "/pages/projects/outcomes/?id=#impact-form",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "add-insight-link"
+							}
+						}) }}
 					</div>
 				</div>
 			</div>
