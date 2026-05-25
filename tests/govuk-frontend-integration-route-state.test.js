@@ -35,7 +35,7 @@ assert.equal(packageJson.devDependencies.sass, '^1.94.2');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
 assert.equal(
 	packageJson.scripts.build,
-	'npm run build:govuk && npm run build:researchops && npm run build:projects && npm run build:govuk-pages',
+	'npm run build:govuk && npm run build:researchops && npm run build:projects && npm run build:project-dashboard && npm run build:govuk-pages',
 );
 assert.equal(
 	packageJson.scripts['build:govuk'],
@@ -44,6 +44,10 @@ assert.equal(
 assert.equal(
 	packageJson.scripts['build:projects'],
 	'sass --load-path=node_modules --no-source-map src/styles/projects.scss public/css/projects.css',
+);
+assert.equal(
+	packageJson.scripts['build:project-dashboard'],
+	'sass --load-path=node_modules --no-source-map src/styles/project-dashboard.scss public/css/project-dashboard.css',
 );
 
 assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
