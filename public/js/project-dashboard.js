@@ -217,10 +217,12 @@ function renderProject(project) {
 		bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 	}
 	setLinkHref("journal-link", `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`);
+	setLinkHref("journal-button-link", `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("outcomes-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?id=${encodeURIComponent(projectId)}`);
-	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?id=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-study-link", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);
+	setLinkHref("outcomes-card-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
 	renderProjectLists(project);
 }
@@ -266,42 +268,37 @@ function renderUserGroups(userGroups = []) {
 	list.innerHTML = userGroups.map((group) => `<li>${escapeHtml(group)}</li>`).join("");
 }
 
+function studyStatusTagClass(status = "") {
+	const value = String(status).toLowerCase();
+	if (value.includes("complete") || value.includes("done")) return "govuk-tag--green";
+	if (value.includes("plan") || value.includes("field") || value.includes("progress")) return "govuk-tag--blue";
+	if (value.includes("cancel") || value.includes("risk") || value.includes("blocked")) return "govuk-tag--red";
+	return "govuk-tag--grey";
+}
+
 function renderStudies(project, studies) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
 	if (!studies.length) {
-		list.innerHTML = '<li class="lede">No studies yet.</li>';
+		list.innerHTML = "<li>No studies yet.</li>";
 		return;
 	}
 	const truncateToWords = (text, maxLength = 170) => {
 		if (!text) return "";
 		if (text.length <= maxLength) return text;
-		return text.slice(0, maxLength).replace(/\s+\S*$/, "");
+		return `${text.slice(0, maxLength).replace(/\s+\S*$/, "")}…`;
 	};
 	list.innerHTML = studies.map((s) => {
 		const title = s.title?.trim() || s.Title?.trim() || s.method?.trim() || computeStudyTitle(s);
 		const href = `/pages/study/?id=${encodeURIComponent(s.id)}`;
 		const status = (s.status || "").trim();
-		const meta = status ? ` — <em>${escapeHtml(status)}</em>` : "";
 		const full = s.description || "";
-		const isTruncated = full.length > 170;
-		const truncated = truncateToWords(full, 170);
-		let descHtml = "";
-		if (truncated) {
-			if (isTruncated && truncated.length > 10) {
-				const head = escapeHtml(truncated.slice(0, -10));
-				const tail = escapeHtml(truncated.slice(-10));
-				descHtml = `${head}<span class="fade-tail">${tail}</span>&hellip;`;
-			} else {
-				descHtml = escapeHtml(truncated);
-			}
-		}
+		const description = truncateToWords(full, 170);
 		return `
-<li class="item">
-<div>
-<a class="govuk-link" href="${href}">${escapeHtml(title)}</a>${meta}
-</div>
-${descHtml ? `<div class="lede" style="margin-top:4px;">${descHtml}</div>` : ""}
+<li class="rops-study-item">
+<a class="govuk-link govuk-!-font-weight-bold" href="${href}">${escapeHtml(title)}</a>
+${description ? `<p class="govuk-body-s rops-study-description">${escapeHtml(description)}</p>` : ""}
+${status ? `<strong class="govuk-tag ${studyStatusTagClass(status)}">${escapeHtml(status)}</strong>` : ""}
 </li>`;
 	}).join("");
 }
@@ -312,7 +309,7 @@ function renderStudiesLoadError(err) {
 	const reason = String(err?.message || err || "Unknown error").trim() || "Unknown error";
 	const upstream = err?.upstreamStatus ? ` (HTTP ${escapeHtml(String(err.upstreamStatus))})` : "";
 	list.innerHTML = `
-<li class="lede" role="alert">
+<li role="alert">
 <strong>Could not load studies${upstream}</strong><br>
 <span>Study records could not be loaded for this project.</span><br>
 <span><strong>Technical detail:</strong> <code>${escapeHtml(reason)}</code></span>
@@ -482,7 +479,7 @@ function renderProjectLoadError(err, requestedProjectId) {
 		${safeRequestedId ? `<p class="govuk-body"><strong>Requested project id:</strong> <code>${safeRequestedId}</code></p>` : '<p class="govuk-body">No <code>id</code> parameter was present in the URL.</p>'}
 		<p class="govuk-body"><a class="govuk-link" href="/pages/projects/">Back to projects</a></p>`;
 	const widthContainer = main.querySelector(".govuk-width-container");
-	const heroAnchor = widthContainer?.querySelector(".dashboard-hero") || widthContainer?.firstElementChild;
+	const heroAnchor = widthContainer?.firstElementChild;
 	if (widthContainer && heroAnchor) widthContainer.insertBefore(container, heroAnchor.nextSibling || null);
 	else main.appendChild(container);
 }

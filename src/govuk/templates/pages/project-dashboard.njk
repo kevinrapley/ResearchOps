@@ -5,7 +5,7 @@
 	<meta name="project:name" content="">
 	<link rel="modulepreload" href="/js/project-dashboard-context.js">
 	<link rel="modulepreload" href="/js/project-dashboard.js?v=projects-api-proxy-20260514">
-	<link rel="stylesheet" href="/css/project-dashboard.css?v=project-dashboard-govuk-existing-model-20260524" media="screen">
+	<link rel="stylesheet" href="/css/project-dashboard.css?v=project-dashboard-govuk-existing-model-20260525" media="screen">
 {% endblock %}
 
 {% block content %}
@@ -95,48 +95,50 @@
 					}) }}
 				</div>
 
-				<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
-				<p class="govuk-body">Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system record.</p>
-				<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
-					<span class="pill pill--neutral">Checking Mural status</span>
-				</p>
-				<dl class="govuk-summary-list">
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Mural account</dt>
-						<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Checking</strong></dd>
+				<div id="mural-integration">
+					<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
+					<p class="govuk-body">Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system record.</p>
+					<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
+						<span class="pill pill--neutral">Checking Mural status</span>
+					</p>
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Mural account</dt>
+							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Checking</strong></dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Mural board</dt>
+							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Checking</strong></dd>
+						</div>
+					</dl>
+					<div class="govuk-button-group rops-mural-actions">
+						{{ govukButton({
+							text: "Connect Mural",
+							type: "button",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "mural-connect"
+							}
+						}) }}
+						{{ govukButton({
+							text: "Create Mural board",
+							type: "button",
+							classes: "govuk-button--secondary",
+							disabled: true,
+							attributes: {
+								id: "mural-setup"
+							}
+						}) }}
+						{{ govukButton({
+							text: "Open Mural board",
+							href: "#",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "mural-open",
+								"aria-disabled": "true"
+							}
+						}) }}
 					</div>
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Mural board</dt>
-						<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Checking</strong></dd>
-					</div>
-				</dl>
-				<div class="govuk-button-group rops-mural-actions">
-					{{ govukButton({
-						text: "Connect Mural",
-						type: "button",
-						classes: "govuk-button--secondary",
-						attributes: {
-							id: "mural-connect"
-						}
-					}) }}
-					{{ govukButton({
-						text: "Create Mural board",
-						type: "button",
-						classes: "govuk-button--secondary",
-						disabled: true,
-						attributes: {
-							id: "mural-setup"
-						}
-					}) }}
-					{{ govukButton({
-						text: "Open Mural board",
-						href: "#",
-						classes: "govuk-button--secondary",
-						attributes: {
-							id: "mural-open",
-							"aria-disabled": "true"
-						}
-					}) }}
 				</div>
 			</div>
 		</section>
@@ -196,10 +198,7 @@
 									<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-email" name="email" type="email" autocomplete="email" aria-describedby="stakeholder-email-hint">
 								</div>
 								<div class="govuk-button-group">
-									{{ govukButton({
-										text: "Save stakeholder",
-										type: "submit"
-									}) }}
+									{{ govukButton({ text: "Save stakeholder", type: "submit" }) }}
 									{{ govukButton({
 										text: "Cancel",
 										type: "button",
@@ -236,10 +235,7 @@
 									<textarea class="govuk-textarea" id="objective-text" name="objective" rows="4" required aria-describedby="objective-text-hint"></textarea>
 								</div>
 								<div class="govuk-button-group">
-									{{ govukButton({
-										text: "Save objective",
-										type: "submit"
-									}) }}
+									{{ govukButton({ text: "Save objective", type: "submit" }) }}
 									{{ govukButton({
 										text: "Cancel",
 										type: "button",
@@ -286,10 +282,7 @@
 									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required aria-describedby="user-group-name-hint">
 								</div>
 								<div class="govuk-button-group">
-									{{ govukButton({
-										text: "Save user group",
-										type: "submit"
-									}) }}
+									{{ govukButton({ text: "Save user group", type: "submit" }) }}
 									{{ govukButton({
 										text: "Cancel",
 										type: "button",
@@ -312,17 +305,13 @@
 								text: "Add participant",
 								href: "/pages/project-dashboard/participants/?pid=",
 								classes: "govuk-button--secondary",
-								attributes: {
-									id: "add-participant-link"
-								}
+								attributes: { id: "add-participant-link" }
 							}) }}
 							{{ govukButton({
 								text: "Bulk upload participants via CSV",
 								href: "/pages/project-dashboard/participants/import/?pid=",
 								classes: "govuk-button--secondary",
-								attributes: {
-									id: "import-participants-link"
-								}
+								attributes: { id: "import-participants-link" }
 							}) }}
 						</div>
 					</div>
@@ -348,9 +337,7 @@
 							text: "Add study",
 							href: "/pages/study/new/?pid=",
 							classes: "govuk-button--secondary",
-							attributes: {
-								id: "add-study-link"
-							}
+							attributes: { id: "add-study-link" }
 						}) }}
 					</div>
 					<div>
@@ -361,9 +348,7 @@
 							text: "Add insight",
 							href: "/pages/projects/outcomes/?id=#impact-form",
 							classes: "govuk-button--secondary",
-							attributes: {
-								id: "add-insight-link"
-							}
+							attributes: { id: "add-insight-link" }
 						}) }}
 					</div>
 				</div>
@@ -377,4 +362,5 @@
 	<script type="module" src="/js/project-dashboard-context.js"></script>
 	<script type="module" src="/js/project-dashboard.js?v=projects-api-proxy-20260514"></script>
 	<script type="module" src="/components/mural-integration.js"></script>
+	<script type="module" src="/components/project-dashboard-mural-state.js"></script>
 {% endblock %}

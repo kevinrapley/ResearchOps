@@ -141,6 +141,19 @@ const pages = [
 			})),
 		},
 	},
+	{
+		template: 'pages/project-dashboard.njk',
+		output: 'public/pages/project-dashboard/index.html',
+		context: {
+			pageTitle: 'Project dashboard - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: navigation.map((item) => ({
+				...item,
+				active: item.href === '/pages/projects/',
+			})),
+		},
+	},
 ];
 
 for (const page of pages) {

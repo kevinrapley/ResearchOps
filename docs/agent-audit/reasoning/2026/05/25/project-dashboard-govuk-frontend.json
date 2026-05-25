@@ -1,0 +1,66 @@
+{
+  "id": "project-dashboard-govuk-frontend",
+  "date": "2026-05-25",
+  "branch": "chore/govuk-frontend-integration",
+  "pullRequest": 262,
+  "task": "Move the Project Dashboard to GOV.UK Frontend while preserving the existing content and interaction model.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "mural-public-api"
+  ],
+  "filesChanged": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "src/styles/project-dashboard.scss",
+    "public/css/project-dashboard.css",
+    "public/pages/project-dashboard/index.html",
+    "public/js/project-dashboard.js",
+    "public/components/project-dashboard-mural-state.js",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "keptContentModel": [
+    "project details",
+    "project area links",
+    "reflexive journal route",
+    "Mural account and board state",
+    "stakeholder management",
+    "objectives",
+    "user groups",
+    "participants",
+    "studies",
+    "insights and outcomes"
+  ],
+  "removedInventedConcepts": [
+    "Add a project note",
+    "Setup checks",
+    "generic dashboard metrics"
+  ],
+  "interactionDecisions": [
+    "ResearchOps reflexive journal remains the system record.",
+    "Mural board is presented as a linked visual support artefact.",
+    "Open journal, create Mural board, and open Mural board are separate actions.",
+    "Study list keeps title, truncated description and status.",
+    "Project stage remains data-driven and is not hardcoded to a generic value."
+  ],
+  "validation": {
+    "testFile": "tests/project-dashboard-route-state.test.js",
+    "guards": [
+      "GOV.UK Frontend CSS",
+      "Nunjucks source template",
+      "shared x-include header and footer",
+      "legacy clone CSS absence",
+      "dashboard DOM hooks",
+      "Mural integration hook",
+      "separated journal and Mural actions",
+      "absence of invented note/setup widgets"
+    ]
+  },
+  "riskNotes": [
+    "Existing API responsibilities are preserved.",
+    "Existing Mural integration component remains the owner of API behaviour.",
+    "The presentation bridge only synchronises visible GOV.UK status and actions."
+  ]
+}
