@@ -1,16 +1,13 @@
-/**
- * @file project-dashboard.js
- * @module ProjectDashboard
- */
+const API_ORIGIN = resolveApiBase();
+const $ = (selector, root = document) => root.querySelector(selector);
+let currentProject = null;
 
-/* ───────── Set data-project-id from URL ASAP (read by integrations) ───────── */
 {
 	const urlId = new URLSearchParams(location.search).get("id") || "";
-	const m = document.querySelector("main");
-	if (m && urlId) m.setAttribute("data-project-id", urlId);
+	const main = document.querySelector("main");
+	if (main && urlId) main.setAttribute("data-project-id", urlId);
 }
 
-/* ───────── Config: single source of truth for API origin ───────── */
 function resolveApiBase() {
 	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
 	return String(explicit || "").trim().replace(/\/+$/, "");
@@ -21,14 +18,18 @@ function apiUrl(path) {
 	return `${API_ORIGIN}${cleanPath}`;
 }
 
-const API_ORIGIN = resolveApiBase();
-const $ = (s, r = document) => r.querySelector(s);
-const setText = (sel, val, fallback = "—") => {
-	const el = $(sel);
-	if (el) el.textContent = (val ?? "").toString().trim() || fallback;
-};
-
-let currentProject = null;
+async function fetchWithTimeout(url, init = {}, timeoutMs = 15000) {
+	const controller = new AbortController();
+	const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		return await fetch(url, { ...init, signal: controller.signal });
+	} catch (error) {
+		if (error?.name === "AbortError") throw new Error(`Request timed out after ${timeoutMs}ms`);
+		throw error;
+	} finally {
+		window.clearTimeout(timer);
+	}
+}
 
 function escapeHtml(value = "") {
 	return String(value)
@@ -39,15 +40,25 @@ function escapeHtml(value = "") {
 		.replace(/'/g, "&#39;");
 }
 
+function setText(selector, value, fallback = "—") {
+	const element = $(selector);
+	if (element) element.textContent = String(value ?? "").trim() || fallback;
+}
+
+function setLinkHref(id, href) {
+	const element = document.getElementById(id);
+	if (element) element.setAttribute("href", href);
+}
+
+function firstPresent(...values) {
+	for (const value of values) if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+	return "";
+}
+
 function looksLikeIdentityFragment(value) {
 	const text = String(value || "").trim();
 	if (!text) return false;
-	return /"?EMAIL"?\s*:/i.test(text) ||
-		/"?email"?\s*:/i.test(text) ||
-		/"?role"?\s*:/i.test(text) ||
-		/^[}\]]+$/.test(text) ||
-		/^[{[]/.test(text) ||
-		(/^[^,\s]+@[^,\s]+\.[^,\s]+$/i.test(text) && !/\s/.test(text));
+	return /"?email"?\s*:/i.test(text) || /"?role"?\s*:/i.test(text) || /^[}\]]+$/.test(text) || /^[{[]/.test(text);
 }
 
 function normaliseLineList(value) {
@@ -60,20 +71,13 @@ function normaliseCommaList(value) {
 	return String(value || "").split(/\r?\n|[|,]/).map((item) => item.trim()).filter((item) => item && !looksLikeIdentityFragment(item));
 }
 
-function firstPresent(...values) {
-	for (const value of values) if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
-	return "";
-}
-
 function normaliseStakeholders(value) {
 	if (Array.isArray(value)) {
-		return value
-			.map((stakeholder) => ({
-				name: String(stakeholder?.name || stakeholder?.Name || "").trim(),
-				role: String(stakeholder?.role || stakeholder?.Role || "").trim(),
-				email: String(stakeholder?.email || stakeholder?.Email || "").trim(),
-			}))
-			.filter((stakeholder) => stakeholder.name || stakeholder.role || stakeholder.email);
+		return value.map((stakeholder) => ({
+			name: String(stakeholder?.name || stakeholder?.Name || "").trim(),
+			role: String(stakeholder?.role || stakeholder?.Role || "").trim(),
+			email: String(stakeholder?.email || stakeholder?.Email || "").trim(),
+		})).filter((stakeholder) => stakeholder.name || stakeholder.role || stakeholder.email);
 	}
 	try {
 		return normaliseStakeholders(JSON.parse(value || "[]"));
@@ -82,113 +86,76 @@ function normaliseStakeholders(value) {
 	}
 }
 
-function normaliseProject(p = {}) {
-	const publicId = firstPresent(p.id, p.airtableId, p.recordId);
-	const teamName = firstPresent(
-		p.teamName,
-		p.team_name,
-		p.team,
-		Array.isArray(p.teamNames) ? p.teamNames[0] : "",
-		p.Org,
-		p.org
-	);
-
+function normaliseProject(project = {}) {
+	const publicId = firstPresent(project.id, project.airtableId, project.recordId);
+	const teamName = firstPresent(project.teamName, project.team_name, project.team, Array.isArray(project.teamNames) ? project.teamNames[0] : "", project.Org, project.org);
 	return {
 		id: publicId,
-		localId: firstPresent(p.localId, p.LocalId, publicId),
-		airtableId: firstPresent(p.airtableId, p.recordId, publicId),
-		name: p.name || p.Name || "",
-		description: p.description || p.Description || "",
+		localId: firstPresent(project.localId, project.LocalId, publicId),
+		airtableId: firstPresent(project.airtableId, project.recordId, publicId),
+		name: project.name || project.Name || "",
+		description: project.description || project.Description || "",
 		org: teamName || "Unassigned team",
-		phase: p["rops:servicePhase"] || p.Phase || "",
-		status: p["rops:projectStatus"] || p.Status || "",
-		objectives: normaliseLineList(p.objectives ?? p.Objectives),
-		user_groups: normaliseCommaList(p.user_groups ?? p.UserGroups),
-		stakeholders: normaliseStakeholders(p.stakeholders ?? p.Stakeholders),
-		createdAt: p.createdAt || p.CreatedAt || p.createdTime || "",
-		lead_researcher: p.lead_researcher || p["Lead Researcher"] || "",
-		lead_researcher_email: p.lead_researcher_email || p["Lead Researcher Email"] || "",
+		phase: project["rops:servicePhase"] || project.Phase || "",
+		status: project["rops:projectStatus"] || project.Status || "",
+		objectives: normaliseLineList(project.objectives ?? project.Objectives),
+		user_groups: normaliseCommaList(project.user_groups ?? project.UserGroups),
+		stakeholders: normaliseStakeholders(project.stakeholders ?? project.Stakeholders),
+		lead_researcher: project.lead_researcher || project["Lead Researcher"] || "",
+		lead_researcher_email: project.lead_researcher_email || project["Lead Researcher Email"] || "",
 	};
 }
 
+async function readJsonResponse(response, label) {
+	const contentType = (response.headers.get("content-type") || "").toLowerCase();
+	if (!contentType.includes("application/json")) {
+		const preview = await response.text().catch(() => "");
+		const error = new Error(`${label} non-JSON (${response.status}) ${preview.slice(0, 120)}`);
+		error.upstreamStatus = response.status;
+		throw error;
+	}
+	const json = await response.json().catch(() => null);
+	if (!response.ok || !json || json.ok === false) {
+		const error = new Error(json?.error || json?.detail || `${label} load failed (${response.status})`);
+		error.upstreamStatus = response.status;
+		error.upstreamBody = json;
+		throw error;
+	}
+	return json;
+}
+
 async function loadProject(projectId) {
-	const url = apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`);
-	const res = await fetch(url, { cache: "no-store", credentials: "include" });
-	const ctype = (res.headers.get("content-type") || "").toLowerCase();
-	if (!ctype.includes("application/json")) {
-		const preview = await res.text().catch(() => "");
-		const err = new Error(`Project non-JSON (${res.status}) ${preview.slice(0, 120)}`);
-		err.upstreamStatus = res.status;
-		throw err;
-	}
-	let data;
-	try {
-		data = await res.json();
-	} catch {
-		const err = new Error(`Project JSON parse failed (${res.status})`);
-		err.upstreamStatus = res.status;
-		throw err;
-	}
-	if (!res.ok || data?.ok === false) {
-		const err = new Error(data?.error || data?.detail || `Project load failed (${res.status})`);
-		err.upstreamStatus = res.status;
-		err.upstreamBody = data;
-		throw err;
-	}
-	return normaliseProject(data);
+	const response = await fetchWithTimeout(apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`), {
+		cache: "no-store",
+		credentials: "include",
+	}, 15000);
+	return normaliseProject(await readJsonResponse(response, "Project"));
 }
 
 async function loadStudies(projectId) {
-	const url = apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`);
-	const res = await fetch(url, { cache: "no-store", credentials: "include" });
-	const ctype = (res.headers.get("content-type") || "").toLowerCase();
-	if (!ctype.includes("application/json")) {
-		const preview = await res.text().catch(() => "");
-		const err = new Error(`Studies non-JSON (${res.status}) ${preview.slice(0, 120)}`);
-		err.upstreamStatus = res.status;
-		throw err;
-	}
-	let js;
-	try {
-		js = await res.json();
-	} catch {
-		const err = new Error(`Studies JSON parse failed (${res.status})`);
-		err.upstreamStatus = res.status;
-		throw err;
-	}
-	if (!res.ok || !js?.ok) {
-		const err = new Error(js?.error || js?.detail || `Studies load failed (${res.status})`);
-		err.upstreamStatus = res.status;
-		err.upstreamBody = js;
-		throw err;
-	}
-	return (js.studies || []).map((r) => ({
-		id: r.id || "",
-		studyId: r.studyId || "",
-		method: r.method || "",
-		status: r.status || "",
-		description: r.description || "",
-		createdAt: r.createdAt || "",
-		title: r.title || r.Title || "",
+	const response = await fetchWithTimeout(apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`), {
+		cache: "no-store",
+		credentials: "include",
+	}, 15000);
+	const json = await readJsonResponse(response, "Studies");
+	return (json.studies || []).map((study) => ({
+		id: study.id || "",
+		method: study.method || "",
+		status: study.status || "",
+		description: study.description || "",
+		createdAt: study.createdAt || "",
+		title: study.title || study.Title || "",
 	}));
 }
 
 function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
-	if (description && description.trim()) return description.trim().slice(0, 80);
-	const d = createdAt ? new Date(createdAt) : new Date();
-	const yyyy = d.getUTCFullYear();
-	const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	const dd = String(d.getUTCDate()).padStart(2, "0");
-	return `${method || "Study"} — ${yyyy}-${mm}-${dd}`;
+	if (description.trim()) return description.trim().slice(0, 80);
+	const date = createdAt ? new Date(createdAt) : new Date();
+	return `${method || "Study"} — ${date.toISOString().slice(0, 10)}`;
 }
 
 function projectIdFromUrl(project) {
 	return new URLSearchParams(location.search).get("id") || project?.id || project?.localId || "";
-}
-
-function setLinkHref(id, href) {
-	const el = document.getElementById(id);
-	if (el) el.setAttribute("href", href);
 }
 
 function renderProject(project) {
@@ -201,21 +168,26 @@ function renderProject(project) {
 	setText("#kv-client-name", project.org);
 	setText("#kv-lead-researcher", project.lead_researcher);
 	setText("#kv-lead-email", project.lead_researcher_email);
+
 	const email = document.getElementById("kv-lead-email");
 	if (email) email.setAttribute("href", project.lead_researcher_email ? `mailto:${project.lead_researcher_email}` : "mailto:");
+
 	const main = document.querySelector("main");
 	if (main) {
 		main.setAttribute("data-project-id", projectId || project.id || "");
 		main.dataset.projectName = project.name || "";
 		main.dataset.projectAirtableId = project.airtableId || "";
 	}
+
 	const metaProject = document.querySelector('meta[name="project:name"]');
 	if (metaProject) metaProject.setAttribute("content", project.name || "");
-	const bcProject = document.getElementById("breadcrumb-project");
-	if (bcProject) {
-		bcProject.textContent = project.name || "Project";
-		bcProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+
+	const breadcrumbProject = document.getElementById("breadcrumb-project");
+	if (breadcrumbProject) {
+		breadcrumbProject.textContent = project.name || "Project";
+		breadcrumbProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 	}
+
 	setLinkHref("journal-link", `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("journal-button-link", `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("outcomes-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
@@ -224,10 +196,7 @@ function renderProject(project) {
 	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?pid=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
-	renderProjectLists(project);
-}
 
-function renderProjectLists(project) {
 	renderStakeholders(project.stakeholders || []);
 	renderObjectives(project.objectives || []);
 	renderUserGroups(project.user_groups || []);
@@ -251,21 +220,13 @@ function renderStakeholders(stakeholders = []) {
 function renderObjectives(objectives = []) {
 	const list = document.getElementById("objectives-list");
 	if (!list) return;
-	if (!objectives.length) {
-		list.innerHTML = "<li>No objectives yet.</li>";
-		return;
-	}
-	list.innerHTML = objectives.map((objective) => `<li>${escapeHtml(objective)}</li>`).join("");
+	list.innerHTML = objectives.length ? objectives.map((objective) => `<li>${escapeHtml(objective)}</li>`).join("") : "<li>No objectives yet.</li>";
 }
 
 function renderUserGroups(userGroups = []) {
 	const list = document.getElementById("user-groups-list");
 	if (!list) return;
-	if (!userGroups.length) {
-		list.innerHTML = "<li>No user groups yet.</li>";
-		return;
-	}
-	list.innerHTML = userGroups.map((group) => `<li>${escapeHtml(group)}</li>`).join("");
+	list.innerHTML = userGroups.length ? userGroups.map((group) => `<li>${escapeHtml(group)}</li>`).join("") : "<li>No user groups yet.</li>";
 }
 
 function studyStatusTagClass(status = "") {
@@ -283,17 +244,11 @@ function renderStudies(project, studies) {
 		list.innerHTML = "<li>No studies yet.</li>";
 		return;
 	}
-	const truncateToWords = (text, maxLength = 170) => {
-		if (!text) return "";
-		if (text.length <= maxLength) return text;
-		return `${text.slice(0, maxLength).replace(/\s+\S*$/, "")}…`;
-	};
-	list.innerHTML = studies.map((s) => {
-		const title = s.title?.trim() || s.Title?.trim() || s.method?.trim() || computeStudyTitle(s);
-		const href = `/pages/study/?id=${encodeURIComponent(s.id)}`;
-		const status = (s.status || "").trim();
-		const full = s.description || "";
-		const description = truncateToWords(full, 170);
+	list.innerHTML = studies.map((study) => {
+		const title = study.title?.trim() || study.method?.trim() || computeStudyTitle(study);
+		const href = `/pages/study/?id=${encodeURIComponent(study.id)}`;
+		const description = study.description && study.description.length > 170 ? `${study.description.slice(0, 170).replace(/\s+\S*$/, "")}…` : study.description;
+		const status = String(study.status || "").trim();
 		return `
 <li class="rops-study-item">
 <a class="govuk-link govuk-!-font-weight-bold" href="${href}">${escapeHtml(title)}</a>
@@ -303,17 +258,11 @@ ${status ? `<strong class="govuk-tag ${studyStatusTagClass(status)}">${escapeHtm
 	}).join("");
 }
 
-function renderStudiesLoadError(err) {
+function renderStudiesLoadError(error) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
-	const reason = String(err?.message || err || "Unknown error").trim() || "Unknown error";
-	const upstream = err?.upstreamStatus ? ` (HTTP ${escapeHtml(String(err.upstreamStatus))})` : "";
-	list.innerHTML = `
-<li role="alert">
-<strong>Could not load studies${upstream}</strong><br>
-<span>Study records could not be loaded for this project.</span><br>
-<span><strong>Technical detail:</strong> <code>${escapeHtml(reason)}</code></span>
-</li>`;
+	const reason = String(error?.message || error || "Unknown error").trim();
+	list.innerHTML = `<li role="alert"><strong>Could not load studies</strong><br><span>Study records could not be loaded for this project.</span><br><span><strong>Technical detail:</strong> <code>${escapeHtml(reason)}</code></span></li>`;
 }
 
 function togglePanel(toggle, panel, forceOpen = null) {
@@ -321,17 +270,13 @@ function togglePanel(toggle, panel, forceOpen = null) {
 	const shouldOpen = forceOpen === null ? panel.hidden : forceOpen;
 	panel.hidden = !shouldOpen;
 	toggle.setAttribute("aria-expanded", String(shouldOpen));
-	if (shouldOpen) {
-		const firstField = panel.querySelector("input, textarea, select, button");
-		if (firstField && typeof firstField.focus === "function") firstField.focus();
-	}
+	if (shouldOpen) panel.querySelector("input, textarea, select, button")?.focus?.();
 }
 
 function initPanelToggle(toggleId, panelId) {
 	const toggle = document.getElementById(toggleId);
 	const panel = document.getElementById(panelId);
-	if (!toggle || !panel) return;
-	toggle.addEventListener("click", () => togglePanel(toggle, panel));
+	if (toggle && panel) toggle.addEventListener("click", () => togglePanel(toggle, panel));
 }
 
 function initPanelClosers() {
@@ -353,14 +298,14 @@ function setStatus(id, message, isError = false) {
 
 async function saveProjectPatch(payload) {
 	if (!currentProject?.id) throw new Error("Missing project id");
-	const res = await fetch(apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`), {
+	const response = await fetchWithTimeout(apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`), {
 		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		credentials: "include",
 		body: JSON.stringify(payload),
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!res.ok || json?.ok === false) throw new Error(json?.error || json?.detail || `HTTP ${res.status}`);
+	}, 15000);
+	const json = await response.json().catch(() => ({}));
+	if (!response.ok || json?.ok === false) throw new Error(json?.error || json?.detail || `HTTP ${response.status}`);
 	return json.project || null;
 }
 
@@ -377,16 +322,16 @@ function initStakeholderForm() {
 			return;
 		}
 		const nextStakeholders = [...(currentProject.stakeholders || []), { name, role, email }];
-		setStatus("add-stakeholder-status", "Saving stakeholder.");
 		try {
+			setStatus("add-stakeholder-status", "Saving stakeholder.");
 			await saveProjectPatch({ stakeholders: nextStakeholders });
 			currentProject.stakeholders = nextStakeholders;
 			renderStakeholders(nextStakeholders);
 			form.reset();
 			setStatus("add-stakeholder-status", "Stakeholder saved.");
 			togglePanel(document.getElementById("add-stakeholder-toggle"), document.getElementById("add-stakeholder-panel"), false);
-		} catch (err) {
-			setStatus("add-stakeholder-status", `Could not save stakeholder. ${String(err?.message || err)}`, true);
+		} catch (error) {
+			setStatus("add-stakeholder-status", `Could not save stakeholder. ${String(error?.message || error)}`, true);
 		}
 	});
 }
@@ -402,16 +347,16 @@ function initObjectiveForm() {
 			return;
 		}
 		const nextObjectives = [...(currentProject.objectives || []), objective];
-		setStatus("add-objective-status", "Saving objective.");
 		try {
+			setStatus("add-objective-status", "Saving objective.");
 			await saveProjectPatch({ objectives: nextObjectives });
 			currentProject.objectives = nextObjectives;
 			renderObjectives(nextObjectives);
 			form.reset();
 			setStatus("add-objective-status", "Objective saved.");
 			togglePanel(document.getElementById("add-objective-toggle"), document.getElementById("add-objective-panel"), false);
-		} catch (err) {
-			setStatus("add-objective-status", `Could not save objective. ${String(err?.message || err)}`, true);
+		} catch (error) {
+			setStatus("add-objective-status", `Could not save objective. ${String(error?.message || error)}`, true);
 		}
 	});
 }
@@ -422,11 +367,7 @@ function initUserGroupForm() {
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 		const userGroup = String($("#user-group-name")?.value || "").trim();
-		if (!userGroup) {
-			setStatus("add-user-group-status", "Enter a user group.", true);
-			return;
-		}
-		if (looksLikeIdentityFragment(userGroup)) {
+		if (!userGroup || looksLikeIdentityFragment(userGroup)) {
 			setStatus("add-user-group-status", "Enter a valid user group label.", true);
 			return;
 		}
@@ -436,16 +377,16 @@ function initUserGroupForm() {
 			return;
 		}
 		const nextUserGroups = [...(currentProject.user_groups || []), userGroup];
-		setStatus("add-user-group-status", "Saving user group.");
 		try {
+			setStatus("add-user-group-status", "Saving user group.");
 			await saveProjectPatch({ user_groups: nextUserGroups });
 			currentProject.user_groups = nextUserGroups;
 			renderUserGroups(nextUserGroups);
 			form.reset();
 			setStatus("add-user-group-status", "User group saved.");
 			togglePanel(document.getElementById("add-user-group-toggle"), document.getElementById("add-user-group-panel"), false);
-		} catch (err) {
-			setStatus("add-user-group-status", `Could not save user group. ${String(err?.message || err)}`, true);
+		} catch (error) {
+			setStatus("add-user-group-status", `Could not save user group. ${String(error?.message || error)}`, true);
 		}
 	});
 }
@@ -460,28 +401,17 @@ function initProjectActions() {
 	initUserGroupForm();
 }
 
-function renderProjectLoadError(err, requestedProjectId) {
+function renderProjectLoadError(error, requestedProjectId) {
 	const main = document.querySelector("main");
 	if (!main) return;
-	const reason = String(err?.message || err || "Unknown error").trim() || "Unknown error";
-	const safeReason = escapeHtml(reason);
-	const safeRequestedId = escapeHtml(requestedProjectId || "");
-	const upstream = err?.upstreamStatus ? ` (HTTP ${escapeHtml(String(err.upstreamStatus))})` : "";
+	const reason = escapeHtml(String(error?.message || error || "Unknown error"));
+	const requested = escapeHtml(requestedProjectId || "");
 	const container = document.createElement("section");
 	container.id = "project-load-error";
 	container.className = "dashboard-action-panel";
 	container.setAttribute("role", "alert");
-	container.setAttribute("aria-live", "assertive");
-	container.innerHTML = `
-		<h2 class="govuk-heading-m">Could not load project</h2>
-		<p class="govuk-body">The project record at this URL could not be loaded.${upstream}</p>
-		<p class="govuk-body"><strong>Technical detail:</strong> <code>${safeReason}</code></p>
-		${safeRequestedId ? `<p class="govuk-body"><strong>Requested project id:</strong> <code>${safeRequestedId}</code></p>` : '<p class="govuk-body">No <code>id</code> parameter was present in the URL.</p>'}
-		<p class="govuk-body"><a class="govuk-link" href="/pages/projects/">Back to projects</a></p>`;
-	const widthContainer = main.querySelector(".govuk-width-container");
-	const heroAnchor = widthContainer?.firstElementChild;
-	if (widthContainer && heroAnchor) widthContainer.insertBefore(container, heroAnchor.nextSibling || null);
-	else main.appendChild(container);
+	container.innerHTML = `<h2 class="govuk-heading-m">Could not load project</h2><p class="govuk-body">The project record at this URL could not be loaded.</p><p class="govuk-body"><strong>Technical detail:</strong> <code>${reason}</code></p>${requested ? `<p class="govuk-body"><strong>Requested project id:</strong> <code>${requested}</code></p>` : '<p class="govuk-body">No <code>id</code> parameter was present in the URL.</p>'}<p class="govuk-body"><a class="govuk-link" href="/pages/projects/">Back to projects</a></p>`;
+	main.querySelector(".govuk-width-container")?.insertBefore(container, main.querySelector(".govuk-breadcrumbs")?.nextSibling || null);
 }
 
 (async function bootstrap() {
@@ -494,17 +424,13 @@ function renderProjectLoadError(err, requestedProjectId) {
 		try {
 			const studies = await loadStudies(project.id || requestedProjectId);
 			renderStudies(project, studies);
-		} catch (studyErr) {
-			console.error("[project-dashboard] studies load failed", {
-				requestedProjectId,
-				message: String(studyErr?.message || studyErr),
-				error: studyErr,
-			});
-			renderStudiesLoadError(studyErr);
+		} catch (studyError) {
+			console.error("[project-dashboard] studies load failed", studyError);
+			renderStudiesLoadError(studyError);
 		}
 		initProjectActions();
-	} catch (err) {
-		console.error("[project-dashboard] load failed", { requestedProjectId, message: String(err?.message || err), error: err });
-		renderProjectLoadError(err, requestedProjectId);
+	} catch (error) {
+		console.error("[project-dashboard] load failed", error);
+		renderProjectLoadError(error, requestedProjectId);
 	}
 })();
