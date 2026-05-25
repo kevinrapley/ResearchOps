@@ -105,10 +105,20 @@ excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project
 
 includes(muralStateSource, "function syncProjectTags", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "function syncMuralPresentation", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "function setTextIfChanged", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "function setAttributeIfChanged", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "function scheduleSync", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "requestAnimationFrame", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "syncInProgress", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "syncQueued", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "mural-account-state", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "mural-board-state", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "mural-open", "Project Dashboard Mural state bridge");
-includes(muralStateSource, "main-content", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "elementById('project-details')", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "elementById('mural-integration')", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "elementById('main-content')", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "document.body", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "new MutationObserver(syncDashboardPresentation)", "Project Dashboard Mural state bridge");
 
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
