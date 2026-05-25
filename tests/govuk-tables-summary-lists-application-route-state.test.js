@@ -13,11 +13,11 @@ const outcomesPageSource = fs.readFileSync("public/pages/projects/outcomes/index
 const impactTrackerSource = fs.readFileSync("public/components/impact-tracker.js", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(tableCssSource, ".govuk-table", "GOV.UK table stylesheet");
@@ -31,11 +31,12 @@ includes(tableCssSource, ".govuk-summary-list__row", "GOV.UK table stylesheet");
 includes(tableCssSource, ".govuk-summary-list__key", "GOV.UK table stylesheet");
 includes(tableCssSource, ".govuk-summary-list__value", "GOV.UK table stylesheet");
 
-includes(dashboardPageSource, "href=\"/css/govuk/govuk-tables.css\"", "project dashboard page");
+includes(dashboardPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "project dashboard page");
 includes(dashboardPageSource, "<dl class=\"govuk-summary-list\">", "project dashboard page");
 includes(dashboardPageSource, "class=\"govuk-summary-list__key\"", "project dashboard page");
 includes(dashboardPageSource, "class=\"govuk-summary-list__value\" id=\"kv-service-stage\"", "project dashboard page");
 includes(dashboardPageSource, "id=\"kv-lead-email\"", "project dashboard page");
+excludes(dashboardPageSource, "href=\"/css/govuk/govuk-tables.css\"", "project dashboard page");
 excludes(dashboardPageSource, "class=\"kv__list\"", "project dashboard page");
 excludes(dashboardPageSource, "class=\"kv__term\"", "project dashboard page");
 excludes(dashboardPageSource, "class=\"kv__desc\"", "project dashboard page");
