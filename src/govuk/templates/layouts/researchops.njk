@@ -11,66 +11,11 @@
 </head>
 <body class="govuk-template__body">
 	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/header.html" vars='{"active":"{{ activeNavigation | default("") }}"}'>
-		<a class="govuk-skip-link" href="#main-content" data-module="govuk-skip-link">Skip to main content</a>
-		<header class="govuk-header" role="banner" data-module="govuk-header">
-			<div class="govuk-header__container govuk-width-container">
-				<div class="govuk-header__logo">
-					<a href="/" class="govuk-header__link govuk-header__link--homepage" aria-label="GOV.UK ResearchOps Demo Suite home">
-						<span class="govuk-header__logotype">GOV.UK</span>
-						<span class="govuk-header__product-name">ResearchOps Demo Suite</span>
-					</a>
-				</div>
-			</div>
-		</header>
-		<section class="govuk-service-navigation" data-module="govuk-service-navigation" aria-label="Service information">
-			<div class="govuk-width-container">
-				<div class="govuk-service-navigation__container">
-					<nav aria-label="Menu" class="govuk-service-navigation__wrapper">
-						<ul class="govuk-service-navigation__list" id="navigation">
-							<li class="govuk-service-navigation__item{% if activeNavigation == 'Home' %} govuk-service-navigation__item--active{% endif %}">
-								<a class="govuk-service-navigation__link" href="/"{% if activeNavigation == 'Home' %} aria-current="page"{% endif %}>Home</a>
-							</li>
-							<li class="govuk-service-navigation__item{% if activeNavigation == 'Start Research Project' %} govuk-service-navigation__item--active{% endif %}">
-								<a class="govuk-service-navigation__link" href="/pages/start/overview/"{% if activeNavigation == 'Start Research Project' %} aria-current="page"{% endif %}>Start research project</a>
-							</li>
-							<li class="govuk-service-navigation__item{% if activeNavigation == 'Projects' %} govuk-service-navigation__item--active{% endif %}">
-								<a class="govuk-service-navigation__link" href="/pages/projects/"{% if activeNavigation == 'Projects' %} aria-current="page"{% endif %}>Projects</a>
-							</li>
-						</ul>
-					</nav>
-				</div>
-			</div>
-		</section>
-		<div class="govuk-phase-banner govuk-width-container" role="note" aria-label="Service phase">
-			<p class="govuk-phase-banner__content">
-				<strong class="govuk-tag govuk-phase-banner__content__tag">Prototype</strong>
-				<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
-			</p>
-		</div>
-	</x-include>
+	<x-include src="/partials/header.html" vars='{"active":"{{ activeNavigation | default("") }}"}'></x-include>
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 		{% block content %}{% endblock %}
 	</main>
-	<x-include src="/partials/footer.html">
-		<footer class="govuk-footer" role="contentinfo">
-			<div class="govuk-width-container govuk-footer__container">
-				<div class="govuk-footer__meta">
-					<div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-						<h2 class="govuk-visually-hidden">Support links</h2>
-						<div class="govuk-footer__meta-custom">&copy; 2026 Home Office Biometrics · ResearchOps v1.0.0</div>
-						<span class="govuk-footer__licence-description">
-							All content is available under the
-							<a class="govuk-footer__link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="license">Open Government Licence v3.0</a>, except where otherwise stated
-						</span>
-					</div>
-					<div class="govuk-footer__meta-item">
-						<a class="govuk-footer__link govuk-footer__copyright-logo" href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">© Crown copyright</a>
-					</div>
-				</div>
-			</div>
-		</footer>
-	</x-include>
+	<x-include src="/partials/footer.html"></x-include>
 	{% block scripts %}{% endblock %}
 </body>
 </html>
