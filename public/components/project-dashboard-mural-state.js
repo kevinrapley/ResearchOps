@@ -6,6 +6,39 @@ function setTag(id, text, className) {
 	tag.textContent = text;
 }
 
+function textOf(id) {
+	return document.getElementById(id)?.textContent?.trim() || '';
+}
+
+function hrefOf(id) {
+	return document.getElementById(id)?.getAttribute('href') || '';
+}
+
+function syncLink(sourceId, targetId) {
+	const href = hrefOf(sourceId);
+	const target = document.getElementById(targetId);
+	if (href && target) target.setAttribute('href', href);
+}
+
+function syncProjectTags() {
+	const serviceStage = textOf('kv-service-stage');
+	const projectStage = textOf('kv-project-stage');
+
+	setTag(
+		'project-service-stage-tag',
+		serviceStage && serviceStage !== '–' ? serviceStage : 'Service stage not recorded',
+		'govuk-tag--blue',
+	);
+	setTag(
+		'project-stage-tag',
+		projectStage && projectStage !== '–' ? projectStage : 'Project stage not recorded',
+		'govuk-tag--purple',
+	);
+
+	syncLink('journal-link', 'journal-button-link');
+	syncLink('outcomes-link', 'outcomes-card-link');
+}
+
 function buttonIsOpeningBoard(button) {
 	return /open/i.test(button?.textContent || '');
 }
@@ -62,12 +95,16 @@ function syncMuralPresentation() {
 	}
 }
 
-function initMuralPresentationBridge() {
-	const target = document.getElementById('mural-integration');
-	if (!target) return;
-
+function syncDashboardPresentation() {
+	syncProjectTags();
 	syncMuralPresentation();
-	const observer = new MutationObserver(syncMuralPresentation);
+}
+
+function initMuralPresentationBridge() {
+	const target = document.getElementById('reflexive-journal') || document.body;
+
+	syncDashboardPresentation();
+	const observer = new MutationObserver(syncDashboardPresentation);
 	observer.observe(target, {
 		attributes: true,
 		childList: true,
