@@ -110,11 +110,13 @@ includes(projectsPage, "class=\"govuk-button govuk-button--secondary\"", "Projec
 includes(projectsPage, "data-module=\"govuk-button\"", "Projects page");
 excludes(projectsPage, "/css/govuk/govuk-frontend-v6.css", "Projects page");
 
-includes(dashboardPage, "class=\"section\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__header\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__title govuk-heading-m\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__body section__grid\"", "project dashboard page");
-
+includes(dashboardPage, "/assets/govuk/govuk-frontend.css", "project dashboard page");
+includes(dashboardPage, "class=\"govuk-summary-card\"", "project dashboard page");
+includes(dashboardPage, "class=\"govuk-summary-list\"", "project dashboard page");
+includes(dashboardPage, "id=\"mural-integration\"", "project dashboard page");
+includes(dashboardPage, "id=\"studies-list\"", "project dashboard page");
+excludes(dashboardPage, "class=\"section\"", "project dashboard page");
+excludes(dashboardPage, "class=\"section__header\"", "project dashboard page");
 excludes(dashboardPage, "class=\"dashboard-section\"", "project dashboard page");
 excludes(dashboardCss, "\n.dashboard-hero {", "project dashboard stylesheet");
 excludes(dashboardCss, "\n.board {", "project dashboard stylesheet");
