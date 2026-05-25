@@ -454,7 +454,6 @@
 
 	document.addEventListener("DOMContentLoaded", () => {
 		if (!els.section) return;
-		jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});
 		observeProjectMeta();
 		updateSetupState();
 	});
