@@ -101,7 +101,7 @@ function syncDashboardPresentation() {
 }
 
 function initMuralPresentationBridge() {
-	const target = document.getElementById('reflexive-journal') || document.body;
+	const target = document.getElementById('main-content') || document.body;
 
 	syncDashboardPresentation();
 	const observer = new MutationObserver(syncDashboardPresentation);
