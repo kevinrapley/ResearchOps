@@ -61,6 +61,7 @@ jobs:
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
         run: |
           missing=""
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
@@ -68,6 +69,7 @@ jobs:
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
           if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
           if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
+          if [ -z "${MURAL_CLIENT_SECRET}" ]; then missing="${missing} MURAL_CLIENT_SECRET"; fi
           if [ -n "${missing}" ]; then
             echo "Missing required production Worker secrets:${missing}"
             exit 1
@@ -121,12 +123,14 @@ jobs:
             RESEARCHOPS_EMAIL_FROM
             AIRTABLE_BASE_ID
             AIRTABLE_API_KEY
+            MURAL_CLIENT_SECRET
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
 
   deploy-preview:
     name: Deploy preview Cloudflare Worker
@@ -156,6 +160,7 @@ jobs:
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
@@ -165,6 +170,7 @@ jobs:
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
           if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
           if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
+          if [ -z "${MURAL_CLIENT_SECRET}" ]; then missing="${missing} MURAL_CLIENT_SECRET"; fi
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then missing="${missing} CF_API_TOKEN"; fi
           if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then missing="${missing} CF_ACCOUNT_ID"; fi
           if [ -n "${missing}" ]; then
@@ -363,9 +369,11 @@ jobs:
             RESEARCHOPS_EMAIL_FROM
             AIRTABLE_BASE_ID
             AIRTABLE_API_KEY
+            MURAL_CLIENT_SECRET
         env:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
