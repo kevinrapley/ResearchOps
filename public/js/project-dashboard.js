@@ -130,12 +130,41 @@ async function readJsonResponse(response, label) {
 	return json;
 }
 
-async function loadProject(projectId) {
+function projectIdentityMatches(project = {}, requestedProjectId = "") {
+	const requested = String(requestedProjectId || "").trim();
+	if (!requested) return false;
+	return [project.id, project.airtableId, project.recordId, project.localId, project.LocalId]
+		.map((value) => String(value || "").trim())
+		.some((value) => value === requested);
+}
+
+async function loadProjectFromD1List(projectId) {
+	const response = await fetchWithTimeout(apiUrl(`/api/projects?limit=200&ts=${Date.now()}`), {
+		cache: "no-store",
+		credentials: "include",
+	}, 15000);
+	const json = await readJsonResponse(response, "Projects list");
+	const projects = Array.isArray(json.projects) ? json.projects : [];
+	const match = projects.find((project) => projectIdentityMatches(project, projectId));
+	if (!match) throw new Error("Project not found in D1-first project list");
+	return normaliseProject(match);
+}
+
+async function loadProjectFromRecord(projectId) {
 	const response = await fetchWithTimeout(apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`), {
 		cache: "no-store",
 		credentials: "include",
 	}, 15000);
 	return normaliseProject(await readJsonResponse(response, "Project"));
+}
+
+async function loadProject(projectId) {
+	try {
+		return await loadProjectFromD1List(projectId);
+	} catch (d1Error) {
+		console.warn("[project-dashboard] D1-first project load failed; falling back to project record endpoint", d1Error);
+		return loadProjectFromRecord(projectId);
+	}
 }
 
 async function loadStudies(projectId) {
