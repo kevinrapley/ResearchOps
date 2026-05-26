@@ -7,12 +7,7 @@
  */
 
 (() => {
-	const API_ORIGIN =
-		document.documentElement?.dataset?.apiOrigin ||
-		window.API_ORIGIN ||
-		(location.hostname.endsWith("pages.dev") ?
-			"https://rops-api.digikev-kevin-rapley.workers.dev" :
-			location.origin);
+	const API_ORIGIN = String(document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "").trim().replace(/\/+$/, "");
 
 	const $ = (selector, root = document) => root.querySelector(selector);
 	const byId = (id) => document.getElementById(id);
@@ -31,6 +26,12 @@
 		boardState: byId("mural-board-state"),
 		summaryTag: byId("mural-summary-tag"),
 	};
+
+	function apiUrl(path) {
+		if (/^https?:\/\//i.test(path)) return path;
+		const cleanPath = path.startsWith("/") ? path : `/${path}`;
+		return `${API_ORIGIN}${cleanPath}`;
+	}
 
 	function addDebug(url) {
 		try {
@@ -101,6 +102,10 @@
 		return `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 	}
 
+	function hasMuralConnectedReturn() {
+		return new URL(location.href).searchParams.get("mural") === "connected";
+	}
+
 	function setText(element, text) {
 		if (element && element.textContent !== text) element.textContent = text;
 	}
@@ -122,10 +127,10 @@
 
 	function setIdleState() {
 		const projectId = getProjectId();
-		setStatus("neutral", "Mural has not been checked yet");
-		setTag(els.accountState, "Not checked", "govuk-tag--grey");
-		setTag(els.boardState, "Not checked", "govuk-tag--grey");
-		setTag(els.summaryTag, "Mural not checked", "govuk-tag--grey");
+		setStatus("neutral", "Mural is optional for visual journaling");
+		setTag(els.accountState, "Connect if needed", "govuk-tag--grey");
+		setTag(els.boardState, "Create or open manually", "govuk-tag--grey");
+		setTag(els.summaryTag, "Mural optional", "govuk-tag--grey");
 
 		if (els.btnConnect) els.btnConnect.disabled = false;
 		if (els.btnSetup) els.btnSetup.disabled = !projectId;
@@ -157,13 +162,13 @@
 		els.btnConnect.addEventListener("click", () => {
 			const projectId = canonicalProjectId(getProjectId() || getProjectParamId());
 			const backPath = projectDashboardPath(projectId);
-			location.href = addDebug(`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`);
+			location.href = addDebug(apiUrl(`/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`));
 		});
 	}
 
 	async function resolveProjectIdByName(name) {
 		const response = await fetchWithTimeout(
-			addDebug(`/api/projects/lookup-by-name?name=${encodeURIComponent(name)}`),
+			addDebug(apiUrl(`/api/projects/lookup-by-name?name=${encodeURIComponent(name)}`)),
 			{ cache: "no-store" },
 			10000,
 		);
@@ -178,7 +183,7 @@
 		if (cached && Date.now() - cached.ts < 60000) return cached;
 
 		const json = await jsonFetch(
-			addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(canonicalId)}&uid=${encodeURIComponent(uid())}`),
+			addDebug(apiUrl(`/api/mural/resolve?projectId=${encodeURIComponent(canonicalId)}&uid=${encodeURIComponent(uid())}`)),
 			{ cache: "no-store" },
 			15000,
 		);
@@ -196,7 +201,7 @@
 		while (Date.now() - start < maxMs) {
 			try {
 				const response = await fetchWithTimeout(
-					addDebug(`${API_ORIGIN}/api/mural/await?muralId=${encodeURIComponent(muralId)}&projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`),
+					addDebug(apiUrl(`/api/mural/await?muralId=${encodeURIComponent(muralId)}&projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`)),
 					{ method: "GET", cache: "no-store" },
 					10000,
 				);
@@ -236,7 +241,7 @@
 			if (/^rec[a-z0-9]{14}$/i.test(projectId)) body.projectId = projectId;
 
 			const json = await jsonFetch(
-				addDebug(`${API_ORIGIN}/api/mural/setup`),
+				addDebug(apiUrl("/api/mural/setup")),
 				{
 					method: "POST",
 					headers: { "content-type": "application/json" },
@@ -330,6 +335,10 @@
 	function init() {
 		if (!els.section) return;
 		setIdleState();
+		if (hasMuralConnectedReturn()) {
+			setConnectedState();
+			setTag(els.boardState, "Ready to create or open", "govuk-tag--grey");
+		}
 		wireConnectButton();
 		wireCreateButton();
 		wireOpenButton();
