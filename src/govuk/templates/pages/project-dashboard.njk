@@ -36,9 +36,9 @@
 		<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
 		<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description"></p>
 		<div class="rops-status-strip" aria-label="Project status">
-			<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Service stage not recorded</strong>
-			<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Project stage not recorded</strong>
-			<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural checking</strong>
+			<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
+			<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
+			<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
 		</div>
 	</header>
 
@@ -99,16 +99,16 @@
 					<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
 					<p class="govuk-body">Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system record.</p>
 					<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
-						<span class="pill pill--neutral">Checking Mural status</span>
+						<span class="pill pill--neutral">Mural is optional for visual journaling</span>
 					</p>
 					<dl class="govuk-summary-list">
 						<div class="govuk-summary-list__row">
 							<dt class="govuk-summary-list__key">Mural account</dt>
-							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Checking</strong></dd>
+							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong></dd>
 						</div>
 						<div class="govuk-summary-list__row">
 							<dt class="govuk-summary-list__key">Mural board</dt>
-							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Checking</strong></dd>
+							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Create or open manually</strong></dd>
 						</div>
 					</dl>
 					<div class="govuk-button-group rops-mural-actions">
@@ -278,8 +278,7 @@
 								<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
 								<div class="govuk-form-group">
 									<label class="govuk-label" for="user-group-name">User group</label>
-									<div id="user-group-name-hint" class="govuk-hint">Use a short group name the research team will recognise.</div>
-									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required aria-describedby="user-group-name-hint">
+									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required>
 								</div>
 								<div class="govuk-button-group">
 									{{ govukButton({ text: "Save user group", type: "submit" }) }}
@@ -298,21 +297,11 @@
 					</div>
 					<div>
 						<h3 class="govuk-heading-s">Participants</h3>
-						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="participants-list"><li>No participants yet.</li></ul>
-						<p class="govuk-hint">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
+						<p class="govuk-body-s">No participants yet.</p>
+						<p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 						<div class="govuk-button-group">
-							{{ govukButton({
-								text: "Add participant",
-								href: "/pages/project-dashboard/participants/?pid=",
-								classes: "govuk-button--secondary",
-								attributes: { id: "add-participant-link" }
-							}) }}
-							{{ govukButton({
-								text: "Bulk upload participants via CSV",
-								href: "/pages/project-dashboard/participants/import/?pid=",
-								classes: "govuk-button--secondary",
-								attributes: { id: "import-participants-link" }
-							}) }}
+							{{ govukButton({ text: "Add participant", href: "/pages/project-dashboard/participants/?pid=", classes: "govuk-button--secondary", attributes: { id: "add-participant-link" } }) }}
+							{{ govukButton({ text: "Bulk upload participants via CSV", href: "/pages/project-dashboard/participants/import/?pid=", classes: "govuk-button--secondary", attributes: { id: "import-participants-link" } }) }}
 						</div>
 					</div>
 				</div>
@@ -323,33 +312,21 @@
 			<div class="govuk-summary-card__title-wrapper">
 				<h2 class="govuk-summary-card__title">Research outcomes</h2>
 				<ul class="govuk-summary-card__actions">
-					<li class="govuk-summary-card__action">
-						<a class="govuk-link" href="/pages/projects/outcomes/?id=" id="outcomes-card-link">Open outcomes</a>
-					</li>
+					<li class="govuk-summary-card__action"><a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">Open outcomes</a></li>
 				</ul>
 			</div>
 			<div class="govuk-summary-card__content">
 				<div class="rops-two-column">
 					<div>
 						<h3 class="govuk-heading-s">Studies</h3>
-						<ul class="govuk-list rops-study-list" id="studies-list"><li>No studies yet.</li></ul>
-						{{ govukButton({
-							text: "Add study",
-							href: "/pages/study/new/?pid=",
-							classes: "govuk-button--secondary",
-							attributes: { id: "add-study-link" }
-						}) }}
+						<ul class="govuk-list govuk-list--spaced rops-study-list" id="studies-list"><li>Loading studies…</li></ul>
+						{{ govukButton({ text: "Add study", href: "/pages/study/new/?pid=", classes: "govuk-button--secondary", attributes: { id: "add-study-link" } }) }}
 					</div>
 					<div>
 						<h3 class="govuk-heading-s">Insights</h3>
-						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="insights-list"><li>No insights yet.</li></ul>
-						<p class="govuk-hint">Insights and impact records are managed from the outcomes workflow so they remain linked to evidence and decisions.</p>
-						{{ govukButton({
-							text: "Add insight",
-							href: "/pages/projects/outcomes/?id=#impact-form",
-							classes: "govuk-button--secondary",
-							attributes: { id: "add-insight-link" }
-						}) }}
+						<p class="govuk-body-s">No insights yet.</p>
+						<p class="govuk-body-s">Insights and impact records are managed from the outcomes workflow so they remain linked to evidence and decisions.</p>
+						{{ govukButton({ text: "Add insight", href: "/pages/projects/outcomes/?id=#impact-form", classes: "govuk-button--secondary", attributes: { id: "add-insight-link" } }) }}
 					</div>
 				</div>
 			</div>
@@ -361,6 +338,6 @@
 {% block scripts %}
 	<script type="module" src="/js/project-dashboard-context.js"></script>
 	<script type="module" src="/js/project-dashboard.js?v=projects-api-proxy-20260514"></script>
-	<script type="module" src="/components/mural-integration.js"></script>
-	<script type="module" src="/components/project-dashboard-mural-state.js"></script>
+	<script type="module" src="/components/mural-integration.js?v=project-dashboard-user-initiated-20260525"></script>
+	<script type="module" src="/components/project-dashboard-mural-state.js?v=inert-20260525"></script>
 {% endblock %}
