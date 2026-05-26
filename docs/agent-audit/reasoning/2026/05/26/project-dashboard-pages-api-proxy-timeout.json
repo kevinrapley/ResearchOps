@@ -1,0 +1,98 @@
+{
+	"date": "2026-05-26",
+	"branch": "chore/govuk-frontend-integration",
+	"pullRequest": 262,
+	"startingHead": "f8f4b08d6715967846c53e8d9e8d2c3a79db8e1d",
+	"traceTrigger": "chore/ branch prefix",
+	"taskSummary": "Fix persistent Project Dashboard preview loading by hardening the Cloudflare Pages API proxy rather than adding x-include fallback chrome.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/trace-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"bundlesSkipped": [
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API, model, retrieval, structured output, eval or AI runtime change was in scope."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP server, MCP client, tool contract or resource exposure change was in scope."
+		},
+		{
+			"id": "airtable-public-api",
+			"reason": "No Airtable schema, formula, record mutation or attachment contract was changed."
+		}
+	],
+	"filesRead": [
+		"functions/api/[[path]].js",
+		"public/js/project-dashboard.js",
+		"public/components/layout.js",
+		"public/components/mural-integration.js",
+		"public/components/project-dashboard-mural-state.js",
+		"public/pages/project-dashboard/index.html",
+		"tests/project-dashboard-route-state.test.js",
+		"tests/mural-ui-route-state.test.js",
+		"package.json",
+		".prettierignore"
+	],
+	"filesModified": [
+		"functions/api/[[path]].js"
+	],
+	"filesCreated": [
+		"tests/pages-api-proxy-timeout-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/26/project-dashboard-pages-api-proxy-timeout.md",
+		"docs/agent-audit/reasoning/2026/05/26/project-dashboard-pages-api-proxy-timeout.json"
+	],
+	"diagnosis": "The Project Dashboard calls same-origin /api routes from the Pages preview. Those requests are handled by the Pages Function proxy before reaching the preview Worker. The proxy did not have a finite upstream timeout, so a slow or stalled Worker call could leave the preview route apparently loading. x-include was not changed.",
+	"changes": [
+		"Added bounded upstream timeout handling to functions/api/[[path]].js.",
+		"Added configurable timeout clamping through API_PROXY_TIMEOUT_MS or RESEARCHOPS_API_PROXY_TIMEOUT_MS.",
+		"Added proxy timeout and upstream diagnostic headers.",
+		"Added a 504 api_proxy_timeout JSON response.",
+		"Added a route-state test guarding proxy timeout behaviour and guarding against x-include fallback chrome."
+	],
+	"validationAttempted": [],
+	"validationNotRun": [
+		"npm test",
+		"npm run format:check",
+		"npm run lint",
+		"Cloudflare preview visual check"
+	],
+	"residualRisks": [
+		"If the browser still loads after deployment, the pending request should now resolve as a finite timeout or identify a different stuck request.",
+		"This change does not prove the preview Worker is healthy; it prevents the Pages Function proxy from hiding a slow upstream call.",
+		"A final Cloudflare Pages preview visual check remains required."
+	]
+}
