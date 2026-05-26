@@ -53,17 +53,31 @@ function isAirtableBillingLimitExceeded(status, body, text = "") {
 }
 
 export function boardsTableName(env) {
-	const t = typeof env.AIRTABLE_TABLE_MURAL_BOARDS === "string" ? env.AIRTABLE_TABLE_MURAL_BOARDS.trim() : "";
+	const t =
+		typeof env.AIRTABLE_TABLE_MURAL_BOARDS === "string"
+			? env.AIRTABLE_TABLE_MURAL_BOARDS.trim()
+			: "";
 	return t || "Mural Boards";
 }
 
 export function projectsTableName(env) {
-	const t = typeof env.AIRTABLE_TABLE_PROJECTS === "string" ? env.AIRTABLE_TABLE_PROJECTS.trim() : "";
+	const t =
+		typeof env.AIRTABLE_TABLE_PROJECTS === "string"
+			? env.AIRTABLE_TABLE_PROJECTS.trim()
+			: "";
 	return t || "Projects";
 }
 
-export async function listAll(env, tableName, opts = {}, timeoutMs = DEFAULTS.TIMEOUT_MS) {
-	const pageSize = Math.min(Math.max(parseInt(String(opts.pageSize ?? 100), 10), 1), 100);
+export async function listAll(
+	env,
+	tableName,
+	opts = {},
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
+	const pageSize = Math.min(
+		Math.max(parseInt(String(opts.pageSize ?? 100), 10), 1),
+		100,
+	);
 	const base = makeTableUrl(env, tableName);
 	const headers = authHeaders(env);
 	const all = [];
@@ -99,7 +113,9 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 	const res = await fetchWithTimeout(url, { headers }, timeoutMs);
 	const txt = await res.text();
 	if (res.ok) return parseAirtableJson(txt, {});
-	if (res.status !== 404) throw new Error(`Airtable ${res.status}: ${safeText(txt)}`);
+	if (res.status !== 404) {
+		throw new Error(`Airtable ${res.status}: ${safeText(txt)}`);
+	}
 
 	const base = makeTableUrl(env, tableName);
 	const params = new URLSearchParams({
@@ -113,11 +129,20 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 
 	const js2 = parseAirtableJson(txt2, { records: [] });
 	const rec = (js2.records || [])[0];
-	if (!rec) throw new Error(`Airtable 404: NOT_FOUND (record ${id} in table "${tableName}")`);
+	if (!rec) {
+		throw new Error(
+			`Airtable 404: NOT_FOUND (record ${id} in table "${tableName}")`,
+		);
+	}
 	return rec;
 }
 
-export async function createRecords(env, tableName, records, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function createRecords(
+	env,
+	tableName,
+	records,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = makeTableUrl(env, tableName);
 	const res = await fetchWithTimeout(
 		url,
@@ -133,7 +158,12 @@ export async function createRecords(env, tableName, records, timeoutMs = DEFAULT
 	return parseAirtableJson(txt, { records: [] });
 }
 
-export async function patchRecords(env, tableName, records, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function patchRecords(
+	env,
+	tableName,
+	records,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = makeTableUrl(env, tableName);
 	const res = await fetchWithTimeout(
 		url,
@@ -164,7 +194,7 @@ export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIME
 	return parseAirtableJson(txt, {});
 }
 
-export async function tryWrite(env, tableName, method, fields, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function tryWrite(env, tableName, method, fields, timeoutMs) {
 	const url = makeTableUrl(env, tableName);
 	return airtableTryWrite(url, airtableToken(env), method, fields, timeoutMs);
 }
@@ -175,7 +205,11 @@ export async function findProjectRecordIdByName(env, projectName) {
 	const baseUrl = makeTableUrl(env, projectsTableName(env));
 	const headers = { [authKey()]: `Bearer ${airtableToken(env)}` };
 	const q = escFormula(name);
-	const or = [`LOWER({Name}) = LOWER("${q}")`, `LOWER({Project Name}) = LOWER("${q}")`, `LOWER({Title}) = LOWER("${q}")`].join(",");
+	const or = [
+		`LOWER({Name}) = LOWER("${q}")`,
+		`LOWER({Project Name}) = LOWER("${q}")`,
+		`LOWER({Title}) = LOWER("${q}")`,
+	].join(",");
 	const url = new URL(baseUrl);
 	url.searchParams.set("maxRecords", "1");
 	url.searchParams.set("filterByFormula", `OR(${or})`);
@@ -193,24 +227,45 @@ export async function findProjectRecordIdByName(env, projectName) {
 	return { id: rec.id, name: rec.fields?.Name || name };
 }
 
-export async function resolveProjectRecordId(env, { projectId, projectName }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function resolveProjectRecordId(
+	env,
+	{ projectId, projectName },
+	log = null,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const safeId = typeof projectId === "string" ? projectId.trim() : "";
 	const safeName = typeof projectName === "string" ? projectName.trim() : "";
 	if (!safeId && !safeName) return null;
 	if (looksLikeAirtableId(safeId)) {
-		log?.debug?.("airtable.projects.lookup.record_id_passthrough", { projectId: safeId });
+		log?.debug?.("airtable.projects.lookup.record_id_passthrough", {
+			projectId: safeId,
+		});
 		return safeId;
 	}
 	const clauses = new Set();
 	if (safeId) {
 		const escId = escFormula(safeId);
-		["LocalId", "localId", "Project ID", "ProjectId", "UID", "Slug", "Slug ID", "ID"].forEach((f) => clauses.add(`{${f}} = "${escId}"`));
+		[
+			"LocalId",
+			"localId",
+			"Project ID",
+			"ProjectId",
+			"UID",
+			"Slug",
+			"Slug ID",
+			"ID",
+		].forEach((f) => clauses.add(`{${f}} = "${escId}"`));
 	}
 	if (safeName) {
 		const escName = escFormula(safeName);
-		["Name", "Project Name", "Title"].forEach((f) => clauses.add(`{${f}} = "${escName}"`));
+		["Name", "Project Name", "Title"].forEach((f) =>
+			clauses.add(`{${f}} = "${escName}"`),
+		);
 	}
-	const filter = clauses.size === 1 ? clauses.values().next().value : `OR(${Array.from(clauses).join(",")})`;
+	const filter =
+		clauses.size === 1
+			? clauses.values().next().value
+			: `OR(${Array.from(clauses).join(",")})`;
 	const url = new URL(makeTableUrl(env, projectsTableName(env)));
 	url.searchParams.set("maxRecords", "5");
 	url.searchParams.set("filterByFormula", filter);
@@ -218,7 +273,11 @@ export async function resolveProjectRecordId(env, { projectId, projectName }, lo
 	log?.debug?.("airtable.projects.lookup.request", { url: url.toString(), filter });
 	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
 	const txt = await res.text().catch(() => "");
-	log?.[res.ok ? "debug" : "warn"]?.("airtable.projects.lookup.response", { status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 500) });
+	log?.[res.ok ? "debug" : "warn"]?.("airtable.projects.lookup.response", {
+		status: res.status,
+		ok: res.ok,
+		bodyPreview: txt.slice(0, 500),
+	});
 	if (!res.ok) {
 		const err = new Error("airtable_project_lookup_failed");
 		err.status = res.status;
@@ -256,21 +315,34 @@ async function mirrorBoardToD1(env, fields, log = null) {
 	const projectId = String(fields["Project ID"] || "").trim();
 	if (!muralId || !projectId) return null;
 	try {
-		await d1Run(env, "INSERT OR REPLACE INTO mural_boards (mural_id, project, purpose, board_url, workspace_id) VALUES (?, ?, ?, ?, ?)", [
-			muralId,
-			projectId,
-			String(fields.Purpose || ""),
-			String(fields["Board URL"] || ""),
-			String(fields["Workspace ID"] || ""),
-		]);
+		await d1Run(
+			env,
+			`INSERT OR REPLACE INTO mural_boards
+				(mural_id, project, purpose, board_url, workspace_id)
+				VALUES (?, ?, ?, ?, ?)`,
+			[
+				muralId,
+				projectId,
+				String(fields.Purpose || ""),
+				String(fields["Board URL"] || ""),
+				String(fields["Workspace ID"] || ""),
+			],
+		);
 		return { ok: true };
 	} catch (err) {
-		log?.warn?.("d1.mural_boards.mirror_failed", { err: String(err?.message || err) });
+		log?.warn?.("d1.mural_boards.mirror_failed", {
+			err: String(err?.message || err),
+		});
 		return { ok: false, error: String(err?.message || err) };
 	}
 }
 
-export async function listBoards(env, { projectId, uid, purpose, active = true, max = 100 }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function listBoards(
+	env,
+	{ projectId, uid, purpose, active = true, max = 100 },
+	log = null,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const pidRaw = String(projectId || "").trim();
 	if (pidRaw) {
 		try {
@@ -281,24 +353,40 @@ export async function listBoards(env, { projectId, uid, purpose, active = true, 
 			});
 			if (row?.mural_id) return [d1BoardRecord(row, { projectId: pidRaw, uid, purpose })];
 		} catch (err) {
-			log?.warn?.("d1.mural_boards.list.failed", { err: String(err?.message || err) });
+			log?.warn?.("d1.mural_boards.list.failed", {
+				err: String(err?.message || err),
+			});
 		}
 	}
+
 	const url = new URL(makeTableUrl(env, boardsTableName(env)));
 	const ands = [];
 	if (!pidRaw && uid) ands.push(`{UID} = "${escFormula(uid)}"`);
 	if (purpose) ands.push(`{Purpose} = "${escFormula(purpose)}"`);
 	if (typeof active === "boolean") ands.push(`{Active} = ${active ? "1" : "0"}`);
-	if (ands.length) url.searchParams.set("filterByFormula", ands.length === 1 ? ands[0] : `AND(${ands.join(",")})`);
+	if (ands.length) {
+		url.searchParams.set(
+			"filterByFormula",
+			ands.length === 1 ? ands[0] : `AND(${ands.join(",")})`,
+		);
+	}
 	url.searchParams.set("maxRecords", String(max));
 	url.searchParams.append("sort[0][field]", "Primary?");
 	url.searchParams.append("sort[0][direction]", "desc");
 	url.searchParams.append("sort[1][field]", "Created At");
 	url.searchParams.append("sort[1][direction]", "desc");
-	log?.debug?.("airtable.boards.list.request", { url: url.toString(), projectId, fallback: "airtable" });
+	log?.debug?.("airtable.boards.list.request", {
+		url: url.toString(),
+		projectId,
+		fallback: "airtable",
+	});
 	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
 	const txt = await res.text().catch(() => "");
-	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.list.response", { status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 500) });
+	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.list.response", {
+		status: res.status,
+		ok: res.ok,
+		bodyPreview: txt.slice(0, 500),
+	});
 	if (!res.ok) {
 		const err = new Error("airtable_list_failed");
 		err.status = res.status;
@@ -320,18 +408,42 @@ export async function listBoards(env, { projectId, uid, purpose, active = true, 
 		for (const arr of candidates) {
 			if (!Array.isArray(arr)) continue;
 			if (pidRec) {
-				if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRec)) return true;
-				if (arr.some((v) => v && typeof v === "object" && String(v.id || "").trim() === pidRec)) return true;
+				if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRec)) {
+					return true;
+				}
+				if (
+					arr.some(
+						(v) => v && typeof v === "object" && String(v.id || "").trim() === pidRec,
+					)
+				) {
+					return true;
+				}
 			}
-			if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRaw)) return true;
+			if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRaw)) {
+				return true;
+			}
 		}
 		const textVal = String(f.Project || f.Projects || "").trim();
 		return textVal && textVal === pidRaw;
 	});
 }
 
-export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
-	const { projectIdText = "", uid, purpose, muralId, boardUrl = null, workspaceId = null, primary = false, active = true } = fieldsBundle;
+export async function createBoard(
+	env,
+	fieldsBundle,
+	log = null,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
+	const {
+		projectIdText = "",
+		uid,
+		purpose,
+		muralId,
+		boardUrl = null,
+		workspaceId = null,
+		primary = false,
+		active = true,
+	} = fieldsBundle;
 	const url = makeTableUrl(env, boardsTableName(env));
 	const baseFields = {
 		"Project ID": String(projectIdText || ""),
@@ -342,17 +454,43 @@ export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEF
 		"Primary?": !!primary,
 		Active: !!active,
 	};
-	if (typeof workspaceId === "string" && workspaceId.trim()) baseFields["Workspace ID"] = workspaceId.trim();
+	if (typeof workspaceId === "string" && workspaceId.trim()) {
+		baseFields["Workspace ID"] = workspaceId.trim();
+	}
 	const d1Write = await mirrorBoardToD1(env, baseFields, log);
 	const body = { typecast: true, records: [{ fields: baseFields }] };
-	log?.info?.("airtable.boards.create.request", { url, mode: "d1_primary_airtable_fallback", d1Write });
-	const res = await fetchWithTimeout(url, { method: "POST", headers: authHeaders(env), body: JSON.stringify(body) }, timeoutMs);
+	log?.info?.("airtable.boards.create.request", {
+		url,
+		mode: "d1_primary_airtable_fallback",
+		d1Write,
+	});
+	const res = await fetchWithTimeout(
+		url,
+		{
+			method: "POST",
+			headers: authHeaders(env),
+			body: JSON.stringify(body),
+		},
+		timeoutMs,
+	);
 	const txt = await res.text().catch(() => "");
 	const parsed = parseAirtableJson(txt);
-	log?.[res.ok ? "info" : "warn"]?.("airtable.boards.create.response", { status: res.status, ok: res.ok, mode: "airtable_fallback", bodyPreview: txt.slice(0, 800) });
+	log?.[res.ok ? "info" : "warn"]?.("airtable.boards.create.response", {
+		status: res.status,
+		ok: res.ok,
+		mode: "airtable_fallback",
+		bodyPreview: txt.slice(0, 800),
+	});
 	if (!res.ok) {
 		if (isAirtableBillingLimitExceeded(res.status, parsed, txt)) {
-			return { ok: false, deferred: true, error: "airtable_billing_limit_exceeded", fields: baseFields, d1Write, upstream: parsed };
+			return {
+				ok: false,
+				deferred: true,
+				error: "airtable_billing_limit_exceeded",
+				fields: baseFields,
+				d1Write,
+				upstream: parsed,
+			};
 		}
 		const err = new Error("airtable_create_failed");
 		err.status = res.status;
@@ -362,12 +500,26 @@ export async function createBoard(env, fieldsBundle, log = null, timeoutMs = DEF
 	return parsed;
 }
 
-export async function updateBoard(env, recordId, fields, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function updateBoard(
+	env,
+	recordId,
+	fields,
+	log = null,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	await mirrorBoardToD1(env, fields, log);
 	if (String(recordId || "").startsWith("d1-")) return { ok: true, source: "d1" };
 	const url = `${makeTableUrl(env, boardsTableName(env))}/${recordId}`;
 	log?.info?.("airtable.boards.update.request", { url, recordId });
-	const res = await fetchWithTimeout(url, { method: "PATCH", headers: authHeaders(env), body: JSON.stringify({ fields, typecast: true }) }, timeoutMs);
+	const res = await fetchWithTimeout(
+		url,
+		{
+			method: "PATCH",
+			headers: authHeaders(env),
+			body: JSON.stringify({ fields, typecast: true }),
+		},
+		timeoutMs,
+	);
 	const txt = await res.text().catch(() => "");
 	if (!res.ok) {
 		const err = new Error("airtable_update_failed");
@@ -380,7 +532,12 @@ export async function updateBoard(env, recordId, fields, log = null, timeoutMs =
 	return parseAirtableJson(txt, {});
 }
 
-export async function findBoardByMuralId(env, { muralId, uid = null, purpose = null }, log = null, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function findBoardByMuralId(
+	env,
+	{ muralId, uid = null, purpose = null },
+	log = null,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = new URL(makeTableUrl(env, boardsTableName(env)));
 	const parts = [`{Mural ID}="${escFormula(String(muralId))}"`];
 	if (uid) parts.push(`{UID}="${escFormula(String(uid))}"`);
@@ -388,7 +545,10 @@ export async function findBoardByMuralId(env, { muralId, uid = null, purpose = n
 	const formula = parts.length === 1 ? parts[0] : `AND(${parts.join(",")})`;
 	url.searchParams.set("filterByFormula", formula);
 	url.searchParams.set("maxRecords", "1");
-	log?.debug?.("airtable.boards.find_by_mural.request", { url: url.toString(), formula });
+	log?.debug?.("airtable.boards.find_by_mural.request", {
+		url: url.toString(),
+		formula,
+	});
 	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
 	const txt = await res.text().catch(() => "");
 	if (!res.ok) return null;
