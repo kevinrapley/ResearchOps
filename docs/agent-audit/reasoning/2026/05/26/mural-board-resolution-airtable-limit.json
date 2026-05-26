@@ -1,0 +1,40 @@
+{
+	"date": "2026-05-26",
+	"branch": "fix/mural-board-resolution-create",
+	"pull_request": 287,
+	"trace_stub": "mural-board-resolution-airtable-limit",
+	"trigger": "Post-merge dashboard test showed Mural connection working but board setup failing during registry write.",
+	"operating_model_files_loaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selected_bundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"cloudflare",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"decision": {
+		"primary_registry": "D1",
+		"fallback_registry": "Airtable",
+		"preserve_legacy_airtable_lookup": true,
+		"md_json_pair_required": true
+	},
+	"changes": [
+		"Read board mappings from D1 before external fallback.",
+		"Mirror board mappings to D1 before external registration.",
+		"Preserve fallback rows that use linked Project or Projects fields.",
+		"Treat external request-limit response as deferred registry state when D1 has been written.",
+		"Update tests for D1-first lookup, legacy fallback, and D1 mirroring."
+	],
+	"validation": {
+		"local": "not run",
+		"github_actions": "pending after corrective commits"
+	}
+}
