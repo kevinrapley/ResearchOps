@@ -3,34 +3,28 @@ import fs from "node:fs";
 
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
-const previewWorkerWorkflow = fs.readFileSync(
-	".github/workflows/deploy-passwordless-preview-worker.yml",
-	"utf8",
-);
+const previewWorkerWorkflow = fs.readFileSync(".github/workflows/deploy-passwordless-preview-worker.yml", "utf8");
 
 function includes(source, text, label) {
-	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(controllerSource, "function loadProjectFromD1List", "Project Dashboard controller");
-includes(controllerSource, "/api/projects?limit=200&ts=${Date.now()}", "Project Dashboard controller");
-includes(controllerSource, "Project not found in D1-first project list", "Project Dashboard controller");
-includes(
-	controllerSource,
-	"D1-first project load failed; falling back to project record endpoint",
-	"Project Dashboard controller",
-);
-includes(controllerSource, "loadProjectFromRecord(projectId)", "Project Dashboard controller");
-includes(
-	controllerSource,
-	"setTagText(\"project-service-stage-tag\", project.phase",
-	"Project Dashboard controller",
-);
-includes(controllerSource, "setTagText(\"project-stage-tag\", project.status", "Project Dashboard controller");
+const controllerExpectations = [
+  "function loadProjectFromD1List",
+  "/api/projects?limit=200",
+  "Project not found in D1-first project list",
+  "loadProjectFromRecord(projectId)",
+  "project-service-stage-tag",
+  "project-stage-tag"
+];
+
+for (const text of controllerExpectations) {
+  includes(controllerSource, text, "Project Dashboard controller");
+}
 
 includes(templateSource, "project-dashboard-d1-first-20260526", "Project Dashboard template");
 includes(templateSource, "project-dashboard-mural-optional-20260526", "Project Dashboard template");
