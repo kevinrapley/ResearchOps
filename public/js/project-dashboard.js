@@ -50,6 +50,12 @@ function setLinkHref(id, href) {
 	if (element) element.setAttribute("href", href);
 }
 
+function setTagText(id, value, fallback) {
+	const element = document.getElementById(id);
+	if (!element) return;
+	element.textContent = String(value ?? "").trim() || fallback;
+}
+
 function firstPresent(...values) {
 	for (const value of values) if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
 	return "";
@@ -96,8 +102,8 @@ function normaliseProject(project = {}) {
 		name: project.name || project.Name || "",
 		description: project.description || project.Description || "",
 		org: teamName || "Unassigned team",
-		phase: project["rops:servicePhase"] || project.Phase || "",
-		status: project["rops:projectStatus"] || project.Status || "",
+		phase: firstPresent(project["rops:servicePhase"], project.servicePhase, project["Service stage"], project["Service Stage"], project.ServiceStage, project.Phase, project.phase),
+		status: firstPresent(project["rops:projectStatus"], project.projectStatus, project["Project stage"], project["Project Stage"], project.ProjectStage, project.Status, project.status),
 		objectives: normaliseLineList(project.objectives ?? project.Objectives),
 		user_groups: normaliseCommaList(project.user_groups ?? project.UserGroups),
 		stakeholders: normaliseStakeholders(project.stakeholders ?? project.Stakeholders),
@@ -168,6 +174,8 @@ function renderProject(project) {
 	setText("#kv-client-name", project.org);
 	setText("#kv-lead-researcher", project.lead_researcher);
 	setText("#kv-lead-email", project.lead_researcher_email);
+	setTagText("project-service-stage-tag", project.phase, "Service stage unavailable");
+	setTagText("project-stage-tag", project.status, "Project stage unavailable");
 
 	const email = document.getElementById("kv-lead-email");
 	if (email) email.setAttribute("href", project.lead_researcher_email ? `mailto:${project.lead_researcher_email}` : "mailto:");
