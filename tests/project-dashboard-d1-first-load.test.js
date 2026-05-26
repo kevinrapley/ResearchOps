@@ -3,25 +3,25 @@ import fs from "node:fs";
 
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const templateSource = fs.readFileSync(
-  "src/govuk/templates/pages/project-dashboard.njk",
-  "utf8",
+	"src/govuk/templates/pages/project-dashboard.njk",
+	"utf8",
 );
 const previewWorkerWorkflow = fs.readFileSync(
-  ".github/workflows/deploy-passwordless-preview-worker.yml",
-  "utf8",
+	".github/workflows/deploy-passwordless-preview-worker.yml",
+	"utf8",
 );
 
 const controllerExpectations = [
-  "function loadProjectFromD1List",
-  "/api/projects?limit=200",
-  "Project not found in D1-first project list",
-  "loadProjectFromRecord(projectId)",
-  "project-service-stage-tag",
-  "project-stage-tag",
+	"function loadProjectFromD1List",
+	"/api/projects?limit=200",
+	"Project not found in D1-first project list",
+	"loadProjectFromRecord(projectId)",
+	"project-service-stage-tag",
+	"project-stage-tag",
 ];
 
 for (const text of controllerExpectations) {
-  assert.ok(controllerSource.includes(text), text);
+	assert.ok(controllerSource.includes(text), text);
 }
 
 assert.ok(templateSource.includes("project-dashboard-d1-first-20260526"));
