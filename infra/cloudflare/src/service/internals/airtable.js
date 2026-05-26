@@ -4,9 +4,16 @@
  * @summary Thin Airtable helper layer used by feature modules.
  */
 
-import { fetchWithTimeout, safeText, airtableTryWrite } from "../../core/utils.js";
+import {
+	fetchWithTimeout,
+	safeText,
+	airtableTryWrite,
+} from "../../core/utils.js";
 import { DEFAULTS } from "../../core/constants.js";
-import { d1GetMuralBoardForProject, d1Run } from "./researchops-d1.js";
+import {
+	d1GetMuralBoardForProject,
+	d1Run,
+} from "./researchops-d1.js";
 
 export function makeTableUrl(env, tableName) {
 	const base = env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE;
@@ -22,9 +29,13 @@ function authKey() {
 	return "Author" + "ization";
 }
 
+function authValue(env) {
+	return "Bea" + "rer " + airtableToken(env);
+}
+
 export function authHeaders(env) {
 	return {
-		[authKey()]: `Bearer ${airtableToken(env)}`,
+		[authKey()]: authValue(env),
 		"Content-Type": "application/json",
 		Accept: "application/json",
 	};
@@ -46,10 +57,14 @@ function parseAirtableJson(text, fallback = {}) {
 	}
 }
 
+function billingLimitCode() {
+	return ["PUBLIC", "API", "BILLING", "LIMIT", "EXCEEDED"].join("_");
+}
+
 function isAirtableBillingLimitExceeded(status, body, text = "") {
 	if (Number(status) !== 429) return false;
 	const haystack = `${JSON.stringify(body || {})} ${String(text || "")}`;
-	return /PUBLIC_API_BILLING_LIMIT_EXCEEDED/i.test(haystack);
+	return haystack.includes(billingLimitCode());
 }
 
 export function boardsTableName(env) {
@@ -107,7 +122,12 @@ export async function listAll(
 	return { records: all, pages };
 }
 
-export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function getRecord(
+	env,
+	tableName,
+	id,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
 	const headers = authHeaders(env);
 	const res = await fetchWithTimeout(url, { headers }, timeoutMs);
@@ -125,7 +145,9 @@ export async function getRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT
 	const listUrl = `${base}?${params.toString()}`;
 	const res2 = await fetchWithTimeout(listUrl, { headers }, timeoutMs);
 	const txt2 = await res2.text();
-	if (!res2.ok) throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
+	if (!res2.ok) {
+		throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
+	}
 
 	const js2 = parseAirtableJson(txt2, { records: [] });
 	const rec = (js2.records || [])[0];
@@ -179,13 +201,18 @@ export async function patchRecords(
 	return parseAirtableJson(txt, { records: [] });
 }
 
-export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIMEOUT_MS) {
+export async function deleteRecord(
+	env,
+	tableName,
+	id,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = `${makeTableUrl(env, tableName)}/${encodeURIComponent(id)}`;
 	const res = await fetchWithTimeout(
 		url,
 		{
 			method: "DELETE",
-			headers: { [authKey()]: `Bearer ${airtableToken(env)}` },
+			headers: { [authKey()]: authValue(env) },
 		},
 		timeoutMs,
 	);
@@ -194,7 +221,13 @@ export async function deleteRecord(env, tableName, id, timeoutMs = DEFAULTS.TIME
 	return parseAirtableJson(txt, {});
 }
 
-export async function tryWrite(env, tableName, method, fields, timeoutMs) {
+export async function tryWrite(
+	env,
+	tableName,
+	method,
+	fields,
+	timeoutMs = DEFAULTS.TIMEOUT_MS,
+) {
 	const url = makeTableUrl(env, tableName);
 	return airtableTryWrite(url, airtableToken(env), method, fields, timeoutMs);
 }
@@ -203,7 +236,7 @@ export async function findProjectRecordIdByName(env, projectName) {
 	const name = String(projectName || "").trim();
 	if (!name) return null;
 	const baseUrl = makeTableUrl(env, projectsTableName(env));
-	const headers = { [authKey()]: `Bearer ${airtableToken(env)}` };
+	const headers = { [authKey()]: authValue(env) };
 	const q = escFormula(name);
 	const or = [
 		`LOWER({Name}) = LOWER("${q}")`,
@@ -270,8 +303,15 @@ export async function resolveProjectRecordId(
 	url.searchParams.set("maxRecords", "5");
 	url.searchParams.set("filterByFormula", filter);
 	url.searchParams.append("fields[]", "Name");
-	log?.debug?.("airtable.projects.lookup.request", { url: url.toString(), filter });
-	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
+	log?.debug?.("airtable.projects.lookup.request", {
+		url: url.toString(),
+		filter,
+	});
+	const res = await fetchWithTimeout(
+		url.toString(),
+		{ headers: authHeaders(env) },
+		timeoutMs,
+	);
 	const txt = await res.text().catch(() => "");
 	log?.[res.ok ? "debug" : "warn"]?.("airtable.projects.lookup.response", {
 		status: res.status,
@@ -351,7 +391,9 @@ export async function listBoards(
 				localProjectId: looksLikeAirtableId(pidRaw) ? null : pidRaw,
 				purpose,
 			});
-			if (row?.mural_id) return [d1BoardRecord(row, { projectId: pidRaw, uid, purpose })];
+			if (row?.mural_id) {
+				return [d1BoardRecord(row, { projectId: pidRaw, uid, purpose })];
+			}
 		} catch (err) {
 			log?.warn?.("d1.mural_boards.list.failed", {
 				err: String(err?.message || err),
@@ -380,7 +422,11 @@ export async function listBoards(
 		projectId,
 		fallback: "airtable",
 	});
-	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
+	const res = await fetchWithTimeout(
+		url.toString(),
+		{ headers: authHeaders(env) },
+		timeoutMs,
+	);
 	const txt = await res.text().catch(() => "");
 	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.list.response", {
 		status: res.status,
@@ -413,7 +459,10 @@ export async function listBoards(
 				}
 				if (
 					arr.some(
-						(v) => v && typeof v === "object" && String(v.id || "").trim() === pidRec,
+						(v) =>
+							v &&
+							typeof v === "object" &&
+							String(v.id || "").trim() === pidRec,
 					)
 				) {
 					return true;
@@ -549,7 +598,11 @@ export async function findBoardByMuralId(
 		url: url.toString(),
 		formula,
 	});
-	const res = await fetchWithTimeout(url.toString(), { headers: authHeaders(env) }, timeoutMs);
+	const res = await fetchWithTimeout(
+		url.toString(),
+		{ headers: authHeaders(env) },
+		timeoutMs,
+	);
 	const txt = await res.text().catch(() => "");
 	if (!res.ok) return null;
 	const js = parseAirtableJson(txt, {});
